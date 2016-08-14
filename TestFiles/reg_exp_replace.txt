@@ -1,0 +1,12 @@
+What find:		(first)|(second)|(third)
+Replace with:	"\1"
+
+first.second.third
+first.second.third
+first.second.third
+first.second.third
+first.second.third
+first.second.third
+first.second.third
+first.second.third
+first.second.third

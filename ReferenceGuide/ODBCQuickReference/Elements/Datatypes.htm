@@ -1,0 +1,840 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+    <title>Datatypes</title>
+    <!--(==============================================================)-->
+
+    <!--(Document created with RoboEditor. )============================-->
+
+    <!--(==============================================================)-->
+
+    <!--(Meta)==========================================================-->
+    <meta content="text/html; charset=us-ascii" http-equiv="content-type">
+    <meta name="GENERATOR" content="AuthorDocumentation">
+    <meta name="generator-major-version" content="0.1">
+    <meta name="generator-minor-version" content="1">
+    <meta name="filetype" content="kadov">
+    <meta name="filetype-version" content="1">
+    <meta name="page-count" content="1">
+    <meta name="layout-height" content="2401">
+    <meta name="layout-width" content="774">
+    <!--(Links)=========================================================-->
+    <link rel="stylesheet" type="text/css" href="../../ODBC_Reference.css">
+    <!--(Body)==========================================================-->
+</head>
+
+<body>
+    <h1>Datatypes</h1>
+
+    <p class="tab_header">ODBC accepts the following datatypes:</p>
+    <!--(Table)=========================================================-->
+
+    <table style=
+    "BORDER-SPACING: 0px; WIDTH: 100%; BORDER-COLLAPSE: separate; x-border-left: 1px table-solid; x-border-top: 1px table-solid; x-border-right: 1px table-solid; x-border-bottom: 1px table-solid"
+    border="1" cellspacing="0" width="100%" color="#99CCFF" x-use-null-cells="">
+        <colgroup>
+            <col>
+            <col style="WIDTH: 175px">
+            <col style="WIDTH: 392px">
+        </colgroup>
+
+        <tbody>
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; BACKGROUND-COLOR: #99ccff; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                bgcolor="#99CCFF" valign="top" width="155">
+                    <p class="tab_header">ODBC Identifier</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; BACKGROUND-COLOR: #99ccff; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                bgcolor="#99CCFF" valign="top" width="175">
+                    <p class="tab_header">Typical datatype</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; BACKGROUND-COLOR: #99ccff; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                bgcolor="#99CCFF" valign="top" width="392">
+                    <p class="tab_header">Explanation</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_BIGINT</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>BIGINT</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Exact numeric value with precision 19 (if signed) or 20 (if unsigned) and scale 0 (signed: &#8211;2[63]
+                    &lt;= n &lt;= 2[63] &#8211; 1, unsigned: 
+                    <!--kadov_tag{{<spaces>}}-->&nbsp; 
+                    <!--kadov_tag{{</spaces>}}-->0 &lt;= n &lt;= 2[64] &#8211; 1)</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_BINARY</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>BINARY(n)</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Binary data of fixed length n.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_BIT</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>BIT</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Single bit binary data.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_CHAR</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>CHAR(n)</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Character string of fixed string length n.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_TYPE_DATE</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>DATE</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Year, month, and day fields, conforming to the rules of the Gregorian calendar</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_DECIMAL</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>DECIMAL(p,s)</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Signed, exact, numeric value with a precision of at least p and scale s. (The maximum precision is
+                    driver-defined.) (1 &lt;= p &lt;= 15; s &lt;= p).</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_DOUBLE</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>DOUBLE PRECISION</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Signed, approximate, numeric value with a binary precision 53 (zero or absolute value 10[&#8211;308] to
+                    10[308]).</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_FLOAT</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>FLOAT(p)</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Signed, approximate, numeric value with a binary precision of at least p. (The maximum precision is
+                    driver-defined.)</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_GUID</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>GUID</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Fixed length Globally Unique Identifier.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_INTEGER</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>INTEGER</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Exact numeric value with precision 10 and scale 0 (signed: &#8211;2[31] &lt;= n &lt;= 2[31] &#8211; 1,
+                    unsigned: 0 &lt;= n &lt;= 2[32] &#8211; 1)</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_INTERVAL_YEAR</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>INTERVAL YEAR(p)</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Number of years between two dates; p is the interval leading precision.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_INTERVAL_YEAR _TO_MONTH</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>INTERVAL YEAR(p) TO MONTH</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Number of years and months between two dates; p is the interval leading precision.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_INTERVAL_MONTH</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>INTERVAL MONTH(p)</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Number of months between two dates; p is the interval leading precision.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_INTERVAL_DAY</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>INTERVAL DAY(p)</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Number of days between two dates; p is the interval leading precision.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_INTERVAL_HOUR</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>INTERVAL HOUR(p)</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Number of hours between two date/times; p is the interval leading precision.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_INTERVAL_ MINUTE</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>INTERVAL MINUTE(p)</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Number of minutes between two date/times; p is the interval leading precision.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_INTERVAL_ SECOND</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>INTERVAL SECOND(p,q)</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Number of seconds between two date/times; p is the interval leading precision and q is the interval
+                    seconds precision.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_INTERVAL_ DAY_TO_HOUR</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>INTERVAL DAY(p) TO HOUR</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Number of days/hours between two date/times; p is the interval leading precision.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_INTERVAL_ DAY_TO_MINUTE</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>INTERVAL DAY(p) TO MINUTE</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Number of days/hours/minutes between two date/times; p is the interval leading precision.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_INTERVAL_ DAY_TO_SECOND</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>INTERVAL DAY(p) TO SECOND(q)</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Number of days/hours/minutes/seconds between two date/times; p is the interval leading precision and q
+                    is the interval seconds precision.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_INTERVAL_HOUR _TO_MINUTE</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>INTERVAL HOUR(p) TO MINUTE</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Number of hours/minutes between two date/times; p is the interval leading precision.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_INTERVAL_HOUR _TO_SECOND</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>INTERVAL HOUR(p) TO SECOND(q)</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Number of hours/minutes/seconds between two date/times; p is the interval leading precision and q is the
+                    interval seconds precision.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_INTERVAL_ MINUTE_TO_SECOND</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>INTERVAL MINUTE(p) TO SECOND(q)</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Number of minutes/seconds between two date/times; p is the interval leading precision and q is the
+                    interval seconds precision.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_LONGVARBINARY</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>LONG VARBINARY</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Variable length binary data. Maximum length is data source &#8211; dependent.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_LONGVARCHAR</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>LONG VARCHAR</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Variable length character data. Maximum length is data source &#8211; dependent.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_NUMERIC</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>NUMERIC(p,s)</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Signed, exact, numeric value with a precision p and scale s (1 &lt;= p &lt;= 15; s &lt;= p).</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_REAL</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>REAL</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Signed, approximate, numeric value with a binary precision 24 (zero or absolute value 10[&#8211;38] to
+                    10[38]).</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_SMALLINT</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>SMALLINT</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Exact numeric value with precision 5 and scale 0 (signed: &#8211;32,768 &lt;= n &lt;= 32,767, unsigned:
+                    0 &lt;= n &lt;= 65,535)</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_TYPE_TIME</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>TIME(p)</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Hour, minute, and second fields, with valid values for hours of 00 to 23, valid values for minutes of 00
+                    to 59, and valid values for seconds of 00 to 61. Precision p indicates the seconds precision.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_TYPE_TIMESTAMP</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>TIMESTAMP(p)</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Year, month, day, hour, minute, and second fields, with valid values as defined for the DATE and TIME
+                    data types.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_TINYINT</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>TINYINT</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Exact numeric value with precision 3 and scale 0 (signed: &#8211;128 &lt;= n &lt;= 127, unsigned: 0
+                    &lt;= n &lt;= 255)</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_VARBINARY</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>VARBINARY(n)</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Variable length binary data of maximum length n. The maximum is set by the user.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_WCHAR</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>WCHAR(n)</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Unicode character string of fixed string length n</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_WLONGVARCHAR</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>LONG WVARCHAR</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Unicode variable-length character data. Maximum length is data source-dependent</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_WVARCHAR</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>VARWCHAR(n)</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Unicode variable-length character string with a maximum string length n</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p>SQL_VARCHAR</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 175px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="175">
+                    <p>VARCHAR(n)</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 392px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="392">
+                    <p>Variable-length character string with a maximum string length n.</p>
+                </td>
+            </tr>
+        </tbody>
+    </table>&nbsp; 
+    <!--begin!kadov{{--><br>
+
+    <!--}}end!kadov-->
+     
+    <!--kadov_tag{{<implicit_p>}}-->Not all datatypes are supported on all databases. The most certainly will not be supported
+    in this way. To discover the datatypes that you can / must use, look them up in the ODBC info tree under 'SQL Data types'.
+    Open the info tree per data type to see what they really represent in terms of allowed precision and scale. 
+    <!--begin!kadov{{--><br>
+
+    <!--}}end!kadov-->
+     
+    <!--kadov_tag{{<implicit_p>}}-->
+     
+    <!--kadov_tag{{<spaces>}}-->&nbsp; 
+    <!--kadov_tag{{</spaces>}}-->
+     
+    <!--begin!kadov{{--><br>
+
+    <!--}}end!kadov-->
+     
+    <!--kadov_tag{{<implicit_p>}}-->In the following example you will see that an Oracle data type DATE is in fact a TIMESTAMP,
+    and that the general datatype VARCHAR is called VARCHAR2 (beware of the '2'). 
+    <!--begin!kadov{{--><br>
+
+    <!--}}end!kadov-->
+     
+    <!--kadov_tag{{<implicit_p>}}-->&nbsp; 
+    <!--begin!kadov{{--><br>
+
+    <!--}}end!kadov-->
+     
+    <!--kadov_tag{{<implicit_p>}}--><img style=
+    "BORDER-BOTTOM: medium none; BORDER-LEFT: medium none; WIDTH: 340px; FLOAT: none; HEIGHT: 527px; BORDER-TOP: medium none; BORDER-RIGHT: medium none"
+    border="0" src="../Pictures/Real_datatypes.bmp" width="340" height="527" x-maintain-ratio="TRUE"> 
+    <!--(HR)============================================================-->
+    <hr style="HEIGHT: 1px" align="center" size="1">
+
+    <p class="footer">This SQL Reference is not the complete documentation for your SQL language. For more detailed information
+    see the documentation of your RDBMS.</p>
+</body>
+</html>

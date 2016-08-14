@@ -1,0 +1,69 @@
+# File: TextPad.keymap
+# Description: TextPad keymap layout.
+# Please don't edit it manually, it'll be replaced without confirmation.
+# I think to copy it to Custom.keymap and edit will be a good idea.
+# Please notify me if you find any mismatch.
+
+Edit.Capitalize               Ctrl+Shift+U
+Edit.Copy                     Ctrl+C
+Edit.Copy                     Ctrl+Insert
+Edit.CopyAppend               Ctrl+Shift+C
+Edit.CopyAppend               Ctrl+Shift+Insert
+Edit.Cut                      Ctrl+X
+Edit.Cut                      Shift+Delete
+Edit.CutAppend                Ctrl+Shift+X
+Edit.CutAppend                Ctrl+Shift+Delete
+Edit.FileSettings             Alt+Enter
+Edit.Find                     F5
+Edit.FindInFile               Ctrl+F5
+Edit.FindMatch                Ctrl+M
+Edit.FindMatchSelect          Ctrl+Shift+M
+Edit.FindNext                 Ctrl+F
+Edit.FindPrevious             Ctrl+Shift+F
+Edit.GoTo                     Ctrl+G
+Edit.IndentSelection          Ctrl+I
+Edit.InvertCase               Ctrl+K
+Edit.JumpNext                 F4
+Edit.JumpPrevious             Shift+F4
+Edit.LineNumbers              Ctrl+Q,L
+Edit.Lowercase                Ctrl+L
+Edit.NextBookmark             F2
+Edit.Paste                    Ctrl+V
+Edit.Paste                    Shift+Insert
+Edit.PermanentSettings        Ctrl+Q,P
+Edit.PreviousBookmark         Shift+F2
+Edit.Redo                     Ctrl+Y
+Edit.RemoveallBookmarks       Ctrl+Shift+F2
+Edit.Replace                  F8
+Edit.ScrollDown               Ctrl+Down
+Edit.ScrollUp                 Ctrl+Up
+Edit.SelectAll                Ctrl+
+Edit.Sort                     F9
+Edit.ToggleBookmark           Ctrl+F2
+Edit.ToggleSelectionMode      Ctrl+Q,B
+Edit.UndentSelection          Ctrl+Shift+I
+Edit.Undo                     Ctrl+Z
+Edit.Uppercase                Ctrl+U
+Edit.VisibleSpaces            Ctrl+Q,I
+File.New                      Ctrl+N
+File.Open                     Ctrl+O
+File.Print                    Ctrl+P
+File.PrintPreview             Ctrl+Shift+P
+File.Save                     Ctrl+S
+File.SaveAll                  Ctrl+Shift+S
+File.SaveAs                   F12
+
+# Not implemented yet
+#Edit.Compare                 Ctrl+F9
+#Edit.Output                  Ctrl+F11
+#Edit.PopupMenu               Shift+F10
+#Edit.RedoAll                 Ctrl+Shift+Y
+#Edit.SearchResult            Shift+F11
+#Edit.SoftWordWrap            Ctrl+Q,W
+#Edit.SwitchReadOnly          Ctrl+Q,E
+#Edit.UndoAll                 Ctrl+Shift+Z
+#File.CtrlBreak               Ctrl+Break
+#File.ExplorerPane            F3
+#File.OpenFilesPane           F1
+
+Help.Index                    F1

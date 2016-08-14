@@ -1,0 +1,369 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html xmlns:o="">
+<head>
+    <title>String functions</title>
+    <!--(==============================================================)-->
+
+    <!--(Document created with RoboEditor. )============================-->
+
+    <!--(==============================================================)-->
+
+    <!--(Meta)==========================================================-->
+    <meta content="text/html; charset=us-ascii" http-equiv="content-type">
+    <meta name="GENERATOR" content="AuthorDocumentation">
+    <meta name="generator-major-version" content="0.1">
+    <meta name="generator-minor-version" content="1">
+    <meta name="filetype" content="kadov">
+    <meta name="filetype-version" content="1">
+    <meta name="page-count" content="1">
+    <meta name="layout-height" content="1530">
+    <meta name="layout-width" content="740">
+    <!--(Links)=========================================================-->
+    <link rel="stylesheet" type="text/css" href="../../ODBC_Reference.css">
+    <!--(Body)==========================================================-->
+</head>
+
+<body>
+    <h1>STRING FUNCTIONS</h1>
+
+    <p>The following table lists string manipulation functions.</p>
+
+    <p>Arguments denoted as string_exp can be the name of a column, a character-string-literal, or the result of another scalar
+    function, where the underlying data type can be represented as CHAR, VARCHAR, or LONGVARCHAR.</p>
+
+    <p>Arguments denoted as character_exp are a variable-length character string.</p>
+
+    <p>Arguments denoted as start, length, or count can be a numeric-literal or the result of another scalar function, where
+    the underlying data type can be represented as TINYINT, SMALLINT, or INTEGER.</p>
+
+    <p>The string functions listed here are 1-based; that is, the first character in the string is character 1.</p>
+    <!--(Table)=========================================================-->
+
+    <table style=
+    "BORDER-SPACING: 0px; WIDTH: 100%; BORDER-COLLAPSE: separate; x-border-left: 1px table-solid; x-border-top: 1px table-solid; x-border-right: 1px table-solid; x-border-bottom: 1px table-solid"
+    border="1" cellspacing="0" width="100%" x-use-null-cells="" color="#99CCFF">
+        <colgroup>
+            <col style="WIDTH: 220px">
+            <col style="WIDTH: 508px">
+        </colgroup>
+
+        <tbody>
+            <tr style="x-cell-content-align: top" valign="top">
+                <td style=
+                "PADDING-BOTTOM: 2px; BACKGROUND-COLOR: #99ccff; PADDING-LEFT: 2px; WIDTH: 220px; PADDING-RIGHT: 2px; PADDING-TOP: 2px"
+                bgcolor="#99CCFF" width="220">
+                    <p class="tab_header">Function</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; BACKGROUND-COLOR: #99ccff; PADDING-LEFT: 2px; WIDTH: 508px; PADDING-RIGHT: 2px; PADDING-TOP: 2px"
+                bgcolor="#99CCFF" width="508">
+                    <p class="tab_header">Value Returned</p>
+                </td>
+            </tr>
+
+            <tr style="x-cell-content-align: top" valign="top">
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 220px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "220">
+                    <p>ASCII(string_exp)</p>
+                </td>
+
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 508px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "508">
+                    <p>Returns the ASCII code value of the leftmost character of string_exp as an integer.</p>
+                </td>
+            </tr>
+
+            <tr style="x-cell-content-align: top" valign="top">
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 220px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "220">
+                    <p>BIT_LENGTH(string_exp)</p>
+                </td>
+
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 508px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "508">
+                    <p>Returns the length in bits of the string expression.</p>
+                </td>
+            </tr>
+
+            <tr style="x-cell-content-align: top" valign="top">
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 220px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "220">
+                    <p>CHAR(code)</p>
+                </td>
+
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 508px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "508">
+                    <p>Returns the character that has the ASCII code value specified by code. The value of code should be
+                    between 0 and 255; otherwise, the return value is data source &#8211; dependent.</p>
+                </td>
+            </tr>
+
+            <tr style="x-cell-content-align: top" valign="top">
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 220px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "220">
+                    <p>CHAR_LENGTH(string_exp)</p>
+                </td>
+
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 508px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "508">
+                    <p>Returns the length in characters of the string expression, if the string expression is of a character
+                    data type; otherwise, returns the length in bytes of the string expression (the smallest integer not less
+                    than the number of bits divided by 8). (This function is the same as the CHARACTER_LENGTH function.)</p>
+                </td>
+            </tr>
+
+            <tr style="x-cell-content-align: top" valign="top">
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 220px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "220">
+                    <p>CHARACTER_LENGTH(string_exp)</p>
+                </td>
+
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 508px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "508">
+                    <p>Returns the length in characters of the string expression, if the string expression is of a character
+                    data type; otherwise, returns the length in bytes of the string expression (the smallest integer not less
+                    than the number of bits divided by 8). (This function is the same as the CHAR_LENGTH function.)</p>
+
+                    <p>&nbsp;</p>
+                </td>
+            </tr>
+
+            <tr style="x-cell-content-align: top" valign="top">
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 220px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "220">
+                    <p>CONCAT(string_exp1, string_exp2)</p>
+                </td>
+
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 508px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "508">
+                    <p>Returns a character string that is the result of concatenating string_exp2 to string_exp1. The resulting
+                    string is DBMS-dependent. For example, if the column represented by string_exp1 contained a NULL value, DB2
+                    would return NULL, but SQL Server would return the non-NULL string.</p>
+                </td>
+            </tr>
+
+            <tr style="x-cell-content-align: top" valign="top">
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 220px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "220">
+                    <p>DIFFERENCE(string_exp1, string_exp2)</p>
+                </td>
+
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 508px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "508">
+                    <p>Returns an integer value that indicates the difference between the values returned by the SOUNDEX
+                    function for string_exp1 and string_exp2.</p>
+                </td>
+            </tr>
+
+            <tr style="x-cell-content-align: top" valign="top">
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 220px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "220">
+                    <p>INSERT(string_exp1, start, length, string_exp2)</p>
+                </td>
+
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 508px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "508">
+                    <p>Returns a character string where length characters have been deleted from string_exp1 beginning at start
+                    and where string_exp2 has been inserted into string_exp, beginning at start.</p>
+                </td>
+            </tr>
+
+            <tr style="x-cell-content-align: top" valign="top">
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 220px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "220">
+                    <p>LCASE(string_exp)</p>
+                </td>
+
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 508px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "508">
+                    <p>Returns a string equal to that in string_exp with all uppercase characters converted to lowercase.</p>
+                </td>
+            </tr>
+
+            <tr style="x-cell-content-align: top" valign="top">
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 220px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "220">
+                    <p>LEFT(string_exp, count)</p>
+                </td>
+
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 508px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "508">
+                    <p>Returns the leftmost count characters of string_exp.</p>
+                </td>
+            </tr>
+
+            <tr style="x-cell-content-align: top" valign="top">
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 220px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "220">
+                    <p>LENGTH(string_exp)</p>
+                </td>
+
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 508px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "508">
+                    <p>Returns the number of characters in string_exp, excluding trailing blanks.</p>
+                </td>
+            </tr>
+
+            <tr style="x-cell-content-align: top" valign="top">
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 220px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "220">
+                    <p>LOCATE(string_exp1, string_exp2[, start])</p>
+                </td>
+
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 508px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "508">
+                    <p>Returns the starting position of the first occurrence of string_exp1 within string_exp2. The search for
+                    the first occurrence of string_exp1 begins with the first character position in string_exp2 unless the
+                    optional argument, start, is specified. If start is specified, the search begins with the character
+                    position indicated by the value of start. The first character position in string_exp2 is indicated by the
+                    value 1. If string_exp1 is not found within string_exp2, the value 0 is returned.</p>
+                </td>
+            </tr>
+
+            <tr style="x-cell-content-align: top" valign="top">
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 220px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "220">
+                    <p>LTRIM(string_exp)</p>
+                </td>
+
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 508px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "508">
+                    <p>Returns the characters of string_exp, with leading blanks removed.</p>
+                </td>
+            </tr>
+
+            <tr style="x-cell-content-align: top" valign="top">
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 220px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "220">
+                    <p>OCTET_LENGTH(string_exp)</p>
+                </td>
+
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 508px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "508">
+                    <p>Returns the length in bytes of the string expression. The result is the smallest integer not less than
+                    the number of bits divided by 8.</p>
+                </td>
+            </tr>
+
+            <tr style="x-cell-content-align: top" valign="top">
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 220px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "220">
+                    <p>POSITION(character_exp IN character_exp)</p>
+                </td>
+
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 508px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "508">
+                    <p>Returns the position of the first character expression in the second character expression. The result is
+                    an exact numeric with an implementation-defined precision and a scale of 0.</p>
+                </td>
+            </tr>
+
+            <tr style="x-cell-content-align: top" valign="top">
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 220px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "220">
+                    <p>REPEAT(string_exp, count)</p>
+                </td>
+
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 508px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "508">
+                    <p>Returns a character string composed of string_exp repeated count times.</p>
+                </td>
+            </tr>
+
+            <tr style="x-cell-content-align: top" valign="top">
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 220px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "220">
+                    <p>REPLACE(string_exp1, string_exp2, string_exp3)</p>
+                </td>
+
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 508px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "508">
+                    <p>Search string_exp1 for occurrences of string_exp2 and replace with string_exp3.</p>
+                </td>
+            </tr>
+
+            <tr style="x-cell-content-align: top" valign="top">
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 220px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "220">
+                    <p>RIGHT(string_exp, count)</p>
+                </td>
+
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 508px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "508">
+                    <p>Returns the rightmost count characters of string_exp.</p>
+                </td>
+            </tr>
+
+            <tr style="x-cell-content-align: top" valign="top">
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 220px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "220">
+                    <p>RTRIM(string_exp)</p>
+                </td>
+
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 508px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "508">
+                    <p>Returns the characters of string_exp with trailing blanks removed.</p>
+                </td>
+            </tr>
+
+            <tr style="x-cell-content-align: top" valign="top">
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 220px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "220">
+                    <p>SOUNDEX(string_exp)</p>
+                </td>
+
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 508px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "508">
+                    <p>Returns a data source &#8211; dependent character string representing the sound of the words in
+                    string_exp. For example, SQL Server returns a 4-digit SOUNDEX code; Oracle returns a phonetic
+                    representation of each word.</p>
+                </td>
+            </tr>
+
+            <tr style="x-cell-content-align: top" valign="top">
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 220px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "220">
+                    <p>SPACE(count)</p>
+                </td>
+
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 508px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "508">
+                    <p>Returns a character string consisting of count spaces.</p>
+                </td>
+            </tr>
+
+            <tr style="x-cell-content-align: top" valign="top">
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 220px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "220">
+                    <p>SUBSTRING(string_exp, start, length)</p>
+                </td>
+
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 508px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "508">
+                    <p>Returns a character string that is derived from string_exp beginning at the character position specified
+                    by start for length characters.</p>
+                </td>
+            </tr>
+
+            <tr style="x-cell-content-align: top" valign="top">
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 220px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "220">
+                    <p>UCASE(string_exp)</p>
+                </td>
+
+                <td style="PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 508px; PADDING-RIGHT: 2px; PADDING-TOP: 2px" width=
+                "508">
+                    <p>Returns a string equal to that in string_exp with all lowercase characters converted to uppercase.</p>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <!--(HR)============================================================-->
+    <hr style="HEIGHT: 1px" align="center" size="1">
+
+    <p class="footer">This SQL Reference is not the complete documentation for your SQL language. For more detailed information
+    see the documentation of your RDBMS.</p>
+</body>
+</html>

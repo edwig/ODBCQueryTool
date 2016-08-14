@@ -1,0 +1,109 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Frameset//EN">
+
+<html>
+
+<!--(==============================================================)-->
+
+<!--(Document created with RoboEditor. )============================-->
+
+<!--(==============================================================)-->
+
+<head>
+    <title>System functions</title>
+    <!--(Meta)==========================================================-->
+    <meta http-equiv="content-type" content="text/html; charset=us-ascii">
+    <meta name="generator" content="RoboHELP by eHelp Corporation - www.ehelp.com">
+    <meta name="generator-major-version" content="0.1">
+    <meta name="generator-minor-version" content="1">
+    <meta name="filetype" content="kadov">
+    <meta name="filetype-version" content="1">
+    <meta name="page-count" content="1">
+    <meta name="layout-height" content="571">
+    <meta name="layout-width" content="782">
+    <!--(Links)=========================================================-->
+    <link href="../../ODBC_Reference.css" type="text/css" rel="stylesheet">
+</head>
+<!--(Body)==========================================================-->
+
+<body>
+    <h1>SYSTEM FUNCTIONS</h1>
+
+    <p class="tab_header">The following table lists system functions that are included in the ODBC scalar function set.</p>
+
+    <p>Arguments denoted as exp can be the name of a column, the result of another scalar function, or a literal, where the
+    underlying data type could be represented as NUMERIC, DECIMAL, TINYINT, SMALLINT, INTEGER, BIGINT, FLOAT, REAL, DOUBLE,
+    DATE, TIME, or TIMESTAMP.</p>
+
+    <p>Arguments denoted as value can be a literal constant, where the underlying data type can be represented as NUMERIC,
+    DECIMAL, TINYINT, SMALLINT, INTEGER, BIGINT, FLOAT, REAL, DOUBLE, DATE, TIME, or TIMESTAMP.</p>
+
+    <p>Values returned are represented as ODBC data types.</p>
+    <!--(Table)=========================================================-->
+
+    <table color="#99CCFF" x-use-null-cells="" style=
+    "width: 100%; x-border-left: 1px table-solid; x-border-top: 1px table-solid; x-border-right: 1px table-solid; x-border-bottom: 1px table-solid; border-collapse: separate; border-spacing: 0px; x-border-left: 1px table-solid; x-border-top: 1px table-solid; x-border-right: 1px table-solid; x-border-bottom: 1px table-solid; border-collapse: separate; border-spacing: 0px;"
+    cellspacing="0" width="100%" border="1">
+        <tr>
+            <td style=
+            "background-color: #99ccff; x-cell-content-align: top; width: 218px; padding-left: 2px; padding-top: 2px; padding-right: 2px; padding-bottom: 2px;"
+            valign="top" bgcolor="#99CCFF" width="218px">
+                <p class="tab_header">Function</p>
+            </td>
+
+            <td style=
+            "background-color: #99ccff; x-cell-content-align: top; width: 769px; padding-left: 2px; padding-top: 2px; padding-right: 2px; padding-bottom: 2px;"
+            valign="top" bgcolor="#99CCFF" width="769px">
+                <p class="tab_header">Value Returned</p>
+            </td>
+        </tr>
+
+        <tr>
+            <td style=
+            "x-cell-content-align: top; width: 218px; padding-left: 2px; padding-top: 2px; padding-right: 2px; padding-bottom: 2px;"
+            valign="top" width="218px">
+                <p>DATABASE( )</p>
+            </td>
+
+            <td style=
+            "x-cell-content-align: top; width: 769px; padding-left: 2px; padding-top: 2px; padding-right: 2px; padding-bottom: 2px;"
+            valign="top" width="769px">
+                <p>Returns the name of the database corresponding to the connection handle.</p>
+            </td>
+        </tr>
+
+        <tr>
+            <td style=
+            "x-cell-content-align: top; width: 218px; padding-left: 2px; padding-top: 2px; padding-right: 2px; padding-bottom: 2px;"
+            valign="top" width="218px">
+                <p>IFNULL(exp, value)</p>
+            </td>
+
+            <td style=
+            "x-cell-content-align: top; width: 769px; padding-left: 2px; padding-top: 2px; padding-right: 2px; padding-bottom: 2px;"
+            valign="top" width="769px">
+                <p>If exp is null, value is returned. If exp is not null, exp is returned. The possible data type or types of
+                value must be compatible with the data type of exp.</p>
+            </td>
+        </tr>
+
+        <tr>
+            <td style=
+            "x-cell-content-align: top; width: 218px; padding-left: 2px; padding-top: 2px; padding-right: 2px; padding-bottom: 2px;"
+            valign="top" width="218px">
+                <p>USER( )</p>
+            </td>
+
+            <td style=
+            "x-cell-content-align: top; width: 769px; padding-left: 2px; padding-top: 2px; padding-right: 2px; padding-bottom: 2px;"
+            valign="top" width="769px">
+                <p>Returns the user name in the DBMS.</p>
+            </td>
+        </tr>
+    </table>
+    <!--(HR)============================================================-->
+    <hr style="float: aligncenter; height: 1px;" align="center" size="1">
+
+    <p class="footer">This SQL Reference is not the complete documentation for your SQL language. For more detailed information
+    see the documentation of your RDBMS.</p>
+</body>
+</html>

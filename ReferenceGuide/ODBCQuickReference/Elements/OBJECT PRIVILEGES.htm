@@ -1,0 +1,678 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+    <title>OBJECT PRIVILEGES</title>
+    <!--(==============================================================)-->
+
+    <!--(Document created with RoboEditor. )============================-->
+
+    <!--(==============================================================)-->
+
+    <!--(Meta)==========================================================-->
+    <meta content="text/html; charset=us-ascii" http-equiv="Content-Type">
+    <meta name="GENERATOR" content="AuthorDocumentation">
+    <meta name="generator-major-version" content="0.1">
+    <meta name="generator-minor-version" content="1">
+    <meta name="filetype" content="kadov">
+    <meta name="filetype-version" content="1">
+    <meta name="page-count" content="1">
+    <meta name="layout-height" content="1127">
+    <meta name="layout-width" content="782">
+    <!--(Links)=========================================================-->
+    <link rel="stylesheet" type="text/css" href="../../ODBC_Reference.css">
+    <!--(Body)==========================================================-->
+</head>
+
+<body>
+    <h3>OBJECT PRIVILEGES</h3>
+    <!--(HR)============================================================-->
+    <hr style="HEIGHT: 3px" align="center" size="3">
+
+    <p>These privileges apply to specific objects.</p>
+    <!--(Table)=========================================================-->
+
+    <table style=
+    "BORDER-SPACING: 0px; WIDTH: 100%; BORDER-COLLAPSE: separate; x-border-left: 1px table-solid; x-border-top: 1px table-solid; x-border-right: 1px table-solid; x-border-bottom: 1px table-solid"
+    border="1" cellspacing="0" width="100%" x-use-null-cells="" color="#99CCFF">
+        <tbody>
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; BACKGROUND-COLOR: #99ccff; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                bgcolor="#99CCFF" valign="top" width="155">
+                    <p class="tab_header">Object Privilege</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; BACKGROUND-COLOR: #99ccff; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                bgcolor="#99CCFF" valign="top">
+                    <p class="tab_header">Allows Grantee To ...</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p class="tab_func">ALL [PRIVILEGES]</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top">
+                    <p class="tab_desc">Apply all of the object privileges that can be applied</p>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4>TABLE PRIVILEGES</h4>
+    <!--(Table)=========================================================-->
+
+    <table style=
+    "BORDER-SPACING: 0px; WIDTH: 100%; BORDER-COLLAPSE: separate; x-border-left: 1px table-solid; x-border-top: 1px table-solid; x-border-right: 1px table-solid; x-border-bottom: 1px table-solid"
+    border="1" cellspacing="0" width="100%" x-use-null-cells="" color="#99CCFF">
+        <tbody>
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; BACKGROUND-COLOR: #99ccff; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                bgcolor="#99CCFF" valign="top" width="155">
+                    <p class="tab_header">Object Privilege</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; BACKGROUND-COLOR: #99ccff; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                bgcolor="#99CCFF" valign="top">
+                    <p class="tab_header">Allows Grantee To ...</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p class="tab_func">ALTER</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top">
+                    <p class="tab_desc">Change the table definition with the ALTER TABLE statement</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p class="tab_func">DELETE</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top">
+                    <p class="tab_desc">Remove rows from the table with the DELETE statement <strong><br>
+                    Note</strong>: You must grant the SELECT privilege on the table along with the DELETE privilege</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p class="tab_func">INDEX</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top">
+                    <p class="tab_desc">Create an index on the table with the CREATE INDEX statement</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p class="tab_func">INSERT</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top">
+                    <p class="tab_desc">Add new rows to the table with the INSERT statement</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p class="tab_func">REFERENCES</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top">
+                    <p class="tab_desc">Create a constraint that refers to the table. You cannot grant this privilege to a
+                    role</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p class="tab_func">SELECT</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top">
+                    <p class="tab_desc">Query the table with the SELECT statement</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p class="tab_func">UPDATE</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top">
+                    <p class="tab_desc">Change data in the table with the UPDATE statement <strong><br>
+                    Note</strong>: You must grant the SELECT privilege on the table along with the UPDATE privilege.</p>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4>VIEW PRIVILEGES</h4>
+    <!--(Table)=========================================================-->
+
+    <table style=
+    "BORDER-SPACING: 0px; WIDTH: 100%; BORDER-COLLAPSE: separate; x-border-left: 1px table-solid; x-border-top: 1px table-solid; x-border-right: 1px table-solid; x-border-bottom: 1px table-solid"
+    border="1" cellspacing="0" width="100%" x-use-null-cells="" color="#99CCFF">
+        <tbody>
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; BACKGROUND-COLOR: #99ccff; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                bgcolor="#99CCFF" valign="top" width="155">
+                    <p class="tab_header">Object Privilege</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; BACKGROUND-COLOR: #99ccff; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                bgcolor="#99CCFF" valign="top">
+                    <p class="tab_header">Allows Grantee To ...</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p class="tab_func">DELETE</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top">
+                    <p class="tab_desc">Remove rows from the view with the DELETE statement</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p class="tab_func">INSERT</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top">
+                    <p class="tab_desc">Add new rows to the view with the INSERT statement</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p class="tab_func">SELECT</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top">
+                    <p class="tab_desc">Query the view with the SELECT statement</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p class="tab_func">UPDATE</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top">
+                    <p class="tab_desc">Change data in the view with the UPDATE statement</p>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4>SEQUENCE PRIVILEGES</h4>
+    <!--(Table)=========================================================-->
+
+    <table style=
+    "BORDER-SPACING: 0px; WIDTH: 100%; BORDER-COLLAPSE: separate; x-border-left: 1px table-solid; x-border-top: 1px table-solid; x-border-right: 1px table-solid; x-border-bottom: 1px table-solid"
+    border="1" cellspacing="0" width="100%" x-use-null-cells="" color="#99CCFF">
+        <tbody>
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; BACKGROUND-COLOR: #99ccff; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                bgcolor="#99CCFF" valign="top" width="155">
+                    <p class="tab_header">Object Privilege</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; BACKGROUND-COLOR: #99ccff; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                bgcolor="#99CCFF" valign="top">
+                    <p class="tab_header">Allows Grantee To ...</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p class="tab_func">ALTER</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top">
+                    <p class="tab_desc">Change the sequence definition with the ALTER SEQUENCE statement</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p class="tab_func">SELECT</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top">
+                    <p class="tab_desc">Examine and increment values of the sequence with the CURRVAL and NEXTVAL
+                    pseudocolumns</p>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h4>PROCEDURE, FUNCTION, AND PACKAGE PRIVILEGE</h4>
+    <!--(Table)=========================================================-->
+
+    <table style=
+    "BORDER-SPACING: 0px; WIDTH: 100%; BORDER-COLLAPSE: separate; x-border-left: 1px table-solid; x-border-top: 1px table-solid; x-border-right: 1px table-solid; x-border-bottom: 1px table-solid"
+    border="1" cellspacing="0" width="100%" x-use-null-cells="" color="#99CCFF">
+        <tbody>
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; BACKGROUND-COLOR: #99ccff; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                bgcolor="#99CCFF" valign="top" width="155">
+                    <p class="tab_header">Object Privilege</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; BACKGROUND-COLOR: #99ccff; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                bgcolor="#99CCFF" valign="top">
+                    <p class="tab_header">Allows Grantee To ...</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 155px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="155">
+                    <p class="tab_func">EXECUTE</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top">
+                    <p class="tab_desc">Compile the procedure or function or execute it directly, or access any program object
+                    declared in the specification of a package</p>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>&nbsp;</p>
+    <!--(Table)=========================================================-->
+
+    <table style=
+    "BORDER-SPACING: 0px; WIDTH: 100%; BORDER-COLLAPSE: separate; x-border-left: 1px table-solid; x-border-top: 1px table-solid; x-border-right: 1px table-solid; x-border-bottom: 1px table-solid"
+    border="1" cellspacing="0" width="100%" x-use-null-cells="" color="#99CCFF">
+        <tbody>
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; BACKGROUND-COLOR: #99ccff; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                bgcolor="#99CCFF" valign="top" width="100">
+                    <p class="tab_header">Object Privilege</p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; BACKGROUND-COLOR: #99ccff; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                bgcolor="#99CCFF" valign="top" width="100" align="middle">
+                    <p class="tab_header">Table</p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; BACKGROUND-COLOR: #99ccff; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                bgcolor="#99CCFF" valign="top" width="100" align="middle">
+                    <p class="tab_header">View</p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; BACKGROUND-COLOR: #99ccff; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                bgcolor="#99CCFF" valign="top" width="100" align="middle">
+                    <p class="tab_header">Sequence</p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; BACKGROUND-COLOR: #99ccff; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                bgcolor="#99CCFF" valign="top" width="100" align="middle">
+                    <p class="tab_header">Procedures, Functions, Packages</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100">
+                    <p class="tab_func">ALTER</p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func"><font style="FONT-FAMILY: Wingdings" face="Wingdings"><strong style=
+                    "FONT-WEIGHT: bold">&#252;</strong></font></p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func">&nbsp;</p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func">&nbsp;</p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func">&nbsp;</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100">
+                    <p class="tab_func">DELETE</p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func"><font style="FONT-FAMILY: Wingdings" face="Wingdings"><strong style=
+                    "FONT-WEIGHT: bold">&#252;</strong></font></p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func"><font style="FONT-FAMILY: Wingdings" face="Wingdings"><strong style=
+                    "FONT-WEIGHT: bold">&#252;</strong></font></p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func">&nbsp;</p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func"><font style="FONT-FAMILY: Wingdings" face="Wingdings"><strong style=
+                    "FONT-WEIGHT: bold">&#252;</strong></font></p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100">
+                    <p class="tab_func">EXECUTE</p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func">&nbsp;</p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func">&nbsp;</p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func">&nbsp;</p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func"><font style="FONT-FAMILY: Wingdings" face="Wingdings"><strong style=
+                    "FONT-WEIGHT: bold">&#252;</strong></font></p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100">
+                    <p class="tab_func">INDEX</p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func"><font style="FONT-FAMILY: Wingdings" face="Wingdings"><strong style=
+                    "FONT-WEIGHT: bold">&#252;</strong></font></p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func">&nbsp;</p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func">&nbsp;</p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func">&nbsp;</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100">
+                    <p class="tab_func">INSERT</p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func"><font style="FONT-FAMILY: Wingdings" face="Wingdings"><strong style=
+                    "FONT-WEIGHT: bold">&#252;</strong></font></p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func"><font style="FONT-FAMILY: Wingdings" face="Wingdings"><strong style=
+                    "FONT-WEIGHT: bold">&#252;</strong></font></p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func">&nbsp;</p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func">&nbsp;</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100">
+                    <p class="tab_func">REFERENCES</p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func"><font style="FONT-FAMILY: Wingdings" face="Wingdings"><strong style=
+                    "FONT-WEIGHT: bold">&#252;</strong></font></p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func">&nbsp;</p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func">&nbsp;</p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func">&nbsp;</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100">
+                    <p class="tab_func">SELECT</p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func"><font style="FONT-FAMILY: Wingdings" face="Wingdings"><strong style=
+                    "FONT-WEIGHT: bold">&#252;</strong></font></p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func"><font style="FONT-FAMILY: Wingdings" face="Wingdings"><strong style=
+                    "FONT-WEIGHT: bold">&#252;</strong></font></p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func"><font style="FONT-FAMILY: Wingdings" face="Wingdings"><strong style=
+                    "FONT-WEIGHT: bold">&#252;</strong></font></p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func">&nbsp;</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100">
+                    <p class="tab_func">UPDATE</p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func"><font style="FONT-FAMILY: Wingdings" face="Wingdings"><strong style=
+                    "FONT-WEIGHT: bold">&#252;</strong></font></p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func"><font style="FONT-FAMILY: Wingdings" face="Wingdings"><strong style=
+                    "FONT-WEIGHT: bold">&#252;</strong></font></p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func">&nbsp;</p>
+                </td>
+
+                <td style=
+                "TEXT-ALIGN: center; PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 100px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="100" align="middle">
+                    <p class="tab_func">&nbsp;</p>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <!--(HR)============================================================-->
+    <hr style="HEIGHT: 1px" align="center" size="1">
+
+    <p class="footer">This SQL Reference is not the complete documentation for your SQL language. For more detailed information
+    see the documentation of your RDBMS.</p>
+</body>
+</html>

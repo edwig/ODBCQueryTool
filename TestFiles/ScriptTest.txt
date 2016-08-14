@@ -1,0 +1,36 @@
+-- Use transcript output
+:file open 'c:\tmp\testoutput.txt';
+
+-- Create a table to work in
+create table test_long
+(
+  field1 number(10,0)
+)
+/
+
+-- Put a value in this table
+:variable1 INPUT LONG;
+:variable1 = 1234567890;
+insert into test_long values (?);
+
+-- reset and rebind to a INTEGER
+:rebind NUMERIC,LONG;
+:variable1 = 000;
+:select on;
+
+-- Get value back from table
+select field1 from test_long;
+
+-- Is it the right value?
+:if variable1 <> 1234567890;
+:print ERROR long should be 1234567890;
+
+-- Reset everything for next test
+:rebind reset;
+:select off;
+drop table test_long;
+
+-- Close our transcript
+:file close;
+-- Now check that the transcript file
+-- has NO line with the word ERROR in it!!

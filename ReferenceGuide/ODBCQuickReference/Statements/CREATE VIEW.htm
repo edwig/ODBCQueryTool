@@ -1,0 +1,124 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+    <title>CREATE VIEW</title>
+    <!--(==============================================================)-->
+
+    <!--(Document created with RoboEditor. )============================-->
+
+    <!--(==============================================================)-->
+
+    <!--(Meta)==========================================================-->
+    <meta content="text/html; charset=us-ascii" http-equiv="content-type">
+    <meta name="GENERATOR" content="AuthorDocumentation">
+    <meta name="filetype" content="kadov">
+    <meta name="filetype-version" content="1">
+    <meta name="page-count" content="1">
+    <meta name="layout-height" content="835">
+    <meta name="layout-width" content="798">
+    <!--(Links)=========================================================-->
+    <link rel="stylesheet" type="text/css" href="../../ODBC_Reference.css">
+    <!--(Generated ActiveX Object Tags)=================================-->
+
+    <!--(WARNING: DO NOT EDIT OR DELETE THIS SECTION!)==================-->
+
+    <!--begin!kadov{{===================================================-->
+    <object id="hhctrl" border="0" classid="clsid:ADB880A6-D8FF-11CF-9377-00AA003B7A11" width="0" height="0" type=
+    "application/x-oleobject">
+        <param name="Width" value="2646">
+        <param name="Height" value="1323">
+        <param name="Command" value="">
+    </object>
+    <!--}}end!kadov=====================================================-->
+
+    <!--(==============================================================)-->
+
+    <!--(Body)==========================================================-->
+    <meta name="AuthorOriginalAuthor" content="">
+    <meta name="AuthorDocComment" content="">
+    <meta name="AuthorHTMLTemplate" content="">
+    <meta name="AuthorStatus" content="0">
+    <meta name="AuthorPriority" content="0">
+    <meta name="AuthorTimeSpent" content="0">
+    <meta name="AuthorToDo" content="0">
+    <meta name="AuthorWidth" content="0">
+    <meta name="AuthorHeight" content="0">
+</head>
+
+<body>
+
+    <!--(Maps)==========================================================--><map id="MAP223033535" name="MAP223033535">
+        <area href="INSERT.htm" shape="rect" coords="2, 10, 49, 40">
+    </map>
+
+    <h1>CREATE VIEW</h1>
+
+    <p>Use this command to define a view, a logical table based on one or more tables or views.</p>
+    <!--(Table)=========================================================-->
+
+    <table style="BORDER-SPACING: 0px; WIDTH: 100.01%; x-cell-content-align: top" cellspacing="0" width="100.01%"
+    x-use-null-cells="">
+        <colgroup>
+            <col style="WIDTH: 100%">
+        </colgroup>
+
+        <tbody>
+            <tr style="x-cell-content-align: top" valign="top">
+                <td style=
+                "BORDER-BOTTOM-STYLE: none; BORDER-RIGHT-STYLE: none; PADDING-LEFT: 10px; WIDTH: 100%; PADDING-RIGHT: 10px; BORDER-TOP-STYLE: none; BORDER-LEFT-STYLE: none"
+                width="100%">
+                    <p class="Kolomkop">Syntax of the SQL statement</p>
+                </td>
+            </tr>
+
+            <tr style="x-cell-content-align: top" valign="top">
+                <td style=
+                "BORDER-BOTTOM-STYLE: none; BORDER-RIGHT-STYLE: none; PADDING-LEFT: 10px; WIDTH: 100%; PADDING-RIGHT: 10px; BORDER-LEFT-STYLE: none"
+                width="100%">
+                    <p style="MARGIN-BOTTOM: 0pt"><span class="Code">CREATE VIEW [schema-name.]view-name</span></p>
+
+                    <p style="MARGIN-BOTTOM: 0pt"><span class="Code">[ ( column [,....] ) ]</span></p>
+
+                    <p style="MARGIN-BOTTOM: 0pt"><span class="Code">AS subquery</span></p>
+
+                    <p style="MARGIN-BOTTOM: 0pt"><span class="Code">[WITH [{CASCADED | LOCAL}] CHECK OPTION]</span></p>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p style="MARGIN-BOTTOM: 0pt">&nbsp;</p>
+
+    <p style="MARGIN-BOTTOM: 0pt">If the form where named columns are used, there must be as much columns as in the result set
+    (derived-table) of the subquery.</p>
+
+    <p style="MARGIN-BOTTOM: 0pt">Not all database vendors support the 'WITH CHECK OPTION' clause.</p>
+
+    <p style="MARGIN-BOTTOM: 0pt">&nbsp;</p>
+
+    <p style="MARGIN-BOTTOM: 0pt">To see if a particular syntax is supported consult the ODBC tree for the following items:</p>
+
+    <p style="MARGIN-BOTTOM: 0pt"><span style="MARGIN-BOTTOM: 0pt">- The SQL conformance level</span></p>
+
+    <p style="MARGIN-BOTTOM: 0pt">- The ODBC conformance level</p>
+
+    <p style="MARGIN-BOTTOM: 0pt">- 'Create 
+    <!--kadov_tag{{<spaces>}}-->&nbsp; 
+    <!--kadov_tag{{</spaces>}}-->table options' under 'SQL support'. This info is rather unreliable for most database
+    vendors.</p>
+
+    <p style="MARGIN-BOTTOM: 0pt">&nbsp;</p>
+
+    <p><img style=
+    "BORDER-BOTTOM: medium none; BORDER-LEFT: medium none; WIDTH: 344px; FLOAT: none; HEIGHT: 380px; BORDER-TOP: medium none; BORDER-RIGHT: medium none"
+    border="0" src="../Pictures/Create_view.bmp" width="344" height="380" usemap="#MAP223033535" x-maintain-ratio="TRUE"></p>
+
+    <p>See also: <a href="DROP%20VIEW.htm">DROP VIEW</a></p>
+    <!--(HR)============================================================-->
+    <hr style="HEIGHT: 1px" align="center" size="1">
+
+    <p class="footer">This SQL Reference is not the complete documentation for your SQL language. For more detailed information
+    see the documentation of your RDBMS.</p>
+</body>
+</html>

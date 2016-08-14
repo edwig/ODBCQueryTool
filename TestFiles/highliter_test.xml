@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<DATA>
+<REC id = "1" name = "Test" DESCRIPTION = "Just a test" />
+<REC
+    id = "2"
+        name = "Test"
+            DESCRIPTION =
+"Just a test
+ test&amp;test
+ &quot; test &apos; test = &gt;"
+/>
+</DATA>
+
+"Just a test
+ test&amp;test
+ &quot; test &apos; test = &gt;
+"
+
+<!--<xsl:choose>
+<xsl:when test="@Skip-Checks='false'
+and @User-Defined='false'
+and Attribute[@Pre-created = 'false'
+and @Oracle-Name != 'SUPPORTED_RATES']
+">xis_dd_checks#pkg.set_type_attr_data('<xsl:value-of select="../../../../@Oracle-Name"/>', '<xsl:value-of select="Attribute/@Oracle-Name"/>', '<xsl:value-of select="Attribute/@Datatype"/>', <xsl:value-of select="../../@ID"/>,  <xsl:call-template name = "decode_mandatory"/>, <xsl:call-template name="Type#Type-Attribute#Default-Value"/>, <xsl:call-template name = "decode_min"/>, <xsl:call-template name = "decode_max"/>, <xsl:call-template name = "decode_min_length"/>, <xsl:call-template name = "decode_max_length"/>);</xsl:when>
+</xsl:choose>-->

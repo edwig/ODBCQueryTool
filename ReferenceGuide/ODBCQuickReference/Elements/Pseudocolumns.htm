@@ -1,0 +1,175 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+    <title>Pseudocolumns</title>
+    <!--(==============================================================)-->
+
+    <!--(Document created with RoboEditor. )============================-->
+
+    <!--(==============================================================)-->
+
+    <!--(Meta)==========================================================-->
+    <meta content="text/html; charset=us-ascii" http-equiv="content-type">
+    <meta name="GENERATOR" content="AuthorDocumentation">
+    <meta name="generator-major-version" content="0.1">
+    <meta name="generator-minor-version" content="1">
+    <meta name="filetype" content="kadov">
+    <meta name="filetype-version" content="1">
+    <meta name="page-count" content="1">
+    <meta name="layout-height" content="779">
+    <meta name="layout-width" content="740">
+    <!--(Links)=========================================================-->
+    <link rel="stylesheet" type="text/css" href="../../ODBC_Reference.css">
+    <!--(Body)==========================================================-->
+</head>
+
+<body>
+    <h1>Pseudocolumns</h1>
+
+    <p>Pseudocolumns are similar to table columns. You can query any of these pseudocolumns, but you cannot change their values
+    with DML statements. Which pseudo columns are used is highly dependent on the RDBMS you are using. Here are some well known
+    pseudo's:</p>
+    <!--(Table)=========================================================-->
+
+    <table style=
+    "BORDER-SPACING: 0px; WIDTH: 100%; BORDER-COLLAPSE: separate; x-border-left: 1px table-solid; x-border-top: 1px table-solid; x-border-right: 1px table-solid; x-border-bottom: 1px table-solid"
+    border="1" cellspacing="0" width="100%" x-use-null-cells="" color="#99CCFF">
+        <tbody>
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; BACKGROUND-COLOR: #99ccff; PADDING-LEFT: 2px; WIDTH: 184px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                bgcolor="#99CCFF" valign="top" width="184">
+                    <p class="tab_header">Column name</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; BACKGROUND-COLOR: #99ccff; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                bgcolor="#99CCFF" valign="top">
+                    <p class="tab_header">Value</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 184px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="184">
+                    <p class="tab_func"><em style="FONT-STYLE: italic">sequence</em>.CURRVAL</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top">
+                    <p class="tab_desc">ORACLE: Current value of sequence for the current session (sequence.NEXTVAL must be
+                    referenced first.)</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 184px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="184">
+                    <p class="tab_func"><em style="FONT-STYLE: italic">sequence</em>.NEXTVAL</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top">
+                    <p class="tab_desc">ORACLE: Next value of sequence for the current session</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 184px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="184">
+                    <p class="tab_func">[<em>table</em>.]LEVEL</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top">
+                    <p class="tab_desc">ORACLE: 1 for a root node, 2 for a child of a root, and so on. Used in the SELECT
+                    statement during tree-structured queries.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 184px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="184">
+                    <p class="tab_func">[<em>table</em>.]ROWID</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top">
+                    <p class="tab_desc">ORACLE: Value that uniquely identifies a single row among other rows in the table.
+                    ROWID values are of datatype ROWID, not NUMBER or CHAR.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 184px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="184">
+                    <p class="tab_func">[<em>table</em>.]ROWID</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top">
+                    <p class="tab_desc">INFORMIX: Integer value that uniquely indentifies a single row among other rows in a
+                    table segement on a per dbspace basis.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; WIDTH: 184px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top" width="184">
+                    <p class="tab_func">ROWNUM</p>
+                </td>
+
+                <td style=
+                "PADDING-BOTTOM: 2px; PADDING-LEFT: 2px; PADDING-RIGHT: 2px; PADDING-TOP: 2px; x-cell-content-align: top"
+                valign="top">
+                    <p class="tab_desc">ORACLE: Position of a single row among other rows selected by a query. Oracle server
+                    selects rows in an arbitrary order and evaluates ROWNUM before sorting rows for an ORDER BY clause.</p>
+                </td>
+            </tr>
+        </tbody>
+    </table>&nbsp; 
+    <!--begin!kadov{{--><br>
+
+    <!--}}end!kadov-->
+     
+    <!--kadov_tag{{<implicit_p>}}-->To find out which pseudo columns are supported, look up a table in the ODBC object list and
+    look up the 'Special columns': 
+    <!--begin!kadov{{--><br>
+
+    <!--}}end!kadov-->
+     
+    <!--kadov_tag{{<implicit_p>}}-->&nbsp; 
+    <!--begin!kadov{{--><br>
+
+    <!--}}end!kadov-->
+     
+    <!--kadov_tag{{<implicit_p>}}--><img style=
+    "BORDER-BOTTOM: medium none; BORDER-LEFT: medium none; WIDTH: 224px; FLOAT: none; HEIGHT: 236px; BORDER-TOP: medium none; BORDER-RIGHT: medium none"
+    border="0" src="../Pictures/PseudoColumns.bmp" width="224" height="236" x-maintain-ratio="TRUE"> 
+    <!--begin!kadov{{--><br>
+
+    <!--}}end!kadov-->
+     
+    <!--kadov_tag{{<implicit_empty_p>}}-->&nbsp;<br>
+
+    <!--kadov_tag{{</implicit_empty_p>}}-->
+     
+    <!--(HR)============================================================-->
+    <hr style="HEIGHT: 1px" align="center" size="1">
+
+    <p class="footer">This SQL Reference is not the complete documentation for your SQL language. For more detailed information
+    see the documentation of your RDBMS.</p>
+</body>
+</html>

@@ -1,0 +1,73 @@
+[OPTIONS]
+Compiled file=ODBCQueryTool.chm
+Compatibility=1.1 or later
+Title=ODBC Query Tool
+Contents File=ODBCQueryTool.hhc
+Index File=ODBCQueryTool.hhk
+Default Topic=Welcome.htm
+Default Window=NewWindow
+Default Font=
+Error log file=CompileErrors.log
+Custom tab=
+Language=
+Full text search stop list file=
+Display compile progress=yes
+Display compile notes=yes
+Full-text search=yes
+Binary index=yes
+Binary TOC=no
+Auto index=no
+Enhanced decompilation=no
+Flat=no
+
+[WINDOWS]
+NewWindow="ODBC SQL QueryTool","C:\Develop\ODBCQueryTool\ReferenceGuide\ODBCQueryTool.hhc","C:\Develop\ODBCQueryTool\ReferenceGuide\ODBCQueryTool.hhk","Welcome.htm","Welcome.htm","ODBCQuickReference\ODBC_SQL_Reference.htm","SQL","","",0x21420,0,0x4204e,[0,0,1024,768],0xb0000,0x0,,0,0,0
+
+[FILES]
+default.css
+EDO.jpg
+ODBCQuickReference\Elements\Datatypes.htm
+ODBCQuickReference\Elements\OBJECT PRIVILEGES.htm
+ODBCQuickReference\Elements\Operators.htm
+ODBCQuickReference\Elements\Privileges.htm
+ODBCQuickReference\Elements\Pseudocolumns.htm
+ODBCQuickReference\Functions\Conversion Functions.htm
+ODBCQuickReference\Functions\Group Functions.htm
+ODBCQuickReference\Functions\Numeric_functions.htm
+ODBCQuickReference\Functions\String_functions.htm
+ODBCQuickReference\Functions\System_functions.htm
+ODBCQuickReference\Functions\Time_Date_Interval_Functions.htm
+ODBCQuickReference\ODBC_SQL_Reference.htm
+ODBCQuickReference\SQL_Elements\base-table-name.htm
+ODBCQuickReference\SQL_Elements\column-name.htm
+ODBCQuickReference\SQL_Elements\data-type.htm
+ODBCQuickReference\SQL_Elements\expression.htm
+ODBCQuickReference\SQL_Elements\pattern.htm
+ODBCQuickReference\SQL_Elements\referenced-table-name.htm
+ODBCQuickReference\SQL_Elements\search-condition.htm
+ODBCQuickReference\Statements\ALTER TABLE.htm
+ODBCQuickReference\Statements\COMMIT.htm
+ODBCQuickReference\Statements\CREATE INDEX.htm
+ODBCQuickReference\Statements\CREATE SCHEMA.htm
+ODBCQuickReference\Statements\CREATE TABLE.htm
+ODBCQuickReference\Statements\CREATE VIEW.htm
+ODBCQuickReference\Statements\DELETE.htm
+ODBCQuickReference\Statements\DROP INDEX.htm
+ODBCQuickReference\Statements\DROP TABLE.htm
+ODBCQuickReference\Statements\DROP VIEW.htm
+ODBCQuickReference\Statements\GRANT (Object Privileges).htm
+ODBCQuickReference\Statements\GRANT (System Privileges and Roles).htm
+ODBCQuickReference\Statements\INSERT.htm
+ODBCQuickReference\Statements\REVOKE_(Object_Privileges).htm
+ODBCQuickReference\Statements\REVOKE_(System_Privileges).htm
+ODBCQuickReference\Statements\ROLLBACK.htm
+ODBCQuickReference\Statements\SELECT.htm
+ODBCQuickReference\Statements\UPDATE.htm
+Querying\Querying.htm
+RoboHHRE.lng
+TheEditor\The_open_editor.htm
+Welcome.htm
+
+[ALIAS]
+[MAP]
+[TEXT POPUPS]

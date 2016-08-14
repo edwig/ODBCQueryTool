@@ -1,0 +1,232 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+    <title>The open editor</title>
+    <!--(==============================================================)-->
+
+    <!--(Document created with RoboEditor. )============================-->
+
+    <!--(==============================================================)-->
+
+    <!--(Meta)==========================================================-->
+    <meta content="text/html; charset=us-ascii" http-equiv="content-type">
+    <meta name="GENERATOR" content="AuthorDocumentation">
+    <meta name="generator-major-version" content="0.1">
+    <meta name="generator-minor-version" content="1">
+    <meta name="filetype" content="kadov">
+    <meta name="filetype-version" content="1">
+    <meta name="page-count" content="1">
+    <meta name="layout-height" content="571">
+    <meta name="layout-width" content="740">
+    <!--(Links)=========================================================-->
+    <link rel="StyleSheet" type="text/css" href="../default.css">
+    <!--(Body)==========================================================-->
+</head>
+
+<body>
+    <h1>Welcome to the OPEN EDITOR</h1>
+
+    <p>This documentation does not contain any particular documentation about the editor in itself. Opening and saving files
+    are assumed to be rather basic operations.</p>
+
+    <p>The following menu's are not yet documented. These menu's belong to the open-editor and are quite standard for a text
+    editor.</p>
+
+    <ul>
+        <li>The file menu</li>
+
+        <li>The edit menu</li>
+
+        <li>The view menu</li>
+
+        <li>The search menu</li>
+
+        <li>The format menu</li>
+
+        <li>The text menu</li>
+
+        <li>The window menu</li>
+
+        <li>The help menu</li>
+    </ul>
+
+    <p>&nbsp;</p>
+
+    <p>The session and script menu's are briefly documented here, because they perform functions for quering of databases.</p>
+
+    <h2>The Session menu</h2>
+
+    <p>The session menu contains the following functions</p>
+
+    <table bordercolor="#800080" cellspacing="0" cellpadding="0" width="100%" border="1" borderwidth="1px">
+        <tbody>
+            <tr>
+                <td style="WIDTH: 7%" width="7%">
+                    <p>Menu item</p>
+                </td>
+
+                <td height="50%" width="33%">
+                    <p>Function</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="WIDTH: 7%" height="50%" width="7%">
+                    <p>Connect</p>
+                </td>
+
+                <td height="50%" width="33%">
+                    <p>Connect to a different database</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="WIDTH: 14px" width="14">Disconnect</td>
+
+                <td>
+                    <p>Disconnect from the current database</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="WIDTH: 14px" width="14">Begin</td>
+
+                <td>
+                    <p>Begin a new transaction. Normally the ODBC connection is in auto-commit mode, so every query will be
+                    committed on it's own. Use the 'begin' function to delay the commit till the end of all queries.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="WIDTH: 14px" width="14">Commit</td>
+
+                <td>
+                    <p>Commit your changes. All changes from the point were you used the 'Begin' command will be permanently
+                    commited to your database.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="WIDTH: 14px" width="14">Rollback</td>
+
+                <td>
+                    <p>Rollback and forget all changes since the point were you used the 'Begin' command. No changes will be
+                    made to the database.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="WIDTH: 14px" width="14">ODBC Report</td>
+
+                <td>
+                    <p>Writes a report of all ODBC properties. All the properties from the&nbsp;ODBC&nbsp;properties panel are
+                    shown in this report. The report serves as a basis to compare one or more ODBC datasources in
+                    capabilities.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="WIDTH: 14px" width="14">Session status</td>
+
+                <td>
+                    <p>Shows the current session status. This status is the same as the details window from the connection
+                    dialog at startup.</p>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>&nbsp;</p>
+
+    <h2>The script menu</h2>
+
+    <p>The script menu contains the following functions</p>
+
+    <table bordercolor="#800080" cellspacing="0" cellpadding="0" width="100%" border="1" borderwidth="1px">
+        <tbody>
+            <tr>
+                <td style="WIDTH: 7%" width="7%">
+                    <p>Menu item</p>
+                </td>
+
+                <td height="50%" width="33%">
+                    <p>Function</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="WIDTH: 7%" height="50%" width="7%">
+                    <p>Execute</p>
+                </td>
+
+                <td height="50%" width="33%">Execute the current edit buffer as a series of SQL commands in a script like
+                way</td>
+            </tr>
+
+            <tr>
+                <td style="WIDTH: 14px" width="14">
+                    <p>Execute current</p>
+                </td>
+
+                <td>
+                    <p>Execute the current command and do NOT move the cursor to the next SQL Command</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="WIDTH: 14px" width="14">
+                    <p>Execute and step</p>
+                </td>
+
+                <td>
+                    <p>Execute the current command and do move the cursor to the next SQL command</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="WIDTH: 14px" width="14">Next error</td>
+
+                <td>
+                    <p>To be implemented</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="WIDTH: 14px" width="14">Previous Error</td>
+
+                <td>
+                    <p>To be implemented</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="WIDTH: 14px" width="14">Native SQL</td>
+
+                <td>
+                    <p>Show how this command would look in the Native SQL dialect of the current database</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="WIDTH: 14px" width="14">Find table</td>
+
+                <td>
+                    <p>Find table as an object in the object pane and show it's database structure in columns, indexes,
+                    constraints en rights.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>Variables</td>
+
+                <td>
+                    <p>Show dialog to set variables, or read them</p>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>&nbsp;</p>
+</body>
+</html>

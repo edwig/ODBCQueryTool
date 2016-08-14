@@ -1,0 +1,266 @@
+Testing script syntax
+=====================
+Syntax of the very (very!) concise script language
+that comes with the ODBQueryTool.
+
+
+The 'file' command
+------------------
+Use this command to open a scripting output file to put
+the results of your testing in.
+
+:file open   'c:\tmp\testoutput.txt';
+:file write  'c:\tmp\testoutput.txt';
+:file append 'c:\tmp\testoutput.txt';
+:file close;
+
+The command words do as presumed:
+- open	 : will open a file in writing mode
+- write	 : is an alias for 'open'
+- append : will open it in appended writing mode
+- close  : will close the file again.
+
+The 'print' command
+-------------------
+Prints a text to the output file previously opened with
+the preceding 'file' command. As in:
+
+:print 'This is a text in the output file';
+
+
+The 'variable' command
+----------------------
+Use this command to define a variable and set it to a value
+Alernativly you can define a binding for queries.
+
+:variable<n> [param] datatype;
+:variable<n> = <value>;
+
+This will define a variable with number <n> as a datatype
+with an optional binding and set it to a value.
+e.q:
+
+:variable1 INPUT NUMERIC;
+:variable1 = 12345.12345678890123;
+
+or:
+
+:variable2 RESULT CHAR;
+
+This defines the second variable as an resulting variable
+as output from a stored procedure.
+
+Legal values for [param] are:
+INPUT	: Input variable for '?' binding in a query
+OUTPUT	: Output variable for a function/procedure
+INOUT	: Input/Output variable for a function/procedure
+RESULT  : Result of a function call
+COLUMN  : Resulting column of a query
+
+Legal values for 'datatype' are:
+CHAR						      : All types of CHAR,VARCHAR,WCHAR etc.
+SHORT						      : 16 bit signed integer
+SHORT (Signed)				: 16 bit signed integer
+SHORT (Unsigned)			: 16 bit unsigned integer
+LONG						      : 32 bit signed integer
+LONG (Signed)				  : 32 bit signed integer
+LONG (Unsigned)				: 32 bit unsigned integer
+FLOAT						      : 16 bit floating point
+DOUBLE						    : 32 bit floating point
+BIT							      : 1 bit
+TINYINT						    : 8 bit signed integer
+TINYINT (Signed)			: 8 bit signed integer
+TINYINT (Unsigned)		: 8 bit unsigned integer
+BIGINT (Signed)				: 64 bit signed integer
+BIGINT (Unsigned)			: 64 bit unsigned integer
+NUMERIC						    : 39 decimal floating point BCD number
+GUID						      : Microsoft GUID
+BINARY						    : All types of BINARY,VARBINARY,LONGVARBINARY etc.
+DATE						      : year-month-day
+TIME						      : hour:min:sec
+TIMESTAMP					    : year-month-day hour:min:sec[.fractions]
+TYPE DATE					    : year-month-day (not screwed up)
+TYPE TIME					    : hour:min:sec   (not screwed up)
+TYPE TIMESTAMP				: year-month-day hour:min:sec[.fractions] (not screwed up)
+INTERVAL YEAR				  : years
+INTERVAL MONTH				: months
+INTERVAL DAY				  : days
+INTERVAL HOUR				  : hours
+INTERVAL MINUTE				: minutes
+INTERVAL SECOND				: seconds
+INTERVAL YEAR TO MONTH		: years-months
+INTERVAL DAY TO HOUR		  : days hours
+INTERVAL DAY TO MINUTE		: days hours:mins
+INTERVAL DAY TO SECOND		: days hours:mins:secs
+INTERVAL HOUR TO MINUTE		: hours:mins
+INTERVAL HOUR TO SECOND		: hours:mins:secs
+INTERVAL MINUTE TO SECOND	: mins:secs
+
+The 'if' command
+----------------
+The if command is for testing of resulting values.
+So you can conditionally put a error text in the output file.
+
+:if variable<n> <> <value>;
+
+If this condition holds (variable unequal to value) than 
+the next printing command will be skipped. So you can write
+
+:if variable4 <> 123;
+:print 'ERROR Should give a result of 123';
+
+The 'rebind' command
+--------------------
+The rebind command makes it possible to bind a datatype as a different one.
+This is purely to test all capabilities of the ODBC driver.
+
+:rebind datatype,datatype
+
+Rebinds a datatype to a new one. So the ODBC driver will do the dataconversion
+e.g:
+:rebind LONG,CHAR;
+Will request a long integer binded in a character buffer from the ODBC driver.
+
+You can set as much rebinds as you want, or clear all rebindings with the
+":rebind reset" command.
+
+For CHAR and BINARY types, you can rebind against the SQL_XXX types
+(use values from the first column as the second datatype in the rebind command)
+
+Rebind to this		  SQL_TYPE	        SQL_C_TYPE		  Oracle type
+------------------  ----------------- ---------------	--------------
+CHAR                SQL_CHAR          SQL_C_CHAR      CHAR
+WCHAR               SQL_WCHAR		      SQL_C_CHAR		  NCHAR
+VARCHAR				      SQL_VARCHAR		    SQL_C_CHAR		  VARCHAR2
+WVARCHAR			      SQL_WVARCHAR	    SQL_C_CHAR		  NVARCHAR2
+LONGVARCHAR			    SQL_LONGVARCHAR	  SQL_C_CHAR		  CLOB        (used to be LONG)
+BINARY              SQL_BINARY        SQL_C_BINARY    RAW
+VARBINARY			      SQL_VARBINARY	    SQL_C_BINARY	  LONG RAW
+LONGVARBINARY		    SQL_LONGVARBINARY SQL_C_BINARY		BLOB
+
+The 'atexec' command
+--------------------
+outbound trafic to rdbms:
+To bind the variable at input time to perform piece-by-piece insertion
+of the data in 'at-exec' time of the SQLExecute command, we need to set
+the 'atexec' attribute of a variable. Alsoo we must provide the size of each
+piece. We do that with the 'atexec' command. eg:
+
+:atexec variable1 300;
+
+Which states that variable 1 will be bound at-exec time with pieces of 300 bytes each.
+The at-exec state of a variable can be reset by providing a piece length of 0.
+
+inbound trafic from rdbms
+To test the SQLGetData interface and get variables from a recordset in pieces
+you can set the inbound buffer size between 0 and 4096 bytes. You can do this with
+the following command:
+
+:atexec inbound 2000;
+
+The 'select' command
+--------------------
+Normally a select query will select the results in the data grid.
+If you set the select command to 'on' like this:
+
+:select on;
+
+than the FIRST line of the grid will alsoo be selected into the 
+variable array. First field will be variable1 and so on.
+You can turn this feature off with the ":select off;" command.
+
+A complete example
+------------------
+This example is based on an Oracle driver. It just puts a number 
+in a database table and re-extract that number. It prints an
+error message if this goes wrong.
+This example is purely for explanatory purposes written and 
+overly complex to show all features. Run it in the editor by
+standing on the first line with the cursor and press F5.
+--------------------------------------------------------
+
+
+-- Use transcript output
+:file open 'c:\tmp\testoutput.txt';
+:print 'Test to select a number as a LONG from the database';
+
+-- Create a table to work in
+create table test_long
+(
+  field1 number(18,4)
+)
+/
+
+-- Put a value in this table
+:variable1 INPUT LONG;
+:variable1 = 1234567890;
+insert into test_long values (?);
+
+-- reset and rebind to a INTEGER
+:rebind NUMERIC,LONG;
+:variable1 = 000;
+
+-- Get value back from table
+:select on;
+select field1 from test_long;
+
+-- Is it the right value?
+:if variable1 <> 1234567890;
+:print 'ERROR long should be 1234567890';
+
+-- Reset everything for next test
+:rebind reset;
+:select off;
+drop table test_long;
+
+-- Close our transcript
+:file close;
+-- Now check that the transcript file 
+-- has NO line with the word ERROR in it!!
+
+
+---------------------------------------------------------------------------
+
+
+PERFORMANCE TESTING ENHANCEMENT
+
+The "logformat" command
+-----------------
+Results of the queries and the speed logging are written to the logfile
+Syntax of the command is
+
+:logformat [QUERY] [SPEED] [OUTPUT]
+
+Here the keywords stand for:
+QUERY  - The records of the query grid
+SPEED  - The log records of the ODBC recordset
+OUTPUT - The records of the speed output grid (prepare/execute/fetch cycles)
+
+QUERY  records are written in COLUMN/ROW format
+SPEED  records are written in CSV (comma serperated values) format for analysys
+       in a spreadsheet program
+OUTPUT records are written in ....       
+
+The "repeat" command
+--------------------
+Sends the same query over-and-over the the database in a desired
+interval or at a precise moment in time. Syntax is:
+
+:repeat <seconds-interval> [ WHOLEMINUTES ] [TIMES <n>]
+....
+:endrepeat
+
+COMMAND LINE FORMAT
+-------------------
+ 
+/CONNECT:<connectstring> <script.sql>
+ 
+<connectstring> is a standard ODBC "DSN=....;UID=....;PWD=....;"
+string to connect to an ODBC datasource
+ 
+ 
+
+
+
+
+

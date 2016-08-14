@@ -1,0 +1,6 @@
+Yet to implement:
+=================
+- medium: Goto next/previous error
+- medium: Completed on-line help file
+- low: Properties of the query results grid
+- Export formats other than excel/html

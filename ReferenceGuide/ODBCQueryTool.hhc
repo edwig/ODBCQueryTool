@@ -1,0 +1,232 @@
+<html>
+<!-- Sitemap 1.0 -->
+<object type="text/site properties">
+  <param name="SiteType" value="toc">
+  <param name="Image Width" value="16">
+  <param name="Window Styles" value="0x800002">
+  <param name="ExWindow Styles" value="0x100">
+</object>
+<ul>
+    <li><object type="text/sitemap">
+            <param name="Name" value="Welcome">
+            <param name="Local" value="Welcome.htm">
+        </object>
+    <li><object type="text/sitemap">
+            <param name="Name" value="The editor">
+        </object>
+    <ul>
+        <li><object type="text/sitemap">
+                <param name="Name" value="The open editor">
+                <param name="Local" value="TheEditor\The_open_editor.htm">
+            </object>
+    </ul>
+    <li><object type="text/sitemap">
+            <param name="Name" value="Querying from within the editor">
+        </object>
+    <ul>
+        <li><object type="text/sitemap">
+                <param name="Name" value="Querying">
+                <param name="Local" value="Querying\Querying.htm">
+            </object>
+    </ul>
+    <li><object type="text/sitemap">
+            <param name="Name" value="ODBC SQL Quick reference">
+        </object>
+    <ul>
+        <li><object type="text/sitemap">
+                <param name="Name" value="SQL Quick Reference">
+                <param name="Local" value="ODBCQuickReference\ODBC_SQL_Reference.htm">
+            </object>
+        <li><object type="text/sitemap">
+                <param name="Name" value="Elements">
+            </object>
+        <ul>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="Datatypes">
+                    <param name="Local" value="ODBCQuickReference\Elements\Datatypes.htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="Object privileges">
+                    <param name="Local" value="ODBCQuickReference\Elements\OBJECT PRIVILEGES.htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="Operators">
+                    <param name="Local" value="ODBCQuickReference\Elements\Operators.htm">
+                </object>
+            <ul>
+                <li><object type="text/sitemap">
+                        <param name="Name" value="Arithmetic Operators">
+                        <param name="Local" value="ODBCQuickReference\Elements\Operators.htm#Arithmetic Operators">
+                    </object>
+                <li><object type="text/sitemap">
+                        <param name="Name" value="Logical Operators">
+                        <param name="Local" value="ODBCQuickReference\Elements\Operators.htm#Logical Operators">
+                    </object>
+                <li><object type="text/sitemap">
+                        <param name="Name" value="Comparison Operators">
+                        <param name="Local" value="ODBCQuickReference\Elements\Operators.htm#Comparison Operators">
+                    </object>
+                <li><object type="text/sitemap">
+                        <param name="Name" value="Set Operators">
+                        <param name="Local" value="ODBCQuickReference\Elements\Operators.htm#Set Operators">
+                    </object>
+                <li><object type="text/sitemap">
+                        <param name="Name" value="Others">
+                        <param name="Local" value="ODBCQuickReference\Elements\Operators.htm#Others">
+                    </object>
+                <li><object type="text/sitemap">
+                        <param name="Name" value="Operator Precedence">
+                        <param name="Local" value="ODBCQuickReference\Elements\Operators.htm#Operator Precedence">
+                    </object>
+            </ul>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="Pseudocolumns">
+                    <param name="Local" value="ODBCQuickReference\Elements\Pseudocolumns.htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="Privileges">
+                    <param name="Local" value="ODBCQuickReference\Elements\Privileges.htm">
+                </object>
+        </ul>
+        <li><object type="text/sitemap">
+                <param name="Name" value="Functions">
+            </object>
+        <ul>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="Conversion Functions">
+                    <param name="Local" value="ODBCQuickReference\Functions\Conversion Functions.htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="Group Functions">
+                    <param name="Local" value="ODBCQuickReference\Functions\Group Functions.htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="String functions">
+                    <param name="Local" value="ODBCQuickReference\Functions\String_functions.htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="Numeric functions">
+                    <param name="Local" value="ODBCQuickReference\Functions\Numeric_functions.htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="Time, Date and Interval functions">
+                    <param name="Local" value="ODBCQuickReference\Functions\Time_Date_Interval_Functions.htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="System functions">
+                    <param name="Local" value="ODBCQuickReference\Functions\System_functions.htm">
+                </object>
+        </ul>
+        <li><object type="text/sitemap">
+                <param name="Name" value="Statements">
+            </object>
+        <ul>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="ALTER TABLE">
+                    <param name="Local" value="ODBCQuickReference\Statements\ALTER TABLE.htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="COMMIT">
+                    <param name="Local" value="ODBCQuickReference\Statements\COMMIT.htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="CREATE INDEX">
+                    <param name="Local" value="ODBCQuickReference\Statements\CREATE INDEX.htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="CREATE SCHEMA">
+                    <param name="Local" value="ODBCQuickReference\Statements\CREATE SCHEMA.htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="CREATE TABLE">
+                    <param name="Local" value="ODBCQuickReference\Statements\CREATE TABLE.htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="CREATE VIEW">
+                    <param name="Local" value="ODBCQuickReference\Statements\CREATE VIEW.htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="DELETE">
+                    <param name="Local" value="ODBCQuickReference\Statements\DELETE.htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="DROP INDEX">
+                    <param name="Local" value="ODBCQuickReference\Statements\DROP INDEX.htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="DROP TABLE">
+                    <param name="Local" value="ODBCQuickReference\Statements\DROP TABLE.htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="DROP VIEW">
+                    <param name="Local" value="ODBCQuickReference\Statements\DROP VIEW.htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="GRANT (Object Privileges)">
+                    <param name="Local" value="ODBCQuickReference\Statements\GRANT (Object Privileges).htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="GRANT (System Privileges)">
+                    <param name="Local" value="ODBCQuickReference\Statements\GRANT (System Privileges and Roles).htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="INSERT">
+                    <param name="Local" value="ODBCQuickReference\Statements\INSERT.htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="REVOKE (Object Privileges)">
+                    <param name="Local" value="ODBCQuickReference\Statements\REVOKE_(Object_Privileges).htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="REVOKE (System Privileges)">
+                    <param name="Local" value="ODBCQuickReference\Statements\REVOKE_(System_Privileges).htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="ROLLBACK">
+                    <param name="Local" value="ODBCQuickReference\Statements\ROLLBACK.htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="SELECT">
+                    <param name="Local" value="ODBCQuickReference\Statements\SELECT.htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="UPDATE">
+                    <param name="Local" value="ODBCQuickReference\Statements\UPDATE.htm">
+                </object>
+        </ul>
+        <li><object type="text/sitemap">
+                <param name="Name" value="Elements of SQL syntax">
+            </object>
+        <ul>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="base-table-name">
+                    <param name="Local" value="ODBCQuickReference\SQL_Elements\base-table-name.htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="column-name">
+                    <param name="Local" value="ODBCQuickReference\SQL_Elements\column-name.htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="data-type">
+                    <param name="Local" value="ODBCQuickReference\SQL_Elements\data-type.htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="expression">
+                    <param name="Local" value="ODBCQuickReference\SQL_Elements\expression.htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="pattern">
+                    <param name="Local" value="ODBCQuickReference\SQL_Elements\pattern.htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="referenced-table-name">
+                    <param name="Local" value="ODBCQuickReference\SQL_Elements\referenced-table-name.htm">
+                </object>
+            <li><object type="text/sitemap">
+                    <param name="Name" value="search-condition">
+                    <param name="Local" value="ODBCQuickReference\SQL_Elements\search-condition.htm">
+                </object>
+        </ul>
+    </ul>
+</ul>
+</html>
