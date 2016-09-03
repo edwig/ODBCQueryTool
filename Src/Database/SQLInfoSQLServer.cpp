@@ -632,6 +632,26 @@ SQLInfoSQLServer::GetNVLStatement(CString& p_test,CString& p_isnull) const
   return CString("NVL(") + p_test + "," + p_isnull + ")";
 }
 
+// Gets the subtransaction commands
+CString 
+SQLInfoSQLServer::GetStartSubTransaction(CString p_savepointName) const
+{
+  return CString("BEGIN TRANSACTION ") + p_savepointName;
+}
+
+CString 
+SQLInfoSQLServer::GetCommitSubTransaction(CString p_savepointName) const
+{
+  return CString("ROLLBACK TRANSACTION ") + p_savepointName;
+}
+
+CString 
+SQLInfoSQLServer::GetRollbackSubTransaction(CString p_savepointName) const
+{
+  return CString("ROLLBACK TRANSACTION ") + p_savepointName;
+}
+
+
 // SQL CATALOG QUERIES
 // ===================================================================
 
@@ -928,6 +948,14 @@ CString
 SQLInfoSQLServer::GetSQLOptimizeTable(CString& /*p_owner*/,CString& /*p_tableName*/,int& /*p_number*/)
 {
   return "";
+}
+
+// Getting the fact that there is only **one** (1) user session in the database
+bool
+SQLInfoSQLServer::GetOnlyOneUserSession()
+{
+  // Yet to implement
+  return true;
 }
 
 // SQL DDL ACTIONS

@@ -37,7 +37,7 @@ SQLState;
 // Array of known sqlstates
 extern SQLState sql_states[];
 
-class SQLError : public CObject
+class SQLError
 {
 public:
   SQLError();

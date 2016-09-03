@@ -217,6 +217,16 @@ SQLDataSet::SetParameter(CString p_naam,SQLVariant p_waarde)
   m_parameters.push_back(par);
 }
 
+void         
+SQLDataSet::SetPrimaryKeyColumn(WordList& p_list)
+{
+  m_primaryKey.clear();
+  for(auto& column : p_list)
+  {
+    m_primaryKey.push_back(column);
+  }
+}
+
 SQLVariant*  
 SQLDataSet::GetParameter(CString& p_name)
 {
@@ -316,7 +326,7 @@ SQLDataSet::ParseSelection(SQLQuery& p_query)
 }
 
 bool
-SQLDataSet::Open(bool p_stopBijGeenKolommen /*= false*/)
+SQLDataSet::Open(bool p_stopIfNoColumns /*= false*/)
 {
   bool   result = false;
   CString query = m_query;
@@ -356,7 +366,7 @@ SQLDataSet::Open(bool p_stopBijGeenKolommen /*= false*/)
 
     // Do the SELECT query
     qr.DoSQLStatement(query);
-    if (p_stopBijGeenKolommen && qr.GetNumberOfColumns() == 0)
+    if (p_stopIfNoColumns && qr.GetNumberOfColumns() == 0)
     {
       return false;
     }
@@ -598,7 +608,7 @@ SQLDataSet::GetRecord(int p_recnum)
   return NULL;
 }
 
-// Find the object record of a primary key
+// Find the object record of an integer primary key
 int
 SQLDataSet::FindObjectRecNum(int p_primary)
 {
@@ -610,7 +620,7 @@ SQLDataSet::FindObjectRecNum(int p_primary)
   return -1;
 }
 
-// Find the object record of a primary key
+// Find the object record of an integer primary key
 SQLRecord*
 SQLDataSet::FindObjectRecord(int p_primary)
 {
@@ -620,6 +630,92 @@ SQLDataSet::FindObjectRecord(int p_primary)
     return m_records[it->second];
   }
   return NULL;
+}
+
+// If your primary is a compound key or not INTEGER (Slower)
+int
+SQLDataSet::FindObjectRecNum(VariantSet& p_primary)
+{
+  if(!GetPrimaryKeyInfo())
+  {
+    // No primary key, cannot do the find
+    return -1;
+  }
+  if(!CheckPrimaryKeyColumns())
+  {
+    // Not all primary key columns are present
+    return -1;
+  }
+
+  int searching = 0;
+  for(int ind = 0;ind < (int) m_primaryKey.size(); ++ind)
+  {
+    int fieldnum = GetFieldNumber(m_primaryKey[ind]);
+    SQLVariant* var = p_primary[ind];
+
+    for(int search = searching; search < (int)m_records.size(); ++search)
+    {
+      SQLVariant* field = m_records[search]->GetField(fieldnum);
+      if(field == var)
+      {
+        if(ind+1 == (int) m_primaryKey.size())
+        {
+          // Last field in the primary key. Stop here
+          return search;
+        }
+        else
+        {
+          // Value found, get on to the next searchfield
+          break;
+        }
+      }
+      ++searching;
+    }
+  }
+  return -1;
+}
+
+// If your primary is a compound key or not INTEGER (Slower)
+SQLRecord*
+SQLDataSet::FindObjectRecord(VariantSet& p_primary)
+{
+  if(!GetPrimaryKeyInfo())
+  {
+    // No primary key, cannot do the find
+    return nullptr;
+  }
+  if(!CheckPrimaryKeyColumns())
+  {
+    // Not all primary key columns are present
+    return nullptr;
+  }
+
+  int searching = 0;
+  for(int ind = 0; ind < (int)m_primaryKey.size(); ++ind)
+  {
+    int fieldnum = GetFieldNumber(m_primaryKey[ind]);
+    SQLVariant* var = p_primary[ind];
+
+    for(int search = searching; search < (int)m_records.size(); ++search)
+    {
+      SQLVariant* field = m_records[search]->GetField(fieldnum);
+      if(field == var)
+      {
+        if(ind + 1 == (int)m_primaryKey.size())
+        {
+          // Last field in the primary key. Stop here
+          return m_records[search];
+        }
+        else
+        {
+          // Value found, get on to the next searchfield
+          break;
+        }
+      }
+      ++searching;
+    }
+  }
+  return nullptr;
 }
 
 // Get a fieldname
@@ -677,7 +773,7 @@ SQLDataSet::InsertRecord()
   SQLRecord* record = new SQLRecord(this);
   m_records.push_back(record);
   m_current = (int)(m_records.size() - 1);
-
+  m_status |= SQL_Insertions;
   return record;
 }
 
@@ -1071,7 +1167,7 @@ SQLDataSet::XMLSave(XmlElement* p_dataset)
   {
     for(unsigned int ind = 0; ind < m_names.size(); ++ind)
     {
-      CString naam = GetFieldName(ind);
+      CString fieldname = GetFieldName(ind);
       SQLVariant* var = record->GetField(ind);
       int type = var->GetDataType();
       
@@ -1081,8 +1177,8 @@ SQLDataSet::XMLSave(XmlElement* p_dataset)
       veld->SetAttribute(DATASET_TYPE,type);
       veld->SetAttribute(DATASET_TYPENAME,var->FindDatatype(type));
 
-      XmlText* ntext = new XmlText(naam);
-      veld->LinkEndChild(ntext);
+      XmlText* newtext = new XmlText(fieldname);
+      veld->LinkEndChild(newtext);
     }
   }
 
@@ -1091,8 +1187,7 @@ SQLDataSet::XMLSave(XmlElement* p_dataset)
   p_dataset->LinkEndChild(records);
   for(unsigned int ind = 0; ind < m_records.size(); ++ind)
   {
-    SQLRecord* record = m_records[ind];
-    record->XMLSave(records);
+    m_records[ind]->XMLSave(records);
   }
 }
 

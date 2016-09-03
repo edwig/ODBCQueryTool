@@ -609,6 +609,25 @@ SQLInfoInformix::GetNVLStatement(CString& p_test,CString& p_isnull) const
   return CString("NVL(") + p_test + "," + p_isnull + ")";
 }
 
+// Gets the subtransaction commands
+CString 
+SQLInfoInformix::GetStartSubTransaction(CString p_savepointName) const
+{
+  return CString("SAVEPOINT ") + p_savepointName;
+}
+
+CString 
+SQLInfoInformix::GetCommitSubTransaction(CString p_savepointName) const
+{
+  return CString("COMMIT TRANSACTION ") + p_savepointName;
+}
+
+CString 
+SQLInfoInformix::GetRollbackSubTransaction(CString p_savepointName) const
+{
+  return CString("ROLLBACK TO SAVEPOINT ") + p_savepointName;
+}
+
 // SQL CATALOG QUERIES
 // ==================================================================
 
@@ -915,7 +934,15 @@ SQLInfoInformix::GetSQLOptimizeTable(CString& /*p_owner*/,CString& p_tableName,i
   return optim;
 }
 
-// SQL DDL HANDELINGEN
+// Getting the fact that there is only **one** (1) user session in the database
+bool
+SQLInfoInformix::GetOnlyOneUserSession()
+{
+  // Yet to implement
+  return true;
+}
+
+// SQL DDL ACTIONS
 // ====================================================================
 
 // Do the commit for the DDL commands in the catalog

@@ -1,9 +1,12 @@
-////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 //
-// $Source: BasicXMLExcel.cpp $
+// BasicExcel
 //
-// Copyright (c) 1998- 2015 ir. W.E. Huisman
-// All rights reserved
+// Original Version: Yap Chun Wei  (2006)
+// Expanded Version: Martin Fuchs  (2009) and Ami Castonguay
+// Expanded Version: Long Wenbiao  (2010)
+// Expanded Version: Edwig Huisman (2012)
+// For more credits: See the .h interface file
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -24,12 +27,7 @@
 // Last Revision:   25-05-2015
 // Version number:  1.1.0
 //
-// Deze klasse wordt gebruikt om OOXML Spreadsheets van MS-Office
-// (Die met de extensie *.xlsx"") in te kunnen lezen
-// Later kan deze klasse worden uitgebreid om ook te kunnen schrijven
-// of met formatteringen en fonts te kunnen werken
-//                                                  
-#include "StdAfx.h"
+#include "stdafx.h"
 #include "BasicXmlExcel.h"
 #include "GetLastErrorAsString.h"
 
@@ -334,7 +332,7 @@ BasicXmlExcel::BasicXmlExcel(CString p_filename)
   if(m_zip == NULL)
   {
     m_error.Format("Cannot open the file: %s",m_filename);
-    SetError(GetLastErrorAsString());
+    m_error.AppendFormat("\nOS Error: %d",GetLastError);
   }
 }
 
@@ -435,7 +433,7 @@ BasicXmlExcel::ReadSheetNames()
       SetError(res);
       break;
     }
-    if(stricmp(ze.name,"xl/workbook.xml") == 0)
+    if(_stricmp(ze.name,"xl/workbook.xml") == 0)
     {
       int   bufflen = ze.unc_size + 1;
       char* buffer  = (char*) malloc(bufflen);
@@ -527,9 +525,13 @@ BasicXmlExcel::Load()
 bool
 BasicXmlExcel::LoadStrings()
 {
-  if(m_zip == NULL || m_sheetRead == true)
+  if(m_zip == NULL)
   {
     return false;
+  }
+  if(m_sheetRead)
+  {
+    return true;
   }
   ZIPENTRY ze;
   ZRESULT  res     = ZR_OK;
@@ -602,9 +604,13 @@ BasicXmlExcel::LoadStrings()
 bool
 BasicXmlExcel::LoadWorksheets()
 {
-  if(m_zip == NULL || m_sheetRead == true)
+  if(m_zip == NULL)
   {
     return false;
+  }
+  if(m_sheetRead)
+  {
+    return true;
   }
   // Make sure we have the sheetnames
   if(m_sheetRead == false)

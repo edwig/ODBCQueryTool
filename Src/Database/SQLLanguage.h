@@ -33,11 +33,11 @@
 typedef enum _language
 {
    LN_DEFAULT  = 0
-  ,LN_DUTCH 
+  ,LN_DUTCH    = 0
   ,LN_ENGLISH
   ,LN_GERMAN
   ,LN_FRENCH
-  ,LN_LASTLANG = LN_FRENCH  // Arraysize
+  ,LN_NUMLANG // Arraysize
 }
 Language;
 
@@ -87,15 +87,15 @@ DateNames;
 // Default language
 extern Language g_defaultLanguage;
 // Names of the week
-extern char*    g_weekdays[LN_LASTLANG][DAYS_IN_WEEK]; 
+extern char*    g_weekdays[LN_NUMLANG][DAYS_IN_WEEK]; 
 // Number of days at the beginning of the month + 2 months in the next year
 extern int      g_daysInTheMonth[MONTHS_IN_YEAR + 2];
 // Names of the months
-extern char*    g_monthnames[LN_LASTLANG][MONTHS_IN_YEAR];
+extern char*    g_monthnames[LN_NUMLANG][MONTHS_IN_YEAR];
 // Short (3 char) variants of the monthnames
-extern char*    g_shortMonths[LN_LASTLANG][MONTHS_IN_YEAR]; 
+extern char*    g_shortMonths[LN_NUMLANG][MONTHS_IN_YEAR]; 
 // Several key names 
-extern char*    g_dateNames[LN_LASTLANG][DN_LASTNAME];
+extern char*    g_dateNames[LN_NUMLANG][DN_LASTNAME];
 
 // Setting the default language
 Language SetDefaultSQLLanguage(Language p_lang);

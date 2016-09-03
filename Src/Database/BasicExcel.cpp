@@ -1,10 +1,12 @@
-////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 //
-// $Source: BasicExcel.cpp $
+// BasicExcel
 //
-// Original source (c) 2006 Yap Chun Wei
-// Last changes 2015 ir. W.E. Huisman
-// See header file for full credits
+// Original Version: Yap Chun Wei  (2006)
+// Expanded Version: Martin Fuchs  (2009) and Ami Castonguay
+// Expanded Version: Long Wenbiao  (2010)
+// Expanded Version: Edwig Huisman (2012)
+// For more credits: See the .h interface file
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -305,7 +307,7 @@ CF_RESULT CompoundFile::WriteFile(const char* path, const vector<char>& data, UL
 
 #else // _WIN32
 
-#if _MSC_VER >=1400	// VS 2005
+#if _MSC_VER>=1400	// VS 2015
 #include <share.h>	// _SH_DENYRW
 #endif
 
@@ -3396,7 +3398,7 @@ ULONG Workbook::SharedStringTable::Read(const char* data)
       ULONG stringSize;
       LittleEndian::Read(data_, stringSize, npos, 2);
       LittleEndian::Read(data_, unicode, npos+2, 1);
-      int multiplier = unicode & 1 ? 2 : 1;
+      int multiplier = (unicode & 1) ? 2 : 1;
 
       if (c >= maxContinue || npos+stringSize*multiplier+3 <= continueIndices_[c]) {
         // String to be read is not split into two records
@@ -5805,21 +5807,21 @@ void BasicExcel::AdjustDBCellPositions()
       worksheets_[i].cellTable_.rowBlocks_[j].dbcell_.firstRowOffset_ = firstRowOffset;
 
       // Adjust DBCell offsets
-      size_t l=0;
-      {for(size_t k=0; k<maxRows; ++k) {
-        for(; l<maxCellBlocks; ++l) {
+      for(size_t k=0; k<maxRows; ++k) 
+      {
+        for(size_t l=0; l<maxCellBlocks; ++l) 
+        {
           if (worksheets_[i].cellTable_.rowBlocks_[j].rows_[k].rowIndex_ <=
-            worksheets_[i].cellTable_.rowBlocks_[j].cellBlocks_[l]->RowIndex()) {
+              worksheets_[i].cellTable_.rowBlocks_[j].cellBlocks_[l]->RowIndex()) 
+          {
             worksheets_[i].cellTable_.rowBlocks_[j].dbcell_.offsets_[k] = cellOffset;
             break;
           }
-
           cellOffset += (USHORT)worksheets_[i].cellTable_.rowBlocks_[j].cellBlocks_[l]->RecordSize();
         }
         cellOffset = 0;
-      }}
     }
-
+    }
     offset += worksheets_[i].cellTable_.RecordSize();
     offset += worksheets_[i].window2_.RecordSize();
     offset += worksheets_[i].eof_.RecordSize();
@@ -5852,8 +5854,8 @@ void BasicExcel::AdjustExtSSTPositions()
   {for(size_t i=0; i<maxBoundSheets; ++i) {offset += workbook_.boundSheets_[i].RecordSize();}}
 
   workbook_.extSST_.stringsTotal_ = 10;
-  ULONG maxPortions = workbook_.sst_.uniqueStringsTotal_ / workbook_.extSST_.stringsTotal_ +
-            (workbook_.sst_.uniqueStringsTotal_%workbook_.extSST_.stringsTotal_ ? 1 : 0);
+  ULONG maxPortions = (workbook_.sst_.uniqueStringsTotal_ / workbook_.extSST_.stringsTotal_ +
+            (workbook_.sst_.uniqueStringsTotal_%workbook_.extSST_.stringsTotal_) ? 1 : 0);
   workbook_.extSST_.streamPos_.resize(maxPortions);
   workbook_.extSST_.firstStringPos_.resize(maxPortions);
   workbook_.extSST_.unused_.resize(maxPortions);
@@ -5973,12 +5975,12 @@ void BasicExcel::UpdateWorksheets()
 
     // References and pointers to shorten code
     vector<Worksheet::CellTable::RowBlock>& rRowBlocks = rawSheet.cellTable_.rowBlocks_;
-    vector<SmartPtr<Worksheet::CellTable::RowBlock::CellBlock> >* pCellBlocks = nullptr;
+    vector<SmartPtr<Worksheet::CellTable::RowBlock::CellBlock> >* pCellBlocks;
     Worksheet::CellTable::RowBlock::CellBlock* pCell;
-    rRowBlocks.resize(maxRows/32 + (maxRows%32 ? 1 : 0));
+    rRowBlocks.resize(maxRows/32 + ((maxRows % 32) ? 1 : 0));
     for(int r=0, curRowBlock=0; r<maxRows; ++r) 
     {
-      // pCellBlocks = nullptr;
+      pCellBlocks = nullptr;
       if (r % 32 == 0) 
       {
         // New row block for every 32 rows.

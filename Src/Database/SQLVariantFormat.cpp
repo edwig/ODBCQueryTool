@@ -447,8 +447,9 @@ SQLVariantFormat::SetCurrentDate()
   m_owner   = true;
   m_variant = new SQLVariant();
   m_variant->SetData(SQL_C_TIMESTAMP,m_format);
- }
+}
 
+#pragma warning (disable: 4996)
 bool
 SQLVariantFormat::GetTimeFromStringVariant(SQLVariant* p_variant,CString p_format,TIME_STRUCT* p_time)
 {
@@ -486,7 +487,7 @@ SQLVariantFormat::GetTimeFromStringVariant(SQLVariant* p_variant,CString p_forma
   }
   return false;
 }
-
+#pragma warning (error:4996)
 
 bool
 SQLVariantFormat::GetDateFromStringVariant(SQLVariant* p_variant,CString p_format,DATE_STRUCT* p_date)
@@ -505,6 +506,17 @@ SQLVariantFormat::GetDateFromStringVariant(SQLVariant* p_variant,CString p_forma
   int posDat2 = datum.Find('-',posDate + 1);
   if(posDat2 < 0)
   {
+    try
+    {
+      SQLDate lang(datum);
+      p_date->day   = (SQLUSMALLINT)lang.Day();
+      p_date->month = (SQLUSMALLINT)lang.Month();
+      p_date->year  = (SQLUSMALLINT)lang.Year();
+      return true;
+    }
+    catch(...)
+    {
+    }
     return false;
   }
   if(posDate == 2 && posDat2 == 5)
@@ -786,7 +798,7 @@ SQLVariantFormat::DateCalculate(char p_bewerking,CString p_argument)
      (p_bewerking == '+' || p_bewerking == '-'))
   {
 
-    Aantal = sscanf_s(p_argument, "%d %c", &Getal, &GetalType,(int)sizeof(char));
+    Aantal = sscanf_s(p_argument, "%d %c", &Getal, &GetalType,(unsigned int)sizeof(char));
 
     //SetDateTimeSpan( long lDays, int nHours, int nMins, int nSecs );
     if (Getal != 0 )

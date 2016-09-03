@@ -26,7 +26,7 @@
 //
 #pragma once
 
-class ColumnInfo  : public CObject
+class ColumnInfo
 {
 public:
   ColumnInfo();

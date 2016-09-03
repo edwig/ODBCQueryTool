@@ -43,7 +43,7 @@ class SQLDataSet;
 class XmlElement;
 class SQLVariant;
 
-class SQLRecord : public CObject
+class SQLRecord
 {
 public:
   SQLRecord(SQLDataSet* p_set,bool p_modifiable = false);

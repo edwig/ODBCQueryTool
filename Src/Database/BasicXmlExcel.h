@@ -1,9 +1,12 @@
-////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////
 //
-// $Source: BasicXMLExcel.cpp $
+// BasicExcel
 //
-// Copyright (c) 1998- 2015 ir. W.E. Huisman
-// All rights reserved
+// Original Version: Yap Chun Wei  (2006)
+// Expanded Version: Martin Fuchs  (2009) and Ami Castonguay
+// Expanded Version: Long Wenbiao  (2010)
+// Expanded Version: Edwig Huisman (2012)
+// For more credits: See the .h interface file
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 

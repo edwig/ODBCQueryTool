@@ -37,7 +37,7 @@ static char THIS_FILE[] = __FILE__;
 Language g_defaultLanguage = LN_ENGLISH;
 
 // All the days of the week 
-char* g_weekdays[LN_LASTLANG][DAYS_IN_WEEK] = 
+char* g_weekdays[LN_NUMLANG][DAYS_IN_WEEK] = 
 {
    { "zondag",  "maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag" }
   ,{ "sunday",  "monday",  "tuesday", "wednesday","thursday",  "friday",  "saturday" }
@@ -46,7 +46,7 @@ char* g_weekdays[LN_LASTLANG][DAYS_IN_WEEK] =
 };
 
 // All the months in the year
-char* g_monthnames[LN_LASTLANG][MONTHS_IN_YEAR] =
+char* g_monthnames[LN_NUMLANG][MONTHS_IN_YEAR] =
 {
    { "januari", "februari", "maart", "april", "mei", "juni", "juli",   "augustus","september","oktober", "november", "december" }
   ,{ "january", "february", "march", "april", "may", "june", "july",   "august",  "september","october", "november", "december" }
@@ -54,7 +54,7 @@ char* g_monthnames[LN_LASTLANG][MONTHS_IN_YEAR] =
   ,{ "janvier", "février",  "mars",  "avril", "mai", "juin", "juillet","août",    "septembre","octobre", "novembre", "décembre" }
 };
 
-char* g_shortMonths[LN_LASTLANG][MONTHS_IN_YEAR] = 
+char* g_shortMonths[LN_NUMLANG][MONTHS_IN_YEAR] = 
 {
   { "jan", "feb", "maa", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec" }
  ,{ "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec" }
@@ -63,7 +63,7 @@ char* g_shortMonths[LN_LASTLANG][MONTHS_IN_YEAR] =
 };
 
 // Operational names for dates/moments
-char* g_dateNames[LN_LASTLANG][DN_LASTNAME] =
+char* g_dateNames[LN_NUMLANG][DN_LASTNAME] =
 {
    {  "VANDAAG"         // DN_TODAY
      ,"HUIDIGMOMENT"    // DN_CURRENT
@@ -191,7 +191,7 @@ int g_daysInTheMonth[14] =
 Language SetDefaultSQLLanguage(Language p_lang)
 {
   Language oldLanguage = g_defaultLanguage;
-  if(LN_DEFAULT >= p_lang && p_lang <= LN_LASTLANG)
+  if(LN_DEFAULT >= p_lang && p_lang < LN_NUMLANG)
   {
     g_defaultLanguage = p_lang;
   }

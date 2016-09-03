@@ -1,11 +1,25 @@
 ////////////////////////////////////////////////////////////////////////
 //
-// $Source: ?/WOCO - BRIEF4all/Brief/BriefLibrary/SQLDataSetXLS.h $
-// $Author: ehuisman $
+// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// All rights reserved
 // 
-// Copyright (c) 1995 - 2015 Centric Netherlands B.V.
-// Alle rechten voorbehouden
+// Permission is hereby granted, free of charge, to any person obtaining a copy of 
+// this software and associated documentation files (the "Software"), 
+// to deal in the Software without restriction, including without limitation the rights 
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, 
+// and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 //
+// The above copyright notice and this permission notice shall be included in all copies 
+// or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+// IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+// CREDITS:
 // Loosly based on the article by: Yap Chun Wei
 // http://www.codeproject.com/Articles/1636/CSpreadSheet-A-Class-to-Read-and-Write-to-Excel-an
 // 
@@ -17,8 +31,6 @@
 #include <list>
 
 using namespace ExcelFormat;
-
-typedef std::list<CString> WordList;
 
 class SQLDataSetXLS : public SQLDataSet
 {
@@ -36,6 +48,8 @@ public:
   bool Commit(); 
   // Undo changes to spreadsheet
   bool RollBack(); 
+  // Close worksheet
+  bool  CloseWorksheet();
 
   // Add header row to spreadsheet
 	bool AddHeaders(CStringArray &FieldNames, bool replace = false); 
@@ -77,12 +91,8 @@ public:
 private:
   // Open a text delimited file for reading or writing
 	bool  Open(); 
-  bool  OpenWorksheet();
-  bool  OpenXmlWorksheet();
-  bool  OpenCsvWorksheet();
-
   // Close and forget the spreadsheet
-  void  Close();
+  bool  Close();
   // Convert Excel column in alphabet into column number
 	int   CalculateColumnNumber(CString column, bool p_name = true); 
   // Read a row from spreadsheet. Default is read the next row
@@ -134,4 +144,10 @@ inline bool
 SQLDataSetXLS::GetIsXLS()
 {
   return (m_excel || m_xmlExcel);
+}
+
+inline bool  
+SQLDataSetXLS::CloseWorksheet()
+{
+  return Close();
 }

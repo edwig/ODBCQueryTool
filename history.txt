@@ -1,3 +1,23 @@
+Version 1.4.4 (Build: 185)
+--------------------------
+- Repaired the representation of the ODBC datatypes, as reported by the driver
+  The following where incorrect and repaired:
+
+  SQLSMALLINT m_money;              // Money (FIXED_PRECISION_SCALE) (TRUE,FALSE)
+  SQLSMALLINT m_autoincrement;      // Auto incrementable (TRUE,FALSE,NULL for non-numeric)
+  CString     m_local_type_name;    // Local type name for display on UI's (not in DDL!)
+  SQLSMALLINT m_minimum_scale;      // Minimum scale of datatype. E.g. in seconds of the TIMESTAMP
+  SQLSMALLINT m_maximum_scale;      // Maximum scale of datatype, otherwise use column_size
+
+  // The following where added
+
+  SQLSMALLINT m_sqlDatatype;        // Driver independent SQL datatype
+  SQLSMALLINT m_sqlSubType;         // SQL subtype for TYPE_TIMESTAMP and INTERVAL types
+  SQLINTEGER  m_radix;              // Decimal radix (2,10 or NULL)
+  SQLSMALLINT m_interval_precision; // Number of decimals in interval precision of leading type
+
+  After this reparation, the ODBC types info tree (left hand side) is now correct again.
+
 Version 1.4.3 (Build: 184)
 --------------------------
 - Fixed MARS: Multiple Active Record Sets

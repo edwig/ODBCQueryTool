@@ -48,7 +48,7 @@ typedef std::map<int,    SQLVariant*> ColNumMap;
 typedef std::map<CString,SQLVariant*> ColNameMap;
 typedef std::map<int,    SQLVariant*> VarMap;
 
-class SQLQuery : public CObject
+class SQLQuery
 {
 public:
   // Construct SQL query to be later connected

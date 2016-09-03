@@ -53,7 +53,7 @@ inline Mutation::Mutation()
 // So the list is two-sided reachable and searchable
 typedef std::list<Mutation*> MutationStack;
 
-class SQLMutation : public CObject
+class SQLMutation
 {
 public:
   SQLMutation();

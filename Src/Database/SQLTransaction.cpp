@@ -66,8 +66,10 @@ SQLTransaction::~SQLTransaction()
     {
       Rollback();
     }
-    catch(...)
+    catch(CString& s)
     {
+      // TODO Do the logging
+      s;
     }
   }
 }

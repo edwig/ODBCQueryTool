@@ -119,20 +119,6 @@ SQLDate::SetNull()
   m_date.m_day   = 0;
 }
 
-SQLDate&
-SQLDate::operator=(const SQLTimestamp& p_date)
-{
-  if(p_date.IsNull())
-  {
-    SetNull();
-  }
-  else
-  {
-    SetDate(p_date.Year(),p_date.Month(),p_date.Day());
-  }
-  return *this;
-}
-
 // SQLDate::SetDate
 // Set the date year-month-day in a date instance
 bool
@@ -843,17 +829,17 @@ SQLDate::ParseXMLDate(const CString& p_string,SQLTimestamp& p_moment)
                   ,&ja[0],&ja[1],&ja[2],&ja[3]
                   ,&ma[0],&ma[1]
                   ,&da[0],&da[1]
-                  ,&sep3,(int)sizeof(char)
+                  ,&sep3,(unsigned int) sizeof(char)
                   ,&uu[0],&uu[1]
-                  ,&sep4,(int)sizeof(char)
+                  ,&sep4,(unsigned int) sizeof(char)
                   ,&mi[0],&mi[1]
-                  ,&sep5,(int)sizeof(char)
+                  ,&sep5,(unsigned int) sizeof(char)
                   ,&se[0],&se[1]
-                  ,&sep6,(int)sizeof(char)
+                  ,&sep6,(unsigned int) sizeof(char)
                   ,&fraction
-                  ,&sep7,(int)sizeof(char)
+                  ,&sep7,(unsigned int) sizeof(char)
                   ,&UTCuu[0],&UTCuu[1]
-                  ,&sep8,(int)sizeof(char)
+                  ,&sep8,(unsigned int) sizeof(char)
                   ,&UTCmi[0],&UTCmi[1]);
 
   int jaar    = ja[0] * 1000 + ja[1] * 100 + ja[2] * 10 + ja[3];
@@ -1069,3 +1055,143 @@ SQLDate::NamedDate(const CString& p_date,int& p_year,int& p_month,int& p_day)
   return result;
 }
 
+//////////////////////////////////////////////////////////////////////////
+//
+// OPERATORS
+//
+//////////////////////////////////////////////////////////////////////////
+
+// Assignment operators
+
+SQLDate&
+SQLDate::operator=(const SQLDate& datum)
+{
+  if(&datum != this)
+  {
+    if(datum.IsNull())
+    {
+      SetNull();
+    }
+    else
+    {
+      SetDate(datum.Year(),datum.Month(),datum.Day());
+    }
+  }
+  return *this;
+}
+
+SQLDate&
+SQLDate::operator=(const SQLTimestamp& p_date)
+{
+  if(p_date.IsNull())
+  {
+    SetNull();
+  }
+  else
+  {
+    SetDate(p_date.Year(),p_date.Month(),p_date.Day());
+  }
+  return *this;
+}
+
+// Temporal operators
+
+SQLTimestamp  
+SQLDate::operator+(const SQLTime& p_time) const
+{
+  SQLTimestamp stamp;
+
+  // NULL if either of both sides is NULL
+  if(IsNull() || p_time.IsNull())
+  {
+    return stamp;
+  }
+  stamp.SetTimestamp(Year()
+                    ,Month()
+                    ,Day()
+                    ,p_time.Hour()
+                    ,p_time.Minute()
+                    ,p_time.Second());
+  return stamp;
+}
+
+SQLInterval   
+SQLDate::operator-(const SQLDate& p_date) const
+{
+  SQLInterval intval;
+  intval.SetIntervalType(SQL_IS_DAY);
+
+  // NULL if either of both sides is NULL
+  if(IsNull() || p_date.IsNull())
+  {
+    return intval;
+  }
+  DateValue value = AsNumber() - p_date.AsNumber();
+  intval.SetInterval(SQL_IS_DAY,value,0,0,0,0);
+  return intval;
+}
+
+SQLDate
+SQLDate::operator+(const SQLInterval& p_interval) const
+{
+  // NULL if either of both sides is NULL
+  if(IsNull() || p_interval.IsNull())
+  {
+    SQLDate date;
+    return date;
+  }
+  // Check if interval is the correct type
+  if(p_interval.GetIsYearMonthType())
+  {
+    throw CString("Incompatible interval to add to a date");
+  }
+  // Do the calculation
+  SQLDate date(*this);
+  date.AddDays(p_interval.GetDays());
+
+  // Corner case where we land on the previous day!!
+  if(p_interval.GetIsNegative())
+  {
+    if(p_interval.GetHours()   || 
+       p_interval.GetMinutes() || 
+       p_interval.GetSeconds() || 
+       p_interval.GetFractionPart())
+    {
+      date.AddDays(-1);
+    }
+  }
+
+  return date;
+}
+
+SQLDate
+SQLDate::operator-(const SQLInterval& p_interval) const
+{
+  // NULL if either of both sides is NULL
+  if(IsNull() || p_interval.IsNull())
+  {
+    SQLDate date;
+    return date;
+  }
+  // Check if interval is the correct type
+  if(p_interval.GetIsYearMonthType())
+  {
+    throw CString("Incompatible interval to add to a date");
+  }
+  // Do the calculation
+  SQLDate date(*this);
+  date.AddDays(-(p_interval.GetDays()));
+
+  // Corner case where we land on the previous day!!
+  if(!p_interval.GetIsNegative())
+  {
+    if(p_interval.GetHours()   || 
+       p_interval.GetMinutes() || 
+       p_interval.GetSeconds() || 
+       p_interval.GetFractionPart())
+    {
+      date.AddDays(-1);
+    }
+  }
+  return date;
+}

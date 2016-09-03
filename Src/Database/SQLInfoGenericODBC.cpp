@@ -609,6 +609,28 @@ SQLInfoGenericODBC::GetNVLStatement(CString& p_test,CString& p_isnull) const
   return "{fn IFNULL(" + p_test + "," + p_isnull + ")}";
 }
 
+// Gets the subtransaction commands
+CString 
+SQLInfoGenericODBC::GetStartSubTransaction(CString p_savepointName) const
+{
+  // Generic ODBC does not known about sub transactions!
+  return CString("");
+}
+
+CString 
+SQLInfoGenericODBC::GetCommitSubTransaction(CString p_savepointName) const
+{
+  // Generic ODBC does not known about sub transactions!
+  return CString("");
+}
+
+CString 
+SQLInfoGenericODBC::GetRollbackSubTransaction(CString p_savepointName) const
+{
+  // Generic ODBC does not known about sub transactions!
+  return CString("");
+}
+
 // SQL CATALOG QUERIES
 // ===================================================================
 
@@ -872,6 +894,15 @@ SQLInfoGenericODBC::GetSQLOptimizeTable(CString& /*p_owner*/,CString& /*p_tableN
 {
   // To be implemented
   return "";
+}
+
+// Getting the fact that there is only **one** (1) user session in the database
+bool
+SQLInfoGenericODBC::GetOnlyOneUserSession()
+{
+  // No way to get the number of user sessions!
+  // So always continue with management functions
+  return true;
 }
 
 // SQL DDL ACTIONS

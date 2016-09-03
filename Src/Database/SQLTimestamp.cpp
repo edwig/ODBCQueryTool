@@ -29,6 +29,7 @@
 #include "SQLTimestamp.h"
 #include "SQLTime.h"
 #include "SQLDate.h"
+#include "SQLInterval.h"
 #include "SQLDatabase.h"
 #include "SQLLanguage.h"
 #include <strstream>
@@ -311,19 +312,6 @@ SQLTimestamp::Validate()
   }
 }
 
-// Assignment operator, regardless of state
-SQLTimestamp&
-SQLTimestamp::operator=(const SQLTimestamp& p_moment)
-{
-  if(&p_moment != this)
-  {
-    m_value     = p_moment.m_value;
-    m_timestamp = p_moment.m_timestamp;
-    m_fraction  = p_moment.m_fraction;
-  }
-  return *this;
-}
-
 SQLTimestamp
 SQLTimestamp::CurrentTimestamp(bool p_fraction /*=false*/)
 {
@@ -365,100 +353,6 @@ SQLTimestamp::FarInThePast()
   // of the Astronomical Emphemeris (Julian Day = 0)
   static SQLTimestamp past(1,1,1,0,0,0);
   return past;
-}
-
-bool
-SQLTimestamp::operator==(const SQLTimestamp& p_stamp) const
-{
-  if(IsNull() || p_stamp.IsNull())
-  {
-    return false;
-  }
-  return (m_value    == p_stamp.m_value) && 
-         (m_fraction == p_stamp.m_fraction);
-}
-
-bool
-SQLTimestamp::operator!=(const SQLTimestamp& p_stamp) const
-{
-  if(IsNull() || p_stamp.IsNull())
-  {
-    return false;
-  }
-  return (m_value    != p_stamp.m_value) ||
-         (m_fraction != p_stamp.m_fraction);
-}
-
-bool
-SQLTimestamp::operator<(const SQLTimestamp& p_stamp) const
-{
-  if(IsNull() || p_stamp.IsNull())
-  {
-    return false;
-  }
-  if(m_value < p_stamp.m_value)
-  {
-    return true;
-  }
-  if(m_value == p_stamp.m_value)
-  {
-    return m_fraction < p_stamp.m_fraction;
-  }
-  return false;
-}
-
-bool
-SQLTimestamp::operator>(const SQLTimestamp& p_stamp) const
-{
-  if(IsNull() || p_stamp.IsNull())
-  {
-    return false;
-  }
-  if(m_value > p_stamp.m_value)
-  {
-    return true;
-  }
-  if(m_value == p_stamp.m_value)
-  {
-    return m_fraction > p_stamp.m_fraction;
-  }
-  return false;
-}
-
-bool
-SQLTimestamp::operator<=(const SQLTimestamp& p_stamp) const
-{
-  if(IsNull() || p_stamp.IsNull())
-  {
-    return false;
-  }
-  if(m_value < p_stamp.m_value)
-  {
-    return true;
-  }
-  if(m_value == p_stamp.m_value)
-  {
-    return m_fraction <= p_stamp.m_fraction;
-  }
-  return false;
-}
-
-bool
-SQLTimestamp::operator>=(const SQLTimestamp& p_stamp) const
-{
-  if(IsNull() || p_stamp.IsNull())
-  {
-    return false;
-  }
-  if(m_value > p_stamp.m_value)
-  {
-    return true;
-  }
-  if(m_value == p_stamp.m_value)
-  {
-    return m_fraction >= p_stamp.m_fraction;
-  }
-  return false;
 }
 
 int
@@ -1122,3 +1016,218 @@ SQLTimestamp::PrintFraction(int p_precision) const
   }
   return fract;
 }
+
+//////////////////////////////////////////////////////////////////////////
+//
+// OPERATORS
+//
+//////////////////////////////////////////////////////////////////////////
+
+// Assignment operator, regardless of state
+
+SQLTimestamp&
+SQLTimestamp::operator=(const SQLTimestamp& p_moment)
+{
+  if(&p_moment != this)
+  {
+    m_value     = p_moment.m_value;
+    m_timestamp = p_moment.m_timestamp;
+    m_fraction  = p_moment.m_fraction;
+  }
+  return *this;
+}
+
+SQLTimestamp&
+SQLTimestamp::operator=(const SQLDate& p_date)
+{
+  // Check for NULL state
+  if(p_date.IsNull())
+  {
+    SetNull();
+  }
+  else
+  {
+    // That day at 00:00:00 midnight (starting of the day)
+    SetTimestamp(p_date.Year(),p_date.Month(),p_date.Day(),0,0,0);
+  }
+  return *this;
+}
+
+SQLTimestamp& 
+SQLTimestamp::operator=(const SQLTime& p_time)
+{
+  // Check for NULL state
+  if(p_time.IsNull())
+  {
+    SetNull();
+  }
+  else
+  {
+    // Current day on that time
+    SQLDate date = SQLDate::Today();
+    SetTimestamp(date.Year()
+                ,date.Month()
+                ,date.Day()
+                ,p_time.Hour()
+                ,p_time.Minute()
+                ,p_time.Second());
+  }
+  return *this;
+}
+
+// Temporal operators
+SQLInterval
+SQLTimestamp::operator-(const SQLTimestamp& p_timestamp) const
+{
+  // Check for NULL state
+  if(IsNull() || p_timestamp.IsNull())
+  {
+    SQLInterval intval;
+    return intval;
+  }
+  // Do the calculation
+  InterValue value = (m_value - p_timestamp.m_value) * NANOSECONDS_PER_SEC;
+  SQLInterval intval(SQL_IS_DAY_TO_SECOND,value);
+  return intval;
+}
+
+SQLTimestamp
+SQLTimestamp::operator+(const SQLInterval& p_interval) const
+{
+  // Check for NULL state
+  if(IsNull() || p_interval.IsNull())
+  {
+    SQLTimestamp stamp;
+    return stamp;
+  }
+  // Check on correct ordinal interval type
+  if(p_interval.GetIsYearMonthType())
+  {
+    throw CString("Cannot add a year-month interval to a timestamp");
+  }
+  // Do the calculation
+  int sign = p_interval.GetIsNegative() ? -1 : 1;
+  StampValue value = m_value + (sign * p_interval.AsValue() / NANOSECONDS_PER_SEC);
+  int  fraction = m_fraction + (sign * p_interval.AsValue() % NANOSECONDS_PER_SEC);
+  SQLTimestamp stamp(value,fraction);
+  return stamp;
+}
+
+SQLTimestamp  
+SQLTimestamp::operator-(const SQLInterval& p_interval) const
+{
+  // Check for NULL state
+  if(IsNull() || p_interval.IsNull())
+  {
+    SQLTimestamp stamp;
+    return stamp;
+  }
+  // Check on correct ordinal interval type
+  if(p_interval.GetIsYearMonthType())
+  {
+    throw CString("Cannot subtract a year-month interval from a timestamp");
+  }
+  // Do the calculation
+  int sign = p_interval.GetIsNegative() ? -1 : 1;
+  StampValue value = m_value - (sign * p_interval.AsValue() / NANOSECONDS_PER_SEC);
+  int  fraction = m_fraction - (sign * p_interval.AsValue() % NANOSECONDS_PER_SEC);
+  SQLTimestamp stamp(value,fraction);
+  return stamp;
+}
+
+// Comparison operators
+
+bool
+SQLTimestamp::operator==(const SQLTimestamp& p_stamp) const
+{
+  if(IsNull() || p_stamp.IsNull())
+  {
+    return false;
+  }
+  return (m_value    == p_stamp.m_value) && 
+         (m_fraction == p_stamp.m_fraction);
+}
+
+bool
+SQLTimestamp::operator!=(const SQLTimestamp& p_stamp) const
+{
+  if(IsNull() || p_stamp.IsNull())
+  {
+    return false;
+  }
+  return (m_value    != p_stamp.m_value) ||
+         (m_fraction != p_stamp.m_fraction);
+}
+
+bool
+SQLTimestamp::operator<(const SQLTimestamp& p_stamp) const
+{
+  if(IsNull() || p_stamp.IsNull())
+  {
+    return false;
+  }
+  if(m_value < p_stamp.m_value)
+  {
+    return true;
+  }
+  if(m_value == p_stamp.m_value)
+  {
+    return m_fraction < p_stamp.m_fraction;
+  }
+  return false;
+}
+
+bool
+SQLTimestamp::operator>(const SQLTimestamp& p_stamp) const
+{
+  if(IsNull() || p_stamp.IsNull())
+  {
+    return false;
+  }
+  if(m_value > p_stamp.m_value)
+  {
+    return true;
+  }
+  if(m_value == p_stamp.m_value)
+  {
+    return m_fraction > p_stamp.m_fraction;
+  }
+  return false;
+}
+
+bool
+SQLTimestamp::operator<=(const SQLTimestamp& p_stamp) const
+{
+  if(IsNull() || p_stamp.IsNull())
+  {
+    return false;
+  }
+  if(m_value < p_stamp.m_value)
+  {
+    return true;
+  }
+  if(m_value == p_stamp.m_value)
+  {
+    return m_fraction <= p_stamp.m_fraction;
+  }
+  return false;
+}
+
+bool
+SQLTimestamp::operator>=(const SQLTimestamp& p_stamp) const
+{
+  if(IsNull() || p_stamp.IsNull())
+  {
+    return false;
+  }
+  if(m_value > p_stamp.m_value)
+  {
+    return true;
+  }
+  if(m_value == p_stamp.m_value)
+  {
+    return m_fraction >= p_stamp.m_fraction;
+  }
+  return false;
+}
+

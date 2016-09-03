@@ -459,9 +459,6 @@
     <ClCompile Include="Src\Database\xml.cpp">
       <Filter>Database</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Database\xmlparser.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Query\Codeer.cpp">
       <Filter>Query</Filter>
     </ClCompile>
@@ -490,6 +487,15 @@
       <Filter>Database</Filter>
     </ClCompile>
     <ClCompile Include="Src\Database\unzip.cpp">
+      <Filter>Database</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Database\xml_parser.cpp">
+      <Filter>Database</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Database\SQLVariantOperator.cpp">
+      <Filter>Database</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Database\SQLInterval.cpp">
       <Filter>Database</Filter>
     </ClCompile>
   </ItemGroup>
@@ -948,6 +954,9 @@
       <Filter>Database\Headers</Filter>
     </ClInclude>
     <ClInclude Include="Src\Database\unzip.h">
+      <Filter>Database\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Database\SQLInterval.h">
       <Filter>Database\Headers</Filter>
     </ClInclude>
   </ItemGroup>

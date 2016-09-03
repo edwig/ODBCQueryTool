@@ -1061,7 +1061,7 @@ public:
 	virtual bool Accept( XmlVisitor* visitor ) const;
 
   // Find next element (child or sibling) with this name
-  XmlElement* FindElement(const char* p_name);
+  XmlElement* FindElement(const char* p_name,bool p_recurse = true);
 
 protected:
 

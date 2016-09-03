@@ -28,6 +28,7 @@
 #include "SQLDatabase.h"
 #include "SQLTime.h"
 #include "SQLTimestamp.h"
+#include "SQLInterval.h"
 #include "SQLLanguage.h"
 
 #define SECONDS_PER_DAY   (60 * 60 * 24)
@@ -46,7 +47,7 @@ typedef struct _Date
 }
 DateStorage;
 
-class SQLDate : public CObject
+class SQLDate
 {
 public:  
   // Date constructed as NULL date
@@ -75,9 +76,6 @@ public:
 
   ~SQLDate();
 
-  // Assignment operator and methods
-  SQLDate& operator=(const SQLDate&      p_date);
-  SQLDate& operator=(const SQLTimestamp& p_date);
   bool        SetDate(const CString& p_string); 
   bool        SetDate(long p_year,long p_month,long p_day);
   void        SetNull();
@@ -113,6 +111,14 @@ public:
   long        MonthsBetween (const SQLDate& p_date) const; 
   long        DaysBetween   (const SQLDate& p_date) const;
 
+  // Assignment operator and methods
+  SQLDate&      operator= (const SQLDate&      p_date);
+  SQLDate&      operator= (const SQLTimestamp& p_date);
+  // Temporal operators
+  SQLTimestamp  operator+ (const SQLTime& p_time) const;
+  SQLInterval   operator- (const SQLDate& p_date) const;
+  SQLDate       operator+ (const SQLInterval& p_interval) const;
+  SQLDate       operator- (const SQLInterval& p_interval) const;
   // Logical comparison operators on a a date
   bool     operator <(const SQLDate& p_date) const;
   bool     operator >(const SQLDate& p_date) const;
@@ -174,17 +180,6 @@ SQLDate::AsNumber() const
   return m_mjd;  
 }
       
-// Assignment operator..
-inline SQLDate&
-SQLDate::operator=(const SQLDate& datum)
-{
-  if (&datum != this)
-  {
-    SetDate(datum.Year(),datum.Month(),datum.Day());
-  }
-  return *this;
-}
-
 // Test on validity of a date instance
 inline bool
 SQLDate::Valid() const

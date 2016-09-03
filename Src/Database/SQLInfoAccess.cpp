@@ -623,6 +623,28 @@ SQLInfoAccess::GetNVLStatement(CString& p_test,CString& p_isnull) const
   return CString("IIF(ISNULL(") + p_test + ")," + p_isnull + "," + p_test + ")";
 }
 
+// Gets the subtransaction commands
+CString 
+SQLInfoAccess::GetStartSubTransaction(CString p_savepointName) const
+{
+  // Does not know how to do sub-transactions
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetCommitSubTransaction(CString p_savepointName) const
+{
+  // Does not know how to do sub-transactions
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetRollbackSubTransaction(CString p_savepointName) const
+{
+  // Does not know how to do sub-transactions
+  return "";
+}
+
 // SQL CATALOG QUERIES
 // ===================================================================
 
@@ -919,6 +941,15 @@ CString
 SQLInfoAccess::GetSQLOptimizeTable(CString& /*p_owner*/,CString& /*p_tableName*/,int& /*p_number*/)
 {
   return "";
+}
+
+// Getting the fact that there is only **one** (1) user session in the database
+bool    
+SQLInfoAccess::GetOnlyOneUserSession()
+{
+  // No way to get the number of user sessions!
+  // So always continue with management functions
+  return true;
 }
 
 // SQL DDL ACTIONS

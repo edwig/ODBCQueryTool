@@ -31,7 +31,7 @@
 // User status
 #define USER_DISPLAY		1
 
-class SQLVariantFormat : public CObject
+class SQLVariantFormat
 {
 public:
   SQLVariantFormat(SQLVariant* p_variant);

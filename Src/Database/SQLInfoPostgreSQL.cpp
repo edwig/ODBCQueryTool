@@ -620,6 +620,26 @@ SQLInfoPostgreSQL::GetNVLStatement(CString& p_test,CString& p_isnull) const
   return "{fn IFNULL(" + p_test + "," + p_isnull + ")}";
 }
 
+// Gets the subtransaction commands
+CString 
+SQLInfoPostgreSQL::GetStartSubTransaction(CString p_savepointName) const
+{
+  return CString("SAVEPOINT ") + p_savepointName;
+}
+
+CString 
+SQLInfoPostgreSQL::GetCommitSubTransaction(CString p_savepointName) const
+{
+  // Geen commit voor subtransaction
+  return CString("");
+}
+
+CString 
+SQLInfoPostgreSQL::GetRollbackSubTransaction(CString p_savepointName) const
+{
+  return CString("ROLLBACK TO SAVEPOINT ") + p_savepointName;
+}
+
 // SQL CATALOG QUERIES
 // ===================================================================
 
@@ -1020,6 +1040,13 @@ SQLInfoPostgreSQL::GetSQLOptimizeTable(CString& p_owner,CString& p_tableName,int
   return optim;
 }
 
+// Getting the fact that there is only **one** (1) user session in the database
+bool
+SQLInfoPostgreSQL::GetOnlyOneUserSession()
+{
+  // Yet to implement
+  return true;
+}
 
 // SQL DDL ACTIONS
 // ===================================================================

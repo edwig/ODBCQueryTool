@@ -68,7 +68,7 @@ typedef struct _sql_parameter
 }
 SQLParameter;
 
-class AggregateInfo : public CObject
+class AggregateInfo
 {
 public:
   AggregateInfo() { Init(); };
@@ -83,12 +83,14 @@ public:
 class SQLDatabase;
 class SQLQuery;
 typedef std::vector<SQLRecord*>   RecordSet;
+typedef std::vector<SQLVariant*>  VariantSet;
 typedef std::vector<SQLParameter> ParameterSet;
 typedef std::vector<CString>      NamenMap;
 typedef std::vector<int>          TypenMap;
 typedef std::map<int,int>         ObjectMap;
+typedef std::list<CString>        WordList;
 
-class SQLDataSet : public CObject
+class SQLDataSet
 {
 public:
   SQLDataSet();
@@ -98,7 +100,7 @@ public:
   // Query done and records gotten?
   bool IsOpen();
   // Perform query: Do SetQuery first
-  bool Open(bool p_stopBijGeenKolommen = false);
+  bool Open(bool p_stopIfNoColumns = false);
   // Append (read extra) into the dataset
   bool Append();
   // Remove resultset
@@ -112,6 +114,7 @@ public:
   int  Goto(int p_record);
   bool IsFirst();
   bool IsLast();
+  int  Current();
 
   // OPERATIONS
 
@@ -128,8 +131,10 @@ public:
   // Forget the records
   bool         Forget(bool p_force = false);
   // Find the object record of a primary key
-  int          FindObjectRecNum(int p_primary);
-  SQLRecord*   FindObjectRecord(int p_primary);
+  int          FindObjectRecNum(int p_primary);           // If your primary is an INTEGER     (Fast!!)
+  int          FindObjectRecNum(VariantSet& p_primary);   // If your primary is a compound key (Slower)
+  SQLRecord*   FindObjectRecord(int p_primary);           // If your primary is an INTEGER     (Fast!!)
+  SQLRecord*   FindObjectRecord(VariantSet& p_primary);   // If your primary is a compound key (Slower)
 
   // SETTERS
 
@@ -143,6 +148,7 @@ public:
   void         SetPrimaryTable(CString p_tableName);
   // Set primary key column name (for updates)
   void         SetPrimaryKeyColumn(CString p_name);
+  void         SetPrimaryKeyColumn(WordList& p_list);
   // Set searchable column
   void         SetSearchableColumn(CString p_name);
   // Set parameter for a query
@@ -209,9 +215,9 @@ private:
   void         Updates();
   void         Inserts();
 
-  CString      GetSQLDelete(SQLQuery* p_query,SQLRecord* p_record);
-  CString      GetSQLUpdate(SQLQuery* p_query,SQLRecord* p_record);
-  CString      GetSQLInsert(SQLQuery* p_query,SQLRecord* p_record);
+  CString      GetSQLDelete  (SQLQuery* p_query,SQLRecord* p_record);
+  CString      GetSQLUpdate  (SQLQuery* p_query,SQLRecord* p_record);
+  CString      GetSQLInsert  (SQLQuery* p_query,SQLRecord* p_record);
   CString      GetWhereClause(SQLQuery* p_query,SQLRecord* p_record,int& p_parameter);
 
   // Private data of the dataset
@@ -307,6 +313,12 @@ inline void
 SQLDataSet::SetPrimaryKeyColumn(CString p_name)
 {
   m_primaryKey.push_back(p_name);
+}
+
+inline int
+SQLDataSet::Current()
+{
+  return m_current;
 }
 
 inline void 

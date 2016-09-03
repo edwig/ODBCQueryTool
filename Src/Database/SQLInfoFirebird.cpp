@@ -626,6 +626,25 @@ SQLInfoFirebird::GetNVLStatement(CString& p_test,CString& p_isnull) const
   return "{fn IFNULL(" + p_test + "," + p_isnull + ")}";
 }
 
+// Gets the subtransaction commands
+CString 
+SQLInfoFirebird::GetStartSubTransaction(CString p_savepointName) const
+{
+  return CString("SAVEPOINT ") + p_savepointName;
+}
+
+CString 
+SQLInfoFirebird::GetCommitSubTransaction(CString p_savepointName) const
+{
+  return CString("COMMIT TRANSACTION ") + p_savepointName;
+}
+
+CString 
+SQLInfoFirebird::GetRollbackSubTransaction(CString p_savepointName) const
+{
+  return CString("ROLLBACK TO ") + p_savepointName;
+}
+
 // SQL CATALOG QUERIES
 // ====================================================================
 
@@ -1034,6 +1053,19 @@ CString
 SQLInfoFirebird::GetSQLOptimizeTable(CString& p_owner,CString& p_tableName,int& p_number)
 {
   return "";
+}
+
+// Getting the fact that there is only **one** (1) user session in the database
+bool
+SQLInfoFirebird::GetOnlyOneUserSession()
+{
+  CString sql("SELECT COUNT(*)\n"
+              "  FROM MON$ATTACHMENTS\n"
+              " WHERE MON$SYSTEM_FLAG = 0");
+
+  SQLQuery query(m_database);
+  SQLVariant* sessions = query.DoSQLStatementScalar(sql);
+  return sessions->GetAsSLong() <= 1;
 }
 
 // SQL DDL ACTIONS

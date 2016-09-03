@@ -29,7 +29,7 @@
 
 class SQLDatabase;
 
-class SQLTransaction  : public CObject
+class SQLTransaction 
 {
 public:
   SQLTransaction(SQLDatabase* p_database, 

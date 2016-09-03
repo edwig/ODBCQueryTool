@@ -38,6 +38,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 #pragma warning (disable: 4996)
+#pragma warning (disable: 4312)
 
 // This macro is used for synchronious ODBC calls
 #define ODBC_CALL_ONCE(SQLFunc) \
@@ -555,14 +556,23 @@ SQLInfo::GetInfo()
   m_convertVarBinary  = GetInfoInteger(SQL_CONVERT_VARBINARY);
   m_convertVarchar    = GetInfoInteger(SQL_CONVERT_VARCHAR);
 
+  ReadingDataTypes();
+  m_initDone = true;
+}
+
+void
+SQLInfo::ReadingDataTypes()
+{
   // Get all datatypes from this ODBC datasource in m_dataTypes
   if(!SupportedFunction(SQL_API_SQLGETTYPEINFO))
   {
-    AfxMessageBox("Cannot get datatype info from this ODBC driver",MB_OK);
+    // Cannot get datatype info from this ODBC driver
     return;
   }
   SQLHSTMT handle;
   SQLLEN   dataLen;
+  char     buffer[5120];
+
   m_retCode = SqlAllocHandle(SQL_HANDLE_STMT,m_hdbc,&handle);
   if (m_retCode == SQL_SUCCESS )
   {
@@ -580,6 +590,8 @@ SQLInfo::GetInfo()
         CString key;
         TypeInfo* ti = new TypeInfo();
         dataLen =0;
+
+        // DATA SOURCE DEPENDENT TYPE NAME. USE FOR CREATE TABLE
         if(::SQLGetData(handle,1,SQL_C_CHAR,buffer,5120,&dataLen) == SQL_SUCCESS)
         {
           if(dataLen > 0) 
@@ -601,78 +613,131 @@ SQLInfo::GetInfo()
         // Put in m_datatypes
         m_dataTypes.insert(std::make_pair(key,ti));
 
+        // SQL_<*> TYPE NUMBER
         if(::SQLGetData(handle,2,SQL_C_SSHORT,&ti->m_data_type,0,&dataLen) == SQL_SUCCESS)
         {
           if(dataLen != 2) ti->m_data_type = 0;
         }
+        // ODBC COLUMN SIZE
         if(::SQLGetData(handle,3,SQL_C_LONG,&ti->m_precision,0,&dataLen) == SQL_SUCCESS)
         {
           if(dataLen != 4) ti->m_precision = 0;
         }
+        // LITERAL PREFIX FOR ODBC DRIVER, like {ts' for timestamp
         if(::SQLGetData(handle,4,SQL_C_CHAR,buffer,5120,&dataLen) == SQL_SUCCESS)
         {
           if(dataLen > 0) ti->m_literal_prefix = buffer;
         }
+        // LITERAL SUFFIX FOR ODBC DRIVER, like '} for timestamp
         if(::SQLGetData(handle,5,SQL_C_CHAR,buffer,5120,&dataLen) == SQL_SUCCESS)
         {
           if(dataLen > 0) ti->m_literal_suffix = buffer;
         }
+        // HOW TO CREATE PARAMETERS, like "(precision,scale)"
         if(::SQLGetData(handle,6,SQL_C_CHAR,buffer,5120,&dataLen) == SQL_SUCCESS)
         {
           if(dataLen > 0) ti->m_create_params = buffer;
         }
+        // Nullable: SQL_NO_NULLS, SQL_NULLABLE, SQL_NULLABLE_UNKNOWN
         ti->m_nullable = 0;
         if(::SQLGetData(handle,7,SQL_C_SSHORT,&ti->m_nullable,0,&dataLen) == SQL_SUCCESS)
         {
           if(dataLen != 2) ti->m_nullable = 0;
         }
+        // Case sensitive search in datatype (TRUE/FALSE)
         ti->m_case_sensitive = 0;
         if(::SQLGetData(handle,8,SQL_C_SSHORT,&ti->m_case_sensitive,0,&dataLen) == SQL_SUCCESS)
         {
           if(dataLen != 2) ti->m_case_sensitive = 0;
         }
+        // Searchable in where clause
+        // SQL_PRED_NONE (SQL_UNSEARCHABLE), SQL_PRED_CHAR, SQL_PRED_BASIC, SQL_SEARCHABLE
         ti->m_searchable = 0;
         if(::SQLGetData(handle,9,SQL_C_SSHORT,&ti->m_searchable,0,&dataLen) == SQL_SUCCESS)
         {
           if(dataLen != 2) ti->m_searchable = 0;
         }
+        // UNSIGNED (TRUE, FALSE)
         ti->m_unsigned = 0;
         if(::SQLGetData(handle,10,SQL_C_SSHORT,&ti->m_unsigned,0,&dataLen) == SQL_SUCCESS)
         {
           if(dataLen != 2) ti->m_unsigned = 0;
         }
+        // FIXED PRECISION SCALE (LIKE MONEY)
         ti->m_money = 0;
         if(::SQLGetData(handle,11,SQL_C_SSHORT,&ti->m_money,0,&dataLen) == SQL_SUCCESS)
         {
           if(dataLen != 2) ti->m_money = 0;
         }
+        // Auto increment type like SERIAL (TRUE, FALSE, NULL for non-numeric)
         ti->m_autoincrement = 0;
         if(::SQLGetData(handle,12,SQL_C_SSHORT,&ti->m_autoincrement,0,&dataLen) == SQL_SUCCESS)
         {
           if(dataLen != 2) ti->m_autoincrement = 0;
         }
+        // Local type name for display on UI's (not in DDL!)
         ti->m_local_type_name = buffer;
         if(::SQLGetData(handle,13,SQL_C_CHAR,buffer,5120,&dataLen) == SQL_SUCCESS)
         {
           if(dataLen > 0) ti->m_local_type_name = buffer;
         }
+        // Minimum scale of the datatype (e.g. in timestamps)
         ti->m_minimum_scale = 0;
-        if(::SQLGetData(handle,11,SQL_C_SSHORT,&ti->m_minimum_scale,0,&dataLen) == SQL_SUCCESS)
+        if(::SQLGetData(handle,14,SQL_C_SSHORT,&ti->m_minimum_scale,0,&dataLen) == SQL_SUCCESS)
         {
           if(dataLen != 2) ti->m_minimum_scale = 0;
         }
+        // Maximum scale of the datatype. If 0 or NULL use column_size
         ti->m_maximum_scale = 0;
-        if(::SQLGetData(handle,11,SQL_C_SSHORT,&ti->m_maximum_scale,0,&dataLen) == SQL_SUCCESS)
+        if(::SQLGetData(handle,15,SQL_C_SSHORT,&ti->m_maximum_scale,0,&dataLen) == SQL_SUCCESS)
         {
           if(dataLen != 2) ti->m_maximum_scale = 0;
+        }
+        // Driver independent SQL datatype
+        ti->m_sqlDatatype = 0;
+        if(::SQLGetData(handle,16,SQL_C_SSHORT,&ti->m_sqlDatatype,0,&dataLen) == SQL_SUCCESS)
+        {
+          if(dataLen != 2) ti->m_sqlDatatype = 0;
+        }
+        // SQL subtype for TYPE_TIMESTAMP and INTERVAL types
+        ti->m_sqlSubType = 0;
+        if(::SQLGetData(handle,17,SQL_C_SSHORT,&ti->m_sqlSubType,0,&dataLen) == SQL_SUCCESS)
+        {
+          if(dataLen != 2) ti->m_sqlSubType = 0;
+        }
+        // Decimal radix (2,10 or NULL)
+        ti->m_radix = 0;
+        if(::SQLGetData(handle,18,SQL_C_SLONG,&ti->m_radix,0,&dataLen) == SQL_SUCCESS)
+        {
+          if(dataLen != 4) ti->m_radix = 0;
+        }
+        // Number of decimals in interval precision of leading type
+        ti->m_interval_precision = 0;
+        if(::SQLGetData(handle,19,SQL_C_SSHORT,&ti->m_interval_precision,0,&dataLen) == SQL_SUCCESS)
+        {
+          if(dataLen != 2) ti->m_interval_precision = 0;
         }
       }
     }
     SqlFreeHandle(SQL_HANDLE_STMT,handle);
   }
-  m_initDone = true;
 }
 
+// Getting datatype info
+TypeInfo* 
+SQLInfo::GetTypeInfo(int p_sqlDatatype)
+{
+  DataTypeMap::iterator it;
+  
+  for(it = m_dataTypes.begin();it != m_dataTypes.end();++it)
+  {
+    if(it->second->m_data_type == p_sqlDatatype)
+    {
+      return it->second;
+    }
+  }
+  return nullptr;
+}
 
 // Returns the fact whether an API function is supported
 // by the ODBC driver, regardless of ODBC version
@@ -784,7 +849,7 @@ SQLInfo::SetAttributeInteger(CString     description
   RETCODE nRetCode = SQL_ERROR;
   nRetCode = ::SQLSetConnectAttr(m_hdbc
                                 ,attrib
-                                ,(SQLPOINTER)(ULONG_PTR)value
+                                ,(SQLPOINTER)value
                                 ,SQL_IS_UINTEGER);
   if(!m_database->Check(nRetCode))
   {
@@ -1106,14 +1171,15 @@ SQLInfo::GetStatement(bool p_metadataID /*= true*/)
     errorText += m_database->GetErrorString(m_hstmt);
     throw errorText;
   }
+  TRACE("DBInfo::GetStatement\n");
 
   SQLUINTEGER meta = p_metadataID ? SQL_TRUE : SQL_FALSE;
   // On Various ODBC databases metadata is or is not case-sensitive. To work around
   // these differences, the statement should be aware that it is about metadata!
-  m_retCode = SqlSetStmtAttr(m_hstmt,SQL_ATTR_METADATA_ID,(SQLPOINTER)(ULONG_PTR)meta,SQL_IS_UINTEGER);
+  m_retCode = SqlSetStmtAttr(m_hstmt,SQL_ATTR_METADATA_ID,(SQLPOINTER)meta,SQL_IS_UINTEGER);
   if(!SQL_SUCCEEDED(m_retCode))
   {
-    m_retCode = SqlSetConnectAttr(m_hdbc,SQL_ATTR_METADATA_ID,(SQLPOINTER)(ULONG_PTR)meta,SQL_IS_UINTEGER);
+    m_retCode = SqlSetConnectAttr(m_hdbc,SQL_ATTR_METADATA_ID,(SQLPOINTER)meta,SQL_IS_UINTEGER);
     if(!SQL_SUCCEEDED(m_retCode))
     {
       // OOPS Cannot set the METADATA attribute.
@@ -1134,6 +1200,8 @@ SQLInfo::CloseStatement()
     SqlFreeStmt(m_hstmt,SQL_DROP);
     m_hstmt   = NULL;
     m_retCode = SQL_SUCCESS;
+
+    TRACE("DBInfo::CloseStatement\n");
   }
 }
 
@@ -1838,7 +1906,6 @@ SQLInfo::MakeInfoTableForeign(WordList* p_list,bool ref)
   {
     return false;
   }
-  SQLRETURN    m_retCode;
   SQLCHAR      szPKCatalogName [SQL_MAX_BUFFER];
   SQLLEN       cbPKCatalogName = 0;
   SQLCHAR      szPKSchemaName  [SQL_MAX_BUFFER];
@@ -2095,7 +2162,6 @@ SQLInfo::MakeInfoTableStatistics(WordList*   p_list
   {
     return false;
   }
-  SQLRETURN    m_retCode;
   SQLCHAR      szCatalogName [SQL_MAX_BUFFER + 1] = "";
   SQLLEN       cbCatalogName = 0;
   SQLCHAR      szSchemaName  [SQL_MAX_BUFFER + 1] = "";
@@ -2332,7 +2398,6 @@ SQLInfo::MakeInfoTableSpecials(WordList* p_list)
   {
     return false;
   }
-  SQLRETURN    m_retCode;
   SQLCHAR      szCatalogName [SQL_MAX_BUFFER];
   SQLCHAR      szSchemaName  [SQL_MAX_BUFFER];
   SQLCHAR      szTableName   [SQL_MAX_BUFFER];
@@ -2446,7 +2511,6 @@ SQLInfo::MakeInfoTablePrivileges(WordList* p_list)
   {
     return false;
   }
-  SQLRETURN    m_retCode;
   SQLCHAR      szCatalogName [SQL_MAX_BUFFER];
   SQLLEN       cbCatalogName = 0;
   SQLCHAR      szSchemaName  [SQL_MAX_BUFFER];

@@ -262,6 +262,11 @@ public:
   // Gets the Not-NULL-Value statement of the database
   virtual CString GetNVLStatement(CString& p_test,CString& p_isnull) const = 0;
 
+  // Gets the subtransaction commands
+  virtual CString GetStartSubTransaction   (CString p_savepointName) const = 0;
+  virtual CString GetCommitSubTransaction  (CString p_savepointName) const = 0;
+  virtual CString GetRollbackSubTransaction(CString p_savepointName) const = 0;
+
   // SQL CATALOG QUERIES
   // ===================
 
@@ -346,8 +351,11 @@ public:
   // Get query to optimize the table statistics
   virtual CString GetSQLOptimizeTable(CString& p_owner,CString& p_tableName,int& p_number) = 0;
 
-  // SQL DDL HANDELINGEN
-  // ===================
+  // Getting the fact that there is only **one** (1) user session in the database
+  virtual bool    GetOnlyOneUserSession() = 0;
+
+  // SQL DDL OPERATIONS
+  // ==================
 
   // Do the commit for the DDL commands in the catalog
   virtual void    DoCommitDDLcommands() const = 0;

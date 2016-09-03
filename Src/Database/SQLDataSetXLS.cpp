@@ -1,10 +1,27 @@
 ////////////////////////////////////////////////////////////////////////
 //
-// $Source: ?/WOCO - BRIEF4all/Brief/BriefLibrary/SQLDataSetXLS.cpp $
-// $Author: ehuisman $
+// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// All rights reserved
 // 
-// Copyright (c) 1995 - 2015 Centric Netherlands B.V.
-// Alle rechten voorbehouden
+// Permission is hereby granted, free of charge, to any person obtaining a copy of 
+// this software and associated documentation files (the "Software"), 
+// to deal in the Software without restriction, including without limitation the rights 
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, 
+// and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all copies 
+// or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+// IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+// CREDITS:
+// Loosly based on the article by: Yap Chun Wei
+// http://www.codeproject.com/Articles/1636/CSpreadSheet-A-Class-to-Read-and-Write-to-Excel-an
 //
 #include "stdafx.h"
 #include "SQLDataSetXLS.h"
@@ -105,6 +122,7 @@ SQLDataSetXLS::ReadXLS(CString p_sheet)
   }
   else if(m_xmlExcel)
   {
+    m_sheetName = p_sheet;
     if(m_xmlWorkbook->GetError().IsEmpty())
     {
       if(Open())
@@ -146,6 +164,12 @@ bool
 SQLDataSetXLS::Commit()
 {
   if(m_excel) // If file is an Excel spreadsheet
+  {
+    m_workbook->Save();
+    m_transaction = false;
+    return true;
+  }
+  if(m_xmlExcel)
   {
     m_workbook->Save();
     m_transaction = false;
@@ -240,7 +264,7 @@ SQLDataSetXLS::AddHeaders(CStringArray &p_fieldNames, bool p_replace)
 // Insert or replace a row into spreadsheet. 
 // Default is add new row.
 bool
-SQLDataSetXLS::AddRow(CStringArray &p_rowValues, long p_row, bool p_replace)
+SQLDataSetXLS::AddRow(CStringArray &p_rowValues, long /*p_row*/, bool /*p_replace*/)
 {
   int ind  = 0;
   int cols = GetNumberOfFields();
@@ -567,7 +591,7 @@ SQLDataSetXLS::Open()
       {
         CString value = sheet->GetCellValue(row,col);
         SQLVariant* var = new SQLVariant(value.GetString());
-        record->AddField(var);
+        record->AddField(var,true); // It's for an insertion
       }
     }
     return true;
@@ -631,11 +655,13 @@ SQLDataSetXLS::Open()
 	}
 }
 
-void
+bool
 SQLDataSetXLS::Close()
 {
   m_append = false;
   SQLDataSet::Close();
+
+  return true;
 }
 
 // Convert Excel column in alphabet into column number

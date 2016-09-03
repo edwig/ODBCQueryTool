@@ -37,6 +37,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#pragma warning (disable: 4312)
+
 // CTOR: To be later connected to a database
 // by calling Init() seperatly
 SQLQuery::SQLQuery()
@@ -128,7 +130,7 @@ SQLQuery::Close()
     if(!SQL_SUCCEEDED(m_retCode))
     {
       GetLastError("Freeing the cursor: ");
-      // throw m_lastError;
+      throw m_lastError;
     }
   }
   // Clear nummer map
@@ -179,7 +181,7 @@ SQLQuery::Open()
   // get statement handle in m_hstmt:
   if(m_database)
   {
-  RETCODE m_retCode = m_database->GetSQLHandle(&m_hstmt,false);
+    m_retCode = m_database->GetSQLHandle(&m_hstmt,false);
     if(!SQL_SUCCEEDED(m_retCode))
   {
     GetLastError("Getting statement handle: ");
@@ -229,7 +231,7 @@ SQLQuery::Open()
   // Set max-rows if our database DOES support it (Oracle!)
   if(m_maxRows)
   {
-    m_retCode = SQLSetStmtAttr(m_hstmt,SQL_MAX_ROWS,(SQLPOINTER)(ULONG_PTR)m_maxRows,SQL_IS_UINTEGER);
+    m_retCode = SQLSetStmtAttr(m_hstmt,SQL_MAX_ROWS,(SQLPOINTER)m_maxRows,SQL_IS_UINTEGER);
     if(!SQL_SUCCEEDED(m_retCode))
     {
       GetLastError("Cannot set SQL_MAX_ROWS attribute: ");
@@ -457,6 +459,12 @@ SQLQuery::DoSQLStatement(const CString& p_statement)
   // Optimization: remove trailing spaces
   statement.Trim();
 
+  // Do the Querytext macro replacement
+  if(m_database)
+  {
+    m_database->ReplaceMacros(statement);
+  }
+
   // The Oracle 10.2.0.3.0 ODBC Driver - and later versions - contain a bug
   // in the processing of the query-strings which crashes it in CharNexW
   // by a missing NUL-Terminator. By changing the length of the statement
@@ -464,7 +472,7 @@ SQLQuery::DoSQLStatement(const CString& p_statement)
   SQLINTEGER lengthStatement = statement.GetLength() + 1;
 
   // GO DO IT RIGHT AWAY
-  m_retCode = SqlExecDirect(m_hstmt,(SQLCHAR*)(LPCSTR)p_statement,lengthStatement);
+  m_retCode = SqlExecDirect(m_hstmt,(SQLCHAR*)(LPCSTR)statement,lengthStatement);
 
   if(SQL_SUCCEEDED(m_retCode))
   {
@@ -594,6 +602,12 @@ SQLQuery::DoSQLPrepare(const CString& p_statement)
   // Optimization: remove trailing spaces
   statement.Trim();
 
+  // Do the Querytext macro replacement
+  if(m_database)
+  {
+    m_database->ReplaceMacros(statement);
+  }
+
   // The Oracle 10.2.0.3.0 ODBC Driver - and later versions - contain a bug
   // in the processing of the query-strings which crashes it in CharNexW
   // by a missing NUL-Terminator. By changing the length of the statement
@@ -703,7 +717,7 @@ SQLQuery::BindParameters()
     if(var->GetAtExec())
     {
       // AT EXEC data piece by piece
-      dataPointer = (SQLPOINTER)(ULONG_PTR) icol;
+      dataPointer = (SQLPOINTER) icol;
       // Some database types need to know the length beforehand (Oracle!)
       // If no database type known, set to true, just to be sure!
       var->SetSizeIndicator(m_database ? m_database->GetNeedLongDataLen() : true);
@@ -816,6 +830,7 @@ SQLQuery::BindColumns()
     }
     SQLVariant* var = new SQLVariant(type,(int)precision);
     var->SetColumnNumber(icol);
+    var->SetSQLDataType(dataType);
     if(atexec)
     {
       m_hasLongColumns = true;
@@ -839,7 +854,7 @@ SQLQuery::BindColumns()
     SQLVariant* var = it->second;
     if(var->GetAtExec() == false)
     {
-      int icol = var->GetColumnNumber();
+      int bcol = var->GetColumnNumber();
       int type = var->GetDataType();
       if(m_rebindColumns)
       {
@@ -850,7 +865,7 @@ SQLQuery::BindColumns()
         }
       }
       m_retCode = SqlBindCol(m_hstmt                                   // statement handle
-                            ,(SQLUSMALLINT) icol                       // Column number
+                            ,(SQLUSMALLINT) bcol                       // Column number
                             ,(SQLSMALLINT)  type                       // Data type
                             ,(SQLPOINTER)   var->GetDataPointer()      // Data pointer
                             ,(SQLINTEGER)   var->GetDataSize()         // Data length
@@ -905,7 +920,7 @@ SQLQuery::ProvideAtExecData()
             // Next SQLParamData/SQLExecute cycle
             break;
           }
-          data   = (SQLPOINTER)((ULONG_PTR)data + (ULONG_PTR)piece);
+          data   = (SQLPOINTER)((DWORD_PTR)data + (DWORD_PTR)piece);
           total += piece;
           if(size - total < piece)
           {
@@ -1017,7 +1032,7 @@ SQLQuery::RetrieveAtExecData()
       SQLLEN actualLength = 0;
       m_retCode = SqlGetData(m_hstmt
                             ,(SQLUSMALLINT) col
-                            ,(SQLSMALLINT)  var->GetSQLDataType()
+                            ,(SQLSMALLINT)  var->GetDataType()
                           ,(SQLPOINTER)   var->GetDataPointer()
                           ,(SQLINTEGER)   0  // Request the actual length of this field
                           ,&actualLength);
@@ -1044,7 +1059,7 @@ SQLQuery::RetrieveAtExecData()
             pointer += length;
             m_retCode = SqlGetData(m_hstmt
                                  ,(SQLUSMALLINT) col
-                                 ,(SQLUSMALLINT) var->GetSQLDataType()
+                                 ,(SQLUSMALLINT) var->GetDataType()
                                  ,(SQLPOINTER)   pointer
                                  ,(SQLINTEGER)   size + extra
                                  ,(SQLLEN*)      var->GetIndicatorPointer());

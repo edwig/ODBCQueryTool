@@ -26,7 +26,7 @@
 //
 #pragma once
 
-class SQLStatement : public CObject
+class SQLStatement
 {
 public :
   SQLStatement();

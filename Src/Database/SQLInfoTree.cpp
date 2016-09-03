@@ -125,8 +125,7 @@ SQLInfoTree::MakeTreeInfo(CTreeCtrl* tree)
   HTREEITEM odbcres = tree->InsertItem("ODBC SQL reserved words", infoItemDriver);
   for(WordList::iterator it = m_ODBCKeywords.begin(); it != m_ODBCKeywords.end(); ++it)
   {
-    CString key = *it;
-    tree->InsertItem(key,odbcres);
+    tree->InsertItem(*it,odbcres);
   }
   // Supported ODBC functions
   HTREEITEM odbcFun = tree->InsertItem("ODBC Supported functions",infoItemDriver);
@@ -187,6 +186,14 @@ SQLInfoTree::MakeTreeInfo(CTreeCtrl* tree)
     sitem.Format("Minimum scale: %s",InfoNumberToString(ti->m_minimum_scale));
     tree->InsertItem(sitem,type);
     sitem.Format("Maximum scale: %s",InfoNumberToString(ti->m_maximum_scale));
+    tree->InsertItem(sitem,type);
+    sitem.Format("Driver independent SQL datatype: %s",ODBCDataType(ti->m_sqlDatatype));
+    tree->InsertItem(sitem,type);
+    sitem.Format("Subtype for temporal types: %d",ti->m_sqlSubType);
+    tree->InsertItem(sitem,type);
+    sitem.Format("Decimal radix: %d",ti->m_radix);
+    tree->InsertItem(sitem,type);
+    sitem.Format("Interval leading precision: %d",ti->m_interval_precision);
     tree->InsertItem(sitem,type);
     // Next datatype
     ++it;
@@ -574,9 +581,12 @@ SQLInfoTree::MakeTreeInfo(CTreeCtrl* tree)
   sitem = "Table aliases correlation: ";
   switch(m_correlationNames)
   {
-  case SQL_CN_NONE:      sitem += "Table aliases are not supported";     break;
-  case SQL_CN_DIFFERENT: sitem += "Aliases must differ from tablenames"; break;
-  case SQL_CN_ANY:       sitem += "Any table alias can be used";         break;
+    case SQL_CN_NONE:     sitem += "Table aliases are not supported";     
+                          break;
+    case SQL_CN_DIFFERENT:sitem += "Aliases must differ from tablenames"; 
+                          break;
+    case SQL_CN_ANY:      sitem += "Any table alias can be used";         
+                          break;
   }
   tree->InsertItem(sitem,fromopt);
 
@@ -733,7 +743,7 @@ SQLInfoTree::MakeTreeInfo(CTreeCtrl* tree)
   {
   case SQL_NC_HIGH:  sitem += "High end of resultset, depending on ASC/DESC"; break;
   case SQL_NC_LOW:   sitem += "Low end of resultset, depending on ASC/DESC";  break;
-  case SQL_NC_START: sitem += "At the start of the resultset, regardless of ASC/DESC"; break;
+    case SQL_NC_START: sitem += "At the start of the resultset, regardless of ASC/DESC";break;
   case SQL_NC_END:   sitem += "At the end of the resultset, regardless of ASC/DESC";   break;
   default:           sitem += "(No information)"; break;
   }
@@ -830,9 +840,9 @@ SQLInfoTree::MakeTreeInfo(CTreeCtrl* tree)
   HTREEITEM words = tree->InsertItem("RDBMS SQL Reserved words",infoItemImpl);
   didInfo =  false;
   m_RDBMSkeywords.sort();
-  for(WordList::iterator it = m_RDBMSkeywords.begin(); it != m_RDBMSkeywords.end(); ++it)
+  for(WordList::iterator wr = m_RDBMSkeywords.begin(); wr != m_RDBMSkeywords.end(); ++wr)
   {
-    CString word = *it;
+    CString word = *wr;
     if(!word.IsEmpty()) 
     {
       didInfo = true;

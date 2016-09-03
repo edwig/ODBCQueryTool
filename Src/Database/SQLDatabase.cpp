@@ -85,7 +85,7 @@ SQLDatabase::SQLDatabase(HDBC p_hdbc)
   m_driverMainVersion = 0;
   m_lastAction        = 0;
   m_needLongDataLen   = false;
-  m_mars              = false;
+  m_mars              = true;
   m_readOnly          = false;
   m_logLevel          = NULL;
   m_logPrinter        = NULL;
@@ -488,6 +488,9 @@ SQLDatabase::CollectInfo()
   else
   {
     m_rdbmsType = RDBMS_ODBC_STANDARD;
+    CString foutType("Generic ODBC database type: ");
+    foutType += m_dbIdent;
+    throw foutType;
   }
 
   // After findint the databasea type, set the rebinds
@@ -611,9 +614,9 @@ SQLDatabase::RealDatabaseName()
   if(databaseName.IsEmpty())
   {
     // After ODBC 2.0, SQL_DATABASE_NAME is replaced by current_qualifier
-    long len;
+    long length = 0;
     buffer = databaseName.GetBuffer(SQL_MAX_OPTION_STRING_LENGTH);
-    SQLGetConnectAttr(m_hdbc,SQL_CURRENT_QUALIFIER,buffer,SQL_MAX_OPTION_STRING_LENGTH,&len);
+    SQLGetConnectAttr(m_hdbc,SQL_CURRENT_QUALIFIER,buffer,SQL_MAX_OPTION_STRING_LENGTH,&length);
     databaseName.ReleaseBuffer();
     m_namingMethod = "ODBC current qualifier";
   }
@@ -870,15 +873,19 @@ SQLDatabase::FreeSQLHandle(HSTMT* p_statementHandle,UWORD p_option)
   return ret;
 };
 
+#pragma warning (disable: 4312)
+
 void 
-SQLDatabase::SetConnectAttr(int attr,int value,int type)
+SQLDatabase::SetConnectAttr(int attr, int value,int type)
 {
-  SQLRETURN ret = SqlSetConnectAttr(m_hdbc,attr,(SQLPOINTER)(ULONG_PTR)value,type);
+  SQLRETURN ret = SqlSetConnectAttr(m_hdbc,attr,(SQLPOINTER)value,type);
   if(!Check(ret))
   {
     throw CString("Error at setting connection attributes at open: ") + GetErrorString();
   }
 }
+
+#pragma warning (error: 4312)
 
 // ODBC Native Support
 bool
@@ -896,6 +903,10 @@ SQLDatabase::ODBCNativeSQL(CString& p_sql)
   char* buffer = new char[2 * len];
   SQLINTEGER lengte = 0;
   buffer[0] = 0;
+
+  // Maar eerst eventuele macros vervangen.
+  // Anders gaat de parser op hol!!
+  ReplaceMacros(p_sql);
 
   // Let the driver do the translation
   SQLRETURN ret = SQLNativeSql(m_hdbc
@@ -1119,9 +1130,19 @@ SQLDatabase::StartTransaction(SQLTransaction* p_transaction, bool p_startSubtran
       transName.Format("AutoSavePoint%d", m_transactions.size());
 
       // Set savepoint
-      // TODO: Check that the engine supports SAVEPOINT's
+      CString startSubtrans = reinterpret_cast<SQLInfoDB*>(m_info)->GetStartSubTransaction(transName);
+      if(!startSubtrans.IsEmpty())
+      {
+        try
+        {
       SQLQuery rs(this);
-      rs.DoSQLStatement("SAVEPOINT " + transName);
+          rs.DoSQLStatement(startSubtrans);
+        }
+        catch(CString& err)
+        {
+          throw CString("Error starting sub-transaction: ") + err;
+        }
+      }
     }
   }
   // Add the transaction on the transaction stack
@@ -1177,6 +1198,25 @@ SQLDatabase::CommitTransaction(SQLTransaction* p_transaction)
 
         // Throw an exception with the errorinfo of the failed commit
         throw CString("Error at commit: ") + error;
+      }
+    }
+    else
+    {
+      // It's a sub transaction
+      // If the database is capable: Do the commit of the sub transaction
+      // Otherwise: do nothing and wait for the outer transaction to commit the whole in-one-go
+      CString startSubtrans = reinterpret_cast<SQLInfoDB*>(m_info)->GetCommitSubTransaction(p_transaction->GetSavePoint());
+      if(!startSubtrans.IsEmpty())
+      {
+        try
+        {
+          SQLQuery rs(this);
+          rs.DoSQLStatement(startSubtrans);
+        }
+        catch(CString& err)
+        {
+          throw CString("Error committing a sub-transaction: ") + err;
+        }
       }
     }
   }
@@ -1244,9 +1284,19 @@ SQLDatabase::RollbackTransaction(SQLTransaction* p_transaction)
     else
     {
       // It is a subtransaction
-      // To do: Check for capability
+      CString startSubtrans = reinterpret_cast<SQLInfoDB*>(m_info)->GetRollbackSubTransaction(p_transaction->GetSavePoint());
+      if(!startSubtrans.IsEmpty())
+      {
+        try
+        {
       SQLQuery rs(this);
-      rs.DoSQLStatement("ROLLBACK TO " + p_transaction->GetSavePoint());
+          rs.DoSQLStatement(startSubtrans);
+        }
+        catch(CString& err)
+        {
+          throw CString("Error rolling back a sub-transaction: ") + err;
+        }
+      }
     }
   }
   // Notify all rolledback transactions
@@ -1637,6 +1687,90 @@ SQLDatabase::SetSchemaAction(SchemaAction p_action)
     }
   }
 }
+
+//////////////////////////////////////////////////////////////////////////
+//
+// MACROS
+//
+//////////////////////////////////////////////////////////////////////////
+
+// Do the Querytext macro replacement
+void           
+SQLDatabase::ReplaceMacros(CString& p_statement)
+{
+  for(auto& macro : m_macros)
+  {
+    CString text = macro.first;
+    CString repl = macro.second;
+
+    while(true)
+    {
+      // Zoek macro tekst
+      int pos = p_statement.Find(text);
+      if(pos < 0)
+      {
+        break;
+      }
+      // Macro vervangen
+      int quotes = FindQuotes(p_statement,pos);
+      if((quotes % 2) == 0)
+      {
+        // doe de replacement
+        ReplaceMacro(p_statement,pos,text.GetLength(),repl);
+      }
+    }
+  }
+}
+
+int
+SQLDatabase::FindQuotes(CString& p_statement,int p_lastpos)
+{
+  int quotes = 0;
+  for(int ind = 0; ind < p_lastpos; ++ind)
+  {
+    if(p_statement.GetAt(ind) == '\'')
+    {
+      ++quotes;
+    }
+  }
+  return quotes;
+}
+
+void
+SQLDatabase::ReplaceMacro(CString& p_statement,int p_pos,int p_length,CString p_replace)
+{
+  CString newStatement;
+  // First part, before macro
+  newStatement = p_statement.Left(p_pos);
+  // Add macro replacement
+  newStatement += p_replace;
+  // Add part after the macro
+  newStatement += p_statement.Mid(p_pos + p_length);
+
+  // Result
+  p_statement = newStatement;
+}
+
+// Add a macro replacement for SQL text
+void
+SQLDatabase::AddMacro(CString p_macro,CString p_replacement)
+{
+  p_macro.MakeUpper();
+  m_macros[p_macro] = p_replacement;
+}
+
+// Remove macro
+void
+SQLDatabase::DeleteMacro(CString p_macro)
+{
+  p_macro.MakeUpper();
+  Macros::iterator it = m_macros.find(p_macro);
+  if(it != m_macros.end())
+  {
+    m_macros.erase(it);
+  }
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 //

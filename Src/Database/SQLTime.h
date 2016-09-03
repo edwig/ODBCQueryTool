@@ -25,8 +25,11 @@
 // Version number:  1.1.0
 //
 #pragma once
+#include <sqltypes.h>
 
+class SQLDate;
 class SQLTimestamp;
+class SQLInterval;
 class SQLDatabase;
 
 #define ONE_MINUTE (60)        // One minute in seconds
@@ -45,7 +48,7 @@ struct TimeStorage
 // NULL value is represented by -1 !!!
 typedef long  TimeValue;
 
-class SQLTime : public CObject
+class SQLTime
 {
 public:   
   SQLTime();
@@ -59,6 +62,7 @@ public:
   CString AsString() const;
   CString AsSQLString(SQLDatabase* p_database) const;
   CString AsStrippedSQLString(SQLDatabase* p_database) const;
+  void    AsTimeStruct(SQL_TIME_STRUCT* p_timestruct) const;
   long    AsNumber() const;
 
   // Parts of the time
@@ -74,20 +78,25 @@ public:
   int     MinutesBetween(const SQLTime& p_time) const; 
   int     SecondsBetween(const SQLTime& p_time) const;
 
+  // Assignment of a time
+  SQLTime&      operator= (const SQLTime& p_time);
+  SQLTime&      operator= (const SQLTimestamp& p_timestamp);
+  // Temporal operators
+  SQLInterval   operator- (const SQLTime& p_time) const;
+  SQLTimestamp  operator+ (const SQLDate& p_date) const;
+  SQLTime       operator+ (const SQLInterval& p_interval) const;
+  SQLTime       operator- (const SQLInterval& p_interval) const;
   // Comparison operators
+  bool          operator==(const SQLTime& p_time) const;
+  bool          operator!=(const SQLTime& p_time) const;
   bool    operator< (const SQLTime& p_time) const;
   bool    operator> (const SQLTime& p_time) const;
-  bool    operator==(const SQLTime& p_time) const;
-  bool    operator!=(const SQLTime& p_time) const;
   bool    operator<=(const SQLTime& p_time) const;
   bool    operator>=(const SQLTime& p_time) const;
   
   // Contains a valid time
   bool    Valid() const;
   bool    IsNull() const;
-
-  // Assignment of a time
-  SQLTime& operator=(const SQLTime& p_time);
 
   // Set a new time
   void    SetTime(int p_hour,int p_minute,int p_second);
@@ -114,7 +123,7 @@ private:
 
   // STORAGE OF THE TIME
 
-  TimeValue   m_seconds;    // Total number of secons in the day, -1 = NULL VALUE
+  TimeValue   m_seconds;    // Total number of seconds in the day, -1 = NULL VALUE
   TimeStorage m_theTime;    // hour, minute, second
 };          
 
@@ -170,13 +179,13 @@ SQLTime::SecondsBetween(const SQLTime& p_time) const
 }
             
 inline bool
-SQLTime::operator< (const SQLTime& p_time) const
+SQLTime::operator<(const SQLTime& p_time) const
 {
   return m_seconds < p_time.m_seconds;
 }
 
 inline bool
-SQLTime::operator> (const SQLTime& p_time) const
+SQLTime::operator>(const SQLTime& p_time) const
 {
   return m_seconds > p_time.m_seconds;
 }
@@ -203,12 +212,4 @@ inline bool
 SQLTime::operator>=(const SQLTime& p_time) const
 {
   return m_seconds >= p_time.m_seconds;
-}
-
-inline SQLTime& 
-SQLTime::operator=(const SQLTime& p_time)
-{
-  m_seconds = p_time.m_seconds;
-  m_theTime = p_time.m_theTime;
-  return *this;
 }

@@ -1811,7 +1811,7 @@ class BasicExcelWorksheet : public RefCount::RefCnt
 public:
 	BasicExcelWorksheet(BasicExcel* excel, int sheetIndex);
 
-  // Worksheet functions
+public: // Worksheet functions
 	char*     GetAnsiSheetName();			      ///< Get the current worksheet name. Returns 0 if name is in Unicode format.
 	wchar_t*  GetUnicodeSheetName();		    ///< Get the current worksheet name. Returns 0 if name is in Ansi format.
 	bool      GetSheetName(char* name);		  ///< Get the current worksheet name. Returns false if name is in Unicode format.
@@ -1820,7 +1820,7 @@ public:
 	bool      Rename(const wchar_t* to);		///< Rename current Excel worksheet to another Unicode name. Returns true if successful, false if otherwise.
 	void      Print(ostream& os, char delimiter=',', char textQualifier='\0')  const; ///< Print entire worksheet to an output stream, separating each column with the defined delimiter and enclosing text using the defined textQualifier. Leave out the textQualifier argument if do not wish to have any text qualifiers.
 
-  // Cell functions
+public: // Cell functions
 	int       GetTotalRows() const;		///< Total number of rows in current Excel worksheet.
 	int       GetTotalCols() const;		///< Total number of columns in current Excel worksheet.
 
@@ -1841,6 +1841,8 @@ private: // Internal functions
 	void UpdateCells(); ///< Update cells using information from BasicExcel.worksheets_.
   void TrimDoubleString(char* p_number); ///< Trim value of a double in a string
 
+
+private:
   BasicExcel*                     excel_; 				///< Pointer to instance of BasicExcel.
 	int                             sheetIndex_; 		///< Index of worksheet in workbook.
 	int	                            maxRows_;				///< Total number of rows in worksheet.

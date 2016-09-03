@@ -40,7 +40,7 @@ PrimaryForeign;
 
 typedef std::vector<PrimaryForeign*> PFMap; 
 
-class SQLAssociation : public CObject
+class SQLAssociation
 {
 public:
   SQLAssociation();

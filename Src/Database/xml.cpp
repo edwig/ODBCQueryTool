@@ -940,20 +940,20 @@ const char* XmlElement::GetText() const
 // Recurse through the XML document, finding a field.
 // Search starts recursively at an element node
 XmlElement*
-XmlElement::FindElement(const char* p_name)
+XmlElement::FindElement(const char* p_name,bool p_recurse /*=true*/)
 {
   XmlElement* node  = this;
   XmlElement* child = NULL;
   do
   {
-    char* value = (char*)node->Value();
+    char* name = (char*)node->Value();
     // Parse away any namespace specifiers
-    char* pos = strchr(value,':');
+    char* pos = strchr(name,':');
     if(pos)
     {
-      value = ++pos;
+      name = ++pos;
     }
-    if(stricmp(value,p_name) == 0)
+    if(stricmp(name,p_name) == 0)
     {
       // Yip, it's our node!
       return node;
@@ -969,7 +969,7 @@ XmlElement::FindElement(const char* p_name)
       }
     }
   } 
-  while ((node = (XmlElement*)node->NextSibling()) != NULL);
+  while (p_recurse && (node = (XmlElement*)node->NextSibling()) != NULL);
   // Nothing found
   return node;
 }
