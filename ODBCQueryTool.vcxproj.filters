@@ -483,9 +483,6 @@
     <ClCompile Include="Src\Database\BasicXmlExcel.cpp">
       <Filter>Database</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Database\GetLastErrorAsString.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Database\unzip.cpp">
       <Filter>Database</Filter>
     </ClCompile>
@@ -496,6 +493,45 @@
       <Filter>Database</Filter>
     </ClCompile>
     <ClCompile Include="Src\Database\SQLInterval.cpp">
+      <Filter>Database</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Database\bcd.cpp">
+      <Filter>Database</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Database\SQLVariantOperatorAdd.cpp">
+      <Filter>Database</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Database\SQLVariantOperatorDiv.cpp">
+      <Filter>Database</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Database\SQLVariantOperatorEqual.cpp">
+      <Filter>Database</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Database\SQLVariantOperatorGreatEqual.cpp">
+      <Filter>Database</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Database\SQLVariantOperatorGreater.cpp">
+      <Filter>Database</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Database\SQLVariantOperatorMod.cpp">
+      <Filter>Database</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Database\SQLVariantOperatorMul.cpp">
+      <Filter>Database</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Database\SQLVariantOperatorSmallEqual.cpp">
+      <Filter>Database</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Database\SQLVariantOperatorSmaller.cpp">
+      <Filter>Database</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Database\SQLVariantOperatorSub.cpp">
+      <Filter>Database</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Database\SQLVariantTrim.cpp">
+      <Filter>Database</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Database\xmem.cpp">
       <Filter>Database</Filter>
     </ClCompile>
   </ItemGroup>
@@ -957,6 +993,45 @@
       <Filter>Database\Headers</Filter>
     </ClInclude>
     <ClInclude Include="Src\Database\SQLInterval.h">
+      <Filter>Database\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Database\bcd.h">
+      <Filter>Database\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Database\SQLVariantOperator.h">
+      <Filter>Database\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Database\SQLVariantOperatorAdd.h">
+      <Filter>Database\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Database\SQLVariantOperatorDiv.h">
+      <Filter>Database\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Database\SQLVariantOperatorGreatEqual.h">
+      <Filter>Database\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Database\SQLVariantOperatorGreater.h">
+      <Filter>Database\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Database\SQLVariantOperatorMod.h">
+      <Filter>Database\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Database\SQLVariantOperatorMul.h">
+      <Filter>Database\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Database\SQLVariantOperatorSmallEqual.h">
+      <Filter>Database\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Database\SQLVariantOperatorSmaller.h">
+      <Filter>Database\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Database\SQLVariantOperatorSub.h">
+      <Filter>Database\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Database\SQLVariantTrim.h">
+      <Filter>Database\Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Database\xmem.h">
       <Filter>Database\Headers</Filter>
     </ClInclude>
   </ItemGroup>

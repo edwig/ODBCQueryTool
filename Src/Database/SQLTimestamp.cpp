@@ -2,7 +2,7 @@
 //
 // File: SQLTimestamp.cpp
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #include "StdAfx.h"
 #include <math.h>
@@ -151,7 +151,7 @@ void
 SQLTimestamp::SetNull()
 {
   m_value = ((StampValue)-(MJD_EPOCH + 1)) * SECONDS_PER_DAY;
-  // 1 second before 0 JD (1 januari 4713 BC in the Julian Calendar)
+  // 1 second before 0 JD (1 January 4713 BC in the Julian Calendar)
   m_timestamp.m_year   = -4714;
   m_timestamp.m_month  = 12;
   m_timestamp.m_day    = 31;
@@ -184,7 +184,7 @@ SQLTimestamp::RecalculateValue()
   int day   = m_timestamp.m_day;
 
   // Check on Gregorian definition of months
-  // Check on leapyear and days in the month
+  // Check on leap year and days in the month
   bool leapYear = ((year & 3) == 0) &&
                   ((year % 100) != 0 || (year % 400) == 0);
 
@@ -201,7 +201,7 @@ SQLTimestamp::RecalculateValue()
   // Calculate the Astronomical Julian Day Number (JD)
   // Method P.D-Smith: Practical Astronomy
   // Page 9: Paragraph 4: Julian day numbers.
-  // See alsoo: Robin M. Green: Spherical Astronomy, page 250
+  // See also: Robin M. Green: Spherical Astronomy, page 250
   if(month < 3)
   {
     month += 12;
@@ -218,8 +218,8 @@ SQLTimestamp::RecalculateValue()
   factorC = (365.25  * (double)year);
   factorD = (30.6001 * (double)(month + 1));
   // The correction factor (Modified JD) 
-  // Falls on 16 november 1858 12:00 hours (noon), 
-  // so subtract 679006 (17 november 1858 00:00:00 hour)
+  // Falls on 16 November 1858 12:00 hours (noon), 
+  // so subtract 679006 (17 November 1858 00:00:00 hour)
   m_value  = gregorianB + factorC + factorD + day - 679006;
   m_value *= SECONDS_PER_DAY;
   m_value += m_timestamp.m_hour   * SECONDS_PER_HOUR   +
@@ -237,12 +237,12 @@ SQLTimestamp::Normalise()
   long factorE = 0;
   long factorG = 0;
 
-  // Calculate Civil Day from the Modified Juliaanse Day Nummer (MJD)
+  // Calculate Civil Day from the Modified Julian's Day number (MJD)
   // Method P.D-Smith: Practical Astronomy
   // Page 11: Paragraph 5: Converting Julian day number to the calendar date
-  // See alsoo Robin M. Green: Spherical Astronomy, page 250 and next
+  // See also Robin M. Green: Spherical Astronomy, page 250 and next
 
-  // Correction factor is MJD (2,400,000.5) + 0.5 (17 nov 1858 instead of 16 nov 12:00 hours)
+  // Correction factor is MJD (2,400,000.5) + 0.5 (17 Nov 1858 instead of 16 Nov 12:00 hours)
   double JD = (m_value / SECONDS_PER_DAY) + 2400001;
   if(JD > 2299160)
   {
@@ -347,10 +347,10 @@ const SQLTimestamp&
 SQLTimestamp::FarInThePast()
 {
   // Smallest allowed timestamp by ODBC definition
-  // is 1 januari 1 at midnight
+  // is 1 January 1 at midnight
   // AND STRANGLY IT IS NOT:
   // January 1st 4713 BC at noon (12:00) is the fundamental Epoch
-  // of the Astronomical Emphemeris (Julian Day = 0)
+  // of the Astronomical Ephemeris (Julian Day = 0)
   static SQLTimestamp past(1,1,1,0,0,0);
   return past;
 }
@@ -426,7 +426,7 @@ SQLTimestamp::WeekDayName(Language p_lang /*=LN_DEFAULT*/) const
 }
 
 // Name of the month in a language by your choice
-// Returns an emtpy string for a NULL timestamp
+// Returns an empty string for a NULL timestamp
 CString
 SQLTimestamp::MonthName(Language p_lang /*=LN_DEFAULT*/) const
 {
@@ -498,8 +498,8 @@ SQLTimestamp::DaysInMonth(int p_year,int p_month) const
 {
   if(Valid())
   {
-    bool leapYear = ((p_year & 3) == 0) && // als (jaar & 3) == 0 dan is jaar deelbaar
-                    ((p_year % 100) != 0 || (p_year % 400) == 0);  // door 4 (binaire vergelijking).
+    bool leapYear = ((p_year & 3) == 0) && // if (year & 3) == 0 then the year can be divided
+                    ((p_year % 100) != 0 || (p_year % 400) == 0);  // by 4 (binairy).
 
     return g_daysInTheMonth[p_month] - g_daysInTheMonth[p_month-1] +
                         ((leapYear && p_month == 2) ? 1 : 0);
@@ -518,9 +518,9 @@ SQLTimestamp::AddYears(int p_number) const
     }
     catch(CString& s)
     {
-      if (Month() == 2 && Day() == 29) // Correctie voor schrikkeljaar
+      if (Month() == 2 && Day() == 29) // Correction for leap year
       {
-        // 29-2-1968 plus 1 jaar wordt 28-2-1969
+        // 29-2-1968 plus 1 year becomes 28-2-1969
         return SQLTimestamp(Year() + p_number, Month(), Day() - 1, Hour(), Minute(), Second());
       }
       // Throw on our error (something else went wrong)
@@ -663,7 +663,7 @@ SQLTimestamp::ParseMoment(const CString& p_string)
 
   if(isalpha(CurrentDate.GetAt(0)))
   {
-    // Speed optimisation. only if alpha chars found parsed moet worden
+    // Speed optimization. only if alpha chars found parsed 
     if (CurrentDate.CompareNoCase(g_dateNames[g_defaultLanguage][DN_CURRENT]) == 0 ||
         CurrentDate.CompareNoCase(g_dateNames[g_defaultLanguage][DN_NOW])     == 0 ) 
     {
@@ -675,11 +675,11 @@ SQLTimestamp::ParseMoment(const CString& p_string)
     }
     else if (CurrentDate.CompareNoCase(g_dateNames[g_defaultLanguage][DN_TODAY]) == 0)
     { 
-	    if (GetVirtualMoment(Sign, ExtraTime, interval, temp))
-	    {
-		    SetTimestamp(temp.m_year, temp.m_month, temp.m_day, 0, 0, 0);
-		    return;
-	    }
+      if (GetVirtualMoment(Sign, ExtraTime, interval, temp))
+      {
+        SetTimestamp(temp.m_year, temp.m_month, temp.m_day, 0, 0, 0);
+        return;
+      }
     }
     else if (CurrentDate.CompareNoCase(g_dateNames[g_defaultLanguage][DN_FOM]) == 0)
     {
@@ -721,7 +721,7 @@ SQLTimestamp::ParseMoment(const CString& p_string)
     return;  
   }
   
-  // Check for a date with a monthname
+  // Check for a date with a month name
   if(ParseNamedDate(p_string))
   {
     return;
@@ -733,7 +733,7 @@ SQLTimestamp::ParseMoment(const CString& p_string)
   if(pos1 > 0 || pos2 > 0)
   {
     // Position comes from 'T' (leftover from XML string)
-    // Let op: yy-mm-dd is anders dan dd-mm-yyyy
+    // Beware: yy-mm-dd is different than dd-mm-yyyy
     if(pos1 < 0) 
     {
       pos1 = pos2;
@@ -750,7 +750,7 @@ SQLTimestamp::ParseMoment(const CString& p_string)
   // See if we have a time only
   if(p_string.Find(':') > 0)
   {
-    // It is a timestring for today
+    // It is a time string for today
     SQLDate date(SQLDate::Today());
     SQLTime time(p_string);
     SetTimestamp(date.Year(),date.Month(), date.Day(),
@@ -764,7 +764,7 @@ SQLTimestamp::ParseMoment(const CString& p_string)
                time.Hour(),time.Minute(),time.Second());
 }
 
-// Named timestamp with short or long monthnames
+// Named timestamp with short or long month names
 bool
 SQLTimestamp::ParseNamedDate(const CString& p_string)
 {
@@ -780,10 +780,10 @@ SQLTimestamp::ParseNamedDate(const CString& p_string)
   }
   if(alpha == false)
   {
-    // No named monthname to find
+    // No named month name to find
     return result;
   }
-  // Find the timestring (if any)
+  // Find the time string (if any)
   int pos = p_string.Find(':');
   if(pos > 0)
   {
@@ -839,6 +839,8 @@ SQLTimestamp::AsString(int p_precision /*=0*/) const
   return theStamp;
 }
 
+// The XML string is the ISO 8601 Format
+// Works for some RDBMS as input format and for XML (of course :-)
 CString
 SQLTimestamp::AsXMLString(int p_precision /*=0*/) const
 {
@@ -939,60 +941,60 @@ SQLTimestamp::GetVirtualMoment(CString Sign
                               ,int    interval
                               ,StampStorage& temp)
 { 	
-	SQLTimestamp mom(CurrentTimestamp());
+  SQLTimestamp mom(CurrentTimestamp());
   if (!Sign.IsEmpty())
   {
     int factor = (Sign == "+") ? 1 : -1;
-		if (Sign == "+" || Sign == "-")
-		{
+    if (Sign == "+" || Sign == "-")
+    {
       ExtraTime.MakeUpper();
       if (ExtraTime == "" )      
       {
         return false;
       }
-			else if (ExtraTime == g_dateNames[g_defaultLanguage][DN_SEC]    || 
-			         ExtraTime == g_dateNames[g_defaultLanguage][DN_SECONDS] )
-			{
-				mom = mom.AddSeconds(factor * interval);
-		  }
-			else if (ExtraTime == g_dateNames[g_defaultLanguage][DN_MIN]    || 
-			         ExtraTime == g_dateNames[g_defaultLanguage][DN_MINUTES] )
-			{
-				mom = mom.AddMinutes (factor * interval);
-		  }
-			else if (ExtraTime == g_dateNames[g_defaultLanguage][DN_HOUR] || 
-			         ExtraTime == g_dateNames[g_defaultLanguage][DN_HOURS] )
-			{
-			  mom = mom.AddHours(factor * interval);
-			}
-			else if (ExtraTime == g_dateNames[g_defaultLanguage][DN_DAY]  || 
-			         ExtraTime == g_dateNames[g_defaultLanguage][DN_DAYS]  )
-			{
-			  mom = mom.AddDays(factor * interval);
-			}
-			else if (ExtraTime == g_dateNames[g_defaultLanguage][DN_WEEK] || 
-			         ExtraTime == g_dateNames[g_defaultLanguage][DN_WEEKS] )
-			{
-			  mom = mom.AddDays(factor * 7 * interval);
-			}
-			else if (ExtraTime == g_dateNames[g_defaultLanguage][DN_MONTH] || 
-			         ExtraTime == g_dateNames[g_defaultLanguage][DN_MONTHS] )
-			{
-				mom = mom.AddMonths(factor * interval);
-			}
-			else if (ExtraTime == g_dateNames[g_defaultLanguage][DN_YEAR] || 
-			         ExtraTime == g_dateNames[g_defaultLanguage][DN_YEARS] )
-			{
-			  mom = mom.AddYears(factor * interval);
-			}
-			else return false;
-		}
+      else if (ExtraTime == g_dateNames[g_defaultLanguage][DN_SEC]    || 
+               ExtraTime == g_dateNames[g_defaultLanguage][DN_SECONDS] )
+      {
+        mom = mom.AddSeconds(factor * interval);
+      }
+      else if (ExtraTime == g_dateNames[g_defaultLanguage][DN_MIN]    || 
+               ExtraTime == g_dateNames[g_defaultLanguage][DN_MINUTES] )
+      {
+        mom = mom.AddMinutes (factor * interval);
+      }
+      else if (ExtraTime == g_dateNames[g_defaultLanguage][DN_HOUR] || 
+               ExtraTime == g_dateNames[g_defaultLanguage][DN_HOURS] )
+      {
+        mom = mom.AddHours(factor * interval);
+      }
+      else if (ExtraTime == g_dateNames[g_defaultLanguage][DN_DAY]  || 
+               ExtraTime == g_dateNames[g_defaultLanguage][DN_DAYS]  )
+      {
+        mom = mom.AddDays(factor * interval);
+      }
+      else if (ExtraTime == g_dateNames[g_defaultLanguage][DN_WEEK] || 
+               ExtraTime == g_dateNames[g_defaultLanguage][DN_WEEKS] )
+      {
+        mom = mom.AddDays(factor * 7 * interval);
+      }
+      else if (ExtraTime == g_dateNames[g_defaultLanguage][DN_MONTH] || 
+               ExtraTime == g_dateNames[g_defaultLanguage][DN_MONTHS] )
+      {
+        mom = mom.AddMonths(factor * interval);
+      }
+      else if (ExtraTime == g_dateNames[g_defaultLanguage][DN_YEAR] || 
+               ExtraTime == g_dateNames[g_defaultLanguage][DN_YEARS] )
+      {
+        mom = mom.AddYears(factor * interval);
+      }
+      else return false;
+    }
     else
     {
       return false;
     }
   }
-	temp = mom.m_timestamp;
+  temp = mom.m_timestamp;
   return true;
 }
 

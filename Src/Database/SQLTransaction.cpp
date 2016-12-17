@@ -2,7 +2,7 @@
 //
 // File: SQLTransaction.cpp
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,12 +21,14 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #include "stdafx.h"
 #include "SQLTransaction.h"
 #include "SQLDatabase.h"
+#include "SQLInfoDB.h"
+#include "SQLQuery.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -35,7 +37,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 SQLTransaction::SQLTransaction(SQLDatabase* p_database
-                              ,CString      p_name
+                              ,const char*  p_name
                               ,bool         p_startImmediate
                               ,bool         p_isSubTransaction) 
                :m_database  (p_database)
@@ -48,12 +50,15 @@ SQLTransaction::SQLTransaction(SQLDatabase* p_database
   }
 }
 
-SQLTransaction::SQLTransaction(HDBC p_hdbc)
+SQLTransaction::SQLTransaction(HDBC p_hdbc,bool p_startImmediate)
                :m_hdbc(p_hdbc)
                ,m_database(NULL)
                ,m_active(false)
 {
-  Start("",false);
+  if(p_startImmediate)
+  {
+    Start("",false);
+  }
 }
 
 SQLTransaction::~SQLTransaction()
@@ -86,7 +91,7 @@ SQLTransaction::Start(CString p_name, bool p_startSubtransaction)
   // Try to start the transaction
   if(m_database)
   {
-  m_savepoint = m_database->StartTransaction(this, p_startSubtransaction);
+    m_savepoint = m_database->StartTransaction(this, p_startSubtransaction);
   }
   else
   {
@@ -119,7 +124,7 @@ SQLTransaction::Commit()
   // automatically do a rollback
   if(m_database)
   {
-  m_database->CommitTransaction(this);
+    m_database->CommitTransaction(this);
   }
   else
   {
@@ -148,7 +153,7 @@ SQLTransaction::Rollback()
   // the AfterRollback method, called by SQLDatabase
   if(m_database)
   {
-  m_database->RollbackTransaction(this);
+    m_database->RollbackTransaction(this);
   }
   else
   {
@@ -174,4 +179,42 @@ SQLTransaction::AfterRollback()
   m_active    = false;
   m_name      = "";
   m_savepoint = "";
+}
+
+// Setting a transaction in a deferred state
+// so that constraints get only committed at the end
+bool 
+SQLTransaction::SetTransactionDeferred()
+{
+  if(m_database == nullptr)
+  {
+    return false;
+  }
+  CString sql = m_database->GetSQLInfoDB()->GetSQLDeferConstraints();
+  if(!sql.IsEmpty())
+  {
+    SQLQuery query(m_database);
+    query.DoSQLStatementNonQuery(sql);
+    return true;
+  }
+  return false;
+}
+
+// Setting a transaction in an immediate state
+// So that the constraints (uptil now) get checked immediatly
+bool 
+SQLTransaction::SetTransactionImmediate()
+{
+  if(m_database == nullptr)
+  {
+    return false;
+  }
+  CString sql = m_database->GetSQLInfoDB()->GetSQLConstraintsImmediate();
+  if(!sql.IsEmpty())
+  {
+    SQLQuery query(m_database);
+    query.DoSQLStatementNonQuery(sql);
+    return true;
+  }
+  return false;
 }

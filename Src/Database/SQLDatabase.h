@@ -2,7 +2,7 @@
 //
 // File: Database.h
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #pragma once
 
@@ -103,7 +103,7 @@ typedef struct _datasource
 DataSourceInternal;
 
 typedef std::vector<DataSourceInternal> DSMap;
-typedef std::stack<SQLTransaction*>     TransactieStack;
+typedef std::stack<SQLTransaction*>     TransactionStack;
 typedef std::map<int,int>               RebindMap;
 typedef std::map<CString,CString>       ODBCOptions;
 typedef std::map<CString,CString>       Macros;
@@ -111,12 +111,18 @@ typedef std::map<CString,CString>       Macros;
 typedef void (CALLBACK* LOGPRINT)(void*,const char*);
 typedef int  (CALLBACK* LOGLEVEL)(void*);
 
-// Foreward declaration
-class SQLInfo;
+// Forward declaration
+class SQLInfoDB;
 class SQLInfoTree;
 class SQLTimestamp;
 
-class SQLDatabase : public CObject
+//////////////////////////////////////////////////////////////////////////
+//
+// THE DATABASE CLASS
+//
+//////////////////////////////////////////////////////////////////////////
+
+class SQLDatabase
 {
 public:
   SQLDatabase();
@@ -126,16 +132,6 @@ public:
 
   // OPEN/CLOSE CYCLE
   
-  // Get the available datasources in a list
-  void           GetDataSources(DSMap& p_list,int p_type = SQL_FETCH_FIRST);
-  // Override of the login timeout of the database engine (in seconds)
-  void           SetLoginTimeout(int p_timeout);
-  // Set the Multiple Active Record Set option (MARS) for MS-SQL-Server
-  void           SetMARS(bool p_set);
-  // Setting the database connection to readonly (if supported at all)
-  bool           SetReadOnly(bool p_readOnly);
-  // Add a general ODBC option for use in the connection string
-  void           AddConnectOption(CString p_keyword,CString p_value);
   // Open the database on basis of datasource, user and password
   bool           Open(CString const& p_datasource
                      ,CString const& p_username
@@ -144,18 +140,29 @@ public:
   // Open the database on basis of a connect string only
   bool           Open(CString const& p_connectString,bool p_readOnly = false);
 
-  bool           IsOpen();       // Is de database open?
+  bool           IsOpen();       // Is the database open?
   void           Close();        // Close it for further use
   bool           CollectInfo();  // Collect database info
-  void           SetDirtyRead(); // Readmode for Informix
+  void           SetDirtyRead(); // Read mode for Informix
+
+  // OPTIONS FOR THE OPEN/CLOSE CYCLE
+
+  // Override of the login timeout of the database engine (in seconds)
+  void           SetLoginTimeout(int p_timeout);
+  // Set the Multiple Active Record Set option (MARS) for MS-SQL-Server
+  void           SetMARS(bool p_set);
+  // Setting the database connection to read-only (if supported at all)
+  bool           SetReadOnly(bool p_readOnly);
+  // Add a general ODBC option for use in the connection string
+  void           AddConnectOption(CString p_keyword,CString p_value);
 
   // GETTING/CONSTRUCTING the SQLInfo object
-  SQLInfo*       GetSQLInfo();
+  SQLInfoDB*     GetSQLInfoDB();
   SQLInfoTree*   GetSQLInfoTree();
 
   // MACRO's FOR SQL TEXT
 
-  // Do the Querytext macro replacement
+  // Do the Query text macro replacement
   void           ReplaceMacros(CString& p_statement);
   // Add a macro replacement for SQL text
   void           AddMacro(CString p_macro,CString p_replacement);
@@ -175,10 +182,10 @@ public:
   CString        GetDatabaseName();         // Real database name
   DatabaseType   GetDatabaseType();
   CString        GetNamingMethod();
-  CString        GetConnect();              // Resulting connet string
+  CString        GetConnect();              // Resulting connect string
   CString        GetOriginalConnect();      // Original  connect string
   int            GetODBCVersion();          // Main version 1/2/3
-  CString        GetODBCVersionComplete();  // Compolete ODBC version e.g."3.51"
+  CString        GetODBCVersionComplete();  // Complete ODBC version e.g."3.51"
   bool           GetNeedLongDataLen();
   CString        GetDataIdent();
   CString        GetDBIdent();
@@ -213,6 +220,10 @@ public:
   CString        GetSpecialDriver(CString p_base,CString p_extensie);
   // Oracle results caching on/off switching
   void           SetOracleResultCacheMode(const CString& mode);
+  // Get the available datasources in a list
+  void           GetDataSources(DSMap& p_list,int p_type = SQL_FETCH_FIRST);
+  // Setting the database type (once)
+  bool           SetDatabaseType(DatabaseType p_type);
 
   // Asking for database-dependent constructions
   CString        GetSQLTimeString        (int p_hour,int p_minute,int p_second);
@@ -234,56 +245,51 @@ public:
   void           LogPrint(int p_level,const char* p_text);
   int            LogLevel();
   bool           WilLog(int p_loglevel);
-
-  // SCHEMA HANDLING
   
+  // SCHEMA HANDLING
   void           SetSchema(CString p_schema);
   void           SetSchemaAction(SchemaAction p_action);
   void           ParseSchema(CString& p_query);
 
   // MULTI-THREADING LOCKING
-
-  // Acquire a multithread lock for SQLQuery
-  void    Acquire(unsigned p_timeout);
-  // Release the multithread lock for SQLQuery
-  void    Release();
-  // See if the database is locked
-  bool    IsLocked();
+  void           Acquire(unsigned p_timeout);   // Acquire a multi threading lock
+  void           Release();                     // Releasing the lock
+  bool           IsLocked();                    // See if database is locked
 
 protected:
   // HANDLE MANAGEMENT
-  void    MakeEnvHandle();   // Environment
-  void    MakeDbcHandle();   // Database
-  HSTMT   MakeStmtHandle();  // Statement
+  void           MakeEnvHandle();   // Environment
+  void           MakeDbcHandle();   // Database
+  HSTMT          MakeStmtHandle();  // Statement
   // Setting of a connection attribute
   void           SetConnectAttr(int attr, int value,int type);
   // Setting known rebind mappings of databases
   void           SetKnownRebinds();
   // Various database-dependent ways of determining the 'name-of-the-database
-  bool    RealDatabaseName();
+  bool           RealDatabaseName();
   // Last resource: take name from datasource-name
   bool           DatabaseNameFromDSN();
   // Setting connection attributes BEFORE connect
   void           SetAttributesBeforeConnect();
   // Setting connection attributes AFTER connect
   void           SetAttributesAfterConnect(bool p_readOnly);
-  // Find number of quotes upto the lastpos position
+  // Find number of quotes up to the lastpos position
   int            FindQuotes(CString& p_statement,int p_lastpos);
   // Replace **ONE** macro in the statement text
   void           ReplaceMacro(CString& p_statement,int p_pos,int p_length,CString p_replace);
 
   // From connect
-  CString           m_datasource;           // Datasource at login
-  CString           m_username;             // System user
-  CString           m_password;             // System's password
+  CString           m_datasource;  // Datasource at login
+  CString           m_username;    // System user
+  CString           m_password;    // System's password
 
   // Info about the database
-  DatabaseType      m_rdbmsType;            // Which RDBMS engine
-  SQLInfo*          m_info;                 // The SQLInfo object
-  SQLInfoTree*      m_infoTree;             // The TREE object
-  int               m_loginTimeout;         // Timeout before login fails
-  bool              m_mars;                 // Multiple Active Record Sets
-  bool              m_readOnly;             // ReadOnly connection
+  DatabaseType      m_rdbmsType    = { RDBMS_UNKNOWN };  // Which RDBMS engine
+  SQLInfoDB*        m_info         = { nullptr       };  // The SQLInfo object
+  SQLInfoTree*      m_infoTree     = { nullptr       };  // The TREE object
+  int               m_loginTimeout = { LOGIN_TIMEOUT };  // Timeout before login fails
+  bool              m_mars         = { true          };  // Multiple Active Record Sets
+  bool              m_readOnly     = { false         };  // ReadOnly connection
   CString	          m_DBName;
   CString	          m_DBVersie;
   CString	          m_DriverName;
@@ -292,40 +298,39 @@ protected:
   CString           m_namingMethod;
   CString           m_originalConnect;
   CString           m_completeConnect;
-  SQLUINTEGER       m_async_possible;
-  SQLUSMALLINT      m_canDoTransactions;
+  SQLUINTEGER       m_async_possible      = { 0     };
+  SQLUSMALLINT      m_canDoTransactions   = { 0     };
   CString           m_odbcVersionComplete;
-  int               m_odbcVersion;
-  int               m_driverMainVersion;       // Main version (2/3) van de Informix driver
-  bool              m_needLongDataLen;
-  RebindMap         m_rebindParameters;        // Rebinding of parameters for SQLBindParam
-  RebindMap         m_rebindColumns;           // Rebinding of result columns for SQLBindCol
-  CString           m_sqlState;                // Last SQLSTATE
+  int               m_odbcVersion         = { 0     };
+  int               m_driverMainVersion   = { 0     };   
+  bool              m_needLongDataLen     = { false };
+  DWORD             m_lastAction          = { 0     };  // Last moment of usage (for database pool)
+  RebindMap         m_rebindParameters;                 // Rebinding of parameters for SQLBindParam
+  RebindMap         m_rebindColumns;                    // Rebinding of result columns for SQLBindCol
+  CString           m_sqlState;                         // Last SQLSTATE
   CString           m_schemaName;
-  SchemaAction      m_schemaAction;
-  Macros            m_macros;                  // Macro replacements for SQL
+  SchemaAction      m_schemaAction = { SCHEMA_NO_ACTION };
+  Macros            m_macros;                      // Macro replacements for SQL
 
   // Derived identifier names for various systems (BRIEF4all, Key2Brief)
-  CString           m_dbIdent;                 // Database   identifier (6 chars name, 2 chars main-version)
-  CString           m_dataIdent;               // Datasource identifier (10 chars at most = DS_IDENT_LEN)
+  CString           m_dbIdent;                     // Database   identifier (6 chars name, 2 chars main-version)
+  CString           m_dataIdent;                   // Datasource identifier (10 chars at most = DS_IDENT_LEN)
   // Handles
-  HENV              m_henv;
-  HDBC              m_hdbc;
+  HENV              m_henv = { SQL_NULL_HANDLE };
+  HDBC              m_hdbc = { SQL_NULL_HANDLE };
 
   // Generic logging
-  LOGPRINT          m_logPrinter;       // Printing a line to the logger
-  LOGLEVEL          m_logLevel;         // Getting the loglevel
-  void*             m_logContext;       // Logging context (e.g. and object)
-  int               m_loggingLevel;     // Current level
+  LOGPRINT          m_logPrinter   = { nullptr };  // Printing a line to the logger
+  LOGLEVEL          m_logLevel     = { nullptr };  // Getting the log level
+  void*             m_logContext   = { nullptr };  // Logging context (e.g. and object)
+  int               m_loggingLevel = { 0       };  // Current level
   
   // Login options for connect string
   ODBCOptions       m_options;
-  // Last moment of usage (for database pool)
-  DWORD             m_lastAction;
   // Locking  
   CRITICAL_SECTION  m_databaseLock;
-  // Transaction adminstration
-  TransactieStack   m_transactions;
+  // Transaction administration
+  TransactionStack   m_transactions;
 };
 
 inline bool 

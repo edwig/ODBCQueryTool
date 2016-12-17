@@ -2,7 +2,7 @@
 //
 // File: SQLVariant.h
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,31 +21,21 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #pragma  once
 #include <sqlext.h>
 
-// Truncation types in SQL_NUMERIC_STRUCT conversions
-#define SQLNUM_TRUNC_FRAC  1
-#define SQLNUM_TRUNC_WHOLE 2
-// Max length of a NUMERIC in a char buffer
-#define SQLNUM_MAXLEN      65
+#ifndef SQLNUM_MAX_PREC
+// Max precision of a NUMERIC as a bcd (Binary Coded Decimal)
+#define SQLNUM_MAX_PREC    38
+// The default scaling of a NUMERIC
+#define SQLNUM_DEF_SCALE    2
+#endif
 
-typedef struct _types
-{
-  char*  name;
-  int    type;
-}
-DataTypes;
-
-// All registrations of type names
-extern DataTypes allTypes[];
-extern DataTypes allOther[];
-extern DataTypes allParams[];
-
-// Forewared declarations
+// Forwarded declarations
+class bcd;
 class SQLDate;
 class SQLTime;
 class SQLTimestamp;
@@ -64,10 +54,10 @@ public:
    SQLVariant();                              // Generic
    SQLVariant(int p_type,int p_space);        // ODBC driver reserve precision
    SQLVariant(SQLVariant* p_var);             // From another SQLVariant
+   SQLVariant(const SQLVariant& p_var);       // From another SQLVariant reference
    // Type constructors
    SQLVariant(const char* p_data);            // SQL_C_CHAR
    SQLVariant(CString& p_data);               // SQL_C_CHAR
-   SQLVariant(unsigned char* p_bookmark);     // SQL_C_VARBOOKMARK / SQL_C_BINARY
    SQLVariant(short p_short);                 // SQL_C_SHORT / SQL_C_SSHORT
    SQLVariant(unsigned short p_short);        // SQL_C_USHORT
    SQLVariant(long p_long);                   // SQL_C_LONG / SQL_C_SLONG
@@ -91,9 +81,12 @@ public:
    SQLVariant(SQLTime* p_time);               // SQLTime
    SQLVariant(SQLTimestamp* p_stamp);         // SQLTimestamp
    SQLVariant(SQLInterval* p_interval);       // SQLInterval
+   SQLVariant(const bcd* p_bcd);              // Binary Coded Decimal
    // Destructor
   ~SQLVariant();
-   void Init(); // Init empty
+   
+  // Init empty variant
+  void     Init(); 
 
    // STATUS
    bool    IsNULL();
@@ -101,14 +94,15 @@ public:
    bool    IsNumericType();
    bool    IsIntervalType();
    bool    IsDateTimeType();
+
    // INFO about type names/values
-   int     FindDatatype   (char* p_type);
-   char*   FindDatatype   (int   p_type);
-   int     FindParamtype  (char* p_type);
-   char*   FindParamtype  (int   p_type);
-   int     FindSQLDatatype(char* p_type);
-   char*   FindSQLDatatype(int   p_type);
-   int     FindDataTypeFromSQLType();
+   static  int     FindDatatype   (char* p_type);
+   static  char*   FindDatatype   (int   p_type);
+   static  int     FindParamtype  (char* p_type);
+   static  char*   FindParamtype  (int   p_type);
+   static  int     FindSQLDatatype(char* p_type);
+   static  char*   FindSQLDatatype(int   p_type);
+           int     FindDataTypeFromSQLType();
 
    // GETTERS
    int     GetDataType();
@@ -116,10 +110,13 @@ public:
    int     GetSQLDataType();
    bool    GetAtExec();
    int     GetBinaryPieceSize();
+   int     GetBinaryLength();
    SQLLEN* GetIndicatorPointer();
    int     GetColumnNumber();
    int     GetParameterType();
    int     GetFraction();
+   int     GetNumericPrecision();  // Only for SQL_NUMERIC
+   int     GetNumericScale();      // Only for SQL_NUMERIC
    // SETTERS
    void    SetSQLDataType(int p_type);
    void    SetAtExec(bool p_atExec);
@@ -162,24 +159,72 @@ public:
    SQLTime              GetAsSQLTime();
    SQLTimestamp         GetAsSQLTimestamp();
    SQLInterval          GetAsSQLInterval();
+   bcd                  GetAsBCD();
 
    // Assignment operator
-   SQLVariant& operator  =(const SQLVariant& p_origineel);
+   SQLVariant& operator  =(const SQLVariant& p_original);
+   // Assignment operator from original data
+   SQLVariant& operator  =(const char* p_data);              // SQL_C_CHAR
+   SQLVariant& operator  =(CString& p_data);                 // SQL_C_CHAR
+   SQLVariant& operator  =(short p_data);                    // SQL_C_SHORT / SQL_C_SSHORT
+   SQLVariant& operator  =(unsigned short p_data);           // SQL_C_USHORT
+   SQLVariant& operator  =(long p_data);                     // SQL_C_LONG  / SQL_C_SLONG
+   SQLVariant& operator  =(unsigned long p_data);            // SQL_C_ULONG
+   SQLVariant& operator  =(float p_data);                    // SQL_C_FLOAT
+   SQLVariant& operator  =(double p_data);                   // SQL_C_DOUBLE
+   SQLVariant& operator  =(bool p_data);                     // SQL_C_BIT
+   SQLVariant& operator  =(char p_data);                     // SQL_C_TINYINT / SQL_C_STINYINT
+   SQLVariant& operator  =(unsigned char p_data);            // SQL_C_UTINYINT
+   SQLVariant& operator  =(__int64 p_data);                  // SQL_C_BIGINT / SQL_C_SBIGINT
+   SQLVariant& operator  =(unsigned __int64 p_data);         // SQL_C_UBIGINT
+   SQLVariant& operator  =(SQL_NUMERIC_STRUCT* p_data);      // SQL_C_NUMERIC
+   SQLVariant& operator  =(SQLGUID* p_data);                 // SQL_C_GUID
+   SQLVariant& operator  =(DATE_STRUCT* p_data);             // SQL_C_DATE / SQL_C_TYPE_DATE
+   SQLVariant& operator  =(TIME_STRUCT* p_data);             // SQL_C_TIME / SQL_C_TYPE_TIME
+   SQLVariant& operator  =(TIMESTAMP_STRUCT* p_data);        // SQL_C_TIMESTAMP / SQL_C_TYPE_TIMESTAMP
+   SQLVariant& operator  =(SQL_INTERVAL_STRUCT* p_data);     // SQL_C_INTERVAL_YEAR -> SQL_C_INTERVAL_DAY_TO_SECOND
+   // Assignments from complex constructors
+   SQLVariant& operator  =(SQLDate& p_data);                 // SQLDate
+   SQLVariant& operator  =(SQLTime& p_data);                 // SQLTime
+   SQLVariant& operator  =(SQLTimestamp& p_data);            // SQLTimestamp
+   SQLVariant& operator  =(SQLInterval& p_data);             // SQLInterval
+   SQLVariant& operator  =(bcd& p_bcd);                      // Binary Coded Decimal
 
    // Comparison operators
-   bool        operator ==(const SQLVariant& p_right);
-   bool        operator !=(const SQLVariant& p_right);
-// bool        operator  >(const SQLVariant& p_right);
-// bool        operator >=(const SQLVariant& p_right);
-// bool        operator  <(const SQLVariant& p_right);
-// bool        operator <=(const SQLVariant& p_right);
-// 
-// // Arithmetic operators
-// SQLVariant& operator  +(const SQLVariant& p_right);
-// SQLVariant& operator  -(const SQLVariant& p_right);
-// SQLVariant& operator  *(const SQLVariant& p_right);
-// SQLVariant& operator  /(const SQLVariant& p_right);
-// SQLVariant& operator  %(const SQLVariant& p_right);
+   bool        operator ==(SQLVariant& p_right);
+   bool        operator !=(SQLVariant& p_right);
+   bool        operator  >(SQLVariant& p_right);
+   bool        operator  <(SQLVariant& p_right);
+   bool        operator >=(SQLVariant& p_right);
+   bool        operator <=(SQLVariant& p_right);
+ 
+   // Arithmetic operators
+   SQLVariant  operator  +(SQLVariant& p_right);
+   SQLVariant  operator  -(SQLVariant& p_right);
+   SQLVariant  operator  *(SQLVariant& p_right);
+   SQLVariant  operator  /(SQLVariant& p_right);
+   SQLVariant  operator  %(SQLVariant& p_right);
+
+   // Cast operators
+   operator bool();
+   operator char();
+   operator const char*();
+   operator unsigned char();
+   operator short();
+   operator unsigned short();
+   operator int();
+   operator unsigned int();
+   operator long();
+   operator unsigned long();
+   operator float();
+   operator double();
+   operator __int64();
+   operator unsigned __int64();
+   operator SQLDate();
+   operator SQLTime();
+   operator SQLTimestamp();
+   operator SQLInterval();
+   operator bcd();
 
 private:
    // Total internal reset (type and data store)
@@ -187,77 +232,8 @@ private:
    // Internal conversions
    bool    StringToBinary (const char* p_data);
    bool    BinaryToString (unsigned char* buffer,int buflen);
-   void    StringToNumeric(const char* p_data,SQL_NUMERIC_STRUCT* p_numeric);
-   void    NumericToString(SQL_NUMERIC_STRUCT* p_numeric,CString& p_string);
-   void    StringToNumericMantissa(const char*         numstr
-                                  ,SQL_NUMERIC_STRUCT* sqlnum
-                                  ,int*                overflow_ptr);
-   void    NumericToStringMantissa(SQL_NUMERIC_STRUCT* sqlnum
-                                  ,SQLCHAR*            numstr
-                                  ,SQLCHAR**           numbegin
-                                  ,SQLCHAR             reqprec
-                                  ,SQLSCHAR            reqscale
-                                  ,int*                truncptr);
-   // Internal conversion and trimming
-   long           ULongToLong(unsigned long p_value);
-   long           FloatToLong(float p_value);
-   long           DoubleToLong(double p_value);
-   long           BIGINTToLong(SQLBIGINT p_value);
-   long           UBIGINTToLong(SQLUBIGINT p_value);
-   short          UShortToShort(unsigned short p_value);
-   short          SLongToShort(long p_value);
-   short          ULongToShort(unsigned long p_value);
-   short          FloatToShort(float p_value);
-   short          DoubleToShort(double p_value);
-   short          BIGINTToShort(SQLBIGINT p_value);
-   short          UBIGINTToShort(SQLUBIGINT p_value);
-   float          DoubleToFloat(double p_value);
-   SQLBIGINT      FloatToBIGINT(float p_value);
-   SQLBIGINT      DoubleToBIGINT(double p_value);
-   SQLBIGINT      UBIGINTToBIGINT(SQLUBIGINT p_value);
-   char           ShortToTinyInt(short p_value);
-   char           UShortToTinyInt(unsigned short p_value);
-   char           SLongToTinyInt(long p_value);
-   char           ULongToTinyInt(long p_value);
-   char           FloatToTinyInt(float p_value);
-   char           DoubleToTinyInt(double p_value);
-   char           UTinyIntToTinyInt(unsigned char p_value);
-   char           SBIGINTToTinyInt(SQLBIGINT p_value);
-   char           UBIGINTToTinyInt(SQLUBIGINT p_value);
-   unsigned long  ShortToULong(short p_value);
-   unsigned long  LongToULong(long p_value);
-   unsigned long  FloatToULong(float p_value);
-   unsigned long  DoubleToULong(double p_value);
-   unsigned long  TinyIntToULong(char p_value);
-   unsigned long  BIGINTToULong(SQLBIGINT p_value);
-   unsigned long  UBIGINTToULong(SQLUBIGINT p_value);
-   SQLUBIGINT     ShortToUBIGINT(short p_value);
-   SQLUBIGINT     LongToUBIGINT(long p_value);
-   SQLUBIGINT     FloatToUBIGINT(float p_value);
-   SQLUBIGINT     DoubleToUBIGINT(double p_value);
-   SQLUBIGINT     TinyIntToUBIGINT(char p_value);
-   SQLUBIGINT     SBIGINTToUBIGINT(SQLBIGINT p_value);
-   unsigned short ShortToUShort(short p_value);
-   unsigned short SLongToUShort(long p_value);
-   unsigned short ULongToUShort(unsigned long p_value);
-   unsigned short FloatToUShort(float p_value);
-   unsigned short DoubleToUShort(double p_value);
-   unsigned short TinyIntToUShort(char p_value);
-   unsigned short BIGINTToUShort(SQLBIGINT p_value);
-   unsigned short UBIGINTToUShort(SQLUBIGINT p_value);
-   unsigned char  ShortToUTinyInt(short p_value);
-   unsigned char  UShortToUTinyInt(short p_value);
-   unsigned char  SLongToUTinyInt(long p_value);
-   unsigned char  ULongToUTinyInt(unsigned long p_value);
-   unsigned char  FloatToUTinyInt(float p_value);
-   unsigned char  DoubleToUTinyInt(double p_value);
-   unsigned char  TinyIntToUTinyInt(char p_value);
-   unsigned char  SBIGINTToUTinyInt(SQLBIGINT p_value);
-   unsigned char  UBIGINTToUTinyInt(SQLUBIGINT p_value);
-
    // Throw error as a result of internal trimming
-   void  ThrowErrorDatatype(int p_getas);
-   void  ThrowErrorTruncate(int p_from,int p_to);
+   void    ThrowErrorDatatype(int p_getas);
 
    // Private Data
    int    m_datatype;         // Primary datatype SQL_C_XXXX
@@ -273,7 +249,6 @@ private:
       // POINTER TYPES
       char*                           m_dataCHAR;         // SQL_C_CHAR               SQL_CHAR
 //    wchar*                          m_dataWCHAR;        // SQL_C_WCHAR              SQL_WCHAR
-      unsigned char*                  m_dataVARBOOKMARK;  // SQL_C_VARBOOKMARK        SQL_VARBOOKMARK
       void*                           m_dataBINARY;       // SQL_C_BINARY             SQL_BINARY
       // STORAGE TYPES
       short                           m_dataSHORT;        // SQL_C_SHORT              SQL_SMALLINT
@@ -291,7 +266,6 @@ private:
       SQLBIGINT                       m_dataSBIGINT;      // SQL_C_SBIGINT            SQL_BIGINT
       SQLUBIGINT                      m_dataUBIGINT;      // SQL_C_UBIGINT            SQL_UBIGINT
       SQL_NUMERIC_STRUCT              m_dataNUMERIC;      // SQL_C_NUMERIC            SQL_NUMERIC
-      unsigned long                   m_dataBOOKMARK;     // SQL_C_BOOKMARK           SQL_BOOKMARK
       SQLGUID                         m_dataGUID;         // SQL_C_GUID               SQL_GUID
       DATE_STRUCT                     m_dataDATE;         // SQL_C_DATE               SQL_DATE
       TIME_STRUCT                     m_dataTIME;         // SQL_C_TIME               SQL_TIME
@@ -332,6 +306,12 @@ inline int
 SQLVariant::GetBinaryPieceSize()
 {
   return m_binaryPieceSize;
+}
+
+inline int
+SQLVariant::GetBinaryLength()
+{
+  return m_binaryLength;
 }
 
 inline void
@@ -381,3 +361,11 @@ SQLVariant::GetSQLDataType()
 {
   return m_sqlDatatype;
 }
+
+//////////////////////////////////////////////////////////////////////////
+//
+// USING short form of SQLVariant in your code
+//
+//////////////////////////////////////////////////////////////////////////
+
+using var = SQLVariant;

@@ -2,7 +2,7 @@
 //
 // File: SQLRercord.cpp
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #include "stdafx.h"
 #include "SQLRecord.h"
@@ -203,7 +203,6 @@ SQLRecord::IsModified(int p_num)
   return m_fields[p_num]->IsMutated();
 }
 
-
 void
 SQLRecord::Reduce()
 {
@@ -241,6 +240,49 @@ SQLRecord::CancelMutation(int p_mutationID)
     m_status &= ~(SQL_Record_Insert | SQL_Record_Updated | SQL_Record_Deleted);
   }
   return mutated;
+}
+
+// Has mixed mutationID mutations
+MutType
+SQLRecord::MixedMutations(int p_mutationID)
+{
+  MutType type = MUT_NoMutation;
+
+  for(unsigned ind = 0; ind < m_fields.size(); ++ind)
+  {
+    MutType mut = m_fields[ind]->MixedMutations(p_mutationID);
+    switch(mut)
+    {
+      case MUT_NoMutation: break;
+      case MUT_MyMutation: if(type == MUT_OnlyOthers)
+                           {
+                             return MUT_Mixed;
+                           }
+                           type = mut;
+                           break;
+      case MUT_OnlyOthers: if(type == MUT_MyMutation)
+                           {
+                             return MUT_Mixed;
+                           }
+                           type = mut;
+                           break;
+      case MUT_Mixed:      return mut;
+    }
+  }
+  // Record has only these mutations or none at all
+  return type;
+}
+
+// For reporting/analysis purposes: all mutationID's on the stack
+int
+SQLRecord::AllMixedMutations(MutationIDS& p_list,int p_mutationID)
+{
+  int total = 0;
+  for(unsigned ind = 0; ind < m_fields.size(); ++ind)
+  {
+    total += m_fields[ind]->AllMixedMutations(p_list,p_mutationID);
+  }
+  return total;
 }
 
 //////////////////////////////////////////////////////////////////////////

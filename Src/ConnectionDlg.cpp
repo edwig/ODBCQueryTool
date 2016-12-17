@@ -20,7 +20,7 @@
 #include "ConnectionDlg.h"
 #include "Common/FileSelectDialog.h"
 #include "Database\SQLDatabase.h"
-#include "Database\SQLInfo.h"
+#include "Database\SQLInfoDB.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -418,7 +418,7 @@ ConnectionDlg::OnDead()
   // Nothing to do to be dead
   if(*m_database)
   {
-    m_connDead = (*m_database)->GetSQLInfo()->GetConnectionDead();
+    m_connDead = (*m_database)->GetSQLInfoDB()->GetConnectionDead();
   }
   else
   {
@@ -432,7 +432,7 @@ ConnectionDlg::OnQuiet()
 {
   if(*m_database)
   {
-    m_quietMode = (*m_database)->GetSQLInfo()->GetAttributeQuiet();
+    m_quietMode = (*m_database)->GetSQLInfoDB()->GetAttributeQuiet();
   }
   else
   {
@@ -446,7 +446,7 @@ ConnectionDlg::OnAutoIPD()
 {
   if(*m_database)
   {
-    if((*m_database)->GetSQLInfo()->GetAttributeAutoIPD() == -1)
+    if((*m_database)->GetSQLInfoDB()->GetAttributeAutoIPD() == -1)
     {
       m_autoIPD = false;
     }
@@ -630,19 +630,19 @@ ConnectionDlg::GetConnectionAttributes()
   {
     m_readOnly     = (*m_database)->GetReadOnly();
     m_loginTimeout = (*m_database)->GetLoginTimeout();
-    m_connDead     = (*m_database)->GetSQLInfo()->GetConnectionDead();
-    m_tracing      = (*m_database)->GetSQLInfo()->GetAttributeTracing();
-    m_traceFile    = (*m_database)->GetSQLInfo()->GetAttributeTraceFile();
-    m_catalog      = (*m_database)->GetSQLInfo()->GetAttributeCatalog();
-    m_fileDSN      = (*m_database)->GetSQLInfo()->GetAttributeFileDSN();
-    m_fileDSNSave  = (*m_database)->GetSQLInfo()->GetAttributeFileDSNSave();
-    m_connTimeout  = (*m_database)->GetSQLInfo()->GetAttributeConnTimeout();
-    m_packetSize   = (*m_database)->GetSQLInfo()->GetAttributePacketSize();
-    m_metadataID   = (*m_database)->GetSQLInfo()->GetAttributeMetadataID();
-    m_txnLevel     = (*m_database)->GetSQLInfo()->GetAttributeTransLevel();
-    m_transLib     = (*m_database)->GetSQLInfo()->GetAttributeTranslib();
-    m_transOption  = (*m_database)->GetSQLInfo()->GetAttributeTransoption();
-    m_quietMode    = (*m_database)->GetSQLInfo()->GetAttributeQuiet();
+    m_connDead     = (*m_database)->GetSQLInfoDB()->GetConnectionDead();
+    m_tracing      = (*m_database)->GetSQLInfoDB()->GetAttributeTracing();
+    m_traceFile    = (*m_database)->GetSQLInfoDB()->GetAttributeTraceFile();
+    m_catalog      = (*m_database)->GetSQLInfoDB()->GetAttributeCatalog();
+    m_fileDSN      = (*m_database)->GetSQLInfoDB()->GetAttributeFileDSN();
+    m_fileDSNSave  = (*m_database)->GetSQLInfoDB()->GetAttributeFileDSNSave();
+    m_connTimeout  = (*m_database)->GetSQLInfoDB()->GetAttributeConnTimeout();
+    m_packetSize   = (*m_database)->GetSQLInfoDB()->GetAttributePacketSize();
+    m_metadataID   = (*m_database)->GetSQLInfoDB()->GetAttributeMetadataID();
+    m_txnLevel     = (*m_database)->GetSQLInfoDB()->GetAttributeTransLevel();
+    m_transLib     = (*m_database)->GetSQLInfoDB()->GetAttributeTranslib();
+    m_transOption  = (*m_database)->GetSQLInfoDB()->GetAttributeTransoption();
+    m_quietMode    = (*m_database)->GetSQLInfoDB()->GetAttributeQuiet();
     m_autoCommit   = (*m_database)->GetTransaction() ? false : true;
     if(m_tracing && m_traceFile.IsEmpty())
     {
@@ -667,22 +667,22 @@ ConnectionDlg::OnApplyBefore()
   }
   if(m_fileDSNApply && (*m_database))
   {
-    (*m_database)->GetSQLInfo()->SetAttributeFileDSN(m_fileDSN);
+    (*m_database)->GetSQLInfoDB()->SetAttributeFileDSN(m_fileDSN);
     m_fileDSNApply = false;
   }
   if(m_fileDSNSaveApply && (*m_database))
   {
-    (*m_database)->GetSQLInfo()->SetAttributeFileDSNSave(m_fileDSNSave);
+    (*m_database)->GetSQLInfoDB()->SetAttributeFileDSNSave(m_fileDSNSave);
     m_fileDSNSaveApply = false;
   }
   if(m_odbcCursorsApply && (*m_database))
   {
-    (*m_database)->GetSQLInfo()->SetAttributeOdbcCursors(m_odbcCursors);
+    (*m_database)->GetSQLInfoDB()->SetAttributeOdbcCursors(m_odbcCursors);
     m_odbcCursorsApply = false;
   }
   if(m_packetSizeApply && (*m_database))
   {
-    if(!(*m_database)->GetSQLInfo()->SetAttributePacketSize(m_packetSize))
+    if(!(*m_database)->GetSQLInfoDB()->SetAttributePacketSize(m_packetSize))
     {
       m_packetSize = 0;
     }
@@ -708,7 +708,7 @@ ConnectionDlg::OnApplyAfter()
     if(( m_tracing && !m_traceFile.IsEmpty()) ||
        (!m_tracing &&  m_traceFile.IsEmpty()) )
     {
-      if(!(*m_database)->GetSQLInfo()->SetAttributeTraceFile(m_traceFile))
+      if(!(*m_database)->GetSQLInfoDB()->SetAttributeTraceFile(m_traceFile))
       {
         m_traceFile = "";
       }
@@ -725,7 +725,7 @@ ConnectionDlg::OnApplyAfter()
     {
       m_traceFile = "";
     }
-    if(!(*m_database)->GetSQLInfo()->SetAttributeTracing(m_tracing))
+    if(!(*m_database)->GetSQLInfoDB()->SetAttributeTracing(m_tracing))
     {
       m_tracing = !m_tracing;
     }
@@ -733,7 +733,7 @@ ConnectionDlg::OnApplyAfter()
   }
   if(m_connTimeoutApply)
   {
-    if(!(*m_database)->GetSQLInfo()->SetAttributeConnTimeout(m_connTimeout))
+    if(!(*m_database)->GetSQLInfoDB()->SetAttributeConnTimeout(m_connTimeout))
     {
       m_connTimeout = 0;
     }
@@ -741,7 +741,7 @@ ConnectionDlg::OnApplyAfter()
   }
   if(m_metadataIDApply)
   {
-    if(!(*m_database)->GetSQLInfo()->SetAttributeMetadataID(m_metadataID))
+    if(!(*m_database)->GetSQLInfoDB()->SetAttributeMetadataID(m_metadataID))
     {
       m_metadataID = false;
     }
@@ -749,12 +749,12 @@ ConnectionDlg::OnApplyAfter()
   }
   if(m_txnLevelApply)
   {
-    (*m_database)->GetSQLInfo()->SetAttributeTransLevel(m_txnLevel);
+    (*m_database)->GetSQLInfoDB()->SetAttributeTransLevel(m_txnLevel);
     m_txnLevelApply = false;
   }
   if(m_transLibApply)
   {
-    if(!(*m_database)->GetSQLInfo()->SetAttributeTranslib(m_transLib))
+    if(!(*m_database)->GetSQLInfoDB()->SetAttributeTranslib(m_transLib))
     {
       m_transLib = "";
     }
@@ -762,7 +762,7 @@ ConnectionDlg::OnApplyAfter()
   }
   if(m_transOptionApply)
   {
-    if(!(*m_database)->GetSQLInfo()->SetAttributeTransoption(m_transOption))
+    if(!(*m_database)->GetSQLInfoDB()->SetAttributeTransoption(m_transOption))
     {
       m_transOption = 0;
     }

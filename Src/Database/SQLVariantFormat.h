@@ -2,7 +2,7 @@
 //
 // File: SQLVariantFormat.h
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,21 +21,23 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #pragma once
 #include "SQLVariant.h"
 #include "SQLDatabase.h"
 
 // User status
-#define USER_DISPLAY		1
+#define USER_DISPLAY		   1
+#define NUMBER_BUFFER_SIZE 100
 
 class SQLVariantFormat
 {
 public:
   SQLVariantFormat(SQLVariant* p_variant);
- ~SQLVariantFormat();
+  SQLVariantFormat(SQLVariant& p_variant);
+  ~SQLVariantFormat();
   void        Reset();
   void        ResetValue();
   void        ReFormat();
@@ -47,18 +49,18 @@ public:
   void        SetCurrentDate();
   // Format the date
   int         FormatDate(CString p_pattern);
-  // Is a constant or a numeric
-  bool        IsConstanteOfNummer(char p_separator = '.');
-  // Testmatig '.' en ',' omzetten
+  // Is a constant or a numeric / IsConstanteOfNummer
+  bool        IsConstantOrNumber(char p_seperator = '.');
+  // Converting european values to system values
   int         StrValutaNLOmzetten(CString& p_string,bool p_enkelValuta);
-  // Testmatig ',' en '.' omzetten
+  // Converting american $ values to dutch values
   int         StrValutaAMOmzetten(CString& p_string,bool p_enkelValuta);
-  // Waarde van de string als double
-  double      StringDoubleWaarde();
-  // Format according to userinterface
+  // Value of a string as a double
+  double      StringDoubleValue();
+  // Format according to user interface
   int         FormatNumber(CString p_format,bool p_currency);
   // Do math on dates
-  int         DateCalculate(char p_bewerking,CString p_argument);
+  int         DateCalculate(char p_operator,CString p_argument);
 
   CString     FormatVariantForSQL(SQLDatabase* p_database);
   void        SetVariant(SQLVariant* p_variant);
@@ -75,7 +77,6 @@ private:
   bool        GetTimeFromStringVariant(SQLVariant* p_variant,CString p_format,TIME_STRUCT* p_date);
 
   // Is string a (formatted) windows number?
-  bool        IsWinNumber(const CString p_string,CString* p_newNumber = NULL);
   bool        IsWinNumber(const CString p_string,char* p_decSeperator,char* p_thouSeperator,char* p_valuta,CString* p_newNumber = NULL);
 
 

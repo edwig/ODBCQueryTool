@@ -2,7 +2,7 @@
 //
 // File: SQLInfo.h
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #pragma once
 
@@ -79,35 +79,35 @@ typedef std::map<int,PrimKeyInfo>   PrimaryMap;
 typedef std::map<CString,TypeInfo*> DataTypeMap;
 typedef std::list<CString>          WordList;
 
-class SQLInfo : public CObject
+class SQLInfo 
 {
 public:
    SQLInfo(SQLDatabase* p_database);
   ~SQLInfo();
 
   // Initialize all internal data structures to defaults
-  void Init();
+  void    Init();
   // (Re)set the connected database (e.g. after re-open)
-  void SetConnection(SQLDatabase* p_database = NULL);
+  void    SetConnection(SQLDatabase* p_database = NULL);
 
   // Get all static info from the ODBC driver via SQLGetInfo 
-  void GetInfo();
+  void    GetInfo();
 
   // Add an ODBC SQL Keyword
-  bool AddSQLWord(CString sql);
+  bool    AddSQLWord(CString sql);
   // Extra to be done on getting info 
   virtual void OnGetInfo(HDBC ,int ) {return;};
   // Is it a correct identifier (type 0=table,1=column)
-  bool IsCorrectName(LPCSTR naam,int type = 0);
+  bool    IsCorrectName(LPCSTR naam,int type = 0);
   // Can we start a transaction on the database
-  bool CanStartTransaction();
+  bool    CanStartTransaction();
   // Returns the fact whether an API function is supported
   // by the ODBC driver, regardless of ODBC version
-  bool SupportedFunction(unsigned int api_function);
+  bool    SupportedFunction(unsigned int api_function);
   // Return the native SQL command from an ODBC-escaped command
   CString NativeSQL(HDBC hdbc,CString& sqlCommand);
   // AT_EXEC data provider needs length beforehand
-  bool NeedLongDataLen();
+  bool    NeedLongDataLen();
   // Character name of an SQL_XXX datatype
   CString ODBCDataType(int DataType);
   // Show metadata warning (for interactive mode)
@@ -250,7 +250,7 @@ protected:
   CString     m_searchTableName;
   CString     m_searchTableType;
 
-	WordList    m_ODBCKeywords;          // Stationary ODBC keywords
+  WordList    m_ODBCKeywords;          // Stationary ODBC keywords
   WordList    m_RDBMSkeywords;         // Keywords  reported by the RDBMS
   DataTypeMap m_dataTypes;             // Datatypes reported by the RDBMS
 

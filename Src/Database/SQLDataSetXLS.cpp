@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
 // to deal in the Software without restriction, including without limitation the rights 
@@ -20,8 +20,11 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 // CREDITS:
-// Loosly based on the article by: Yap Chun Wei
+// Loosely based on the article by: Yap Chun Wei
 // http://www.codeproject.com/Articles/1636/CSpreadSheet-A-Class-to-Read-and-Write-to-Excel-an
+// 
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #include "stdafx.h"
 #include "SQLDataSetXLS.h"
@@ -49,21 +52,21 @@ SQLDataSetXLS::SQLDataSetXLS(CString p_file, CString p_sheetOrSeperator, bool p_
   // Set defaults
   m_delimLeft  = "\"";
   m_delimRight = "\"";
-	// Detect whether file is an Excel spreadsheet or a text delimited file
+  // Detect whether file is an Excel spreadsheet or a text delimited file
   CString extensie;
-	CString tempString1 = m_file.Right(4);
+  CString tempString1 = m_file.Right(4);
   CString tempString2 = m_file.Right(5);
-	tempString1.MakeLower();
+  tempString1.MakeLower();
   tempString2.MakeLower();
 
   // File is an Excel spreadsheet
-	if (tempString1 == ".xls") 
-	{
-		m_excel     = true;
-		m_sheetName = p_sheetOrSeperator;
+  if (tempString1 == ".xls") 
+  {
+    m_excel     = true;
+    m_sheetName = p_sheetOrSeperator;
     extensie    = tempString1;
     m_workbook  = new BasicExcel();
-	}
+  }
   if (tempString2 == ".xlsx")
   {
     m_xmlExcel    = true;
@@ -71,28 +74,28 @@ SQLDataSetXLS::SQLDataSetXLS(CString p_file, CString p_sheetOrSeperator, bool p_
     extensie      = tempString2;
     m_xmlWorkbook = new BasicXmlExcel(p_file);
     m_lastError   = m_xmlWorkbook->GetError();
-	}
-	else 
-	{
+  }
+  else 
+  {
     // Treat file as a text delimited file
-		m_separator = p_sheetOrSeperator;
-	}
+    m_separator = p_sheetOrSeperator;
+  }
 }
 
 // Perform some cleanup functions
 SQLDataSetXLS::~SQLDataSetXLS()
 {
-	if(m_workbook)
-	{
-		//m_workbook->Close();
-		delete m_workbook;
+  if(m_workbook)
+  {
+    //m_workbook->Close();
+    delete m_workbook;
     m_workbook = NULL;
-	}
+  }
   if(m_xmlWorkbook)
   {
     delete m_xmlWorkbook;
     m_xmlWorkbook = NULL;
-	}
+  }
 }
 
 // Read in a XLS and optionally make a backup
@@ -346,44 +349,44 @@ SQLDataSetXLS::ReadCell(CString &p_cellValue, short p_column, long p_row)
 bool 
 SQLDataSetXLS::DeleteSheet()
 {
-	if(m_excel)
-	{
-		if(DeleteSheet(m_sheetName))
-		{
-			return true;
-		}
-		else
-		{
-			m_lastError = "Error deleting sheet\n";
-			return false;
-		}
-	}
-	else
-	{
+  if(m_excel)
+  {
+    if(DeleteSheet(m_sheetName))
+    {
+      return true;
+    }
+    else
+    {
+      m_lastError = "Error deleting sheet\n";
+      return false;
+    }
+  }
+  else
+  {
     Close();
-		if(!m_transaction)
-		{
-			Commit();			
-		}
-		m_append = false; // Set flag to new sheet
-		return true;		
-	}
+    if(!m_transaction)
+    {
+      Commit();			
+    }
+    m_append = false; // Set flag to new sheet
+    return true;		
+  }
 }
 
 // Clear entire Excel spreadsheet content. The sheet itself is not deleted
 bool 
 SQLDataSetXLS::DeleteSheet(CString p_sheetName)
 {
-	if(m_excel) // If file is an Excel spreadsheet
-	{
-		// Delete sheet
+  if(m_excel) // If file is an Excel spreadsheet
+  {
+    // Delete sheet
     m_workbook->DeleteWorksheet(p_sheetName);
-		return true;
-	}
-	else // if file is a text delimited file
-	{
-		return DeleteSheet();
-	}
+    return true;
+  }
+  else // if file is a text delimited file
+  {
+    return DeleteSheet();
+  }
 }
 
 // Replace a cell into Excel spreadsheet using header row or column alphabet. 
@@ -391,16 +394,16 @@ SQLDataSetXLS::DeleteSheet(CString p_sheetName)
 bool 
 SQLDataSetXLS::SetCell(CString p_cellValue, CString p_column, long p_row, bool p_name /*=true*/)
 {
-	int columnIndex = CalculateColumnNumber(p_column, p_name);
-	if(columnIndex == 0)
-	{
-		return false;
-	}
-	if(SetCell(p_cellValue, (short)columnIndex, p_row))
-	{
-		return true;
-	}
-	return false;
+  int columnIndex = CalculateColumnNumber(p_column, p_name);
+  if(columnIndex == 0)
+  {
+    return false;
+  }
+  if(SetCell(p_cellValue, (short)columnIndex, p_row))
+  {
+    return true;
+  }
+  return false;
 }
 
 // Set a cell value into spreadsheet using column number, row number
@@ -442,11 +445,11 @@ SQLDataSetXLS::SetCell(CString p_cellValue, short p_column, long p_row)
     SQLVariant* variant = record->GetField(col);
     variant->SetData(SQL_C_CHAR,p_cellValue);
   }
-	if(!m_transaction)
-	{
-		Commit();
-	}
-	return true;
+  if(!m_transaction)
+  {
+    Commit();
+  }
+  return true;
 }
 
 // Get a list of all worksheets in the XLS (xls only!)
@@ -457,26 +460,26 @@ SQLDataSetXLS::GetListOfWorksheets(WordList* p_sheets)
   {
     int num = m_workbook->GetTotalWorkSheets(m_file);
     for(int ind = 0;ind < num; ++ind)
-	  {
+    {
       char name[MAX_PATH];
       m_workbook->GetSheetName(ind,name);
       CString sheetname(name);
       p_sheets->push_back(sheetname);
-		}
+    }
     if(m_workbook->GetError())
     {
       m_lastError = m_workbook->GetError();
     }
-		return true;
+    return true;
   }
   if(m_xmlExcel)
-	{
+  {
     Names names;
     m_xmlWorkbook->GetSheetNames(names);
     for(unsigned ind = 0;ind < names.size();++ind)
-	  {
+    {
        p_sheets->push_back(names[ind]);
-	  }
+    }
     return true;
   }
   // Does not work for ".csv" files
@@ -493,8 +496,8 @@ SQLDataSetXLS::GetListOfWorksheets(WordList* p_sheets)
 bool 
 SQLDataSetXLS::Open()
 {
-	if (m_excel) // If file is an Excel spreadsheet
-	{
+  if (m_excel) // If file is an Excel spreadsheet
+  {
     try
     {
       // Buffer voor de cellen
@@ -523,7 +526,7 @@ SQLDataSetXLS::Open()
 
       // Lees de header row met cell namen
       for(int col = 0; col < cols; ++col)
-		  {
+      {
         CString value(sheet->CellValue(0,col,buffer,100));
         m_names.push_back(value);
         m_types.push_back(SQL_C_CHAR);
@@ -531,33 +534,33 @@ SQLDataSetXLS::Open()
 
       // Lees de data rows
       for(int row = 1; row < rows; ++row)
-        {
-          SQLRecord* record = InsertRecord();
+      {
+        SQLRecord* record = InsertRecord();
         for(int col = 0; col < cols; ++col)
         {
           char* value = sheet->CellValue(row,col,buffer,100);
           SQLVariant* var = new SQLVariant(value);
           record->AddField(var);
-          }
         }
+      }
     }
-		catch(CString str)
+    catch(CString str)
     {
       m_lastError = "Error reading spreadhseet: " + str;
       return false;
     }
-		catch (...)
-		{
-			m_lastError = "Error reading spreadsheet\n";
-			return false;
-		}
+    catch (...)
+    {
+      m_lastError = "Error reading spreadsheet\n";
+      return false;
+    }
     if(m_records.size())
     {
       m_current = 0;
       m_status |= SQL_Selections;
     }
-		return true;
-	}
+    return true;
+  }
   else if(m_xmlExcel)
   {
     // 
@@ -590,34 +593,34 @@ SQLDataSetXLS::Open()
       for(int col = 1; col <= cols; ++col)
       {
         CString value = sheet->GetCellValue(row,col);
-        SQLVariant* var = new SQLVariant(value.GetString());
-        record->AddField(var,true); // It's for an insertion
+        SQLVariant var(value.GetString());
+        record->AddField(&var,true); // It's for an insertion
       }
     }
     return true;
 
   }
-	else // if file is a text delimited file
-	{
-		try
-		{
-			CFile *File = NULL;
-			File = new CFile(m_file, CFile::modeRead | CFile::shareDenyNone);
-			if (File != NULL)
-			{
+  else // if file is a text delimited file
+  {
+    try
+    {
+      CFile *File = NULL;
+      File = new CFile(m_file, CFile::modeRead | CFile::shareDenyNone);
+      if (File != NULL)
+      {
         CString tempString;
-				CArchive *Archive = NULL;
-				Archive = new CArchive(File, CArchive::load);
-				if (Archive != NULL)
-				{
-					Close();
+        CArchive *Archive = NULL;
+        Archive = new CArchive(File, CArchive::load);
+        if (Archive != NULL)
+        {
+          Close();
           int rows = 0;
           bool result = true;
           // Read and store all rows in memory
           m_transaction = true;
-					// Read and store all rows in memory
-					while(Archive->ReadString(tempString))
-					{
+          // Read and store all rows in memory
+          while(Archive->ReadString(tempString))
+          {
             TRACE("INPUT: %s\n",tempString);
             CStringArray values;
             if(SplitRow(tempString,values) == false)
@@ -631,28 +634,28 @@ SQLDataSetXLS::Open()
               AddHeaders(values,true);
               continue;
             }
-						AddRow(values);
+            AddRow(values);
             values.RemoveAll();
-					}
-					delete Archive;
-					delete File;
+          }
+          delete Archive;
+          delete File;
 
-					if(GetNumberOfFields() != 0)
-					{
-						m_append = true;
-					}
+          if(GetNumberOfFields() != 0)
+          {
+            m_append = true;
+          }
           m_transaction = false;
-					return result;
-				}
-				delete File;
-			}
-		}
-		catch(...)
-		{
-		}
-		m_lastError = "Error in opening file\n";
-		return false;
-	}
+          return result;
+        }
+        delete File;
+      }
+    }
+    catch(...)
+    {
+    }
+    m_lastError = "Error in opening file\n";
+    return false;
+  }
 }
 
 bool
@@ -670,7 +673,7 @@ SQLDataSetXLS::Close()
 int 
 SQLDataSetXLS::CalculateColumnNumber(CString p_column, bool p_name /*=true*/)
 {
-	if(p_name)
+  if(p_name)
   {
     // Check if it is a valid field name
     for (unsigned i = 0; i < m_names.size(); i++)
@@ -684,26 +687,26 @@ SQLDataSetXLS::CalculateColumnNumber(CString p_column, bool p_name /*=true*/)
     return 0;	
   }
   else
-	{
-		int firstLetter, secondLetter;
-		p_column.MakeUpper();
+  {
+    int firstLetter, secondLetter;
+    p_column.MakeUpper();
 
-		if (p_column.GetLength() == 1)
-		{
-			firstLetter = p_column.GetAt(0);
+    if (p_column.GetLength() == 1)
+    {
+      firstLetter = p_column.GetAt(0);
       // 65 is A in ascii
-			return (firstLetter - 65 + 1); 
-		}
-		else if (p_column.GetLength() == 2)
-		{
-			firstLetter = p_column.GetAt(0);
-			secondLetter = p_column.GetAt(1);
+      return (firstLetter - 65 + 1); 
+    }
+    else if (p_column.GetLength() == 2)
+    {
+      firstLetter = p_column.GetAt(0);
+      secondLetter = p_column.GetAt(1);
       // 65 is A in ascii
-			return ((firstLetter - 65 + 1)*26 + (secondLetter - 65 + 1)); 
-		}
-	}
-	m_lastError = "Invalid column alphabet";
-	return 0;	
+      return ((firstLetter - 65 + 1)*26 + (secondLetter - 65 + 1)); 
+    }
+  }
+  m_lastError = "Invalid column alphabet";
+  return 0;	
 }
 
 // Read a row from spreadsheet. 

@@ -120,7 +120,7 @@
       <ProgramDataBaseFileName>.\Debug/</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
     </ClCompile>
     <ResourceCompile>
@@ -301,13 +301,13 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Src\Database\BasicXmlExcel.cpp" />
+    <ClCompile Include="Src\Database\bcd.cpp" />
     <ClCompile Include="Src\Database\ExcelFormat.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Src\Database\GetLastErrorAsString.cpp" />
     <ClCompile Include="Src\Database\SQLAssociation.cpp" />
     <ClCompile Include="Src\Database\SQLColumnInfo.cpp" />
     <ClCompile Include="Src\Database\SQLDatabase.cpp" />
@@ -342,11 +342,29 @@
     <ClCompile Include="Src\Database\SQLVariant.cpp" />
     <ClCompile Include="Src\Database\SQLVariantFormat.cpp" />
     <ClCompile Include="Src\Database\SQLVariantOperator.cpp" />
+    <ClCompile Include="Src\Database\SQLVariantOperatorAdd.cpp" />
+    <ClCompile Include="Src\Database\SQLVariantOperatorDiv.cpp" />
+    <ClCompile Include="Src\Database\SQLVariantOperatorEqual.cpp" />
+    <ClCompile Include="Src\Database\SQLVariantOperatorGreatEqual.cpp" />
+    <ClCompile Include="Src\Database\SQLVariantOperatorGreater.cpp" />
+    <ClCompile Include="Src\Database\SQLVariantOperatorMod.cpp" />
+    <ClCompile Include="Src\Database\SQLVariantOperatorMul.cpp" />
+    <ClCompile Include="Src\Database\SQLVariantOperatorSmallEqual.cpp" />
+    <ClCompile Include="Src\Database\SQLVariantOperatorSmaller.cpp" />
+    <ClCompile Include="Src\Database\SQLVariantOperatorSub.cpp" />
+    <ClCompile Include="Src\Database\SQLVariantTrim.cpp" />
     <ClCompile Include="Src\Database\unzip.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Src\Database\xmem.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="Src\Database\xml.cpp" />
     <ClCompile Include="Src\Database\xml_parser.cpp" />
@@ -835,6 +853,7 @@
     <ClInclude Include="Src\ConnectionDlg.h" />
     <ClInclude Include="Src\Database\BasicExcel.h" />
     <ClInclude Include="Src\Database\BasicXmlExcel.h" />
+    <ClInclude Include="Src\Database\bcd.h" />
     <ClInclude Include="Src\Database\ExcelFormat.h" />
     <ClInclude Include="Src\Database\GetLastErrorAsString.h" />
     <ClInclude Include="Src\Database\Locker.h" />
@@ -869,8 +888,20 @@
     <ClInclude Include="Src\Database\SQLTransaction.h" />
     <ClInclude Include="Src\Database\SQLVariant.h" />
     <ClInclude Include="Src\Database\SQLVariantFormat.h" />
+    <ClInclude Include="Src\Database\SQLVariantOperator.h" />
+    <ClInclude Include="Src\Database\SQLVariantOperatorAdd.h" />
+    <ClInclude Include="Src\Database\SQLVariantOperatorDiv.h" />
+    <ClInclude Include="Src\Database\SQLVariantOperatorGreatEqual.h" />
+    <ClInclude Include="Src\Database\SQLVariantOperatorGreater.h" />
+    <ClInclude Include="Src\Database\SQLVariantOperatorMod.h" />
+    <ClInclude Include="Src\Database\SQLVariantOperatorMul.h" />
+    <ClInclude Include="Src\Database\SQLVariantOperatorSmallEqual.h" />
+    <ClInclude Include="Src\Database\SQLVariantOperatorSmaller.h" />
+    <ClInclude Include="Src\Database\SQLVariantOperatorSub.h" />
+    <ClInclude Include="Src\Database\SQLVariantTrim.h" />
     <ClInclude Include="Src\Database\SQLWrappers.h" />
     <ClInclude Include="Src\Database\unzip.h" />
+    <ClInclude Include="Src\Database\xmem.h" />
     <ClInclude Include="Src\Database\xml.h" />
     <ClInclude Include="Src\MultConnectionsDlg.h" />
     <ClInclude Include="Src\OpenEditorApp.h" />

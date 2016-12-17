@@ -2,7 +2,7 @@
 //
 // File: SQLInfoTree.cpp
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #include "StdAfx.h"
 #include "SQLInfoTree.h"
@@ -159,9 +159,9 @@ SQLInfoTree::MakeTreeInfo(CTreeCtrl* tree)
     sitem = "Datatype is nullable: ";
     switch(ti->m_nullable)
     {
-    case SQL_NO_NULLS:         sitem += "No nulls"; break;
-    case SQL_NULLABLE:         sitem += "Nullable"; break;
-    case SQL_NULLABLE_UNKNOWN: sitem += "Unknown";  break;
+      case SQL_NO_NULLS:         sitem += "No nulls"; break;
+      case SQL_NULLABLE:         sitem += "Nullable"; break;
+      case SQL_NULLABLE_UNKNOWN: sitem += "Unknown";  break;
     }
     tree->InsertItem(sitem,type);
     sitem = CString("Datatype is case sensitive: ") + (ti->m_case_sensitive ? "Yes" : "No");
@@ -169,10 +169,10 @@ SQLInfoTree::MakeTreeInfo(CTreeCtrl* tree)
     sitem = "Datatype is searchable: ";
     switch(ti->m_searchable)
     {
-    case SQL_UNSEARCHABLE:    sitem += "Unsearchable";    break;
-    case SQL_LIKE_ONLY:       sitem += "Like only";       break;
-    case SQL_ALL_EXCEPT_LIKE: sitem += "All except like"; break;
-    case SQL_SEARCHABLE:      sitem += "Searchable";      break;
+      case SQL_UNSEARCHABLE:    sitem += "Unsearchable";    break;
+      case SQL_LIKE_ONLY:       sitem += "Like only";       break;
+      case SQL_ALL_EXCEPT_LIKE: sitem += "All except like"; break;
+      case SQL_SEARCHABLE:      sitem += "Searchable";      break;
     }
     tree->InsertItem(sitem,type);
     sitem = CString("Datatype is unsigned: ") + (ti->m_unsigned ? "Yes" : "No");
@@ -234,30 +234,30 @@ SQLInfoTree::MakeTreeInfo(CTreeCtrl* tree)
   sitem = "SQL conformance: ";
   switch(m_sql_conformance)
   {
-  case SQL_SC_SQL92_ENTRY:             sitem += "Entry level SQL92 compliant"; break;
-  case SQL_SC_FIPS127_2_TRANSITIONAL : sitem += "FIPS 127-2 transitional level compliant"; break;
-  case SQL_SC_SQL92_FULL :             sitem += "Full SQL92 compliant"; break;
-  case SQL_SC_SQL92_INTERMEDIATE :     sitem += "Intermediate SQL92 compliant"; break;
-  default:                             sitem += "No information"; break;
+    case SQL_SC_SQL92_ENTRY:             sitem += "Entry level SQL92 compliant";              break;
+    case SQL_SC_FIPS127_2_TRANSITIONAL : sitem += "FIPS 127-2 transitional level compliant";  break;
+    case SQL_SC_SQL92_FULL :             sitem += "Full SQL92 compliant";                     break;
+    case SQL_SC_SQL92_INTERMEDIATE :     sitem += "Intermediate SQL92 compliant";             break;
+    default:                             sitem += "No information";                           break;
   }
   tree->InsertItem(sitem, infoItemCF);
 
   sitem = "ODBC conformance: ";
   switch(m_odbc_conformance)
   {
-  case SQL_OIC_CORE:   sitem += "CORE";    break;
-  case SQL_OIC_LEVEL1: sitem += "LEVEL 1"; break;
-  case SQL_OIC_LEVEL2: sitem += "LEVEL 2"; break;
-  default:             sitem += "No information"; break;
+    case SQL_OIC_CORE:   sitem += "CORE";           break;
+    case SQL_OIC_LEVEL1: sitem += "LEVEL 1";        break;
+    case SQL_OIC_LEVEL2: sitem += "LEVEL 2";        break;
+    default:             sitem += "No information"; break;
   }
   tree->InsertItem(sitem, infoItemCF);
 
   sitem = "CLI conformance: ";
   switch(m_cli_conformance)
   {
-  case SQL_SCC_XOPEN_CLI_VERSION1:   sitem += "X/Open CLI version 1"; break;
-  case SQL_SCC_ISO92_CLI:            sitem += "ISO 92 CLI"; break;
-  default:                           sitem += "No information"; break;
+    case SQL_SCC_XOPEN_CLI_VERSION1:   sitem += "X/Open CLI version 1"; break;
+    case SQL_SCC_ISO92_CLI:            sitem += "ISO 92 CLI";           break;
+    default:                           sitem += "No information";       break;
   }
   tree->InsertItem(sitem, infoItemCF);
   tree->InsertItem(CString("X/Open CLI Year: ")+m_cli_year, infoItemCF);
@@ -682,10 +682,10 @@ SQLInfoTree::MakeTreeInfo(CTreeCtrl* tree)
   sitem = "RDBMS storage: ";
   switch(m_fileUsage)
   {
-  case SQL_FILE_TABLE:         sitem += "1 file = 1 table";    break;
-  case SQL_FILE_CATALOG:       sitem += "1 file = catalog";    break;
-  case SQL_FILE_NOT_SUPPORTED: sitem += "Multi-tier database"; break;
-  default:                     sitem += "(No information)";    break;
+    case SQL_FILE_TABLE:         sitem += "1 file = 1 table";    break;
+    case SQL_FILE_CATALOG:       sitem += "1 file = catalog";    break;
+    case SQL_FILE_NOT_SUPPORTED: sitem += "Multi-tier database"; break;
+    default:                     sitem += "(No information)";    break;
   }
   tree->InsertItem(sitem,infoItemImpl);
 
@@ -699,17 +699,17 @@ SQLInfoTree::MakeTreeInfo(CTreeCtrl* tree)
   CString line("Catalog identifiers: ");
   switch(m_identifierCase)
   {
-  case SQL_IC_UPPER:     line += "Upper-case";    break;
-  case SQL_IC_LOWER:     line += "Lower-case";    break;
-  case SQL_IC_SENSITIVE: line += "Sensitive (?)"; break;
-  case SQL_IC_MIXED:     line += "Mixed-case";    break;
-  default:               line += "No information";break;
+    case SQL_IC_UPPER:     line += "Upper-case";    break;
+    case SQL_IC_LOWER:     line += "Lower-case";    break;
+    case SQL_IC_SENSITIVE: line += "Sensitive (?)"; break;
+    case SQL_IC_MIXED:     line += "Mixed-case";    break;
+    default:               line += "No information";break;
   }
   tree->InsertItem(line,infoItemImpl);
   sitem = "Catalog name location: ";
   sitem += (m_catalogLocation == SQL_CL_START) ? "Before schema" : 
-    (m_catalogLocation == SQL_CL_END)   ? "After table"   : 
-    "(Unknown)";
+           (m_catalogLocation == SQL_CL_END)   ? "After table"   : 
+           "(Unknown)";
   tree->InsertItem(sitem,infoItemImpl);
   tree->InsertItem("Catalog name separator: " + m_catalogNameSeparator,infoItemImpl);
   HTREEITEM cu = tree->InsertItem("Catalog name usage",infoItemImpl);
@@ -741,29 +741,29 @@ SQLInfoTree::MakeTreeInfo(CTreeCtrl* tree)
   sitem = "NULL Collation: ";
   switch(m_nullCollation)
   {
-  case SQL_NC_HIGH:  sitem += "High end of resultset, depending on ASC/DESC"; break;
-  case SQL_NC_LOW:   sitem += "Low end of resultset, depending on ASC/DESC";  break;
+    case SQL_NC_HIGH:  sitem += "High end of resultset, depending on ASC/DESC";         break;
+    case SQL_NC_LOW:   sitem += "Low end of resultset, depending on ASC/DESC";          break;
     case SQL_NC_START: sitem += "At the start of the resultset, regardless of ASC/DESC";break;
-  case SQL_NC_END:   sitem += "At the end of the resultset, regardless of ASC/DESC";   break;
-  default:           sitem += "(No information)"; break;
+    case SQL_NC_END:   sitem += "At the end of the resultset, regardless of ASC/DESC";  break;
+    default:           sitem += "(No information)";                                     break;
   }
   tree->InsertItem(sitem,infoItemImpl);
 
   sitem = "Concat NULL behaviour: ";
   switch(m_concatBehaviour)
   {
-  case SQL_CB_NULL:     sitem += "Results in NULL";     break;
-  case SQL_CB_NON_NULL: sitem += "Results in NON-NULL"; break;
-  default:              sitem += "(No information)";    break;
+    case SQL_CB_NULL:     sitem += "Results in NULL";     break;
+    case SQL_CB_NON_NULL: sitem += "Results in NON-NULL"; break;
+    default:              sitem += "(No information)";    break;
   }
   tree->InsertItem(sitem,infoItemImpl);
 
   sitem = "Nullable columns: ";
   switch(m_nullableColumns)
   {
-  case SQL_NNC_NULL:     sitem += "All columns are nullable"; break;
-  case SQL_NNC_NON_NULL: sitem += "Columns can be non-null";  break;
-  default:               sitem += "(No information)";         break;
+    case SQL_NNC_NULL:     sitem += "All columns are nullable"; break;
+    case SQL_NNC_NON_NULL: sitem += "Columns can be non-null";  break;
+    default:               sitem += "(No information)";         break;
   }
   tree->InsertItem(sitem,infoItemImpl);
 
@@ -801,23 +801,23 @@ SQLInfoTree::MakeTreeInfo(CTreeCtrl* tree)
   sitem = "Transactions behaviour: ";
   switch(m_txn_cap)
   {
-  case SQL_TC_DML:        sitem += "Only DML";    break;
-  case SQL_TC_DDL_COMMIT: sitem += "DDL Commits"; break;
-  case SQL_TC_DDL_IGNORE: sitem += "DDL Ignores"; break;
-  case SQL_TC_ALL:        sitem += "DDL and DML"; break;
-  case SQL_TC_NONE:
-  default:                sitem += "None";        break;
+    case SQL_TC_DML:        sitem += "Only DML";    break;
+    case SQL_TC_DDL_COMMIT: sitem += "DDL Commits"; break;
+    case SQL_TC_DDL_IGNORE: sitem += "DDL Ignores"; break;
+    case SQL_TC_ALL:        sitem += "DDL and DML"; break;
+    case SQL_TC_NONE:
+    default:                sitem += "None";        break;
   }
   tree->InsertItem(sitem, infoItemImpl);
 
   sitem = "Default transaction level: ";
   switch(m_defaultTransaction)
   {
-  case SQL_TXN_READ_UNCOMMITTED: sitem += "Read uncommitted"; break;
-  case SQL_TXN_READ_COMMITTED:   sitem += "Read committed";   break;
-  case SQL_TXN_REPEATABLE_READ:  sitem += "Repeatable read";  break;
-  case SQL_TXN_SERIALIZABLE:     sitem += "Serializable";     break;
-  default:                       sitem += "(No information)"; break;
+    case SQL_TXN_READ_UNCOMMITTED: sitem += "Read uncommitted"; break;
+    case SQL_TXN_READ_COMMITTED:   sitem += "Read committed";   break;
+    case SQL_TXN_REPEATABLE_READ:  sitem += "Repeatable read";  break;
+    case SQL_TXN_SERIALIZABLE:     sitem += "Serializable";     break;
+    default:                       sitem += "(No information)"; break;
   }
   tree->InsertItem(sitem, infoItemImpl);
 
@@ -914,6 +914,7 @@ SQLInfoTree::WordListToTree(WordList& p_list,CTreeCtrl* p_tree,HTREEITEM p_item)
 }
 
 // All table info to a treecontrol
+// HINT: Call in advance: CWaitCursor take_a_deep_sigh;
 void
 SQLInfoTree::MakeTableInfo(CTreeCtrl* tree,CString& table)
 {
@@ -933,7 +934,6 @@ SQLInfoTree::MakeTableInfo(CTreeCtrl* tree,CString& table)
   {
     return;
   }
-  CWaitCursor take_a_deep_sigh;
 
   // This outperforms the DeleteAllItems of the treecontrol BY FAR!!!
   // Just search all items and delete them individually

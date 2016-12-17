@@ -2,7 +2,7 @@
 //
 // File: SQLQuery.cpp
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #include "stdafx.h"
 #include <sqlext.h>
@@ -30,6 +30,7 @@
 #include "SQLQuery.h"
 #include "SQLWrappers.h"
 #include "SQLDate.h"
+#include "bcd.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -70,22 +71,22 @@ SQLQuery::~SQLQuery()
 void 
 SQLQuery::Init(SQLDatabase* p_database)
 {
-  m_database       = p_database;
-  m_hstmt          = 0;
-  m_retCode        = SQL_SUCCESS;
-  m_numColumns     = -1;
-  m_rows           = 0;
-  m_fetchIndex     = 0;
+  m_database         = p_database;
+  m_hstmt            = 0;
+  m_retCode          = SQL_SUCCESS;
+  m_numColumns       = -1;
+  m_rows             = 0;
+  m_fetchIndex       = 0;
   m_rebindParameters = NULL;
   m_rebindColumns    = NULL;
-  m_hasLongColumns = false;
-  m_bufferSize     = 0;
-  m_prepareDone    = false;
-  m_boundDone      = false;
-  m_lastError      = "";
-  m_maxRows        = 0;
-  m_isSelectQuery  = false;
-  m_speedThreshold = QUERY_TOO_LONG;
+  m_hasLongColumns   = false;
+  m_bufferSize       = 0;
+  m_prepareDone      = false;
+  m_boundDone        = false;
+  m_lastError        = "";
+  m_maxRows          = 0;
+  m_isSelectQuery    = false;
+  m_speedThreshold   = QUERY_TOO_LONG;
   m_connection       = NULL;
 }
 
@@ -99,10 +100,10 @@ SQLQuery::Init(HDBC p_connection)
 void
 SQLQuery::Close()
 {
-  // Statement resetten
+  // Statement reset
   if (m_hstmt)
   {
-    // If a cursor was openend (binding columns present)
+    // If a cursor was opened (binding columns present)
     // And not read until the end of the cursor stream
     // Try closing the cursor first
     if(m_numMap.size() && m_retCode != SQL_NO_DATA)
@@ -116,15 +117,28 @@ SQLQuery::Close()
         // This is documented behaviour of SQLCloseCursor
         if(m_database)
         {
-        if(m_database->GetSQLState() != "24000")
-        {
-          m_database->LogPrint(0,m_lastError);
-          m_database->LogPrint(0,"Trying to continue without closing the cursor!");
+          if(m_database->GetSQLState() != "24000")
+          {
+            m_database->LogPrint(0,m_lastError);
+            m_database->LogPrint(0,"Trying to continue without closing the cursor!");
+          }
         }
       }
     }
+
+    // Some databases require to ALWAYS call commit after any statement
+    // Namely databases with Multi-Generational-Architecture.
+    // Even after a SELECT query!!
+    if(m_database)
+    {
+      ::SQLEndTran(SQL_HANDLE_DBC,m_database->GetDBHandle(),SQL_COMMIT);
     }
-    // Free the statement and drop alle associated info
+    else
+    {
+      ::SQLEndTran(SQL_HANDLE_DBC,m_connection,SQL_COMMIT);
+    }
+
+    // Free the statement and drop all associated info
     // And all cursors on the database engine
     m_retCode = SQLDatabase::FreeSQLHandle(&m_hstmt,SQL_DROP);
     if(!SQL_SUCCEEDED(m_retCode))
@@ -133,7 +147,7 @@ SQLQuery::Close()
       throw m_lastError;
     }
   }
-  // Clear nummer map
+  // Clear number map
   ColNumMap::iterator it = m_numMap.begin();
   while(it != m_numMap.end())
   {
@@ -183,10 +197,10 @@ SQLQuery::Open()
   {
     m_retCode = m_database->GetSQLHandle(&m_hstmt,false);
     if(!SQL_SUCCEEDED(m_retCode))
-  {
-    GetLastError("Getting statement handle: ");
-    throw m_lastError;
-  }
+    {
+      GetLastError("Getting statement handle: ");
+      throw m_lastError;
+    }
   }
   else
   {
@@ -209,7 +223,7 @@ SQLQuery::Open()
     throw CString("No database connection at SQLQUery::Open function");
   }
   // DISABLED!!
-  // Without escae scanning other things will go wrong.
+  // Without escape scanning other things will go wrong.
   // For instance if a query ends on a "? " : So "<Placeholder><space>"
 
   // SPEED: Do not look for ODBC escapes sequences
@@ -221,7 +235,7 @@ SQLQuery::Open()
   //   }
 
   // Change cursor type to the cheapest qua performance
-  m_retCode = SQLSetStmtAttr(m_hstmt,SQL_CURSOR_TYPE,(SQLPOINTER)SQL_CURSOR_FORWARD_ONLY,SQL_IS_UINTEGER);
+  m_retCode = SqlSetStmtAttr(m_hstmt,SQL_CURSOR_TYPE,(SQLPOINTER)SQL_CURSOR_FORWARD_ONLY,SQL_IS_UINTEGER);
   if(!SQL_SUCCEEDED(m_retCode))
   {
     GetLastError("Cannot set CURSOR-FORWARD-ONLY attribute: ");
@@ -231,7 +245,7 @@ SQLQuery::Open()
   // Set max-rows if our database DOES support it (Oracle!)
   if(m_maxRows)
   {
-    m_retCode = SQLSetStmtAttr(m_hstmt,SQL_MAX_ROWS,(SQLPOINTER)m_maxRows,SQL_IS_UINTEGER);
+    m_retCode = SqlSetStmtAttr(m_hstmt,SQL_MAX_ROWS,(SQLPOINTER)m_maxRows,SQL_IS_UINTEGER);
     if(!SQL_SUCCEEDED(m_retCode))
     {
       GetLastError("Cannot set SQL_MAX_ROWS attribute: ");
@@ -239,8 +253,7 @@ SQLQuery::Open()
     }
   }
   // Solving formatting for various databases (Oracle / MS-Access)
-  // Numeric and Decimal formats can be mangled by disbehaving ODCBC drivers
-  // So they must be set or gotten in a predefined format (e.g. Oracle needs DOUBLE for a NUMERIC column)
+  // So they must be set or gotten in a predefined format (e.g. Oracle needs LONG for SLONG and ULONG)
   // Also see method "SQLType2CType" for the use of the rebind maps
   if(m_database)
   {
@@ -300,7 +313,7 @@ SQLQuery::ReportQuerySpeed(LARGE_INTEGER p_start)
   QueryPerformanceCounter(&einde);
 
   double secondsDBL = ((double)(einde.QuadPart - p_start.QuadPart)) / (double)freq.QuadPart;
-  seconds = (long) secondsDBL; // afronden
+  seconds = (long) secondsDBL; // rounding
 
   CString message;
   if(seconds > m_speedThreshold)
@@ -396,6 +409,13 @@ SQLQuery::SetParameter(int p_num,SQLTimestamp& p_param,int p_type /*=SQL_PARAM_I
   InternalSetParameter(p_num,var,p_type);
 }
 
+void
+SQLQuery::SetParameter(int p_num,const bcd& p_param,int p_type /*=SQL_PARAM_INPUT*/)
+{
+  SQLVariant* var = new SQLVariant(&p_param);
+  InternalSetParameter(p_num,var,p_type);
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // STATEMENTS
@@ -411,6 +431,13 @@ SQLQuery::DoSQLStatement(const CString& p_statement,int p_param1)
 
 void 
 SQLQuery::DoSQLStatement(const CString& p_statement,const char* p_param1)
+{
+  SetParameter(1,p_param1);
+  DoSQLStatement(p_statement);
+}
+
+void
+SQLQuery::DoSQLStatement(const CString& p_statement,const bcd&  p_param1)
 {
   SetParameter(1,p_param1);
   DoSQLStatement(p_statement);
@@ -441,7 +468,7 @@ SQLQuery::DoSQLStatement(const CString& p_statement)
 
   if(m_database && m_database->LogLevel() >= LOGLEVEL_MAX)
   {
-    m_database->LogPrint(LOGLEVEL_MAX,"[Datbase query]\n");
+    m_database->LogPrint(LOGLEVEL_MAX,"[Database query]\n");
     m_database->LogPrint(LOGLEVEL_MAX,p_statement.GetString());
     m_database->LogPrint(LOGLEVEL_MAX,"\n");
   }
@@ -459,15 +486,15 @@ SQLQuery::DoSQLStatement(const CString& p_statement)
   // Optimization: remove trailing spaces
   statement.Trim();
 
-  // Do the Querytext macro replacement
+  // Do the Query text macro replacement
   if(m_database)
   {
     m_database->ReplaceMacros(statement);
   }
 
   // The Oracle 10.2.0.3.0 ODBC Driver - and later versions - contain a bug
-  // in the processing of the query-strings which crashes it in CharNexW
-  // by a missing NUL-Terminator. By changing the length of the statement
+  // in the processing of the query-strings which crashes it in CharNextW
+  // by a missing NULL-Terminator. By changing the length of the statement
   // _including_ the terminating NUL, it won't crash at all
   SQLINTEGER lengthStatement = statement.GetLength() + 1;
 
@@ -554,6 +581,13 @@ SQLQuery::DoSQLStatementScalar(const CString& p_statement,const char* p_param1)
   return DoSQLStatementScalar(p_statement);
 }
 
+SQLVariant* 
+SQLQuery::DoSQLStatementScalar(const CString& p_statement,const bcd&  p_param1)
+{
+  SetParameter(1,p_param1);
+  return DoSQLStatementScalar(p_statement);
+}
+
 int
 SQLQuery::DoSQLStatementNonQuery(const CString& p_statement,const int p_param1)
 {
@@ -563,6 +597,13 @@ SQLQuery::DoSQLStatementNonQuery(const CString& p_statement,const int p_param1)
 
 int
 SQLQuery::DoSQLStatementNonQuery(const CString& p_statement,const char* p_param1)
+{
+  SetParameter(1,p_param1);
+  return DoSQLStatementNonQuery(p_statement);
+}
+
+int
+SQLQuery::DoSQLStatementNonQuery(const CString& p_statement,const bcd&  p_param1)
 {
   SetParameter(1,p_param1);
   return DoSQLStatementNonQuery(p_statement);
@@ -602,7 +643,7 @@ SQLQuery::DoSQLPrepare(const CString& p_statement)
   // Optimization: remove trailing spaces
   statement.Trim();
 
-  // Do the Querytext macro replacement
+  // Do the Query text macro replacement
   if(m_database)
   {
     m_database->ReplaceMacros(statement);
@@ -732,7 +773,7 @@ SQLQuery::BindParameters()
         sqlDatatype = (SQLSMALLINT)rt->second;
       }
     }
-    // Check minimaal input type
+    // Check minimal input type
     if(var->GetParameterType() == SQL_PARAM_TYPE_UNKNOWN)
     {
       var->SetParameterType(SQL_PARAM_INPUT);
@@ -768,6 +809,13 @@ SQLQuery::BindParameters()
       GetLastError(prefix);
       throw m_lastError;
     }
+
+    // Bind NUMERIC/DECIMAL precision and scale
+    if(sqlDatatype == SQL_NUMERIC || sqlDatatype == SQL_DECIMAL)
+    {
+      BindColumnNumeric((SQLSMALLINT)icol,var,SQL_PARAM_INPUT);
+    }
+
     // Next column
     ++it;
   }
@@ -786,18 +834,24 @@ SQLQuery::BindColumns()
   int atexec = 0;
 
   GetMaxColumnLength();
+
+  // COLLECT INFO FOR ALL COLUMNS AND CREATE VARIANTS
+
   for(icol = 1; icol <= m_numColumns; ++icol)
   {
     atexec = 0;
+    scale  = SQLNUM_DEF_SCALE;
+ 
+    // Getting the info for this column
     m_retCode = SqlDescribeCol(m_hstmt            // statement handle
-                             ,icol               // Column number
-                             ,colName            // Column name
-                             ,SQL_MAX_IDENTIFIER // name buffer length
-                             ,&dummy             // actual name length gotten
-                             ,&dataType          // SQL data type (SQL_XX)
-                             ,&precision         // precision of numbers
-                             ,&scale             // decimal scale
-                             ,&nullable);        // NULL values OK?
+                              ,icol               // Column number
+                              ,colName            // Column name
+                              ,SQL_MAX_IDENTIFIER // name buffer length
+                              ,&dummy             // actual name length gotten
+                              ,&dataType          // SQL data type (SQL_XX)
+                              ,&precision         // precision of numbers
+                              ,&scale             // decimal scale
+                              ,&nullable);        // NULL values OK?
     if(!SQL_SUCCEEDED(m_retCode))
     {
       CString fout;
@@ -828,6 +882,7 @@ SQLQuery::BindColumns()
       // IF YOU DON'T DO THIS, YOU WILL CRASH!!
       precision *= 2;
     }
+    // Create new variant and reserve space for CHAR and BINARY types
     SQLVariant* var = new SQLVariant(type,(int)precision);
     var->SetColumnNumber(icol);
     var->SetSQLDataType(dataType);
@@ -837,6 +892,15 @@ SQLQuery::BindColumns()
       var->SetAtExec(true);
       var->SetBinaryPieceSize(atexec);
     }
+
+    // Record precision/scale for NUMERIC/DECIMAL types
+    if(type == SQL_DECIMAL || type == SQL_NUMERIC)
+    {
+      SQL_NUMERIC_STRUCT* numeric = var->GetAsNumeric();
+      numeric->precision = (SQLCHAR)  precision;
+      numeric->scale     = (SQLSCHAR) scale;
+    }
+
     CString columnName(colName);
     columnName.MakeLower();
     m_numMap .insert(std::make_pair(icol,var));
@@ -848,6 +912,10 @@ SQLQuery::BindColumns()
 //     TRACE("- Precision: %d\n",precision);
 //     TRACE("- ATEXEC   : %d\n",atexec);
   }
+
+  // NOW WE HAVE ALL INFORMATION
+  // BEGIN THE BINDING PROCES
+
   ColNumMap::iterator it = m_numMap.begin();
   while(it != m_numMap.end())
   {
@@ -864,10 +932,12 @@ SQLQuery::BindColumns()
           type = re->second;
         }
       }
+      SQLPOINTER pointer = var->GetDataPointer();
+
       m_retCode = SqlBindCol(m_hstmt                                   // statement handle
                             ,(SQLUSMALLINT) bcol                       // Column number
                             ,(SQLSMALLINT)  type                       // Data type
-                            ,(SQLPOINTER)   var->GetDataPointer()      // Data pointer
+                            ,(SQLPOINTER)   pointer                    // Data pointer
                             ,(SQLINTEGER)   var->GetDataSize()         // Data length
                             ,(SQLLEN*)      var->GetIndicatorPointer() // Indicator address
                             );
@@ -878,9 +948,55 @@ SQLQuery::BindColumns()
         GetLastError(prefix);
         throw m_lastError;
       }
+
+      // Now do the SQL_NUMERIC precision/scale binding
+      if(type == SQL_NUMERIC || type == SQL_DECIMAL)
+      {
+        BindColumnNumeric((SQLSMALLINT)bcol,var,SQL_RESULT_COL);
+      }
     }
     ++it;
   }
+}
+
+// Specifying the precision/scale of a NUMERIC/DECIMAL number
+// Must be set in the ARD/APD of the record descriptor to work
+//
+void
+SQLQuery::BindColumnNumeric(SQLSMALLINT p_column,SQLVariant* p_var,int p_type)
+{
+  // Row descriptor for RESULT rows or PARAMeter rows
+  SQLHDESC rowdesc = NULL;
+
+  // Is it for a result set, or for a binded parameter?
+  SQLINTEGER attribute = (p_type == SQL_RESULT_COL) ? SQL_ATTR_APP_ROW_DESC : SQL_ATTR_APP_PARAM_DESC;
+
+  // Getting the ROW descriptor and set the precision/scale fields
+  m_retCode = SqlGetStmtAttr(m_hstmt,attribute,&rowdesc,SQL_IS_POINTER,NULL);
+  if(SQL_SUCCEEDED(m_retCode))
+  {
+    int     precision = p_var->GetNumericPrecision();
+    int     scale     = p_var->GetNumericScale();
+    RETCODE retCode1  = SqlSetDescField(rowdesc,p_column,SQL_DESC_PRECISION,(SQLPOINTER)precision,NULL);
+    RETCODE retCode2  = SqlSetDescField(rowdesc,p_column,SQL_DESC_SCALE,    (SQLPOINTER)scale,    NULL);
+
+    if(SQL_SUCCEEDED(retCode1) && SQL_SUCCEEDED(retCode2))
+    {
+      // Now trigger the reset and check of the descriptor record, by re-supplying the data pointer again.
+      // Very covertly described in the ODBC documentation. But if you do not do this one last step
+      // results will be very different - and faulty - depending on your RDBMS
+      SQLPOINTER pointer = p_var->GetDataPointer();
+      m_retCode = SqlSetDescField(rowdesc,p_column,SQL_DESC_DATA_PTR,pointer,NULL);
+      if(SQL_SUCCEEDED(m_retCode))
+      {
+        // All went well, we are done
+        return;
+      }
+    }
+  }
+  CString error;
+  error.Format("Cannot bind NUMERIC attributes PRECISION/SCALE for column: %d",p_column);
+  throw error;
 }
 
 int 
@@ -893,7 +1009,7 @@ SQLQuery::ProvideAtExecData()
   int value;
   do 
   {
-    m_retCode = ::SQLParamData(m_hstmt,(SQLPOINTER*)&value);
+    m_retCode = SqlParamData(m_hstmt,(SQLPOINTER*)&value);
     if(m_retCode == SQL_NEED_DATA)
     {
       VarMap::iterator it = m_parameters.find(value);
@@ -911,7 +1027,7 @@ SQLQuery::ProvideAtExecData()
           piece = size;
         }
 
-        // Put all the datapieces into place
+        // Put all the data pieces into place
         while(total < size)
         {
           m_retCode = SqlPutData(m_hstmt,data,piece);
@@ -990,6 +1106,7 @@ SQLQuery::GetRecord()
   }
   // Set all columns to NULL
   ResetColumns();
+
   // Do the fetch
   m_retCode = SqlFetch(m_hstmt);
   if(SQL_SUCCEEDED(m_retCode))
@@ -1033,9 +1150,9 @@ SQLQuery::RetrieveAtExecData()
       m_retCode = SqlGetData(m_hstmt
                             ,(SQLUSMALLINT) col
                             ,(SQLSMALLINT)  var->GetDataType()
-                          ,(SQLPOINTER)   var->GetDataPointer()
-                          ,(SQLINTEGER)   0  // Request the actual length of this field
-                          ,&actualLength);
+                            ,(SQLPOINTER)   var->GetDataPointer()
+                            ,(SQLINTEGER)   0  // Request the actual length of this field
+                            ,&actualLength);
       if(SQL_SUCCEEDED(m_retCode))
       {
         if(actualLength == SQL_NO_TOTAL)
@@ -1264,10 +1381,10 @@ SQLQuery::GetColumnName(int p_column,CString& p_name)
 
 // Convert database dependent SQL_XXXX types to C-types SQL_C_XXXX
 short
-SQLQuery::SQLType2CType(short nSQLType)
+SQLQuery::SQLType2CType(short p_sqlType)
 {
   short type = SQL_C_CHAR; // Default;
-  switch(nSQLType)
+  switch(p_sqlType)
   {
     case SQL_CHAR:                      // Fall through
     case SQL_WCHAR:                     // Fall through
@@ -1311,7 +1428,7 @@ SQLQuery::SQLType2CType(short nSQLType)
   {
     // A rebind simply transposes a SQL_C_XXX type for another
     // So we can as to return say a SQL_C_DATE as an SQL_C_CHAR from the ODBC driver
-    RebindMap::iterator it = m_rebindColumns->find(nSQLType);
+    RebindMap::iterator it = m_rebindColumns->find(p_sqlType);
     if(it != m_rebindColumns->end())
     {
       // Return rebind type to this one
@@ -1374,7 +1491,7 @@ SQLQuery::GetColumnDisplaySize(int p_column)
   return (int)integerValue;
 }
 
-// LEGACY SUPPORT ODBC 1.x AND 2.x
+// LEGACY SUPPORT ODBC 1.x AND 2.x Style applications
 
 void
 SQLQuery::DescribeColumn(int           p_col
@@ -1426,11 +1543,11 @@ SQLQuery::DescribeColumn(int           p_col
   // Explicit 2.x call (SQLColAttributes instead of SQLColAttribute)
   m_retCode = SqlColAttributes(m_hstmt
                               ,(SQLUSMALLINT) p_col
-                            ,(SQLUSMALLINT) SQL_COLUMN_LENGTH
-                            ,(SQLPOINTER)   rgbDesc
-                            ,(SQLSMALLINT)  cbDescMax
-                            ,(SQLSMALLINT*) &cbDescResult
-                            ,(SQLLEN*)      &fDesc);
+                              ,(SQLUSMALLINT) SQL_COLUMN_LENGTH
+                              ,(SQLPOINTER)   rgbDesc
+                              ,(SQLSMALLINT)  cbDescMax
+                              ,(SQLSMALLINT*) &cbDescResult
+                              ,(SQLLEN*)      &fDesc);
   if(!SQL_SUCCEEDED(m_retCode))
   {
     GetLastError();

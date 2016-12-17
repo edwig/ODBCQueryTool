@@ -24,8 +24,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   25-05-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #include "ExcelFormat.h"
 
@@ -5820,7 +5820,7 @@ void BasicExcel::AdjustDBCellPositions()
           cellOffset += (USHORT)worksheets_[i].cellTable_.rowBlocks_[j].cellBlocks_[l]->RecordSize();
         }
         cellOffset = 0;
-    }
+      }
     }
     offset += worksheets_[i].cellTable_.RecordSize();
     offset += worksheets_[i].window2_.RecordSize();
@@ -5980,7 +5980,6 @@ void BasicExcel::UpdateWorksheets()
     rRowBlocks.resize(maxRows/32 + ((maxRows % 32) ? 1 : 0));
     for(int r=0, curRowBlock=0; r<maxRows; ++r) 
     {
-      pCellBlocks = nullptr;
       if (r % 32 == 0) 
       {
         // New row block for every 32 rows.
@@ -5988,229 +5987,233 @@ void BasicExcel::UpdateWorksheets()
       }
       bool newRow = true; 
       // Keep track whether current row contains data.
-      pCellBlocks->reserve(1000);
-      for(int c=0; c<maxCols; ++c) {
-        const BasicExcelCell* cell = sheet.Cell(r, c);
+      if(pCellBlocks)
+      {
+        pCellBlocks->reserve(1000);
+        for(int c=0; c<maxCols; ++c) {
+          const BasicExcelCell* cell = sheet.Cell(r, c);
 
-        int cellType = cell->Type();
-//				if (cellType != BasicExcelCell::UNDEFINED)	// Current cell contains some data
-        // Write cell content, even if blank in order to keep format
-        {
-          if (rawSheet.index_.firstUsedRowIndex_ == 100000) {
-            // Set firstUsedRowIndex.
-            rawSheet.index_.firstUsedRowIndex_ = r;
-            rawSheet.dimensions_.firstUsedRowIndex_ = r;
-
-            // Resize DBCellPos.
-            size_t nm = int(rawSheet.index_.firstUnusedRowIndex_ - rawSheet.index_.firstUsedRowIndex_ - 1) / 32 + 1;
-            rawSheet.index_.DBCellPos_.resize(nm);
-          }
-
-          if (rawSheet.dimensions_.firstUsedColIndex_ == 1000) {
-            // Set firstUsedColIndex.
-            rawSheet.dimensions_.firstUsedColIndex_ = c;
-          }
-
-          if (newRow) {
-            // Prepare Row and DBCell for new row with data.
-            Worksheet::CellTable::RowBlock& rRowBlock = rRowBlocks[curRowBlock-1];
-            rRowBlock.rows_.push_back(row);
-            rRowBlock.rows_.back().rowIndex_ = r;
-            rRowBlock.rows_.back().lastCellColIndexPlusOne_ = maxCols;
-            rRowBlock.dbcell_.offsets_.push_back(0);
-            newRow = false;
-          }
-
-          // Create new cellblock to store cell.
-          pCellBlocks->push_back(new Worksheet::CellTable::RowBlock::CellBlock);
-          if (pCellBlocks->size()%1000==0) pCellBlocks->reserve(pCellBlocks->size()+1000);
-          pCell = &*(pCellBlocks->back());
-
-          // Store cell.
-          switch(cellType) {
-            case BasicExcelCell::INT:
+          int cellType = cell->Type();
+  //				if (cellType != BasicExcelCell::UNDEFINED)	// Current cell contains some data
+          // Write cell content, even if blank in order to keep format
+          {
+            if (rawSheet.index_.firstUsedRowIndex_ == 100000) 
             {
-              // Check whether it is a single cell or range of cells.
-              int cl = c + 1;
-              for(; cl<maxCols; ++cl) {
-                const BasicExcelCell* cellNext = sheet.Cell(r, cl);
-                if (cellNext->Type()==BasicExcelCell::UNDEFINED ||
-                  cellNext->Type()!=cell->Type()) break;
-              }
+              // Set firstUsedRowIndex.
+              rawSheet.index_.firstUsedRowIndex_ = r;
+              rawSheet.dimensions_.firstUsedRowIndex_ = r;
 
-              if (cl > c+1) {
-                // MULRK cells
-                pCell->SetType(CODE::MULRK);
-                pCell->_union.mulrk_->rowIndex_ = r;
-                pCell->_union.mulrk_->firstColIndex_ = c;
-                pCell->_union.mulrk_->lastColIndex_ = cl - 1;
-                pCell->_union.mulrk_->XFRK_.resize(cl-c);
-
-                for(size_t i=0; c<cl; ++c, ++i) {
-                  cell = sheet.Cell(r, c);
-                  pCell->_union.mulrk_->XFRK_[i].RKValue_ = GetRKValueFromInteger(cell->GetInteger());
-                  pCell->_union.mulrk_->XFRK_[i].XFRecordIndex_ = cell->GetXFormatIdx();	//MF set format index
-                }
-
-                --c;
-              } else {
-                // Single cell
-                pCell->SetType(CODE::RK);
-                pCell->_union.rk_->rowIndex_ = r;
-                pCell->_union.rk_->colIndex_ = c;
-                pCell->_union.rk_->value_ = GetRKValueFromInteger(cell->GetInteger());
-                pCell->_union.rk_->XFRecordIndex_ = cell->GetXFormatIdx();	//MF set format index
-              }
-              break;
+              // Resize DBCellPos.
+              size_t nm = int(rawSheet.index_.firstUnusedRowIndex_ - rawSheet.index_.firstUsedRowIndex_ - 1) / 32 + 1;
+              rawSheet.index_.DBCellPos_.resize(nm);
             }
 
-            case BasicExcelCell::DOUBLE:
-            {
-              // Check whether it is a single cell or range of cells.
-              // Double values which cannot be stored as RK values will be stored as single cells.
-              bool canStoreAsRKValue = CanStoreAsRKValue(cell->GetDouble());
-              int cl = c + 1;
-              for(; cl<maxCols; ++cl) {
-                const BasicExcelCell* cellNext = sheet.Cell(r, cl);
+            if (rawSheet.dimensions_.firstUsedColIndex_ == 1000) {
+              // Set firstUsedColIndex.
+              rawSheet.dimensions_.firstUsedColIndex_ = c;
+            }
 
-                if (cellNext->Type()==BasicExcelCell::UNDEFINED ||
-                  cellNext->Type()!=cell->Type() ||
-                  canStoreAsRKValue!=CanStoreAsRKValue(cellNext->GetDouble())) break;
-              }
+            if (newRow) {
+              // Prepare Row and DBCell for new row with data.
+              Worksheet::CellTable::RowBlock& rRowBlock = rRowBlocks[curRowBlock-1];
+              rRowBlock.rows_.push_back(row);
+              rRowBlock.rows_.back().rowIndex_ = r;
+              rRowBlock.rows_.back().lastCellColIndexPlusOne_ = maxCols;
+              rRowBlock.dbcell_.offsets_.push_back(0);
+              newRow = false;
+            }
 
-              if (cl > c+1 && canStoreAsRKValue) {
-                // MULRK cells
-                pCell->SetType(CODE::MULRK);
-                pCell->_union.mulrk_->rowIndex_ = r;
-                pCell->_union.mulrk_->firstColIndex_ = c;
-                pCell->_union.mulrk_->lastColIndex_ = cl - 1;
-                pCell->_union.mulrk_->XFRK_.resize(cl-c);
+            // Create new cellblock to store cell.
+            pCellBlocks->push_back(new Worksheet::CellTable::RowBlock::CellBlock);
+            if (pCellBlocks->size()%1000==0) pCellBlocks->reserve(pCellBlocks->size()+1000);
+            pCell = &*(pCellBlocks->back());
 
-                for(size_t i=0; c<cl; ++c, ++i) {
-                  cell = sheet.Cell(r, c);
-                  pCell->_union.mulrk_->XFRK_[i].RKValue_ = GetRKValueFromDouble(cell->GetDouble());
-                  pCell->_union.mulrk_->XFRK_[i].XFRecordIndex_ = cell->GetXFormatIdx();	//MF set format index
+            // Store cell.
+            switch(cellType) {
+              case BasicExcelCell::INT:
+              {
+                // Check whether it is a single cell or range of cells.
+                int cl = c + 1;
+                for(; cl<maxCols; ++cl) {
+                  const BasicExcelCell* cellNext = sheet.Cell(r, cl);
+                  if (cellNext->Type()==BasicExcelCell::UNDEFINED ||
+                    cellNext->Type()!=cell->Type()) break;
                 }
-                --c;
-              } else {
-                // Single cell
-                if (canStoreAsRKValue) {
+
+                if (cl > c+1) {
+                  // MULRK cells
+                  pCell->SetType(CODE::MULRK);
+                  pCell->_union.mulrk_->rowIndex_ = r;
+                  pCell->_union.mulrk_->firstColIndex_ = c;
+                  pCell->_union.mulrk_->lastColIndex_ = cl - 1;
+                  pCell->_union.mulrk_->XFRK_.resize(cl-c);
+
+                  for(size_t i=0; c<cl; ++c, ++i) {
+                    cell = sheet.Cell(r, c);
+                    pCell->_union.mulrk_->XFRK_[i].RKValue_ = GetRKValueFromInteger(cell->GetInteger());
+                    pCell->_union.mulrk_->XFRK_[i].XFRecordIndex_ = cell->GetXFormatIdx();	//MF set format index
+                  }
+
+                  --c;
+                } else {
+                  // Single cell
                   pCell->SetType(CODE::RK);
                   pCell->_union.rk_->rowIndex_ = r;
                   pCell->_union.rk_->colIndex_ = c;
-                  pCell->_union.rk_->value_ = GetRKValueFromDouble(cell->GetDouble());
+                  pCell->_union.rk_->value_ = GetRKValueFromInteger(cell->GetInteger());
                   pCell->_union.rk_->XFRecordIndex_ = cell->GetXFormatIdx();	//MF set format index
-                } else {
-                  pCell->SetType(CODE::NUMBER);
-                  pCell->_union.number_->rowIndex_ = r;
-                  pCell->_union.number_->colIndex_ = c;
-                  pCell->_union.number_->value_ = cell->GetDouble();
-                  pCell->_union.number_->XFRecordIndex_ = cell->GetXFormatIdx();	//MF set format index
                 }
-              }
-              break;
-            }
-
-            case BasicExcelCell::STRING:
-            {
-              // Fill cell information
-              pCell->SetType(CODE::LABELSST);
-              pCell->_union.labelsst_->rowIndex_ = r;
-              pCell->_union.labelsst_->colIndex_ = c;
-
-              // Get cell string
-              vector<char> str(cell->GetStringLength()+1);
-              cell->Get(&*(str.begin()));
-              str.pop_back(); // Remove null character because LargeString does not store null character.
-
-              // Check if string is present in Shared string table.
-              ++workbook_.sst_.stringsTotal_;
-              ULONG maxUniqueStrings = workbook_.sst_.uniqueStringsTotal_;
-              size_t strIndex = 0;
-              stringMapIt = stringMap.find(str);
-              if (stringMapIt != stringMap.end()) strIndex = stringMapIt->second;
-              else strIndex = maxUniqueStrings;
-
-              if (strIndex < maxUniqueStrings) {
-                // String is present in Shared string table.
-                pCell->_union.labelsst_->SSTRecordIndex_ = strIndex;
-              } else {
-                // New unique string.
-                stringMap[str] = maxUniqueStrings;
-                workbook_.sst_.strings_.push_back(largeString);
-                workbook_.sst_.strings_[maxUniqueStrings].name_ = str;
-                workbook_.sst_.strings_[maxUniqueStrings].unicode_ = 0;
-                pCell->_union.labelsst_->SSTRecordIndex_ = maxUniqueStrings;
-                ++workbook_.sst_.uniqueStringsTotal_;
+                break;
               }
 
-              pCell->_union.labelsst_->XFRecordIndex_ = cell->GetXFormatIdx();	//MF set format index
-              break;
-            }
+              case BasicExcelCell::DOUBLE:
+              {
+                // Check whether it is a single cell or range of cells.
+                // Double values which cannot be stored as RK values will be stored as single cells.
+                bool canStoreAsRKValue = CanStoreAsRKValue(cell->GetDouble());
+                int cl = c + 1;
+                for(; cl<maxCols; ++cl) {
+                  const BasicExcelCell* cellNext = sheet.Cell(r, cl);
 
-            case BasicExcelCell::WSTRING:
-            {
-              // Fill cell information
-              pCell->SetType(CODE::LABELSST);
-              pCell->_union.labelsst_->rowIndex_ = r;
-              pCell->_union.labelsst_->colIndex_ = c;
+                  if (cellNext->Type()==BasicExcelCell::UNDEFINED ||
+                    cellNext->Type()!=cell->Type() ||
+                    canStoreAsRKValue!=CanStoreAsRKValue(cellNext->GetDouble())) break;
+                }
 
-              // Get cell string
-              vector<wchar_t> str(cell->GetStringLength()+1);
-              cell->Get(&*(str.begin()));
-              str.pop_back(); // Remove null character because LargeString does not store null character.
+                if (cl > c+1 && canStoreAsRKValue) {
+                  // MULRK cells
+                  pCell->SetType(CODE::MULRK);
+                  pCell->_union.mulrk_->rowIndex_ = r;
+                  pCell->_union.mulrk_->firstColIndex_ = c;
+                  pCell->_union.mulrk_->lastColIndex_ = cl - 1;
+                  pCell->_union.mulrk_->XFRK_.resize(cl-c);
 
-              // Check if string is present in Shared string table.
-              ++workbook_.sst_.stringsTotal_;
-              size_t maxUniqueStrings = workbook_.sst_.strings_.size();
-              size_t strIndex = 0;
-              wstringMapIt = wstringMap.find(str);
-              if (wstringMapIt != wstringMap.end()) strIndex = wstringMapIt->second;
-              else strIndex = maxUniqueStrings;
-
-              if (strIndex < maxUniqueStrings) {
-                // String is present in Shared string table.
-                pCell->_union.labelsst_->SSTRecordIndex_ = strIndex;
-              } else {
-                // New unique string
-                wstringMap[str] = maxUniqueStrings;
-                workbook_.sst_.strings_.push_back(largeString);
-                workbook_.sst_.strings_[maxUniqueStrings].wname_ = str;
-                workbook_.sst_.strings_[maxUniqueStrings].unicode_ = 1;
-                pCell->_union.labelsst_->SSTRecordIndex_ = maxUniqueStrings;
-                ++workbook_.sst_.uniqueStringsTotal_;
+                  for(size_t i=0; c<cl; ++c, ++i) {
+                    cell = sheet.Cell(r, c);
+                    pCell->_union.mulrk_->XFRK_[i].RKValue_ = GetRKValueFromDouble(cell->GetDouble());
+                    pCell->_union.mulrk_->XFRK_[i].XFRecordIndex_ = cell->GetXFormatIdx();	//MF set format index
+                  }
+                  --c;
+                } else {
+                  // Single cell
+                  if (canStoreAsRKValue) {
+                    pCell->SetType(CODE::RK);
+                    pCell->_union.rk_->rowIndex_ = r;
+                    pCell->_union.rk_->colIndex_ = c;
+                    pCell->_union.rk_->value_ = GetRKValueFromDouble(cell->GetDouble());
+                    pCell->_union.rk_->XFRecordIndex_ = cell->GetXFormatIdx();	//MF set format index
+                  } else {
+                    pCell->SetType(CODE::NUMBER);
+                    pCell->_union.number_->rowIndex_ = r;
+                    pCell->_union.number_->colIndex_ = c;
+                    pCell->_union.number_->value_ = cell->GetDouble();
+                    pCell->_union.number_->XFRecordIndex_ = cell->GetXFormatIdx();	//MF set format index
+                  }
+                }
+                break;
               }
 
-              pCell->_union.labelsst_->XFRecordIndex_ = cell->GetXFormatIdx();	//MF set format index
-              break;
-            }
+              case BasicExcelCell::STRING:
+              {
+                // Fill cell information
+                pCell->SetType(CODE::LABELSST);
+                pCell->_union.labelsst_->rowIndex_ = r;
+                pCell->_union.labelsst_->colIndex_ = c;
 
-            //MF: handle formulas
-            case BasicExcelCell::FORMULA:
-            {
-              // Fill cell information
-              pCell->SetType(CODE::FORMULA);
+                // Get cell string
+                vector<char> str(cell->GetStringLength()+1);
+                cell->Get(&*(str.begin()));
+                str.pop_back(); // Remove null character because LargeString does not store null character.
 
-              pCell->_union.formula_->rowIndex_ = r;
-              pCell->_union.formula_->colIndex_ = c;
+                // Check if string is present in Shared string table.
+                ++workbook_.sst_.stringsTotal_;
+                ULONG maxUniqueStrings = workbook_.sst_.uniqueStringsTotal_;
+                size_t strIndex = 0;
+                stringMapIt = stringMap.find(str);
+                if (stringMapIt != stringMap.end()) strIndex = stringMapIt->second;
+                else strIndex = maxUniqueStrings;
 
-              pCell->_union.formula_->XFRecordIndex_ = cell->GetXFormatIdx();
+                if (strIndex < maxUniqueStrings) {
+                  // String is present in Shared string table.
+                  pCell->_union.labelsst_->SSTRecordIndex_ = strIndex;
+                } else {
+                  // New unique string.
+                  stringMap[str] = maxUniqueStrings;
+                  workbook_.sst_.strings_.push_back(largeString);
+                  workbook_.sst_.strings_[maxUniqueStrings].name_ = str;
+                  workbook_.sst_.strings_[maxUniqueStrings].unicode_ = 0;
+                  pCell->_union.labelsst_->SSTRecordIndex_ = maxUniqueStrings;
+                  ++workbook_.sst_.uniqueStringsTotal_;
+                }
 
-              cell->get_formula(pCell);
-              break;
-            }
+                pCell->_union.labelsst_->XFRecordIndex_ = cell->GetXFormatIdx();	//MF set format index
+                break;
+              }
 
-            // handle blank case to keep formatting
-            case BasicExcelCell::UNDEFINED:
-            {
-              // Fill cell information
-              pCell->SetType(CODE::BLANK);
+              case BasicExcelCell::WSTRING:
+              {
+                // Fill cell information
+                pCell->SetType(CODE::LABELSST);
+                pCell->_union.labelsst_->rowIndex_ = r;
+                pCell->_union.labelsst_->colIndex_ = c;
 
-              pCell->_union.blank_->colIndex_ = c;
-              pCell->_union.blank_->rowIndex_ = r;
+                // Get cell string
+                vector<wchar_t> str(cell->GetStringLength()+1);
+                cell->Get(&*(str.begin()));
+                str.pop_back(); // Remove null character because LargeString does not store null character.
 
-              pCell->_union.blank_->XFRecordIndex_ = cell->GetXFormatIdx();
-              break;
+                // Check if string is present in Shared string table.
+                ++workbook_.sst_.stringsTotal_;
+                size_t maxUniqueStrings = workbook_.sst_.strings_.size();
+                size_t strIndex = 0;
+                wstringMapIt = wstringMap.find(str);
+                if (wstringMapIt != wstringMap.end()) strIndex = wstringMapIt->second;
+                else strIndex = maxUniqueStrings;
+
+                if (strIndex < maxUniqueStrings) {
+                  // String is present in Shared string table.
+                  pCell->_union.labelsst_->SSTRecordIndex_ = strIndex;
+                } else {
+                  // New unique string
+                  wstringMap[str] = maxUniqueStrings;
+                  workbook_.sst_.strings_.push_back(largeString);
+                  workbook_.sst_.strings_[maxUniqueStrings].wname_ = str;
+                  workbook_.sst_.strings_[maxUniqueStrings].unicode_ = 1;
+                  pCell->_union.labelsst_->SSTRecordIndex_ = maxUniqueStrings;
+                  ++workbook_.sst_.uniqueStringsTotal_;
+                }
+
+                pCell->_union.labelsst_->XFRecordIndex_ = cell->GetXFormatIdx();	//MF set format index
+                break;
+              }
+
+              //MF: handle formulas
+              case BasicExcelCell::FORMULA:
+              {
+                // Fill cell information
+                pCell->SetType(CODE::FORMULA);
+
+                pCell->_union.formula_->rowIndex_ = r;
+                pCell->_union.formula_->colIndex_ = c;
+
+                pCell->_union.formula_->XFRecordIndex_ = cell->GetXFormatIdx();
+
+                cell->get_formula(pCell);
+                break;
+              }
+
+              // handle blank case to keep formatting
+              case BasicExcelCell::UNDEFINED:
+              {
+                // Fill cell information
+                pCell->SetType(CODE::BLANK);
+
+                pCell->_union.blank_->colIndex_ = c;
+                pCell->_union.blank_->rowIndex_ = r;
+
+                pCell->_union.blank_->XFRecordIndex_ = cell->GetXFormatIdx();
+                break;
+              }
             }
           }
         }
@@ -6488,16 +6491,16 @@ BasicExcelWorksheet::CellValue(int row,int col,char* p_buffer,int p_length)
       case BasicExcelCell::STRING:    pointer = (char*)cell->GetString();
                                       break;
       case BasicExcelCell::WSTRING:   {
-                                      const std::wstring wstr(cell->GetWString());
-                                      std::string str = ::narrow_string(wstr);
-                                      pointer = (char*)str.c_str();
+                                        const std::wstring wstr(cell->GetWString());
+                                        std::string str = ::narrow_string(wstr);
+                                        pointer = (char*)str.c_str();
                                       }
                                       break;
       case BasicExcelCell::FORMULA:   {
-                                      double result = 0.0;
-                                      cell->Get(result);
-                                      sprintf_s(p_buffer,p_length,"%f",result);
-                                      TrimDoubleString(p_buffer);
+                                        double result = 0.0;
+                                        cell->Get(result);
+                                        sprintf_s(p_buffer,p_length,"%f",result);
+                                        TrimDoubleString(p_buffer);
                                       }
     }
   }

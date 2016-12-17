@@ -2,7 +2,7 @@
 //
 // File: SQLDate.h
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #include "Stdafx.h"
 #include "SQLDate.h"  
@@ -308,7 +308,7 @@ SQLDate::WeekDayName(Language p_lang /*=LN_DEFAULT*/) const
     }
     if(p_lang >= LN_DUTCH && p_lang <= LN_FRENCH)
     {
-      return g_weekdays[p_lang - 1][weekday];
+      return g_weekdays[p_lang][weekday];
     }
   }
   return "";
@@ -328,7 +328,7 @@ SQLDate::MonthName(Language p_lang /*=LN_DEFAULT*/) const
       }
       if(p_lang >= LN_DUTCH && p_lang <= LN_FRENCH)
       {
-        return g_monthnames[p_lang - 1][m_date.m_month - 1];
+        return g_monthnames[p_lang][m_date.m_month - 1];
       }
     }
   }
@@ -513,7 +513,7 @@ SQLDate::CalculateDate(const CString& p_datum)
     }
     // Speciaal geval: Pronto doet dit
     // 00-00-00 -> wordt vandaag
-    if (dag == 0 && maand == 0 && jaar == 0)
+    if (dag == 0 && maand == 0)
     {
       *this = Today();
       success = true;
@@ -580,11 +580,11 @@ SQLDate::ShortDate(const CString& p_date,int& p_year,int& p_month,int& p_day)
 // Get the virtual date as in (+/- <number> <YEAR(S)/MONTH(S)/DAY(S)/WEEK(S)>)
 bool 
 SQLDate::GetVirtualDate(CString       p_sign,
- 					              CString       p_extraTime,
- 					              long          p_interval,
-					              DateStorage&  p_temp)
+                        CString       p_extraTime,
+                        long          p_interval,
+                        DateStorage&  p_temp)
 {       
-	SQLDate dt;
+  SQLDate dt;
   SQLDate mom = SQLDate::Today();
 
   if(!p_sign.IsEmpty())
@@ -600,24 +600,24 @@ SQLDate::GetVirtualDate(CString       p_sign,
     if(p_extraTime == g_dateNames[g_defaultLanguage][DN_DAY] || 
        p_extraTime == g_dateNames[g_defaultLanguage][DN_DAYS] )
     {
-	    mom = mom.AddDays(factor * p_interval);   
+      mom = mom.AddDays(factor * p_interval);   
     }
-		else if (p_extraTime == g_dateNames[g_defaultLanguage][DN_WEEK] || 
-		         p_extraTime == g_dateNames[g_defaultLanguage][DN_WEEKS] )
-		{
-		  mom = mom.AddDays(factor * p_interval * 7);
-	  }
-		else if (p_extraTime == g_dateNames[g_defaultLanguage][DN_MONTH] || 
-		         p_extraTime == g_dateNames[g_defaultLanguage][DN_MONTHS] )
-		{
-		  mom = mom.AddMonths(factor * p_interval);
-		}
-		else if (p_extraTime == g_dateNames[g_defaultLanguage][DN_YEAR]  || 
-		         p_extraTime == g_dateNames[g_defaultLanguage][DN_YEARS] )
-		{
-		  mom = mom.AddYears(factor * p_interval);
+    else if (p_extraTime == g_dateNames[g_defaultLanguage][DN_WEEK] || 
+             p_extraTime == g_dateNames[g_defaultLanguage][DN_WEEKS] )
+    {
+      mom = mom.AddDays(factor * p_interval * 7);
     }
-		else return false;
+    else if (p_extraTime == g_dateNames[g_defaultLanguage][DN_MONTH] || 
+             p_extraTime == g_dateNames[g_defaultLanguage][DN_MONTHS] )
+    {
+      mom = mom.AddMonths(factor * p_interval);
+    }
+    else if (p_extraTime == g_dateNames[g_defaultLanguage][DN_YEAR]  || 
+             p_extraTime == g_dateNames[g_defaultLanguage][DN_YEARS] )
+    {
+      mom = mom.AddYears(factor * p_interval);
+    }
+    else return false;
   }
   p_temp.m_year  = mom.Year();
   p_temp.m_month = mom.Month();
@@ -992,9 +992,9 @@ SQLDate::NamedDate(const CString& p_date,int& p_year,int& p_month,int& p_day)
     int lang = g_defaultLanguage;
     
     // Adjust language for array origin
-    if(lang != LN_DEFAULT)
+    if(lang == LN_DEFAULT)
     {
-      --lang;
+      lang = LN_ENGLISH;
     }
         
     for(month = 0;month < MONTHS_IN_YEAR; ++month)
@@ -1147,17 +1147,17 @@ SQLDate::operator+(const SQLInterval& p_interval) const
   }
   // Do the calculation
   SQLDate date(*this);
-  date.AddDays(p_interval.GetDays());
+  date = date.AddDays(p_interval.GetDays());
 
   // Corner case where we land on the previous day!!
   if(p_interval.GetIsNegative())
   {
-    if(p_interval.GetHours()   || 
-       p_interval.GetMinutes() || 
-       p_interval.GetSeconds() || 
+    if(p_interval.GetHours()   % 24 || 
+       p_interval.GetMinutes() % 60 || 
+       p_interval.GetSeconds()% 60  || 
        p_interval.GetFractionPart())
     {
-      date.AddDays(-1);
+      date = date.AddDays(-1);
     }
   }
 
@@ -1180,17 +1180,17 @@ SQLDate::operator-(const SQLInterval& p_interval) const
   }
   // Do the calculation
   SQLDate date(*this);
-  date.AddDays(-(p_interval.GetDays()));
+  date = date.AddDays(-(p_interval.GetDays()));
 
   // Corner case where we land on the previous day!!
   if(!p_interval.GetIsNegative())
   {
-    if(p_interval.GetHours()   || 
-       p_interval.GetMinutes() || 
-       p_interval.GetSeconds() || 
+    if(p_interval.GetHours()   % 24 || 
+       p_interval.GetMinutes() % 60 || 
+       p_interval.GetSeconds() % 60 || 
        p_interval.GetFractionPart())
     {
-      date.AddDays(-1);
+      date = date.AddDays(-1);
     }
   }
   return date;

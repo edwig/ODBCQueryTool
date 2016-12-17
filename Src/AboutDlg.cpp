@@ -25,7 +25,7 @@ IMPLEMENT_DYNAMIC(CAboutDlg, CDialog)
 CAboutDlg::CAboutDlg(CWnd* pParent /*=NULL*/)
           :CDialog(CAboutDlg::IDD, pParent)
 {
-  m_license = "ODBC Query Tool 1.4.4 Build: 185"
+  m_license = "ODBC Query Tool 1.5.0 Build: 192"
               "\r\nCopyright (c) 2006-2016 Edwig Huisman" 
               "\r\n\r\nThis program is free software; you can redistribute it" 
               "\r\n\r\nThis program is distributed in the hope that it will be useful,"
@@ -36,7 +36,10 @@ CAboutDlg::CAboutDlg(CWnd* pParent /*=NULL*/)
               "\r\nFor his superb data grid: Chris Maunder"
               "\r\nFor the ODBCRecordset: B.P. Nebbeling"
               "\r\nFor all the testing: Vincent Heuveling"
-              "\r\nFor editable querygrids: Marco Brattinga";
+              "\r\nFor editable query grids: Marco Brattinga"
+              "\r\nFor NUMERIC corrections: Ibo Boekestijn"
+              "\r\nFor GUID corrections: Dann Corbit"
+              "\r\nFor documentation ideas: Chandra Sekhar";
 }
 
 CAboutDlg::~CAboutDlg()

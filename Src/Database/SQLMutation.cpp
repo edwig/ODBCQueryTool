@@ -2,7 +2,7 @@
 //
 // File: SQLMutation.cpp
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,11 +21,12 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #include "stdafx.h"
 #include "SQLMutation.h"
+#include <algorithm>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -151,6 +152,46 @@ SQLMutation::CurrentMutationID()
   return 0;
 }
 
+// Contains mixed mutations
+MutType
+SQLMutation::MixedMutations(int p_mutationID)
+{
+  if(p_mutationID == 0)
+  {
+    return MUT_MyMutation;
+  }
+
+  MutType type = MUT_NoMutation;
+  MutationStack::iterator it;
+  for(it = m_stack.begin(); it != m_stack.end(); ++it);
+  {
+    if((*it)->m_mutationID > 0)
+    {
+      if((*it)->m_mutationID == p_mutationID)
+      {
+        if(type == MUT_OnlyOthers)
+        {
+          // Return directly so we can abort any mutations
+          return MUT_Mixed;
+        }
+        type = MUT_MyMutation;
+      }
+      else
+      {
+        // Contains a mutation of another ID
+        if(type == MUT_MyMutation)
+        {
+          // Return directly so we can abort any mutations
+          return MUT_Mixed;
+        }
+        type = MUT_OnlyOthers;
+      }
+    }
+  }
+  // resulting mutation type
+  return type;
+}
+
 // Reduce all mutations after synchronisation with the database
 // Leaving only the last mutation (TOS) intact.
 void
@@ -170,3 +211,30 @@ SQLMutation::Reduce()
   // Set mutation to 'The Original'
   m_stack.front()->m_mutationID = 0;
 }
+
+// For reporting/analysis purposes: all mutationID's on the stack
+int
+SQLMutation::AllMixedMutations(MutationIDS& p_list,int p_mutationID)
+{
+  // Check if we have mixed mutations
+  if(MixedMutations(p_mutationID) != MUT_Mixed)
+  {
+    return 0;
+  }
+
+  // Walk the stack for the other mutation ID's
+  for(auto& mut : m_stack)
+  {
+    int mutationID = mut->m_mutationID;
+    if(mutationID && mutationID != p_mutationID)
+    {
+      if(std::find(p_list.begin(),p_list.end(),mutationID) == p_list.end())
+      {
+        p_list.push_back(mutationID);
+      }
+    }
+  }
+  return (int)p_list.size();
+}
+
+

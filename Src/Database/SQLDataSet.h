@@ -2,7 +2,7 @@
 //
 // File: SQLDataSet.h
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #pragma once
 #include "SQLDatabase.h"
@@ -127,7 +127,9 @@ public:
   // Cancel the mutations of this mutation ID
   void         CancelMutation(int p_mutationID);
   // Insert / Update / delete records from the database
-  bool         Synchronize();
+  bool         Synchronize(int p_mutationID = 0);
+  // In case synchronize doesn't work, ask for mixed mutations
+  int          AllMixedMutations(MutationIDS& p_list,int p_mutationID);
   // Forget the records
   bool         Forget(bool p_force = false);
   // Find the object record of a primary key
@@ -211,14 +213,16 @@ private:
 
   // WRITEBACK OPERATIONS
 
-  void         Deletes();
-  void         Updates();
-  void         Inserts();
+  void         Deletes(int p_mutationID);
+  void         Updates(int p_mutationID);
+  void         Inserts(int p_mutationID);
+  void         Reduce (int p_mutationID);
 
   CString      GetSQLDelete  (SQLQuery* p_query,SQLRecord* p_record);
   CString      GetSQLUpdate  (SQLQuery* p_query,SQLRecord* p_record);
   CString      GetSQLInsert  (SQLQuery* p_query,SQLRecord* p_record);
   CString      GetWhereClause(SQLQuery* p_query,SQLRecord* p_record,int& p_parameter);
+  void         SetTransactionDeferred();
 
   // Private data of the dataset
 
@@ -231,7 +235,7 @@ private:
   ParameterSet m_parameters;
   NamenMap     m_primaryKey;
   // Object mapping
-  CString      m_searchColumn;
+  CString      m_searchColumn; 
   ObjectMap    m_objects;
 protected:
   int          m_status;
@@ -321,7 +325,7 @@ SQLDataSet::Current()
   return m_current;
 }
 
-inline void 
+inline void
 AggregateInfo::Init()
 {
   m_sum  = 0.0;

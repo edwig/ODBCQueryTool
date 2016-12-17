@@ -25,7 +25,7 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 // Last Revision:   25-05-2015
-// Version number:  1.1.0
+// Version number:  1.3.0
 //
 #pragma once
 #include "unzip.h"
@@ -44,11 +44,11 @@ class BasicXmlExcel;
 // Type of cells
 typedef enum _celltype
 {
-  CT_EMPTY
- ,CT_INTEGER
- ,CT_DOUBLE
- ,CT_STRING
- ,CT_FORMULA
+  XCT_EMPTY
+ ,XCT_INTEGER
+ ,XCT_DOUBLE
+ ,XCT_STRING
+ ,XCT_FORMULA
 }
 CellType;
 

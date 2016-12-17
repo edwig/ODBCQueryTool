@@ -19,6 +19,16 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #pragma once
 #include "resource.h"
 
+// Translation list of SQL datatype constants and names
+typedef struct _types
+{
+  char*  name;
+  int    type;
+}
+DataTypes;
+
+extern DataTypes allTypes[];
+extern DataTypes allParams[];
 
 // RebindDlg dialog
 

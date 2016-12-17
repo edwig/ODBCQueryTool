@@ -2,7 +2,7 @@
 //
 // File: SQLLanguage.h
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #include "stdafx.h"
 #include "SQLLanguage.h"
@@ -33,8 +33,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-// Default language
-Language g_defaultLanguage = LN_ENGLISH;
+// Default language for Key2Brief = DUTCH !
+Language g_defaultLanguage = LN_DUTCH;
 
 // All the days of the week 
 char* g_weekdays[LN_NUMLANG][DAYS_IN_WEEK] = 
@@ -191,7 +191,7 @@ int g_daysInTheMonth[14] =
 Language SetDefaultSQLLanguage(Language p_lang)
 {
   Language oldLanguage = g_defaultLanguage;
-  if(LN_DEFAULT >= p_lang && p_lang < LN_NUMLANG)
+  if(LN_DEFAULT <= p_lang && p_lang < LN_NUMLANG)
   {
     g_defaultLanguage = p_lang;
   }

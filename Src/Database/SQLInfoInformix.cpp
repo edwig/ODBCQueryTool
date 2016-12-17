@@ -2,7 +2,7 @@
 //
 // File: SQLInfoInformix.cpp
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #include "stdafx.h"
 #include "SQLInfoInformix.h"
@@ -90,6 +90,12 @@ SQLInfoInformix::IsCatalogUpper () const
   return false;
 }
 
+// System catalog supports full ISO schemas (same tables per schema)
+bool
+SQLInfoInformix::GetUnderstandsSchemas() const
+{
+  return false;
+}
 // Supports database/ODBCdriver comments in sql
 bool 
 SQLInfoInformix::SupportsDatabaseComments() const
@@ -318,40 +324,6 @@ SQLInfoInformix::GetReplaceColumnOIDbySequence(CString p_columns,CString /*p_tab
   return p_columns;
 }
 
-// Get the tablespace for the tables
-CString 
-SQLInfoInformix::GetTablesTablespace(CString p_tablespace /*=""*/) const
-{
-  if(p_tablespace != "")
-  {
-    return " IN " + p_tablespace;
-  }
-  return "";
-}
-
-// Get the tablespace for the indexes
-// If no default is givven, fallbacks to the DEFAULT tablespace
-CString 
-SQLInfoInformix::GetIndexTablespace(CString /*p_tablespace /*=""*/) const
-{
-  return "";
-}
-
-// Get the storage name for indici
-CString
-SQLInfoInformix::GetStorageSpaceNameForIndexes() const
-{
-  return "";
-}
-
-// Get the storage space for temporary tables
-CString
-SQLInfoInformix::GetStorageSpaceNameForTempTables(CString /*p_tablename*/) const
-{
-  // Informix gebruikt een DBSPACE met attribuut 'temp'
-  return "";
-}
-
 // Remove catalog dependencies for stored procedures
 // To be run after a 'DROP PROCEDURE' or 'DROP FUNCTION'
 CString 
@@ -371,7 +343,7 @@ SQLInfoInformix::GetSQLRemoveFieldDependencies(CString /*p_tablename*/) const
 
 // Gets the table definition-form of a primary key
 CString
-SQLInfoInformix::GetPrimaryKeyDefinition(CString p_tableName,bool p_temporary) const
+SQLInfoInformix::GetPrimaryKeyDefinition(CString p_schema,CString p_tableName,bool p_temporary) const
 {
   if(p_temporary)
   {
@@ -385,9 +357,61 @@ SQLInfoInformix::GetPrimaryKeyDefinition(CString p_tableName,bool p_temporary) c
 
 // Get the constraint form of a primary key to be added to a table after creation of that table
 CString
-SQLInfoInformix::GetPrimaryKeyConstraint(CString p_tablename, bool /*p_temporary*/) const
+SQLInfoInformix::GetPrimaryKeyConstraint(CString /*p_schema*/,CString p_tablename,CString p_primary) const
 {
-  return "ADD CONSTRAINT PRIMARY KEY(oid) CONSTRAINT pk_" + p_tablename + "\n";
+  return "ALTER TABLE " + p_tablename + "\n"
+         "  ADD CONSTRAINT PRIMARY KEY (" + p_primary + ")\n"
+         "      CONSTRAINT pk_" + p_tablename;
+}
+
+// Get the sql to add a foreign key to a table
+CString 
+SQLInfoInformix::GetSQLForeignKeyConstraint(DBForeign& p_foreign) const
+{
+  // Construct the correct tablenames
+  CString table  (p_foreign.m_tablename);
+  CString primary(p_foreign.m_primaryTable);
+  if(!p_foreign.m_schema.IsEmpty())
+  {
+    table   = p_foreign.m_schema + "." + table;
+    primary = p_foreign.m_schema + "." + primary;
+  }
+
+  // The base foreign key command (non-standard!)
+  CString query = "ALTER TABLE " + table + "\n"
+                  "  ADD CONSTRAINT FOREIGN KEY (" + p_foreign.m_column + ")\n"
+                  "      REFERENCES " + primary + "(" + p_foreign.m_primaryColumn + ")"
+                  "      CONSTRAINT " + p_foreign.m_constraintname;
+  if(p_foreign.m_initiallyDeffered)
+  {
+    query += "\n      NOVALIDATE";
+  }
+  switch(p_foreign.m_deleteRule)
+  {
+    case 1: query += "\n      ON DELETE CASCADE"; 
+            break;
+    default:// In essence: ON DELETE RESTRICT, but that's already the default
+    case 0: break;
+  }
+  return query;
+}
+
+// Get the sql (if possible) to change the foreign key constraint
+CString 
+SQLInfoInformix::GetSQLAlterForeignKey(DBForeign& p_origin,DBForeign& p_requested) const
+{
+  CString query = "SET CONSTRAINTS " + p_origin.m_constraintname + " ";
+
+  // Add all relevant options
+  if(p_origin.m_initiallyDeffered != p_requested.m_initiallyDeffered)
+  {
+    query += p_requested.m_initiallyDeffered ? "DEFERRED" : "IMMEDIATE";
+  }
+  else if(p_origin.m_enabled != p_requested.m_enabled)
+  {
+    query += p_requested.m_enabled ? "ENABLED" : "DISABLED";
+  }
+  return query;
 }
 
 // Performance parameters to be added to the database
@@ -424,50 +448,7 @@ SQLInfoInformix::GetMaxStatementLength() const
 {
   // The current limit of the INFORMIX ODBC driver is MAX_UINT16
   // We limit somewhat lower, just to be on the sure side
-	return 64000;		
-}
-
-// Prefix for an add constraint DDL command in SQLAtlerTableGenerator
-CString 
-SQLInfoInformix::GetAddConstraintPrefix(CString /*p_constraintName*/) const
-{
-  return "ADD CONSTRAINT ";
-}
-
-// Suffix for an add constraint DDL command in SQLAtlerTableGenerator
-CString 
-SQLInfoInformix::GetAddConstraintSuffix(CString p_constraintName) const
-{
-  return "CONSTRAINT " + p_constraintName + "\n";
-}
-
-// Get the prefix for a drop constraint DDL command in the SQLAlterTableGenerator
-CString 
-SQLInfoInformix::GetDropConstraintPrefix() const
-{
-  return "DROP CONSTRAINT ";
-}
-
-// Get the suffix for a drop constraint DDL commando in the SQLAlterTableGenerator
-CString 
-SQLInfoInformix::GetDropConstraintSuffix() const
-{
-  return "";
-}
-
-// Clause separator between two ADD or DROP clauses in an ALTER TABLE
-CString 
-SQLInfoInformix::GetAlterTableClauseSeparator()  const
-{
-  return ",";
-}
-
-// Grouping of more than one column possible in an ADD/MODIFY/DROP clause
-bool   
-SQLInfoInformix::GetClauseGroupingPossible() const
-{
-  // Kan meerdere ADD (kolomdef ,.... ) doen
-  return true;
+  return 64000;		
 }
 
 // Gets the prefix needed for altering the datatype of a column in a MODIFY/ALTER
@@ -502,9 +483,14 @@ SQLInfoInformix::GetCodeTempTableWithNoLog() const
 
 // Granting all rights on a table (In a NON-ANSI database)
 CString
-SQLInfoInformix::GetSQLGrantAllOnTable(CString /*p_tableName*/)
+SQLInfoInformix::GetSQLGrantAllOnTable(CString /*p_schema*/,CString p_tableName,bool p_grantOption /*= false*/)
 {
-  return "";
+  CString sql = "GRANT ALL ON " + p_tableName + " TO " + GetGrantedUsers();
+  if(p_grantOption)
+  {
+    sql += " WITH GRANT OPTION";
+  }
+  return sql;
 }
 
 // Code prefix for a select-into-temp
@@ -679,7 +665,7 @@ SQLInfoInformix::GetSQLConstraintsImmediate() const
 
 // Get SQL to check if a table already exists in the database
 CString 
-SQLInfoInformix::GetSQLTableExists(CString p_tablename) const
+SQLInfoInformix::GetSQLTableExists(CString /*p_schema*/,CString p_tablename) const
 {
   CString lowerName(p_tablename);
   lowerName.MakeLower();
@@ -714,88 +700,236 @@ SQLInfoInformix::GetSQLGetConstraintsForTable(CString& p_tableName) const
   CString lowerName(p_tableName);
   lowerName.MakeLower();
   CString contabel = "SELECT con.constrname "
-		 	              "      ,con.tabid "
-			              "      ,con.constrid "
+                    "      ,con.tabid "
+                    "      ,con.constrid "
                     "  FROM sysconstraints con "
-		                "      ,systables tab "
-		                " WHERE tab.tabid   = con.tabid "
-		                "   AND con.constrtype in ('C', 'U') "
+                    "      ,systables tab "
+                    " WHERE tab.tabid   = con.tabid "
+                    "   AND con.constrtype in ('C', 'U') "
                     "   AND tab.tabname = '" + lowerName + "'";
   return contabel;
 }
 
-// Get SQL to read all indici for a table
+// Get SQL to read all indices for a table
 CString 
-SQLInfoInformix::GetSQLTableIndexes(CString& /*p_user*/,CString& p_tableName) const
+SQLInfoInformix::GetSQLTableIndices(CString /*p_user*/,CString p_tableName) const
 {
-  CString lowerName(p_tableName);
-  lowerName.MakeLower();
+  CString query;
+  p_tableName.MakeLower();
 
   // Reads all current indici in the database in a list
   // So we can figure out if an index need to be generated
-	CString query = "select idx.idxname\n"
-							    "      ,idx.tabid\n"      // Table
-                  "      ,idx.idxtype\n"		 // U=Uniek, D=Duplicates
-							    "      ,part1,part2, part3, part4, part5, part6, part7, part8\n"
-							    "      ,part9,part10,part11,part12,part13,part14,part15,part16\n"
-					        "  from sysindexes idx\n"
-					        "      ,systables  tab\n"
-                  " where tab.tabid = idx.tabid\n"
-						      "   and tab.tabname ='" + lowerName + "'\n " 
-                  "   and idx.idxname not matches ' [0-9]*'";
+  for(int ind = 1; ind <= 8; ++ind)
+  {
+    if(!query.IsEmpty())
+    {
+      query += "\nUNION ALL\n";
+    }
+    query.AppendFormat("SELECT idx.idxname AS index_name\n"
+                       "      ,col.colname\n"
+                       "      ,%d   AS index_column\n"
+                       "      ,CASE WHEN idx.idxtype = 'D' THEN 0\n"
+                       "            WHEN idx.idxtype = 'U' THEN 1\n"
+                       "            ELSE 0 END AS is_unique\n"
+                       "      ,CASE WHEN idx.part%d < 0 THEN 1\n"
+                       "            ELSE 0 END AS descending\n"
+                       "  FROM sysindexes idx\n"
+                       "      ,systables  tab\n"
+                       "      ,syscolumns col\n"
+                       " WHERE tab.tabid = idx.tabid\n"
+                       "   AND tab.tabname = '%s'\n"
+                       "   AND col.tabid   = idx.tabid\n"
+                       "   AND col.colno   = abs(idx.part%d)\n"
+                       "   AND idx.idxname[1] != ' '"
+                      ,ind,ind,p_tableName,ind);
+  }
   return query;
 }
+
+// Get SQL to create an index for a table
+CString 
+SQLInfoInformix::GetSQLCreateIndex(CString /*p_user*/,CString p_tableName,DBIndex* p_index) const
+{
+  CString sql("CREATE ");
+  if(p_index->m_unique)
+  {
+    sql += "UNIQUE ";
+  }
+  sql += " INDEX ON ";
+  sql += p_tableName + "(";
+
+  int column = 0;
+  while(!p_index->m_indexName.IsEmpty())
+  {
+    if(column)
+    {
+      sql += ",";
+    }
+    sql += p_index->m_column;
+    sql += (p_index->m_descending) ? " DESC" : " ASC";
+    // Next column
+    ++column;
+    ++p_index;
+  }
+  sql += ")";
+
+  return sql;
+}
+
+// Get SQL to drop an index
+CString 
+SQLInfoInformix::GetSQLDropIndex(CString p_user,CString p_indexName) const
+{
+  CString sql = "DROP INDEX " + p_indexName;
+  return sql;
+}
+
 
 // Get SQL to read the referential constaints from the catalog
 CString 
-SQLInfoInformix::GetSQLTableReferences(CString& p_tablename) const
+SQLInfoInformix::GetSQLTableReferences(CString p_schema
+                                      ,CString p_tablename
+                                      ,CString p_constraint /*=""*/
+                                      ,int     p_maxColumns /*= SQLINFO_MAX_COLUMNS*/) const
 {
-  CString lowerName(p_tablename);
-  lowerName.MakeLower();
-	// EH Reads all current references
-  CString query = "select con.constrname "
-		              "      ,con.tabid "
-                  "      ,con.constrid "
-                  "  from sysconstraints con "
-                  "      ,systables tab "
-                  " where tab.tabid      = con.tabid "
-                  "   and con.constrtype = 'R' "
-                  "   and tab.tabname    = '" + lowerName + "'";
+  CString query;
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+  p_constraint.MakeLower();
+
+  for(int ind = 1;ind <= p_maxColumns; ++ind)
+  {
+    CString part;
+    part.Format("SELECT con.constrname  AS foreign_key_constraint\n"
+                "      ,tab.owner       AS schema_name\n"
+                "      ,tab.tabname     AS table_name\n"
+                "      ,col.colname     AS column_name\n"
+                "      ,pri.tabname     AS primary_table_name\n"
+                "      ,pcl.colname     AS primary_column_name\n"
+                "      ,1               AS deferrable\n"
+                "      ,0               AS initially_deferred\n"
+                "      ,1               AS enabled\n"
+                "      ,CASE WHEN ref.matchtype = 'N' THEN 0\n"
+                "            WHEN ref.matchtype = 'P' THEN 1\n"
+                "            ELSE 0\n"
+                "       END  AS match_option\n"
+                "      ,CASE WHEN ref.updrule = 'R' THEN 0\n"
+                "            WHEN ref.updrule = 'C' THEN 1\n"
+                "            WHEN ref.updrule = 'N' THEN 2\n"
+                "            WHEN ref.updrule = 'D' THEN 3\n"
+                "            ELSE 0\n"
+                "       END  AS update_rule\n"
+                "      ,CASE WHEN ref.delrule = 'R' THEN 0\n"
+                "            WHEN ref.delrule = 'C' THEN 1\n"
+                "            WHEN ref.delrule = 'N' THEN 2\n"
+                "            WHEN ref.delrule = 'D' THEN 3\n"
+                "            ELSE 0\n"
+                "       END  AS delete_rule\n"
+                "  FROM sysconstraints con\n"
+                "      ,systables      tab\n"
+                "      ,syscolumns     col\n"
+                "      ,sysreferences  ref\n"
+                "      ,systables      pri\n"
+                "      ,sysindexes     idx\n"
+                "      ,sysconstraints pcn\n"
+                "      ,sysindexes     pix\n"
+                "      ,syscolumns     pcl\n"
+                " WHERE tab.tabid      = con.tabid\n"
+                "   AND con.constrid   = ref.constrid\n"
+                "   AND ref.ptabid     = pri.tabid\n"
+                "   AND con.idxname    = idx.idxname\n"
+                "   AND col.tabid      = tab.tabid\n"
+                "   AND col.colno      = idx.part%d\n"
+                "   AND pcn.tabid      = pri.tabid\n"
+                "   AND pix.idxname    = pcn.idxname\n"
+                "   AND pcl.tabid      = pri.tabid\n"
+                "   AND pcl.colno      = pix.part%d\n"
+                "   and con.constrtype = 'R'\n"
+                "   AND pcn.constrtype = 'P'\n"
+               ,ind
+               ,ind);
+    if(!p_schema.IsEmpty())
+    {
+      part += "\n    AND tab.owner = '" + p_schema + "'";
+    }
+    if(!p_tablename.IsEmpty())
+    {
+      part += "\n   AND tab.tabname    = '" + p_tablename + "'";
+    }
+    if(!p_constraint.IsEmpty())
+    {
+      part += "\n    AND con.constrname = '" + p_constraint + "'";
+    }
+    // Add to the query
+    if(!query.IsEmpty())
+    {
+      query += "\nUNION ALL\n";
+    }
+    query += part;
+  }
   return query;
 }
 
-// Get the SQL Query to create a synonym
+// Get the SQL to determine the sequence state in the database
 CString 
-SQLInfoInformix::GetSQLMakeSynonym(CString& /*p_objectName*/) const
+SQLInfoInformix::GetSQLSequence(CString p_schema,CString p_tablename,CString p_postfix /*= "_seq"*/) const
 {
-  return "";
-}
-
-// Get SQL to drop the synonym
-CString 
-SQLInfoInformix::GetSQLDropSynonym(CString& /*p_objectName*/) const
-{
-  return "";
+  p_schema.MakeLower();
+  CString sequence = p_tablename + p_postfix;
+  sequence.MakeLower();
+  CString sql = "SELECT dom.name as sequence_name\n"
+                "      ,seq.start_val as current_value"
+                "      ,decode(seq.inc_val,1,1,0) *\n"
+                "       decode(seq.cycle,'0',1,0) *\n"
+                "       decode(seq.cache, 0, 1,0) *\n"
+                "       decode(seq.order,'1',1,0) as is_correct\n"
+                "  FROM syssequences seq\n"
+                "      ,sysdomains   dom\n"
+                " WHERE dom.id = seq.id\n"
+                "   AND dom.owner = '" + p_schema + "'\n"
+                "   AND dom.name  = '" + sequence + "'\n";
+              //"   AND dom.type  = 3"; ??
+  return sql;
 }
 
 // Create a sequence in the database
-void 
-SQLInfoInformix::DoCreateSequence(CString& /*p_sequenceName*/,int /*p_startpos*/) 
+CString 
+SQLInfoInformix::GetSQLCreateSequence(CString p_schema,CString p_tablename,CString p_postfix /*= "_seq"*/,int p_startpos) const
 {
-  // INFORMIX uses SERIAL's in stead of sequences
+  CString sql("CREATE SEQUENCE ");
+  CString sequence = p_tablename + p_postfix;
+
+  if(!p_schema.IsEmpty())
+  {
+    sql += p_schema + ".";
+  }
+  sql += sequence;
+  sql.AppendFormat(" START WITH %d",p_startpos);
+  sql += " NOCYCLE NOCACHE ORDER";
+  return sql;
 }
 
 // Remove a sequence from the database
-void
-SQLInfoInformix::DoRemoveSequence(CString& /*p_sequenceName*/) const
+CString 
+SQLInfoInformix::GetSQLDropSequence(CString p_schema,CString p_tablename,CString p_postfix /*= "_seq"*/) const
 {
-  // INFORMIX uses SERIAL's in stead of sequences
+  CString sequence = p_tablename + p_postfix;
+  CString sql;
+  sql = "DROP SEQUENCE " + p_schema + "." + sequence;
+  return sql;
 }
 
-// Re-Creates a sequence in a database from the OID column
-void 
-SQLInfoInformix::DoCreateNextSequence(const CString& /*p_tableName*/,CString p_postfix /*="_seq"*/)
+// Gets the SQL for the rights on the sequence
+CString
+SQLInfoInformix::GetSQLSequenceRights(CString p_schema,CString p_tablename,CString p_postfix /*="_seq"*/) const
 {
+  CString sequence = p_tablename + p_postfix;
+  if(!p_schema.IsEmpty())
+  {
+    sequence = p_schema + "." + sequence;
+  }
+  CString sql = "GRANT SELECT ON " + sequence + " TO " + GetGrantedUsers();
+  return sql;
 }
 
 // Remove a stored procedure from the database
@@ -804,14 +938,7 @@ SQLInfoInformix::DoRemoveProcedure(CString& p_procedureName) const
 {
   SQLQuery sql(m_database);
   sql.TryDoSQLStatement("DROP PROCEDURE " + p_procedureName);
-}
 
-// Gets the SQL for the rights on the sequence
-CString 
-SQLInfoInformix::GetSQLSequenceRights(const CString& /*p_tableName*/,CString /*p_postfix /*="_seq"*/) const
-{
-  // INFORMIX uses SERIAL's in stead of sequences
-  return "";
 }
 
 // Get SQL for your session and controling terminal
@@ -859,7 +986,7 @@ SQLInfoInformix::GetSQLSearchSession(const CString& p_databaseName,const CString
          " WHERE  sid IN\n"
          "      ( SELECT odb_sessionid\n"
          "          FROM sysmaster:sysopendb\n"
-		     "         WHERE odb_dbname = '" + p_databaseName + "'\n"
+         "         WHERE odb_dbname = '" + p_databaseName + "'\n"
          "           AND NOT odb_sessionid IN\n"
          "             ( SELECT sessie_nr\n"
          "                 FROM " + p_sessionTable +"))";
@@ -888,7 +1015,7 @@ SQLInfoInformix::DoesColumnExistsInTable(CString& /*p_owner*/,CString& p_tableNa
 
 // Get SQL to get all the information about a Primary Key constraint
 CString
-SQLInfoInformix::GetSQLPrimaryKeyConstraintInformation(CString& p_tableName) const
+SQLInfoInformix::GetSQLPrimaryKeyConstraintInformation(CString /*p_schema*/,CString p_tableName) const
 {
   CString query = "SELECT count(*)\n"
                   "  FROM systables t\n"
@@ -942,6 +1069,71 @@ SQLInfoInformix::GetOnlyOneUserSession()
   return true;
 }
 
+// SQL DDL STATEMENTS
+// ==================
+
+CString
+SQLInfoInformix::GetCreateColumn(CString /*p_schema*/,CString p_tablename,CString p_columnName,CString p_typeDefinition,bool p_notNull)
+{
+  CString sql  = "ALTER TABLE "  + p_tablename  + "\n";
+                 "  ADD COLUMN " + p_columnName + " " + p_typeDefinition;
+  if(p_notNull)
+  {
+    sql += " NOT NULL";
+  }
+  return sql;
+}
+
+// Drop a column from a table
+CString 
+SQLInfoInformix::GetSQLDropColumn(CString /*p_schema*/,CString p_tablename,CString p_columnName) const
+{
+  return "ALTER TABLE " + p_tablename + "\n"
+         " DROP COLUMN " + p_columnName;
+}
+
+// Add a foreign key to a table
+CString 
+SQLInfoInformix::GetCreateForeignKey(CString p_tablename,CString p_constraintname,CString p_column,CString p_refTable,CString p_primary)
+{
+  CString sql = "ALTER TABLE " + p_tablename + "\n"
+                "  ADD CONSTRAINT FOREIGN KEY (" + p_column + ")\n"
+                "      REFERENCES " + p_refTable + "(" + p_primary + ")\n"
+                "      CONSTRAINT + " + p_constraintname;
+  return sql;
+}
+
+CString 
+SQLInfoInformix::GetModifyColumnType(CString /*p_schema*/,CString p_tablename,CString p_columnName,CString p_typeDefinition)
+{
+  CString sql = "ALTER  TABLE  " + p_tablename + "\n";
+                "MODIFY COLUMN " + p_columnName + " " + p_typeDefinition;
+  return sql;
+}
+
+CString 
+SQLInfoInformix::GetModifyColumnNull(CString /*p_schema*/,CString p_tablename,CString p_columnName,bool p_notNull)
+ {
+  CString sql = "ALTER  TABLE  " + p_tablename + "\n";
+                "MODIFY COLUMN " + p_columnName + " " + (p_notNull ? "NOT " : "") + "NULL";
+  return sql;
+}
+
+// Get the SQL to drop a view. If precursor is filled: run that SQL first!
+CString 
+SQLInfoInformix::GetSQLDropView(CString /*p_schema*/,CString p_view,CString& p_precursor)
+{
+  p_precursor.Empty();
+  return "DROP VIEW " + p_view;
+}
+
+// Create or replace a database view
+CString 
+SQLInfoInformix::GetSQLCreateOrReplaceView(CString /*p_schema*/,CString p_view,CString p_asSelect) const
+{
+  return "CREATE VIEW " + p_view + "\n" + p_asSelect;
+}
+
 // SQL DDL ACTIONS
 // ====================================================================
 
@@ -962,21 +1154,14 @@ SQLInfoInformix::DoCommitDMLcommands() const
   // Commit follows from a BEGIN/COMMIT transaction by AUTOCOMMIT from the driver
 }
 
-// Create a view from the select code and the name
-void 
-SQLInfoInformix::DoCreateOrReplaceView(CString p_code,CString p_viewName)
+// Remove a column from a table
+void
+SQLInfoInformix::DoDropColumn(CString p_tableName,CString p_columName)
 {
-  SQLQuery sql(m_database);
-  sql.DoSQLStatement(p_code);
-  sql.DoSQLStatement("GRANT ALL ON " + p_viewName + " TO " + GetGrantedUsers());
-}
-
-// Remove a view from the database
-void 
-SQLInfoInformix::DoDropView(CString p_viewName)
-{
-  SQLQuery sql(m_database);
-  sql.TryDoSQLStatement("DROP VIEW " + p_viewName);
+  CString sql = "ALTER TABLE  " + p_tableName + "\n"
+                " DROP COLUMN " + p_columName;
+  SQLQuery query(m_database);
+  query.TryDoSQLStatement(sql);
 }
 
 // Does the named view exists in the database
@@ -1035,31 +1220,6 @@ SQLInfoInformix::DoRemoveTemporaryTable(CString& p_tableName) const
 {
   SQLQuery sql(m_database);
   sql.TryDoSQLStatement("DROP TABLE " + p_tableName);
-}
-
-// If the temporary table exists, remove it
-void
-SQLInfoInformix::DoRemoveTemporaryTableWithCheck(CString& p_tableName) const
-{
-  CString tabelName(p_tableName);
-  int number = 0;
-  tabelName.MakeLower();
-
-  CString query = "SELECT count(*)\n"
-                  "  FROM systables sys\n"
-                  " WHERE tabname = '" + tabelName + "'";
-  SQLQuery sql(m_database);
-  sql.DoSQLStatement(query);
-  if(sql.GetRecord())
-  {
-    number = sql.GetColumn(1)->GetAsSLong();
-  }
-  // IF the table is NOT in the system catalog, THEN we can try to drop it
-  // If it was in the systables, it's persistent, so we can NOT drop it!!!
-  if(number == 0)
-  {
-    DoRemoveTemporaryTable(tabelName);
-  }
 }
 
 // Create a procedure in the database
@@ -1132,21 +1292,21 @@ SQLInfoInformix::GetParameterLength(int p_SQLType) const
     case SQL_VARCHAR:           retval = 32000;    break;
     case SQL_LONGVARCHAR:       retval = 32000;    break;
     case SQL_DECIMAL:           retval = 32000;    break;
-	  case SQL_SMALLINT:          retval = 0;    break;
-	  case SQL_INTEGER:           retval = 0;    break;
-	  case SQL_REAL:              retval = 0;    break;
-	  case SQL_DOUBLE:            retval = 0;    break;
-	  case SQL_FLOAT:             retval = 0;    break;
-	  case SQL_BINARY:            retval = 0;    break;
-	  case SQL_VARBINARY:         retval = 0;    break;
-	  case SQL_LONGVARBINARY:     retval = 0;    break;
-	  case SQL_DATE:              retval = 0;    break;
+    case SQL_SMALLINT:          retval = 0;    break;
+    case SQL_INTEGER:           retval = 0;    break;
+    case SQL_REAL:              retval = 0;    break;
+    case SQL_DOUBLE:            retval = 0;    break;
+    case SQL_FLOAT:             retval = 0;    break;
+    case SQL_BINARY:            retval = 0;    break;
+    case SQL_VARBINARY:         retval = 0;    break;
+    case SQL_LONGVARBINARY:     retval = 0;    break;
+    case SQL_DATE:              retval = 0;    break;
     case SQL_TIME:              retval = 0;    break;
     case SQL_TIMESTAMP:         retval = 19;   break;
-	  case SQL_NUMERIC:           retval = 0;    break;
-	  case SQL_BIGINT:            retval = 0;    break;
-	  case SQL_TINYINT:           retval = 0;    break;
-	  case SQL_BIT:               retval = 0;    break;
+    case SQL_NUMERIC:           retval = 0;    break;
+    case SQL_BIGINT:            retval = 0;    break;
+    case SQL_TINYINT:           retval = 0;    break;
+    case SQL_BIT:               retval = 0;    break;
     case SQL_INTERVAL_YEAR:
     case SQL_INTERVAL_YEAR_TO_MONTH:
     case SQL_INTERVAL_MONTH:
@@ -1266,7 +1426,7 @@ SQLInfoInformix::GetSPLSourcecodeFromDatabase(const CString& /*p_owner*/,const C
   sQuery = "SELECT sbody.data\n"
            "  FROM sysprocbody sbody\n"
            "      ,sysprocedures sproc\n"
-	         " WHERE sbody.procid   = sproc.procid\n"
+           " WHERE sbody.procid   = sproc.procid\n"
            "   AND sproc.procname = '" + sName + "'\n"
            "   AND datakey        = 'T'";
   SQLQuery sql(m_database);
@@ -1274,8 +1434,8 @@ SQLInfoInformix::GetSPLSourcecodeFromDatabase(const CString& /*p_owner*/,const C
   CString sProcBody;
   while (sql.GetRecord())
   {
-	  sProcBody = sql.GetColumn(1)->GetAsChar();
-	}
+    sProcBody = sql.GetColumn(1)->GetAsChar();
+  }
   return sProcBody;
 }
 

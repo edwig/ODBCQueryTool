@@ -2,7 +2,7 @@
 //
 // File: SQLDatabase.cpp
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,14 +21,15 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #include "stdafx.h"
 #include "SQLDatabase.h"
 #include "SQLQuery.h"
 #include "SQLWrappers.h"
 #include "SQLInfoTree.h"
+#include "SQLInfoDB.h"
 #include "SQLInfoAccess.h"
 #include "SQLInfoOracle.h"
 #include "SQLInfoFirebird.h"
@@ -47,53 +48,15 @@ static char THIS_FILE[] = __FILE__;
 
 SQLDatabase::SQLDatabase()
             :m_info(NULL)
-            ,m_infoTree(NULL)
 {
-  m_rdbmsType         = RDBMS_UNKNOWN;
-  m_loginTimeout      = LOGIN_TIMEOUT;
-  m_async_possible    = 0;
-  m_canDoTransactions = 0;
-  m_odbcVersion       = 0;
-  m_driverMainVersion = 0;
-  m_lastAction        = 0;
-  m_needLongDataLen   = false;
-  m_mars              = true;
-  m_readOnly          = false;
-  m_henv              = SQL_NULL_HANDLE;
-  m_hdbc              = SQL_NULL_HANDLE;
-  m_logLevel          = NULL;
-  m_logPrinter        = NULL;
-  m_logContext        = NULL;
-  m_loggingLevel      = 0;
-  m_schemaAction      = SCHEMA_NO_ACTION;
-  
-  // Initialise locking
+  // Initialize locking
   InitializeCriticalSection(&m_databaseLock);
 }
 
 SQLDatabase::SQLDatabase(HDBC p_hdbc)
             :m_hdbc(p_hdbc)
-            ,m_henv(NULL)
-            ,m_info(NULL)
-            ,m_infoTree(NULL)
 {
-  m_rdbmsType         = RDBMS_UNKNOWN;
-  m_loginTimeout      = LOGIN_TIMEOUT;
-  m_async_possible    = 0;
-  m_canDoTransactions = 0;
-  m_odbcVersion       = 0;
-  m_driverMainVersion = 0;
-  m_lastAction        = 0;
-  m_needLongDataLen   = false;
-  m_mars              = true;
-  m_readOnly          = false;
-  m_logLevel          = NULL;
-  m_logPrinter        = NULL;
-  m_logContext        = NULL;
-  m_loggingLevel      = 0;
-  m_schemaAction      = SCHEMA_NO_ACTION;
-  
-  // Initialise locking
+  // Initialize locking
   InitializeCriticalSection(&m_databaseLock);
 
   // Discover our database
@@ -109,7 +72,7 @@ SQLDatabase::~SQLDatabase()
   // Only close the database if we did open it
   if(m_henv)
   {
-  Close();
+    Close();
   }
   DeleteCriticalSection(&m_databaseLock);
 }
@@ -120,7 +83,7 @@ SQLDatabase::Close()
   // Set lock on the stack
   Locker<SQLDatabase> lock(this,INFINITE);
 
-  // Sluit database handle
+  // Close database handle
   if(m_hdbc != SQL_NULL_HANDLE)
   {
     // Try to disconnect 
@@ -279,7 +242,7 @@ SQLDatabase::Open(CString const& p_datasource
   return true;
 }
 
-// Open the database (connectstring)
+// Open the database (connect string)
 bool 
 SQLDatabase::Open(CString const& p_connectString,bool p_readOnly)
 {
@@ -299,7 +262,7 @@ SQLDatabase::Open(CString const& p_connectString,bool p_readOnly)
 
   // Time to set our attributes
   SetAttributesBeforeConnect();
-  
+
   // The Connect function wants a non-const ptr
   SQLCHAR* pszConnect = (SQLCHAR*)p_connectString.GetString();
   SQLCHAR  szConnectOut[CONNECTSTRING_MAXLEN + 1];
@@ -378,14 +341,14 @@ SQLDatabase::SetAttributesAfterConnect(bool p_readOnly)
   }
   if(m_canDoTransactions != SQL_TC_NONE)
   {
-  	SetConnectAttr(SQL_ATTR_TXN_ISOLATION,SQL_TXN_READ_COMMITTED,SQL_IS_UINTEGER);
+    SetConnectAttr(SQL_ATTR_TXN_ISOLATION,SQL_TXN_READ_COMMITTED,SQL_IS_UINTEGER);
     if(m_rdbmsType == RDBMS_ACCESS)
     {
       // MS-Access can only shift the autocommit mode once at the start of a connection
-      // Afterwards, after statements have occured, it cannot be turned on or off.
+      // Afterwards, after statements have occurred, it cannot be turned on or off.
       // See Microsoft KB169469 article for confirmation. It's and ODBC 3.x issue for MS-Access
       // All insert/updates/deletes **must** be transactions
-      // Se we work in autocommitmode = off
+      // So we work in autocommit mode = off
       // Programs **MUST** put SQLTransaction on the stack to modify the database
       SetConnectAttr(SQL_ATTR_AUTOCOMMIT,SQL_AUTOCOMMIT_OFF,SQL_IS_UINTEGER);
     }
@@ -436,11 +399,11 @@ SQLDatabase::CollectInfo()
 
   if (LoadVersie)
   {
-    // driver naam
+    // driver name
     SqlGetInfo(m_hdbc, SQL_DRIVER_NAME,szInfo1, sizeof(szInfo1), &nResult);
     m_DriverName = szInfo1;
 
-    // driver versie
+    // driver version
     SqlGetInfo(m_hdbc, SQL_DRIVER_VER,szInfo1, sizeof(szInfo1), &nResult);
     m_DriverVersion = szInfo1;
     int pos = m_DriverVersion.Find('.');
@@ -508,29 +471,29 @@ SQLDatabase::CollectInfo()
 bool
 SQLDatabase::DatabaseNameFromDSN()
 {
-    // Fall back on the datasource name
-    // Only if we have nothing else, because it can be different per machine
-    int  pos    = 0;
-    int  number = 0;
-    
-    m_dataIdent.Empty();
-    if ((pos = m_completeConnect.Find("DSN=")) >= 0)
+  // Fall back on the datasource name
+  // Only if we have nothing else, because it can be different per machine
+  int  pos    = 0;
+  int  number = 0;
+
+  m_dataIdent.Empty();
+  if ((pos = m_completeConnect.Find("DSN=")) >= 0)
+  {
+    pos += 4;
+    char sp = m_completeConnect.GetAt(pos);
+    while(sp && sp != ';' && number++ < DS_IDENT_LEN)
     {
-      pos += 4;
-      char sp = m_completeConnect.GetAt(pos);
-      while(sp && sp != ';' && number++ < DS_IDENT_LEN)
-      {
-        m_dataIdent += sp;
-        sp = m_completeConnect.GetAt(++pos);
-      }
+      m_dataIdent += sp;
+      sp = m_completeConnect.GetAt(++pos);
     }
-    else
-    {
-      // Cannot determine a database name
+  }
+  else
+  {
+    // Cannot determine a database name
     return false;
-    }
-    // Record database name as ident
-    m_databaseName = m_dataIdent;
+  }
+  // Record database name as ident
+  m_databaseName = m_dataIdent;
   return true;
 }
 
@@ -539,14 +502,12 @@ void
 SQLDatabase::SetKnownRebinds()
 {
   // Solving formatting for various databases (Oracle / MS-Access)
-  // Numeric and Decimal formats can be mangled by disbehaving ODCBC drivers
+  // Numeric and Decimal formats can be mangled by misbehaving ODCBC drivers
   // So they must be set or gotten in a predefined format (e.g. Oracle needs DOUBLE for a NUMERIC column)
   // Also see method "SQLQuery::SQLType2CType" for the use of the rebind maps
   if(m_rdbmsType == RDBMS_ORACLE)
   {
     m_rebindColumns.clear();
-    m_rebindColumns[SQL_DECIMAL] = SQL_C_DOUBLE;
-    m_rebindColumns[SQL_NUMERIC] = SQL_C_DOUBLE;
     m_rebindColumns[SQL_REAL   ] = SQL_C_DOUBLE;
     m_rebindColumns[SQL_FLOAT  ] = SQL_C_DOUBLE;
   }
@@ -566,8 +527,8 @@ SQLDatabase::SetKnownRebinds()
 
 // Get the SQL Info object by database
 // SQLInfoDB Factory for subclass
-SQLInfo*
-SQLDatabase::GetSQLInfo()
+SQLInfoDB*
+SQLDatabase::GetSQLInfoDB()
 {
   if(m_info == NULL && IsOpen())
   {
@@ -605,7 +566,7 @@ SQLDatabase::RealDatabaseName()
   bool  result = false;
 
   CString databaseName;
-  // ODBC 1.x methode. Databasname.
+  // ODBC 1.x method. Databasename.
   buffer = databaseName.GetBuffer(SQL_MAX_OPTION_STRING_LENGTH);
   SQLGetInfo(m_hdbc, SQL_DATABASE_NAME, buffer, SQL_MAX_OPTION_STRING_LENGTH, &len);
   databaseName.ReleaseBuffer();
@@ -622,22 +583,22 @@ SQLDatabase::RealDatabaseName()
   }
   if(databaseName.IsEmpty())
   {
-    if(GetSQLInfo())
+    if(GetSQLInfoDB())
     {
       // Get the SQLInfo<Database> implementation's name
-      databaseName = reinterpret_cast<SQLInfoDB*>(m_info)->GetFysicalDatabaseName();
-      m_namingMethod = "Fysical database name";
+      databaseName   = m_info->GetFysicalDatabaseName();
+      m_namingMethod = "Physical database name";
     }
   }
   if(databaseName.IsEmpty())
   {
-    // Anders alsnog de server proberen
+    // Or else: try the server name
     buffer = databaseName.GetBuffer(SQL_MAX_OPTION_STRING_LENGTH);
     SQLGetInfo(m_hdbc,SQL_SERVER_NAME,buffer,SQL_MAX_OPTION_STRING_LENGTH,&len);
     databaseName.ReleaseBuffer();
     m_namingMethod = "ODBC server name";
   }
-  // Strip fysical name for text sources 
+  // Strip physical name for text sources 
   // Such as: DB3, FoxBase, Firebird, MS-Access, MS-Excel, PostgreSQL
   if(databaseName.Find(".") >= 0)
   {
@@ -661,7 +622,7 @@ SQLDatabase::RealDatabaseName()
   }
   if(file == true && !databaseName.IsEmpty())
   {
-    m_namingMethod += " : Name stripped or Fysical file name";
+    m_namingMethod += " : Name stripped or physical file name";
   }
   // Found?
   if(!databaseName.IsEmpty())
@@ -710,7 +671,7 @@ SQLDatabase::SetDirtyRead()
   }
   catch(CString ex)
   {
-    CString boodschap = CString("ERROR: Datbase dirty-read mode not set, reason: ") + ex;
+    CString boodschap = CString("ERROR: Database dirty-read mode not set, reason: ") + ex;
     LogPrint(0,boodschap);
   }
   catch(...)
@@ -719,12 +680,12 @@ SQLDatabase::SetDirtyRead()
   }
 }
 
-// Setting the database connection to readonly (if supported at all)
+// Setting the database connection to read-only (if supported at all)
 bool 
 SQLDatabase::SetReadOnly(bool p_readOnly)
 {
   SQLUINTEGER access = p_readOnly ? SQL_MODE_READ_ONLY : SQL_MODE_READ_WRITE;
-  SQLInfo* info = GetSQLInfo();
+  SQLInfoDB* info = GetSQLInfoDB();
   if(info == NULL)
   {
     return false;
@@ -743,7 +704,7 @@ SQLDatabase::GetDatabaseTypeName()
 {
   switch(m_rdbmsType)
   {
-    case RDBMS_UNKNOWN:       return "Onbekend";
+    case RDBMS_UNKNOWN:       return "Unknown";
     case RDBMS_ORACLE:        return "Oracle";
     case RDBMS_INFORMIX:      return "Informix";
     case RDBMS_ACCESS:        return "MS-Access";
@@ -803,7 +764,7 @@ SQLDatabase::MakeStmtHandle()
 {
   HSTMT stmt = SQL_NULL_HANDLE;
 
-  // Controleer de hdbc
+  // Check the hdbc
   if(m_hdbc == SQL_NULL_HANDLE)
   {
     throw CString("No database handle. Are you logged in to a database?");
@@ -904,8 +865,8 @@ SQLDatabase::ODBCNativeSQL(CString& p_sql)
   SQLINTEGER lengte = 0;
   buffer[0] = 0;
 
-  // Maar eerst eventuele macros vervangen.
-  // Anders gaat de parser op hol!!
+  // But first replace eventual macro texts
+  // Otherwise the parser will go haywire!
   ReplaceMacros(p_sql);
 
   // Let the driver do the translation
@@ -915,7 +876,7 @@ SQLDatabase::ODBCNativeSQL(CString& p_sql)
                               ,(UCHAR*)buffer
                               ,2*len
                               ,&lengte);
-  // Check if succseeded                             
+  // Check if succeeded
   if(Check(ret))
   {
     p_sql = buffer;
@@ -933,7 +894,7 @@ SQLDatabase::ODBCNativeSQL(CString& p_sql)
 //////////////////////////////////////////////////////////////////////////
 
 CString 
-SQLDatabase::GetErrorString(HSTMT statement)
+SQLDatabase::GetErrorString(SQL_HANDLE statement)
 {
   CString errors;
   int     number;
@@ -968,7 +929,7 @@ SQLDatabase::GetErrorString(HSTMT statement)
       errors += error;
     }
   }
-  // No errro information found
+  // No error information found
   if(errors.GetLength() == 0)
   {
     errors = "No error information is available.";
@@ -978,7 +939,7 @@ SQLDatabase::GetErrorString(HSTMT statement)
 }
 
 int    
-SQLDatabase::GetErrorNumber(HSTMT statement)
+SQLDatabase::GetErrorNumber(SQL_HANDLE statement)
 {
   CString text;
   int     number;
@@ -1016,7 +977,7 @@ SQLDatabase::GetErrorInfo(SQLSMALLINT p_type, SQLHANDLE p_handle, int& p_number,
   CString errors;
   while(true)
   {
-    // Haal foutinfo op
+    // Getting the diagnostic info record
     szErrorMsg[0] = 0;
     szSqlState[0] = 0;
     SQLRETURN res = SqlGetDiagRec(p_type,             // Type of the handle
@@ -1117,7 +1078,7 @@ SQLDatabase::StartTransaction(SQLTransaction* p_transaction, bool p_startSubtran
       }
       catch(CString& err)
       {
-        // Add location to the errormessage
+        // Add location to the error message
         throw CString("Error at starting transaction: ") + err;
       }
     }
@@ -1130,12 +1091,12 @@ SQLDatabase::StartTransaction(SQLTransaction* p_transaction, bool p_startSubtran
       transName.Format("AutoSavePoint%d", m_transactions.size());
 
       // Set savepoint
-      CString startSubtrans = reinterpret_cast<SQLInfoDB*>(m_info)->GetStartSubTransaction(transName);
+      CString startSubtrans = m_info->GetStartSubTransaction(transName);
       if(!startSubtrans.IsEmpty())
       {
         try
         {
-      SQLQuery rs(this);
+          SQLQuery rs(this);
           rs.DoSQLStatement(startSubtrans);
         }
         catch(CString& err)
@@ -1161,7 +1122,7 @@ SQLDatabase::CommitTransaction(SQLTransaction* p_transaction)
     if(GetTransaction() != p_transaction)
     {
       // Note: If this exception is indeed reached it means that
-      // a transaction lower on the stack is now being commited
+      // a transaction lower on the stack is now being committed
       // This is clearly not what we want, and points to an error
       // in our application's logic in the calling code.
       throw CString("Error at commit: transaction is not the current transaction");
@@ -1196,7 +1157,7 @@ SQLDatabase::CommitTransaction(SQLTransaction* p_transaction)
         // do the rollback of the transaction
         RollbackTransaction(p_transaction);
 
-        // Throw an exception with the errorinfo of the failed commit
+        // Throw an exception with the error info of the failed commit
         throw CString("Error at commit: ") + error;
       }
     }
@@ -1205,7 +1166,7 @@ SQLDatabase::CommitTransaction(SQLTransaction* p_transaction)
       // It's a sub transaction
       // If the database is capable: Do the commit of the sub transaction
       // Otherwise: do nothing and wait for the outer transaction to commit the whole in-one-go
-      CString startSubtrans = reinterpret_cast<SQLInfoDB*>(m_info)->GetCommitSubTransaction(p_transaction->GetSavePoint());
+      CString startSubtrans = m_info->GetCommitSubTransaction(p_transaction->GetSavePoint());
       if(!startSubtrans.IsEmpty())
       {
         try
@@ -1227,17 +1188,17 @@ SQLDatabase::CommitTransaction(SQLTransaction* p_transaction)
 void 
 SQLDatabase::RollbackTransaction(SQLTransaction* p_transaction)
 {
-  // Check taht it is the top-of-the-stack transaction
+  // Check that it is the top-of-the-stack transaction
   if(GetTransaction() != p_transaction)
   {
     throw CString("Error in rollback: transaction is not the current transaction");
   }
 
-  // Look for the first saveepoint on the stack
+  // Look for the first savepoint on the stack
   // Beware: the transaction is always removed from the stack
   // even if the rollback may fail.
   // So we cannot try to rollback or commit it again
-  TransactieStack transactions;
+  TransactionStack transactions;
   while(m_transactions.size())
   {
     // Get the top of the stack
@@ -1277,19 +1238,19 @@ SQLDatabase::RollbackTransaction(SQLTransaction* p_transaction)
       }
       catch(...)
       {
-        // Throw an exception with errorinfo at a failed rollback
+        // Throw an exception with error info at a failed rollback
         throw CString("Error at rollback: ") + GetErrorString();
       }
     }
     else
     {
       // It is a subtransaction
-      CString startSubtrans = reinterpret_cast<SQLInfoDB*>(m_info)->GetRollbackSubTransaction(p_transaction->GetSavePoint());
+      CString startSubtrans = m_info->GetRollbackSubTransaction(p_transaction->GetSavePoint());
       if(!startSubtrans.IsEmpty())
       {
         try
         {
-      SQLQuery rs(this);
+          SQLQuery rs(this);
           rs.DoSQLStatement(startSubtrans);
         }
         catch(CString& err)
@@ -1299,7 +1260,7 @@ SQLDatabase::RollbackTransaction(SQLTransaction* p_transaction)
       }
     }
   }
-  // Notify all rolledback transactions
+  // Notify all rolled back transactions
   while(transactions.size())
   {
     transactions.top()->AfterRollback();
@@ -1323,9 +1284,9 @@ SQLDatabase::GetTransaction()
 CString
 SQLDatabase::GetSQLTimeString(int p_hour,int p_minute,int p_second)
 {
-  if(GetSQLInfo())
+  if(GetSQLInfoDB())
   {
-    return reinterpret_cast<SQLInfoDB*>(m_info)->GetSQLTimeString(p_hour,p_minute,p_second);
+    return m_info->GetSQLTimeString(p_hour,p_minute,p_second);
   }
   return "";
 }
@@ -1333,9 +1294,9 @@ SQLDatabase::GetSQLTimeString(int p_hour,int p_minute,int p_second)
 CString
 SQLDatabase::GetStrippedSQLTimeString(int p_hour,int p_minute,int p_second)
 {
-  if(GetSQLInfo())
+  if(GetSQLInfoDB())
   {
-    return reinterpret_cast<SQLInfoDB*>(m_info)->GetSQLTimeString(p_hour,p_minute,p_second);
+    return m_info->GetSQLTimeString(p_hour,p_minute,p_second);
   }
   return "";
 }
@@ -1343,9 +1304,9 @@ SQLDatabase::GetStrippedSQLTimeString(int p_hour,int p_minute,int p_second)
 CString
 SQLDatabase::GetSQLDateString(int p_day, int p_month, int p_year)
 {
-  if(GetSQLInfo())
+  if(GetSQLInfoDB())
   {
-    return reinterpret_cast<SQLInfoDB*>(m_info)->GetSQLDateString(p_year,p_month,p_day);
+    return m_info->GetSQLDateString(p_year,p_month,p_day);
   }
   return "";
 }
@@ -1353,9 +1314,9 @@ SQLDatabase::GetSQLDateString(int p_day, int p_month, int p_year)
 CString
 SQLDatabase::GetCurrentTimestampQualifier()
 {
-  if(GetSQLInfo())
+  if(GetSQLInfoDB())
   {
-    return reinterpret_cast<SQLInfoDB*>(m_info)->GetSystemDateTimeKeyword();
+    return m_info->GetSystemDateTimeKeyword();
   }
   return "";
 }
@@ -1364,9 +1325,9 @@ CString
 SQLDatabase::GetSQL_GenerateSerial(CString p_table)
 {
   CString query;
-  if(GetSQLInfo())
+  if(GetSQLInfoDB())
   {
-    query = reinterpret_cast<SQLInfoDB*>(m_info)->GetSQLGenerateSerial(p_table);
+    query = m_info->GetSQLGenerateSerial(p_table);
   }
   if(query.Left(6).CompareNoCase("SELECT") == 0)
   {
@@ -1385,9 +1346,9 @@ int
 SQLDatabase::GetSQL_EffectiveSerial(CString p_oid_string)
 {
   CString query;
-  if(GetSQLInfo())
+  if(GetSQLInfoDB())
   {
-    query = reinterpret_cast<SQLInfoDB*>(m_info)->GetSQLEffectiveSerial(p_oid_string);
+    query = m_info->GetSQLEffectiveSerial(p_oid_string);
   }
   if(query.Left(6).CompareNoCase("SELECT") == 0)
   {
@@ -1407,14 +1368,14 @@ SQLDatabase::GetSQL_EffectiveSerial(CString p_oid_string)
 CString 
 SQLDatabase::GetTimestampAsString(const SQLTimestamp& p_timestamp)
 {
-  if(GetSQLInfo())
+  if(GetSQLInfoDB())
   {
-    return reinterpret_cast<SQLInfoDB*>(m_info)->GetSQLDateTimeString(p_timestamp.Year()
-                                                                     ,p_timestamp.Month()
-                                                                     ,p_timestamp.Day()
-                                                                     ,p_timestamp.Hour()
-                                                                     ,p_timestamp.Minute()
-                                                                     ,p_timestamp.Second());
+    return m_info->GetSQLDateTimeString(p_timestamp.Year()
+                                       ,p_timestamp.Month()
+                                       ,p_timestamp.Day()
+                                       ,p_timestamp.Hour()
+                                       ,p_timestamp.Minute()
+                                       ,p_timestamp.Second());
   }
   return "";
 }
@@ -1422,9 +1383,9 @@ SQLDatabase::GetTimestampAsString(const SQLTimestamp& p_timestamp)
 CString 
 SQLDatabase::GetTimestampAsBoundString()
 {
-  if(GetSQLInfo())
+  if(GetSQLInfoDB())
   {
-    return reinterpret_cast<SQLInfoDB*>(m_info)->GetSQLDateTimeBoundString();
+    return m_info->GetSQLDateTimeBoundString();
   }
   return "";
 }
@@ -1432,14 +1393,14 @@ SQLDatabase::GetTimestampAsBoundString()
 CString
 SQLDatabase::GetSQLDateTimeStrippedString(const SQLTimestamp& p_timestamp)
 {
-  if(GetSQLInfo())
+  if(GetSQLInfoDB())
   {
-    return reinterpret_cast<SQLInfoDB*>(m_info)->GetSQLDateTimeStrippedString(p_timestamp.Year()
-                                                                             ,p_timestamp.Month()
-                                                                             ,p_timestamp.Day()
-                                                                             ,p_timestamp.Hour()
-                                                                             ,p_timestamp.Minute()
-                                                                             ,p_timestamp.Second());
+    return m_info->GetSQLDateTimeStrippedString(p_timestamp.Year()
+                                               ,p_timestamp.Month()
+                                               ,p_timestamp.Day()
+                                               ,p_timestamp.Hour()
+                                               ,p_timestamp.Minute()
+                                               ,p_timestamp.Second());
   }
   return "";
 }
@@ -1447,9 +1408,9 @@ SQLDatabase::GetSQLDateTimeStrippedString(const SQLTimestamp& p_timestamp)
 CString
 SQLDatabase::GetInterval1MinuteAgo()
 {
-  if(GetSQLInfo())
+  if(GetSQLInfoDB())
   {
-    return reinterpret_cast<SQLInfoDB*>(m_info)->GetInterval1MinuteAgo();
+    return m_info->GetInterval1MinuteAgo();
   }
   return "";
 }
@@ -1457,9 +1418,9 @@ SQLDatabase::GetInterval1MinuteAgo()
 CString
 SQLDatabase::GetUpper(CString p_veld)
 {
-  if(GetSQLInfo())
+  if(GetSQLInfoDB())
   {
-    return reinterpret_cast<SQLInfoDB*>(m_info)->GetUpperFunction(p_veld);
+    return m_info->GetUpperFunction(p_veld);
   }
   return "";
 }
@@ -1467,9 +1428,9 @@ SQLDatabase::GetUpper(CString p_veld)
 CString
 SQLDatabase::GetNVLStatement(CString p_test,CString p_isnull)
 {
-  if(GetSQLInfo())
+  if(GetSQLInfoDB())
   {
-    return reinterpret_cast<SQLInfoDB*>(m_info)->GetNVLStatement(p_test,p_isnull);
+    return m_info->GetNVLStatement(p_test,p_isnull);
   }
   return "";
 }
@@ -1479,12 +1440,12 @@ void
 SQLDatabase::SetOracleResultCacheMode(const CString& p_mode)
 {
   // Check to see if we are logged in, and 
-  if(!GetSQLInfo())
+  if(!GetSQLInfoDB())
   {
     return;
   }
   // See if we've got a setting
-  CString query = reinterpret_cast<SQLInfoDB*>(m_info)->GetSQLCacheModeSetting(p_mode);
+  CString query = m_info->GetSQLCacheModeSetting(p_mode);
   if(query.IsEmpty())
   {
     return;
@@ -1501,6 +1462,23 @@ SQLDatabase::SetOracleResultCacheMode(const CString& p_mode)
     throw error;
   }
 }
+
+// Setting the database type (once)
+// Can only be done in unopened state 
+// Opening a database will overwrite this
+bool
+SQLDatabase::SetDatabaseType(DatabaseType p_type)
+{
+  if(m_rdbmsType == RDBMS_UNKNOWN && !IsOpen())
+  {
+    MakeEnvHandle();
+    MakeDbcHandle();
+    m_rdbmsType = p_type;
+    return true;
+  }
+  return false;
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -1694,7 +1672,7 @@ SQLDatabase::SetSchemaAction(SchemaAction p_action)
 //
 //////////////////////////////////////////////////////////////////////////
 
-// Do the Querytext macro replacement
+// Do the Query text macro replacement
 void           
 SQLDatabase::ReplaceMacros(CString& p_statement)
 {
@@ -1705,17 +1683,17 @@ SQLDatabase::ReplaceMacros(CString& p_statement)
 
     while(true)
     {
-      // Zoek macro tekst
+      // Search the macro text
       int pos = p_statement.Find(text);
       if(pos < 0)
       {
         break;
       }
-      // Macro vervangen
+      // Replace the macro
       int quotes = FindQuotes(p_statement,pos);
       if((quotes % 2) == 0)
       {
-        // doe de replacement
+        // Do the replacement
         ReplaceMacro(p_statement,pos,text.GetLength(),repl);
       }
     }
@@ -1771,21 +1749,20 @@ SQLDatabase::DeleteMacro(CString p_macro)
   }
 }
 
-
 //////////////////////////////////////////////////////////////////////////
 //
 // LOCKING THE DATABASE
 //
 //////////////////////////////////////////////////////////////////////////
 
-// Acquire a multithread lock for SQLQuery
+// Acquire a multi threaded lock for SQLQuery
 void 
 SQLDatabase::Acquire(unsigned /*p_timeout*/)   
 {
   EnterCriticalSection(&m_databaseLock);
 }
 
-// Release the multithread lock for SQLQuery
+// Release the multi threaded lock for SQLQuery
 void 
 SQLDatabase::Release()   
 {

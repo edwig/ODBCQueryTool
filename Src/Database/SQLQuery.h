@@ -2,7 +2,7 @@
 //
 // File: SQLQuery.h
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #pragma once
 #include "SQLVariant.h"
@@ -41,6 +41,7 @@
 // After this amount of seconds it's been toooooo long
 #define QUERY_TOO_LONG 2.0
 
+class bcd;
 class SQLDate;
 class SQLDatabase;
 
@@ -84,6 +85,7 @@ public:
   void SetParameter  (int p_num,SQLDate&      p_param,int p_type = SQL_PARAM_INPUT);
   void SetParameter  (int p_num,SQLTime&      p_param,int p_type = SQL_PARAM_INPUT);
   void SetParameter  (int p_num,SQLTimestamp& p_param,int p_type = SQL_PARAM_INPUT);
+  void SetParameter  (int p_num,const bcd&    p_param,int p_type = SQL_PARAM_INPUT);
 
   // SINGLE STATEMENT
 
@@ -94,56 +96,62 @@ public:
   // Overrides with one parameter
   void        DoSQLStatement(const CString& p_statement,const int   p_param1);
   void        DoSQLStatement(const CString& p_statement,const char* p_param1);
+  void        DoSQLStatement(const CString& p_statement,const bcd&  p_param1);
   // Variants of the DoSQLStatement
   SQLVariant* DoSQLStatementScalar  (const CString& p_statement,const int   p_param1);
   SQLVariant* DoSQLStatementScalar  (const CString& p_statement,const char* p_param1);
+  SQLVariant* DoSQLStatementScalar  (const CString& p_statement,const bcd&  p_param1);
   int         DoSQLStatementNonQuery(const CString& p_statement,const int   p_param1);
   int         DoSQLStatementNonQuery(const CString& p_statement,const char* p_param1);
+  int         DoSQLStatementNonQuery(const CString& p_statement,const bcd&  p_param1);
   // Variant with a catch to it
   void        TryDoSQLStatement(const CString& p_statement);
 
   // BOUND STATEMENT
-  // Devide a SQL statement in Prepare/Execute/Fetch
-  void DoSQLPrepare(const CString& p_statement);
-  void DoSQLExecute();
+  // Divide a SQL statement in Prepare/Execute/Fetch
+  void        DoSQLPrepare(const CString& p_statement);
+  void        DoSQLExecute();
   // Get bounded columns from query
-  ColNumMap* GetBoundedColumns();
+  ColNumMap*  GetBoundedColumns();
 
-  // Paralllel cancelation of the statement
-  void DoCancelQuery();
+  // Parallel cancellation of the statement
+  void        DoCancelQuery();
 
   // GET RESULTS FROM AN EXECUTED QUERY
 
   // Get next record of previously executed select statement
-  bool GetRecord();
+  bool        GetRecord();
   // Get a pointer to a variable of the column
   SQLVariant* GetColumn(int icol);
   // Get the variant data type of the columns
-  int  GetColumnType(int icol);
+  int         GetColumnType(int icol);
   // Get number of columns in the result set
-  int  GetNumberOfColumns() const;
+  int         GetNumberOfColumns() const;
   // Get number of records read so far
-  int  GetNumberOfRows();
+  int         GetNumberOfRows();
   // ColumnName -> column number
-  int  GetColumnNumber(const char* p_columnName);
+  int         GetColumnNumber(const char* p_columnName);
   // ColumnNumber -> column name
-  bool GetColumnName(int p_column,CString& p_name);
+  bool        GetColumnName(int p_column,CString& p_name);
   // Get length of the column
-  int  GetColumnLength(int p_column);
+  int         GetColumnLength(int p_column);
   // Get Display size of the column
-  int  GetColumnDisplaySize(int p_column);
+  int         GetColumnDisplaySize(int p_column);
+
+  // Getting the results of the query
+  SQLVariant& operator[](int p_index);
 
   // VARIOUS STATUS METHODS
   // Get true if no error found so far
-  bool    IsOk() const;
+  bool        IsOk() const;
   // Get the error string
-  CString GetError();
+  CString     GetError();
   // See if column is NULL value
-  bool    IsNull(int col);
+  bool        IsNull(int col);
   // See if column is EMPTY value
-  bool    IsEmpty(int col);
-  // Get version for work-arounds
-  int     GetODBCVersion();
+  bool        IsEmpty(int col);
+  // Get version for work-around
+  int         GetODBCVersion();
 
   // LEGACY SUPPORT ODBC 1.x AND 2.x
   void DescribeColumn(int           p_col
@@ -161,10 +169,12 @@ private:
   // Bind application parameters
   void  BindParameters();
   void  BindColumns();
+  void  BindColumnNumeric(SQLSMALLINT p_column,SQLVariant* p_var,int p_type);
+
   // Reset all column to NULL
   void  ResetColumns();
   // Convert database dependent SQL_XXXX types to C-types SQL_C_XXXX
-  short SQLType2CType(short nSQLType);
+  short SQLType2CType(short p_sqlType);
   // Provide piece-by-piece data at exec time of the SQLExecute
   int   ProvideAtExecData();
   // Retrieve the piece-by-piece data at exec time of the SQLFetch
@@ -249,3 +259,8 @@ SQLQuery::SetSpeedThreshold(double p_seconds)
   m_speedThreshold = p_seconds;
 }
 
+inline SQLVariant&
+SQLQuery::operator[](int p_index)
+{
+  return *(GetColumn(p_index));
+}

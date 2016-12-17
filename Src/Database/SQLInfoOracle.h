@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #pragma once
 #include "SQLInfoDB.h"
@@ -47,6 +47,9 @@ public:
 
   // System catalog is stored in uppercase in the database?
   bool IsCatalogUpper () const;
+
+  // System catalog supports full ISO schemas (same tables per schema)
+  bool GetUnderstandsSchemas() const;
 
   // Supports database/ODBCdriver comments in sql
   bool SupportsDatabaseComments() const;
@@ -140,18 +143,6 @@ public:
   // Replace the Identity column OID by a sequence.nextval
   CString GetReplaceColumnOIDbySequence(CString p_columns,CString p_tablename,CString p_postfix = "_seq") const;
 
-  // Get the tablespace for the tables
-  CString GetTablesTablespace(CString p_tablespace = "") const;
-
-  // Get the tablespace for the indexes
-  CString GetIndexTablespace(CString p_tablespace = "") const;
-
-  // Get the storage name for indici
-  CString GetStorageSpaceNameForIndexes() const;
-
-  // Get the storage space for temporary tables
-  CString GetStorageSpaceNameForTempTables(CString p_tablename) const;
-
   // Remove catalog dependencies for stored procedures
   CString GetSQLRemoveProcedureDependencies(CString p_procname) const;
 
@@ -159,11 +150,17 @@ public:
   CString GetSQLRemoveFieldDependencies(CString p_tablename) const;
 
   // Gets the table definition-form of a primary key
-  CString GetPrimaryKeyDefinition(CString p_tableName,bool p_temporary) const;
+  CString GetPrimaryKeyDefinition(CString p_schema,CString p_tableName,bool p_temporary) const;
 
   // Get the constraint form of a primary key to be added to a table after creation of that table
-  CString GetPrimaryKeyConstraint(CString p_tablename,bool p_temporary) const;
+  CString GetPrimaryKeyConstraint(CString p_schema,CString p_tablename,CString p_primary) const;
   
+  // Get the sql to add a foreign key to a table
+  CString GetSQLForeignKeyConstraint(DBForeign& p_foreign) const;
+
+  // Get the sql (if possible) to change the foreign key constraint
+  CString GetSQLAlterForeignKey(DBForeign& p_origin,DBForeign& p_requested) const;
+
   // Performance parameters to be added to the database
   CString GetSQLPerformanceSettings() const;
 
@@ -175,27 +172,9 @@ public:
 
   // Gives the statement to alter a table columns' name
   CString GetSQLModifyColumnName(CString p_tablename,CString p_oldName,CString p_newName,CString p_datatype);
-	
-	// Gets the maximum length of an SQL statement
-	unsigned long GetMaxStatementLength() const;
-
-  // Prefix for an add constraint DDL command in SQLAtlerTableGenerator
-  CString GetAddConstraintPrefix(CString p_constraintName) const;
-
-  // Suffix for an add constraint DDL command in SQLAtlerTableGenerator
-  CString GetAddConstraintSuffix(CString p_constraintName) const;
-
-  // Get the prefix for a drop constraint DDL command in the SQLAlterTableGenerator
-  CString GetDropConstraintPrefix() const;
-
-  // Get the suffix for a drop constraint DDL commando in the SQLAlterTableGenerator
-  CString GetDropConstraintSuffix() const;
-
-  // Clause separator between two ADD or DROP clauses in an ALTER TABLE
-  CString GetAlterTableClauseSeparator() const;
-
-  // Grouping of more than one column possible in an ADD/MODIFY/DROP clause
-  bool    GetClauseGroupingPossible() const;
+  
+  // Gets the maximum length of an SQL statement
+  unsigned long GetMaxStatementLength() const;
 
   // Gets the prefix needed for altering the datatype of a column in a MODIFY/ALTER
   CString GetModifyDatatypePrefix() const;
@@ -210,7 +189,7 @@ public:
   CString GetCodeTempTableWithNoLog() const;
 
   // Granting all rights on a table (In a NON-ANSI database)
-  CString GetSQLGrantAllOnTable(CString p_tableName);
+  CString GetSQLGrantAllOnTable(CString p_schema,CString p_tableName,bool p_grantOption = false);
 
   // Code prefix for a select-into-temp
   CString GetSelectIntoTempClausePrefix(CString p_tableName) const;
@@ -281,7 +260,7 @@ public:
   CString GetSQLConstraintsImmediate() const;
 
   // Get SQL to check if a table already exists in the database
-  CString GetSQLTableExists(CString p_tablename) const;
+  CString GetSQLTableExists(CString p_schema,CString p_tablename) const;
 
   // Get SQL to select all columns of a table from the catalog
   CString GetSQLGetColumns(CString& p_user,CString& p_tableName) const;
@@ -289,32 +268,32 @@ public:
   // Get SQL to select all constraints on a table from the catalog
   CString GetSQLGetConstraintsForTable(CString& p_tableName) const;
 
-  // Get SQL to read all indici for a table
-  CString GetSQLTableIndexes(CString& p_user,CString& p_tableName) const;
+  // Get SQL to read all indices for a table
+  CString GetSQLTableIndices(CString p_user,CString p_tableName) const;
+
+  // Get SQL to create an index for a table
+  CString GetSQLCreateIndex(CString p_user,CString p_tableName,DBIndex* p_index) const;
+
+  // Get SQL to drop an index
+  CString GetSQLDropIndex(CString p_user,CString p_indexName) const;
 
   // Get SQL to read the referential constaints from the catalog
-  CString GetSQLTableReferences(CString& p_tablename) const;
+  CString GetSQLTableReferences(CString p_schema,CString p_tablename,CString p_constraint = "",int p_maxColumns = SQLINFO_MAX_COLUMNS) const;
 
-  // Get the SQL Query to create a synonym
-  CString GetSQLMakeSynonym(CString& p_objectName) const;
-
-  // Get SQL to drop the synonym
-  CString GetSQLDropSynonym(CString& p_objectname) const;
+  // Get the SQL to determine the sequence state in the database
+  CString GetSQLSequence(CString p_schema,CString p_tablename,CString p_postfix = "_seq") const;
 
   // Create a sequence in the database
-  void    DoCreateSequence(CString& p_sequenceName,int p_startpos);
+  CString GetSQLCreateSequence(CString p_schema,CString p_tablename,CString p_postfix = "_seq",int p_startpos = 1) const;
 
   // Remove a sequence from the database
-  void    DoRemoveSequence(CString& p_sequenceName) const;
+  CString GetSQLDropSequence(CString p_schema,CString p_tablename,CString p_postfix = "_seq") const;
+
+  // Gets the SQL for the rights on the sequence
+  CString GetSQLSequenceRights(CString p_schema,CString p_tableName,CString p_postfix = "_seq") const;
 
   // Remove a stored procedure from the database
   void    DoRemoveProcedure(CString& p_procedureName) const;
-
-  // Re-Creates a sequence in a database from the OID column
-  void    DoCreateNextSequence(const CString& p_tableName,CString p_postfix = "_seq");
-
-  // Gets the SQL for the rights on the sequence
-  CString GetSQLSequenceRights(const CString& p_tableName,CString p_postfix = "_seq") const;
 
   // Get SQL for your session and controling terminal
   CString GetSQLSessionAndTerminal() const;
@@ -332,7 +311,7 @@ public:
   bool    DoesColumnExistsInTable(CString& p_owner,CString& p_tableName,CString& p_column) const;
 
   // Get SQL to get all the information about a Primary Key constraint
-  CString GetSQLPrimaryKeyConstraintInformation(CString& p_tableName) const;
+  CString GetSQLPrimaryKeyConstraintInformation(CString p_schema,CString p_tableName) const;
 
   // Does the named constraint exist in the database
   bool    DoesConstraintExist(CString p_constraintName) const;
@@ -346,6 +325,28 @@ public:
   // Getting the fact that there is only **one** (1) user session in the database
   bool    GetOnlyOneUserSession();
 
+  // SQL DDL STATEMENTS
+  // ==================
+
+  // Add a column to a table
+  CString GetCreateColumn(CString p_schema,CString p_tablename,CString p_columnName,CString p_typeDefinition,bool p_notNull);
+
+  // Drop a column from a table
+  CString GetSQLDropColumn(CString p_schema,CString p_tablename,CString p_columnName) const;
+
+  // Add a foreign key to a table
+  CString GetCreateForeignKey(CString p_tablename,CString p_constraintname,CString p_column,CString p_refTable,CString p_primary);
+
+  // Modify a column's definition in a table
+  CString GetModifyColumnType(CString p_schema,CString p_tablename,CString p_columnName,CString p_typeDefinition);
+  CString GetModifyColumnNull(CString p_schema,CString p_tablename,CString p_columnName,bool p_notNull);
+
+  // Get the SQL to drop a view. If precursor is filled: run that SQL first!
+  CString GetSQLDropView(CString p_schema,CString p_view,CString& p_precursor);
+
+  // Create or replace a database view
+  CString GetSQLCreateOrReplaceView(CString p_schema,CString p_view,CString p_asSelect) const;
+
   // SQL DDL OPERATIONS
   // ==================
 
@@ -355,11 +356,8 @@ public:
   // Do the commit for the DML commands in the database
   void    DoCommitDMLcommands() const;
 
-  // Create a view from the select code and the name
-  void    DoCreateOrReplaceView(CString p_code,CString p_viewName);
-
-  // Remove a view from the database
-  void    DoDropView(CString p_viewName);
+  // Remove a column from a table
+  void    DoDropColumn(CString p_tableName,CString p_columName);
 
   // Does the named view exists in the database
   bool    DoesViewExists(CString& p_viewName);
@@ -372,9 +370,6 @@ public:
 
   // Remove a temporary table
   void    DoRemoveTemporaryTable(CString& p_tableName) const;
-
-  // If the temporary table exists, remove it
-  void    DoRemoveTemporaryTableWithCheck(CString& p_tableName) const;
 
   // Maak een procedure aan in de database
   void    DoMakeProcedure(CString& p_procName,CString p_table,bool p_noParameters,CString& p_codeBlock);

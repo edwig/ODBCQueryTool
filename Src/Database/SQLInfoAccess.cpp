@@ -2,7 +2,7 @@
 //
 // File: SQLInfoAccess.cpp
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #include "stdafx.h"
 #include "SQLInfoAccess.h"
@@ -76,6 +76,13 @@ SQLInfoAccess::IsCatalogUpper() const
   return false;
 }
 
+// System catalog supports full ISO schemas (same tables per schema)
+bool 
+SQLInfoAccess::GetUnderstandsSchemas() const
+{
+  return false;
+}
+
 // Supports database/ODBCdriver comments in sql
 bool 
 SQLInfoAccess::SupportsDatabaseComments() const
@@ -103,13 +110,8 @@ SQLInfoAccess::SupportsOrderByExpression() const
 CString 
 SQLInfoAccess::GetSQLStringDefaultValue(CString p_tableName,CString p_columnName) const
 {
-  CString query = "SELECT replace(replace('#' + text + '#', '#(', ''), ')#', '')\n"
-    "  FROM dbo.sysobjects obj, dbo.syscolumns col, dbo.syscomments com\n"
-    " WHERE obj.name = '" + p_tableName + "'\n"
-    "   AND obj.Id = col.id\n"
-    "   AND col.name = '" + p_columnName + "'\n"
-    "   AND col.cdefault = com.id\n";
-  return query;
+  // MS-Access cannot query this
+  return "";
 }
 
 // Keyword for the current date and time
@@ -290,8 +292,8 @@ SQLInfoAccess::GetSQLRemoveTemporaryTable(CString& p_tablename,int& p_number) co
   // mogelijke volgende definitie onder deze naam
   p_number += 3;
   return "DELETE FROM #"    + p_tablename + ";\n"
-    "TRUNCATE TABLE #" + p_tablename + ";\n"
-    "DROP TABLE #"     + p_tablename + ";\n";
+         "TRUNCATE TABLE #" + p_tablename + ";\n"
+         "DROP TABLE #"     + p_tablename + ";\n";
 }
 
 // Get a query to select into a temp table
@@ -324,36 +326,6 @@ SQLInfoAccess::GetReplaceColumnOIDbySequence(CString p_columns,CString p_tablena
   return p_columns;
 }
 
-// Get the tablespace for the tables
-CString
-SQLInfoAccess::GetTablesTablespace(CString p_tablespace /*=""*/) const
-{
-  return "";
-}
-
-// Get the tablespace for the indexes
-// If no default is givven, fallbacks to the DEFAULT tablespace
-CString
-SQLInfoAccess::GetIndexTablespace(CString p_tablespace /*=""*/) const
-{
-  return "";
-}
-
-// Get the storage name for indici
-CString 
-SQLInfoAccess::GetStorageSpaceNameForIndexes() const
-{
-  return "INDEX"; // Settings::OpslagRuimte::OracleIndexTablespace;
-}
-
-// Get the storage space for temporary tables
-CString
-SQLInfoAccess::GetStorageSpaceNameForTempTables(CString p_tablename) const
-{
-  // MS_SQLServer uses implicit TEMP TABLESPACE for the user
-  return "";
-}
-
 // Remove catalog dependencies for stored procedures
 // To be run after a 'DROP PROCEDURE' or 'DROP FUNCTION'
 CString 
@@ -373,7 +345,7 @@ SQLInfoAccess::GetSQLRemoveFieldDependencies(CString p_tablename) const
 
 // Gets the table definition-form of a primary key
 CString 
-SQLInfoAccess::GetPrimaryKeyDefinition(CString p_tableName,bool /*p_temporary*/) const
+SQLInfoAccess::GetPrimaryKeyDefinition(CString p_schema,CString p_tableName,bool /*p_temporary*/) const
 {
   // The primary key constraint is not directly generated after the column
   // to ensure it wil use the named index in the correct tablespace
@@ -383,10 +355,58 @@ SQLInfoAccess::GetPrimaryKeyDefinition(CString p_tableName,bool /*p_temporary*/)
 
 // Get the constraint form of a primary key to be added to a table after creation of that table
 CString
-SQLInfoAccess::GetPrimaryKeyConstraint(CString p_tablename,bool /*p_temporary*/) const
+SQLInfoAccess::GetPrimaryKeyConstraint(CString /*p_schema*/,CString p_tablename,CString p_primary) const
 {
-  return "ADD CONSTRAINT pk_" + p_tablename + " PRIMARY KEY(oid)\n";
+  return "ALTER TABLE " + p_tablename + "\n"
+         "  ADD CONSTRAINT pk_" + p_tablename + "\n"
+         "      PRIMARY KEY (" + p_primary + ")";
 }
+
+// Get the sql to add a foreign key to a table
+CString 
+SQLInfoAccess::GetSQLForeignKeyConstraint(DBForeign& p_foreign) const
+{
+  // Construct the correct tablenames
+  CString table  (p_foreign.m_tablename);
+  CString primary(p_foreign.m_primaryTable);
+  if(!p_foreign.m_schema.IsEmpty())
+  {
+    table   = p_foreign.m_schema + "." + table;
+    primary = p_foreign.m_schema + "." + primary;
+  }
+
+  // The base foreign key command
+  CString query = "ALTER TABLE " + table + "\n"
+                  "  ADD CONSTRAINT " + p_foreign.m_constraintname + "\n"
+                  "      FOREIGN KEY (" + p_foreign.m_column + ")\n"
+                  "      REFERENCES " + primary + "(" + p_foreign.m_primaryColumn + ")";
+  switch(p_foreign.m_updateRule)
+  {
+    case 1: query += "\n      ON UPDATE CASCADE";     break;
+    case 2: query += "\n      ON UPDATE SET NULL";    break;
+    default:// In essence: ON UPDATE RESTRICT, but that's already the default
+    case 0: break;
+  }
+  switch(p_foreign.m_deleteRule)
+  {
+    case 1: query += "\n      ON DELETE CASCADE";     break;
+    case 2: query += "\n      ON DELETE SET NULL";    break;
+    default:// In essence: ON DELETE RESTRICT, but that's already the default
+    case 0: break;
+  }
+  return query;
+}
+
+// Get the sql (if possible) to change the foreign key constraint
+CString 
+SQLInfoAccess::GetSQLAlterForeignKey(DBForeign& /*p_origin*/,DBForeign& /*p_requested*/) const
+{
+  // MS-Acces cannot alter a foreign-key constraint.
+  // You must drop and then re-create your foreign key constraint
+  // So return an empty string to signal this!
+  return "";
+}
+
 
 // Performance parameters to be added to the database
 CString
@@ -416,11 +436,11 @@ SQLInfoAccess::GetSQLModifyColumnName(CString p_tablename,CString p_oldName,CStr
 {
   CString sqlCode;
   sqlCode  = "ALTER TABLE " + p_tablename + "\n"
-    "        ADD " + p_newName + " " + p_datatype + ";\n";
+             "  ADD " + p_newName + " " + p_datatype + ";\n";
   sqlCode += "UPDATE " + p_tablename + "\n"
-    "   SET " + p_newName   + " = " + p_oldName + ";\n";
+             "   SET " + p_newName   + " = " + p_oldName + ";\n";
   sqlCode += "ALTER TABLE " + p_tablename + "\n"
-    " DROP COLUMN " + p_oldName + ";";
+             " DROP COLUMN " + p_oldName + ";";
   return sqlCode;
 }
 
@@ -429,49 +449,6 @@ unsigned long
 SQLInfoAccess::GetMaxStatementLength() const
 {
   return 0;		// No limit
-}
-
-// Prefix for an add constraint DDL command in SQLAtlerTableGenerator
-CString 
-SQLInfoAccess::GetAddConstraintPrefix(CString p_constraintName) const
-{
-  return "ADD CONSTRAINT " + p_constraintName + " ";
-}
-
-// Suffix for an add constraint DDL command in SQLAtlerTableGenerator
-CString 
-SQLInfoAccess::GetAddConstraintSuffix(CString /*p_constraintName*/) const
-{
-  return "";
-}
-
-// Get the prefix for a drop constraint DDL command in the SQLAlterTableGenerator
-CString 
-SQLInfoAccess::GetDropConstraintPrefix() const
-{
-  return "DROP CONSTRAINT ";
-}
-
-// Get the suffix for a drop constraint DDL commando in the SQLAlterTableGenerator
-CString 
-SQLInfoAccess::GetDropConstraintSuffix() const
-{
-  return "";
-}
-
-// Clause separator between two ADD or DROP clauses in an ALTER TABLE
-CString 
-SQLInfoAccess::GetAlterTableClauseSeparator() const
-{
-  return ", ";
-}
-
-// Grouping of more than one column possible in an ADD/MODIFY/DROP clause
-bool   
-SQLInfoAccess::GetClauseGroupingPossible() const
-{
-  // Kan meerdere ADD (kolomdef ,.... ) doen
-  return true;
 }
 
 // Gets the prefix needed for altering the datatype of a column in a MODIFY/ALTER
@@ -506,9 +483,14 @@ SQLInfoAccess::GetCodeTempTableWithNoLog() const
 
 // Granting all rights on a table (In a NON-ANSI database)
 CString 
-SQLInfoAccess::GetSQLGrantAllOnTable(CString p_tableName)
+SQLInfoAccess::GetSQLGrantAllOnTable(CString /*p_schema*/,CString p_tableName,bool p_grantOption /*= false*/)
 {
-  return "GRANT ALL ON " + p_tableName + " TO " + GetGrantedUsers() + " WITH GRANT OPTION;\n";
+  CString sql = "GRANT ALL ON " + p_tableName + " TO " + GetGrantedUsers();
+  if(p_grantOption)
+  {
+    sql += " WITH GRANT OPTION;\n";
+  }
+  return sql;
 }
 
 
@@ -650,14 +632,10 @@ SQLInfoAccess::GetRollbackSubTransaction(CString p_savepointName) const
 
 // Get SQL to check if a storedprocedure already exists in the database
 CString 
-SQLInfoAccess::GetSQLStoredProcedureExists(CString& p_name) const
+SQLInfoAccess::GetSQLStoredProcedureExists(CString& /*p_name*/) const
 {
-  CString unaam(p_name);
-  unaam.MakeUpper();
-  return "SELECT count(*)\n"
-    "  FROM all_objects\n"
-    " WHERE UPPER(object_name) = '" + unaam + "'\n"
-    "   AND object_type        = 'FUNCTION';";
+  // MS-Access cannot query this
+  return "";
 }
 
 // Part of a query to select only 1 (one) record
@@ -697,119 +675,116 @@ SQLInfoAccess::GetSQLConstraintsImmediate() const
 
 // Get SQL to check if a table already exists in the database
 CString 
-SQLInfoAccess::GetSQLTableExists(CString p_tablename) const
+SQLInfoAccess::GetSQLTableExists(CString /*p_schema*/,CString /*p_tablename*/) const
 {
-  CString query = "SELECT count(*)\n"
-    "  FROM dbo.sysobjects\n"
-    " WHERE name = '" + p_tablename + "'";
-  return query;
+  // MS-Access cannot do this
+  return "";
 }
 
 // Get SQL to select all columns of a table from the catalog
 CString 
-SQLInfoAccess::GetSQLGetColumns(CString& /*p_user*/,CString& p_tableName) const
+SQLInfoAccess::GetSQLGetColumns(CString& /*p_user*/,CString& /*p_tableName*/) const
 {
-  // naam, nummer, type, lengte,nullable
-  CString select = "SELECT col.name\n"
-    "      ,col.colid\n"
-    "      ,typ.name\n"
-    "      ,col.length\n"
-    "      ,col.isnullable\n"
-    "      ,col.prec\n"
-    "      ,col.scale\n"
-    "  FROM dbo.sysobjects obj, dbo.syscolumns col, dbo.systypes typ\n"
-    " WHERE obj.name = '" + p_tableName  + "'\n"
-    "   AND obj.Id = col.id\n"
-    "   AND col.xtype = typ.xtype\n"
-    " ORDER BY col.colid";
-  return select;
+  // MS-Access is not capable of getting the columns for you
+  return "";
 }
 
 // Get SQL to select all constraints on a table from the catalog
 CString 
-SQLInfoAccess::GetSQLGetConstraintsForTable(CString& p_tableName) const
+SQLInfoAccess::GetSQLGetConstraintsForTable(CString& /*p_tableName*/) const
 {
-  CString contabel = "SELECT con.name\n"
-    "      ,tab.name\n"
-    "  FROM dbo.sysobjects con, dbo.sysobjects tab\n"
-    " WHERE tab.name = '" + p_tableName + "'\n"
-    "   AND tab.Id = con.parent_obj\n"
-    "   AND con.xtype in ('C ', 'UQ')\n"
-    "   AND con.type  in ('C ', 'K ')\n";
-  return contabel;
+  // MS-Access is not capable of getting the constraints for you
+  return "";
 }
 
-// Get SQL to read all indici for a table
+// Get SQL to read all indices for a table
 CString 
-SQLInfoAccess::GetSQLTableIndexes(CString& /*p_user*/,CString& p_tableName) const
+SQLInfoAccess::GetSQLTableIndices(CString /*p_user*/,CString /*p_tableName*/) const
 {
-  CString query = "SELECT idx.name\n"
-    "      ,indexproperty(obj.Id, idx.name, 'IsClustered')\n"
-    "      ,indexproperty(obj.Id, idx.name, 'IsUnique')\n"
-    "      ,ixk.keyno\n"
-    "      ,col.name\n"
-    "      ,indexkey_property(obj.Id, idx.indid, ixk.keyno, 'IsDescending')\n"
-    "  FROM dbo.sysindexes idx\n"
-    "      ,dbo.sysindexkeys ixk\n"
-    "      ,dbo.sysobjects obj\n"
-    "      ,dbo.syscolumns col\n"
-    " WHERE obj.name = '" + p_tableName + "'\n"
-    "   AND obj.Id = idx.id\n"
-    "   AND obj.Id = ixk.id\n"
-    "   AND idx.indid = ixk.indid\n"
-    "   AND ixk.colid = col.colid\n"
-    "   AND col.id = obj.Id\n"
-    "   AND NOT idx.name LIKE '\\_WA\\_Sys\\_%\\_%' ESCAPE '\\'\n"
-    //                       "   AND idx.first <> 0\n"
-    " ORDER BY idx.name\n"
-    "         ,ixk.keyno\n";
-  return query;
+  // Cannot query MS-Access for the index configuration
+  return "";
+}
+
+// Get SQL to create an index for a table
+CString 
+SQLInfoAccess::GetSQLCreateIndex(CString p_user,CString p_tableName,DBIndex* p_index) const
+{
+  CString sql("CREATE ");
+  if(p_index->m_unique)
+  {
+    sql += "UNIQUE ";
+  }
+  sql += (p_index->m_descending) ? "DESC" : "ASC";
+  sql += " INDEX ON ";
+  sql += p_user + ".";
+  sql += p_tableName + "(";
+
+  int column = 0;
+  while(!p_index->m_indexName.IsEmpty())
+  {
+    if(column)
+    {
+      sql += ",";
+    }
+    sql += p_index->m_column;
+    // Next column
+    ++column;
+    ++p_index;
+  }
+  sql += ")";
+
+  return sql;
+}
+
+// Get SQL to drop an index
+CString 
+SQLInfoAccess::GetSQLDropIndex(CString /*p_user*/,CString p_indexName) const
+{
+  CString sql = "DROP INDEX " + p_indexName;
+  return sql;
 }
 
 // Get SQL to read the referential constaints from the catalog
 CString 
-SQLInfoAccess::GetSQLTableReferences(CString& p_tablename) const
+SQLInfoAccess::GetSQLTableReferences(CString p_schema
+                                    ,CString p_tablename
+                                    ,CString p_constraint /*=""*/
+                                    ,int     /* p_maxColumns = SQLINFO_MAX_COLUMNS*/) const
 {
-  CString query = "SELECT con.name\n"
-    "      ,tab.name\n"
-    "  FROM dbo.sysobjects con, dbo.sysobjects tab\n"
-    " WHERE tab.name = '" + p_tablename + "'"
-    "   AND tab.Id = con.parent_obj\n"
-    "   AND con.xtype = 'F'\n"
-    "   AND con.type = 'F'\n";
-  return query;
+  // Access driver not capable of getting the table references
+  return CString("");
 }
 
-// Get the SQL Query to create a synonym
-CString
-SQLInfoAccess::GetSQLMakeSynonym(CString& /*p_objectName*/) const
-{
-  return "";
-}
-
-// Get SQL to drop the synonym
+// Get the SQL to determine the sequence state in the database
 CString 
-SQLInfoAccess::GetSQLDropSynonym(CString& /*p_objectName*/) const
+SQLInfoAccess::GetSQLSequence(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_postfix*/) const
 {
+  // MS-Access does not have sequences
   return "";
 }
 
 // Create a sequence in the database
-void 
-SQLInfoAccess::DoCreateSequence(CString& /*p_sequenceName*/,int /*p_startpos*/) 
+CString 
+SQLInfoAccess::GetSQLCreateSequence(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_postfix = "_seq"*/,int /*p_startpos = 1*/) const
 {
+  // MS-Access does not have sequences
+  return "";
 }
 
 // Remove a sequence from the database
-void
-SQLInfoAccess::DoRemoveSequence(CString& /*p_sequenceName*/) const
+CString 
+SQLInfoAccess::GetSQLDropSequence(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_postfix = "_seq"*/) const
 {
+  // MS-Access does not have sequences
+  return "";
 }
 
-// Re-Creates a sequence in a database from the OID column
-void 
-SQLInfoAccess::DoCreateNextSequence(const CString& /*p_tableName*/,CString /*p_postfix /*="_seq"*/)
+// Gets the SQL for the rights on the sequence
+CString
+SQLInfoAccess::GetSQLSequenceRights(CString /*p_schema*/,CString /*p_tableName*/,CString /*p_postfix /*="_seq"*/) const
 {
+  // MS-Access does not have sequences
+  return "";
 }
 
 // Remove a stored procedure from the database
@@ -820,59 +795,36 @@ SQLInfoAccess::DoRemoveProcedure(CString& p_procedureName) const
   query.DoSQLStatement("DROP PROCEDURE " + p_procedureName);
 }
 
-// Gets the SQL for the rights on the sequence
-CString 
-SQLInfoAccess::GetSQLSequenceRights(const CString& /*p_tableName*/,CString /*p_postfix /*="_seq"*/) const
-{
-  return "";
-}
-
 // Get SQL for your session and controling terminal
 CString
 SQLInfoAccess::GetSQLSessionAndTerminal() const
 {
-  CString query = "SELECT rtrim(hostprocess)\n"
-    "      ,rtrim(hostname)\n"    
-    "  FROM master.dbo.sysprocesses\n"
-    " WHERE hostprocess = host_id()\n"
-    "   AND hostname = host_name()\n"
-    "   AND rtrim(program_name) = 'Pronto'";
-  return query;
+  // MS-Access cannot query this
+  return "";
 }
 
 // Get SQL to check if sessionnumber exists
 CString 
 SQLInfoAccess::GetSQLSessionExists(CString p_sessionID) const
 {
-  return "SELECT DISTINCT rtrim(hostprocess)\n"
-    "  FROM master.dbo.sysprocesses\n"
-    " WHERE rtrim(hostprocess) <> " + p_sessionID;
+  // Cannot query this
+  return "";
 }
 
 // Get SQL for unique session ID
 CString 
 SQLInfoAccess::GetSQLUniqueSessionId(const CString& /*p_databaseName*/,const CString& /*p_sessionTable*/) const
 {
-  return "SELECT DISTINCT rtrim(hostprocess)\n"
-    "  FROM master.dbo.sysprocesses\n"
-    " WHERE rtrim(hostprocess) <> '0'\n"
-    "   AND dbid = db_id()";
+  // Cannot query this
+  return "";
 }
 
 // Get SQL for searching a session
 CString 
-SQLInfoAccess::GetSQLSearchSession(const CString& /*p_databaseName*/,const CString& p_sessionTable) const
+SQLInfoAccess::GetSQLSearchSession(const CString& /*p_databaseName*/,const CString& /*p_sessionTable*/) const
 {
-  // In MS_SQLServer is de database de engine. Databasenaam is dus niet relevant
-  return "SELECT rtrim(hostprocess)\n"
-    "      ,rtrim(nt_username)\n"
-    "      ,rtrim(hostname)\n"
-    "  FROM master.dbo.sysprocesses\n"
-    " WHERE rtrim(hostprocess) <> '0'\n"
-    "   AND dbid = db_id()\n"
-    "   AND NOT rtrim(hostprocess) IN\n"
-    "     ( SELECT sessie_nr\n"
-    "         FROM "+ p_sessionTable + ")";
+  // MS Access cannot search the session
+  return "";
 }
 
 
@@ -908,15 +860,10 @@ SQLInfoAccess::DoesColumnExistsInTable(CString& p_owner,CString& p_tableName,CSt
 
 // Get SQL to get all the information about a Primary Key constraint
 CString
-SQLInfoAccess::GetSQLPrimaryKeyConstraintInformation(CString& p_tableName) const
+SQLInfoAccess::GetSQLPrimaryKeyConstraintInformation(CString /*p_schema*/,CString /*p_tableName*/) const
 {
-  CString query = "SELECT count(*)\n"
-    "  FROM dbo.sysobjects tab, dbo.sysobjects con\n"
-    " WHERE tab.name = '" + p_tableName + "'\n"
-    "   AND tab.Id = con.parent_obj\n"
-    "   AND con.xtype = 'PK'\n"
-    "   AND con.type  = 'K '";
-  return query;
+  // MS Access cannot get this info
+  return "";
 }
 
 // Does the named constraint exist in the database
@@ -952,6 +899,72 @@ SQLInfoAccess::GetOnlyOneUserSession()
   return true;
 }
 
+// SQL DDL STATEMENTS
+// ==================
+
+CString
+SQLInfoAccess::GetCreateColumn(CString /*p_schema*/,CString p_tablename,CString p_columnName,CString p_typeDefinition,bool p_notNull)
+{
+  CString sql  = "ALTER TABLE "  + p_tablename  + "\n";
+                 "  ADD COLUMN " + p_columnName + " " + p_typeDefinition;
+  if(p_notNull)
+  {
+    sql += " NOT NULL";
+  }
+  return sql;
+}
+
+// Drop a column from a table
+CString 
+SQLInfoAccess::GetSQLDropColumn(CString /*p_schema*/,CString p_tablename,CString p_columnName) const
+{
+  return "ALTER TABLE " + p_tablename + "\n"
+         " DROP COLUMN " + p_columnName;
+}
+
+
+// Add a foreign key to a table
+CString 
+SQLInfoAccess::GetCreateForeignKey(CString p_tablename,CString p_constraintname,CString p_column,CString p_refTable,CString p_primary)
+{
+  CString sql = "ALTER TABLE " + p_tablename + "\n"
+                "  ADD CONSTRAINT " + p_constraintname + "\n"
+                "      FOREIGN KEY (" + p_column + ")\n"
+                "      REFERENCES " + p_refTable + "(" + p_primary + ")";
+  return sql;
+}
+
+CString 
+SQLInfoAccess::GetModifyColumnType(CString /*p_schema*/,CString p_tablename,CString p_columnName,CString p_typeDefinition)
+{
+  CString sql  = "ALTER TABLE  " + p_tablename  + "\n";
+                 "ALTER COLUMN " + p_columnName + " " + p_typeDefinition;
+  return sql;
+}
+
+CString 
+SQLInfoAccess::GetModifyColumnNull(CString /*p_schema*/,CString p_tablename,CString p_columnName,bool p_notNull)
+{
+  CString sql  = "ALTER TABLE  " + p_tablename  + "\n";
+                 "ALTER COLUMN " + p_columnName + " " + (p_notNull ? "NOT " : "") + "NULL";
+  return sql;
+}
+
+// Get the SQL to drop a view. If precursor is filled: run that SQL first!
+CString 
+SQLInfoAccess::GetSQLDropView(CString /*p_schema*/,CString p_view,CString& p_precursor)
+{
+  p_precursor.Empty();
+  return "DROP VIEW " + p_view;
+}
+
+// Create or replace a database view
+CString 
+SQLInfoAccess::GetSQLCreateOrReplaceView(CString /*p_schema*/,CString p_view,CString p_asSelect) const
+{
+  return "CREATE VIEW " + p_view + "\n" + p_asSelect;
+}
+
 // SQL DDL ACTIONS
 // ===================================================================
 
@@ -968,25 +981,17 @@ SQLInfoAccess::DoCommitDDLcommands() const
 void
 SQLInfoAccess::DoCommitDMLcommands() const
 {
-  //   SQLQuery query(m_database);
-  //   query.DoSQLStatement("COMMIT WORK");
+  // Not needed in MS-Access
 }
 
-// Create a view from the select code and the name
-void 
-SQLInfoAccess::DoCreateOrReplaceView(CString p_code,CString p_viewName)
+// Remove a column from a table
+void
+SQLInfoAccess::DoDropColumn(CString p_tableName,CString p_columName)
 {
+  CString sql = "ALTER TABLE  " + p_tableName + "\n"
+                " DROP COLUMN " + p_columName;
   SQLQuery query(m_database);
-  query.DoSQLStatement(p_code);
-  query.DoSQLStatement("GRANT SELECT ON " + p_viewName + " TO PUBLIC");
-}
-
-// Remove a view from the database
-void 
-SQLInfoAccess::DoDropView(CString p_viewName)
-{
-  SQLQuery query(m_database);
-  query.TryDoSQLStatement("DROP VIEW " + p_viewName);
+  query.TryDoSQLStatement(sql);
 }
 
 // Does the named view exists in the database
@@ -1041,28 +1046,6 @@ SQLInfoAccess::DoRemoveTemporaryTable(CString& p_tableName) const
   query.TryDoSQLStatement("DELETE FROM #"    + p_tableName);
   query.TryDoSQLStatement("TRUNCATE TABLE #" + p_tableName);
   query.TryDoSQLStatement("DROP TABLE #"     + p_tableName);
-}
-
-// If the temporary table exists, remove it
-void
-SQLInfoAccess::DoRemoveTemporaryTableWithCheck(CString& p_tableName) const
-{
-  int number = 0;
-
-  CString query = "SELECT count(*)\n"
-    "  FROM tempdb.dbo.sysobjects\n"
-    " WHERE name  = '#" + p_tableName + "'\n"
-    "   AND xtype = 'U'";
-  SQLQuery qry(m_database);
-  qry.DoSQLStatement(query);
-  if(qry.GetRecord())
-  {
-    number = qry.GetColumn(1)->GetAsSLong();
-  }
-  if(number == 1)
-  {
-    DoRemoveTemporaryTable(p_tableName);
-  }
 }
 
 // Create a procedure in the database
@@ -1291,19 +1274,6 @@ SQLInfoAccess::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int
 CString 
 SQLInfoAccess::GetSPLSourcecodeFromDatabase(const CString& /*p_owner*/,const CString& /*p_procName*/) const
 {
-  //   CString sQuery;  
-  //   sQuery = "SELECT TEXT from ALL_SOURCE "
-  //            "WHERE type = 'FUNCTION' "
-  //            "AND LOWER(NAME)  = LOWER('" + p_procName +  "') "
-  //            "AND LOWER(OWNER) = LOWER('" + p_owner    + "')";
-  //   DBrecordset rs(GeefDatabase());
-  //   rs.VoerSqlUitZonderThrow(sQuery);
-  //   String sProcBody="CREATE OR REPLACE ";
-  //   while (rs.GetRecord())
-  //   {
-  // 	  sProcBody +=rs.GetCol_LPCSTR(0);
-  // 	}
-  //   return sProcBody;
   return "";
 }
 

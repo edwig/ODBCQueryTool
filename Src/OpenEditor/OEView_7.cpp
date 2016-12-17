@@ -26,6 +26,7 @@
 #include "Database\SQLDatabase.h"
 #include "Database\SQLQuery.h"
 #include "Database\SQLVariant.h"
+#include "Database\SQLInfoDB.h"
 #include "Query\NativeSQLDlg.h"
 #include "Query\VariablesDlg.h"
 #include <sql.h>
@@ -994,7 +995,7 @@ COEditorView::CanEdit()
     m_keyMap.clear();
     if(!m_tableOne.IsEmpty())
     {
-      database.GetSQLInfo()->GetPrimaryKeyInfo(m_tableOne,m_primaryName,m_keyMap);
+      database.GetSQLInfoDB()->GetPrimaryKeyInfo(m_tableOne,m_primaryName,m_keyMap);
     }
     m_findPrimary = true;
   }

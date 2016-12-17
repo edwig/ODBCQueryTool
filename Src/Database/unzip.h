@@ -25,7 +25,7 @@ typedef struct
   FILETIME atime,ctime,mtime;// access, create, modify filetimes
   long comp_size;            // sizes of item, compressed and uncompressed. These
   long unc_size;             // may be -1 if not yet known (e.g. being streamed in)
-} 
+}
 ZIPENTRY;
 
 HZIP OpenZip(const TCHAR *fn, const char *password);

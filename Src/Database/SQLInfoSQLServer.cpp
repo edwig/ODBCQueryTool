@@ -2,7 +2,7 @@
 //
 // File: SQLInfoSQLServer.cpp
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #include "stdafx.h"
 #include "SQLInfoSQLServer.h"
@@ -83,6 +83,13 @@ bool
 SQLInfoSQLServer::IsCatalogUpper() const
 {
   return false;
+}
+
+// System catalog supports full ISO schemas (same tables per schema)
+bool
+SQLInfoSQLServer::GetUnderstandsSchemas() const
+{
+  return true;
 }
 
 // Supports database/ODBCdriver comments in sql
@@ -333,36 +340,6 @@ SQLInfoSQLServer::GetReplaceColumnOIDbySequence(CString p_columns,CString p_tabl
   return p_columns;
 }
 
-// Get the tablespace for the tables
-CString
-SQLInfoSQLServer::GetTablesTablespace(CString p_tablespace /*=""*/) const
-{
-  return "";
-}
-
-// Get the tablespace for the indexes
-// If no default is givven, fallbacks to the DEFAULT tablespace
-CString
-SQLInfoSQLServer::GetIndexTablespace(CString p_tablespace /*=""*/) const
-{
-  return "";
-}
-
-// Get the storage name for indici
-CString 
-SQLInfoSQLServer::GetStorageSpaceNameForIndexes() const
-{
-  return "INDEX"; // Settings::OpslagRuimte::OracleIndexTablespace;
-}
-
-// Get the storage space for temporary tables
-CString
-SQLInfoSQLServer::GetStorageSpaceNameForTempTables(CString p_tablename) const
-{
-  // MS_SQLServer uses implicit TEMP TABLESPACE for the user
-  return "";
-}
-
 // Remove catalog dependencies for stored procedures
 // To be run after a 'DROP PROCEDURE' or 'DROP FUNCTION'
 CString 
@@ -382,19 +359,70 @@ SQLInfoSQLServer::GetSQLRemoveFieldDependencies(CString p_tablename) const
 
 // Gets the table definition-form of a primary key
 CString 
-SQLInfoSQLServer::GetPrimaryKeyDefinition(CString p_tableName,bool /*p_temporary*/) const
+SQLInfoSQLServer::GetPrimaryKeyDefinition(CString p_schema,CString p_tableName,bool /*p_temporary*/) const
 {
   // The primary key constraint is not directly generated after the column
   // to ensure it wil use the named index in the correct tablespace
   // Otherwise the index name and tablespace cannot be definied and will be auto-generated
-  return GetPrimaryKeyType() + " NOT NULL\n";
+  return GetPrimaryKeyType() + " NOT NULL CONSTRAINT pk_" + p_tableName + " PRIMARY KEY\n";
 }
 
 // Get the constraint form of a primary key to be added to a table after creation of that table
 CString
-SQLInfoSQLServer::GetPrimaryKeyConstraint(CString p_tablename,bool /*p_temporary*/) const
+SQLInfoSQLServer::GetPrimaryKeyConstraint(CString p_schema,CString p_tablename,CString p_primary) const
 {
-  return "ADD CONSTRAINT pk_" + p_tablename + " PRIMARY KEY(oid)\n";
+  return "ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+         "  ADD CONSTRAINT pk_" + p_tablename + "\n"
+         "      PRIMARY KEY (" + p_primary + ")";
+}
+
+// Get the sql to add a foreign key to a table
+CString 
+SQLInfoSQLServer::GetSQLForeignKeyConstraint(DBForeign& p_foreign) const
+{
+  // Construct the correct tablenames
+  CString table  (p_foreign.m_tablename);
+  CString primary(p_foreign.m_primaryTable);
+  if(!p_foreign.m_schema.IsEmpty())
+  {
+    table   = p_foreign.m_schema + "." + table;
+    primary = p_foreign.m_schema + "." + primary;
+  }
+
+  // The base foreign key command
+  CString query = "ALTER TABLE " + table + "\n"
+                  "  ADD CONSTRAINT " + p_foreign.m_constraintname + "\n"
+                  "      FOREIGN KEY (" + p_foreign.m_column + ")\n"
+                  "      REFERENCES " + primary + "(" + p_foreign.m_primaryColumn + ")";
+  switch(p_foreign.m_updateRule)
+  {
+    case 1: query += "\n      ON UPDATE CASCADE";     break;
+    case 2: query += "\n      ON UPDATE SET NULL";    break;
+    case 3: query += "\n      ON UPDATE SET DEFAULT"; break;
+    case 4: query += "\n      ON UPDATE NO ACTION";   break;
+    default:// In essence: ON UPDATE RESTRICT, but that's already the default
+    case 0: break;
+  }
+  switch(p_foreign.m_deleteRule)
+  {
+    case 1: query += "\n      ON DELETE CASCADE";     break;
+    case 2: query += "\n      ON DELETE SET NULL";    break;
+    case 3: query += "\n      ON DELETE SET DEFAULT"; break;
+    case 4: query += "\n      ON DELETE NO ACTION";   break;
+    default:// In essence: ON DELETE RESTRICT, but that's already the default
+    case 0: break;
+  }
+  return query;
+}
+
+// Get the sql (if possible) to change the foreign key constraint
+CString 
+SQLInfoSQLServer::GetSQLAlterForeignKey(DBForeign& /*p_origin*/,DBForeign& /*p_requested*/) const
+{
+  // MS-SQL Server cannot alter a foreign-key constraint.
+  // You must drop and then re-create your foreign key constraint
+  // So return an empty string to signal this!
+  return "";
 }
 
 // Performance parameters to be added to the database
@@ -437,50 +465,7 @@ SQLInfoSQLServer::GetSQLModifyColumnName(CString p_tablename,CString p_oldName,C
 unsigned long 
 SQLInfoSQLServer::GetMaxStatementLength() const
 {
-	return 0;		// No limit
-}
-
-// Prefix for an add constraint DDL command in SQLAtlerTableGenerator
-CString 
-SQLInfoSQLServer::GetAddConstraintPrefix(CString p_constraintName) const
-{
-  return "ADD CONSTRAINT " + p_constraintName + " ";
-}
-
-// Suffix for an add constraint DDL command in SQLAtlerTableGenerator
-CString 
-SQLInfoSQLServer::GetAddConstraintSuffix(CString /*p_constraintName*/) const
-{
-  return "";
-}
-
-// Get the prefix for a drop constraint DDL command in the SQLAlterTableGenerator
-CString 
-SQLInfoSQLServer::GetDropConstraintPrefix() const
-{
-  return "DROP CONSTRAINT ";
-}
-
-// Get the suffix for a drop constraint DDL commando in the SQLAlterTableGenerator
-CString 
-SQLInfoSQLServer::GetDropConstraintSuffix() const
-{
-  return "";
-}
-
-// Clause separator between two ADD or DROP clauses in an ALTER TABLE
-CString 
-SQLInfoSQLServer::GetAlterTableClauseSeparator() const
-{
-  return ", ";
-}
-
-// Grouping of more than one column possible in an ADD/MODIFY/DROP clause
-bool   
-SQLInfoSQLServer::GetClauseGroupingPossible() const
-{
-  // Kan meerdere ADD (kolomdef ,.... ) doen
-  return true;
+  return 0;		// No limit
 }
 
 // Gets the prefix needed for altering the datatype of a column in a MODIFY/ALTER
@@ -515,9 +500,14 @@ SQLInfoSQLServer::GetCodeTempTableWithNoLog() const
 
 // Granting all rights on a table (In a NON-ANSI database)
 CString 
-SQLInfoSQLServer::GetSQLGrantAllOnTable(CString p_tableName)
+SQLInfoSQLServer::GetSQLGrantAllOnTable(CString p_schema,CString p_tableName,bool p_grantOption /*= false*/)
 {
-  return "GRANT ALL ON " + p_tableName + " TO " + GetGrantedUsers() + " WITH GRANT OPTION;\n";
+  CString sql = "GRANT ALL ON " + p_schema + "." + p_tableName + " TO " + GetGrantedUsers();
+  if(p_grantOption)
+  {
+    sql += " WITH GRANT OPTION;\n";
+  }
+  return sql;
 }
 
 
@@ -704,8 +694,10 @@ SQLInfoSQLServer::GetSQLConstraintsImmediate() const
 
 // Get SQL to check if a table already exists in the database
 CString 
-SQLInfoSQLServer::GetSQLTableExists(CString p_tablename) const
+SQLInfoSQLServer::GetSQLTableExists(CString p_schema,CString p_tablename) const
 {
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
   CString query = "SELECT count(*)\n"
                  "  FROM dbo.sysobjects\n"
                  " WHERE name = '" + p_tablename + "'";
@@ -746,16 +738,17 @@ SQLInfoSQLServer::GetSQLGetConstraintsForTable(CString& p_tableName) const
   return contabel;
 }
 
-// Get SQL to read all indici for a table
+// Get SQL to read all indices for a table
 CString 
-SQLInfoSQLServer::GetSQLTableIndexes(CString& /*p_user*/,CString& p_tableName) const
+SQLInfoSQLServer::GetSQLTableIndices(CString /*p_user*/,CString p_tableName) const
 {
+  p_tableName.MakeLower();
   CString query = "SELECT idx.name\n"
-                  "      ,indexproperty(obj.Id, idx.name, 'IsClustered')\n"
-                  "      ,indexproperty(obj.Id, idx.name, 'IsUnique')\n"
-                  "      ,ixk.keyno\n"
                   "      ,col.name\n"
+                  "      ,ixk.keyno\n"
+                  "      ,indexproperty(obj.Id, idx.name, 'IsUnique')\n"
                   "      ,indexkey_property(obj.Id, idx.indid, ixk.keyno, 'IsDescending')\n"
+                  "      ,'' as index_source"
                   "  FROM dbo.sysindexes idx\n"
                   "      ,dbo.sysindexkeys ixk\n"
                   "      ,dbo.sysobjects obj\n"
@@ -773,50 +766,151 @@ SQLInfoSQLServer::GetSQLTableIndexes(CString& /*p_user*/,CString& p_tableName) c
   return query;
 }
 
+// Get SQL to create an index for a table
+CString 
+SQLInfoSQLServer::GetSQLCreateIndex(CString p_user,CString p_tableName,DBIndex* p_index) const
+{
+  CString sql("CREATE ");
+  if(p_index->m_unique)
+  {
+    sql += "UNIQUE ";
+  }
+  sql += " INDEX ON ";
+  sql += p_user + ".";
+  sql += p_tableName + "(";
+
+  int column = 0;
+  while(!p_index->m_indexName.IsEmpty())
+  {
+    if(column)
+    {
+      sql += ",";
+    }
+    sql += p_index->m_column;
+    sql += (p_index->m_descending) ? " DESC" : " ASC";
+    // Next column
+    ++column;
+    ++p_index;
+  }
+  sql += ")";
+
+  return sql;
+}
+
+// Get SQL to drop an index
+CString 
+SQLInfoSQLServer::GetSQLDropIndex(CString p_user,CString p_indexName) const
+{
+  CString sql = "DROP INDEX " + p_user + "." + p_indexName;
+  return sql;
+}
+
 // Get SQL to read the referential constaints from the catalog
 CString 
-SQLInfoSQLServer::GetSQLTableReferences(CString& p_tablename) const
+SQLInfoSQLServer::GetSQLTableReferences(CString p_schema
+                                       ,CString p_tablename
+                                       ,CString p_constraint /*=""*/
+                                       ,int     /*p_maxColumns = SQLINFO_MAX_COLUMNS*/) const
 {
-  CString query = "SELECT con.name\n"
-                  "      ,tab.name\n"
-                  "  FROM dbo.sysobjects con, dbo.sysobjects tab\n"
-                  " WHERE tab.name = '" + p_tablename + "'"
-                  "   AND tab.Id = con.parent_obj\n"
-                  "   AND con.xtype = 'F'\n"
-                  "   AND con.type = 'F'\n";
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+  CString query = "SELECT fok.name          as foreign_key_constraint\n"
+                  "      ,sch.name          as schema_name\n"
+                  "      ,tab.name          as table_name\n"
+                  "      ,col.name          as column_name\n"
+                  "      ,pri.name          as primary_table_name\n"
+                  "      ,pky.name          as primary_key_column\n"
+                  "      ,0                 as deferrable\n"
+                  "      ,0                 as initially_deferred\n"
+                  "      ,fok.is_disabled   as disabled\n"
+                  "      ,1                 as match_option\n"
+                  "      ,fok.delete_referential_action as delete_rule\n"
+                  "      ,fok.update_referential_action as update_rule\n"
+                  "  FROM sys.foreign_keys        fok\n"
+                  "      ,sys.foreign_key_columns fkc\n"
+                  "      ,sys.schemas sch\n"
+                  "      ,sys.tables  tab\n"
+                  "      ,sys.columns col\n"
+                  "      ,sys.tables  pri\n"
+                  "      ,sys.columns pky\n"
+                  " WHERE fok.type = 'F'\n"
+                  "   AND fok.parent_object_id     = tab.object_id\n"
+                  "   AND tab.schema_id            = sch.schema_id\n"
+                  "   AND fkc.constraint_object_id = fok.object_id\n"
+                  "   AND fkc.parent_object_id     = col.object_id\n"
+                  "   AND fkc.parent_column_id     = col.column_id\n"
+                  "   AND fkc.referenced_object_id = pri.object_id\n"
+                  "   AND fkc.referenced_object_id = pky.object_id\n"
+                  "   AND fkc.referenced_column_id = pky.column_id";
+  if(!p_schema.IsEmpty())
+  {
+    query += "\n   AND sch.name = '" + p_schema + "'";
+  }
+  if(!p_tablename.IsEmpty())
+  {
+    query += "\n   AND tab.name = '" + p_tablename + "'";
+  }
+  if(!p_constraint.IsEmpty())
+  {
+    query += "\n   AND fok.name = '" + p_constraint + "'";
+  }
   return query;
 }
 
-// Get the SQL Query to create a synonym
-CString
-SQLInfoSQLServer::GetSQLMakeSynonym(CString& /*p_objectName*/) const
-{
-	return "";
-}
-
-// Get SQL to drop the synonym
+// Get the SQL to determine the sequence state in the database
 CString 
-SQLInfoSQLServer::GetSQLDropSynonym(CString& /*p_objectName*/) const
+SQLInfoSQLServer::GetSQLSequence(CString p_schema,CString p_tablename,CString p_postfix /*= "_seq"*/) const
 {
-  return "";
+  CString sequence = p_tablename + p_postfix;
+  sequence.MakeLower();
+  p_schema.MakeLower();
+  CString sql = "SELECT name as sequence_name\n"
+                "      ,current_value\n"
+                "      ,decode(is_cycling,0,1,0) *\n"
+                "       decode(is_cached, 0,1,0) as is_correct"
+                "  FROM sys.sequences seq\n"
+                "      ,sys.schemas   sch\n"
+                " WHERE sch.object_id = seq.schema_id\n"
+                "   AND seq.name = '" + sequence + "'\n"
+                "   AND sch.name = '" + p_schema + "'";
+  return sql;
 }
 
 // Create a sequence in the database
-void 
-SQLInfoSQLServer::DoCreateSequence(CString& /*p_sequenceName*/,int /*p_startpos*/) 
+CString 
+SQLInfoSQLServer::GetSQLCreateSequence(CString p_schema,CString p_tablename,CString p_postfix /*= "_seq"*/,int p_startpos) const
 {
+  CString sql("CREATE SEQUENCE ");
+
+  if(!p_schema.IsEmpty())
+  {
+    sql += p_schema + ".";
+  }
+  sql += p_tablename + p_postfix;
+  sql.AppendFormat(" START WITH %d",p_startpos);
+  sql += " NO CYCLE NO CACHE";
+  return sql;
 }
 
 // Remove a sequence from the database
-void
-SQLInfoSQLServer::DoRemoveSequence(CString& /*p_sequenceName*/) const
+CString 
+SQLInfoSQLServer::GetSQLDropSequence(CString p_schema,CString p_tablename,CString p_postfix /*= "_seq"*/) const
 {
+  CString sql;
+  sql = "DROP SEQUENCE " + p_schema + "." + p_tablename + p_postfix;
+  return sql;
 }
 
-// Re-Creates a sequence in a database from the OID column
-void 
-SQLInfoSQLServer::DoCreateNextSequence(const CString& /*p_tableName*/,CString /*p_postfix /*="_seq"*/)
+// Gets the SQL for the rights on the sequence
+CString
+SQLInfoSQLServer::GetSQLSequenceRights(CString p_schema,CString p_tableName,CString p_postfix /*="_seq"*/) const
 {
+  CString sequence = p_tableName + p_postfix;
+  if(!p_schema.IsEmpty())
+  {
+    sequence = p_schema + "." + sequence;
+  }
+  return "GRANT SELECT ON " + sequence + " TO " + GetGrantedUsers();
 }
 
 // Remove a stored procedure from the database
@@ -825,13 +919,7 @@ SQLInfoSQLServer::DoRemoveProcedure(CString& p_procedureName) const
 {
   SQLQuery query(m_database);
   query.DoSQLStatement("DROP PROCEDURE " + p_procedureName);
-}
 
-// Gets the SQL for the rights on the sequence
-CString 
-SQLInfoSQLServer::GetSQLSequenceRights(const CString& /*p_tableName*/,CString /*p_postfix /*="_seq"*/) const
-{
-  return "";
 }
 
 // Get SQL for your session and controling terminal
@@ -915,14 +1003,21 @@ SQLInfoSQLServer::DoesColumnExistsInTable(CString& p_owner,CString& p_tableName,
 
 // Get SQL to get all the information about a Primary Key constraint
 CString
-SQLInfoSQLServer::GetSQLPrimaryKeyConstraintInformation(CString& p_tableName) const
+SQLInfoSQLServer::GetSQLPrimaryKeyConstraintInformation(CString p_schema,CString p_tableName) const
 {
+  p_schema.MakeLower();
+  p_tableName.MakeLower();
+
   CString query = "SELECT count(*)\n"
-                 "  FROM dbo.sysobjects tab, dbo.sysobjects con\n"
-                 " WHERE tab.name = '" + p_tableName + "'\n"
-                 "   AND tab.Id = con.parent_obj\n"
+                 "  FROM dbo.sysobjects tab\n"
+                 "      ,dbo.sysobjects con\n"
+                 "      ,dbo.sysusers   use\n"
+                 " WHERE tab.id    = con.parent_obj\n"
+                 "   AND tab.uid   = use.uid\n"
                  "   AND con.xtype = 'PK'\n"
-                 "   AND con.type  = 'K '";
+                 "   AND con.type  = 'K '"
+                 "   AND use.name  = '" + p_schema    + "'\n"
+                 "   AND tab.name  = '" + p_tableName + "'";
   return query;
 }
 
@@ -958,6 +1053,71 @@ SQLInfoSQLServer::GetOnlyOneUserSession()
   return true;
 }
 
+// SQL DDL STATEMENTS
+// ==================
+
+CString
+SQLInfoSQLServer::GetCreateColumn(CString p_schema,CString p_tablename,CString p_columnName,CString p_typeDefinition,bool p_notNull)
+{
+  CString sql  = "ALTER TABLE "  + p_schema + "." + p_tablename  + "\n";
+                 "  ADD COLUMN " + p_columnName + " " + p_typeDefinition;
+  if(p_notNull)
+  {
+    sql += " NOT NULL";
+  }
+  return sql;
+}
+
+// Drop a column from a table
+CString 
+SQLInfoSQLServer::GetSQLDropColumn(CString p_schema,CString p_tablename,CString p_columnName) const
+{
+  return "ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+         " DROP COLUMN " + p_columnName;
+}
+
+// Add a foreign key to a table
+CString
+SQLInfoSQLServer::GetCreateForeignKey(CString p_tablename,CString p_constraintname,CString p_column,CString p_refTable,CString p_primary)
+{
+  CString sql = "ALTER TABLE " + p_tablename + "\n"
+                "  ADD CONSTRAINT " + p_constraintname + "\n"
+                "      FOREIGN KEY (" + p_column + ")\n"
+                "      REFERENCES " + p_refTable + "(" + p_primary + ")";
+  return sql;
+}
+
+CString 
+SQLInfoSQLServer::GetModifyColumnType(CString p_schema,CString p_tablename,CString p_columnName,CString p_typeDefinition)
+{
+  CString sql = "ALTER TABLE  " + p_schema + "." + p_tablename  + "\n"
+                "ALTER COLUMN " + p_columnName + " " + p_typeDefinition;
+  return sql;
+}
+
+CString 
+SQLInfoSQLServer::GetModifyColumnNull(CString p_schema,CString p_tablename,CString p_columnName,bool p_notNull)
+{
+  CString sql = "ALTER TABLE  " + p_schema + "." + p_tablename  + "\n"
+                "ALTER COLUMN " + p_columnName + (p_notNull ? " NOT " : " ") + "NULL";
+  return sql;
+}
+
+// Get the SQL to drop a view. If precursor is filled: run that SQL first!
+CString 
+SQLInfoSQLServer::GetSQLDropView(CString p_schema,CString p_view,CString& p_precursor)
+{
+  p_precursor.Empty();
+  return "DROP VIEW " + p_schema + "." + p_view;
+}
+
+// Create or replace a database view
+CString 
+SQLInfoSQLServer::GetSQLCreateOrReplaceView(CString p_schema,CString p_view,CString p_asSelect) const
+{
+  return "CREATE VIEW " + p_schema + "." + p_view + "\n" + p_asSelect;
+}
+
 // SQL DDL ACTIONS
 // ===================================================================
 
@@ -978,21 +1138,14 @@ SQLInfoSQLServer::DoCommitDMLcommands() const
 //   query.DoSQLStatement("COMMIT WORK");
 }
 
-// Create a view from the select code and the name
-void 
-SQLInfoSQLServer::DoCreateOrReplaceView(CString p_code,CString p_viewName)
+// Remove a column from a table
+void
+SQLInfoSQLServer::DoDropColumn(CString p_tableName,CString p_columName)
 {
+  CString sql = "ALTER TABLE  " + p_tableName + "\n"
+                " DROP COLUMN " + p_columName;
   SQLQuery query(m_database);
-  query.DoSQLStatement(p_code);
-  query.DoSQLStatement("GRANT SELECT ON " + p_viewName + " TO PUBLIC");
-}
-
-// Remove a view from the database
-void 
-SQLInfoSQLServer::DoDropView(CString p_viewName)
-{
-  SQLQuery query(m_database);
-  query.TryDoSQLStatement("DROP VIEW " + p_viewName);
+  query.TryDoSQLStatement(sql);
 }
 
 // Does the named view exists in the database
@@ -1047,28 +1200,6 @@ SQLInfoSQLServer::DoRemoveTemporaryTable(CString& p_tableName) const
   query.TryDoSQLStatement("DELETE FROM #"    + p_tableName);
   query.TryDoSQLStatement("TRUNCATE TABLE #" + p_tableName);
   query.TryDoSQLStatement("DROP TABLE #"     + p_tableName);
-}
-
-// If the temporary table exists, remove it
-void
-SQLInfoSQLServer::DoRemoveTemporaryTableWithCheck(CString& p_tableName) const
-{
-  int number = 0;
-
-  CString query = "SELECT count(*)\n"
-                  "  FROM tempdb.dbo.sysobjects\n"
-                  " WHERE name  = '#" + p_tableName + "'\n"
-                  "   AND xtype = 'U'";
-  SQLQuery qry(m_database);
-  qry.DoSQLStatement(query);
-  if(qry.GetRecord())
-  {
-    number = qry.GetColumn(1)->GetAsSLong();
-  }
-  if(number == 1)
-  {
-    DoRemoveTemporaryTable(p_tableName);
-  }
 }
 
 // Create a procedure in the database
@@ -1161,21 +1292,21 @@ SQLInfoSQLServer::GetParameterLength(int p_SQLType) const
     case SQL_VARCHAR:         retval =  4000;      break;
     case SQL_LONGVARCHAR:     retval = 32000;      break;
     case SQL_DECIMAL:         retval = 32000;      break;
-	  case SQL_SMALLINT:        retval =     0;      break;
-	  case SQL_INTEGER:         retval = sizeof(long); break;
-	  case SQL_REAL:            retval = 0;      break;
-	  case SQL_DOUBLE:          retval = 0;      break;
-	  case SQL_FLOAT:           retval = 0;      break;
-	  case SQL_BINARY:          retval = 0;      break;
-	  case SQL_VARBINARY:       retval = 0;      break;
-	  case SQL_LONGVARBINARY:   retval = 0;      break;
-	  case SQL_DATE:            retval = 0;      break;
+    case SQL_SMALLINT:        retval =     0;      break;
+    case SQL_INTEGER:         retval = sizeof(long); break;
+    case SQL_REAL:            retval = 0;      break;
+    case SQL_DOUBLE:          retval = 0;      break;
+    case SQL_FLOAT:           retval = 0;      break;
+    case SQL_BINARY:          retval = 0;      break;
+    case SQL_VARBINARY:       retval = 0;      break;
+    case SQL_LONGVARBINARY:   retval = 0;      break;
+    case SQL_DATE:            retval = 0;      break;
     case SQL_TIME:            retval = 0;      break;
     case SQL_TIMESTAMP:       retval = 19;     break;
-	  case SQL_NUMERIC:         retval = 0;      break;
-	  case SQL_BIGINT:          retval = 0;      break;
-	  case SQL_TINYINT:         retval = 0;      break;
-	  case SQL_BIT:             retval = 0;      break;
+    case SQL_NUMERIC:         retval = 0;      break;
+    case SQL_BIGINT:          retval = 0;      break;
+    case SQL_TINYINT:         retval = 0;      break;
+    case SQL_BIT:             retval = 0;      break;
     case SQL_INTERVAL_YEAR:
     case SQL_INTERVAL_YEAR_TO_MONTH:
     case SQL_INTERVAL_MONTH:

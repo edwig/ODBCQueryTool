@@ -2,7 +2,7 @@
 //
 // File: SQLStatement.cpp
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #include "stdafx.h"
 #include "SQLStatement.h"
@@ -55,20 +55,21 @@ SQLStatement::~SQLStatement()
 {
 }
 
-void
+bool
 SQLStatement::CheckRecords(int p_records)
 {
-	CString fout;
+  CString fout;
   if(m_minNumber > 0 && p_records < m_minNumber)
   {
-		fout.Format("SQL %d has only %d record(s) (too few) minimum = %d",m_number,p_records,m_minNumber);
-		throw fout;
+    fout.Format("SQL %d has only %d record(s) (too few) minimum = %d",m_number,p_records,m_minNumber);
+		return true;
   }
   if(m_maxNumber > 0 && p_records > m_maxNumber)
   {
-		fout.Format("SQL %d has %d records(s) (too much) maximum = %i",m_number,p_records,m_maxNumber);
-    throw fout;
+    fout.Format("SQL %d has %d records(s) (too much) maximum = %i",m_number,p_records,m_maxNumber);
+    return true;
   }
+  return false;
 }
 
 void

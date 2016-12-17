@@ -2,7 +2,7 @@
 //
 // File: SQLWrappers.h
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,12 +21,12 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #pragma once
 
-// Maak een constante waarmee we de vlag kunnen zien in c++
+// Create a constant so we can see the flag in C++
 #ifdef ODBC_NOT_STANDARD
 enum { odbc_std_app = false } ;
 #else
@@ -37,8 +37,8 @@ enum { odbc_std_app = true  } ;
 
 //////////////////////////////////////////////////////////////////////////
 //
-// Deze file bevat wrappers voor alle SQLXxx functies om
-// access violations en dergelijke op te kunnen vangen.
+// This files contains wrappers for all SQLXxxxx functions to circumvent
+// access violations and other errors by catching them all
 //
 
 inline SQLRETURN SqlDriverConnect(SQLHDBC hdbc, SQLHWND hwnd, SQLCHAR *szConnStrIn, SQLSMALLINT cbConnStrIn, SQLCHAR *szConnStrOut, SQLSMALLINT cbConnStrOutMax, SQLSMALLINT *pcbConnStrOut, SQLUSMALLINT fDriverCompletion)
@@ -464,6 +464,22 @@ inline SQLRETURN SqlGetStmtAttr(SQLHSTMT    p_hstmt
   }
 }
 
+inline SQLRETURN SqlSetDescField(SQLHDESC    p_handle
+                                ,SQLSMALLINT p_record
+                                ,SQLSMALLINT p_field
+                                ,SQLPOINTER  p_value
+                                ,SQLINTEGER  p_bufLength)
+{
+  try
+  {
+    return ::SQLSetDescField(p_handle,p_record,p_field,p_value,p_bufLength);
+  }
+  catch(...)
+  {
+    return SQL_ERROR;
+  }
+}
+
 inline SQLRETURN SqlError(SQLHENV      p_henv
                          ,SQLHDBC      p_hdbc
                          ,SQLHSTMT     p_hstmt
@@ -524,7 +540,19 @@ inline SQLRETURN SqlSetStmtAttr(SQLHSTMT   p_hstmt
   }
 }
 
-// OLD STYLE ODBC 1.x / 2.x call. Do only use if absolutly nessecary!!
+inline SQLRETURN SqlParamData(SQLHSTMT p_hstmt,SQLPOINTER* p_value)
+{
+  try
+  {
+    return ::SQLParamData(p_hstmt,p_value);
+  }
+  catch(...)
+  {
+    return SQL_ERROR;
+  }
+}
+
+// OLD STYLE ODBC 1.x / 2.x call. Do only use if absolutely necessary!!
 inline SQLRETURN SqlColAttributes(SQLHSTMT     p_hstmt
                                  ,SQLUSMALLINT p_icol
                                  ,SQLUSMALLINT p_descType
@@ -542,3 +570,5 @@ inline SQLRETURN SqlColAttributes(SQLHSTMT     p_hstmt
     return SQL_ERROR;
   }
 }
+
+

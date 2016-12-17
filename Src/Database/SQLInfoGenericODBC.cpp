@@ -2,7 +2,7 @@
 //
 // File: SQLInfoGenericODBC.cpp
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #include "stdafx.h"
 #include "SQLInfoGenericODBC.h"
@@ -73,6 +73,13 @@ SQLInfoGenericODBC::GetFysicalDatabaseName() const
 // System catalog is stored in uppercase in the database?
 bool 
 SQLInfoGenericODBC::IsCatalogUpper() const
+{
+  return true;
+}
+
+// System catalog supports full ISO schemas (same tables per schema)
+bool
+SQLInfoGenericODBC::GetUnderstandsSchemas() const
 {
   return true;
 }
@@ -308,42 +315,6 @@ SQLInfoGenericODBC::GetReplaceColumnOIDbySequence(CString p_columns,CString p_ta
   return p_columns;
 }
 
-// Get the tablespace for the tables
-// Indien er geen initialisatie is ingesteld, dan wordt teruggevallen op
-// de defaultwaarde "PRONTODATA". Dit is niet discriminatoir t.o.v. de 
-// te bouwen applicaties.
-CString 
-SQLInfoGenericODBC::GetTablesTablespace(CString p_tablespace /*=""*/) const
-{
-  // No way to do this in the ODBC standard
-  return "";
-}
-
-// Get the tablespace for the indexes
-// If no default is givven, fallbacks to the DEFAULT tablespace
-CString 
-SQLInfoGenericODBC::GetIndexTablespace(CString p_tablespace /*=""*/) const
-{
-  // No way to do this in the ODBC standard
-  return "";
-}
-
-// Get the storage name for indici
-CString 
-SQLInfoGenericODBC::GetStorageSpaceNameForIndexes() const
-{
-  // No way to do this in the ODBC standard
-  return "";
-}
-
-// Get the storage space for temporary tables
-CString 
-SQLInfoGenericODBC::GetStorageSpaceNameForTempTables(CString p_tablename) const
-{
-  // No way to do this in the ODBC standard
-  return "";
-}
-
 // Remove catalog dependencies for stored procedures
 // To be run after a 'DROP PROCEDURE' or 'DROP FUNCTION'
 CString 
@@ -364,7 +335,7 @@ SQLInfoGenericODBC::GetSQLRemoveFieldDependencies(CString p_tablename) const
 
 // Gets the table definition-form of a primary key
 CString 
-SQLInfoGenericODBC::GetPrimaryKeyDefinition(CString p_tableName,bool /*p_temporary*/) const
+SQLInfoGenericODBC::GetPrimaryKeyDefinition(CString p_schema,CString p_tableName,bool /*p_temporary*/) const
 {
   // The primary key constraint is not directly generated after the column
   // to ensure it wil use the named index in the correct tablespace
@@ -374,10 +345,133 @@ SQLInfoGenericODBC::GetPrimaryKeyDefinition(CString p_tableName,bool /*p_tempora
 
 // Get the constraint form of a primary key to be added to a table after creation of that table
 CString 
-SQLInfoGenericODBC::GetPrimaryKeyConstraint(CString p_tablename,bool /*p_temporary*/) const
+SQLInfoGenericODBC::GetPrimaryKeyConstraint(CString p_schema,CString p_tablename,CString p_primary) const
 {
   // General ISO definition of a primary key
-  return "ADD CONSTRAINT pk_" + p_tablename + " PRIMARY KEY(oid)\n";
+  return "ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+         "  ADD CONSTRAINT pk_" + p_tablename + "\n"
+         "      PRIMARY KEY (" + p_primary + ")";
+}
+
+// Get the sql to add a foreign key to a table
+// This is the full ISO 9075 Implementation
+CString 
+SQLInfoGenericODBC::GetSQLForeignKeyConstraint(DBForeign& p_foreign) const
+{
+  // Construct the correct tablenames
+  CString table  (p_foreign.m_tablename);
+  CString primary(p_foreign.m_primaryTable);
+  if(!p_foreign.m_schema.IsEmpty())
+  {
+    table   = p_foreign.m_schema + "." + table;
+    primary = p_foreign.m_schema + "." + primary;
+  }
+
+  // The base foreign key command
+  CString query = "ALTER TABLE " + table + "\n"
+                  "  ADD CONSTRAINT " + p_foreign.m_constraintname + "\n"
+                  "      FOREIGN KEY (" + p_foreign.m_column + ")\n"
+                  "      REFERENCES " + primary + "(" + p_foreign.m_primaryColumn + ")";
+  // Add all relevant options
+  if(p_foreign.m_deferrable)
+  {
+    query += "\n      DEFERRABLE";
+  }
+  if(p_foreign.m_initiallyDeffered)
+  {
+    query += "\n      INITIALLY DEFERRED";
+  }
+  if(p_foreign.m_match > 0)
+  {
+    if(p_foreign.m_match == 1)
+    {
+      query += "\n      MATCH PARTIAL";
+    }
+    if(p_foreign.m_match == 2)
+    {
+      query += "\n      MATCH SIMPLE";
+    }
+  }
+  switch(p_foreign.m_updateRule)
+  {
+    case 1: query += "\n      ON UPDATE CASCADE";     break;
+    case 2: query += "\n      ON UPDATE SET NULL";    break;
+    case 3: query += "\n      ON UPDATE SET DEFAULT"; break;
+    case 4: query += "\n      ON UPDATE NO ACTION";   break;
+    default:// In essence: ON UPDATE RESTRICT, but that's already the default
+    case 0: break;
+  }
+  switch(p_foreign.m_deleteRule)
+  {
+    case 1: query += "\n      ON DELETE CASCADE";     break;
+    case 2: query += "\n      ON DELETE SET NULL";    break;
+    case 3: query += "\n      ON DELETE SET DEFAULT"; break;
+    case 4: query += "\n      ON DELETE NO ACTION";   break;
+    default:// In essence: ON DELETE RESTRICT, but that's already the default
+    case 0: break;
+  }
+  return query;
+}
+
+// Get the sql (if possible) to change the foreign key constraint
+CString 
+SQLInfoGenericODBC::GetSQLAlterForeignKey(DBForeign& p_origin,DBForeign& p_requested) const
+{
+  // Construct the correct tablenames
+  CString table(p_origin.m_tablename);
+  if(!p_origin.m_schema.IsEmpty())
+  {
+    table = p_origin.m_schema + "." + table;
+  }
+
+  // The base foreign key command
+  CString query = "ALTER TABLE " + table + "\n"
+                  "ALTER CONSTRAINT " + p_origin.m_constraintname + "\n";
+
+  // Add all relevant options
+  if(p_origin.m_deferrable != p_requested.m_deferrable)
+  {
+    query.AppendFormat("\n      %sDEFERRABLE",p_requested.m_deferrable == 0 ? "NOT " : "");
+  }
+  if(p_origin.m_initiallyDeffered != p_requested.m_initiallyDeffered)
+  {
+    query += "\n      INITIALLY ";
+    query += p_requested.m_initiallyDeffered ? "DEFERRED" : "IMMEDIATE";
+  }
+  if(p_origin.m_match != p_requested.m_match)
+  {
+    switch(p_requested.m_match)
+    {
+      case 0: query += "\n      MATCH FULL";    break;
+      case 1: query += "\n      MATCH PARTIAL"; break;
+      case 2: query += "\n      MATCH SIMPLE";  break;
+    }
+  }
+  if(p_origin.m_updateRule != p_requested.m_updateRule)
+  {
+    switch(p_requested.m_updateRule)
+    {
+      case 1: query += "\n      ON UPDATE CASCADE";     break;
+      case 2: query += "\n      ON UPDATE SET NULL";    break;
+      case 3: query += "\n      ON UPDATE SET DEFAULT"; break;
+      case 4: query += "\n      ON UPDATE NO ACTION";   break;
+      default:// In essence: ON UPDATE RESTRICT, but that's already the default
+      case 0: break;
+    }
+  }
+  if(p_origin.m_deleteRule != p_requested.m_deleteRule)
+  {
+    switch(p_requested.m_deleteRule)
+    {
+      case 1: query += "\n      ON DELETE CASCADE";     break;
+      case 2: query += "\n      ON DELETE SET NULL";    break;
+      case 3: query += "\n      ON DELETE SET DEFAULT"; break;
+      case 4: query += "\n      ON DELETE NO ACTION";   break;
+      default:// In essence: ON DELETE RESTRICT, but that's already the default
+      case 0: break;
+    }
+  }
+  return query;
 }
 
 // Performance parameters to be added to the database
@@ -419,50 +513,6 @@ SQLInfoGenericODBC::GetMaxStatementLength() const
   return 0;		// No limit
 }
 
-// Prefix for an add constraint DDL command in SQLAtlerTableGenerator
-CString 
-SQLInfoGenericODBC::GetAddConstraintPrefix(CString p_constraintName) const
-{
-  return "ADD CONSTRAINT " + p_constraintName + " ";
-}
-
-// Suffix for an add constraint DDL command in SQLAtlerTableGenerator
-CString 
-SQLInfoGenericODBC::GetAddConstraintSuffix(CString p_constraintName) const
-{
-  return "";
-}
-
-// Get the prefix for a drop constraint DDL command in the SQLAlterTableGenerator
-CString 
-SQLInfoGenericODBC::GetDropConstraintPrefix() const
-{
-  return "DROP CONSTRAINT ";
-}
-
-// Get the suffix for a drop constraint DDL commando in the SQLAlterTableGenerator
-CString 
-SQLInfoGenericODBC::GetDropConstraintSuffix() const
-{
-  return "";
-}
-
-// Clause separator between two ADD or DROP clauses in an ALTER TABLE
-CString 
-SQLInfoGenericODBC::GetAlterTableClauseSeparator() const
-{
-  return "";
-}
-
-// Grouping of more than one column possible in an ADD/MODIFY/DROP clause
-bool    
-SQLInfoGenericODBC::GetClauseGroupingPossible() const
-{
-  // NO way of knowing this through GetSQLInfo
-  // So it's safe to asume that we cannot do it
-  return false;
-}
-
 // Gets the prefix needed for altering the datatype of a column in a MODIFY/ALTER
 CString 
 SQLInfoGenericODBC::GetModifyDatatypePrefix() const
@@ -495,12 +545,17 @@ SQLInfoGenericODBC::GetCodeTempTableWithNoLog() const
   return "";
 }
 
-// Granting all rights on a table (In a NON-ANSI database)
+// Granting all rights on a table
 CString 
-SQLInfoGenericODBC::GetSQLGrantAllOnTable(CString p_tableName)
+SQLInfoGenericODBC::GetSQLGrantAllOnTable(CString p_schema,CString p_tableName,bool p_grantOption /*= false*/)
 {
   // General ISO SQL syntax
-  return "GRANT ALL ON " + p_tableName + " TO " + GetGrantedUsers() + " WITH GRANT OPTION;\n";
+  CString sql = "GRANT ALL ON " + p_schema + "." + p_tableName + " TO " + GetGrantedUsers();
+  if(p_grantOption)
+  {
+    sql += " WITH GRANT OPTION;\n";
+  }
+  return sql;
 }
 
 // Code prefix for a select-into-temp
@@ -698,11 +753,18 @@ SQLInfoGenericODBC::GetSQLConstraintsImmediate() const
 
 // Get SQL to check if a table already exists in the database
 CString 
-SQLInfoGenericODBC::GetSQLTableExists(CString p_tablename) const
+SQLInfoGenericODBC::GetSQLTableExists(CString p_schema,CString p_tablename) const
 {
   WordList list;
   SQLInfo* info = (SQLInfo*)this;
+  CString table(p_tablename);
 
+  // Construct compounded name
+  if(!p_schema.IsEmpty())
+  {
+    table = p_schema + "." + p_tablename;
+  }
+  // Get from SQLTables
   if(info->MakeInfoTableTablepart(&list,NULL,p_tablename))
   {
     if(!list.empty())
@@ -725,54 +787,96 @@ SQLInfoGenericODBC::GetSQLGetColumns(CString& /*p_user*/,CString& /*p_tableName*
 CString 
 SQLInfoGenericODBC::GetSQLGetConstraintsForTable(CString& /*p_tableName*/) const
 {
-  // To be implemented
+  // Cannot be implemented for generic ODBC
+  // Use SQLPrimaryKeys/SQLForeignKeys instead (see SQLInfo class)
   return "";
 }
 
-// Get SQL to read all indici for a table
+// Get SQL to read all indices for a table
 CString 
-SQLInfoGenericODBC::GetSQLTableIndexes(CString& /*p_user*/,CString& /*p_tableName*/) const
+SQLInfoGenericODBC::GetSQLTableIndices(CString /*p_user*/,CString /*p_tableName*/) const
 {
-  // To be implemented
+  // Cannot be implemented for generic ODBC
+  // Use SQLStatistics instead (see SQLInfo class)
   return "";
 }
+
+// Get SQL to create an index for a table
+CString 
+SQLInfoGenericODBC::GetSQLCreateIndex(CString p_user,CString p_tableName,DBIndex* p_index) const
+{
+  CString sql("CREATE ");
+  if(p_index->m_unique)
+  {
+    sql += "UNIQUE ";
+  }
+  sql += (p_index->m_descending) ? "DESC" : "ASC";
+  sql += " INDEX ON ";
+  sql += p_user + ".";
+  sql += p_tableName + "(";
+
+  int column = 0;
+  while(!p_index->m_indexName.IsEmpty())
+  {
+    if(column)
+    {
+      sql += ",";
+    }
+    sql += p_index->m_column;
+    // Next column
+    ++column;
+    ++p_index;
+  }
+  sql += ")";
+
+  return sql;
+}
+
+// Get SQL to drop an index
+CString 
+SQLInfoGenericODBC::GetSQLDropIndex(CString p_user,CString p_indexName) const
+{
+  CString sql = "DROP INDEX " + p_user + "." + p_indexName;
+  return sql;
+}
+
 
 // Get SQL to read the referential constaints from the catalog
 CString 
-SQLInfoGenericODBC::GetSQLTableReferences(CString& /*p_tablename*/) const
+SQLInfoGenericODBC::GetSQLTableReferences(CString p_schema,CString p_tablename,CString p_constraint /*=""*/,int /*p_maxColumns = SQLINFO_MAX_COLUMNS*/) const
 {
-  // To be implemented
+  // Cannot be implemented for generic ODBC
+  // Use SQLForeignKeys instead (see SQLInfo class)
   return "";
 }
 
-// Get the SQL Query to create a synonym
+// Get the SQL to determine the sequence state in the database
 CString 
-SQLInfoGenericODBC::GetSQLMakeSynonym(CString& /*p_objectName*/) const
+SQLInfoGenericODBC::GetSQLSequence(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_postfix*/) const
 {
-  // To be implemented
-  return "";
-}
-
-// Get SQL to drop the synonym
-CString 
-SQLInfoGenericODBC::GetSQLDropSynonym(CString& /*p_objectName*/) const
-{
-  // To be implemented
   return "";
 }
 
 // Create a sequence in the database
-void
-SQLInfoGenericODBC::DoCreateSequence(CString& /*p_sequenceName*/,int /*p_startpos*/) 
+CString 
+SQLInfoGenericODBC::GetSQLCreateSequence(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_postfix = "_seq"*/,int /*p_startpos*/) const
 {
-  // To be implemented
+  return "";
 }
 
 // Remove a sequence from the database
-void
-SQLInfoGenericODBC::DoRemoveSequence(CString& /*p_sequenceName*/) const
+CString 
+SQLInfoGenericODBC::GetSQLDropSequence(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_postfix = "_seq"*/) const
+{
+  return "";
+}
+
+// Gets the SQL for the rights on the sequence
+CString
+SQLInfoGenericODBC::GetSQLSequenceRights(CString /*p_schema*/,CString /*p_tableName*/,CString /*p_postfix*/ /*="_seq"*/) const
 {
   // To be implemented
+  return "";
 }
 
 // Remove a stored procedure from the database
@@ -780,21 +884,6 @@ void
 SQLInfoGenericODBC::DoRemoveProcedure(CString& /*p_procedureName*/) const
 {
   // To be implemented
-}
-
-// Re-Creates a sequence in a database from the OID column
-void    
-SQLInfoGenericODBC::DoCreateNextSequence(const CString& /*p_tableName*/,CString /*p_postfix*/ /*="_seq"*/)
-{
-  // To be implemented
-}
-
-// Gets the SQL for the rights on the sequence
-CString 
-SQLInfoGenericODBC::GetSQLSequenceRights(const CString& /*p_tableName*/,CString /*p_postfix*/ /*="_seq"*/) const
-{
-  // To be implemented
-  return "";
 }
 
 // Get SQL for your session and controling terminal
@@ -863,7 +952,7 @@ SQLInfoGenericODBC::DoesColumnExistsInTable(CString& p_owner,CString& p_tableNam
 
 // Get SQL to get all the information about a Primary Key constraint
 CString 
-SQLInfoGenericODBC::GetSQLPrimaryKeyConstraintInformation(CString& /*p_tableName*/) const
+SQLInfoGenericODBC::GetSQLPrimaryKeyConstraintInformation(CString /*p_schema*/,CString /*p_tableName*/) const
 {
   // To be implemented
   return "";
@@ -905,6 +994,72 @@ SQLInfoGenericODBC::GetOnlyOneUserSession()
   return true;
 }
 
+// SQL DDL STATEMENTS
+// ==================
+
+CString
+SQLInfoGenericODBC::GetCreateColumn(CString p_schema,CString p_tablename,CString p_columnName,CString p_typeDefinition,bool p_notNull)
+{
+  CString sql  = "ALTER TABLE "  + p_schema + "." + p_tablename  + "\n";
+                 "  ADD COLUMN " + p_columnName + " " + p_typeDefinition;
+  if(p_notNull)
+  {
+    sql += " NOT NULL";
+  }
+  return sql;
+}
+
+// Drop a column from a table
+CString 
+SQLInfoGenericODBC::GetSQLDropColumn(CString p_schema,CString p_tablename,CString p_columnName) const
+{
+  return "ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+         " DROP COLUMN " + p_columnName;
+}
+
+
+// Add a foreign key to a table
+CString 
+SQLInfoGenericODBC::GetCreateForeignKey(CString p_tablename,CString p_constraintname,CString p_column,CString p_refTable,CString p_primary)
+{
+  CString sql = "ALTER TABLE " + p_tablename + "\n"
+                "  ADD CONSTRAINT " + p_constraintname + "\n"
+                "      FOREIGN KEY (" + p_column + ")\n"
+                "      REFERENCES " + p_refTable + "(" + p_primary + ")";
+  return sql;
+}
+
+CString 
+SQLInfoGenericODBC::GetModifyColumnType(CString p_schema,CString p_tablename,CString p_columnName,CString p_typeDefinition)
+{
+  CString sql  = "ALTER TABLE "  + p_schema + "." + p_tablename  + "\n";
+                 "      MODIFY " + p_columnName + " " + p_typeDefinition;
+  return sql;
+}
+
+CString 
+SQLInfoGenericODBC::GetModifyColumnNull(CString p_schema,CString p_tablename,CString p_columnName,bool p_notNull)
+{
+  CString sql = "ALTER TABLE " + p_schema + "." + p_tablename + "\n";
+                "      MODIFY " + p_columnName + (p_notNull ? "NOT " : " ") + "NULL";
+  return sql;
+}
+
+// Get the SQL to drop a view. If precursor is filled: run that SQL first!
+CString 
+SQLInfoGenericODBC::GetSQLDropView(CString p_schema,CString p_view,CString& p_precursor)
+{
+  p_precursor.Empty();
+  return "DROP VIEW " + p_schema + "." + p_view;
+}
+
+// Create or replace a database view
+CString 
+SQLInfoGenericODBC::GetSQLCreateOrReplaceView(CString p_schema,CString p_view,CString p_asSelect) const
+{
+  return "CREATE VIEW " + p_schema + "." + p_view + "\n" + p_asSelect;
+}
+
 // SQL DDL ACTIONS
 // ===================================================================
 
@@ -923,20 +1078,11 @@ SQLInfoGenericODBC::DoCommitDMLcommands() const
 {
 }
 
-// Create a view from the select code and the name
-void
-SQLInfoGenericODBC::DoCreateOrReplaceView(CString p_code,CString p_viewName)
+// Remove a column from a table
+void    
+SQLInfoGenericODBC::DoDropColumn(CString p_tableName,CString p_columName)
 {
-  SQLQuery query(m_database);
-  query.DoSQLStatement(p_code);
-}
 
-// Remove a view from the database
-void
-SQLInfoGenericODBC::DoDropView(CString p_viewName)
-{
-  SQLQuery query(m_database);
-  query.TryDoSQLStatement("DROP VIEW " + p_viewName);
 }
 
 // Does the named view exists in the database
@@ -999,16 +1145,6 @@ SQLInfoGenericODBC::DoRemoveTemporaryTable(CString& p_tableName) const
   // Every error can be ignored. Can still be in use by another user and/or session
   // The table contents will then removed for this session
   query.TryDoSQLStatement("DROP TABLE " + p_tableName);
-}
-
-// If the temporary table exists, remove it
-void
-SQLInfoGenericODBC::DoRemoveTemporaryTableWithCheck(CString& p_tableName) const
-{
-  if(!GetSQLTableExists(p_tableName).IsEmpty())
-  {
-    DoRemoveTemporaryTable(p_tableName);
-  }
 }
 
 // Maak een procedure aan in de database

@@ -2,7 +2,7 @@
 //
 // File: SQLAssociation.h
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #pragma once
 
@@ -51,16 +51,16 @@ public:
   bool UpdateDetails();
 
   // SETTERS
-  void SetMaster          (SQLDataSet* p_master)  { m_master          = p_master; };
-  void SetDetail          (SQLDataSet* p_detail)  { m_detail          = p_detail; };
+  void SetMaster      (SQLDataSet* p_master)  { m_master          = p_master; };
+  void SetDetail      (SQLDataSet* p_detail)  { m_detail          = p_detail; };
   void SetMasterRecord(SQLRecord* p_record)   { m_masterRecord    = p_record; };
   void SetAssociation (CString p_primaryColumn,CString p_foreignColumn,SQLVariant* p_value = NULL);
   void SetAssociation (int p_num,SQLVariant* p_value);
 
   // GETTERS
-  SQLDataSet* GetMaster()           { return m_master; };
-  SQLDataSet* GetDetail()           { return m_detail; };
-  SQLRecord*  GetMasterRecord()     { return m_masterRecord;   };
+  SQLDataSet* GetMaster()       { return m_master; };
+  SQLDataSet* GetDetail()       { return m_detail; };
+  SQLRecord*  GetMasterRecord() { return m_masterRecord; };
   CString     GetAssocationName (int p_column);
   SQLVariant* GetAssocationValue(int p_column);
 

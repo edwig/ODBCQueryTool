@@ -24,12 +24,12 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   25-05-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #include "stdafx.h"
 #include "BasicXmlExcel.h"
-#include "GetLastErrorAsString.h"
+//#include "GetLastErrorAsString.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -47,7 +47,7 @@ BasicXmlCell::BasicXmlCell(int p_row,int p_col)
 {
   m_row  = p_row;
   m_col  = p_col;
-  m_type = CT_EMPTY;
+  m_type = XCT_EMPTY;
   m_val.m_intval = 0;
 }
 
@@ -65,7 +65,7 @@ BasicXmlCell::BasicXmlCell(int p_row,int p_col,double p_value)
   m_row = p_row;
   m_col = p_col;
   m_val.m_number = p_value;
-  m_type = CT_DOUBLE;
+  m_type = XCT_DOUBLE;
 }
 
 BasicXmlCell::~BasicXmlCell()
@@ -75,7 +75,7 @@ BasicXmlCell::~BasicXmlCell()
 bool     
 BasicXmlCell::GetCellValue(int& p_value)
 {
-  if(m_type == CT_INTEGER)
+  if(m_type == XCT_INTEGER)
   {
     p_value = m_val.m_intval;
     return true;
@@ -86,7 +86,7 @@ BasicXmlCell::GetCellValue(int& p_value)
 bool     
 BasicXmlCell::GetCellValue(double& p_value)
 {
-  if(m_type == CT_DOUBLE)
+  if(m_type == XCT_DOUBLE)
   {
     p_value = m_val.m_number;
     return true;
@@ -97,7 +97,7 @@ BasicXmlCell::GetCellValue(double& p_value)
 bool     
 BasicXmlCell::GetCellString(int& p_value)
 {
-  if(m_type == CT_STRING)
+  if(m_type == XCT_STRING)
   {
     p_value = m_val.m_string;
     return true;
@@ -221,7 +221,7 @@ BasicXmlWorksheet::Load(XmlElement* p_root)
         if(isString)
         {
           int stringNum = atoi(value);
-          cell = new BasicXmlCell(rowNumber,colNumber,stringNum,CT_STRING);
+          cell = new BasicXmlCell(rowNumber,colNumber,stringNum,XCT_STRING);
         }
         else
         {
@@ -235,7 +235,7 @@ BasicXmlWorksheet::Load(XmlElement* p_root)
           {
             // Integer number
             int intNum = atoi(value);
-            cell = new BasicXmlCell(rowNumber,colNumber,intNum,CT_INTEGER);
+            cell = new BasicXmlCell(rowNumber,colNumber,intNum,XCT_INTEGER);
           }
         }
         ulong cellnum = CELLNUM(rowNumber,colNumber);
@@ -294,22 +294,22 @@ BasicXmlWorksheet::GetCellValue(int p_row,int p_col)
 
     switch(type)
     {
-      case CT_INTEGER:  if(cell->GetCellValue(intValue))
+      case XCT_INTEGER:  if(cell->GetCellValue(intValue))
                         {
                           value.Format("%d",intValue);
                         }
                         break;
-      case CT_DOUBLE:   if(cell->GetCellValue(dblValue))
+      case XCT_DOUBLE:   if(cell->GetCellValue(dblValue))
                         {
                           value.Format("%f",dblValue);
                         }
                         break;
-      case CT_STRING:   if(cell->GetCellString(intValue))
+      case XCT_STRING:   if(cell->GetCellString(intValue))
                         {
                           value = m_workbook->GetSharedString(intValue);
                         }
                         break;
-      case CT_EMPTY:    // Fall through
+      case XCT_EMPTY:    // Fall through
       default:          break;
     }
   }
@@ -515,11 +515,10 @@ BasicXmlExcel::SetError(CString p_error)
 bool
 BasicXmlExcel::Load()
 {
-  if(LoadStrings())
-  {
-    return LoadWorksheets();
-  }
-  return false;
+  // Ignore return value from LoadStrings
+  // After Office-2013 it shared-strings are not mandatory any more
+  LoadStrings();
+  return LoadWorksheets();
 }
 
 bool

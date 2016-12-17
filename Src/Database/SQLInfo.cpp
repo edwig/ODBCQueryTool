@@ -2,7 +2,7 @@
 //
 // File: SQLInfo.cpp
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #include "stdafx.h"
 #include "SQLDatabase.h"
@@ -211,7 +211,7 @@ SQLInfo::Init()
   m_getdata_extensions = 0;
 
   // Statement
-  m_hstmt             = NULL;
+  m_hstmt              = NULL;
   m_retCode            = SQL_SUCCESS;
 
   // Workarounds
@@ -265,9 +265,8 @@ SQLInfo::SupportedODBCFunctions()
     m_retCode = SqlGetFunctions(m_hdbc,SQL_API_ALL_FUNCTIONS,m_ODBCFunctions_2);
     if(!SQL_SUCCEEDED(m_retCode))
     {
-      AfxMessageBox("Cannot determine which ODBC functions are supported. Proceed with caution!\n\r"
-                    "In effect: Get a better driver, because this is a basic ODBC function!"
-                   ,MB_OK|MB_ICONERROR);
+      TRACE("Cannot determine which ODBC functions are supported. Proceed with caution!");
+      TRACE("In effect: Get a better driver, because this is a basic ODBC function!\n");
     }
   }
 }
@@ -374,9 +373,8 @@ SQLInfo::GetInfo()
   
   if(!SupportedFunction(SQL_API_SQLGETINFO))
   {
-    AfxMessageBox("Cannot get ODBC info with SQLGetInfo. Cannot determine capabilities\n\r"
-                  "In effect: Get a better driver, because this is a basic ODBC function!"
-                 ,MB_OK);
+    TRACE("Cannot get ODBC info with SQLGetInfo. Cannot determine capabilities\n");
+    TRACE("In effect: Get a better driver, because this is a basic ODBC function!\n");
     return;
   }
   // STATIC KEYWORDS FROM ODBC 3.5 as of compilation

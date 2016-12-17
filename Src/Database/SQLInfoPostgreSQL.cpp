@@ -2,7 +2,7 @@
 //
 // File: SQLInfoPostgreSQL.cpp
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #include "stdafx.h"
 #include "SQLInfoPostgreSQL.h"
@@ -80,6 +80,13 @@ bool
 SQLInfoPostgreSQL::IsCatalogUpper () const
 {
   return false;
+}
+
+// System catalog supports full ISO schemas (same tables per schema)
+bool
+SQLInfoPostgreSQL::GetUnderstandsSchemas() const
+{
+  return true;
 }
 
 // Ondersteund database/ODBCdriver commentaar in sql
@@ -327,44 +334,6 @@ SQLInfoPostgreSQL::GetReplaceColumnOIDbySequence(CString p_columns,CString p_tab
   return p_columns;
 }
 
-// Geef opslagruimte clausule voor tabellen
-// Indien er geen initialisatie is ingesteld, dan wordt teruggevallen op
-// de defaultwaarde "PRONTODATA". Dit is niet discriminatoir t.o.v. de 
-// te bouwen applicaties.
-CString
-SQLInfoPostgreSQL::GetTablesTablespace(CString p_tablespace /*=""*/) const
-{
-  if(!p_tablespace.IsEmpty())
-  {
-    return " WITHOUT OIDS TABLESPACE \"" + p_tablespace + "\"";
-  }
-  return " WITHOUT OIDS TABLESPACE \"DATA\"";
-}
-
-// Geef opslagruimte clausule voor indexen.
-// Indien er geen initialisatie is ingesteld, dan wordt via het keyword DEFAULT
-// teruggevallen op de default tablespace van de ingelogde systeemgebruiker
-CString
-SQLInfoPostgreSQL::GetIndexTablespace(CString p_tablespace /*=""*/) const
-{
-  return " TABLESPACE \"INDEX\"";
-}
-
-// Get the storage name for indici
-CString 
-SQLInfoPostgreSQL::GetStorageSpaceNameForIndexes() const
-{
-  return "INDEX"; // Settings::OpslagRuimte::OracleIndexTablespace;
-}
-
-// Geef de opslagruimte voor tijdelijke tabellen
-CString
-SQLInfoPostgreSQL::GetStorageSpaceNameForTempTables(CString /*p_tablename*/) const
-{
-  // PostgreSQL gebruikt impliciete TEMP TABLESPACE door gebruiker instellingen
-  return "";
-}
-
 // Verwijder catalog afhankelijkheden
 CString 
 SQLInfoPostgreSQL::GetSQLRemoveProcedureDependencies(CString p_procname) const
@@ -382,18 +351,109 @@ SQLInfoPostgreSQL::GetSQLRemoveFieldDependencies(CString p_tablename) const
 
 // Geeft de tabeldefinitie-vorm van een primary key en constraint
 CString 
-SQLInfoPostgreSQL::GetPrimaryKeyDefinition(CString p_tableName,bool /*p_temporary*/) const
+SQLInfoPostgreSQL::GetPrimaryKeyDefinition(CString p_schema,CString p_tableName,bool /*p_temporary*/) const
 {
   // Primary key-constraint niet direct genereren: deze wordt apart gegenereerd,
   // zodat de bijbehorende index in de juiste tablespace terechtkomt.
-  return GetPrimaryKeyType() + " NOT NULL\n";
+  return GetPrimaryKeyType() + " NOT NULL CONSTRAINT pk_" + p_tableName + " PRIMARY KEY\n";
 }
 
 // Geef de constraint-vorm van een primary key definitie (achteraf toevoegen aan tabel)
 CString
-SQLInfoPostgreSQL::GetPrimaryKeyConstraint(CString p_tablename,bool /*p_temporary*/) const
+SQLInfoPostgreSQL::GetPrimaryKeyConstraint(CString p_schema,CString p_tablename,CString p_primary) const
 {
-  return "ADD CONSTRAINT pk_" + p_tablename + " PRIMARY KEY(oid)\n";
+  return "ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+         "  ADD CONSTRAINT pk_" + p_tablename + "\n"
+         "      PRIMARY KEY (" + p_primary + ")";
+}
+
+// Get the sql to add a foreign key to a table
+CString 
+SQLInfoPostgreSQL::GetSQLForeignKeyConstraint(DBForeign& p_foreign) const
+{
+  // Construct the correct tablenames
+  CString table  (p_foreign.m_tablename);
+  CString primary(p_foreign.m_primaryTable);
+  if(!p_foreign.m_schema.IsEmpty())
+  {
+    table   = p_foreign.m_schema + "." + table;
+    primary = p_foreign.m_schema + "." + primary;
+  }
+
+  // The base foreign key command
+  CString query = "ALTER TABLE " + table + "\n"
+                  "  ADD CONSTRAINT " + p_foreign.m_constraintname + "\n"
+                  "      FOREIGN KEY (" + p_foreign.m_column + ")\n"
+                  "      REFERENCES " + primary + "(" + p_foreign.m_primaryColumn + ")";
+  // Add all relevant options
+  if(p_foreign.m_deferrable)
+  {
+    query += "\n      DEFERRABLE";
+  }
+  if(p_foreign.m_initiallyDeffered)
+  {
+    query += "\n      INITIALLY DEFERRED";
+  }
+  switch(p_foreign.m_match)
+  {
+    case 0: query += "\n      MATCH FULL";    break;
+    case 1: query += "\n      MATCH PARTIAL"; break;
+    case 2: query += "\n      MATCH SIMPLE";  break;
+  }
+  switch(p_foreign.m_updateRule)
+  {
+    case 1: query += "\n      ON UPDATE CASCADE";     break;
+    case 2: query += "\n      ON UPDATE SET NULL";    break;
+    case 3: query += "\n      ON UPDATE SET DEFAULT"; break;
+    case 4: query += "\n      ON UPDATE NO ACTION";   break;
+    default:// The default
+    case 0: query += "\n      ON UPDATE RESTRICT";    break;
+  }
+  switch(p_foreign.m_deleteRule)
+  {
+    case 1: query += "\n      ON DELETE CASCADE";     break;
+    case 2: query += "\n      ON DELETE SET NULL";    break;
+    case 3: query += "\n      ON DELETE SET DEFAULT"; break;
+    case 4: query += "\n      ON DELETE NO ACTION";   break;
+    default:// The default
+    case 0: query += "\n      ON DELETE RESTRICT";    break;
+  }
+  return query;
+}
+
+// Get the sql (if possible) to change the foreign key constraint
+CString 
+SQLInfoPostgreSQL::GetSQLAlterForeignKey(DBForeign& p_origin,DBForeign& p_requested) const
+{
+  // Construct the correct tablenames
+  CString table(p_origin.m_tablename);
+  if(!p_origin.m_schema.IsEmpty())
+  {
+    table = p_origin.m_schema + "." + table;
+  }
+
+  // The base foreign key command
+  CString query = "ALTER TABLE " + table + "\n"
+                  "ALTER CONSTRAINT " + p_origin.m_constraintname + "\n";
+
+  // Add all relevant options
+  if(p_origin.m_deferrable != p_requested.m_deferrable)
+  {
+    query.AppendFormat("\n      %sDEFERRABLE",p_requested.m_deferrable == 0 ? "NOT " : "");
+  }
+  if(p_origin.m_initiallyDeffered != p_requested.m_initiallyDeffered)
+  {
+    query += "\n      INITIALLY ";
+    query += p_requested.m_initiallyDeffered ? "DEFERRED" : "IMMEDIATE";
+  }
+  if((p_origin.m_match      != p_requested.m_match)      ||
+     (p_origin.m_updateRule != p_requested.m_updateRule) ||
+     (p_origin.m_deleteRule != p_requested.m_deleteRule) )
+  {
+    // PostgreSQL not capable of altering these attributes, so re-create the constraint
+    query.Empty();
+  }
+  return query;
 }
 
 // Performance paramters in de database zetten
@@ -437,50 +497,7 @@ SQLInfoPostgreSQL::GetSQLModifyColumnName(CString p_tablename,CString p_oldName,
 unsigned long 
 SQLInfoPostgreSQL::GetMaxStatementLength() const
 {
-	return 0;		//	Geen limiet
-}
-
-// Prefix voor een add constraint DDL commando voor SQLAtlerTableGenerator
-CString 
-SQLInfoPostgreSQL::GetAddConstraintPrefix(CString p_constraintName) const
-{
-  return "ADD CONSTRAINT " + p_constraintName + " ";
-}
-
-// Suffix voor een add constraint DDL commando voor SQLAtlerTableGenerator
-CString 
-SQLInfoPostgreSQL::GetAddConstraintSuffix(CString p_constraintName) const
-{
-  return "";
-}
-
-// Prefix voor een drop constraint DDL commando voor SQLAlterTableGenerator
-CString 
-SQLInfoPostgreSQL::GetDropConstraintPrefix() const
-{
-  return "DROP CONSTRAINT ";
-}
-
-// Suffix voor een drop constraint DDL commando voor SQLAlterTableGenerator
-CString 
-SQLInfoPostgreSQL::GetDropConstraintSuffix() const
-{
-  return "";
-}
-
-// Clausule separator tussen twee ADD of DROP clausules in een ALTER TABLE
-CString 
-SQLInfoPostgreSQL::GetAlterTableClauseSeparator() const
-{
-  return ",";
-}
-
-// Groupering van meerdere kolommen in een ADD/MODIFY/DROP clausule
-bool   
-SQLInfoPostgreSQL::GetClauseGroupingPossible() const
-{
-  // Kan meerdere ADD (kolomdef ,.... ) doen
-  return false;
+  return 0;		//	Geen limiet
 }
 
 // Geeft de prefix voor het wijzigen van het datatype in MODIFY/ALTER
@@ -515,9 +532,14 @@ SQLInfoPostgreSQL::GetCodeTempTableWithNoLog() const
 
 // Code om alle rechten op de tabel open te zetten (NON-ANSI database)
 CString 
-SQLInfoPostgreSQL::GetSQLGrantAllOnTable(CString p_tableName)
+SQLInfoPostgreSQL::GetSQLGrantAllOnTable(CString p_schema,CString p_tableName,bool p_grantOption /*= false*/)
 {
-  return "GRANT ALL ON " + p_tableName + " TO " + GetGrantedUsers();
+  CString sql = "GRANT ALL ON " + p_schema + "." + p_tableName + " TO " + GetGrantedUsers();
+  if(p_grantOption)
+  {
+    sql += " WITH GRANT OPTION";
+  }
+  return sql;
 }
 
 
@@ -689,13 +711,16 @@ SQLInfoPostgreSQL::GetSQLConstraintsImmediate() const
 
 // Geef de query die controleert of de tabel al bestaat in de database
 CString 
-SQLInfoPostgreSQL::GetSQLTableExists(CString p_tablename) const
+SQLInfoPostgreSQL::GetSQLTableExists(CString p_schema,CString p_tablename) const
 {
-  CString lowerName(p_tablename);
-  lowerName.MakeLower();
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
   CString query = "SELECT count(*)\n"
-                  "  FROM pg_class\n"
-                  " WHERE relname = '" + lowerName + "'";
+                  "  FROM pg_class cl\n"
+                  "      ,pg_namespace ns"
+                  " WHERE cl.relnamespace = ns.oid\n"
+                  "   AND cl.name = '" + p_schema    + "'\n"
+                  "   AND relname = '" + p_tablename + "'";
   return query;
 }
 
@@ -778,28 +803,27 @@ SQLInfoPostgreSQL::GetSQLGetConstraintsForTable(CString& p_tableName) const
   return contabel;
 }
 
-// Lees de bestaande indexen van een tabel
+// Read all existing indices of a table
 CString 
-SQLInfoPostgreSQL::GetSQLTableIndexes(CString& p_user,CString& p_tableName) const
+SQLInfoPostgreSQL::GetSQLTableIndices(CString p_user,CString p_tableName) const
 {
-  CString lowerTable(p_tableName);
-  CString lowerUser (p_user);
-  lowerTable.MakeLower();
-  lowerUser .MakeLower();
+  p_user.MakeLower();
+  p_tableName.MakeLower();
 
   CString query =  "SELECT cli.relname\n"
-                   "      ,idx.indisunique\n"
-                   "      ,att.attnum\n"
                    "      ,att.attname\n"
-                   "      ,'ASCENDING'\n"
+                   "      ,att.attnum\n"
+                   "      ,idx.indisunique\n"
+                   "      ,0  as ascending\n"
+                   "      ,'' as expression_source"
                    "  FROM pg_user sha\n"
                    "      ,pg_class clr\n"
                    "      ,pg_index idx\n"
                    "      ,pg_class cli\n"
                    "      ,pg_attribute att\n"
-                   " WHERE sha.usename = '" + lowerUser + "'\n"
+                   " WHERE sha.usename = '" + p_user + "'\n"
                    "   AND sha.usesysid = clr.relowner\n"
-                   "   AND clr.relname = '" + lowerTable + "'\n"
+                   "   AND clr.relname = '" + p_tableName+ "'\n"
                    "   AND clr.relkind = 'r'\n"
                    "   AND clr.oid = idx.indrelid\n"
                    "   AND idx.indexrelid = cli.oid\n"
@@ -809,55 +833,181 @@ SQLInfoPostgreSQL::GetSQLTableIndexes(CString& p_user,CString& p_tableName) cons
   return query;
 }
 
+// Get SQL to create an index for a table
+CString 
+SQLInfoPostgreSQL::GetSQLCreateIndex(CString p_user,CString p_tableName,DBIndex* p_index) const
+{
+  CString sql("CREATE ");
+  if(p_index->m_unique)
+  {
+    sql += "UNIQUE ";
+  }
+  sql += " INDEX ON ";
+  sql += p_user + ".";
+  sql += p_tableName + "(";
+
+  int column = 0;
+  while(!p_index->m_indexName.IsEmpty())
+  {
+    if(column)
+    {
+      sql += ",";
+    }
+    sql += p_index->m_column;
+    sql += (p_index->m_descending) ? " DESC" : " ASC";
+    // Next column
+    ++column;
+    ++p_index;
+  }
+  sql += ")";
+
+  return sql;
+}
+
+// Get SQL to drop an index
+CString 
+SQLInfoPostgreSQL::GetSQLDropIndex(CString p_user,CString p_indexName) const
+{
+  CString sql = "DROP INDEX " + p_user + "." + p_indexName;
+  return sql;
+}
+
 // Geef de query om de referential constaints uit de catalogus te lezen.
 CString 
-SQLInfoPostgreSQL::GetSQLTableReferences(CString& p_tablename) const
+SQLInfoPostgreSQL::GetSQLTableReferences(CString p_schema
+                                        ,CString p_tablename
+                                        ,CString p_constraint /*=""*/
+                                        ,int     p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
 {
-  CString lowerName(p_tablename);
-  lowerName.MakeLower();
-  CString query = "SELECT con.conname\n"
-                  "      ,cla.relname\n"
-                  "  FROM pg_constraint con, pg_class cla\n"
-                  " WHERE con.contype = 'f'\n"
-                  "   AND con.conrelid = cla.oid\n"
-                  "   AND cla.relname  = '" + lowerName + "'";
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+  p_constraint.MakeLower();
+
+  CString query;
+
+  for(int ind = 1; ind <= p_maxColumns; ++ind)
+  {
+    CString part;
+    part.Format("SELECT con.conname       as constraint_name\n"
+                "      ,sch.nspname       as schema\n"
+                "      ,cla.relname       as table_name\n"
+                "      ,att.attname       as column_name\n"
+                "      ,pri.relname       as primary_table_name\n"
+                "      ,fky.attname       AS primary_column_name\n"
+                "      ,con.condeferrable as deferrable\n"
+                "      ,con.condeferred   as initially_deferred\n"
+                "      ,1                 as enabled\n"
+                "      ,case con.confmatchtype WHEN 's' THEN 1\n"
+                "                              WHEN 'f' THEN 1\n"
+                "                              ELSE  0\n"
+                "                              END as match_option\n"
+                "      ,case con.confdeltype   WHEN 'r' THEN 0\n"
+                "                              WHEN 'c' THEN 1\n"
+                "                              WHEN 'n' THEN 2\n"
+                "                              WHEN 'd' THEN 3\n"
+                "                              WHEN 'a' THEN 4\n"
+                "                              ELSE  0\n"
+                "                              END as update_rule\n"
+                "      ,case con.confupdtype   WHEN 'r' THEN 0\n"
+                "                              WHEN 'c' THEN 1\n"
+                "                              WHEN 'n' THEN 2\n"
+                "                              WHEN 'd' THEN 3\n"
+                "                              WHEN 'a' THEN 4\n"
+                "                              ELSE  0\n"
+                "                              END as delete_rule\n"
+                "  FROM pg_constraint con\n"
+                "      ,pg_class      cla\n"
+                "      ,pg_attribute  att\n"
+                "      ,pg_namespace  sch\n"
+                "      ,pg_class      pri\n"
+                "      ,pg_attribute  fky\n"
+                " WHERE con.contype      = 'f'\n"
+                "   AND con.conrelid     = cla.oid\n"
+                "   and cla.relnamespace = sch.oid\n"
+                "   and con.confrelid    = pri.oid\n"
+                "   and att.attrelid     = cla.oid\n"
+                "   and att.attnum       = con.conkey[%d]\n"
+                "   and fky.attrelid     = pri.oid\n"
+                "   and fky.attnum       = con.confkey[%d]\n"
+                "   AND cla.relname      = 'part'"
+               ,ind
+               ,ind);
+    if(!p_schema.IsEmpty())
+    {
+      part += "\n   AND sch.nspname = '" + p_schema + "'";
+    }
+    if(!p_tablename.IsEmpty())
+    {
+      part += "\n   AND cla.relname = '" + p_tablename + "'";
+    }
+    if(!p_constraint.IsEmpty())
+    {
+      part += "\n   AND con.conname = '" + p_constraint + "'";
+    }
+
+    // Append to query, multiple for multiple columns
+    if(!query.IsEmpty())
+    {
+      query += "\nUNION ALL\n";
+    }
+    query += part;
+  }
   return query;
 }
 
-// Maak een synonym
-CString
-SQLInfoPostgreSQL::GetSQLMakeSynonym(CString& /*p_objectName*/) const
-{
-  // Let op: public synonym zonder qualifier, for qualifier.tabelnaam
-	return "";
-}
-
-// Verwijder een synonym
+// Get the SQL to determine the sequence state in the database
 CString 
-SQLInfoPostgreSQL::GetSQLDropSynonym(CString& /*p_objectName*/) const
+SQLInfoPostgreSQL::GetSQLSequence(CString p_schema,CString p_tablename,CString p_postfix /*= "_seq"*/) const
 {
-  return "";
+  CString sequence = p_tablename + p_postfix;
+  sequence.MakeLower();
+  p_schema.MakeLower();
+
+  CString sql = "SELECT sequence_name\n"
+                "      ,start_value as current_value\n"
+                "      ,decode(increment,'1',1,0) *\n"
+                "       decode(cycle_option,'NO',1,0) as is_correct\n"
+                "  FROM information_schema.sequences\n"
+                " WHERE sequence_schema = '" + p_schema + "'\n"
+                "   AND sequence_name   = '" + sequence + "'\n";
+  return sql;
 }
 
- // Maak een sequence
-void
-SQLInfoPostgreSQL::DoCreateSequence(CString& p_sequenceName,int p_startpos) 
+// Create a sequence in the database
+CString 
+SQLInfoPostgreSQL::GetSQLCreateSequence(CString p_schema,CString p_tablename,CString p_postfix /*= "_seq"*/,int p_startpos) const
 {
-  CString create = "CREATE SEQUENCE " + p_sequenceName;
-  if(p_startpos)
+  CString sql("CREATE SEQUENCE ");
+
+  if(!p_schema.IsEmpty())
   {
-    create.AppendFormat(" START WITH %d",p_startpos);
+    sql += p_schema + ".";
   }
-  SQLQuery sql(m_database);
-  sql.DoSQLStatement(create);
+  sql += p_tablename + p_postfix;
+  sql.AppendFormat(" START WITH %d",p_startpos);
+  sql += " CACHE 1 NO CYCLE";
+  return sql;
 }
 
-// Verwijder een sequence
-void 
-SQLInfoPostgreSQL::DoRemoveSequence(CString& p_sequenceName) const
+// Remove a sequence from the database
+CString 
+SQLInfoPostgreSQL::GetSQLDropSequence(CString p_schema,CString p_tablename,CString p_postfix /*= "_seq"*/) const
 {
-  SQLQuery sql(m_database);
-  sql.TryDoSQLStatement("DROP SEQUENCE " + p_sequenceName);
+  CString sql;
+  sql = "DROP SEQUENCE " + p_schema + "." + p_tablename + p_postfix;
+  return sql;
+}
+
+// Geef de query om rechten op een sequence toe te kennen
+CString
+SQLInfoPostgreSQL::GetSQLSequenceRights(CString p_schema,CString p_tableName,CString p_postfix /*="_seq"*/) const
+{
+  CString sequence = p_tableName + p_postfix;
+  if(!p_schema.IsEmpty())
+  {
+    sequence = p_schema + "." + sequence;
+  }
+  return "GRANT SELECT, UPDATE ON " + sequence + " TO " + GetGrantedUsers();
 }
 
 // Geef de query om een stored procedure te verwijderen
@@ -884,47 +1034,6 @@ SQLInfoPostgreSQL::DoRemoveProcedure(CString& /*p_procedureName*/) const
 //         "DROP TYPE " + procnaam + "_proc_out_par;\n";
 //     }
 //   }
-}
-
-void 
-SQLInfoPostgreSQL::DoCreateNextSequence(const CString& p_tableName,CString p_postfix /*="_seq"*/)
-{
-  // In PostgreSQL worden de oid's gegenereerd uit een SEQUENCE. Deze moet eerst worden
-  // aangemaakt. Niet meer droppen, want dan zijn er al oid's uitgegeven
-
-  // @DJS Wel droppen als sequence nummer fout is. Is momenteel geval door eerdere
-  // problemen met genereren.
-  // EH: Wel droppen in verband met verkeerde sequences
-  // door acties van consultants en converteurs. Anderen rekenen op het 
-  // vermogen om de sequence te herstellen
-  SQLQuery sql(m_database);
-  CString sequenceName = p_tableName + p_postfix;
-  DoRemoveSequence(sequenceName);
-  long maxOid  = 0;
-  try
-  {
-    // We zoeken het maximum oid in de tabel plus 1 als beginwaarde.
-    CString query = "SELECT MAX(oid) FROM " + p_tableName;
-
-    sql.DoSQLStatement(query);
-    if(sql.GetRecord())
-    {
-      maxOid = sql.GetColumn(1)->GetAsSLong();
-    }
-    ++maxOid;
-  }
-  catch (...) {}
-  // Hoogste oid meegeven aan de create sequence als start pos.
-  DoCreateSequence(sequenceName,maxOid);
-  // Nu nog rechten en synoniemen:
-  sql.TryDoSQLStatement(GetSQLSequenceRights(p_tableName,p_postfix));  
-}
-
-// Geef de query om rechten op een sequence toe te kennen
-CString 
-SQLInfoPostgreSQL::GetSQLSequenceRights(const CString& p_tableName,CString p_postfix /*="_seq"*/) const
-{
-  return "GRANT SELECT, UPDATE ON " + p_tableName + p_postfix + " TO " + GetGrantedUsers();
 }
 
 CString
@@ -1001,15 +1110,20 @@ SQLInfoPostgreSQL::DoesColumnExistsInTable(CString& p_owner,CString& p_tableName
 
 // Query om te bepalen of de tabel al een primary key heeft
 CString
-SQLInfoPostgreSQL::GetSQLPrimaryKeyConstraintInformation(CString& p_tableName) const
+SQLInfoPostgreSQL::GetSQLPrimaryKeyConstraintInformation(CString p_schema,CString p_tableName) const
 {
-  CString table(p_tableName);
-  table.MakeLower();
+  p_schema.MakeLower();
+  p_tableName.MakeLower();
+
   CString query = "SELECT count(*)\n"
-                  "  FROM pg_class a, pg_constraint b\n"
-                  " WHERE a.relname = '" + table + "'\n"
-                  "   AND a.oid = b.conrelid\n"
-                  "   AND b.contype = 'p'";
+                  "  FROM pg_class a\n"
+                  "      ,pg_constraint b\n"
+                  "      ,pg_namespaces n\n"
+                  " WHERE a.relnamespace = n.oid\n"
+                  "   AND a.oid     = b.conrelid\n"
+                  "   AND b.contype = 'p'"
+                  "   AND n.name    = '" + p_schema    + "'\n"
+                  "   AND a.relname = '" + p_tableName + "'\n";
   return query;
 }
 
@@ -1048,6 +1162,72 @@ SQLInfoPostgreSQL::GetOnlyOneUserSession()
   return true;
 }
 
+// SQL DDL STATEMENTS
+// ==================
+
+CString
+SQLInfoPostgreSQL::GetCreateColumn(CString p_schema,CString p_tablename,CString p_columnName,CString p_typeDefinition,bool p_notNull)
+{
+  CString sql  = "ALTER TABLE "  + p_schema + "." + p_tablename  + "\n";
+                 "  ADD COLUMN " + p_columnName + " " + p_typeDefinition;
+  if(p_notNull)
+  {
+    sql += " NOT NULL";
+  }
+  return sql;
+}
+
+// Drop a column from a table
+CString 
+SQLInfoPostgreSQL::GetSQLDropColumn(CString p_schema,CString p_tablename,CString p_columnName) const
+{
+  return "ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+         " DROP COLUMN " + p_columnName;
+}
+
+// Add a foreign key to a table
+CString
+SQLInfoPostgreSQL::GetCreateForeignKey(CString p_tablename,CString p_constraintname,CString p_column,CString p_refTable,CString p_primary)
+{
+  CString sql = "ALTER TABLE " + p_tablename + "\n"
+                "  ADD CONSTRAINT " + p_constraintname + "\n"
+                "      FOREIGN KEY (" + p_column + ")\n"
+                "      REFERENCES " + p_refTable + "(" + p_primary + ")";
+  return sql;
+}
+
+CString 
+SQLInfoPostgreSQL::GetModifyColumnType(CString p_schema,CString p_tablename,CString p_columnName,CString p_typeDefinition)
+{
+  CString sql = "ALTER TABLE "   + p_schema + "." + p_tablename + "\n"
+                " ALTER COLUMN " + p_columnName + 
+                " SET DATA TYPE " + p_typeDefinition;
+  return sql;
+}
+
+CString 
+SQLInfoPostgreSQL::GetModifyColumnNull(CString p_schema,CString p_tablename,CString p_columnName,bool p_notNull)
+{
+  CString sql = "ALTER TABLE  " + p_schema + "." + p_tablename + "\n"
+                "ALTER COLUMN " + p_columnName + (p_notNull ? " SET " : " DROP ") + "NOT NULL";
+  return sql;
+}
+
+// Get the SQL to drop a view. If precursor is filled: run that SQL first!
+CString 
+SQLInfoPostgreSQL::GetSQLDropView(CString p_schema,CString p_view,CString& p_precursor)
+{
+  p_precursor.Empty();
+  return "DROP VIEW " + p_schema + "." + p_view;
+}
+
+// Create or replace a database view
+CString 
+SQLInfoPostgreSQL::GetSQLCreateOrReplaceView(CString p_schema,CString p_view,CString p_asSelect) const
+{
+  return "CREATE OR REPLACE VIEW " + p_schema + "." + p_view + "\n" + p_asSelect;
+}
+
 // SQL DDL ACTIONS
 // ===================================================================
 
@@ -1068,21 +1248,14 @@ SQLInfoPostgreSQL::DoCommitDMLcommands() const
   sql.DoSQLStatement("commit");
 }
 
-// Creeer een view op een geoptimaliseerde manier vanuit een bestaande tabel
-void 
-SQLInfoPostgreSQL::DoCreateOrReplaceView(CString p_code,CString p_viewName)
+// Remove a column from a table
+void
+SQLInfoPostgreSQL::DoDropColumn(CString p_tableName,CString p_columName)
 {
-  SQLQuery sql(m_database);
-  sql.DoSQLStatement(p_code);
-  sql.DoSQLStatement("GRANT SELECT ON " + p_viewName + " TO " + GetGrantedUsers());
-}
-
-// Verwijder een view uit de database
-void 
-SQLInfoPostgreSQL::DoDropView(CString p_viewName)
-{
-  SQLQuery sql(m_database);
-  sql.DoSQLStatement("DROP VIEW " + p_viewName);
+  CString sql = "ALTER TABLE  " + p_tableName + "\n"
+                " DROP COLUMN " + p_columName;
+  SQLQuery query(m_database);
+  query.TryDoSQLStatement(sql);
   DoCommitDDLcommands();
 }
 
@@ -1150,34 +1323,6 @@ SQLInfoPostgreSQL::DoRemoveTemporaryTable(CString& p_tableName) const
   sql.TryDoSQLStatement("DELETE FROM "    + p_tableName);
   sql.TryDoSQLStatement("TRUNCATE TABLE " + p_tableName);
   sql.TryDoSQLStatement("DROP TABLE "     + p_tableName);
-}
-
-// Indien de tabel een tijdelijke tabel is, verwijder hem
-void
-SQLInfoPostgreSQL::DoRemoveTemporaryTableWithCheck(CString& p_tableName) const
-{
-  CString tableName(p_tableName);
-  int number = 0;
-  tableName.MakeLower();
-
-  CString query = "SELECT count(*)\n"
-                  "  FROM pg_class cl\n"
-                  "      ,pg_namespace ns\n"
-                  " WHERE cl.relnamespace = ns.oid\n"
-                  "   AND cl.relname = '" + tableName + "'\n"
-                  "   AND ns.nspname like like_escape('pg!_temp!_%','!')";
-  SQLQuery sql(m_database);
-  sql.DoSQLStatement(query);
-  if(sql.GetRecord())
-  {
-    number = sql.GetColumn(1)->GetAsSLong();
-  }
-  // Als de tabel WEL voorkomt in de catalog, dan mag je hem proberen te droppen
-  // Als hij NIET voorkomt, dan bestaat hij niet, en hoeft hij niet gedropped te worden
-  if(number == 1)
-  {
-    DoRemoveTemporaryTable(p_tableName);
-  }
 }
 
 // Maak een procedure aan in de database
@@ -1284,21 +1429,21 @@ SQLInfoPostgreSQL::GetParameterLength(int p_SQLType) const
     case SQL_VARCHAR:       retval = 4000; break;
     case SQL_LONGVARCHAR:   retval = 32000;break;
     case SQL_DECIMAL:       retval = 32000;break;
-	  case SQL_SMALLINT:      retval = 0;    break;
-	  case SQL_INTEGER:       retval = sizeof(long);break;
-	  case SQL_REAL:          retval = 0;    break;
-	  case SQL_DOUBLE:        retval = 0;    break;
-	  case SQL_FLOAT:         retval = 0;    break;
-	  case SQL_BINARY:        retval = 0;    break;
-	  case SQL_VARBINARY:     retval = 0;    break;
-	  case SQL_LONGVARBINARY: retval = 0;    break;
-	  case SQL_DATE:          retval = 0;    break;
+    case SQL_SMALLINT:      retval = 0;    break;
+    case SQL_INTEGER:       retval = sizeof(long);break;
+    case SQL_REAL:          retval = 0;    break;
+    case SQL_DOUBLE:        retval = 0;    break;
+    case SQL_FLOAT:         retval = 0;    break;
+    case SQL_BINARY:        retval = 0;    break;
+    case SQL_VARBINARY:     retval = 0;    break;
+    case SQL_LONGVARBINARY: retval = 0;    break;
+    case SQL_DATE:          retval = 0;    break;
     case SQL_TIME:          retval = 0;    break;
     case SQL_TIMESTAMP:     retval = 19;   break;
-	  case SQL_NUMERIC:       retval = 0;    break;
-	  case SQL_BIGINT:        retval = 0;    break;
-	  case SQL_TINYINT:       retval = 0;    break;
-	  case SQL_BIT:           retval = 0;    break;
+    case SQL_NUMERIC:       retval = 0;    break;
+    case SQL_BIGINT:        retval = 0;    break;
+    case SQL_TINYINT:       retval = 0;    break;
+    case SQL_BIT:           retval = 0;    break;
     case SQL_INTERVAL_YEAR:
     case SQL_INTERVAL_YEAR_TO_MONTH:
     case SQL_INTERVAL_MONTH:
@@ -1434,8 +1579,8 @@ SQLInfoPostgreSQL::GetSPLSourcecodeFromDatabase(const CString& p_owner,const CSt
   CString sProcBody = "CREATE OR REPLACE ";
   while (sql.GetRecord())
   {
-	  sProcBody += sql.GetColumn(1)->GetAsChar();
-	}
+    sProcBody += sql.GetColumn(1)->GetAsChar();
+  }
   return sProcBody;
 }
 

@@ -73,15 +73,15 @@ TINYINT (Signed)			: 8 bit signed integer
 TINYINT (Unsigned)		: 8 bit unsigned integer
 BIGINT (Signed)				: 64 bit signed integer
 BIGINT (Unsigned)			: 64 bit unsigned integer
-NUMERIC						    : 39 decimal floating point BCD number
+NUMERIC						    : 38 decimal floating point BCD number
 GUID						      : Microsoft GUID
 BINARY						    : All types of BINARY,VARBINARY,LONGVARBINARY etc.
 DATE						      : year-month-day
 TIME						      : hour:min:sec
-TIMESTAMP					    : year-month-day hour:min:sec[.fractions]
+TIMESTAMP					    : year-month-day hour:min:sec[.fractions]  (Fraction <= 3)
 TYPE DATE					    : year-month-day (not screwed up)
 TYPE TIME					    : hour:min:sec   (not screwed up)
-TYPE TIMESTAMP				: year-month-day hour:min:sec[.fractions] (not screwed up)
+TYPE TIMESTAMP				: year-month-day hour:min:sec[.fractions]  (Fraction <= 9)
 INTERVAL YEAR				  : years
 INTERVAL MONTH				: months
 INTERVAL DAY				  : days

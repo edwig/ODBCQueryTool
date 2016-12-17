@@ -2,7 +2,7 @@
 //
 // File: SQLInfoDB.cpp
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #include "stdafx.h"
 #include "SQLInfoDB.h"
@@ -38,7 +38,8 @@ SQLInfoDB::SQLInfoDB(SQLDatabase* p_database)
 {
   // Granted users.
   // Comma separated list of granted users
-  // e.g. "IDBA, MDBA, KDBA, PRONTO"
+  // e.g. "meta3", "meta2", "meta1", "model" and "data"
+
   // Must be 'PUBLIC' for an ANSI-compliant database
   m_grantedUsers = "PUBLIC";
 }

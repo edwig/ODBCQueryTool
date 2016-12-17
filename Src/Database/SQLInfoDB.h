@@ -2,7 +2,7 @@
 //
 // File: SQLInfoDB.h
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,13 +21,49 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #pragma once
 #include "SQLInfo.h"
 #include "SQLDatabase.h"
 #include <vector>
+
+// Maximum supported columns in an index or a foreign key
+// Does not constrict every SQL RDBMS's, but some have multiple!!
+#define SQLINFO_MAX_COLUMNS  8
+
+// DBForeign is used to store the current state 
+// of the database foreign key constraints of a table
+typedef struct _dbForeign
+{
+  CString m_constraintname;
+  CString m_schema;
+  CString m_tablename;
+  CString m_column;
+  CString m_primaryTable;
+  CString m_primaryColumn;
+  bool    m_enabled;            // yes/no
+  bool    m_deferrable;         // yes/no
+  bool    m_initiallyDeffered;  // yes/no
+  int     m_match;              // 0=Full, 1=partial, 2=simple
+  int     m_updateRule;         // 0=restrict, 1=cascade, 2=set null, 3=set default, 4=No action
+  int     m_deleteRule;         // 0=restrict, 1=cascade, 2=set null, 3=set default, 4=No action
+}
+DBForeign;
+
+// DBIndex is used to store the current state
+// of the database indici and columns of a table
+typedef struct _dbIndex
+{
+  CString m_indexName;    // Name of the total index
+  CString m_column;       // Column name in the index
+  int     m_position;     // Position of column in the index
+  bool    m_unique;       // 1 = unique, null,0 if not
+  bool    m_descending;   // true if DESC, otherwise ASC
+  CString m_source;       // Optional expression source
+}
+DBIndex;
 
 class SQLInfoDB : public SQLInfo
 {
@@ -37,7 +73,7 @@ public:
 
   // DB INTERFACE
 
-  void    SetGrantedUsers(CString& p_users);
+  void    SetGrantedUsers(CString p_users);
   CString GetGrantedUsers() const;
 
   // PURE VIRTUAL INTERFACE
@@ -55,6 +91,9 @@ public:
 
   // System catalog is stored in uppercase in the database?
   virtual bool IsCatalogUpper () const = 0;
+
+  // System catalog supports full ISO schemas (same tables per schema)
+  virtual bool GetUnderstandsSchemas() const = 0;
   
   // Supports database/ODBCdriver comments in sql
   virtual bool SupportsDatabaseComments() const = 0;
@@ -148,18 +187,6 @@ public:
   // Replace the Identity column OID by a sequence.nextval
   virtual CString GetReplaceColumnOIDbySequence(CString p_columns,CString p_tablename,CString p_postfix = "_seq") const = 0;
 
-  // Get the tablespace for the tables
-  virtual CString GetTablesTablespace(CString p_tablespace = "") const = 0;
-
-  // Get the tablespace for the indexes
-  virtual CString GetIndexTablespace(CString p_tablespace = "") const = 0;
-
-  // Get the storage name for indici
-  virtual CString GetStorageSpaceNameForIndexes() const = 0;
-
-  // Get the storage space for temporary tables
-  virtual CString GetStorageSpaceNameForTempTables(CString p_tablename) const = 0;
-
   // Remove catalog dependencies for stored procedures
   virtual CString GetSQLRemoveProcedureDependencies(CString p_procname) const = 0;
 
@@ -167,10 +194,16 @@ public:
   virtual CString GetSQLRemoveFieldDependencies(CString p_tablename) const = 0;
 
   // Gets the table definition-form of a primary key
-  virtual CString GetPrimaryKeyDefinition(CString p_tableName,bool p_temporary) const = 0;
+  virtual CString GetPrimaryKeyDefinition(CString p_schema,CString p_tableName,bool p_temporary) const = 0;
 
   // Get the constraint form of a primary key to be added to a table after creation of that table
-  virtual CString GetPrimaryKeyConstraint(CString p_tablename,bool p_temporary) const = 0;
+  virtual CString GetPrimaryKeyConstraint(CString p_schema,CString p_tablename,CString p_primary) const = 0;
+
+  // Get the sql to add a foreign key to a table
+  virtual CString GetSQLForeignKeyConstraint(DBForeign& p_foreign) const = 0;
+
+  // Get the sql (if possible) to change the foreign key constraint
+  virtual CString GetSQLAlterForeignKey(DBForeign& p_origin,DBForeign& p_requested) const = 0;
 
   // Performance parameters to be added to the database
   virtual CString GetSQLPerformanceSettings() const = 0;
@@ -187,24 +220,6 @@ public:
   // Gets the maximum length of an SQL statement
   virtual unsigned long GetMaxStatementLength() const = 0;
 
-  // Prefix for an add constraint DDL command in SQLAtlerTableGenerator
-  virtual CString GetAddConstraintPrefix(CString p_constraintName) const = 0;
-
-  // Suffix for an add constraint DDL command in SQLAtlerTableGenerator
-  virtual CString GetAddConstraintSuffix(CString p_constraintName) const = 0;
-
-  // Get the prefix for a drop constraint DDL command in the SQLAlterTableGenerator
-  virtual CString GetDropConstraintPrefix() const = 0;
-
-  // Get the suffix for a drop constraint DDL commando in the SQLAlterTableGenerator
-  virtual CString GetDropConstraintSuffix() const = 0;
-
-  // Clause separator between two ADD or DROP clauses in an ALTER TABLE
-  virtual CString GetAlterTableClauseSeparator() const = 0;
-
-  // Grouping of more than one column possible in an ADD/MODIFY/DROP clause
-  virtual bool    GetClauseGroupingPossible() const = 0;
-
   // Gets the prefix needed for altering the datatype of a column in a MODIFY/ALTER
   virtual CString GetModifyDatatypePrefix() const = 0;
 
@@ -218,7 +233,7 @@ public:
   virtual CString GetCodeTempTableWithNoLog() const = 0;
 
   // Granting all rights on a table (In a NON-ANSI database)
-  virtual CString GetSQLGrantAllOnTable(CString p_tableName) = 0;
+  virtual CString GetSQLGrantAllOnTable(CString p_schema,CString p_tableName,bool p_grantOption = false) = 0;
 
   // Code prefix for a select-into-temp
   virtual CString GetSelectIntoTempClausePrefix(CString p_tableName) const = 0;
@@ -289,7 +304,7 @@ public:
   virtual CString GetSQLConstraintsImmediate() const = 0;
 
   // Get SQL to check if a table already exists in the database
-  virtual CString GetSQLTableExists(CString p_tablename) const = 0;
+  virtual CString GetSQLTableExists(CString p_schema,CString p_tablename) const = 0;
 
   // Get SQL to select all columns of a table from the catalog
   virtual CString GetSQLGetColumns(CString& p_user,CString& p_tableName) const = 0;
@@ -297,32 +312,32 @@ public:
   // Get SQL to select all constraints on a table from the catalog
   virtual CString GetSQLGetConstraintsForTable(CString& p_tableName) const = 0;
 
-  // Get SQL to read all indici for a table
-  virtual CString GetSQLTableIndexes(CString& p_user,CString& p_tableName) const = 0;
+  // Get SQL to read all indices for a table
+  virtual CString GetSQLTableIndices(CString p_user,CString p_tableName) const = 0;
+
+  // Get SQL to create an index for a table
+  virtual CString GetSQLCreateIndex(CString p_user,CString p_tableName,DBIndex* p_index) const = 0;
+
+  // Get SQL to drop an index
+  virtual CString GetSQLDropIndex(CString p_user,CString p_indexName) const = 0;
 
   // Get SQL to read the referential constaints from the catalog
-  virtual CString GetSQLTableReferences(CString& p_tablename) const = 0;
+  virtual CString GetSQLTableReferences(CString p_schema,CString p_tablename,CString p_constraint = "",int p_maxColumns = SQLINFO_MAX_COLUMNS) const = 0;
 
-  // Get the SQL Query to create a synonym
-  virtual CString GetSQLMakeSynonym(CString& p_objectName) const = 0;
-
-  // Get SQL to drop the synonym
-  virtual CString GetSQLDropSynonym(CString& p_objectname) const = 0;
+  // Get the SQL to determine the sequence state in the database
+  virtual CString GetSQLSequence(CString p_schema,CString p_tablename,CString p_postfix = "_seq") const = 0;
 
   // Create a sequence in the database
-  virtual void    DoCreateSequence(CString& p_sequenceName,int p_startpos) = 0;
+  virtual CString GetSQLCreateSequence(CString p_schema,CString p_tablename,CString p_postfix = "_seq",int p_startpos = 1) const = 0;
 
   // Remove a sequence from the database
-  virtual void    DoRemoveSequence(CString& p_sequenceName) const = 0;
+  virtual CString GetSQLDropSequence(CString p_schema,CString p_tablename,CString p_postfix = "_seq") const = 0;
+
+  // Gets the SQL for the rights on the sequence
+  virtual CString GetSQLSequenceRights(CString p_schema,CString p_tableName,CString p_postfix = "_seq") const = 0;
 
   // Remove a stored procedure from the database
   virtual void    DoRemoveProcedure(CString& p_procedureName) const = 0;
-
-  // Re-Creates a sequence in a database from the OID column
-  virtual void    DoCreateNextSequence(const CString& p_tableName,CString p_postfix = "_seq") = 0;
-
-  // Gets the SQL for the rights on the sequence
-  virtual CString GetSQLSequenceRights(const CString& p_tableName,CString p_postfix = "_seq") const = 0;
 
   // Get SQL for your session and controling terminal
   virtual CString GetSQLSessionAndTerminal() const = 0;
@@ -340,7 +355,7 @@ public:
   virtual bool    DoesColumnExistsInTable(CString& p_owner,CString& p_tableName,CString& p_column) const = 0;
 
   // Get SQL to get all the information about a Primary Key constraint
-  virtual CString GetSQLPrimaryKeyConstraintInformation(CString& p_tableName) const = 0;
+  virtual CString GetSQLPrimaryKeyConstraintInformation(CString p_schema,CString p_tableName) const = 0;
 
   // Does the named constraint exist in the database
   virtual bool    DoesConstraintExist(CString p_constraintName) const = 0;
@@ -354,6 +369,28 @@ public:
   // Getting the fact that there is only **one** (1) user session in the database
   virtual bool    GetOnlyOneUserSession() = 0;
 
+  // SQL DDL STATEMENTS
+  // ==================
+
+  // Add a column to a table
+  virtual CString GetCreateColumn(CString p_schema,CString p_tablename,CString p_columnName,CString p_typeDefinition,bool p_notNull) = 0;
+
+  // Drop a column from a table
+  virtual CString GetSQLDropColumn(CString p_schema,CString p_tablename,CString p_columnName) const = 0;
+
+  // Add a foreign key to a table
+  virtual CString GetCreateForeignKey(CString p_tablename,CString p_constraintname,CString p_column,CString p_refTable,CString p_primary) = 0;
+
+  // Modify a column's definition in a table
+  virtual CString GetModifyColumnType(CString p_schema,CString p_tablename,CString p_columnName,CString p_typeDefinition) = 0;
+  virtual CString GetModifyColumnNull(CString p_schema,CString p_tablename,CString p_columnName,bool p_notNull) = 0;
+
+  // Get the SQL to drop a view. If precursor is filled: run that SQL first!
+  virtual CString GetSQLDropView(CString p_schema,CString p_view,CString& p_precursor) = 0;
+
+  // Create or replace a database view
+  virtual CString GetSQLCreateOrReplaceView(CString p_schema,CString p_view,CString p_asSelect) const = 0;
+
   // SQL DDL OPERATIONS
   // ==================
 
@@ -362,12 +399,6 @@ public:
 
   // Do the commit for the DML commands in the database
   virtual void    DoCommitDMLcommands() const = 0;
-
-  // Create a view from the select code and the name
-  virtual void    DoCreateOrReplaceView(CString p_code,CString p_viewName) = 0;
-
-  // Remove a view from the database
-  virtual void    DoDropView(CString p_viewName) = 0;
 
   // Does the named view exists in the database
   virtual bool    DoesViewExists(CString& p_viewName) = 0;
@@ -380,9 +411,6 @@ public:
 
   // Remove a temporary table
   virtual void    DoRemoveTemporaryTable(CString& p_tableName) const = 0;
-
-  // If the temporary table exists, remove it
-  virtual void    DoRemoveTemporaryTableWithCheck(CString& p_tableName) const = 0;
 
   // Maak een procedure aan in de database
   virtual void    DoMakeProcedure(CString& p_procName,CString p_table,bool p_noParameters,CString& p_codeBlock) = 0;
@@ -485,7 +513,7 @@ private:
 };
 
 inline void    
-SQLInfoDB::SetGrantedUsers(CString& p_users) 
+SQLInfoDB::SetGrantedUsers(CString p_users) 
 {
   m_grantedUsers = p_users;
 }

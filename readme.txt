@@ -22,6 +22,17 @@ pretty well.
 HISTORY
 =======
 
+Version 1.5.0 (Build: 192)
+--------------------------
+- Updated the Database directory to versie 1.3 of the SQLComponents module on
+  https://github.com/edwig/SQLComponents
+- It is now possible to correctly retrieve and update DECIMAL/NUMBER fields
+  in database types like MS-SQLServer. This was done by adding the 
+  bcd (Binary Coded Decimal) data type to the library and effectivly converting
+  between bcd's and SQL_NUMERIC_STRUCT.
+- Fixed a bug in the spreadsheet export, where the export could crash on 
+  an empty 33th row in the output grid. (In effect after each 32 rows)
+
 Version 1.4.4 (Build: 185)
 --------------------------
 - Repaired the representation of the ODBC datatypes, as reported by the driver

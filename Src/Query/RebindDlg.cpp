@@ -21,6 +21,63 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "OpenEditorApp.h"
 #include "Database\SQLVariant.h"
 
+DataTypes allTypes[] = 
+{
+   { "<NO TYPE>",                  0                               }
+  ,{ "CHAR",                       SQL_C_CHAR                      } 
+  ,{ "SHORT",                      SQL_C_SHORT                     }
+  ,{ "SIGNED SHORT",               SQL_C_SSHORT                    }
+  ,{ "UNSIGNED SHORT",             SQL_C_USHORT                    }
+  ,{ "LONG",                       SQL_C_LONG                      }
+  ,{ "SIGNED LONG",                SQL_C_SLONG                     }
+  ,{ "UNSIGNED LONG",              SQL_C_ULONG                     }
+  ,{ "REAL",                       SQL_C_FLOAT                     }
+  ,{ "FLOAT",                      SQL_C_FLOAT                     }
+  ,{ "DOUBLE",                     SQL_C_DOUBLE                    }
+  ,{ "BIT",                        SQL_C_BIT                       }
+  ,{ "TINYINT",                    SQL_C_TINYINT                   }
+  ,{ "SIGNED TINYINT",             SQL_C_STINYINT                  }
+  ,{ "UNSIGNED TINYINT",           SQL_C_UTINYINT                  }
+  ,{ "SIGNED BIGINT",              SQL_C_SBIGINT                   }
+  ,{ "UNSIGNED BIGINT",            SQL_C_UBIGINT                   }
+  ,{ "DECIMAL",                    SQL_C_NUMERIC                   }
+  ,{ "NUMERIC",                    SQL_C_NUMERIC                   }
+  ,{ "GUID",                       SQL_C_GUID                      }
+  ,{ "BINARY",                     SQL_C_BINARY                    }
+  ,{ "DATE",                       SQL_C_DATE                      }
+  ,{ "TIME",                       SQL_C_TIME                      }
+  ,{ "TIMESTAMP",                  SQL_C_TIMESTAMP                 }
+  ,{ "TYPE DATE",                  SQL_C_TYPE_DATE                 }
+  ,{ "TYPE TIME",                  SQL_C_TYPE_TIME                 }
+  ,{ "TYPE TIMESTAMP",             SQL_C_TYPE_TIMESTAMP            }
+  ,{ "INTERVAL YEAR",              SQL_C_INTERVAL_YEAR             }
+  ,{ "INTERVAL MONTH",             SQL_C_INTERVAL_MONTH            }
+  ,{ "INTERVAL DAY",               SQL_C_INTERVAL_DAY              }
+  ,{ "INTERVAL HOUR",              SQL_C_INTERVAL_HOUR             }
+  ,{ "INTERVAL MINUTE",            SQL_C_INTERVAL_MINUTE           }
+  ,{ "INTERVAL SECOND",            SQL_C_INTERVAL_SECOND           }
+  ,{ "INTERVAL YEAR TO MONTH",     SQL_C_INTERVAL_YEAR_TO_MONTH    }
+  ,{ "INTERVAL DAY TO HOUR",       SQL_C_INTERVAL_DAY_TO_HOUR      }
+  ,{ "INTERVAL DAY TO MINUTE",     SQL_C_INTERVAL_DAY_TO_MINUTE    }
+  ,{ "INTERVAL DAY TO SECOND",     SQL_C_INTERVAL_DAY_TO_SECOND    }
+  ,{ "INTERVAL HOUR TO MINUTE",    SQL_C_INTERVAL_HOUR_TO_MINUTE   }
+  ,{ "INTERVAL HOUR TO SECOND",    SQL_C_INTERVAL_HOUR_TO_SECOND   }
+  ,{ "INTERVAL MINUTE TO SECOND",  SQL_C_INTERVAL_MINUTE_TO_SECOND }
+  ,{ NULL,                         0                               }
+};
+
+// Names must appear in this order to work properly!!
+DataTypes allParams[] = 
+{
+  { "<UNKNOWN>", SQL_PARAM_TYPE_UNKNOWN }    // 0
+ ,{ "INPUT",     SQL_PARAM_INPUT        }    // 1
+ ,{ "INOUT",     SQL_PARAM_INPUT_OUTPUT }    // 2
+ ,{ "COLUMN",    SQL_RESULT_COL         }    // 3
+ ,{ "OUTPUT",    SQL_PARAM_OUTPUT       }    // 4
+ ,{ "RETURN",    SQL_RETURN_VALUE       }    // 5
+ ,{ NULL,        0                      }
+};
+
 // RebindDlg dialog
 
 IMPLEMENT_DYNAMIC(RebindDlg, CDialog)

@@ -2,7 +2,7 @@
 //
 // File: SQLTransaction.h
 //
-// Copyright (c) 1998- 2014 ir. W.E. Huisman
+// Copyright (c) 1998-2016 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   01-01-2015
-// Version number:  1.1.0
+// Last Revision:   14-12-2016
+// Version number:  1.3.0
 //
 #pragma once
 #include <sqltypes.h>
@@ -33,30 +33,37 @@ class SQLTransaction
 {
 public:
   SQLTransaction(SQLDatabase* p_database, 
-                 CString      p_name,
+                 const char*  p_name,
                  bool         p_startImmediate   = true, 
                  bool         p_isSubTransaction = false);
-  SQLTransaction(HDBC p_hdbc);
+  SQLTransaction(HDBC p_hdbc, bool p_startImmediate);
 
   // Destructor will rollback at an open transaction
  ~SQLTransaction();
 
   // Transaction on the database. If a transaction is already started and isSubTransaction
-  // is requested, it will start a subtransaction's SAVEPOINT, that can be rollback'ed 
+  // is requested, it will start a sub-transaction's SAVEPOINT, that can be rolled back
   // independently. Whenever a subtransaction is off, the transaction will be linked to 
   // earlier transactions, and thus influence the complete behaviour,
   // until the last commit/rollback of the main transaction
   void Start(CString p_name,bool p_startSubtransaction = false);
   // Commit the transaction
   void Commit();
-  // Rollback the transction
+  // Rollback the transaction
   void Rollback();
   // Is the transaction (still) active
   bool IsActive() const;
   // Database for which the transaction is active
-  SQLDatabase* GeefDatabase() const;
+  SQLDatabase* GetDatabase() const;
   // Name of the savepoint in the database
   CString GetSavePoint() const;
+  // Setting a transaction in a deferred state
+  // so that constraints get only committed at the end
+  bool SetTransactionDeferred();
+  // Setting a transaction in an immediate state
+  // So that the constraints (uptil now) get checked immediately
+  bool SetTransactionImmediate();
+
 private:
   friend class SQLDatabase;
   // To do after a rollback
@@ -68,7 +75,6 @@ private:
   CString       m_name;
   CString       m_savepoint;
   bool          m_active;
-
 };
 
 inline bool 
@@ -78,7 +84,7 @@ SQLTransaction::IsActive() const
 }
 
 inline SQLDatabase*
-SQLTransaction::GeefDatabase() const
+SQLTransaction::GetDatabase() const
 {
   return m_database;
 }
