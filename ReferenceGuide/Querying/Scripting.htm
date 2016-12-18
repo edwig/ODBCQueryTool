@@ -1,0 +1,587 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+    <title>Querying</title>
+    <meta content="text/html; charset=us-ascii" http-equiv="Content-Type">
+    <link rel="StyleSheet" type="text/css" href="../default.css">
+    <meta name="GENERATOR" content="AuthorDocumentation">
+</head>
+
+<body>
+    <h1>Scripting</h1>
+
+    <p>Once you get to using the ODBC Querytool for one time SQL queries, the whish to script tasks comes along. This page
+    describes briefly how you can script one or more SQL statements in a script that you can run regularly. Scripting commands
+    begin with a ':' (colon) character in the first column of the line and are closed by a ';' marker.</p>
+
+    <h2>The 'file' command</h2>
+
+    <p>Use this command ot open a scripting output file and top put the results of the queries in. The following file commands
+    exist:</p>
+
+    <table bordercolor="#C0C0C0" cellspacing="1" cellpadding="1" width="100%" bgcolor="#C3DAED" border="1">
+        <tbody>
+            <tr>
+                <td>
+                    <p>:file open 'C:\TMP\filename.txt';</p>
+                </td>
+
+                <td>
+                    <p>Open the file for writing of the output results.</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p>:file write 'C:\TMP\filename.txt';</p>
+                </td>
+
+                <td>
+                    <p>The 'write' commando is an alias for 'open'</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p>:file append 'C:\TMP\filename.txt;</p>
+                </td>
+
+                <td>
+                    <p>Open the designated file in 'append' mode, enlarging it</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p>:file close;</p>
+                </td>
+
+                <td>
+                    <p>Close the output file</p>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>The file open and close commands can handle the opening of one (1) file at the time. Meaning you cannot write to more
+    than one file at the time.</p>
+
+    <h2>The 'print command</h2>
+
+    <p>Prints a text to the previously opened output file. As in:</p>
+
+    <p><font face="Courier New">:print 'This is a text that goes in the output file';</font></p>
+
+    <p>As with all commands, the command begins with a ':' and ends in a ';'</p>
+
+    <p>The 'variable'&nbsp;command</p>
+
+    <p>Use this command to define a variable and set a value in the variable. Alternativly you can define a type binding for
+    the query input. You are allowed a total maximum of 9 variables (1 to 9). The syntax is as follows:</p>
+
+    <p><font face="Courier New">:variable&lt;n&gt; [paramtype] datatype;</font></p>
+
+    <p><font face="Courier New">:variable&lt;n&gt; = &lt;value&gt;;</font></p>
+
+    <p>This will define a variable with number &lt;n&gt; as a datatype, with an optional binding and set it to a value. For
+    instance:</p>
+
+    <p><font face="Courier New">:variable1 INPUT NUMERIC;</font></p>
+
+    <p><font face="Courier New">:variable1 = 12345.9876;</font></p>
+
+    <p>Or you could write:</p>
+
+    <p>:variable2 RESULT CHAR;</p>
+
+    <p>This defines the second variable as an output variable from a stored procedure with the datatype CHAR (equivalent to
+    string)</p>
+
+    <p>Legal values for the [paramtype] option are:</p>
+
+    <table bordercolor="#C0C0C0" cellspacing="1" cellpadding="1" width="100%" bgcolor="#C3DAED" border="1" borderwidth="1px">
+        <tbody>
+            <tr>
+                <td style="BORDER-TOP-COLOR: ; BORDER-LEFT-COLOR: ; BORDER-BOTTOM-COLOR: ; BORDER-RIGHT-COLOR:">
+                    <p>INPUT</p>
+                </td>
+
+                <td height="50%" width="33%">
+                    <p>Input variable for a '?'&nbsp;binding marker in a query</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="WIDTH: 12%" height="50%" width="12%">
+                    <p>OUTPUT</p>
+                </td>
+
+                <td height="50%" width="33%">
+                    <p>Output variable for a function or a stored procedure</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p>INOUT</p>
+                </td>
+
+                <td>
+                    <p>Input and output variable for a stored procedure</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p>RESULT</p>
+                </td>
+
+                <td>
+                    <p>Result of a function call</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p>COLUMN</p>
+                </td>
+
+                <td>
+                    <p>Result column of a query</p>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>And here are all the values for 'datatype'</p>
+
+    <table bordercolor="#C0C0C0" cellspacing="2" cellpadding="1" width="100%" bgcolor="#C3DAED" border="1">
+        <tbody>
+            <tr>
+                <td style="BORDER-TOP-COLOR: ; WIDTH: 7px; BORDER-LEFT-COLOR: ; BORDER-BOTTOM-COLOR: ; BORDER-RIGHT-COLOR:"
+                width="7">
+                    <p>CHAR</p>
+                </td>
+
+                <td height="50%" width="33%">
+                    <p>All types of CHAR, VARCHAR etcetera</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="WIDTH: 10%" height="50%" width="10%">
+                    <p>SHORT</p>
+                </td>
+
+                <td height="50%" width="33%">
+                    <p>16 bits short number</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="WIDTH: 7px" width="7">
+                    <p>LONG</p>
+                </td>
+
+                <td>32 bits integer number</td>
+            </tr>
+
+            <tr>
+                <td style="WIDTH: 7px" width="7">
+                    <p>FLOAT</p>
+                </td>
+
+                <td>
+                    <p>Floating point number upto 1.0 10^38 or as small as 1.0 10^-38</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="WIDTH: 7px" width="7">
+                    <p>DOUBLE</p>
+                </td>
+
+                <td>
+                    <p>Floating point number upto 1.0 10^128</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="WIDTH: 7px" width="7">
+                    <p>BIT</p>
+                </td>
+
+                <td>
+                    <p>1 bit logic (true or false). Also known as BOOLEAN</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="WIDTH: 7px" width="7">
+                    <p>TINYINT</p>
+                </td>
+
+                <td>
+                    <p>8 bit number (-128 upto 127)</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="WIDTH: 7px" width="7">
+                    <p>BIGINT</p>
+                </td>
+
+                <td>
+                    <p>64 bits integer number</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="WIDTH: 7px" width="7">
+                    <p>NUMERIC</p>
+                </td>
+
+                <td>
+                    <p>Binary coded decimal number upto 38 decimal places</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="BORDER-TOP-COLOR: ; WIDTH: 7px; BORDER-LEFT-COLOR: ; BORDER-BOTTOM-COLOR: ; BORDER-RIGHT-COLOR:">
+                    <p>GUID</p>
+                </td>
+
+                <td>
+                    <p>Microsoft unique global identifier</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p>DATE</p>
+                </td>
+
+                <td>Date with just day-year-month</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p>TIME</p>
+                </td>
+
+                <td>
+                    <p>Time with just hour:minutes:seconds</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p>TIMESTAMP</p>
+                </td>
+
+                <td>
+                    <p>Full timestamp 'year-month-day hour:minutes:seconds'</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p>INTERVAL YEAR</p>
+                </td>
+
+                <td>
+                    <p>Interval of a number of years</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p>INTERVAL MONTH</p>
+                </td>
+
+                <td>
+                    <p>Interval of a number of months</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p>INTERVAL DAY</p>
+                </td>
+
+                <td>
+                    <p>Interval of a number of days</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p>INTERVAL HOUR</p>
+                </td>
+
+                <td>
+                    <p>Interval of a number of hours</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p>INTERVAL MINUTE</p>
+                </td>
+
+                <td>
+                    <p>Interval of a number of minutes</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td style="BORDER-TOP-COLOR: ; BORDER-LEFT-COLOR: ; BORDER-BOTTOM-COLOR: ; BORDER-RIGHT-COLOR:">
+                    <p>INTERVAL SECOND</p>
+                </td>
+
+                <td>
+                    <p>Interval of a number of seconds</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p>INTERVAL YEAR TO MONTH</p>
+                </td>
+
+                <td>
+                    <p>Interval of a number of years and months</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p>INTERVAL DAY TO HOUR</p>
+                </td>
+
+                <td>
+                    <p>Interval of a number of days and hours</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p>INTERVAL DAY TO MINUTE</p>
+                </td>
+
+                <td>
+                    <p>Interval of a number of days, hours and minutes</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p>INTERVAL DAY TO SECOND</p>
+                </td>
+
+                <td>
+                    <p>Interval of a number of days, hours,&nbsp;minutes and seconds</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p>INTERVAL HOUR TO MINUTE</p>
+                </td>
+
+                <td>
+                    <p>Interval of a number of hours and minutes</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p>INTERVAL HOUR TO SECOND</p>
+                </td>
+
+                <td>Interval of a number of hours, minutes and seconds</td>
+            </tr>
+
+            <tr>
+                <td>INTERVAL MINUTE TO SECOND</td>
+
+                <td>
+                    <p>Interval of a number of minutes and seconds</p>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>The 'if' command</h2>
+
+    <p>This very limited 'if'&nbsp;command is for testing of a result value. If it does **NOT** meet the expected value. If the
+    condition holds, the next scripting command will be executed. This makes it possible to report the missing of an expected
+    value in the output file. Example:</p>
+
+    <p><font face="Courier New">:if variable4 &lt;&gt; 123;</font></p>
+
+    <p><font face="Courier New">:print 'ERROR Should give a result of 123';</font></p>
+
+    <p>Of course, when the variable has the desired value, the next command will be skipped.</p>
+
+    <h2>The 'rebind' command</h2>
+
+    <p>Rebinds a datatype to a new one upon use. This can be used to rebind e.g. a NUMERIC to a DOUBLE.</p>
+
+    <p>REMARK: After version 1.5 this command is a bit out of use, as the Open ODBC Querytool can now handle all datatypes.</p>
+
+    <p>This is the syntax:</p>
+
+    <p><font face="Courier New">:rebind &lt;OLDTYPE&gt;,&lt;NEWTYPE&gt;;</font></p>
+
+    <p>You can write for instance:</p>
+
+    <p><font face="Courier New">:rebind NUMERIC, DOUBLE;</font></p>
+
+    <p><font face="Courier New">:rebind DECIMAL, DOUBLE;</font></p>
+
+    <h2>The 'atexec' command for outbound traffic</h2>
+
+    <p>To bind the variable at input time to perform piece-by-piece insertion of the data in 'at-exec' time of the SQLExecute
+    command, we need to set the 'atexec' attribute of a variable. Alsoo we must provide the size of each piece. We do that with
+    the 'atexec' command. eg:</p>
+
+    <p><font face="Courier New">:atexec variable1 300;</font></p>
+
+    <p>Which states that variable 1 will be bound at-exec time with pieces of 300 bytes each.<br>
+    The at-exec state of a variable can be reset by providing a piece length of 0.<br></p>
+
+    <h2>The 'atexec'&nbsp;command for inbound traffic</h2>
+
+    <p>To test the SQLGetData interface and get variables from a recordset in pieces you can set the inbound buffer size
+    between 0 and 4096 bytes. You can do this with the following command:</p>
+
+    <p><font face="Courier New">:atexec inbound 2000;</font><br></p>
+
+    <h2>The 'select'&nbsp;command</h2>
+
+    <p>Normally a select query will select the results in the data grid. If you set the select command to 'on' like this:</p>
+
+    <p><font face="Courier New">:select on;</font></p>
+
+    <p>than the FIRST line of the grid will alsoo be selected into the variable array. First field will be variable1 and so
+    on.<br>
+    You can turn this feature off with the ":select off;" command.<br></p>
+
+    <h2>The 'logformat' command</h2>
+
+    <p>Results of the queries and the speed logging are written to the logfile. These correspond to the extra info tabs of the
+    query results as you can see it in every query file buffer of the querytool. Syntax of the command is:</p>
+
+    <p>:logformat [QUERY] [SPEED] [OUTPUT];</p>
+
+    <p>Here the keywords stand for:</p>
+
+    <table bordercolor="#C0C0C0" cellspacing="1" cellpadding="1" width="100%" bgcolor="#C3DAED" border="1">
+        <tbody>
+            <tr>
+                <td>
+                    <p>QUERY</p>
+                </td>
+
+                <td>
+                    <p>The records of the query grid in COLUMN/ROW format</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p>SPEED</p>
+                </td>
+
+                <td>
+                    <p>The log records of the ODBC recordset, written in CSV (comma seperated valeus) format</p>
+                </td>
+            </tr>
+
+            <tr>
+                <td>
+                    <p>OUTPUT</p>
+                </td>
+
+                <td>
+                    <p>The records of the speed output grid (prepare/execute/fetch cycles)</p>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>&nbsp;</p>
+
+    <h2>The&nbsp;'repeat' command</h2>
+
+    <p>Sends the same query over-and-over the the database in a desired interval or at a precise moment in time. This makes it
+    possible to do performance testing or regression testing in a loop. The syntax is:</p>
+
+    <p><font face="Courier New">:repeat &lt;seconds-interval&gt; [ WHOLEMINUTES ] [TIMES &lt;n&gt;];<br>
+    ....<br>
+    :endrepeat</font></p>
+
+    <h2><font face="Verdana">The command line format</font></h2>
+
+    <p>Starting a script 'by hand' is all very fine for one time testing. But the real benefit of scripting lies in the fact
+    that we can start a script from the command line. For instance from within the MS-Windows tasks manager. This is the
+    command line format:</p>
+
+    <p><font face="Courier New">ODBCQueryTool /CONNECT:&lt;connectstring&gt; script.sql</font></p>
+
+    <p>Where 'script.sql'&nbsp; stands for the file name of your testing script, and &lt;connectstring&gt; stands for a
+    standard ODBC connect string like "DSN=....;UID=....;PWD=....;" to connect to a datasource.</p>
+
+    <h1>A complete example</h1>
+
+    <p>This example is based on an Oracle driver. It just puts a number&nbsp; in a database table and re-extract that number.
+    It prints an error message if this goes wrong. This example is purely for explanatory purposes written and&nbsp;overly
+    complex to show all features. Run it in the editor by standing on the first line with the cursor and press F5.</p>
+
+    <p><font face="Courier New">-- Use transcript output<br>
+    :file open 'c:\tmp\testoutput.txt';<br>
+    :print 'Test to select a number as a LONG from the database';</font></p>
+
+    <p><font face="Courier New">-- Create a table to work in<br>
+    create table test_long<br>
+    (<br>
+    &nbsp; field1 number(18,4)<br>
+    )<br>
+    /</font></p>
+
+    <p><font face="Courier New">-- Put a value in this table<br>
+    :variable1 INPUT LONG;<br>
+    :variable1 = 1234567890;<br>
+    insert into test_long values (?);</font></p>
+
+    <p><font face="Courier New">-- reset and rebind to a INTEGER<br>
+    :rebind NUMERIC,LONG;<br>
+    :variable1 = 000;</font></p>
+
+    <p><font face="Courier New">-- Get value back from table<br>
+    :select on;<br>
+    select field1 from test_long;</font></p>
+
+    <p><font face="Courier New">-- Is it the right value?<br>
+    :if variable1 &lt;&gt; 1234567890;<br>
+    :print 'ERROR long should be 1234567890';</font></p>
+
+    <p><font face="Courier New">-- Reset everything for next test<br>
+    :rebind reset;<br>
+    :select off;<br>
+    drop table test_long;</font></p>
+
+    <p><font face="Courier New">-- Close our transcript<br>
+    :file close;<br>
+    -- Now check that the transcript file<br>
+    -- has NO line with the word ERROR in it!!<br></font></p>
+
+    <p>&nbsp;</p>
+
+    <p><br>
+    <br>
+    &nbsp;</p>
+</body>
+</html>

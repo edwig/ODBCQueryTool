@@ -28,6 +28,14 @@
                 <param name="Name" value="Querying">
                 <param name="Local" value="Querying\Querying.htm">
             </object>
+        <li><object type="text/sitemap">
+                <param name="Name" value="Finding Tables">
+                <param name="Local" value="Querying\FindingTables.html">
+            </object>
+        <li><object type="text/sitemap">
+                <param name="Name" value="Scripting">
+                <param name="Local" value="Querying\Scripting.htm">
+            </object>
     </ul>
     <li><object type="text/sitemap">
             <param name="Name" value="ODBC SQL Quick reference">

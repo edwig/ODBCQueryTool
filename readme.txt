@@ -32,6 +32,9 @@ Version 1.5.0 (Build: 192)
   between bcd's and SQL_NUMERIC_STRUCT.
 - Fixed a bug in the spreadsheet export, where the export could crash on 
   an empty 33th row in the output grid. (In effect after each 32 rows)
+- Extended the on-line help file with the following subjects:
+  - Finding a table and tableinfo
+  - Scripting with SQL  
 
 Version 1.4.4 (Build: 185)
 --------------------------
