@@ -1,15 +1,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ODBCQueryTool", "ODBCQueryTool.vcxproj", "{B9835D63-5C8A-4ADC-A3D7-699D75875770}"
-EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Installer_32bits", "Installer\Installer_32bits\Installer_32bits.vdproj", "{E4381AA3-A0AF-4D4D-B438-3ECBE62AC9D7}"
-EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Installer_64bits", "Installer\Installer_64bits\Installer_64bits.vdproj", "{295DFAB1-F907-42D8-8964-88833D4B2BBD}"
-	ProjectSection(ProjectDependencies) = postProject
-		{B9835D63-5C8A-4ADC-A3D7-699D75875770} = {B9835D63-5C8A-4ADC-A3D7-699D75875770}
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,16 +20,6 @@ Global
 		{B9835D63-5C8A-4ADC-A3D7-699D75875770}.Release|Win32.Build.0 = Release|Win32
 		{B9835D63-5C8A-4ADC-A3D7-699D75875770}.Release|x64.ActiveCfg = Release|x64
 		{B9835D63-5C8A-4ADC-A3D7-699D75875770}.Release|x64.Build.0 = Release|x64
-		{E4381AA3-A0AF-4D4D-B438-3ECBE62AC9D7}.Debug|Win32.ActiveCfg = Debug
-		{E4381AA3-A0AF-4D4D-B438-3ECBE62AC9D7}.Debug|x64.ActiveCfg = Debug
-		{E4381AA3-A0AF-4D4D-B438-3ECBE62AC9D7}.Release|Win32.ActiveCfg = Release
-		{E4381AA3-A0AF-4D4D-B438-3ECBE62AC9D7}.Release|Win32.Build.0 = Release
-		{E4381AA3-A0AF-4D4D-B438-3ECBE62AC9D7}.Release|x64.ActiveCfg = Release
-		{295DFAB1-F907-42D8-8964-88833D4B2BBD}.Debug|Win32.ActiveCfg = Debug
-		{295DFAB1-F907-42D8-8964-88833D4B2BBD}.Debug|x64.ActiveCfg = Debug
-		{295DFAB1-F907-42D8-8964-88833D4B2BBD}.Release|Win32.ActiveCfg = Release
-		{295DFAB1-F907-42D8-8964-88833D4B2BBD}.Release|x64.ActiveCfg = Release
-		{295DFAB1-F907-42D8-8964-88833D4B2BBD}.Release|x64.Build.0 = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
