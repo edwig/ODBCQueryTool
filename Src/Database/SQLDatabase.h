@@ -46,8 +46,9 @@
 // By convention in use for older INFORMIX systems
 #define DS_IDENT_LEN 10
 
-// Loglevel for various systems (BRIEF4all)
+// Loglevel for various systems
 // Log queries at this loglevel
+#define LOGLEVEL_ERROR  1
 #define LOGLEVEL_MAX    6
 // Log actions at this level
 #define LOGLEVEL_ACTION 2
@@ -103,7 +104,7 @@ typedef struct _datasource
 DataSourceInternal;
 
 typedef std::vector<DataSourceInternal> DSMap;
-typedef std::stack<SQLTransaction*>     TransactionStack;
+typedef std::stack<SQLTransaction*>     TransactieStack;
 typedef std::map<int,int>               RebindMap;
 typedef std::map<CString,CString>       ODBCOptions;
 typedef std::map<CString,CString>       Macros;
@@ -111,7 +112,7 @@ typedef std::map<CString,CString>       Macros;
 typedef void (CALLBACK* LOGPRINT)(void*,const char*);
 typedef int  (CALLBACK* LOGLEVEL)(void*);
 
-// Forward declaration
+// Foreward declaration
 class SQLInfoDB;
 class SQLInfoTree;
 class SQLTimestamp;
@@ -143,7 +144,6 @@ public:
   bool           IsOpen();       // Is the database open?
   void           Close();        // Close it for further use
   bool           CollectInfo();  // Collect database info
-  void           SetDirtyRead(); // Read mode for Informix
 
   // OPTIONS FOR THE OPEN/CLOSE CYCLE
 
@@ -261,6 +261,10 @@ protected:
   void           MakeEnvHandle();   // Environment
   void           MakeDbcHandle();   // Database
   HSTMT          MakeStmtHandle();  // Statement
+  void           FreeEnvHandle();   // Environment
+  void           FreeDbcHandle();   // Database
+  // Before closing the database, close transactions
+  void           CloseAllTransactions();
   // Setting of a connection attribute
   void           SetConnectAttr(int attr, int value,int type);
   // Setting known rebind mappings of databases
@@ -330,7 +334,7 @@ protected:
   // Locking  
   CRITICAL_SECTION  m_databaseLock;
   // Transaction administration
-  TransactionStack   m_transactions;
+  TransactieStack   m_transactions;
 };
 
 inline bool 

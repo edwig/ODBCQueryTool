@@ -26,6 +26,7 @@
 //
 #pragma once
 #include <sqltypes.h>
+#include "Locker.h"
 
 class SQLDatabase;
 
@@ -42,32 +43,38 @@ public:
  ~SQLTransaction();
 
   // Transaction on the database. If a transaction is already started and isSubTransaction
-  // is requested, it will start a sub-transaction's SAVEPOINT, that can be rolled back
+  // is requested, it will start a subtransaction's SAVEPOINT, that can be rollback'ed 
   // independently. Whenever a subtransaction is off, the transaction will be linked to 
   // earlier transactions, and thus influence the complete behaviour,
   // until the last commit/rollback of the main transaction
-  void Start(CString p_name,bool p_startSubtransaction = false);
+  void    Start(CString p_name,bool p_startSubtransaction = false);
   // Commit the transaction
-  void Commit();
+  void    Commit();
   // Rollback the transaction
-  void Rollback();
-  // Is the transaction (still) active
-  bool IsActive() const;
-  // Database for which the transaction is active
-  SQLDatabase* GetDatabase() const;
-  // Name of the savepoint in the database
-  CString GetSavePoint() const;
+  void    Rollback();
   // Setting a transaction in a deferred state
   // so that constraints get only committed at the end
-  bool SetTransactionDeferred();
+  bool    SetTransactionDeferred();
   // Setting a transaction in an immediate state
   // So that the constraints (uptil now) get checked immediately
-  bool SetTransactionImmediate();
+  bool    SetTransactionImmediate();
+
+  // GETTERS
+
+  // Getting the name of the transaction
+  CString GetName() const;
+  // Name of the savepoint in the database
+  CString GetSavePoint() const;
+  // Database for which the transaction is active
+  SQLDatabase* GetDatabase() const;
+  // Is the transaction (still) active
+  bool    IsActive() const;
 
 private:
+  // To do after a rollback. Only SQLDatabase may call this method
   friend class SQLDatabase;
-  // To do after a rollback
-  void AfterRollback();
+  void    AfterRollback();
+  void    SetSavepoint(CString p_savepoint);
 
 private:
   SQLDatabase*  m_database;
@@ -75,6 +82,9 @@ private:
   CString       m_name;
   CString       m_savepoint;
   bool          m_active;
+  // Lock database for multi-access from other threads
+  // For as long as the current transaction takes
+  Locker<SQLDatabase> m_lock;
 };
 
 inline bool 
@@ -93,4 +103,16 @@ inline CString
 SQLTransaction::GetSavePoint() const
 {
   return m_savepoint;
+}
+
+inline CString
+SQLTransaction::GetName() const
+{
+  return m_name;
+}
+
+inline void
+SQLTransaction::SetSavepoint(CString p_savepoint)
+{
+  m_savepoint = p_savepoint;
 }

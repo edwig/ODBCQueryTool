@@ -82,35 +82,24 @@ SQLDatabase::Close()
 {
   // Set lock on the stack
   Locker<SQLDatabase> lock(this,INFINITE);
-
+  
   // Close database handle
   if(m_hdbc != SQL_NULL_HANDLE)
   {
+    // See if there are pending transactions,
+    CloseAllTransactions();
+
     // Try to disconnect 
     // (time consuming for some database engines)
-    SQLRETURN ret = SqlDisconnect(m_hdbc);
-    if(Check(ret) == FALSE)
-    {
-      LogPrint(0,"Error at closing the database\n");
-      LogPrint(0,GetErrorString(0));
-    }
-    // And free the handle
-    SqlFreeHandle(SQL_HANDLE_DBC, m_hdbc);
-    m_hdbc = SQL_NULL_HANDLE;
+    FreeDbcHandle();
   }
   // Close environment handle
   if(m_henv != SQL_NULL_HANDLE)
   {
     // Disconnect environment
-    SQLRETURN ret = SqlFreeHandle(SQL_HANDLE_ENV, m_henv);
-    if(Check(ret) == FALSE)
-    {
-      LogPrint(0,"Error at closing the database environment\n");
-      LogPrint(0,GetErrorString(0));
-    }
-    m_henv = SQL_NULL_HANDLE;
+    FreeEnvHandle();
   }
-  // Empty the rebinds mappings
+  // Empty parameter and column rebindings
   m_rebindParameters.clear();
   m_rebindColumns.clear();
 
@@ -246,8 +235,6 @@ SQLDatabase::Open(CString const& p_datasource
 bool 
 SQLDatabase::Open(CString const& p_connectString,bool p_readOnly)
 {
-  // ::MessageBox(GetDesktopWindow(),"Debug first moment","Debug",MB_OK);
-
   // Set lock on the stack
   Locker<SQLDatabase> lock(this,INFINITE);
 
@@ -502,8 +489,6 @@ void
 SQLDatabase::SetKnownRebinds()
 {
   // Solving formatting for various databases (Oracle / MS-Access)
-  // Numeric and Decimal formats can be mangled by misbehaving ODCBC drivers
-  // So they must be set or gotten in a predefined format (e.g. Oracle needs DOUBLE for a NUMERIC column)
   // Also see method "SQLQuery::SQLType2CType" for the use of the rebind maps
   if(m_rdbmsType == RDBMS_ORACLE)
   {
@@ -646,38 +631,6 @@ SQLDatabase::RealDatabaseName()
   log.Format("Database connection at login => DATABASE: %s\n",databaseName);
   LogPrint(LOGLEVEL_ACTION,log);
   return result;
-}
-
-// Work-around for programs (WOCAS/X) that are designed 
-// to work in dirty-read mode.
-// So that reporting programs cannot clash onto a locked record
-// CAVEAT: Can see data from not-yet-rolled-back transactions!
-// and thus can see 'to-much-data'
-//
-void
-SQLDatabase::SetDirtyRead()
-{
-  // Can only be called for the INFORMIX database type
-  if(m_rdbmsType != RDBMS_INFORMIX)
-  {
-    return;
-  }
-
-  LogPrint(LOGLEVEL_ACTION,"*** Database in dirty-read mode ***");
-  try
-  {
-    SQLQuery rs(this);
-    rs.DoSQLStatement("SET ISOLATION DIRTY READ");
-  }
-  catch(CString ex)
-  {
-    CString boodschap = CString("ERROR: Database dirty-read mode not set, reason: ") + ex;
-    LogPrint(0,boodschap);
-  }
-  catch(...)
-  {
-    LogPrint(0,"ERROR: Database dirty-read mode not set, reason unknown");
-  }
 }
 
 // Setting the database connection to read-only (if supported at all)
@@ -833,6 +786,38 @@ SQLDatabase::FreeSQLHandle(HSTMT* p_statementHandle,UWORD p_option)
   }
   return ret;
 };
+
+// Freeing the environment handle, disconnecting the ODBC driver
+void
+SQLDatabase::FreeEnvHandle()
+{
+  // Disconnect environment
+  SQLRETURN ret = SqlFreeHandle(SQL_HANDLE_ENV,m_henv);
+  if(Check(ret) == FALSE)
+  {
+    CString error = GetErrorString(0);
+    LogPrint(0,"Error at closing the database environment\n");
+    LogPrint(0,error);
+  }
+  m_henv = SQL_NULL_HANDLE;
+}
+
+// Freeing the database handle, disconnecting from the database
+void
+SQLDatabase::FreeDbcHandle()
+{
+  // Time consuming for some databases
+  SQLRETURN ret = SqlDisconnect(m_hdbc);
+  if(Check(ret) == FALSE)
+  {
+    CString error = GetErrorString(0);
+    LogPrint(0,"Error at closing the database\n");
+    LogPrint(0,error);
+  }
+  // And free the handle
+  SqlFreeHandle(SQL_HANDLE_DBC,m_hdbc);
+  m_hdbc = SQL_NULL_HANDLE;
+}
 
 #pragma warning (disable: 4312)
 
@@ -1068,7 +1053,6 @@ SQLDatabase::StartTransaction(SQLTransaction* p_transaction, bool p_startSubtran
     // If no transaction active yet, we must turn of autocommit
     if(m_transactions.size() == 0)
     {
-      // Try tot start the transaction
       try
       {
         if(m_rdbmsType != RDBMS_ACCESS)
@@ -1076,10 +1060,11 @@ SQLDatabase::StartTransaction(SQLTransaction* p_transaction, bool p_startSubtran
           SetConnectAttr(SQL_ATTR_AUTOCOMMIT,SQL_AUTOCOMMIT_OFF,SQL_IS_UINTEGER);
         }
       }
-      catch(CString& err)
+      catch(CString& error)
       {
-        // Add location to the error message
-        throw CString("Error at starting transaction: ") + err;
+        CString message;
+        message.Format("Error at starting transaction [%s] : %s",p_transaction->GetName(),error);
+        throw message;
       }
     }
 
@@ -1098,10 +1083,13 @@ SQLDatabase::StartTransaction(SQLTransaction* p_transaction, bool p_startSubtran
         {
           SQLQuery rs(this);
           rs.DoSQLStatement(startSubtrans);
+          p_transaction->SetSavepoint(transName);
         }
         catch(CString& err)
         {
-          throw CString("Error starting sub-transaction: ") + err;
+          CString message;
+          message.Format("Error starting sub-transaction [%s:%s] : %s",p_transaction->GetName(),transName,err);
+          throw message;
         }
       }
     }
@@ -1125,7 +1113,9 @@ SQLDatabase::CommitTransaction(SQLTransaction* p_transaction)
       // a transaction lower on the stack is now being committed
       // This is clearly not what we want, and points to an error
       // in our application's logic in the calling code.
-      throw CString("Error at commit: transaction is not the current transaction");
+      CString message;
+      message.Format("Error at commit: transaction [%s] is not the current transaction",p_transaction->GetName());
+      throw message;
     }
 
     // Only the last transaction will really be committed
@@ -1158,7 +1148,9 @@ SQLDatabase::CommitTransaction(SQLTransaction* p_transaction)
         RollbackTransaction(p_transaction);
 
         // Throw an exception with the error info of the failed commit
-        throw CString("Error at commit: ") + error;
+        CString message;
+        message.Format("Error in commit of transaction [%s] : %s",p_transaction->GetName(),error);
+        throw message;
       }
     }
     else
@@ -1174,9 +1166,14 @@ SQLDatabase::CommitTransaction(SQLTransaction* p_transaction)
           SQLQuery rs(this);
           rs.DoSQLStatement(startSubtrans);
         }
-        catch(CString& err)
+        catch(CString& error)
         {
-          throw CString("Error committing a sub-transaction: ") + err;
+          CString message;
+          message.Format("Error in commit of sub-transaction [%s:%s] : %s"
+                        ,p_transaction->GetName()
+                        ,p_transaction->GetSavePoint()
+                        ,error);
+          throw message;
         }
       }
     }
@@ -1191,14 +1188,16 @@ SQLDatabase::RollbackTransaction(SQLTransaction* p_transaction)
   // Check that it is the top-of-the-stack transaction
   if(GetTransaction() != p_transaction)
   {
-    throw CString("Error in rollback: transaction is not the current transaction");
+    CString message;
+    message.Format("Error in rollback: transaction [%s] is not the current transaction",p_transaction->GetName());
+    throw message;
   }
 
-  // Look for the first savepoint on the stack
+  // Look for the first saveepoint on the stack
   // Beware: the transaction is always removed from the stack
   // even if the rollback may fail.
   // So we cannot try to rollback or commit it again
-  TransactionStack transactions;
+  TransactieStack transactions;
   while(m_transactions.size())
   {
     // Get the top of the stack
@@ -1238,8 +1237,11 @@ SQLDatabase::RollbackTransaction(SQLTransaction* p_transaction)
       }
       catch(...)
       {
-        // Throw an exception with error info at a failed rollback
-        throw CString("Error at rollback: ") + GetErrorString();
+        // Throw an exception with error info at a failed rollback1
+        CString message;
+        CString error = GetErrorString();
+        message.Format("Error at rollback of transaction [%s] : %s",p_transaction->GetName(),error);
+        throw message;
       }
     }
     else
@@ -1253,9 +1255,14 @@ SQLDatabase::RollbackTransaction(SQLTransaction* p_transaction)
           SQLQuery rs(this);
           rs.DoSQLStatement(startSubtrans);
         }
-        catch(CString& err)
+        catch(CString& error)
         {
-          throw CString("Error rolling back a sub-transaction: ") + err;
+          CString message;
+          message.Format("Error in rolling back sub-transaction [%s:%s] : %s"
+                        ,p_transaction->GetName()
+                        ,p_transaction->GetSavePoint()
+                        ,error);
+          throw message;
         }
       }
     }
@@ -1273,6 +1280,40 @@ SQLDatabase::GetTransaction()
 {
   // return the current top-of-the-stack transaction
   return m_transactions.size() ? m_transactions.top() : 0;
+}
+
+// Before closing the database, close transactions
+void
+SQLDatabase::CloseAllTransactions()
+{
+  SQLRETURN ret = 0;
+
+  // See if there are pending transactions,
+  if(m_transactions.empty())
+  {
+    // Commit last SELECT in multi-version databases
+    // Otherwise we gat an error at the disconnect of de HDBC
+    ret = SqlEndTran(SQL_HANDLE_DBC,m_hdbc,SQL_COMMIT);
+  }
+  else
+  {
+    // IF SO: rollback these transactions
+    ret = SqlEndTran(SQL_HANDLE_DBC,m_hdbc,SQL_ROLLBACK);
+
+    // Notifying all transactions that we are done!
+    // and clearing the transactions stack
+    while(!m_transactions.empty())
+    {
+      m_transactions.top()->AfterRollback();
+      m_transactions.pop();
+    }
+  }
+  if(Check(ret) == FALSE)
+  {
+    CString error = GetErrorString(0);
+    LogPrint(0,"Error in rollback at closing the database\n");
+    LogPrint(0,error);
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1335,7 +1376,10 @@ SQLDatabase::GetSQL_GenerateSerial(CString p_table)
     rs.DoSQLStatement(query);
     if(rs.GetRecord())
     {
-      return rs.GetColumn(1)->GetAsChar();
+      int serial = rs[1];
+      CString result;
+      result.Format("%d",serial);
+      return result;
     }
     return "0";
   }
@@ -1478,7 +1522,6 @@ SQLDatabase::SetDatabaseType(DatabaseType p_type)
   }
   return false;
 }
-
 
 //////////////////////////////////////////////////////////////////////////
 //

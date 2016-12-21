@@ -151,7 +151,7 @@ void
 SQLTimestamp::SetNull()
 {
   m_value = ((StampValue)-(MJD_EPOCH + 1)) * SECONDS_PER_DAY;
-  // 1 second before 0 JD (1 January 4713 BC in the Julian Calendar)
+  // 1 second before 0 JD (1 januari 4713 BC in the Julian Calendar)
   m_timestamp.m_year   = -4714;
   m_timestamp.m_month  = 12;
   m_timestamp.m_day    = 31;
@@ -184,7 +184,7 @@ SQLTimestamp::RecalculateValue()
   int day   = m_timestamp.m_day;
 
   // Check on Gregorian definition of months
-  // Check on leap year and days in the month
+  // Check on leapyear and days in the month
   bool leapYear = ((year & 3) == 0) &&
                   ((year % 100) != 0 || (year % 400) == 0);
 
@@ -201,7 +201,7 @@ SQLTimestamp::RecalculateValue()
   // Calculate the Astronomical Julian Day Number (JD)
   // Method P.D-Smith: Practical Astronomy
   // Page 9: Paragraph 4: Julian day numbers.
-  // See also: Robin M. Green: Spherical Astronomy, page 250
+  // See alsoo: Robin M. Green: Spherical Astronomy, page 250
   if(month < 3)
   {
     month += 12;
@@ -218,8 +218,8 @@ SQLTimestamp::RecalculateValue()
   factorC = (365.25  * (double)year);
   factorD = (30.6001 * (double)(month + 1));
   // The correction factor (Modified JD) 
-  // Falls on 16 November 1858 12:00 hours (noon), 
-  // so subtract 679006 (17 November 1858 00:00:00 hour)
+  // Falls on 16 november 1858 12:00 hours (noon), 
+  // so subtract 679006 (17 november 1858 00:00:00 hour)
   m_value  = gregorianB + factorC + factorD + day - 679006;
   m_value *= SECONDS_PER_DAY;
   m_value += m_timestamp.m_hour   * SECONDS_PER_HOUR   +
@@ -237,12 +237,12 @@ SQLTimestamp::Normalise()
   long factorE = 0;
   long factorG = 0;
 
-  // Calculate Civil Day from the Modified Julian's Day number (MJD)
+  // Calculate Civil Day from the Modified Juliaanse Day Nummer (MJD)
   // Method P.D-Smith: Practical Astronomy
   // Page 11: Paragraph 5: Converting Julian day number to the calendar date
-  // See also Robin M. Green: Spherical Astronomy, page 250 and next
+  // See alsoo Robin M. Green: Spherical Astronomy, page 250 and next
 
-  // Correction factor is MJD (2,400,000.5) + 0.5 (17 Nov 1858 instead of 16 Nov 12:00 hours)
+  // Correction factor is MJD (2,400,000.5) + 0.5 (17 nov 1858 instead of 16 nov 12:00 hours)
   double JD = (m_value / SECONDS_PER_DAY) + 2400001;
   if(JD > 2299160)
   {
@@ -347,10 +347,10 @@ const SQLTimestamp&
 SQLTimestamp::FarInThePast()
 {
   // Smallest allowed timestamp by ODBC definition
-  // is 1 January 1 at midnight
+  // is 1 januari 1 at midnight
   // AND STRANGLY IT IS NOT:
   // January 1st 4713 BC at noon (12:00) is the fundamental Epoch
-  // of the Astronomical Ephemeris (Julian Day = 0)
+  // of the Astronomical Emphemeris (Julian Day = 0)
   static SQLTimestamp past(1,1,1,0,0,0);
   return past;
 }
@@ -426,7 +426,7 @@ SQLTimestamp::WeekDayName(Language p_lang /*=LN_DEFAULT*/) const
 }
 
 // Name of the month in a language by your choice
-// Returns an empty string for a NULL timestamp
+// Returns an emtpy string for a NULL timestamp
 CString
 SQLTimestamp::MonthName(Language p_lang /*=LN_DEFAULT*/) const
 {
@@ -663,7 +663,7 @@ SQLTimestamp::ParseMoment(const CString& p_string)
 
   if(isalpha(CurrentDate.GetAt(0)))
   {
-    // Speed optimization. only if alpha chars found parsed 
+    // Speed optimisation. only if alpha chars found parsed 
     if (CurrentDate.CompareNoCase(g_dateNames[g_defaultLanguage][DN_CURRENT]) == 0 ||
         CurrentDate.CompareNoCase(g_dateNames[g_defaultLanguage][DN_NOW])     == 0 ) 
     {
@@ -721,7 +721,7 @@ SQLTimestamp::ParseMoment(const CString& p_string)
     return;  
   }
   
-  // Check for a date with a month name
+  // Check for a date with a monthname
   if(ParseNamedDate(p_string))
   {
     return;
@@ -750,7 +750,7 @@ SQLTimestamp::ParseMoment(const CString& p_string)
   // See if we have a time only
   if(p_string.Find(':') > 0)
   {
-    // It is a time string for today
+    // It is a timestring for today
     SQLDate date(SQLDate::Today());
     SQLTime time(p_string);
     SetTimestamp(date.Year(),date.Month(), date.Day(),
@@ -764,7 +764,7 @@ SQLTimestamp::ParseMoment(const CString& p_string)
                time.Hour(),time.Minute(),time.Second());
 }
 
-// Named timestamp with short or long month names
+// Named timestamp with short or long monthnames
 bool
 SQLTimestamp::ParseNamedDate(const CString& p_string)
 {
@@ -780,10 +780,10 @@ SQLTimestamp::ParseNamedDate(const CString& p_string)
   }
   if(alpha == false)
   {
-    // No named month name to find
+    // No named monthname to find
     return result;
   }
-  // Find the time string (if any)
+  // Find the timestring (if any)
   int pos = p_string.Find(':');
   if(pos > 0)
   {
@@ -839,8 +839,6 @@ SQLTimestamp::AsString(int p_precision /*=0*/) const
   return theStamp;
 }
 
-// The XML string is the ISO 8601 Format
-// Works for some RDBMS as input format and for XML (of course :-)
 CString
 SQLTimestamp::AsXMLString(int p_precision /*=0*/) const
 {

@@ -22,6 +22,10 @@ pretty well.
 HISTORY
 =======
 
+Version 1.5.1 (Build: 194)
+--------------------------
+- Broken transaction begin/commit/rollback fixed
+
 Version 1.5.0 (Build: 192)
 --------------------------
 - Updated the Database directory to versie 1.3 of the SQLComponents module on

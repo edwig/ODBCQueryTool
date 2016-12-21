@@ -126,18 +126,6 @@ SQLQuery::Close()
       }
     }
 
-    // Some databases require to ALWAYS call commit after any statement
-    // Namely databases with Multi-Generational-Architecture.
-    // Even after a SELECT query!!
-    if(m_database)
-    {
-      ::SQLEndTran(SQL_HANDLE_DBC,m_database->GetDBHandle(),SQL_COMMIT);
-    }
-    else
-    {
-      ::SQLEndTran(SQL_HANDLE_DBC,m_connection,SQL_COMMIT);
-    }
-
     // Free the statement and drop all associated info
     // And all cursors on the database engine
     m_retCode = SQLDatabase::FreeSQLHandle(&m_hstmt,SQL_DROP);
@@ -148,12 +136,9 @@ SQLQuery::Close()
     }
   }
   // Clear number map
-  ColNumMap::iterator it = m_numMap.begin();
-  while(it != m_numMap.end())
+  for(auto& column : m_numMap)
   {
-    delete it->second;
-    it->second = NULL;
-    ++it;
+    delete column.second;
   }
   m_numMap.clear();
   m_nameMap.clear();
@@ -179,12 +164,9 @@ void
 SQLQuery::ResetParameters()
 {
   // Clear parameter map
-  VarMap::iterator it3 = m_parameters.begin();
-  while(it3 != m_parameters.end())
+  for(auto& parm : m_parameters)
   {
-    delete it3->second;
-    it3->second = NULL;
-    ++it3;
+    delete parm.second;
   }
   m_parameters.clear();
 }
@@ -266,11 +248,9 @@ SQLQuery::Open()
 void
 SQLQuery::ResetColumns()
 {
-  ColNumMap::iterator it = m_numMap.begin();
-  while(it != m_numMap.end())
+  for(auto& col : m_numMap)
   {
-    it->second->SetNULL();
-    ++it;
+    col.second->SetNULL();
   }
 }
 
@@ -731,15 +711,16 @@ SQLQuery::DoSQLExecute()
 void
 SQLQuery::BindParameters()
 {
-  if(m_parameters.size() == 0)
+  // Optimize for no-parameters
+  if(m_parameters.empty())
   {
     return;
   }
-  VarMap::iterator it = m_parameters.begin();
-  while(it != m_parameters.end())
+
+  for(auto& parameter : m_parameters)
   {
-    int icol = it->first;
-    SQLVariant* var = it->second;
+    int icol = parameter.first;
+    SQLVariant* var = parameter.second;
     if(var->GetDataType() == 0) 
     {
       continue;
@@ -815,9 +796,6 @@ SQLQuery::BindParameters()
     {
       BindColumnNumeric((SQLSMALLINT)icol,var,SQL_PARAM_INPUT);
     }
-
-    // Next column
-    ++it;
   }
 }
 
@@ -916,10 +894,9 @@ SQLQuery::BindColumns()
   // NOW WE HAVE ALL INFORMATION
   // BEGIN THE BINDING PROCES
 
-  ColNumMap::iterator it = m_numMap.begin();
-  while(it != m_numMap.end())
+  for(auto& column : m_numMap)
   {
-    SQLVariant* var = it->second;
+    SQLVariant* var = column.second;
     if(var->GetAtExec() == false)
     {
       int bcol = var->GetColumnNumber();
@@ -955,7 +932,6 @@ SQLQuery::BindColumns()
         BindColumnNumeric((SQLSMALLINT)bcol,var,SQL_RESULT_COL);
       }
     }
-    ++it;
   }
 }
 
@@ -1138,14 +1114,13 @@ SQLQuery::GetRecord()
 int
 SQLQuery::RetrieveAtExecData()
 {
-  ColNumMap::iterator it = m_numMap.begin();
-  while(it != m_numMap.end())
-  {
-    SQLVariant* var = it->second;
+  for(auto& column : m_numMap)
+  { 
+    SQLVariant* var = column.second;
     if(var->GetAtExec())
     {
       // Retrieve actual length of this instance of the column
-      int col = it->first;
+      int col = column.first;
       SQLLEN actualLength = 0;
       m_retCode = SqlGetData(m_hstmt
                             ,(SQLUSMALLINT) col
@@ -1211,8 +1186,6 @@ SQLQuery::RetrieveAtExecData()
         return m_retCode;
       }
     }
-    // Next column
-    ++it;
   }
   return SQL_SUCCESS;
 }
@@ -1366,15 +1339,13 @@ SQLQuery::GetColumnNumber(const char* p_columnName)
 bool 
 SQLQuery::GetColumnName(int p_column,CString& p_name) 
 {
-  ColNameMap::iterator it = m_nameMap.begin();
-  while(it != m_nameMap.end())
-  {
-    if(it->second->GetColumnNumber() == p_column)
+  for(auto& column : m_nameMap)
+  { 
+    if(column.second->GetColumnNumber() == p_column)
     {
-      p_name = it->first;
+      p_name = column.first;
       return true;
     }
-    ++it;
   }
   return false;
 }

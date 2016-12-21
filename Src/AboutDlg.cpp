@@ -25,7 +25,7 @@ IMPLEMENT_DYNAMIC(CAboutDlg, CDialog)
 CAboutDlg::CAboutDlg(CWnd* pParent /*=NULL*/)
           :CDialog(CAboutDlg::IDD, pParent)
 {
-  m_license = "ODBC Query Tool 1.5.0 Build: 192"
+  m_license = "ODBC Query Tool 1.5.1 Build: 194"
               "\r\nCopyright (c) 2006-2016 Edwig Huisman" 
               "\r\n\r\nThis program is free software; you can redistribute it" 
               "\r\n\r\nThis program is distributed in the hope that it will be useful,"

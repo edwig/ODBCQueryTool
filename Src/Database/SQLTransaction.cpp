@@ -29,6 +29,7 @@
 #include "SQLDatabase.h"
 #include "SQLInfoDB.h"
 #include "SQLQuery.h"
+#include "SQLWrappers.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -41,6 +42,7 @@ SQLTransaction::SQLTransaction(SQLDatabase* p_database
                               ,bool         p_startImmediate
                               ,bool         p_isSubTransaction) 
                :m_database  (p_database)
+               ,m_lock      (p_database,INFINITE)
                ,m_active    (false)
 {
   // If asked for, start it right away
@@ -53,6 +55,7 @@ SQLTransaction::SQLTransaction(SQLDatabase* p_database
 SQLTransaction::SQLTransaction(HDBC p_hdbc,bool p_startImmediate)
                :m_hdbc(p_hdbc)
                ,m_database(NULL)
+               ,m_lock(NULL,INFINITE)
                ,m_active(false)
 {
   if(p_startImmediate)
@@ -63,19 +66,25 @@ SQLTransaction::SQLTransaction(HDBC p_hdbc,bool p_startImmediate)
 
 SQLTransaction::~SQLTransaction()
 {
-  // If still active, rollback the transaction
-  if(m_active)
+  try
   {
-    // Cannot throw in a destructor
-    try
+    Rollback();
+  }
+  catch(CString& error)
+  {
+    CString message;
+    message.Format("Error in rollback of transaction [%s] : %s\n",m_name,error);
+    if(m_database)
     {
-      Rollback();
+      m_database->LogPrint(LOGLEVEL_ERROR,message);
     }
-    catch(CString& s)
+    else
     {
-      // TODO Do the logging
-      s;
+      // No database. Poor man's logging
+      TRACE(message);
     }
+    // Cannot throw in a destructor. Stops here
+    // But we where already 'cornered', why would we otherwise need to rollback :-(
   }
 }
 
@@ -85,7 +94,9 @@ SQLTransaction::Start(CString p_name, bool p_startSubtransaction)
   // On transaction per instance
   if(m_active)
   {
-    throw CString("Error in start-transaction: Already started a transaction");
+    CString message;
+    message.Format("Error in start-transaction [%s] : Already started a transaction",m_name);
+    throw message;
   }
 
   // Try to start the transaction
@@ -95,10 +106,10 @@ SQLTransaction::Start(CString p_name, bool p_startSubtransaction)
   }
   else
   {
-    SQLRETURN ret = SQLSetConnectAttr(m_hdbc,SQL_ATTR_AUTOCOMMIT,(SQLPOINTER)SQL_AUTOCOMMIT_OFF,SQL_IS_UINTEGER);
+    SQLRETURN ret = SqlSetConnectAttr(m_hdbc,SQL_ATTR_AUTOCOMMIT,(SQLPOINTER)SQL_AUTOCOMMIT_OFF,SQL_IS_UINTEGER);
     if(!SQL_SUCCEEDED(ret))
     {
-      throw CString("Error setting autocommit mode to 'off', starting a transaction");
+      throw CString("Error setting autocommit mode to 'off', starting transaction: ") + m_name;
     }
   }
   // We are alive!
@@ -112,7 +123,9 @@ SQLTransaction::Commit()
   // Error if there is no active transaction
   if(!m_active)
   {
-    throw CString("Error in commit: transaction object is not opened");
+    CString message;
+    message.Format("Error in commit of [%s] : transaction object is not opened",m_name);
+    throw message;
   }
 
   // We are no longer started/active, so we do nothing else after destruction
@@ -128,17 +141,20 @@ SQLTransaction::Commit()
   }
   else
   {
-    // Do the commit
-    SQLRETURN ret = SQLEndTran(SQL_HANDLE_DBC,m_hdbc,SQL_COMMIT);
+    // Do the commit straigth away
+    SQLRETURN ret = SqlEndTran(SQL_HANDLE_DBC,m_hdbc,SQL_COMMIT);
     if(!SQL_SUCCEEDED(ret))
     {
       // Throw something, so we reach the catch block
-      throw CString("Error commiting transaction");
+      throw CString("Error commiting transaction: " + m_name);
     }
-    ret = SQLSetConnectAttr(m_hdbc,SQL_ATTR_AUTOCOMMIT,(SQLPOINTER)SQL_AUTOCOMMIT_ON,SQL_IS_UINTEGER);
+    ret = SqlSetConnectAttr(m_hdbc,SQL_ATTR_AUTOCOMMIT,(SQLPOINTER)SQL_AUTOCOMMIT_ON,SQL_IS_UINTEGER);
     if(!SQL_SUCCEEDED(ret))
     {
-      throw CString("Error setting autocommit mode to 'on', after a committed transaction");
+      // Not an error in all RDBMS'es. In MS-Access this is default behaviour
+      // So we log the error instead of throwing it. 
+      // But as we do not have the database object to log it, we TRACE it :-(
+      TRACE("Error setting autocommit mode to 'on', after committed transaction [%s]\n",m_name);
     }
   }
   // Cleanup after use
@@ -149,7 +165,13 @@ SQLTransaction::Commit()
 void 
 SQLTransaction::Rollback()
 {
-  // Do the rollboack. Cleaning will be done by
+  // See if we are still an active transaction
+  if(!m_active)
+  {
+    return;
+  }
+
+  // Do the rollback. Cleaning will be done by
   // the AfterRollback method, called by SQLDatabase
   if(m_database)
   {
@@ -158,16 +180,19 @@ SQLTransaction::Rollback()
   else
   {
     // Do the rollback
-    SQLRETURN ret = SQLEndTran(SQL_HANDLE_DBC,m_hdbc,SQL_ROLLBACK);
+    SQLRETURN ret = SqlEndTran(SQL_HANDLE_DBC,m_hdbc,SQL_ROLLBACK);
     if(!SQL_SUCCEEDED(ret))
     {
       // Throw something, so we reach the catch block
-      throw CString("Error commiting transaction");
+      throw CString("Error commiting transaction: " + m_name);
     }
-    ret = SQLSetConnectAttr(m_hdbc,SQL_ATTR_AUTOCOMMIT,(SQLPOINTER)SQL_AUTOCOMMIT_ON,SQL_IS_UINTEGER);
+    ret = SqlSetConnectAttr(m_hdbc,SQL_ATTR_AUTOCOMMIT,(SQLPOINTER)SQL_AUTOCOMMIT_ON,SQL_IS_UINTEGER);
     if(!SQL_SUCCEEDED(ret))
     {
-      throw CString("Error setting autocommit mode to 'on', after a rollback transaction");
+      // Not an error in all RDBMS'es. In MS-Access this is default behaviour
+      // So we log the error instead of throwing it. 
+      // But as we do not have the database object to log it, we TRACE it :-(
+      TRACE("Error setting autocommit mode to 'on', after committed transaction [%s]\n",m_name);
     }
   }
 }

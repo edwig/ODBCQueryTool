@@ -999,6 +999,8 @@ SQLVariant::GetDataSize()
 //
 //////////////////////////////////////////////////////////////////////////
 
+__declspec(thread) static CString g_value;
+
 char*
 SQLVariant::GetAsChar()
 {
@@ -1012,12 +1014,8 @@ SQLVariant::GetAsChar()
   }
   // Should be: GetErrorDatatype(SQL_C_CHAR);
   // Sometimes we come her unexpectedly in various programs
-  // This is a non-multi-treaded solution as an after-thought
-  // IT IS NOT SAFE. REWRITE YOUR PROGRAM!!
-  TRACE("ALARM: Rewrite your program. Use 'GetAsString' instead\n");
-  static CString waarde;
-  GetAsString(waarde);
-  return (char*)waarde.GetString();
+  GetAsString(g_value);
+  return (char*)g_value.GetString();
 }
 
 void*
@@ -1643,6 +1641,8 @@ SQLVariant::GetAsUBigInt()
   return NULL; 
 }
 
+__declspec(thread) static SQL_NUMERIC_STRUCT g_number;
+
 SQL_NUMERIC_STRUCT*
 SQLVariant::GetAsNumeric()
 {
@@ -1651,74 +1651,69 @@ SQLVariant::GetAsNumeric()
     return &m_data.m_dataNUMERIC;
   }
   // Sometimes we come her unexpectedly in various programs
-  // This is a non-multi-treaded solution as an after-thought
-  // IT IS NOT SAFE. REWRITE YOUR PROGRAM!!
-  TRACE("ALARM: Rewrite your program. Use 'GetAs<cardinal>' instead\n");
-  CString number;
-  static SQL_NUMERIC_STRUCT val;
   switch(m_datatype)
   {
     case SQL_C_CHAR:      { bcd num(m_data.m_dataCHAR);
-                            num.AsNumeric(&val);
-                            return &val;
+                            num.AsNumeric(&g_number);
+                            return &g_number;
                           }
                           break;
     case SQL_C_SSHORT:    // Fall through
     case SQL_C_SHORT:     { bcd num(m_data.m_dataSHORT);
-                            num.AsNumeric(&val);
-                            return &val;
+                            num.AsNumeric(&g_number);
+                            return &g_number;
                           }
                           break;
     case SQL_C_USHORT:    { bcd num((int)m_data.m_dataUSHORT);
-                            num.AsNumeric(&val);
-                            return &val;
+                            num.AsNumeric(&g_number);
+                            return &g_number;
                           }
                           break;
     case SQL_C_LONG:      // Fall through
     case SQL_C_SLONG:     { bcd num(m_data.m_dataLONG);
-                            num.AsNumeric(&val);
-                            return &val;
+                            num.AsNumeric(&g_number);
+                            return &g_number;
                           }
                           break;
     case SQL_C_ULONG:     { bcd num((int64)m_data.m_dataULONG);
-                            num.AsNumeric(&val);
-                            return &val;
+                            num.AsNumeric(&g_number);
+                            return &g_number;
                           }
                           break;
     case SQL_C_FLOAT:     { bcd num((double)m_data.m_dataFLOAT);
-                            num.AsNumeric(&val);
-                            return &val;
+                            num.AsNumeric(&g_number);
+                            return &g_number;
                           }
                           break;
     case SQL_C_DOUBLE:    { bcd num(m_data.m_dataDOUBLE);
-                            num.AsNumeric(&val);
-                            return &val;
+                            num.AsNumeric(&g_number);
+                            return &g_number;
                           }
                           break;
     case SQL_C_BIT:       { bcd num(m_data.m_dataBIT);
-                            num.AsNumeric(&val);
-                            return &val;
+                            num.AsNumeric(&g_number);
+                            return &g_number;
                           }
                           break;
     case SQL_C_TINYINT:   // Fall through
     case SQL_C_STINYINT:  { bcd num(m_data.m_dataSTINYINT);
-                            num.AsNumeric(&val);
-                            return &val;
+                            num.AsNumeric(&g_number);
+                            return &g_number;
                           }
                           break;
     case SQL_C_UTINYINT:  { bcd num(m_data.m_dataUTINYINT);
-                            num.AsNumeric(&val);
-                            return &val;
+                            num.AsNumeric(&g_number);
+                            return &g_number;
                           }
                           break;
     case SQL_C_SBIGINT:   { bcd num(m_data.m_dataSBIGINT);
-                            num.AsNumeric(&val);
-                            return &val;
+                            num.AsNumeric(&g_number);
+                            return &g_number;
                           }
                           break;
     case SQL_C_UBIGINT:   { bcd num(m_data.m_dataUBIGINT);
-                            num.AsNumeric(&val);
-                            return &val;
+                            num.AsNumeric(&g_number);
+                            return &g_number;
                           }
                           break;
   }
@@ -1738,6 +1733,8 @@ SQLVariant::GetAsGUID()
   return NULL;
 }
 
+__declspec(thread) static DATE_STRUCT g_date;
+
 DATE_STRUCT*
 SQLVariant::GetAsDate()
 {
@@ -1751,15 +1748,11 @@ SQLVariant::GetAsDate()
   }
   if(m_datatype == SQL_C_CHAR)
   {
-    // Try  conversion from char
-    // NOT MULTI-THREAD SAFE
-    TRACE("BEWARE: Not multi-thread safe: Conversion from char to date_struct");
     try
     {
-      static DATE_STRUCT date_struct;
       SQLDate date(m_data.m_dataCHAR);
-      date.AsDateStruct(&date_struct);
-      return &date_struct;
+      date.AsDateStruct(&g_date);
+      return &g_date;
     }
     catch(CString& /*er*/)
     {
@@ -1769,6 +1762,8 @@ SQLVariant::GetAsDate()
   ThrowErrorDatatype(SQL_C_DATE);
   return NULL;
 }
+
+__declspec(thread) static TIME_STRUCT g_time;
 
 TIME_STRUCT*
 SQLVariant::GetAsTime()
@@ -1783,16 +1778,22 @@ SQLVariant::GetAsTime()
   }
   if(m_datatype == SQL_C_CHAR)
   {
-    char buffer[20];
-    strcpy_s(buffer,20,m_data.m_dataCHAR);
-    if(SetData(SQL_C_TIME,buffer))
+    try
     {
-      return &m_data.m_dataTIME;
+      SQLTime time(m_data.m_dataCHAR);
+      time.AsTimeStruct(&g_time);
+      return &g_time;
+    }
+    catch(CString& /*er*/)
+    {
+      throw;
     }
   }
   ThrowErrorDatatype(SQL_C_TIME);
   return NULL;
 }
+
+__declspec(thread) static TIMESTAMP_STRUCT g_timestamp;
 
 TIMESTAMP_STRUCT*
 SQLVariant::GetAsTimestamp()
@@ -1811,11 +1812,15 @@ SQLVariant::GetAsTimestamp()
   }
   if(m_datatype == SQL_C_CHAR)
   {
-    char buffer[30];
-    strcpy_s(buffer,30,m_data.m_dataCHAR);
-    if(SetData(SQL_C_TIMESTAMP,buffer))
+    try
     {
-      return &m_data.m_dataTIMESTAMP;
+      SQLTimestamp stamp(m_data.m_dataCHAR);
+      stamp.AsTimeStampStruct(&g_timestamp);
+      return &g_timestamp;
+    }
+    catch(CString& /*er*/)
+    {
+      throw;
     }
   }
   ThrowErrorDatatype(SQL_C_TIMESTAMP);
