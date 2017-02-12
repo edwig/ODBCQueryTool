@@ -29,13 +29,13 @@
 #include "resource.h"
 #include <Common/AppGlobal.h>
 #include "COMMON/DocManagerExt.h"
-#include "Database\SQLDatabase.h"
-#include "Database\SQLVariant.h"
-#include "Database\SQLTransaction.h"
+#include "SQLDatabase.h"
+#include "SQLQuery.h"
+#include "SQLVariant.h"
+#include "SQLTransaction.h"
 #include <map>
 
-typedef std::map<int,SQLVariant*> VarMap;
-typedef std::map<int,int> RebindMap;
+using namespace SQLComponents;
 
 // UNCOMMENT THE NEXT LINE FOR DEBUG BUILDS SAVING THE PASSWORD
 #define OQT_SAVE_PASSWORD

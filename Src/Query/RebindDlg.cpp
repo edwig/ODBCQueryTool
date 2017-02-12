@@ -19,7 +19,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "stdafx.h"
 #include "RebindDlg.h"
 #include "OpenEditorApp.h"
-#include "Database\SQLVariant.h"
+#include "SQLVariant.h"
 
 DataTypes allTypes[] = 
 {

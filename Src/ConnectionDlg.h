@@ -18,6 +18,10 @@
 
 #pragma once
 
+// Timeout and net wait defaults
+#define DEFAULT_LOGIN_TIMEOUT 15    // seconds to before fail on connect
+#define DEFAULT_QUERY_TIMEOUT 15    // seconds to before fail waiting for results
+
 class ConnectionDlg : public CDialog
 {
 // Construction

@@ -24,6 +24,7 @@ del *.exe
 del *.user
 del *.sdf
 del *.pdb
+del *.VC.db
 
 echo .
 echo Done cleaning compilations

@@ -33,8 +33,8 @@
 #include "OpenEditor/OEViewPaintAccessories.h"
 #include "Query/GridView.h"
 #include "Query/QueryPanelWnd.h"
-#include "Database\SQLQuery.h"
-#include "Database\SQLInfo.h"
+#include "SQLQuery.h"
+#include "SQLInfo.h"
 
 using arg::counted_ptr;
 class COEDocument;

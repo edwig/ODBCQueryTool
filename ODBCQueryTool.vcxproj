@@ -76,12 +76,13 @@
     <OutDir>.\</OutDir>
     <IntDir>.\Debug\</IntDir>
     <LinkIncremental>true</LinkIncremental>
+    <TargetName>$(ProjectName)Debug</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <OutDir>$(SolutionDir)</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental>true</LinkIncremental>
-    <TargetName>$(ProjectName)$(Platform)</TargetName>
+    <TargetName>$(ProjectName)Debug$(Platform)</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>.\</OutDir>
@@ -89,10 +90,10 @@
     <LinkIncremental>false</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>.\</OutDir>
+    <OutDir>$(SolutionDir)</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental>false</LinkIncremental>
-    <TargetName>$(ProjectName)64</TargetName>
+    <TargetName>$(ProjectName)$(Platform)</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Midl>
@@ -105,8 +106,8 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\src\include;.\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NO_WARN_MBCS_MFC_DEPRECATION;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.\src\include;.\src;.\src\SQLComponents;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>SQL_COMPONENTS_MFC;NO_WARN_MBCS_MFC_DEPRECATION;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -128,8 +129,8 @@
       <Culture>0x0413</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>.\ODBCQueryTool.exe</OutputFile>
+      <AdditionalDependencies>SQLComponents.lib;odbc32.lib;crypt32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(SolutionDir)$(TargetName).exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>.\Debug/ODBCQueryTool.pdb</ProgramDatabaseFile>
@@ -137,6 +138,7 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
       <TargetMachine>MachineX86</TargetMachine>
+      <AdditionalLibraryDirectories>Debug</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -150,8 +152,8 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\src\include;.\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NO_WARN_MBCS_MFC_DEPRECATION;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.\src\include;.\src;.\src\SQLComponents;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>SQL_COMPONENTS_MFC;NO_WARN_MBCS_MFC_DEPRECATION;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -173,8 +175,8 @@
       <Culture>0x0413</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>$(SolutionDir)$(ProjectName)$(Platform).exe</OutputFile>
+      <AdditionalDependencies>crypt32.lib;shlwapi.lib;SQLComponents.lib;odbc32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(SolutionDir)$(TargetName).exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>$(Platform)\$(Configuration)\ODBCQueryTool.pdb</ProgramDatabaseFile>
@@ -183,6 +185,7 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
       <TargetMachine>MachineX64</TargetMachine>
+      <AdditionalLibraryDirectories>Debug\x64;</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -197,8 +200,8 @@
     <ClCompile>
       <Optimization>Full</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>.\src;.\src\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NO_WARN_MBCS_MFC_DEPRECATION;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.\src;.\src\include;.\src\SQLComponents;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>SQL_COMPONENTS_MFC;NO_WARN_MBCS_MFC_DEPRECATION;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -221,7 +224,7 @@
       <Culture>0x0413</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SQLComponents.lib;odbc32.lib;crypt32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>.\ODBCQueryTool.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <SubSystem>Windows</SubSystem>
@@ -234,6 +237,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <AdditionalLibraryDirectories>Release;</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -248,8 +252,8 @@
     <ClCompile>
       <Optimization>Full</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>.\src;.\src\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>NO_WARN_MBCS_MFC_DEPRECATION;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>.\src;.\src\include;.\src\SQLComponents;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>SQL_COMPONENTS_MFC;NO_WARN_MBCS_MFC_DEPRECATION;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -272,8 +276,8 @@
       <Culture>0x0413</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <OutputFile>.\ODBCQueryTool64.exe</OutputFile>
+      <AdditionalDependencies>SQLComponents.lib;odbc32.lib;crypt32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(SolutionDir)$(ProjectName)$(Platform).exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <SubSystem>Windows</SubSystem>
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
@@ -282,6 +286,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <AdditionalLibraryDirectories>x64\Release</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -294,80 +299,6 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
     </ClCompile>
     <ClCompile Include="Src\ConnectionDlg.cpp" />
-    <ClCompile Include="Src\Database\BasicExcel.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="Src\Database\BasicXmlExcel.cpp" />
-    <ClCompile Include="Src\Database\bcd.cpp" />
-    <ClCompile Include="Src\Database\ExcelFormat.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLAssociation.cpp" />
-    <ClCompile Include="Src\Database\SQLColumnInfo.cpp" />
-    <ClCompile Include="Src\Database\SQLDatabase.cpp" />
-    <ClCompile Include="Src\Database\SQLDataSet.cpp" />
-    <ClCompile Include="Src\Database\SQLDataSetXLS.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLDate.cpp" />
-    <ClCompile Include="Src\Database\SQLError.cpp" />
-    <ClCompile Include="Src\Database\SQLInfo.cpp" />
-    <ClCompile Include="Src\Database\SQLInfoAccess.cpp" />
-    <ClCompile Include="Src\Database\SQLInfoDB.cpp" />
-    <ClCompile Include="Src\Database\SQLInfoFirebird.cpp" />
-    <ClCompile Include="Src\Database\SQLInfoGenericODBC.cpp" />
-    <ClCompile Include="Src\Database\SQLInfoInformix.cpp" />
-    <ClCompile Include="Src\Database\SQLInfoOracle.cpp" />
-    <ClCompile Include="Src\Database\SQLInfoPostgreSQL.cpp" />
-    <ClCompile Include="Src\Database\SQLInfoSQLServer.cpp" />
-    <ClCompile Include="Src\Database\SQLInfoTree.cpp" />
-    <ClCompile Include="Src\Database\SQLInterval.cpp" />
-    <ClCompile Include="Src\Database\SQLLanguage.cpp" />
-    <ClCompile Include="Src\Database\SQLMutation.cpp" />
-    <ClCompile Include="Src\Database\SQLQuery.cpp" />
-    <ClCompile Include="Src\Database\SQLRecord.cpp" />
-    <ClCompile Include="Src\Database\SQLStatement.cpp" />
-    <ClCompile Include="Src\Database\SQLTime.cpp" />
-    <ClCompile Include="Src\Database\SQLTimestamp.cpp" />
-    <ClCompile Include="Src\Database\SQLTransaction.cpp" />
-    <ClCompile Include="Src\Database\SQLVariant.cpp" />
-    <ClCompile Include="Src\Database\SQLVariantFormat.cpp" />
-    <ClCompile Include="Src\Database\SQLVariantOperator.cpp" />
-    <ClCompile Include="Src\Database\SQLVariantOperatorAdd.cpp" />
-    <ClCompile Include="Src\Database\SQLVariantOperatorDiv.cpp" />
-    <ClCompile Include="Src\Database\SQLVariantOperatorEqual.cpp" />
-    <ClCompile Include="Src\Database\SQLVariantOperatorGreatEqual.cpp" />
-    <ClCompile Include="Src\Database\SQLVariantOperatorGreater.cpp" />
-    <ClCompile Include="Src\Database\SQLVariantOperatorMod.cpp" />
-    <ClCompile Include="Src\Database\SQLVariantOperatorMul.cpp" />
-    <ClCompile Include="Src\Database\SQLVariantOperatorSmallEqual.cpp" />
-    <ClCompile Include="Src\Database\SQLVariantOperatorSmaller.cpp" />
-    <ClCompile Include="Src\Database\SQLVariantOperatorSub.cpp" />
-    <ClCompile Include="Src\Database\SQLVariantTrim.cpp" />
-    <ClCompile Include="Src\Database\unzip.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="Src\Database\xmem.cpp">
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="Src\Database\xml.cpp" />
-    <ClCompile Include="Src\Database\xml_parser.cpp" />
     <ClCompile Include="Src\MultConnectionsDlg.cpp" />
     <ClCompile Include="Src\OpenEditorApp.cpp" />
     <ClCompile Include="Src\Query\Codeer.cpp" />
@@ -851,58 +782,6 @@
   <ItemGroup>
     <ClInclude Include="Src\AboutDlg.h" />
     <ClInclude Include="Src\ConnectionDlg.h" />
-    <ClInclude Include="Src\Database\BasicExcel.h" />
-    <ClInclude Include="Src\Database\BasicXmlExcel.h" />
-    <ClInclude Include="Src\Database\bcd.h" />
-    <ClInclude Include="Src\Database\ExcelFormat.h" />
-    <ClInclude Include="Src\Database\GetLastErrorAsString.h" />
-    <ClInclude Include="Src\Database\Locker.h" />
-    <ClInclude Include="Src\Database\SQLAssociation.h" />
-    <ClInclude Include="Src\Database\SQLColumnInfo.h" />
-    <ClInclude Include="Src\Database\SQLDatabase.h" />
-    <ClInclude Include="Src\Database\SQLDataSet.h" />
-    <ClInclude Include="Src\Database\SQLDataSetXLS.h" />
-    <ClInclude Include="Src\Database\SQLDate.h" />
-    <ClInclude Include="Src\Database\SQLError.h" />
-    <ClInclude Include="Src\Database\SQLFormatErrors.h" />
-    <ClInclude Include="Src\Database\SQLInfo.h" />
-    <ClInclude Include="Src\Database\SQLInfoAccess.h" />
-    <ClInclude Include="Src\Database\SQLInfoDB.h" />
-    <ClInclude Include="Src\Database\SQLInfoFirebird.h" />
-    <ClInclude Include="Src\Database\SQLInfoGenericODBC.h" />
-    <ClInclude Include="Src\Database\SQLInfoInformix.h" />
-    <ClInclude Include="Src\Database\SQLInfoOracle.h" />
-    <ClInclude Include="Src\Database\SQLInfoPostgreSQL.h" />
-    <ClInclude Include="Src\Database\SQLInfoSQLServer.h" />
-    <ClInclude Include="Src\Database\SQLInfoTree.h" />
-    <ClInclude Include="Src\Database\SQLInterval.h" />
-    <ClInclude Include="Src\Database\SQLLanguage.h" />
-    <ClInclude Include="Src\Database\SQLMutation.h" />
-    <ClInclude Include="Src\Database\sqlncli.h" />
-    <ClInclude Include="Src\Database\SQLOdbc.h" />
-    <ClInclude Include="Src\Database\SQLQuery.h" />
-    <ClInclude Include="Src\Database\SQLRecord.h" />
-    <ClInclude Include="Src\Database\SQLStatement.h" />
-    <ClInclude Include="Src\Database\SQLTime.h" />
-    <ClInclude Include="Src\Database\SQLTimestamp.h" />
-    <ClInclude Include="Src\Database\SQLTransaction.h" />
-    <ClInclude Include="Src\Database\SQLVariant.h" />
-    <ClInclude Include="Src\Database\SQLVariantFormat.h" />
-    <ClInclude Include="Src\Database\SQLVariantOperator.h" />
-    <ClInclude Include="Src\Database\SQLVariantOperatorAdd.h" />
-    <ClInclude Include="Src\Database\SQLVariantOperatorDiv.h" />
-    <ClInclude Include="Src\Database\SQLVariantOperatorGreatEqual.h" />
-    <ClInclude Include="Src\Database\SQLVariantOperatorGreater.h" />
-    <ClInclude Include="Src\Database\SQLVariantOperatorMod.h" />
-    <ClInclude Include="Src\Database\SQLVariantOperatorMul.h" />
-    <ClInclude Include="Src\Database\SQLVariantOperatorSmallEqual.h" />
-    <ClInclude Include="Src\Database\SQLVariantOperatorSmaller.h" />
-    <ClInclude Include="Src\Database\SQLVariantOperatorSub.h" />
-    <ClInclude Include="Src\Database\SQLVariantTrim.h" />
-    <ClInclude Include="Src\Database\SQLWrappers.h" />
-    <ClInclude Include="Src\Database\unzip.h" />
-    <ClInclude Include="Src\Database\xmem.h" />
-    <ClInclude Include="Src\Database\xml.h" />
     <ClInclude Include="Src\MultConnectionsDlg.h" />
     <ClInclude Include="Src\OpenEditorApp.h" />
     <ClInclude Include="Src\Query\codeer.h" />

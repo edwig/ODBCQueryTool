@@ -27,8 +27,8 @@
 #include "COMMON/GUICommandDictionary.h"
 #include "COMMON/DocManagerExt.h"
 #include "OpenEditorApp.h"
-#include "Database\SQLInfoTree.h"
-#include "Database\SQLDatabase.h"
+#include "SQLInfoTree.h"
+#include "SQLDatabase.h"
 
 #define FPW_OPEN_FILES_TAB  0
 #define FPW_EXPLORER_TAB    1
@@ -46,6 +46,8 @@
 
 #define ACTIVATE_FILE_TIMER 777
 #define ACTIVATE_FILE_DELAY 500
+
+using namespace SQLComponents;
 
 static BOOL GetVolumeName (LPCSTR rootDirectory, CString& volumeName)
 {

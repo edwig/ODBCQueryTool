@@ -23,16 +23,17 @@
 #include "OpenEditorApp.h"
 
 #undef String
-#include "Database\SQLDatabase.h"
-#include "Database\SQLQuery.h"
-#include "Database\SQLVariant.h"
-#include "Database\SQLInfoDB.h"
+#include "SQLDatabase.h"
+#include "SQLQuery.h"
+#include "SQLVariant.h"
+#include "SQLInfoDB.h"
 #include "Query\NativeSQLDlg.h"
 #include "Query\VariablesDlg.h"
 #include <sql.h>
 #include <time.h>
 
 using namespace OpenEditor;
+using namespace SQLComponents;
 
 // MAXIMUM TOKEN NAME LENGTH FOR ODBC Environments
 const int maxTokenlength = 512;

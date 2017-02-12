@@ -53,12 +53,6 @@
       <UniqueIdentifier>{b594fb3b-4106-43f9-a7d0-d3d295467407}</UniqueIdentifier>
       <Extensions>*.h</Extensions>
     </Filter>
-    <Filter Include="Database">
-      <UniqueIdentifier>{d76218b6-fd3d-47c8-8a8d-b204086e3478}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Database\Headers">
-      <UniqueIdentifier>{01ae27b9-9bd7-4605-9f3f-8a91a946b463}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Frame">
       <UniqueIdentifier>{31196b22-5226-4efc-aad3-ada66d192f8e}</UniqueIdentifier>
       <Extensions>*.cpp</Extensions>
@@ -378,87 +372,6 @@
     <ClCompile Include="SRC\COMMON\WorkbookMDIFrame.cpp">
       <Filter>Frame</Filter>
     </ClCompile>
-    <ClCompile Include="Src\Database\SQLAssociation.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLColumnInfo.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLDatabase.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLDataSet.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLDate.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLError.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLInfo.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLInfoAccess.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLInfoDB.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLInfoFirebird.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLInfoGenericODBC.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLInfoInformix.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLInfoOracle.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLInfoPostgreSQL.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLInfoSQLServer.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLInfoTree.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLLanguage.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLMutation.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLQuery.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLRecord.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLStatement.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLTime.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLTimestamp.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLTransaction.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLVariant.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLVariantFormat.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\xml.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
     <ClCompile Include="Src\Query\Codeer.cpp">
       <Filter>Query</Filter>
     </ClCompile>
@@ -470,69 +383,6 @@
     </ClCompile>
     <ClCompile Include="Src\Query\VariablesDlg.cpp">
       <Filter>Query</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLDataSetXLS.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\BasicExcel.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\ExcelFormat.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\BasicXmlExcel.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\unzip.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\xml_parser.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLVariantOperator.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLInterval.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\bcd.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLVariantOperatorAdd.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLVariantOperatorDiv.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLVariantOperatorEqual.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLVariantOperatorGreatEqual.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLVariantOperatorGreater.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLVariantOperatorMod.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLVariantOperatorMul.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLVariantOperatorSmallEqual.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLVariantOperatorSmaller.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLVariantOperatorSub.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\SQLVariantTrim.cpp">
-      <Filter>Database</Filter>
-    </ClCompile>
-    <ClCompile Include="Src\Database\xmem.cpp">
-      <Filter>Database</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -866,102 +716,6 @@
     <ClInclude Include="Include\COMMON\WorkbookMDIFrame.h">
       <Filter>Frame\Frame headers</Filter>
     </ClInclude>
-    <ClInclude Include="Src\Database\Locker.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLAssociation.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLColumnInfo.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLDatabase.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLDataSet.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLDate.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLError.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLFormatErrors.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLInfo.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLInfoAccess.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLInfoDB.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLInfoFirebird.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLInfoGenericODBC.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLInfoInformix.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLInfoOracle.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLInfoPostgreSQL.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLInfoSQLServer.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLInfoTree.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLLanguage.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLMutation.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\sqlncli.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLOdbc.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLQuery.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLRecord.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLStatement.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLTime.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLTimestamp.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLTransaction.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLVariant.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLVariantFormat.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLWrappers.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\xml.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
     <ClInclude Include="Src\Query\codeer.h">
       <Filter>Query\Query Headers</Filter>
     </ClInclude>
@@ -973,66 +727,6 @@
     </ClInclude>
     <ClInclude Include="Src\Query\VariablesDlg.h">
       <Filter>Query\Query Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLDataSetXLS.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\BasicExcel.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\ExcelFormat.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\BasicXmlExcel.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\GetLastErrorAsString.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\unzip.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLInterval.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\bcd.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLVariantOperator.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLVariantOperatorAdd.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLVariantOperatorDiv.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLVariantOperatorGreatEqual.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLVariantOperatorGreater.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLVariantOperatorMod.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLVariantOperatorMul.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLVariantOperatorSmallEqual.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLVariantOperatorSmaller.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLVariantOperatorSub.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\SQLVariantTrim.h">
-      <Filter>Database\Headers</Filter>
-    </ClInclude>
-    <ClInclude Include="Src\Database\xmem.h">
-      <Filter>Database\Headers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

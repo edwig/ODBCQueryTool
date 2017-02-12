@@ -360,6 +360,8 @@ BOOL COpenEditorApp::InitInstance()
 		  AfxMessageBox("OLE Initialization failed!");
 		  return FALSE;
 	  }
+    InitSQLComponents();
+
 	  SetRegistryKey("ODBCQueryTool");
 	  LoadStdProfileSettings(10);  // Load standard INI file options (including MRU)
     ParseODBCCommandLine();
@@ -543,7 +545,7 @@ BOOL COpenEditorApp::AllowThisInstance ()
   return TRUE;
 }
 
-// Simpele manier om argument van de commandoregel op te halen
+// Simple way to get an argument from the command line
 // ODBCQueryTool [/CONNECT:<connectstring>] <file.sql>
 //
 BOOL 
@@ -690,7 +692,7 @@ COpenEditorApp::GetExeDirectory(void)
   CString sCommandLine = GetCommandLine();   
   CString sRetval;
   if(sCommandLine.Find('"')>=0)
-  // staat tussen " 
+  // stands between " 
   {
     int pos1 = sCommandLine.Find('"');
     int pos = sCommandLine.Find('"',pos1+1);
@@ -704,7 +706,7 @@ COpenEditorApp::GetExeDirectory(void)
     }
   }
   else
-  // staat niet tussen " dus neem spatie als grens.
+  // Not between ", so take a space as the bordering of the words
   {
     int pos = sCommandLine.Find(' ');
     if(pos >= 0)
@@ -810,9 +812,7 @@ COpenEditorApp::ParseConnectString()
   return false;
 }
 
-
-// Aanmaken en openen database (m_database).
-// Aangeroepen vanuit GeefDatabase.
+// Creating and opening a database (m_database)
 bool
 COpenEditorApp::OpenDatabaseConnectie()
 {
@@ -828,7 +828,7 @@ COpenEditorApp::OpenDatabaseConnectie()
   CString status;
   status.Format("Trying to connect to: %s",m_datasource);
 
-  // Reset the connection status on de DialogBar
+  // Reset the connection status on the DialogBar
   CMDIMainFrame* frame = (CMDIMainFrame*)m_pMainWnd;
   frame->SetConnectionText((CString)"No connection");
 

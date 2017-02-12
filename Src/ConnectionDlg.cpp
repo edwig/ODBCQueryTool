@@ -19,8 +19,8 @@
 #include "OpenEditorApp.h"
 #include "ConnectionDlg.h"
 #include "Common/FileSelectDialog.h"
-#include "Database\SQLDatabase.h"
-#include "Database\SQLInfoDB.h"
+#include "SQLDatabase.h"
+#include "SQLInfoDB.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

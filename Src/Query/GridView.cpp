@@ -7,8 +7,8 @@
 #include "resource.h"
 #include "OpenEditor/OEView.h"
 #include "OpenEditor/OESettings.h"
-#include "Database\BasicExcel.h"
-#include "Database\ExcelFormat.h"
+#include "BasicExcel.h"
+#include "ExcelFormat.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -17,6 +17,9 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 #define MAX_FNAME_LEN 256
+
+using namespace SQLComponents;
+using namespace ExcelFormat;
 
 const GridType initGrid[] =
 {
