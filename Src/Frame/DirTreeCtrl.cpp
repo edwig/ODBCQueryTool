@@ -70,27 +70,33 @@ BOOL CDirTreeCtrl::DisplayTree(LPCTSTR strRoot, BOOL bFiles)
 	DeleteAllItems();
 
 	if ( !GetSysImgList() )
-		return FALSE;
-    m_bFiles = bFiles;  // if TRUE, Display Path- and Filenames 
+  {
+    return FALSE;
+  }
+  m_bFiles = bFiles;  // if TRUE, Display Path- and Filenames 
 	if ( strRoot == NULL || strRoot[0] == '\0' )
 	{
 		if ( !DisplayDrives() )
-			return FALSE;
+    {
+      return FALSE;
+    }
 		m_strRoot = "";
 	}
-    else
+  else
 	{
 		m_strRoot = strRoot;
 		if ( m_strRoot.Right(1) != '\\' )
-			m_strRoot += "\\";
+    {
+      m_strRoot += "\\";
+    }
 		HTREEITEM hParent = AddItem( TVI_ROOT, m_strRoot );
 
-        if (!hParent) // 11.06.2002   minimal error handling has been added
-        {
-            MessageBeep((UINT)-1);
-            AfxMessageBox(CString("Cannot show \"") + m_strRoot + "\".", MB_OK|MB_ICONSTOP);
-	        return FALSE;	
-        }
+    if (!hParent) // 11.06.2002   minimal error handling has been added
+    {
+      MessageBeep((UINT)-1);
+      AfxMessageBox(CString("Cannot show \"") + m_strRoot + "\".", MB_OK|MB_ICONSTOP);
+	    return FALSE;	
+    }
 		DisplayPath( hParent, strRoot );
 	}
 	return TRUE;	
@@ -168,7 +174,7 @@ void CDirTreeCtrl::DisplayPath(HTREEITEM hParent, LPCTSTR strPath)
 	CSortStringArray strDirArray;
 	CSortStringArray strFileArray;
 	
-	if ( strPathFiles.Right(1) != "\\" )
+	if(strPathFiles.Right(1) != "\\" )
   {
     strPathFiles += "\\";
   }
@@ -182,23 +188,27 @@ void CDirTreeCtrl::DisplayPath(HTREEITEM hParent, LPCTSTR strPath)
 	while ( bFind )
 	{
 		bFind = find.FindNextFile();
-		if ( find.IsDirectory() && !find.IsDots() )
-		{		
-			strDirArray.Add( find.GetFilePath() );
-		}
-		if ( !find.IsDirectory() && m_bFiles )
+
+    if(!find.IsHidden())
     {
-      CString path = find.GetFilePath();
-      if(m_filter.IsEmpty())
+      if ( find.IsDirectory() && !find.IsDots() )
+		  {		
+			  strDirArray.Add( find.GetFilePath() );
+		  }
+		  if ( !find.IsDirectory() && m_bFiles )
       {
-        strFileArray.Add(path);
-      }
-      else
-      {
-        int len = m_filter.GetLength();
-        if(path.Right(len) == m_filter)
+        CString path = find.GetFilePath();
+        if(m_filter.IsEmpty())
         {
           strFileArray.Add(path);
+        }
+        else
+        {
+          int len = m_filter.GetLength();
+          if(path.Right(len) == m_filter)
+          {
+            strFileArray.Add(path);
+          }
         }
       }
     }
@@ -210,23 +220,24 @@ void CDirTreeCtrl::DisplayPath(HTREEITEM hParent, LPCTSTR strPath)
   int i = 0;
 	for (i = 0; i < strDirArray.GetSize(); i++ )
 	{
-			HTREEITEM hItem = AddItem( hParent, strDirArray.GetAt(i) );
+		HTREEITEM hItem = AddItem( hParent, strDirArray.GetAt(i) );
 
-            if (hItem) // 11.06.2002   minimal error handling has been added
-            {
-			    if ( FindSubDir( strDirArray.GetAt(i) ) )
-				    InsertItem( "", 0, 0, hItem );
-            }
-            else
-            {
-                MessageBeep((UINT)-1);
-                if (AfxMessageBox(CString("Cannot show \"") + strDirArray.GetAt(i) + "\".", 
-                        MB_OKCANCEL|MB_ICONSTOP) == IDCANCEL)
-                {
-                    SetRedraw(TRUE);
-                    return;
-                }
-            }
+    if(hItem) // 11.06.2002   minimal error handling has been added
+    {
+		  if(FindSubDir( strDirArray.GetAt(i) ) )
+      {
+        InsertItem( "", 0, 0, hItem );
+      }
+     }
+     else
+     {
+       MessageBeep((UINT)-1);
+       if (AfxMessageBox(CString("Cannot show \"") + strDirArray.GetAt(i) + "\".", MB_OKCANCEL|MB_ICONSTOP) == IDCANCEL)
+       {
+         SetRedraw(TRUE);
+         return;
+       }
+     }
 	}
 
 	if ( m_bFiles )
@@ -236,27 +247,26 @@ void CDirTreeCtrl::DisplayPath(HTREEITEM hParent, LPCTSTR strPath)
 		{
 			HTREEITEM hItem = AddItem( hParent, strFileArray.GetAt(i) );
 			
-            if (!hItem) // 11.06.2002   minimal error handling has been added
-            {
-                MessageBeep((UINT)-1);
-                if (AfxMessageBox(CString("Cannot show \"") + strFileArray.GetAt(i) + "\".", 
-                        MB_OKCANCEL|MB_ICONSTOP) == IDCANCEL)
-                {
-                    SetRedraw(TRUE);
-                    return;
-                }
-            }
+      if (!hItem) // 11.06.2002   minimal error handling has been added
+      {
+        MessageBeep((UINT)-1);
+        if (AfxMessageBox(CString("Cannot show \"") + strFileArray.GetAt(i) + "\".", MB_OKCANCEL|MB_ICONSTOP) == IDCANCEL)
+        {
+          SetRedraw(TRUE);
+          return;
+        }
+      }
 		}
 	}
 
-    //
-    // change item image to an open folder
-    //
-    TVITEM item;
-    memset(&item, 0, sizeof(item));
-    item.hItem = hParent;
-    GetFileImage (strPath, item, SHGFI_ICON|SHGFI_SMALLICON|SHGFI_OPENICON);
-    SetItem(&item);
+  //
+  // change item image to an open folder
+  //
+  TVITEM item;
+  memset(&item, 0, sizeof(item));
+  item.hItem = hParent;
+  GetFileImage (strPath, item, SHGFI_ICON|SHGFI_SMALLICON|SHGFI_OPENICON);
+  SetItem(&item);
     
 	SetRedraw( TRUE );
 }
@@ -264,27 +274,32 @@ void CDirTreeCtrl::DisplayPath(HTREEITEM hParent, LPCTSTR strPath)
 HTREEITEM CDirTreeCtrl::AddItem (HTREEITEM hParent, LPCTSTR strPath)
 {
 	// Adding the Item to the TreeCtrl with the current Icons
-    CString strTemp = strPath;
+  CString strTemp = strPath;
     
 	if ( strTemp.Right(1) != '\\' )
-		 strTemp += "\\";
+  {
+    strTemp += "\\";
+  }
+  TVINSERTSTRUCT item;
+  memset(&item, 0, sizeof(hParent));
+  item.hParent = hParent;
+  item.hInsertAfter = TVI_LAST;
     
-    TVINSERTSTRUCT item;
-    memset(&item, 0, sizeof(hParent));
-    item.hParent = hParent;
-    item.hInsertAfter = TVI_LAST;
-    
-    item.item.mask = TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
-    GetFileImage(strTemp, item.item, SHGFI_ICON|SHGFI_SMALLICON);
+  item.item.mask = TVIF_TEXT|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
+  GetFileImage(strTemp, item.item, SHGFI_ICON|SHGFI_SMALLICON);
 	
 	if (strTemp.Right(1) == "\\")
-		strTemp.SetAt(strTemp.GetLength() - 1, '\0');
-	
-    if (hParent == TVI_ROOT)
-        item.item.pszText = (LPSTR)(LPCSTR)strTemp;
-    else
-        item.item.pszText = (LPSTR)(LPCSTR)GetSubPath(strTemp);
-
+  {
+    strTemp.SetAt(strTemp.GetLength() - 1, '\0');
+  }
+  if (hParent == TVI_ROOT)
+  {
+    item.item.pszText = (LPSTR)(LPCSTR)strTemp;
+  }
+  else
+  {
+    item.item.pszText = (LPSTR)(LPCSTR)GetSubPath(strTemp);
+  }
 	return this->InsertItem(&item);
 }
 
@@ -299,11 +314,14 @@ LPCTSTR CDirTreeCtrl::GetSubPath(LPCTSTR strPath)
 
 	strTemp = strPath;
 	if ( strTemp.Right(1) == '\\' )
-		 strTemp.SetAt( strTemp.GetLength() - 1, '\0' );
+  {
+    strTemp.SetAt( strTemp.GetLength() - 1, '\0' );
+  }
 	iPos = strTemp.ReverseFind( '\\' );
 	if ( iPos != -1 )
-	    strTemp = strTemp.Mid( iPos + 1);
-
+  {
+    strTemp = strTemp.Mid( iPos + 1);
+  }
 	return (LPCTSTR)strTemp;
 }
 
@@ -372,11 +390,11 @@ void CDirTreeCtrl::OnItemexpanded(NMHDR* pNMHDR, LRESULT* pResult)
 		}
 		InsertItem("", pNMTreeView->itemNew.hItem );
     
-        TVITEM item;
-        memset(&item, 0, sizeof(item));
-        item.hItem = pNMTreeView->itemNew.hItem;
-        GetFileImage(GetFullPath(item.hItem), item, SHGFI_ICON|SHGFI_SMALLICON);
-        SetItem(&item);
+    TVITEM item;
+    memset(&item, 0, sizeof(item));
+    item.hItem = pNMTreeView->itemNew.hItem;
+    GetFileImage(GetFullPath(item.hItem), item, SHGFI_ICON|SHGFI_SMALLICON);
+    SetItem(&item);
 	}
 
 	*pResult = 0;

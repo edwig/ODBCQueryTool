@@ -19,8 +19,6 @@
 
 #include "BasicExcel.h"
 
-#pragma warning (disable:4512) // Generating assignment operators
-
 namespace ExcelFormat {
 
 using namespace YExcel;

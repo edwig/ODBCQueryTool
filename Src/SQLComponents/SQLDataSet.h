@@ -28,6 +28,7 @@
 #include "SQLDatabase.h"
 #include "SQLRecord.h"
 #include "SQLVariant.h"
+#include "SQLFilter.h"
 #include "XMLMessage.h"
 #include <vector>
 
@@ -125,13 +126,18 @@ public:
   bool         Synchronize(int p_mutationID = 0);
   // In case synchronize doesn't work, ask for mixed mutations
   int          AllMixedMutations(MutationIDS& p_list,int p_mutationID);
-  // Forget the records
-  bool         Forget(bool p_force = false);
   // Find the object record of a primary key
   int          FindObjectRecNum(int p_primary);           // If your primary is an INTEGER     (Fast!!)
   int          FindObjectRecNum(VariantSet& p_primary);   // If your primary is a compound key (Slower)
   SQLRecord*   FindObjectRecord(int p_primary);           // If your primary is an INTEGER     (Fast!!)
   SQLRecord*   FindObjectRecord(VariantSet& p_primary);   // If your primary is a compound key (Slower)
+  SQLRecord*   FindObjectFilter(SQLFilterSet& p_filters,bool p_primary = false);  // Fast & slow
+  RecordSet*   FindRecordSet   (SQLFilterSet& p_filters);                         // Always slow
+  // Forget the records
+  bool         Forget(bool p_force = false);
+  // Forget just one record AND reset current cursor to first position
+  bool         ForgetObject(int p_primary,        bool p_force = false); // Forget 1 record and primary is an INTEGER     (Fast!!)
+  bool         ForgetObject(VariantSet& p_primary,bool p_force = false); // Forget 1 record and primary is a compound key (Slower)
 
   // SETTERS
 
@@ -151,6 +157,8 @@ public:
   // Set parameter for a query
   void         SetParameter(SQLParameter p_parameter);
   void         SetParameter(CString p_naam,SQLVariant p_waarde);
+  // Set filters for a query
+  void         SetFilters(SQLFilterSet& p_filters);
   // Set the status to modified/saved
   void         SetStatus(int m_add,int m_delete = 0);
   // Set a field value in the current record
@@ -180,6 +188,9 @@ public:
   int          GetFieldNumber(CString p_name);
   // Get a field from the current record
   SQLVariant*  GetCurrentField(int p_num);
+  // Getting info about the primary key
+  CString      GetPrimarySchema();
+  CString      GetPrimaryTableName();
 
   // XML Saving and loading
   bool         XMLSave(CString p_filename,CString p_name,XMLEncoding p_encoding = XMLEncoding::ENC_UTF8);
@@ -191,6 +202,8 @@ private:
   CString      ParseQuery();
   // Parse the selection
   CString      ParseSelection(SQLQuery& p_query);
+  // Parse the fitlers
+  CString      ParseFilters();
   // Get the variant of a parameter
   SQLVariant*  GetParameter(CString& p_name);
   // Get all the columns of the record
@@ -207,6 +220,9 @@ private:
   bool         CheckPrimaryKeyColumns();
   // Find primary key in the column names
   int          FindSearchColumn();
+  // Forget about a record in the recordset
+  bool         ForgetRecord(SQLRecord* p_record,bool p_force);
+  void         ForgetPrimaryObject(SQLRecord* p_record);
 
   // WRITEBACK OPERATIONS
 
@@ -230,6 +246,7 @@ private:
   CString      m_primarySchema;
   CString      m_primaryTableName;
   ParameterSet m_parameters;
+  SQLFilterSet m_filters;
   NamenMap     m_primaryKey;
   // Object mapping
   CString      m_searchColumn; 
@@ -303,6 +320,18 @@ inline CString
 SQLDataSet::GetName()
 {
   return m_name;
+}
+
+inline CString
+SQLDataSet::GetPrimarySchema()
+{
+  return m_primarySchema;
+}
+
+inline CString
+SQLDataSet::GetPrimaryTableName()
+{
+  return m_primaryTableName;
 }
 
 inline void

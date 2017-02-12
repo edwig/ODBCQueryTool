@@ -843,19 +843,15 @@ SQLDatabase::FreeDbcHandle()
   m_hdbc = SQL_NULL_HANDLE;
 }
 
-#pragma warning (disable: 4312)
-
 void 
 SQLDatabase::SetConnectAttr(int attr, int value,int type)
 {
-  SQLRETURN ret = SqlSetConnectAttr(m_hdbc,attr,(SQLPOINTER)value,type);
+  SQLRETURN ret = SqlSetConnectAttr(m_hdbc,attr,(SQLPOINTER)(DWORD_PTR)value,type);
   if(!Check(ret))
   {
     throw CString("Error at setting connection attributes at open: ") + GetErrorString();
   }
 }
-
-#pragma warning (error: 4312)
 
 // ODBC Native Support
 bool

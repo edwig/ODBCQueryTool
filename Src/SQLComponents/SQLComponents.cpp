@@ -26,14 +26,18 @@
 //
 #include "stdafx.h"
 #include "SQLComponents.h"
+#include "ConvertWideString.h"
+
+#ifdef _DEBUG
+// C-Runtime memory state for debug leak detection
+static _CrtMemState state;
 
 // To execute at the end of the program
 void __cdecl AtExitOfSQLComponents(void)
 {
-#ifndef SQL_COMPONENTS_MFC
-  _CrtMemDumpAllObjectsSince(NULL);
-#endif
+  _CrtMemDumpAllObjectsSince(&state);
 }
+#endif
 
 namespace SQLComponents
 {
@@ -42,12 +46,28 @@ namespace SQLComponents
   // Initialization of the SQLComponents library
   void InitSQLComponents(Language p_language)
   {
+    // Setting our default language for SQLDate, SQLTime and SQLTimestamp processing
+    SetDefaultSQLLanguage(p_language);
+
+    // Check if something to do for memory
+    if(g_SQLComponentsInitialized)
+    {
+      return;
+    }
+
+    // Initialize the code page name system
+    InitCodePageNames();
+
+#ifdef _DEBUG
+#ifndef SQL_COMPONENTS_MFC
+    // Create a memory checkpoint
+    _CrtMemCheckpoint(&state);
+
     // Do reporting of memory leaks if we have no MFC loaded
     // By registering our AtExit function
     atexit(::AtExitOfSQLComponents);
-
-    // Setting our default language for SQLDate, SQLTime and SQLTimestamp processing
-    SetDefaultSQLLanguage(p_language);
+#endif // SQL_COMPONENTS_MFC
+#endif // _DEBUG
 
     // We are now officially 'in business' :-)
     g_SQLComponentsInitialized = true;

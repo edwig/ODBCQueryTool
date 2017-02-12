@@ -275,3 +275,5 @@ paket-files/
 # JetBrains Rider 
 .idea/ 
 *.sln.iml 
+ReferenceGuide/ODBCQueryTool.chm
+*.exe

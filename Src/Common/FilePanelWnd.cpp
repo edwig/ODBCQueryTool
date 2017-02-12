@@ -103,6 +103,34 @@ static BOOL IsFolder (const CString& path)
 ///////////////////////////////////////////////////////////////////////////////
 IMPLEMENT_DYNAMIC(CFilePanelWnd, CTabCtrl)
 
+BEGIN_MESSAGE_MAP(CFilePanelWnd, CTabCtrl)
+    ON_WM_CREATE()
+    ON_WM_DESTROY()
+    ON_WM_SIZE()
+    ON_WM_KEYDOWN()
+    ON_NOTIFY_REFLECT    (TCN_SELCHANGE,    OnTab_SelChange)
+    ON_CBN_SETFOCUS      (ID_FPW_DRIVES,    OnDrive_SetFocus)
+    ON_CBN_SELCHANGE     (ID_FPW_DRIVES,    OnDrive_SelChange)
+    ON_CBN_SETFOCUS      (ID_FPW_FILTER,    OnFilter_SetFocus)
+    ON_CBN_SELCHANGE     (ID_FPW_FILTER,    OnFilter_SelChange)
+    ON_CBN_KILLFOCUS     (ID_FPW_FILTER,    OnFilter_SelChange) 
+    ON_CBN_SETFOCUS      (ID_FPW_TABFILTER, OnTable_SetFocus)
+    ON_CBN_KILLFOCUS     (ID_FPW_TABFILTER, OnTable_SelChange)
+    ON_NOTIFY(NM_CLICK,   ID_FPW_OPEN_FILES,OnOpenFiles_Click)
+    ON_NOTIFY(NM_RCLICK,  ID_FPW_OPEN_FILES,OnOpenFiles_RClick)
+    ON_NOTIFY(LVN_KEYDOWN,ID_FPW_OPEN_FILES,OnOpenFiles_KeyDown)
+    ON_NOTIFY(NM_DBLCLK,  ID_FPW_EXPLORER,  OnExplorerTree_DblClick)
+    ON_NOTIFY(NM_RCLICK,  ID_FPW_EXPLORER,  OnExplorerTree_RClick)
+    ON_NOTIFY(NM_RCLICK,  ID_FPW_DRIVES,    OnDrivers_RClick)
+    ON_NOTIFY_EX(TTN_NEEDTEXT,0,            OnTooltipNotify)
+    ON_WM_TIMER()
+    ON_COMMAND(ID_FPW_OPEN,           OnFpwOpen)
+    ON_COMMAND(ID_FPW_REFRESH,        OnFpwRefresh)
+    ON_COMMAND(ID_FPW_SET_DEF_DIR,    OnFpwSetWorDir)
+    ON_COMMAND(ID_FPW_REFRESH_DRIVERS,OnFpwRefreshDrivers)
+END_MESSAGE_MAP()
+
+
 CFilePanelWnd::CFilePanelWnd()
 {
     m_isExplorerInitialized = FALSE;
@@ -191,7 +219,7 @@ void CFilePanelWnd::AddToFilters(CString& filter)
     CString text = m_filters.GetAt(ind);
     if(!text.Find(filter)  && (text.GetLength() == filter.GetLength()))
     {
-      // OK, Zit al in de lijst
+      // OK, Already in the list
       return;
     }
   }
@@ -209,7 +237,7 @@ void CFilePanelWnd::DisplayDrivers (BOOL force, BOOL curOnly)
 
     if (!curOnly) 
     {
-      // 09.03.2003 bug fix, desktop flickers when the programm is starting
+      // 09.03.2003 bug fix, desktop flickers when the program is starting
       m_drivesCBox.LockWindowUpdate(); 
     }
     m_drivesCBox.SetRedraw(FALSE);
@@ -300,6 +328,7 @@ void CFilePanelWnd::ChangeTab (int nTab)
   {
     OnTable_SelChange();
   }
+  m_tab = nTab;
 }
 
 void CFilePanelWnd::ActivateOpenFile ()
@@ -320,33 +349,6 @@ void CFilePanelWnd::ActivateOpenFile ()
     ((CWorkbookMDIFrame*)AfxGetMainWnd())->ActivateChild((CMDIChildWnd*)item.lParam);
   }
 }
-
-BEGIN_MESSAGE_MAP(CFilePanelWnd, CTabCtrl)
-    ON_WM_CREATE()
-    ON_WM_DESTROY()
-    ON_WM_SIZE()
-    ON_NOTIFY_REFLECT    (TCN_SELCHANGE,    OnTab_SelChange)
-    ON_CBN_SETFOCUS      (ID_FPW_DRIVES,    OnDrive_SetFocus)
-    ON_CBN_SELCHANGE     (ID_FPW_DRIVES,    OnDrive_SelChange)
-    ON_CBN_SETFOCUS      (ID_FPW_FILTER,    OnFilter_SetFocus)
-    ON_CBN_SELCHANGE     (ID_FPW_FILTER,    OnFilter_SelChange)
-    ON_CBN_KILLFOCUS     (ID_FPW_FILTER,    OnFilter_SelChange) 
-    ON_CBN_SETFOCUS      (ID_FPW_TABFILTER, OnTable_SetFocus)
-    //ON_CBN_SELCHANGE     (ID_FPW_TABFILTER, OnTable_SelChange)
-    ON_CBN_KILLFOCUS     (ID_FPW_TABFILTER, OnTable_SelChange)
-    ON_NOTIFY(NM_CLICK,   ID_FPW_OPEN_FILES,OnOpenFiles_Click)
-    ON_NOTIFY(NM_RCLICK,  ID_FPW_OPEN_FILES,OnOpenFiles_RClick)
-    ON_NOTIFY(LVN_KEYDOWN,ID_FPW_OPEN_FILES,OnOpenFiles_KeyDown)
-    ON_NOTIFY(NM_DBLCLK,  ID_FPW_EXPLORER,  OnExplorerTree_DblClick)
-    ON_NOTIFY(NM_RCLICK,  ID_FPW_EXPLORER,  OnExplorerTree_RClick)
-    ON_NOTIFY(NM_RCLICK,  ID_FPW_DRIVES,    OnDrivers_RClick)
-    ON_NOTIFY_EX(TTN_NEEDTEXT,0,            OnTooltipNotify)
-    ON_WM_TIMER()
-    ON_COMMAND(ID_FPW_OPEN,           OnFpwOpen)
-    ON_COMMAND(ID_FPW_REFRESH,        OnFpwRefresh)
-    ON_COMMAND(ID_FPW_SET_DEF_DIR,    OnFpwSetWorDir)
-    ON_COMMAND(ID_FPW_REFRESH_DRIVERS,OnFpwRefreshDrivers)
-END_MESSAGE_MAP()
 
 // FilePanelWnd message handlers
 
@@ -781,7 +783,7 @@ void CFilePanelWnd::OnFpwOpen ()
       //VERIFY(::SetCurrentDirectory(path));
       CDocManagerExt::SetFileOpenPath(path);
       // 31.03.2003 bug fix, Attempt to open File dialog for a specified folder in File explorer fails 
-      //                     if any file alredy open from another location
+      //                     if any file already open from another location
       AfxGetApp()->OnCmdMsg(ID_FILE_OPEN, 0, 0, 0);
       CDocManagerExt::SetFileOpenPath("");
     }
@@ -897,7 +899,7 @@ void CFilePanelWnd::AddToTables(CString& table)
     CString text = m_tables.GetAt(ind);
     if(!text.Find(table)  && (text.GetLength() == table.GetLength()))
     {
-      // OK, Zit al in de lijst
+      // OK, Already in the list
       return;
     }
   }
@@ -983,3 +985,18 @@ CFilePanelWnd::ReportCapabilities(CString& filename)
     app->GetDatabase().GetSQLInfoTree()->ReportAllCapabilities(&m_odbcTree,filename);
   }
 }
+
+BOOL 
+CFilePanelWnd::PreTranslateMessage(MSG* pMsg)
+{
+  if(pMsg->message == WM_KEYDOWN && pMsg->wParam == VK_RETURN)
+  {
+    if(m_tab == FPW_TABLETREE_TAB)
+    {
+      OnTable_SelChange();
+      return TRUE;
+    }
+  }
+  return CTabCtrl::PreTranslateMessage(pMsg);
+}
+

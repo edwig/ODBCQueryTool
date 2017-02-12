@@ -829,7 +829,7 @@ COEditorView::GetLineFromQuery(int row)
     {
       int len = var->GetDataSize();
       unsigned char* buffer = (unsigned char*) calloc(2,(len * 2) + 6);
-      char* binbuf = var->GetAsChar();
+      const char* binbuf = var->GetAsChar();
       strncpy_s((char*)buffer,len*2+1,binbuf,len*2);
       buffer[len * 2]  = 0;
       CString text = (char*)buffer;

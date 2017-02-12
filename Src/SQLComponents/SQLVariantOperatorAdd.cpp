@@ -31,6 +31,12 @@
 #include "SQLDate.h"
 #include "bcd.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
 namespace SQLComponents
 {
 
@@ -1531,7 +1537,6 @@ static SQL_OperIntDSAddStamp(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 // TYPE == INTERVAL_YEAR_MONTH
-#pragma warning (disable: 4239)
 
 SQLVariant 
 static SQL_OperIntYMAddIntYM(SQLVariant& p_left,SQLVariant& p_right)

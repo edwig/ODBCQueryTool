@@ -71,20 +71,24 @@
     <_ProjectFileVersion>14.0.25420.1</_ProjectFileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)lib\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
+    <TargetName>$(ProjectName)_x86D</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <OutDir>$(SolutionDir)$(Configuration)\$(Platform)\</OutDir>
+    <OutDir>$(SolutionDir)lib\</OutDir>
     <IntDir>$(Configuration)\$(Platform)\</IntDir>
+    <TargetName>$(ProjectName)_x64D</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
-    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)lib\</OutDir>
     <IntDir>$(Configuration)\</IntDir>
+    <TargetName>$(ProjectName)_x86R</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <OutDir>$(SolutionDir)lib\</OutDir>
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>$(ProjectName)_x64R</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -171,6 +175,7 @@
     </ClCompile>
     <ClCompile Include="SQLDate.cpp" />
     <ClCompile Include="SQLError.cpp" />
+    <ClCompile Include="SQLFilter.cpp" />
     <ClCompile Include="SQLInfo.cpp" />
     <ClCompile Include="SQLInfoAccess.cpp" />
     <ClCompile Include="SQLInfoDB.cpp" />
@@ -236,6 +241,7 @@
     <ClInclude Include="SQLDataSetXLS.h" />
     <ClInclude Include="SQLDate.h" />
     <ClInclude Include="SQLError.h" />
+    <ClInclude Include="SQLFilter.h" />
     <ClInclude Include="SQLFormatErrors.h" />
     <ClInclude Include="SQLInfo.h" />
     <ClInclude Include="SQLInfoAccess.h" />

@@ -47,23 +47,22 @@ class SQLAssociation
 {
 public:
   SQLAssociation();
+  SQLAssociation(SQLDataSet* p_master,SQLDataSet* p_detail);
  ~SQLAssociation();
 
   // ACTIONS
-  bool UpdateMaster();
-  bool UpdateDetails();
+  SQLRecord* FollowToMaster();
+  RecordSet* FollowToDetails();
 
   // SETTERS
   void SetMaster      (SQLDataSet* p_master)  { m_master          = p_master; };
   void SetDetail      (SQLDataSet* p_detail)  { m_detail          = p_detail; };
-  void SetMasterRecord(SQLRecord* p_record)   { m_masterRecord    = p_record; };
   void SetAssociation (CString p_primaryColumn,CString p_foreignColumn,SQLVariant* p_value = NULL);
-  void SetAssociation (int p_num,SQLVariant* p_value);
+  void SetAssociation (int p_num,SQLVariant* p_value);  // For reuse of the association
 
   // GETTERS
   SQLDataSet* GetMaster()       { return m_master; };
   SQLDataSet* GetDetail()       { return m_detail; };
-  SQLRecord*  GetMasterRecord() { return m_masterRecord; };
   CString     GetAssocationName (int p_column);
   SQLVariant* GetAssocationValue(int p_column);
 
@@ -71,12 +70,11 @@ private:
   // Free the association columns and values
   void        FreeAssocs();
   // Basic checks for a valid association
-  bool        BasicChecks(bool p_toDetails);
+  bool        BasicChecks();
 
   SQLDataSet* m_master;
   SQLDataSet* m_detail;
   PFMap       m_assocs;
-  SQLRecord*  m_masterRecord;
 };
 
 // End of namespace

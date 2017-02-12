@@ -33,8 +33,6 @@
 #include <cmath>
 #include <ctime>
 
-#pragma warning (disable: 4244)
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -128,9 +126,9 @@ SQLDate::SetNull()
 bool
 SQLDate::SetDate(long p_year, long p_month, long p_day)
 {
-  m_date.m_year  = p_year;
-  m_date.m_month = p_month;
-  m_date.m_day   = p_day;
+  m_date.m_year  = (short) p_year;
+  m_date.m_month = (char)  p_month;
+  m_date.m_day   = (char)  p_day;
   return SetMJD();
 }
 
@@ -185,8 +183,8 @@ SQLDate::SetMJD()
         gregorianA = year / 100;
         gregorianB = 2 - gregorianA + (gregorianA / 4);
       }
-      factorC = (365.25  * (double) year);
-      factorD = (30.6001 * (double)(month + 1));
+      factorC = (long)(365.25  * (double) year);
+      factorD = (long)(30.6001 * (double)(month + 1));
       // The correction factor (Modified JD) 
       // Falls on 16 november 1858 12:00 hours (noon), 
       // so subtract 679006 (17 november 1858 00:00:00 hour)
@@ -218,20 +216,20 @@ SQLDate::MJDtoDate()
   if(JD > 2299160)
   {
     long gregorianA = 0;
-    gregorianA = (JD - 1867216.25) / 36524.25;
-    gregorianB = JD + 1 + gregorianA - (gregorianA / 4);
+    gregorianA = (long)((JD - 1867216.25) / 36524.25);
+    gregorianB = (long)(JD + 1 + gregorianA - (gregorianA / 4));
   }
   else
   {
-    gregorianB = JD;
+    gregorianB = (long) JD;
   }
   factorC = gregorianB + 1524;
-  factorD = ((double)factorC - 122.1) / 365.25;
-  factorE = (double)factorD * 365.25;
-  factorG = ((double)(factorC - factorE)) / 30.6001;
-  m_date.m_day   = factorC - factorE - (int)((double)factorG * 30.6001);
-  m_date.m_month = (factorG > 13) ? factorG - 13 : factorG - 1;
-  m_date.m_year  = (m_date.m_month > 2) ? factorD - 4716 : factorD - 4715;
+  factorD = (long) (((double)factorC - 122.1) / 365.25);
+  factorE = (long) ((double)factorD * 365.25);
+  factorG = (long) (((double)(factorC - factorE)) / 30.6001);
+  m_date.m_day   = (char)   (factorC - factorE - (int)((double)factorG * 30.6001));
+  m_date.m_month = (char)  ((factorG > 13) ? factorG - 13 : factorG - 1);
+  m_date.m_year  = (short) ((m_date.m_month > 2) ? factorD - 4716 : factorD - 4715);
 }
 
 // Gets the number of days in the month
@@ -278,9 +276,9 @@ SQLDate::AsSQLString(SQLDatabase* p_database)
 void
 SQLDate::AsDateStruct(DATE_STRUCT* p_date)
 {
-  p_date->day   = Day();
-  p_date->month = Month();
-  p_date->year  = Year();
+  p_date->day   = (SQLUSMALLINT) Day();
+  p_date->month = (SQLUSMALLINT) Month();
+  p_date->year  = (SQLSMALLINT)  Year();
 }
 
 // Today's date
@@ -626,9 +624,9 @@ SQLDate::GetVirtualDate(CString       p_sign,
     }
     else return false;
   }
-  p_temp.m_year  = mom.Year();
-  p_temp.m_month = mom.Month();
-  p_temp.m_day   = mom.Day();
+  p_temp.m_year  = (short) mom.Year();
+  p_temp.m_month = (char)  mom.Month();
+  p_temp.m_day   = (char)  mom.Day();
 
   return true;
 }
@@ -687,22 +685,22 @@ SQLDate::AddMonths(const long p_numberMonths) const
       int month = dat.Month() + p_numberMonths - 1;
       if (month >= 0)
       {
-        dat.m_date.m_month  = (month % 12) + 1;
-        dat.m_date.m_year  += month / 12;
+        dat.m_date.m_month  = (char) ((month % 12) + 1);
+        dat.m_date.m_year  += (short) (month / 12);
       }
       else
       {
         // Back in time
         // Making sure it rounds to a month
         month = -month - 1;
-        dat.m_date.m_year -= (month / 12) + 1;
-        dat.m_date.m_month = 12 - month % 12; 
+        dat.m_date.m_year -= (short) ((month / 12) + 1);
+        dat.m_date.m_month = (char)  (12 - month % 12); 
       }
       // Round the number of days
       int maxDay = dat.DaysInMonth();
       if(dat.m_date.m_day > maxDay)
       {
-        dat.m_date.m_day = maxDay;
+        dat.m_date.m_day = (char) maxDay;
       }
       dat.SetMJD();
     }

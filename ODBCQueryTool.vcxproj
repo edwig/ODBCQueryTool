@@ -129,7 +129,7 @@
       <Culture>0x0413</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>SQLComponents.lib;odbc32.lib;crypt32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;crypt32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(SolutionDir)$(TargetName).exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -138,7 +138,7 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
       <TargetMachine>MachineX86</TargetMachine>
-      <AdditionalLibraryDirectories>Debug</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>Debug;$(SolutionDir)lib\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -175,7 +175,7 @@
       <Culture>0x0413</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>crypt32.lib;shlwapi.lib;SQLComponents.lib;odbc32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>crypt32.lib;shlwapi.lib;odbc32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(SolutionDir)$(TargetName).exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -185,7 +185,7 @@
       <RandomizedBaseAddress>false</RandomizedBaseAddress>
       <DataExecutionPrevention />
       <TargetMachine>MachineX64</TargetMachine>
-      <AdditionalLibraryDirectories>Debug\x64;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>Debug\x64;$(SolutionDir)lib\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -224,7 +224,7 @@
       <Culture>0x0413</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>SQLComponents.lib;odbc32.lib;crypt32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;crypt32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>.\ODBCQueryTool.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <SubSystem>Windows</SubSystem>
@@ -237,7 +237,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <AdditionalLibraryDirectories>Release;</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>Release;$(SolutionDir)lib\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -276,7 +276,7 @@
       <Culture>0x0413</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>SQLComponents.lib;odbc32.lib;crypt32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>odbc32.lib;crypt32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(SolutionDir)$(ProjectName)$(Platform).exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <SubSystem>Windows</SubSystem>
@@ -286,7 +286,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
-      <AdditionalLibraryDirectories>x64\Release</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>x64\Release;$(SolutionDir)lib\</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -782,6 +782,7 @@
   <ItemGroup>
     <ClInclude Include="Src\AboutDlg.h" />
     <ClInclude Include="Src\ConnectionDlg.h" />
+    <ClInclude Include="Src\Include\Common\FilePanelWnd.h" />
     <ClInclude Include="Src\MultConnectionsDlg.h" />
     <ClInclude Include="Src\OpenEditorApp.h" />
     <ClInclude Include="Src\Query\codeer.h" />
@@ -884,7 +885,6 @@
     <ClInclude Include="Src\Frame\DirTreeCtrl.h" />
     <ClInclude Include="Include\COMMON\DocManagerExt.h" />
     <ClInclude Include="Include\COMMON\FakeRClick.h" />
-    <ClInclude Include="Include\COMMON\FilePanelWnd.h" />
     <ClInclude Include="Src\Frame\FileWatch.h" />
     <ClInclude Include="Src\Frame\MainFrm.h" />
     <ClInclude Include="Src\Frame\scbarcf.h" />
@@ -896,6 +896,9 @@
     <ClInclude Include="Include\COMMON\WorkbookMDIFrame.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Installer\Installer_32bits\Installer_32Bits.nsi" />
+    <None Include="Installer\Installer_64bits\Installer_64Bits.nsi" />
+    <None Include="Installer\Installer_Algemeen.nsh" />
     <None Include="OpenEditor.rh" />
     <None Include="res\OpenQuery.rc2" />
     <None Include="_Data\languages.dat" />

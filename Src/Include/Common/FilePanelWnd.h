@@ -77,8 +77,10 @@ protected:
     void ActivateOpenFile ();
 
 protected:
-	DECLARE_MESSAGE_MAP()
+	  DECLARE_MESSAGE_MAP()
 
+    BOOL PreTranslateMessage(MSG* pMsg);
+    int  m_tab { 0 };
 public:
     afx_msg int  OnCreate(LPCREATESTRUCT lpCreateStruct);
     afx_msg void OnDestroy();

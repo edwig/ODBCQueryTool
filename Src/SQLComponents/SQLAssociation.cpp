@@ -27,6 +27,7 @@
 #include "Stdafx.h"
 #include "SQLComponents.h"
 #include "SQLAssociation.h"
+#include "SQLFilter.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -34,12 +35,37 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+//////////////////////////////////////////////////////////////////////////
+//
+// REQUIREMENTS FOR WORKING WITH ASSOCIATIONS
+//
+// 1) Fill the SQLDataSet for both the master and the detail
+//    SetQuery            -> "SELECT * FROM master"
+//                        -> "SELECT * FROM detail"
+//                           Queries CAN contain a WHERE clause BUT
+//                           CANNOT contain ORDER BY / HAVING etc.
+//    SetPrimaryTable     -> Filled "master" / "detail"
+//    SetPrimaryKeyColumn -> Set with primary keys
+// 2) If network database (1 primary key column of type INTEGER) use:
+//    SetSearchableColumn -> Set unique primary key (id type)
+// 3) Connect both datasets to the SQLAssocation
+// 4) Use "SetAssociation"-> Fill in the connecting foreign/primary columns
+//
+//////////////////////////////////////////////////////////////////////////
+
 namespace SQLComponents
 {
 
 SQLAssociation::SQLAssociation()
+               :m_master(nullptr)
+               ,m_detail(nullptr)
 {
+}
 
+SQLAssociation::SQLAssociation(SQLDataSet* p_master,SQLDataSet* p_detail)
+               :m_master(p_master)
+               ,m_detail(p_detail)
+{
 }
 
 SQLAssociation::~SQLAssociation()
@@ -57,6 +83,8 @@ SQLAssociation::FreeAssocs()
   m_assocs.clear();
 }
 
+// Create assocation mapping
+// and optionally the value to follow
 void 
 SQLAssociation::SetAssociation(CString     p_primaryColumn
                               ,CString     p_foreignColumn
@@ -69,84 +97,123 @@ SQLAssociation::SetAssociation(CString     p_primaryColumn
   m_assocs.push_back(pf);
 }
 
+// Set a new value in the association map
+// For reuse on each lookup of the association
 void 
 SQLAssociation::SetAssociation(int p_num,SQLVariant* p_value)
 {
   if(p_num >= 0 && p_num < (int)m_assocs.size())
   {
-    delete m_assocs[p_num]->m_value;
     m_assocs[p_num]->m_value = p_value;
   }
+}
+
+CString 
+SQLAssociation::GetAssocationName(int p_column)
+{
+  if(p_column >= 0 && p_column < (int)m_assocs.size())
+  {
+    // Returns "master.id->detail.id_master"
+    CString name;
+    name = m_master->GetName() + "." +
+           m_assocs[p_column]->m_primary + "->" + 
+           m_detail->GetName() + "." + 
+           m_assocs[p_column]->m_foreign;
+    return name;
+  }
+  return "";
+}
+
+SQLVariant*
+SQLAssociation::GetAssocationValue(int p_column)
+{
+  if(p_column >= 0 && p_column < (int)m_assocs.size())
+  {
+    return m_assocs[p_column]->m_value;
+  }
+  return nullptr;
 }
 
 // Check if everything needed is givven
 // 1) From master to details (p_toDetails = true)
 // 2) From details to master (p_toDetails = false)
 bool
-SQLAssociation::BasicChecks(bool p_toDetails)
+SQLAssociation::BasicChecks()
 {
   bool result = false;
 
   // Check 1: Master and detail both there
   if(m_master && m_detail)
   {
-    // Check 2: Association columns filled
+    // Check 2: Association columns present and filled
     if(m_assocs.size() > 0)
     {
-      if(p_toDetails)
+      result = true;
+      for(auto& key : m_assocs)
       {
-        // Check 3: Master record must be givven
-        if(m_masterRecord)
+        if(!key->m_value)
         {
-          result = true;
+          result = false;
         }
-      }
-      else
-      {
-        // From details to master: this is enough
-        result = true;
       }
     }
   }
   return result;
 }
 
-bool 
-SQLAssociation::UpdateMaster()
+SQLRecord*
+SQLAssociation::FollowToMaster()
 {
   // Check if we can do the update
-  if(!BasicChecks(false))
+  if(!BasicChecks())
   {
     return false;
   }
+
+  // Create filterset and add to the master
+  SQLFilterSet filters;
   for(unsigned ind = 0;ind < m_assocs.size();++ind)
   {
-    m_master->SetParameter(m_assocs[ind]->m_primary,*(m_assocs[ind]->m_value));
+    SQLFilter filter(m_assocs[ind]->m_primary,OP_Equal,m_assocs[ind]->m_value);
+    filters.push_back(filter);
   }
-  if(m_master->IsOpen())
+  m_master->SetFilters(filters);
+
+  bool result = m_master->IsOpen() ? m_master->Append() : m_master->Open();
+  if(result)
   {
-    return m_master->Append();
+    // FindBy Filter (primary = true)
+    return m_master->FindObjectFilter(filters,true);
   }
-  return m_master->Open();
+  return nullptr;
 }
 
-bool 
-SQLAssociation::UpdateDetails()
+// Find a recordset of details
+// Caller must 'delete' the RecordSet
+RecordSet*
+SQLAssociation::FollowToDetails()
 {
   // Check if we can do the update
-  if(!BasicChecks(true))
+  if(!BasicChecks())
   {
     return false;
   }
+
+  // Create filterset and add to the detail
+  SQLFilterSet filters;
   for(unsigned ind = 0;ind < m_assocs.size();++ind)
   {
-    m_detail->SetParameter(m_assocs[ind]->m_foreign,*(m_assocs[ind]->m_value));
+    SQLFilter filter(m_assocs[ind]->m_foreign,OP_Equal,m_assocs[ind]->m_value);
+    filters.push_back(filter);
   }
-  if(m_detail->IsOpen())
+  m_detail->SetFilters(filters);
+
+  bool result = m_detail->IsOpen() ? m_detail->Append() : m_detail->Open();
+  if(result)
   {
-    return m_detail->Append();
+    return m_detail->FindRecordSet(filters);
   }
-  return m_detail->Open();
+  return nullptr;
 }
 
 // End of namespace

@@ -124,7 +124,7 @@ public:
   // BOUND STATEMENT
   // Divide a SQL statement in Prepare/Execute/Fetch
   void        DoSQLPrepare(const CString& p_statement);
-  void        DoSQLExecute();
+  void        DoSQLExecute(bool p_rebind = false);
   // Get bounded columns from query
   ColNumMap*  GetBoundedColumns();
 

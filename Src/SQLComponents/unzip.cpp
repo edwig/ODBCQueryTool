@@ -67,8 +67,6 @@
 #include <tchar.h>
 #include "unzip.h"
 
-#pragma warning (disable: 4996)
-
 #define ZIP_HANDLE   1
 #define ZIP_FILENAME 2
 #define ZIP_MEMORY   3
@@ -3752,8 +3750,9 @@ public:
     cze.index  = 0;
     if (pwd!=0) 
     {
-      password=new char[strlen(pwd)+1]; 
-      strcpy(password,pwd);
+      int len = (int) strlen(pwd);
+      password=new char[len+1]; 
+      strcpy_s(password,len + 1,pwd);
     }
   }
   ~TUnzip() {if (password!=0) delete[] password; password=0; if (unzbuf!=0) delete[] unzbuf; unzbuf=0;}
@@ -3781,7 +3780,11 @@ ZRESULT TUnzip::Open(void *z,unsigned int len,DWORD flags)
   _tcscpy(rootdir,_T("\\"));
 #endif
   TCHAR lastchar = rootdir[_tcslen(rootdir)-1];
-  if (lastchar!='\\' && lastchar!='/') _tcscat(rootdir,_T("\\"));
+  if(lastchar != '\\' && lastchar != '/')
+  {
+    // _tcscat(rootdir,_T("\\"));
+    strcat_s(rootdir,MAX_PATH,"\\");
+  }
   //
   if (flags==ZIP_HANDLE)
   { // test if we can seek on it. We can't use GetFileType(h)==FILE_TYPE_DISK since it's not on CE.
@@ -3797,9 +3800,15 @@ ZRESULT TUnzip::Open(void *z,unsigned int len,DWORD flags)
 }
 
 ZRESULT TUnzip::SetUnzipBaseDir(const TCHAR *dir)
-{ _tcscpy(rootdir,dir);
+{ 
+  // _tcscpy(rootdir,dir);
+  strcpy_s(rootdir,MAX_PATH,dir);
   TCHAR lastchar = rootdir[_tcslen(rootdir)-1];
-  if (lastchar!='\\' && lastchar!='/') _tcscat(rootdir,_T("\\"));
+  if(lastchar != '\\' && lastchar != '/')
+  {
+    // _tcscat(rootdir,_T("\\"));
+    strcat_s(rootdir,MAX_PATH,"\\");
+  }
   return ZR_OK;
 }
 
@@ -3836,7 +3845,7 @@ ZRESULT TUnzip::Get(int index,ZIPENTRY *ze)
 #ifdef UNICODE
   MultiByteToWideChar(CP_UTF8,0,fn,-1,tfn,MAX_PATH);
 #else
-  strcpy(tfn,fn);
+  strcpy_s(tfn,MAX_PATH,fn);
 #endif
   // As a safety feature: if the zip filename had sneaky stuff
   // like "c:\windows\file.txt" or "\windows\file.txt" or "fred\..\..\..\windows\file.txt"
@@ -3856,7 +3865,8 @@ ZRESULT TUnzip::Get(int index,ZIPENTRY *ze)
     c=_tcsstr(sfn,_T("/..\\")); if (c!=0) {sfn=c+4; continue;}
     break;
   }
-  _tcscpy(ze->name, sfn);
+  // _tcscpy(ze->name, sfn);
+  strcpy_s(ze->name,MAX_PATH,sfn);
 
 
   // zip has an 'attribute' 32bit value. Its lower half is windows stuff
@@ -3931,7 +3941,7 @@ ZRESULT TUnzip::Find(const TCHAR *tname,bool ic,int *index,ZIPENTRY *ze)
 #ifdef UNICODE
   WideCharToMultiByte(CP_UTF8,0,tname,-1,name,MAX_PATH,0,0);
 #else
-  strcpy(name,tname);
+  strcpy_s(name,MAX_PATH,tname);
 #endif
   int res = unzLocateFile(uf,name,ic?CASE_INSENSITIVE:CASE_SENSITIVE);
   if (res!=UNZ_OK)
@@ -3961,7 +3971,15 @@ void EnsureDirectory(const TCHAR *rootdir, const TCHAR *dir)
     EnsureDirectory(rootdir,tmp);
     name++;
   }
-  TCHAR cd[MAX_PATH]; *cd=0; if (rootdir!=0) _tcscpy(cd,rootdir); _tcscat(cd,dir);
+  TCHAR cd[MAX_PATH]; 
+  *cd=0; 
+  if(rootdir != 0)
+  {
+    //_tcscpy(cd,rootdir);
+    strcpy_s(cd,MAX_PATH,rootdir);
+  }
+  //_tcscat(cd,dir);
+  strcat_s(cd,MAX_PATH,dir);
   if (GetFileAttributes(cd)==0xFFFFFFFF) CreateDirectory(cd,NULL);
 }
 
@@ -4012,7 +4030,17 @@ ZRESULT TUnzip::Unzip(int index,void *dst,unsigned int len,DWORD flags)
     // a malicious zip could unzip itself into c:\windows. Our solution is that GetZipItem (which
     // is how the user retrieve's the file's name within the zip) never returns absolute paths.
     const TCHAR *name=ufn; const TCHAR *c=name; while (*c!=0) {if (*c=='/' || *c=='\\') name=c+1; c++;}
-    TCHAR dir[MAX_PATH]; _tcscpy(dir,ufn); if (name==ufn) *dir=0; else dir[name-ufn]=0;
+    TCHAR dir[MAX_PATH]; 
+    // _tcscpy(dir,ufn); 
+    strcpy_s(dir,MAX_PATH,ufn);
+    if(name == ufn)
+    {
+      *dir = 0;
+    }
+    else
+    {
+      dir[name - ufn] = 0;
+    }
     TCHAR fn[MAX_PATH]; 
     bool isabsolute = (dir[0]=='/' || dir[0]=='\\' || (dir[0]!=0 && dir[1]==':'));
     if (isabsolute) {wsprintf(fn,_T("%s%s"),dir,name); EnsureDirectory(0,dir);}
@@ -4085,7 +4113,9 @@ unsigned int FormatZipMessageU(ZRESULT code, TCHAR *buf,unsigned int len)
   unsigned int mlen=(unsigned int)_tcslen(msg);
   if (buf==0 || len==0) return mlen;
   unsigned int n=mlen; if (n+1>len) n=len-1;
-  _tcsncpy(buf,msg,n); buf[n]=0;
+  //_tcsncpy(buf,msg,n); 
+  strncpy_s(buf,len,msg,n);
+  buf[n]=0;
   return mlen;
 }
 

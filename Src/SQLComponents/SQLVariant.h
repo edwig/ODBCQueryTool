@@ -138,7 +138,7 @@ public:
    bool                 SetBinary(int p_length,void* p_data);
    void*                GetDataPointer();
    // Access per type
-   char*                GetAsChar();
+   const char*          GetAsChar();
    void                 GetAsString(CString& p_result);
    void*                GetAsBinary();
    bool                 GetAsBoolean();
@@ -160,6 +160,7 @@ public:
    TIMESTAMP_STRUCT*    GetAsTimestamp();
    CString              GetAsEuropeanTimestamp();
    SQL_INTERVAL_STRUCT* GetAsInterval();
+   CString              GetAsSQLString();
    // Access per complex type
    SQLDate              GetAsSQLDate();
    SQLTime              GetAsSQLTime();
@@ -239,7 +240,7 @@ private:
    bool    StringToBinary (const char* p_data);
    bool    BinaryToString (unsigned char* buffer,int buflen);
    // Throw error as a result of internal trimming
-   void    ThrowErrorDatatype(int p_getas);
+   void*   ThrowErrorDatatype(int p_getas);
 
    // Private Data
    int    m_datatype;         // Primary datatype SQL_C_XXXX
@@ -374,7 +375,7 @@ SQLVariant::GetSQLDataType()
 //
 //////////////////////////////////////////////////////////////////////////
 
-using var = SQLVariant;
+using var = SQLComponents::SQLVariant;
 
 // End of namespace
 }

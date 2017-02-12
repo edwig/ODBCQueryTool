@@ -76,6 +76,19 @@ typedef enum _schemaAction
 }
 SchemaAction;
 
+// Structure to hold information about a DSN (DataSourceName)
+typedef struct _datasource
+{
+  CString m_datasource;
+  CString m_username;
+  CString m_password;
+  bool    m_system;
+  bool    m_outputOMF;
+  bool    m_default;
+  bool    m_dataConnection;
+}
+DataSourceInternal;
+
 typedef std::vector<DataSourceInternal> DSMap;
 typedef std::stack<SQLTransaction*>     TransactionStack;
 typedef std::map<int,int>               RebindMap;

@@ -42,8 +42,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#pragma warning(disable: 4244)
-
 namespace SQLComponents
 {
 
@@ -140,12 +138,12 @@ SQLTimestamp::SetTimestamp(int p_year,int p_month ,int p_day
                           ,int p_hour,int p_minute,int p_second
                           ,int p_fraction /*=0*/)
 {
-  m_timestamp.m_year   = p_year;
-  m_timestamp.m_month  = p_month;
-  m_timestamp.m_day    = p_day;
-  m_timestamp.m_hour   = p_hour;
-  m_timestamp.m_minute = p_minute;
-  m_timestamp.m_second = p_second;
+  m_timestamp.m_year   = (short) p_year;
+  m_timestamp.m_month  = (char)  p_month;
+  m_timestamp.m_day    = (char)  p_day;
+  m_timestamp.m_hour   = (char)  p_hour;
+  m_timestamp.m_minute = (char)  p_minute;
+  m_timestamp.m_second = (char)  p_second;
   m_fraction = p_fraction;
 
   RecalculateValue();
@@ -219,8 +217,8 @@ SQLTimestamp::RecalculateValue()
     gregorianA = year / 100;
     gregorianB = 2 - gregorianA + (gregorianA / 4);
   }
-  factorC = (365.25  * (double)year);
-  factorD = (30.6001 * (double)(month + 1));
+  factorC = (long) (365.25  * (double)year);
+  factorD = (long) (30.6001 * (double)(month + 1));
   // The correction factor (Modified JD) 
   // Falls on 16 november 1858 12:00 hours (noon), 
   // so subtract 679006 (17 november 1858 00:00:00 hour)
@@ -247,29 +245,29 @@ SQLTimestamp::Normalise()
   // See alsoo Robin M. Green: Spherical Astronomy, page 250 and next
 
   // Correction factor is MJD (2,400,000.5) + 0.5 (17 nov 1858 instead of 16 nov 12:00 hours)
-  double JD = (m_value / SECONDS_PER_DAY) + 2400001;
+  double JD = (double)((m_value / SECONDS_PER_DAY) + 2400001);
   if(JD > 2299160)
   {
-    gregorianA = (JD - 1867216.25) / 36524.25;
-    gregorianB = JD + 1 + gregorianA - (gregorianA / 4);
+    gregorianA = (long) ((JD - 1867216.25) / 36524.25);
+    gregorianB = (long) (JD + 1 + gregorianA - (gregorianA / 4));
   }
   else
   {
-    gregorianB = JD;
+    gregorianB = (long) JD;
   }
   factorC = gregorianB + 1524;
-  factorD = ((double)factorC - 122.1) / 365.25;
-  factorE =  (double)factorD * 365.25;
-  factorG = ((double)(factorC - factorE)) / 30.6001;
-  m_timestamp.m_day   = factorC - factorE - (int)((double)factorG * 30.6001);
-  m_timestamp.m_month = (factorG > 13) ? factorG - 13 : factorG - 1;
-  m_timestamp.m_year  = (m_timestamp.m_month > 2) ? factorD - 4716 : factorD - 4715;
+  factorD = (long) (((double)factorC - 122.1) / 365.25);
+  factorE = (long)  ((double)factorD * 365.25);
+  factorG = (long) (((double)(factorC - factorE)) / 30.6001);
+  m_timestamp.m_day   = (char)   (factorC - factorE - (int)((double)factorG * 30.6001));
+  m_timestamp.m_month = (char)  ((factorG > 13) ? factorG - 13 : factorG - 1);
+  m_timestamp.m_year  = (short) ((m_timestamp.m_month > 2) ? factorD - 4716 : factorD - 4715);
 
   long seconden        = m_value  % SECONDS_PER_DAY;
-  m_timestamp.m_hour   = seconden / SECONDS_PER_HOUR;
+  m_timestamp.m_hour   = (char) (seconden / SECONDS_PER_HOUR);
   int rest             = seconden % SECONDS_PER_HOUR;
-  m_timestamp.m_minute = rest     / SECONDS_PER_MINUTE;
-  m_timestamp.m_second = rest     % SECONDS_PER_MINUTE;
+  m_timestamp.m_minute = (char) (rest     / SECONDS_PER_MINUTE);
+  m_timestamp.m_second = (char) (rest     % SECONDS_PER_MINUTE);
   // Fraction not set from normalized value
   m_fraction = 0;
 
@@ -609,19 +607,19 @@ SQLTimestamp::MonthsBetween(const SQLTimestamp& p_stamp) const
 int
 SQLTimestamp::DaysBetween(const SQLTimestamp& p_stamp) const
 {
-  return SecondsBetween(p_stamp) / SECONDS_PER_DAY;
+  return (int)(SecondsBetween(p_stamp) / SECONDS_PER_DAY);
 }
 
 int
 SQLTimestamp::HoursBetween(const SQLTimestamp& p_stamp) const
 {
-  return SecondsBetween(p_stamp) / SECONDS_PER_HOUR;
+  return (int)(SecondsBetween(p_stamp) / SECONDS_PER_HOUR);
 }
 
 int
 SQLTimestamp::MinutesBetween(const SQLTimestamp& p_stamp) const
 {
-  return SecondsBetween(p_stamp) / SECONDS_PER_MINUTE;
+  return (int)(SecondsBetween(p_stamp) / SECONDS_PER_MINUTE);
 }
 
 // Difference between two timestamp

@@ -40,6 +40,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+namespace SQLComponents
+{
+
 typedef struct _cpNames
 {
   int     m_codepage_ID;    // Active codepage ID
@@ -216,7 +219,7 @@ static CPIDNameMap cp_cpid_map;
 static NameCPIDMap cp_name_map;
 static CPIDNameMap cp_info_map;
 // 
-static void 
+void 
 InitCodePageNames()
 {
   // See if we are already initialized
@@ -556,4 +559,7 @@ TryCreateWideString(const CString& p_string
     }
   }
   return result;
+}
+
+// End of namespace
 }

@@ -30,6 +30,7 @@
 #include "SQLQuery.h"
 #include "SQLVariantFormat.h"
 #include "SQLInfoDB.h"
+#include <algorithm>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -220,6 +221,32 @@ SQLDataSet::Forget(bool p_force /*=false*/)
   return true;
 }
 
+// Forget 1 record and primary is an INTEGER (Fast!!)
+bool
+SQLDataSet::ForgetObject(int p_primary,bool p_force /*=false*/)
+{
+  // Find the record to forget
+  SQLRecord* record = FindObjectRecord(p_primary);
+  if(!record)
+  {
+    return false;
+  }
+  return ForgetRecord(record,p_force);
+}
+
+// Forget 1 record and primary is a compound key (Slower)
+bool
+SQLDataSet::ForgetObject(VariantSet& p_primary,bool p_force /*=false*/)
+{
+  // Find the record to forget
+  SQLRecord* record = FindObjectRecord(p_primary);
+  if(!record)
+  {
+    return false;
+  }
+  return ForgetRecord(record,p_force);
+}
+
 void
 SQLDataSet::SetStatus(int m_add,int m_delete /*=0*/)
 {
@@ -265,6 +292,14 @@ SQLDataSet::SetParameter(CString p_naam,SQLVariant p_waarde)
   par.m_name   = p_naam;
   par.m_value  = p_waarde;
   m_parameters.push_back(par);
+}
+
+// Set filters for a query
+// Releasing the previous set of filters
+void
+SQLDataSet::SetFilters(SQLFilterSet& p_filters)
+{
+  m_filters = p_filters;
 }
 
 void         
@@ -380,6 +415,39 @@ SQLDataSet::ParseSelection(SQLQuery& p_query)
   return sql;
 }
 
+// Parse the fitlers
+CString
+SQLDataSet::ParseFilters()
+{
+  CString query(m_query);
+  query.MakeUpper();
+  query.Replace("\t"," ");
+  bool whereFound = m_query.Find("WHERE ") > 0;
+  bool first = true;
+
+  // Restart with original query
+  query = m_query;
+
+  // Add all filters
+  for(auto& filt : m_filters)
+  {
+    if(first == true)
+    {
+      if(!whereFound)
+      {
+        query += "\nWHERE ";
+      }
+    }
+    else
+    {
+      query += "\n   AND ";
+    }
+    query += filt.GetSQLFilter();
+  }
+  return query;
+}
+
+
 bool
 SQLDataSet::Open(bool p_stopIfNoColumns /*=false*/)
 {
@@ -412,6 +480,10 @@ SQLDataSet::Open(bool p_stopIfNoColumns /*=false*/)
       if(m_parameters.size())
       {
         query = ParseQuery();
+      }
+      else if(m_filters.size())
+      {
+        query = ParseFilters();
       }
     }
     else
@@ -453,21 +525,11 @@ SQLDataSet::Open(bool p_stopIfNoColumns /*=false*/)
           unsigned long prim = var->GetAsULong();
           m_objects[prim] = number++;
         }
-
-// #ifdef DEBUG
-//         // Debugging e.g. for reading the data from the dataset
-//         // In case of format problems with DOUBLE/NUMERIC/DECIMAL
-//         CString res;
-//         var->GetAsString(res);
-//         TRACE("Dataset: %s Field: %d Value: %s\n",m_name,ind,res);
-// #endif
       }
     }
     // Reached the end: we are OPEN!
     m_open = true;
     result = true;
-    // Remember the query
-    m_query = query;
 
     trans.Commit();
   }
@@ -514,16 +576,27 @@ SQLDataSet::Append()
   {
     SQLQuery qr(m_database);
     SQLTransaction trans(m_database,m_name);
+    CString query(m_query);
 
-    // Use the parameters (if any)
-    qr.ResetParameters();
-    for(unsigned ind = 0;ind < m_parameters.size();++ind)
+    // Fill in the query with parameters / filters
+    if(!m_query.IsEmpty())
     {
-      qr.SetParameter(ind + 1,&m_parameters[ind].m_value);
+      if(m_parameters.size())
+      {
+        query = ParseQuery();
+      }
+      else if(m_filters.size())
+      {
+        query = ParseFilters();
+      }
+    }
+    else
+    {
+      query = ParseSelection(qr);
     }
 
     // Do the SELECT query
-    qr.DoSQLStatement(m_query);
+    qr.DoSQLStatement(query);
 
     // Names and types must be the same as previous queries
     CheckNames(qr);
@@ -536,7 +609,7 @@ SQLDataSet::Append()
     {
       // Make a new record
       SQLRecord* record = new SQLRecord(this,modifiable);
-      m_records.push_back(record);
+      bool foundNew = true;
       // Get all the columns of the record
       SQLVariant* var = NULL;
       int num = qr.GetNumberOfColumns();
@@ -549,8 +622,20 @@ SQLDataSet::Append()
         if(ind == primary)
         {
           unsigned long prim = var->GetAsULong();
+          if(m_objects.find(prim) == m_objects.end())
+          {
           m_objects[prim] = m_current + number++;
         }
+          else
+          {
+            foundNew = false;
+          }
+        }
+      }
+      // If we found a new record: keep it!
+      if(foundNew)
+      {
+        m_records.push_back(record);
       }
     }
     // Legal 0 or more records
@@ -562,10 +647,10 @@ SQLDataSet::Append()
     Close();
     throw s;
   }
+  // Goto the first freshly read record
   if(m_records.size() > sizeBefore)
   {
     m_status |= SQL_Selections;
-    // Goto first read record
     Next();
   }
   return result;
@@ -773,6 +858,78 @@ SQLDataSet::FindObjectRecord(VariantSet& p_primary)
   }
   return nullptr;
 }
+
+// Finding an object through a filter set
+// Finds the first object. In case of an unique record, it will be the only one
+SQLRecord*
+SQLDataSet::FindObjectFilter(SQLFilterSet& p_filters,bool p_primary /*=false*/)
+{
+  SQLRecord* record = nullptr;
+
+  // Optimize for network databases
+  if(p_primary && p_filters.size() == 1)
+  {
+    SQLVariant* prim = p_filters[0].GetValue();
+    if(p_filters[0].GetOperator() == OP_Equal && prim->GetDataType() == SQL_C_SLONG )
+    {
+      return FindObjectRecord(prim->GetAsSLong());
+    }
+  }
+
+  // Walk the chain of records
+  for(auto& rec : m_records)
+  {
+    record = rec;
+    // Walk the chain of filters
+    for(auto& filt : p_filters)
+    {
+      if(! filt.MatchRecord(record))
+      {
+        record = nullptr;
+        break;
+      }
+    }
+    // Result reached at first matching record
+    if(record)
+    {
+      return record;
+    }
+  }
+  return nullptr;
+}
+
+// Finding a set of records through a filter set
+// Searches the complete recordset for all matches
+// Caller must delete the resulting set!!
+RecordSet* 
+SQLDataSet::FindRecordSet(SQLFilterSet& p_filters)
+{
+  RecordSet* records = new RecordSet();
+
+  // Walk the chain of records
+  for(auto& rec : m_records)
+  {
+    SQLRecord* record = rec;
+    // Walk the chain of filters
+    for(auto& filt : p_filters)
+    {
+      if(! filt.MatchRecord(record))
+      {
+        record = nullptr;
+        break;
+      }
+    }
+    // If record found, keep it
+    if(record)
+    {
+      records->push_back(record);
+    }
+  }
+
+  // Return complete recordset
+  return records;
+}
+
 
 // Get a fieldname
 CString    
@@ -1058,15 +1215,16 @@ SQLDataSet::Deletes(int p_mutationID)
       MutType type = record->MixedMutations(p_mutationID);
       switch(type)
       {
-        case MUT_NoMutation: // Fall through: do nothing with record
-        case MUT_OnlyOthers: ++it;
+        case MUT_OnlyOthers: ++it;  // do nothing with record
                              break;
         case MUT_Mixed:      throw CString("Mixed mutations");
+        case MUT_NoMutation: // Fall through: Remove record
         case MUT_MyMutation: sql = GetSQLDelete(&query,record);
                              query.DoSQLStatement(sql);
                              // Delete this record, continuing to the next
-                             delete record;
-                             it = m_records.erase(it);
+//                              delete record;
+//                              it = m_records.erase(it);
+                             ForgetRecord(record,true);
                              ++deletes;
                              break;
       }
@@ -1078,9 +1236,9 @@ SQLDataSet::Deletes(int p_mutationID)
   }
 
   // Adjust the current record if necessary
-  if(m_current > (int)m_records.size())
+  if(m_current >= (int)m_records.size())
   {
-    m_current = (int)m_records.size();
+    m_current = (int)m_records.size() - 1;
   }
 
   // If we did all records, no more deletes are present
@@ -1345,12 +1503,10 @@ SQLDataSet::XMLLoad(CString p_filename)
   return false;
 }
 
-#pragma warning (disable: 4189)
-
 void
 SQLDataSet::XMLSave(XMLMessage* p_msg,XMLElement* p_dataset)
 {
-  XMLElement* dataset   = p_msg->AddElement(p_dataset,dataset_names[g_defaultLanguage][DATASET_NAME],XDT_String,m_name);
+                          p_msg->AddElement(p_dataset,dataset_names[g_defaultLanguage][DATASET_NAME],XDT_String,m_name);
   XMLElement* structure = p_msg->AddElement(p_dataset,dataset_names[g_defaultLanguage][DATASET_STRUCTURE],XDT_String,"");
   CString nameField = dataset_names[g_defaultLanguage][DATASET_FIELD];
 
@@ -1409,6 +1565,70 @@ SQLDataSet::XMLLoad(XMLMessage* p_msg,XMLElement* p_dataset)
     rec->XMLLoad(p_msg,record);
     // Next record
     record = p_msg->GetElementSibling(record);
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// FORGETTING ABOUT A RECORD
+//
+//////////////////////////////////////////////////////////////////////////
+
+// Record pointer cannot be a nullptr
+bool
+SQLDataSet::ForgetRecord(SQLRecord* p_record,bool p_force)
+{
+  if(p_force == false)
+  {
+    if(p_record->GetStatus() & (SQL_Record_Insert | SQL_Record_Updated | SQL_Record_Deleted))
+    {
+      // Do the synchronization first!
+      return false;
+    }
+  }
+  RecordSet::iterator it = find(m_records.begin(),m_records.end(),p_record);
+  if(it != m_records.end())
+  {
+    // Try to release the record
+    if(p_record->Release())
+    {
+      // Remove from m_objects. Maybe does nothing!
+      ForgetPrimaryObject(p_record);
+
+      // Remove from m_records
+      m_records.erase(it);
+    }
+    return true;
+  }
+  return false;
+}
+
+// Forget the registration of the optimized primary key
+void
+SQLDataSet::ForgetPrimaryObject(SQLRecord* p_record)
+{
+  // See if we have a unique primary key
+  int primary = FindSearchColumn();
+  if(!primary)
+  {
+    return;
+  }
+  // Find the record
+  long value = p_record->GetField(primary)->GetAsSLong();
+  ObjectMap::iterator it = m_objects.find(value);
+  if(it != m_objects.end())
+  {
+    // Remove the reference to the record
+    it = m_objects.erase(it);
+
+    // All other objects shift one place down!
+    while(it != m_objects.end())
+    {
+      it->second--;
+      ++it;
+    }
+    // Reset the current pointer
+    First();
   }
 }
 

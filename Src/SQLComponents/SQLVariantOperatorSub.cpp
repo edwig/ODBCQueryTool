@@ -31,6 +31,12 @@
 #include "SQLDate.h"
 #include "bcd.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
 namespace SQLComponents
 {
 
@@ -1473,7 +1479,6 @@ static SQL_OperNumSubNum(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 // TYPE == DATE
-#pragma warning (disable: 4239)
 
 SQLVariant 
 static SQL_OperDateSubDate(SQLVariant& p_left,SQLVariant& p_right)

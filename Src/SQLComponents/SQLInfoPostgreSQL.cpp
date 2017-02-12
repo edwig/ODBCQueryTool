@@ -1633,10 +1633,10 @@ SQLInfoPostgreSQL::DoSQLCall(SQLQuery* p_query,CString& p_schema,CString& p_proc
       SQLVariant* result = query.GetColumn(resIndex);
       if(result->GetDataType() == SQL_C_CHAR)
       {
-        char* resPointer = result->GetAsChar();
+        const char* resPointer = result->GetAsChar();
         if(resPointer && *resPointer == '(' && numReturn)
         {
-          var = GetVarFromRecord(dataType,resPointer,recIndex++,ready);
+          var = GetVarFromRecord(dataType,(char*)resPointer,recIndex++,ready);
           resIndex = 0;
           result = &var;
         }

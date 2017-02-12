@@ -686,9 +686,6 @@
     <ClInclude Include="Include\COMMON\FakeRClick.h">
       <Filter>Frame\Frame headers</Filter>
     </ClInclude>
-    <ClInclude Include="Include\COMMON\FilePanelWnd.h">
-      <Filter>Frame\Frame headers</Filter>
-    </ClInclude>
     <ClInclude Include="Src\Frame\FileWatch.h">
       <Filter>Frame\Frame headers</Filter>
     </ClInclude>
@@ -728,6 +725,9 @@
     <ClInclude Include="Src\Query\VariablesDlg.h">
       <Filter>Query\Query Headers</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Include\Common\FilePanelWnd.h">
+      <Filter>Frame\Frame headers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="OpenEditor.rh">
@@ -762,6 +762,15 @@
     </None>
     <None Include="Data\ultraedit.keymap">
       <Filter>Keymap files</Filter>
+    </None>
+    <None Include="Installer\Installer_Algemeen.nsh">
+      <Filter>Installation files</Filter>
+    </None>
+    <None Include="Installer\Installer_64bits\Installer_64Bits.nsi">
+      <Filter>Installation files</Filter>
+    </None>
+    <None Include="Installer\Installer_32bits\Installer_32Bits.nsi">
+      <Filter>Installation files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

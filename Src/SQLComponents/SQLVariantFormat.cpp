@@ -42,8 +42,6 @@ static char THIS_FILE[] = __FILE__;
 namespace SQLComponents
 {
 
-#pragma warning (disable: 4482) // Non standard enum used
-
 #define SEP_LEN 10
 
 // string format number and money format functions
@@ -470,7 +468,6 @@ SQLVariantFormat::SetCurrentDate()
   m_owner   = true;
 }
 
-#pragma warning (disable: 4996)
 bool
 SQLVariantFormat::GetTimeFromStringVariant(SQLVariant* p_variant,CString p_format,TIME_STRUCT* p_time)
 {
@@ -498,7 +495,7 @@ SQLVariantFormat::GetTimeFromStringVariant(SQLVariant* p_variant,CString p_forma
   int uur = 0;
   int min = 0;
   int sec = 0;
-  if(sscanf(tijd,"%d:%d:%d",&uur,&min,&sec) == 3)
+  if(sscanf_s(tijd,"%d:%d:%d",&uur,&min,&sec) == 3)
   {
     p_time->hour   = (SQLUSMALLINT) uur;
     p_time->minute = (SQLUSMALLINT) min;
@@ -508,7 +505,6 @@ SQLVariantFormat::GetTimeFromStringVariant(SQLVariant* p_variant,CString p_forma
   }
   return false;
 }
-#pragma warning (error:4996)
 
 bool
 SQLVariantFormat::GetDateFromStringVariant(SQLVariant* p_variant,CString p_format,DATE_STRUCT* p_date)

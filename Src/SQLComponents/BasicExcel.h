@@ -82,25 +82,10 @@
 #ifndef BASICEXCEL_HPP
 #define BASICEXCEL_HPP
 
-//MF
-#if defined(_MSC_VER) && _MSC_VER<=1200 // VC++ 6.0
-#pragma warning(disable: 4786)
-
-#define LONGINT __int64
-#define LONGINT_CONST(x) x
-#define COMPOUNDFILE
-
-#else	// newer Microsoft compilers
-
+// newer Microsoft compilers
 #define LONGINT long long
 #define LONGINT_CONST(x) x##LL
 #define COMPOUNDFILE CompoundFile::
-
-#ifdef _DEBUG
-//#define _ITERATOR_DEBUG_LEVEL 0	// speedup iterator operations while debugging
-#endif
-#endif
-
 
 //MF type definitions of the Windows Compound Binary File Format (CBF) Specification
 

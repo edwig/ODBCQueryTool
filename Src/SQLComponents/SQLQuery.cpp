@@ -40,8 +40,6 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#pragma warning (disable: 4312)
-
 namespace SQLComponents
 {
 
@@ -242,7 +240,7 @@ SQLQuery::Open()
   // Set max-rows if our database DOES support it (Oracle!)
   if(m_maxRows)
   {
-    m_retCode = SqlSetStmtAttr(m_hstmt,SQL_MAX_ROWS,(SQLPOINTER)m_maxRows,SQL_IS_UINTEGER);
+    m_retCode = SqlSetStmtAttr(m_hstmt,SQL_MAX_ROWS,(SQLPOINTER)(DWORD_PTR)m_maxRows,SQL_IS_UINTEGER);
     if(!SQL_SUCCEEDED(m_retCode))
     {
       GetLastError("Cannot set MAX_ROWS attribute: ");
@@ -253,7 +251,7 @@ SQLQuery::Open()
   // Setting the concurrency level of the cursor
   if(m_concurrency > SQL_CONCUR_READ_ONLY)
   {
-    m_retCode = SqlSetStmtAttr(m_hstmt,SQL_ATTR_CONCURRENCY,(SQLPOINTER)m_concurrency,SQL_IS_UINTEGER);
+    m_retCode = SqlSetStmtAttr(m_hstmt,SQL_ATTR_CONCURRENCY,(SQLPOINTER)(DWORD_PTR)m_concurrency,SQL_IS_UINTEGER);
     if(!SQL_SUCCEEDED(m_retCode))
     {
       GetLastError("Cannot set CONCURRENCY attribute: ");
@@ -499,15 +497,9 @@ SQLQuery::DoSQLStatement(const CString& p_statement)
   BindParameters();
 
   // In special cases queries can go wrong through ORACLE ODBC if they contain newlines
-  // Hence all newlines are replaces by spaces, if the query does NOT contain any comments
+  // So we need to remove trailing white and red space
   CString statement(p_statement);
-  if(statement.Find("--") < 0)
-  {
-    statement.Replace("\n"," ");
-    statement.Replace("\r"," ");
-  }
-  // Optimization: remove trailing spaces
-  statement.Trim();
+  statement.TrimRight("\n\r\t\f ");
 
   // Do the Query text macro replacement
   if(m_database)
@@ -519,10 +511,11 @@ SQLQuery::DoSQLStatement(const CString& p_statement)
   // in the processing of the query-strings which crashes it in CharNextW
   // by a missing NULL-Terminator. By changing the length of the statement
   // _including_ the terminating NUL, it won't crash at all
+  // NOTE: This alsoo means we cannot use the SQL_NTS terminator
   SQLINTEGER lengthStatement = statement.GetLength() + 1;
 
   // GO DO IT RIGHT AWAY
-  m_retCode = SqlExecDirect(m_hstmt,(SQLCHAR*)(LPCSTR)statement,lengthStatement);
+  m_retCode = SqlExecDirect(m_hstmt,(SQLCHAR*)statement.GetString(),lengthStatement);
 
   if(SQL_SUCCEEDED(m_retCode))
   {
@@ -695,7 +688,7 @@ SQLQuery::DoSQLPrepare(const CString& p_statement)
 }
 
 void
-SQLQuery::DoSQLExecute()
+SQLQuery::DoSQLExecute(bool p_rebind /*=false*/)
 {
   m_retCode = SQL_ERROR;
 
@@ -705,13 +698,13 @@ SQLQuery::DoSQLExecute()
     throw m_lastError;
   }
   
-  if(!m_boundDone)
+  if(!m_boundDone || p_rebind)
   {
     BindParameters();
   }
 
+  // Go execute it (again)
   m_retCode = SqlExecute(m_hstmt);
-  //m_prepareDone = false;
   if(m_retCode == SQL_NEED_DATA)
   {
     m_retCode = (short)ProvideAtExecData();
@@ -740,12 +733,17 @@ SQLQuery::DoSQLExecute()
     }
     FetchCursorName();
   }
-  if(m_retCode < 0)
+  else if(m_retCode < 0)
   {
     // rcExec == SQL_ERROR
     // rcExec == SQL_INVALID_HANDLE
     GetLastError("Error in SQL statement: ");
     throw m_lastError;
+  }
+  else
+  {
+    // rcExec == SQL_NO_DATA
+    // rcExec == SQL_STILL_EXECUTING
   }
   // Do bindings only once in a prepare -> multiple-execute cycle
   m_boundDone = true;
@@ -785,7 +783,7 @@ SQLQuery::BindParameters()
     if(var->GetAtExec())
     {
       // AT EXEC data piece by piece
-      dataPointer = (SQLPOINTER) icol;
+      dataPointer = (SQLPOINTER)(DWORD_PTR) icol;
       // Some database types need to know the length beforehand (Oracle!)
       // If no database type known, set to true, just to be sure!
       var->SetSizeIndicator(m_database ? m_database->GetNeedLongDataLen() : true);
@@ -1018,8 +1016,8 @@ SQLQuery::BindColumnNumeric(SQLSMALLINT p_column,SQLVariant* p_var,int p_type)
   {
     int     precision = p_var->GetNumericPrecision();
     int     scale     = p_var->GetNumericScale();
-    RETCODE retCode1  = SqlSetDescField(rowdesc,p_column,SQL_DESC_PRECISION,(SQLPOINTER)precision,NULL);
-    RETCODE retCode2  = SqlSetDescField(rowdesc,p_column,SQL_DESC_SCALE,    (SQLPOINTER)scale,    NULL);
+    RETCODE retCode1  = SqlSetDescField(rowdesc,p_column,SQL_DESC_PRECISION,(SQLPOINTER)(DWORD_PTR)precision,NULL);
+    RETCODE retCode2  = SqlSetDescField(rowdesc,p_column,SQL_DESC_SCALE,    (SQLPOINTER)(DWORD_PTR)scale,    NULL);
 
     if(SQL_SUCCEEDED(retCode1) && SQL_SUCCEEDED(retCode2))
     {

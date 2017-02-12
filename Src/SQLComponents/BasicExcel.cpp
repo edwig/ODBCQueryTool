@@ -40,8 +40,6 @@
 #pragma error ("COMPILE-TIME-ERROR: BasicExcel cannot be compiled in the AFX context")
 #endif
 
-#pragma warning(disable:4244)
-
 #ifdef _WIN32
 
 namespace WinCompFiles
@@ -4549,7 +4547,7 @@ void Worksheet::CellTable::RowBlock::CellBlock::SetType(int type)
   if (_union.void_)
     Reset();
 
-  type_ = type;
+  type_ = (short)type;
 
   switch(type_) {
     case CODE::BLANK:
@@ -5967,8 +5965,8 @@ void BasicExcel::UpdateWorksheets()
     // Modify Dimensions
     rawSheet.dimensions_.firstUsedRowIndex_ = 100000; // Use 100000 to indicate that firstUsedRowIndex is not set yet since maximum allowed rows in Excel is 65535.
     rawSheet.dimensions_.firstUsedColIndex_ = 1000;	  // Use 1000   to indicate that firstUsedColIndex is not set yet since maximum allowed columns in Excel is 255.
-    rawSheet.dimensions_.lastUsedRowIndexPlusOne_ = maxRows;
-    rawSheet.dimensions_.lastUsedColIndexPlusOne_ = maxCols;
+    rawSheet.dimensions_.lastUsedRowIndexPlusOne_ = (ULONG) maxRows;
+    rawSheet.dimensions_.lastUsedColIndexPlusOne_ = (USHORT) maxCols;
 
     // Make first sheet selected and other sheets unselected
     if (s > 0) rawSheet.window2_.options_ &= ~0x200;
@@ -6010,15 +6008,15 @@ void BasicExcel::UpdateWorksheets()
 
             if (rawSheet.dimensions_.firstUsedColIndex_ == 1000) {
               // Set firstUsedColIndex.
-              rawSheet.dimensions_.firstUsedColIndex_ = c;
+              rawSheet.dimensions_.firstUsedColIndex_ = (USHORT) c;
             }
 
             if (newRow) {
               // Prepare Row and DBCell for new row with data.
               Worksheet::CellTable::RowBlock& rRowBlock = rRowBlocks[curRowBlock-1];
               rRowBlock.rows_.push_back(row);
-              rRowBlock.rows_.back().rowIndex_ = r;
-              rRowBlock.rows_.back().lastCellColIndexPlusOne_ = maxCols;
+              rRowBlock.rows_.back().rowIndex_ = (USHORT) r;
+              rRowBlock.rows_.back().lastCellColIndexPlusOne_ = (USHORT) maxCols;
               rRowBlock.dbcell_.offsets_.push_back(0);
               newRow = false;
             }
@@ -6043,25 +6041,25 @@ void BasicExcel::UpdateWorksheets()
                 if (cl > c+1) {
                   // MULRK cells
                   pCell->SetType(CODE::MULRK);
-                  pCell->_union.mulrk_->rowIndex_ = r;
-                  pCell->_union.mulrk_->firstColIndex_ = c;
-                  pCell->_union.mulrk_->lastColIndex_ = cl - 1;
+                  pCell->_union.mulrk_->rowIndex_      = (USHORT) r;
+                  pCell->_union.mulrk_->firstColIndex_ = (USHORT) c;
+                  pCell->_union.mulrk_->lastColIndex_  = (USHORT) cl - 1;
                   pCell->_union.mulrk_->XFRK_.resize(cl-c);
 
                   for(size_t i=0; c<cl; ++c, ++i) {
                     cell = sheet.Cell(r, c);
                     pCell->_union.mulrk_->XFRK_[i].RKValue_ = GetRKValueFromInteger(cell->GetInteger());
-                    pCell->_union.mulrk_->XFRK_[i].XFRecordIndex_ = cell->GetXFormatIdx();	//MF set format index
+                    pCell->_union.mulrk_->XFRK_[i].XFRecordIndex_ = (USHORT) cell->GetXFormatIdx();	//MF set format index
                   }
 
                   --c;
                 } else {
                   // Single cell
                   pCell->SetType(CODE::RK);
-                  pCell->_union.rk_->rowIndex_ = r;
-                  pCell->_union.rk_->colIndex_ = c;
+                  pCell->_union.rk_->rowIndex_ = (USHORT) r;
+                  pCell->_union.rk_->colIndex_ = (USHORT) c;
                   pCell->_union.rk_->value_ = GetRKValueFromInteger(cell->GetInteger());
-                  pCell->_union.rk_->XFRecordIndex_ = cell->GetXFormatIdx();	//MF set format index
+                  pCell->_union.rk_->XFRecordIndex_ = (USHORT) cell->GetXFormatIdx();	//MF set format index
                 }
                 break;
               }
@@ -6083,31 +6081,31 @@ void BasicExcel::UpdateWorksheets()
                 if (cl > c+1 && canStoreAsRKValue) {
                   // MULRK cells
                   pCell->SetType(CODE::MULRK);
-                  pCell->_union.mulrk_->rowIndex_ = r;
-                  pCell->_union.mulrk_->firstColIndex_ = c;
-                  pCell->_union.mulrk_->lastColIndex_ = cl - 1;
+                  pCell->_union.mulrk_->rowIndex_      = (USHORT) r;
+                  pCell->_union.mulrk_->firstColIndex_ = (USHORT) c;
+                  pCell->_union.mulrk_->lastColIndex_  = (USHORT) cl - 1;
                   pCell->_union.mulrk_->XFRK_.resize(cl-c);
 
                   for(size_t i=0; c<cl; ++c, ++i) {
                     cell = sheet.Cell(r, c);
                     pCell->_union.mulrk_->XFRK_[i].RKValue_ = GetRKValueFromDouble(cell->GetDouble());
-                    pCell->_union.mulrk_->XFRK_[i].XFRecordIndex_ = cell->GetXFormatIdx();	//MF set format index
+                    pCell->_union.mulrk_->XFRK_[i].XFRecordIndex_ = (USHORT) cell->GetXFormatIdx();	//MF set format index
                   }
                   --c;
                 } else {
                   // Single cell
                   if (canStoreAsRKValue) {
                     pCell->SetType(CODE::RK);
-                    pCell->_union.rk_->rowIndex_ = r;
-                    pCell->_union.rk_->colIndex_ = c;
+                    pCell->_union.rk_->rowIndex_ = (USHORT) r;
+                    pCell->_union.rk_->colIndex_ = (USHORT) c;
                     pCell->_union.rk_->value_ = GetRKValueFromDouble(cell->GetDouble());
-                    pCell->_union.rk_->XFRecordIndex_ = cell->GetXFormatIdx();	//MF set format index
+                    pCell->_union.rk_->XFRecordIndex_ = (USHORT) cell->GetXFormatIdx();	//MF set format index
                   } else {
                     pCell->SetType(CODE::NUMBER);
-                    pCell->_union.number_->rowIndex_ = r;
-                    pCell->_union.number_->colIndex_ = c;
+                    pCell->_union.number_->rowIndex_ = (USHORT) r;
+                    pCell->_union.number_->colIndex_ = (USHORT) c;
                     pCell->_union.number_->value_ = cell->GetDouble();
-                    pCell->_union.number_->XFRecordIndex_ = cell->GetXFormatIdx();	//MF set format index
+                    pCell->_union.number_->XFRecordIndex_ = (USHORT) cell->GetXFormatIdx();	//MF set format index
                   }
                 }
                 break;
@@ -6117,8 +6115,8 @@ void BasicExcel::UpdateWorksheets()
               {
                 // Fill cell information
                 pCell->SetType(CODE::LABELSST);
-                pCell->_union.labelsst_->rowIndex_ = r;
-                pCell->_union.labelsst_->colIndex_ = c;
+                pCell->_union.labelsst_->rowIndex_ = (USHORT) r;
+                pCell->_union.labelsst_->colIndex_ = (USHORT) c;
 
                 // Get cell string
                 vector<char> str(cell->GetStringLength()+1);
@@ -6146,7 +6144,7 @@ void BasicExcel::UpdateWorksheets()
                   ++workbook_.sst_.uniqueStringsTotal_;
                 }
 
-                pCell->_union.labelsst_->XFRecordIndex_ = cell->GetXFormatIdx();	//MF set format index
+                pCell->_union.labelsst_->XFRecordIndex_ = (USHORT) cell->GetXFormatIdx();	//MF set format index
                 break;
               }
 
@@ -6154,8 +6152,8 @@ void BasicExcel::UpdateWorksheets()
               {
                 // Fill cell information
                 pCell->SetType(CODE::LABELSST);
-                pCell->_union.labelsst_->rowIndex_ = r;
-                pCell->_union.labelsst_->colIndex_ = c;
+                pCell->_union.labelsst_->rowIndex_ = (USHORT) r;
+                pCell->_union.labelsst_->colIndex_ = (USHORT) c;
 
                 // Get cell string
                 vector<wchar_t> str(cell->GetStringLength()+1);
@@ -6183,7 +6181,7 @@ void BasicExcel::UpdateWorksheets()
                   ++workbook_.sst_.uniqueStringsTotal_;
                 }
 
-                pCell->_union.labelsst_->XFRecordIndex_ = cell->GetXFormatIdx();	//MF set format index
+                pCell->_union.labelsst_->XFRecordIndex_ = (USHORT) cell->GetXFormatIdx();	//MF set format index
                 break;
               }
 
@@ -6193,10 +6191,10 @@ void BasicExcel::UpdateWorksheets()
                 // Fill cell information
                 pCell->SetType(CODE::FORMULA);
 
-                pCell->_union.formula_->rowIndex_ = r;
-                pCell->_union.formula_->colIndex_ = c;
+                pCell->_union.formula_->rowIndex_ = (USHORT) r;
+                pCell->_union.formula_->colIndex_ = (USHORT) c;
 
-                pCell->_union.formula_->XFRecordIndex_ = cell->GetXFormatIdx();
+                pCell->_union.formula_->XFRecordIndex_ = (USHORT) cell->GetXFormatIdx();
 
                 cell->get_formula(pCell);
                 break;
@@ -6208,10 +6206,10 @@ void BasicExcel::UpdateWorksheets()
                 // Fill cell information
                 pCell->SetType(CODE::BLANK);
 
-                pCell->_union.blank_->colIndex_ = c;
-                pCell->_union.blank_->rowIndex_ = r;
+                pCell->_union.blank_->colIndex_ = (USHORT) c;
+                pCell->_union.blank_->rowIndex_ = (USHORT) r;
 
-                pCell->_union.blank_->XFRecordIndex_ = cell->GetXFormatIdx();
+                pCell->_union.blank_->XFRecordIndex_ = (USHORT) cell->GetXFormatIdx();
                 break;
               }
             }
@@ -6229,10 +6227,10 @@ void BasicExcel::UpdateWorksheets()
         if (cell->GetMergedRows() > 1 || cell->GetMergedColumns() > 1) {
           YExcel::Worksheet::MergedCells::MergedCell mergedCell;
 
-          mergedCell.firstRow_ = mr;
-          mergedCell.firstColumn_ = c;
-          mergedCell.lastRow_ = mr + cell->GetMergedRows() - 1;
-          mergedCell.lastColumn_ = c + cell->GetMergedColumns() - 1;
+          mergedCell.firstRow_    = (USHORT) mr;
+          mergedCell.firstColumn_ = (USHORT) c;
+          mergedCell.lastRow_     = (USHORT) mr + cell->GetMergedRows() - 1;
+          mergedCell.lastColumn_  = (USHORT) c + cell->GetMergedColumns() - 1;
 
           rawSheet.mergedCells_.mergedCellsVector_.push_back(mergedCell);
         }
@@ -6585,8 +6583,8 @@ static void calculate_dimension(vector<Worksheet::CellTable::RowBlock>& rRowBloc
 void BasicExcelWorksheet::SetColWidth(const int colindex, const USHORT colwidth)
 {
   Worksheet::ColInfo tmpColInfo;
-  tmpColInfo.firstColumnIndex_ = tmpColInfo.lastColumnIndex_ = colindex;
-  tmpColInfo.columnWidth_ = colwidth;
+  tmpColInfo.firstColumnIndex_ = tmpColInfo.lastColumnIndex_ = (USHORT) colindex;
+  tmpColInfo.columnWidth_ = (USHORT) colwidth;
   colInfos_.colinfo_.push_back(tmpColInfo);
 }
 
@@ -7144,7 +7142,7 @@ BasicExcelCell::Formula::Formula(const Worksheet::CellTable::RowBlock::CellBlock
 bool BasicExcelCell::get_formula(Worksheet::CellTable::RowBlock::CellBlock* pCell) const
 {
   if (type_==FORMULA && _pFormula) {
-    pCell->_union.formula_->type_ = _pFormula->_formula_type;
+    pCell->_union.formula_->type_ = (USHORT) _pFormula->_formula_type;
     memcpy(pCell->_union.formula_->result_, _pFormula->_result, 8);
 
     if (pCell->_union.formula_->type_ == CODE::SHRFMLA1) {

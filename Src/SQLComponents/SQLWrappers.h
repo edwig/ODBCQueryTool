@@ -25,14 +25,16 @@
 // Version number:  1.4.0
 //
 #pragma once
-
-#pragma warning(disable: 4702)
+#include "SQLComponents.h"
 
 //////////////////////////////////////////////////////////////////////////
 //
 // This files contains wrappers for all SQLXxxxx functions to circumvent
 // access violations and other exceptions from ODBC drivers by catching them all
 //
+
+namespace SQLComponents
+{
 
 inline SQLRETURN SqlDriverConnect(SQLHDBC hdbc, SQLHWND hwnd, SQLCHAR *szConnStrIn, SQLSMALLINT cbConnStrIn, SQLCHAR *szConnStrOut, SQLSMALLINT cbConnStrOutMax, SQLSMALLINT *pcbConnStrOut, SQLUSMALLINT fDriverCompletion)
 {
@@ -183,19 +185,6 @@ inline SQLRETURN SqlCloseCursor(SQLHSTMT StatementHandle)
   try
   {
     return SQLCloseCursor(StatementHandle);
-  }
-  catch(...)
-  {
-    return SQL_ERROR;
-  }
-}
-
-#pragma warning (disable: 4996)
-inline SQLRETURN SqlSetStmtOption(SQLHSTMT StatementHandle, SQLUSMALLINT Option, SQLULEN Value)
-{
-  try
-  {
-    return SQLSetStmtOption(StatementHandle, Option, Value);
   }
   catch(...)
   {
@@ -586,4 +575,7 @@ inline SQLRETURN SqlColAttributes(SQLHSTMT     p_hstmt
   {
     return SQL_ERROR;
   }
+}
+
+// End of namespace
 }
