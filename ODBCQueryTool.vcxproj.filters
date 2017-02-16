@@ -384,6 +384,12 @@
     <ClCompile Include="Src\Query\VariablesDlg.cpp">
       <Filter>Query</Filter>
     </ClCompile>
+    <ClCompile Include="Src\Frame\ObjectTree.cpp">
+      <Filter>Frame</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Frame\InfoTree.cpp">
+      <Filter>Frame</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\AboutDlg.h">
@@ -726,6 +732,12 @@
       <Filter>Query\Query Headers</Filter>
     </ClInclude>
     <ClInclude Include="Src\Include\Common\FilePanelWnd.h">
+      <Filter>Frame\Frame headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Frame\ObjectTree.h">
+      <Filter>Frame\Frame headers</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Frame\InfoTree.h">
       <Filter>Frame\Frame headers</Filter>
     </ClInclude>
   </ItemGroup>

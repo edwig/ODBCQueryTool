@@ -185,7 +185,6 @@
     <ClCompile Include="SQLInfoOracle.cpp" />
     <ClCompile Include="SQLInfoPostgreSQL.cpp" />
     <ClCompile Include="SQLInfoSQLServer.cpp" />
-    <ClCompile Include="SQLInfoTree.cpp" />
     <ClCompile Include="SQLInterval.cpp" />
     <ClCompile Include="SQLLanguage.cpp" />
     <ClCompile Include="SQLMutation.cpp" />
@@ -252,7 +251,6 @@
     <ClInclude Include="SQLInfoOracle.h" />
     <ClInclude Include="SQLInfoPostgreSQL.h" />
     <ClInclude Include="SQLInfoSQLServer.h" />
-    <ClInclude Include="SQLInfoTree.h" />
     <ClInclude Include="SQLInterval.h" />
     <ClInclude Include="SQLLanguage.h" />
     <ClInclude Include="SQLMemoryDebug.h" />

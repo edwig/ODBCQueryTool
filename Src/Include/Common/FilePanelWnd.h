@@ -1,6 +1,6 @@
 /* 
     Copyright (C) 2002 Aleksey Kochetov
-    Copyright (C) 2006 Edwig Huisman
+    Copyright (C) 2006 - 2017 Edwig Huisman
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 #pragma once
 #include "Common/FakeRClick.h"
 #include "Frame/DirTreeCtrl.h"
+#include "Frame/ObjectTree.h"
+#include "Frame/InfoTree.h"
 
 class CFilePanelWnd : public CTabCtrl
 {
@@ -56,8 +58,8 @@ protected:
     CImageList   m_explorerStateImageList;
     CListCtrl    m_openFilesList;
     CDirTreeCtrl m_explorerTree;
-    CTreeCtrl    m_odbcTree;
-    CTreeCtrl    m_tableTree;
+    InfoTree     m_odbcTree;
+    ObjectTree   m_tableTree;
     CComboBoxEx  m_drivesCBox;
     CComboBox    m_filterCBox;
     CComboBox    m_tableCBox;
@@ -92,6 +94,7 @@ public:
     afx_msg void OnFilter_SelChange();
     afx_msg void OnTable_SetFocus();
     afx_msg void OnTable_SelChange();
+    afx_msg void OnTable_Enter();
     afx_msg void OnOpenFiles_Click      (NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg void OnOpenFiles_KeyDown    (NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg void OnOpenFiles_RClick     (NMHDR* pNMHDR, LRESULT* pResult);

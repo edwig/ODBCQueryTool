@@ -25,52 +25,46 @@
 // Version number:  1.4.0
 //
 #pragma once
-#include "SQLInfo.h"
+#include "SQLDatabase.h"
+#include "SQLInfoDB.h"
 
-namespace SQLComponents
-{
+using namespace SQLComponents;
 
-class SQLInfoTree : public SQLInfo
+class InfoTree : public CTreeCtrl
 {
 public:
-   SQLInfoTree(SQLDatabase* p_database);
-  ~SQLInfoTree();
+  InfoTree();
+  InfoTree(SQLDatabase* p_database);
+ ~InfoTree();
 
-#ifdef SQL_COMPONENTS_MFC
+  // For database open/cloase
+  void SetDatabase(SQLDatabase* p_database);
   // All ODBC Functions to the tree
-  void MakeTreeInfo (CTreeCtrl* tree);
-  // All table info to a tree control
-  void MakeTableInfo(CTreeCtrl* tree,CString& table);
-  // All procedure info to a tree control
-  bool MakeProcedureInfo(CTreeCtrl* tree,CString& procedure);
+  void MakeTreeInfo ();
   // Report all capabilities to a system file
-  virtual void ReportAllCapabilities(CTreeCtrl* p_tree,CString& filename);
+  virtual void ReportAllCapabilities(CString& filename);
 
 private:
   CString   InfoNumberToString(SQLINTEGER num);
-  HTREEITEM DisplayBitfield(CTreeCtrl*  tree
-                           ,HTREEITEM   item
+  HTREEITEM DisplayBitfield(HTREEITEM   item
                            ,SQLUINTEGER var
                            ,SQLUINTEGER macro
                            ,char*       text);
   // Helper for displaying SQLGetInfo information
-  void DisplayConversion(CTreeCtrl* tree 
-                        ,HTREEITEM  item
+  void DisplayConversion(HTREEITEM  item
                         ,CString    type
                         ,SQLINTEGER totype);
   // Make ODBC Extensions in a tree control
-  void MakeTreeODBCExtensions(CTreeCtrl* tree,HTREEITEM item);
+  void MakeTreeODBCExtensions(HTREEITEM item);
   // All ODBC Info to a tree control
-  void MakeTreeInfoFunctions(CTreeCtrl* tree,HTREEITEM item);
-  void WordListToTree(WordList& p_list,CTreeCtrl* p_tree,HTREEITEM p_item);
+  void MakeTreeInfoFunctions(HTREEITEM item);
+  void WordListToTree(WordList& p_list,HTREEITEM p_item);
 
   // Printing the DBInfo tree to a report
-  void ReportCapabilities(CTreeCtrl* p_tree
-                         ,HTREEITEM  p_branch
+  void ReportCapabilities(HTREEITEM  p_branch
                          ,int        p_level
                          ,FILE*      p_file);
-#endif
-};
 
-// End of namespace
-}
+  SQLDatabase* m_database;
+  SQLInfoDB*   m_info;
+};

@@ -100,7 +100,6 @@ typedef int  (CALLBACK* LOGLEVEL)(void*);
 
 // Forward declaration
 class SQLInfoDB;
-class SQLInfoTree;
 class SQLTimestamp;
 
 //////////////////////////////////////////////////////////////////////////
@@ -146,7 +145,6 @@ public:
 
   // GETTING/CONSTRUCTING the SQLInfo object
   SQLInfoDB*     GetSQLInfoDB();
-  SQLInfoTree*   GetSQLInfoTree();
 
   // MACRO's FOR SQL TEXT
 
@@ -279,7 +277,6 @@ protected:
   // Info about the database
   DatabaseType      m_rdbmsType    = { RDBMS_UNKNOWN };  // Which RDBMS engine
   SQLInfoDB*        m_info         = { nullptr       };  // The SQLInfo object
-  SQLInfoTree*      m_infoTree     = { nullptr       };  // The TREE object
   int               m_loginTimeout = { LOGIN_TIMEOUT };  // Timeout before login fails
   bool              m_mars         = { true          };  // Multiple Active Record Sets
   bool              m_readOnly     = { false         };  // ReadOnly connection

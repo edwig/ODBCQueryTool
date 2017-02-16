@@ -40,6 +40,8 @@ namespace SQLComponents
 #define META_SCHEMAS       2
 #define META_TABLES        3
 
+#define MAX_BUFFER       512
+
 typedef struct _TypeInfo
 {
   CString     m_type_name;          // Datasource dependent type name. Use for CREATE TABLE
@@ -194,6 +196,127 @@ public:
   // Setting the translation optioen (with or without connection)
   bool    SetAttributeTransoption(int p_transOption);
 
+  // GETTERS
+
+  SQLSMALLINT   GetDatabaseFileUsage();
+  // mappings
+  WordList&     GetODBCKeywords();
+  WordList&     GetRDBMSKeywords();
+  DataTypeMap&  GetDataTypeMap();
+  CString       GetDriverName();
+  // type conversions
+  SQLUINTEGER   GetConversionFunctions();
+  SQLINTEGER    GetConvertBigint();
+  SQLINTEGER    GetConvertBinary();
+  SQLINTEGER    GetConvertBit();
+  SQLINTEGER    GetConvertChar();
+  SQLINTEGER    GetConvertDate();
+  SQLINTEGER    GetConvertDecimal();
+  SQLINTEGER    GetConvertDouble();
+  SQLINTEGER    GetConvertFloat();
+  SQLINTEGER    GetConvertInteger();
+  SQLINTEGER    GetConvertIYM();
+  SQLINTEGER    GetConvertIDT();
+  SQLINTEGER    GetConvertLVarBinary();
+  SQLINTEGER    GetConvertLVarchar();
+  SQLINTEGER    GetConvertNumeric();
+  SQLINTEGER    GetConvertReal();
+  SQLINTEGER    GetConvertSmallint();
+  SQLINTEGER    GetConvertTime();
+  SQLINTEGER    GetConvertTimestamp();
+  SQLINTEGER    GetConvertTinyint();
+  SQLINTEGER    GetConvertVarBinary();
+  SQLINTEGER    GetConvertVarchar();
+  // conformance
+  SQLUINTEGER   GetSQLConformance();
+  SQLUINTEGER   GetODBCConformance();
+  SQLUINTEGER   GetCLIConformance();
+  CString       GetCLIYear();
+  // Support for functions
+  SQLUINTEGER   GetAggregationFunctions();
+  SQLUINTEGER   GetNumericFunctions();
+  SQLUINTEGER   GetStringFunctions();
+  SQLUINTEGER   GetStringFunctions3();
+  SQLUINTEGER   GetDateTimeFunctions();
+  SQLUINTEGER   GetTimestampAddFunctions();
+  SQLUINTEGER   GetTimestampDiffFunctions();
+  SQLUINTEGER   GetSystemFunctions();
+  // Support for SQL DDL
+  SQLUINTEGER   GetAlterDomainFunctions();
+  SQLUINTEGER   GetAlterTableFunctions();
+  SQLUINTEGER   GetCreateSchemaFunctions();
+  SQLUINTEGER   GetCreateDomainFunctions();
+  SQLUINTEGER   GetCreateTableFunctions();
+  SQLUINTEGER   GetCreateViewFunctions();
+  SQLUINTEGER   GetDeleteRuleFunctions();
+  SQLUINTEGER   GetDropSchemaFunctions();
+  SQLUINTEGER   GetDropDomainFunctions();
+  SQLUINTEGER   GetDropTableFunctions();
+  SQLUINTEGER   GetDropViewFunctions();
+  // Options
+  SQLUINTEGER   GetGrantOptions();
+  SQLUINTEGER   GetIndexOptions1();
+  SQLUINTEGER   GetIndexOptions2();
+  SQLUINTEGER   GetInsertOptions();
+  SQLUINTEGER   GetRevokeOptions();
+  SQLUINTEGER   GetRowConstructorOptions();
+  SQLUINTEGER   GetValueExpressionOptions();
+  SQLSMALLINT   GetTableCorrelationOptions();
+  SQLUINTEGER   GetOuterJoinOptions();
+  SQLUINTEGER   GetOuterJoin1992Options();
+  SQLUINTEGER   GetPredicateOptions();
+  SQLUINTEGER   GetPredicateSubqueryOptions();
+  SQLUINTEGER   GetGroupByOptions();
+  SQLUINTEGER   GetUnionOptions();
+  SQLUINTEGER   GetUpdateOptions();
+  SQLSMALLINT   GetIdentifierCase();
+  SQLSMALLINT   GetCatalogLocation();
+  SQLUINTEGER   GetCatalogNameUsage();
+  SQLSMALLINT   GetNULLCollation();
+  SQLSMALLINT   GetNULLConcatBehaviour();
+  SQLSMALLINT   GetColumnsCanBeNULL();
+  SQLUINTEGER   GetSupportedDateTimeLiterals();
+  SQLSMALLINT   GetTransactionCapabilities();
+  SQLINTEGER    GetDefaultTransactionLevel();
+  SQLSMALLINT   GetCursorCommitBehaviour();
+  SQLSMALLINT   GetCursorRollbackBehaviour();
+  SQLINTEGER    GetInformationSchemaViews();
+  SQLUINTEGER   GetGetDataExtensions();
+  // Ordinal maximum
+  SQLSMALLINT   GetMaxActiveEnvironments();
+  SQLSMALLINT   GetMaxColumnsInIndex();
+  SQLSMALLINT   GetMaxColumnsInSelect();
+  SQLSMALLINT   GetMaxColumnsInGroupBy();
+  SQLSMALLINT   GetMaxColumnsInOrderBy();
+  SQLSMALLINT   GetMaxTablesInSelect();
+  SQLSMALLINT   GetMaxCatalogNameLength();
+  SQLSMALLINT   GetMaxSchemaNameLength();
+  SQLSMALLINT   GetMaxTableNameLength();
+  SQLSMALLINT   GetMaxColumnNameLength();
+  SQLSMALLINT   GetMaxColumnsInTable();
+  // Booleans
+  bool          GetColumnAliasAllowed();
+  bool          GetOrderByInSelectAllowed();
+  bool          GetExpressionsInOrderByAllowed();
+  bool          GetSupportsCatalogs();
+  bool          GetTransactionIntegrity();
+  bool          GetAccessibleTables();
+  bool          GetAccessibleProcedures();
+  bool          GetSupportsV3Functions();
+  // Strings
+  CString       GetCatalogTerm();
+  CString       GetSchemaTerm();
+  CString       GetTableTerm();
+  CString       GetProcedureTerm();
+  CString       GetCatalogNameSeparator();
+  CString       GetSpecialCharacters();
+  CString       GetLikeEscapeCharacter();
+  CString       GetIdentifierQuoteCharacter();
+  CString       GetCollationSequence();
+  // Function arrays
+  SQLUSMALLINT* GetFunctionArrayV2();
+  SQLUSMALLINT* GetFunctionArrayV3();
+
 private:
   // SQLDatabase has access to attribute methods
   friend SQLDatabase;
@@ -212,7 +335,7 @@ private:
   unsigned short GetInfoShortInteger(SQLUSMALLINT info);
 
   // Getting a general INTEGER connection attribute
-  int     GetAttributeInteger(CString description,SQLINTEGER attrib);
+  int     GetAttributeInteger(LPCTSTR description,SQLINTEGER attrib);
   // Getting a general STRING connection attribute
   CString GetAttributeString(CString description,SQLINTEGER attrib);
   // Setting an INTEGER attribute
@@ -306,18 +429,18 @@ protected:
   CString      m_catalogName;           // empty if catalogs ar not supported
   CString      m_schemaName;            // Standard is 'owner'
   CString      m_tableName;             // Standard is 'table'
+  CString      m_procedureName;         // Standard is 'procedure'
   SQLUSMALLINT m_catalogLocation;       // Before schema or after tablename
   SQLUINTEGER  m_catalogUsage;          // Where catalog names can be used
   CString      m_catalogNameSeparator;  // Separator for the catalog name
   SQLSMALLINT  m_identifierCase;        // Case-specific of names in the catalog
-  CString      m_procedureName;         // Standard is 'procedure'
 
   // RDBMS Implementation specifics
   SQLSMALLINT  m_fileUsage;             // Type of database storage!
   SQLSMALLINT  m_maxCatalogName;
   SQLSMALLINT  m_maxSchemaName;
-  SQLSMALLINT  m_maxTableNaam;
-  SQLSMALLINT  m_maxColumNaam;
+  SQLSMALLINT  m_maxTableName;
+  SQLSMALLINT  m_maxColumnName;
   bool         m_accesibleProcedures;   // User can execute all returned names
   bool         m_accesibleTables;       // User can select from all returned names
   SQLSMALLINT  m_txn_cap;               // Capable of transactions
@@ -335,7 +458,7 @@ protected:
   SQLSMALLINT  m_concatBehaviour;       // NULL concat behaviour
   CString      m_userName;              // User name in database
   SQLSMALLINT  m_nullCollation;         // How NULL's are sorted
-  SQLSMALLINT  m_nullableColumns;       // Columns must be nullable
+  SQLSMALLINT  m_nullableColumns;       // Columns can be nullable
   bool         m_integrity;             // Integrity support
   bool         m_needLongDataLen;       // Need length for SQL_AT_EXEC 
   SQLINTEGER   m_packetSize;            // Optimization of the IP packet size
@@ -454,6 +577,654 @@ inline void
 SQLInfo::SetAttributeFileDSNSave(CString p_fileDSN)
 {
   m_fileDSNSave = p_fileDSN;
+}
+
+inline WordList& 
+SQLInfo::GetODBCKeywords()
+{
+  return m_ODBCKeywords;
+}
+
+inline WordList&
+SQLInfo::GetRDBMSKeywords()
+{
+  return m_RDBMSkeywords;
+}
+
+inline DataTypeMap&  
+SQLInfo::GetDataTypeMap()
+{
+  return m_dataTypes;
+}
+
+inline CString
+SQLInfo::GetDriverName()
+{
+  return m_driverName;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetConversionFunctions()
+{
+  return m_conversionFuncs;
+}
+
+inline SQLINTEGER    
+SQLInfo::GetConvertBigint()
+{
+  return m_convertBigint;
+}
+
+inline SQLINTEGER    
+SQLInfo::GetConvertBinary()
+{
+  return m_convertBinary;
+}
+
+inline SQLINTEGER    
+SQLInfo::GetConvertBit()
+{
+  return m_convertBit;
+}
+
+inline SQLINTEGER    
+SQLInfo::GetConvertChar()
+{
+  return m_convertChar;
+}
+
+inline SQLINTEGER    
+SQLInfo::GetConvertDate()
+{
+  return m_convertDate;
+}
+
+inline SQLINTEGER    
+SQLInfo::GetConvertDecimal()
+{
+  return m_convertDecimal;
+}
+
+inline SQLINTEGER    
+SQLInfo::GetConvertDouble()
+{
+  return m_convertDouble;
+}
+
+inline SQLINTEGER    
+SQLInfo::GetConvertFloat()
+{
+  return m_convertFloat;
+}
+
+inline SQLINTEGER    
+SQLInfo::GetConvertInteger()
+{
+  return m_convertInteger;
+}
+
+inline SQLINTEGER    
+SQLInfo::GetConvertIYM()
+{
+  return m_convertIYM;
+}
+
+inline SQLINTEGER    
+SQLInfo::GetConvertIDT()
+{
+  return m_convertIDT;
+}
+
+inline SQLINTEGER    
+SQLInfo::GetConvertLVarBinary()
+{
+  return m_convertVarBinary;
+}
+
+inline SQLINTEGER    
+SQLInfo::GetConvertLVarchar()
+{
+  return m_convertLVarchar;
+}
+
+inline SQLINTEGER    
+SQLInfo::GetConvertNumeric()
+{
+  return m_convertNumeric;
+}
+
+inline SQLINTEGER    
+SQLInfo::GetConvertReal()
+{
+  return m_convertReal;
+}
+
+inline SQLINTEGER    
+SQLInfo::GetConvertSmallint()
+{
+  return m_convertSmallint;
+}
+
+inline SQLINTEGER    
+SQLInfo::GetConvertTime()
+{
+  return m_convertTime;
+}
+
+inline SQLINTEGER    
+SQLInfo::GetConvertTimestamp()
+{
+  return m_convertTimestamp;
+}
+
+inline SQLINTEGER    
+SQLInfo::GetConvertTinyint()
+{
+  return m_convertTinyint;
+}
+
+inline SQLINTEGER    
+SQLInfo::GetConvertVarBinary()
+{
+  return m_convertVarBinary;
+}
+
+inline SQLINTEGER    
+SQLInfo::GetConvertVarchar()
+{
+  return m_convertVarchar;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetSQLConformance()
+{
+  return m_sql_conformance;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetODBCConformance()
+{
+  return m_odbc_conformance;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetCLIConformance()
+{
+  return m_cli_conformance;
+}
+
+inline CString
+SQLInfo::GetCLIYear()
+{
+  return m_cli_year;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetAggregationFunctions()
+{
+  return m_aggr_functions;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetNumericFunctions()
+{
+  return m_funcNumeric;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetStringFunctions()
+{
+  return m_funcString;
+}
+
+inline SQLUINTEGER
+SQLInfo::GetStringFunctions3()
+{
+  return m_funcString3;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetDateTimeFunctions()
+{
+  return m_funcDateTime;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetTimestampAddFunctions()
+{
+  return m_funcTimestampadd;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetTimestampDiffFunctions()
+{
+  return m_funcTimestampdiff;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetSystemFunctions()
+{
+  return m_funcSystem;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetAlterDomainFunctions()
+{
+  return m_alterDomain;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetAlterTableFunctions()
+{
+  return m_alterTable;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetCreateSchemaFunctions()
+{
+  return m_createSchema;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetCreateDomainFunctions()
+{
+  return m_createDomain;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetCreateTableFunctions()
+{
+  return m_createTable;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetCreateViewFunctions()
+{
+  return m_createView;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetDeleteRuleFunctions()
+{
+  return m_deleteRules;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetDropSchemaFunctions()
+{
+  return m_dropSchema;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetDropDomainFunctions()
+{
+  return m_dropDomain;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetDropTableFunctions()
+{
+  return m_dropTable;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetDropViewFunctions()
+{
+  return m_dropView;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetGrantOptions()
+{
+  return m_grantOptions;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetIndexOptions1()
+{
+  return m_indexOptions1;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetIndexOptions2()
+{
+  return m_indexOptions2;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetInsertOptions()
+{
+  return m_insertOptions;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetRevokeOptions()
+{
+  return m_revokeOptions;
+}
+
+inline SQLSMALLINT   
+SQLInfo::GetMaxColumnsInIndex()
+{
+  return m_maxColIndex;
+}
+
+inline SQLSMALLINT   
+SQLInfo::GetMaxColumnsInSelect()
+{
+  return m_maxColSelect;
+}
+
+inline SQLSMALLINT   
+SQLInfo::GetMaxTablesInSelect()
+{
+  return m_maxTabSelect;
+}
+
+inline bool
+SQLInfo::GetColumnAliasAllowed()
+{
+  return m_columnAliases;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetRowConstructorOptions()
+{
+  return m_rowConstructors;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetValueExpressionOptions()
+{
+  return m_valExpressions;
+}
+
+inline SQLSMALLINT   
+SQLInfo::GetTableCorrelationOptions()
+{
+  return m_correlationNames;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetOuterJoinOptions()
+{
+  return m_oj_cap;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetOuterJoin1992Options()
+{
+  return m_oj_cap92;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetPredicateOptions()
+{
+  return m_predicates;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetPredicateSubqueryOptions()
+{
+  return m_predSubqueries;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetGroupByOptions()
+{
+  return m_groupBy;
+}
+
+inline SQLSMALLINT   
+SQLInfo::GetMaxColumnsInGroupBy()
+{
+  return m_maxColGroupBy;
+}
+
+inline bool
+SQLInfo::GetOrderByInSelectAllowed()
+{
+  return m_orderByInSelect;
+}
+
+inline bool
+SQLInfo::GetExpressionsInOrderByAllowed()
+{
+  return m_exprInOrderBy;
+}
+
+inline SQLSMALLINT   
+SQLInfo::GetMaxColumnsInOrderBy()
+{
+  return m_maxColOrderBy;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetUnionOptions()
+{
+  return m_unions;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetUpdateOptions()
+{
+  return m_updateRules;
+}
+
+inline SQLSMALLINT   
+SQLInfo::GetDatabaseFileUsage()
+{
+  return m_fileUsage;
+}
+
+inline bool
+SQLInfo::GetSupportsCatalogs()
+{
+  return m_supportsCatalogs;
+}
+
+inline CString       
+SQLInfo::GetCatalogTerm()
+{
+  return m_catalogName;
+}
+
+inline CString       
+SQLInfo::GetSchemaTerm()
+{
+  return m_schemaName;
+}
+
+inline CString       
+SQLInfo::GetTableTerm()
+{
+  return m_tableName;
+}
+
+inline CString       
+SQLInfo::GetProcedureTerm()
+{
+  return m_procedureName;
+}
+
+inline SQLSMALLINT   
+SQLInfo::GetIdentifierCase()
+{
+  return m_identifierCase;
+}
+
+inline SQLSMALLINT   
+SQLInfo::GetCatalogLocation()
+{
+  return m_catalogLocation;
+}
+
+inline CString
+SQLInfo::GetCatalogNameSeparator()
+{
+  return m_catalogNameSeparator;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetCatalogNameUsage()
+{
+  return m_catalogUsage;
+}
+
+inline SQLSMALLINT   
+SQLInfo::GetMaxCatalogNameLength()
+{
+  return m_maxCatalogName;
+}
+
+inline SQLSMALLINT   
+SQLInfo::GetMaxSchemaNameLength()
+{
+  return m_maxSchemaName;
+}
+
+inline SQLSMALLINT   
+SQLInfo::GetMaxTableNameLength()
+{
+  return m_maxTableName;
+}
+
+inline SQLSMALLINT   
+SQLInfo::GetMaxColumnNameLength()
+{
+  return m_maxColumnName;
+}
+
+inline SQLSMALLINT   
+SQLInfo::GetMaxColumnsInTable()
+{
+  return m_maxColTable;
+}
+
+inline CString       
+SQLInfo::GetSpecialCharacters()
+{
+  return m_specialChars;
+}
+
+inline CString       
+SQLInfo::GetLikeEscapeCharacter()
+{
+  return m_likeEscape;
+}
+
+inline CString       
+SQLInfo::GetIdentifierQuoteCharacter()
+{
+  return m_identifierQuote;
+}
+
+inline CString       
+SQLInfo::GetCollationSequence()
+{
+  return m_collationSequence;
+}
+
+inline SQLSMALLINT   
+SQLInfo::GetNULLCollation()
+{
+  return m_nullCollation;
+}
+
+inline SQLSMALLINT   
+SQLInfo::GetNULLConcatBehaviour()
+{
+  return m_concatBehaviour;
+}
+
+inline SQLSMALLINT   
+SQLInfo::GetColumnsCanBeNULL()
+{
+  return m_nullableColumns;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetSupportedDateTimeLiterals()
+{
+  return m_datetimeLiterals;
+}
+
+inline SQLSMALLINT   
+SQLInfo::GetMaxActiveEnvironments()
+{
+  return m_activeEnvironments;
+}
+
+inline bool
+SQLInfo::GetTransactionIntegrity()
+{
+  return m_integrity;
+}
+
+inline SQLSMALLINT   
+SQLInfo::GetTransactionCapabilities()
+{
+  return m_txn_cap;
+}
+
+inline SQLINTEGER    
+SQLInfo::GetDefaultTransactionLevel()
+{
+  return m_defaultTransaction;
+}
+
+inline SQLSMALLINT   
+SQLInfo::GetCursorCommitBehaviour()
+{
+  return m_cursor_commit;
+}
+
+inline SQLSMALLINT   
+SQLInfo::GetCursorRollbackBehaviour()
+{
+  return m_cursor_rollback;
+}
+
+inline bool
+SQLInfo::GetAccessibleTables()
+{
+  return m_accesibleTables;
+}
+
+inline bool
+SQLInfo::GetAccessibleProcedures()
+{
+  return m_accesibleProcedures;
+}
+
+inline SQLINTEGER    
+SQLInfo::GetInformationSchemaViews()
+{
+  return m_schemaViews;
+}
+
+inline SQLUINTEGER   
+SQLInfo::GetGetDataExtensions()
+{
+  return m_getdata_extensions;
+}
+
+inline bool
+SQLInfo::GetSupportsV3Functions()
+{
+  return m_functions_use_3;
+}
+
+inline SQLUSMALLINT* 
+SQLInfo::GetFunctionArrayV2()
+{
+  return m_ODBCFunctions_2;
+}
+
+inline SQLUSMALLINT* 
+SQLInfo::GetFunctionArrayV3()
+{
+  return m_ODBCFunctions_3;
 }
 
 // End of namespace

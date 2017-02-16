@@ -1,322 +1,105 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
-    </Filter>
-    <Filter Include="Resource Files">
-      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
-    </Filter>
+    <ClCompile Include="BasicExcel.cpp" />
+    <ClCompile Include="BasicXmlExcel.cpp" />
+    <ClCompile Include="bcd.cpp" />
+    <ClCompile Include="ConvertWideString.cpp" />
+    <ClCompile Include="DefuseBOM.cpp" />
+    <ClCompile Include="ExcelFormat.cpp" />
+    <ClCompile Include="SQLAssociation.cpp" />
+    <ClCompile Include="SQLColumnInfo.cpp" />
+    <ClCompile Include="SQLComponents.cpp" />
+    <ClCompile Include="SQLDatabase.cpp" />
+    <ClCompile Include="SQLDataSet.cpp" />
+    <ClCompile Include="SQLDataSetXLS.cpp" />
+    <ClCompile Include="SQLDate.cpp" />
+    <ClCompile Include="SQLError.cpp" />
+    <ClCompile Include="SQLFilter.cpp" />
+    <ClCompile Include="SQLInfo.cpp" />
+    <ClCompile Include="SQLInfoAccess.cpp" />
+    <ClCompile Include="SQLInfoDB.cpp" />
+    <ClCompile Include="SQLInfoFirebird.cpp" />
+    <ClCompile Include="SQLInfoGenericODBC.cpp" />
+    <ClCompile Include="SQLInfoInformix.cpp" />
+    <ClCompile Include="SQLInfoOracle.cpp" />
+    <ClCompile Include="SQLInfoPostgreSQL.cpp" />
+    <ClCompile Include="SQLInfoSQLServer.cpp" />
+    <ClCompile Include="SQLInterval.cpp" />
+    <ClCompile Include="SQLLanguage.cpp" />
+    <ClCompile Include="SQLMutation.cpp" />
+    <ClCompile Include="SQLQuery.cpp" />
+    <ClCompile Include="SQLRecord.cpp" />
+    <ClCompile Include="SQLStatement.cpp" />
+    <ClCompile Include="SQLTime.cpp" />
+    <ClCompile Include="SQLTimestamp.cpp" />
+    <ClCompile Include="SQLTransaction.cpp" />
+    <ClCompile Include="SQLVariant.cpp" />
+    <ClCompile Include="SQLVariantFormat.cpp" />
+    <ClCompile Include="SQLVariantOperator.cpp" />
+    <ClCompile Include="SQLVariantOperatorAdd.cpp" />
+    <ClCompile Include="SQLVariantOperatorDiv.cpp" />
+    <ClCompile Include="SQLVariantOperatorEqual.cpp" />
+    <ClCompile Include="SQLVariantOperatorGreatEqual.cpp" />
+    <ClCompile Include="SQLVariantOperatorGreater.cpp" />
+    <ClCompile Include="SQLVariantOperatorMod.cpp" />
+    <ClCompile Include="SQLVariantOperatorMul.cpp" />
+    <ClCompile Include="SQLVariantOperatorSmallEqual.cpp" />
+    <ClCompile Include="SQLVariantOperatorSmaller.cpp" />
+    <ClCompile Include="SQLVariantOperatorSub.cpp" />
+    <ClCompile Include="SQLVariantTrim.cpp" />
+    <ClCompile Include="stdafx.cpp" />
+    <ClCompile Include="unzip.cpp" />
+    <ClCompile Include="XMLMessage.cpp" />
+    <ClCompile Include="XMLParser.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="SQLAssociation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLColumnInfo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLDatabase.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLDataSet.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLDataSetXLS.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLDate.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLError.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLInfo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLInfoAccess.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLInfoDB.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLInfoFirebird.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLInfoGenericODBC.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLInfoInformix.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLInfoOracle.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLInfoPostgreSQL.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLInfoSQLServer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLInfoTree.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLLanguage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLMutation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLQuery.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLRecord.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLStatement.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLTime.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLTimestamp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLTransaction.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLVariant.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLVariantFormat.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BasicExcel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="BasicXmlExcel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="unzip.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLVariantOperator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLInterval.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLVariantOperatorEqual.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLVariantOperatorGreater.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLVariantOperatorSmaller.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLVariantOperatorGreatEqual.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLVariantOperatorSmallEqual.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLVariantOperatorAdd.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLVariantOperatorSub.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLVariantOperatorMul.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLVariantOperatorDiv.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLVariantOperatorMod.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="bcd.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLVariantTrim.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SQLComponents.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="XMLMessage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="XMLParser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ConvertWideString.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DefuseBOM.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ExcelFormat.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    </ClCompile>
-    <ClCompile Include="SQLFilter.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="Locker.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLAssociation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLColumnInfo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLDatabase.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLDataSet.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLDataSetXLS.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLDate.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLError.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLFormatErrors.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLInfo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLInfoAccess.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLInfoDB.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLInfoFirebird.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLInfoGenericODBC.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLInfoInformix.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLInfoOracle.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLInfoPostgreSQL.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLInfoSQLServer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLInfoTree.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLLanguage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLMutation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLQuery.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLRecord.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLStatement.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLTime.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLTimestamp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLTransaction.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLVariant.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLVariantFormat.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLWrappers.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ExcelFormat.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BasicExcel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="BasicXmlExcel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="unzip.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLInterval.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="targetver.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLVariantOperator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLVariantTrim.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="bcd.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLComponents.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLMemoryDebug.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XMLMessage.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XMLParser.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ConvertWideString.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XMLDataType.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DefuseBOM.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLFilter.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+    <ClInclude Include="BasicExcel.h" />
+    <ClInclude Include="BasicXmlExcel.h" />
+    <ClInclude Include="bcd.h" />
+    <ClInclude Include="ConvertWideString.h" />
+    <ClInclude Include="DefuseBOM.h" />
+    <ClInclude Include="ExcelFormat.h" />
+    <ClInclude Include="Locker.h" />
+    <ClInclude Include="SQLAssociation.h" />
+    <ClInclude Include="SQLColumnInfo.h" />
+    <ClInclude Include="SQLComponents.h" />
+    <ClInclude Include="SQLDatabase.h" />
+    <ClInclude Include="SQLDataSet.h" />
+    <ClInclude Include="SQLDataSetXLS.h" />
+    <ClInclude Include="SQLDate.h" />
+    <ClInclude Include="SQLError.h" />
+    <ClInclude Include="SQLFilter.h" />
+    <ClInclude Include="SQLFormatErrors.h" />
+    <ClInclude Include="SQLInfo.h" />
+    <ClInclude Include="SQLInfoAccess.h" />
+    <ClInclude Include="SQLInfoDB.h" />
+    <ClInclude Include="SQLInfoFirebird.h" />
+    <ClInclude Include="SQLInfoGenericODBC.h" />
+    <ClInclude Include="SQLInfoInformix.h" />
+    <ClInclude Include="SQLInfoOracle.h" />
+    <ClInclude Include="SQLInfoPostgreSQL.h" />
+    <ClInclude Include="SQLInfoSQLServer.h" />
+    <ClInclude Include="SQLInterval.h" />
+    <ClInclude Include="SQLLanguage.h" />
+    <ClInclude Include="SQLMemoryDebug.h" />
+    <ClInclude Include="SQLMutation.h" />
+    <ClInclude Include="SQLQuery.h" />
+    <ClInclude Include="SQLRecord.h" />
+    <ClInclude Include="SQLStatement.h" />
+    <ClInclude Include="SQLTime.h" />
+    <ClInclude Include="SQLTimestamp.h" />
+    <ClInclude Include="SQLTransaction.h" />
+    <ClInclude Include="SQLVariant.h" />
+    <ClInclude Include="SQLVariantFormat.h" />
+    <ClInclude Include="SQLVariantOperator.h" />
+    <ClInclude Include="SQLVariantTrim.h" />
+    <ClInclude Include="SQLWrappers.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="unzip.h" />
+    <ClInclude Include="XMLDataType.h" />
+    <ClInclude Include="XMLMessage.h" />
+    <ClInclude Include="XMLParser.h" />
   </ItemGroup>
 </Project>

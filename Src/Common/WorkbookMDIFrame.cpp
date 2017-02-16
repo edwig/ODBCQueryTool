@@ -655,7 +655,6 @@ void
 CWorkbookMDIFrame::OnFpwRefreshOdbc()
 {
   m_wndFilePanel.OnFpwRefreshOdbc();
-  m_wndFilePanel.OnTable_SelChange();
 }
 
 void

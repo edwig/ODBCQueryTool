@@ -27,7 +27,6 @@
 #include "COMMON/GUICommandDictionary.h"
 #include "COMMON/DocManagerExt.h"
 #include "OpenEditorApp.h"
-#include "SQLInfoTree.h"
 #include "SQLDatabase.h"
 
 #define FPW_OPEN_FILES_TAB  0
@@ -142,9 +141,10 @@ CFilePanelWnd::~CFilePanelWnd()
 {
 }
 
-void CFilePanelWnd::SelectDrive (const CString& path, BOOL force)
+void 
+CFilePanelWnd::SelectDrive (const CString& path, BOOL force)
 {
-  if (!m_hWnd)
+  if(!m_hWnd)
   {
     m_curDrivePath = path;
   }
@@ -186,7 +186,8 @@ void CFilePanelWnd::SelectDrive (const CString& path, BOOL force)
   }
 }
 
-void CFilePanelWnd::DisplayFilters(BOOL force,BOOL curOnly)
+void 
+CFilePanelWnd::DisplayFilters(BOOL force,BOOL curOnly)
 {
   if(force)
   {
@@ -434,6 +435,9 @@ int CFilePanelWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
   m_explorerStateImageList.Create(IDB_OE_EXPLORER_STATE_LIST, 16, 64, RGB(0,0,255));
   m_explorerTree.SetImageList(&m_explorerStateImageList, TVSIL_STATE);
+
+  // Reset table tree
+  m_tableTree.ClearTree();
 
   // load saved tab
   ChangeTab(FPW_EXPLORER_TAB);
@@ -856,13 +860,13 @@ void
 CFilePanelWnd::OnFpwRefreshOdbc()
 {
   CWaitCursor sighAndWait;
-
-  m_odbcTree.DeleteAllItems();
   COpenEditorApp* app =(COpenEditorApp *) AfxGetApp();
-  if(app->DatabaseIsOpen())
-  {
-    app->GetDatabase().GetSQLInfoTree()->MakeTreeInfo(&m_odbcTree);
-  }
+
+  m_odbcTree.SetDatabase(&(app->GetDatabase()));
+  m_odbcTree.MakeTreeInfo();
+
+  m_tableTree.SetFilter("");
+  m_tableTree.ClearTree();
 }
 
 void 
@@ -915,30 +919,57 @@ CFilePanelWnd::OnTable_SetFocus()
   DisplayTables();
 }
 
-void CFilePanelWnd::OnTable_SelChange()
+void 
+CFilePanelWnd::OnTable_SelChange()
 {
-  int inx = m_tableCBox.GetCurSel();
-  if(inx != CB_ERR)
-  {
-    m_tableCBox.SetCurSel(inx);
-  }
+  // Get current selection
   CString table;
-  m_tableCBox.GetWindowText(table);
-  AddToTables(table);
-
-  CWaitCursor sighAndWait;
-  COpenEditorApp* app =(COpenEditorApp *) AfxGetApp();
-  if(app->DatabaseIsOpen() && !table.IsEmpty())
+  int inx = m_tableCBox.GetCurSel();
+  if(inx > CB_ERR)
   {
-    app->GetDatabase().GetSQLInfoTree()->MakeTableInfo(&m_tableTree,table);
+    m_tableCBox.GetLBText(inx,table);
   }
   else
   {
-    m_tableTree.DeleteAllItems();
+    m_tableCBox.GetWindowText(table);
+    table.Trim();
+    if(!table.IsEmpty())
+    {
+      AddToTables(table);
+    }
+  }
+
+  // Compare with filter, if changed
+  if(m_tableTree.GetFilter().CompareNoCase(table))
+  {
+    m_tableTree.ClearTree();
+    m_tableTree.SetFilter(table);
   }
 }
 
-void CFilePanelWnd::FindTable(CString& table)
+void
+CFilePanelWnd::OnTable_Enter()
+{
+  CString filter;
+  m_tableCBox.GetWindowText(filter);
+  filter.Trim();
+
+  // Potentially add to list
+  if(!filter.IsEmpty())
+  {
+    AddToTables(filter);
+  }
+
+  // Compare with filter, if changed
+  if(m_tableTree.GetFilter().CompareNoCase(filter))
+  {
+    m_tableTree.ClearTree();
+    m_tableTree.SetFilter(filter);
+  }
+}
+
+void 
+CFilePanelWnd::FindTable(CString& table)
 {
   // Add to listbox
   AddToTables(table);
@@ -947,15 +978,11 @@ void CFilePanelWnd::FindTable(CString& table)
   // Display this tab
   ChangeTab(FPW_TABLETREE_TAB);
 
-  COpenEditorApp* app =(COpenEditorApp *) AfxGetApp();
-  if(app->DatabaseIsOpen() && !table.IsEmpty())
-  {
-    app->GetDatabase().GetSQLInfoTree()->MakeTableInfo(&m_tableTree,table);
-  }
-  else
-  {
-    m_tableTree.DeleteAllItems();
-  }
+  m_tableTree.ClearTree();
+  m_tableTree.SetFilter(table);
+
+  // Expand total table
+  m_tableTree.ExpandFirstTable();
 }
 
 CString
@@ -981,8 +1008,8 @@ CFilePanelWnd::ReportCapabilities(CString& filename)
   if(app->DatabaseIsOpen())
   {
     CWaitCursor take_a_deep_sigh;
-    app->GetDatabase().GetSQLInfoTree()->MakeTreeInfo(&m_odbcTree);
-    app->GetDatabase().GetSQLInfoTree()->ReportAllCapabilities(&m_odbcTree,filename);
+    m_odbcTree.MakeTreeInfo();
+    m_odbcTree.ReportAllCapabilities(filename);
   }
 }
 
@@ -993,7 +1020,7 @@ CFilePanelWnd::PreTranslateMessage(MSG* pMsg)
   {
     if(m_tab == FPW_TABLETREE_TAB)
     {
-      OnTable_SelChange();
+      OnTable_Enter();
       return TRUE;
     }
   }

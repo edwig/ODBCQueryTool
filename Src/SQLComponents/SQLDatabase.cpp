@@ -29,7 +29,6 @@
 #include "SQLDatabase.h"
 #include "SQLQuery.h"
 #include "SQLWrappers.h"
-#include "SQLInfoTree.h"
 #include "SQLInfoDB.h"
 #include "SQLInfoAccess.h"
 #include "SQLInfoOracle.h"
@@ -112,11 +111,6 @@ SQLDatabase::Close()
   {
     delete m_info;
     m_info = NULL;
-  }
-  if(m_infoTree)
-  {
-    delete m_infoTree;
-    m_infoTree = NULL;
   }
   
   // Reset RDBMS related members
@@ -539,16 +533,6 @@ SQLDatabase::GetSQLInfoDB()
     }
   }
   return m_info;
-}
-
-SQLInfoTree*
-SQLDatabase::GetSQLInfoTree()
-{
-  if(m_infoTree == NULL)
-  {
-    m_infoTree = new SQLInfoTree(this);
-  }
-  return m_infoTree;
 }
 
 // Find the **REAL** database name

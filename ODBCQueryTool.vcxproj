@@ -299,6 +299,8 @@
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
     </ClCompile>
     <ClCompile Include="Src\ConnectionDlg.cpp" />
+    <ClCompile Include="Src\Frame\InfoTree.cpp" />
+    <ClCompile Include="Src\Frame\ObjectTree.cpp" />
     <ClCompile Include="Src\MultConnectionsDlg.cpp" />
     <ClCompile Include="Src\OpenEditorApp.cpp" />
     <ClCompile Include="Src\Query\Codeer.cpp" />
@@ -782,6 +784,8 @@
   <ItemGroup>
     <ClInclude Include="Src\AboutDlg.h" />
     <ClInclude Include="Src\ConnectionDlg.h" />
+    <ClInclude Include="Src\Frame\InfoTree.h" />
+    <ClInclude Include="Src\Frame\ObjectTree.h" />
     <ClInclude Include="Src\Include\Common\FilePanelWnd.h" />
     <ClInclude Include="Src\MultConnectionsDlg.h" />
     <ClInclude Include="Src\OpenEditorApp.h" />

@@ -916,7 +916,7 @@ COpenEditorApp::OnConnect()
   INT_PTR result = 0;
   while(result != IDCANCEL)
   {
-    // Simpel connection
+    // Simple connection
     MultConnectionsDlg connection;
     result = connection.DoModal();
 
@@ -929,6 +929,8 @@ COpenEditorApp::OnConnect()
 
       OpenDatabaseConnectie();
       UpdateDatabaseConnector();
+      // Refresh the ODBC info
+      RefreshODBCPanels();
       return;
     }
     if(result == IDC_CON_DETAILS)
@@ -990,6 +992,13 @@ COpenEditorApp::OnDisconnect()
       AfxMessageBox("Not connected to an ODBC datasource!");
     }
   }
+  // Refresh the ODBC info
+  RefreshODBCPanels();
+}
+
+void
+COpenEditorApp::RefreshODBCPanels()
+{
   // Refresh the ODBC info
   if(m_pMainWnd)
   {

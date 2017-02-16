@@ -89,8 +89,8 @@ SQLInfo::Init()
   m_sql_conformance     = 0;
   m_odbc_conformance    = 0;
   m_cli_conformance     = 0;
-  m_maxTableNaam        = 0;
-  m_maxColumNaam        = 0;
+  m_maxTableName        = 0;
+  m_maxColumnName        = 0;
   m_oj_cap              = 0;
   m_oj_cap92            = 0;
   m_txn_cap             = 0;
@@ -184,8 +184,8 @@ SQLInfo::Init()
   m_columnAliases    = true;
   m_maxCatalogName   = 128;
   m_maxSchemaName    = 128;
-  m_maxColumNaam     = 128;
-  m_maxTableNaam     = 128;
+  m_maxColumnName     = 128;
+  m_maxTableName     = 128;
 
   // Conversions
   m_conversionFuncs   = 0;
@@ -470,8 +470,8 @@ SQLInfo::GetInfo()
   m_sql_conformance     = GetInfoInteger(SQL_SQL_CONFORMANCE);
   m_odbc_conformance    = GetInfoInteger(SQL_ODBC_INTERFACE_CONFORMANCE);
   m_cli_conformance     = GetInfoInteger(SQL_STANDARD_CLI_CONFORMANCE);
-  m_maxColumNaam        = GetInfoShortInteger(SQL_MAX_COLUMN_NAME_LEN);
-  m_maxTableNaam        = GetInfoShortInteger(SQL_MAX_TABLE_NAME_LEN);
+  m_maxColumnName        = GetInfoShortInteger(SQL_MAX_COLUMN_NAME_LEN);
+  m_maxTableName        = GetInfoShortInteger(SQL_MAX_TABLE_NAME_LEN);
   m_maxSchemaName       = GetInfoShortInteger(SQL_MAX_SCHEMA_NAME_LEN);
   m_maxCatalogName      = GetInfoShortInteger(SQL_MAX_CATALOG_NAME_LEN);
   m_identifierCase      = GetInfoShortInteger(SQL_IDENTIFIER_CASE);
@@ -791,16 +791,16 @@ SQLInfo::SupportedFunction(unsigned int api_function)
 
 // Getting a general INTEGER connection attribute
 int
-SQLInfo::GetAttributeInteger(CString description,SQLINTEGER attrib)
+SQLInfo::GetAttributeInteger(LPCTSTR description,SQLINTEGER attrib)
 {
-  SQLUINTEGER value;
-  RETCODE nRetCode = SQL_ERROR;
-  SQLINTEGER cbMax = 0;
-  nRetCode = SQLGetConnectAttr(m_hdbc
-                              ,attrib
-                              ,(SQLPOINTER)&value
-                              ,0
-                              ,&cbMax);
+  SQLUINTEGER value = 0;
+  SQLINTEGER  cbMax = 0;
+  
+  SQLRETURN nRetCode = SQLGetConnectAttr(m_hdbc
+                                        ,attrib
+                                        ,(SQLPOINTER)&value
+                                        ,sizeof(value)
+                                        ,&cbMax);
   if(!m_database->Check(nRetCode))
   {
     CString error;
@@ -812,15 +812,16 @@ SQLInfo::GetAttributeInteger(CString description,SQLINTEGER attrib)
        state.CompareNoCase("HYC00") == 0 )  // Optional feature not implemented
     {
       // Driver not capable to get/set this attribute
-      ATLTRACE("%s\n",error);
+      ATLTRACE("%s\n",error.GetString());
       return -1;
     }
     InfoMessageBox(error);
     return 0;
   }
-  if(cbMax != 4)
+  if(cbMax != sizeof(value))
   {
     ATLTRACE("Attribute \"%s\" not supported on your database\n",description);
+    return 0;
   }
   ATLTRACE("Database connection attribute \"%s\" was: %d\n",description,value);
   return value;
@@ -830,13 +831,13 @@ SQLInfo::GetAttributeInteger(CString description,SQLINTEGER attrib)
 CString
 SQLInfo::GetAttributeString(CString description,SQLINTEGER attrib)
 {
-  SQLCHAR    value[512 + 1];
+  SQLCHAR    value[MAX_BUFFER + 1];
   SQLINTEGER cbMax = 0;
   RETCODE    nRetCode = SQL_ERROR;
   nRetCode = ::SQLGetConnectAttr(m_hdbc
                                 ,attrib
                                 ,(SQLPOINTER)&value
-                                ,512
+                                ,MAX_BUFFER
                                 ,&cbMax);
   if(!m_database->Check(nRetCode))
   {
@@ -859,9 +860,9 @@ SQLInfo::SetAttributeInteger(CString     description
 {
   RETCODE nRetCode = SQL_ERROR;
   nRetCode = SqlSetConnectAttr(m_hdbc
-                                ,attrib
+                              ,attrib
                               ,(SQLPOINTER)(DWORD_PTR)value
-                                ,SQL_IS_UINTEGER);
+                              ,SQL_IS_UINTEGER);
   if(!m_database->Check(nRetCode))
   {
     CString error;
@@ -1098,11 +1099,11 @@ SQLInfo::IsCorrectName(LPCSTR naam,int type)
   {
     return true;
   }
-  if (type == 0 && nlen > (m_maxColumNaam - 4))
+  if (type == 0 && nlen > (m_maxColumnName - 4))
   {
     return false;
   }
-  if (type == 0 && nlen > (m_maxTableNaam - 4))
+  if (type == 0 && nlen > (m_maxTableName - 4))
   {
     return false;
   }
@@ -1223,7 +1224,7 @@ SQLInfo::GetObjectName(CString& pattern
                       ,unsigned char* search_schema
                       ,unsigned char* search_table
                       ,unsigned char* search_type)
-{
+  {
   search_catalog[0] = 0;
   search_schema [0] = 0;
   search_table  [0] = 0;
@@ -1351,7 +1352,7 @@ SQLInfo::GetObjectName(CString& pattern
   {
     InfoMessageBox("Requested schema name is longer than this ODBC database supports!",MB_OK);
   }
-  if(m_maxTableNaam   && strlen((char*)search_table)   > (size_t)m_maxTableNaam)
+  if(m_maxTableName   && strlen((char*)search_table)   > (size_t)m_maxTableName)
   {
     InfoMessageBox("Requested table name is longer than this ODBC database supports!",MB_OK);
   }
@@ -2690,11 +2691,10 @@ SQLInfo::MakeInfoProcedureProcedurepart(WordList* p_list
   // Split name in a maximum of three parts
   GetObjectName(p_procedure,szCatalogName,szSchemaName,szProcedureName,szProcedureNType);  // Get a statement handle for metadata use
   strcpy_s((char*)searchName,SQL_MAX_IDENTIFIER,(char*)szProcedureName);
-  if(strcmp((char*)szProcedureName,"*") == 0)
+  if(p_procedure.Find('%') >= 0)
   {
     doAllProcedures = true;
     RetValue = false; // Do not continue with parameters
-    strcpy_s((char*)szProcedureName,SQL_MAX_IDENTIFIER,"%");
   }
   CloseStatement();
   bool meta = GetStatement(false);
@@ -2751,7 +2751,7 @@ SQLInfo::MakeInfoProcedureProcedurepart(WordList* p_list
         m_searchTableName = szProcedureName;
 
         // NAME
-        CString line("PROCEDURE: ");
+        CString line = (ProcedureType == SQL_PT_PROCEDURE) ? "PROCEDURE: " : "FUNCTION: ";
         if(cbProcedureName > 0)
         {
           line += MakeObjectName(cbCatalogName   > 0 ? szCatalogName   : (unsigned char *)""
@@ -2925,11 +2925,10 @@ SQLInfo::MakeInfoProcedureParameters(WordList* p_list)
         {
           switch(Nullable)
           {
-            case SQL_NO_NULLS:         line += " [NOT NULL]"; break;
-            case SQL_NULLABLE:         line += " [NULL]";     break;
-            case SQL_NULLABLE_UNKNOWN: 
-            default:                   line += " [Nulls unknown]";
-                                       break;
+            case SQL_NO_NULLS:         line += " [NOT NULL]";     break;
+            case SQL_NULLABLE:         line += " [NULL ALLOWED]"; break;
+            case SQL_NULLABLE_UNKNOWN: // Fall through
+            default:                   line += " [NULLS UNKNOWN]";break;
           }
         }
         if(cbRemarks > 0)
@@ -2945,16 +2944,18 @@ SQLInfo::MakeInfoProcedureParameters(WordList* p_list)
           line = "TYPE: ";
           switch(ColumnType)
           {
-            case SQL_PARAM_INPUT:        line += "Input parameter";        break;
-            case SQL_PARAM_OUTPUT:       line += "Output parameter";       break;
-            case SQL_PARAM_INPUT_OUTPUT: line += "Input/Output parameter"; break;
-            case SQL_RESULT_COL:         line += "Result column";          break;
-            case SQL_RETURN_VALUE:       line += "Return value";           
-                                         pos = 0; // Reset counter
-                                         break;
-            case SQL_PARAM_TYPE_UNKNOWN: 
-            default:                     line += "Parameter type is unknown"; 
-                                         break;
+            case SQL_PARAM_INPUT:               line += "Input parameter";        break;
+            case SQL_PARAM_OUTPUT:              line += "Output parameter";       break;
+            case SQL_PARAM_INPUT_OUTPUT:        line += "Input/Output parameter"; break;
+            case SQL_RESULT_COL:                line += "Result column";          break;
+            case SQL_RETURN_VALUE:              line += "Return value";           
+                                                pos = 0; // Reset counter
+                                                break;
+            case SQL_PARAM_INPUT_OUTPUT_STREAM: line += "Input/Output stream";    break;
+            case SQL_PARAM_OUTPUT_STREAM:       line += "Output stream";          break;
+            case SQL_PARAM_TYPE_UNKNOWN:        // Fall through
+            default:                            line += "Parameter type is unknown"; 
+                                                break;
           }
           //tree->InsertItem(line,col);
           p_list->push_back(line);
