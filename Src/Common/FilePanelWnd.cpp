@@ -1026,4 +1026,3 @@ CFilePanelWnd::PreTranslateMessage(MSG* pMsg)
   }
   return CTabCtrl::PreTranslateMessage(pMsg);
 }
-
