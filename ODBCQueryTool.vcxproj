@@ -918,6 +918,7 @@
   <ItemGroup>
     <Image Include="res\add.ico" />
     <Image Include="res\bmp00006.bmp" />
+    <Image Include="Src\res\bitmap1.bmp" />
     <Image Include="Src\res\bmp00006.bmp" />
     <Image Include="res\border_b.bmp" />
     <Image Include="res\connectb.bmp" />
@@ -947,6 +948,7 @@
     <Image Include="res\Toolbar.bmp" />
     <Image Include="res\toolbar1.bmp" />
     <Image Include="res\up.ico" />
+    <Image Include="Src\res\rdbms_objects.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Src\OpenQuery.rc" />

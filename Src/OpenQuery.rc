@@ -354,6 +354,8 @@ IDR_QUERYBAR            BITMAP                  "res\\querybar.bmp"
 
 IDB_QUERYSTATES         BITMAP                  "res\\querysta.bmp"
 
+IDB_RDBMS_OBJECTS       BITMAP                  "res\\rdbms_objects.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

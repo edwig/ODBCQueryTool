@@ -1,3 +1,19 @@
+Version 2.0.0 (Build: 200)  18-02-2017
+======================================
+This is the 10th year anniversary edition of the Open ODBC Querytool!
+The following have been changed / extended:
+- The object tree was previously a tree with just one table at the most.
+  It is now a tree with tables, views, catalogs, and procedures
+  you can expand any object at will, the control will then try to 
+  read in extra information for you. Thusly spreading the performance hit
+  over more than just one action.
+  See also the online help for directions and examples.
+- The implmentation info tree (odbc options) has been moved from the 
+  SQLComponents module to the ODBCQuerytool module (no functional changes).
+- The installer has been moved to the standard open source NSIS installer
+- The SQLComponents library has been upgraded to version 1.4.2
+- Repaired the number format export in the XLS Excel export.
+
 Version 1.5.1 (Build: 194)
 --------------------------
 - Broken transaction begin/commit/rollback fixed

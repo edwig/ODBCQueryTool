@@ -461,7 +461,7 @@ public:
   int             m_linesFetched;   // aantal regels opgehaald
   CString         m_tableOne;
   bool            m_findPrimary;
-  SQLQuery        m_rs;
+  SQLQuery        m_query;
   PrimaryMap      m_keyMap;
   CString         m_primaryName;
   FILE*           m_scriptOutput;

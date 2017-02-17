@@ -847,6 +847,13 @@ SQLDatabase::ODBCNativeSQL(CString& p_sql)
     return false;
   }
 
+  // See if we have something to do
+  p_sql.Trim();
+  if(p_sql.IsEmpty())
+  {
+    return false;
+  }
+
   // Create a buffer that's 2 times the length
   // just to be sure for native constructions
   int len = p_sql.GetLength();

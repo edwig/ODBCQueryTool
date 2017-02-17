@@ -225,7 +225,7 @@ COEditorView::COEditorView ()
 
 COEditorView::~COEditorView ()
 {
-  m_rs.Close();
+  m_query.Close();
   while(m_historyMap.size())
   {
     m_historyMap.pop_back();

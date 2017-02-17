@@ -436,6 +436,8 @@ int CFilePanelWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
   m_explorerStateImageList.Create(IDB_OE_EXPLORER_STATE_LIST, 16, 64, RGB(0,0,255));
   m_explorerTree.SetImageList(&m_explorerStateImageList, TVSIL_STATE);
 
+  m_tableTree.CreateImageList();
+
   // Reset table tree
   m_tableTree.ClearTree();
 

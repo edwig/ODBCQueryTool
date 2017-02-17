@@ -47,6 +47,8 @@
 #define IDC_EDIT_NATIVE_SQL             136
 #define IDC_SIZE1                       136
 #define IDC_FONT                        136
+#define IDB_BITMAP1                     136
+#define IDB_RDBMS_OBJECTS               136
 #define IDC_CHECK1                      137
 #define IDC_WHOLE_WORD                  137
 #define IDC_EXEC1                       137
@@ -167,7 +169,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        136
+#define _APS_NEXT_RESOURCE_VALUE        137
 #define _APS_NEXT_COMMAND_VALUE         40063
 #define _APS_NEXT_CONTROL_VALUE         1042
 #define _APS_NEXT_SYMED_VALUE           101

@@ -798,8 +798,8 @@ CGridView::ExportToExcelXLS()
           // ALL INTERVAL TYPES HAVE NO REPRESENTATIVE TYPES IN MS-EXCEL
           // SO NO FORMATTING STRINGS YET. 
           // TO BE RESEARCHED!!
-          default:              var.SetData(sqlType, text);
-                                var.GetAsString(text);
+          default:              // var.SetData(sqlType, text);
+                                // var.GetAsString(text);
                                 cell->Set(text);
                                 break;
         }

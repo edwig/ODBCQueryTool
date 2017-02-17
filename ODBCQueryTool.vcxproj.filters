@@ -879,6 +879,12 @@
     <Image Include="res\up.ico">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="Src\res\bitmap1.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Src\res\rdbms_objects.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Src\OpenQuery.rc">

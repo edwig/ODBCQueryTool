@@ -21,7 +21,7 @@
 
 using namespace SQLComponents;
 
-enum treeTypes
+typedef enum treeTypes
 {
   TREE_NOTHING = 0  
  ,TREE_TABLES
@@ -35,7 +35,31 @@ enum treeTypes
  ,TREE_REFERENCEDBY
  ,TREE_PRIVILEGES
  ,TREE_PARAMETERS
-};
+}
+TreeTypes;
+
+typedef enum objectImage
+{
+  IMG_TABLES = 0
+ ,IMG_TABLE 
+ ,IMG_VIEWS
+ ,IMG_VIEW
+ ,IMG_CATALOGS
+ ,IMG_CATALOG
+ ,IMG_PROCEDURES
+ ,IMG_PROCEDURE
+ ,IMG_ALIASSES
+ ,IMG_ALIAS
+ ,IMG_COLUMN
+ ,IMG_PRIMARY
+ ,IMG_FOREIGN
+ ,IMG_PARAMETER
+ ,IMG_INDEX
+ ,IMG_INFO
+ ,IMG_ACCESS
+ ,IMG_SCHEMA
+}
+ObjectImage;
 
 //using WordList = std::list<CString>;
 
@@ -51,19 +75,25 @@ public:
   void      SetFilter(CString p_filter);
   void      ExpandFirstTable();
   CString   GetFilter();
+  void      CreateImageList();
 
   HTREEITEM InsertItem(CString p_string,HTREEITEM p_item,int p_data = 0);
+
+private:
+  ObjectImage TypeToImage(CString p_type);
+
 protected:
   DECLARE_MESSAGE_MAP();
 
   void      InsertNoInfo   (HTREEITEM p_item);
   void      RemoveNoInfo   (HTREEITEM p_item);
-  void      WordListToTree (WordList& p_list,HTREEITEM p_item);
-  bool      IsSpecialNode  (CString p_name);
+  void      WordListToTree (WordList& p_list,HTREEITEM p_item,ObjectImage p_image);
+  bool      IsSpecialNode  (CString& p_name);
+  void      SetItemCount   (HTREEITEM p_theItem,int p_size);
   bool      PresetTable    (HTREEITEM p_theItem);
   bool      PresetProcedure(HTREEITEM p_theItem,WordList& p_list);
   void      FindTables     (HTREEITEM p_theItem);
-  void      FindTable      (HTREEITEM p_theItem);
+  void      PrepareTable   (HTREEITEM p_theItem);
   void      FindColumns    (HTREEITEM p_theItem);
   void      FindPrimary    (HTREEITEM p_theItem);
   void      FindForeign    (HTREEITEM p_theItem);
@@ -74,8 +104,10 @@ protected:
   void      FindProcedures (HTREEITEM p_theItem);
   void      FindParameters (HTREEITEM p_theItem);
 
-  CString m_filter;
-  bool    m_busy;
+  CString     m_filter;
+  bool        m_busy;
+  CImageList  m_imageList;
+
 public:
   afx_msg void OnSelChanged(NMHDR* pNMHDR, LRESULT* pResult);
 };

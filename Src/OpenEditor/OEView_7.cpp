@@ -172,9 +172,9 @@ COEditorView::OnScriptFindTable()
 {
   Square blkPos;
   char   buffer[128];
-  const char*  line;
-  int    len;
-  int    ind;
+  const char*  line = nullptr;
+  int    len = 0;
+  int    ind = 0;
   if (!WordFromPoint(GetPosition(), blkPos))
   {
     GetSelection(blkPos);
@@ -632,19 +632,19 @@ COEditorView::ExecuteQuery(int      p_line
                           ,bool     batch     /*=false*/
                           ,FILE*    p_script  /*=NULL*/)
 {
-  COpenEditorApp *app      = dynamic_cast<COpenEditorApp *> (AfxGetApp());
-  SQLDatabase&   database  = app->GetDatabase();
-  bool    selectQuery      = false;
-  bool    preMatureStopped = false;
-  int     panelWindow      = batch ? QPW_OUTPUT_VIEW : QPW_QUERY_VIEW;
-  UINT    defFormat        = DT_LEFT|DT_VCENTER|DT_WORDBREAK|DT_END_ELLIPSIS|DT_NOPREFIX|DT_EXPANDTABS;
-  int     prefetchLines    = GetDocument()->GetSettings().GetSQLPrefetchLines();
+  COpenEditorApp *app       = dynamic_cast<COpenEditorApp *> (AfxGetApp());
+  SQLDatabase&   database   = app->GetDatabase();
+  bool     selectQuery      = false;
+  bool     preMatureStopped = false;
+  int      panelWindow      = batch ? QPW_OUTPUT_VIEW : QPW_QUERY_VIEW;
+  UINT     defFormat        = DT_LEFT|DT_VCENTER|DT_WORDBREAK|DT_END_ELLIPSIS|DT_NOPREFIX|DT_EXPANDTABS;
+  int      prefetchLines    = GetDocument()->GetSettings().GetSQLPrefetchLines();
+  VarMap&  variables        = theApp.GetVariables();
+  int      numVariables     = (int)variables.size();
   CString  partialCommand;
-  VarMap&  variables    = theApp.GetVariables();
-  int      numVariables = (int)variables.size();
 
   // Init the query recordset
-  m_rs.Init(&database);
+  m_query.Init(&database);
 
   odbcCommand.TrimLeft('\n');
   if(odbcCommand.Left(1) == ':')
@@ -686,21 +686,21 @@ COEditorView::ExecuteQuery(int      p_line
 
     // Set rebind map for executing a query
     RebindMap* rebinds = theApp.GetRebinds();
-    m_rs.SetRebindMap(rebinds);
+    m_query.SetRebindMap(rebinds);
     // Set the buffer size for piece-wise extraction
-    m_rs.SetBufferSize(m_inboundBufferSize);
+    m_query.SetBufferSize(m_inboundBufferSize);
 
     // Run the query
     bool mustPrepare = (numVariables > 0) && (odbcCommand.Find('?') > 0);
     if(mustPrepare)
     {
-      m_rs.DoSQLPrepare(odbcCommand);
+      m_query.DoSQLPrepare(odbcCommand);
       WriteStatisticsLine("0 =>","Query prepared: " + partialCommand);
-      m_rs.DoSQLExecute();
+      m_query.DoSQLExecute();
     }
     else
     {
-      m_rs.DoSQLStatement(odbcCommand); // TODO ,0,p_script);
+      m_query.DoSQLStatement(odbcCommand); // TODO ,0,p_script);
     }
     WriteStatisticsLine("1 =>",(mustPrepare ? "Execute ready: " : "Query ready: ") + partialCommand);
     if(selectQuery)
@@ -712,10 +712,10 @@ COEditorView::ExecuteQuery(int      p_line
 
       // Build the header of the grid
       UINT format = DT_SINGLELINE|DT_VCENTER|DT_WORDBREAK|DT_END_ELLIPSIS|DT_NOPREFIX|DT_EXPANDTABS;
-      for(int k = 1; k <= m_rs.GetNumberOfColumns();++k)
+      for(int k = 1; k <= m_query.GetNumberOfColumns();++k)
       {
         CString kolnaam;
-        SQLVariant* var = m_rs.GetColumn(k);
+        SQLVariant* var = m_query.GetColumn(k);
         SWORD type = var->GetDataType();
         format &= ~(DT_LEFT | DT_RIGHT);
         format |= (type == SQL_C_CHAR) ? DT_LEFT : DT_RIGHT;
@@ -724,7 +724,7 @@ COEditorView::ExecuteQuery(int      p_line
           // Numeric sort
           format |= DT_SORT_NUMERIC;
         }
-        m_rs.GetColumnName(k,kolnaam);
+        m_query.GetColumnName(k,kolnaam);
         m_gridView->InsertColumn((LPCTSTR)kolnaam,format,k);
 
       }
@@ -733,7 +733,7 @@ COEditorView::ExecuteQuery(int      p_line
       {
         ScriptSelect(p_line);
       }
-      if(m_rs.GetRecord())
+      if(m_query.GetRecord())
       {
         do
         {
@@ -748,7 +748,7 @@ COEditorView::ExecuteQuery(int      p_line
             break;
           }
         }
-        while(m_rs.GetRecord());
+        while(m_query.GetRecord());
       }
     }
     else
@@ -761,10 +761,10 @@ COEditorView::ExecuteQuery(int      p_line
 
     if(!row)
     {
-      row = m_rs.GetNumberOfRows();
+      row = m_query.GetNumberOfRows();
     }
     WriteStatisticsLine("2 =>","Fetch ready: " + partialCommand);
-    WriteOutputLine(p_line,row,partialCommand,m_rs.GetError());
+    WriteOutputLine(p_line,row,partialCommand,m_query.GetError());
   }
   catch(char *errorTekst)
   {
@@ -775,7 +775,7 @@ COEditorView::ExecuteQuery(int      p_line
       AfxMessageBox(text,MB_OK | MB_ICONHAND);
     }
     WriteStatisticsLine("2 =>","Error: " + partialCommand);
-    WriteOutputLine(p_line,m_rs.GetNumberOfRows(),partialCommand,errorTekst);
+    WriteOutputLine(p_line,m_query.GetNumberOfRows(),partialCommand,errorTekst);
     panelWindow = QPW_OUTPUT_VIEW;
   }
   catch(CString errorText)
@@ -786,7 +786,7 @@ COEditorView::ExecuteQuery(int      p_line
     }
     // @EH TODO Print to output pane
     WriteStatisticsLine("2 =>","Error: " + partialCommand);
-    WriteOutputLine(p_line,m_rs.GetNumberOfRows(),partialCommand,errorText);
+    WriteOutputLine(p_line,m_query.GetNumberOfRows(),partialCommand,errorText);
     panelWindow = QPW_OUTPUT_VIEW;
   }
   catch(...)
@@ -798,7 +798,7 @@ COEditorView::ExecuteQuery(int      p_line
       AfxMessageBox(text,MB_OK | MB_ICONHAND);
     }
     WriteStatisticsLine("2 =>","Unknown: " + partialCommand);
-    WriteOutputLine(p_line,m_rs.GetNumberOfRows(),partialCommand,"ERROR");
+    WriteOutputLine(p_line,m_query.GetNumberOfRows(),partialCommand,"ERROR");
     panelWindow = QPW_OUTPUT_VIEW;
   }
   // Clock is ready ticking
@@ -821,9 +821,9 @@ COEditorView::GetLineFromQuery(int row)
   m_gridView->InsertRow((LPCSTR) rowNumber,-1);
 
   // Insert the row info
-  for(int k = 1; k <= m_rs.GetNumberOfColumns(); ++k)
+  for(int k = 1; k <= m_query.GetNumberOfColumns(); ++k)
   {
-    SQLVariant* var = m_rs.GetColumn(k);
+    SQLVariant* var = m_query.GetColumn(k);
     SWORD type = var->GetDataType();
     if(type == SQL_C_BINARY)
     {
@@ -842,7 +842,7 @@ COEditorView::GetLineFromQuery(int row)
 	    var->GetAsString(text);
       format &= ~(DT_LEFT | DT_RIGHT);
       format |= (type == SQL_CHAR || type == SQL_VARCHAR) ? DT_LEFT : DT_RIGHT;
-      m_gridView->InsertItem(row,k,text,format,var->GetSQLDataType());
+      m_gridView->InsertItem(row,k,text,format,var->GetDataType());
     }
   }
 }
@@ -850,15 +850,14 @@ COEditorView::GetLineFromQuery(int row)
 void
 COEditorView::ReadRestOfQuery()
 {
-  if(m_rs.GetRecord())
+  if(m_query.GetRecord())
   {
     do 
     {
       GetLineFromQuery(++m_linesFetched);
     } 
-    while(m_rs.GetRecord());
+    while(m_query.GetRecord());
   }
-  //m_rs.Sluit();
   // Reset to 0, so grid will not attempt a second time
   m_linesFetched = 0;
 }
@@ -1055,7 +1054,7 @@ COEditorView::UpdateCondition(int row,CString column)
       return "";
     }
     CString text = m_gridView->GetItemText(row,xx);
-    SQLVariant* var = m_rs.GetColumn(xx);
+    SQLVariant* var = m_query.GetColumn(xx);
     if(var == NULL)
     {
       return "";
@@ -1084,7 +1083,7 @@ COEditorView::UpdateTable(int row,int col,CString text)
 
   // Get column
   CString column = m_gridView->GetItemText(0,col);
-  SQLVariant* var = m_rs.GetColumn(col);
+  SQLVariant* var = m_query.GetColumn(col);
   if(var->GetDataType() == SQL_C_CHAR)
   {
     text.Replace("\'","\'\'");
@@ -1333,7 +1332,7 @@ COEditorView::ScriptCommandIf(int p_line,CString command)
         command.TrimRight('\'');
 
         CString value;
-		var->GetAsString(value);
+		    var->GetAsString(value);
         m_scriptCompare = (command.Compare(value) == 0);
         m_ifLast = true;
         if(m_scriptOutput)
@@ -1577,10 +1576,10 @@ COEditorView::ScriptSelect(int p_line)
   CString error;
   VarMap& vars = theApp.GetVariables();
   VarMap::iterator it;
-  for(int k=1; k <= m_rs.GetNumberOfColumns();++k)
+  for(int k=1; k <= m_query.GetNumberOfColumns();++k)
   {
     SQLVariant* var = NULL;
-    SQLVariant* column = m_rs.GetColumn(k);
+    SQLVariant* column = m_query.GetColumn(k);
     it = vars.find(k);
     if(it != vars.end())
     {

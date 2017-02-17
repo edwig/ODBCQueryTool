@@ -36,12 +36,32 @@ ObjectTree::~ObjectTree()
 {
 }
 
-// Eache node gets a 'no info' extra node
+// Setting the image list for the tree control
+// Containing all object type images for the nodes
+void
+ObjectTree::CreateImageList()
+{
+  // Create image list (16 x 16 in 32 bits depth, 10 images default, grow by 2)
+  m_imageList.Create(16,16,ILC_COLOR32,10,2);
+
+  // Load bitmap from resources
+  CBitmap bitmap;
+  bitmap.LoadBitmapA(MAKEINTRESOURCE(IDB_RDBMS_OBJECTS));
+
+  // Set bitmap in image list, white is background color
+  m_imageList.Add(&bitmap,RGB(0,0,0));
+
+  // Set the image list in the treecontrol
+  SetImageList(&m_imageList,TVSIL_NORMAL);
+}
+
+// Each node gets a 'no info' extra node
 // to show the "+" in the tree control
 void
 ObjectTree::InsertNoInfo(HTREEITEM p_item)
 {
-  InsertItem("No information",p_item);
+  HTREEITEM noinfo = InsertItem("No information",p_item);
+  SetItemImage(noinfo,IMG_INFO,IMG_INFO);
 }
 
 // If we DO have info, we want the 
@@ -72,21 +92,44 @@ ObjectTree::ClearTree()
   DeleteAllItems();
   HTREEITEM root = GetRootItem();
 
-  InsertNoInfo(InsertItem("Tables",    root,TREE_TABLES));
-  InsertNoInfo(InsertItem("Views",     root,TREE_TABLES));
-  InsertNoInfo(InsertItem("Catalog" ,  root,TREE_TABLES));
-  InsertNoInfo(InsertItem("Aliases",   root,TREE_TABLES));
-  InsertNoInfo(InsertItem("Synonyms",  root,TREE_TABLES));
-  InsertNoInfo(InsertItem("Procedures",root,TREE_PROCEDURES));
+  HTREEITEM tables     = InsertItem("Tables",    root,TREE_TABLES);
+  HTREEITEM views      = InsertItem("Views",     root,TREE_TABLES);
+  HTREEITEM catalogs   = InsertItem("Catalog" ,  root,TREE_TABLES);
+  HTREEITEM aliasses   = InsertItem("Aliasses",  root,TREE_TABLES);
+  HTREEITEM synonyms   = InsertItem("Synonyms",  root,TREE_TABLES);
+  HTREEITEM procedures = InsertItem("Procedures",root,TREE_PROCEDURES);
+
+  SetItemImage(tables,    IMG_TABLES,     IMG_TABLES);
+  SetItemImage(views,     IMG_VIEWS,      IMG_VIEWS);
+  SetItemImage(catalogs,  IMG_CATALOGS,   IMG_CATALOGS);
+  SetItemImage(aliasses,  IMG_ALIASSES,   IMG_ALIASSES);
+  SetItemImage(synonyms,  IMG_ALIASSES,   IMG_ALIASSES);
+  SetItemImage(procedures,IMG_PROCEDURES, IMG_PROCEDURES);
+
+  InsertNoInfo(tables);
+  InsertNoInfo(views);
+  InsertNoInfo(catalogs);
+  InsertNoInfo(aliasses);
+  InsertNoInfo(synonyms);
+  InsertNoInfo(procedures);
 
   m_busy = false;
 }
 
 // See if a node is a schema, or if the schema
 // is missing, if it is the node above
+// BEWARE: Removes the count from the text
 bool
-ObjectTree::IsSpecialNode(CString p_name)
+ObjectTree::IsSpecialNode(CString& p_name)
 {
+  // Find first word of the nodename
+  int pos = p_name.Find(' ');
+  if(pos > 0)
+  {
+    p_name = p_name.Left(pos);
+  }
+
+  // See if it is a type node instead of a schema name
   if(p_name.Compare("Tables")     == 0)  return true;
   if(p_name.Compare("Views")      == 0)  return true;
   if(p_name.Compare("Catalog")    == 0)  return true;
@@ -96,6 +139,43 @@ ObjectTree::IsSpecialNode(CString p_name)
 
   return false;
 }
+
+ObjectImage
+ObjectTree::TypeToImage(CString p_type)
+{
+  if(p_type == "T") return IMG_TABLE;
+  if(p_type == "V") return IMG_VIEW;
+  if(p_type == "C") return IMG_CATALOG;
+  if(p_type == "A") return IMG_ALIAS;
+  if(p_type == "S") return IMG_ALIAS;
+  if(p_type == "P") return IMG_PROCEDURE;
+
+  return IMG_TABLES;
+}
+
+void      
+ObjectTree::SetItemCount(HTREEITEM p_theItem,int p_size)
+{
+  // Get current text
+  CString text = GetItemText(p_theItem);
+
+  // Find primary text of the nodename
+  int pos = text.Find(' ');
+  if(pos > 0)
+  {
+    text = text.Left(pos);
+  }
+  
+  // Append count if not zero
+  if(p_size > 0)
+  {
+    text.AppendFormat(" (%d)",p_size);
+  }
+
+  // Reformat the item text
+  SetItemText(p_theItem,text);
+}
+
 
 // Basic item insert. Also inserts a data item, to keep track
 // of the type of lookup we should do for a node
@@ -134,7 +214,7 @@ ObjectTree::OnSelChanged(NMHDR* pNMHDR,LRESULT* pResult)
       switch(data)
       {
         case TREE_TABLES:       FindTables(theItem);     break;
-        case TREE_TABLE:        FindTable(theItem);      break;
+        case TREE_TABLE:        PrepareTable(theItem);   break;
         case TREE_COLUMNS:      FindColumns(theItem);    break;
         case TREE_PRIMARY:      FindPrimary(theItem);    break;
         case TREE_FOREIGN:      FindForeign(theItem);    break;
@@ -162,7 +242,7 @@ ObjectTree::OnSelChanged(NMHDR* pNMHDR,LRESULT* pResult)
 // 3) '+' -> One extra level in the tree
 // 4) '-' -> One level back in the tree
 void
-ObjectTree::WordListToTree(WordList& p_list,HTREEITEM p_item)
+ObjectTree::WordListToTree(WordList& p_list,HTREEITEM p_item,ObjectImage p_image)
 {
   // We now have information. Remove the 'No information' marker
   if(!p_list.empty())
@@ -190,6 +270,7 @@ ObjectTree::WordListToTree(WordList& p_list,HTREEITEM p_item)
     else
     {
       last = InsertItem(line,item);
+      SetItemImage(last,p_image,p_image);
     }
   }
   p_list.clear();
@@ -226,7 +307,8 @@ void
 ObjectTree::FindTables(HTREEITEM p_theItem)
 {
   CString text = GetItemText(p_theItem);
-  CString find = text.Left(1) +":";
+  CString type = text.Left(1);
+  CString find = type + ":";
   if(m_filter.IsEmpty())
   {
     find += "%";
@@ -243,7 +325,8 @@ ObjectTree::FindTables(HTREEITEM p_theItem)
   COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
   WordList  list;
   CString   lastSchema;
-  HTREEITEM schemaItem = 0;
+  int       schemaCount = 0;
+  HTREEITEM schemaItem  = 0;
 
   // Go  find it
   app->GetDatabase().GetSQLInfoDB()->MakeInfoTableTablepart(&list,nullptr,find);
@@ -252,6 +335,9 @@ ObjectTree::FindTables(HTREEITEM p_theItem)
   {
     RemoveNoInfo(p_theItem);
   }
+
+  // Set item count text
+  SetItemCount(p_theItem,(int)list.size());
 
   for(auto& str : list)
   {
@@ -271,12 +357,16 @@ ObjectTree::FindTables(HTREEITEM p_theItem)
         if((schema.Compare(lastSchema) == 0) && schemaItem)
         {
           table = InsertItem(object,schemaItem);
+          SetItemCount(schemaItem,++schemaCount);
         }
         else
         {
-          lastSchema = schema;
-          schemaItem = InsertItem(schema,p_theItem);
-          table = InsertItem(object,schemaItem);
+          lastSchema  = schema;
+          schemaItem  = InsertItem(schema,p_theItem);
+          table       = InsertItem(object,schemaItem);
+          schemaCount = 1;
+          SetItemCount(schemaItem,schemaCount);
+          SetItemImage(schemaItem,IMG_SCHEMA,IMG_SCHEMA);
         }
       }
       else
@@ -284,22 +374,40 @@ ObjectTree::FindTables(HTREEITEM p_theItem)
         // No schema found, just add the item
         table = InsertItem(toAdd,p_theItem);
       }
-      FindTable(table);
+      ObjectImage image = TypeToImage(type);
+      SetItemImage(table,image,image);
+      PrepareTable(table);
     }
   }
 }
 
 // Add what we can find in a table
 void
-ObjectTree::FindTable(HTREEITEM p_theItem)
+ObjectTree::PrepareTable(HTREEITEM p_theItem)
 {
-  InsertNoInfo(InsertItem("Columns",        p_theItem,TREE_COLUMNS));
-  InsertNoInfo(InsertItem("Primary key",    p_theItem,TREE_PRIMARY));
-  InsertNoInfo(InsertItem("Foreign keys",   p_theItem,TREE_FOREIGN));
-  InsertNoInfo(InsertItem("Statistics",     p_theItem,TREE_STATISTICS));
-  InsertNoInfo(InsertItem("Special columns",p_theItem,TREE_SPECIALS));
-  InsertNoInfo(InsertItem("Referenced by",  p_theItem,TREE_REFERENCEDBY));
-  InsertNoInfo(InsertItem("Privileges",     p_theItem,TREE_PRIVILEGES));
+  HTREEITEM columns    = InsertItem("Columns",        p_theItem,TREE_COLUMNS);
+  HTREEITEM primary    = InsertItem("Primary key",    p_theItem,TREE_PRIMARY);
+  HTREEITEM foreigns   = InsertItem("Foreign keys",   p_theItem,TREE_FOREIGN);
+  HTREEITEM indices    = InsertItem("Statistics",     p_theItem,TREE_STATISTICS);
+  HTREEITEM specials   = InsertItem("Special columns",p_theItem,TREE_SPECIALS);
+  HTREEITEM referenced = InsertItem("Referenced by",  p_theItem,TREE_REFERENCEDBY);
+  HTREEITEM access     = InsertItem("Privileges",     p_theItem,TREE_PRIVILEGES);
+
+  SetItemImage(columns,   IMG_COLUMN,  IMG_COLUMN);
+  SetItemImage(primary,   IMG_PRIMARY, IMG_PRIMARY);
+  SetItemImage(foreigns,  IMG_FOREIGN, IMG_FOREIGN);
+  SetItemImage(indices,   IMG_INDEX,   IMG_INDEX);
+  SetItemImage(specials,  IMG_COLUMN,  IMG_COLUMN);
+  SetItemImage(referenced,IMG_FOREIGN, IMG_FOREIGN);
+  SetItemImage(access,    IMG_ACCESS,  IMG_ACCESS);
+
+  InsertNoInfo(columns);
+  InsertNoInfo(primary);
+  InsertNoInfo(foreigns);
+  InsertNoInfo(indices);
+  InsertNoInfo(specials);
+  InsertNoInfo(referenced);
+  InsertNoInfo(access);
 }
 
 // Before expanding a node, find the table again
@@ -357,7 +465,7 @@ ObjectTree::FindColumns(HTREEITEM p_theItem)
 
     // Go find the columns
     app->GetDatabase().GetSQLInfoDB()->MakeInfoTableColumns(&list);
-    WordListToTree(list,p_theItem);
+    WordListToTree(list,p_theItem,IMG_COLUMN);
   }
 }
 
@@ -375,7 +483,7 @@ ObjectTree::FindPrimary(HTREEITEM p_theItem)
 
     // Go find the primary key
     app->GetDatabase().GetSQLInfoDB()->MakeInfoTablePrimary(&list,primName,keymap);
-    WordListToTree(list,p_theItem);
+    WordListToTree(list,p_theItem,IMG_PRIMARY);
   }
 }
 
@@ -391,7 +499,7 @@ ObjectTree::FindForeign(HTREEITEM p_theItem)
 
     // Go find the foreign keys
     app->GetDatabase().GetSQLInfoDB()->MakeInfoTableForeign(&list);
-    WordListToTree(list,p_theItem);
+    WordListToTree(list,p_theItem,IMG_FOREIGN);
   }
 }
 
@@ -409,7 +517,7 @@ ObjectTree::FindStatistics(HTREEITEM p_theItem)
 
     // Go find the indices and statistics
     app->GetDatabase().GetSQLInfoDB()->MakeInfoTableStatistics(&list,keyname,primary);
-    WordListToTree(list,p_theItem);
+    WordListToTree(list,p_theItem,IMG_INDEX);
   }
 }
 
@@ -424,7 +532,7 @@ ObjectTree::FindSpecials(HTREEITEM p_theItem)
 
     // Go find the special columns
     app->GetDatabase().GetSQLInfoDB()->MakeInfoTableSpecials(&list);
-    WordListToTree(list,p_theItem);
+    WordListToTree(list,p_theItem,IMG_COLUMN);
   }
 }
 
@@ -440,7 +548,7 @@ ObjectTree::FindReferenced(HTREEITEM p_theItem)
 
     // Go find the referencing tables
     app->GetDatabase().GetSQLInfoDB()->MakeInfoTableForeign(&list,true);
-    WordListToTree(list,p_theItem);
+    WordListToTree(list,p_theItem,IMG_FOREIGN);
   }
 }
 
@@ -455,7 +563,7 @@ ObjectTree::FindPrivileges(HTREEITEM p_theItem)
 
     // Go find the privileges on the table
     app->GetDatabase().GetSQLInfoDB()->MakeInfoTablePrivileges(&list);
-    WordListToTree(list,p_theItem);
+    WordListToTree(list,p_theItem,IMG_ACCESS);
   }
 }
 
@@ -472,7 +580,8 @@ ObjectTree::FindProcedures(HTREEITEM p_theItem)
   COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
   WordList  list;
   CString   lastSchema;
-  HTREEITEM schemaItem = NULL;
+  int       schemaCount = 0;
+  HTREEITEM schemaItem  = NULL;
 
   // Go find the procedures
   app->GetDatabase().GetSQLInfoDB()->MakeInfoProcedureProcedurepart(&list,find);
@@ -481,6 +590,9 @@ ObjectTree::FindProcedures(HTREEITEM p_theItem)
   {
     RemoveNoInfo(p_theItem);
   }
+
+  // Setting count of objects
+  SetItemCount(p_theItem,(int)list.size());
   
   for(auto& str : list)
   {
@@ -500,12 +612,16 @@ ObjectTree::FindProcedures(HTREEITEM p_theItem)
         if((schema.Compare(lastSchema) == 0) && schemaItem)
         {
           procedure = InsertItem(object,schemaItem);
+          SetItemCount(schemaItem,++schemaCount);
         }
         else
         {
-          lastSchema = schema;
-          schemaItem = InsertItem(schema,p_theItem);
-          procedure  = InsertItem(object,schemaItem);
+          lastSchema  = schema;
+          schemaItem  = InsertItem(schema,p_theItem);
+          procedure   = InsertItem(object,schemaItem);
+          schemaCount = 1;
+          SetItemCount(schemaItem,schemaCount);
+          SetItemImage(schemaItem,IMG_SCHEMA,IMG_SCHEMA);
         }
       }
       else
@@ -513,8 +629,17 @@ ObjectTree::FindProcedures(HTREEITEM p_theItem)
         // No schema found, just add the item
         procedure = InsertItem(toAdd,p_theItem);
       }
-      InsertNoInfo(InsertItem("Information",procedure,TREE_PARAMETERS));
-      InsertNoInfo(InsertItem("Parameters", procedure,TREE_PARAMETERS));
+      SetItemImage(procedure,IMG_PROCEDURE,IMG_PROCEDURE);
+
+      // Insert the info and parameters nodes
+      HTREEITEM information = InsertItem("Information",procedure,TREE_PARAMETERS);
+      HTREEITEM parameters  = InsertItem("Parameters", procedure,TREE_PARAMETERS);
+
+      SetItemImage(information,IMG_INFO,     IMG_INFO);
+      SetItemImage(parameters, IMG_PARAMETER,IMG_PARAMETER);
+
+      InsertNoInfo(information);
+      InsertNoInfo(parameters);
     }
   }
 }
@@ -536,7 +661,8 @@ ObjectTree::FindParameters(HTREEITEM p_theItem)
       RemoveNoInfo(info);
       for(auto& type : list)
       {
-        InsertItem(type,info);
+        HTREEITEM node = InsertItem(type,info);
+        SetItemImage(node,IMG_INFO,IMG_INFO);
       }
     }
 
@@ -546,9 +672,9 @@ ObjectTree::FindParameters(HTREEITEM p_theItem)
 
     // Go find the parameters for the procedure
     app->GetDatabase().GetSQLInfoDB()->MakeInfoProcedureParameters(&params);
-    WordListToTree(params,param);
+    WordListToTree(params,param,IMG_PARAMETER);
 
-    // Reset
+    // Reset BOTH node data pointers
     SetItemData(info,0);
     SetItemData(param,0);
   }
