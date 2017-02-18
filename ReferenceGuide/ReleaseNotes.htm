@@ -1,0 +1,645 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+
+<html>
+<head>
+    <title>ReleaseNotes</title>
+    <meta content="text/html; charset=us-ascii" http-equiv="Content-Type">
+    <meta name="GENERATOR" content="AuthorDocumentation">
+    <link rel="Stylesheet" type="text/css" href="default.css">
+</head>
+
+<body>
+    <h1>Releasenotes version 2.0.0</h1>
+
+    <p>This is the 10th year anniversary edition of the Open ODBC Querytool!<br>
+    The following have been changed / extended:</p>
+
+    <ul>
+        <li>The object tree was previously a tree with just one table at the most.&nbsp;It is now a tree with tables, views,
+        catalogs, and procedures you can expand any object at will, the control will then try to&nbsp;read in extra information
+        for you. Thusly&nbsp;reading the performance hit over more than just one action.&nbsp;</li>
+
+        <li>See for the new description of the tree functionality the rewritten page <a href=
+        "Querying/FindingTables.html">Finding tables</a></li>
+
+        <li>The implmentation info tree (odbc options) has been moved from the&nbsp;SQLComponents module to the ODBCQuerytool
+        module (no functional changes).</li>
+
+        <li>The installer has been moved to the standard open source NSIS installer</li>
+
+        <li>The SQLComponents library has been upgraded to version 1.4.2</li>
+
+        <li>Repaired the number format export in the XLS Excel export.</li>
+    </ul>
+
+    <h3>Version 1.5.1 (Build: 194)</h3>
+
+    <ul>
+        <li>Broken transaction begin/commit/rollback fixed</li>
+    </ul>
+
+    <h3>Version 1.5.0 (Build: 192)</h3>
+
+    <ul>
+        <li>Updated the Database directory to versie 1.3 of the SQLComponents module on&nbsp;<a href=
+        "https://github.com/edwig/SQLComponents">https://github.com/edwig/SQLComponents</a></li>
+
+        <li>It is now possible to correctly retrieve and update DECIMAL/NUMBER fields&nbsp;in database types like MS-SQLServer.
+        This was done by adding the bcd (Binary Coded Decimal) data type to the library and effectivly converting between bcd's
+        and SQL_NUMERIC_STRUCT.</li>
+
+        <li>Fixed a bug in the spreadsheet export, where the export could crash on&nbsp;an empty 33th row in the output grid.
+        (In effect after each 32 rows)</li>
+
+        <li>Extended the on-line help file with the following subjects:<br>
+        &nbsp; - Finding a table and tableinfo<br>
+        &nbsp; - Scripting with SQL</li>
+    </ul>
+
+    <h3>Version 1.4.4 (Build: 185)<br></h3>
+
+    <ul>
+        <li>Repaired the representation of the ODBC datatypes, as reported by the driver<br>
+        The following where incorrect and repaired:</li>
+    </ul>
+
+    <p>&nbsp;</p>
+
+    <p>&nbsp; SQLSMALLINT
+    m_money;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Money
+    (FIXED_PRECISION_SCALE) (TRUE,FALSE)<br>
+    &nbsp; SQLSMALLINT m_autoincrement;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Auto incrementable (TRUE,FALSE,NULL for
+    non-numeric)<br>
+    &nbsp; CString&nbsp;&nbsp;&nbsp;&nbsp; m_local_type_name;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Local type
+    name for display on UI's (not in DDL!)<br>
+    &nbsp; SQLSMALLINT m_minimum_scale;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;// Minimum scale of datatype. E.g. in seconds of
+    the TIMESTAMP<br>
+    &nbsp; SQLSMALLINT m_maximum_scale;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Maximum scale of datatype, otherwise use
+    column_size</p>
+
+    <p>&nbsp;&nbsp;The following where added</p>
+
+    <p>&nbsp; SQLSMALLINT m_sqlDatatype;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Driver independent SQL datatype<br>
+    &nbsp; SQLSMALLINT m_sqlSubType;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // SQL subtype for TYPE_TIMESTAMP and
+    INTERVAL types<br>
+    &nbsp; SQLINTEGER&nbsp;
+    m_radix;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; //
+    Decimal radix (2,10 or NULL)<br>
+    &nbsp; SQLSMALLINT m_interval_precision; // Number of decimals in interval precision of leading type</p>
+
+    <p>&nbsp; After this reparation, the ODBC types info tree (left hand side) is now correct again.</p>
+
+    <h3>Version 1.4.3 (Build: 184)</h3>
+
+    <ul>
+        <li>Fixed MARS: Multiple Active Record Sets.&nbsp;This is a MS-SQLServer feature, needed to run more than one SQL
+        statement, for instance a SQL Statement in an inner loop of another recordset.&nbsp;This feature should be in the 'on'
+        state BEFORE connecting to a database.</li>
+    </ul>
+
+    <h3>Version 1.4.2 (Build: 183)</h3>
+
+    <ul>
+        <li>Fixed parsing of SQL Found with F10/F11. The division operator ('/')&nbsp;was mistaken for the end-of-the-statement
+        marker. The ODBCQuerytool now can correctly parse SQL scripts like:</li>
+    </ul>
+
+    <p>&nbsp; SELECT (field_b - field_a) / field_c<br>
+    &nbsp;&nbsp;&nbsp; FROM table<br>
+    &nbsp; /<br>
+    &nbsp; SELECT (field_b - field_a) / field_c<br>
+    &nbsp;&nbsp;&nbsp; FROM table<br>
+    &nbsp; ;<br>
+    &nbsp; SELECT {fn DATE() } FROM dual<br>
+    &nbsp; /</p>
+
+    <ul>
+        <li>As a result to this: ANY / marker at the first position will be seen as an end-of-the-statement marker. So a 'real'
+        calculation with the division&nbsp;operator must not have the division operator in the first text column!&nbsp;Thanks
+        to: Ibo Boekestijn, Manfred Baumann.</li>
+
+        <li>NULL values are exported as '0' rather than an empty string, whil exporting to an Excel spreadsheet. This is
+        corrected. Numbers and dates are exported as empty strings when NULL. Thanks to: Jerrad Pierce</li>
+    </ul>Version 1.4.1 (Build: 182)
+
+    <ul>
+        <li>Fixed a typo on the connection dialog "Safty" -&gt; "Safety"</li>
+
+        <li>Fixed a bug in the month of the date the connection was saved. The month&nbsp;was off-by-one (januari = zero)</li>
+
+        <li>Extended the functionality of the Excel spreadsheet export.<br>
+        The images (OK and ERROR) are now being exported to Excel as:<br>
+        "0" on a green field -&gt; Means no error<br>
+        "1" on a red field&nbsp;&nbsp; &nbsp;-&gt; Means one error</li>
+    </ul>
+
+    <h3>Version 1.4.0 (Build: 181)</h3>
+
+    <ul>
+        <li>Added the possibility to send a bug report or a feature request by email to the maintainers of the program.</li>
+
+        <li>Fixed a bug in the connection dialog. The 'Test' function was broken for all who use the standard
+        'OQT_SAVE_PASSWORD' setting to zero (No passwords saved). As the test function uses the saved password's from the
+        connection list.&nbsp;You can now type in a password above the 'Test' button and use that as an override&nbsp;for the
+        testing of the connection.&nbsp;Also fixed various bugs in the saving of the password in the list, and changed the
+        default deployment to 'SAVE_PASSWORD's so that everyone can again enjoy the&nbsp;save connections, including
+        passwords.</li>
+
+        <li>For paranoia organisations or persons, please undefine 'OQT_SAVE_PASSWORD' in the following include header:
+        'OpenEditorApp.h' on line 41.</li>
+
+        <li>Fixed a bug in the search-next / search-previous functionality (F3 / SHIFT-F3). These functions where commented
+        out, and not working, and sometimes threw errors or let the whole application hang. The bugs are solved in this
+        version.<br>
+        F3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&gt; Find the next instance of the search string<br>
+        SHIFT-F3 -&gt; Finds the previous instance, but not if you are still on a found string!</li>
+
+        <li>Updated the Database code to a higher version of the SQLComponents module</li>
+
+        <li>Source code ported to VisualStudio 2015.<br>
+        Various extra warnings point to better type conversions to be done.<br>
+        All code in the database module is updated for this version.<br>
+        Warnings in the Open-Editor disregarded for now: it's still working :-)</li>
+
+        <li>Compiled against MS-Windows SDK 8.1<br>
+        Application tested against MDAC 2.8 for Windows 7.x, 8.x and Windows 10<br>
+        Alsoo tested on MS-Windows Server 2008 and 2012 platforms.<br>
+        Everything is working fine on these platforms.</li>
+    </ul>
+
+    <h3>Version 1.3.0 (Build: 180)</h3>
+
+    <ul>
+        <li>Added 'BasicExcel' code to the codebase to be able to process&nbsp;spreadsheets in both reading and writing
+        mode.</li>
+
+        <li>Writing 'real' *.XLS files as an export from the data grid. It's a replacement of the writing of the *.SYLK
+        files.&nbsp;Writes headers in bold and background colors.</li>
+    </ul>
+
+    <h3>Version 1.2.1 (Build: 179)</h3>
+
+    <ul>
+        <li>Fixed bugs in SQLPrimaryKey</li>
+
+        <li>Fixed bugs in SQLForeignKey</li>
+
+        <li>Fixed leaking of database cursors</li>
+    </ul>
+
+    <h3>Version 1.2.0 (Build: 178)</h3>
+
+    <ul>
+        <li>Port to Visual Studio 2013 (With MBCS option pack!!)</li>
+
+        <li>Higher stability of the SQL Query results</li>
+
+        <li>Support for the datatypes DATE, TIME, TIMESTAMP</li>
+
+        <li>Mutable SQLDataSet with autmatic insert/update/delete</li>
+
+        <li>XML Export of the dataset -&gt; In order to be able to export&nbsp;query results to XML. Can now be added to this
+        program at last.</li>
+
+        <li>Support for the following databases vendors:<br>
+        - Oracle&nbsp;<br>
+        - IBM Informix<br>
+        - Microsoft SQL-Server<br>
+        - Microsoft MS-Access<br>
+        - PostgreSQL<br>
+        - Firebird<br>
+        - Generic ODBC typed databases</li>
+
+        <li>Plugin Database-part in directory "Database" in the source tree</li>
+
+        <li>The database part of the program is now under the MIT license</li>
+    </ul>
+
+    <h3>Version 1.0.5&nbsp; (Build: 35)</h3>
+
+    <ul>
+        <li>Resolved a issue for databases with fractions in the second field of timestamp types. The fractions where not
+        correctly calculated and&nbsp;concatenated to the seconds-field without an intermediate '.' sign.&nbsp; All fractional
+        parts are 1.000.000.000 part of a second (1 nanosecond)&nbsp;See the ODBC documentation from Microsoft for
+        this.&nbsp;This means there is a another bug in the ODBC driver from Oracle !!</li>
+
+        <li>Port to Visual Studio 2010.</li>
+    </ul>
+
+    <h3>Version 1.0.4. (Build: 34)</h3>
+
+    <ul>
+        <li>Solution for some XP computers giving streaming-errors at startup. Due to incorrect optimalisation settings in some
+        source files in the project and a MSVCRT dependency in the installer.</li>
+
+        <li>This is a servicepack for the retracted 1.0.3 version</li>
+    </ul>
+
+    <h3>Version 1.0.3 (build: 33)</h3>
+
+    <ul>
+        <li>Recurse to Windows Version 5.xx in Stdafx.h&nbsp;because of support problems with Windows-XP (fonts and
+        SHGetFolderPath) Tested on XP-Mode in 32 bits mode, and works fine</li>
+    </ul>
+
+    <h3>Version 1.0.2 (build: 32)</h3>
+
+    <ul>
+        <li>New routine to do the discovery of %APPDATA%</li>
+
+        <li>Fonts of connection dialog and query result grid can be chosen. Misfits on some XP machines to fonts smaller than 4
+        px Make your choise at the menu "Text / Permanent settings / Query setttings"</li>
+    </ul>
+
+    <h3>Version 1.0.1 (build: 31)</h3>
+
+    <ul>
+        <li>use "#define OQT_SAVE_PASSWORD" to save passwords in a build.</li>
+
+        <li>Ini's with current connections will be saved to&nbsp;<br>
+        "%APP_DATA%\EDO\OpenODBCQuerytool\ODBC_querytool.ini"<br>
+        Will work for Windows-XP / Vista / W7<br>
+        On Vista/W7 it will be saved in the roaming profile.</li>
+
+        <li>Update on the helpfile. Slightly more documentation :-)</li>
+    </ul>
+
+    <h3>Version 1.0 (build: 30)</h3>
+
+    <ul>
+        <li>Find Repaired for multilines</li>
+
+        <li>Save-as feature crash after "CTRL-S" combination fixed</li>
+
+        <li>SQL-Server features repaired. Querytool runs on 1 cursor only.</li>
+
+        <li>Stable release after multi tests</li>
+
+        <li>Stable release works for Oracle 9/10/11; IBM-Informix 9/11;&nbsp;SQL-Server 2005 and higher.</li>
+
+        <li>True 64Bits and 32Bits implementations</li>
+    </ul>
+
+    <h3>Version 0.78 (build: 29)</h3>
+
+    <ul>
+        <li>Find&amp;Replace did crash in the find. Replace alsoo didn't work as a&nbsp;result of the reworking in the regexp
+        class. Both are fixed.</li>
+
+        <li>Searching and replacing now works fine again.</li>
+    </ul>
+
+    <h3>Version 0.77 (build: 28)</h3>
+
+    <ul>
+        <li>Fixed problem of empty query. If a query returns no result, there was no header line in the output view pane. This
+        is now solved. If a query returns no lines, the output query view still shows the names of the queried fields.</li>
+    </ul>
+
+    <h3>Version 0.76 (build: 27)</h3>
+
+    <ul>
+        <li>Fixed problem in repeat script. Grids will no longer grow, so measured times are linear to tested SQL
+        commands.</li>
+    </ul>
+
+    <h3>Version 0.75 (build: 26)</h3>
+
+    <ul>
+        <li>New feature: script elements to do performance testing&nbsp;:repeat command to repeatedly perform the same SQL</li>
+
+        <li>New feature: command line /CONNECT feature. See script_syntax.sql. Allows for scripts to run from the command
+        line</li>
+
+        <li>Fixed problem with DML under Informix 3.50 driver in case of&nbsp;zero (0) affected rows in an insert/update/delete
+        statement</li>
+    </ul>
+
+    <h3>Version 0.74 (build: 25)</h3>
+
+    <ul>
+        <li>Fixed problem in SQL-Server without MARS option. Could not have more than one recordset open at any one time.</li>
+
+        <li>Fixed problem with info discovery on combination of databases. Now works fine for
+        INFORMIX/ORACLE/MS-ACCESS/MS-SQLServer/Firebird/MySQL etc.</li>
+    </ul>
+
+    <h3>Version 0.73 (Build: 24)</h3>
+
+    <ul>
+        <li>Fixed alphanumeric sort of ODBC and RDBMS keywords in the Info tree</li>
+
+        <li>Saving of datasources and connections now works under MS-Vista and also under non-local-adminstration accounts on
+        Windows XP</li>
+
+        <li>Weakly coded passwords are removed from the ini file under production builds. Users must now always provide a
+        password. C++ Programmers can re-enable this as a debug build feature by defining the "OQT_SAVE_PASSWORD" macro in
+        OpenEditorApp.h".&nbsp;But mind you: debug builds only. Not on production builds!</li>
+    </ul>
+
+    <h3>Version 0.72 (build: 23)</h3>
+
+    <ul>
+        <li>Fixed: Object discovery did not work in MS-Access (Jet engine 4.x) object names cannot be passed as a empty string
+        to the ODBC driver but must be passed as NULL pointers if SQL_ATTR_METADATA_ID does not work</li>
+
+        <li>New feature: Port and test to MS-Vista.</li>
+
+        <li>Added WideMessageBox for message-box redemption under Vista!</li>
+    </ul>
+
+    <h3>Version 0.71 (build: 22)</h3>
+
+    <ul>
+        <li>New feature to test SQLGetData for incoming piecewise interface of large SQL_C_CHAR and SQL_C_BINARY fields</li>
+    </ul>
+
+    <h3>Version 0.70 (build: 21)</h3>
+
+    <ul>
+        <li>Fixed bug in freeing ODBC statement handles</li>
+
+        <li>Fixed bug in HDBC error handling</li>
+
+        <li>Fixed bug in more than 32 digits fraction in SQL_NUMERIC</li>
+    </ul>
+
+    <h3>Version 0.69 (build: 20)</h3>
+
+    <ul>
+        <li>Fixed memory bugs in HistoryLines</li>
+
+        <li>Added script support for testing of ODBC drivers. See "script_syntax.txt"</li>
+
+        <li>Added the SQLVariant class to cache values from an ODBC driver</li>
+
+        <li>Rewrote the "Recordset.cpp" to use SQLVariant for columns</li>
+
+        <li>Fixed serveral minor bugs in DBInfo in the use of SQLGetInfo</li>
+
+        <li>Fixed recordset to use the SQLParamData/SQLPutData for the SQL_AT_EXEC piecewise inserts.</li>
+    </ul>
+
+    <h3>Version 0.68</h3>
+
+    <ul>
+        <li>Fixed diverse SQL info functions (SQLTables etc)</li>
+    </ul>
+
+    <h3>Version 0.67</h3>
+
+    <ul>
+        <li>Fixed the parsing of strings in SQL statements "" '' -&gt; embedded quotes within strings, especially when spread
+        over more than one (1) line. Such as in:<br>
+        INSERT INTO table1 values (23,'this is a long ''string with embedded''<br>
+        quotes in it<br>
+        ');</li>
+    </ul>Version 0.66
+
+    <ul>
+        <li>Changed workbookbar under query tekst windows<br>
+        -&gt; Bar replaced to the top of the documents<br>
+        -&gt; Bar is a now TabControl</li>
+
+        <li>Fixed the bug that an update in the grid of the primary key&nbsp;did not warn the user that it's illegal!! The user
+        is not only warned, but the original value is restored alsoo.</li>
+    </ul>
+
+    <h3>Version 0.65</h3>
+
+    <ul>
+        <li>Changed ODBC driver report to a full print of the ODBC Info tree so the report looks the same as on screen. The
+        tree-level is printed as 4 spaces instead of the treeview's lines.</li>
+    </ul>
+
+    <h3>Version 0.64</h3>
+
+    <ul>
+        <li>Added: It is now posssible to edit the results grid of a query if all parts of the primary key, or in the absence
+        of a primary key of the first found unique key are present, editted results wil be updated to the underlying table.
+        This feature is alsoo nown as "The Marco Brattinga option"</li>
+
+        <li>&nbsp;After each successful edit the name of the key is reflected in the message zone.</li>
+    </ul>
+
+    <h3>Version 0.63</h3>
+
+    <ul>
+        <li>Added a text report on ODBC capabilities. Accesible via the main menu under "Session / ODBC Report" after a
+        successful login. (CTRL-Q, R)</li>
+
+        <li>Added text report output from grid (extra button on query-grid)</li>
+
+        <li>Added: Meta types in the ODBC Info-tree under 'Database'.</li>
+
+        <li>Added: Extra logon with details. See button "Detail" at logon and&nbsp; the extra menu entry under 'Session /
+        Session status"<br>
+        - Extra logon attributes ODBC standard specific<br>
+        - Extra logon attributes driver specific<br>
+        - ODBC tracing on/off<br>
+        - ODBC tracing file settings<br>
+        - ODBC Translation library and option<br>
+        - Transaction isolation<br>
+        - ODBC Cursor library<br>
+        - Quiet mode<br>
+        - Auto commit on/off<br>
+        - Dead-connection detection<br>
+        - Connection read-only settings<br>
+        - Metadata ID settings<br>
+        - Auto IPD for SQL Server<br>
+        - Network packet size<br>
+        - Connection timeout<br>
+        - Login timeout<br>
+        - Login via *.dsn file<br>
+        - Recording of succesful login via *.dsn file</li>
+    </ul>
+
+    <h3>Version 0.62</h3>
+
+    <ul>
+        <li>Help is on the way! A On-line CHM is beeing written.</li>
+
+        <li>Completed the SQLInfo tree. Added Type conversions / All statement info. Take care: Some newer info (odbc 3.x) are
+        unreliable on older databases&nbsp;(Informix/Oracle) Obviously these databases can do grant/revoke but it&nbsp;is not
+        reported!?</li>
+
+        <li>Renamed the tab 'Table' to 'Object' because it alsoo reports procedures and views</li>
+
+        <li>Added 'Native SQL' command (F9) on a SQL statement shows how the ODBC driver&nbsp;would translate '{' escape
+        sequences to native database SQL. Alsoo on the main menu under 'Script / Native SQL'.<br>
+        eg: "{fn LEFT (string,3)}" is translated "SUBSTR(string,1,3)" on Oracle,<br>
+        and "{fn RIGHT(string,3)}" is translated "SUBSTR(string, -3)"</li>
+
+        <li>Added the capability to search for object types in the object pane/tab syntax:
+        "[&lt;Type&gt;:][&lt;Catalog&gt;.][&lt;Schema&gt;.][&lt;Table&gt;]"<br>
+        &lt;Type&gt; can be one of:<br>
+        - T : Search for a real table e.g: "T:persons"<br>
+        - V : Search for a real view&nbsp; e.g: "V:persons_with_contract"<br>
+        - C : Search for a catalog table : "C:syscolumns"<br>
+        - S : Search for a synonym&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : "S:persons_in_other_database"<br>
+        - A : Search for an alias&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : "A:persons_in_other_database"<br>
+        - A combination of the above&nbsp;&nbsp;&nbsp;&nbsp; : "TVS:clients"<br>
+        - nothing: searching for all types.<br>
+        &lt;Catalog&gt; can be one of:<br>
+        - A name of a catalog&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : "lin6rnd4.mdba.ibs_sc"<br>
+        - A search pattern&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :
+        "%.mdba.ibs_sc" (not supported on all databases)<br>
+        - nothing: Searching in the current catalog<br>
+        &lt;Schema&gt; can be one of<br>
+        - A name of an user or schema&nbsp;&nbsp;&nbsp; : "mdba.ibs_sc"<br>
+        - A search pattern&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :
+        "%.ibs_sc"&nbsp; (not supported on all databases)<br>
+        - nothing: searching in the schema of the current logged in user in all schema's depending on the implementation of the
+        database driver.<br>
+        &lt;Table&gt; can be one of<br>
+        - A name of a table or view&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : "ibs_sc"<br>
+        - A search pattern&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : "mbs%"&nbsp;
+        (not supported on all databases)<br>
+        - ALL database must support the special search pattern "%"<br>
+        - A name of a procedure&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : "ibs_sc_ins_proc"<br>
+        - The special search pattern for ALL procedures "*"<br>
+        REMARK: Some databases allow more complex patterns like: "%.my%", meaning:&nbsp;all tables from all owners in the
+        database for which the names begins with 'my'. Databases allowing this are PostgreSQL and Firebird.</li>
+    </ul>
+
+    <p>BEWARE: Although the ODBC standard states that drivers must be able to search on table-types in a 'comma-separated way',
+    this is mostly not the case. Most drivers can only search on simple 'T'able and 'V'iew type only! Even though<br>
+    the returned capabilities indicate otherwise! (Oracle/Interbase/MSSQLServer)</p>
+
+    <h3>Version 0.61</h3>
+
+    <ul>
+        <li>bug 10: removed memory leak from display of datatypes in PostgreSQL (duplicate names)</li>
+
+        <li>bug 11: Incorrect info (grant/revoke/drop) corrected</li>
+
+        <li>Improved datatype info</li>
+
+        <li>Improved supported SQL info</li>
+    </ul>
+
+    <h3>Version 0.60</h3>
+
+    <ul>
+        <li>Implemented info on Procedures. Info for the procedure and the procedure columns (parameters, output values, return
+        values) are displayed in the object tree</li>
+    </ul>
+
+    <p>NB: This fails for some ODBC drivers.&nbsp;eg: Informix does not support these functions, while
+    SQLGetFunctions&nbsp;reports that it is supported.<br></p>
+
+    <h3>Version 0.59</h3>
+
+    <ul>
+        <li>Added much more supported for ODBC tree and supported features<br>
+        &nbsp; Namly info on<br>
+        &nbsp; - supported ODBC escape sequences and functions<br>
+        &nbsp; - supported create schema/table/view options<br>
+        &nbsp; - aggregate functions<br>
+        &nbsp; - outer join features<br>
+        &nbsp; - usage of the catalog naming methods</li>
+
+        <li>Added status line info for long retreval of table info</li>
+
+        <li>Added object naming logic in the table discovery window.&nbsp;End user can write something like
+        "catalog.schema.table" and the application will use the ODBCGetInfo to make a database specific qualifier. Informix
+        =&gt; catalog:schema.table. racle&nbsp;=&gt; <a href="mailto:SCHEMA.TABLE@CATALOG">SCHEMA.TABLE@CATALOG</a></li>
+    </ul>
+
+    <h3>Version 0.58</h3>
+
+    <ul>
+        <li>Added database naming method. For databases that do not report their databasename correctly via the SQLGetInfo
+        method, but by a rdbms specific method (Oracle!)</li>
+
+        <li>Added supported ODBC function calls in the ODBC tree.<br>
+        - For the ODBC 1.x and 2.x support of SQLGetFunctions (array of 100 ints)<br>
+        - For the ODBC 3.x support of SQLGetFunctions (4000 bits)</li>
+
+        <li>Added support for case-specific catalogs for databases that do not correctly implement the SQL_ATTR_METADTA_ID
+        method of SQLTables/SQLColumns etc. For these databases (Firebird/InterBase) SQL_IDENTIFIER_CASE of SQLGetInfo is used
+        to determine wheter the catalog stores in Upper or Lower case. NB: There are two more methods (MIXED and SENSITIVE). If
+        neither&nbsp;SQL_ATTR_METADATA_ID and SQL_IDENTIFIER_CASE is supported to upper/lower than the extraction of metadata
+        is a 'best guess' on basis of user-input.</li>
+    </ul>
+
+    <h3>Version 0.57</h3>
+
+    <ul>
+        <li>Added a Table object-info window with ODBC info about a table (Columns, Primary/Foreign keys, Columns, Indici,
+        Referenced by other tables,&nbsp;special columns, Statistics)</li>
+
+        <li>Table can be queried by F12 from within a script</li>
+
+        <li>Added a file filter for the explorer tree. Filters are extensions. e.g.: Fill in 'sql' and only *.sql files will be
+        displayed in the tree</li>
+    </ul>
+
+    <h3>Version 0.56</h3>
+
+    <ul>
+        <li>3: Fixed: Crash problem with empty 'last-login' list</li>
+
+        <li>4: Fixed: Crash problem with scrolling in 'last-login' list</li>
+
+        <li>5: Fixed: Delete ODBC connection from connect list is 'strange' (needed refresh of list)</li>
+
+        <li>6: Fixed: Try to open a non-existing file must give messagebox i.e. Exception thrown</li>
+
+        <li>7: Fixed: Bug in STL of ConnectionDialog</li>
+
+        <li>8: Create a stored procedure does not work. This was mainly because all text ran on one line it now parses all
+        newlines correctly and preserves white space.</li>
+
+        <li>9: Run ODBC SQL command from selected text does not work. Selected text now has precedence over SQL text parsing.
+        Works now alsoo in other database engines than Oracle alone.</li>
+
+        <li>SQL Query terminator (default '/') on the properties page 'Text / Permanent settings / SQL settings'</li>
+
+        <li>A query gets terminated with this terminator and then executed.</li>
+
+        <li>Added newer CLI conformance codes to "ODBC panel" Oracle 8/9 now displays correctly!</li>
+    </ul>
+
+    <h3>Version 0.55</h3>
+
+    <ul>
+        <li>2: Fixed: Script does not run beyond the fysical screen!</li>
+
+        <li>Statistics/Output cleaned on each run/run-next cycle</li>
+    </ul>
+
+    <h3>Version 0.54</h3>
+
+    <ul>
+        <li>Max prefetch lines for grid on extra properties page 'Text / Permanent settings / SQL settings'</li>
+    </ul>
+
+    <h3>Version 0.52</h3>
+
+    <ul>
+        <li>1: Fixed the ' Vincent' bug of an extra space</li>
+    </ul>
+
+    <h3>Version 0.50</h3>
+
+    <ul>
+        <li>Cloned the OpenEditor project</li>
+
+        <li>Added ODBC database control</li>
+
+        <li>Added everything needed for a query tool<br>
+        - Connection dialog<br>
+        - Connection toolbar<br>
+        - Chris Maunder Grid<br>
+        - Query result grid<br>
+        - Statistics result grid<br>
+        - Output results grid for batch processing<br>
+        - History results grid<br>
+        - Excel export<br>
+        - HTML export</li>
+    </ul>
+
+    <p>&nbsp;</p>
+</body>
+</html>

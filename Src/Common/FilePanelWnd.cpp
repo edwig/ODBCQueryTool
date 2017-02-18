@@ -29,10 +29,10 @@
 #include "OpenEditorApp.h"
 #include "SQLDatabase.h"
 
-#define FPW_OPEN_FILES_TAB  0
-#define FPW_EXPLORER_TAB    1
-#define FPW_ODBCTREE_TAB    2
-#define FPW_TABLETREE_TAB   3
+#define FPW_TABLETREE_TAB   0
+#define FPW_OPEN_FILES_TAB  1
+#define FPW_EXPLORER_TAB    2
+#define FPW_ODBCTREE_TAB    3
 #define FPW_NUM_OF_TAB      4
 
 #define ID_FPW_OPEN_FILES   1000
@@ -359,10 +359,10 @@ int CFilePanelWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
   {
     return -1;
   }
+  InsertItem(FPW_TABLETREE_TAB,  "Object");
   InsertItem(FPW_OPEN_FILES_TAB, "Files");
   InsertItem(FPW_EXPLORER_TAB,   "Explorer");
   InsertItem(FPW_ODBCTREE_TAB,   "ODBC");
-  InsertItem(FPW_TABLETREE_TAB,  "Object");
 
   if (!m_openFilesList.Create(
       WS_CHILD|WS_TABSTOP
@@ -442,7 +442,7 @@ int CFilePanelWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
   m_tableTree.ClearTree();
 
   // load saved tab
-  ChangeTab(FPW_EXPLORER_TAB);
+  ChangeTab(FPW_TABLETREE_TAB);
   
   m_drivesRClick.SubclassWindow(::GetWindow(m_drivesCBox.m_hWnd, GW_CHILD));
   m_filterRClick.SubclassWindow(::GetWindow(m_filterCBox.m_hWnd, GW_CHILD));
@@ -981,10 +981,9 @@ CFilePanelWnd::FindTable(CString& table)
   ChangeTab(FPW_TABLETREE_TAB);
 
   m_tableTree.ClearTree();
-  m_tableTree.SetFilter(table);
 
   // Expand total table
-  m_tableTree.ExpandFirstTable();
+  m_tableTree.ExpandFirstTable(table);
 }
 
 CString

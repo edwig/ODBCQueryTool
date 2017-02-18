@@ -63,9 +63,10 @@ ODBCQuickReference\Statements\REVOKE_(System_Privileges).htm
 ODBCQuickReference\Statements\ROLLBACK.htm
 ODBCQuickReference\Statements\SELECT.htm
 ODBCQuickReference\Statements\UPDATE.htm
-Querying\Querying.htm
 Querying\FindingTables.html
+Querying\Querying.htm
 Querying\Scripting.htm
+ReleaseNotes.htm
 RoboHHRE.lng
 TheEditor\The_open_editor.htm
 Welcome.htm

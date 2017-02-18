@@ -73,7 +73,7 @@ public:
 
   void      ClearTree();
   void      SetFilter(CString p_filter);
-  void      ExpandFirstTable();
+  void      ExpandFirstTable(CString p_table);
   CString   GetFilter();
   void      CreateImageList();
 

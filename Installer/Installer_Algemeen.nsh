@@ -6,12 +6,12 @@
 ; Copyright (c) 2016 ir. W.E. Huisman
 ; All rights reserved
 ;
-; Last change:       19-12-2016
-; Versionnumber:     1.5.0
+; Last change:       18-02-2017
+; Versionnumber:     2.0.0
 ;-------------------------------------------------------
  !define PRODUCT_NAME                         "OpenODBCQuerytool"
- !define PRODUCT_VERSION                      "1.5.1"
- !define PRODUCT_BUILDNUMBER                  "194"
+ !define PRODUCT_VERSION                      "2.0.0"
+ !define PRODUCT_BUILDNUMBER                  "200"
  !define PRODUCT_PUBLISHER                    "EDO"
  !define PRODUCT_WEB_SITE                     "https://sourceforge.net/projects/odbcquerytool"
  !define PRODUCT_DIR_REGKEY                   "Software\Microsoft\Windows\CurrentVersion\App Paths\${PRODUCT_NAME}"
@@ -141,7 +141,6 @@ Section "The Program" prog_always
  DetailPrint "Output directory set to: $INSTDIR"
  DetailPrint "Copying the files..."
  File "${InvoerMapBin}bugs.txt"
- File "${InvoerMapBin}history.txt"
  File "${InvoerMapBin}license.rtf"
  File "${InvoerMapBin}ODBCQueryTool.chm"
  File "${InvoerMapBin}ODBCQueryTool.exe"

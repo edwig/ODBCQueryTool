@@ -12,6 +12,11 @@
             <param name="Local" value="Welcome.htm">
         </object>
     <li><object type="text/sitemap">
+            <param name="Name" value="Releasenotes">
+            <param name="Local" value="ReleaseNotes.htm">
+            <param name="ImageNumber" value="9">
+        </object>
+    <li><object type="text/sitemap">
             <param name="Name" value="The editor">
         </object>
     <ul>

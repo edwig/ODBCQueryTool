@@ -258,7 +258,7 @@ ObjectTree::WordListToTree(WordList& p_list,HTREEITEM p_item,ObjectImage p_image
   {
     if(line == "+" && last)
     {
-      // één inspringen
+      // Indent one level
       item = last;
       continue;
     }
@@ -279,12 +279,16 @@ ObjectTree::WordListToTree(WordList& p_list,HTREEITEM p_item,ObjectImage p_image
 // Expand the first table in the tree
 // Special case for the F12 key on a table in the editor
 void
-ObjectTree::ExpandFirstTable()
+ObjectTree::ExpandFirstTable(CString p_table)
 {
+  // Setting the filter for a table
+  SetFilter(p_table);
+
   HTREEITEM tables = GetRootItem();
   if(tables)
   {
-    FindTables(tables);
+    // The "Expand" below already does a 'FindTables' on basis of the set filter
+    // FindTables(tables); 
     Expand(tables,TVE_EXPAND);
     HTREEITEM table = GetChildItem(tables);
     if(table)
