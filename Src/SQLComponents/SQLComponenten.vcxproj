@@ -254,6 +254,7 @@
     <ClInclude Include="SQLInterval.h" />
     <ClInclude Include="SQLLanguage.h" />
     <ClInclude Include="SQLMemoryDebug.h" />
+    <ClInclude Include="SQLMetaInfo.h" />
     <ClInclude Include="SQLMutation.h" />
     <ClInclude Include="SQLQuery.h" />
     <ClInclude Include="SQLRecord.h" />

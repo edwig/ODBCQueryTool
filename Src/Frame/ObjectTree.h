@@ -104,6 +104,9 @@ protected:
   void      FindProcedures (HTREEITEM p_theItem);
   void      FindParameters (HTREEITEM p_theItem);
 
+  void      ColumnListToTree(MColumnMap& p_columns,HTREEITEM p_item);
+
+
   CString     m_filter;
   bool        m_busy;
   CImageList  m_imageList;

@@ -297,6 +297,9 @@
     <ClInclude Include="unzip.h">
       <Filter>ZIP</Filter>
     </ClInclude>
+    <ClInclude Include="SQLMetaInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">

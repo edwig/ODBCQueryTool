@@ -122,7 +122,7 @@ ObjectTree::ClearTree()
 bool
 ObjectTree::IsSpecialNode(CString& p_name)
 {
-  // Find first word of the nodename
+  // Find first word of the node name
   int pos = p_name.Find(' ');
   if(pos > 0)
   {
@@ -159,7 +159,7 @@ ObjectTree::SetItemCount(HTREEITEM p_theItem,int p_size)
   // Get current text
   CString text = GetItemText(p_theItem);
 
-  // Find primary text of the nodename
+  // Find primary text of the node name
   int pos = text.Find(' ');
   if(pos > 0)
   {
@@ -327,61 +327,67 @@ ObjectTree::FindTables(HTREEITEM p_theItem)
   }
 
   COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
-  WordList  list;
+  MTableMap tables;
+  CString   errors;
   CString   lastSchema;
   int       schemaCount = 0;
   HTREEITEM schemaItem  = 0;
 
   // Go  find it
-  app->GetDatabase().GetSQLInfoDB()->MakeInfoTableTablepart(&list,nullptr,find);
+  app->GetDatabase().GetSQLInfoDB()->MakeInfoTableTablepart(find,tables,errors);
 
-  if(!list.empty())
+  if(!errors.IsEmpty())
+  {
+    InsertItem(errors,p_theItem);
+    return;
+  }
+
+  if(!tables.empty())
   {
     RemoveNoInfo(p_theItem);
   }
 
   // Set item count text
-  SetItemCount(p_theItem,(int)list.size());
+  SetItemCount(p_theItem,(int)tables.size());
 
-  for(auto& str : list)
+  for(auto& theTable : tables)
   {
-    int pos = str.Find(':');
-    if(pos > 0)
-    {
-      HTREEITEM table = NULL;
-      CString toAdd = str.Mid(pos + 1);
-      pos = toAdd.Find('.');
-      if(pos > 0)
-      {
-        CString schema = toAdd.Left(pos);
-        CString object = toAdd.Mid(pos + 1);
-        schema.Trim();
-        object.Trim();
+    HTREEITEM table = NULL;
+    CString schema = theTable.m_schema;
+    CString object = theTable.m_table;
+    schema.Trim();
+    object.Trim();
 
-        if((schema.Compare(lastSchema) == 0) && schemaItem)
-        {
-          table = InsertItem(object,schemaItem);
-          SetItemCount(schemaItem,++schemaCount);
-        }
-        else
-        {
-          lastSchema  = schema;
-          schemaItem  = InsertItem(schema,p_theItem);
-          table       = InsertItem(object,schemaItem);
-          schemaCount = 1;
-          SetItemCount(schemaItem,schemaCount);
-          SetItemImage(schemaItem,IMG_SCHEMA,IMG_SCHEMA);
-        }
+    if(!theTable.m_remarks.IsEmpty())
+    {
+      object.AppendFormat(" (%s)",theTable.m_remarks);
+    }
+
+    if(schema.IsEmpty())
+    {
+      // No schema found, just add the item
+      table = InsertItem(object,p_theItem);
+    }
+    else
+    {
+      if((schema.Compare(lastSchema) == 0) && schemaItem)
+      {
+        table = InsertItem(object,schemaItem);
+        SetItemCount(schemaItem,++schemaCount);
       }
       else
       {
-        // No schema found, just add the item
-        table = InsertItem(toAdd,p_theItem);
+        lastSchema  = schema;
+        schemaItem  = InsertItem(schema,p_theItem);
+        table       = InsertItem(object,schemaItem);
+        schemaCount = 1;
+        SetItemCount(schemaItem,schemaCount);
+        SetItemImage(schemaItem,IMG_SCHEMA,IMG_SCHEMA);
       }
-      ObjectImage image = TypeToImage(type);
-      SetItemImage(table,image,image);
-      PrepareTable(table);
     }
+    ObjectImage image = TypeToImage(type);
+    SetItemImage(table,image,image);
+    PrepareTable(table);
   }
 }
 
@@ -425,6 +431,7 @@ ObjectTree::PresetTable(HTREEITEM p_theItem)
   CString schema = GetItemText(itemSchema);
   table.Trim();
   schema.Trim();
+  IsSpecialNode(table);
   CString findtable(table);
   if(!IsSpecialNode(schema))
   {
@@ -433,7 +440,9 @@ ObjectTree::PresetTable(HTREEITEM p_theItem)
 
   COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
   // Set table to use
-  return app->GetDatabase().GetSQLInfoDB()->MakeInfoTableTablepart(NULL,NULL,findtable);
+  MTableMap tables;
+  CString   errors;
+  return app->GetDatabase().GetSQLInfoDB()->MakeInfoTableTablepart(findtable,tables,errors);
 }
 
 // Before expanding a node, find the procedure again
@@ -464,12 +473,12 @@ ObjectTree::FindColumns(HTREEITEM p_theItem)
 {
   if(PresetTable(p_theItem))
   {
-    COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
-    WordList list;
-
     // Go find the columns
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableColumns(&list);
-    WordListToTree(list,p_theItem,IMG_COLUMN);
+    MColumnMap columns;
+    CString    errors;
+    COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableColumns(columns,errors);
+    ColumnListToTree(columns,p_theItem);
   }
 }
 
@@ -683,3 +692,54 @@ ObjectTree::FindParameters(HTREEITEM p_theItem)
     SetItemData(param,0);
   }
 }
+
+//////////////////////////////////////////////////////////////////////////
+//
+// FILLING THE TREE
+//
+//////////////////////////////////////////////////////////////////////////
+
+void
+ObjectTree::ColumnListToTree(MColumnMap& p_columns,HTREEITEM p_item)
+{
+  // We now have information. Remove the 'No information' marker
+  if(!p_columns.empty())
+  {
+    RemoveNoInfo(p_item);
+  }
+
+  // Process columns
+  for(auto& column : p_columns)
+  {
+    CString line  = column.m_column + " " + column.m_typename;
+    if(column.m_precision > 0)
+    {
+      line.AppendFormat(" (%d",column.m_precision);
+      if(column.m_scale)
+      {
+        line.AppendFormat(",%d)",column.m_scale);
+      }
+      else
+      {
+        line += ")";
+      }
+    }
+    switch(column.m_nullable)
+    {
+      case SQL_NO_NULLS:          line += " NOT NULL"; 
+                                  break;
+      case SQL_NULLABLE:          break;  
+      default:                    // Fall through
+      case SQL_NULLABLE_UNKNOWN:  line += " NULLABLE UNKNOWN";
+                                  break;
+    }
+
+    if(!column.m_remarks.IsEmpty())
+    {
+      line.AppendFormat(" (%s)",column.m_remarks);
+    }
+    HTREEITEM item = InsertItem(line,p_item);
+    SetItemImage(item,IMG_COLUMN,IMG_COLUMN);
+  }
+}
+

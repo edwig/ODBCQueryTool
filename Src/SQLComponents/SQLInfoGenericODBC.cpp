@@ -766,11 +766,14 @@ SQLInfoGenericODBC::GetSQLTableExists(CString p_schema,CString p_tablename) cons
     table = p_schema + "." + p_tablename;
   }
   // Get from SQLTables
-  if(info->MakeInfoTableTablepart(&list,NULL,p_tablename))
+  MTableMap tables;
+  CString   errors;
+
+  if(info->MakeInfoTableTablepart(p_tablename,tables,errors))
   {
-    if(!list.empty())
+    if(!tables.empty())
     {
-      return list.front();
+      return tables.front().m_table;
     }
   }
   return "";
@@ -923,8 +926,6 @@ SQLInfoGenericODBC::GetSQLSearchSession(const CString& /*p_databaseName*/,const 
 bool   
 SQLInfoGenericODBC::DoesColumnExistsInTable(CString& p_owner,CString& p_tableName,CString& p_column) const
 {
-  WordList tables;
-  WordList columns;
   CString pattern(p_tableName);
   SQLInfo* info = (SQLInfo*)this;
 
@@ -934,14 +935,17 @@ SQLInfoGenericODBC::DoesColumnExistsInTable(CString& p_owner,CString& p_tableNam
     pattern = p_owner + "." + p_tableName;
   }
 
-  if(info->MakeInfoTableTablepart(&tables,NULL,pattern))
+  MTableMap tables;
+  CString   errors;
+
+  if(info->MakeInfoTableTablepart(pattern,tables,errors))
   {
-    if(info->MakeInfoTableColumns(&columns))
+    MColumnMap columns;
+    if(info->MakeInfoTableColumns(columns,errors))
     {
-      WordList::iterator it;
-      for(it = columns.begin();it != columns.end();++it)
+      for(auto& column : columns)
       {
-        if(it->Find(p_column) >= 0)
+        if(p_column.CompareNoCase(column.m_column) == 0)
         {
           return true;
         }
@@ -1090,11 +1094,12 @@ SQLInfoGenericODBC::DoDropColumn(CString p_tableName,CString p_columName)
 bool
 SQLInfoGenericODBC::DoesViewExists(CString& p_viewName)
 {
-  WordList list;
+  CString   errors;
+  MTableMap tables;
 
-  if(MakeInfoTableTablepart(&list,NULL,p_viewName))
+  if(MakeInfoTableTablepart(p_viewName,tables,errors))
   {
-    if(!list.empty())
+    if(errors.IsEmpty() && !tables.empty())
     {
       return true;
     }

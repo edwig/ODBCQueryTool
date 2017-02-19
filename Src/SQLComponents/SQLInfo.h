@@ -27,6 +27,7 @@
 #pragma once
 #include "SQLComponents.h"
 #include "SQLDatabase.h"
+#include "SQLMetaInfo.h"
 #include <sql.h>
 #include <sqlext.h>
 #include <map>
@@ -66,6 +67,8 @@ typedef struct _TypeInfo
 }
 TypeInfo;
 
+typedef std::map<CString,TypeInfo*> DataTypeMap;
+
 typedef struct _PrimKeyInfo
 {
   CString  m_colName;
@@ -75,7 +78,6 @@ typedef struct _PrimKeyInfo
 PrimKeyInfo;
 
 typedef std::map<int,PrimKeyInfo>   PrimaryMap;
-typedef std::map<CString,TypeInfo*> DataTypeMap;
 typedef std::list<CString>          WordList;
 
 class SQLInfo 
@@ -97,7 +99,7 @@ public:
   // Extra to be done on getting info 
   virtual void OnGetInfo(HDBC ,int ) {return;};
   // Is it a correct identifier (type 0=table,1=column)
-  bool    IsCorrectName(LPCSTR naam,int type = 0);
+  bool    IsCorrectName(CString p_name,int p_type = 0);
   // Can we start a transaction on the database
   bool    CanStartTransaction();
   // Returns the fact whether an API function is supported
@@ -125,8 +127,8 @@ public:
 
   // GETTING ALL THE TABLES OF A NAME PATTERN
   // GETTING ALL THE INFO FOR ONE TABLE
-  bool MakeInfoTableTablepart (WordList* p_list,WordList* p_tables,CString& p_findTable);
-  bool MakeInfoTableColumns   (WordList* p_list);
+  bool MakeInfoTableTablepart (CString p_findTable,MTableMap& p_tables,CString& p_errors);
+  bool MakeInfoTableColumns   (MColumnMap& p_columns,CString& p_errors);
   bool MakeInfoTablePrimary   (WordList* p_list,CString& primary,PrimaryMap& keymap);
   bool MakeInfoTableForeign   (WordList* p_list,bool ref = false);
   bool MakeInfoTableStatistics(WordList* p_list,CString& keyName,PrimaryMap& keyMap);

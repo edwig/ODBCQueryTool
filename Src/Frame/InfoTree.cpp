@@ -998,7 +998,6 @@ InfoTree::WordListToTree(WordList& p_list,HTREEITEM p_item)
   p_list.clear();
 }
 
-
 void
 InfoTree::ReportAllCapabilities(CString& filename)
 {

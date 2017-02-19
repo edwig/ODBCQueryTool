@@ -1088,47 +1088,52 @@ SQLInfo::SetAttributeTransoption(int p_transOption)
 
 // Is it a correct identifier (type 0=table,1=column)
 bool 
-SQLInfo::IsCorrectName(LPCSTR naam,int type)
+SQLInfo::IsCorrectName(CString p_name,int p_type)
 {
-  if (!naam)
+  if(p_name.IsEmpty())
   {
     return true;
   }
-  int nlen = (int)strlen(naam);
-  if (nlen == 0)
-  {
-    return true;
-  }
-  if (type == 0 && nlen > (m_maxColumnName - 4))
+
+  // Cannot be too long for table or column
+  if(m_maxTableName  && p_type == 0 && p_name.GetLength() > m_maxTableName)
   {
     return false;
   }
-  if (type == 0 && nlen > (m_maxTableName - 4))
+  if(m_maxColumnName && p_type == 1 && p_name.GetLength() > m_maxColumnName)
   {
     return false;
   }
-  LPCSTR p;
-  for(p = naam; *p != '\0'; p++)
+
+  // Must be an identifier, complying to ODBC rules
+  for(int ind = 0;ind < p_name.GetLength(); ++ind)
   {
-    if ( *p == ' ' || ( !isalnum(*p) && *p != '_' && strchr(m_specialChars,*p) == NULL ))
+    int ch = p_name.GetAt(ind);
+    if (ch == ' ' || ( !isalnum(ch) && ch != '_' && strchr(m_specialChars,ch) == NULL ))
     {
       return false;
     }
   }
-  for(WordList::iterator it = m_ODBCKeywords.begin(); it != m_ODBCKeywords.end(); ++it)
+
+  // Cannot be in the ODBC keywords list
+  for(auto& word : m_ODBCKeywords)
   {
-    if((*it).CompareNoCase(naam) == 0)
+    if(p_name.CompareNoCase(word) == 0)
     {
       return false;
     }
   }
-  for(WordList::iterator it = m_RDBMSkeywords.begin(); it != m_RDBMSkeywords.end(); ++it)
+
+  // Cannot be in the RDBMS extra reserved words list
+  for(auto& word : m_RDBMSkeywords)
   {
-    if((*it).CompareNoCase(naam) == 0)
+    if(p_name.CompareNoCase(word) == 0)
     {
       return false;
     }
   }
+
+  // Name OK
   return true;
 }
 
@@ -1157,7 +1162,10 @@ SQLInfo::GetPrimaryKeyInfo(CString&    p_tablename
   p_primary = "";
   p_keymap.clear();
 
-  if(!MakeInfoTableTablepart(NULL,NULL,p_tablename))
+
+  MTableMap tables;
+  CString   errors;
+  if(!MakeInfoTableTablepart(p_tablename,tables,errors))
   {
     // Table could not be found
     return false;
@@ -1175,7 +1183,7 @@ SQLInfo::GetPrimaryKeyInfo(CString&    p_tablename
 bool
 SQLInfo::GetStatement(bool p_metadataID /*= true*/)
 {
-  // Opvragen statement handle in m_hstmt:
+  // Create statement handle in m_hstmt:
   m_retCode = m_database->GetSQLHandle(&m_hstmt,FALSE);
   if (!SQL_SUCCEEDED(m_retCode))
   {
@@ -1455,9 +1463,8 @@ SQLInfo::ODBCDataType(int DataType)
 // GETTING ALL THE TABLES OF A NAME PATTERN
 // GETTING ALL THE INFO FOR ONE TABLE
 bool
-SQLInfo::MakeInfoTableTablepart(WordList* p_list,WordList* p_tables,CString& p_findTable)
+SQLInfo::MakeInfoTableTablepart(CString p_findTable,MTableMap& p_tables,CString& p_errors)
 {
-  bool         retValue      = true;
   SQLCHAR      szCatalogName [SQL_MAX_BUFFER];
   SQLLEN       cbCatalogName = 0;
   SQLCHAR      szSchemaName  [SQL_MAX_BUFFER];
@@ -1477,10 +1484,7 @@ SQLInfo::MakeInfoTableTablepart(WordList* p_list,WordList* p_tables,CString& p_f
   // Check whether we can do this
   if(!SupportedFunction(SQL_API_SQLTABLES))
   {
-    if(p_list)
-    {
-      p_list->push_back("SQLTables unsupported. Get a better ODBC driver!");
-    }
+    p_errors = "SQLTables unsupported. Get a better ODBC driver!";
     return false;
   }
   // Get a statement handle for metadata use
@@ -1495,11 +1499,11 @@ SQLInfo::MakeInfoTableTablepart(WordList* p_list,WordList* p_tables,CString& p_f
       case SQL_IC_UPPER:     p_findTable.MakeUpper(); break;  // e.g. Oracle / DB2
       case SQL_IC_LOWER:     p_findTable.MakeLower(); break;  // e.g. Informix
       case SQL_IC_SENSITIVE: // Nothing to be done, Catalog is treated case-insensitive
-      case SQL_IC_MIXED:     // but is fysically stored case-sensitive only
+      case SQL_IC_MIXED:     // but is physically stored case-sensitive only
                              // e.g. MS-SQLServer / MS-Access / PostgreSQL / mySQL
       default:               if(m_METADATA_ID_unsupported && (m_METADATA_ID_errorseen == false))
                              {
-                               InfoMessageBox("Cannot garantee to find object '" + p_findTable + "' for one of the following reasons:\r\n"
+                               InfoMessageBox("Cannot guarantee to find object '" + p_findTable + "' for one of the following reasons:\r\n"
                                              "- The usage of SQL_ATTR_METADATA_ID is not supported on the statement level\r\n"
                                              "- The usage of SQL_ATTR_METADATA_ID is not supported on the connection level\r\n"
                                              "- SQLInfo of catalog identifiers is not simply SQL_IC_UPPER or SQL_IC_LOWER\r\n"
@@ -1513,8 +1517,7 @@ SQLInfo::MakeInfoTableTablepart(WordList* p_list,WordList* p_tables,CString& p_f
   // Split name in a maximum of three parts
   GetObjectName(p_findTable,search_catalog,search_schema,search_table,search_type);
 
-  // Reset tablesearch
-  bool foundOneTable = false;
+  // Reset table search
   m_searchCatalogName = "";
   m_searchSchemaName  = "";
   m_searchTableName   = "";
@@ -1554,8 +1557,8 @@ SQLInfo::MakeInfoTableTablepart(WordList* p_list,WordList* p_tables,CString& p_f
        m_retCode = SqlFetch(m_hstmt);
        if(m_retCode == SQL_ERROR || m_retCode == SQL_SUCCESS_WITH_INFO)
        {
-         CString err = m_database->GetErrorString(m_hstmt);
-         InfoMessageBox(err,MB_OK);
+         p_errors = m_database->GetErrorString(m_hstmt);
+         InfoMessageBox(p_errors,MB_OK);
          if(m_retCode == SQL_ERROR)
          {
            return false;
@@ -1563,57 +1566,41 @@ SQLInfo::MakeInfoTableTablepart(WordList* p_list,WordList* p_tables,CString& p_f
        }
        if(m_retCode == SQL_SUCCESS || m_retCode == SQL_SUCCESS_WITH_INFO)
        {
-         CString line;
-         // Testing for SQL_NO_TOTAL en SQL_NO_DATA
-         // Build line "TYPE: catalog.schema.table (remarks)"
-         line += MakeObjectName(cbCatalogName > 0 ? szCatalogName : (unsigned char *)""
-                               ,cbSchemaName  > 0 ? szSchemaName  : (unsigned char *)""
-                               ,cbTableName   > 0 ? szTableName   : (unsigned char *)""
-                               ,cbTableType   > 0 ? szTableType   : (unsigned char *)"");
-         if(cbRemarks > 0)  
+         MetaTable theTable;
+
+         // Put primary info in the MetaTable object
+         if(cbCatalogName)
          {
-           line += CString(" (") + CString(szRemarks) + ")";
+           theTable.m_catalog = szCatalogName;
          }
-         if(p_list)
+         if(cbSchemaName)
          {
-           p_list->push_back(line);
+           theTable.m_schema = szSchemaName;
          }
-         if(p_tables && cbTableName > 0)
+         if(cbTableName > 0)
          {
-           p_tables->push_back(CString(szTableName));
+           theTable.m_table = szTableName;
          }
-         // Now record the qualifiers for a table
-         if(cbTableType > 0)
+         if(cbRemarks > 0)
          {
-           // Valid ODBC TableTypes are:
-           // "TABLE"             : Real fysical table of data
-           // "VIEW"              : View over one or more fysical tables
-           // "SYSTEM TABLE"      : System catalog table
-           // "GLOBAL TEMPORARY"  : Global temporary table (visible to other sessions)
-           // "LOCAL TEMPORARY"   : Local temporary table only visible to current session
-           // "ALIAS"             : MSSQL server like alias to another database/table
-           // "SYNONYM"           : Oracle/Informix like alias to another database/table
-           // "SYSTEM VIEW"       : Added for ORACLE: View over one or more system tables
-           //                     : Alsoo in MS-SQLServer for the INFORMATION_SCHEMA
-           // or RDBMS specific type, not listed above
-           if((strcmp((char *)szTableType,"TABLE")             ==0) ||
-              (strcmp((char *)szTableType,"VIEW")              ==0) ||
-              (strcmp((char *)szTableType,"SYSTEM TABLE")      ==0) ||
-              (strcmp((char *)szTableType,"SYSTEM VIEW")       ==0) ||
-              (strcmp((char *)szTableType,"GLOBAL TEMPORARY")  ==0) ||
-              (strcmp((char *)szTableType,"LOCAL TEMPORARY")   ==0))
-           {
-             if(foundOneTable)
-             {
-               // Found more than one table. Let user decide first
-               retValue = false;
-             }
-             if(cbCatalogName > 0) m_searchCatalogName = szCatalogName;
-             if(cbSchemaName  > 0) m_searchSchemaName  = szSchemaName;
-             m_searchTableName = szTableName;
-             foundOneTable = true;
-           }
+           theTable.m_remarks = szRemarks;
          }
+
+         // Build "TYPE: catalog.schema.table" object type name
+         theTable.m_objectType = MakeObjectName(cbCatalogName > 0 ? szCatalogName : (unsigned char *)""
+                                               ,cbSchemaName  > 0 ? szSchemaName  : (unsigned char *)""
+                                               ,cbTableName   > 0 ? szTableName   : (unsigned char *)""
+                                               ,cbTableType   > 0 ? szTableType   : (unsigned char *)"");
+         // Now record the qualifiers for a table as the first table to globally search for
+         // This sets up the other MakeInfoTables* functions to search for THIS stable
+         if(cbTableType > 0 && p_tables.empty())
+         {
+            if(cbCatalogName > 0) m_searchCatalogName = szCatalogName;
+            if(cbSchemaName  > 0) m_searchSchemaName  = szSchemaName;
+            if(cbTableName   > 0) m_searchTableName   = szTableName;
+         }
+         // Remember this table as a result
+         p_tables.push_back(theTable);
        }
        else
        {
@@ -1623,26 +1610,21 @@ SQLInfo::MakeInfoTableTablepart(WordList* p_list,WordList* p_tables,CString& p_f
   }
   else
   {
-    if(p_list)
-    {
-      CString sitem = "Driver not capable to find table/view: ";
-      sitem += MakeObjectName(search_catalog,search_schema,search_table,search_type);
-      p_list->push_back(sitem);
+    p_errors  = "Driver not capable to find table/view: ";
+    p_errors += MakeObjectName(search_catalog,search_schema,search_table,search_type);
 
-      CString errorText = "Error in ODBC statement: ";
-      errorText += m_database->GetErrorString(m_hstmt);
-      p_list->push_back(errorText);
-    }
-    retValue = false;
+    p_errors += ". Error in ODBC statement: ";
+    p_errors += m_database->GetErrorString(m_hstmt);
   }
-  return retValue;
+  return p_tables.size() > 0;
 }
 
 bool
-SQLInfo::MakeInfoTableColumns(WordList* p_list)
+SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns,CString& p_errors)
 {
   if(m_searchTableName.IsEmpty())
   {
+    p_errors = "Search for a table first!";
     return false;
   }
   SQLCHAR      szCatalogName [SQL_MAX_BUFFER+1];
@@ -1671,8 +1653,8 @@ SQLInfo::MakeInfoTableColumns(WordList* p_list)
   // Check whether we can do this
   if(!SupportedFunction(SQL_API_SQLCOLUMNS))
   {
-    p_list->push_back("SQLColumns unsupported. Get a better ODBC driver!");
-    return true;
+    p_errors = "SQLColumns unsupported. Get a better ODBC driver!";
+    return false;
   }
   strcpy_s((char*)szCatalogName,SQL_MAX_IDENTIFIER,m_searchCatalogName.GetString());
   strcpy_s((char*)szSchemaName, SQL_MAX_IDENTIFIER,m_searchSchemaName.GetString());
@@ -1715,8 +1697,8 @@ SQLInfo::MakeInfoTableColumns(WordList* p_list)
        m_retCode = SqlFetch(m_hstmt);
        if(m_retCode == SQL_ERROR || m_retCode == SQL_SUCCESS_WITH_INFO)
        {
-         CString err = m_database->GetErrorString(m_hstmt);
-         InfoMessageBox(err,MB_OK);
+         p_errors = m_database->GetErrorString(m_hstmt);
+         InfoMessageBox(p_errors,MB_OK);
          if(m_retCode == SQL_ERROR)
          {
            return false;
@@ -1724,55 +1706,55 @@ SQLInfo::MakeInfoTableColumns(WordList* p_list)
        }
        if(m_retCode == SQL_SUCCESS || m_retCode == SQL_SUCCESS_WITH_INFO)
        {
-         CString line;
          CString type;
-         // NAME
-         if(cbColumnName > 0)
-         {
-           line += CString(szColumnName);
-         }
-         // DATATYPE
-         if(cbDataType > 0)
+         MetaColumn theColumn;
+
+         // Reset the structure
+         theColumn.m_datatype  = 0;
+         theColumn.m_precision = 0;
+         theColumn.m_scale     = 0;
+         theColumn.m_length    = 0;
+         theColumn.m_nullable  = 0;
+
+         // Fill in the structure
+         if(cbCatalogName) theColumn.m_catalog = szCatalogName;
+         if(cbSchemaName)  theColumn.m_schema  = szSchemaName;
+         if(cbTableName)   theColumn.m_table   = szTableName;
+         if(cbColumnName)  theColumn.m_column  = szColumnName;
+         if(cbRemarks)     theColumn.m_remarks = szRemarks;
+         if(cbDataType)    
          {
            type = ODBCDataType(DataType);
-         }
-         if(cbTypeName > 0)
-         {
-           if(type.CompareNoCase((char*)szTypeName))
+           if(cbTypeName)
            {
-             type = CString(szTypeName);
+             if(type.CompareNoCase((char*)szTypeName))
+             {
+               type = szTypeName;
+             }
            }
          }
-         if(cbDataType<0 && cbTypeName<0)
+         if(cbDataType < 0 && cbTypeName < 0)
          {
            type = "UNKNOWN-TYPE";
          }
-         line += CString(" ") + type;
+         theColumn.m_typename = type;
+
          // PRECISION and SCALE
          if(cbPrecision > 0 && Precision > 0)
          {
-           CString precscale;
-           precscale.Format("%d",Precision);
+           theColumn.m_precision = Precision;
            if(cbScale > 0)
            {
-             CString scale;
-             scale.Format("%d",Scale);
-             precscale += "," + scale;
+             theColumn.m_scale = Scale;
            }
-           line += "(" + precscale + ")";
          }
          // NULLABLE
          if(cbNullable > 0)
          {
-           if(Nullable == SQL_NO_NULLS)         line += " NOT NULL";
-           if(Nullable == SQL_NULLABLE_UNKNOWN) line += " NULLABLE UNKNOWN";
+           theColumn.m_nullable = Nullable;
          }
-         // REMARKS
-         if(cbRemarks > 0)
-         {
-           line += CString(" (") + CString(szRemarks) + ")";
-         }
-         p_list->push_back(line);
+         // Save the result
+         p_columns.push_back(theColumn);
        }
        else
        {
@@ -1782,18 +1764,16 @@ SQLInfo::MakeInfoTableColumns(WordList* p_list)
   }
   else
   {
-    CString sitem = "Driver not capable to find columns for: ";
-    sitem += MakeObjectName((SQLCHAR *)m_searchCatalogName.GetString()
-                           ,(SQLCHAR *)m_searchSchemaName.GetString()
-                           ,(SQLCHAR *)m_searchTableName.GetString()
-                           ,(SQLCHAR *)m_searchTableType.GetString());
-    p_list->push_back(sitem);
+    p_errors  = "Driver not capable to find columns for: ";
+    p_errors += MakeObjectName((SQLCHAR *)m_searchCatalogName.GetString()
+                              ,(SQLCHAR *)m_searchSchemaName.GetString()
+                              ,(SQLCHAR *)m_searchTableName.GetString()
+                              ,(SQLCHAR *)m_searchTableType.GetString());
 
-    CString errorText = "Error in ODBC statement: ";
-    errorText += m_database->GetErrorString(m_hstmt);
-    p_list->push_back(errorText);
+    p_errors += ". Error in ODBC statement: ";
+    p_errors += m_database->GetErrorString(m_hstmt);
   }
-  return true;
+  return p_columns.size() > 0;
 }
 
 bool
