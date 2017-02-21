@@ -142,19 +142,20 @@ InfoTree::MakeTreeInfo()
   InsertItem(method,infoItemDB);
   InsertItem(user,  infoItemDB);
 
-  WordList list;
+  CString   errors;
+  MMetaMap  objects;
   HTREEITEM meta     = InsertItem("Meta-objects in the database",infoItemDB);
   HTREEITEM catalogs = InsertItem("Catalogs",meta);
-  m_info->MakeInfoMetaTypes(&list,META_CATALOGS);
-  WordListToTree(list,catalogs);
+  m_info->MakeInfoMetaTypes(objects,META_CATALOGS,errors);
+  MetaListToTree(objects,catalogs,errors);
 
   HTREEITEM schemas  = InsertItem("Schemas",meta);
-  m_info->MakeInfoMetaTypes(&list,META_SCHEMAS);
-  WordListToTree(list,schemas);
+  m_info->MakeInfoMetaTypes(objects,META_SCHEMAS,errors);
+  MetaListToTree(objects,schemas,errors);
 
   HTREEITEM obtypes  = InsertItem("Object types",meta);
-  m_info->MakeInfoMetaTypes(&list,META_TABLES);
-  WordListToTree(list,obtypes);
+  m_info->MakeInfoMetaTypes(objects,META_TABLES,errors);
+  MetaListToTree(objects,obtypes,errors);
 
   // ODBC DRIVER
   sitem.Format("ODBC Driver DLL: %s",m_info->GetDriverName());
@@ -996,6 +997,31 @@ InfoTree::WordListToTree(WordList& p_list,HTREEITEM p_item)
     }
   }
   p_list.clear();
+}
+
+void
+InfoTree::MetaListToTree(MMetaMap& p_list,HTREEITEM p_item,CString& p_errors)
+{
+  // Put all meta-objects in the tree
+  for(auto& object : p_list)
+  {
+    CString line = object.m_objectName;
+    if(!object.m_remarks)
+    {
+      line.AppendFormat(" (%s)",object.m_remarks);
+    }
+    InsertItem(line,p_item);
+  }
+
+  // Eventually all errors
+  if(!p_errors.IsEmpty())
+  {
+    InsertItem(p_errors,p_item);
+  }
+
+  // Ready for next query
+  p_list.clear();
+  p_errors.Empty();
 }
 
 void

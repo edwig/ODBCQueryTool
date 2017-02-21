@@ -447,7 +447,7 @@ ObjectTree::PresetTable(HTREEITEM p_theItem)
 
 // Before expanding a node, find the procedure again
 bool
-ObjectTree::PresetProcedure(HTREEITEM p_theItem,WordList& p_list)
+ObjectTree::PresetProcedure(HTREEITEM p_theItem,MProcedureMap& p_procedures)
 {
   HTREEITEM itemProcedure = GetParentItem(p_theItem);
   HTREEITEM itemSchema    = GetParentItem(itemProcedure);
@@ -463,8 +463,9 @@ ObjectTree::PresetProcedure(HTREEITEM p_theItem,WordList& p_list)
   }
 
   COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
-  // Set table to use
-  return app->GetDatabase().GetSQLInfoDB()->MakeInfoProcedureProcedurepart(&p_list,findproc);
+  CString errors;
+  // Set procedure
+  return app->GetDatabase().GetSQLInfoDB()->MakeInfoProcedureProcedurepart(findproc,p_procedures,errors);
 }
 
 // Find all the columns in a table
@@ -490,13 +491,12 @@ ObjectTree::FindPrimary(HTREEITEM p_theItem)
   if(PresetTable(p_theItem))
   {
     COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
-    WordList   list;
-    PrimaryMap keymap;
-    CString    primName;
+    MPrimaryMap primaries;
+    CString     errors;
 
     // Go find the primary key
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTablePrimary(&list,primName,keymap);
-    WordListToTree(list,p_theItem,IMG_PRIMARY);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTablePrimary(primaries,errors);
+    PrimariesToTree(primaries,p_theItem);
   }
 }
 
@@ -508,11 +508,12 @@ ObjectTree::FindForeign(HTREEITEM p_theItem)
   if(PresetTable(p_theItem))
   {
     COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
-    WordList   list;
+    MForeignMap foreigns;
+    CString     errors;
 
     // Go find the foreign keys
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableForeign(&list);
-    WordListToTree(list,p_theItem,IMG_FOREIGN);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableForeign(foreigns,errors);
+    ForeignsToTree(foreigns,p_theItem);
   }
 }
 
@@ -524,13 +525,12 @@ ObjectTree::FindStatistics(HTREEITEM p_theItem)
   if(PresetTable(p_theItem))
   {
     COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
-    WordList   list;
-    CString    keyname;
-    PrimaryMap primary;
+    MStatisticsMap  statistics;
+    CString         errors;
 
     // Go find the indices and statistics
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableStatistics(&list,keyname,primary);
-    WordListToTree(list,p_theItem,IMG_INDEX);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableStatistics(statistics,nullptr,errors);
+    StatisticsToTree(statistics,p_theItem);
   }
 }
 
@@ -541,11 +541,12 @@ ObjectTree::FindSpecials(HTREEITEM p_theItem)
   if(PresetTable(p_theItem))
   {
     COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
-    WordList   list;
+    MSpecialColumnMap specials;
+    CString errors;
 
     // Go find the special columns
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableSpecials(&list);
-    WordListToTree(list,p_theItem,IMG_COLUMN);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableSpecials(specials,errors);
+    SpecialsToTree(specials,p_theItem);
   }
 }
 
@@ -557,11 +558,12 @@ ObjectTree::FindReferenced(HTREEITEM p_theItem)
   if(PresetTable(p_theItem))
   {
     COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
-    WordList   list;
+    MForeignMap foreigns;
+    CString     errors;
 
     // Go find the referencing tables
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableForeign(&list,true);
-    WordListToTree(list,p_theItem,IMG_FOREIGN);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableForeign(foreigns,errors,true);
+    ReferencedToTree(foreigns,p_theItem);
   }
 }
 
@@ -572,11 +574,12 @@ ObjectTree::FindPrivileges(HTREEITEM p_theItem)
   if(PresetTable(p_theItem))
   {
     COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
-    WordList   list;
+    MPrivilegeMap privileges;
+    CString errors;
 
     // Go find the privileges on the table
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTablePrivileges(&list);
-    WordListToTree(list,p_theItem,IMG_ACCESS);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTablePrivileges(privileges,errors);
+    PrivilegesToTree(privileges,p_theItem);
   }
 }
 
@@ -591,69 +594,65 @@ ObjectTree::FindProcedures(HTREEITEM p_theItem)
   }
 
   COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
-  WordList  list;
+  MProcedureMap procedures;
+  CString   errors;
   CString   lastSchema;
   int       schemaCount = 0;
   HTREEITEM schemaItem  = NULL;
 
   // Go find the procedures
-  app->GetDatabase().GetSQLInfoDB()->MakeInfoProcedureProcedurepart(&list,find);
+  app->GetDatabase().GetSQLInfoDB()->MakeInfoProcedureProcedurepart(find,procedures,errors);
 
-  if(!list.empty())
+  // See if we have something
+  if(!procedures.empty())
   {
     RemoveNoInfo(p_theItem);
   }
 
   // Setting count of objects
-  SetItemCount(p_theItem,(int)list.size());
+  SetItemCount(p_theItem,(int)procedures.size());
   
-  for(auto& str : list)
+  for(auto& proc : procedures)
   {
-    int pos = str.Find(':');
-    if(pos > 0)
-    {
-      HTREEITEM procedure = NULL;
-      CString toAdd = str.Mid(pos + 1);
-      pos = toAdd.Find('.');
-      if(pos > 0)
-      {
-        CString schema = toAdd.Left(pos);
-        CString object = toAdd.Mid(pos + 1);
-        schema.Trim();
-        object.Trim();
+    HTREEITEM procedure = NULL;
+    CString schema = proc.m_schemaName;
+    CString object = proc.m_procedureName;
+    schema.Trim();
+    object.Trim();
 
-        if((schema.Compare(lastSchema) == 0) && schemaItem)
-        {
-          procedure = InsertItem(object,schemaItem);
-          SetItemCount(schemaItem,++schemaCount);
-        }
-        else
-        {
-          lastSchema  = schema;
-          schemaItem  = InsertItem(schema,p_theItem);
-          procedure   = InsertItem(object,schemaItem);
-          schemaCount = 1;
-          SetItemCount(schemaItem,schemaCount);
-          SetItemImage(schemaItem,IMG_SCHEMA,IMG_SCHEMA);
-        }
+    if(schema.IsEmpty())
+    {
+      // No schema found, just add the item
+      procedure = InsertItem(object,p_theItem);
+    }
+    else
+    {
+      if((schema.Compare(lastSchema) == 0) && schemaItem)
+      {
+        procedure = InsertItem(object,schemaItem);
+        SetItemCount(schemaItem,++schemaCount);
       }
       else
       {
-        // No schema found, just add the item
-        procedure = InsertItem(toAdd,p_theItem);
+        lastSchema  = schema;
+        schemaItem  = InsertItem(schema,p_theItem);
+        procedure   = InsertItem(object,schemaItem);
+        schemaCount = 1;
+        SetItemCount(schemaItem,schemaCount);
+        SetItemImage(schemaItem,IMG_SCHEMA,IMG_SCHEMA);
       }
-      SetItemImage(procedure,IMG_PROCEDURE,IMG_PROCEDURE);
-
-      // Insert the info and parameters nodes
-      HTREEITEM information = InsertItem("Information",procedure,TREE_PARAMETERS);
-      HTREEITEM parameters  = InsertItem("Parameters", procedure,TREE_PARAMETERS);
-
-      SetItemImage(information,IMG_INFO,     IMG_INFO);
-      SetItemImage(parameters, IMG_PARAMETER,IMG_PARAMETER);
-
-      InsertNoInfo(information);
-      InsertNoInfo(parameters);
     }
+    SetItemImage(procedure,IMG_PROCEDURE,IMG_PROCEDURE);
+
+    // Insert the info and parameters nodes
+    HTREEITEM information = InsertItem("Information",procedure,TREE_PARAMETERS);
+    HTREEITEM parameters  = InsertItem("Parameters", procedure,TREE_PARAMETERS);
+
+    SetItemImage(information,IMG_INFO,     IMG_INFO);
+    SetItemImage(parameters, IMG_PARAMETER,IMG_PARAMETER);
+
+    InsertNoInfo(information);
+    InsertNoInfo(parameters);
   }
 }
 
@@ -661,31 +660,57 @@ ObjectTree::FindProcedures(HTREEITEM p_theItem)
 void
 ObjectTree::FindParameters(HTREEITEM p_theItem)
 {
-  WordList list;
-  if(PresetProcedure(p_theItem,list))
+  MProcedureMap procedures;
+  if(PresetProcedure(p_theItem,procedures))
   {
+    MetaProcedure& procedure = procedures.front();
+    CString   line;
     HTREEITEM proc  = GetParentItem(p_theItem);
     HTREEITEM info  = GetChildItem(proc);
     HTREEITEM param = GetNextItem(info,TVGN_NEXT);
 
     // procedure type + return mechanism
-    if(!list.empty())
+    if(!procedures.empty())
     {
       RemoveNoInfo(info);
-      for(auto& type : list)
-      {
-        HTREEITEM node = InsertItem(type,info);
-        SetItemImage(node,IMG_INFO,IMG_INFO);
-      }
     }
+
+    line = "SPL type: ";
+    switch(procedure.m_procedureType)      
+    {
+      case SQL_PT_PROCEDURE:  line += "PROCEDURE"; break;
+      case SQL_PT_FUNCTION:   line += "FUNCTION";  break;
+      case SQL_PT_UNKNOWN:    // Fall through
+      default:                line += "UNKNOWN";   break;
+    }
+    HTREEITEM item = InsertItem(line,info);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+
+    line.Format("Input parameters: %d", procedure.m_inputParameters);
+    item = InsertItem(line,info);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+    
+    line.Format("Output parameters: %d",procedure.m_outputParameters);
+    item = InsertItem(line,info);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+    
+    line.Format("Result sets: %d",      procedure.m_resultSets);
+    item = InsertItem(line,info);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+
+    line.Format("Remarks: %s",procedure.m_remarks);
+    item = InsertItem(line,info);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
 
     // Now getting the parameter list
     COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
     WordList params;
 
     // Go find the parameters for the procedure
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoProcedureParameters(&params);
-    WordListToTree(params,param,IMG_PARAMETER);
+    CString errors;
+    MProcColumnMap parameters;
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoProcedureParameters(parameters,errors);
+    ParametersToTree(parameters,param);
 
     // Reset BOTH node data pointers
     SetItemData(info,0);
@@ -743,3 +768,400 @@ ObjectTree::ColumnListToTree(MColumnMap& p_columns,HTREEITEM p_item)
   }
 }
 
+void
+ObjectTree::PrimariesToTree(MPrimaryMap& p_primaries,HTREEITEM p_item)
+{
+  // Check for a primary key
+  if(p_primaries.empty())
+  {
+    return;
+  }
+  RemoveNoInfo(p_item);
+
+  // Insert primary constraint name
+  CString name("Constraint name: ");
+  name += p_primaries.front().m_constraintName;
+  HTREEITEM nameItem = InsertItem(name,p_item);
+  SetItemImage(nameItem,IMG_PRIMARY,IMG_PRIMARY);
+  
+  // Insert primary column names
+  for(auto& prim : p_primaries)
+  {
+    HTREEITEM colItem = InsertItem(prim.m_columnName,nameItem);
+    SetItemImage(colItem,IMG_COLUMN,IMG_COLUMN);
+  }
+}
+
+CString
+ObjectTree::ForeignRuleToString(int p_rule)
+{
+  CString text;
+  switch(p_rule)
+  {
+    case SQL_CASCADE:     text = "CASCADE";     break;
+    case SQL_NO_ACTION:   text = "NO ACTION";   break;
+    case SQL_SET_NULL:    text = "SET NULL";    break;
+    case SQL_SET_DEFAULT: text = "SET DEFAULT"; break;
+    default:              text = "No info";     break;
+  }
+  return text;
+}
+
+CString
+ObjectTree::DeferrableToString(int p_defer)
+{
+  CString text;
+  switch(p_defer)
+  {
+    case SQL_INITIALLY_DEFERRED:  text = "INITIALLY DEFERRED";  break;
+    case SQL_INITIALLY_IMMEDIATE: text = "INITIALLY IMMEDIATE"; break;
+    case SQL_NOT_DEFERRABLE:      text = "NOT DEFERRABLE";      break;
+    default:                      text = "No Info";             break;
+  }
+  return text;
+}
+
+void
+ObjectTree::ForeignsToTree(MForeignMap& p_foreigns,HTREEITEM p_item)
+{
+  // Check for a foreign keys
+  if(p_foreigns.empty())
+  {
+    return;
+  }
+  RemoveNoInfo(p_item);
+
+  // Currently dealing with foreign key item
+  HTREEITEM keyItem = NULL;
+  HTREEITEM info    = NULL;
+  HTREEITEM primkey = NULL;
+  CString   line;
+
+  // Walk through all the foreign-key columns
+  for(auto& foreign : p_foreigns)
+  {
+    if(foreign.m_keySequence == 1)
+    {
+      // Start a new foreign key
+      line  = "Constraint name: ";
+      line += foreign.m_foreignConstraint;
+      keyItem = InsertItem(line,p_item);
+      SetItemImage(keyItem,IMG_FOREIGN,IMG_FOREIGN);
+
+      // Update rule
+      line = "Update rule: " + ForeignRuleToString(foreign.m_updateRule);
+      info = InsertItem(line,keyItem);
+      SetItemImage(info,IMG_INFO,IMG_INFO);
+
+      // Delete rule
+      line = "Delete rule: " + ForeignRuleToString(foreign.m_deleteRule);
+      info = InsertItem(line,keyItem);
+      SetItemImage(info,IMG_INFO,IMG_INFO);
+
+      // Deferable
+      line = "Deferrable: " + DeferrableToString(foreign.m_deferrable);
+      info = InsertItem(line,keyItem);
+      SetItemImage(info,IMG_INFO,IMG_INFO);
+
+      // Primary key + columns
+      line.Format("Primary key: %s (%s)"
+                  ,foreign.m_pkTableName
+                  ,foreign.m_primaryConstraint);
+      primkey = InsertItem(line,keyItem);
+      SetItemImage(primkey,IMG_FOREIGN,IMG_FOREIGN);
+    }
+    // Add the columns
+    line.Format("%s -> %s",foreign.m_fkColumnName,foreign.m_pkColumnName);
+    HTREEITEM col = InsertItem(line,primkey);
+    SetItemImage(col,IMG_COLUMN,IMG_COLUMN);
+  }
+}
+
+void
+ObjectTree::ReferencedToTree(MForeignMap& p_foreigns,HTREEITEM p_item)
+{
+  // Check for a referenced tables
+  if(p_foreigns.empty())
+  {
+    return;
+  }
+  RemoveNoInfo(p_item);
+
+  // Currently dealing with foreign key item
+  HTREEITEM keyItem = NULL;
+  HTREEITEM info    = NULL;
+  HTREEITEM primkey = NULL;
+  CString   line;
+
+  // Walk through all the foreign-key columns
+  for(auto& foreign : p_foreigns)
+  {
+    if(foreign.m_keySequence == 1)
+    {
+      // Start a new table
+      line  = "Table: ";
+      line += foreign.m_fkTableName;
+      keyItem = InsertItem(line,p_item);
+      SetItemImage(keyItem,IMG_FOREIGN,IMG_FOREIGN);
+
+      // Update rule
+      line = "Update rule: " + ForeignRuleToString(foreign.m_updateRule);
+      info = InsertItem(line,keyItem);
+      SetItemImage(info,IMG_INFO,IMG_INFO);
+
+      // Delete rule
+      line = "Delete rule: " + ForeignRuleToString(foreign.m_deleteRule);
+      info = InsertItem(line,keyItem);
+      SetItemImage(info,IMG_INFO,IMG_INFO);
+
+      // Deferable
+      line = "Deferrable: " + DeferrableToString(foreign.m_deferrable);
+      info = InsertItem(line,keyItem);
+      SetItemImage(info,IMG_INFO,IMG_INFO);
+
+      // Primary key + columns
+      line.Format("Primary key: %s (%s)"
+                  ,foreign.m_pkTableName
+                  ,foreign.m_primaryConstraint);
+      primkey = InsertItem(line,keyItem);
+      SetItemImage(primkey,IMG_FOREIGN,IMG_FOREIGN);
+    }
+    // Add the columns
+    line.Format("%s -> %s",foreign.m_fkColumnName,foreign.m_pkColumnName);
+    HTREEITEM col = InsertItem(line,primkey);
+    SetItemImage(col,IMG_COLUMN,IMG_COLUMN);
+  }
+}
+
+void
+ObjectTree::StatisticsToTree(MStatisticsMap& p_statistics,HTREEITEM p_item)
+{
+  // Check for a indices
+  if(p_statistics.empty())
+  {
+    return;
+  }
+  RemoveNoInfo(p_item);
+
+  HTREEITEM next = NULL;
+  CString   line;
+
+  // Process statistics
+  for(auto& stat : p_statistics)
+  {
+    if(stat.m_position == 1)
+    {
+      // Start new index/table node
+      if(stat.m_indexType == SQL_TABLE_STAT)
+      {
+        // Process whole table statistics
+        next = InsertItem("[Table statistics]",p_item);
+      }
+      else
+      {
+        // New index on a table
+        line.Format("Index name: %s",stat.m_indexName);
+        if(stat.m_unique)
+        {
+          line += " (Unique)";
+        }
+        if(stat.m_indexType == SQL_INDEX_CLUSTERED)
+        {
+          line += " (Clustered)";
+        }
+        if(stat.m_indexType == SQL_INDEX_HASHED)
+        {
+          line += " (Hashed)";
+        }
+        next = InsertItem(line,p_item);
+      }
+      SetItemImage(next,IMG_INDEX,IMG_INDEX);
+
+      // Table/index nodes have cardinality and pages
+      line.Format("Cardinality: %d",stat.m_cardinality);
+      HTREEITEM item = InsertItem(line,next);
+      SetItemImage(item,IMG_INDEX,IMG_INDEX);
+      line.Format("Data pages: %d",stat.m_pages);
+      item = InsertItem(line,next);
+      SetItemImage(item,IMG_INDEX,IMG_INDEX);
+    }
+    if(stat.m_indexType != SQL_TABLE_STAT)
+    {
+      // Extra column on an index
+      line.Format("%d: %s",stat.m_position,stat.m_columnName);
+      line += stat.m_ascending == "A" ? " (Ascending)" : " (Descending)";
+      HTREEITEM item = InsertItem(line,next);
+      SetItemImage(item,IMG_COLUMN,IMG_COLUMN);
+    }
+  }
+}
+
+void
+ObjectTree::SpecialsToTree(MSpecialColumnMap& p_specials,HTREEITEM p_item)
+{
+  // Check for special columns
+  if(p_specials.empty())
+  {
+    return;
+  }
+  RemoveNoInfo(p_item);
+
+  HTREEITEM next = NULL;
+  COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
+  SQLInfoDB* info = app->GetDatabase().GetSQLInfoDB();
+
+  // Inserts the special columns
+  for(auto& special : p_specials)
+  {
+    CString line = "Columnname: " + special.m_columnName;
+    next = InsertItem(line,p_item);
+    SetItemImage(next,IMG_COLUMN,IMG_COLUMN);
+
+    line.Format("RDBMS Special type: %s",special.m_typeName);
+    HTREEITEM item  = InsertItem(line,next);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+
+    line.Format("ODBC data type: %s",info->ODBCDataType(special.m_datatype));
+    item = InsertItem(line,next);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+
+    line.Format("Column size: %d",special.m_columnSize);
+    item = InsertItem(line,next);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+
+    line.Format("Buffer size: %d",special.m_bufferSize);
+    item = InsertItem(line,next);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+
+    line.Format("Decimal digits: %d",special.m_decimalDigits);
+    item = InsertItem(line,next);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+
+    line = "Column scope: ";
+    switch(special.m_scope)
+    {
+      case SQL_SCOPE_CURROW:      line += "Current row"; break;
+      case SQL_SCOPE_TRANSACTION: line += "Transaction"; break;
+      case SQL_SCOPE_SESSION:     line += "Session";     break;
+      default:                    line += "Unknown";     break;
+    }
+    item = InsertItem(line,next);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+
+    line = "Column scope: ";
+    switch(special.m_pseudo)
+    {
+      case SQL_PC_NON_PSEUDO: line += "Non-pseudo";    break;
+      case SQL_PC_PSEUDO:     line += "Pseudo column"; break;
+      default:                line += "No info";       break;
+    }
+    item = InsertItem(line,next);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+  }
+}
+
+void
+ObjectTree::PrivilegesToTree(MPrivilegeMap& p_privileges,HTREEITEM p_item)
+{
+  // Check for privileges
+  if(p_privileges.empty())
+  {
+    return;
+  }
+  RemoveNoInfo(p_item);
+
+  // Do all privileges records
+  for(auto& priv : p_privileges)
+  {
+    CString line;
+    line.Format("%s was granted %s by %s"
+                ,priv.m_grantee
+                ,priv.m_privilege
+                ,priv.m_grantor);
+    if(priv.m_grantable)
+    {
+      line += " (With GRANT OPTION)";
+    }
+    HTREEITEM item = InsertItem(line,p_item);
+    SetItemImage(item,IMG_ACCESS,IMG_ACCESS);
+  }
+}
+
+void
+ObjectTree::ParametersToTree(MProcColumnMap& p_parameters,HTREEITEM p_item)
+{
+  // Check for parameters
+  if(p_parameters.empty())
+  {
+    return;
+  }
+  RemoveNoInfo(p_item);
+
+  COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
+  SQLInfoDB* info = app->GetDatabase().GetSQLInfoDB();
+
+  // Do all parameters
+  for(auto& param : p_parameters)
+  {
+    CString line;
+    line.Format("%d: %s",param.m_ordinalPosition,param.m_columnName);
+    switch(param.m_nullable)
+    {
+      case SQL_NO_NULLS:         line += " (NOT NULL)"; break;
+      case SQL_NULLABLE:         line += " (NULLABLE)"; break;
+      case SQL_NULLABLE_UNKNOWN: // Fall through
+      default:                   line += " (NULLS unknown)";
+                                 break;
+    }
+    HTREEITEM paramItem = InsertItem(line,p_item);
+    SetItemImage(paramItem,IMG_PARAMETER,IMG_PARAMETER);
+
+    line = "Parameter type: ";
+    switch(param.m_columnType)
+    {
+      case SQL_PARAM_INPUT:               line += "input";              break;
+      case SQL_PARAM_OUTPUT:              line += "output";             break;
+      case SQL_PARAM_INPUT_OUTPUT:        line += "input/output";       break;
+      case SQL_RETURN_VALUE:              line += "return value";       break;
+      case SQL_RESULT_COL:                line += "result column";      break;
+      case SQL_PARAM_INPUT_OUTPUT_STREAM: line += "input/output stream";break;
+      case SQL_PARAM_OUTPUT_STREAM:       line += "output stream";      break;
+      case SQL_PARAM_TYPE_UNKNOWN:        // fall through
+      default:                            line += "UNKNOWN";            break;
+    }
+    HTREEITEM item = InsertItem(line,paramItem);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+
+    line.Format("ODBC Datatype: %s",info->ODBCDataType(param.m_dataType));
+    item = InsertItem(line,paramItem);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+
+    line.Format("RDBMS Datatype: %s",param.m_typeName);
+    item = InsertItem(line,paramItem);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+
+    line.Format("Columnsize: %d",param.m_columnSize);
+    item = InsertItem(line,paramItem);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+
+    line.Format("Buffersize: %d",param.m_bufferSize);
+    item = InsertItem(line,paramItem);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+
+    line.Format("Decimal digits: %d",param.m_decimalDigits);
+    item = InsertItem(line,paramItem);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+
+    line.Format("Radix: %d",param.m_radix);
+    item = InsertItem(line,paramItem);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+
+    line.Format("Default value: %s",param.m_defaultValue);
+    item = InsertItem(line,paramItem);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+
+    line.Format("Comments: %s",param.m_remarks);
+    item = InsertItem(line,paramItem);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+  }
+}

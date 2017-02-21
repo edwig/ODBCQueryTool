@@ -59,6 +59,8 @@ private:
   // All ODBC Info to a tree control
   void MakeTreeInfoFunctions(HTREEITEM item);
   void WordListToTree(WordList& p_list,HTREEITEM p_item);
+  void MetaListToTree(MMetaMap& p_list,HTREEITEM p_item,CString& p_errors);
+
 
   // Printing the DBInfo tree to a report
   void ReportCapabilities(HTREEITEM  p_branch

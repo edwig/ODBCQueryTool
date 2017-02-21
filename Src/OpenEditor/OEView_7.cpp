@@ -991,11 +991,25 @@ COEditorView::CanEdit()
   {
     COpenEditorApp *app = dynamic_cast<COpenEditorApp *> (AfxGetApp());
     SQLDatabase& database  = app->GetDatabase();
+    MPrimaryMap primaries;
 
     m_keyMap.clear();
+
     if(!m_tableOne.IsEmpty())
     {
-      database.GetSQLInfoDB()->GetPrimaryKeyInfo(m_tableOne,m_primaryName,m_keyMap);
+      if(database.GetSQLInfoDB()->GetPrimaryKeyInfo(m_tableOne,m_primaryName,primaries))
+      {
+        int ind = 0;
+        for(auto& prim : primaries)
+        {
+          PrimKeyInfo info;
+          info.m_colName  = prim.m_columnName;
+          info.m_colPos   = prim.m_columnPosition;
+          info.m_queryPos = 0;
+          m_keyMap.insert(std::make_pair(ind,info));
+          ++ind;
+        }
+      }
     }
     m_findPrimary = true;
   }

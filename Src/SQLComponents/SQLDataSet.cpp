@@ -1152,19 +1152,18 @@ SQLDataSet::GetPrimaryKeyInfo()
 {
   if(m_primaryKey.size() == 0)
   {
-    SQLInfoDB* info = m_database->GetSQLInfoDB();
-    CString primaryConstraintName;
-    PrimaryMap map;
-    if(info->GetPrimaryKeyInfo(m_primaryTableName,primaryConstraintName,map) == false)
+    SQLInfoDB*  info = m_database->GetSQLInfoDB();
+    MPrimaryMap primaries;
+    CString     constraintName;
+    if(info->GetPrimaryKeyInfo(m_primaryTableName,constraintName,primaries) == false)
     {
       // No primary key given, and cannot get it from the ODBC driver
       return false;
     }
     // Remember the primary key info
-    PrimaryMap::iterator it;
-    for(it = map.begin();it != map.end(); ++it)
+    for(auto& key : primaries)
     {
-      m_primaryKey.push_back(it->second.m_colName);
+      m_primaryKey.push_back(key.m_columnName);
     }
   }
   return m_primaryKey.size() > 0;

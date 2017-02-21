@@ -91,7 +91,7 @@ protected:
   bool      IsSpecialNode  (CString& p_name);
   void      SetItemCount   (HTREEITEM p_theItem,int p_size);
   bool      PresetTable    (HTREEITEM p_theItem);
-  bool      PresetProcedure(HTREEITEM p_theItem,WordList& p_list);
+  bool      PresetProcedure(HTREEITEM p_theItem,MProcedureMap& p_procedures);
   void      FindTables     (HTREEITEM p_theItem);
   void      PrepareTable   (HTREEITEM p_theItem);
   void      FindColumns    (HTREEITEM p_theItem);
@@ -104,9 +104,19 @@ protected:
   void      FindProcedures (HTREEITEM p_theItem);
   void      FindParameters (HTREEITEM p_theItem);
 
-  void      ColumnListToTree(MColumnMap& p_columns,HTREEITEM p_item);
+  void      ColumnListToTree(MColumnMap&        p_columns,   HTREEITEM p_item);
+  void      PrimariesToTree (MPrimaryMap&       p_primaries, HTREEITEM p_item);
+  void      ForeignsToTree  (MForeignMap&       p_foreigns,  HTREEITEM p_item);
+  void      ReferencedToTree(MForeignMap&       p_foreigns,  HTREEITEM p_item);
+  void      StatisticsToTree(MStatisticsMap&    p_statistics,HTREEITEM p_item);
+  void      SpecialsToTree  (MSpecialColumnMap& p_specials,  HTREEITEM p_item);
+  void      PrivilegesToTree(MPrivilegeMap&     p_privileges,HTREEITEM p_item);
+  void      ParametersToTree(MProcColumnMap&    p_parameters,HTREEITEM p_item);
 
+  CString   ForeignRuleToString(int p_rule);
+  CString   DeferrableToString(int p_defer);
 
+  // Data
   CString     m_filter;
   bool        m_busy;
   CImageList  m_imageList;

@@ -54,6 +54,16 @@ public:
 typedef std::vector<QueryHistory> HistoryMap;
 typedef std::vector<int>          ErrorMap;
 
+typedef struct _PrimKeyInfo
+{
+  CString  m_colName;
+  int      m_colPos;
+  int      m_queryPos;
+}
+PrimKeyInfo;
+
+typedef std::map<int,PrimKeyInfo>   PrimaryMap;
+
 class COEditorView : public CView, protected OpenEditor::EditContext
 {
 	// Ruler is a struct, which helpes to draw character grid

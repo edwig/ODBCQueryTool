@@ -69,15 +69,7 @@ TypeInfo;
 
 typedef std::map<CString,TypeInfo*> DataTypeMap;
 
-typedef struct _PrimKeyInfo
-{
-  CString  m_colName;
-  int      m_colPos;
-  int      m_queryPos;
-}
-PrimKeyInfo;
 
-typedef std::map<int,PrimKeyInfo>   PrimaryMap;
 typedef std::list<CString>          WordList;
 
 class SQLInfo 
@@ -121,24 +113,24 @@ public:
   CString GetVersionRDBMS();
 
   // Get information about the primary key of a table
-  bool GetPrimaryKeyInfo(CString&    p_tablename
-                        ,CString&    p_primary
-                        ,PrimaryMap& p_keymap);
+  bool GetPrimaryKeyInfo(CString&     p_tablename
+                        ,CString&     p_primary
+                        ,MPrimaryMap& p_keymap);
 
   // GETTING ALL THE TABLES OF A NAME PATTERN
   // GETTING ALL THE INFO FOR ONE TABLE
   bool MakeInfoTableTablepart (CString p_findTable,MTableMap& p_tables,CString& p_errors);
-  bool MakeInfoTableColumns   (MColumnMap& p_columns,CString& p_errors);
-  bool MakeInfoTablePrimary   (WordList* p_list,CString& primary,PrimaryMap& keymap);
-  bool MakeInfoTableForeign   (WordList* p_list,bool ref = false);
-  bool MakeInfoTableStatistics(WordList* p_list,CString& keyName,PrimaryMap& keyMap);
-  bool MakeInfoTableSpecials  (WordList* p_list);
-  bool MakeInfoTablePrivileges(WordList* p_list);
+  bool MakeInfoTableColumns   (MColumnMap&        p_columns,   CString& p_errors);
+  bool MakeInfoTablePrimary   (MPrimaryMap&       p_primaries, CString& p_errors);
+  bool MakeInfoTableForeign   (MForeignMap&       p_foreigns,  CString& p_errors,bool p_referenced = false);
+  bool MakeInfoTableStatistics(MStatisticsMap&    p_statistics,MPrimaryMap* p_keymap,CString& p_errors,bool p_all = true);
+  bool MakeInfoTableSpecials  (MSpecialColumnMap& p_specials,  CString& p_errors);
+  bool MakeInfoTablePrivileges(MPrivilegeMap&    p_privileges,CString& p_errors);
   // GETTING ALL THE INFO FOR ONE PROCEDURE
-  bool MakeInfoProcedureProcedurepart(WordList* p_list,CString& procedure);
-  bool MakeInfoProcedureParameters   (WordList* p_list);
+  bool MakeInfoProcedureProcedurepart(CString p_procedure,MProcedureMap& p_procedures,CString& p_errors);
+  bool MakeInfoProcedureParameters   (MProcColumnMap& p_parameters,CString& p_errors);
   // GETTING ALL META TYPES
-  bool MakeInfoMetaTypes(WordList* p_list,int type);
+  bool MakeInfoMetaTypes(MMetaMap& p_objects,int p_type,CString& p_errors);
 
   // Meta pointer to SQLGet<META> functions
   unsigned char* GetMetaPointer(unsigned char* p_buffer,bool p_meta);

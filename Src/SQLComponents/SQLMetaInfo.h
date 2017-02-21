@@ -97,4 +97,138 @@ MetaPrimary;
 
 using MPrimaryMap = std::vector<MetaPrimary>;
 
+
+// Results from "SQLForeignKeys"
+
+typedef struct _metaInfoForeign
+{
+  CString   m_pkCatalogName;
+  CString   m_pkSchemaName;
+  CString   m_pkTableName;
+  CString   m_pkColumnName;
+
+  CString   m_fkCatalogName;
+  CString   m_fkSchemaName;
+  CString   m_fkTableName;
+  CString   m_fkColumnName;
+  
+  int       m_keySequence;        // Ordinal sequence number
+  int       m_updateRule;         // SQL_CASCADE / SQL_NO_ACTION / SQL_SET_NULL / SQL_SET_DEFAULT
+  int       m_deleteRule;         // SQL_CASCADE / SQL_NO_ACTION / SQL_SET_NULL / SQL_SET_DEFAULT
+  CString   m_foreignConstraint;
+  CString   m_primaryConstraint;
+  int       m_deferrable;         // SQL_INITIALLY_DEFERRED / SQL_INITIALLY_IMMEDIATE / SQL_NOT_DEFERRABLE
+}
+MetaForeign;
+
+using MForeignMap = std::vector<MetaForeign>;
+
+// Results from "SQLStatistics"
+
+typedef struct _metaInfoStatistics
+{
+  CString   m_catalogName;    // Catalog (database name)
+  CString   m_schemaName;     // Schema owner
+  CString   m_tableName;      // Tablename
+  bool      m_unique;         // true = UNIQUE
+  CString   m_indexName;      // Index name
+  int       m_indexType;      // SQL_TABLE_STAT / SQL_INDEX_CLUSTERED / SQL_INDEX_HASHED / SQL_INDEX_OTHER
+  int       m_position;       // Ordinal position (start at 1)
+  CString   m_columnName;     // Column in the index
+  CString   m_ascending;      // 'A', 'D', '' = unknown
+  long      m_cardinality;    // cardinality of index
+  long      m_pages;          // Pages of the index
+  CString   m_filter;         // filter or expression
+}
+MetaStatistics;
+
+using MStatisticsMap = std::vector<MetaStatistics>;
+
+// Results from "SQLSpecialColumns"
+
+typedef struct _metaSpecialColumns
+{
+  CString   m_columnName;     // Extra column name by RDBMS
+  CString   m_typeName;       // Different datatype by RDBMS
+  int       m_datatype;       // Corresponding ODBC Datatype
+  int       m_columnSize;
+  int       m_bufferSize;
+  int       m_decimalDigits;
+  int       m_scope;          // SQL_SCOPE_CURROW  / SQL_SCOPE_TRANSACTION / SQL_SCOPE_SESSION
+  int       m_pseudo;         // SQL_PC_NOT_PSEUDO / SQL_PC_PSEUDO / SQL_PC_UNKNOWN
+}
+MetaSpecialColumn;
+
+using MSpecialColumnMap = std::vector<MetaSpecialColumn>;
+
+// Results from "SQLTablePrivileges" 
+
+typedef struct _metaInfoPrivilege
+{
+  CString   m_catalogName;
+  CString   m_schemaName;
+  CString   m_tableName;
+  CString   m_grantor;
+  CString   m_grantee;
+  CString   m_privilege;
+  bool      m_grantable;
+}
+MetaPrivilege;
+
+using MPrivilegeMap = std::vector<MetaPrivilege>;
+
+// Results from "SQLProcedures"
+
+typedef struct _metaInfoProcedure
+{
+  CString   m_catalogName;
+  CString   m_schemaName;
+  CString   m_procedureName;
+  int       m_inputParameters;    // Number of input parameters
+  int       m_outputParameters;   // Number of output parameters
+  int       m_resultSets;         // Number of result sets
+  CString   m_remarks;            // As in COMMENT command
+  int       m_procedureType;      // SQL_PT_PROCEDURE / SQL_PT_FUNCTION / SQL_PT_UNKNOWN
+}
+MetaProcedure;
+
+using MProcedureMap = std::vector<MetaProcedure>;
+
+// Results from "SQLProcedureColumns"
+
+typedef struct _metaInfoProcColumns
+{
+  CString   m_catalogName;
+  CString   m_schemaName;
+  CString   m_procedureName;
+  CString   m_columnName;
+  int       m_ordinalPosition;
+  int       m_columnType;       // SQL_PARAM_INPUT / SQL_PARAM_OUTPUT etc. etc.
+  int       m_dataType;         // ODBC standard type name
+  CString   m_typeName;         // RDBMS type name
+  int       m_columnSize;
+  int       m_bufferSize;
+  int       m_decimalDigits;
+  int       m_radix;
+  int       m_nullable;         // SQL_NO_NULLS / SQL_NULLABLE / SQL_NULLABLE_UNKNOWN
+  CString   m_remarks;          // From the COMMENT command
+  CString   m_defaultValue;     // Default value
+  CString   m_isNullable;       // "NO" or "YES" (can include nulls)
+}
+MetaProcedureColumn;
+
+using MProcColumnMap = std::vector<MetaProcedureColumn>;
+
+// Results for Meta objects in the catalog(s)
+
+typedef struct _metaInfoObject
+{
+  int       m_objectType;       // META_CATALOGS / META_SCHEMAS / META_TABLES
+  CString   m_objectName;       // Name of the object
+  CString   m_remarks;          // From the COMMENT command
+}
+MetaObject;
+
+using MMetaMap = std::vector<MetaObject>;
+
 };
