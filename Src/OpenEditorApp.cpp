@@ -33,6 +33,7 @@
 #include "Frame/FileWatch.h"
 #include "MultConnectionsDlg.h"
 #include "ConnectionDlg.h"
+#include "DDLCreateTable.h"
 #include "AboutDlg.h"
 
 #ifdef _DEBUG
@@ -252,6 +253,7 @@ void COpenEditorApp::InitGUICommand ()
     GUICommandDictionary::InsertCommand("Script.ExecuteCurrent",           ID_SCRIPT_CURRENT);
     GUICommandDictionary::InsertCommand("Script.ExecuteAndStep",           ID_SCRIPT_EXECUTESTEP);
     GUICommandDictionary::InsertCommand("Script.FindTable",                ID_SCRIPT_FINDTABLE);
+    GUICommandDictionary::InsertCommand("Script.TableDDL",                 ID_SCRIPT_TABLEDDL);
     GUICommandDictionary::InsertCommand("Script.Variables",                ID_SCRIPT_VARIABLES);
     GUICommandDictionary::InsertCommand("Script.NextError",                ID_SCRIPT_NEXTERROR);
     GUICommandDictionary::InsertCommand("Script.PreviousError",            ID_SCRIPT_PREVERROR);
@@ -424,7 +426,7 @@ BOOL COpenEditorApp::InitInstance()
       UpdateDatabaseConnector();
       if(open)
       {
-        // Verwerk maar zodra we ertoe in staat zijn
+        // Execute the script as soon as we can do this
         PostMessage(pMainFrame->GetSafeHwnd(),WM_COMMAND,ID_SCRIPT_EXECUTE,0);
       }
     }
@@ -488,7 +490,7 @@ BOOL COpenEditorApp::AllowThisInstance ()
        cmdInfo.m_nShellCommand == CCommandLineInfo::FileOpen)
   && !COEDocument::GetSettingsManager().GetGlobalSettings().GetAllowMultipleInstances())
   {
-    const char* cszMutex = "MAGENTA.ODBCQueryTool";
+    const char* cszMutex = "EDO.ODBCQueryTool";
     const char* cszError = "Cannot connect to another program instance.";
 
     m_hMutex = CreateMutex(NULL, FALSE, cszMutex);
@@ -760,7 +762,7 @@ COpenEditorApp::ParseConnectString()
   m_user       = "";
   m_password   = "";
   
-  // Datasourcename
+  // Datasource name
   pos = m_connectString.Find("DSN=");
   if(pos >= 0)
   {
@@ -1054,6 +1056,34 @@ COpenEditorApp::FindTable(CString& table)
   {
     CMDIMainFrame* frame = (CMDIMainFrame*)m_pMainWnd;
     frame->FindTable(table);
+  }
+}
+
+void
+COpenEditorApp::TableDDL(CString& p_table)
+{
+  if(m_pMainWnd)
+  {
+    CWaitCursor take_a_deep_sigh;
+    char tempdir [MAX_PATH + 1];
+    char filename[MAX_PATH + 1];
+    CString templateName("CreateTable_");
+    templateName += p_table;
+    templateName += ".sql";
+
+    if(!GetTempPath(MAX_PATH,tempdir))
+    {
+      return;
+    }
+    if(!GetTempFileName(tempdir,templateName,0,filename))
+    {
+      return;
+    }
+    // frame->TableDDL(p_table);
+    DDLCreateTable create(m_database->GetSQLInfoDB());
+    create.GetTableDDL(p_table);
+    create.SaveDDL(filename);
+    AfxGetApp()->OpenDocumentFile(filename);
   }
 }
 

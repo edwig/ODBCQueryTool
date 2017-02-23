@@ -1458,6 +1458,7 @@ BEGIN
         MENUITEM SEPARATOR
         MENUITEM "Native SQL\tF9",              ID_SCRIPT_NATIVE
         MENUITEM "Find table\tF12",             ID_SCRIPT_FINDTABLE
+        MENUITEM "Table DDL\tCTRL-F12",         ID_SCRIPT_TABLEDDL
         MENUITEM "Variables\tCTRL-B",           ID_SCRIPT_VARIABLES
     END
     POPUP "&Window"

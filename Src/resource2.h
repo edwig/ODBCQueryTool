@@ -156,6 +156,7 @@
 #define ID_QUERY_HTML                   40049
 #define ID_VIEW_FIND_PANEL              40050
 #define ID_SCRIPT_FINDTABLE             40051
+#define ID_SCRIPT_TABLEDDL              40052
 #define ID_SCRIPT_NATIVE                40054
 #define ID_SESSION_ODBCREPORT           40055
 #define ID_QUERY_TXT                    40056

@@ -72,6 +72,7 @@ public:
   void    DoFileSaveAll (bool silent, bool skipNew);
   void    OnActivateApp (BOOL bActive);
   void    FindTable     (CString& table);
+  void    TableDDL      (CString& p_table);
   CString FindNativeSQL (CString& command);
   void    ReportCapabilities();
   void    OnSessionStatus();

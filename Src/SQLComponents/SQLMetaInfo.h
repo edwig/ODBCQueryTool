@@ -77,6 +77,8 @@ typedef struct _metaInfoColumn
   int       m_length;           // Total length in bytes
   int       m_scale;            // Decimal/Numeric scale
   int       m_nullable;         // Nullable SQL_NO_NULLS / SQL_NULLABLE / SQL_NULLABLE_UNKNOWN
+  CString   m_default;          // Default value of the column
+  int       m_position;         // Ordinal position in the table
 }
 MetaColumn;
 
@@ -129,7 +131,7 @@ typedef struct _metaInfoStatistics
 {
   CString   m_catalogName;    // Catalog (database name)
   CString   m_schemaName;     // Schema owner
-  CString   m_tableName;      // Tablename
+  CString   m_tableName;      // Table name
   bool      m_unique;         // true = UNIQUE
   CString   m_indexName;      // Index name
   int       m_indexType;      // SQL_TABLE_STAT / SQL_INDEX_CLUSTERED / SQL_INDEX_HASHED / SQL_INDEX_OTHER

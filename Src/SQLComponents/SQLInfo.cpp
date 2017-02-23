@@ -1631,18 +1631,22 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns,CString& p_errors)
   SQLLEN       cbColumnName  = 0;
   SQLCHAR      szTypeName    [SQL_MAX_BUFFER+1];
   SQLLEN       cbTypeName    = 0;
-  SQLCHAR      szRemarks     [2 *SQL_MAX_BUFFER+1];
+  SQLCHAR      szRemarks     [2 * SQL_MAX_BUFFER + 1];
   SQLLEN       cbRemarks     = 0;
-  SQLSMALLINT  DataType    = 0;
+  SQLCHAR      szDefault     [2 * SQL_MAX_BUFFER + 1];
+  SQLLEN       cbDefault     = 0;
+  SQLSMALLINT  DataType      = 0;
   SQLLEN       cbDataType    = 0;
   SQLINTEGER   Precision     = 0;
   SQLINTEGER   Length        = 0;
   SQLSMALLINT  Scale         = 0;
   SQLSMALLINT  Nullable      = 0;
+  SQLINTEGER   Position      = 0;
   SQLLEN       cbPrecision   = 0;
   SQLLEN       cbLength      = 0;
   SQLLEN       cbScale       = 0;
   SQLLEN       cbNullable    = 0;
+  SQLLEN       cbPosition    = 0;
 
   // Check whether we can do this
   if(!SupportedFunction(SQL_API_SQLCOLUMNS))
@@ -1686,6 +1690,8 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns,CString& p_errors)
      SQLBindCol(m_hstmt, 9, SQL_C_SSHORT,&Scale,        2,              &cbScale);
      SQLBindCol(m_hstmt,11, SQL_C_SSHORT,&Nullable,     2,              &cbNullable);
      SQLBindCol(m_hstmt,12, SQL_C_CHAR,   szRemarks,  2*SQL_MAX_BUFFER, &cbRemarks);
+     SQLBindCol(m_hstmt,13, SQL_C_CHAR,   szDefault,  2*SQL_MAX_BUFFER, &cbDefault);
+     SQLBindCol(m_hstmt,17, SQL_C_SLONG, &Position,     4,              &cbPosition);
      while(true)
      {
        m_retCode = SqlFetch(m_hstmt);
@@ -1716,8 +1722,13 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns,CString& p_errors)
          if(cbTableName   > 0) theColumn.m_table   = szTableName;
          if(cbColumnName  > 0) theColumn.m_column  = szColumnName;
          if(cbRemarks     > 0) theColumn.m_remarks = szRemarks;
-         if(cbDataType > 0)    
+         if(cbDefault     > 0) theColumn.m_default = szDefault;
+         // Numbers
+         if(cbNullable > 0) theColumn.m_nullable = Nullable;
+         if(cbPosition > 0) theColumn.m_position = Position;
+         if(cbDataType > 0)
          {
+           theColumn.m_datatype = DataType;
            type = ODBCDataType(DataType);
            if(cbTypeName > 0)
            {
@@ -1741,11 +1752,6 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns,CString& p_errors)
            {
              theColumn.m_scale = Scale;
            }
-         }
-         // NULLABLE
-         if(cbNullable > 0)
-         {
-           theColumn.m_nullable = Nullable;
          }
          // Save the result
          p_columns.push_back(theColumn);

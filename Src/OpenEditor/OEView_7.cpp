@@ -195,6 +195,33 @@ COEditorView::OnScriptFindTable()
 }
 
 void
+COEditorView::OnScriptTableDDL()
+{
+  Square blkPos;
+  char   buffer[128];
+  const char*  line = nullptr;
+  int    len = 0;
+  int    ind = 0;
+  if(!WordFromPoint(GetPosition(),blkPos))
+  {
+    GetSelection(blkPos);
+  }
+  GetLine(blkPos.start.line,line,len);
+  line += blkPos.start.column;
+  for(ind = 0; ind < (blkPos.end.column - blkPos.start.column); ++ind)
+  {
+    buffer[ind] = *line++;
+  }
+  buffer[ind] = 0;
+  // Find via the Application
+  CString tableToFind(buffer);
+  if(!tableToFind.IsEmpty())
+  {
+    theApp.TableDDL(tableToFind);
+  }
+}
+
+void
 COEditorView::OnScriptVariables()
 {
   SQLVariant var1r; // (SQL_C_CHAR,   "This is a test for Edwig's Birthday");

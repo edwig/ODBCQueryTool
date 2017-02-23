@@ -403,6 +403,7 @@ public:
   afx_msg void OnScriptCurrent();
   afx_msg void OnScriptExecuteStep();
   afx_msg void OnScriptFindTable();
+  afx_msg void OnScriptTableDDL();
   afx_msg void OnScriptVariables();
   afx_msg void OnScriptNextError();
   afx_msg void OnScriptPrevError();

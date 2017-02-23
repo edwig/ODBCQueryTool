@@ -154,6 +154,9 @@
     <ClCompile Include="unzip.cpp">
       <Filter>ZIP</Filter>
     </ClCompile>
+    <ClCompile Include="DDLCreateTable.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BasicExcel.h">
@@ -299,6 +302,9 @@
     </ClInclude>
     <ClInclude Include="SQLMetaInfo.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DDLCreateTable.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

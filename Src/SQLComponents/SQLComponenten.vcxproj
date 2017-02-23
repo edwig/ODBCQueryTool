@@ -155,6 +155,7 @@
       <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Level4</WarningLevel>
     </ClCompile>
     <ClCompile Include="ConvertWideString.cpp" />
+    <ClCompile Include="DDLCreateTable.cpp" />
     <ClCompile Include="DefuseBOM.cpp" />
     <ClCompile Include="ExcelFormat.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
@@ -229,6 +230,7 @@
     <ClInclude Include="BasicXmlExcel.h" />
     <ClInclude Include="bcd.h" />
     <ClInclude Include="ConvertWideString.h" />
+    <ClInclude Include="DDLCreateTable.h" />
     <ClInclude Include="DefuseBOM.h" />
     <ClInclude Include="ExcelFormat.h" />
     <ClInclude Include="Locker.h" />

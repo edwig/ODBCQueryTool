@@ -128,6 +128,7 @@ Script.Native				  F9
 Script.ExecuteCurrent         F10
 Script.ExecuteAndStep         F11
 Script.FindTable              F12
+Script.TableDDL               Ctrl+F12
 Script.PreviousError          Shift+F4
 Script.Variables              Ctrl+B
 #Window
