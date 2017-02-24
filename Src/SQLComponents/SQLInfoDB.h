@@ -207,9 +207,11 @@ public:
 
   // Get the constraint form of a primary key to be added to a table after creation of that table
   virtual CString GetPrimaryKeyConstraint(CString p_schema,CString p_tablename,CString p_primary) const = 0;
+  virtual CString GetPrimaryKeyConstraint(MPrimaryMap& p_primaries) const = 0;
 
   // Get the sql to add a foreign key to a table
-  virtual CString GetSQLForeignKeyConstraint(DBForeign& p_foreign) const = 0;
+  virtual CString GetSQLForeignKeyConstraint(DBForeign&   p_foreign) const = 0;
+  virtual CString GetSQLForeignKeyConstraint(MForeignMap& p_foreign) const = 0;
 
   // Get the sql (if possible) to change the foreign key constraint
   virtual CString GetSQLAlterForeignKey(DBForeign& p_origin,DBForeign& p_requested) const = 0;
@@ -326,6 +328,10 @@ public:
 
   // Get SQL to create an index for a table
   virtual CString GetSQLCreateIndex(CString p_user,CString p_tableName,DBIndex* p_index) const = 0;
+  virtual CString GetSQLCreateIndex(MStatisticsMap& p_indices) const = 0;
+
+  // Get extra filter expression for an index column
+  virtual CString GetIndexFilter(MetaStatistics& p_index) const = 0;
 
   // Get SQL to drop an index
   virtual CString GetSQLDropIndex(CString p_user,CString p_indexName) const = 0;

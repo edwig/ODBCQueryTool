@@ -1065,25 +1065,23 @@ COpenEditorApp::TableDDL(CString& p_table)
   if(m_pMainWnd)
   {
     CWaitCursor take_a_deep_sigh;
-    char tempdir [MAX_PATH + 1];
-    char filename[MAX_PATH + 1];
-    CString templateName("CreateTable_");
-    templateName += p_table;
-    templateName += ".sql";
+    CString directory;
+    directory.GetEnvironmentVariable("TMP");
+    CString filename("CreateTable_");
+    filename += p_table;
+    filename += ".sql";
 
-    if(!GetTempPath(MAX_PATH,tempdir))
+    try
     {
-      return;
+      DDLCreateTable create(m_database->GetSQLInfoDB());
+      create.GetTableDDL(p_table);
+      create.SaveDDL(filename);
+      AfxGetApp()->OpenDocumentFile(filename);
     }
-    if(!GetTempFileName(tempdir,templateName,0,filename))
+    catch(CString& error)
     {
-      return;
+      DoMessageBox("Cannot create DDL for table: " + p_table + "\n" + error,MB_OK | MB_ICONERROR,0);
     }
-    // frame->TableDDL(p_table);
-    DDLCreateTable create(m_database->GetSQLInfoDB());
-    create.GetTableDDL(p_table);
-    create.SaveDDL(filename);
-    AfxGetApp()->OpenDocumentFile(filename);
   }
 }
 

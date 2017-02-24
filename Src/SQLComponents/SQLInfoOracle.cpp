@@ -401,6 +401,34 @@ SQLInfoOracle::GetPrimaryKeyConstraint(CString p_schema,CString p_tablename,CStr
          "      PRIMARY KEY (" + p_primary + ")";
 }
 
+CString
+SQLInfoOracle::GetPrimaryKeyConstraint(MPrimaryMap& p_primaries) const
+{
+  CString query("ALTER TABLE ");
+
+  for(auto& prim : p_primaries)
+  {
+    if(prim.m_columnPosition == 1)
+    {
+      if(!prim.m_schema.IsEmpty())
+      {
+        query += prim.m_schema + ".";
+      }
+      query += prim.m_table + "\n";
+      query += "  ADD CONSTRAINT " + prim.m_constraintName + "\n";
+      query += "      PRIMARY KEY (";
+
+    }
+    else
+    {
+      query += ",";
+    }
+    query += prim.m_columnName;
+  }
+  query += ")";
+  return query;
+}
+
 // Get the sql to add a foreign key to a table
 CString 
 SQLInfoOracle::GetSQLForeignKeyConstraint(DBForeign& p_foreign) const
@@ -430,13 +458,76 @@ SQLInfoOracle::GetSQLForeignKeyConstraint(DBForeign& p_foreign) const
   }
   switch(p_foreign.m_deleteRule)
   {
-    case 1: query += "\n      ON DELETE CASCADE";     break;
+    case 0: query += "\n      ON DELETE CASCADE";     break;
     case 2: query += "\n      ON DELETE SET NULL";    break;
     default:// In essence: ON DELETE RESTRICT, but that's already the default
-    case 0: break;
+    case 1: break;
   }
   return query;
 }
+
+CString
+SQLInfoOracle::GetSQLForeignKeyConstraint(MForeignMap& p_foreigns) const
+{
+  MetaForeign& foreign = p_foreigns.front();
+
+  // Construct the correct tablename
+  CString table(foreign.m_fkTableName);
+  CString primary(foreign.m_pkTableName);
+  if(!foreign.m_fkSchemaName.IsEmpty())
+  {
+    table = foreign.m_fkSchemaName + "." + table;
+  }
+  if(!foreign.m_pkSchemaName.IsEmpty())
+  {
+    primary = foreign.m_pkSchemaName + "." + primary;
+  }
+
+  // The base foreign key command
+  CString query = "ALTER TABLE " + table + "\n"
+                  "  ADD CONSTRAINT " + foreign.m_foreignConstraint + "\n"
+                  "      FOREIGN KEY (";
+
+  // Add the foreign key columns
+  bool extra = false;
+  for(auto& key : p_foreigns)
+  {
+    if(extra) query += ",";
+    query += key.m_fkColumnName;
+    extra  = true;
+  }
+
+  // Add references primary table
+  query += ")\n      REFERENCES " + primary + "(";
+
+  // Add the primary key columns
+  extra = false;
+  for(auto& key : p_foreigns)
+  {
+    if(extra) query += ",";
+    query += key.m_pkColumnName;
+    extra  = true;
+  }
+  query += ")";
+
+  // Add all relevant options
+  switch(foreign.m_deferrable)
+  {
+    case SQL_INITIALLY_DEFERRED:  query += "\n      INITIALLY DEFERRED"; break;
+    case SQL_INITIALLY_IMMEDIATE: query += "\n      DEFERRABLE";         break;
+    case SQL_NOT_DEFERRABLE:      // Already the default
+                                  break;
+  }
+  switch(foreign.m_deleteRule)
+  {
+    case SQL_CASCADE:  query += "\n      ON DELETE CASCADE";     break;
+    case SQL_SET_NULL: query += "\n      ON DELETE SET NULL";    break;
+    default:           // In essence: ON DELETE RESTRICT, but that's already the default
+                       break;
+  }
+  return query;
+}
+
 
 // Get the sql (if possible) to change the foreign key constraint
 CString 
@@ -868,6 +959,87 @@ SQLInfoOracle::GetSQLCreateIndex(CString p_user,CString p_tableName,DBIndex* p_i
   return sql;
 }
 
+// Get SQL to create an index for a table
+// CREATE [UNIQUE] INDEX [<schema>.]indexname ON [<schema>.]tablename(column [ASC|DESC] [,...]);
+CString
+SQLInfoOracle::GetSQLCreateIndex(MStatisticsMap& p_indices) const
+{
+  CString query;
+  for(auto& index : p_indices)
+  {
+    if(index.m_position == 1)
+    {
+      // New index
+      query = "CREATE ";
+      if(index.m_unique)
+      {
+        query += "UNIQUE ";
+      }
+      query += "INDEX ";
+      if(!index.m_schemaName.IsEmpty())
+      {
+        query += index.m_schemaName + ".";
+      }
+      query += index.m_indexName;
+      query += " ON ";
+      if(!index.m_schemaName.IsEmpty())
+      {
+        query += index.m_schemaName + ".";
+      }
+      query += index.m_tableName;
+      query += "(";
+    }
+    else
+    {
+      query += ",";
+    }
+    if(!index.m_filter.IsEmpty())
+    {
+      query += index.m_filter;
+    }
+    else
+    {
+      query += index.m_columnName;
+      if(index.m_ascending != "A")
+      {
+        query += " DESC";
+      }
+    }
+  }
+  query += ")";
+  return query;
+}
+
+// Get extra filter expression for an index column
+CString
+SQLInfoOracle::GetIndexFilter(MetaStatistics& p_index) const
+{
+  CString number;
+  number.Format("%d",p_index.m_position);
+  CString sql = "SELECT column_expression\n"
+                "  FROM all_ind_expressions\n"
+                " WHERE index_owner = '" + p_index.m_schemaName + "'\n"
+                "   AND index_name  = '" + p_index.m_indexName  + "'\n"
+                "   AND table_owner = '" + p_index.m_schemaName + "'\n"
+                "   AND table_name  = '" + p_index.m_tableName  + "'\n"
+                "   AND column_position = " + number;
+  try
+  {
+    SQLQuery qry(m_database);
+    SQLVariant* var = qry.DoSQLStatementScalar(sql);
+    if(var)
+    {
+      var->GetAsString(number);
+      return number;
+    }
+  }
+  catch(CString& error)
+  {
+    throw CString("Cannot find index filter: ") + error;
+  }
+  return "";
+}
+
 // Get SQL to drop an index
 CString 
 SQLInfoOracle::GetSQLDropIndex(CString p_user,CString p_indexName) const
@@ -909,11 +1081,11 @@ SQLInfoOracle::GetSQLTableReferences(CString p_schema
                   "                            ELSE 0 END AS enabled\n"
                   "      ,0                    AS match_option\n"
                   "      ,0                    AS update_rule\n"
-                  "      ,CASE con.delete_rule WHEN 'RESTRICT'    THEN 0\n"
-                  "                            WHEN 'CASCADE'     THEN 1\n"
+                  "      ,CASE con.delete_rule WHEN 'RESTRICT'    THEN 1\n"
+                  "                            WHEN 'CASCADE'     THEN 0\n"
                   "                            WHEN 'SET NULL'    THEN 2\n"
-                  "                            WHEN 'SET DEFAULT' THEN 3\n"
-                  "                            WHEN 'NO ACTION'   THEN 4\n"
+                  "                            WHEN 'SET DEFAULT' THEN 4\n"
+                  "                            WHEN 'NO ACTION'   THEN 3\n"
                   "                            ELSE 0 END AS delete_rule\n"
                   "  FROM dba_constraints  con\n"
                   "      ,dba_cons_columns col\n"

@@ -368,6 +368,35 @@ SQLInfoAccess::GetPrimaryKeyConstraint(CString /*p_schema*/,CString p_tablename,
          "      PRIMARY KEY (" + p_primary + ")";
 }
 
+CString 
+SQLInfoAccess::GetPrimaryKeyConstraint(MPrimaryMap& p_primaries) const
+{
+  CString query("ALTER TABLE ");
+
+  for(auto& prim : p_primaries)
+  {
+    if(prim.m_columnPosition == 1)
+    {
+      if(!prim.m_schema.IsEmpty())
+      {
+        query += prim.m_schema + ".";
+      }
+      query += prim.m_table + "\n";
+      query += "  ADD CONSTRAINT " + prim.m_constraintName + "\n";
+      query += "      PRIMARY KEY (";
+
+    }
+    else
+    {
+      query += ",";
+    }
+    query += prim.m_columnName;
+  }
+  query += ")";
+  return query;
+}
+
+
 // Get the sql to add a foreign key to a table
 CString 
 SQLInfoAccess::GetSQLForeignKeyConstraint(DBForeign& p_foreign) const
@@ -388,17 +417,79 @@ SQLInfoAccess::GetSQLForeignKeyConstraint(DBForeign& p_foreign) const
                   "      REFERENCES " + primary + "(" + p_foreign.m_primaryColumn + ")";
   switch(p_foreign.m_updateRule)
   {
-    case 1: query += "\n      ON UPDATE CASCADE";     break;
+    case 0: query += "\n      ON UPDATE CASCADE";     break;
     case 2: query += "\n      ON UPDATE SET NULL";    break;
     default:// In essence: ON UPDATE RESTRICT, but that's already the default
-    case 0: break;
+    case 1: break;
   }
   switch(p_foreign.m_deleteRule)
   {
-    case 1: query += "\n      ON DELETE CASCADE";     break;
+    case 0: query += "\n      ON DELETE CASCADE";     break;
     case 2: query += "\n      ON DELETE SET NULL";    break;
     default:// In essence: ON DELETE RESTRICT, but that's already the default
-    case 0: break;
+    case 1: break;
+  }
+  return query;
+}
+
+CString
+SQLInfoAccess::GetSQLForeignKeyConstraint(MForeignMap& p_foreigns) const
+{
+  // Get first record
+  MetaForeign& foreign = p_foreigns.front();
+
+  // Construct the correct tablename
+  CString table(foreign.m_fkTableName);
+  CString primary(foreign.m_pkTableName);
+  if(!foreign.m_fkSchemaName.IsEmpty())
+  {
+    table = foreign.m_fkSchemaName + "." + table;
+  }
+  if(!foreign.m_pkSchemaName.IsEmpty())
+  {
+    primary = foreign.m_pkSchemaName + "." + primary;
+  }
+
+  // The base foreign key command
+  CString query = "ALTER TABLE " + table + "\n"
+    "  ADD CONSTRAINT " + foreign.m_foreignConstraint + "\n"
+    "      FOREIGN KEY (";
+
+  // Add the foreign key columns
+  bool extra = false;
+  for(auto& key : p_foreigns)
+  {
+    if(extra) query += ",";
+    query += key.m_fkColumnName;
+    extra  = true;
+  }
+
+  // Add references primary table
+  query += ")\n      REFERENCES " + primary + "(";
+
+  // Add the primary key columns
+  extra = false;
+  for(auto& key : p_foreigns)
+  {
+    if(extra) query += ",";
+    query += key.m_pkColumnName;
+    extra  = true;
+  }
+  query += ")";
+
+  switch(foreign.m_updateRule)
+  {
+    case SQL_CASCADE :    query += "\n      ON UPDATE CASCADE";     break;
+    case SQL_SET_NULL:    query += "\n      ON UPDATE SET NULL";    break;
+    default:              // In essence: ON UPDATE RESTRICT, but that's already the default
+                          break;
+  }
+  switch(foreign.m_deleteRule)
+  {
+    case SQL_CASCADE:     query += "\n      ON DELETE CASCADE";     break;
+    case SQL_SET_NULL:    query += "\n      ON DELETE SET NULL";    break;
+    default:              // In essence: ON DELETE RESTRICT, but that's already the default
+                          break;
   }
   return query;
 }
@@ -740,6 +831,57 @@ SQLInfoAccess::GetSQLCreateIndex(CString p_user,CString p_tableName,DBIndex* p_i
   sql += ")";
 
   return sql;
+}
+
+// Get SQL to create an index for a table
+// CREATE [UNIQUE] [ASC|DESC] INDEX [<schema>.]indexname ON [<schema>.]tablename(column [,...]);
+CString 
+SQLInfoAccess::GetSQLCreateIndex(MStatisticsMap& p_indices) const
+{
+  CString query;
+  for(auto& index : p_indices)
+  {
+    if(index.m_position == 1)
+    {
+      // New index
+      query = "CREATE ";
+      if(index.m_unique)
+      {
+        query += "UNIQUE ";
+      }
+      if(index.m_ascending != "A")
+      {
+        query += "DESC ";
+      }
+      query += "INDEX ";
+      if(!index.m_schemaName.IsEmpty())
+      {
+        query += index.m_schemaName + ".";
+      }
+      query += index.m_indexName;
+      query += " ON ";
+      if(!index.m_schemaName.IsEmpty())
+      {
+        query += index.m_schemaName + ".";
+      }
+      query += index.m_tableName;
+      query += "(";
+    }
+    else
+    {
+      query += ",";
+    }
+    query += index.m_columnName;
+  }
+  query += ")";
+  return query;
+}
+
+// Get extra filter expression for an index column
+CString 
+SQLInfoAccess::GetIndexFilter(MetaStatistics& /*p_index*/) const
+{
+  return "";
 }
 
 // Get SQL to drop an index

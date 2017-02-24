@@ -1574,23 +1574,29 @@ SQLInfo::MakeInfoTableTablepart(CString p_findTable,MTableMap& p_tables,CString&
          MetaTable theTable;
 
          // Put primary info in the MetaTable object
-         if(cbCatalogName > 0) theTable.m_catalog = szCatalogName;
-         if(cbSchemaName  > 0) theTable.m_schema  = szSchemaName;
-         if(cbTableName   > 0) theTable.m_table   = szTableName;
-         if(cbRemarks     > 0) theTable.m_remarks = szRemarks;
+         if(cbCatalogName > 0) theTable.m_catalog     = szCatalogName;
+         if(cbSchemaName  > 0) theTable.m_schema      = szSchemaName;
+         if(cbTableName   > 0) theTable.m_table       = szTableName;
+         if(cbRemarks     > 0) theTable.m_remarks     = szRemarks;
+         if(cbTableType   > 0) theTable.m_objectType  = szTableType;
 
          // Build "TYPE: catalog.schema.table" object type name
-         theTable.m_objectType = MakeObjectName(cbCatalogName > 0 ? szCatalogName : (unsigned char *)""
-                                               ,cbSchemaName  > 0 ? szSchemaName  : (unsigned char *)""
-                                               ,cbTableName   > 0 ? szTableName   : (unsigned char *)""
-                                               ,cbTableType   > 0 ? szTableType   : (unsigned char *)"");
+
+         theTable.m_fullObjectName = MakeObjectName((SQLCHAR*)theTable.m_catalog.GetString()
+                                                   ,(SQLCHAR*)theTable.m_schema.GetString()
+                                                   ,(SQLCHAR*)theTable.m_table.GetString()
+                                                   ,(SQLCHAR*)theTable.m_objectType.GetString());
          // Now record the qualifiers for a table as the first table to globally search for
          // This sets up the other MakeInfoTables* functions to search for THIS stable
-         if(cbTableType > 0 && p_tables.empty())
+         if(cbTableType > 0)
          {
-            if(cbCatalogName > 0) m_searchCatalogName = szCatalogName;
-            if(cbSchemaName  > 0) m_searchSchemaName  = szSchemaName;
-            if(cbTableName   > 0) m_searchTableName   = szTableName;
+           if(_stricmp((char*)szTableType,"ALIAS") &&
+              _stricmp((char*)szTableType,"SYNONYM"))
+           {
+             if(cbCatalogName > 0) m_searchCatalogName = szCatalogName;
+             if(cbSchemaName > 0)  m_searchSchemaName  = szSchemaName;
+             if(cbTableName > 0)   m_searchTableName   = szTableName;
+           }
          }
          // Remember this table as a result
          p_tables.push_back(theTable);
@@ -1853,7 +1859,7 @@ SQLInfo::MakeInfoTablePrimary(MPrimaryMap& p_primaries,CString& p_errors)
          if(cbTableName  > 0) primary.m_table          = szTableName;
          if(cbColumnName > 0) primary.m_columnName     = szColumnName;
          if(cbPkName     > 0) primary.m_constraintName = szPkName;
-         if(cbKeySeq     > 0) primary.m_columnPosition = (int)cbKeySeq;
+         if(cbKeySeq     > 0) primary.m_columnPosition = (int)KeySeq;
 
          p_primaries.push_back(primary);
        }
@@ -2016,6 +2022,7 @@ SQLInfo::MakeInfoTableForeign(MForeignMap& p_foreigns
         foreign.m_updateRule  = cbUpdateRule > 0 ? UpdateRule : 0;
         foreign.m_deleteRule  = cbDeleteRule > 0 ? DeleteRule : 0;
         foreign.m_deferrable  = cbDeferrab   > 0 ? Deferrab   : 0;
+        foreign.m_match       = SQL_MATCH_FULL;
          // Keep the foreign key
         p_foreigns.push_back(foreign);
       }

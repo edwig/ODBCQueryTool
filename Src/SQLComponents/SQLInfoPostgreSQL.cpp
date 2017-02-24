@@ -373,6 +373,34 @@ SQLInfoPostgreSQL::GetPrimaryKeyConstraint(CString p_schema,CString p_tablename,
          "      PRIMARY KEY (" + p_primary + ")";
 }
 
+CString
+SQLInfoPostgreSQL::GetPrimaryKeyConstraint(MPrimaryMap& p_primaries) const
+{
+  CString query("ALTER TABLE ");
+
+  for(auto& prim : p_primaries)
+  {
+    if(prim.m_columnPosition == 1)
+    {
+      if(!prim.m_schema.IsEmpty())
+      {
+        query += prim.m_schema + ".";
+      }
+      query += prim.m_table + "\n";
+      query += "  ADD CONSTRAINT " + prim.m_constraintName + "\n";
+      query += "      PRIMARY KEY (";
+
+    }
+    else
+    {
+      query += ",";
+    }
+    query += prim.m_columnName;
+  }
+  query += ")";
+  return query;
+}
+
 // Get the sql to add a foreign key to a table
 CString 
 SQLInfoPostgreSQL::GetSQLForeignKeyConstraint(DBForeign& p_foreign) const
@@ -408,24 +436,108 @@ SQLInfoPostgreSQL::GetSQLForeignKeyConstraint(DBForeign& p_foreign) const
   }
   switch(p_foreign.m_updateRule)
   {
-    case 1: query += "\n      ON UPDATE CASCADE";     break;
+    case 0: query += "\n      ON UPDATE CASCADE";     break;
     case 2: query += "\n      ON UPDATE SET NULL";    break;
-    case 3: query += "\n      ON UPDATE SET DEFAULT"; break;
-    case 4: query += "\n      ON UPDATE NO ACTION";   break;
+    case 4: query += "\n      ON UPDATE SET DEFAULT"; break;
+    case 3: query += "\n      ON UPDATE NO ACTION";   break;
     default:// The default
-    case 0: query += "\n      ON UPDATE RESTRICT";    break;
+    case 1: query += "\n      ON UPDATE RESTRICT";    break;
   }
   switch(p_foreign.m_deleteRule)
   {
-    case 1: query += "\n      ON DELETE CASCADE";     break;
+    case 0: query += "\n      ON DELETE CASCADE";     break;
     case 2: query += "\n      ON DELETE SET NULL";    break;
-    case 3: query += "\n      ON DELETE SET DEFAULT"; break;
-    case 4: query += "\n      ON DELETE NO ACTION";   break;
+    case 4: query += "\n      ON DELETE SET DEFAULT"; break;
+    case 3: query += "\n      ON DELETE NO ACTION";   break;
     default:// The default
-    case 0: query += "\n      ON DELETE RESTRICT";    break;
+    case 1: query += "\n      ON DELETE RESTRICT";    break;
   }
   return query;
 }
+
+CString
+SQLInfoPostgreSQL::GetSQLForeignKeyConstraint(MForeignMap& p_foreigns) const
+{
+  // Get first record
+  MetaForeign& foreign = p_foreigns.front();
+
+  // Construct the correct tablename
+  CString table(foreign.m_fkTableName);
+  CString primary(foreign.m_pkTableName);
+  if(!foreign.m_fkSchemaName.IsEmpty())
+  {
+    table = foreign.m_fkSchemaName + "." + table;
+  }
+  if(!foreign.m_pkSchemaName.IsEmpty())
+  {
+    primary = foreign.m_pkSchemaName + "." + primary;
+  }
+
+  // The base foreign key command
+  CString query = "ALTER TABLE " + table + "\n"
+                  "  ADD CONSTRAINT " + foreign.m_foreignConstraint + "\n"
+                  "      FOREIGN KEY (";
+
+  // Add the foreign key columns
+  bool extra = false;
+  for(auto& key : p_foreigns)
+  {
+    if(extra) query += ",";
+    query += key.m_fkColumnName;
+    extra  = true;
+  }
+
+  // Add references primary table
+  query += ")\n      REFERENCES " + primary + "(";
+
+  // Add the primary key columns
+  extra = false;
+  for(auto& key : p_foreigns)
+  {
+    if(extra) query += ",";
+    query += key.m_pkColumnName;
+    extra  = true;
+  }
+  query += ")";
+
+  // Add all relevant options
+  switch(foreign.m_deferrable)
+  {
+    case SQL_INITIALLY_DEFERRED:  query += "\n      INITIALLY DEFERRED"; break;
+    case SQL_INITIALLY_IMMEDIATE: query += "\n      DEFERRABLE";         break;
+    default:                      break;
+  }
+  switch(foreign.m_match)
+  {
+    case SQL_MATCH_PARTIAL: query += "\n      MATCH PARTIAL"; break;
+    case SQL_MATCH_SIMPLE:  query += "\n      MATCH SIMPLE";  break;
+    case SQL_MATCH_FULL:    query += "\n      MATCH FULL";    break;
+    default:                // In essence: MATCH FULL, but that's already the default
+                            break;
+  }
+  switch(foreign.m_updateRule)
+  {
+    case SQL_CASCADE :    query += "\n      ON UPDATE CASCADE";     break;
+    case SQL_SET_NULL:    query += "\n      ON UPDATE SET NULL";    break;
+    case SQL_SET_DEFAULT: query += "\n      ON UPDATE SET DEFAULT"; break;
+    case SQL_NO_ACTION:   query += "\n      ON UPDATE NO ACTION";   break;
+    case SQL_RESTRICT:    query += "\n      ON UPDATE NO RESTRICT"; break;
+    default:              // In essence: ON UPDATE RESTRICT, but that's already the default
+                          break;
+  }
+  switch(foreign.m_deleteRule)
+  {
+    case SQL_CASCADE:     query += "\n      ON DELETE CASCADE";     break;
+    case SQL_SET_NULL:    query += "\n      ON DELETE SET NULL";    break;
+    case SQL_SET_DEFAULT: query += "\n      ON DELETE SET DEFAULT"; break;
+    case SQL_NO_ACTION:   query += "\n      ON DELETE NO ACTION";   break;
+    case SQL_RESTRICT:    query += "\n      ON DELETE NO RESTRICT"; break;
+    default:              // In essence: ON DELETE RESTRICT, but that's already the default
+                          break;
+  }
+  return query;
+}
+
 
 // Get the sql (if possible) to change the foreign key constraint
 CString 
@@ -861,6 +973,57 @@ SQLInfoPostgreSQL::GetSQLCreateIndex(CString p_user,CString p_tableName,DBIndex*
   return sql;
 }
 
+// Get SQL to create an index for a table
+// CREATE [UNIQUE] INDEX [<schema>.]indexname ON [<schema>.]tablename(column [ASC|DESC] [,...]);
+CString
+SQLInfoPostgreSQL::GetSQLCreateIndex(MStatisticsMap& p_indices) const
+{
+  CString query;
+  for(auto& index : p_indices)
+  {
+    if(index.m_position == 1)
+    {
+      // New index
+      query = "CREATE ";
+      if(index.m_unique)
+      {
+        query += "UNIQUE ";
+      }
+      query += "INDEX ";
+      if(!index.m_schemaName.IsEmpty())
+      {
+        query += index.m_schemaName + ".";
+      }
+      query += index.m_indexName;
+      query += " ON ";
+      if(!index.m_schemaName.IsEmpty())
+      {
+        query += index.m_schemaName + ".";
+      }
+      query += index.m_tableName;
+      query += "(";
+    }
+    else
+    {
+      query += ",";
+    }
+    query += index.m_columnName;
+    if(index.m_ascending != "A")
+    {
+      query += " DESC";
+    }
+  }
+  query += ")";
+  return query;
+}
+
+// Get extra filter expression for an index column
+CString
+SQLInfoPostgreSQL::GetIndexFilter(MetaStatistics& /*p_index*/) const
+{
+  return "";
+}
+
 // Get SQL to drop an index
 CString 
 SQLInfoPostgreSQL::GetSQLDropIndex(CString p_user,CString p_indexName) const
@@ -898,18 +1061,18 @@ SQLInfoPostgreSQL::GetSQLTableReferences(CString p_schema
                 "                              WHEN 'f' THEN 1\n"
                 "                              ELSE  0\n"
                 "                              END as match_option\n"
-                "      ,case con.confdeltype   WHEN 'r' THEN 0\n"
-                "                              WHEN 'c' THEN 1\n"
+                "      ,case con.confdeltype   WHEN 'r' THEN 1\n"
+                "                              WHEN 'c' THEN 0\n"
                 "                              WHEN 'n' THEN 2\n"
-                "                              WHEN 'd' THEN 3\n"
-                "                              WHEN 'a' THEN 4\n"
+                "                              WHEN 'd' THEN 4\n"
+                "                              WHEN 'a' THEN 3\n"
                 "                              ELSE  0\n"
                 "                              END as update_rule\n"
-                "      ,case con.confupdtype   WHEN 'r' THEN 0\n"
-                "                              WHEN 'c' THEN 1\n"
+                "      ,case con.confupdtype   WHEN 'r' THEN 1\n"
+                "                              WHEN 'c' THEN 0\n"
                 "                              WHEN 'n' THEN 2\n"
-                "                              WHEN 'd' THEN 3\n"
-                "                              WHEN 'a' THEN 4\n"
+                "                              WHEN 'd' THEN 4\n"
+                "                              WHEN 'a' THEN 3\n"
                 "                              ELSE  0\n"
                 "                              END as delete_rule\n"
                 "  FROM pg_constraint con\n"

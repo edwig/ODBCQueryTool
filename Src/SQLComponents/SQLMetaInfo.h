@@ -41,7 +41,13 @@ namespace SQLComponents
 #define OBJECT_TYPE_ALIAS         "ALIAS"             // MSSQL server like alias to another database/table
 #define OBJECT_TYPE_SYNONYM       "SYNONYM"           // Oracle/Informix like alias to another database/table
 #define OBJECT_TYPE_SYSVIEW       "SYSTEM VIEW"       // Added for ORACLE: View over one or more system tables
-  
+
+// Foreign key options, not in sqlext.h
+
+#define SQL_MATCH_FULL    0
+#define SQL_MATCH_PARTIAL 1 
+#define SQL_MATCH_SIMPLE  2
+
 // Contains all types for META SQLInfo inquiries to the ODBC Driver
 // About the objects in the database system catalog.
 
@@ -88,9 +94,9 @@ using MColumnMap = std::vector<MetaColumn>;
 
 typedef struct _metaInfoPrimary
 {
-  CString  m_catalog;
-  CString  m_schema;
-  CString  m_table;
+  CString  m_catalog;           // Catalog of the primary key table
+  CString  m_schema;            // Schema  of the primary key table
+  CString  m_table;             // Name    of the primary key table
   CString  m_columnName;        // Name of the column of the primary key
   int      m_columnPosition;    // Position of the column in the table
   CString  m_constraintName;    // Name of the primary key constraint
@@ -104,22 +110,26 @@ using MPrimaryMap = std::vector<MetaPrimary>;
 
 typedef struct _metaInfoForeign
 {
-  CString   m_pkCatalogName;
-  CString   m_pkSchemaName;
-  CString   m_pkTableName;
-  CString   m_pkColumnName;
-
-  CString   m_fkCatalogName;
-  CString   m_fkSchemaName;
-  CString   m_fkTableName;
-  CString   m_fkColumnName;
-  
+  // Primary table
+  CString   m_pkCatalogName;      // Primary key catalog name
+  CString   m_pkSchemaName;       // Primary key schema name
+  CString   m_pkTableName;        // Primary key table name
+  // Foreign key table
+  CString   m_fkCatalogName;      // Foreign key catalog name
+  CString   m_fkSchemaName;       // Foreign key schema name
+  CString   m_fkTableName;        // Foreign key table name
+  // Constraints naming
+  CString   m_primaryConstraint;  // Name of the primary key constraint
+  CString   m_foreignConstraint;  // Name of the foreign key constraint
+  // The column
   int       m_keySequence;        // Ordinal sequence number
+  CString   m_pkColumnName;       // Corresponding column in the primary key table
+  CString   m_fkColumnName;       // Corresponding column of the foreign key
+  // Options of the foreign key
   int       m_updateRule;         // SQL_CASCADE / SQL_NO_ACTION / SQL_SET_NULL / SQL_SET_DEFAULT
   int       m_deleteRule;         // SQL_CASCADE / SQL_NO_ACTION / SQL_SET_NULL / SQL_SET_DEFAULT
-  CString   m_foreignConstraint;
-  CString   m_primaryConstraint;
   int       m_deferrable;         // SQL_INITIALLY_DEFERRED / SQL_INITIALLY_IMMEDIATE / SQL_NOT_DEFERRABLE
+  int       m_match;              // SQL_MATCH_FULL = 0 / SQL_MATCH_PARTIAL = 1 / SQL_MATCH_SIMPLE = 2
 }
 MetaForeign;
 
@@ -153,9 +163,9 @@ typedef struct _metaSpecialColumns
   CString   m_columnName;     // Extra column name by RDBMS
   CString   m_typeName;       // Different datatype by RDBMS
   int       m_datatype;       // Corresponding ODBC Datatype
-  int       m_columnSize;
-  int       m_bufferSize;
-  int       m_decimalDigits;
+  int       m_columnSize;     // Display column size
+  int       m_bufferSize;     // Binary buffer size
+  int       m_decimalDigits;  // Decimal digits of the column
   int       m_scope;          // SQL_SCOPE_CURROW  / SQL_SCOPE_TRANSACTION / SQL_SCOPE_SESSION
   int       m_pseudo;         // SQL_PC_NOT_PSEUDO / SQL_PC_PSEUDO / SQL_PC_UNKNOWN
 }
@@ -167,13 +177,13 @@ using MSpecialColumnMap = std::vector<MetaSpecialColumn>;
 
 typedef struct _metaInfoPrivilege
 {
-  CString   m_catalogName;
-  CString   m_schemaName;
-  CString   m_tableName;
-  CString   m_grantor;
-  CString   m_grantee;
-  CString   m_privilege;
-  bool      m_grantable;
+  CString   m_catalogName;    // Catalog of the object
+  CString   m_schemaName;     // Schema of the object
+  CString   m_tableName;      // Table/object name
+  CString   m_grantor;        // Grantor granting the privilege
+  CString   m_grantee;        // Grantee receiving the privilege
+  CString   m_privilege;      // The privilege (CRUD etc)
+  bool      m_grantable;      // Can pass on the privilege to others
 }
 MetaPrivilege;
 
@@ -183,12 +193,12 @@ using MPrivilegeMap = std::vector<MetaPrivilege>;
 
 typedef struct _metaInfoProcedure
 {
-  CString   m_catalogName;
-  CString   m_schemaName;
-  CString   m_procedureName;
-  int       m_inputParameters;    // Number of input parameters
-  int       m_outputParameters;   // Number of output parameters
-  int       m_resultSets;         // Number of result sets
+  CString   m_catalogName;        // Catalog of the procedure / function
+  CString   m_schemaName;         // Schema  of the procedure / function
+  CString   m_procedureName;      // Name    of the procedure / function
+  int       m_inputParameters;    // Number  of input parameters
+  int       m_outputParameters;   // Number  of output parameters
+  int       m_resultSets;         // Number  of result sets
   CString   m_remarks;            // As in COMMENT command
   int       m_procedureType;      // SQL_PT_PROCEDURE / SQL_PT_FUNCTION / SQL_PT_UNKNOWN
 }
@@ -200,18 +210,18 @@ using MProcedureMap = std::vector<MetaProcedure>;
 
 typedef struct _metaInfoProcColumns
 {
-  CString   m_catalogName;
-  CString   m_schemaName;
-  CString   m_procedureName;
-  CString   m_columnName;
-  int       m_ordinalPosition;
+  CString   m_catalogName;      // Catalog of the procedure / function
+  CString   m_schemaName;       // Schema  of the procedure / function
+  CString   m_procedureName;    // Name    of the procedure / function
+  CString   m_columnName;       // Parameter / column name 
+  int       m_ordinalPosition;  // Positioning of the parameter
   int       m_columnType;       // SQL_PARAM_INPUT / SQL_PARAM_OUTPUT etc. etc.
   int       m_dataType;         // ODBC standard type name
   CString   m_typeName;         // RDBMS type name
-  int       m_columnSize;
-  int       m_bufferSize;
-  int       m_decimalDigits;
-  int       m_radix;
+  int       m_columnSize;       // Display size
+  int       m_bufferSize;       // Binary buffer size
+  int       m_decimalDigits;    // Number of decimal digits
+  int       m_radix;            // Radix display (2, 8, 10, 16)
   int       m_nullable;         // SQL_NO_NULLS / SQL_NULLABLE / SQL_NULLABLE_UNKNOWN
   CString   m_remarks;          // From the COMMENT command
   CString   m_defaultValue;     // Default value

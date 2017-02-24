@@ -375,6 +375,36 @@ SQLInfoInformix::GetPrimaryKeyConstraint(CString /*p_schema*/,CString p_tablenam
          "      CONSTRAINT pk_" + p_tablename;
 }
 
+CString
+SQLInfoInformix::GetPrimaryKeyConstraint(MPrimaryMap& p_primaries) const
+{
+  CString query("ALTER TABLE ");
+  CString constraintName;
+
+  for(auto& prim : p_primaries)
+  {
+    if(prim.m_columnPosition == 1)
+    {
+      if(!prim.m_schema.IsEmpty())
+      {
+        query += prim.m_schema + ".";
+      }
+      query += prim.m_table + "\n";
+      query += "  ADD CONSTRAINT PRIMARY KEY (";
+    }
+    else
+    {
+      query += ",";
+    }
+    query += prim.m_columnName;
+    constraintName = prim.m_constraintName;
+  }
+  query += ")\n";
+  query += "      CONSTRAINT " + constraintName;
+
+  return query;
+}
+
 // Get the sql to add a foreign key to a table
 CString 
 SQLInfoInformix::GetSQLForeignKeyConstraint(DBForeign& p_foreign) const
@@ -399,13 +429,74 @@ SQLInfoInformix::GetSQLForeignKeyConstraint(DBForeign& p_foreign) const
   }
   switch(p_foreign.m_deleteRule)
   {
-    case 1: query += "\n      ON DELETE CASCADE"; 
+    case 0: query += "\n      ON DELETE CASCADE"; 
             break;
     default:// In essence: ON DELETE RESTRICT, but that's already the default
-    case 0: break;
+    case 1: break;
   }
   return query;
 }
+
+CString
+SQLInfoInformix::GetSQLForeignKeyConstraint(MForeignMap& p_foreigns) const
+{
+  // Get first record
+  MetaForeign& foreign = p_foreigns.front();
+
+  // Construct the correct tablename
+  CString table(foreign.m_fkTableName);
+  CString primary(foreign.m_pkTableName);
+  if(!foreign.m_fkSchemaName.IsEmpty())
+  {
+    table = foreign.m_fkSchemaName + "." + table;
+  }
+  if(!foreign.m_pkSchemaName.IsEmpty())
+  {
+    primary = foreign.m_pkSchemaName + "." + primary;
+  }
+
+  // The base foreign key command
+  CString query = "ALTER TABLE " + table + "\n"
+                  "  ADD CONSTRAINT FOREIGN KEY (";
+
+  // Add the foreign key columns
+  bool extra = false;
+  for(auto& key : p_foreigns)
+  {
+    if(extra) query += ",";
+    query += key.m_fkColumnName;
+    extra  = true;
+  }
+
+  // Add references primary table
+  query += ")\n      REFERENCES " + primary + "(";
+
+  // Add the primary key columns
+  extra = false;
+  for(auto& key : p_foreigns)
+  {
+    if(extra) query += ",";
+    query += key.m_pkColumnName;
+    extra  = true;
+  }
+  query += ")\n";
+  query += "      CONSTRAINT " + foreign.m_foreignConstraint;
+
+  // Add all relevant options
+  switch(foreign.m_deferrable)
+  {
+    case SQL_INITIALLY_DEFERRED:  query += "\n      NOVALIDATE"; break;
+    default:                      break;
+  }
+  switch(foreign.m_deleteRule)
+  {
+    case SQL_CASCADE: query += "\n      ON DELETE CASCADE"; break;
+    default:          // In essence: ON DELETE RESTRICT, but that's already the default
+                      break;
+  }
+  return query;
+}
+
 
 // Get the sql (if possible) to change the foreign key constraint
 CString 
@@ -787,6 +878,57 @@ SQLInfoInformix::GetSQLCreateIndex(CString /*p_user*/,CString p_tableName,DBInde
   return sql;
 }
 
+// Get SQL to create an index for a table
+// CREATE [UNIQUE] INDEX [<schema>.]indexname ON [<schema>.]tablename(column [ASC|DESC] [,...]);
+CString
+SQLInfoInformix::GetSQLCreateIndex(MStatisticsMap& p_indices) const
+{
+  CString query;
+  for(auto& index : p_indices)
+  {
+    if(index.m_position == 1)
+    {
+      // New index
+      query = "CREATE ";
+      if(index.m_unique)
+      {
+        query += "UNIQUE ";
+      }
+      query += "INDEX ";
+      if(!index.m_schemaName.IsEmpty())
+      {
+        query += index.m_schemaName + ".";
+      }
+      query += index.m_indexName;
+      query += " ON ";
+      if(!index.m_schemaName.IsEmpty())
+      {
+        query += index.m_schemaName + ".";
+      }
+      query += index.m_tableName;
+      query += "(";
+    }
+    else
+    {
+      query += ",";
+    }
+    query += index.m_columnName;
+    if(index.m_ascending != "A")
+    {
+      query += " DESC";
+    }
+  }
+  query += ")";
+  return query;
+}
+
+// Get extra filter expression for an index column
+CString
+SQLInfoInformix::GetIndexFilter(MetaStatistics& /*p_index*/) const
+{
+  return "";
+}
+
 // Get SQL to drop an index
 CString 
 SQLInfoInformix::GetSQLDropIndex(CString p_user,CString p_indexName) const
@@ -824,16 +966,16 @@ SQLInfoInformix::GetSQLTableReferences(CString p_schema
                 "            WHEN ref.matchtype = 'P' THEN 1\n"
                 "            ELSE 0\n"
                 "       END  AS match_option\n"
-                "      ,CASE WHEN ref.updrule = 'R' THEN 0\n"
-                "            WHEN ref.updrule = 'C' THEN 1\n"
+                "      ,CASE WHEN ref.updrule = 'R' THEN 1\n"
+                "            WHEN ref.updrule = 'C' THEN 0\n"
                 "            WHEN ref.updrule = 'N' THEN 2\n"
-                "            WHEN ref.updrule = 'D' THEN 3\n"
+                "            WHEN ref.updrule = 'D' THEN 4\n"
                 "            ELSE 0\n"
                 "       END  AS update_rule\n"
-                "      ,CASE WHEN ref.delrule = 'R' THEN 0\n"
-                "            WHEN ref.delrule = 'C' THEN 1\n"
+                "      ,CASE WHEN ref.delrule = 'R' THEN 1\n"
+                "            WHEN ref.delrule = 'C' THEN 0\n"
                 "            WHEN ref.delrule = 'N' THEN 2\n"
-                "            WHEN ref.delrule = 'D' THEN 3\n"
+                "            WHEN ref.delrule = 'D' THEN 4\n"
                 "            ELSE 0\n"
                 "       END  AS delete_rule\n"
                 "  FROM sysconstraints con\n"
