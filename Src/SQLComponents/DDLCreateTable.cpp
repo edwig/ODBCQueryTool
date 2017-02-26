@@ -22,6 +22,7 @@ DDLCreateTable::GetTableDDL(CString p_tableName)
     GetIndexInfo();
     GetPrimaryKeyInfo();
     GetForeignKeyInfo();
+    GetTriggerInfo();
     GetAccessInfo();
   }
   catch(CString& error)
@@ -249,6 +250,26 @@ DDLCreateTable::GetForeignKeyInfo()
   {
     line = m_info->GetSQLForeignKeyConstraint(oneFKey);
     StashTheLine(line,";",2);
+  }
+}
+
+void
+DDLCreateTable::GetTriggerInfo()
+{
+  CString errors;
+
+  m_triggers.clear();
+  m_info->MakeInfoTableTriggers(m_triggers,errors);
+  if(!errors.IsEmpty())
+  {
+    throw CString("Cannot find the triggers for table: ") + m_tableName + " : " + errors;
+  }
+
+  // Print all triggers
+  for(auto& trigger : m_triggers)
+  {
+    CString line = m_info->CreateOrReplaceTrigger(trigger);
+    StashTheLine(line,";\n");
   }
 }
 

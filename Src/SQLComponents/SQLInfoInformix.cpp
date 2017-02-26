@@ -1222,6 +1222,13 @@ SQLInfoInformix::GetOnlyOneUserSession()
   return true;
 }
 
+// Gets the triggers for a table
+CString
+SQLInfoInformix::GetSQLTriggers(CString m_schema,CString p_table) const
+{
+  return "";
+}
+
 // SQL DDL STATEMENTS
 // ==================
 
@@ -1285,6 +1292,13 @@ CString
 SQLInfoInformix::GetSQLCreateOrReplaceView(CString /*p_schema*/,CString p_view,CString p_asSelect) const
 {
   return "CREATE VIEW " + p_view + "\n" + p_asSelect;
+}
+
+// Create or replace a trigger
+CString
+SQLInfoInformix::CreateOrReplaceTrigger(MetaTrigger& /*p_trigger*/) const
+{
+  return "";
 }
 
 // SQL DDL ACTIONS

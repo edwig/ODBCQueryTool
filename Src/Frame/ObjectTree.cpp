@@ -518,7 +518,7 @@ ObjectTree::FindForeign(HTREEITEM p_theItem)
 }
 
 // Finding table statistics
-// and indeces for the table
+// and indices for the table
 void
 ObjectTree::FindStatistics(HTREEITEM p_theItem)
 {
@@ -858,7 +858,7 @@ ObjectTree::ForeignsToTree(MForeignMap& p_foreigns,HTREEITEM p_item)
       info = InsertItem(line,keyItem);
       SetItemImage(info,IMG_INFO,IMG_INFO);
 
-      // Deferable
+      // deferrable
       line = "Deferrable: " + DeferrableToString(foreign.m_deferrable);
       info = InsertItem(line,keyItem);
       SetItemImage(info,IMG_INFO,IMG_INFO);
@@ -949,7 +949,7 @@ ObjectTree::StatisticsToTree(MStatisticsMap& p_statistics,HTREEITEM p_item)
   // Process statistics
   for(auto& stat : p_statistics)
   {
-    if(stat.m_position == 1)
+    if(stat.m_position <= 1)
     {
       // Start new index/table node
       if(stat.m_indexType == SQL_TABLE_STAT)
@@ -988,8 +988,15 @@ ObjectTree::StatisticsToTree(MStatisticsMap& p_statistics,HTREEITEM p_item)
     if(stat.m_indexType != SQL_TABLE_STAT)
     {
       // Extra column on an index
-      line.Format("%d: %s",stat.m_position,stat.m_columnName);
-      line += stat.m_ascending == "A" ? " (Ascending)" : " (Descending)";
+      if(!stat.m_filter.IsEmpty())
+      {
+        line.Format("%d: %s",stat.m_position,stat.m_filter);
+      }
+      else
+      {
+        line.Format("%d: %s",stat.m_position,stat.m_columnName);
+      }
+      line += (stat.m_ascending == "A") ? " (Ascending)" : " (Descending)";
       HTREEITEM item = InsertItem(line,next);
       SetItemImage(item,IMG_COLUMN,IMG_COLUMN);
     }

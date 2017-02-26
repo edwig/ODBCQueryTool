@@ -746,7 +746,6 @@ SQLInfoSQLServer::GetRollbackSubTransaction(CString p_savepointName) const
   return CString("ROLLBACK TRANSACTION ") + p_savepointName;
 }
 
-
 // SQL CATALOG QUERIES
 // ===================================================================
 
@@ -1207,6 +1206,13 @@ SQLInfoSQLServer::GetOnlyOneUserSession()
   return true;
 }
 
+// Gets the triggers for a table
+CString
+SQLInfoSQLServer::GetSQLTriggers(CString m_schema,CString p_table) const
+{
+  return "";
+}
+
 // SQL DDL STATEMENTS
 // ==================
 
@@ -1270,6 +1276,13 @@ CString
 SQLInfoSQLServer::GetSQLCreateOrReplaceView(CString p_schema,CString p_view,CString p_asSelect) const
 {
   return "CREATE VIEW " + p_schema + "." + p_view + "\n" + p_asSelect;
+}
+
+// Create or replace a trigger
+CString
+SQLInfoSQLServer::CreateOrReplaceTrigger(MetaTrigger& /*p_trigger*/) const
+{
+  return "";
 }
 
 // SQL DDL ACTIONS

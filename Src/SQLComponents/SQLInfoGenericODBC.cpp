@@ -1164,6 +1164,13 @@ SQLInfoGenericODBC::GetOnlyOneUserSession()
   return true;
 }
 
+// Gets the triggers for a table
+CString
+SQLInfoGenericODBC::GetSQLTriggers(CString m_schema,CString p_table) const
+{
+  return "";
+}
+
 // SQL DDL STATEMENTS
 // ==================
 
@@ -1228,6 +1235,13 @@ CString
 SQLInfoGenericODBC::GetSQLCreateOrReplaceView(CString p_schema,CString p_view,CString p_asSelect) const
 {
   return "CREATE VIEW " + p_schema + "." + p_view + "\n" + p_asSelect;
+}
+
+// Create or replace a trigger
+CString
+SQLInfoGenericODBC::CreateOrReplaceTrigger(MetaTrigger& /*p_trigger*/) const
+{
+  return "";
 }
 
 // SQL DDL ACTIONS

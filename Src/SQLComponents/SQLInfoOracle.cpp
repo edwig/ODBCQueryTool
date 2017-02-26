@@ -784,7 +784,6 @@ SQLInfoOracle::GetRollbackSubTransaction(CString p_savepointName) const
   return CString("ROLLBACK TO ") + p_savepointName;
 }
 
-
 // SQL CATALOG QUERIES
 // ===================================================================
 
@@ -1314,6 +1313,28 @@ SQLInfoOracle::GetOnlyOneUserSession()
   return true;
 }
 
+// Gets the triggers for a table
+CString
+SQLInfoOracle::GetSQLTriggers(CString p_schema,CString p_table) const
+{
+  CString sql;
+  sql.Format("SELECT owner\n"
+             "      ,trigger_name\n"
+             "      ,description\n"
+             "      ,trigger_type\n"
+             "      ,triggering_event\n"
+             "      ,referencing_names\n"
+             "      ,when_clause\n"
+             "      ,status\n"
+             "      ,trigger_body\n"
+             "  FROM all_triggers\n"
+             " WHERE table_owner = '%s'\n"
+             "   AND table_name = '%s'"
+             ,p_schema
+             ,p_table);
+  return sql;
+}
+
 // SQL DDL STATEMENTS
 // ==================
 
@@ -1377,6 +1398,13 @@ CString
 SQLInfoOracle::GetSQLCreateOrReplaceView(CString p_schema,CString p_view,CString p_asSelect) const
 {
   return "CREATE OR REPLACE VIEW " + p_schema + "." + p_view + "\n" + p_asSelect;
+}
+
+// Create or replace a trigger
+CString
+SQLInfoOracle::CreateOrReplaceTrigger(MetaTrigger& /*p_trigger*/) const
+{
+  return "";
 }
 
 // SQL DDL ACTIONS

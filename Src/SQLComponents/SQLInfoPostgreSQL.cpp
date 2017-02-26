@@ -1300,6 +1300,13 @@ SQLInfoPostgreSQL::GetOnlyOneUserSession()
   return true;
 }
 
+// Gets the triggers for a table
+CString
+SQLInfoPostgreSQL::GetSQLTriggers(CString m_schema,CString p_table) const
+{
+  return "";
+}
+
 // SQL DDL STATEMENTS
 // ==================
 
@@ -1364,6 +1371,13 @@ CString
 SQLInfoPostgreSQL::GetSQLCreateOrReplaceView(CString p_schema,CString p_view,CString p_asSelect) const
 {
   return "CREATE OR REPLACE VIEW " + p_schema + "." + p_view + "\n" + p_asSelect;
+}
+
+// Create or replace a trigger
+CString
+SQLInfoPostgreSQL::CreateOrReplaceTrigger(MetaTrigger& /*p_trigger*/) const
+{
+  return "";
 }
 
 // SQL DDL ACTIONS

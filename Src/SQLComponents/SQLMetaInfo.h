@@ -243,4 +243,30 @@ MetaObject;
 
 using MMetaMap = std::vector<MetaObject>;
 
+// Results for triggers - by SQLInfoDB!
+
+typedef struct _metaTrigger
+{
+  CString   m_catalogName;      // Catalog name
+  CString   m_schemaName;       // Schema name
+  CString   m_tableName;        // Table name
+  CString   m_triggerName;      // Trigger name
+  CString   m_remarks;          // Remarks from COMMENT ON
+  int       m_position;         // Position in firing
+  bool      m_before;           // true = BEFORE, false = AFTER
+  bool      m_insert;           // INSERT into table
+  bool      m_update;           // UPDATE of a table
+  bool      m_delete;           // DELETE from a table
+  bool      m_select;           // SELECT from a table
+  bool      m_session;          // ON CONNECT / ON DISCONNECT
+  bool      m_transaction;      // ON BEGIN   / ON COMMIT
+  bool      m_rollback;         // ON ROLLBACK
+  CString   m_referencing;      // Referencing names OLD and NEW
+  bool      m_enabled;          // Enabled or disabled
+  CString   m_source;           // Source of the trigger
+}
+MetaTrigger;
+
+using MTriggerMap = std::vector<MetaTrigger>;
+
 };

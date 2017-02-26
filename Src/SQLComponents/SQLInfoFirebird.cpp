@@ -901,7 +901,21 @@ SQLInfoFirebird::GetSQLCreateIndex(MStatisticsMap& p_indices) const
     {
       query += ",";
     }
-    query += index.m_columnName;
+    if(index.m_columnName.Left(1) == "(")
+    {
+      query.TrimRight("(");
+      query += " COMPUTED BY ";
+      query += index.m_columnName;
+      query.TrimRight(")");
+    }
+    else if(!index.m_filter.IsEmpty())
+    {
+      query += index.m_filter;
+    }
+    else
+    {
+      query += index.m_columnName;
+    }
   }
   query += ")";
   return query;
@@ -922,7 +936,7 @@ SQLInfoFirebird::GetSQLDropIndex(CString p_user,CString p_indexName) const
   return sql;
 }
 
-// Get the SQL Query to read the referential constriants for a table
+// Get the SQL Query to read the referential constraints for a table
 CString 
 SQLInfoFirebird::GetSQLTableReferences(CString /*p_schema*/
                                       ,CString p_tablename
@@ -1143,6 +1157,88 @@ SQLInfoFirebird::GetOnlyOneUserSession()
   return sessions->GetAsSLong() <= 1;
 }
 
+// Gets the triggers for a table
+CString
+SQLInfoFirebird::GetSQLTriggers(CString p_schema,CString p_table) const
+{
+  CString sql;
+  sql.Format("SELECT '' AS catalog_name\n"
+             "      ,'%s' AS schema_name\n"
+             "      ,rdb$relation_name\n"
+             "      ,rdb$trigger_name\n"
+             "      ,rdb$description\n"
+             "      ,rdb$trigger_sequence\n"
+             "      ,CASE rdb$trigger_type\n"
+             "            WHEN    1 THEN true\n"
+             "            WHEN    3 THEN true\n"
+             "            WHEN    5 THEN true\n"
+             "            WHEN   17 THEN true\n"
+             "            WHEN   25 THEN true\n"
+             "            WHEN   27 THEN true\n"
+             "            WHEN  113 THEN true\n"
+             "            WHEN 8192 THEN true\n"
+             "            WHEN 8194 THEN true\n"
+             "                      ELSE false\n"
+             "       END AS trigger_before\n"
+             "      ,CASE rdb$trigger_type\n"
+             "            WHEN    1 THEN true\n"
+             "            WHEN    2 THEN true\n"
+             "            WHEN   17 THEN true\n"
+             "            WHEN   18 THEN true\n"
+             "            WHEN   25 THEN true\n"
+             "            WHEN   26 THEN true\n"
+             "            WHEN  113 THEN true\n"
+             "            WHEN  114 THEN true\n"
+             "                      ELSE false\n"
+             "       END AS trigger_insert\n"
+             "      ,CASE rdb$trigger_type\n"
+             "            WHEN    3 THEN true\n"
+             "            WHEN    4 THEN true\n"
+             "            WHEN   17 THEN true\n"
+             "            WHEN   18 THEN true\n"
+             "            WHEN  113 THEN true\n"
+             "            WHEN  114 THEN true\n"
+             "                      ELSE false\n"
+             "       END AS trigger_update\n"
+             "      ,CASE rdb$trigger_type\n"
+             "            WHEN    5 THEN true\n"
+             "            WHEN    6 THEN true\n"
+             "            WHEN   25 THEN true\n"
+             "            WHEN   26 THEN true\n"
+             "            WHEN  113 THEN true\n"
+             "            WHEN  114 THEN true\n"
+             "                      ELSE false\n"
+             "       END AS trigger_delete\n"
+             "      ,false as trigger_select\n"
+             "      ,CASE rdb$trigger_type\n"
+             "            WHEN 8192 THEN true\n"
+             "            WHEN 8993 THEN true\n"
+             "                      ELSE false\n"
+             "       END AS trigger_session\n"
+             "      ,CASE rdb$trigger_type\n"
+             "            WHEN 8194 THEN true\n"
+             "            WHEN 8995 THEN true\n"
+             "                      ELSE false\n"
+             "       END AS trigger_transaction\n"
+             "      ,CASE rdb$trigger_type\n"
+             "            WHEN 8196 THEN true\n"
+             "                      ELSE false\n"
+             "       END AS trigger_rollback\n"
+             "      ,'' AS trigger_referencing\n"
+             "      ,CASE rdb$trigger_inactive\n"
+             "            WHEN 0 THEN true\n"
+             "                   ELSE false\n"
+             "       END AS trigger_enabled\n"
+             "      ,rdb$trigger_source\n"
+             "  FROM rdb$triggers\n"
+             " WHERE rdb$relation_name = '%s'\n"
+             "   AND rdb$system_flag   = 0\n"
+             " ORDER BY rdb$trigger_sequence"
+            ,p_schema
+            ,p_table);
+  return sql;
+}
+
 // SQL DDL STATEMENTS
 // ==================
 
@@ -1214,6 +1310,64 @@ CString
 SQLInfoFirebird::GetSQLCreateOrReplaceView(CString /*p_schema*/,CString p_view,CString p_asSelect) const
 {
   return "RECREATE VIEW " + p_view + "\n" + p_asSelect;
+}
+
+// Create or replace a trigger
+CString
+SQLInfoFirebird::CreateOrReplaceTrigger(MetaTrigger& p_trigger) const
+{
+  CString sql;
+  sql.Format("CREATE OR ALTER TRIGGER %s FOR %s\n"
+            ,p_trigger.m_triggerName
+            ,p_trigger.m_tableName);
+
+  // Do the table level trigger
+  if(p_trigger.m_insert || p_trigger.m_update || p_trigger.m_delete)
+  {
+    sql += p_trigger.m_before ? "BEFORE " : "AFTER ";
+    if(p_trigger.m_insert)
+    {
+      sql += "INSERT ";
+    }
+    if(p_trigger.m_update)
+    {
+      if(p_trigger.m_insert)
+      {
+        sql += "OR ";
+      }
+      sql += "UPDATE ";
+    }
+    if(p_trigger.m_delete)
+    {
+      if(p_trigger.m_insert || p_trigger.m_update)
+      {
+        sql += "OR ";
+      }
+      sql += "DELETE ";
+    }
+  }
+  else if(p_trigger.m_session)
+  {
+    sql += p_trigger.m_before ? "ON CONNECT" : "ON DISCONNECT";
+  }
+  else // transaction
+  {
+    sql += "ON TRANSACTION ";
+    if(p_trigger.m_before)
+    {
+      sql += "START";
+    }
+    else
+    {
+      sql += p_trigger.m_rollback ? "ROLLBACK" : "COMMIT";
+    }
+  }
+
+  // Now add the trigger PSM source
+  sql += "\n";
+  sql += p_trigger.m_source;
+
+  return sql;
 }
 
 // SQL DDL ACTIONS

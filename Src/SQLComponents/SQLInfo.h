@@ -125,7 +125,7 @@ public:
   bool MakeInfoTableForeign   (MForeignMap&       p_foreigns,  CString& p_errors,bool p_referenced = false);
   bool MakeInfoTableStatistics(MStatisticsMap&    p_statistics,MPrimaryMap* p_keymap,CString& p_errors,bool p_all = true);
   bool MakeInfoTableSpecials  (MSpecialColumnMap& p_specials,  CString& p_errors);
-  bool MakeInfoTablePrivileges(MPrivilegeMap&    p_privileges,CString& p_errors);
+  bool MakeInfoTablePrivileges(MPrivilegeMap&     p_privileges,CString& p_errors);
   // GETTING ALL THE INFO FOR ONE PROCEDURE
   bool MakeInfoProcedureProcedurepart(CString p_procedure,MProcedureMap& p_procedures,CString& p_errors);
   bool MakeInfoProcedureParameters   (MProcColumnMap& p_parameters,CString& p_errors);

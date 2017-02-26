@@ -22,6 +22,7 @@ private:
   void    GetIndexInfo();
   void    GetPrimaryKeyInfo();
   void    GetForeignKeyInfo();
+  void    GetTriggerInfo();
   void    GetAccessInfo();
 
   // Service routines
@@ -43,8 +44,8 @@ private:
   MStatisticsMap  m_indices;
   MPrimaryMap     m_primaries;
   MForeignMap     m_foreigns;
+  MTriggerMap     m_triggers;
   MPrivilegeMap   m_access;
-
 };
 
 };

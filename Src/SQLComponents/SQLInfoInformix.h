@@ -337,6 +337,9 @@ public:
   // Getting the fact that there is only **one** (1) user session in the database
   bool    GetOnlyOneUserSession();
 
+  // Gets the triggers for a table
+  CString GetSQLTriggers(CString m_schema,CString p_table) const;
+
   // SQL DDL STATEMENTS
   // ==================
 
@@ -358,6 +361,9 @@ public:
 
   // Create or replace a database view
   CString GetSQLCreateOrReplaceView(CString p_schema,CString p_view,CString p_asSelect) const;
+
+  // Create or replace a trigger
+  CString CreateOrReplaceTrigger(MetaTrigger& p_trigger) const;
 
   // SQL DDL OPERATIONS
   // ==================

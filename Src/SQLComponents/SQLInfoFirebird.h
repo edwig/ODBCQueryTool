@@ -290,7 +290,7 @@ public:
   // Get SQL to drop an index
   CString GetSQLDropIndex(CString p_user,CString p_indexName) const;
 
-  // Get SQL to read the referential constaints from the catalog
+  // Get SQL to read the referential constraints from the catalog
   CString GetSQLTableReferences(CString p_schema,CString p_tablename,CString p_constraint = "",int p_maxColumns = SQLINFO_MAX_COLUMNS) const;
 
   // Get the SQL to determine the sequence state in the database
@@ -360,6 +360,9 @@ public:
   // Create or replace a database view
   CString GetSQLCreateOrReplaceView(CString p_schema,CString p_view,CString p_asSelect) const;
 
+  // Gets the triggers for a table
+  CString GetSQLTriggers(CString m_schema,CString p_table) const;
+
   // SQL DDL OPERATIONS
   // ==================
 
@@ -375,7 +378,7 @@ public:
   // Does the named view exists in the database
   bool    DoesViewExists(CString& p_viewName);
 
-  // Must create temoporary tables runtime 
+  // Must create temporary tables runtime 
   bool    GetMustMakeTemptablesAtRuntime() const;
 
   // Create a temporary table in an optimized manner with the given index column
@@ -389,6 +392,9 @@ public:
 
   // Rename a database table 
   void    DoRenameTable(CString& p_oldName,CString& p_newName) const;
+
+  // Create or replace a trigger
+  CString CreateOrReplaceTrigger(MetaTrigger& p_trigger) const;
 
   // PERSISTENT-STORED MODULES (SPL / PL/SQL)
   // ====================================================================
