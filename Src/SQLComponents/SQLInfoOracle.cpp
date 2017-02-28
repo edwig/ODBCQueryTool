@@ -1013,30 +1013,29 @@ SQLInfoOracle::GetSQLCreateIndex(MStatisticsMap& p_indices) const
 CString
 SQLInfoOracle::GetIndexFilter(MetaStatistics& p_index) const
 {
-  CString number;
-  number.Format("%d",p_index.m_position);
-  CString sql = "SELECT column_expression\n"
-                "  FROM all_ind_expressions\n"
-                " WHERE index_owner = '" + p_index.m_schemaName + "'\n"
-                "   AND index_name  = '" + p_index.m_indexName  + "'\n"
-                "   AND table_owner = '" + p_index.m_schemaName + "'\n"
-                "   AND table_name  = '" + p_index.m_tableName  + "'\n"
-                "   AND column_position = " + number;
+  CString expression;
+  CString sql;
+  sql.Format("SELECT column_expression\n"
+             "  FROM all_ind_expressions\n"
+             " WHERE index_owner = '" + p_index.m_schemaName + "'\n"
+             "   AND index_name  = '" + p_index.m_indexName  + "'\n"
+             "   AND table_owner = '" + p_index.m_schemaName + "'\n"
+             "   AND table_name  = '" + p_index.m_tableName  + "'\n"
+             "   AND column_position = %d",p_index.m_position);
   try
   {
     SQLQuery qry(m_database);
     SQLVariant* var = qry.DoSQLStatementScalar(sql);
     if(var)
     {
-      var->GetAsString(number);
-      return number;
+      var->GetAsString(expression);
     }
   }
   catch(CString& error)
   {
     throw CString("Cannot find index filter: ") + error;
   }
-  return "";
+  return expression;
 }
 
 // Get SQL to drop an index
@@ -1318,18 +1317,30 @@ CString
 SQLInfoOracle::GetSQLTriggers(CString p_schema,CString p_table) const
 {
   CString sql;
-  sql.Format("SELECT owner\n"
+  sql.Format("SELECT ''    AS catalog_name\n"
+             "      ,owner AS schema_name\n"
+             "      ,table_name\n"
              "      ,trigger_name\n"
-             "      ,description\n"
-             "      ,trigger_type\n"
-             "      ,triggering_event\n"
+             "      ,triggering_event || ' ON ' || table_name AS description\n"
+             "      ,0     AS position\n"
+             "      ,CASE WHEN (InStr(trigger_type,    'BEFORE') > 0) THEN 1 ELSE 0 END AS trigger_before\n"
+             "      ,CASE WHEN (InStr(triggering_event,'INSERT') > 0) THEN 1 ELSE 0 END AS trigger_insert\n"
+             "      ,CASE WHEN (InStr(triggering_event,'UPDATE') > 0) THEN 1 ELSE 0 END AS trigger_update\n" 
+             "      ,CASE WHEN (InStr(triggering_event,'DELETE') > 0) THEN 1 ELSE 0 END AS trigger_delete\n" 
+             "      ,CASE WHEN (InStr(triggering_event,'SELECT') > 0) THEN 1 ELSE 0 END AS trigger_select\n"
+             "      ,CASE WHEN (InStr(triggering_event,'LOGON')  > 0 OR\n"
+             "                  InStr(triggering_event,'LOGOFF') > 0 ) THEN 1 ELSE 0 END AS trigger_session\n"
+             "      ,0  AS trigger_transaction\n"
+             "      ,0  AS trigger_rollback\n"
              "      ,referencing_names\n"
-             "      ,when_clause\n"
-             "      ,status\n"
-             "      ,trigger_body\n"
+             "      ,CASE status\n"
+             "            WHEN 'DISABLED' THEN 0\n"
+             "                            ELSE 1\n"
+             "            END AS trigger_status\n"
+             "      ,trigger_body AS source\n"
              "  FROM all_triggers\n"
              " WHERE table_owner = '%s'\n"
-             "   AND table_name = '%s'"
+             "   AND table_name  = '%s'"
              ,p_schema
              ,p_table);
   return sql;
@@ -1402,9 +1413,56 @@ SQLInfoOracle::GetSQLCreateOrReplaceView(CString p_schema,CString p_view,CString
 
 // Create or replace a trigger
 CString
-SQLInfoOracle::CreateOrReplaceTrigger(MetaTrigger& /*p_trigger*/) const
+SQLInfoOracle::CreateOrReplaceTrigger(MetaTrigger& p_trigger) const
 {
-  return "";
+  // Command + trigger name
+  CString sql("CREATE OR REPLACE TRIGGER ");
+  sql += p_trigger.m_schemaName;
+  sql += ".";
+  sql += p_trigger.m_triggerName;
+  sql += "\n";
+
+  // Before or after
+  sql += p_trigger.m_before ? "BEFORE " : "AFTER ";
+
+  // Trigger actions
+  if(p_trigger.m_insert)
+  {
+    sql += "INSERT";
+  }
+  if(p_trigger.m_update)
+  {
+    if(p_trigger.m_insert)
+    {
+      sql += " OR ";
+    }
+    sql += "UPDATE";
+  }
+  if(p_trigger.m_delete)
+  {
+    if(p_trigger.m_insert || p_trigger.m_update)
+    {
+      sql += " OR ";
+    }
+    sql += "DELETE";
+  }
+
+  // Add trigger table
+  sql += " ON ";
+  sql += p_trigger.m_tableName;
+  sql += "\n";
+
+  // Referencing clause
+  if(!p_trigger.m_referencing.IsEmpty())
+  {
+    sql += p_trigger.m_referencing;
+    sql += "\nFOR EACH ROW\n";
+  }
+
+  // Add trigger body
+  sql += p_trigger.m_source;
+
+  return sql;
 }
 
 // SQL DDL ACTIONS

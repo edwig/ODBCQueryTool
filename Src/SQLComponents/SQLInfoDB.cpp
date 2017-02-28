@@ -53,6 +53,8 @@ SQLInfoDB::~SQLInfoDB()
 {
 }
 
+// Getting the info for the triggers is not a part of the standard
+// ODBC function set. It needs a RDBMS driver, so it is not in DBInfo but in DBInfoDB
 bool
 SQLInfoDB::MakeInfoTableTriggers(MTriggerMap& p_triggers,CString& p_errors)
 {
@@ -63,8 +65,13 @@ SQLInfoDB::MakeInfoTableTriggers(MTriggerMap& p_triggers,CString& p_errors)
     return false;
   }
 
-  // Getting the database dependent string
+  // Getting the database dependent SQL string
   CString sql = GetSQLTriggers(m_searchSchemaName,m_searchTableName);
+  if(sql.IsEmpty())
+  {
+    // No triggers to be gotten from this RDBMS
+    return false;
+  }
 
   try
   {
@@ -91,6 +98,7 @@ SQLInfoDB::MakeInfoTableTriggers(MTriggerMap& p_triggers,CString& p_errors)
       trigger.m_enabled     = qry.GetColumn(16)->GetAsBoolean();
       trigger.m_source      = qry.GetColumn(17)->GetAsChar();
 
+      // Some RDBMS'es have extra trailing spaces in these fields
       trigger.m_triggerName.Trim();
       trigger.m_remarks.Trim();
       trigger.m_source.Trim();
@@ -101,6 +109,7 @@ SQLInfoDB::MakeInfoTableTriggers(MTriggerMap& p_triggers,CString& p_errors)
   }
   catch(CString& error)
   {
+    // Pass on the database error
     p_errors = error;
   }
   return p_triggers.size() > 0;

@@ -1166,7 +1166,7 @@ SQLInfoGenericODBC::GetOnlyOneUserSession()
 
 // Gets the triggers for a table
 CString
-SQLInfoGenericODBC::GetSQLTriggers(CString m_schema,CString p_table) const
+SQLInfoGenericODBC::GetSQLTriggers(CString p_schema,CString p_table) const
 {
   return "";
 }

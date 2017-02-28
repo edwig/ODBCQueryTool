@@ -40,6 +40,10 @@ namespace SQLComponents
 // Can be modified by the "SetBufferSize" method
 #define OPTIM_BUFFERSIZE (4*1024)
 
+// Some drivers give no buffer sizes for NVARCHAR back
+// So use a maximum default value
+#define MAX_CHAR_BUFFER  (32*1024 - 1)
+
 // After this amount of seconds it's been toooooo long
 #define QUERY_TOO_LONG 2.0
 

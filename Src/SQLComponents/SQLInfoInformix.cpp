@@ -1224,7 +1224,7 @@ SQLInfoInformix::GetOnlyOneUserSession()
 
 // Gets the triggers for a table
 CString
-SQLInfoInformix::GetSQLTriggers(CString m_schema,CString p_table) const
+SQLInfoInformix::GetSQLTriggers(CString p_schema,CString p_table) const
 {
   return "";
 }

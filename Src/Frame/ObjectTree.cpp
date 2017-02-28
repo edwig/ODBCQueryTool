@@ -221,6 +221,7 @@ ObjectTree::OnSelChanged(NMHDR* pNMHDR,LRESULT* pResult)
         case TREE_STATISTICS:   FindStatistics(theItem); break;
         case TREE_SPECIALS:     FindSpecials(theItem);   break;
         case TREE_REFERENCEDBY: FindReferenced(theItem); break;
+        case TREE_TRIGGERS:     FindTriggers(theItem);   break;
         case TREE_PRIVILEGES:   FindPrivileges(theItem); break;
         case TREE_PROCEDURES:   FindProcedures(theItem); break;
         case TREE_PARAMETERS:   FindParameters(theItem); break;
@@ -401,6 +402,7 @@ ObjectTree::PrepareTable(HTREEITEM p_theItem)
   HTREEITEM indices    = InsertItem("Statistics",     p_theItem,TREE_STATISTICS);
   HTREEITEM specials   = InsertItem("Special columns",p_theItem,TREE_SPECIALS);
   HTREEITEM referenced = InsertItem("Referenced by",  p_theItem,TREE_REFERENCEDBY);
+  HTREEITEM triggers   = InsertItem("Triggers",       p_theItem,TREE_TRIGGERS);
   HTREEITEM access     = InsertItem("Privileges",     p_theItem,TREE_PRIVILEGES);
 
   SetItemImage(columns,   IMG_COLUMN,  IMG_COLUMN);
@@ -409,6 +411,7 @@ ObjectTree::PrepareTable(HTREEITEM p_theItem)
   SetItemImage(indices,   IMG_INDEX,   IMG_INDEX);
   SetItemImage(specials,  IMG_COLUMN,  IMG_COLUMN);
   SetItemImage(referenced,IMG_FOREIGN, IMG_FOREIGN);
+  SetItemImage(triggers,  IMG_TRIGGER, IMG_TRIGGER);
   SetItemImage(access,    IMG_ACCESS,  IMG_ACCESS);
 
   InsertNoInfo(columns);
@@ -417,6 +420,7 @@ ObjectTree::PrepareTable(HTREEITEM p_theItem)
   InsertNoInfo(indices);
   InsertNoInfo(specials);
   InsertNoInfo(referenced);
+  InsertNoInfo(triggers);
   InsertNoInfo(access);
 }
 
@@ -564,6 +568,22 @@ ObjectTree::FindReferenced(HTREEITEM p_theItem)
     // Go find the referencing tables
     app->GetDatabase().GetSQLInfoDB()->MakeInfoTableForeign(foreigns,errors,true);
     ReferencedToTree(foreigns,p_theItem);
+  }
+}
+
+// Find all triggers on the table
+void
+ObjectTree::FindTriggers(HTREEITEM p_theItem)
+{
+  if(PresetTable(p_theItem))
+  {
+    COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
+    MTriggerMap triggers;
+    CString     errors;
+
+    // Go find the triggers
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableTriggers(triggers,errors);
+    TriggersToTree(triggers,p_theItem);
   }
 }
 
@@ -945,6 +965,8 @@ ObjectTree::StatisticsToTree(MStatisticsMap& p_statistics,HTREEITEM p_item)
 
   HTREEITEM next = NULL;
   CString   line;
+  COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
+  SQLInfoDB* info = app->GetDatabase().GetSQLInfoDB();
 
   // Process statistics
   for(auto& stat : p_statistics)
@@ -987,6 +1009,12 @@ ObjectTree::StatisticsToTree(MStatisticsMap& p_statistics,HTREEITEM p_item)
     }
     if(stat.m_indexType != SQL_TABLE_STAT)
     {
+      // Optionally get the filter
+      if(stat.m_filter.IsEmpty())
+      {
+        stat.m_filter = info->GetIndexFilter(stat);
+      }
+
       // Extra column on an index
       if(!stat.m_filter.IsEmpty())
       {
@@ -1064,6 +1092,62 @@ ObjectTree::SpecialsToTree(MSpecialColumnMap& p_specials,HTREEITEM p_item)
     }
     item = InsertItem(line,next);
     SetItemImage(item,IMG_INFO,IMG_INFO);
+  }
+}
+
+void
+ObjectTree::TriggersToTree(MTriggerMap& p_triggers,HTREEITEM p_item)
+{
+  // Check if we have triggers
+  if(p_triggers.empty())
+  {
+    return;
+  }
+  RemoveNoInfo(p_item);
+
+  for(auto& trigger : p_triggers)
+  {
+    // Name of the trigger + position in firing (0 = no order)
+    CString line;
+    line.Format("%d: %s",trigger.m_position,trigger.m_triggerName);
+    if(trigger.m_remarks)
+    {
+      line.AppendFormat(" (%s)",trigger.m_remarks);
+    }
+    HTREEITEM trigItem = InsertItem(line,p_item);
+    SetItemImage(trigItem,IMG_TRIGGER,IMG_TRIGGER);
+
+    // Active trigger
+    line.Format("Trigger is: %s",trigger.m_enabled ? "enabled" : "disabled");
+    HTREEITEM item = InsertItem(line,trigItem);
+    SetItemImage(item,IMG_TRIGGER,IMG_TRIGGER);
+
+    // Type before/after
+    line.Format("Trigger fires: %s",trigger.m_before ? "before" : "after");
+    item = InsertItem(line,trigItem);
+    SetItemImage(item,IMG_TRIGGER,IMG_TRIGGER);
+
+    // Fires on INSERT/UPDATE/DELETE/SELECT
+    line = "Trigger on DML: ";
+    if(trigger.m_insert) line += "insert,";
+    if(trigger.m_update) line += "update,";
+    if(trigger.m_delete) line += "delete,";
+    if(trigger.m_select) line += "select,";
+    line.TrimRight(',');
+    item = InsertItem(line,trigItem);
+    SetItemImage(item,IMG_TRIGGER,IMG_TRIGGER);
+
+    // Referencing statement (if any)
+    if(!trigger.m_referencing.IsEmpty())
+    {
+      line.Format("Referencing: %s",trigger.m_referencing);
+      item = InsertItem(line,trigItem);
+      SetItemImage(item,IMG_TRIGGER,IMG_TRIGGER);
+    }
+    // Source
+    line.Format("SQL Source: %d characters",trigger.m_source.GetLength());
+    item = InsertItem(line,trigItem);
+    SetItemImage(item,IMG_TRIGGER,IMG_TRIGGER);
   }
 }
 

@@ -1,3 +1,29 @@
+////////////////////////////////////////////////////////////////////////
+//
+// File: DDLCreateTable.cpp
+//
+// Copyright (c) 1998-2017 ir. W.E. Huisman
+// All rights reserved
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of 
+// this software and associated documentation files (the "Software"), 
+// to deal in the Software without restriction, including without limitation the rights 
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, 
+// and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all copies 
+// or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+// IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
+// Last Revision:   08-01-2017
+// Version number:  1.4.0
+//
 #include "StdAfx.h"
 #include "DDLCreateTable.h"
 
@@ -341,7 +367,6 @@ DDLCreateTable::StashTheLine(CString p_line,CString p_extraEnd /*=""*/,int p_new
   }
 }
 
-
 CString
 DDLCreateTable::ReplaceLengthPrecScale(CString p_template
                                        ,int p_length
@@ -366,9 +391,9 @@ DDLCreateTable::ReplaceLengthPrecScale(CString p_template
 
   // Replace as strings
   p_template.Replace("max length",length);    // ORACLE DOES THIS!!
-  p_template.Replace("length",length);
-  p_template.Replace("precision",precision);
-  p_template.Replace("scale",scale);
+  p_template.Replace("length",    length);
+  p_template.Replace("precision", precision);
+  p_template.Replace("scale",     scale);
 
   // Make sure we have parenthesis
   if(!p_template.IsEmpty() && p_template.Left(1) != "(")

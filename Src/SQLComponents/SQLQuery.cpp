@@ -897,23 +897,33 @@ SQLQuery::BindColumns()
     CString name(colName);
     if(type == SQL_C_CHAR || type == SQL_C_BINARY)
     {
-      int BUFFERSIZE = m_bufferSize ? m_bufferSize : OPTIM_BUFFERSIZE;
-      if(precision > (unsigned)BUFFERSIZE)
+      if(precision == 0)
       {
-        // Must use AT_EXEC SQLGetData Interface
-        atexec = min((int)m_maxColumnLength,BUFFERSIZE);
-        if(atexec == 0)
-        {
-          // Provide arbitrary border value
-          atexec = BUFFERSIZE;
-        }
-        precision = atexec;
+        // Some ODBC drivers do not give you the length of a NVARCHAR type column
+        // All we can do here is to proceed with fingers crossed (and max buffers)
+        // Found in MS-SQLServer
+        precision = MAX_CHAR_BUFFER;
       }
-      // Some ODBC drivers crash as a result of the fact
-      // that CHAR types could be WCHAR types and they 
-      // reserve the privilege to allocate double the memory
-      // IF YOU DON'T DO THIS, YOU WILL CRASH!!
-      precision *= 2;
+      else
+      {
+        int BUFFERSIZE = m_bufferSize ? m_bufferSize : OPTIM_BUFFERSIZE;
+        if(precision > (unsigned)BUFFERSIZE)
+        {
+          // Must use AT_EXEC SQLGetData Interface
+          atexec = min((int)m_maxColumnLength,BUFFERSIZE);
+          if(atexec == 0)
+          {
+            // Provide arbitrary border value
+            atexec = BUFFERSIZE;
+          }
+          precision = atexec;
+        }
+        // Some ODBC drivers crash as a result of the fact
+        // that CHAR types could be WCHAR types and they 
+        // reserve the privilege to allocate double the memory
+        // IF YOU DON'T DO THIS, YOU WILL CRASH!!
+        precision *= 2;
+      }
     }
     // Create new variant and reserve space for CHAR and BINARY types
     SQLVariant* var = new SQLVariant(type,(int)precision);

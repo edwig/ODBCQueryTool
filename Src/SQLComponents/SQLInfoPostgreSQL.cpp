@@ -1302,7 +1302,7 @@ SQLInfoPostgreSQL::GetOnlyOneUserSession()
 
 // Gets the triggers for a table
 CString
-SQLInfoPostgreSQL::GetSQLTriggers(CString m_schema,CString p_table) const
+SQLInfoPostgreSQL::GetSQLTriggers(CString p_schema,CString p_table) const
 {
   return "";
 }

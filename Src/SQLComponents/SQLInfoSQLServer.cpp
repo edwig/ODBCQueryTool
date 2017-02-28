@@ -901,7 +901,8 @@ SQLInfoSQLServer::GetSQLCreateIndex(CString p_user,CString p_tableName,DBIndex* 
 }
 
 // Get SQL to create an index for a table
-// CREATE [UNIQUE] INDEX [<schema>.]indexname ON [<schema>.]tablename(column [ASC|DESC] [,...]);
+// CREATE [UNIQUE] INDEX indexname ON [<schema>.]tablename(column [ASC|DESC] [,...]);
+// Beware: no schema name for indexname. Automatically in the table schema
 CString
 SQLInfoSQLServer::GetSQLCreateIndex(MStatisticsMap& p_indices) const
 {
@@ -917,10 +918,6 @@ SQLInfoSQLServer::GetSQLCreateIndex(MStatisticsMap& p_indices) const
         query += "UNIQUE ";
       }
       query += "INDEX ";
-      if(!index.m_schemaName.IsEmpty())
-      {
-        query += index.m_schemaName + ".";
-      }
       query += index.m_indexName;
       query += " ON ";
       if(!index.m_schemaName.IsEmpty())
@@ -1193,9 +1190,17 @@ SQLInfoSQLServer::GetSQLLockTable(CString& p_tableName,bool p_exclusive) const
 
 // Get query to optimize the table statistics
 CString 
-SQLInfoSQLServer::GetSQLOptimizeTable(CString& /*p_owner*/,CString& /*p_tableName*/,int& /*p_number*/)
+SQLInfoSQLServer::GetSQLOptimizeTable(CString& p_owner,CString& p_tableName,int& /*p_number*/)
 {
-  return "";
+  CString query("UPDATE STATISTICS ");
+  if(!p_owner.IsEmpty())
+  {
+    query += p_owner;
+    query += ".";
+  }
+  query += p_tableName;
+  query += " WITH FULLSCAN";
+  return query;
 }
 
 // Getting the fact that there is only **one** (1) user session in the database
@@ -1203,14 +1208,56 @@ bool
 SQLInfoSQLServer::GetOnlyOneUserSession()
 {
   // Yet to implement
-  return true;
+  CString sql = "SELECT COUNT(*)\n"
+                "  FROM sys.sysprocesses\n"
+                " WHERE dbid = db_id()";
+  SQLQuery qry(m_database);
+  SQLVariant* var = qry.DoSQLStatementScalar(sql);
+  return (var->GetAsSLong() <= 1);
 }
 
 // Gets the triggers for a table
 CString
-SQLInfoSQLServer::GetSQLTriggers(CString m_schema,CString p_table) const
+SQLInfoSQLServer::GetSQLTriggers(CString p_schema,CString p_table) const
 {
-  return "";
+  CString sql;
+  sql.Format("SELECT ''       AS catalog_name\n"
+             "      ,sch.name AS schema_name\n"
+             "      ,tab.name AS table_name\n"
+             "      ,trg.name AS trigger_name\n"
+             "      ,trg.name + ' ON TABLE ' + tab.name AS trigger_description\n"
+             "      ,0        AS position\n"
+             "      ,0        AS trigger_before\n"
+             "      ,(SELECT CASE type_desc WHEN 'INSERT' THEN 1 ELSE 0 END\n"
+             "          FROM sys.trigger_events ev\n"
+             "         WHERE ev.object_id = trg.object_id) AS trigger_insert\n"
+             "      ,(SELECT CASE type_desc WHEN 'UPDATE' THEN 1 ELSE 0 END\n"
+             "          FROM sys.trigger_events ev\n"
+             "         WHERE ev.object_id = trg.object_id) AS trigger_update\n"
+             "      ,(SELECT CASE type_desc WHEN 'DELETE' THEN 1 ELSE 0 END\n"
+             "          FROM sys.trigger_events ev\n"
+             "         WHERE ev.object_id = trg.object_id) AS trigger_delete\n"
+             "      ,(SELECT CASE type_desc WHEN 'SELECT' THEN 1 ELSE 0 END\n"
+             "          FROM sys.trigger_events ev\n"
+             "         WHERE ev.object_id = trg.object_id) AS trigger_select\n"
+             "      ,0  AS trigger_session\n"
+             "   	  ,0  AS trigger_transaction\n"
+             "      ,0  AS trigger_rollback\n"
+             "      ,'' AS trigger_referencing\n"
+             "  	  ,CASE trg.is_disabled WHEN 0 THEN 1 ELSE 0 END AS trigger_enabled\n"
+             "  	  ,mod.definition AS trigger_source\n"
+             "  FROM sys.triggers    trg\n"
+             "      ,sys.sql_modules mod\n"
+             "      ,sys.objects     tab\n"
+             "      ,sys.schemas     sch\n"
+             " WHERE sch.name      = '%s'\n"
+             "   AND tab.name      = '%s'\n"
+             "   AND trg.object_id = mod.object_id\n"
+             "   AND tab.object_id = trg.parent_id\n"
+             "   AND tab.schema_id = sch.schema_id"
+            ,p_schema
+            ,p_table);
+  return sql;
 }
 
 // SQL DDL STATEMENTS
@@ -1280,9 +1327,12 @@ SQLInfoSQLServer::GetSQLCreateOrReplaceView(CString p_schema,CString p_view,CStr
 
 // Create or replace a trigger
 CString
-SQLInfoSQLServer::CreateOrReplaceTrigger(MetaTrigger& /*p_trigger*/) const
+SQLInfoSQLServer::CreateOrReplaceTrigger(MetaTrigger& p_trigger) const
 {
-  return "";
+  // Simply return the SYS.SQL_MODULE.definition block
+  CString sql(p_trigger.m_source);
+  sql.TrimRight(';');
+  return sql;
 }
 
 // SQL DDL ACTIONS
