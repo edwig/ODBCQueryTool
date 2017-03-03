@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////
 //
-// File: SQLInfoFirebird.h
+// File: SQLInfoMySQL.h
 //
-// Copyright (c) 1992- 2014 ir. W.E. Huisman
+// Copyright (c) 1992- 2017 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -30,11 +30,11 @@
 namespace SQLComponents
 {
 
-class SQLInfoFirebird : public SQLInfoDB
+class SQLInfoMySQL : public SQLInfoDB
 {
 public:
-  SQLInfoFirebird(SQLDatabase* p_database);
- ~SQLInfoFirebird();
+  SQLInfoMySQL(SQLDatabase* p_database);
+ ~SQLInfoMySQL();
 
   //////////////////////////////////////////////////////////////////////////
   //
@@ -145,7 +145,7 @@ public:
   //
   //////////////////////////////////////////////////////////////////////////
 
-  // BOOLEANS EN STRINGS
+  // BOOLEANS AND STRINGS
   // ===================
 
   // Get a query to create a temporary table from a select statement
@@ -176,7 +176,6 @@ public:
   // Get the SQL to add a foreign key to a table
   CString GetSQLForeignKeyConstraint(DBForeign&   p_foreign) const;
   CString GetSQLForeignKeyConstraint(MForeignMap& p_foreigns) const;
-
 
   // Get the SQL (if possible) to change the foreign key constraint
   CString GetSQLAlterForeignKey(DBForeign& p_origin,DBForeign& p_requested) const;
@@ -334,6 +333,9 @@ public:
   // Getting the fact that there is only **one** (1) user session in the database
   bool    GetOnlyOneUserSession();
 
+  // Gets the triggers for a table
+  CString GetSQLTriggers(CString m_schema,CString p_table) const;
+
   // SQL DDL STATEMENTS
   // ==================
 
@@ -356,8 +358,8 @@ public:
   // Create or replace a database view
   CString GetSQLCreateOrReplaceView(CString p_schema,CString p_view,CString p_asSelect) const;
 
-  // Gets the triggers for a table
-  CString GetSQLTriggers(CString m_schema,CString p_table) const;
+  // Create or replace a trigger
+  CString CreateOrReplaceTrigger(MetaTrigger& p_trigger) const;
 
   // SQL DDL OPERATIONS
   // ==================
@@ -389,9 +391,6 @@ public:
   // Rename a database table 
   void    DoRenameTable(CString& p_oldName,CString& p_newName) const;
 
-  // Create or replace a trigger
-  CString CreateOrReplaceTrigger(MetaTrigger& p_trigger) const;
-
   // PERSISTENT-STORED MODULES (SPL / PL/SQL)
   // ====================================================================
 
@@ -413,7 +412,7 @@ public:
   // Build a parameter list for calling a stored procedure
   CString GetBuildedParameterList(size_t p_numOfParameters) const;
 
-  // Parametertype for stored procedure for a given column type for parameters and return types
+  // Parameter type for stored procedure for a given column type for parameters and return types
   CString GetParameterType(CString &p_type) const;
 
   // Makes a SQL string from a given string, with all the right quotes
@@ -480,14 +479,6 @@ public:
 
   // Translate database-errors to a human readable form
   CString TranslateErrortext(int p_error,CString p_errorText) const;
-
-private:
-  // IMPLEMENTATION OF the DoSQLCall interface
-  int     GetCountReturnParameters(SQLQuery* p_query);
-  bool    DoSQLCallFunction (SQLQuery* p_query,CString& p_function);
-  bool    DoSQLCallProcedure(SQLQuery* p_query,CString& p_procedure);
-  CString ConstructSQLForFunctionCall (SQLQuery* p_query,SQLQuery* p_thecall,CString& p_function);
-  CString ConstructSQLForProcedureCall(SQLQuery* p_query,SQLQuery* p_thecall,CString& p_procedure);
 };
 
 // End of namespace

@@ -183,6 +183,7 @@
     <ClCompile Include="SQLInfoFirebird.cpp" />
     <ClCompile Include="SQLInfoGenericODBC.cpp" />
     <ClCompile Include="SQLInfoInformix.cpp" />
+    <ClCompile Include="SQLInfoMySQL.cpp" />
     <ClCompile Include="SQLInfoOracle.cpp" />
     <ClCompile Include="SQLInfoPostgreSQL.cpp" />
     <ClCompile Include="SQLInfoSQLServer.cpp" />
@@ -250,6 +251,7 @@
     <ClInclude Include="SQLInfoFirebird.h" />
     <ClInclude Include="SQLInfoGenericODBC.h" />
     <ClInclude Include="SQLInfoInformix.h" />
+    <ClInclude Include="SQLInfoMySQL.h" />
     <ClInclude Include="SQLInfoOracle.h" />
     <ClInclude Include="SQLInfoPostgreSQL.h" />
     <ClInclude Include="SQLInfoSQLServer.h" />

@@ -49,25 +49,31 @@ SQLInfoPostgreSQL::~SQLInfoPostgreSQL()
 {
 }
 
-// Getting the SQLDatabaseType
-DatabaseType 
-SQLInfoPostgreSQL::GetDatabaseType() const
+//////////////////////////////////////////////////////////////////////////
+//
+// GENERALS (Strings & Booleans) 
+//
+//////////////////////////////////////////////////////////////////////////
+
+// Get the database type
+// DatabaseType GetDatabaseType() const;
+DatabaseType
+SQLInfoPostgreSQL::GetRDBMSDatabaseType() const
 {
   return RDBMS_POSTGRESQL;
 }
 
-// BOOLEANS AND STRINGS
-// ====================================================================
-
+// The name of the database vendor
 CString
-SQLInfoPostgreSQL::GetDatabaseVendorName() const
+SQLInfoPostgreSQL::GetRDBMSVendorName() const
 {
+  // The name of the database vendor
   return "PostgreSQL";
 }
 
-// Get physical database name
-CString 
-SQLInfoPostgreSQL::GetPhysicalDatabaseName() const
+// Get the physical database name
+CString
+SQLInfoPostgreSQL::GetRDBMSPhysicalDatabaseName() const
 {
   SQLQuery sql(m_database);
   CString query = "SELECT current_database()";
@@ -80,220 +86,202 @@ SQLInfoPostgreSQL::GetPhysicalDatabaseName() const
 }
 
 // System catalog is stored in uppercase in the database?
-bool 
-SQLInfoPostgreSQL::IsCatalogUpper () const
+bool
+SQLInfoPostgreSQL::GetRDBMSIsCatalogUpper() const
 {
   return false;
 }
 
 // System catalog supports full ISO schemas (same tables per schema)
 bool
-SQLInfoPostgreSQL::GetUnderstandsSchemas() const
+SQLInfoPostgreSQL::GetRDBMSUnderstandsSchemas() const
 {
   return true;
 }
 
-// Supports database/ODBCdriver comments in sql
-bool 
-SQLInfoPostgreSQL::SupportsDatabaseComments() const
+// Supports database/ODBCdriver comments in SQL
+bool
+SQLInfoPostgreSQL::GetRDBMSSupportsComments() const
 {
-  return false;
+  return true;
 }
 
 // Database can defer constraints until the end of a transaction
-bool 
-SQLInfoPostgreSQL::SupportsDeferredConstraints() const
+bool
+SQLInfoPostgreSQL::GetRDBMSSupportsDeferredConstraints() const
 {
   // SET CONSTRAINTS DEFERRED is supported
   return true;
 }
 
-// Database has ORDER BY with an expression, e.g. ORDER BY UPPER(column-name)
-// Work-around is "SELECT UPPER(column-name) AS something.....ORDER BY something
+// Database has ORDER BY with an expression, e.g. ORDER BY UPPER(columnname)
 bool
-SQLInfoPostgreSQL::SupportsOrderByExpression() const
+SQLInfoPostgreSQL::GetRDBMSSupportsOrderByExpression() const
 {
   return true;
 }
 
 // Supports the ODBC escape sequence {[?=] CALL procedure (?,?,?)}
 bool
-SQLInfoPostgreSQL::SupportsODBCCallEscapes() const
+SQLInfoPostgreSQL::GetRDBMSSupportsODBCCallEscapes() const
 {
   // Does NOT support the [?=] return parameter
   // So our own plumbing is needed
   return false;
 }
 
-// Catalog table with all default values of a column in the database
-CString 
-SQLInfoPostgreSQL::GetSQLStringDefaultValue(CString p_tableName,CString p_columnName) const
+// If the database does not support the datatype TIME, it can be implemented as a DECIMAL
+bool
+SQLInfoPostgreSQL::GetRDBMSSupportsDatatypeTime() const
 {
-  CString query = "SELECT adsrc\n"
-                  "  FROM pg_attrdef, pg_attribute, pg_class\n"
-                  " WHERE pg_attrdef.adrelid    = pg_attribute.attrelid\n"
-                  "   AND pg_attrdef.adnum      = pg_attribute.attnum\n"
-                  "   AND pg_attribute.attrelid = pg_class.oid\n"
-                  "   AND pg_class.relname      = '" + p_tableName + "'\n"
-                  "   AND pg_attribute.attname  = '" + p_columnName + "'";                 
-  return query;
+  // Time can be implemented as TIME
+  return true;
 }
 
-// Keyword for current date and time
-CString 
-SQLInfoPostgreSQL::GetSystemDateTimeKeyword() const
+// If the database does not support the datatype INTERVAL, it can be implemented as a DECIMAL
+bool
+SQLInfoPostgreSQL::GetRDBMSSupportsDatatypeInterval() const
+{
+  // Interval supported
+  return true;
+}
+
+// Gets the maximum length of an SQL statement
+unsigned long
+SQLInfoPostgreSQL::GetRDBMSMaxStatementLength() const
+{
+  // No Limit
+  return 0;
+}
+
+// KEYWORDS
+
+// Keyword for the current date and time
+CString
+SQLInfoPostgreSQL::GetKEYWORDCurrentTimestamp() const
 {
   return "current_timestamp(0)";
-} 
+}
 
-// Gtetign the current date
+// String for the current date
 CString
-SQLInfoPostgreSQL::GetSystemDateString() const
+SQLInfoPostgreSQL::GetKEYWORDCurrentDate() const
 {
   return "current_date";
 }
 
-// True if TIME is implemented in the database as a DECIMAL
-bool 
-SQLInfoPostgreSQL::GetTimeIsDecimal() const
+// Get the concatenation operator
+CString
+SQLInfoPostgreSQL::GetKEYWORDConcatanationOperator() const
 {
-  // TIJD is implemented as TIME in PostgreSQL :-)
-  return false;
+  return "||";
 }
 
-// True if INTERVAL is impelemented as a DECIMAL
-bool 
-SQLInfoPostgreSQL::GetIntervalIsDecimal() const
+// Get quote character for strings
+CString
+SQLInfoPostgreSQL::GetKEYWORDQuoteCharacter() const
 {
-  // Interval is implemented as INTERVAL in PostgreSQL :-)
-  return false;
+  return "\'";
 }
 
-// Character for the string concatanation operator
-CString 
-SQLInfoPostgreSQL::GetConcatanationOperator() const
+// Get default NULL for parameter list input
+CString
+SQLInfoPostgreSQL::GetKEYWORDParameterDefaultNULL() const
 {
-  return "||";    
+  // Standard, no definition defines the NULL state
+  return "";
 }
 
-// Quote character for string literals
-CString 
-SQLInfoPostgreSQL::GetQuoteCharacter() const
+// Parameter is for INPUT and OUTPUT in parameter list
+CString
+SQLInfoPostgreSQL::GetKEYWORDParameterINOUT() const
 {
-  return "'";    
+  return "";
 }
 
-// Default NULL for parameters
-CString 
-SQLInfoPostgreSQL::GetDefaultNULL() const
+// Parameter is for OUTPUT only in parameter list
+CString
+SQLInfoPostgreSQL::GetKEYWORDParameterOUT() const
 {
-  return "";    
+  return "";
 }
 
-// INOUT prefix for input/output parameter in a parameter list
-CString 
-SQLInfoPostgreSQL::GetParameterINOUT() const
+// Get datatype of the IDENTITY primary key in a Network database
+CString
+SQLInfoPostgreSQL::GetKEYWORDNetworkPrimaryKeyType() const
 {
-  return "";    
-}
-  
-// OUT prefix for an output parameter in a parameter list
-CString 
-SQLInfoPostgreSQL::GetParameterOUT() const
-{
-  return "";    
-}
-
-// Get datatype for last user in a stored procedure as a parameter
-CString 
-SQLInfoPostgreSQL::GetAuditUserDatatype() const
-{
-  return "VARCHAR";
-} 
-
-// Get datatype for last user in a stored procedure as a variable
-CString 
-SQLInfoPostgreSQL::GetAuditUserDatatypeAsVariable() const
-{
-  return "VARCHAR(50)";
-} 
-
-// Datatype of the primary key
-CString 
-SQLInfoPostgreSQL::GetPrimaryKeyType() const
-{
+  // Use SEQUENCE to fill!
   return "INTEGER";
 }
 
-// Datatype for a timestamp (DATETIME YEAR TO SECOND)
-CString 
-SQLInfoPostgreSQL::GetDatetimeYearToSecondType() const
+// Get datatype for timestamp (year to second)
+CString
+SQLInfoPostgreSQL::GetKEYWORDTypeTimestamp() const
 {
   return "TIMESTAMP";
 }
 
-// Separator between to alter constraints in a alter table statemetn
+// Prefix for a parameter in a stored procedure
 CString
-SQLInfoPostgreSQL::GetAlterConstraintSeparator() const
-{
-  return ",";
-}
-
-// Inner Join Keyword
-CString 
-SQLInfoPostgreSQL::GetInnerJoinKeyword() const
-{
-  return "INNER JOIN ";
-}
-
-// Outer join keyword
-CString  
-SQLInfoPostgreSQL::GetOuterJoinKeyword() const
-{
-  return "LEFT OUTER JOIN ";
-}
-
-// Inner Join Keyword for use in views.
-CString 
-SQLInfoPostgreSQL::GetViewInnerJoinKeyword() const
-{
-  return "INNER JOIN";
-}
-
-// Outer join keyword for use in views
-CString 
-SQLInfoPostgreSQL::GetViewOuterJoinKeyword() const
-{
-  return "LEFT OUTER JOIN";
-}
-
-// Closer character for an outer join (+ in some databases)
-CString 
-SQLInfoPostgreSQL::GetOuterJoinClosure() const
+SQLInfoPostgreSQL::GetKEYWORDParameterPrefix() const
 {
   return "";
 }
 
-// OUTER JOIN sign
-CString  
-SQLInfoPostgreSQL::GetOuterJoinSign() const
-{
-  return "";
-}
-
-// Prefix for using a parameter in a stored procedure
+// Get select part to add new record identity to a table
+// Can be special column like 'OID' or a sequence select
 CString
-SQLInfoPostgreSQL::GetSPParamPrefix() const
-{
-  return "";
-}
-
-// Get the query to add a new record in a table by the column OID
-CString 
-SQLInfoPostgreSQL::GetIdentityString(CString& p_tablename,CString p_postfix /*="_seq"*/) const
+SQLInfoPostgreSQL::GetKEYWORDIdentityString(CString& p_tablename,CString p_postfix /*= "_seq"*/) const
 {
   return "nextval('" + p_tablename + p_postfix + "')";
 }
+
+// Gets the UPPER function
+CString
+SQLInfoPostgreSQL::GetKEYWORDUpper(CString& p_expression) const
+{
+  return "UPPER(" + p_expression + ")";
+}
+
+// Gets the construction for 1 minute ago
+CString
+SQLInfoPostgreSQL::GetKEYWORDInterval1MinuteAgo() const
+{
+  // Not supported by PostgreSQL
+  return "ERROR";
+}
+
+// Gets the Not-NULL-Value statement of the database
+CString
+SQLInfoPostgreSQL::GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) const
+{
+  return "{fn IFNULL(" + p_test + "," + p_isnull + ")}";
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// CATALOG
+//
+//////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// SQL/PSM
+//
+//////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// OLD INTERFACE
+//
+//////////////////////////////////////////////////////////////////////////
+
+// BOOLEANS AND STRINGS
+// ====================================================================
 
 // Get the query to create a temporary table from a SELECT statement
 CString 
@@ -361,7 +349,7 @@ SQLInfoPostgreSQL::GetSQLRemoveFieldDependencies(CString p_tablename) const
 CString 
 SQLInfoPostgreSQL::GetPrimaryKeyDefinition(CString p_schema,CString p_tableName,bool /*p_temporary*/) const
 {
-  return GetPrimaryKeyType() + " NOT NULL CONSTRAINT pk_" + p_tableName + " PRIMARY KEY\n";
+  return GetKEYWORDNetworkPrimaryKeyType() + " NOT NULL CONSTRAINT pk_" + p_tableName + " PRIMARY KEY\n";
 }
 
 // Getting the primary key constraint in the form of an ALTER TABLE statement
@@ -608,26 +596,12 @@ SQLInfoPostgreSQL::GetSQLModifyColumnName(CString p_tablename,CString p_oldName,
   return sqlCode;
 }
 
-// Maximum length of an SQL statement
-unsigned long 
-SQLInfoPostgreSQL::GetMaxStatementLength() const
-{
-  return 0;//	No limit
-}
-
 // Prefix for altering the datatype in a MODIFY/ALTER statement
 CString 
 SQLInfoPostgreSQL::GetModifyDatatypePrefix() const
 {
   // SO: MODIFY <kolomnaam> TYPE <datatypenaam>
   return "TYPE ";
-}
-
-// Definition / Qualifier of a temporary table
-CString 
-SQLInfoPostgreSQL::GetCodeTemporaryTable() const
-{
-  return "GLOBAL TEMPORARY";
 }
 
 // Locking a table in row mode
@@ -720,20 +694,6 @@ SQLInfoPostgreSQL::GetAssignmentSelectParenthesis() const
   return false;
 }
 
-// Gets the UPPER function
-CString 
-SQLInfoPostgreSQL::GetUpperFunction(CString& p_expression) const
-{
-  return "UPPER(" + p_expression + ")";
-}
-
-// Gets the construction for 1 minute ago
-CString 
-SQLInfoPostgreSQL::GetInterval1MinuteAgo() const
-{
-  return "ERROR";
-}
-
 // Gets the construction / select for generating a new serial identity
 CString 
 SQLInfoPostgreSQL::GetSQLGenerateSerial(CString p_table) const
@@ -747,13 +707,6 @@ SQLInfoPostgreSQL::GetSQLEffectiveSerial(CString p_identity) const
 {
   // Already the correct value
   return p_identity;
-}
-
-// Gets the Not-NULL-Value statement of the database
-CString 
-SQLInfoPostgreSQL::GetNVLStatement(CString& p_test,CString& p_isnull) const
-{
-  return "{fn IFNULL(" + p_test + "," + p_isnull + ")}";
 }
 
 // Gets the sub transaction commands
@@ -853,11 +806,16 @@ SQLInfoPostgreSQL::GetSQLGetColumns(CString& /*p_user*/,CString& p_tableName) co
                    "      ,attnotnull\n"
                    "      ,(atttypmod - 4) / 65536\n"
                    "      ,(atttypmod - 4) % 65536\n"
-                   "  FROM pg_class, pg_attribute, pg_type\n"
+                   "  FROM pg_class\n"
+                   "      ,pg_attribute\n"
+                   "      ,pg_type\n"
+                   "      ,pg_attrdef\n"
                    " WHERE pg_class.relname = '" + tableName  + "'\n"
                    "   AND pg_class.relkind = 'r'\n"
                    "   AND pg_class.oid = pg_attribute.attrelid\n"
                    "   AND pg_attribute.atttypid = pg_type.oid\n"
+                   "   AND pg_attrdef.adrelid    = pg_attribute.attrelid\n"
+                   "   AND pg_attrdef.adnum      = pg_attribute.attnum\n"
                    "   AND attnum > 0\n"
                    "   AND typlen < 0\n"
                    "   AND typname = 'numeric'\n"
@@ -869,11 +827,16 @@ SQLInfoPostgreSQL::GetSQLGetColumns(CString& /*p_user*/,CString& p_tableName) co
                    "      ,attnotnull\n"
                    "      ,0\n"
                    "      ,0\n"
-                   "  FROM pg_class, pg_attribute, pg_type\n"
+                   "  FROM pg_class\n"
+                   "      ,pg_attribute\n"
+                   "      ,pg_type\n"
+                   "      ,pg_attrdef\n"
                    " WHERE pg_class.relname = '" + tableName  + "'\n"
                    "   AND pg_class.relkind = 'r'\n"
                    "   AND pg_class.oid = pg_attribute.attrelid\n"
                    "   AND pg_attribute.atttypid = pg_type.oid\n"
+                   "   AND pg_attrdef.adrelid    = pg_attribute.attrelid\n"
+                   "   AND pg_attrdef.adnum      = pg_attribute.attnum\n"
                    "   AND attnum > 0\n"
                    "   AND typlen < 0\n"
                    "   AND typname = 'varchar'\n"
@@ -885,11 +848,16 @@ SQLInfoPostgreSQL::GetSQLGetColumns(CString& /*p_user*/,CString& p_tableName) co
                    "      ,attnotnull\n"
                    "      ,0\n"
                    "      ,0\n"
-                   "  FROM pg_class, pg_attribute, pg_type\n"
+                   "  FROM pg_class\n"
+                   "      ,pg_attribute\n"
+                   "      ,pg_type\n"
+                   "      ,pg_attrdef\n"
                    " WHERE pg_class.relname = '" + tableName  + "'\n"
                    "   AND pg_class.relkind = 'r'\n"
                    "   AND pg_class.oid = pg_attribute.attrelid\n"
                    "   AND pg_attribute.atttypid = pg_type.oid\n"
+                   "   AND pg_attrdef.adrelid    = pg_attribute.attrelid\n"
+                   "   AND pg_attrdef.adnum      = pg_attribute.attnum\n"
                    "   AND attnum > 0\n"
                    "   AND typlen > 0\n"
                    "   AND typname not in ('numeric', 'varchar')\n"
@@ -1606,7 +1574,7 @@ SQLInfoPostgreSQL::GetSQLString(const CString& p_string) const
 {
   CString s = p_string;
   s.Replace("'","''");
-  CString kwoot = GetQuoteCharacter();
+  CString kwoot = GetKEYWORDQuoteCharacter();
   return  kwoot + s + kwoot;
 }
 

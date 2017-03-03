@@ -30,6 +30,7 @@
 #include "SQLQuery.h"
 #include "SQLWrappers.h"
 #include "SQLInfoDB.h"
+#include "SQLInfoMySQL.h"
 #include "SQLInfoAccess.h"
 #include "SQLInfoOracle.h"
 #include "SQLInfoFirebird.h"
@@ -427,18 +428,18 @@ SQLDatabase::CollectInfo()
 
   // Get the type of the database
   CString baseName = m_dbIdent.Left(6);
+  baseName.Trim();
        if(baseName.CompareNoCase("INFORM") == 0)  m_rdbmsType = RDBMS_INFORMIX;
   else if(baseName.CompareNoCase("ORACLE") == 0)  m_rdbmsType = RDBMS_ORACLE;
   else if(baseName.CompareNoCase("ACCESS") == 0)  m_rdbmsType = RDBMS_ACCESS;
   else if(baseName.CompareNoCase("MICROS") == 0)  m_rdbmsType = RDBMS_SQLSERVER;
   else if(baseName.CompareNoCase("FIREBI") == 0)  m_rdbmsType = RDBMS_FIREBIRD;
   else if(baseName.CompareNoCase("POSTGR") == 0)  m_rdbmsType = RDBMS_POSTGRESQL;
+  else if(baseName.CompareNoCase("MYSQL")  == 0)  m_rdbmsType = RDBMS_MYSQL;
   else
   {
+    // Generic default type, now supported by SQLInfoGenericODBC class
     m_rdbmsType = RDBMS_ODBC_STANDARD;
-    CString foutType("Generic ODBC database type: ");
-    foutType += m_dbIdent;
-    throw foutType;
   }
 
   // After findint the databasea type, set the rebinds
@@ -529,6 +530,7 @@ SQLDatabase::GetSQLInfoDB()
       case RDBMS_SQLSERVER: m_info = new SQLInfoSQLServer  (this); break;
       case RDBMS_POSTGRESQL:m_info = new SQLInfoPostgreSQL (this); break;
       case RDBMS_FIREBIRD:  m_info = new SQLInfoFirebird   (this); break;
+      case RDBMS_MYSQL:     m_info = new SQLInfoMySQL      (this); break;
       default:              m_info = new SQLInfoGenericODBC(this); break;
     }
   }
@@ -565,7 +567,7 @@ SQLDatabase::RealDatabaseName()
     if(GetSQLInfoDB())
     {
       // Get the SQLInfo<Database> implementation's name
-      databaseName   = m_info->GetPhysicalDatabaseName();
+      databaseName   = m_info->GetRDBMSPhysicalDatabaseName();
       m_namingMethod = "Physical database name";
     }
   }
@@ -686,6 +688,7 @@ SQLDatabase::GetDatabaseTypeName()
     case RDBMS_SQLSERVER:     return "SQL-Server";
     case RDBMS_POSTGRESQL:    return "PostgreSQL";
     case RDBMS_FIREBIRD:      return "Firebird";
+    case RDBMS_MYSQL:         return "MySQL";
     case RDBMS_ODBC_STANDARD: return "Generic ODBC";
   }
   return "";
@@ -1368,7 +1371,7 @@ SQLDatabase::GetCurrentTimestampQualifier()
 {
   if(GetSQLInfoDB())
   {
-    return m_info->GetSystemDateTimeKeyword();
+    return m_info->GetKEYWORDCurrentTimestamp();
   }
   return "";
 }
@@ -1465,7 +1468,7 @@ SQLDatabase::GetInterval1MinuteAgo()
 {
   if(GetSQLInfoDB())
   {
-    return m_info->GetInterval1MinuteAgo();
+    return m_info->GetKEYWORDInterval1MinuteAgo();
   }
   return "";
 }
@@ -1475,7 +1478,7 @@ SQLDatabase::GetUpper(CString p_veld)
 {
   if(GetSQLInfoDB())
   {
-    return m_info->GetUpperFunction(p_veld);
+    return m_info->GetKEYWORDUpper(p_veld);
   }
   return "";
 }
@@ -1485,7 +1488,7 @@ SQLDatabase::GetNVLStatement(CString p_test,CString p_isnull)
 {
   if(GetSQLInfoDB())
   {
-    return m_info->GetNVLStatement(p_test,p_isnull);
+    return m_info->GetKEYWORDStatementNVL(p_test,p_isnull);
   }
   return "";
 }

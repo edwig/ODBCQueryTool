@@ -49,18 +49,22 @@ SQLInfoAccess::~SQLInfoAccess()
 {
 }
 
+//////////////////////////////////////////////////////////////////////////
+//
+// GENERALS (Strings & Booleans) 
+//
+//////////////////////////////////////////////////////////////////////////
+
 // Get the database type
 DatabaseType 
-SQLInfoAccess::GetDatabaseType() const
+SQLInfoAccess::GetRDBMSDatabaseType() const
 {
   return RDBMS_SQLSERVER;
 }
 
-// BOOLEANS EN STRINGS
-// ====================================================================
-
-CString
-SQLInfoAccess::GetDatabaseVendorName() const
+// The name of the database vendor
+CString 
+SQLInfoAccess::GetRDBMSVendorName() const
 {
   // The name of the database vendor
   return "Microsoft";
@@ -68,222 +72,204 @@ SQLInfoAccess::GetDatabaseVendorName() const
 
 // Get the physical database name
 CString 
-SQLInfoAccess::GetPhysicalDatabaseName() const
+SQLInfoAccess::GetRDBMSPhysicalDatabaseName() const
 {
   return m_database->GetDatabaseName();
 }
 
 // System catalog is stored in uppercase in the database?
-bool 
-SQLInfoAccess::IsCatalogUpper() const
+bool
+SQLInfoAccess::GetRDBMSIsCatalogUpper() const
 {
   return false;
 }
 
 // System catalog supports full ISO schemas (same tables per schema)
-bool 
-SQLInfoAccess::GetUnderstandsSchemas() const
+bool
+SQLInfoAccess::GetRDBMSUnderstandsSchemas() const
 {
   return false;
 }
 
-// Supports database/ODBCdriver comments in sql
-bool 
-SQLInfoAccess::SupportsDatabaseComments() const
+// Supports database/ODBCdriver comments in SQL
+bool
+SQLInfoAccess::GetRDBMSSupportsComments() const
 {
   return false;
 }
 
 // Database can defer constraints until the end of a transaction
-bool 
-SQLInfoAccess::SupportsDeferredConstraints() const
+bool
+SQLInfoAccess::GetRDBMSSupportsDeferredConstraints() const
 {
   // SET CONSTRAINTS DEFERRED is supported
   return true;
 }
 
-// Database has ORDER BY with an expression, e.g. ORDER BY UPPER(column-name)
-// Work-around is "SELECT UPPER(column-name) AS something.....ORDER BY something
+// Database has ORDER BY with an expression, e.g. ORDER BY UPPER(columnname)
 bool
-SQLInfoAccess::SupportsOrderByExpression() const
+SQLInfoAccess::GetRDBMSSupportsOrderByExpression() const
 {
   return true;
 }
 
 // Supports the ODBC escape sequence {[?=] CALL procedure (?,?,?)}
 bool
-SQLInfoAccess::SupportsODBCCallEscapes() const
+SQLInfoAccess::GetRDBMSSupportsODBCCallEscapes() const
 {
   return true;
-}
-
-// Catalog query for the default value of a table's column
-CString 
-SQLInfoAccess::GetSQLStringDefaultValue(CString p_tableName,CString p_columnName) const
-{
-  // MS-Access cannot query this
-  return "";
-}
-
-// Keyword for the current date and time
-CString 
-SQLInfoAccess::GetSystemDateTimeKeyword () const
-{
-  return "GETDATE()"; // "now"
-} 
-
-// String for the current date
-CString
-SQLInfoAccess::GetSystemDateString() const
-{
-  CString dbLaatsteLogin;
-  //dbLaatsteLogin = "CONVERT(datetime, '" + Datum::Vandaag().AlsString() + "')";
-  return dbLaatsteLogin;
 }
 
 // If the database does not support the datatype TIME, it can be implemented as a DECIMAL
-bool 
-SQLInfoAccess::GetTimeIsDecimal() const
+bool
+SQLInfoAccess::GetRDBMSSupportsDatatypeTime() const
 {
-  // Time can be implemented as DECIMAL(17,16)
-  return false;
+  // Time can be implemented as TIME
+  return true;
 }
 
 // If the database does not support the datatype INTERVAL, it can be implemented as a DECIMAL
-bool 
-SQLInfoAccess::GetIntervalIsDecimal() const
+bool
+SQLInfoAccess::GetRDBMSSupportsDatatypeInterval() const
 {
-  // INTERVAL can be implemented as DECIMAL
-  return true;
+  // Interval not supported, can be implemented as DECIMALS
+  return false;
+}
+
+// Gets the maximum length of an SQL statement
+unsigned long 
+SQLInfoAccess::GetRDBMSMaxStatementLength() const
+{
+  // No limit
+  return 0; 
+}
+
+// KEYWORDS
+
+// Keyword for the current date and time
+CString 
+SQLInfoAccess::GetKEYWORDCurrentTimestamp() const
+{
+  return "GETDATE()";
+}
+
+// String for the current date
+CString 
+SQLInfoAccess::GetKEYWORDCurrentDate() const
+{
+  return "GETDATE()";
 }
 
 // Get the concatenation operator
 CString 
-SQLInfoAccess::GetConcatanationOperator() const
+SQLInfoAccess::GetKEYWORDConcatanationOperator() const
 {
-  return "+";    
+  return "+";
 }
 
 // Get quote character for strings
 CString 
-SQLInfoAccess::GetQuoteCharacter() const
+SQLInfoAccess::GetKEYWORDQuoteCharacter() const
 {
-  return "'";    
+  return "\'";
 }
 
 // Get default NULL for parameter list input
 CString 
-SQLInfoAccess::GetDefaultNULL() const
+SQLInfoAccess::GetKEYWORDParameterDefaultNULL() const
 {
-  return " = NULL ";    
+  return "= NULL";
 }
 
 // Parameter is for INPUT and OUTPUT in parameter list
 CString 
-SQLInfoAccess::GetParameterINOUT() const
+SQLInfoAccess::GetKEYWORDParameterINOUT() const
 {
-  return "OUTPUT ";    
+  return "OUTPUT";
 }
 
 // Parameter is for OUTPUT only in parameter list
 CString 
-SQLInfoAccess::GetParameterOUT() const
+SQLInfoAccess::GetKEYWORDParameterOUT() const
 {
-  return "OUTPUT ";    
+  return "OUTPUT";
 }
 
-// Get the datatype of the audited user (h_user) in a stored procedure
+// Get datatype of the IDENTITY primary key in a Network database
 CString 
-SQLInfoAccess::GetAuditUserDatatype() const
+SQLInfoAccess::GetKEYWORDNetworkPrimaryKeyType() const
 {
-  return "VARCHAR(50)";
-} 
-
-// Get the datatype of the audited user (h_user) as variable in a stored-procedure
-CString 
-SQLInfoAccess::GetAuditUserDatatypeAsVariable() const
-{
-  return "VARCHAR(50)";
-} 
-
-// Get datatype of the IDENTITY primary key
-CString 
-SQLInfoAccess::GetPrimaryKeyType() const
-{
-  return "INTEGER IDENTITY(1, 1)";
+  return "INTEGER IDENTITY(1,1)";
 }
 
-// Get datatype for Moment
+// Get datatype for timestamp (year to second)
 CString 
-SQLInfoAccess::GetDatetimeYearToSecondType() const
+SQLInfoAccess::GetKEYWORDTypeTimestamp() const
 {
   return "DATETIME";
 }
 
-// Separator between two alter-constraints in an alter-table statement
-CString
-SQLInfoAccess::GetAlterConstraintSeparator() const
-{
-  return ",";
-}
-
-// Inner Join Keyword
-CString 
-SQLInfoAccess::GetInnerJoinKeyword() const
-{
-  return "INNER JOIN ";
-}
-
-// Outer join keyword
-CString  
-SQLInfoAccess::GetOuterJoinKeyword() const
-{
-  return "LEFT OUTER JOIN ";
-}
-
-// Inner Join Keyword for use in views.
-CString 
-SQLInfoAccess::GetViewInnerJoinKeyword() const
-{
-  return "INNER JOIN";
-}
-
-
-// Outer join keyword for use in views
-CString 
-SQLInfoAccess::GetViewOuterJoinKeyword() const
-{
-  return "LEFT OUTER JOIN";
-}
-
-// Get the closure for an outer-join
-CString 
-SQLInfoAccess::GetOuterJoinClosure() const
-{
-  return "";
-}
-
-// Outer join sign
-CString  
-SQLInfoAccess::GetOuterJoinSign() const
-{
-  return "";
-}
-
 // Prefix for a parameter in a stored procedure
-CString
-SQLInfoAccess::GetSPParamPrefix() const
+CString 
+SQLInfoAccess::GetKEYWORDParameterPrefix() const
 {
   return "@";
 }
 
 // Get select part to add new record identity to a table
-// Can be special column like 'OID'
+// Can be special column like 'OID' or a sequence select
 CString 
-SQLInfoAccess::GetIdentityString(CString& p_tablename,CString /*p_postfix = "_seq"*/) const
+SQLInfoAccess::GetKEYWORDIdentityString(CString& p_tablename,CString /*p_postfix*/ /*= "_seq"*/) const
 {
   return "IDENT_CURRENT('" + p_tablename + "') + " + "IDENT_INCR('" + p_tablename + "')";
 }
+
+// Gets the UPPER function
+CString 
+SQLInfoAccess::GetKEYWORDUpper(CString& p_expression) const
+{
+  return "{fn UCASE(" + p_expression + ")}";
+}
+
+// Gets the construction for 1 minute ago
+CString 
+SQLInfoAccess::GetKEYWORDInterval1MinuteAgo() const
+{
+  // Not supported by MS-Access
+  return "ERROR";
+}
+
+// Gets the Not-NULL-Value statement of the database
+CString 
+SQLInfoAccess::GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) const
+{
+  return CString("IIF(ISNULL(") + p_test + ")," + p_isnull + "," + p_test + ")";
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// CATALOG
+//
+//////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// SQL/PSM
+//
+//////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// OLD INTERFACE
+//
+//////////////////////////////////////////////////////////////////////////
+
+// BOOLEANS EN STRINGS
+// ====================================================================
 
 // Get a query to create a temporary table from a select statement
 CString 
@@ -356,7 +342,7 @@ SQLInfoAccess::GetPrimaryKeyDefinition(CString p_schema,CString p_tableName,bool
   // The primary key constraint is not directly generated after the column
   // to ensure it will use the named index in the correct tablespace
   // Otherwise the index name and tablespace cannot be defined and will be auto-generated
-  return GetPrimaryKeyType() + " NOT NULL\n";
+  return GetKEYWORDNetworkPrimaryKeyType() + " NOT NULL\n";
 }
 
 // Get the constraint form of a primary key to be added to a table after creation of that table
@@ -541,26 +527,12 @@ SQLInfoAccess::GetSQLModifyColumnName(CString p_tablename,CString p_oldName,CStr
   return sqlCode;
 }
 
-// Gets the maximum length of an SQL statement
-unsigned long 
-SQLInfoAccess::GetMaxStatementLength() const
-{
-  return 0;		// No limit
-}
-
 // Gets the prefix needed for altering the datatype of a column in a MODIFY/ALTER
 CString 
 SQLInfoAccess::GetModifyDatatypePrefix() const
 {
   // Just give the needed datatype. No prefix needed
   // SO: MODIFY <kolomnaam> <datatypenaam>
-  return "";
-}
-
-// Code to create a temporary table (qualifier)
-CString 
-SQLInfoAccess::GetCodeTemporaryTable() const
-{
   return "";
 }
 
@@ -666,20 +638,6 @@ SQLInfoAccess::GetAssignmentSelectParenthesis() const
   return false;
 }
 
-// Gets the UPPER function
-CString 
-SQLInfoAccess::GetUpperFunction(CString& p_expression) const
-{
-  return "{fn UCASE(" + p_expression + ")}";
-}
-
-// Gets the construction for 1 minute ago
-CString 
-SQLInfoAccess::GetInterval1MinuteAgo() const
-{
-  return "ERROR";
-}
-
 // Gets the construction / select for generating a new serial identity
 CString 
 SQLInfoAccess::GetSQLGenerateSerial(CString p_table) const
@@ -693,13 +651,6 @@ CString
 SQLInfoAccess::GetSQLEffectiveSerial(CString p_identity) const
 {
   return "SELECT @@IDENTITY";
-}
-
-// Gets the Not-NULL-Value statement of the database
-CString 
-SQLInfoAccess::GetNVLStatement(CString& p_test,CString& p_isnull) const
-{
-  return CString("IIF(ISNULL(") + p_test + ")," + p_isnull + "," + p_test + ")";
 }
 
 // Gets the sub-transaction commands
@@ -1341,7 +1292,7 @@ SQLInfoAccess::GetSQLString(const CString& p_string) const
 {
   CString s = p_string;
   s.Replace("'","''");
-  CString kwoot = GetQuoteCharacter();
+  CString kwoot = GetKEYWORDQuoteCharacter();
   return  kwoot + s + kwoot;
 }
 

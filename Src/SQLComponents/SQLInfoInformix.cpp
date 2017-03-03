@@ -49,26 +49,31 @@ SQLInfoInformix::~SQLInfoInformix()
 {
 }
 
-// BOOLEANS AND STRINGS
-// ===================================================================
+//////////////////////////////////////////////////////////////////////////
+//
+// GENERALS (Strings & Booleans) 
+//
+//////////////////////////////////////////////////////////////////////////
 
-// Get DatabaseType
-DatabaseType 
-SQLInfoInformix::GetDatabaseType() const
+// Get the database type
+// DatabaseType GetDatabaseType() const;
+DatabaseType
+SQLInfoInformix::GetRDBMSDatabaseType() const
 {
   return RDBMS_INFORMIX;
 }
 
 // The name of the database vendor
 CString
-SQLInfoInformix::GetDatabaseVendorName() const
+SQLInfoInformix::GetRDBMSVendorName() const
 {
-  return "IBM Informix";
+  // The name of the database vendor
+  return "IBM-Informix";
 }
 
 // Get the physical database name
-CString 
-SQLInfoInformix::GetPhysicalDatabaseName() const
+CString
+SQLInfoInformix::GetRDBMSPhysicalDatabaseName() const
 {
   // Oops. We have an INFORMIX CLI bug
   // Versions of the INFORMIX CLI above 2.5 reflect in the connection string
@@ -88,220 +93,201 @@ SQLInfoInformix::GetPhysicalDatabaseName() const
 }
 
 // System catalog is stored in uppercase in the database?
-bool 
-SQLInfoInformix::IsCatalogUpper () const
+bool
+SQLInfoInformix::GetRDBMSIsCatalogUpper() const
 {
   return false;
 }
 
 // System catalog supports full ISO schemas (same tables per schema)
 bool
-SQLInfoInformix::GetUnderstandsSchemas() const
+SQLInfoInformix::GetRDBMSUnderstandsSchemas() const
 {
   return false;
 }
-// Supports database/ODBCdriver comments in sql
-bool 
-SQLInfoInformix::SupportsDatabaseComments() const
+
+// Supports database/ODBCdriver comments in SQL
+bool
+SQLInfoInformix::GetRDBMSSupportsComments() const
 {
   // Does not work anymore from and above version 3.34 of KIT 2.70-TC3
   return false;
 }
 
 // Database can defer constraints until the end of a transaction
-bool 
-SQLInfoInformix::SupportsDeferredConstraints() const
+bool
+SQLInfoInformix::GetRDBMSSupportsDeferredConstraints() const
 {
   // SET CONSTRAINTS DEFERRED is supported
   return true;
 }
 
-// Database has ORDER BY with an expression, e.g. ORDER BY UPPER(column-name)
-// Work-around is "SELECT UPPER(column-name) AS something.....ORDER BY something
+// Database has ORDER BY with an expression, e.g. ORDER BY UPPER(columnname)
 bool
-SQLInfoInformix::SupportsOrderByExpression() const
+SQLInfoInformix::GetRDBMSSupportsOrderByExpression() const
 {
   return false;
 }
 
 // Supports the ODBC escape sequence {[?=] CALL procedure (?,?,?)}
 bool
-SQLInfoInformix::SupportsODBCCallEscapes() const
+SQLInfoInformix::GetRDBMSSupportsODBCCallEscapes() const
 {
   return true;
 }
 
-// Catalog query for the default value of a table's column
-CString 
-SQLInfoInformix::GetSQLStringDefaultValue(CString p_tableName,CString p_columnName) const
-{   
-  return  "select default\n"
-          "  from sysdefaults d\n"
-          "      ,systables   t\n"
-          "      ,syscolumns  c\n"
-          " where t.tabid   = d.tabid\n" 
-          "   and t.tabid   = c.tabid\n"
-          "   and d.colno   = c.colno\n"
-          "   and t.tabname = '" + p_tableName   + "'\n"
-          "   and c.colname = '" + p_columnName  + "'";   
+// If the database does not support the datatype TIME, it can be implemented as a DECIMAL
+bool
+SQLInfoInformix::GetRDBMSSupportsDatatypeTime() const
+{
+  // Time can be implemented as TIME
+  return true;
 }
 
+// If the database does not support the datatype INTERVAL, it can be implemented as a DECIMAL
+bool
+SQLInfoInformix::GetRDBMSSupportsDatatypeInterval() const
+{
+  // Interval supported
+  return true;
+}
+
+// Gets the maximum length of an SQL statement
+unsigned long 
+SQLInfoInformix::GetRDBMSMaxStatementLength() const
+{
+  // The current limit of the INFORMIX ODBC driver is MAX_UINT16
+  // We limit somewhat lower, just to be on the sure side
+  return 64000;
+}
+
+// KEYWORDS
+
 // Keyword for the current date and time
-CString 
-SQLInfoInformix::GetSystemDateTimeKeyword() const
+CString
+SQLInfoInformix::GetKEYWORDCurrentTimestamp() const
 {
   return "current";
-}  
+}
 
 // String for the current date
 CString
-SQLInfoInformix::GetSystemDateString() const
+SQLInfoInformix::GetKEYWORDCurrentDate() const
 {
   return "current_date";
 }
 
-// If the database does not support the datatype TIME, it can be implemented as a DECIMAL
-bool 
-SQLInfoInformix::GetTimeIsDecimal() const
-{
-  // TIJD is implemented as TIME :-)
-  return false;
-}
-
-// If the database does not support the datatype INTERVAL, it can be implemented as a DECIMAL
-bool 
-SQLInfoInformix::GetIntervalIsDecimal() const
-{
-  // Interval is implemeted in Informix as INTERVAL :-)
-  return false;
-}
-
 // Get the concatenation operator
-CString 
-SQLInfoInformix::GetConcatanationOperator() const
+CString
+SQLInfoInformix::GetKEYWORDConcatanationOperator() const
 {
-  return "||";    
+  return "||";
 }
 
 // Get quote character for strings
-CString 
-SQLInfoInformix::GetQuoteCharacter() const
+CString
+SQLInfoInformix::GetKEYWORDQuoteCharacter() const
 {
-  return "'";    
+  return "\'";
 }
 
 // Get default NULL for parameter list input
-CString 
-SQLInfoInformix::GetDefaultNULL() const
+CString
+SQLInfoInformix::GetKEYWORDParameterDefaultNULL() const
 {
-  return "";    
+  // Standard, no definition defines the NULL state
+  return "";
 }
 
 // Parameter is for INPUT and OUTPUT in parameter list
-CString 
-SQLInfoInformix::GetParameterINOUT() const
+CString
+SQLInfoInformix::GetKEYWORDParameterINOUT() const
 {
-  return "";    
+  return "";
 }
 
 // Parameter is for OUTPUT only in parameter list
-CString 
-SQLInfoInformix::GetParameterOUT() const
+CString
+SQLInfoInformix::GetKEYWORDParameterOUT() const
 {
-  return "";    
+  return "";
 }
 
-// Get the datatype of the audited user (h_user) in a stored procedure
-CString 
-SQLInfoInformix::GetAuditUserDatatype() const
-{
-  return "varchar(50)";
-}
-
-// Get the datatype of the audited user (h_user) as variable in a stored-procedure
-CString 
-SQLInfoInformix::GetAuditUserDatatypeAsVariable() const
-{
-  return "varchar(50)";
-}
-
-// Get datatype of the IDENTITY primary key
-CString 
-SQLInfoInformix::GetPrimaryKeyType() const
+// Get datatype of the IDENTITY primary key in a Network database
+CString
+SQLInfoInformix::GetKEYWORDNetworkPrimaryKeyType() const
 {
   return "serial";
 }
 
-// Get datatype for timestamp
-CString 
-SQLInfoInformix::GetDatetimeYearToSecondType() const
+// Get datatype for timestamp (year to second)
+CString
+SQLInfoInformix::GetKEYWORDTypeTimestamp() const
 {
   return "datetime year to second";
 }
 
-// Separator between two alter-constraints in an alter-table statement
-CString 
-SQLInfoInformix::GetAlterConstraintSeparator() const
-{
-  return ",";
-}
-
-// Inner Join Keyword
-CString 
-SQLInfoInformix::GetInnerJoinKeyword() const
-{
-  return "";
-}
-
-// Outer join keyword
-CString  
-SQLInfoInformix::GetOuterJoinKeyword() const
-{
-  return "OUTER(";
-}
-
-// Inner Join Keyword for use in views.
-CString 
-SQLInfoInformix::GetViewInnerJoinKeyword() const
-{
-  return "INNER JOIN";
-}
-
-// Outer join keyword for use in views
-CString 
-SQLInfoInformix::GetViewOuterJoinKeyword() const
-{
-  return "LEFT OUTER JOIN";
-}
-
-// Get the closure for an outer-join
-CString 
-SQLInfoInformix::GetOuterJoinClosure() const
-{
-  return ")";
-}
-
-// Get the special Outer Join sign for the while-conditions
-CString  
-SQLInfoInformix::GetOuterJoinSign() const
-{
-  return "";
-}
-
 // Prefix for a parameter in a stored procedure
 CString
-SQLInfoInformix::GetSPParamPrefix() const
+SQLInfoInformix::GetKEYWORDParameterPrefix() const
 {
   return "";
 }
 
 // Get select part to add new record identity to a table
-// Can be special column like 'OID'
-CString 
-SQLInfoInformix::GetIdentityString(CString& /*p_tablename*/,CString /*p_postfix /*="_seq"*/) const
+// Can be special column like 'OID' or a sequence select
+CString
+SQLInfoInformix::GetKEYWORDIdentityString(CString& /*p_tablename*/,CString /*p_postfix*/ /*= "_seq"*/) const
 {
+  // Insert 0 for a SERIAL column
   return "0";
 }
+
+// Gets the UPPER function
+CString
+SQLInfoInformix::GetKEYWORDUpper(CString& p_expression) const
+{
+  return "UPPER(" + p_expression + ")";
+}
+
+// Gets the construction for 1 minute ago
+CString
+SQLInfoInformix::GetKEYWORDInterval1MinuteAgo() const
+{
+  return "(CURRENT - INTERVAL (1) MINUTE TO MINUTE)";
+}
+
+// Gets the Not-NULL-Value statement of the database
+CString
+SQLInfoInformix::GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) const
+{
+  return CString("NVL(") + p_test + "," + p_isnull + ")";
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// CATALOG
+//
+//////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// SQL/PSM
+//
+//////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// OLD INTERFACE
+//
+//////////////////////////////////////////////////////////////////////////
+
+// BOOLEANS AND STRINGS
+// ===================================================================
 
 // Get a query to create a temporary table from a select statement
 CString 
@@ -358,11 +344,11 @@ SQLInfoInformix::GetPrimaryKeyDefinition(CString p_schema,CString p_tableName,bo
 {
   if(p_temporary)
   {
-    return GetPrimaryKeyType() + " PRIMARY KEY\n";
+    return GetKEYWORDNetworkPrimaryKeyType() + " PRIMARY KEY\n";
   }
   else
   {
-    return GetPrimaryKeyType() + " PRIMARY KEY CONSTRAINT pk_" + p_tableName + "\n";
+    return GetKEYWORDNetworkPrimaryKeyType() + " PRIMARY KEY CONSTRAINT pk_" + p_tableName + "\n";
   }
 }
 
@@ -544,15 +530,6 @@ SQLInfoInformix::GetSQLModifyColumnName(CString p_tablename,CString p_oldName,CS
   return "rename column " + p_tablename + "." + p_oldName + " to " + p_newName;
 }
 
-// Gets the maximum length of an SQL statement
-unsigned long 
-SQLInfoInformix::GetMaxStatementLength() const
-{
-  // The current limit of the INFORMIX ODBC driver is MAX_UINT16
-  // We limit somewhat lower, just to be on the sure side
-  return 64000;		
-}
-
 // Gets the prefix needed for altering the datatype of a column in a MODIFY/ALTER
 CString 
 SQLInfoInformix::GetModifyDatatypePrefix() const
@@ -560,13 +537,6 @@ SQLInfoInformix::GetModifyDatatypePrefix() const
   // At the changing of the datatype, just specify the new 
   // SO: MODIFY <columname> <datatype>
   return "";
-}
-
-// Code to create a temporary table (qualifier)
-CString 
-SQLInfoInformix::GetCodeTemporaryTable() const
-{
-  return "TEMP";
 }
 
 // Code to define a table in row-locking mode
@@ -660,20 +630,6 @@ SQLInfoInformix::GetAssignmentSelectParenthesis() const
   return true;
 }
 
-// Gets the UPPER function
-CString 
-SQLInfoInformix::GetUpperFunction(CString& p_expression) const
-{
-  return "UPPER(" + p_expression + ")";
-}
-
-// Gets the construction for 1 minute ago
-CString 
-SQLInfoInformix::GetInterval1MinuteAgo() const
-{
-  return "(CURRENT - INTERVAL (1) MINUTE TO MINUTE)";
-}
-
 // Gets the construction / select for generating a new serial identity
 CString 
 SQLInfoInformix::GetSQLGenerateSerial(CString p_table) const
@@ -688,13 +644,6 @@ SQLInfoInformix::GetSQLEffectiveSerial(CString p_identity) const
 {
   return "SELECT DBINFO('sqlca.sqlerrd1')\n"
          "  FROM systables WHERE tabid = 1";
-}
-
-// Gets the Not-NULL-Value statement of the database
-CString 
-SQLInfoInformix::GetNVLStatement(CString& p_test,CString& p_isnull) const
-{
-  return CString("NVL(") + p_test + "," + p_isnull + ")";
 }
 
 // Gets the sub transaction commands
@@ -787,10 +736,14 @@ SQLInfoInformix::GetSQLGetColumns(CString& /*p_user*/,CString& p_tableName) cons
                    "      ,col.colno\n"
                    "      ,col.coltype\n"
                    "      ,col.collength\n"
-                   "  FROM systables tab\n"
-                   "      ,syscolumns col\n"
+                   "      ,def.default\n"
+                   "  FROM systables   tab\n"
+                   "      ,syscolumns  col\n"
+                   "      ,sysdefaults def\n"
                    " WHERE tab.tabname = '" + lowerName + "'\n"
                    "   AND col.tabid   = tab.tabid\n"
+                   "   AND def.tabid   = tab.tabid\n"
+                   "   AND def.colno   = col.colno\n"
                    " ORDER BY colno";
   return select;
 }
@@ -1483,7 +1436,7 @@ SQLInfoInformix::GetSQLString(const CString& p_string) const
 {
   CString str = p_string;
   str.Replace("'","''");
-  CString kwoot = GetQuoteCharacter();
+  CString kwoot = GetKEYWORDQuoteCharacter();
   return kwoot + str + kwoot;
 }
 

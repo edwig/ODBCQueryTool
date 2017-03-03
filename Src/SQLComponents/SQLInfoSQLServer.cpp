@@ -49,26 +49,31 @@ SQLInfoSQLServer::~SQLInfoSQLServer()
 {
 }
 
+//////////////////////////////////////////////////////////////////////////
+//
+// GENERALS (Strings & Booleans) 
+//
+//////////////////////////////////////////////////////////////////////////
+
 // Get the database type
-DatabaseType 
-SQLInfoSQLServer::GetDatabaseType() const
+// DatabaseType GetDatabaseType() const;
+DatabaseType
+SQLInfoSQLServer::GetRDBMSDatabaseType() const
 {
   return RDBMS_SQLSERVER;
 }
 
-// BOOLEANS EN STRINGS
-// ====================================================================
-
+// The name of the database vendor
 CString
-SQLInfoSQLServer::GetDatabaseVendorName() const
+SQLInfoSQLServer::GetRDBMSVendorName() const
 {
   // The name of the database vendor
   return "Microsoft";
 }
 
 // Get the physical database name
-CString 
-SQLInfoSQLServer::GetPhysicalDatabaseName() const
+CString
+SQLInfoSQLServer::GetRDBMSPhysicalDatabaseName() const
 {
   CString query = "SELECT name\n"
                   "  FROM master.dbo.sysdatabases\n"
@@ -83,219 +88,197 @@ SQLInfoSQLServer::GetPhysicalDatabaseName() const
 }
 
 // System catalog is stored in uppercase in the database?
-bool 
-SQLInfoSQLServer::IsCatalogUpper() const
+bool
+SQLInfoSQLServer::GetRDBMSIsCatalogUpper() const
 {
   return false;
 }
 
 // System catalog supports full ISO schemas (same tables per schema)
 bool
-SQLInfoSQLServer::GetUnderstandsSchemas() const
+SQLInfoSQLServer::GetRDBMSUnderstandsSchemas() const
 {
   return true;
 }
 
-// Supports database/ODBCdriver comments in sql
-bool 
-SQLInfoSQLServer::SupportsDatabaseComments() const
+// Supports database/ODBCdriver comments in SQL
+bool
+SQLInfoSQLServer::GetRDBMSSupportsComments() const
 {
-  return false;
+  return true;
 }
 
 // Database can defer constraints until the end of a transaction
-bool 
-SQLInfoSQLServer::SupportsDeferredConstraints() const
+bool
+SQLInfoSQLServer::GetRDBMSSupportsDeferredConstraints() const
 {
   // SET CONSTRAINTS DEFERRED is supported
   return true;
 }
 
-// Database has ORDER BY with an expression, e.g. ORDER BY UPPER(column-name)
-// Work-around is "SELECT UPPER(column-name) AS something.....ORDER BY something
+// Database has ORDER BY with an expression, e.g. ORDER BY UPPER(columnname)
 bool
-SQLInfoSQLServer::SupportsOrderByExpression() const
+SQLInfoSQLServer::GetRDBMSSupportsOrderByExpression() const
 {
   return true;
 }
 
 // Supports the ODBC escape sequence {[?=] CALL procedure (?,?,?)}
 bool
-SQLInfoSQLServer::SupportsODBCCallEscapes() const
+SQLInfoSQLServer::GetRDBMSSupportsODBCCallEscapes() const
 {
   return true;
 }
 
-// Catalogs query for the default value of a table's column
-CString 
-SQLInfoSQLServer::GetSQLStringDefaultValue(CString p_tableName,CString p_columnName) const
+// If the database does not support the datatype TIME, it can be implemented as a DECIMAL
+bool
+SQLInfoSQLServer::GetRDBMSSupportsDatatypeTime() const
 {
-  CString query = "SELECT replace(replace('#' + text + '#', '#(', ''), ')#', '')\n"
-                  "  FROM dbo.sysobjects obj, dbo.syscolumns col, dbo.syscomments com\n"
-                  " WHERE obj.name = '" + p_tableName + "'\n"
-                  "   AND obj.Id = col.id\n"
-                  "   AND col.name = '" + p_columnName + "'\n"
-                  "   AND col.cdefault = com.id\n";
-  return query;
+  // Time can be implemented as TIME
+  return true;
 }
 
-// Keyword for the current date and time
-CString 
-SQLInfoSQLServer::GetSystemDateTimeKeyword () const
+// If the database does not support the datatype INTERVAL, it can be implemented as a DECIMAL
+bool
+SQLInfoSQLServer::GetRDBMSSupportsDatatypeInterval() const
 {
-  return "GETDATE()"; // current_timestamp also reported
-} 
+  // Interval not supported, can be implemented as DECIMALS
+  return false;
+}
 
-// String for the current date
+// Gets the maximum length of an SQL statement
+unsigned long
+SQLInfoSQLServer::GetRDBMSMaxStatementLength() const
+{
+  // No Limit
+  return 0;
+}
+
+// KEYWORDS
+
+// Keyword for the current date and time
 CString
-SQLInfoSQLServer::GetSystemDateString() const
+SQLInfoSQLServer::GetKEYWORDCurrentTimestamp() const
 {
   return "GETDATE()";
 }
 
-// If the database does not support the datatype TIME, it can be implemented as a DECIMAL
-bool 
-SQLInfoSQLServer::GetTimeIsDecimal() const
+// String for the current date
+CString
+SQLInfoSQLServer::GetKEYWORDCurrentDate() const
 {
-  // Time can be implemented as DECIMAL(17,16)
-  return false;
-}
-
-// If the database does not support the datatype INTERVAL, it can be implemented as a DECIMAL
-bool 
-SQLInfoSQLServer::GetIntervalIsDecimal() const
-{
-  // INTERVAL can be implemented as DECIMAL
-  return true;
+  return "GETDATE()";
 }
 
 // Get the concatenation operator
-CString 
-SQLInfoSQLServer::GetConcatanationOperator() const
+CString
+SQLInfoSQLServer::GetKEYWORDConcatanationOperator() const
 {
-  return "+";    
+  return "+";
 }
 
 // Get quote character for strings
-CString 
-SQLInfoSQLServer::GetQuoteCharacter() const
+CString
+SQLInfoSQLServer::GetKEYWORDQuoteCharacter() const
 {
-  return "'";    
+  return "\'";
 }
 
 // Get default NULL for parameter list input
-CString 
-SQLInfoSQLServer::GetDefaultNULL() const
+CString
+SQLInfoSQLServer::GetKEYWORDParameterDefaultNULL() const
 {
-  return " = NULL ";    
+  return "= NULL";
 }
 
 // Parameter is for INPUT and OUTPUT in parameter list
-CString 
-SQLInfoSQLServer::GetParameterINOUT() const
+CString
+SQLInfoSQLServer::GetKEYWORDParameterINOUT() const
 {
-  return "OUTPUT ";    
+  return "OUTPUT";
 }
-  
+
 // Parameter is for OUTPUT only in parameter list
-CString 
-SQLInfoSQLServer::GetParameterOUT() const
+CString
+SQLInfoSQLServer::GetKEYWORDParameterOUT() const
 {
-  return "OUTPUT ";    
+  return "OUTPUT";
 }
 
-// Get the datatype of the audited user (h_user) in a stored procedure
-CString 
-SQLInfoSQLServer::GetAuditUserDatatype() const
+// Get datatype of the IDENTITY primary key in a Network database
+CString
+SQLInfoSQLServer::GetKEYWORDNetworkPrimaryKeyType() const
 {
-  return "VARCHAR(50)";
-} 
-
-// Get the datatype of the audited user (h_user) as variable in a stored-procedure
-CString 
-SQLInfoSQLServer::GetAuditUserDatatypeAsVariable() const
-{
-  return "VARCHAR(50)";
-} 
-
-// Get datatype of the IDENTITY primary key
-CString 
-SQLInfoSQLServer::GetPrimaryKeyType() const
-{
-  return "INTEGER IDENTITY(1, 1)";
+  return "INTEGER IDENTITY(1,1)";
 }
 
-// Get datatype for a timestamp
-CString 
-SQLInfoSQLServer::GetDatetimeYearToSecondType() const
+// Get datatype for timestamp (year to second)
+CString
+SQLInfoSQLServer::GetKEYWORDTypeTimestamp() const
 {
   return "DATETIME";
 }
 
-// Separator between two alter-constraints in an alter-table statement
-CString
-SQLInfoSQLServer::GetAlterConstraintSeparator() const
-{
-  return ",";
-}
-
-// Inner Join Keyword
-CString 
-SQLInfoSQLServer::GetInnerJoinKeyword() const
-{
-  return "INNER JOIN ";
-}
-
-// Outer join keyword
-CString  
-SQLInfoSQLServer::GetOuterJoinKeyword() const
-{
-  return "LEFT OUTER JOIN ";
-}
-
-// Inner Join Keyword for use in views.
-CString 
-SQLInfoSQLServer::GetViewInnerJoinKeyword() const
-{
-  return "INNER JOIN";
-}
-
-
-// Outer join keyword for use in views
-CString 
-SQLInfoSQLServer::GetViewOuterJoinKeyword() const
-{
-  return "LEFT OUTER JOIN";
-}
-
-// Get the closure for an outer-join
-CString 
-SQLInfoSQLServer::GetOuterJoinClosure() const
-{
-  return "";
-}
-
-// Outer join sign
-CString  
-SQLInfoSQLServer::GetOuterJoinSign() const
-{
-  return "";
-}
-
 // Prefix for a parameter in a stored procedure
 CString
-SQLInfoSQLServer::GetSPParamPrefix() const
+SQLInfoSQLServer::GetKEYWORDParameterPrefix() const
 {
   return "@";
 }
 
 // Get select part to add new record identity to a table
-// Can be special column like 'OID'
-CString 
-SQLInfoSQLServer::GetIdentityString(CString& p_tablename,CString /*p_postfix = "_seq"*/) const
+// Can be special column like 'OID' or a sequence select
+CString
+SQLInfoSQLServer::GetKEYWORDIdentityString(CString& p_tablename,CString /*p_postfix*/ /*= "_seq"*/) const
 {
   return "IDENT_CURRENT('" + p_tablename + "') + " + "IDENT_INCR('" + p_tablename + "')";
 }
+
+// Gets the UPPER function
+CString
+SQLInfoSQLServer::GetKEYWORDUpper(CString& p_expression) const
+{
+  return "UPPER(" + p_expression + ")";
+}
+
+// Gets the construction for 1 minute ago
+CString
+SQLInfoSQLServer::GetKEYWORDInterval1MinuteAgo() const
+{
+  return "dateadd(minute,-1,current_timestamp)";
+}
+
+// Gets the Not-NULL-Value statement of the database
+CString
+SQLInfoSQLServer::GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) const
+{
+  return CString("NVL(") + p_test + "," + p_isnull + ")";
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// CATALOG
+//
+//////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// SQL/PSM
+//
+//////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// OLD INTERFACE
+//
+//////////////////////////////////////////////////////////////////////////
+
+// BOOLEANS EN STRINGS
+// ====================================================================
 
 // Get a query to create a temporary table from a select statement
 CString 
@@ -372,7 +355,7 @@ SQLInfoSQLServer::GetPrimaryKeyDefinition(CString p_schema,CString p_tableName,b
   // The primary key constraint is not directly generated after the column
   // to ensure it will use the named index in the correct tablespace
   // Otherwise the index name and tablespace cannot be defined and will be auto-generated
-  return GetPrimaryKeyType() + " NOT NULL CONSTRAINT pk_" + p_tableName + " PRIMARY KEY\n";
+  return GetKEYWORDNetworkPrimaryKeyType() + " NOT NULL CONSTRAINT pk_" + p_tableName + " PRIMARY KEY\n";
 }
 
 // Get the constraint form of a primary key to be added to a table after creation of that table
@@ -566,26 +549,12 @@ SQLInfoSQLServer::GetSQLModifyColumnName(CString p_tablename,CString p_oldName,C
   return sqlCode;
 }
 
-// Gets the maximum length of an SQL statement
-unsigned long 
-SQLInfoSQLServer::GetMaxStatementLength() const
-{
-  return 0;		// No limit
-}
-
 // Gets the prefix needed for altering the datatype of a column in a MODIFY/ALTER
 CString 
 SQLInfoSQLServer::GetModifyDatatypePrefix() const
 {
   // Just provide the new datatype without the TYPE word
   // SO: MODIFY <kolomnaam> <datatypenaam>
-  return "";
-}
-
-// Code to create a temporary table (qualifier)
-CString 
-SQLInfoSQLServer::GetCodeTemporaryTable() const
-{
   return "";
 }
 
@@ -691,20 +660,6 @@ SQLInfoSQLServer::GetAssignmentSelectParenthesis() const
   return false;
 }
 
-// Gets the UPPER function
-CString 
-SQLInfoSQLServer::GetUpperFunction(CString& p_expression) const
-{
-  return "UPPER(" + p_expression + ")";
-}
-
-// Gets the construction for 1 minute ago
-CString 
-SQLInfoSQLServer::GetInterval1MinuteAgo() const
-{
-  return "dateadd(minute,-1,current_timestamp)";
-}
-
 // Gets the construction / select for generating a new serial identity
 CString 
 SQLInfoSQLServer::GetSQLGenerateSerial(CString p_table) const
@@ -718,13 +673,6 @@ CString
 SQLInfoSQLServer::GetSQLEffectiveSerial(CString p_identity) const
 {
   return "SELECT @@IDENTITY";
-}
-
-// Gets the Not-NULL-Value statement of the database
-CString 
-SQLInfoSQLServer::GetNVLStatement(CString& p_test,CString& p_isnull) const
-{
-  return CString("NVL(") + p_test + "," + p_isnull + ")";
 }
 
 // Gets the sub transaction commands
@@ -819,13 +767,19 @@ SQLInfoSQLServer::GetSQLGetColumns(CString& /*p_user*/,CString& p_tableName) con
                    "      ,col.isnullable\n"
                    "      ,col.prec\n"
                    "      ,col.scale\n"
-                   "  FROM dbo.sysobjects obj, dbo.syscolumns col, dbo.systypes typ\n"
-                   " WHERE obj.name = '" + p_tableName  + "'\n"
-                   "   AND obj.Id = col.id\n"
-                   "   AND col.xtype = typ.xtype\n"
+                   "      ,replace(replace('#' + com.text + '#', '#(', ''), ')#', '')\n" // default
+                   "  FROM dbo.sysobjects  obj\n"
+                   "      ,dbo.syscolumns  col\n"
+                   "      ,dbo.systypes    typ\n"
+                   "      ,dbo.syscomments com\n"
+                   " WHERE obj.name     = '" + p_tableName  + "'\n"
+                   "   AND obj.Id       = col.id\n"
+                   "   AND col.xtype    = typ.xtype\n"
+                   "   AND col.cdefault = com.id\n"
                    " ORDER BY col.colid";
   return select;
 }
+
 
 // Get SQL to select all constraints on a table from the catalog
 CString 
@@ -1549,7 +1503,7 @@ SQLInfoSQLServer::GetSQLString(const CString& p_string) const
 {
   CString s = p_string;
   s.Replace("'","''");
-  CString kwoot = GetQuoteCharacter();
+  CString kwoot = GetKEYWORDQuoteCharacter();
   return  kwoot + s + kwoot;
 }
 

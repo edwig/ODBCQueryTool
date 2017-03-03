@@ -49,26 +49,31 @@ SQLInfoOracle::~SQLInfoOracle()
 {
 }
 
+//////////////////////////////////////////////////////////////////////////
+//
+// GENERALS (Strings & Booleans) 
+//
+//////////////////////////////////////////////////////////////////////////
+
 // Get the database type
-DatabaseType 
-SQLInfoOracle::GetDatabaseType() const
+// DatabaseType GetDatabaseType() const;
+DatabaseType
+SQLInfoOracle::GetRDBMSDatabaseType() const
 {
   return RDBMS_ORACLE;
 }
 
-// BOOLEANS EN STRINGS
-// ====================================================================
-
 // The name of the database vendor
-CString 
-SQLInfoOracle::GetDatabaseVendorName() const
+CString
+SQLInfoOracle::GetRDBMSVendorName() const
 {
+  // The name of the database vendor
   return "Oracle";
 }
 
 // Get the physical database name
-CString 
-SQLInfoOracle::GetPhysicalDatabaseName() const
+CString
+SQLInfoOracle::GetRDBMSPhysicalDatabaseName() const
 {
   // Oops. We have a Oracle bug. Name is effectively one of
   // 1) the name in TNSNAMES.ORA file
@@ -91,225 +96,198 @@ SQLInfoOracle::GetPhysicalDatabaseName() const
 }
 
 // System catalog is stored in uppercase in the database?
-bool 
-SQLInfoOracle::IsCatalogUpper() const
+bool
+SQLInfoOracle::GetRDBMSIsCatalogUpper() const
 {
   return true;
 }
 
 // System catalog supports full ISO schemas (same tables per schema)
 bool
-SQLInfoOracle::GetUnderstandsSchemas() const
+SQLInfoOracle::GetRDBMSUnderstandsSchemas() const
 {
   return true;
 }
 
-// Supports database/ODBCdriver comments in sql
-bool 
-SQLInfoOracle::SupportsDatabaseComments() const
+// Supports database/ODBCdriver comments in SQL
+bool
+SQLInfoOracle::GetRDBMSSupportsComments() const
 {
-  return false;
+  return true;
 }
 
 // Database can defer constraints until the end of a transaction
-bool 
-SQLInfoOracle::SupportsDeferredConstraints() const
+bool
+SQLInfoOracle::GetRDBMSSupportsDeferredConstraints() const
 {
-  // SET CONSTRAINTS DEFERRED is supported by database
+  // SET CONSTRAINTS DEFERRED is supported
   return true;
 }
 
-// Database has ORDER BY with an expression, e.g. ORDER BY UPPER(column-name)
-// Work-around is "SELECT UPPER(column-name) AS something.....ORDER BY something
-bool 
-SQLInfoOracle::SupportsOrderByExpression() const
+// Database has ORDER BY with an expression, e.g. ORDER BY UPPER(columnname)
+bool
+SQLInfoOracle::GetRDBMSSupportsOrderByExpression() const
 {
   return true;
 }
 
 // Supports the ODBC escape sequence {[?=] CALL procedure (?,?,?)}
 bool
-SQLInfoOracle::SupportsODBCCallEscapes() const
+SQLInfoOracle::GetRDBMSSupportsODBCCallEscapes() const
 {
   return true;
 }
 
-// Catalogs query for the default value of a table's column
-CString 
-SQLInfoOracle::GetSQLStringDefaultValue(CString p_tableName,CString p_columnName) const
+// If the database does not support the datatype TIME, it can be implemented as a DECIMAL
+bool
+SQLInfoOracle::GetRDBMSSupportsDatatypeTime() const
 {
-  p_tableName .MakeUpper();
-  p_columnName.MakeUpper();
-
-  CString query = "SELECT data_default\n"
-                  "  FROM all_tab_columns\n"
-                  " WHERE table_name  = '" + p_tableName + "'\n"
-                  "   AND column_name = '" + p_columnName + "'";                 
-  return query;
+  // Time can be implemented as DECIMAL(17,16)
+  return false;
 }
 
+// If the database does not support the datatype INTERVAL, it can be implemented as a DECIMAL
+bool
+SQLInfoOracle::GetRDBMSSupportsDatatypeInterval() const
+{
+  // Interval not supported, can be implemented as DECIMALS
+  return false;
+}
+
+// Gets the maximum length of an SQL statement
+unsigned long
+SQLInfoOracle::GetRDBMSMaxStatementLength() const
+{
+  // No Limit
+  return 0;
+}
+
+// KEYWORDS
+
 // Keyword for the current date and time
-CString 
-SQLInfoOracle::GetSystemDateTimeKeyword() const
+CString
+SQLInfoOracle::GetKEYWORDCurrentTimestamp() const
 {
   return "SYSDATE";
 }
 
 // String for the current date
-CString 
-SQLInfoOracle::GetSystemDateString() const
+CString
+SQLInfoOracle::GetKEYWORDCurrentDate() const
 {
-  CString today = "TRUNC(SYSDATE)";
-  return today;
-}
-
-// If the database does not support the datatype TIME, it can be implemented as a DECIMAL
-bool 
-SQLInfoOracle::GetTimeIsDecimal() const
-{
-  // Time can be implemented as DECIMAL(17,16)
-  return true;
-}
-
-// If the database does not support the datatype INTERVAL, it can be implemented as a DECIMAL
-bool 
-SQLInfoOracle::GetIntervalIsDecimal() const
-{
-  // INTERVAL can be implemented as DECIMAL
-  return true;
+  return "TRUNC(SYSDATE)";
 }
 
 // Get the concatenation operator
-CString 
-SQLInfoOracle::GetConcatanationOperator() const
+CString
+SQLInfoOracle::GetKEYWORDConcatanationOperator() const
 {
   return "||";
 }
 
 // Get quote character for strings
-CString 
-SQLInfoOracle::GetQuoteCharacter() const
+CString
+SQLInfoOracle::GetKEYWORDQuoteCharacter() const
 {
-  return "'";
+  return "\'";
 }
 
 // Get default NULL for parameter list input
-CString 
-SQLInfoOracle::GetDefaultNULL() const
+CString
+SQLInfoOracle::GetKEYWORDParameterDefaultNULL() const
 {
-  return " DEFAULT NULL ";
+  return "DEFAULT NULL";
 }
 
 // Parameter is for INPUT and OUTPUT in parameter list
-CString 
-SQLInfoOracle::GetParameterINOUT() const
+CString
+SQLInfoOracle::GetKEYWORDParameterINOUT() const
 {
-  return "IN OUT ";
+  return "IN OUT";
 }
 
 // Parameter is for OUTPUT only in parameter list
-CString 
-SQLInfoOracle::GetParameterOUT() const
+CString
+SQLInfoOracle::GetKEYWORDParameterOUT() const
 {
-  return "OUT ";
+  return "OUT";
 }
 
-// Get the datatype of the audited user (h_user) in a stored procedure
-CString 
-SQLInfoOracle::GetAuditUserDatatype() const
+// Get datatype of the IDENTITY primary key in a Network database
+CString
+SQLInfoOracle::GetKEYWORDNetworkPrimaryKeyType() const
 {
-  return "VARCHAR2";
-}
-
-// Get the datatype of the audited user (h_user) as variable in a stored-procedure
-CString 
-SQLInfoOracle::GetAuditUserDatatypeAsVariable() const
-{
-  return "VARCHAR2(50)";
-}
-
-// Get datatype of the IDENTITY primary key
-CString 
-SQLInfoOracle::GetPrimaryKeyType() const
-{
+  // Use SEQUENCE to fill!
   return "INTEGER";
 }
 
-// Get datatype for Moment
-CString 
-SQLInfoOracle::GetDatetimeYearToSecondType() const
+// Get datatype for timestamp (year to second)
+CString
+SQLInfoOracle::GetKEYWORDTypeTimestamp() const
 {
   return "DATE";
 }
 
-// Separator between two alter-constraints in an alter-table statement
-CString 
-SQLInfoOracle::GetAlterConstraintSeparator() const
-{
-  // In Oracle two alter constraints are not separated
-  return "";
-}
-
-// Inner Join Keyword
-CString 
-SQLInfoOracle::GetInnerJoinKeyword() const
-{
-  // Before Oracle 9 it's empty
-  // After Oracle 9 it's just regular "INNER JOIN"
-  return "INNER JOIN";
-}
-
-// Outer join keyword
-CString 
-SQLInfoOracle::GetOuterJoinKeyword() const
-{
-  // Before Oracle 9 it's empty
-  // After Oracle 9 its just regular "LEFT OUTER JOIN"
-  return "LEFT OUTER JOIN";
-}
-
-// Inner Join Keyword for use in views.
-CString 
-SQLInfoOracle::GetViewInnerJoinKeyword() const
-{
-  return "INNER JOIN";
-}
-
-// Outer join keyword for use in views
-CString 
-SQLInfoOracle::GetViewOuterJoinKeyword() const
-{
-  return "LEFT OUTER JOIN";
-}
-
-// Get the closure for an outer-join
-CString 
-SQLInfoOracle::GetOuterJoinClosure() const
-{
-  return "";
-}
-
-// Get the special Outer Join sign for the while-conditions
-CString 
-SQLInfoOracle::GetOuterJoinSign() const
-{
-  return "(+)";
-}
-
 // Prefix for a parameter in a stored procedure
-CString  
-SQLInfoOracle::GetSPParamPrefix() const
+CString
+SQLInfoOracle::GetKEYWORDParameterPrefix() const
 {
   return "";
 }
 
 // Get select part to add new record identity to a table
-// Can be special column like 'OID'
-CString 
-SQLInfoOracle::GetIdentityString(CString& p_tablename,CString p_postfix /*="_seq"*/) const
+// Can be special column like 'OID' or a sequence select
+CString
+SQLInfoOracle::GetKEYWORDIdentityString(CString& p_tablename,CString p_postfix /*= "_seq"*/) const
 {
   return p_tablename + p_postfix + ".nextval";
 }
+
+// Gets the UPPER function
+CString
+SQLInfoOracle::GetKEYWORDUpper(CString& p_expression) const
+{
+  return "UPPER(" + p_expression + ")";
+}
+
+// Gets the construction for 1 minute ago
+CString
+SQLInfoOracle::GetKEYWORDInterval1MinuteAgo() const
+{
+  return "(SYSDATE - 0.0007)";
+}
+
+// Gets the Not-NULL-Value statement of the database
+CString
+SQLInfoOracle::GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) const
+{
+  return CString("NVL(") + p_test + "," + p_isnull + ")";
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// CATALOG
+//
+//////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// SQL/PSM
+//
+//////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// OLD INTERFACE
+//
+//////////////////////////////////////////////////////////////////////////
+
+// BOOLEANS EN STRINGS
+// ====================================================================
 
 // Get a query to create a temporary table from a select statement
 CString 
@@ -389,7 +367,7 @@ SQLInfoOracle::GetPrimaryKeyDefinition(CString p_schema,CString p_tableName,bool
   // The primary key constraint is not directly generated after the column
   // to ensure it will use the named index in the correct tablespace
   // Otherwise the index name and tablespace cannot be defined and will be auto-generated
-  return GetPrimaryKeyType() + " NOT NULL CONSTRAINT pk_" + p_tableName + " PRIMARY KEY\n";
+  return GetKEYWORDNetworkPrimaryKeyType() + " NOT NULL CONSTRAINT pk_" + p_tableName + " PRIMARY KEY\n";
 }
 
 // Get the constraint form of a primary key to be added to a table after creation of that table
@@ -609,13 +587,6 @@ SQLInfoOracle::GetSQLModifyColumnName(CString p_tablename,CString p_oldName,CStr
     "RENAME COLUMN " + p_oldName   + " TO " + p_newName + "\n";
 }
 
-// Gets the maximum length of an SQL statement
-unsigned long 
-SQLInfoOracle::GetMaxStatementLength() const
-{
-  return 0;		// No limit in Oracle
-}
-
 // Gets the prefix needed for altering the datatype of a column in a MODIFY/ALTER
 CString 
 SQLInfoOracle::GetModifyDatatypePrefix() const
@@ -623,13 +594,6 @@ SQLInfoOracle::GetModifyDatatypePrefix() const
   // At the changing of the datatype, just specify the new 
   // SO: MODIFY <columname> <datatype>
   return "";
-}
-
-// Code to create a temporary table (qualifier)
-CString 
-SQLInfoOracle::GetCodeTemporaryTable() const
-{
-  return "GLOBAL TEMPORARY";
 }
 
 // Code to define a table in row-locking mode
@@ -728,20 +692,6 @@ SQLInfoOracle::GetAssignmentSelectParenthesis() const
   return false;
 }
 
-// Gets the UPPER function
-CString 
-SQLInfoOracle::GetUpperFunction(CString& p_expression) const
-{
-   return "UPPER(" + p_expression + ")";
-}
-
-// Gets the construction for 1 minute ago
-CString 
-SQLInfoOracle::GetInterval1MinuteAgo() const
-{
-  return "(SYSDATE - 0.0007)";
-}
-
 // Gets the construction / select for generating a new serial identity
 CString 
 SQLInfoOracle::GetSQLGenerateSerial(CString p_table) const
@@ -755,13 +705,6 @@ SQLInfoOracle::GetSQLEffectiveSerial(CString p_identity) const
 {
   // Just return it, it's the correct value
   return p_identity;
-}
-
-// Gets the Not-NULL-Value statement of the database
-CString 
-SQLInfoOracle::GetNVLStatement(CString& p_test,CString& p_isnull) const
-{
-  return CString("NVL(") + p_test + "," + p_isnull + ")";
 }
 
 // Gets the sub transaction commands
@@ -872,6 +815,7 @@ SQLInfoOracle::GetSQLGetColumns(CString& p_user,CString& p_tableName) const
                    "      ,CASE WHEN nullable = 'Y' THEN 1 ELSE 0 END\n"
                    "      ,data_precision\n"
                    "      ,data_scale\n"
+                   "      ,data_default\n"
                    "  FROM all_tab_columns\n"
                    " WHERE table_name = '" + upperName  + "'\n"
                    "   AND owner      = '" + systemUser + "'\n"
@@ -1720,7 +1664,7 @@ SQLInfoOracle::GetSQLString(const CString& p_string) const
 {
   CString s = p_string;
   s.Replace("'","''");
-  CString kwoot = GetQuoteCharacter();
+  CString kwoot = GetKEYWORDQuoteCharacter();
   return  kwoot + s + kwoot;
 }
 

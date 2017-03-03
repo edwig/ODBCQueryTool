@@ -62,6 +62,7 @@ typedef enum _databaseType
  ,RDBMS_SQLSERVER     = 5
  ,RDBMS_POSTGRESQL    = 6
  ,RDBMS_FIREBIRD      = 7
+ ,RDBMS_MYSQL         = 8
 }
 DatabaseType;
 

@@ -1680,7 +1680,7 @@ SQLQuery::DoSQLCall(CString p_schema,CString p_procedure,bool p_hasReturn /*=fal
   }
 
   // Is we support standard ODBC, do that call
-  if(m_database->GetSQLInfoDB()->SupportsODBCCallEscapes())
+  if(m_database->GetSQLInfoDB()->GetRDBMSSupportsODBCCallEscapes())
   {
     return DoSQLCallODBCEscape(p_schema,p_procedure,p_hasReturn);
   }

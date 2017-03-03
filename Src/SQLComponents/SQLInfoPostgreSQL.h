@@ -36,106 +36,117 @@ public:
   SQLInfoPostgreSQL(SQLDatabase* p_database);
  ~SQLInfoPostgreSQL();
 
+  //////////////////////////////////////////////////////////////////////////
+  //
+  // GENERALS (Strings & Booleans) 
+  //
+  //////////////////////////////////////////////////////////////////////////
+
   // Get the database type
-  DatabaseType GetDatabaseType() const;
+  DatabaseType GetRDBMSDatabaseType() const;
+
+  // The name of the database vendor
+  CString GetRDBMSVendorName() const;
+
+  // Get the physical database name
+  CString GetRDBMSPhysicalDatabaseName() const;
+
+  // System catalog is stored in uppercase in the database?
+  bool    GetRDBMSIsCatalogUpper() const;
+
+  // System catalog supports full ISO schemas (same tables per schema)
+  bool    GetRDBMSUnderstandsSchemas() const;
+
+  // Supports database/ODBCdriver comments in SQL
+  bool    GetRDBMSSupportsComments() const;
+
+  // Database can defer constraints until the end of a transaction
+  bool    GetRDBMSSupportsDeferredConstraints() const;
+
+  // Database has ORDER BY with an expression, e.g. ORDER BY UPPER(columnname)
+  bool    GetRDBMSSupportsOrderByExpression() const;
+
+  // Supports the ODBC escape sequence {[?=] CALL procedure (?,?,?)}
+  bool    GetRDBMSSupportsODBCCallEscapes() const;
+
+  // If the database does not support the datatype TIME, it can be implemented as a DECIMAL
+  bool    GetRDBMSSupportsDatatypeTime() const;
+
+  // If the database does not support the datatype INTERVAL, it can be implemented as a DECIMAL
+  bool    GetRDBMSSupportsDatatypeInterval() const;
+
+  // Gets the maximum length of an SQL statement
+  unsigned long GetRDBMSMaxStatementLength() const;
+
+  // KEYWORDS
+
+  // Keyword for the current date and time
+  CString GetKEYWORDCurrentTimestamp() const;
+
+  // String for the current date
+  CString GetKEYWORDCurrentDate() const;
+
+  // Get the concatenation operator
+  CString GetKEYWORDConcatanationOperator() const;
+
+  // Get quote character for strings
+  CString GetKEYWORDQuoteCharacter() const;
+
+  // Get default NULL for parameter list input
+  CString GetKEYWORDParameterDefaultNULL() const;
+
+  // Parameter is for INPUT and OUTPUT in parameter list
+  CString GetKEYWORDParameterINOUT() const;
+
+  // Parameter is for OUTPUT only in parameter list
+  CString GetKEYWORDParameterOUT() const;
+
+  // Get datatype of the IDENTITY primary key in a Network database
+  CString GetKEYWORDNetworkPrimaryKeyType() const;
+
+  // Get datatype for timestamp (year to second)
+  CString GetKEYWORDTypeTimestamp() const;
+
+  // Prefix for a parameter in a stored procedure
+  CString GetKEYWORDParameterPrefix() const;
+
+  // Get select part to add new record identity to a table
+  // Can be special column like 'OID' or a sequence select
+  CString GetKEYWORDIdentityString(CString& p_tablename,CString p_postfix = "_seq") const;
+
+  // Gets the UPPER function
+  CString GetKEYWORDUpper(CString& p_expression) const;
+
+  // Gets the construction for 1 minute ago
+  CString GetKEYWORDInterval1MinuteAgo() const;
+
+  // Gets the Not-NULL-Value statement of the database
+  CString GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) const;
+
+  //////////////////////////////////////////////////////////////////////////
+  //
+  // CATALOG
+  //
+  //////////////////////////////////////////////////////////////////////////
+
+
+
+  //////////////////////////////////////////////////////////////////////////
+  //
+  // SQL/PSM
+  //
+  //////////////////////////////////////////////////////////////////////////
+
+
+
+  //////////////////////////////////////////////////////////////////////////
+  //
+  // OLD INTERFACE
+  //
+  //////////////////////////////////////////////////////////////////////////
 
   // BOOLEANS EN STRINGS
   // ===================
-
-  // The name of the database vendor
-  CString GetDatabaseVendorName() const;
-
-  // Get the physical database name
-  CString GetPhysicalDatabaseName() const;
-
-  // System catalog is stored in uppercase in the database?
-  bool IsCatalogUpper () const;
-
-  // System catalog supports full ISO schemas (same tables per schema)
-  bool GetUnderstandsSchemas() const;
-
-  // Supports database/ODBCdriver comments in SQL
-  bool SupportsDatabaseComments() const;
-
-  // Database can defer constraints until the end of a transaction
-  bool SupportsDeferredConstraints() const;
-
-  // Database has ORDER BY with an expression, e.g. ORDER BY UPPER(column-name)
-  // Work-around is "SELECT UPPER(column-name) AS something.....ORDER BY something
-  bool SupportsOrderByExpression() const;
-
-  // Supports the ODBC escape sequence {[?=] CALL procedure (?,?,?)}
-  bool    SupportsODBCCallEscapes() const;
-
-  // Catalog query for the default value of a table's column
-  CString GetSQLStringDefaultValue(CString p_tableName,CString p_columnName) const;
-
-  // Keyword for the current date and time
-  CString GetSystemDateTimeKeyword() const;
-
-  // String for the current date
-  CString GetSystemDateString() const;
-
-  // If the database does not support the datatype TIME, it can be implemented as a DECIMAL
-  bool GetTimeIsDecimal() const;
-
-  // If the database does not support the datatype INTERVAL, it can be implemented as a DECIMAL
-  bool GetIntervalIsDecimal() const;
-
-  // Get the concatenation operator
-  CString GetConcatanationOperator() const;
-
-  // Get quote character for strings
-  CString GetQuoteCharacter() const;
-
-  // Get default NULL for parameter list input
-  CString GetDefaultNULL() const;
-
-  // Parameter is for INPUT and OUTPUT in parameter list
-  CString GetParameterINOUT() const;
-
-  // Parameter is for OUTPUT only in parameter list
-  CString GetParameterOUT() const;
-
-  // Get the datatype of the audited user (h_user) in a stored procedure
-  CString GetAuditUserDatatype() const;
-
-  // Get the datatype of the audited user (h_user) as variable in a stored-procedure
-  CString GetAuditUserDatatypeAsVariable() const;
-
-  // Get datatype of the IDENTITY primary key
-  CString GetPrimaryKeyType() const;
-
-  // Get datatype for Moment
-  CString GetDatetimeYearToSecondType() const;
-
-  // Separator between two alter-constraints in an alter-table statement
-  CString GetAlterConstraintSeparator() const;
-
-  // Inner Join Keyword
-  CString GetInnerJoinKeyword() const;
-
-  // Outer join keyword
-  CString GetOuterJoinKeyword() const;
-
-  // Inner Join Keyword for use in views.
-  CString GetViewInnerJoinKeyword() const;
-
-  // Outer join keyword for use in views
-  CString GetViewOuterJoinKeyword() const;
-
-  // Get the closure for an outer-join
-  CString GetOuterJoinClosure() const;
-
-  // Get the special Outer Join sign for the while-conditions
-  CString GetOuterJoinSign() const;
-
-  // Prefix for a parameter in a stored procedure
-  CString  GetSPParamPrefix() const;
-
-  // Get select part to add new record identity to a table
-  // Can be special column like 'OID'
-  CString GetIdentityString(CString& p_tablename,CString p_postfix = "_seq") const;
 
   // Get a query to create a temporary table from a select statement
   CString GetSQLCreateTemporaryTable(CString& p_tablename,CString p_select) const;
@@ -181,14 +192,8 @@ public:
   // Gives the statement to alter a table columns' name
   CString GetSQLModifyColumnName(CString p_tablename,CString p_oldName,CString p_newName,CString p_datatype);
 
-  // Gets the maximum length of an SQL statement
-  unsigned long GetMaxStatementLength() const;
-
   // Gets the prefix needed for altering the datatype of a column in a MODIFY/ALTER
   CString GetModifyDatatypePrefix() const;
-
-  // Code to create a temporary table (qualifier)
-  CString GetCodeTemporaryTable() const;
 
   // Code to define a table in row-locking mode
   CString GetCodeLockModeRow() const;
@@ -226,20 +231,11 @@ public:
   // Gets the fact if a SELECT must be in between parenthesis for an assignment
   bool    GetAssignmentSelectParenthesis() const;
 
-  // Gets the UPPER function
-  CString GetUpperFunction(CString& p_expression) const;
-
-  // Gets the construction for 1 minute ago
-  CString GetInterval1MinuteAgo() const;
-
   // Gets the construction / select for generating a new serial identity
   CString GetSQLGenerateSerial(CString p_table) const;
 
   // Gets the construction / select for the resulting effective generated serial
   CString GetSQLEffectiveSerial(CString p_identity) const;
-
-  // Gets the Not-NULL-Value statement of the database
-  CString GetNVLStatement(CString& p_test,CString& p_isnull) const;
 
   // Gets the sub transaction commands
   CString GetStartSubTransaction   (CString p_savepointName) const;

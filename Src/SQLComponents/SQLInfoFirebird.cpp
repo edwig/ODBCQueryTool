@@ -49,243 +49,232 @@ SQLInfoFirebird::~SQLInfoFirebird()
 {
 }
 
+//////////////////////////////////////////////////////////////////////////
+//
+// GENERALS (Strings & Booleans) 
+//
+//////////////////////////////////////////////////////////////////////////
+
 // Get the database type
-DatabaseType 
-SQLInfoFirebird::GetDatabaseType() const
+// DatabaseType GetDatabaseType() const;
+DatabaseType
+SQLInfoFirebird::GetRDBMSDatabaseType() const
 {
   return RDBMS_FIREBIRD;
 }
 
-// BOOLEANS EN STRINGS
-// ====================================================================
-
 // The name of the database vendor
 CString
-SQLInfoFirebird::GetDatabaseVendorName() const
+SQLInfoFirebird::GetRDBMSVendorName() const
 {
+  // The name of the database vendor
   return "Firebird";
 }
 
 // Get the physical database name
-CString 
-SQLInfoFirebird::GetPhysicalDatabaseName() const
+CString
+SQLInfoFirebird::GetRDBMSPhysicalDatabaseName() const
 {
   // See to it that "SQLDatabase:GetDatabaseName" does it's work
   return m_database->GetDatabaseName();
 }
 
 // System catalog is stored in uppercase in the database?
-bool 
-SQLInfoFirebird::IsCatalogUpper() const
+bool
+SQLInfoFirebird::GetRDBMSIsCatalogUpper() const
 {
   return true;
 }
 
 // System catalog supports full ISO schemas (same tables per schema)
 bool
-SQLInfoFirebird::GetUnderstandsSchemas() const
+SQLInfoFirebird::GetRDBMSUnderstandsSchemas() const
 {
   return false;
 }
 
-// Supports database/ODBCdriver comments in sql
-bool 
-SQLInfoFirebird::SupportsDatabaseComments() const
+// Supports database/ODBCdriver comments in SQL
+bool
+SQLInfoFirebird::GetRDBMSSupportsComments() const
 {
   return false;
 }
 
 // Database can defer constraints until the end of a transaction
-bool 
-SQLInfoFirebird::SupportsDeferredConstraints() const
+bool
+SQLInfoFirebird::GetRDBMSSupportsDeferredConstraints() const
 {
-  // No SET CONSTRAINTS DEFERRED 
-  return false;
+  // NO CONSTRAINTS DEFERRED
+  return true;
 }
 
-// Database has ORDER BY with an expression, e.g. ORDER BY UPPER(column-name)
-// Work-around is "SELECT UPPER(column-name) AS something.....ORDER BY something
+// Database has ORDER BY with an expression, e.g. ORDER BY UPPER(columnname)
 bool
-SQLInfoFirebird::SupportsOrderByExpression() const
+SQLInfoFirebird::GetRDBMSSupportsOrderByExpression() const
 {
   return true;
 }
 
 // Supports the ODBC escape sequence {[?=] CALL procedure (?,?,?)}
-bool    
-SQLInfoFirebird::SupportsODBCCallEscapes() const
+bool
+SQLInfoFirebird::GetRDBMSSupportsODBCCallEscapes() const
 {
   return false;
 }
 
-// Catalog table with all default values for a column in a table
-CString 
-SQLInfoFirebird::GetSQLStringDefaultValue(CString p_tableName,CString p_columnName) const
+// If the database does not support the datatype TIME, it can be implemented as a DECIMAL
+bool
+SQLInfoFirebird::GetRDBMSSupportsDatatypeTime() const
 {
-  p_tableName.MakeUpper();
-  p_columnName.MakeUpper();
-  
-  CString query = "SELECT rdb$default_source\n"
-                  "  FROM rdb$relation_fields\n"
-                  " WHERE rdb$relation_name = '" + p_tableName   + "'\n"
-                  "   AND rdb$field_name    = '" + p_columnName  + "'";  
-  return query;
+  // Time can be implemented as TIME
+  return true;
 }
 
-CString 
-SQLInfoFirebird::GetSystemDateTimeKeyword() const
+// If the database does not support the datatype INTERVAL, it can be implemented as a DECIMAL
+bool
+SQLInfoFirebird::GetRDBMSSupportsDatatypeInterval() const
+{
+  // Interval not supported, can be implemented as DECIMALS
+  return false;
+}
+
+// Gets the maximum length of an SQL statement
+unsigned long 
+SQLInfoFirebird::GetRDBMSMaxStatementLength() const
+{
+  // No Limit
+  return 0;
+}
+
+// KEYWORDS
+
+// Keyword for the current date and time
+CString
+SQLInfoFirebird::GetKEYWORDCurrentTimestamp() const
 {
   return "current_timestamp";
-}  
+}
 
 // String for the current date
 CString
-SQLInfoFirebird::GetSystemDateString() const
+SQLInfoFirebird::GetKEYWORDCurrentDate() const
 {
   return "current_date";
 }
 
-// Datatype TIME can be implemented as a decimal value on the database
-bool 
-SQLInfoFirebird::GetTimeIsDecimal() const
+// Get the concatenation operator
+CString
+SQLInfoFirebird::GetKEYWORDConcatanationOperator() const
 {
-  // TIJD is implemented as DECIMAL(18,16)
-  return true;
+  return "||";
 }
 
-// Datatype INTERVAL can be implemented as a decimal value on the database
-bool 
-SQLInfoFirebird::GetIntervalIsDecimal() const
+// Get quote character for strings
+CString
+SQLInfoFirebird::GetKEYWORDQuoteCharacter() const
 {
-  // Interval is implemented in Firebird as a DECIMAL
-  return true;
+  return "\'";
 }
 
-// Concatenation operator character string
-CString 
-SQLInfoFirebird::GetConcatanationOperator() const
+// Get default NULL for parameter list input
+CString
+SQLInfoFirebird::GetKEYWORDParameterDefaultNULL() const
 {
-  return "||";    
+  // Standard, no definition defines the NULL state
+  return "";
 }
 
-// Quote character for a string
-CString 
-SQLInfoFirebird::GetQuoteCharacter() const
+// Parameter is for INPUT and OUTPUT in parameter list
+CString
+SQLInfoFirebird::GetKEYWORDParameterINOUT() const
 {
-  return "\'";    
+  // Firebird works with the "RETURNS" list !
+  return "";
 }
 
-// Default NULL for an input parameter list
-CString 
-SQLInfoFirebird::GetDefaultNULL() const
+// Parameter is for OUTPUT only in parameter list
+CString
+SQLInfoFirebird::GetKEYWORDParameterOUT() const
 {
-  return "";    
+  return "";
 }
 
-// INOUT prefix for an input/output parameter in a parameter list
-CString 
-SQLInfoFirebird::GetParameterINOUT() const
+// Get datatype of the IDENTITY primary key in a Network database
+CString
+SQLInfoFirebird::GetKEYWORDNetworkPrimaryKeyType() const
 {
-  return "";    
-}
-
-// OUT prefix for an input/output parameter in a parameter list
-CString 
-SQLInfoFirebird::GetParameterOUT() const
-{
-  return "";    
-}
-
-// Datatype for the last user in a stored procedure as a parameter
-CString 
-SQLInfoFirebird::GetAuditUserDatatype() const
-{
-  return "CHAR(8)";
-}
-
-// Datatype for a last-user in a stored procedure as a variable
-CString 
-SQLInfoFirebird::GetAuditUserDatatypeAsVariable() const
-{
-  return "CHAR(8)";
-}
-
-// Datatype of a primary key
-CString 
-SQLInfoFirebird::GetPrimaryKeyType() const
-{
+  // Use SEQUENCE / GENERATOR to fill!
   return "INTEGER";
 }
 
-// Datatype for a timestamp (DATETIME YEAR TO SECOND)
-CString 
-SQLInfoFirebird::GetDatetimeYearToSecondType() const
-{
-  return "timestamp";
-}
-
-// Separator between two alter-constraint statements in one alter-table statement
-CString 
-SQLInfoFirebird::GetAlterConstraintSeparator() const
-{
-  return ",";
-}
-
-// Inner Join Keyword
-CString 
-SQLInfoFirebird::GetInnerJoinKeyword() const
-{
-  return "INNER JOIN ";
-}
-
-// Outer join keyword
-CString  
-SQLInfoFirebird::GetOuterJoinKeyword() const
-{
-  return "LEFT OUTER JOIN ";
-}
-
-// Inner Join Keyword for use in views.
-CString 
-SQLInfoFirebird::GetViewInnerJoinKeyword() const
-{
-  return "INNER JOIN";
-}
-
-// Outer join keyword for use in views
-CString 
-SQLInfoFirebird::GetViewOuterJoinKeyword() const
-{
-  return "LEFT OUTER JOIN";
-}
-
-// OUTER JOIN closer (+ in some databases)
-CString 
-SQLInfoFirebird::GetOuterJoinClosure() const
-{
-  return "";
-}
-
-// Outer join sign
-CString  
-SQLInfoFirebird::GetOuterJoinSign() const
-{
-  return "";
-}
-
-// Prefix before using a stored procedure parameter
+// Get datatype for timestamp (year to second)
 CString
-SQLInfoFirebird::GetSPParamPrefix() const
+SQLInfoFirebird::GetKEYWORDTypeTimestamp() const
+{
+  return "TIMESTAMP";
+}
+
+// Prefix for a parameter in a stored procedure
+CString
+SQLInfoFirebird::GetKEYWORDParameterPrefix() const
 {
   return ":";
 }
 
-// Get the query to add a new record to the primary key column
-CString 
-SQLInfoFirebird::GetIdentityString(CString& p_tablename,CString p_postfix /*="_seq"*/) const
+// Get select part to add new record identity to a table
+// Can be special column like 'OID' or a sequence select
+CString
+SQLInfoFirebird::GetKEYWORDIdentityString(CString& p_tablename,CString p_postfix /*= "_seq"*/) const
 {
   return "GEN_ID(" + p_tablename + p_postfix + ",1)";
 }
+
+// Gets the UPPER function
+CString
+SQLInfoFirebird::GetKEYWORDUpper(CString& p_expression) const
+{
+  return "UPPER(" + p_expression + ")";
+}
+
+// Gets the construction for 1 minute ago
+CString
+SQLInfoFirebird::GetKEYWORDInterval1MinuteAgo() const
+{
+  // Not supported by Firebird
+  return "ERROR";
+}
+
+// Gets the Not-NULL-Value statement of the database
+CString
+SQLInfoFirebird::GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) const
+{
+  return "{fn IFNULL(" + p_test + "," + p_isnull + ")}";
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// CATALOG
+//
+//////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// SQL/PSM
+//
+//////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// OLD INTERFACE
+//
+//////////////////////////////////////////////////////////////////////////
+
+// BOOLEANS EN STRINGS
+// ====================================================================
 
 // Get the SQL Query to create a temporary table from a select statement;
 CString 
@@ -362,7 +351,7 @@ SQLInfoFirebird::GetSQLRemoveFieldDependencies(CString p_tablename) const
 CString 
 SQLInfoFirebird::GetPrimaryKeyDefinition(CString p_schema,CString p_tableName,bool p_temporary) const
 {
-  CString keyDefinitie = GetPrimaryKeyType() + " NOT NULL\n";
+  CString keyDefinitie = GetKEYWORDNetworkPrimaryKeyType() + " NOT NULL\n";
   keyDefinitie += p_temporary ? CString("\n") : " CONSTRAINT pk_" + p_tableName + " PRIMARY KEY\n";
   return keyDefinitie;
 }
@@ -550,25 +539,11 @@ SQLInfoFirebird::GetSQLModifyColumnName(CString p_tablename,CString p_oldName,CS
   return rename;
 }
 
-// Max length of an SQL statement
-unsigned long 
-SQLInfoFirebird::GetMaxStatementLength() const
-{
-  return 0;		// NO limit
-}
-
 // Getting the prefix for altering the datatyp in MODIFY/ALTER
 CString 
 SQLInfoFirebird::GetModifyDatatypePrefix() const
 {
   return "TYPE ";
-}
-
-// Code to create a temporary table
-CString 
-SQLInfoFirebird::GetCodeTemporaryTable() const
-{
-  return "";
 }
 
 // Getting the correct locking mode
@@ -661,20 +636,6 @@ SQLInfoFirebird::GetAssignmentSelectParenthesis() const
   return true;
 }
 
-// Gets the UPPER function
-CString 
-SQLInfoFirebird::GetUpperFunction(CString& p_expression) const
-{
-  return "UPPER(" + p_expression + ")";
-}
-
-// Gets the construction for 1 minute ago
-CString 
-SQLInfoFirebird::GetInterval1MinuteAgo() const
-{
-  return "ERROR";
-}
-
 // Gets the construction / select for generating a new serial identity
 CString 
 SQLInfoFirebird::GetSQLGenerateSerial(CString p_table) const
@@ -688,13 +649,6 @@ SQLInfoFirebird::GetSQLEffectiveSerial(CString p_identity) const
 {
   // Just return it, it's the correct value
   return p_identity;
-}
-
-// Gets the Not-NULL-Value statement of the database
-CString 
-SQLInfoFirebird::GetNVLStatement(CString& p_test,CString& p_isnull) const
-{
-  return "{fn IFNULL(" + p_test + "," + p_isnull + ")}";
 }
 
 // Gets the sub-transaction commands
@@ -792,6 +746,7 @@ SQLInfoFirebird::GetSQLGetColumns(CString& /*p_user*/,CString& p_tableName) cons
                   "      ,typ.rdb$null_flag\n"         // 4 -> nn 1 = not null / 0 is null
                   "      ,typ.rdb$field_precision\n"   // 5 -> precision
                   "      ,typ.rdb$field_scale\n"       // 6 -> scale (neg)
+                  "      ,col.rdb$default_source\n"    // 7 -> default value
                   "  FROM rdb$relation_fields col\n"
                   "      ,rdb$fields typ\n"
                   " WHERE col.rdb$relation_name = '" + upperName + "'\n"
@@ -1547,7 +1502,7 @@ SQLInfoFirebird::GetSQLString(const CString& p_string) const
 {
   CString s = p_string;
   s.Replace("'","''");
-  CString kwoot = GetQuoteCharacter();
+  CString kwoot = GetKEYWORDQuoteCharacter();
   return  kwoot + s + kwoot;
 }
 
