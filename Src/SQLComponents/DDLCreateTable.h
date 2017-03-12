@@ -57,7 +57,7 @@ private:
   CString ReplaceLengthPrecScale(CString p_template,int p_length,int p_precision,int p_scale);
   CString FormatColumnName(CString p_column,int p_length);
   int     CalculateColumnLength(MColumnMap& p_columns);
-  void    FindIndexFilter(MetaStatistics& p_index);
+  void    FindIndexFilter(MetaIndex& p_index);
 
   // Private data for the DDL creation
   SQLInfoDB* m_info;
@@ -67,7 +67,7 @@ private:
   // Mappings
   MTableMap       m_tables;
   MColumnMap      m_columns;
-  MStatisticsMap  m_indices;
+  MIndicesMap  m_indices;
   MPrimaryMap     m_primaries;
   MForeignMap     m_foreigns;
   MTriggerMap     m_triggers;

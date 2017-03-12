@@ -264,123 +264,403 @@ SQLInfoOracle::GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) const
   return CString("NVL(") + p_test + "," + p_isnull + ")";
 }
 
-//////////////////////////////////////////////////////////////////////////
-//
-// CATALOG
-//
-//////////////////////////////////////////////////////////////////////////
-
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// SQL/PSM
-//
-//////////////////////////////////////////////////////////////////////////
-
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// OLD INTERFACE
-//
-//////////////////////////////////////////////////////////////////////////
-
-// BOOLEANS EN STRINGS
-// ====================================================================
-
-// Get a query to create a temporary table from a select statement
-CString 
-SQLInfoOracle::GetSQLCreateTemporaryTable(CString& p_tablename,CString p_select) const
+// Code prefix for a select-into-temp
+CString
+SQLInfoOracle::GetSQLSelectIntoTempPrefix(CString p_tableName) const
 {
-  return "CREATE GLOBAL TEMPORARY TABLE " + p_tablename + "\nAS " + p_select + 
-         "ON COMMIT PRESERVE ROWS";
+  return "CREATE GLOBAL TEMPORARY TABLE " + p_tableName + "\n" +
+         "ON COMMIT PRESERVE ROWS\n" +
+         "AS\n";
 }
 
-// Get the query to remove a temporary table indefinite
-// BEWARE: Must be executed with a multi-statement stack!
-CString 
-SQLInfoOracle::GetSQLRemoveTemporaryTable(CString& p_tablename,int& p_number) const
+// Code suffix for after a select-into-temp
+CString
+SQLInfoOracle::GetSQLSelectIntoTempSuffix(CString p_tableName) const
 {
-  // Works only in Oracle in this way. If not an error will follow for the
-  // fact that the temporary table is still in use. The table definition 
-  // remains in the table catalog and can be different from and blocking
-  // newly defined temporary tables under the same name
-  p_number += 3;
-  return "DELETE FROM "    + p_tablename + ";\n"
-         "TRUNCATE TABLE " + p_tablename + ";\n"
-         "DROP TABLE "     + p_tablename + ";\n";
-}
-
-// Get a query to select into a temp table
-CString 
-SQLInfoOracle::GetSQLSelectIntoTemp(CString& p_tablename,CString& p_select) const
-{
-   return "INSERT INTO " + p_tablename + "\n" + p_select + ";\n";
-}
-
-// Replace the Identity column OID by a sequence.nextval
-CString 
-SQLInfoOracle::GetReplaceColumnOIDbySequence(CString p_columns,CString p_tablename,CString p_postfix /*="_seq"*/) const
-{
-  int pos;
-  int len = p_columns.GetLength();
-  pos = p_columns.Find("OID,");
-  if(pos == 0)
-  {
-    CString newkolom = ( p_tablename + p_postfix + ".nextval");
-    newkolom += p_columns.Right(len - 3);
-    return newkolom;
-  }
-  if(pos > 0)
-  {
-    pos = p_columns.Find(",OID,");
-    CString newkolom = p_columns.Left(pos) + "," + p_tablename + p_postfix + ".nextval";
-    newkolom += p_columns.Right(len - pos - 5);
-    return newkolom;
-  }
-  return p_columns;
-}
-
-// Remove catalog dependencies for stored procedures
-// To be run after a 'DROP PROCEDURE' or 'DROP FUNCTION'
-CString 
-SQLInfoOracle::GetSQLRemoveProcedureDependencies(CString p_procname) const
-{
-  // Is implicitly done by the database engine in Oracle
   return "";
 }
 
-// Remove field dependencies for calculated fields (bug in Firebird)
-// To be run after a 'DROP TABLE' or an 'ALTER TABLE DROP COLUMN' or 'ALTER TABLE MODIFY COLUMN'
-CString 
-SQLInfoOracle::GetSQLRemoveFieldDependencies(CString p_tablename) const
+// Gets the construction / select for generating a new serial identity
+CString
+SQLInfoOracle::GetSQLGenerateSerial(CString p_table) const
 {
-  // Not necessary in Oracle
-  return "";
+  return "SELECT " + p_table + "_seq.nextval FROM DUAL";
 }
 
-// Gets the table definition-form of a primary key
-CString 
-SQLInfoOracle::GetPrimaryKeyDefinition(CString p_schema,CString p_tableName,bool /*p_temporary*/) const
+// Gets the construction / select for the resulting effective generated serial
+CString
+SQLInfoOracle::GetSQLEffectiveSerial(CString p_identity) const
 {
-  // The primary key constraint is not directly generated after the column
-  // to ensure it will use the named index in the correct tablespace
-  // Otherwise the index name and tablespace cannot be defined and will be auto-generated
-  return GetKEYWORDNetworkPrimaryKeyType() + " NOT NULL CONSTRAINT pk_" + p_tableName + " PRIMARY KEY\n";
+  // Just return it, it's the correct value
+  return p_identity;
 }
 
-// Get the constraint form of a primary key to be added to a table after creation of that table
-CString 
-SQLInfoOracle::GetPrimaryKeyConstraint(CString p_schema,CString p_tablename,CString p_primary) const
+// Gets the sub transaction commands
+CString
+SQLInfoOracle::GetSQLStartSubTransaction(CString p_savepointName) const
 {
-  return "ALTER TABLE " + p_schema + "." + p_tablename + "\n"
-         "  ADD CONSTRAINT pk_" + p_tablename + "\n"
-         "      PRIMARY KEY (" + p_primary + ")";
+  return CString("SAVEPOINT ") + p_savepointName;
 }
 
 CString
-SQLInfoOracle::GetPrimaryKeyConstraint(MPrimaryMap& p_primaries) const
+SQLInfoOracle::GetSQLCommitSubTransaction(CString p_savepointName) const
+{
+  // There is no savepoint commit in Oracle!!
+  return "";
+}
+
+CString
+SQLInfoOracle::GetSQLRollbackSubTransaction(CString p_savepointName) const
+{
+  return CString("ROLLBACK TO ") + p_savepointName;
+}
+
+// FROM-Part for a query to select only 1 (one) record / or empty!
+CString
+SQLInfoOracle::GetSQLFromDualClause() const
+{
+  return " FROM dual";
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// CATALOG
+// o GetCATALOG<Object[s]><Function>
+//   Objects
+//   - Table
+//   - Column
+//   - Index
+//   - PrimaryKey
+//   - ForeignKey
+//   - Trigger
+//   - TemporaryTable 
+//   - View
+//   - Sequence
+//  Functions per object type
+//   - Exists
+//   - List
+//   - Attributes
+//   - Create
+//   - Alter  (where possible)
+//   - Rename (where possible)
+//   - Drop
+//
+//////////////////////////////////////////////////////////////////////////
+
+// Get SQL to check if a table already exists in the database
+CString
+SQLInfoOracle::GetCATALOGTableExists(CString p_schema,CString p_tablename) const
+{
+  p_schema.MakeUpper();
+  p_tablename.MakeUpper();
+  CString query = "SELECT COUNT(*)\n"
+                  "  FROM ALL_TABLES\n"
+                  " WHERE owner      = '" + p_schema    + "'\n"
+                  "   AND table_name = '" + p_tablename + "'";
+  return query;
+}
+
+CString
+SQLInfoOracle::GetCATALOGTablesList(CString p_schema,CString p_pattern) const
+{
+  p_schema.MakeUpper();
+  p_pattern.MakeUpper();
+  CString query = "SELECT table_name\n"
+                  "  FROM ALL_TABLES\n"
+                  " WHERE owner      = '" + p_schema + "'\n"
+                  "   AND table_name like '" + p_pattern + "'";
+  return query;
+}
+
+bool
+SQLInfoOracle::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/,MetaTable& /*p_table*/) const
+{
+  // Getting the temp table status
+  return false;
+}
+
+CString
+SQLInfoOracle::GetCATALOGTableCreate(MetaTable& /*p_table*/,MetaColumn& /*p_column*/) const
+{
+  return "";
+}
+
+CString
+SQLInfoOracle::GetCATALOGTableRename(CString p_schema,CString p_tablename,CString p_newname) const
+{
+  // Beware: No 'TABLE' in the statement
+  CString sql("RENAME " + p_schema + "." + p_tablename + " TO " + p_newname);
+  return sql;
+}
+
+CString
+SQLInfoOracle::GetCATALOGTableDrop(CString p_schema,CString p_tablename) const
+{
+  CString sql("DROP TABLE ");
+  if(!p_schema.IsEmpty())
+  {
+    sql += p_schema + ".";
+  }
+  sql += p_tablename;
+  return sql;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL COLUMN FUNCTIONS
+
+CString 
+SQLInfoOracle::GetCATALOGColumnExists(CString p_schema,CString p_tablename,CString p_columnname) const
+{
+  p_schema.MakeUpper();
+  p_tablename.MakeUpper();
+  p_columnname.MakeUpper();
+  CString query = "SELECT COUNT(*)\n"
+                 "  FROM all_tab_columns tab\n"
+                 " WHERE tab.table_name  = '" + p_tablename  + "'\n"
+                 "   AND tab.column_name = '" + p_columnname + "'\n"
+                 "   AND tab.owner       = '" + p_schema     + "'";
+  return query;
+}
+
+CString 
+SQLInfoOracle::GetCATALOGColumnList(CString p_schema,CString p_tablename) const
+{
+  CString sql = GetCATALOGColumnAttributes(p_schema,p_tablename,"");
+
+  int pos = sql.ReverseFind('\n');
+  sql = sql.Mid(pos + 1) + " ORDER BY column_id";
+
+  return sql;
+}
+
+CString 
+SQLInfoOracle::GetCATALOGColumnAttributes(CString p_schema,CString p_tablename,CString p_columnname) const
+{
+  p_schema.MakeUpper();
+  p_tablename.MakeUpper();
+  p_columnname.MakeUpper();
+
+  // name, number, type, length, nullable, precision, scale
+  CString sql = "SELECT column_name\n"          // 1 -> Columnname
+                "      ,column_id\n"            // 2 -> Position
+                "      ,data_type\n"            // 3 -> Datatype
+                "      ,data_length\n"          // 4 -> Length
+                "      ,CASE WHEN nullable = 'Y' THEN 1 ELSE 0 END\n" // 5-> Nullable
+                "      ,data_precision\n"       // 5 -> Precision
+                "      ,data_scale\n"           // 6 -> Scale
+                "      ,data_default\n"         // 7 -> Default
+                "  FROM all_tab_columns\n"
+                " WHERE owner       = '" + p_schema     + "'\n"
+                "   AND table_name  = '" + p_tablename  + "'\n"
+                "   AND column_name = '" + p_columnname + "'";
+                // BEWARE: Columnname filter must be last for previous method!
+  return sql;
+}
+
+CString 
+SQLInfoOracle::GetCATALOGColumnCreate(MetaColumn& p_column) const
+{
+  CString sql = "ALTER TABLE "  + p_column.m_schema + "." + p_column.m_table  + "\n";
+                "  ADD COLUMN " + p_column.m_column + " " + p_column.m_typename;
+  p_column.GetPrecisionAndScale(sql);
+  p_column.GetNullable(sql);
+  p_column.GetDefault(sql);
+  // m_position not used
+  // m_length   not used
+  // m_remarks  not used
+  return sql;
+}
+
+CString 
+SQLInfoOracle::GetCATALOGColumnAlter(MetaColumn& p_column) const
+{
+  CString sql = "ALTER  TABLE  " + p_column.m_schema + "." + p_column.m_table  + "\n";
+                "MODIFY COLUMN " + p_column.m_column + " " + p_column.m_typename;
+  p_column.GetPrecisionAndScale(sql);
+  p_column.GetNullable(sql);
+  p_column.GetDefault(sql);
+  // m_position not used
+  // m_length   not used
+  // m_remarks  not used
+  return sql;
+}
+
+CString
+SQLInfoOracle::GetCATALOGColumnRename(CString p_schema,CString p_tablename,CString p_columnname,CString p_newname,CString /*p_datatype*/) const
+{
+  CString sql("ALTER  TABLE  " + p_schema + "." + p_tablename + "\n"
+              "RENAME COLUMN " + p_columnname + " TO " + p_newname + "\n");
+  return sql;
+}
+
+CString
+SQLInfoOracle::GetCATALOGColumnDrop(CString p_schema,CString p_tablename,CString p_columnname) const
+{
+  CString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+              " DROP COLUMN " + p_columnname);
+  return sql;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL INDICES FUNCTIONS
+
+// All index functions
+CString
+SQLInfoOracle::GetCATALOGIndexExists(CString p_schema,CString p_tablename,CString p_indexname) const
+{
+  return "";
+}
+
+CString
+SQLInfoOracle::GetCATALOGIndexList(CString p_schema,CString p_tablename)   const
+{
+  p_schema.MakeUpper();
+  p_tablename.MakeUpper();
+
+  // Query runs on the 'all_' variant, so owner name must be taken into account
+  // for performance reasons on the system table
+  CString query = "SELECT idx.index_name\n"
+                  "      ,col.column_name\n"
+                  "      ,col.column_position\n"
+//                "      ,idx.index_type\n"
+                  "      ,idx.uniqueness\n"
+                  "      ,col.descend\n"
+                  "      ,'' as column_source"
+                  "  FROM all_indexes     idx\n"
+                  "      ,all_ind_columns col\n"
+                  " WHERE idx.index_name  = col.index_name\n"
+                  "   AND idx.table_name  = col.table_name\n"
+                  "   AND idx.table_owner = col.table_owner\n"
+                  "   AND idx.generated   = 'N'\n"
+                  "   AND idx.table_name  = '" + p_tablename + "'\n"
+                  "   AND idx.table_owner = '" + p_schema     + "'\n"
+                  " ORDER BY index_name\n"
+                  "         ,column_position\n";
+  return query;
+}
+
+CString
+SQLInfoOracle::GetCATALOGIndexAttributes(CString p_schema,CString p_tablename,CString p_indexname) const
+{
+  return "";
+}
+
+CString
+SQLInfoOracle::GetCATALOGIndexCreate(MIndicesMap& p_indices) const
+{
+  // Get SQL to create an index for a table
+  // CREATE [UNIQUE] INDEX [<schema>.]indexname ON [<schema>.]tablename(column [ASC|DESC] [,...]);
+  CString query;
+  for(auto& index : p_indices)
+  {
+    if(index.m_position == 1)
+    {
+      // New index
+      query = "CREATE ";
+      if(index.m_unique)
+      {
+        query += "UNIQUE ";
+      }
+      query += "INDEX ";
+      if(!index.m_schemaName.IsEmpty())
+      {
+        query += index.m_schemaName + ".";
+      }
+      query += index.m_indexName;
+      query += " ON ";
+      if(!index.m_schemaName.IsEmpty())
+      {
+        query += index.m_schemaName + ".";
+      }
+      query += index.m_tableName;
+      query += "(";
+    }
+    else
+    {
+      query += ",";
+    }
+    if(!index.m_filter.IsEmpty())
+    {
+      query += index.m_filter;
+    }
+    else
+    {
+      query += index.m_columnName;
+      if(index.m_ascending != "A")
+      {
+        query += " DESC";
+      }
+    }
+  }
+  query += ")";
+  return query;
+}
+
+CString
+SQLInfoOracle::GetCATALOGIndexDrop(CString p_schema,CString /*p_tablename*/,CString p_indexname) const
+{
+  CString sql = "DROP INDEX " + p_schema + "." + p_indexname;
+  return sql;
+}
+
+// Get extra filter expression for an index column
+CString
+SQLInfoOracle::GetCATALOGIndexFilter(MetaIndex& p_index) const
+{
+  CString expression;
+  CString sql;
+  sql.Format("SELECT column_expression\n"
+             "  FROM all_ind_expressions\n"
+             " WHERE index_owner = '" + p_index.m_schemaName + "'\n"
+             "   AND index_name  = '" + p_index.m_indexName + "'\n"
+             "   AND table_owner = '" + p_index.m_schemaName + "'\n"
+             "   AND table_name  = '" + p_index.m_tableName + "'\n"
+             "   AND column_position = %d",p_index.m_position);
+  try
+  {
+    SQLQuery qry(m_database);
+    SQLVariant* var = qry.DoSQLStatementScalar(sql);
+    if(var)
+    {
+      var->GetAsString(expression);
+    }
+  }
+  catch(CString& error)
+  {
+    throw CString("Cannot find index filter: ") + error;
+  }
+  return expression;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL PRIMARY KEY FUNCTIONS
+
+CString
+SQLInfoOracle::GetCATALOGPrimaryExists(CString p_schema,CString p_tablename) const
+{
+  p_schema.MakeUpper();
+  p_tablename.MakeUpper();
+
+  CString query = "SELECT c.constraint_name\n"
+                  "      ,c.index_name\n"
+                  "      ,'Y' as deferrable\n"
+                  "      ,'N' as initially_deferred\n"
+                  "  FROM all_constraints c\n"
+                  " WHERE c.owner           = '" + p_schema    + "'\n"
+                  "   AND c.table_name      = '" + p_tablename + "'\n"
+                  "   AND c.constraint_type = 'P'\n";
+  return query;
+}
+
+CString
+SQLInfoOracle::GetCATALOGPrimaryAttributes(CString p_schema,CString p_tablename) const
+{
+  // To be implemented
+  return "";
+}
+
+CString
+SQLInfoOracle::GetCATALOGPrimaryCreate(MPrimaryMap& p_primaries) const
 {
   CString query("ALTER TABLE ");
 
@@ -407,45 +687,37 @@ SQLInfoOracle::GetPrimaryKeyConstraint(MPrimaryMap& p_primaries) const
   return query;
 }
 
-// Get the sql to add a foreign key to a table
-CString 
-SQLInfoOracle::GetSQLForeignKeyConstraint(DBForeign& p_foreign) const
+CString
+SQLInfoOracle::GetCATALOGPrimaryDrop(CString p_schema,CString p_tablename,CString p_constraintname) const
 {
-  // Construct the correct table names
-  CString table  (p_foreign.m_tablename);
-  CString primary(p_foreign.m_primaryTable);
-  if(!p_foreign.m_schema.IsEmpty())
-  {
-    table   = p_foreign.m_schema + "." + table;
-    primary = p_foreign.m_schema + "." + primary;
-  }
+  CString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+              " DROP CONSTRAINT " + p_constraintname);
+  return sql;
+}
 
-  // The base foreign key command
-  CString query = "ALTER TABLE " + table + "\n"
-                  "  ADD CONSTRAINT " + p_foreign.m_constraintname + "\n"
-                  "      FOREIGN KEY (" + p_foreign.m_column + ")\n"
-                  "      REFERENCES " + primary + "(" + p_foreign.m_primaryColumn + ")";
-  // Add all relevant options
-  if(p_foreign.m_deferrable)
-  {
-    query += "\n      DEFERRABLE";
-  }
-  if(p_foreign.m_initiallyDeffered)
-  {
-    query += "\n      INITIALLY DEFERRED";
-  }
-  switch(p_foreign.m_deleteRule)
-  {
-    case 0: query += "\n      ON DELETE CASCADE";     break;
-    case 2: query += "\n      ON DELETE SET NULL";    break;
-    default:// In essence: ON DELETE RESTRICT, but that's already the default
-    case 1: break;
-  }
-  return query;
+//////////////////////////////////////////////////////////////////////////
+// ALL FOREIGN KEY FUNCTIONS
+
+CString
+SQLInfoOracle::GetCATALOGForeignExists(CString p_schema,CString p_tablename,CString p_constraintname) const
+{
+  return "";
 }
 
 CString
-SQLInfoOracle::GetSQLForeignKeyConstraint(MForeignMap& p_foreigns) const
+SQLInfoOracle::GetCATALOGForeignList(CString p_schema,CString p_tablename) const
+{
+  return "";
+}
+
+CString
+SQLInfoOracle::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraintname) const
+{
+  return "";
+}
+
+CString
+SQLInfoOracle::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
 {
   MetaForeign& foreign = p_foreigns.front();
 
@@ -506,6 +778,58 @@ SQLInfoOracle::GetSQLForeignKeyConstraint(MForeignMap& p_foreigns) const
   return query;
 }
 
+CString
+SQLInfoOracle::GetCATALOGForeignDrop(CString p_schema,CString p_tablename,CString p_constraintname) const
+{
+  return "";
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// SQL/PSM
+//
+//////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// OLD INTERFACE
+//
+//////////////////////////////////////////////////////////////////////////
+
+// BOOLEANS EN STRINGS
+// ====================================================================
+
+// Get a query to create a temporary table from a select statement
+CString 
+SQLInfoOracle::GetSQLCreateTemporaryTable(CString& p_tablename,CString p_select) const
+{
+  return "CREATE GLOBAL TEMPORARY TABLE " + p_tablename + "\nAS " + p_select + 
+         "ON COMMIT PRESERVE ROWS";
+}
+
+// Get the query to remove a temporary table indefinite
+// BEWARE: Must be executed with a multi-statement stack!
+CString 
+SQLInfoOracle::GetSQLRemoveTemporaryTable(CString& p_tablename,int& p_number) const
+{
+  // Works only in Oracle in this way. If not an error will follow for the
+  // fact that the temporary table is still in use. The table definition 
+  // remains in the table catalog and can be different from and blocking
+  // newly defined temporary tables under the same name
+  p_number += 3;
+  return "DELETE FROM "    + p_tablename + ";\n"
+         "TRUNCATE TABLE " + p_tablename + ";\n"
+         "DROP TABLE "     + p_tablename + ";\n";
+}
+
+// Get a query to select into a temp table
+CString 
+SQLInfoOracle::GetSQLSelectIntoTemp(CString& p_tablename,CString& p_select) const
+{
+   return "INSERT INTO " + p_tablename + "\n" + p_select + ";\n";
+}
 
 // Get the sql (if possible) to change the foreign key constraint
 CString 
@@ -546,99 +870,6 @@ SQLInfoOracle::GetSQLAlterForeignKey(DBForeign& p_origin,DBForeign& p_requested)
   return query;
 }
 
-// Performance parameters to be added to the database
-CString 
-SQLInfoOracle::GetSQLPerformanceSettings() const
-{
-  // To run optimized queries on views with outer-joins and filters on the view
-  // the following parameter is of live-saving essence!
-  return "ALTER SESSION SET \"_push_join_predicate\" = true";
-}
-
-// SQL To set the caching mode of SQL results
-CString
-SQLInfoOracle::GetSQLCacheModeSetting(const CString& p_mode) const
-{
-  // Check mode parameter for correct values
-  CString query;
-  if(p_mode.CompareNoCase("manual") == 0 ||
-     p_mode.CompareNoCase("force")  == 0 ||
-     p_mode.CompareNoCase("auto")   == 0  )
-  {
-    query = "ALTER SESSION SET RESULT_CACHE_MODE = " + p_mode;
-  }
-  return query;
-}
-
-// Needed for storing numbers in stored procedures
-CString 
-SQLInfoOracle::GetSQLNlsNumericCharacters() const
-{
-  return "ALTER SESSION SET NLS_NUMERIC_CHARACTERS='.,'";
-}
-
-// Gives the statement to alter a table columns' name
-CString 
-SQLInfoOracle::GetSQLModifyColumnName(CString p_tablename,CString p_oldName,CString p_newName,CString /*p_datatype*/)
-{
-  // datatype not used in Oracle
-  return 
-    "ALTER  TABLE  " + p_tablename + "\n"
-    "RENAME COLUMN " + p_oldName   + " TO " + p_newName + "\n";
-}
-
-// Gets the prefix needed for altering the datatype of a column in a MODIFY/ALTER
-CString 
-SQLInfoOracle::GetModifyDatatypePrefix() const
-{
-  // At the changing of the datatype, just specify the new 
-  // SO: MODIFY <columname> <datatype>
-  return "";
-}
-
-// Code to define a table in row-locking mode
-CString 
-SQLInfoOracle::GetCodeLockModeRow() const
-{
-  // Not needed in Oracle
-  return "";
-}
-
-// Code to create a temporary table with no logging
-CString 
-SQLInfoOracle::GetCodeTempTableWithNoLog() const
-{
-  return "ON COMMIT PRESERVE ROWS";
-}
-
-// Granting all rights on a table (In a NON-ANSI database)
-CString 
-SQLInfoOracle::GetSQLGrantAllOnTable(CString p_schema,CString p_tableName,bool p_grantOption /*= false*/)
-{
-  CString sql = "GRANT ALL ON " + p_schema + "." + p_tableName + " TO " + GetGrantedUsers();
-  if(p_grantOption)
-  {
-    sql += " WITH GRANT OPTION;\n";
-  }
-  return sql;
-}
-
-// Code prefix for a select-into-temp
-CString 
-SQLInfoOracle::GetSelectIntoTempClausePrefix(CString p_tableName) const
-{
-  return "CREATE GLOBAL TEMPORARY TABLE " + p_tableName + "\n" +
-         "ON COMMIT PRESERVE ROWS\n" +
-         "AS\n";
-}
-
-// Code suffix for after a select-into-temp
-CString 
-SQLInfoOracle::GetSelectIntoTempClauseSuffix(CString p_tableName) const
-{
-  return "";
-}
-
 // Gets the fact if an IF statement needs to be bordered with BEGIN/END
 bool
 SQLInfoOracle::GetCodeIfStatementBeginEnd() const
@@ -659,14 +890,6 @@ CString
 SQLInfoOracle::GetAssignmentStatement(const CString& p_destiny,const CString& p_source) const
 {
   return p_destiny + " := " + p_source + ";";
-}
-
-// Get SQL keyword to alter a column in a table
-CString 
-SQLInfoOracle::GetCodeAlterColumn() const
-{
-  // Can be MODIFY or ALTER
-  return "MODIFY ";
 }
 
 // Get the code to start a WHILE-loop
@@ -692,41 +915,6 @@ SQLInfoOracle::GetAssignmentSelectParenthesis() const
   return false;
 }
 
-// Gets the construction / select for generating a new serial identity
-CString 
-SQLInfoOracle::GetSQLGenerateSerial(CString p_table) const
-{
-  return "SELECT " + p_table + "_seq.nextval FROM DUAL";
-}
-
-// Gets the construction / select for the resulting effective generated serial
-CString 
-SQLInfoOracle::GetSQLEffectiveSerial(CString p_identity) const
-{
-  // Just return it, it's the correct value
-  return p_identity;
-}
-
-// Gets the sub transaction commands
-CString 
-SQLInfoOracle::GetStartSubTransaction(CString p_savepointName) const
-{
-  return CString("SAVEPOINT ") + p_savepointName;
-}
-
-CString 
-SQLInfoOracle::GetCommitSubTransaction(CString p_savepointName) const
-{
-  // There is no savepoint commit in Oracle!!
-  return "";
-}
-
-CString 
-SQLInfoOracle::GetRollbackSubTransaction(CString p_savepointName) const
-{
-  return CString("ROLLBACK TO ") + p_savepointName;
-}
-
 // SQL CATALOG QUERIES
 // ===================================================================
 
@@ -740,20 +928,6 @@ SQLInfoOracle::GetSQLStoredProcedureExists(CString& p_name) const
          "  FROM all_objects\n"
          " WHERE UPPER(object_name) = '" + uname + "'\n"
          "   AND object_type        = 'FUNCTION';";
-}
-
-// Part of a query to select only 1 (one) record
-CString 
-SQLInfoOracle::GetDualTableName() const
-{
-  return "DUAL";
-}
-
-// FROM-Part for a query to select only 1 (one) record
-CString 
-SQLInfoOracle::GetDualClause() const
-{
-  return " FROM DUAL";
 }
 
 // Gets DEFERRABLE for a constraint (or nothing)
@@ -785,44 +959,6 @@ SQLInfoOracle::GetSQLConstraintsImmediate() const
   return "ALTER SESSION SET CONSTRAINTS = IMMEDIATE";
 }
 
-// Get SQL to check if a table already exists in the database
-CString 
-SQLInfoOracle::GetSQLTableExists(CString p_schema,CString p_tablename) const
-{
-  p_schema.MakeUpper();
-  p_tablename.MakeUpper();
-  CString query = "SELECT COUNT(*)\n"
-                  "  FROM ALL_TABLES\n"
-                  " WHERE owner      = '" + p_schema    + "'\n"
-                  "   AND table_name = '" + p_tablename + "'";
-  return query;
-}
-
-// Get SQL to select all columns of a table from the catalog
-CString 
-SQLInfoOracle::GetSQLGetColumns(CString& p_user,CString& p_tableName) const
-{
-  CString systemUser = p_user;
-  CString upperName  = p_tableName;
-  systemUser.MakeUpper();
-  upperName .MakeUpper();
-
-  // name, number, type, length, nullable, precision, scale
-  CString select = "SELECT column_name\n"
-                   "      ,column_id\n"
-                   "      ,data_type\n"
-                   "      ,data_length\n"
-                   "      ,CASE WHEN nullable = 'Y' THEN 1 ELSE 0 END\n"
-                   "      ,data_precision\n"
-                   "      ,data_scale\n"
-                   "      ,data_default\n"
-                   "  FROM all_tab_columns\n"
-                   " WHERE table_name = '" + upperName  + "'\n"
-                   "   AND owner      = '" + systemUser + "'\n"
-                   " ORDER BY column_id";
-  return select;
-}
-
 // Get SQL to select all constraints on a table from the catalog
 CString 
 SQLInfoOracle::GetSQLGetConstraintsForTable(CString& p_tableName) const
@@ -840,154 +976,6 @@ SQLInfoOracle::GetSQLGetConstraintsForTable(CString& p_tableName) const
                      "   AND con.table_name = '" + upperName + "'\n"
                      "   AND NOT constraint_name like 'SYS_%'"; 
   return contabel;
-}
-
-// Get SQL to read all indices for a table
-CString 
-SQLInfoOracle::GetSQLTableIndices(CString p_user,CString p_tableName) const
-{
-  p_user.MakeUpper();
-  p_tableName.MakeUpper();
-
-  // Query runs on the 'all_' variant, so owner name must be taken into account
-  // for performance reasons on the system table
-  CString query = "SELECT idx.index_name\n"
-                  "      ,col.column_name\n"
-                  "      ,col.column_position\n"
-//                  "      ,idx.index_type\n"
-                  "      ,idx.uniqueness\n"
-                  "      ,col.descend\n"
-                  "      ,'' as column_source"
-                  "  FROM all_indexes     idx\n"
-                  "      ,all_ind_columns col\n"
-                  " WHERE idx.index_name  = col.index_name\n"
-                  "   AND idx.table_name  = col.table_name\n"
-                  "   AND idx.table_owner = col.table_owner\n"
-                  "   AND idx.generated   = 'N'\n"
-                  "   AND idx.table_name  = '" + p_tableName + "'\n"
-                  "   AND idx.table_owner = '" + p_user + "'"
-                  " ORDER BY index_name\n"
-                  "         ,column_position\n";
-  return query;
-}
-
-// Get SQL to create an index for a table
-CString 
-SQLInfoOracle::GetSQLCreateIndex(CString p_user,CString p_tableName,DBIndex* p_index) const
-{
-  CString sql("CREATE ");
-  if(p_index->m_unique)
-  {
-    sql += "UNIQUE ";
-  }
-  sql += " INDEX ON ";
-  sql += p_user + ".";
-  sql += p_tableName + "(";
-
-  int column = 0;
-  while(!p_index->m_indexName.IsEmpty())
-  {
-    if(column)
-    {
-      sql += ",";
-    }
-    sql += p_index->m_column;
-    sql += (p_index->m_descending) ? " DESC" : " ASC";
-    // Next column
-    ++column;
-    ++p_index;
-  }
-  sql += ")";
-
-  return sql;
-}
-
-// Get SQL to create an index for a table
-// CREATE [UNIQUE] INDEX [<schema>.]indexname ON [<schema>.]tablename(column [ASC|DESC] [,...]);
-CString
-SQLInfoOracle::GetSQLCreateIndex(MStatisticsMap& p_indices) const
-{
-  CString query;
-  for(auto& index : p_indices)
-  {
-    if(index.m_position == 1)
-    {
-      // New index
-      query = "CREATE ";
-      if(index.m_unique)
-      {
-        query += "UNIQUE ";
-      }
-      query += "INDEX ";
-      if(!index.m_schemaName.IsEmpty())
-      {
-        query += index.m_schemaName + ".";
-      }
-      query += index.m_indexName;
-      query += " ON ";
-      if(!index.m_schemaName.IsEmpty())
-      {
-        query += index.m_schemaName + ".";
-      }
-      query += index.m_tableName;
-      query += "(";
-    }
-    else
-    {
-      query += ",";
-    }
-    if(!index.m_filter.IsEmpty())
-    {
-      query += index.m_filter;
-    }
-    else
-    {
-      query += index.m_columnName;
-      if(index.m_ascending != "A")
-      {
-        query += " DESC";
-      }
-    }
-  }
-  query += ")";
-  return query;
-}
-
-// Get extra filter expression for an index column
-CString
-SQLInfoOracle::GetIndexFilter(MetaStatistics& p_index) const
-{
-  CString expression;
-  CString sql;
-  sql.Format("SELECT column_expression\n"
-             "  FROM all_ind_expressions\n"
-             " WHERE index_owner = '" + p_index.m_schemaName + "'\n"
-             "   AND index_name  = '" + p_index.m_indexName  + "'\n"
-             "   AND table_owner = '" + p_index.m_schemaName + "'\n"
-             "   AND table_name  = '" + p_index.m_tableName  + "'\n"
-             "   AND column_position = %d",p_index.m_position);
-  try
-  {
-    SQLQuery qry(m_database);
-    SQLVariant* var = qry.DoSQLStatementScalar(sql);
-    if(var)
-    {
-      var->GetAsString(expression);
-    }
-  }
-  catch(CString& error)
-  {
-    throw CString("Cannot find index filter: ") + error;
-  }
-  return expression;
-}
-
-// Get SQL to drop an index
-CString 
-SQLInfoOracle::GetSQLDropIndex(CString p_user,CString p_indexName) const
-{
-  CString sql = "DROP INDEX " + p_user + "." + p_indexName;
-  return sql;
 }
 
 // Get SQL to read the referential constraints from the catalog
@@ -1165,52 +1153,6 @@ SQLInfoOracle::GetSQLSearchSession(const CString& /*p_databaseName*/,const CStri
           "         FROM "+ p_sessionTable+ ")";
 }
 
-// See if a column exists within a table
-bool   
-SQLInfoOracle::DoesColumnExistsInTable(CString& p_owner,CString& p_tableName,CString& p_column) const
-{
-  int number = 0;
-
-  CString tableName(p_tableName);
-  tableName.MakeUpper();
-  CString column(p_column);
-  column.MakeUpper();
-  CString owner(p_owner);
-  owner.MakeUpper();
-
-  CString query = "SELECT COUNT(*)\n"
-                 "  FROM all_tab_columns tab\n"
-                 " WHERE tab.table_name  = '" + tableName + "'\n"
-                 "   AND tab.column_name = '" + column    + "'\n"
-                 "   AND tab.owner       = '" + owner     + "'";
-  SQLQuery qry(m_database);
-  qry.DoSQLStatement(query);
-  if(qry.GetRecord())
-  {
-    number = qry.GetColumn(1)->GetAsSLong();
-  }
-  return (number == 1);
-}
-
-// Get SQL to get all the information about a Primary Key constraint
-CString 
-SQLInfoOracle::GetSQLPrimaryKeyConstraintInformation(CString p_schema,CString p_tableName) const
-{
-  p_schema.MakeUpper();
-  p_tableName.MakeUpper();
-
-  CString query = "SELECT c.constraint_name\n"
-                  "      ,c.index_name\n"
-                  "      ,(SELECT i.tablespace_name\n"
-                  "          FROM all_indexes i\n"
-                  "         WHERE i.index_name = c.index_name)\n"
-                  "  FROM all_constraints c\n"
-                  " WHERE c.owner           = '" + p_schema    + "'\n"
-                  "   AND c.table_name      = '" + p_tableName + "'\n"
-                  "   AND c.constraint_type = 'P'\n";
-  return query;
-}
-
 // Does the named constraint exist in the database
 bool    
 SQLInfoOracle::DoesConstraintExist(CString p_constraintName) const
@@ -1293,26 +1235,6 @@ SQLInfoOracle::GetSQLTriggers(CString p_schema,CString p_table) const
 // SQL DDL STATEMENTS
 // ==================
 
-CString
-SQLInfoOracle::GetCreateColumn(CString p_schema,CString p_tablename,CString p_columnName,CString p_typeDefinition,bool p_notNull)
-{
-  CString sql  = "ALTER TABLE "  + p_schema + "." + p_tablename  + "\n";
-                 "  ADD COLUMN " + p_columnName + " " + p_typeDefinition;
-  if(p_notNull)
-  {
-    sql += " NOT NULL";
-  }
-  return sql;
-}
-
-// Drop a column from a table
-CString 
-SQLInfoOracle::GetSQLDropColumn(CString p_schema,CString p_tablename,CString p_columnName) const
-{
-  return "ALTER TABLE " + p_schema + "." + p_tablename + "\n"
-         " DROP COLUMN " + p_columnName;
-}
-
 // Add a foreign key to a table
 CString
 SQLInfoOracle::GetCreateForeignKey(CString p_tablename,CString p_constraintname,CString p_column,CString p_refTable,CString p_primary)
@@ -1321,22 +1243,6 @@ SQLInfoOracle::GetCreateForeignKey(CString p_tablename,CString p_constraintname,
                 "  ADD CONSTRAINT " + p_constraintname + "\n"
                 "      FOREIGN KEY (" + p_column + ")\n"
                 "      REFERENCES " + p_refTable + "(" + p_primary + ")";
-  return sql;
-}
-
-CString 
-SQLInfoOracle::GetModifyColumnType(CString p_schema,CString p_tablename,CString p_columnName,CString p_typeDefinition)
-{
-  CString sql = "ALTER  TABLE  " + p_schema + "." + p_tablename + "\n";
-                "MODIFY COLUMN " + p_columnName + " " + p_typeDefinition;
-  return sql;
-}
-
-CString 
-SQLInfoOracle::GetModifyColumnNull(CString p_schema,CString p_tablename,CString p_columnName,bool p_notNull)
-{
-  CString sql = "ALTER  TABLE  " + p_schema + "." + p_tablename + "\n";
-                "MODIFY COLUMN " + p_columnName + " " + (p_notNull ? "NOT " : "") + "NULL";
   return sql;
 }
 
@@ -1429,16 +1335,6 @@ SQLInfoOracle::DoCommitDMLcommands() const
   qry.DoSQLStatement("COMMIT");
 }
 
-// Remove a column from a table
-void
-SQLInfoOracle::DoDropColumn(CString p_tableName,CString p_columName)
-{
-  CString sql = "ALTER TABLE  " + p_tableName + "\n"
-                " DROP COLUMN " + p_columName;
-  SQLQuery query(m_database);
-  query.TryDoSQLStatement(sql);
-}
-
 // Does the named view exists in the database
 bool
 SQLInfoOracle::DoesViewExists(CString& p_viewName)
@@ -1514,18 +1410,6 @@ SQLInfoOracle::DoMakeProcedure(CString& p_procName,CString p_table,bool /*p_noPa
   query.DoSQLStatement("GRANT EXECUTE ON " + p_procName + " TO " + GetGrantedUsers());
   query.TryDoSQLStatement("CREATE OR REPLACE PUBLIC SYNONYM " + p_procName + " FOR " + p_procName);
   query.DoSQLStatement("GRANT ALL ON " + p_procName + " TO " + GetGrantedUsers());
-}
-
-// Rename a database table 
-void
-SQLInfoOracle::DoRenameTable(CString& p_oldName,CString& p_newName) const
-{
-  SQLQuery query(m_database);
-
-  // Beware: No 'TABLE' in the statement
-  CString rename = "rename " + p_oldName + " to " + p_newName;
-  query.DoSQLStatement(rename);
-  DoCommitDDLcommands();
 }
 
 // PERSISTENT-STORED MODULES (SPL / PL/SQL)

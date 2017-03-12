@@ -1173,7 +1173,7 @@ SQLInfo::GetPrimaryKeyInfo(CString&     p_tablename
   if(!p_primaries.size())
   {
     // If no primary key found, search for the first unique key
-    MStatisticsMap statistics;
+    MIndicesMap statistics;
     MakeInfoTableStatistics(statistics,&p_primaries,errors,false);
   }
   else
@@ -1572,6 +1572,7 @@ SQLInfo::MakeInfoTableTablepart(CString p_findTable,MTableMap& p_tables,CString&
        if(m_retCode == SQL_SUCCESS || m_retCode == SQL_SUCCESS_WITH_INFO)
        {
          MetaTable theTable;
+         theTable.m_temporary = false;
 
          // Put primary info in the MetaTable object
          if(cbCatalogName > 0) theTable.m_catalog     = szCatalogName;
@@ -2048,7 +2049,7 @@ SQLInfo::MakeInfoTableForeign(MForeignMap& p_foreigns
 }
 
 bool
-SQLInfo::MakeInfoTableStatistics(MStatisticsMap& p_statistics
+SQLInfo::MakeInfoTableStatistics(MIndicesMap& p_statistics
                                 ,MPrimaryMap*    p_keymap
                                 ,CString&        p_errors
                                 ,bool            p_all /*=true*/)
@@ -2139,7 +2140,7 @@ SQLInfo::MakeInfoTableStatistics(MStatisticsMap& p_statistics
       }
       if(m_retCode == SQL_SUCCESS || m_retCode == SQL_SUCCESS_WITH_INFO)
       {
-        MetaStatistics stat;
+        MetaIndex stat;
         // Names
         if(cbCatalogName > 0) stat.m_catalogName = szCatalogName;
         if(cbSchemaName  > 0) stat.m_schemaName  = szSchemaName;

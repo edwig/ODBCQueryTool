@@ -63,6 +63,8 @@ typedef struct _metaInfoTable
   CString   m_fullObjectName;   // Full object name, conforming RDBMS rules
                                 // eg: type:catalog.schema.table
                                 // or: type:schema.table@catalog
+  CString   m_tablespace;       // Some engines need the storage space
+  bool      m_temporary;        // Temporary table (true) or persistent (false)
 }
 MetaTable;
 
@@ -85,6 +87,34 @@ typedef struct _metaInfoColumn
   int       m_nullable;         // Nullable SQL_NO_NULLS / SQL_NULLABLE / SQL_NULLABLE_UNKNOWN
   CString   m_default;          // Default value of the column
   int       m_position;         // Ordinal position in the table
+
+  void GetPrecisionAndScale(CString& p_sql)
+  {
+    if(m_precision > 0)
+    {
+      p_sql.AppendFormat("(%d",m_precision);
+      if(m_scale > 0)
+      {
+        p_sql.AppendFormat(",%d",m_scale);
+      }
+      p_sql += ")";
+    }
+  };
+  void GetNullable(CString& p_sql)
+  {
+    if(!m_nullable)
+    {
+      p_sql += " NOT NULL";
+    }
+  };
+  void GetDefault(CString& p_sql)
+  {
+    if(!m_default.IsEmpty())
+    {
+      p_sql += " DEFAULT ";
+      p_sql += m_default;
+    }
+  }
 }
 MetaColumn;
 
@@ -137,7 +167,7 @@ using MForeignMap = std::vector<MetaForeign>;
 
 // Results from "SQLStatistics"
 
-typedef struct _metaInfoStatistics
+typedef struct _metaInfoIndex
 {
   CString   m_catalogName;    // Catalog (database name)
   CString   m_schemaName;     // Schema owner
@@ -152,9 +182,9 @@ typedef struct _metaInfoStatistics
   long      m_pages;          // Pages of the index
   CString   m_filter;         // filter or expression
 }
-MetaStatistics;
+MetaIndex;
 
-using MStatisticsMap = std::vector<MetaStatistics>;
+using MIndicesMap = std::vector<MetaIndex>;
 
 // Results from "SQLSpecialColumns"
 

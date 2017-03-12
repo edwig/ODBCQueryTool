@@ -42,6 +42,8 @@ public:
   //
   //////////////////////////////////////////////////////////////////////////
 
+  // RDBMS Capabilities
+
   // Get the database type
   DatabaseType GetRDBMSDatabaseType() const;
  
@@ -123,13 +125,86 @@ public:
   // Gets the Not-NULL-Value statement of the database
   CString GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) const;
 
+  // SQL's
+
+  // Code prefix for a select-into-temp
+  CString GetSQLSelectIntoTempPrefix(CString p_tableName) const;
+
+  // Code suffix for after a select-into-temp
+  CString GetSQLSelectIntoTempSuffix(CString p_tableName) const;
+
+  // Gets the construction / select for generating a new serial identity
+  CString GetSQLGenerateSerial(CString p_table) const;
+
+  // Gets the construction / select for the resulting effective generated serial
+  CString GetSQLEffectiveSerial(CString p_identity) const;
+
+  // Gets the subtransaction commands
+  CString GetSQLStartSubTransaction   (CString p_savepointName) const;
+  CString GetSQLCommitSubTransaction  (CString p_savepointName) const;
+  CString GetSQLRollbackSubTransaction(CString p_savepointName) const;
+
+  // FROM-Part for a query to select only 1 (one) record / or empty!
+  CString GetSQLFromDualClause() const;
+
   //////////////////////////////////////////////////////////////////////////
   //
   // CATALOG
+  // o GetCATALOG<Object[s]><Function>
+  //   Objects
+  //   - Table
+  //   - Column
+  //   - Index
+  //   - PrimaryKey
+  //   - ForeignKey
+  //   - Trigger
+  //   - TemporaryTable 
+  //   - View
+  //   - Sequence
+  //  Functions per object type
+  //   - Exists
+  //   - List
+  //   - Attributes
+  //   - Create
+  //   - Alter (where possible)
+  //   - Rename (where possible)
+  //   - Drop
   //
   //////////////////////////////////////////////////////////////////////////
 
-
+  // All table functions
+  CString GetCATALOGTableExists    (CString p_schema,CString p_tablename) const;
+  CString GetCATALOGTablesList     (CString p_schema,CString p_pattern) const;
+  bool    GetCATALOGTableAttributes(CString p_schema,CString p_tablename,MetaTable& p_table) const;
+  CString GetCATALOGTableCreate    (MetaTable& p_table,MetaColumn& p_column) const;
+  CString GetCATALOGTableRename    (CString p_schema,CString p_tablename,CString p_newname) const;
+  CString GetCATALOGTableDrop      (CString p_schema,CString p_tablename) const;
+  // All column functions
+  CString GetCATALOGColumnExists    (CString p_schema,CString p_tablename,CString p_columname) const;
+  CString GetCATALOGColumnList      (CString p_schema,CString p_tablename) const;
+  CString GetCATALOGColumnAttributes(CString p_schema,CString p_tablename,CString p_columname) const;
+  CString GetCATALOGColumnCreate    (MetaColumn& p_column) const;
+  CString GetCATALOGColumnAlter     (MetaColumn& p_column) const;
+  CString GetCATALOGColumnRename    (CString p_schema,CString p_tablename,CString p_columnname,CString p_newname,CString p_datatype) const;
+  CString GetCATALOGColumnDrop      (CString p_schema,CString p_tablename,CString p_columname) const;
+  // All index functions
+  CString GetCATALOGIndexExists     (CString p_schema,CString p_tablename,CString p_indexname) const;
+  CString GetCATALOGIndexList       (CString p_schema,CString p_tablename) const;
+  CString GetCATALOGIndexAttributes (CString p_schema,CString p_tablename,CString p_indexname) const;
+  CString GetCATALOGIndexCreate     (MIndicesMap& p_index) const;
+  CString GetCATALOGIndexDrop       (CString p_schema,CString p_tablename,CString p_indexname) const;
+  CString GetCATALOGIndexFilter     (MetaIndex& p_index) const;
+  // All primary key functions
+  CString GetCATALOGPrimaryExists    (CString p_schema,CString p_tablename) const;
+  CString GetCATALOGPrimaryAttributes(CString p_schema,CString p_tablename) const;
+  CString GetCATALOGPrimaryCreate    (MPrimaryMap& p_primaries) const;
+  CString GetCATALOGPrimaryDrop      (CString p_schema,CString p_tablename,CString p_constraintname) const;
+  // All foreign key functions
+  CString GetCATALOGForeignExists    (CString p_schema,CString p_tablename,CString p_constraintname) const;
+  CString GetCATALOGForeignList      (CString p_schema,CString p_tablename) const;
+  CString GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraintname) const;
+  CString GetCATALOGForeignCreate    (MForeignMap& p_foreigns) const;
+  CString GetCATALOGForeignDrop      (CString p_schema,CString p_tablename,CString p_constraintname) const;
 
   //////////////////////////////////////////////////////////////////////////
   //
@@ -157,58 +232,8 @@ public:
   // Get a query to select into a temp table
   CString GetSQLSelectIntoTemp(CString& p_tablename,CString& p_select) const;
 
-  // Replace the Identity column OID by a sequence.nextval
-  CString GetReplaceColumnOIDbySequence(CString p_columns,CString p_tablename,CString p_postfix = "_seq") const;
-
-  // Remove catalog dependencies for stored procedures
-  CString GetSQLRemoveProcedureDependencies(CString p_procname) const;
-
-  // Remove field dependencies for calculated fields (bug in Firebird)
-  CString GetSQLRemoveFieldDependencies(CString p_tablename) const;
-
-  // Gets the table definition-form of a primary key
-  CString GetPrimaryKeyDefinition(CString p_schema,CString p_tableName,bool p_temporary) const;
-
-  // Get the constraint form of a primary key to be added to a table after creation of that table
-  CString GetPrimaryKeyConstraint(CString p_schema,CString p_tablename,CString p_primary) const;
-  CString GetPrimaryKeyConstraint(MPrimaryMap& p_primaries) const;
-
-  // Get the SQL to add a foreign key to a table
-  CString GetSQLForeignKeyConstraint(DBForeign&   p_foreign) const;
-  CString GetSQLForeignKeyConstraint(MForeignMap& p_foreigns) const;
-
   // Get the SQL (if possible) to change the foreign key constraint
   CString GetSQLAlterForeignKey(DBForeign& p_origin,DBForeign& p_requested) const;
-
-  // Performance parameters to be added to the database
-  CString GetSQLPerformanceSettings() const;
-
-  // SQL To set the caching mode of SQL results
-  CString GetSQLCacheModeSetting(const CString& p_mode) const;
-
-  // Needed for storing numbers in stored procedures
-  CString GetSQLNlsNumericCharacters() const;
-
-  // Gives the statement to alter a table columns' name
-  CString GetSQLModifyColumnName(CString p_tablename,CString p_oldName,CString p_newName,CString p_datatype);
-
-  // Gets the prefix needed for altering the datatype of a column in a MODIFY/ALTER
-  CString GetModifyDatatypePrefix() const;
-
-  // Code to define a table in row-locking mode
-  CString GetCodeLockModeRow() const;
-
-  // Code to create a temporary table with no logging
-  CString GetCodeTempTableWithNoLog() const;
-
-  // Granting all rights on a table (In a NON-ANSI database)
-  CString GetSQLGrantAllOnTable(CString p_schema,CString p_tableName,bool p_grantOption = false);
-
-  // Code prefix for a select-into-temp
-  CString GetSelectIntoTempClausePrefix(CString p_tableName) const;
-
-  // Code suffix for after a select-into-temp
-  CString GetSelectIntoTempClauseSuffix(CString p_tableName) const;
 
   // Gets the fact if an IF statement needs to be bordered with BEGIN/END
   bool    GetCodeIfStatementBeginEnd() const;
@@ -219,9 +244,6 @@ public:
   // Gets a complete assignment statement.
   CString GetAssignmentStatement(const CString& p_destiny,const CString& p_source) const;
 
-  // Get SQL keyword to alter a column in a table
-  CString GetCodeAlterColumn() const;
-
   // Get the code to start a WHILE-loop
   CString GetStartWhileLoop(CString p_condition) const;
 
@@ -231,25 +253,11 @@ public:
   // Gets the fact if a SELECT must be in between parenthesis for an assignment
   bool    GetAssignmentSelectParenthesis() const;
 
-  // Gets the construction / select for generating a new serial identity
-  CString GetSQLGenerateSerial(CString p_table) const;
-
-  // Gets the construction / select for the resulting effective generated serial
-  CString GetSQLEffectiveSerial(CString p_identity) const;
-
-  // Gets the subtransaction commands
-  CString GetStartSubTransaction   (CString p_savepointName) const;
-  CString GetCommitSubTransaction  (CString p_savepointName) const;
-  CString GetRollbackSubTransaction(CString p_savepointName) const;
-
   // SQL CATALOG QUERIES
   // ===================
 
   // Get SQL to check if a stored procedure already exists in the database
   CString GetSQLStoredProcedureExists(CString& p_name) const;
-
-  // Part of a query to select only 1 (one) record
-  CString GetDualTableName () const;
 
   // FROM-Part for a query to select only 1 (one) record
   CString GetDualClause() const;
@@ -263,27 +271,8 @@ public:
   // Reset constraints back to immediate
   CString GetSQLConstraintsImmediate() const;
 
-  // Get SQL to check if a table already exists in the database
-  CString GetSQLTableExists(CString p_schema,CString p_tablename) const;
-
-  // Get SQL to select all columns of a table from the catalog
-  CString GetSQLGetColumns(CString& p_user,CString& p_tableName) const;
-
   // Get SQL to select all constraints on a table from the catalog
   CString GetSQLGetConstraintsForTable(CString& p_tableName) const;
-
-  // Get SQL to read all indices for a table
-  CString GetSQLTableIndices(CString p_user,CString p_tableName) const;
-
-  // Get SQL to create an index for a table
-  CString GetSQLCreateIndex(CString p_user,CString p_tableName,DBIndex* p_index) const;
-  CString GetSQLCreateIndex(MStatisticsMap& p_indices) const;
-
-  // Get extra filter expression for an index column
-  CString GetIndexFilter(MetaStatistics& p_index) const;
-
-  // Get SQL to drop an index
-  CString GetSQLDropIndex(CString p_user,CString p_indexName) const;
 
   // Get SQL to read the referential constraints from the catalog
   CString GetSQLTableReferences(CString p_schema,CString p_tablename,CString p_constraint = "",int p_maxColumns = SQLINFO_MAX_COLUMNS) const;
@@ -315,12 +304,6 @@ public:
   // Get SQL for searching a session
   CString GetSQLSearchSession(const CString& p_databaseName,const CString& p_sessionTable) const;
 
-  // See if a column exists within a table
-  bool       DoesColumnExistsInTable(CString& p_owner,CString& p_tableName,CString& p_column) const;
-
-  // Get SQL to get all the information about a Primary Key constraint
-  CString GetSQLPrimaryKeyConstraintInformation(CString p_schema,CString p_tableName) const;
-
   // Does the named constraint exist in the database
   bool       DoesConstraintExist(CString p_constraintName) const;
 
@@ -339,18 +322,8 @@ public:
   // SQL DDL STATEMENTS
   // ==================
 
-  // Add a column to a table
-  CString GetCreateColumn(CString p_schema,CString p_tablename,CString p_columnName,CString p_typeDefinition,bool p_notNull);
-
-  // Drop a column from a table
-  CString GetSQLDropColumn(CString p_schema,CString p_tablename,CString p_columnName) const;
-
   // Add a foreign key to a table
   CString GetCreateForeignKey(CString p_tablename,CString p_constraintname,CString p_column,CString p_refTable,CString p_primary);
-
-  // Modify a column's definition in a table
-  CString GetModifyColumnType(CString p_schema,CString p_tablename,CString p_columnName,CString p_typeDefinition);
-  CString GetModifyColumnNull(CString p_schema,CString p_tablename,CString p_columnName,bool p_notNull);
 
   // Get the SQL to drop a view. If precursor is filled: run that SQL first!
   CString GetSQLDropView(CString p_schema,CString p_view,CString& p_precursor);
@@ -370,9 +343,6 @@ public:
   // Do the commit for the DML commands in the database
   void    DoCommitDMLcommands() const;
 
-  // Remove a column from a table
-  void    DoDropColumn(CString p_tableName,CString p_columName);
-
   // Does the named view exists in the database
   bool    DoesViewExists(CString& p_viewName);
 
@@ -387,9 +357,6 @@ public:
 
   // Create a procedure in the database
   void    DoMakeProcedure(CString& p_procName,CString p_table,bool    p_noParameters,CString& p_codeBlock);
-
-  // Rename a database table 
-  void    DoRenameTable(CString& p_oldName,CString& p_newName) const;
 
   // PERSISTENT-STORED MODULES (SPL / PL/SQL)
   // ====================================================================

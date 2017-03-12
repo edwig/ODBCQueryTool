@@ -241,30 +241,94 @@ public:
   // Gets the Not-NULL-Value statement of the database
   // virtual CString GetNVLStatement(CString& p_test,CString& p_isnull) const = 0;
   virtual CString GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) const = 0;
+
+  // SQL for sub processing
+
+  // Code prefix for a select-into-temp
+  // virtual CString GetSelectIntoTempClausePrefix(CString p_tableName) const = 0;
+  virtual CString GetSQLSelectIntoTempPrefix(CString p_tableName) const = 0;
+
+  // Code suffix for after a select-into-temp
+  // virtual CString GetSelectIntoTempClauseSuffix(CString p_tableName) const = 0;
+  virtual CString GetSQLSelectIntoTempSuffix(CString p_tableName) const = 0;
   
+  // Gets the construction / select for generating a new serial identity
+  virtual CString GetSQLGenerateSerial(CString p_table) const = 0;
+
+  // Gets the construction / select for the resulting effective generated serial
+  virtual CString GetSQLEffectiveSerial(CString p_identity) const = 0;
+
+  // Gets the subtransaction commands
+  // virtual CString GetStartSubTransaction(CString p_savepointName) const = 0;
+  // virtual CString GetCommitSubTransaction(CString p_savepointName) const = 0;
+  // virtual CString GetRollbackSubTransaction(CString p_savepointName) const = 0;
+  virtual CString GetSQLStartSubTransaction   (CString p_savepointName) const = 0;
+  virtual CString GetSQLCommitSubTransaction  (CString p_savepointName) const = 0;
+  virtual CString GetSQLRollbackSubTransaction(CString p_savepointName) const = 0;
+
+  // FROM-Part for a query to select only 1 (one) record
+  // virtual CString GetDualClause() const = 0;
+  virtual CString GetSQLFromDualClause() const = 0;
+
+
   //////////////////////////////////////////////////////////////////////////
   //
   // CATALOG
   // o GetCATALOG<Object[s]><Function>
   //   Objects
-  //   - Sequence
   //   - Table
-  //   - View
   //   - Column
   //   - Index
   //   - PrimaryKey
   //   - ForeignKey
   //   - Trigger
   //   - TemporaryTable 
+  //   - View
+  //   - Sequence
   //  Functions per object type
   //   - Exists
   //   - List
   //   - Attributes
   //   - Create
-  //   - Alter (where possible)
+  //   - Alter  (where possible)
+  //   - Rename (where possible)
   //   - Drop
   //
   //////////////////////////////////////////////////////////////////////////
+
+  // All table functions
+  virtual CString GetCATALOGTableExists    (CString p_schema,CString p_tablename) const = 0;
+  virtual CString GetCATALOGTablesList     (CString p_schema,CString p_pattern)   const = 0;
+  virtual bool    GetCATALOGTableAttributes(CString p_schema,CString p_tablename,MetaTable& p_table) const = 0;
+  virtual CString GetCATALOGTableCreate    (MetaTable& p_table,MetaColumn& p_column) const = 0;
+  virtual CString GetCATALOGTableRename    (CString p_schema,CString p_tablename,CString p_newname) const = 0;
+  virtual CString GetCATALOGTableDrop      (CString p_schema,CString p_tablename) const = 0;
+  // All column functions
+  virtual CString GetCATALOGColumnExists    (CString p_schema,CString p_tablename,CString p_columname) const = 0;
+  virtual CString GetCATALOGColumnList      (CString p_schema,CString p_tablename) const = 0;
+  virtual CString GetCATALOGColumnAttributes(CString p_schema,CString p_tablename,CString p_columname) const = 0;
+  virtual CString GetCATALOGColumnCreate    (MetaColumn& p_column) const = 0;
+  virtual CString GetCATALOGColumnAlter     (MetaColumn& p_column) const = 0;
+  virtual CString GetCATALOGColumnRename    (CString p_schema,CString p_tablename,CString p_columnname,CString p_newname,CString p_datatype) const = 0;
+  virtual CString GetCATALOGColumnDrop      (CString p_schema,CString p_tablename,CString p_columnname) const = 0;
+  // All index functions
+  virtual CString GetCATALOGIndexExists     (CString p_schema,CString p_tablename,CString p_indexname) const = 0;
+  virtual CString GetCATALOGIndexList       (CString p_schema,CString p_tablename)                     const = 0;
+  virtual CString GetCATALOGIndexAttributes (CString p_schema,CString p_tablename,CString p_indexname) const = 0;
+  virtual CString GetCATALOGIndexCreate     (MIndicesMap& p_index) const = 0;
+  virtual CString GetCATALOGIndexDrop       (CString p_schema,CString p_tablename,CString p_indexname) const = 0;
+  virtual CString GetCATALOGIndexFilter     (MetaIndex& p_index) const = 0;
+  // All primary key functions
+  virtual CString GetCATALOGPrimaryExists    (CString p_schema,CString p_tablename) const = 0;
+  virtual CString GetCATALOGPrimaryAttributes(CString p_schema,CString p_tablename) const = 0;
+  virtual CString GetCATALOGPrimaryCreate    (MPrimaryMap& p_primaries) const = 0;
+  virtual CString GetCATALOGPrimaryDrop      (CString p_schema,CString p_tablename,CString p_constraintname) const = 0;
+  // All foreign key functions
+  virtual CString GetCATALOGForeignExists    (CString p_schema,CString p_tablename,CString p_constraintname) const = 0;
+  virtual CString GetCATALOGForeignList      (CString p_schema,CString p_tablename) const = 0;
+  virtual CString GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraintname) const = 0;
+  virtual CString GetCATALOGForeignCreate    (MForeignMap& p_foreigns) const = 0;
+  virtual CString GetCATALOGForeignDrop      (CString p_schema,CString p_tablename,CString p_constraintname) const = 0;
 
 
   //////////////////////////////////////////////////////////////////////////
@@ -316,61 +380,11 @@ public:
 
   // BOOLEANS AND STRINGS
 
-  // Replace the Identity column OID by a sequence.nextval
-  virtual CString GetReplaceColumnOIDbySequence(CString p_columns,CString p_tablename,CString p_postfix = "_seq") const = 0;
-
-  // Remove catalog dependencies for stored procedures
-  virtual CString GetSQLRemoveProcedureDependencies(CString p_procname) const = 0;
-
-  // Remove field dependencies for calculated fields (bug in Firebird)
-  virtual CString GetSQLRemoveFieldDependencies(CString p_tablename) const = 0;
-
-  // Performance parameters to be added to the database
-  virtual CString GetSQLPerformanceSettings() const = 0;
-
-  // SQL To set the caching mode of SQL results
-  virtual CString GetSQLCacheModeSetting(const CString& p_mode) const = 0;
-
-  // Needed for storing numbers in stored procedures
-  virtual CString GetSQLNlsNumericCharacters() const = 0;
-
-  // Code to define a table in row-locking mode
-  virtual CString GetCodeLockModeRow() const = 0;
-
-  // Code to create a temporary table with no logging
-  virtual CString GetCodeTempTableWithNoLog() const = 0;
-
-  // Granting all rights on a table (In a NON-ANSI database)
-  virtual CString GetSQLGrantAllOnTable(CString p_schema,CString p_tableName,bool p_grantOption = false) = 0;
-
-  // Code prefix for a select-into-temp
-  virtual CString GetSelectIntoTempClausePrefix(CString p_tableName) const = 0;
-
-  // Code suffix for after a select-into-temp
-  virtual CString GetSelectIntoTempClauseSuffix(CString p_tableName) const = 0;
-
-  // Gets the construction / select for generating a new serial identity
-  virtual CString GetSQLGenerateSerial(CString p_table) const = 0;
-
-  // Gets the construction / select for the resulting effective generated serial
-  virtual CString GetSQLEffectiveSerial(CString p_identity) const = 0;
-  
-  // Gets the subtransaction commands
-  virtual CString GetStartSubTransaction   (CString p_savepointName) const = 0;
-  virtual CString GetCommitSubTransaction  (CString p_savepointName) const = 0;
-  virtual CString GetRollbackSubTransaction(CString p_savepointName) const = 0;
-
   // SQL CATALOG QUERIES
   // ===================
 
   // Get SQL to check if a stored procedure already exists in the database
   virtual CString GetSQLStoredProcedureExists(CString& p_name) const = 0;
-
-  // Part of a query to select only 1 (one) record
-  virtual CString GetDualTableName () const = 0;
-
-  // FROM-Part for a query to select only 1 (one) record
-  virtual CString GetDualClause() const = 0;
 
   // Gets DEFERRABLE for a constraint (or nothing)
   virtual CString GetConstraintDeferrable () const = 0;
@@ -381,27 +395,8 @@ public:
   // Reset constraints back to immediate
   virtual CString GetSQLConstraintsImmediate() const = 0;
 
-  // Get SQL to check if a table already exists in the database
-  virtual CString GetSQLTableExists(CString p_schema,CString p_tablename) const = 0;
-
-  // Get SQL to select all columns of a table from the catalog
-  virtual CString GetSQLGetColumns(CString& p_user,CString& p_tableName) const = 0;
-
   // Get SQL to select all constraints on a table from the catalog
   virtual CString GetSQLGetConstraintsForTable(CString& p_tableName) const = 0;
-
-  // Get SQL to read all indices for a table
-  virtual CString GetSQLTableIndices(CString p_user,CString p_tableName) const = 0;
-
-  // Get SQL to create an index for a table
-  virtual CString GetSQLCreateIndex(CString p_user,CString p_tableName,DBIndex* p_index) const = 0;
-  virtual CString GetSQLCreateIndex(MStatisticsMap& p_indices) const = 0;
-
-  // Get extra filter expression for an index column
-  virtual CString GetIndexFilter(MetaStatistics& p_index) const = 0;
-
-  // Get SQL to drop an index
-  virtual CString GetSQLDropIndex(CString p_user,CString p_indexName) const = 0;
 
   // Get SQL to read the referential constraints from the catalog
   virtual CString GetSQLTableReferences(CString p_schema,CString p_tablename,CString p_constraint = "",int p_maxColumns = SQLINFO_MAX_COLUMNS) const = 0;
@@ -433,12 +428,6 @@ public:
   // Get SQL for searching a session
   virtual CString GetSQLSearchSession(const CString& p_databaseName,const CString& p_sessionTable) const = 0;
 
-  // See if a column exists within a table
-  virtual bool    DoesColumnExistsInTable(CString& p_owner,CString& p_tableName,CString& p_column) const = 0;
-
-  // Get SQL to get all the information about a Primary Key constraint
-  virtual CString GetSQLPrimaryKeyConstraintInformation(CString p_schema,CString p_tableName) const = 0;
-
   // Does the named constraint exist in the database
   virtual bool    DoesConstraintExist(CString p_constraintName) const = 0;
 
@@ -454,36 +443,12 @@ public:
   // Gets the triggers for a table
   virtual CString GetSQLTriggers(CString m_schema,CString p_table) const = 0;
 
-  // NEW INTERFACE
-  // GetCATALOGColumnAlter
-
-  // Gives the statement to alter a table columns' name
-  virtual CString GetSQLModifyColumnName(CString p_tablename,CString p_oldName,CString p_newName,CString p_datatype) = 0;
-
-  // Get SQL keyword to alter a column in a table
-  virtual CString GetCodeAlterColumn() const = 0;
-
-  // Gets the prefix needed for altering the datatype of a column in a MODIFY/ALTER
-  virtual CString GetModifyDatatypePrefix() const = 0;
-
-
 
   // New Interface PrimaryKey / ForeignKey
   // GetCATALOGPrimaryKeyList
   // GetCATALOGPrimaryKeyCreate
   // GetCATALOGForeignKeyCreate
   // GetCATALOGForeignKeyAlter
-
-  // Gets the table definition-form of a primary key
-  virtual CString GetPrimaryKeyDefinition(CString p_schema,CString p_tableName,bool p_temporary) const = 0;
-
-  // Get the constraint form of a primary key to be added to a table after creation of that table
-  virtual CString GetPrimaryKeyConstraint(CString p_schema,CString p_tablename,CString p_primary) const = 0;
-  virtual CString GetPrimaryKeyConstraint(MPrimaryMap& p_primaries) const = 0;
-
-  // Get the sql to add a foreign key to a table
-  virtual CString GetSQLForeignKeyConstraint(DBForeign&   p_foreign) const = 0;
-  virtual CString GetSQLForeignKeyConstraint(MForeignMap& p_foreign) const = 0;
 
   // Get the sql (if possible) to change the foreign key constraint
   virtual CString GetSQLAlterForeignKey(DBForeign& p_origin,DBForeign& p_requested) const = 0;
@@ -507,18 +472,8 @@ public:
   // SQL DDL STATEMENTS
   // ==================
 
-  // Add a column to a table
-  virtual CString GetCreateColumn(CString p_schema,CString p_tablename,CString p_columnName,CString p_typeDefinition,bool p_notNull) = 0;
-
-  // Drop a column from a table
-  virtual CString GetSQLDropColumn(CString p_schema,CString p_tablename,CString p_columnName) const = 0;
-
   // Add a foreign key to a table
   virtual CString GetCreateForeignKey(CString p_tablename,CString p_constraintname,CString p_column,CString p_refTable,CString p_primary) = 0;
-
-  // Modify a column's definition in a table
-  virtual CString GetModifyColumnType(CString p_schema,CString p_tablename,CString p_columnName,CString p_typeDefinition) = 0;
-  virtual CString GetModifyColumnNull(CString p_schema,CString p_tablename,CString p_columnName,bool p_notNull) = 0;
 
   // Get the SQL to drop a view. If precursor is filled: run that SQL first!
   virtual CString GetSQLDropView(CString p_schema,CString p_view,CString& p_precursor) = 0;
@@ -541,7 +496,7 @@ public:
   // Does the named view exists in the database
   virtual bool    DoesViewExists(CString& p_viewName) = 0;
 
-  // Must create temoporary tables runtime 
+  // Must create temporary tables runtime 
   virtual bool    GetMustMakeTemptablesAtRuntime() const = 0;
 
   // Create a temporary table in an optimized manner with the given index column
@@ -552,9 +507,6 @@ public:
 
   // Maak een procedure aan in de database
   virtual void    DoMakeProcedure(CString& p_procName,CString p_table,bool p_noParameters,CString& p_codeBlock) = 0;
-
-  // Rename a database table 
-  virtual void    DoRenameTable(CString& p_oldName,CString& p_newName) const = 0;
 
   // PERSISTENT-STORED MODULES (SPL / PL/SQL)
   // ====================================================================

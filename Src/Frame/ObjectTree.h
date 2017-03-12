@@ -112,7 +112,7 @@ protected:
   void      ForeignsToTree  (MForeignMap&       p_foreigns,  HTREEITEM p_item);
   void      ReferencedToTree(MForeignMap&       p_foreigns,  HTREEITEM p_item);
   void      TriggersToTree  (MTriggerMap&       p_triggers,  HTREEITEM p_item);
-  void      StatisticsToTree(MStatisticsMap&    p_statistics,HTREEITEM p_item);
+  void      StatisticsToTree(MIndicesMap&    p_statistics,HTREEITEM p_item);
   void      SpecialsToTree  (MSpecialColumnMap& p_specials,  HTREEITEM p_item);
   void      PrivilegesToTree(MPrivilegeMap&     p_privileges,HTREEITEM p_item);
   void      ParametersToTree(MProcColumnMap&    p_parameters,HTREEITEM p_item);

@@ -1090,7 +1090,7 @@ SQLDatabase::StartTransaction(SQLTransaction* p_transaction, bool p_startSubtran
       transName.Format("AutoSavePoint%d", m_transactions.size());
 
       // Set savepoint
-      CString startSubtrans = m_info->GetStartSubTransaction(transName);
+      CString startSubtrans = m_info->GetSQLStartSubTransaction(transName);
       if(!startSubtrans.IsEmpty())
       {
         try
@@ -1172,7 +1172,7 @@ SQLDatabase::CommitTransaction(SQLTransaction* p_transaction)
       // It's a sub transaction
       // If the database is capable: Do the commit of the sub transaction
       // Otherwise: do nothing and wait for the outer transaction to commit the whole in-one-go
-      CString startSubtrans = m_info->GetCommitSubTransaction(p_transaction->GetSavePoint());
+      CString startSubtrans = m_info->GetSQLCommitSubTransaction(p_transaction->GetSavePoint());
       if(!startSubtrans.IsEmpty())
       {
         try
@@ -1261,7 +1261,7 @@ SQLDatabase::RollbackTransaction(SQLTransaction* p_transaction)
     else
     {
       // It is a subtransaction
-      CString startSubtrans = m_info->GetRollbackSubTransaction(p_transaction->GetSavePoint());
+      CString startSubtrans = m_info->GetSQLRollbackSubTransaction(p_transaction->GetSavePoint());
       if(!startSubtrans.IsEmpty())
       {
         try
@@ -1498,12 +1498,20 @@ void
 SQLDatabase::SetOracleResultCacheMode(const CString& p_mode)
 {
   // Check to see if we are logged in, and 
-  if(!GetSQLInfoDB())
+  if(!GetSQLInfoDB() || (m_rdbmsType != RDBMS_ORACLE))
   {
     return;
   }
+
   // See if we've got a setting
-  CString query = m_info->GetSQLCacheModeSetting(p_mode);
+  // Check mode parameter for correct values
+  CString query;
+  if(p_mode.CompareNoCase("manual") == 0 ||
+     p_mode.CompareNoCase("force") == 0 ||
+     p_mode.CompareNoCase("auto") == 0)
+  {
+    query = "ALTER SESSION SET RESULT_CACHE_MODE = " + p_mode;
+  }
   if(query.IsEmpty())
   {
     return;

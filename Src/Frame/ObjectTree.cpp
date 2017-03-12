@@ -529,7 +529,7 @@ ObjectTree::FindStatistics(HTREEITEM p_theItem)
   if(PresetTable(p_theItem))
   {
     COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
-    MStatisticsMap  statistics;
+    MIndicesMap  statistics;
     CString         errors;
 
     // Go find the indices and statistics
@@ -954,7 +954,7 @@ ObjectTree::ReferencedToTree(MForeignMap& p_foreigns,HTREEITEM p_item)
 }
 
 void
-ObjectTree::StatisticsToTree(MStatisticsMap& p_statistics,HTREEITEM p_item)
+ObjectTree::StatisticsToTree(MIndicesMap& p_statistics,HTREEITEM p_item)
 {
   // Check for a indices
   if(p_statistics.empty())
@@ -1012,7 +1012,7 @@ ObjectTree::StatisticsToTree(MStatisticsMap& p_statistics,HTREEITEM p_item)
       // Optionally get the filter
       if(stat.m_filter.IsEmpty())
       {
-        stat.m_filter = info->GetIndexFilter(stat);
+        stat.m_filter = info->GetCATALOGIndexFilter(stat);
       }
 
       // Extra column on an index

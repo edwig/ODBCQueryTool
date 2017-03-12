@@ -186,7 +186,7 @@ DDLCreateTable::GetIndexInfo()
   }
 
   // Walk the list of indices
-  MStatisticsMap theIndex;
+  MIndicesMap theIndex;
   for(auto& index : m_indices)
   {
     // Skip the table statistics record
@@ -200,7 +200,7 @@ DDLCreateTable::GetIndexInfo()
     {
       if(!theIndex.empty())
       {
-        line = m_info->GetSQLCreateIndex(theIndex);
+        line = m_info->GetCATALOGIndexCreate(theIndex);
         StashTheLine(line,";",2);
       }
       // Create new index statement
@@ -212,7 +212,7 @@ DDLCreateTable::GetIndexInfo()
   }
   if(!theIndex.empty())
   {
-    line = m_info->GetSQLCreateIndex(theIndex);
+    line = m_info->GetCATALOGIndexCreate(theIndex);
     StashTheLine(line,";",2);
   }
 }
@@ -233,7 +233,7 @@ DDLCreateTable::GetPrimaryKeyInfo()
   if(!m_primaries.empty())
   {
     // Getting the alter table statement
-    CString line = m_info->GetPrimaryKeyConstraint(m_primaries);
+    CString line = m_info->GetCATALOGPrimaryCreate(m_primaries);
     StashTheLine(line,";",2);
   }
 }
@@ -264,7 +264,7 @@ DDLCreateTable::GetForeignKeyInfo()
 
       if(!oneFKey.empty())
       {
-        line = m_info->GetSQLForeignKeyConstraint(oneFKey);
+        line = m_info->GetCATALOGForeignCreate(oneFKey);
         StashTheLine(line,";",2);
       }
       oneFKey.clear();
@@ -274,7 +274,7 @@ DDLCreateTable::GetForeignKeyInfo()
   }
   if(!oneFKey.empty())
   {
-    line = m_info->GetSQLForeignKeyConstraint(oneFKey);
+    line = m_info->GetCATALOGForeignCreate(oneFKey);
     StashTheLine(line,";",2);
   }
 }
@@ -429,7 +429,7 @@ DDLCreateTable::CalculateColumnLength(MColumnMap& p_columns)
 }
 
 void
-DDLCreateTable::FindIndexFilter(MetaStatistics& p_index)
+DDLCreateTable::FindIndexFilter(MetaIndex& p_index)
 {
   // See if column name in index exists in the table
   for(auto& column : m_columns)
@@ -440,7 +440,7 @@ DDLCreateTable::FindIndexFilter(MetaStatistics& p_index)
     }
   }
   // Not existing column. Find index filter
-  p_index.m_filter = m_info->GetIndexFilter(p_index);
+  p_index.m_filter = m_info->GetCATALOGIndexFilter(p_index);
 }
 
 };

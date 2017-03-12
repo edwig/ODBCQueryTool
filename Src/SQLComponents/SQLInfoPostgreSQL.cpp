@@ -258,111 +258,465 @@ SQLInfoPostgreSQL::GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) con
   return "{fn IFNULL(" + p_test + "," + p_isnull + ")}";
 }
 
+// Code prefix for a select-into-temp
+CString
+SQLInfoPostgreSQL::GetSQLSelectIntoTempPrefix(CString p_tableName) const
+{
+  return "CREATE GLOBAL TEMPORARY TABLE " + p_tableName + "\nWITHOUT OIDS AS\n";
+}
+
+// Code suffix for after a select-into-temp
+CString
+SQLInfoPostgreSQL::GetSQLSelectIntoTempSuffix(CString p_tableName) const
+{
+  return "";
+}
+
+// Gets the construction / select for generating a new serial identity
+CString
+SQLInfoPostgreSQL::GetSQLGenerateSerial(CString p_table) const
+{
+  return "SELECT " + p_table + "_seq.nextval FROM DUAL";
+}
+
+// Gets the construction / select for the resulting effective generated serial
+CString
+SQLInfoPostgreSQL::GetSQLEffectiveSerial(CString p_identity) const
+{
+  // Already the correct value
+  return p_identity;
+}
+
+// Gets the sub transaction commands
+CString
+SQLInfoPostgreSQL::GetSQLStartSubTransaction(CString p_savepointName) const
+{
+  return CString("SAVEPOINT ") + p_savepointName;
+}
+
+CString
+SQLInfoPostgreSQL::GetSQLCommitSubTransaction(CString p_savepointName) const
+{
+  // No commit for a sub transaction
+  return CString("");
+}
+
+CString
+SQLInfoPostgreSQL::GetSQLRollbackSubTransaction(CString p_savepointName) const
+{
+  return CString("ROLLBACK TO SAVEPOINT ") + p_savepointName;
+}
+
+// FROM-Part for a query to select only 1 (one) record / or empty!
+CString
+SQLInfoPostgreSQL::GetSQLFromDualClause() const
+{
+  // PostgreSQL knows the bare SELECT
+  return "";
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // CATALOG
+// o GetCATALOG<Object[s]><Function>
+//   Objects
+//   - Table
+//   - Column
+//   - Index
+//   - PrimaryKey
+//   - ForeignKey
+//   - Trigger
+//   - TemporaryTable 
+//   - View
+//   - Sequence
+//  Functions per object type
+//   - Exists
+//   - List
+//   - Attributes
+//   - Create
+//   - Alter (where possible)
+//   - Drop
 //
 //////////////////////////////////////////////////////////////////////////
 
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// SQL/PSM
-//
-//////////////////////////////////////////////////////////////////////////
-
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// OLD INTERFACE
-//
-//////////////////////////////////////////////////////////////////////////
-
-// BOOLEANS AND STRINGS
-// ====================================================================
-
-// Get the query to create a temporary table from a SELECT statement
-CString 
-SQLInfoPostgreSQL::GetSQLCreateTemporaryTable(CString& p_tablename,CString p_select) const
-{
-  return "CREATE GLOBAL TEMPORARY TABLE " + p_tablename + "\nAS " + p_select;
-}
-
-// Get the query to remove a temporary table completely
+// Get SQL to check if a table already exists in the database
 CString
-SQLInfoPostgreSQL::GetSQLRemoveTemporaryTable(CString& p_tablename,int& p_number) const
+SQLInfoPostgreSQL::GetCATALOGTableExists(CString p_schema,CString p_tablename) const
 {
-  p_number += 3;
-  return "DELETE FROM "    + p_tablename + ";\n"
-         "TRUNCATE TABLE " + p_tablename + ";\n"
-         "DROP TABLE "     + p_tablename + ";\n";
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+  CString query = "SELECT count(*)\n"
+                  "  FROM pg_class cl\n"
+                  "      ,pg_namespace ns\n"
+                  " WHERE cl.relnamespace = ns.oid\n"
+                  "   AND ns.nspname = '" + p_schema    + "'\n"
+                  "   AND cl.relname = '" + p_tablename + "'";
+  return query;
 }
 
-// Get the SQL query to select into a temporary table
-CString 
-SQLInfoPostgreSQL::GetSQLSelectIntoTemp(CString& p_tablename,CString& p_select) const
+CString
+SQLInfoPostgreSQL::GetCATALOGTablesList(CString p_schema,CString p_pattern) const
 {
-   return "INSERT INTO " + p_tablename + "\n" + p_select + ";\n";
+  p_schema.MakeLower();
+  p_pattern.MakeLower();
+  CString query = "SELECT count(*)\n"
+                  "  FROM pg_class cl\n"
+                  "      ,pg_namespace ns\n"
+                  " WHERE cl.relnamespace = ns.oid\n"
+                  "   AND ns.nspname = '" + p_schema    + "'\n"
+                  "   AND cl.relname like '" + p_pattern + "'";
+  return query;
 }
 
-// Replace the primary key column by a sequence NEXTVAL
-CString 
-SQLInfoPostgreSQL::GetReplaceColumnOIDbySequence(CString p_columns,CString p_tablename,CString p_postfix /*="_seq"*/) const
+bool
+SQLInfoPostgreSQL::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/,MetaTable& /*p_table*/) const
 {
-  int pos;
-  int len = p_columns.GetLength();
-  pos = p_columns.Find("OID,");
-  if(pos == 0)
-  {
-    CString newkolom = ( p_tablename + p_postfix + ".nextval");
-    newkolom += p_columns.Right(len - 3);
-    return newkolom;
-  }
-  if(pos > 0)
-  {
-    pos = p_columns.Find(",OID,");
-    CString newkolom = p_columns.Left(pos) + "," + p_tablename + p_postfix + ".nextval";
-    newkolom += p_columns.Right(len - pos - 5);
-    return newkolom;
-  }
-  return p_columns;
+  // Getting the temp table status
+  return false;
 }
 
-// Remove catalg dependencies
-CString 
-SQLInfoPostgreSQL::GetSQLRemoveProcedureDependencies(CString p_procname) const
+CString
+SQLInfoPostgreSQL::GetCATALOGTableCreate(MetaTable& /*p_table*/,MetaColumn& /*p_column*/) const
 {
   return "";
 }
 
-// Remove catalog dependencies for calculated fields (bug in Firebird)
-CString 
-SQLInfoPostgreSQL::GetSQLRemoveFieldDependencies(CString p_tablename) const
+CString
+SQLInfoPostgreSQL::GetCATALOGTableRename(CString p_schema,CString p_tablename,CString p_newname) const
 {
-  // Not needed in PostgreSQL
+  // Beware: No 'TABLE' in the statement
+  CString sql("RENAME " + p_schema + "." + p_tablename + " TO " + p_newname);
+  return sql;
+}
+
+CString
+SQLInfoPostgreSQL::GetCATALOGTableDrop(CString p_schema,CString p_tablename) const
+{
+  CString sql("DROP TABLE ");
+  if(!p_schema.IsEmpty())
+  {
+    sql += p_schema + ".";
+  }
+  sql += p_tablename;
+  return sql;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL COLUMN FUNCTIONS
+
+CString 
+SQLInfoPostgreSQL::GetCATALOGColumnExists(CString p_schema,CString p_tablename,CString p_columnname) const
+{
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+  p_columnname.MakeLower();
+  CString query = "SELECT count(*)\n"
+                 "  FROM pg_class      tab\n"
+                 "      ,pg_namespaces sch\n"
+                 "      ,pg_attribute  att\n"
+                 " WHERE tab.relname = '" + p_tablename  + "'\n"
+                 "   AND sch.name    = '" + p_schema     + "'\n";
+                 "   AND att.attname = '" + p_columnname + "'\n"
+                 "   AND tab.oid     = att.attrelid\n"
+                 "   AND sch.oid     = tab.relnamespace\n";
+  return query;
+}
+
+CString 
+SQLInfoPostgreSQL::GetCATALOGColumnList(CString p_schema,CString p_tablename) const
+{
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+
+  CString query =  "SELECT att.attname\n"
+                   "      ,att.attnum\n"
+                   "      ,typname\n"
+                   "      ,typlen\n"
+                   "      ,attnotnull\n"
+                   "      ,(atttypmod - 4) / 65536\n"
+                   "      ,(atttypmod - 4) % 65536\n"
+                   "  FROM pg_class      tab\n"
+                   "      ,pg_namespaces sch\n"
+                   "      ,pg_attribute  att\n"
+                   "      ,pg_type       typ\n"
+                   "      ,pg_attrdef    def\n"
+                   " WHERE tab.relname  = '" + p_tablename + "'\n"
+                   "   AND sch.name     = '" + p_schema + "'\n"
+                   "   AND sch.oid      = tab.relnamespace\n"
+                   "   AND tab.relkind  = 'r'\n"
+                   "   AND tab.oid      = att.attrelid\n"
+                   "   AND att.atttypid = pg_type.oid\n"
+                   "   AND def.adrelid  = att.attrelid\n"
+                   "   AND def.adnum    = att.attnum\n"
+                   "   AND attnum > 0\n"
+                   "   AND typlen < 0\n"
+                   "   AND typname = 'numeric'\n"
+                   "UNION\n"
+                   "SELECT attname\n"
+                   "      ,attnum\n"
+                   "      ,typname\n"
+                   "      ,(atttypmod - 4) AS typlen\n"
+                   "      ,attnotnull\n"
+                   "      ,0\n"
+                   "      ,0\n"
+                   "  FROM pg_class      tab\n"
+                   "      ,pg_namespaces sch\n"
+                   "      ,pg_attribute  att\n"
+                   "      ,pg_type       typ\n"
+                   "      ,pg_attrdef    def\n"
+                   " WHERE tab.relname  = '" + p_tablename + "'\n"
+                   "   AND sch.name     = '" + p_schema + "'\n"
+                   "   AND sch.oid      = tab.relnamespace\n"
+                   "   AND tab.relkind  = 'r'\n"
+                   "   AND tab.oid      = att.attrelid\n"
+                   "   AND att.atttypid = typ.oid\n"
+                   "   AND def.adrelid  = att.attrelid\n"
+                   "   AND def.adnum    = att.attnum\n"
+                   "   AND attnum > 0\n"
+                   "   AND typlen < 0\n"
+                   "   AND typname = 'varchar'\n"
+                   "UNION\n"
+                   "SELECT attname\n"
+                   "      ,attnum\n"
+                   "      ,typname\n"
+                   "      ,typlen\n"
+                   "      ,attnotnull\n"
+                   "      ,0\n"
+                   "      ,0\n"
+                   "  FROM pg_class      tab\n"
+                   "      ,pg_namespaces sch\n"
+                   "      ,pg_attribute  att\n"
+                   "      ,pg_type       typ\n"
+                   "      ,pg_attrdef    def\n"
+                   " WHERE tab.relname  = '" + p_tablename + "'\n"
+                   "   AND sch.name     = '" + p_schema + "'\n"
+                   "   AND sch.oid      = tab.relnamespace\n"
+                   "   AND tab.relkind  = 'r'\n"
+                   "   AND tab.oid      = att.attrelid\n"
+                   "   AND att.atttypid = typ.oid\n"
+                   "   AND def.adrelid  = att.attrelid\n"
+                   "   AND def.adnum    = att.attnum\n"
+                   "   AND attnum > 0\n"
+                   "   AND typlen > 0\n"
+                   "   AND typname not in ('numeric', 'varchar')\n"
+                   " ORDER BY attnum";
+  return query;
+}
+
+CString 
+SQLInfoPostgreSQL::GetCATALOGColumnAttributes(CString p_schema,CString p_tablename,CString p_columname) const
+{
   return "";
 }
 
-// Getting the create-table form of a primary key constraint
 CString 
-SQLInfoPostgreSQL::GetPrimaryKeyDefinition(CString p_schema,CString p_tableName,bool /*p_temporary*/) const
+SQLInfoPostgreSQL::GetCATALOGColumnCreate(MetaColumn& p_column) const
 {
-  return GetKEYWORDNetworkPrimaryKeyType() + " NOT NULL CONSTRAINT pk_" + p_tableName + " PRIMARY KEY\n";
+  CString sql = "ALTER TABLE "  + p_column.m_schema + "." + p_column.m_table  + "\n";
+                "  ADD COLUMN " + p_column.m_column + " " + p_column.m_typename;
+  if(p_column.m_precision)
+  {
+    sql.AppendFormat("(%d",p_column.m_precision);
+    if(p_column.m_scale)
+    {
+      sql.AppendFormat(",%d",p_column.m_scale);
+    }
+    sql += ")";
+  }
+  if(!p_column.m_nullable)
+  {
+    sql += " NOT NULL";
+  }
+  if(!p_column.m_default.IsEmpty())
+  {
+    sql += " DEFAULT ";
+    sql += p_column.m_default;
+  }
+  // m_position not used
+  // m_length   not used
+  // m_remarks  not used
+  return sql;
 }
 
-// Getting the primary key constraint in the form of an ALTER TABLE statement
-CString
-SQLInfoPostgreSQL::GetPrimaryKeyConstraint(CString p_schema,CString p_tablename,CString p_primary) const
+CString 
+SQLInfoPostgreSQL::GetCATALOGColumnAlter(MetaColumn& p_column) const
 {
-  return "ALTER TABLE " + p_schema + "." + p_tablename + "\n"
-         "  ADD CONSTRAINT pk_" + p_tablename + "\n"
-         "      PRIMARY KEY (" + p_primary + ")";
+  CString sql("ALTER TABLE  " + p_column.m_schema + "." + p_column.m_table + "\n"
+              "ALTER COLUMN " + p_column.m_column + " SET DATA TYPE " + p_column.m_typename);
+  p_column.GetPrecisionAndScale(sql);
+
+  sql += p_column.m_nullable ? " DROP " : " SET ";
+  sql += "NOT NULL";
+  return sql;
+}
+
+CString 
+SQLInfoPostgreSQL::GetCATALOGColumnRename(CString p_schema,CString p_tablename,CString p_columnname,CString p_newname,CString p_datatype) const
+{
+  CString sqlCode = "ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+                    "  ADD " + p_newname + " " + p_datatype + ";\n";
+  sqlCode        += "UPDATE " + p_schema + "." + p_tablename + "\n"
+                    "   SET " + p_newname + " = " + p_columnname + ";\n";
+  sqlCode        += "ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+                    " DROP COLUMN " + p_columnname + ";";
+  return sqlCode;
 }
 
 CString
-SQLInfoPostgreSQL::GetPrimaryKeyConstraint(MPrimaryMap& p_primaries) const
+SQLInfoPostgreSQL::GetCATALOGColumnDrop(CString p_schema,CString p_tablename,CString p_columnname) const
+{
+  CString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+              " DROP COLUMN " + p_columnname);
+  return sql;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL INDICES FUNCTIONS
+
+// All index functions
+CString
+SQLInfoPostgreSQL::GetCATALOGIndexExists(CString p_schema,CString p_tablename,CString p_indexname) const
+{
+  return "";
+}
+
+CString
+SQLInfoPostgreSQL::GetCATALOGIndexList(CString p_schema,CString p_tablename) const
+{
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+
+  CString query =  "SELECT cli.relname\n"
+                   "      ,att.attname\n"
+                   "      ,att.attnum\n"
+                   "      ,idx.indisunique\n"
+                   "      ,0  as ascending\n"
+                   "      ,'' as expression_source"
+                   "  FROM pg_user sha\n"
+                   "      ,pg_class clr\n"
+                   "      ,pg_index idx\n"
+                   "      ,pg_class cli\n"
+                   "      ,pg_attribute att\n"
+                   " WHERE sha.usename = '" + p_schema + "'\n"
+                   "   AND clr.relname = '" + p_tablename+ "'\n"
+                   "   AND sha.usesysid = clr.relowner\n"
+                   "   AND clr.relkind = 'r'\n"
+                   "   AND clr.oid = idx.indrelid\n"
+                   "   AND idx.indexrelid = cli.oid\n"
+                   "   AND cli.relkind = 'i'\n"
+                   "   AND cli.oid = att.attrelid\n"
+                   " ORDER BY cli.relname, att.attnum";
+  return query;
+}
+
+CString
+SQLInfoPostgreSQL::GetCATALOGIndexAttributes(CString p_schema,CString p_tablename,CString p_indexname) const
+{
+  return "";
+}
+
+CString
+SQLInfoPostgreSQL::GetCATALOGIndexCreate(MIndicesMap& p_indices) const
+{
+  // Get SQL to create an index for a table
+  // CREATE [UNIQUE] INDEX [<schema>.]indexname ON [<schema>.]tablename(column [ASC|DESC] [,...]);
+  CString query;
+  for(auto& index : p_indices)
+  {
+    if(index.m_position == 1)
+    {
+      // New index
+      query = "CREATE ";
+      if(index.m_unique)
+      {
+        query += "UNIQUE ";
+      }
+      query += "INDEX ";
+      if(!index.m_schemaName.IsEmpty())
+      {
+        query += index.m_schemaName + ".";
+      }
+      query += index.m_indexName;
+      query += " ON ";
+      if(!index.m_schemaName.IsEmpty())
+      {
+        query += index.m_schemaName + ".";
+      }
+      query += index.m_tableName;
+      query += "(";
+    }
+    else
+    {
+      query += ",";
+    }
+    query += index.m_columnName;
+    if(index.m_ascending != "A")
+    {
+      query += " DESC";
+    }
+  }
+  query += ")";
+  return query;
+}
+
+CString
+SQLInfoPostgreSQL::GetCATALOGIndexDrop(CString p_schema,CString /*p_tablename*/,CString p_indexname) const
+{
+  CString sql = "DROP INDEX " + p_schema + "." + p_indexname;
+  return sql;
+}
+
+// Get extra filter expression for an index column
+CString
+SQLInfoPostgreSQL::GetCATALOGIndexFilter(MetaIndex& /*p_index*/) const
+{
+  return "";
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL PRIMARY KEY FUNCTIONS
+
+CString
+SQLInfoPostgreSQL::GetCATALOGPrimaryExists(CString p_schema,CString p_tablename) const
+{
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+
+  CString query = "SELECT COUNT(*)\n"
+                  "  FROM pg_class      tab\n"
+                  "      ,pg_constraint con\n"
+                  "      ,pg_namespaces sch\n"
+                  " WHERE tab.relnamespace = sch.oid\n"
+                  "   AND tab.oid     = con.conrelid\n"
+                  "   AND con.contype = 'p'\n"
+                  "   AND sch.name    = '" + p_schema    + "'\n"
+                  "   AND tab.relname = '" + p_tablename + "'";
+  return query;
+}
+
+CString
+SQLInfoPostgreSQL::GetCATALOGPrimaryAttributes(CString p_schema,CString p_tablename) const
+{
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+
+  CString query = "SELECT con.conname       as constraint_name\n"
+                  "      ,con.conname       as index_name\n"
+                  "      ,con.condeferrable as deferrable\n"
+                  "      ,con.deferred      as initially_deferred\n"
+                  "  FROM pg_class      tab\n"
+                  "      ,pg_constraint con\n"
+                  "      ,pg_namespaces sch\n"
+                  " WHERE tab.relnamespace = sch.oid\n"
+                  "   AND tab.oid          = con.conrelid\n"
+                  "   AND con.contype      = 'p'\n"
+                  "   AND sch.name         = '" + p_schema    + "'\n"
+                  "   AND tab.relname      = '" + p_tablename + "'";
+  return query;
+}
+
+CString
+SQLInfoPostgreSQL::GetCATALOGPrimaryCreate(MPrimaryMap& p_primaries) const
 {
   CString query("ALTER TABLE ");
 
@@ -389,62 +743,37 @@ SQLInfoPostgreSQL::GetPrimaryKeyConstraint(MPrimaryMap& p_primaries) const
   return query;
 }
 
-// Get the sql to add a foreign key to a table
-CString 
-SQLInfoPostgreSQL::GetSQLForeignKeyConstraint(DBForeign& p_foreign) const
+CString
+SQLInfoPostgreSQL::GetCATALOGPrimaryDrop(CString p_schema,CString p_tablename,CString p_constraintname) const
 {
-  // Construct the correct tablename
-  CString table  (p_foreign.m_tablename);
-  CString primary(p_foreign.m_primaryTable);
-  if(!p_foreign.m_schema.IsEmpty())
-  {
-    table   = p_foreign.m_schema + "." + table;
-    primary = p_foreign.m_schema + "." + primary;
-  }
+  CString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+              " DROP CONSTRAINT " + p_constraintname);
+  return sql;
+}
 
-  // The base foreign key command
-  CString query = "ALTER TABLE " + table + "\n"
-                  "  ADD CONSTRAINT " + p_foreign.m_constraintname + "\n"
-                  "      FOREIGN KEY (" + p_foreign.m_column + ")\n"
-                  "      REFERENCES " + primary + "(" + p_foreign.m_primaryColumn + ")";
-  // Add all relevant options
-  if(p_foreign.m_deferrable)
-  {
-    query += "\n      DEFERRABLE";
-  }
-  if(p_foreign.m_initiallyDeffered)
-  {
-    query += "\n      INITIALLY DEFERRED";
-  }
-  switch(p_foreign.m_match)
-  {
-    case 0: query += "\n      MATCH FULL";    break;
-    case 1: query += "\n      MATCH PARTIAL"; break;
-    case 2: query += "\n      MATCH SIMPLE";  break;
-  }
-  switch(p_foreign.m_updateRule)
-  {
-    case 0: query += "\n      ON UPDATE CASCADE";     break;
-    case 2: query += "\n      ON UPDATE SET NULL";    break;
-    case 4: query += "\n      ON UPDATE SET DEFAULT"; break;
-    case 3: query += "\n      ON UPDATE NO ACTION";   break;
-    default:// The default
-    case 1: query += "\n      ON UPDATE RESTRICT";    break;
-  }
-  switch(p_foreign.m_deleteRule)
-  {
-    case 0: query += "\n      ON DELETE CASCADE";     break;
-    case 2: query += "\n      ON DELETE SET NULL";    break;
-    case 4: query += "\n      ON DELETE SET DEFAULT"; break;
-    case 3: query += "\n      ON DELETE NO ACTION";   break;
-    default:// The default
-    case 1: query += "\n      ON DELETE RESTRICT";    break;
-  }
-  return query;
+//////////////////////////////////////////////////////////////////////////
+// ALL FOREIGN KEY FUNCTIONS
+
+CString
+SQLInfoPostgreSQL::GetCATALOGForeignExists(CString p_schema,CString p_tablename,CString p_constraintname) const
+{
+  return "";
 }
 
 CString
-SQLInfoPostgreSQL::GetSQLForeignKeyConstraint(MForeignMap& p_foreigns) const
+SQLInfoPostgreSQL::GetCATALOGForeignList(CString p_schema,CString p_tablename) const
+{
+  return "";
+}
+
+CString
+SQLInfoPostgreSQL::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraintname) const
+{
+  return "";
+}
+
+CString
+SQLInfoPostgreSQL::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
 {
   // Get first record
   MetaForeign& foreign = p_foreigns.front();
@@ -526,6 +855,52 @@ SQLInfoPostgreSQL::GetSQLForeignKeyConstraint(MForeignMap& p_foreigns) const
   return query;
 }
 
+CString
+SQLInfoPostgreSQL::GetCATALOGForeignDrop(CString p_schema,CString p_tablename,CString p_constraintname) const
+{
+  return "";
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// SQL/PSM
+//
+//////////////////////////////////////////////////////////////////////////
+
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// OLD INTERFACE
+//
+//////////////////////////////////////////////////////////////////////////
+
+// BOOLEANS AND STRINGS
+// ====================================================================
+
+// Get the query to create a temporary table from a SELECT statement
+CString 
+SQLInfoPostgreSQL::GetSQLCreateTemporaryTable(CString& p_tablename,CString p_select) const
+{
+  return "CREATE GLOBAL TEMPORARY TABLE " + p_tablename + "\nAS " + p_select;
+}
+
+// Get the query to remove a temporary table completely
+CString
+SQLInfoPostgreSQL::GetSQLRemoveTemporaryTable(CString& p_tablename,int& p_number) const
+{
+  p_number += 3;
+  return "DELETE FROM "    + p_tablename + ";\n"
+         "TRUNCATE TABLE " + p_tablename + ";\n"
+         "DROP TABLE "     + p_tablename + ";\n";
+}
+
+// Get the SQL query to select into a temporary table
+CString 
+SQLInfoPostgreSQL::GetSQLSelectIntoTemp(CString& p_tablename,CString& p_select) const
+{
+   return "INSERT INTO " + p_tablename + "\n" + p_select + ";\n";
+}
 
 // Get the sql (if possible) to change the foreign key constraint
 CString 
@@ -562,89 +937,6 @@ SQLInfoPostgreSQL::GetSQLAlterForeignKey(DBForeign& p_origin,DBForeign& p_reques
   return query;
 }
 
-// Performance parameters in the database
-CString
-SQLInfoPostgreSQL::GetSQLPerformanceSettings() const
-{
-  return "";
-}
-
-// SQL To set the caching mode of SQL results
-CString 
-SQLInfoPostgreSQL::GetSQLCacheModeSetting(const CString& /*p_mode*/) const
-{
-  return "";
-}
-
-// Formatting of numbers in stored procedures
-CString
-SQLInfoPostgreSQL::GetSQLNlsNumericCharacters() const
-{
-  return "";
-}
-
-// Altering the datatype of a column
-CString
-SQLInfoPostgreSQL::GetSQLModifyColumnName(CString p_tablename,CString p_oldName,CString p_newName,CString p_datatype)
-{
-  CString sqlCode = "ALTER TABLE " + p_tablename + "\n"
-                    "  ADD " + p_newName + " " + p_datatype + ";\n";
-  sqlCode += "UPDATE " + p_tablename + "\n"
-             "   SET " + p_newName + " = " + p_oldName + ";\n";
-  sqlCode += "ALTER TABLE " + p_tablename + "\n"
-             " DROP COLUMN " + p_oldName + ";";
-  return sqlCode;
-}
-
-// Prefix for altering the datatype in a MODIFY/ALTER statement
-CString 
-SQLInfoPostgreSQL::GetModifyDatatypePrefix() const
-{
-  // SO: MODIFY <kolomnaam> TYPE <datatypenaam>
-  return "TYPE ";
-}
-
-// Locking a table in row mode
-CString 
-SQLInfoPostgreSQL::GetCodeLockModeRow() const
-{
-  return "";
-}
-
-// To create a table without logging
-CString 
-SQLInfoPostgreSQL::GetCodeTempTableWithNoLog() const
-{
-  return "\nWITHOUT OIDS\nON COMMIT PRESERVE ROWS";
-}
-
-// Code to grant rights on configured users
-CString 
-SQLInfoPostgreSQL::GetSQLGrantAllOnTable(CString p_schema,CString p_tableName,bool p_grantOption /*= false*/)
-{
-  CString sql = "GRANT ALL ON " + p_schema + "." + p_tableName + " TO " + GetGrantedUsers();
-  if(p_grantOption)
-  {
-    sql += " WITH GRANT OPTION";
-  }
-  return sql;
-}
-
-
-// Code BEFORE a select into temp
-CString
-SQLInfoPostgreSQL::GetSelectIntoTempClausePrefix(CString p_tableName) const
-{
-  return "CREATE GLOBAL TEMPORARY TABLE " + p_tableName + "\nWITHOUT OIDS AS\n";
-}
-
-// Code AFTER the select into temp
-CString
-SQLInfoPostgreSQL::GetSelectIntoTempClauseSuffix(CString p_tableName) const
-{
-  return "";
-}
-
 bool
 SQLInfoPostgreSQL::GetCodeIfStatementBeginEnd() const
 {
@@ -663,13 +955,6 @@ CString
 SQLInfoPostgreSQL::GetAssignmentStatement(const CString& p_destiny,const CString& p_source) const
 {
   return p_destiny + " := " + p_source + ";";
-}
-
-// SQL To alter a column (MODIFY / ALTER)
-CString 
-SQLInfoPostgreSQL::GetCodeAlterColumn() const
-{
-  return "ALTER ";
 }
 
 // Code to start an SPL WHIL loop
@@ -694,41 +979,6 @@ SQLInfoPostgreSQL::GetAssignmentSelectParenthesis() const
   return false;
 }
 
-// Gets the construction / select for generating a new serial identity
-CString 
-SQLInfoPostgreSQL::GetSQLGenerateSerial(CString p_table) const
-{
-  return "SELECT " + p_table + "_seq.nextval FROM DUAL";
-}
-
-// Gets the construction / select for the resulting effective generated serial
-CString 
-SQLInfoPostgreSQL::GetSQLEffectiveSerial(CString p_identity) const
-{
-  // Already the correct value
-  return p_identity;
-}
-
-// Gets the sub transaction commands
-CString 
-SQLInfoPostgreSQL::GetStartSubTransaction(CString p_savepointName) const
-{
-  return CString("SAVEPOINT ") + p_savepointName;
-}
-
-CString 
-SQLInfoPostgreSQL::GetCommitSubTransaction(CString p_savepointName) const
-{
-  // No commit for a sub transaction
-  return CString("");
-}
-
-CString 
-SQLInfoPostgreSQL::GetRollbackSubTransaction(CString p_savepointName) const
-{
-  return CString("ROLLBACK TO SAVEPOINT ") + p_savepointName;
-}
-
 // SQL CATALOG QUERIES
 // ===================================================================
 
@@ -739,21 +989,6 @@ SQLInfoPostgreSQL::GetSQLStoredProcedureExists(CString& p_name) const
   return "SELECT count(*)\n"
          "  FROM pg_proc\n"
          " WHERE proname = '" + p_name + "'\n;";
-}
-
-// Part of a query to select 1 record 
-CString
-SQLInfoPostgreSQL::GetDualTableName() const
-{
-  // Not needed, can do "SELECT <expression>"
-  return "";
-}
-
-// FROM-Part for a query to select only 1 (one) record
-CString 
-SQLInfoPostgreSQL::GetDualClause() const
-{
-  return "";
 }
 
 // Get DEFERRABLE clause to defer constraints
@@ -777,94 +1012,6 @@ SQLInfoPostgreSQL::GetSQLConstraintsImmediate() const
   return "set transaction not deferrable";
 }
 
-// Gets the SQL query to check if a table exists in the database
-CString 
-SQLInfoPostgreSQL::GetSQLTableExists(CString p_schema,CString p_tablename) const
-{
-  p_schema.MakeLower();
-  p_tablename.MakeLower();
-  CString query = "SELECT count(*)\n"
-                  "  FROM pg_class cl\n"
-                  "      ,pg_namespace ns"
-                  " WHERE cl.relnamespace = ns.oid\n"
-                  "   AND cl.name = '" + p_schema    + "'\n"
-                  "   AND relname = '" + p_tablename + "'";
-  return query;
-}
-
-// Gets the SQL query to get the columns of a table from the catalog
-CString 
-SQLInfoPostgreSQL::GetSQLGetColumns(CString& /*p_user*/,CString& p_tableName) const
-{
-  CString tableName(p_tableName);
-  tableName.MakeLower();
-
-  CString query =  "SELECT attname\n"
-                   "      ,attnum\n"
-                   "      ,typname\n"
-                   "      ,typlen\n"
-                   "      ,attnotnull\n"
-                   "      ,(atttypmod - 4) / 65536\n"
-                   "      ,(atttypmod - 4) % 65536\n"
-                   "  FROM pg_class\n"
-                   "      ,pg_attribute\n"
-                   "      ,pg_type\n"
-                   "      ,pg_attrdef\n"
-                   " WHERE pg_class.relname = '" + tableName  + "'\n"
-                   "   AND pg_class.relkind = 'r'\n"
-                   "   AND pg_class.oid = pg_attribute.attrelid\n"
-                   "   AND pg_attribute.atttypid = pg_type.oid\n"
-                   "   AND pg_attrdef.adrelid    = pg_attribute.attrelid\n"
-                   "   AND pg_attrdef.adnum      = pg_attribute.attnum\n"
-                   "   AND attnum > 0\n"
-                   "   AND typlen < 0\n"
-                   "   AND typname = 'numeric'\n"
-                   "UNION\n"
-                   "SELECT attname\n"
-                   "      ,attnum\n"
-                   "      ,typname\n"
-                   "      ,(atttypmod - 4) AS typlen\n"
-                   "      ,attnotnull\n"
-                   "      ,0\n"
-                   "      ,0\n"
-                   "  FROM pg_class\n"
-                   "      ,pg_attribute\n"
-                   "      ,pg_type\n"
-                   "      ,pg_attrdef\n"
-                   " WHERE pg_class.relname = '" + tableName  + "'\n"
-                   "   AND pg_class.relkind = 'r'\n"
-                   "   AND pg_class.oid = pg_attribute.attrelid\n"
-                   "   AND pg_attribute.atttypid = pg_type.oid\n"
-                   "   AND pg_attrdef.adrelid    = pg_attribute.attrelid\n"
-                   "   AND pg_attrdef.adnum      = pg_attribute.attnum\n"
-                   "   AND attnum > 0\n"
-                   "   AND typlen < 0\n"
-                   "   AND typname = 'varchar'\n"
-                   "UNION\n"
-                   "SELECT attname\n"
-                   "      ,attnum\n"
-                   "      ,typname\n"
-                   "      ,typlen\n"
-                   "      ,attnotnull\n"
-                   "      ,0\n"
-                   "      ,0\n"
-                   "  FROM pg_class\n"
-                   "      ,pg_attribute\n"
-                   "      ,pg_type\n"
-                   "      ,pg_attrdef\n"
-                   " WHERE pg_class.relname = '" + tableName  + "'\n"
-                   "   AND pg_class.relkind = 'r'\n"
-                   "   AND pg_class.oid = pg_attribute.attrelid\n"
-                   "   AND pg_attribute.atttypid = pg_type.oid\n"
-                   "   AND pg_attrdef.adrelid    = pg_attribute.attrelid\n"
-                   "   AND pg_attrdef.adnum      = pg_attribute.attnum\n"
-                   "   AND attnum > 0\n"
-                   "   AND typlen > 0\n"
-                   "   AND typname not in ('numeric', 'varchar')\n"
-                   " ORDER BY attnum";
-  return query;
-}
-
 // Get the SQL query to get the CHECK and UNIQUE constraints from the catalog
 CString 
 SQLInfoPostgreSQL::GetSQLGetConstraintsForTable(CString& p_tableName) const
@@ -880,127 +1027,8 @@ SQLInfoPostgreSQL::GetSQLGetConstraintsForTable(CString& p_tableName) const
   return contabel;
 }
 
-// Read all existing indices of a table
-CString 
-SQLInfoPostgreSQL::GetSQLTableIndices(CString p_user,CString p_tableName) const
-{
-  p_user.MakeLower();
-  p_tableName.MakeLower();
 
-  CString query =  "SELECT cli.relname\n"
-                   "      ,att.attname\n"
-                   "      ,att.attnum\n"
-                   "      ,idx.indisunique\n"
-                   "      ,0  as ascending\n"
-                   "      ,'' as expression_source"
-                   "  FROM pg_user sha\n"
-                   "      ,pg_class clr\n"
-                   "      ,pg_index idx\n"
-                   "      ,pg_class cli\n"
-                   "      ,pg_attribute att\n"
-                   " WHERE sha.usename = '" + p_user + "'\n"
-                   "   AND sha.usesysid = clr.relowner\n"
-                   "   AND clr.relname = '" + p_tableName+ "'\n"
-                   "   AND clr.relkind = 'r'\n"
-                   "   AND clr.oid = idx.indrelid\n"
-                   "   AND idx.indexrelid = cli.oid\n"
-                   "   AND cli.relkind = 'i'\n"
-                   "   AND cli.oid = att.attrelid\n"
-                   " ORDER BY cli.relname, att.attnum";
-  return query;
-}
-
-// Get SQL to create an index for a table
-CString 
-SQLInfoPostgreSQL::GetSQLCreateIndex(CString p_user,CString p_tableName,DBIndex* p_index) const
-{
-  CString sql("CREATE ");
-  if(p_index->m_unique)
-  {
-    sql += "UNIQUE ";
-  }
-  sql += " INDEX ON ";
-  sql += p_user + ".";
-  sql += p_tableName + "(";
-
-  int column = 0;
-  while(!p_index->m_indexName.IsEmpty())
-  {
-    if(column)
-    {
-      sql += ",";
-    }
-    sql += p_index->m_column;
-    sql += (p_index->m_descending) ? " DESC" : " ASC";
-    // Next column
-    ++column;
-    ++p_index;
-  }
-  sql += ")";
-
-  return sql;
-}
-
-// Get SQL to create an index for a table
-// CREATE [UNIQUE] INDEX [<schema>.]indexname ON [<schema>.]tablename(column [ASC|DESC] [,...]);
-CString
-SQLInfoPostgreSQL::GetSQLCreateIndex(MStatisticsMap& p_indices) const
-{
-  CString query;
-  for(auto& index : p_indices)
-  {
-    if(index.m_position == 1)
-    {
-      // New index
-      query = "CREATE ";
-      if(index.m_unique)
-      {
-        query += "UNIQUE ";
-      }
-      query += "INDEX ";
-      if(!index.m_schemaName.IsEmpty())
-      {
-        query += index.m_schemaName + ".";
-      }
-      query += index.m_indexName;
-      query += " ON ";
-      if(!index.m_schemaName.IsEmpty())
-      {
-        query += index.m_schemaName + ".";
-      }
-      query += index.m_tableName;
-      query += "(";
-    }
-    else
-    {
-      query += ",";
-    }
-    query += index.m_columnName;
-    if(index.m_ascending != "A")
-    {
-      query += " DESC";
-    }
-  }
-  query += ")";
-  return query;
-}
-
-// Get extra filter expression for an index column
-CString
-SQLInfoPostgreSQL::GetIndexFilter(MetaStatistics& /*p_index*/) const
-{
-  return "";
-}
-
-// Get SQL to drop an index
-CString 
-SQLInfoPostgreSQL::GetSQLDropIndex(CString p_user,CString p_indexName) const
-{
-  CString sql = "DROP INDEX " + p_user + "." + p_indexName;
-  return sql;
-}
-
-// Get the SQL queyr to get all the referential constraints from the catalog
+// Get the SQL query to get all the referential constraints from the catalog
 CString 
 SQLInfoPostgreSQL::GetSQLTableReferences(CString p_schema
                                         ,CString p_tablename
@@ -1187,53 +1215,6 @@ SQLInfoPostgreSQL::GetSQLSearchSession(const CString& /*p_databaseName*/,const C
   return query;
 }
 
-// See if a column exists in a table
-bool   
-SQLInfoPostgreSQL::DoesColumnExistsInTable(CString& p_owner,CString& p_tableName,CString& p_column) const
-{
-  int number = 0;
-  CString lowerOwner(p_owner);
-  CString lowerTable(p_tableName);
-  CString lowerColumn(p_column);
-  lowerOwner.MakeLower();
-  lowerTable.MakeLower();
-  lowerColumn.MakeLower();
-
-  CString query = "SELECT count(*)\n"
-                 "  FROM pg_class a, pg_attribute b, pg_user c\n"
-                 " WHERE a.relname  = '" + lowerTable + "'\n"
-                 "   AND a.OID = b.attrelid\n"
-                 "   AND b.attname = '" + lowerColumn + "'\n"
-                 "   AND a.relowner = c.usesysid\n"
-                 "   AND c.usename = '" + lowerOwner  + "'";
-  SQLQuery sql(m_database);
-  sql.DoSQLStatement(query);
-  if (sql.GetRecord())
-  {
-    number = sql.GetColumn(1)->GetAsSLong();
-  }
-  return (number == 1);
-}
-
-// Get SQL query to see if a table already has a primary key
-CString
-SQLInfoPostgreSQL::GetSQLPrimaryKeyConstraintInformation(CString p_schema,CString p_tableName) const
-{
-  p_schema.MakeLower();
-  p_tableName.MakeLower();
-
-  CString query = "SELECT count(*)\n"
-                  "  FROM pg_class a\n"
-                  "      ,pg_constraint b\n"
-                  "      ,pg_namespaces n\n"
-                  " WHERE a.relnamespace = n.oid\n"
-                  "   AND a.oid     = b.conrelid\n"
-                  "   AND b.contype = 'p'"
-                  "   AND n.name    = '" + p_schema    + "'\n"
-                  "   AND a.relname = '" + p_tableName + "'\n";
-  return query;
-}
-
 // Does the named constraint exist in the database
 bool    
 SQLInfoPostgreSQL::DoesConstraintExist(CString /*p_constraintName*/) const
@@ -1278,26 +1259,6 @@ SQLInfoPostgreSQL::GetSQLTriggers(CString p_schema,CString p_table) const
 // SQL DDL STATEMENTS
 // ==================
 
-CString
-SQLInfoPostgreSQL::GetCreateColumn(CString p_schema,CString p_tablename,CString p_columnName,CString p_typeDefinition,bool p_notNull)
-{
-  CString sql  = "ALTER TABLE "  + p_schema + "." + p_tablename  + "\n";
-                 "  ADD COLUMN " + p_columnName + " " + p_typeDefinition;
-  if(p_notNull)
-  {
-    sql += " NOT NULL";
-  }
-  return sql;
-}
-
-// Drop a column from a table
-CString 
-SQLInfoPostgreSQL::GetSQLDropColumn(CString p_schema,CString p_tablename,CString p_columnName) const
-{
-  return "ALTER TABLE " + p_schema + "." + p_tablename + "\n"
-         " DROP COLUMN " + p_columnName;
-}
-
 // Add a foreign key to a table
 CString
 SQLInfoPostgreSQL::GetCreateForeignKey(CString p_tablename,CString p_constraintname,CString p_column,CString p_refTable,CString p_primary)
@@ -1306,23 +1267,6 @@ SQLInfoPostgreSQL::GetCreateForeignKey(CString p_tablename,CString p_constraintn
                 "  ADD CONSTRAINT " + p_constraintname + "\n"
                 "      FOREIGN KEY (" + p_column + ")\n"
                 "      REFERENCES " + p_refTable + "(" + p_primary + ")";
-  return sql;
-}
-
-CString 
-SQLInfoPostgreSQL::GetModifyColumnType(CString p_schema,CString p_tablename,CString p_columnName,CString p_typeDefinition)
-{
-  CString sql = "ALTER TABLE "   + p_schema + "." + p_tablename + "\n"
-                " ALTER COLUMN " + p_columnName + 
-                " SET DATA TYPE " + p_typeDefinition;
-  return sql;
-}
-
-CString 
-SQLInfoPostgreSQL::GetModifyColumnNull(CString p_schema,CString p_tablename,CString p_columnName,bool p_notNull)
-{
-  CString sql = "ALTER TABLE  " + p_schema + "." + p_tablename + "\n"
-                "ALTER COLUMN " + p_columnName + (p_notNull ? " SET " : " DROP ") + "NOT NULL";
   return sql;
 }
 
@@ -1365,17 +1309,6 @@ SQLInfoPostgreSQL::DoCommitDMLcommands() const
 {
   SQLQuery sql(m_database);
   sql.DoSQLStatement("commit");
-}
-
-// Remove a column from a table
-void
-SQLInfoPostgreSQL::DoDropColumn(CString p_tableName,CString p_columName)
-{
-  CString sql = "ALTER TABLE  " + p_tableName + "\n"
-                " DROP COLUMN " + p_columName;
-  SQLQuery query(m_database);
-  query.TryDoSQLStatement(sql);
-  DoCommitDDLcommands();
 }
 
 // Does the named view exists in the database
@@ -1468,17 +1401,6 @@ SQLInfoPostgreSQL::DoMakeProcedure(CString& p_procName,CString p_table,bool p_no
   }
   grant_statement += " TO PUBLIC;";
   sql.DoSQLStatement(grant_statement);
-}
-
-// Way to rename a table
-void 
-SQLInfoPostgreSQL::DoRenameTable(CString& p_oldName,CString& p_newName) const
-{
-  SQLQuery sql(m_database);
-  // Beware: no 'TABLE' in the statement
-  CString rename = "rename " + p_oldName + " to " + p_newName;
-  sql.DoSQLStatement(rename);
-  DoCommitDDLcommands();
 }
 
 // PERSISTENT-STORED MODULES (SPL / PL/SQL)
