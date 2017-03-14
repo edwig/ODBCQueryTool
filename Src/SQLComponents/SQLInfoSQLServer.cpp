@@ -1146,8 +1146,8 @@ SQLInfoSQLServer::GetSQLTriggers(CString p_schema,CString p_table) const
              "   AND trg.object_id = mod.object_id\n"
              "   AND tab.object_id = trg.parent_id\n"
              "   AND tab.schema_id = sch.schema_id"
-            ,p_schema
-            ,p_table);
+            ,p_schema.GetString()
+            ,p_table.GetString());
   return sql;
 }
 
@@ -1558,7 +1558,7 @@ SQLInfoSQLServer::TranslateErrortext(int p_error,CString p_errorText) const
   }
 
   CString errorText;
-  errorText.Format("ODBC error [%d:%s]",p_error,p_errorText);
+  errorText.Format("ODBC error [%d:%s]",p_error,p_errorText.GetString());
   return errorText;
 }
 

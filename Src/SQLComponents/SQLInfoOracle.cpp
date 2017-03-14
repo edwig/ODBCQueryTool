@@ -1227,8 +1227,8 @@ SQLInfoOracle::GetSQLTriggers(CString p_schema,CString p_table) const
              "  FROM all_triggers\n"
              " WHERE table_owner = '%s'\n"
              "   AND table_name  = '%s'"
-             ,p_schema
-             ,p_table);
+             ,p_schema.GetString()
+             ,p_table.GetString());
   return sql;
 }
 
@@ -1445,12 +1445,12 @@ SQLInfoOracle::GetUserErrorText(CString& p_procName) const
                     " WHERE type = 'FUNCTION'\n"
                     "   AND name = '%s'\n"
                     "   AND line = %d"
-                   ,procName
+                   ,procName.GetString()
                    ,qry1.GetColumn(1)->GetAsSLong());
       qry2.DoSQLStatement(query);
       while(qry2.GetRecord())
       {
-        s.Format("Line %d: %s\n",qry1.GetColumn(1)->GetAsSLong(),qry2.GetColumn(1)->GetAsChar());
+        s.Format("Line %d: %s\n",qry1.GetColumn(1)->GetAsSLong(),(LPCTSTR)qry2.GetColumn(1)->GetAsChar());
         errorText += s;
       }
     }

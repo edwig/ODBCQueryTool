@@ -1609,7 +1609,7 @@ SQLVariant::operator-(SQLVariant& p_right)
   CString leftType  = FindDatatype(m_datatype);
   CString rightType = FindDatatype(p_right.m_datatype);
   CString error;
-  error.Format("Cannot do the subtract operator on (%s - %s)",leftType,rightType);
+  error.Format("Cannot do the subtract operator on (%s - %s)",leftType.GetString(),rightType.GetString());
   throw error;
 }
 

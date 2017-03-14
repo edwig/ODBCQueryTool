@@ -1348,7 +1348,7 @@ SQLInfoAccess::TranslateErrortext(int p_error,CString p_errorText) const
   }
 
   CString errorText;
-  errorText.Format("ODBC error [%d:%s]",p_error,p_errorText);
+  errorText.Format("ODBC error [%d:%s]",p_error,p_errorText.GetString());
   return errorText;
 }
 

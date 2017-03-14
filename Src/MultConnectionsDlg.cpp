@@ -21,6 +21,7 @@
 #include "Query\codeer.h"
 #include <KnownFolders.h>
 #include <direct.h>
+#include <wincrypt.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

@@ -352,7 +352,7 @@ SQLDate::FullDate(Language p_lang /*=LN_DEFAULT*/) const
     }
     if(p_lang >= LN_DUTCH && p_lang <= LN_FRENCH)
     {
-      fullName.Format("%s %d %s %d",WeekDayName(p_lang),Day(),MonthName(p_lang),Year());
+      fullName.Format("%s %d %s %d",WeekDayName(p_lang).GetString(),Day(),MonthName(p_lang).GetString(),Year());
     }
   }
   return fullName;

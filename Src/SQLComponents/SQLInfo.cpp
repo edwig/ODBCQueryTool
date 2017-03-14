@@ -842,13 +842,13 @@ SQLInfo::GetAttributeString(CString description,SQLINTEGER attrib)
   if(!m_database->Check(nRetCode))
   {
     CString error;
-    error.Format("Cannot get connection attribute \"%s\": ",description);
+    error.Format("Cannot get connection attribute \"%s\": ",description.GetString());
     error += m_database->GetErrorString(NULL);
     InfoMessageBox(error);
     return "";
   }
   value[cbMax] = 0;
-  ATLTRACE("Database connection attribute \"%s\" was: %s\n",description,value);
+  ATLTRACE("Database connection attribute \"%s\" was: %s\n",description.GetString(),value);
   return CString(value);
 }
 
@@ -866,12 +866,12 @@ SQLInfo::SetAttributeInteger(CString     description
   if(!m_database->Check(nRetCode))
   {
     CString error;
-    error.Format("Cannot set connection attribute \"%s\": ",description);
+    error.Format("Cannot set connection attribute \"%s\": ",description.GetString());
     error += m_database->GetErrorString(NULL);
     InfoMessageBox(error);
     return false;
   }
-  ATLTRACE("Database connection attribute \"%s\" set to: %d\n",description,value);
+  ATLTRACE("Database connection attribute \"%s\" set to: %d\n",description.GetString(),value);
   return true;
 }
 
@@ -889,12 +889,12 @@ SQLInfo::SetAttributeString(CString    description
   if(!m_database->Check(nRetCode))
   {
     CString error;
-    error.Format("Cannot set connection attribute \"%s\": ",description);
+    error.Format("Cannot set connection attribute \"%s\": ",description.GetString());
     error += m_database->GetErrorString(NULL);
     InfoMessageBox(error);
     return false;
   }
-  ATLTRACE("Database connection attribute \"%s\" set to: %s\n",description,value);
+  ATLTRACE("Database connection attribute \"%s\" set to: %s\n",description.GetString(),value);
   return true;
 }
 

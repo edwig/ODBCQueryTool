@@ -327,7 +327,7 @@ DDLCreateTable::GetAccessInfo()
     }
 
     // Primary privilege
-    line.Format("GRANT %s ON %s TO %s",priv.m_privilege,object,priv.m_grantee);
+    line.Format("GRANT %s ON %s TO %s",priv.m_privilege.GetString(),object.GetString(),priv.m_grantee.GetString());
     if(priv.m_grantable)
     {
       line += " WITH GRANT OPTION";

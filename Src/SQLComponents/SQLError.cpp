@@ -387,9 +387,9 @@ SQLError::GetSQLStateFormatted(CString p_sqlState)
                "Text     : %s\n"
                "---------------------\n"
                "%s"
-              ,state->m_code
-              ,state->m_error
-              ,state->m_explanation);
+              ,state->m_code.GetString()
+              ,state->m_error.GetString()
+              ,state->m_explanation.GetString());
   return error;
 }
 

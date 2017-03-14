@@ -278,7 +278,7 @@ BasicXmlWorksheet::CalculateColumnNumber(CString p_column,CString p_row)
     return ((firstLetter - 65 + 1)*26 + (secondLetter - 65 + 1)); 
   }
   CString error;
-  error.Format("Invalid column alphabet name: %s",p_column);
+  error.Format("Invalid column alphabet name: %s",p_column.GetString());
   m_workbook->SetError(error);
   return 0;	
 }
@@ -334,7 +334,7 @@ BasicXmlExcel::BasicXmlExcel(CString p_filename)
   m_zip = OpenZip(m_filename,"");
   if(m_zip == NULL)
   {
-    m_error.Format("Cannot open the file: %s",m_filename);
+    m_error.Format("Cannot open the file: %s",m_filename.GetString());
     m_error.AppendFormat("\nOS Error: %d",GetLastError);
   }
 }
@@ -432,7 +432,7 @@ BasicXmlExcel::ReadSheetNames()
     res = GetZipItem(m_zip,ind,&ze);
     if(res != ZR_OK)
     {
-      m_error.Format("Cannot get entries from file: %s",m_filename);
+      m_error.Format("Cannot get entries from file: %s",m_filename.GetString());
       SetError(res);
       break;
     }
@@ -444,7 +444,7 @@ BasicXmlExcel::ReadSheetNames()
       res = UnzipItem(m_zip,ind,buffer,bufflen);
       if(res != ZR_OK)
       {
-        m_error.Format("Cannot read the workbook definition of: %s",m_filename);
+        m_error.Format("Cannot read the workbook definition of: %s",m_filename.GetString());
         SetError(res);
         break;
       }
@@ -457,7 +457,7 @@ BasicXmlExcel::ReadSheetNames()
       XMLElement* root = doc.GetRoot();
       if(root == NULL)
       {
-        m_error.Format("Workbook definition incorrect in: %s",m_filename);
+        m_error.Format("Workbook definition incorrect in: %s",m_filename.GetString());
         break;
       }
       XMLElement* sheets = doc.FindElement(root,"sheets");
@@ -557,7 +557,7 @@ BasicXmlExcel::LoadStrings()
     res = GetZipItem(m_zip,ind,&ze);
     if(res != ZR_OK)
     {
-      m_error.Format("Cannot get entries from file: %s",m_filename);
+      m_error.Format("Cannot get entries from file: %s",m_filename.GetString());
       SetError(res);
       return false;
     }
@@ -569,7 +569,7 @@ BasicXmlExcel::LoadStrings()
       res = UnzipItem(m_zip,ind,buffer,bufflen);
       if(res != ZR_OK)
       {
-        m_error.Format("Cannot read the shared-strings of: %s",m_filename);
+        m_error.Format("Cannot read the shared-strings of: %s",m_filename.GetString());
         SetError(res);
         return false;
       }
@@ -582,7 +582,7 @@ BasicXmlExcel::LoadStrings()
       XMLElement* root = doc.GetRoot();
       if(root == NULL)
       {
-        m_error.Format("Shared-strings definition incorrect in: %s",m_filename);
+        m_error.Format("Shared-strings definition incorrect in: %s",m_filename.GetString());
         return false;
       }
       // Reading the strings
@@ -648,7 +648,7 @@ BasicXmlExcel::LoadWorksheets()
       res = GetZipItem(m_zip,ind,&ze);
       if(res != ZR_OK)
       {
-        m_error.Format("Cannot get entries from file: %s",m_filename);
+        m_error.Format("Cannot get entries from file: %s",m_filename.GetString());
         SetError(res);
         return false;
       }
@@ -660,7 +660,7 @@ BasicXmlExcel::LoadWorksheets()
         res = UnzipItem(m_zip,ind,buffer,bufflen);
         if(res != ZR_OK)
         {
-          m_error.Format("Cannot read the worksheet definition of: %s",m_filename);
+          m_error.Format("Cannot read the worksheet definition of: %s",m_filename.GetString());
           SetError(res);
           return false;
         }
@@ -673,7 +673,7 @@ BasicXmlExcel::LoadWorksheets()
         XMLElement* root = doc.GetRoot();
         if(root == NULL)
         {
-          m_error.Format("Worksheet definition incorrect in: %s",m_filename);
+          m_error.Format("Worksheet definition incorrect in: %s",m_filename.GetString());
           return false;
         }
         // Make a new worksheet

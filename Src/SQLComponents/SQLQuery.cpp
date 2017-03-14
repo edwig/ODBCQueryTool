@@ -849,7 +849,7 @@ SQLQuery::LogParameter(int p_column,SQLVariant* p_parameter)
     }
     CString text,value;
     p_parameter->GetAsString(value);
-    text.Format("Parameter %d: %s\n",p_column,value);
+    text.Format("Parameter %d: %s\n",p_column,value.GetString());
     m_database->LogPrint(LOGLEVEL_MAX,text);
   }
 }

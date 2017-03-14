@@ -518,7 +518,7 @@ SQLDataSetXLS::Open()
       BasicExcelWorksheet* sheet = m_workbook->GetWorksheet(m_sheetName);
       if(sheet == NULL)
       {
-        m_lastError.Format("Cannot find worksheet [%s] in XLS file: %s",m_sheetName,m_file);
+        m_lastError.Format("Cannot find worksheet [%s] in XLS file: %s",m_sheetName.GetString(),m_file.GetString());
         return false;
       }
       int cols = sheet->GetTotalCols();
@@ -526,7 +526,7 @@ SQLDataSetXLS::Open()
 
       if(cols == 0 || rows <= 1)
       {
-        m_lastError.Format("Empty worksheet [%s]",m_sheetName);
+        m_lastError.Format("Empty worksheet [%s]",m_sheetName.GetString());
         return false;
       }
 
@@ -578,7 +578,7 @@ SQLDataSetXLS::Open()
     BasicXmlWorksheet* sheet = m_xmlWorkbook->GetWorksheet(m_sheetName);
     if(sheet == NULL)
     {
-      m_lastError.Format("Cannot find worksheet [%s] in XLS file: %s",m_sheetName,m_file);
+      m_lastError.Format("Cannot find worksheet [%s] in XLS file: %s",m_sheetName.GetString(),m_file.GetString());
       return false;
     }
     int cols = sheet->GetMaxCols();
@@ -627,7 +627,7 @@ SQLDataSetXLS::Open()
           // Read and store all rows in memory
           while(Archive->ReadString(tempString))
           {
-            TRACE("INPUT: %s\n",tempString);
+            TRACE("INPUT: %s\n",tempString.GetString());
             WordList values;
             if(SplitRow(tempString,values) == false)
             {

@@ -975,7 +975,7 @@ SQLInfoFirebird::GetSQLCreateSequence(CString /*p_schema*/,CString p_tablename,C
 {
   CString sequence = p_tablename + p_postfix;
   CString sql;
-  sql.Format("CREATE SEQUENCE %s START WITH %d",sequence,p_startpos);
+  sql.Format("CREATE SEQUENCE %s START WITH %d",sequence.GetString(),p_startpos);
   return sql;
 }
 
@@ -994,7 +994,7 @@ SQLInfoFirebird::GetSQLSequenceRights(CString /*p_schema*/,CString p_tableName,C
 {
   CString sql;
   CString sequence = p_tableName + p_postfix;
-  sql.Format("GRANT USAGE ON %s TO %s",sequence,GetGrantedUsers());
+  sql.Format("GRANT USAGE ON %s TO %s",sequence.GetString(),GetGrantedUsers().GetString());
   return sql;
 }
 
@@ -1029,7 +1029,7 @@ SQLInfoFirebird::GetSQLSessionExists(CString p_sessionID) const
   query.Format("SELECT COUNT(*)\n"
                "  FROM mon$attachments\n"
                " WHERE mon$system_flag = 0\n"
-               "   AND mon$attachment_id = %d",p_sessionID);
+               "   AND mon$attachment_id = %s",p_sessionID.GetString());
   return query;
 }
 
@@ -1164,8 +1164,8 @@ SQLInfoFirebird::GetSQLTriggers(CString p_schema,CString p_table) const
              " WHERE rdb$relation_name = '%s'\n"
              "   AND rdb$system_flag   = 0\n"
              " ORDER BY rdb$trigger_sequence"
-            ,p_schema
-            ,p_table);
+            ,p_schema.GetString()
+            ,p_table.GetString());
   return sql;
 }
 
@@ -1211,8 +1211,8 @@ SQLInfoFirebird::CreateOrReplaceTrigger(MetaTrigger& p_trigger) const
 {
   CString sql;
   sql.Format("CREATE OR ALTER TRIGGER %s FOR %s\n"
-            ,p_trigger.m_triggerName
-            ,p_trigger.m_tableName);
+            ,p_trigger.m_triggerName.GetString()
+            ,p_trigger.m_tableName.GetString());
 
   // Do the table level trigger
   if(p_trigger.m_insert || p_trigger.m_update || p_trigger.m_delete)
@@ -1610,7 +1610,7 @@ SQLInfoFirebird::TranslateErrortext(int p_error,CString p_errorText) const
   }
 
   CString errorText;
-  errorText.Format("ODBC error [%d:%s]",p_error,p_errorText);
+  errorText.Format("ODBC error [%d:%s]",p_error,p_errorText.GetString());
   return errorText;
 }
 

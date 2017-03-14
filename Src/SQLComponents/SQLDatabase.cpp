@@ -207,14 +207,14 @@ SQLDatabase::Open(CString const& p_datasource
 {
   // get the connect string
   CString connect;
-  connect.Format("DSN=%s;UID=%s;PWD=%s;", p_datasource, p_username, p_password);
+  connect.Format("DSN=%s;UID=%s;PWD=%s;", p_datasource.GetString(), p_username.GetString(), p_password.GetString());
 
   // Add any options passed to 'AddConnectOption'  
   ODBCOptions::iterator it;
   for(it = m_options.begin();it != m_options.end();++it)
   {
     CString text;
-    text.Format("%s=%s;",it->first,it->second);
+    text.Format("%s=%s;",it->first.GetString(),it->second.GetString());
     connect += text;
   }
 
@@ -423,7 +423,7 @@ SQLDatabase::CollectInfo()
   // Consists of 6 chars name and 2 chars of main-version of the database
   // For instance "INFORM09" or "ORACLE09"
   m_DBVersion.Trim();
-  m_dbIdent.Format("%-6s%02d",m_DBName,atoi(m_DBVersion));
+  m_dbIdent.Format("%-6s%02d",m_DBName.GetString(),atoi(m_DBVersion));
 
 
   // Get the type of the database
@@ -624,7 +624,7 @@ SQLDatabase::RealDatabaseName()
   m_databaseName = databaseName;
   // Log the connection
   CString log;
-  log.Format("Database connection at login => DATABASE: %s\n",databaseName);
+  log.Format("Database connection at login => DATABASE: %s\n",databaseName.GetString());
   LogPrint(LOGLEVEL_ACTION,log);
   return result;
 }
@@ -1041,7 +1041,7 @@ SQLDatabase::Check(INT nRetCode)
                                   if((*m_logLevel)(m_logContext) >= LOGLEVEL_MAX)
                                   {
                                     CString error;
-                                    error.Format("=> ODBC Success with info: %s\n",GetErrorString());
+                                    error.Format("=> ODBC Success with info: %s\n",GetErrorString().GetString());
                                     LogPrint(LOGLEVEL_MAX,error);
                                   }
                                 }
@@ -1077,7 +1077,7 @@ SQLDatabase::StartTransaction(SQLTransaction* p_transaction, bool p_startSubtran
       catch(CString& error)
       {
         CString message;
-        message.Format("Error at starting transaction [%s] : %s",p_transaction->GetName(),error);
+        message.Format("Error at starting transaction [%s] : %s",p_transaction->GetName().GetString(),error.GetString());
         throw message;
       }
     }
@@ -1102,7 +1102,10 @@ SQLDatabase::StartTransaction(SQLTransaction* p_transaction, bool p_startSubtran
         catch(CString& err)
         {
           CString message;
-          message.Format("Error starting sub-transaction [%s:%s] : %s",p_transaction->GetName(),transName,err);
+          message.Format("Error starting sub-transaction [%s:%s] : %s"
+                        ,p_transaction->GetName().GetString()
+                        ,transName.GetString()
+                        ,err.GetString());
           throw message;
         }
       }
@@ -1128,7 +1131,7 @@ SQLDatabase::CommitTransaction(SQLTransaction* p_transaction)
       // This is clearly not what we want, and points to an error
       // in our application's logic in the calling code.
       CString message;
-      message.Format("Error at commit: transaction [%s] is not the current transaction",p_transaction->GetName());
+      message.Format("Error at commit: transaction [%s] is not the current transaction",p_transaction->GetName().GetString());
       throw message;
     }
 
@@ -1163,7 +1166,7 @@ SQLDatabase::CommitTransaction(SQLTransaction* p_transaction)
 
         // Throw an exception with the error info of the failed commit
         CString message;
-        message.Format("Error in commit of transaction [%s] : %s",p_transaction->GetName(),error);
+        message.Format("Error in commit of transaction [%s] : %s",p_transaction->GetName().GetString(),error.GetString());
         throw message;
       }
     }
@@ -1184,9 +1187,9 @@ SQLDatabase::CommitTransaction(SQLTransaction* p_transaction)
         {
           CString message;
           message.Format("Error in commit of sub-transaction [%s:%s] : %s"
-                        ,p_transaction->GetName()
-                        ,p_transaction->GetSavePoint()
-                        ,error);
+                        ,p_transaction->GetName().GetString()
+                        ,p_transaction->GetSavePoint().GetString()
+                        ,error.GetString());
           throw message;
         }
       }
@@ -1203,7 +1206,7 @@ SQLDatabase::RollbackTransaction(SQLTransaction* p_transaction)
   if(GetTransaction() != p_transaction)
   {
     CString message;
-    message.Format("Error in rollback: transaction [%s] is not the current transaction",p_transaction->GetName());
+    message.Format("Error in rollback: transaction [%s] is not the current transaction",p_transaction->GetName().GetString());
     throw message;
   }
 
@@ -1254,7 +1257,7 @@ SQLDatabase::RollbackTransaction(SQLTransaction* p_transaction)
         // Throw an exception with error info at a failed rollback1
         CString message;
         CString error = GetErrorString();
-        message.Format("Error at rollback of transaction [%s] : %s",p_transaction->GetName(),error);
+        message.Format("Error at rollback of transaction [%s] : %s",p_transaction->GetName().GetString(),error.GetString());
         throw message;
       }
     }
@@ -1273,9 +1276,9 @@ SQLDatabase::RollbackTransaction(SQLTransaction* p_transaction)
         {
           CString message;
           message.Format("Error in rolling back sub-transaction [%s:%s] : %s"
-                        ,p_transaction->GetName()
-                        ,p_transaction->GetSavePoint()
-                        ,error);
+                        ,p_transaction->GetName().GetString()
+                        ,p_transaction->GetSavePoint().GetString()
+                        ,error.GetString());
           throw message;
         }
       }

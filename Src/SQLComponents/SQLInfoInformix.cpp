@@ -532,7 +532,7 @@ SQLInfoInformix::GetCATALOGIndexList(CString p_schema,CString p_tablename)   con
                        "   AND idx.idxname[1] != ' '"
                        ,ind
                        ,ind
-                       ,p_tablename
+                       ,p_tablename.GetString()
                        ,ind);
   }
   return query;
@@ -1566,7 +1566,7 @@ SQLInfoInformix::TranslateErrortext(int p_error,CString p_errorText) const
   }
 
   CString errorText;
-  errorText.Format("ODBC error [%d:%s]",p_error,p_errorText);
+  errorText.Format("ODBC error [%d:%s]",p_error,p_errorText.GetString());
   return errorText;
 }
 
