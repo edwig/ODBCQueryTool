@@ -1263,13 +1263,6 @@ SQLInfoPostgreSQL::GetAssignmentSelectParenthesis() const
 // SQL CATALOG QUERIES
 // ===================================================================
 
-// Removing a stored procedure
-void 
-SQLInfoPostgreSQL::DoRemoveProcedure(CString& /*p_procedureName*/) const
-{
-  // To be implemented
-}
-
 CString
 SQLInfoPostgreSQL::GetSQLSessionAndTerminal() const
 {
@@ -1434,38 +1427,6 @@ SQLInfoPostgreSQL::DoRemoveTemporaryTable(CString& p_tableName) const
   sql.TryDoSQLStatement("DELETE FROM "    + p_tableName);
   sql.TryDoSQLStatement("TRUNCATE TABLE " + p_tableName);
   sql.TryDoSQLStatement("DROP TABLE "     + p_tableName);
-}
-
-// Create a stored procedure in the database
-void 
-SQLInfoPostgreSQL::DoMakeProcedure(CString& p_procName,CString p_table,bool p_noParameters,CString& p_codeBlock)
-{
-  SQLQuery sql(m_database);
-  sql.DoSQLStatement(p_codeBlock);
-  CString grant_statement = "GRANT EXECUTE ON FUNCTION " + p_procName + "(";
-  if (p_procName.Find("_ins_proc")  > 0 || 
-      p_procName.Find("_upd_proc")  > 0 || 
-      p_procName.Find("_fupd_proc") > 0 )
-  {
-    grant_statement += p_table + ")";
-  }
-  else
-  {
-    if (p_procName.Find("_del_proc") > 0)
-    {
-      grant_statement += "int4, \"timestamp\", \"timestamp\", \"varchar\")";
-    }
-    else if (p_noParameters)
-    {
-      grant_statement += ")";
-    }
-    else
-    {
-      grant_statement += p_procName + "_proc_in_par)";
-    }
-  }
-  grant_statement += " TO PUBLIC;";
-  sql.DoSQLStatement(grant_statement);
 }
 
 // PERSISTENT-STORED MODULES (SPL / PL/SQL)

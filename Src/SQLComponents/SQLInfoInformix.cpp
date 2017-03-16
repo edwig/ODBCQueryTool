@@ -1165,15 +1165,6 @@ SQLInfoInformix::GetAssignmentSelectParenthesis() const
 // SQL CATALOG QUERIES
 // ==================================================================
 
-// Remove a stored procedure from the database
-void
-SQLInfoInformix::DoRemoveProcedure(CString& p_procedureName) const
-{
-  SQLQuery sql(m_database);
-  sql.TryDoSQLStatement("DROP PROCEDURE " + p_procedureName);
-
-}
-
 // Get SQL for your session and controlling terminal
 CString
 SQLInfoInformix::GetSQLSessionAndTerminal() const
@@ -1348,15 +1339,6 @@ SQLInfoInformix::DoRemoveTemporaryTable(CString& p_tableName) const
 {
   SQLQuery sql(m_database);
   sql.TryDoSQLStatement("DROP TABLE " + p_tableName);
-}
-
-// Create a procedure in the database
-void 
-SQLInfoInformix::DoMakeProcedure(CString& p_procName,CString /*p_table*/,bool /*p_noParameters*/,CString& p_codeBlock)
-{
-  SQLQuery sql(m_database);
-  sql.DoSQLStatement(p_codeBlock);
-  sql.DoSQLStatement("GRANT EXECUTE ON " + p_procName + " TO " + GetGrantedUsers());
 }
 
 // PERSISTENT-STORED MODULES (SPL / PL/SQL)

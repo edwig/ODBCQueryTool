@@ -1234,14 +1234,6 @@ SQLInfoFirebird::GetAssignmentSelectParenthesis() const
 // SQL CATALOG QUERIES
 // ====================================================================
 
-// Query to remove a stored procedure
-void
-SQLInfoFirebird::DoRemoveProcedure(CString& p_procedureName) const
-{
-  SQLQuery query(m_database);
-  query.TryDoSQLStatement("DROP PROCEDURE " + p_procedureName);
-}
-
 CString
 SQLInfoFirebird::GetSQLSessionAndTerminal() const
 {
@@ -1415,16 +1407,6 @@ SQLInfoFirebird::DoRemoveTemporaryTable(CString& p_tableName) const
   SQLQuery query(m_database);
   // If table is not there, no error...
   query.TryDoSQLStatement("DROP TABLE " + p_tableName);
-}
-
-// Making a stored procedure in the database
-void 
-SQLInfoFirebird::DoMakeProcedure(CString& p_procName,CString p_table,bool /*p_noParameters*/,CString& p_codeBlock)
-{
-  SQLQuery sql(m_database);
-  sql.DoSQLStatement(p_codeBlock);
-  sql.DoSQLStatement("GRANT EXECUTE ON PROCEDURE " + p_procName + " TO " + GetGrantedUsers());
-  DoCommitDDLcommands();
 }
 
 // PERSISTENT-STORED MODULES (SPL / PL/SQL)

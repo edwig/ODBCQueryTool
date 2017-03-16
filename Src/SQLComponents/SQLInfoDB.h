@@ -309,12 +309,6 @@ public:
   //////////////////////////////////////////////////////////////////////////
 
 
-  // Remove a stored procedure from the database
-  virtual void    DoRemoveProcedure(CString& p_procedureName) const = 0;
-
-  // Maak een procedure aan in de database
-  virtual void    DoMakeProcedure(CString& p_procName, CString p_table, bool p_noParameters, CString& p_codeBlock) = 0;
-
   // Get the SPL source code for a stored procedure as registered in the database
   virtual CString GetSPLSourcecodeFromDatabase(const CString& p_owner, const CString& p_procName) const = 0;
 

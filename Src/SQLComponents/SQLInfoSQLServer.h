@@ -305,9 +305,6 @@ public:
   // SQL CATALOG QUERIES
   // ===================
 
-  // Remove a stored procedure from the database
-  void    DoRemoveProcedure(CString& p_procedureName) const;
-
   // Get SQL for your session and controlling terminal
   CString GetSQLSessionAndTerminal() const;
 
@@ -358,9 +355,6 @@ public:
 
   // Remove a temporary table
   void    DoRemoveTemporaryTable(CString& p_tableName) const;
-
-  // Create a procedure in the database
-  void    DoMakeProcedure(CString& p_procName,CString p_table,bool    p_noParameters,CString& p_codeBlock);
 
   // PERSISTENT-STORED MODULES (SPL / PL/SQL)
   // ====================================================================

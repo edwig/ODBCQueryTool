@@ -1000,13 +1000,6 @@ SQLInfoMySQL::GetAssignmentSelectParenthesis() const
 // SQL CATALOG QUERIES
 // ===================================================================
 
-// Remove a stored procedure from the database
-void
-SQLInfoMySQL::DoRemoveProcedure(CString& /*p_procedureName*/) const
-{
-  // To be implemented
-}
-
 // Get SQL for your session and controlling terminal
 CString
 SQLInfoMySQL::GetSQLSessionAndTerminal() const
@@ -1163,16 +1156,6 @@ SQLInfoMySQL::DoRemoveTemporaryTable(CString& p_tableName) const
   // Every error can be ignored. Can still be in use by another user and/or session
   // The table contents will then removed for this session
   query.TryDoSQLStatement("DROP TABLE " + p_tableName);
-}
-
-// Create a stored procedure in the database
-void
-SQLInfoMySQL::DoMakeProcedure(CString& p_procName,CString p_table,bool /*p_noParameters*/,CString& p_codeBlock)
-{
-  SQLQuery query(m_database);
-
-  query.DoSQLStatement(p_codeBlock);
-  query.DoSQLStatement("GRANT EXECUTE ON " + p_procName + " TO " + GetGrantedUsers());
 }
 
 // PERSISTENT-STORED MODULES (SPL / PL/SQL)

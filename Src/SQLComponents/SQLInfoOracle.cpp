@@ -1153,7 +1153,15 @@ SQLInfoOracle::GetPSMProcedureList(CString p_schema) const
 CString
 SQLInfoOracle::GetPSMProcedureAttributes(CString p_schema, CString p_procedure) const
 {
-  return "";
+  p_schema.MakeUpper();
+  p_procedure.MakeUpper();
+
+  CString sql("SELECT 'CREATE OR REPLACE ' || text\n"
+              "  FROM all_source\n"
+              " WHERE type  = 'FUNCTION'\n"
+              "   AND name  = '" + p_procedure + "'\n"
+              "   AND owner = '" + p_schema    + "'");
+  return sql;
 }
 
 CString
@@ -1285,14 +1293,6 @@ SQLInfoOracle::GetAssignmentSelectParenthesis() const
 
 // SQL CATALOG QUERIES
 // ===================================================================
-
-// Remove a stored procedure from the database
-void    
-SQLInfoOracle::DoRemoveProcedure(CString& p_procedureName) const
-{
-  SQLQuery query(m_database);
-  query.TryDoSQLStatement("DROP FUNCTION " + p_procedureName);
-}
 
 // Get SQL for your session and controlling terminal
 CString 
@@ -1470,18 +1470,6 @@ SQLInfoOracle::DoRemoveTemporaryTable(CString& p_tableName) const
   query.TryDoSQLStatement("DELETE FROM "    + p_tableName);
   query.TryDoSQLStatement("TRUNCATE TABLE " + p_tableName);
   query.TryDoSQLStatement("DROP TABLE "     + p_tableName);
-}
-
-// Create a procedure in the database
-void
-SQLInfoOracle::DoMakeProcedure(CString& p_procName,CString p_table,bool /*p_noParameters*/,CString& p_codeBlock)
-{
-  SQLQuery query(m_database);
-
-  query.DoSQLStatement(p_codeBlock);
-  query.DoSQLStatement("GRANT EXECUTE ON " + p_procName + " TO " + GetGrantedUsers());
-  query.TryDoSQLStatement("CREATE OR REPLACE PUBLIC SYNONYM " + p_procName + " FOR " + p_procName);
-  query.DoSQLStatement("GRANT ALL ON " + p_procName + " TO " + GetGrantedUsers());
 }
 
 // PERSISTENT-STORED MODULES (SPL / PL/SQL)

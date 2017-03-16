@@ -1174,15 +1174,6 @@ SQLInfoSQLServer::GetAssignmentSelectParenthesis() const
 // SQL CATALOG QUERIES
 // ===================================================================
 
-// Remove a stored procedure from the database
-void 
-SQLInfoSQLServer::DoRemoveProcedure(CString& p_procedureName) const
-{
-  SQLQuery query(m_database);
-  query.DoSQLStatement("DROP PROCEDURE " + p_procedureName);
-
-}
-
 // Get SQL for your session and controlling terminal
 CString
 SQLInfoSQLServer::GetSQLSessionAndTerminal() const
@@ -1358,15 +1349,6 @@ SQLInfoSQLServer::DoRemoveTemporaryTable(CString& p_tableName) const
   query.TryDoSQLStatement("DELETE FROM #"    + p_tableName);
   query.TryDoSQLStatement("TRUNCATE TABLE #" + p_tableName);
   query.TryDoSQLStatement("DROP TABLE #"     + p_tableName);
-}
-
-// Create a procedure in the database
-void 
-SQLInfoSQLServer::DoMakeProcedure(CString& p_procName,CString p_table,bool /*p_noParameters*/,CString& p_codeBlock)
-{
-  SQLQuery query(m_database);
-  query.DoSQLStatement(p_codeBlock);
-  query.DoSQLStatement("GRANT EXECUTE ON " + p_procName + " TO PUBLIC");
 }
 
 // PERSISTENT-STORED MODULES (SPL / PL/SQL)
