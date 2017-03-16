@@ -1196,8 +1196,6 @@ SQLInfo::GetStatement(bool p_metadataID /*= true*/)
     errorText += m_database->GetErrorString(m_hstmt);
     throw errorText;
   }
-  ATLTRACE("DBInfo::GetStatement\n");
-
   SQLUINTEGER meta = p_metadataID ? SQL_TRUE : SQL_FALSE;
   // On Various ODBC databases metadata is or is not case-sensitive. To work around
   // these differences, the statement should be aware that it is about metadata!

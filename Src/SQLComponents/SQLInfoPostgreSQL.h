@@ -199,16 +199,71 @@ public:
   CString GetCATALOGPrimaryDrop      (CString p_schema,CString p_tablename,CString p_constraintname) const;
     // All foreign key functions
   CString GetCATALOGForeignExists    (CString p_schema,CString p_tablename,CString p_constraintname) const;
-  CString GetCATALOGForeignList      (CString p_schema,CString p_tablename) const;
-  CString GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraintname) const;
+  CString GetCATALOGForeignList      (CString p_schema,CString p_tablename,int p_maxColumns = SQLINFO_MAX_COLUMNS) const;
+  CString GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraintname,int p_maxColumns = SQLINFO_MAX_COLUMNS) const;
   CString GetCATALOGForeignCreate    (MForeignMap& p_foreigns) const;
+  CString GetCATALOGForeignAlter     (MForeignMap& p_original,MForeignMap& p_requested) const;
   CString GetCATALOGForeignDrop      (CString p_schema,CString p_tablename,CString p_constraintname) const;
+  // All trigger functions
+  CString GetCATALOGTriggerExists    (CString p_schema,CString p_tablename,CString p_triggername) const;
+  CString GetCATALOGTriggerList      (CString p_schema,CString p_tablename) const;
+  CString GetCATALOGTriggerAttributes(CString p_schema,CString p_tablename,CString p_triggername) const;
+  CString GetCATALOGTriggerCreate    (MetaTrigger& p_trigger) const;
+  CString GetCATALOGTriggerDrop      (CString p_schema,CString p_tablename,CString p_triggername) const;
+  // All sequence functions
+  CString GetCATALOGSequenceExists    (CString p_schema,CString p_sequence) const;
+  CString GetCATALOGSequenceAttributes(CString p_schema,CString p_sequence) const;
+  CString GetCATALOGSequenceCreate    (MetaSequence& p_sequence) const;
+  CString GetCATALOGSequenceDrop      (CString p_schema,CString p_sequence) const;
 
   //////////////////////////////////////////////////////////////////////////
   //
-  // SQL/PSM
+  // SQL/PSM PERSISTENT STORED MODULES 
+  //         Also called SPL or PL/SQL
+  // o GetPSM<Object[s]><Function>
+  //   -Procedures / Functions
+  //   - Exists					GetPSMProcedureExists
+  //   - List					  GetPSMProcedureList
+  //   - Attributes
+  //   - Create
+  //   - Drop
+  //
+  // o PSMWORDS
+  //   - Declare
+  //   - Assignment(LET)
+  //   - IF statement
+  //   - FOR statement
+  //   - WHILE / LOOP statement
+  //   - CURSOR and friends
+  //
+  // o CALL the FUNCTION/PROCEDURE
   //
   //////////////////////////////////////////////////////////////////////////
+
+  CString GetPSMProcedureExists    (CString p_schema,CString p_procedure) const;
+  CString GetPSMProcedureList      (CString p_schema) const;
+  CString GetPSMProcedureAttributes(CString p_schema,CString p_procedure) const;
+  CString GetPSMProcedureCreate    (MetaProcedure& p_procedure) const;
+  CString GetPSMProcedureDrop      (CString p_schema,CString p_procedure) const;
+
+  //////////////////////////////////////////////////////////////////////////
+  //
+  // SESSIONS
+  // - Sessions (No create and drop)
+  //   - GetSessionMyself
+  //   - GetSessionExists
+  //   - GetSessionList
+  //   - GetSessionAttributes
+  //     (was GetSessionAndTerminal)
+  //     (was GetSessionUniqueID)
+  // - Transactions
+  //   - GetSessionDeferredConstraints
+  //   - GetSessionImmediateConstraints
+  //
+  //////////////////////////////////////////////////////////////////////////
+
+  CString GetSESSIONConstraintsDeferred()  const;
+  CString GetSESSIONConstraintsImmediate() const;
 
 
 
@@ -229,9 +284,6 @@ public:
 
   // Get a query to select into a temp table
   CString GetSQLSelectIntoTemp(CString& p_tablename,CString& p_select) const;
-
-  // Get the sql (if possible) to change the foreign key constraint
-  CString GetSQLAlterForeignKey(DBForeign& p_origin,DBForeign& p_requested) const;
 
   // Gets the fact if an IF statement needs to be bordered with BEGIN/END
   bool    GetCodeIfStatementBeginEnd() const;
@@ -254,39 +306,6 @@ public:
   // SQL CATALOG QUERIES
   // ===================
 
-  // Get SQL to check if a stored procedure already exists in the database
-  CString GetSQLStoredProcedureExists(CString& p_name) const;
-
-  // FROM-Part for a query to select only 1 (one) record
-  CString GetDualClause() const;
-
-  // Gets DEFERRABLE for a constraint (or nothing)
-  CString GetConstraintDeferrable () const;
-
-  // Defer Constraints until the next COMMIT;
-  CString GetSQLDeferConstraints() const;
-
-  // Reset constraints back to immediate
-  CString GetSQLConstraintsImmediate() const;
-
-  // Get SQL to select all constraints on a table from the catalog
-  CString GetSQLGetConstraintsForTable(CString& p_tableName) const;
-
-  // Get SQL to read the referential constraints from the catalog
-  CString GetSQLTableReferences(CString p_schema,CString p_tablename,CString p_constraint = "",int p_maxColumns = SQLINFO_MAX_COLUMNS) const;
-
-  // Get the SQL to determine the sequence state in the database
-  CString GetSQLSequence(CString p_schema,CString p_tablename,CString p_postfix = "_seq") const;
-
-  // Create a sequence in the database
-  CString GetSQLCreateSequence(CString p_schema,CString p_tablename,CString p_postfix = "_seq",int p_startpos = 1) const;
-
-  // Remove a sequence from the database
-  CString GetSQLDropSequence(CString p_schema,CString p_tablename,CString p_postfix = "_seq") const;
-
-  // Gets the SQL for the rights on the sequence
-  CString GetSQLSequenceRights(CString p_schema,CString p_tableName,CString p_postfix = "_seq") const;
-
   // Remove a stored procedure from the database
   void    DoRemoveProcedure(CString& p_procedureName) const;
 
@@ -302,9 +321,6 @@ public:
   // Get SQL for searching a session
   CString GetSQLSearchSession(const CString& p_databaseName,const CString& p_sessionTable) const;
 
-  // Does the named constraint exist in the database
-  bool    DoesConstraintExist(CString p_constraintName) const;
-
   // Get SQL to lock a table
   CString GetSQLLockTable(CString& p_tableName,bool p_exclusive) const;
 
@@ -314,23 +330,14 @@ public:
   // Getting the fact that there is only **one** (1) user session in the database
   bool    GetOnlyOneUserSession();
 
-  // Gets the triggers for a table
-  CString GetSQLTriggers(CString m_schema,CString p_table) const;
-
   // SQL DDL STATEMENTS
   // ==================
-
-  // Add a foreign key to a table
-  CString GetCreateForeignKey(CString p_tablename,CString p_constraintname,CString p_column,CString p_refTable,CString p_primary);
 
   // Get the SQL to drop a view. If precursor is filled: run that SQL first!
   CString GetSQLDropView(CString p_schema,CString p_view,CString& p_precursor);
 
   // Create or replace a database view
   CString GetSQLCreateOrReplaceView(CString p_schema,CString p_view,CString p_asSelect) const;
-
-  // Create or replace a trigger
-  CString CreateOrReplaceTrigger(MetaTrigger& p_trigger) const;
 
   // SQL DDL OPERATIONS
   // ==================

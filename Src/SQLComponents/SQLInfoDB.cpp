@@ -66,7 +66,7 @@ SQLInfoDB::MakeInfoTableTriggers(MTriggerMap& p_triggers,CString& p_errors)
   }
 
   // Getting the database dependent SQL string
-  CString sql = GetSQLTriggers(m_searchSchemaName,m_searchTableName);
+  CString sql = GetCATALOGTriggerList(m_searchSchemaName,m_searchTableName);
   if(sql.IsEmpty())
   {
     // No triggers to be gotten from this RDBMS

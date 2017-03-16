@@ -591,20 +591,23 @@ SQLInfoAccess::GetCATALOGPrimaryDrop(CString /*p_schema*/,CString p_tablename,CS
 // ALL FOREIGN KEY FUNCTIONS
 
 CString 
-SQLInfoAccess::GetCATALOGForeignExists(CString p_schema,CString p_tablename,CString p_constraintname) const
+SQLInfoAccess::GetCATALOGForeignExists(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_constraintname*/) const
 {
+  // MS-Access cannot get this information, Use ODBC functions
   return "";
 }
 
 CString 
-SQLInfoAccess::GetCATALOGForeignList(CString p_schema,CString p_tablename) const
-{
+SQLInfoAccess::GetCATALOGForeignList(CString /*p_schema*/,CString /*p_tablename*/,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
+{ 
+  // MS-Access cannot get this information, Use ODBC functions
   return "";
 }
 
 CString 
-SQLInfoAccess::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraintname) const
+SQLInfoAccess::GetCATALOGForeignAttributes(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_constraintname*/,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
 {
+  // MS-Access cannot get this information, Use ODBC functions
   return "";
 }
 
@@ -667,21 +670,183 @@ SQLInfoAccess::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
     default:              // In essence: ON DELETE RESTRICT, but that's already the default
                           break;
   }
-  return query;}
+  return query;
+}
 
 CString 
-SQLInfoAccess::GetCATALOGForeignDrop(CString p_schema,CString p_tablename,CString p_constraintname) const
+SQLInfoAccess::GetCATALOGForeignAlter(MForeignMap& /*p_original*/, MForeignMap& /*p_requested*/) const
 {
+	// MS-Access cannot alter a foreign-key constraint.
+	// You must drop and then re-create your foreign key constraint
+	// So return an empty string to signal this!
+	return "";
+}
+
+CString 
+SQLInfoAccess::GetCATALOGForeignDrop(CString /*p_schema*/,CString p_tablename,CString p_constraintname) const
+{
+  CString sql("ALTER TABLE " + p_tablename + "\n"
+              " DROP CONSTRAINT " + p_constraintname);
+  return sql;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL TRIGGER FUNCTIONS
+
+CString 
+SQLInfoAccess::GetCATALOGTriggerExists(CString p_schema, CString p_tablename, CString p_triggername) const
+{
+  // No triggers in MS-Access
   return "";
 }
 
+CString 
+SQLInfoAccess::GetCATALOGTriggerList(CString p_schema, CString p_tablename) const
+{
+  // No triggers in MS-Access
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetCATALOGTriggerAttributes(CString p_schema, CString p_tablename, CString p_triggername) const
+{
+  // No triggers in MS-Access
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetCATALOGTriggerCreate(MetaTrigger& /*p_trigger*/) const
+{
+  // Cannot create a trigger. Does not exist in MS-Access
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetCATALOGTriggerDrop(CString p_schema, CString p_tablename, CString p_triggername) const
+{
+  // Cannot drop a trigger. Does not exist in MS-Access
+  return "";
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL SEQUENCE FUNCTIONS
+
+CString 
+SQLInfoAccess::GetCATALOGSequenceExists(CString p_schema, CString p_sequence) const
+{
+  // MS-Access does not have sequences
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetCATALOGSequenceAttributes(CString p_schema, CString p_sequence) const
+{
+  // MS-Access does not have sequences
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetCATALOGSequenceCreate(MetaSequence& /*p_sequence*/) const
+{
+  // MS-Access does not have sequences
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetCATALOGSequenceDrop(CString p_schema, CString p_sequence) const
+{
+  // MS-Access does not have sequences
+  return "";
+}
 
 //////////////////////////////////////////////////////////////////////////
 //
-// SQL/PSM
+// SQL/PSM PERSISTENT STORED MODULES 
+//         Also called SPL or PL/SQL
+// o GetPSM<Object[s]><Function>
+//   -Procedures / Functions
+//   - Exists					GetPSMProcedureExists
+//   - List					  GetPSMProcedureList
+//   - Attributes
+//   - Create
+//   - Drop
+//
+// o PSMWORDS
+//   - Declare
+//   - Assignment(LET)
+//   - IF statement
+//   - FOR statement
+//   - WHILE / LOOP statement
+//   - CURSOR and friends
+//
+// o CALL the FUNCTION/PROCEDURE
 //
 //////////////////////////////////////////////////////////////////////////
 
+CString 
+SQLInfoAccess::GetPSMProcedureExists(CString p_schema,CString p_procedure) const
+{
+  // MS-Access does not support PSM
+  return "";
+}
+  
+CString 
+SQLInfoAccess::GetPSMProcedureList(CString p_schema) const
+{
+  // MS-Access does not support PSM
+  return "";
+}
+  
+CString 
+SQLInfoAccess::GetPSMProcedureAttributes(CString p_schema, CString p_procedure) const
+{
+  // MS-Access does not support PSM
+  return "";
+}
+  
+CString 
+SQLInfoAccess::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
+{
+  // MS-Access does not support PSM
+  return "";
+}
+  
+CString 
+SQLInfoAccess::GetPSMProcedureDrop(CString p_schema,CString p_procedure) const
+{
+  // MS-Access does not support PSM
+  return "";
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// SESSIONS
+// - Sessions (No create and drop)
+//   - GetSessionMyself
+//   - GetSessionExists
+//   - GetSessionList
+//   - GetSessionAttributes
+//     (was GetSessionAndTerminal)
+//     (was GetSessionUniqueID)
+// - Transactions
+//   - GetSessionDeferredConstraints
+//   - GetSessionImmediateConstraints
+//
+//////////////////////////////////////////////////////////////////////////
+
+CString 
+SQLInfoAccess::GetSESSIONConstraintsDeferred() const
+{
+  // MS-Access cannot defer constraints
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetSESSIONConstraintsImmediate() const
+{
+  // MS-Access constraints are always active
+  return "";
+}
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -715,16 +880,6 @@ CString
 SQLInfoAccess::GetSQLSelectIntoTemp(CString& p_tablename,CString& p_select) const
 {
   return "INSERT INTO #" + p_tablename + "\n" + p_select + ";\n";
-}
-
-// Get the sql (if possible) to change the foreign key constraint
-CString 
-SQLInfoAccess::GetSQLAlterForeignKey(DBForeign& /*p_origin*/,DBForeign& /*p_requested*/) const
-{
-  // MS-Access cannot alter a foreign-key constraint.
-  // You must drop and then re-create your foreign key constraint
-  // So return an empty string to signal this!
-  return "";
 }
 
 // Gets the fact if an IF statement needs to be bordered with BEGIN/END
@@ -784,88 +939,6 @@ SQLInfoAccess::GetAssignmentSelectParenthesis() const
 // SQL CATALOG QUERIES
 // ===================================================================
 
-// Get SQL to check if a stored procedure already exists in the database
-CString 
-SQLInfoAccess::GetSQLStoredProcedureExists(CString& /*p_name*/) const
-{
-  // MS-Access cannot query this
-  return "";
-}
-
-// Gets DEFERRABLE for a constraint (or nothing)
-CString
-SQLInfoAccess::GetConstraintDeferrable() const
-{
-  return "";
-}
-
-// Defer Constraints until the next COMMIT;
-CString 
-SQLInfoAccess::GetSQLDeferConstraints() const
-{
-  return "";
-}
-
-// Reset constraints back to immediate
-CString 
-SQLInfoAccess::GetSQLConstraintsImmediate() const
-{
-  return "";
-}
-
-// Get SQL to select all constraints on a table from the catalog
-CString 
-SQLInfoAccess::GetSQLGetConstraintsForTable(CString& /*p_tableName*/) const
-{
-  // MS-Access is not capable of getting the constraints for you
-  return "";
-}
-
-
-
-// Get SQL to read the referential constraints from the catalog
-CString 
-SQLInfoAccess::GetSQLTableReferences(CString p_schema
-                                    ,CString p_tablename
-                                    ,CString p_constraint /*=""*/
-                                    ,int     /* p_maxColumns = SQLINFO_MAX_COLUMNS*/) const
-{
-  // Access driver not capable of getting the table references
-  return CString("");
-}
-
-// Get the SQL to determine the sequence state in the database
-CString 
-SQLInfoAccess::GetSQLSequence(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_postfix*/) const
-{
-  // MS-Access does not have sequences
-  return "";
-}
-
-// Create a sequence in the database
-CString 
-SQLInfoAccess::GetSQLCreateSequence(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_postfix = "_seq"*/,int /*p_startpos = 1*/) const
-{
-  // MS-Access does not have sequences
-  return "";
-}
-
-// Remove a sequence from the database
-CString 
-SQLInfoAccess::GetSQLDropSequence(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_postfix = "_seq"*/) const
-{
-  // MS-Access does not have sequences
-  return "";
-}
-
-// Gets the SQL for the rights on the sequence
-CString
-SQLInfoAccess::GetSQLSequenceRights(CString /*p_schema*/,CString /*p_tableName*/,CString /*p_postfix /*="_seq"*/) const
-{
-  // MS-Access does not have sequences
-  return "";
-}
-
 // Remove a stored procedure from the database
 void 
 SQLInfoAccess::DoRemoveProcedure(CString& p_procedureName) const
@@ -906,14 +979,6 @@ SQLInfoAccess::GetSQLSearchSession(const CString& /*p_databaseName*/,const CStri
   return "";
 }
 
-// Does the named constraint exist in the database
-bool    
-SQLInfoAccess::DoesConstraintExist(CString p_constraintName) const
-{
-  // To be implemented
-  return false;
-}
-
 // Gets the lock-table query
 CString 
 SQLInfoAccess::GetSQLLockTable(CString& p_tableName,bool p_exclusive) const
@@ -939,26 +1004,8 @@ SQLInfoAccess::GetOnlyOneUserSession()
   return true;
 }
 
-// Gets the triggers for a table
-CString
-SQLInfoAccess::GetSQLTriggers(CString m_schema,CString p_table) const
-{
-  return "";
-}
-
 // SQL DDL STATEMENTS
 // ==================
-
-// Add a foreign key to a table
-CString 
-SQLInfoAccess::GetCreateForeignKey(CString p_tablename,CString p_constraintname,CString p_column,CString p_refTable,CString p_primary)
-{
-  CString sql = "ALTER TABLE " + p_tablename + "\n"
-                "  ADD CONSTRAINT " + p_constraintname + "\n"
-                "      FOREIGN KEY (" + p_column + ")\n"
-                "      REFERENCES " + p_refTable + "(" + p_primary + ")";
-  return sql;
-}
 
 // Get the SQL to drop a view. If precursor is filled: run that SQL first!
 CString 
@@ -973,13 +1020,6 @@ CString
 SQLInfoAccess::GetSQLCreateOrReplaceView(CString /*p_schema*/,CString p_view,CString p_asSelect) const
 {
   return "CREATE VIEW " + p_view + "\n" + p_asSelect;
-}
-
-// Create or replace a trigger
-CString 
-SQLInfoAccess::CreateOrReplaceTrigger(MetaTrigger& /*p_trigger*/) const
-{
-  return "";
 }
 
 // SQL DDL ACTIONS

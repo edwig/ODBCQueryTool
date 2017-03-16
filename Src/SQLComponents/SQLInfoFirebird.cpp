@@ -660,21 +660,93 @@ SQLInfoFirebird::GetCATALOGPrimaryDrop(CString /*p_schema*/,CString p_tablename,
 // ALL FOREIGN KEY FUNCTIONS
 
 CString
-SQLInfoFirebird::GetCATALOGForeignExists(CString p_schema,CString p_tablename,CString p_constraintname) const
+SQLInfoFirebird::GetCATALOGForeignExists(CString /*p_schema*/,CString p_tablename,CString p_constraintname) const
 {
-  return "";
+  p_tablename.MakeUpper();
+  p_constraintname.MakeUpper();
+
+  CString sql;
+  sql.Format("SELECT COUNT(*)\n"
+             "  FROM rdb$relation_constraints con\n"
+             " WHERE con.rdb$constraint_name = '%s'\n"
+             "   AND con.rdb$relation_name   = '%s'\n"
+             "   AND con.rdb$constraint_type = 'FOREIGN KEY'"
+            ,p_constraintname.GetString()
+            ,p_tablename.GetString());
+  return sql;
 }
 
 CString
-SQLInfoFirebird::GetCATALOGForeignList(CString p_schema,CString p_tablename) const
+SQLInfoFirebird::GetCATALOGForeignList(CString p_schema,CString p_tablename,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
 {
-  return "";
+  return GetCATALOGForeignAttributes(p_schema,p_tablename,"",p_maxColumns);
 }
 
 CString
-SQLInfoFirebird::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraintname) const
+SQLInfoFirebird::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraint,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
 {
-  return "";
+  p_schema.MakeUpper();
+  p_tablename.MakeUpper();
+  p_constraint.MakeUpper();
+  CString query;
+  query.Format( "SELECT mon.mon$database_name           AS primary_key_catalog\n"
+                "      ,'%s'                            AS primary_key_schema\n"
+                "      ,idx.rdb$relation_name           AS primary_key_table\n"
+                "      ,mon.mon$database_name           AS foreign_key_catalog\n"
+                "      ,'%s'                            AS foreign_key_schema\n"
+                "      ,con.rdb$relation_name           AS foreign_key_table\n"
+                "      ,ref.rdb$const_name_uq           AS primary_key_constraint\n"
+                "      ,con.rdb$constraint_name         AS foreign_key_constraint\n"
+                "      ,%d                              AS key_sequence\n"
+                "      ,seg.rdb$field_name              AS foreign_key_column_name\n"
+                "      ,psg.rdb$field_name              AS primary_key_column_name\n"
+                "      ,case ref.rdb$update_rule        WHEN 'RESTRICT'     THEN 1\n"
+                "                                       WHEN 'CASCADE'      THEN 0\n"
+                "                                       WHEN 'SET NULL'     THEN 2\n"
+                "                                       WHEN 'SET DEFAULT'  THEN 4\n"
+                "                                       WHEN 'NO ACTION'    THEN 3\n"
+                "                                       ELSE 0\n"
+                "                                       END AS update_rule\n"
+                "      ,case ref.rdb$delete_Rule        WHEN 'RESTRICT'     THEN 1\n"
+                "                                       WHEN 'CASCADE'      THEN 0\n"
+                "                                       WHEN 'SET NULL'     THEN 2\n"
+                "                                       WHEN 'SET DEFAULT'  THEN 4\n"
+                "                                       WHEN 'NO ACTION'    THEN 3\n"
+                "                                       ELSE 0\n"
+                "                                       END AS delete_rule\n"
+                "      ,case con.rdb$deferrable         WHEN 'YES'  THEN 1 ELSE 0 END as deferrable\n"
+                "      ,case ref.rdb$match_option       WHEN 'FULL' THEN 1 ELSE 0 END as match_option\n"
+                "      ,case con.rdb$initially_deferred WHEN 'YES'  THEN 1 ELSE 0 END as initially_deferred\n"
+                "      ,1                               AS enabled\n"
+                "  FROM rdb$relation_constraints con\n"
+                "      ,rdb$ref_constraints ref\n"
+                "      ,rdb$indices         idx\n"
+                "      ,rdb$indices         cix\n"
+                "      ,rdb$index_segments  seg\n"
+                "      ,rdb$index_segments  psg\n"
+                "      ,mon$database        mon\n"
+                " WHERE con.rdb$constraint_name = ref.rdb$constraint_name\n"
+                "   AND ref.rdb$const_name_uq   = idx.rdb$index_name\n"
+                "   AND con.rdb$index_name      = cix.rdb$index_name\n"
+                "   AND seg.rdb$index_name      = cix.rdb$index_name\n"
+                "   AND psg.rdb$index_name      = idx.rdb$index_name\n"
+                "   AND seg.rdb$field_position  = psg.rdb$field_position\n"
+                "   AND con.rdb$constraint_type = 'FOREIGN KEY'\n"
+                ,p_schema.GetString()
+                ,p_schema.GetString());
+  if(!p_tablename.IsEmpty())
+  {
+    query += "   AND con.rdb$relation_name   = '" + p_tablename + "'\n";
+  }
+  if(!p_constraint.IsEmpty())
+  {
+    query += "   AND con.rdb$constraint_name = '" + p_constraint + "'\n";
+  }
+
+  // Add ordering upto column number
+  query += " ORDER BY 1,2,3,4,5,6,7,8,9";
+
+  return query;
 }
 
 CString
@@ -745,352 +817,55 @@ SQLInfoFirebird::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
 }
 
 CString
-SQLInfoFirebird::GetCATALOGForeignDrop(CString p_schema,CString p_tablename,CString p_constraintname) const
-{
-  return "";
-}
-
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// SQL/PSM
-//
-//////////////////////////////////////////////////////////////////////////
-
-
-
-//////////////////////////////////////////////////////////////////////////
-//
-// OLD INTERFACE
-//
-//////////////////////////////////////////////////////////////////////////
-
-// BOOLEANS EN STRINGS
-// ====================================================================
-
-// Get the SQL Query to create a temporary table from a select statement;
-CString 
-SQLInfoFirebird::GetSQLCreateTemporaryTable(CString& p_tablename,CString p_select) const
-{
-  return "CREATE GLOBAL TEMPORARY TABLE " + p_tablename + "\nAS " + p_select +
-         "ON COMMIT PRESERVE ROWS";
-}
-
-// Get the SQL query to remove a temporary table
-CString
-SQLInfoFirebird::GetSQLRemoveTemporaryTable(CString& p_tablename,int& p_number) const
-{
-  // 'Simply' a drop from a table
-  p_number += 1;
-  return "DROP TABLE "     + p_tablename + ";\n";
-}
-
-// Getting the SQL query to select into a temporary table
-CString 
-SQLInfoFirebird::GetSQLSelectIntoTemp(CString& p_tablename,CString& p_select) const
-{
-  return "INSERT INTO " + p_tablename + "\n" + p_select + ";\n";
-}
-
-// Get the sql (if possible) to change the foreign key constraint
-CString 
-SQLInfoFirebird::GetSQLAlterForeignKey(DBForeign& /*p_origin*/,DBForeign& /*p_requested*/) const
+SQLInfoFirebird::GetCATALOGForeignAlter(MForeignMap& /*p_original*/, MForeignMap& /*p_requested*/) const
 {
   // Firebird cannot alter a foreign-key constraint.
   // You must drop and then re-create your foreign key constraint
   // So return an empty string to signal this!
   return "";
-} 
-
-bool
-SQLInfoFirebird::GetCodeIfStatementBeginEnd() const
-{
-  // IF THEN ELSE END IF; always needs a BEGIN/END
-  return true;
 }
 
-// End of the IF statement
-CString 
-SQLInfoFirebird::GetCodeEndIfStatement() const
-{
-  return "\n";
-}
-
-CString 
-SQLInfoFirebird::GetAssignmentStatement(const CString& p_destiny,const CString& p_source) const
-{
-  return p_destiny + " = " + p_source + ";";
-}
-
-
-// Code to start a while loop
 CString
-SQLInfoFirebird::GetStartWhileLoop(CString p_condition) const
+SQLInfoFirebird::GetCATALOGForeignDrop(CString /*p_schema*/,CString p_tablename,CString p_constraintname) const
 {
-  return "WHILE " + p_condition + " LOOP\n";
+  CString sql("ALTER TABLE " + p_tablename + "\n"
+              " DROP CONSTRAINT " + p_constraintname);
+  return sql;
 }
 
-// Code to end a WHILE loop
+//////////////////////////////////////////////////////////////////////////
+// ALL TRIGGER FUNCTIONS
+
 CString
-SQLInfoFirebird::GetEndWhileLoop() const
-{
-  return "END LOOP;\n";
-}
-
-// The fact that a SELECT **must** be between parenthesis for an assignment
-bool 
-SQLInfoFirebird::GetAssignmentSelectParenthesis() const
-{
-  // waarde = (SELECT max kenmerk FROM tabel);
-  return true;
-}
-
-// SQL CATALOG QUERIES
-// ====================================================================
-
-// SQL to find out whether a stored procedure does exist in the database
-CString 
-SQLInfoFirebird::GetSQLStoredProcedureExists(CString& p_name) const
-{
-  CString nameUpper(p_name);
-  nameUpper.MakeUpper();
-  CString query = ( "SELECT COUNT(*) "
-                    "  FROM RDB$PROCEDURES "
-                    " WHERE RDB$PROCEDURE_NAME ='" + nameUpper + "';");
-  return query;
-}
-
-// CONSTRAINTS DEFERRABLE clause
-CString
-SQLInfoFirebird::GetConstraintDeferrable() const
-{
-  return "";
-}
-
-// Defer constraints until the next commit
-CString 
-SQLInfoFirebird::GetSQLDeferConstraints() const
-{
-  return "";
-}
-
-// Constraints back to immediate checking
-CString 
-SQLInfoFirebird::GetSQLConstraintsImmediate() const
-{
-  return "";
-}
-
-// Get the SQL query to get the CHECK and UNIQUE constraints for a table
-CString 
-SQLInfoFirebird::GetSQLGetConstraintsForTable(CString& p_tableName) const
-{
-  CString upperName = p_tableName;
-  upperName.MakeUpper();
-  CString contabel = "SELECT con.rdb$constraint_name\n"
-                     "      ,con.rdb$relation_name\n"
-                     "  FROM rdb$relation_constraints con\n"
-                     " WHERE rdb$relation_name = '" + upperName + "'"
-                     "   AND con.rdb$constraint_type IN ('CHECK','UNIQUE')";
-  return contabel;
-}
-
-// Get the SQL Query to read the referential constraints for a table
-CString 
-SQLInfoFirebird::GetSQLTableReferences(CString /*p_schema*/
-                                      ,CString p_tablename
-                                      ,CString p_constraint /*=""*/
-                                      ,int     /* p_maxColumns /*= SQLINFO_MAX_COLUMNS*/) const
+SQLInfoFirebird::GetCATALOGTriggerExists(CString /*p_schema*/, CString p_tablename, CString p_triggername) const
 {
   p_tablename.MakeUpper();
-  p_constraint.MakeUpper();
-  CString query = "SELECT con.rdb$constraint_name         AS foreign_key_constraint\n"
-                  "      ,''                              AS schema_name\n"
-                  "      ,con.rdb$relation_name           AS table_name\n"
-                  "      ,seg.rdb$field_name              AS column_name\n"
-                  "      ,idx.rdb$relation_name           AS primary_table_name\n"
-                  "      ,psg.rdb$field_name              AS primary_key_column\n"
-                  "      ,case con.rdb$deferrable         WHEN 'YES'  THEN 1 ELSE 0 END as deferrable\n"
-                  "      ,case con.rdb$initially_deferred WHEN 'YES'  THEN 1 ELSE 0 END as initially_deferred\n"
-                  "      ,1                               as enabled\n"
-                  "      ,case ref.rdb$match_option       WHEN 'FULL' THEN 1 ELSE 0 END as match_option\n"
-                  "      ,case ref.rdb$update_rule        WHEN 'RESTRICT'     THEN 1\n"
-                  "                                       WHEN 'CASCADE'      THEN 0\n"
-                  "                                       WHEN 'SET NULL'     THEN 2\n"
-                  "                                       WHEN 'SET DEFAULT'  THEN 4\n"
-                  "                                       WHEN 'NO ACTION'    THEN 3\n"
-                  "                                       ELSE 0\n"
-                  "                                       END as update_rule\n"
-                  "      ,case ref.rdb$delete_Rule        WHEN 'RESTRICT'     THEN 1\n"
-                  "                                       WHEN 'CASCADE'      THEN 0\n"
-                  "                                       WHEN 'SET NULL'     THEN 2\n"
-                  "                                       WHEN 'SET DEFAULT'  THEN 4\n"
-                  "                                       WHEN 'NO ACTION'    THEN 3\n"
-                  "                                       ELSE 0\n"
-                  "                                       END as delete_rule\n"
-                  "  FROM rdb$relation_constraints con\n"
-                  "      ,rdb$ref_constraints ref\n"
-                  "      ,rdb$indices         idx\n"
-                  "      ,rdb$indices         cix\n"
-                  "      ,rdb$index_segments  seg\n"
-                  "      ,rdb$index_segments  psg\n"
-                  " WHERE con.rdb$constraint_name = ref.rdb$constraint_name\n"
-                  "   AND ref.rdb$const_name_uq   = idx.rdb$index_name\n"
-                  "   AND con.rdb$index_name      = cix.rdb$index_name\n"
-                  "   AND seg.rdb$index_name      = cix.rdb$index_name\n"
-                  "   AND psg.rdb$index_name      = idx.rdb$index_name\n"
-                  "   AND seg.rdb$field_position  = psg.rdb$field_position\n"
-                  "   AND con.rdb$constraint_type = 'FOREIGN KEY'";
-  if(!p_tablename.IsEmpty())
-  {
-    query += "\n   AND con.rdb$relation_name   = '" + p_tablename + "'";
-  }
-  if(!p_constraint.IsEmpty())
-  {
-    query += "\n   AND con.rdb$constraint_name = '" + p_constraint + "'";
-  }
-  return query;
-}
+  p_triggername.MakeUpper();
 
-// Get the SQL to determine the sequence state in the database
-CString 
-SQLInfoFirebird::GetSQLSequence(CString p_schema,CString p_tablename,CString p_postfix /*= "_seq"*/) const
-{
-  CString sequence = p_tablename + p_postfix;
-  sequence.MakeUpper();
-
-  CString sql = "SELECT rdb$generator_name as sequence_name\n" 
-                "      ,rdb$initial_value as current_value\n"
-                "      ,decode(rdb$generator_increment,1,1,0) as is_correct\n"
-                "  FROM rdb$generators\n"
-                " WHERE rdb$system_flag    = 0\n"
-                "   AND rdb$generator_name = '" + sequence + "'";
-  return sql;
-}
-
-// Create a sequence in the database
-CString 
-SQLInfoFirebird::GetSQLCreateSequence(CString /*p_schema*/,CString p_tablename,CString p_postfix /*= "_seq"*/,int p_startpos /*=1*/) const
-{
-  CString sequence = p_tablename + p_postfix;
   CString sql;
-  sql.Format("CREATE SEQUENCE %s START WITH %d",sequence.GetString(),p_startpos);
+  sql.Format("SELECT COUNT(*)\n"
+             "  FROM rdb$triggers\n"
+             " WHERE rdb$relation_name = '%s'\n"
+             "   AND rdb$trigger_name  = '%s'\n"
+             "   AND rdb$system_flag   = 0"
+            ,p_tablename.GetString()
+            ,p_triggername.GetString());
   return sql;
 }
 
-// Remove a sequence from the database
-CString 
-SQLInfoFirebird::GetSQLDropSequence(CString p_schema,CString p_tablename,CString p_postfix /*= "_seq"*/) const
-{
-  CString sequence = p_tablename + p_postfix;
-  CString sql = "DROP SEQUENCE " + sequence;
-  return sql;
-}
-
-// Grant rights on the sequence
 CString
-SQLInfoFirebird::GetSQLSequenceRights(CString /*p_schema*/,CString p_tableName,CString p_postfix /*="_seq"*/) const
+SQLInfoFirebird::GetCATALOGTriggerList(CString p_schema, CString p_tablename) const
 {
-  CString sql;
-  CString sequence = p_tableName + p_postfix;
-  sql.Format("GRANT USAGE ON %s TO %s",sequence.GetString(),GetGrantedUsers().GetString());
-  return sql;
-}
-
-// Query to remove a stored procedure
-void
-SQLInfoFirebird::DoRemoveProcedure(CString& p_procedureName) const
-{
-  SQLQuery query(m_database);
-  query.TryDoSQLStatement("DROP PROCEDURE " + p_procedureName);
+  return GetCATALOGTriggerAttributes(p_schema,p_tablename,"");
 }
 
 CString
-SQLInfoFirebird::GetSQLSessionAndTerminal() const
+SQLInfoFirebird::GetCATALOGTriggerAttributes(CString p_schema, CString p_tablename, CString p_triggername) const
 {
-  CString query = "SELECT mon.mon$attachment_id\n"
-                  "      ,mon.mon$timestamp\n"
-                  "      ,mon.mon$remote_address\n"
-                  "      ,mon.mon$remote_host\n"
-                  "      ,mon.mon$remote_process\n"
-                  "      ,mon.mon$remote_pid\n"
-                  "      ,mon.mon$remote_os_user\n"
-                  "  FROM mon$attachments mon\n"
-                  " WHERE mon$attachment_id = current_connection";
-  return query;
-}
+  p_schema.MakeUpper();
+  p_triggername.MakeUpper();
+  p_triggername.MakeUpper();
 
-// Get SQL to check if session number exists
-CString 
-SQLInfoFirebird::GetSQLSessionExists(CString p_sessionID) const
-{
-  CString query;
-  query.Format("SELECT COUNT(*)\n"
-               "  FROM mon$attachments\n"
-               " WHERE mon$system_flag = 0\n"
-               "   AND mon$attachment_id = %s",p_sessionID.GetString());
-  return query;
-}
-
-// Get a query for an unique session id
-CString
-SQLInfoFirebird::GetSQLUniqueSessionId(const CString& /*p_databaseName*/,const CString& /*p_sessionTable*/) const
-{
-  CString query = "SELECT distinct(mon$attachment_id)\n"
-                  "  FROM mon$attachments\n"
-                  " WHERE mon$system_flag = 0";
-  return query;
-}
-
-// Get query to find the extra logged in sessions
-CString
-SQLInfoFirebird::GetSQLSearchSession(const CString& /*p_databaseName*/,const CString& /*p_sessionTable*/) const
-{
-  // No way in Firebird to find that
-  return "";
-}
-
-// Does the named constraint exist in the database
-bool    
-SQLInfoFirebird::DoesConstraintExist(CString p_constraintName) const
-{
-  return false;
-}
-
-// returns a lock table statement
-CString 
-SQLInfoFirebird::GetSQLLockTable(CString& /*p_tableName*/,bool /*p_exclusive*/) const
-{
-  // Firebird does NOT have a LOCK-TABLE statement
-  return "";
-}
-
-// Query to optimize a table
-CString 
-SQLInfoFirebird::GetSQLOptimizeTable(CString& /*p_owner*/,CString& /*p_tableName*/,int& /*p_number*/)
-{
-  // Firebird has no SQL for this, it uses the "gfix -sweep <database>" tool
-  return "";
-}
-
-// Getting the fact that there is only **one** (1) user session in the database
-bool
-SQLInfoFirebird::GetOnlyOneUserSession()
-{
-  CString sql("SELECT COUNT(*)\n"
-              "  FROM MON$ATTACHMENTS\n"
-              " WHERE MON$SYSTEM_FLAG = 0");
-
-  SQLQuery query(m_database);
-  SQLVariant* sessions = query.DoSQLStatementScalar(sql);
-  return sessions->GetAsSLong() <= 1;
-}
-
-// Gets the triggers for a table
-CString
-SQLInfoFirebird::GetSQLTriggers(CString p_schema,CString p_table) const
-{
   CString sql;
   sql.Format("SELECT '' AS catalog_name\n"
              "      ,'%s' AS schema_name\n"
@@ -1163,51 +938,20 @@ SQLInfoFirebird::GetSQLTriggers(CString p_schema,CString p_table) const
              "  FROM rdb$triggers\n"
              " WHERE rdb$relation_name = '%s'\n"
              "   AND rdb$system_flag   = 0\n"
-             " ORDER BY rdb$trigger_sequence"
             ,p_schema.GetString()
-            ,p_table.GetString());
+            ,p_tablename.GetString());
+
+  if(!p_triggername.IsEmpty())
+  {
+    sql.AppendFormat("   AND rdb$trigger_name = '%s'\n",p_triggername.GetString());
+  }
+
+  sql += " ORDER BY rdb$trigger_sequence";
   return sql;
 }
 
-// SQL DDL STATEMENTS
-// ==================
-
 CString
-SQLInfoFirebird::GetCreateForeignKey(CString p_tablename,CString p_constraintname,CString p_column,CString p_refTable,CString p_primary)
-{
-  CString sql = "ALTER TABLE " + p_tablename + "\n"
-                "  ADD CONSTRAINT " + p_constraintname + "\n"
-                "      FOREIGN KEY (" + p_column + ")\n"
-                "      REFERENCES " + p_refTable + "(" + p_primary + ")";
-  return sql;
-}
-
-// Get the SQL to drop a view. If precursor is filled: run that SQL first!
-CString 
-SQLInfoFirebird::GetSQLDropView(CString /*p_schema*/,CString p_view,CString& p_precursor)
-{
-  p_view.MakeUpper();
-
-  // Firebird cannot drop a view if dependencies from stored procedures or functions
-  // still exist in the dependencies table. After Firebird 3.0 we need modification
-  // rights on this system catalog table!!
-  // Changes being that we re-create the view right away after the drop.
-  p_precursor = "DELETE FROM rdb$dependencies\n"
-                " WHERE rdb$depended_on_name = '" + p_view + "'\n"
-                "   AND rdb$depended_on_type = 0";
-  return "DROP VIEW " + p_view;
-}
-
-// Create or replace a database view
-CString 
-SQLInfoFirebird::GetSQLCreateOrReplaceView(CString /*p_schema*/,CString p_view,CString p_asSelect) const
-{
-  return "RECREATE VIEW " + p_view + "\n" + p_asSelect;
-}
-
-// Create or replace a trigger
-CString
-SQLInfoFirebird::CreateOrReplaceTrigger(MetaTrigger& p_trigger) const
+SQLInfoFirebird::GetCATALOGTriggerCreate(MetaTrigger& p_trigger) const
 {
   CString sql;
   sql.Format("CREATE OR ALTER TRIGGER %s FOR %s\n"
@@ -1261,6 +1005,341 @@ SQLInfoFirebird::CreateOrReplaceTrigger(MetaTrigger& p_trigger) const
   sql += p_trigger.m_source;
 
   return sql;
+}
+
+CString
+SQLInfoFirebird::GetCATALOGTriggerDrop(CString /*p_schema*/, CString /*p_tablename*/, CString p_triggername) const
+{
+  CString sql("DROP TRIGGER " + p_triggername);
+  return sql;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL SEQUENCE FUNCTIONS
+
+CString
+SQLInfoFirebird::GetCATALOGSequenceExists(CString /*p_schema*/, CString p_sequence) const
+{
+  p_sequence.MakeUpper();
+
+  CString sql = "SELECT COUNT(*)\n"
+                "  FROM rdb$generators\n"
+                " WHERE rdb$system_flag    = 0\n"
+                "   AND rdb$generator_name = '" + p_sequence + "'";
+  return sql;
+}
+
+CString
+SQLInfoFirebird::GetCATALOGSequenceAttributes(CString /*p_schema*/, CString p_sequence) const
+{
+  p_sequence.MakeUpper();
+
+  CString sql = "SELECT '' as catalog_name\n"
+                "       '' as schema_name\n"
+                "      ,rdb$generator_name      as sequence_name\n" 
+                "      ,rdb$initial_value       as current_value\n"
+                "      ,0                       as minimal_value\n"
+                "      ,rdb$generator_increment as increment\n"
+                "      ,0  as cache\n"
+                "      ,0  as cycle\n"
+                "      ,0  as ordering\n"
+                "  FROM rdb$generators\n"
+                " WHERE rdb$system_flag    = 0\n"
+                "   AND rdb$generator_name = '" + p_sequence + "'";
+  return sql;
+}
+
+CString
+SQLInfoFirebird::GetCATALOGSequenceCreate(MetaSequence& p_sequence) const
+{
+  CString sql;
+  sql.Format("CREATE SEQUENCE %s START WITH %d"
+            ,p_sequence.m_sequenceName.GetString()
+            ,p_sequence.m_currentValue);
+  return sql;
+}
+
+CString
+SQLInfoFirebird::GetCATALOGSequenceDrop(CString /*p_schema*/, CString p_sequence) const
+{
+  CString sql("DROP SEQUENCE " + p_sequence);
+  return sql;
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// SQL/PSM PERSISTENT STORED MODULES 
+//         Also called SPL or PL/SQL
+// o GetPSM<Object[s]><Function>
+//   -Procedures / Functions
+//   - Exists					GetPSMProcedureExists
+//   - List					  GetPSMProcedureList
+//   - Attributes
+//   - Create
+//   - Drop
+//
+// o PSMWORDS
+//   - Declare
+//   - Assignment(LET)
+//   - IF statement
+//   - FOR statement
+//   - WHILE / LOOP statement
+//   - CURSOR and friends
+//
+// o CALL the FUNCTION/PROCEDURE
+//
+//////////////////////////////////////////////////////////////////////////
+
+CString
+SQLInfoFirebird::GetPSMProcedureExists(CString /*p_schema*/, CString p_procedure) const
+{
+  p_procedure.MakeUpper();
+  CString query = ( "SELECT COUNT(*) "
+                    "  FROM RDB$PROCEDURES "
+                    " WHERE RDB$PROCEDURE_NAME ='" + p_procedure + "';");
+  return query;
+}
+
+CString
+SQLInfoFirebird::GetPSMProcedureList(CString p_schema) const
+{
+  return "";
+}
+
+CString
+SQLInfoFirebird::GetPSMProcedureAttributes(CString p_schema, CString p_procedure) const
+{
+  return "";
+}
+
+CString
+SQLInfoFirebird::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
+{
+  return "";
+}
+
+CString
+SQLInfoFirebird::GetPSMProcedureDrop(CString p_schema, CString p_procedure) const
+{
+  return "";
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// SESSIONS
+// - Sessions (No create and drop)
+//   - GetSessionMyself
+//   - GetSessionExists
+//   - GetSessionList
+//   - GetSessionAttributes
+//     (was GetSessionAndTerminal)
+//     (was GetSessionUniqueID)
+// - Transactions
+//   - GetSessionDeferredConstraints
+//   - GetSessionImmediateConstraints
+//
+//////////////////////////////////////////////////////////////////////////
+
+CString
+SQLInfoFirebird::GetSESSIONConstraintsDeferred() const
+{
+  // Firebird cannot defer constraints
+  return "";
+}
+
+CString
+SQLInfoFirebird::GetSESSIONConstraintsImmediate() const
+{
+  // Firebird constraints are always active
+  return "";
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// OLD INTERFACE
+//
+//////////////////////////////////////////////////////////////////////////
+
+// BOOLEANS EN STRINGS
+// ====================================================================
+
+// Get the SQL Query to create a temporary table from a select statement;
+CString 
+SQLInfoFirebird::GetSQLCreateTemporaryTable(CString& p_tablename,CString p_select) const
+{
+  return "CREATE GLOBAL TEMPORARY TABLE " + p_tablename + "\nAS " + p_select +
+         "ON COMMIT PRESERVE ROWS";
+}
+
+// Get the SQL query to remove a temporary table
+CString
+SQLInfoFirebird::GetSQLRemoveTemporaryTable(CString& p_tablename,int& p_number) const
+{
+  // 'Simply' a drop from a table
+  p_number += 1;
+  return "DROP TABLE "     + p_tablename + ";\n";
+}
+
+// Getting the SQL query to select into a temporary table
+CString 
+SQLInfoFirebird::GetSQLSelectIntoTemp(CString& p_tablename,CString& p_select) const
+{
+  return "INSERT INTO " + p_tablename + "\n" + p_select + ";\n";
+}
+
+bool
+SQLInfoFirebird::GetCodeIfStatementBeginEnd() const
+{
+  // IF THEN ELSE END IF; always needs a BEGIN/END
+  return true;
+}
+
+// End of the IF statement
+CString 
+SQLInfoFirebird::GetCodeEndIfStatement() const
+{
+  return "\n";
+}
+
+CString 
+SQLInfoFirebird::GetAssignmentStatement(const CString& p_destiny,const CString& p_source) const
+{
+  return p_destiny + " = " + p_source + ";";
+}
+
+
+// Code to start a while loop
+CString
+SQLInfoFirebird::GetStartWhileLoop(CString p_condition) const
+{
+  return "WHILE " + p_condition + " LOOP\n";
+}
+
+// Code to end a WHILE loop
+CString
+SQLInfoFirebird::GetEndWhileLoop() const
+{
+  return "END LOOP;\n";
+}
+
+// The fact that a SELECT **must** be between parenthesis for an assignment
+bool 
+SQLInfoFirebird::GetAssignmentSelectParenthesis() const
+{
+  // waarde = (SELECT max kenmerk FROM tabel);
+  return true;
+}
+
+// SQL CATALOG QUERIES
+// ====================================================================
+
+// Query to remove a stored procedure
+void
+SQLInfoFirebird::DoRemoveProcedure(CString& p_procedureName) const
+{
+  SQLQuery query(m_database);
+  query.TryDoSQLStatement("DROP PROCEDURE " + p_procedureName);
+}
+
+CString
+SQLInfoFirebird::GetSQLSessionAndTerminal() const
+{
+  CString query = "SELECT mon.mon$attachment_id\n"
+                  "      ,mon.mon$timestamp\n"
+                  "      ,mon.mon$remote_address\n"
+                  "      ,mon.mon$remote_host\n"
+                  "      ,mon.mon$remote_process\n"
+                  "      ,mon.mon$remote_pid\n"
+                  "      ,mon.mon$remote_os_user\n"
+                  "  FROM mon$attachments mon\n"
+                  " WHERE mon$attachment_id = current_connection";
+  return query;
+}
+
+// Get SQL to check if session number exists
+CString 
+SQLInfoFirebird::GetSQLSessionExists(CString p_sessionID) const
+{
+  CString query;
+  query.Format("SELECT COUNT(*)\n"
+               "  FROM mon$attachments\n"
+               " WHERE mon$system_flag = 0\n"
+               "   AND mon$attachment_id = %s",p_sessionID.GetString());
+  return query;
+}
+
+// Get a query for an unique session id
+CString
+SQLInfoFirebird::GetSQLUniqueSessionId(const CString& /*p_databaseName*/,const CString& /*p_sessionTable*/) const
+{
+  CString query = "SELECT distinct(mon$attachment_id)\n"
+                  "  FROM mon$attachments\n"
+                  " WHERE mon$system_flag = 0";
+  return query;
+}
+
+// Get query to find the extra logged in sessions
+CString
+SQLInfoFirebird::GetSQLSearchSession(const CString& /*p_databaseName*/,const CString& /*p_sessionTable*/) const
+{
+  // No way in Firebird to find that
+  return "";
+}
+
+// returns a lock table statement
+CString 
+SQLInfoFirebird::GetSQLLockTable(CString& /*p_tableName*/,bool /*p_exclusive*/) const
+{
+  // Firebird does NOT have a LOCK-TABLE statement
+  return "";
+}
+
+// Query to optimize a table
+CString 
+SQLInfoFirebird::GetSQLOptimizeTable(CString& /*p_owner*/,CString& /*p_tableName*/,int& /*p_number*/)
+{
+  // Firebird has no SQL for this, it uses the "gfix -sweep <database>" tool
+  return "";
+}
+
+// Getting the fact that there is only **one** (1) user session in the database
+bool
+SQLInfoFirebird::GetOnlyOneUserSession()
+{
+  CString sql("SELECT COUNT(*)\n"
+              "  FROM MON$ATTACHMENTS\n"
+              " WHERE MON$SYSTEM_FLAG = 0");
+
+  SQLQuery query(m_database);
+  SQLVariant* sessions = query.DoSQLStatementScalar(sql);
+  return sessions->GetAsSLong() <= 1;
+}
+
+// SQL DDL STATEMENTS
+// ==================
+
+// Get the SQL to drop a view. If precursor is filled: run that SQL first!
+CString 
+SQLInfoFirebird::GetSQLDropView(CString /*p_schema*/,CString p_view,CString& p_precursor)
+{
+  p_view.MakeUpper();
+
+  // Firebird cannot drop a view if dependencies from stored procedures or functions
+  // still exist in the dependencies table. After Firebird 3.0 we need modification
+  // rights on this system catalog table!!
+  // Changes being that we re-create the view right away after the drop.
+  p_precursor = "DELETE FROM rdb$dependencies\n"
+                " WHERE rdb$depended_on_name = '" + p_view + "'\n"
+                "   AND rdb$depended_on_type = 0";
+  return "DROP VIEW " + p_view;
+}
+
+// Create or replace a database view
+CString 
+SQLInfoFirebird::GetSQLCreateOrReplaceView(CString /*p_schema*/,CString p_view,CString p_asSelect) const
+{
+  return "RECREATE VIEW " + p_view + "\n" + p_asSelect;
 }
 
 // SQL DDL ACTIONS

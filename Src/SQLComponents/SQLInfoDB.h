@@ -49,38 +49,6 @@ class SQLQuery;
 // Does not constrict every SQL RDBMS's, but some have multiple!!
 #define SQLINFO_MAX_COLUMNS  8
 
-// DBForeign is used to store the current state 
-// of the database foreign key constraints of a table
-typedef struct _dbForeign
-{
-  CString m_constraintname;
-  CString m_schema;
-  CString m_tablename;
-  CString m_column;
-  CString m_primaryTable;
-  CString m_primaryColumn;
-  bool    m_enabled;            // yes/no
-  bool    m_deferrable;         // yes/no
-  bool    m_initiallyDeffered;  // yes/no
-  int     m_match;              // 0=Full, 1=partial, 2=simple
-  int     m_updateRule;         // 0=restrict, 1=cascade, 2=set null, 3=set default, 4=No action
-  int     m_deleteRule;         // 0=restrict, 1=cascade, 2=set null, 3=set default, 4=No action
-}
-DBForeign;
-
-// DBIndex is used to store the current state
-// of the database indices and columns of a table
-typedef struct _dbIndex
-{
-  CString m_indexName;    // Name of the total index
-  CString m_column;       // Column name in the index
-  int     m_position;     // Position of column in the index
-  bool    m_unique;       // 1 = unique, null,0 if not
-  bool    m_descending;   // true if DESC, otherwise ASC
-  CString m_source;       // Optional expression source
-}
-DBIndex;
-
 class SQLInfoDB : public SQLInfo
 {
 public:
@@ -103,153 +71,100 @@ public:
   // GENERALS (Strings & Booleans) 
   //   o GetRDBMS<x>              (boolean,string)
   //   o GetKEYWORD<x>            (string)
-  //   o GetSQL<special-process>  (sql-string)
+  //   o GetSQL<special-process>  (SQL-string)
   //
   //////////////////////////////////////////////////////////////////////////
 
   // Get the database type
-  // virtual DatabaseType GetDatabaseType() const = 0;
   virtual DatabaseType GetRDBMSDatabaseType() const = 0;
 
   // The name of the database vendor
-  // virtual CString GetDatabaseVendorName() const = 0;
   virtual CString GetRDBMSVendorName() const = 0;
 
   // Get the physical database name
-  // virtual CString GetPhysicalDatabaseName() const = 0;
   virtual CString GetRDBMSPhysicalDatabaseName() const = 0;
 
   // System catalog is stored in uppercase in the database?
-  // virtual bool IsCatalogUpper() const = 0;
   virtual bool GetRDBMSIsCatalogUpper() const = 0;
 
   // System catalog supports full ISO schemas (same tables per schema)
-  // virtual bool GetUnderstandsSchemas() const = 0;
   virtual bool GetRDBMSUnderstandsSchemas() const = 0;
 
   // Supports database/ODBCdriver comments in SQL
-  // virtual bool SupportsDatabaseComments() const = 0;
   virtual bool GetRDBMSSupportsComments() const = 0;
 
   // Database can defer constraints until the end of a transaction
-  // virtual bool SupportsDeferredConstraints() const = 0;
   virtual bool GetRDBMSSupportsDeferredConstraints() const = 0;
 
   // Database has ORDER BY with an expression, e.g. ORDER BY UPPER(columnname)
   // Work-around is "SELECT UPPER(columnname) AS something.....ORDER BY something
-  // virtual bool SupportsOrderByExpression() const = 0;
   virtual bool GetRDBMSSupportsOrderByExpression() const = 0;
 
   // Supports the ODBC escape sequence {[?=] CALL procedure (?,?,?)}
-  // virtual bool SupportsODBCCallEscapes() const = 0;
   virtual bool GetRDBMSSupportsODBCCallEscapes() const = 0;
 
-  // Catalogs query for the default value of a table's column
-  // virtual CString GetSQLStringDefaultValue(CString p_tableName,CString p_columnName) const = 0;
-  // -> Goes to "GetCATALOGColumnAttributes"
-
   // If the database does not support the datatype TIME, it can be implemented as a DECIMAL
-  //virtual bool GetTimeIsDecimal() const = 0;
   // BEWARE BOOL INVERTED!!
   virtual bool GetRDBMSSupportsDatatypeTime() const = 0;
 
   // If the database does not support the datatype INTERVAL, it can be implemented as a DECIMAL
-  // virtual bool GetIntervalIsDecimal() const = 0;
   // BEWARE BOOL INVERTED!!
   virtual bool GetRDBMSSupportsDatatypeInterval() const = 0;
 
   // Gets the maximum length of an SQL statement
-  // virtual unsigned long GetMaxStatementLength() const = 0;
   virtual unsigned long GetRDBMSMaxStatementLength() const = 0;
 
   // KEYWORDS
 
   // Keyword for the current date and time
-  // virtual CString GetSystemDateTimeKeyword() const = 0;
   virtual CString GetKEYWORDCurrentTimestamp() const = 0;
 
   // String for the current date
-  // virtual CString GetSystemDateString() const = 0;
   virtual CString GetKEYWORDCurrentDate() const = 0;
 
   // Get the concatenation operator
-  // virtual CString GetConcatanationOperator() const = 0;
   virtual CString GetKEYWORDConcatanationOperator() const = 0;
 
   // Get quote character for strings
-  // virtual CString GetQuoteCharacter() const = 0;
   virtual CString GetKEYWORDQuoteCharacter() const = 0;
 
   // Get default NULL for parameter list input
-  // virtual CString GetDefaultNULL() const = 0;
   virtual CString GetKEYWORDParameterDefaultNULL() const = 0;
 
   // Parameter is for INPUT and OUTPUT in parameter list
-  // virtual CString GetParameterINOUT() const = 0;
   virtual CString GetKEYWORDParameterINOUT() const = 0;
 
   // Parameter is for OUTPUT only in parameter list
-  // virtual CString GetParameterOUT() const = 0;
   virtual CString GetKEYWORDParameterOUT() const = 0;
 
   // Get datatype of the IDENTITY primary key in a Network database
-  // virtual CString GetPrimaryKeyType() const = 0;
   virtual CString GetKEYWORDNetworkPrimaryKeyType() const = 0;
 
   // Get datatype for Moment
-  // virtual CString GetDatetimeYearToSecondType() const = 0;
   virtual CString GetKEYWORDTypeTimestamp() const = 0;
 
-  // Separator between two alter-constraints in an alter-table statement
-  // virtual CString GetAlterConstraintSeparator() const = 0;
-
-  // DROPPED SUPPORT FOR OLD STYLE (+) LEFT OUTER JOIN SUPPORT
-  // ALL DATABASES NOW SUPPORT ISO SYTLE INNER/OUTER JOIN
-  // Inner Join Keyword
-  // virtual CString GetInnerJoinKeyword() const = 0;
-  // Outer join keyword
-  // virtual CString GetOuterJoinKeyword() const = 0;
-  // Inner Join Keyword for use in views.
-  // virtual CString GetViewInnerJoinKeyword() const = 0;
-  // Outer join keyword for use in views
-  // virtual CString GetViewOuterJoinKeyword() const = 0;
-  // Get the closure for an outer-join
-  // virtual CString GetOuterJoinClosure() const = 0;
-  // Get the special Outer Join sign for the while-conditions
-  // virtual CString GetOuterJoinSign() const = 0;
-
   // Prefix for a parameter in a stored procedure
-  // virtual CString  GetSPParamPrefix() const = 0;
   virtual CString  GetKEYWORDParameterPrefix() const = 0;
 
   // Get select part to add new record identity to a table
   // Can be special column like 'OID' or a sequence select
-  // virtual CString GetIdentityString(CString& p_tablename,CString p_postfix = "_seq") const = 0;
   virtual CString GetKEYWORDIdentityString(CString& p_tablename,CString p_postfix = "_seq") const = 0;
 
-  // Code to create a temporary table (qualifier)
-  // virtual CString GetCodeTemporaryTable() const = 0;
-
   // Gets the UPPER function
-  // virtual CString GetUpperFunction(CString& p_expression) const = 0;
   virtual CString GetKEYWORDUpper(CString& p_expression) const = 0;
 
   // Gets the construction for 1 minute ago
-  // virtual CString GetInterval1MinuteAgo() const = 0;
   virtual CString GetKEYWORDInterval1MinuteAgo() const = 0;
 
   // Gets the Not-NULL-Value statement of the database
-  // virtual CString GetNVLStatement(CString& p_test,CString& p_isnull) const = 0;
   virtual CString GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) const = 0;
 
   // SQL for sub processing
 
   // Code prefix for a select-into-temp
-  // virtual CString GetSelectIntoTempClausePrefix(CString p_tableName) const = 0;
   virtual CString GetSQLSelectIntoTempPrefix(CString p_tableName) const = 0;
 
   // Code suffix for after a select-into-temp
-  // virtual CString GetSelectIntoTempClauseSuffix(CString p_tableName) const = 0;
   virtual CString GetSQLSelectIntoTempSuffix(CString p_tableName) const = 0;
   
   // Gets the construction / select for generating a new serial identity
@@ -258,18 +173,13 @@ public:
   // Gets the construction / select for the resulting effective generated serial
   virtual CString GetSQLEffectiveSerial(CString p_identity) const = 0;
 
-  // Gets the subtransaction commands
-  // virtual CString GetStartSubTransaction(CString p_savepointName) const = 0;
-  // virtual CString GetCommitSubTransaction(CString p_savepointName) const = 0;
-  // virtual CString GetRollbackSubTransaction(CString p_savepointName) const = 0;
+  // Gets the sub-transaction commands
   virtual CString GetSQLStartSubTransaction   (CString p_savepointName) const = 0;
   virtual CString GetSQLCommitSubTransaction  (CString p_savepointName) const = 0;
   virtual CString GetSQLRollbackSubTransaction(CString p_savepointName) const = 0;
 
   // FROM-Part for a query to select only 1 (one) record
-  // virtual CString GetDualClause() const = 0;
   virtual CString GetSQLFromDualClause() const = 0;
-
 
   //////////////////////////////////////////////////////////////////////////
   //
@@ -282,9 +192,9 @@ public:
   //   - PrimaryKey
   //   - ForeignKey
   //   - Trigger
+  //   - Sequence
   //   - TemporaryTable 
   //   - View
-  //   - Sequence
   //  Functions per object type
   //   - Exists
   //   - List
@@ -325,25 +235,42 @@ public:
   virtual CString GetCATALOGPrimaryDrop      (CString p_schema,CString p_tablename,CString p_constraintname) const = 0;
   // All foreign key functions
   virtual CString GetCATALOGForeignExists    (CString p_schema,CString p_tablename,CString p_constraintname) const = 0;
-  virtual CString GetCATALOGForeignList      (CString p_schema,CString p_tablename) const = 0;
-  virtual CString GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraintname) const = 0;
+  virtual CString GetCATALOGForeignList      (CString p_schema,CString p_tablename,int p_maxColumns = SQLINFO_MAX_COLUMNS) const = 0;
+  virtual CString GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraintname,int p_maxColumns = SQLINFO_MAX_COLUMNS) const = 0;
   virtual CString GetCATALOGForeignCreate    (MForeignMap& p_foreigns) const = 0;
+  virtual CString GetCATALOGForeignAlter     (MForeignMap& p_original,MForeignMap& p_requested) const = 0;
   virtual CString GetCATALOGForeignDrop      (CString p_schema,CString p_tablename,CString p_constraintname) const = 0;
+  // All trigger functions
+  virtual CString GetCATALOGTriggerExists    (CString p_schema,CString p_tablename,CString p_triggername) const = 0;
+  virtual CString GetCATALOGTriggerList      (CString p_schema,CString p_tablename) const = 0;
+  virtual CString GetCATALOGTriggerAttributes(CString p_schema,CString p_tablename,CString p_triggername) const = 0;
+  virtual CString GetCATALOGTriggerCreate    (MetaTrigger& p_trigger) const = 0;
+  virtual CString GetCATALOGTriggerDrop      (CString p_schema,CString p_tablename,CString p_triggername) const = 0;
+  // All sequence functions
+  virtual CString GetCATALOGSequenceExists    (CString p_schema,CString p_sequence) const = 0;
+  virtual CString GetCATALOGSequenceAttributes(CString p_schema,CString p_sequence) const = 0;
+  virtual CString GetCATALOGSequenceCreate    (MetaSequence& p_sequence) const = 0;
+  virtual CString GetCATALOGSequenceDrop      (CString p_schema,CString p_sequence) const = 0;
 
 
   //////////////////////////////////////////////////////////////////////////
   //
   // SESSIONS
-  // -Sessions (No create and drop)
+  // - Sessions (No create and drop)
   //   - GetSessionMyself
   //   - GetSessionExists
   //   - GetSessionList
   //   - GetSessionAttributes
   //     (was GetSessionAndTerminal)
   //     (was GetSessionUniqueID)
+  // - Transactions
+  //   - GetSessionConstraintsDeferred
+  //   - GetSessionConstraintsImmediate
   //
   //////////////////////////////////////////////////////////////////////////
 
+  virtual CString GetSESSIONConstraintsDeferred()  const = 0;
+  virtual CString GetSESSIONConstraintsImmediate() const = 0;
 
   //////////////////////////////////////////////////////////////////////////
   //
@@ -353,9 +280,9 @@ public:
   //   -Procedures / Functions
   //   - Exists					GetPSMProcedureExists
   //   - List					  GetPSMProcedureList
+  //   - Attributes
   //   - Create
   //   - Drop
-  //   - GetAttributes
   //
   // o PSMWORDS
   //   - Declare
@@ -369,7 +296,11 @@ public:
   //
   //////////////////////////////////////////////////////////////////////////
 
-
+  virtual CString GetPSMProcedureExists    (CString p_schema,CString p_procedure) const = 0;
+  virtual CString GetPSMProcedureList      (CString p_schema) const = 0;
+  virtual CString GetPSMProcedureAttributes(CString p_schema,CString p_procedure) const = 0;
+  virtual CString GetPSMProcedureCreate    (MetaProcedure& p_procedure) const = 0;
+  virtual CString GetPSMProcedureDrop      (CString p_schema,CString p_procedure) const = 0;
 
   //////////////////////////////////////////////////////////////////////////
   //
@@ -378,43 +309,20 @@ public:
   //////////////////////////////////////////////////////////////////////////
 
 
-  // BOOLEANS AND STRINGS
+  // Remove a stored procedure from the database
+  virtual void    DoRemoveProcedure(CString& p_procedureName) const = 0;
+
+  // Maak een procedure aan in de database
+  virtual void    DoMakeProcedure(CString& p_procName, CString p_table, bool p_noParameters, CString& p_codeBlock) = 0;
+
+  // Get the SPL source code for a stored procedure as registered in the database
+  virtual CString GetSPLSourcecodeFromDatabase(const CString& p_owner, const CString& p_procName) const = 0;
+
+
+
 
   // SQL CATALOG QUERIES
   // ===================
-
-  // Get SQL to check if a stored procedure already exists in the database
-  virtual CString GetSQLStoredProcedureExists(CString& p_name) const = 0;
-
-  // Gets DEFERRABLE for a constraint (or nothing)
-  virtual CString GetConstraintDeferrable () const = 0;
-
-  // Defer Constraints until the next COMMIT;
-  virtual CString GetSQLDeferConstraints() const = 0;
-
-  // Reset constraints back to immediate
-  virtual CString GetSQLConstraintsImmediate() const = 0;
-
-  // Get SQL to select all constraints on a table from the catalog
-  virtual CString GetSQLGetConstraintsForTable(CString& p_tableName) const = 0;
-
-  // Get SQL to read the referential constraints from the catalog
-  virtual CString GetSQLTableReferences(CString p_schema,CString p_tablename,CString p_constraint = "",int p_maxColumns = SQLINFO_MAX_COLUMNS) const = 0;
-
-  // Get the SQL to determine the sequence state in the database
-  virtual CString GetSQLSequence(CString p_schema,CString p_tablename,CString p_postfix = "_seq") const = 0;
-
-  // Create a sequence in the database
-  virtual CString GetSQLCreateSequence(CString p_schema,CString p_tablename,CString p_postfix = "_seq",int p_startpos = 1) const = 0;
-
-  // Remove a sequence from the database
-  virtual CString GetSQLDropSequence(CString p_schema,CString p_tablename,CString p_postfix = "_seq") const = 0;
-
-  // Gets the SQL for the rights on the sequence
-  virtual CString GetSQLSequenceRights(CString p_schema,CString p_tableName,CString p_postfix = "_seq") const = 0;
-
-  // Remove a stored procedure from the database
-  virtual void    DoRemoveProcedure(CString& p_procedureName) const = 0;
 
   // Get SQL for your session and controlling terminal
   virtual CString GetSQLSessionAndTerminal() const = 0;
@@ -428,9 +336,6 @@ public:
   // Get SQL for searching a session
   virtual CString GetSQLSearchSession(const CString& p_databaseName,const CString& p_sessionTable) const = 0;
 
-  // Does the named constraint exist in the database
-  virtual bool    DoesConstraintExist(CString p_constraintName) const = 0;
-
   // Get SQL to lock  a table 
   virtual CString GetSQLLockTable(CString& p_tableName,bool p_exclusive) const = 0;
 
@@ -439,25 +344,6 @@ public:
 
   // Getting the fact that there is only **one** (1) user session in the database
   virtual bool    GetOnlyOneUserSession() = 0;
-
-  // Gets the triggers for a table
-  virtual CString GetSQLTriggers(CString m_schema,CString p_table) const = 0;
-
-
-  // New Interface PrimaryKey / ForeignKey
-  // GetCATALOGPrimaryKeyList
-  // GetCATALOGPrimaryKeyCreate
-  // GetCATALOGForeignKeyCreate
-  // GetCATALOGForeignKeyAlter
-
-  // Get the sql (if possible) to change the foreign key constraint
-  virtual CString GetSQLAlterForeignKey(DBForeign& p_origin,DBForeign& p_requested) const = 0;
-
-
-  // New interface: Obect = TempTable
-  // GetCATALOGTempTableCreate
-  // GetCATALOGTempTableDrop
-  // GetCATALOGTempTableInsert
 
   // Get a query to create a temporary table from a select statement
   virtual CString GetSQLCreateTemporaryTable(CString& p_tablename,CString p_select) const = 0;
@@ -472,17 +358,11 @@ public:
   // SQL DDL STATEMENTS
   // ==================
 
-  // Add a foreign key to a table
-  virtual CString GetCreateForeignKey(CString p_tablename,CString p_constraintname,CString p_column,CString p_refTable,CString p_primary) = 0;
-
   // Get the SQL to drop a view. If precursor is filled: run that SQL first!
   virtual CString GetSQLDropView(CString p_schema,CString p_view,CString& p_precursor) = 0;
 
   // Create or replace a database view
   virtual CString GetSQLCreateOrReplaceView(CString p_schema,CString p_view,CString p_asSelect) const = 0;
-
-  // Create or replace a trigger
-  virtual CString CreateOrReplaceTrigger(MetaTrigger& p_trigger) const = 0;
 
   // SQL DDL OPERATIONS
   // ==================
@@ -504,9 +384,6 @@ public:
 
   // Remove a temporary table
   virtual void    DoRemoveTemporaryTable(CString& p_tableName) const = 0;
-
-  // Maak een procedure aan in de database
-  virtual void    DoMakeProcedure(CString& p_procName,CString p_table,bool p_noParameters,CString& p_codeBlock) = 0;
 
   // PERSISTENT-STORED MODULES (SPL / PL/SQL)
   // ====================================================================
@@ -568,9 +445,6 @@ public:
   // Stripped data for the parameter binding
   virtual CString GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const = 0;
 
-  // Get the SPL source code for a stored procedure as registered in the database
-  virtual CString GetSPLSourcecodeFromDatabase(const CString& p_owner,const CString& p_procName) const = 0;
-  
   // Get the SPL datatype for integer
   virtual CString GetSPLIntegerType() const = 0;
   

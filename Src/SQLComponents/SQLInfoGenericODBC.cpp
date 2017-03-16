@@ -625,18 +625,24 @@ SQLInfoGenericODBC::GetCATALOGPrimaryDrop(CString p_schema,CString p_tablename,C
 CString
 SQLInfoGenericODBC::GetCATALOGForeignExists(CString p_schema,CString p_tablename,CString p_constraintname) const
 {
+  // Cannot be implemented for generic ODBC
+  // Use SQLForeignKeys instead (see SQLInfo class)
   return "";
 }
 
 CString
-SQLInfoGenericODBC::GetCATALOGForeignList(CString p_schema,CString p_tablename) const
+SQLInfoGenericODBC::GetCATALOGForeignList(CString p_schema,CString p_tablename,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
 {
+  // Cannot be implemented for generic ODBC
+  // Use SQLForeignKeys instead (see SQLInfo class)
   return "";
 }
 
 CString
-SQLInfoGenericODBC::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraintname) const
+SQLInfoGenericODBC::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraintname,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
 {
+  // Cannot be implemented for generic ODBC
+  // Use SQLForeignKeys instead (see SQLInfo class)
   return "";
 }
 
@@ -725,17 +731,232 @@ SQLInfoGenericODBC::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
 }
 
 CString
+SQLInfoGenericODBC::GetCATALOGForeignAlter(MForeignMap& p_original,MForeignMap& p_requested) const
+{
+  // Make sure we have both
+  if(p_original.empty() || p_requested.empty())
+  {
+    return "";
+  }
+
+  MetaForeign& original  = p_original.front();
+  MetaForeign& requested = p_requested.front();
+
+  // Construct the correct tablename
+  CString table(original.m_fkTableName);
+  if(!original.m_fkSchemaName.IsEmpty())
+  {
+    table = original.m_fkSchemaName + "." + table;
+  }
+
+  // The base foreign key command
+  CString query = "ALTER TABLE " + table + "\n"
+                  "ALTER CONSTRAINT " + original.m_foreignConstraint + "\n";
+
+  // Add all relevant options
+  if(original.m_deferrable != requested.m_deferrable)
+  {
+    switch(requested.m_deferrable)
+    {
+      case SQL_INITIALLY_DEFERRED:  query += "\n      INITIALLY DEFERRED"; break;
+      case SQL_INITIALLY_IMMEDIATE: query += "\n      DEFERRABLE";         break;
+      case SQL_NOT_DEFERRABLE:      query += "\n      NOT DEFERRABLE";     break;
+      default:                      break;
+    }
+  }
+  if(original.m_match != requested.m_match)
+  {
+    switch(requested.m_match)
+    {
+      case SQL_MATCH_FULL:    query += "\n      MATCH FULL";    break;
+      case SQL_MATCH_PARTIAL: query += "\n      MATCH PARTIAL"; break;
+      case SQL_MATCH_SIMPLE:  query += "\n      MATCH SIMPLE";  break;
+    }
+  }
+  if(original.m_updateRule != requested.m_updateRule)
+  {
+    switch(requested.m_updateRule)
+    {
+      case SQL_CASCADE:     query += "\n      ON UPDATE CASCADE";     break;
+      case SQL_SET_NULL:    query += "\n      ON UPDATE SET NULL";    break;
+      case SQL_SET_DEFAULT: query += "\n      ON UPDATE SET DEFAULT"; break;
+      case SQL_NO_ACTION:   query += "\n      ON UPDATE NO ACTION";   break;
+      default:              // In essence: ON UPDATE RESTRICT, but that's already the default
+      case SQL_RESTRICT:    break;
+    }
+  }
+  if(original.m_deleteRule != requested.m_deleteRule)
+  {
+    switch(requested.m_deleteRule)
+    {
+      case SQL_CASCADE:     query += "\n      ON DELETE CASCADE";     break;
+      case SQL_SET_NULL:    query += "\n      ON DELETE SET NULL";    break;
+      case SQL_SET_DEFAULT: query += "\n      ON DELETE SET DEFAULT"; break;
+      case SQL_NO_ACTION:   query += "\n      ON DELETE NO ACTION";   break;
+      default:              // In essence: ON DELETE RESTRICT, but that's already the default
+      case SQL_RESTRICT:    break;
+    }
+  }
+  return query;
+}
+
+CString
 SQLInfoGenericODBC::GetCATALOGForeignDrop(CString p_schema,CString p_tablename,CString p_constraintname) const
+{
+  CString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+              " DROP CONSTRAINT " + p_constraintname);
+  return sql;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL TRIGGER FUNCTIONS
+
+CString
+SQLInfoGenericODBC::GetCATALOGTriggerExists(CString p_schema, CString p_tablename, CString p_triggername) const
+{
+  // Not standard enough
+  return "";
+}
+
+CString
+SQLInfoGenericODBC::GetCATALOGTriggerList(CString p_schema, CString p_tablename) const
+{
+  // Not standard enough
+  return "";
+}
+
+CString
+SQLInfoGenericODBC::GetCATALOGTriggerAttributes(CString p_schema, CString p_tablename, CString p_triggername) const
+{
+  // Not standard enough
+  return "";
+}
+
+CString
+SQLInfoGenericODBC::GetCATALOGTriggerCreate(MetaTrigger& /*p_trigger*/) const
+{
+  // Not standard enough
+  return "";
+}
+
+CString
+SQLInfoGenericODBC::GetCATALOGTriggerDrop(CString p_schema, CString p_tablename, CString p_triggername) const
+{
+  // Not standard enough
+  return "";
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL SEQUENCE FUNCTIONS
+
+CString
+SQLInfoGenericODBC::GetCATALOGSequenceExists(CString p_schema, CString p_sequence) const
+{
+  return "";
+}
+
+CString
+SQLInfoGenericODBC::GetCATALOGSequenceAttributes(CString p_schema, CString p_sequence) const
+{
+  return "";
+}
+
+CString
+SQLInfoGenericODBC::GetCATALOGSequenceCreate(MetaSequence& /*p_sequence*/) const
+{
+  return "";
+}
+
+CString
+SQLInfoGenericODBC::GetCATALOGSequenceDrop(CString p_schema, CString p_sequence) const
 {
   return "";
 }
 
 //////////////////////////////////////////////////////////////////////////
 //
-// SQL/PSM
+// SQL/PSM PERSISTENT STORED MODULES 
+//         Also called SPL or PL/SQL
+// o GetPSM<Object[s]><Function>
+//   -Procedures / Functions
+//   - Exists					GetPSMProcedureExists
+//   - List					  GetPSMProcedureList
+//   - Attributes
+//   - Create
+//   - Drop
+//
+// o PSMWORDS
+//   - Declare
+//   - Assignment(LET)
+//   - IF statement
+//   - FOR statement
+//   - WHILE / LOOP statement
+//   - CURSOR and friends
+//
+// o CALL the FUNCTION/PROCEDURE
 //
 //////////////////////////////////////////////////////////////////////////
 
+CString
+SQLInfoGenericODBC::GetPSMProcedureExists(CString p_schema, CString p_procedure) const
+{
+  return "";
+}
+
+CString
+SQLInfoGenericODBC::GetPSMProcedureList(CString p_schema) const
+{
+  return "";
+}
+
+CString
+SQLInfoGenericODBC::GetPSMProcedureAttributes(CString p_schema, CString p_procedure) const
+{
+  return "";
+}
+
+CString
+SQLInfoGenericODBC::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
+{
+  return "";
+}
+
+CString
+SQLInfoGenericODBC::GetPSMProcedureDrop(CString p_schema, CString p_procedure) const
+{
+  return "";
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// SESSIONS
+// - Sessions (No create and drop)
+//   - GetSessionMyself
+//   - GetSessionExists
+//   - GetSessionList
+//   - GetSessionAttributes
+//     (was GetSessionAndTerminal)
+//     (was GetSessionUniqueID)
+// - Transactions
+//   - GetSessionDeferredConstraints
+//   - GetSessionImmediateConstraints
+//
+//////////////////////////////////////////////////////////////////////////
+
+CString
+SQLInfoGenericODBC::GetSESSIONConstraintsDeferred() const
+{
+  // ISO SQL does not know how to defer constraints
+  return "";
+}
+
+CString
+SQLInfoGenericODBC::GetSESSIONConstraintsImmediate() const
+{
+  // ISO SQL constraints are always active
+  return "";
+}
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -769,67 +990,6 @@ CString
 SQLInfoGenericODBC::GetSQLSelectIntoTemp(CString& p_tablename,CString& p_select) const
 {
   return "INSERT INTO " + p_tablename + "\n" + p_select + ";\n";
-}
-
-// Get the sql (if possible) to change the foreign key constraint
-CString 
-SQLInfoGenericODBC::GetSQLAlterForeignKey(DBForeign& p_origin,DBForeign& p_requested) const
-{
-  // Construct the correct tablename
-  CString table(p_origin.m_tablename);
-  if(!p_origin.m_schema.IsEmpty())
-  {
-    table = p_origin.m_schema + "." + table;
-  }
-
-  // The base foreign key command
-  CString query = "ALTER TABLE " + table + "\n"
-                  "ALTER CONSTRAINT " + p_origin.m_constraintname + "\n";
-
-  // Add all relevant options
-  if(p_origin.m_deferrable != p_requested.m_deferrable)
-  {
-    query.AppendFormat("\n      %sDEFERRABLE",p_requested.m_deferrable == 0 ? "NOT " : "");
-  }
-  if(p_origin.m_initiallyDeffered != p_requested.m_initiallyDeffered)
-  {
-    query += "\n      INITIALLY ";
-    query += p_requested.m_initiallyDeffered ? "DEFERRED" : "IMMEDIATE";
-  }
-  if(p_origin.m_match != p_requested.m_match)
-  {
-    switch(p_requested.m_match)
-    {
-      case 0: query += "\n      MATCH FULL";    break;
-      case 1: query += "\n      MATCH PARTIAL"; break;
-      case 2: query += "\n      MATCH SIMPLE";  break;
-    }
-  }
-  if(p_origin.m_updateRule != p_requested.m_updateRule)
-  {
-    switch(p_requested.m_updateRule)
-    {
-      case 1: query += "\n      ON UPDATE CASCADE";     break;
-      case 2: query += "\n      ON UPDATE SET NULL";    break;
-      case 3: query += "\n      ON UPDATE SET DEFAULT"; break;
-      case 4: query += "\n      ON UPDATE NO ACTION";   break;
-      default:// In essence: ON UPDATE RESTRICT, but that's already the default
-      case 0: break;
-    }
-  }
-  if(p_origin.m_deleteRule != p_requested.m_deleteRule)
-  {
-    switch(p_requested.m_deleteRule)
-    {
-      case 1: query += "\n      ON DELETE CASCADE";     break;
-      case 2: query += "\n      ON DELETE SET NULL";    break;
-      case 3: query += "\n      ON DELETE SET DEFAULT"; break;
-      case 4: query += "\n      ON DELETE NO ACTION";   break;
-      default:// In essence: ON DELETE RESTRICT, but that's already the default
-      case 0: break;
-    }
-  }
-  return query;
 }
 
 // Gets the fact if an IF statement needs to be bordered with BEGIN/END
@@ -880,91 +1040,6 @@ SQLInfoGenericODBC::GetAssignmentSelectParenthesis() const
 // SQL CATALOG QUERIES
 // ===================================================================
 
-// Get SQL to check if a stored procedure already exists in the database
-CString 
-SQLInfoGenericODBC::GetSQLStoredProcedureExists(CString& /*p_name*/) const
-{
-  // No way to do this in the ODBC standard
-  // To be implemented by way of the SQLInfo calls
-
-  // SQLInfo* info = (SQLInfo*)this;
-  return "";
-}
-
-// Gets DEFERRABLE for a constraint (or nothing)
-CString 
-SQLInfoGenericODBC::GetConstraintDeferrable() const
-{
-  if(m_txn_cap)
-  {
-    return " DEFERRABLE";
-  }
-  return "";
-}
-
-// Defer Constraints until the next COMMIT;
-CString 
-SQLInfoGenericODBC::GetSQLDeferConstraints() const
-{
-  // No way of knowing this in ODBC
-  return "";
-}
-
-// Reset constraints back to immediate
-CString 
-SQLInfoGenericODBC::GetSQLConstraintsImmediate() const
-{
-  // No way of knowing this in ODBC
-  return "";
-}
-
-// Get SQL to select all constraints on a table from the catalog
-CString 
-SQLInfoGenericODBC::GetSQLGetConstraintsForTable(CString& /*p_tableName*/) const
-{
-  // Cannot be implemented for generic ODBC
-  // Use SQLPrimaryKeys/SQLForeignKeys instead (see SQLInfo class)
-  return "";
-}
-
-// Get SQL to read the referential constraints from the catalog
-CString 
-SQLInfoGenericODBC::GetSQLTableReferences(CString p_schema,CString p_tablename,CString p_constraint /*=""*/,int /*p_maxColumns = SQLINFO_MAX_COLUMNS*/) const
-{
-  // Cannot be implemented for generic ODBC
-  // Use SQLForeignKeys instead (see SQLInfo class)
-  return "";
-}
-
-// Get the SQL to determine the sequence state in the database
-CString 
-SQLInfoGenericODBC::GetSQLSequence(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_postfix*/) const
-{
-  return "";
-}
-
-// Create a sequence in the database
-CString 
-SQLInfoGenericODBC::GetSQLCreateSequence(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_postfix = "_seq"*/,int /*p_startpos*/) const
-{
-  return "";
-}
-
-// Remove a sequence from the database
-CString 
-SQLInfoGenericODBC::GetSQLDropSequence(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_postfix = "_seq"*/) const
-{
-  return "";
-}
-
-// Gets the SQL for the rights on the sequence
-CString
-SQLInfoGenericODBC::GetSQLSequenceRights(CString /*p_schema*/,CString /*p_tableName*/,CString /*p_postfix*/ /*="_seq"*/) const
-{
-  // To be implemented
-  return "";
-}
-
 // Remove a stored procedure from the database
 void    
 SQLInfoGenericODBC::DoRemoveProcedure(CString& /*p_procedureName*/) const
@@ -1004,14 +1079,6 @@ SQLInfoGenericODBC::GetSQLSearchSession(const CString& /*p_databaseName*/,const 
   return "";
 }
 
-// Does the named constraint exist in the database
-bool    
-SQLInfoGenericODBC::DoesConstraintExist(CString /*p_constraintName*/) const
-{
-  // To be implemented
-  return "";
-}
-
 // Get a lock-table query
 CString 
 SQLInfoGenericODBC::GetSQLLockTable(CString& p_tableName,bool p_exclusive) const
@@ -1040,26 +1107,8 @@ SQLInfoGenericODBC::GetOnlyOneUserSession()
   return true;
 }
 
-// Gets the triggers for a table
-CString
-SQLInfoGenericODBC::GetSQLTriggers(CString p_schema,CString p_table) const
-{
-  return "";
-}
-
 // SQL DDL STATEMENTS
 // ==================
-
-// Add a foreign key to a table
-CString 
-SQLInfoGenericODBC::GetCreateForeignKey(CString p_tablename,CString p_constraintname,CString p_column,CString p_refTable,CString p_primary)
-{
-  CString sql = "ALTER TABLE " + p_tablename + "\n"
-                "  ADD CONSTRAINT " + p_constraintname + "\n"
-                "      FOREIGN KEY (" + p_column + ")\n"
-                "      REFERENCES " + p_refTable + "(" + p_primary + ")";
-  return sql;
-}
 
 // Get the SQL to drop a view. If precursor is filled: run that SQL first!
 CString 
@@ -1074,13 +1123,6 @@ CString
 SQLInfoGenericODBC::GetSQLCreateOrReplaceView(CString p_schema,CString p_view,CString p_asSelect) const
 {
   return "CREATE VIEW " + p_schema + "." + p_view + "\n" + p_asSelect;
-}
-
-// Create or replace a trigger
-CString
-SQLInfoGenericODBC::CreateOrReplaceTrigger(MetaTrigger& /*p_trigger*/) const
-{
-  return "";
 }
 
 // SQL DDL ACTIONS

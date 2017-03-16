@@ -597,18 +597,24 @@ SQLInfoMySQL::GetCATALOGPrimaryDrop(CString p_schema,CString p_tablename,CString
 CString
 SQLInfoMySQL::GetCATALOGForeignExists(CString p_schema,CString p_tablename,CString p_constraintname) const
 {
+  // Cannot be implemented for generic ODBC
+  // Use SQLForeignKeys instead (see SQLInfo class)
   return "";
 }
 
 CString
-SQLInfoMySQL::GetCATALOGForeignList(CString p_schema,CString p_tablename) const
+SQLInfoMySQL::GetCATALOGForeignList(CString p_schema,CString p_tablename,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
 {
+  // Cannot be implemented for generic ODBC
+  // Use SQLForeignKeys instead (see SQLInfo class)
   return "";
 }
 
 CString
-SQLInfoMySQL::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraintname) const
+SQLInfoMySQL::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraintname,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
 {
+  // Cannot be implemented for generic ODBC
+  // Use SQLForeignKeys instead (see SQLInfo class)
   return "";
 }
 
@@ -690,18 +696,227 @@ SQLInfoMySQL::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
 }
 
 CString
+SQLInfoMySQL::GetCATALOGForeignAlter(MForeignMap& p_original, MForeignMap& p_requested) const
+{
+  // Make sure we have both
+  if(p_original.empty() || p_requested.empty())
+  {
+    return "";
+  }
+
+  MetaForeign& original  = p_original.front();
+  MetaForeign& requested = p_requested.front();
+
+  // Construct the correct tablename
+  CString table(original.m_fkTableName);
+  if(!original.m_fkSchemaName.IsEmpty())
+  {
+    table = original.m_fkSchemaName + "." + table;
+  }
+
+  // The base foreign key command
+  CString query = "ALTER TABLE " + table + "\n"
+                  "ALTER CONSTRAINT " + original.m_foreignConstraint + "\n";
+
+  // Add all relevant options
+  if(original.m_deferrable != requested.m_deferrable)
+  {
+    switch(requested.m_deferrable)
+    {
+      case SQL_INITIALLY_DEFERRED:  query += "\n      INITIALLY DEFERRED"; break;
+      case SQL_INITIALLY_IMMEDIATE: query += "\n      DEFERRABLE";         break;
+      case SQL_NOT_DEFERRABLE:      query += "\n      NOT DEFERRABLE";     break;
+      default:                      break;
+    }
+  }
+  if(original.m_match != requested.m_match)
+  {
+    switch(requested.m_match)
+    {
+      case SQL_MATCH_FULL:    query += "\n      MATCH FULL";    break;
+      case SQL_MATCH_PARTIAL: query += "\n      MATCH PARTIAL"; break;
+      case SQL_MATCH_SIMPLE:  query += "\n      MATCH SIMPLE";  break;
+    }
+  }
+  if(original.m_updateRule != requested.m_updateRule)
+  {
+    switch(requested.m_updateRule)
+    {
+      case SQL_CASCADE:     query += "\n      ON UPDATE CASCADE";     break;
+      case SQL_SET_NULL:    query += "\n      ON UPDATE SET NULL";    break;
+      case SQL_SET_DEFAULT: query += "\n      ON UPDATE SET DEFAULT"; break;
+      case SQL_NO_ACTION:   query += "\n      ON UPDATE NO ACTION";   break;
+      default:              // In essence: ON UPDATE RESTRICT, but that's already the default
+      case SQL_RESTRICT:    break;
+    }
+  }
+  if(original.m_deleteRule != requested.m_deleteRule)
+  {
+    switch(requested.m_deleteRule)
+    {
+      case SQL_CASCADE:     query += "\n      ON DELETE CASCADE";     break;
+      case SQL_SET_NULL:    query += "\n      ON DELETE SET NULL";    break;
+      case SQL_SET_DEFAULT: query += "\n      ON DELETE SET DEFAULT"; break;
+      case SQL_NO_ACTION:   query += "\n      ON DELETE NO ACTION";   break;
+      default:              // In essence: ON DELETE RESTRICT, but that's already the default
+      case SQL_RESTRICT:    break;
+    }
+  }
+  return query;
+}
+
+CString
 SQLInfoMySQL::GetCATALOGForeignDrop(CString p_schema,CString p_tablename,CString p_constraintname) const
+{
+  CString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+              " DROP CONSTRAINT " + p_constraintname);
+  return sql;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL TRIGGER FUNCTIONS
+
+CString
+SQLInfoMySQL::GetCATALOGTriggerExists(CString p_schema, CString p_tablename, CString p_triggername) const
+{
+  return "";
+}
+
+CString
+SQLInfoMySQL::GetCATALOGTriggerList(CString p_schema, CString p_tablename) const
+{
+  return "";
+}
+
+CString
+SQLInfoMySQL::GetCATALOGTriggerAttributes(CString p_schema, CString p_tablename, CString p_triggername) const
+{
+  return "";
+}
+
+CString
+SQLInfoMySQL::GetCATALOGTriggerCreate(MetaTrigger& /*p_trigger*/) const
+{
+  return "";
+}
+
+CString
+SQLInfoMySQL::GetCATALOGTriggerDrop(CString p_schema, CString p_tablename, CString p_triggername) const
+{
+  return "";
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL SEQUENCE FUNCTIONS
+
+CString
+SQLInfoMySQL::GetCATALOGSequenceExists(CString p_schema, CString p_sequence) const
+{
+  return "";
+}
+
+CString
+SQLInfoMySQL::GetCATALOGSequenceAttributes(CString p_schema, CString p_sequence) const
+{
+  return "";
+}
+
+CString
+SQLInfoMySQL::GetCATALOGSequenceCreate(MetaSequence& /*p_sequence*/) const
+{
+  return "";
+}
+
+CString
+SQLInfoMySQL::GetCATALOGSequenceDrop(CString p_schema, CString p_sequence) const
 {
   return "";
 }
 
 //////////////////////////////////////////////////////////////////////////
 //
-// SQL/PSM
+// SQL/PSM PERSISTENT STORED MODULES 
+//         Also called SPL or PL/SQL
+// o GetPSM<Object[s]><Function>
+//   -Procedures / Functions
+//   - Exists					GetPSMProcedureExists
+//   - List					  GetPSMProcedureList
+//   - Attributes
+//   - Create
+//   - Drop
+//
+// o PSMWORDS
+//   - Declare
+//   - Assignment(LET)
+//   - IF statement
+//   - FOR statement
+//   - WHILE / LOOP statement
+//   - CURSOR and friends
+//
+// o CALL the FUNCTION/PROCEDURE
 //
 //////////////////////////////////////////////////////////////////////////
 
+CString
+SQLInfoMySQL::GetPSMProcedureExists(CString p_schema, CString p_procedure) const
+{
+  return "";
+}
 
+CString
+SQLInfoMySQL::GetPSMProcedureList(CString p_schema) const
+{
+  return "";
+}
+
+CString
+SQLInfoMySQL::GetPSMProcedureAttributes(CString p_schema, CString p_procedure) const
+{
+  return "";
+}
+
+CString
+SQLInfoMySQL::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
+{
+  return "";
+}
+
+CString
+SQLInfoMySQL::GetPSMProcedureDrop(CString p_schema, CString p_procedure) const
+{
+  return "";
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// SESSIONS
+// - Sessions (No create and drop)
+//   - GetSessionMyself
+//   - GetSessionExists
+//   - GetSessionList
+//   - GetSessionAttributes
+//     (was GetSessionAndTerminal)
+//     (was GetSessionUniqueID)
+// - Transactions
+//   - GetSessionDeferredConstraints
+//   - GetSessionImmediateConstraints
+//
+//////////////////////////////////////////////////////////////////////////
+
+CString
+SQLInfoMySQL::GetSESSIONConstraintsDeferred() const
+{
+  // MySQL cannot defer constraints
+  return "";
+}
+
+CString
+SQLInfoMySQL::GetSESSIONConstraintsImmediate() const
+{
+  // MySQL constraints are always active
+  return "";
+}
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -735,67 +950,6 @@ CString
 SQLInfoMySQL::GetSQLSelectIntoTemp(CString& p_tablename,CString& p_select) const
 {
   return "INSERT INTO " + p_tablename + "\n" + p_select + ";\n";
-}
-
-// Get the sql (if possible) to change the foreign key constraint
-CString
-SQLInfoMySQL::GetSQLAlterForeignKey(DBForeign& p_origin,DBForeign& p_requested) const
-{
-  // Construct the correct tablename
-  CString table(p_origin.m_tablename);
-  if(!p_origin.m_schema.IsEmpty())
-  {
-    table = p_origin.m_schema + "." + table;
-  }
-
-  // The base foreign key command
-  CString query = "ALTER TABLE " + table + "\n"
-                  "ALTER CONSTRAINT " + p_origin.m_constraintname + "\n";
-
-  // Add all relevant options
-  if(p_origin.m_deferrable != p_requested.m_deferrable)
-  {
-    query.AppendFormat("\n      %sDEFERRABLE",p_requested.m_deferrable == 0 ? "NOT " : "");
-  }
-  if(p_origin.m_initiallyDeffered != p_requested.m_initiallyDeffered)
-  {
-    query += "\n      INITIALLY ";
-    query += p_requested.m_initiallyDeffered ? "DEFERRED" : "IMMEDIATE";
-  }
-  if(p_origin.m_match != p_requested.m_match)
-  {
-    switch(p_requested.m_match)
-    {
-      case 0: query += "\n      MATCH FULL";    break;
-      case 1: query += "\n      MATCH PARTIAL"; break;
-      case 2: query += "\n      MATCH SIMPLE";  break;
-    }
-  }
-  if(p_origin.m_updateRule != p_requested.m_updateRule)
-  {
-    switch(p_requested.m_updateRule)
-    {
-      case 1: query += "\n      ON UPDATE CASCADE";     break;
-      case 2: query += "\n      ON UPDATE SET NULL";    break;
-      case 3: query += "\n      ON UPDATE SET DEFAULT"; break;
-      case 4: query += "\n      ON UPDATE NO ACTION";   break;
-      default:// In essence: ON UPDATE RESTRICT, but that's already the default
-      case 0: break;
-    }
-  }
-  if(p_origin.m_deleteRule != p_requested.m_deleteRule)
-  {
-    switch(p_requested.m_deleteRule)
-    {
-      case 1: query += "\n      ON DELETE CASCADE";     break;
-      case 2: query += "\n      ON DELETE SET NULL";    break;
-      case 3: query += "\n      ON DELETE SET DEFAULT"; break;
-      case 4: query += "\n      ON DELETE NO ACTION";   break;
-      default:// In essence: ON DELETE RESTRICT, but that's already the default
-      case 0: break;
-    }
-  }
-  return query;
 }
 
 // Gets the fact if an IF statement needs to be bordered with BEGIN/END
@@ -846,87 +1000,6 @@ SQLInfoMySQL::GetAssignmentSelectParenthesis() const
 // SQL CATALOG QUERIES
 // ===================================================================
 
-// Get SQL to check if a stored procedure already exists in the database
-CString
-SQLInfoMySQL::GetSQLStoredProcedureExists(CString& /*p_name*/) const
-{
-  // No way to do this in the ODBC standard
-  // To be implemented by way of the SQLInfo calls
-
-  // SQLInfo* info = (SQLInfo*)this;
-  return "";
-}
-
-// Gets DEFERRABLE for a constraint (or nothing)
-CString
-SQLInfoMySQL::GetConstraintDeferrable() const
-{
-  return "";
-}
-
-// Defer Constraints until the next COMMIT;
-CString
-SQLInfoMySQL::GetSQLDeferConstraints() const
-{
-  // No way of knowing this in ODBC
-  return "";
-}
-
-// Reset constraints back to immediate
-CString
-SQLInfoMySQL::GetSQLConstraintsImmediate() const
-{
-  // No way of knowing this in ODBC
-  return "";
-}
-
-// Get SQL to select all constraints on a table from the catalog
-CString
-SQLInfoMySQL::GetSQLGetConstraintsForTable(CString& /*p_tableName*/) const
-{
-  // Cannot be implemented for generic ODBC
-  // Use SQLPrimaryKeys/SQLForeignKeys instead (see SQLInfo class)
-  return "";
-}
-
-// Get SQL to read the referential constraints from the catalog
-CString
-SQLInfoMySQL::GetSQLTableReferences(CString p_schema,CString p_tablename,CString p_constraint /*=""*/,int /*p_maxColumns = SQLINFO_MAX_COLUMNS*/) const
-{
-  // Cannot be implemented for generic ODBC
-  // Use SQLForeignKeys instead (see SQLInfo class)
-  return "";
-}
-
-// Get the SQL to determine the sequence state in the database
-CString
-SQLInfoMySQL::GetSQLSequence(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_postfix*/) const
-{
-  return "";
-}
-
-// Create a sequence in the database
-CString
-SQLInfoMySQL::GetSQLCreateSequence(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_postfix = "_seq"*/,int /*p_startpos*/) const
-{
-  return "";
-}
-
-// Remove a sequence from the database
-CString
-SQLInfoMySQL::GetSQLDropSequence(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_postfix = "_seq"*/) const
-{
-  return "";
-}
-
-// Gets the SQL for the rights on the sequence
-CString
-SQLInfoMySQL::GetSQLSequenceRights(CString /*p_schema*/,CString /*p_tableName*/,CString /*p_postfix*/ /*="_seq"*/) const
-{
-  // To be implemented
-  return "";
-}
-
 // Remove a stored procedure from the database
 void
 SQLInfoMySQL::DoRemoveProcedure(CString& /*p_procedureName*/) const
@@ -966,14 +1039,6 @@ SQLInfoMySQL::GetSQLSearchSession(const CString& /*p_databaseName*/,const CStrin
   return "";
 }
 
-// Does the named constraint exist in the database
-bool
-SQLInfoMySQL::DoesConstraintExist(CString /*p_constraintName*/) const
-{
-  // To be implemented
-  return "";
-}
-
 // Get a lock-table query
 CString
 SQLInfoMySQL::GetSQLLockTable(CString& p_tableName,bool p_exclusive) const
@@ -1002,26 +1067,8 @@ SQLInfoMySQL::GetOnlyOneUserSession()
   return true;
 }
 
-// Gets the triggers for a table
-CString
-SQLInfoMySQL::GetSQLTriggers(CString p_schema,CString p_table) const
-{
-  return "";
-}
-
 // SQL DDL STATEMENTS
 // ==================
-
-// Add a foreign key to a table
-CString
-SQLInfoMySQL::GetCreateForeignKey(CString p_tablename,CString p_constraintname,CString p_column,CString p_refTable,CString p_primary)
-{
-  CString sql = "ALTER TABLE " + p_tablename + "\n"
-                "  ADD CONSTRAINT " + p_constraintname + "\n"
-                "      FOREIGN KEY (" + p_column + ")\n"
-                "      REFERENCES " + p_refTable + "(" + p_primary + ")";
-  return sql;
-}
 
 // Get the SQL to drop a view. If precursor is filled: run that SQL first!
 CString
@@ -1036,13 +1083,6 @@ CString
 SQLInfoMySQL::GetSQLCreateOrReplaceView(CString p_schema,CString p_view,CString p_asSelect) const
 {
   return "CREATE VIEW " + p_schema + "." + p_view + "\n" + p_asSelect;
-}
-
-// Create or replace a trigger
-CString
-SQLInfoMySQL::CreateOrReplaceTrigger(MetaTrigger& /*p_trigger*/) const
-{
-  return "";
 }
 
 // SQL DDL ACTIONS

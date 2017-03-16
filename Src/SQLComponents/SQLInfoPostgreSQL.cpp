@@ -757,19 +757,116 @@ SQLInfoPostgreSQL::GetCATALOGPrimaryDrop(CString p_schema,CString p_tablename,CS
 CString
 SQLInfoPostgreSQL::GetCATALOGForeignExists(CString p_schema,CString p_tablename,CString p_constraintname) const
 {
-  return "";
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+  p_constraintname.MakeLower();
+
+  CString sql;
+  sql.Format("SELECT COUNT(*)\n"
+             "  FROM pg_constraint con\n"
+             "      ,pg_class      cla\n"
+             "      ,pg_namespace  sch\n"
+             " WHERE con.contype      = 'f'\n"
+             "   AND con.conrelid     = cla.oid\n"
+             "   AND cla.relnamespace = sch.oid\n"
+             "   AND sch.nspname      = '" + p_schema + "'\n"
+             "   AND cla.relname      = '" + p_tablename + "'\n"
+             "   AND con.conname      = '" + p_constraintname + "'"
+            ,p_schema.GetString()
+            ,p_tablename.GetString()
+            ,p_constraintname.GetString());
+  return sql;
 }
 
 CString
-SQLInfoPostgreSQL::GetCATALOGForeignList(CString p_schema,CString p_tablename) const
+SQLInfoPostgreSQL::GetCATALOGForeignList(CString p_schema,CString p_tablename,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
 {
-  return "";
+  return GetCATALOGForeignAttributes(p_schema,p_tablename,"",p_maxColumns);
 }
 
 CString
-SQLInfoPostgreSQL::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraintname) const
+SQLInfoPostgreSQL::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraint,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
 {
-  return "";
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+  p_constraint.MakeLower();
+
+  CString query;
+
+  for(int ind = 1; ind <= p_maxColumns; ++ind)
+  {
+    CString part;
+    part.Format("SELECT current_database() as primary_catalog_name\n"
+                "      ,sch.nspname        as primary_schema_name\n"
+                "      ,pri.relname        as primary_table_name\n"
+                "      ,current_database() as foreign_catalog_name\n"
+                "      ,sch.nspname        as foreign_schema_name\n"
+                "      ,cla.relname        as foreign_table_name\n"
+                "      ,''                 as primary_constraint_name\n"
+                "      ,con.conname        as constraint_name\n"
+                "      ,%d                 as key_sequence"
+                "      ,fky.attname        as primary_key_column\n"
+                "      ,att.attname        as foreign_key_column\n"
+                "      ,case con.confupdtype   WHEN 'r' THEN 1\n"
+                "                              WHEN 'c' THEN 0\n"
+                "                              WHEN 'n' THEN 2\n"
+                "                              WHEN 'd' THEN 4\n"
+                "                              WHEN 'a' THEN 3\n"
+                "                              ELSE  0\n"
+                "                              END as update_rule\n"
+                "      ,case con.confdeltype   WHEN 'r' THEN 1\n"
+                "                              WHEN 'c' THEN 0\n"
+                "                              WHEN 'n' THEN 2\n"
+                "                              WHEN 'd' THEN 4\n"
+                "                              WHEN 'a' THEN 3\n"
+                "                              ELSE  0\n"
+                "                              END as delete_rule\n"
+                "      ,con.condeferrable as deferrable\n"
+                "      ,case con.confmatchtype WHEN 's' THEN 1\n"
+                "                              WHEN 'f' THEN 1\n"
+                "                              ELSE  0\n"
+                "                              END as match_option\n"
+                "      ,con.condeferred   as initially_deferred\n"
+                "      ,1                 as enabled\n"
+                "  FROM pg_constraint con\n"
+                "      ,pg_class      cla\n"
+                "      ,pg_attribute  att\n"
+                "      ,pg_namespace  sch\n"
+                "      ,pg_class      pri\n"
+                "      ,pg_attribute  fky\n"
+                " WHERE con.contype      = 'f'\n"
+                "   AND con.conrelid     = cla.oid\n"
+                "   and cla.relnamespace = sch.oid\n"
+                "   and con.confrelid    = pri.oid\n"
+                "   and att.attrelid     = cla.oid\n"
+                "   and att.attnum       = con.conkey[%d]\n"
+                "   and fky.attrelid     = pri.oid\n"
+                "   and fky.attnum       = con.confkey[%d]\n"
+                "   AND cla.relname      = 'part'"
+               ,ind
+               ,ind
+               ,ind);
+    if(!p_schema.IsEmpty())
+    {
+      part += "\n   AND sch.nspname = '" + p_schema + "'";
+    }
+    if(!p_tablename.IsEmpty())
+    {
+      part += "\n   AND cla.relname = '" + p_tablename + "'";
+    }
+    if(!p_constraint.IsEmpty())
+    {
+      part += "\n   AND con.conname = '" + p_constraint + "'";
+    }
+
+    // Append to query, multiple for multiple columns
+    if(!query.IsEmpty())
+    {
+      query += "\nUNION ALL\n";
+    }
+    query += part;
+  }
+  return query;
 }
 
 CString
@@ -856,18 +953,237 @@ SQLInfoPostgreSQL::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
 }
 
 CString
+SQLInfoPostgreSQL::GetCATALOGForeignAlter(MForeignMap& p_original,MForeignMap& p_requested) const
+{
+  // Make sure we have both
+  if(p_original.empty() || p_requested.empty())
+  {
+    return "";
+  }
+
+  MetaForeign& original  = p_original.front();
+  MetaForeign& requested = p_requested.front();
+
+  // Construct the correct tablename
+  CString table(original.m_fkTableName);
+  if(!original.m_fkSchemaName.IsEmpty())
+  {
+    table = original.m_fkSchemaName + "." + table;
+  }
+
+  // The base foreign key command
+  CString query = "ALTER TABLE " + table + "\n"
+                  "ALTER CONSTRAINT " + original.m_foreignConstraint + "\n";
+
+  // Add all relevant options
+  if(original.m_deferrable != requested.m_deferrable)
+  {
+    query.AppendFormat("\n      %sDEFERRABLE", requested.m_deferrable == 0 ? "NOT " : "");
+  }
+  if(original.m_initiallyDeferred != requested.m_initiallyDeferred)
+  {
+    query += "\n      INITIALLY ";
+    query += requested.m_initiallyDeferred ? "DEFERRED" : "IMMEDIATE";
+  }
+  if((original.m_match      != requested.m_match) ||
+     (original.m_updateRule != requested.m_updateRule) ||
+     (original.m_deleteRule != requested.m_deleteRule))
+  {
+    // PostgreSQL not capable of altering these attributes, so re-create the constraint
+    query.Empty();
+  }
+  return query;
+}
+
+CString
 SQLInfoPostgreSQL::GetCATALOGForeignDrop(CString p_schema,CString p_tablename,CString p_constraintname) const
+{
+  CString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+              " DROP CONSTRAINT " + p_constraintname);
+  return sql;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL TRIGGER FUNCTIONS
+
+CString
+SQLInfoPostgreSQL::GetCATALOGTriggerExists(CString p_schema, CString p_tablename, CString p_triggername) const
+{
+  return "";
+}
+
+CString
+SQLInfoPostgreSQL::GetCATALOGTriggerList(CString p_schema, CString p_tablename) const
+{
+  return "";
+}
+
+CString
+SQLInfoPostgreSQL::GetCATALOGTriggerAttributes(CString p_schema, CString p_tablename, CString p_triggername) const
+{
+  return "";
+}
+
+CString
+SQLInfoPostgreSQL::GetCATALOGTriggerCreate(MetaTrigger& /*p_trigger*/) const
+{
+  return "";
+}
+
+CString
+SQLInfoPostgreSQL::GetCATALOGTriggerDrop(CString p_schema, CString p_tablename, CString p_triggername) const
+{
+  return "";
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL SEQUENCE FUNCTIONS
+
+CString
+SQLInfoPostgreSQL::GetCATALOGSequenceExists(CString p_schema, CString p_sequence) const
+{
+  p_schema.MakeLower();
+  p_sequence.MakeLower();
+
+  CString sql("SELECT COUNT(*)\n"
+              "  FROM information_schema.sequences\n"
+              " WHERE sequence_schema = '" + p_schema   + "'\n"
+              "   AND sequence_name   = '" + p_sequence + "'");
+  return sql;
+}
+
+CString
+SQLInfoPostgreSQL::GetCATALOGSequenceAttributes(CString p_schema, CString p_sequence) const
+{
+  p_schema.MakeLower();
+  p_sequence.MakeLower();
+
+  CString sql = "SELECT ''              AS catalog_name\n"
+                "      ,sequence_schema AS schema_name\n"
+                "      ,sequence_name\n"
+                "      ,start_value     AS current_value\n"
+                "      ,0               AS minimal_value\n"
+                "      ,increment\n"
+                "      ,0               AS cache\n"
+                "      ,decode(cycle_option,'NO',1,0) AS cycle\n"
+                "      ,0               AS ordering\n"
+                "  FROM information_schema.sequences\n"
+                " WHERE sequence_schema = '" + p_schema   + "'\n"
+                "   AND sequence_name   = '" + p_sequence + "'";
+  return sql;
+}
+
+CString
+SQLInfoPostgreSQL::GetCATALOGSequenceCreate(MetaSequence& p_sequence) const
+{
+  CString sql("CREATE SEQUENCE ");
+
+  if (!p_sequence.m_schemaName.IsEmpty())
+  {
+    sql += p_sequence.m_schemaName + ".";
+  }
+  sql += p_sequence.m_sequenceName;
+  sql.AppendFormat(" START WITH %d", p_sequence.m_currentValue);
+  if(p_sequence.m_cache)
+  {
+    sql.AppendFormat(" CACHE %d",p_sequence.m_cache);
+  }
+  sql += p_sequence.m_cycle ? " CYCLE" : " NO CYCLE";
+  return sql;
+}
+
+CString
+SQLInfoPostgreSQL::GetCATALOGSequenceDrop(CString p_schema, CString p_sequence) const
+{
+  CString sql("DROP SEQUENCE " + p_schema + "." + p_sequence);
+  return  sql;
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// SQL/PSM PERSISTENT STORED MODULES 
+//         Also called SPL or PL/SQL
+// o GetPSM<Object[s]><Function>
+//   -Procedures / Functions
+//   - Exists					GetPSMProcedureExists
+//   - List					  GetPSMProcedureList
+//   - Attributes
+//   - Create
+//   - Drop
+//
+// o PSMWORDS
+//   - Declare
+//   - Assignment(LET)
+//   - IF statement
+//   - FOR statement
+//   - WHILE / LOOP statement
+//   - CURSOR and friends
+//
+// o CALL the FUNCTION/PROCEDURE
+//
+//////////////////////////////////////////////////////////////////////////
+
+CString
+SQLInfoPostgreSQL::GetPSMProcedureExists(CString p_schema, CString p_procedure) const
+{
+  p_schema.MakeLower();
+  p_procedure.MakeLower();
+  return "SELECT count(*)\n"
+         "  FROM pg_proc\n"
+         " WHERE proname = '" + p_procedure + "'\n;";
+}
+
+CString
+SQLInfoPostgreSQL::GetPSMProcedureList(CString p_schema) const
+{
+  return "";
+}
+
+CString
+SQLInfoPostgreSQL::GetPSMProcedureAttributes(CString p_schema, CString p_procedure) const
+{
+  return "";
+}
+
+CString
+SQLInfoPostgreSQL::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
+{
+  return "";
+}
+
+CString
+SQLInfoPostgreSQL::GetPSMProcedureDrop(CString p_schema, CString p_procedure) const
 {
   return "";
 }
 
 //////////////////////////////////////////////////////////////////////////
 //
-// SQL/PSM
+// SESSIONS
+// - Sessions (No create and drop)
+//   - GetSessionMyself
+//   - GetSessionExists
+//   - GetSessionList
+//   - GetSessionAttributes
+//     (was GetSessionAndTerminal)
+//     (was GetSessionUniqueID)
+// - Transactions
+//   - GetSessionDeferredConstraints
+//   - GetSessionImmediateConstraints
 //
 //////////////////////////////////////////////////////////////////////////
 
+CString
+SQLInfoPostgreSQL::GetSESSIONConstraintsDeferred() const
+{
+  return "set transaction deferrable";
+}
 
+CString
+SQLInfoPostgreSQL::GetSESSIONConstraintsImmediate() const
+{
+  return "set transaction not deferrable";
+}
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -900,41 +1216,6 @@ CString
 SQLInfoPostgreSQL::GetSQLSelectIntoTemp(CString& p_tablename,CString& p_select) const
 {
    return "INSERT INTO " + p_tablename + "\n" + p_select + ";\n";
-}
-
-// Get the sql (if possible) to change the foreign key constraint
-CString 
-SQLInfoPostgreSQL::GetSQLAlterForeignKey(DBForeign& p_origin,DBForeign& p_requested) const
-{
-  // Construct the correct tablename
-  CString table(p_origin.m_tablename);
-  if(!p_origin.m_schema.IsEmpty())
-  {
-    table = p_origin.m_schema + "." + table;
-  }
-
-  // The base foreign key command
-  CString query = "ALTER TABLE " + table + "\n"
-                  "ALTER CONSTRAINT " + p_origin.m_constraintname + "\n";
-
-  // Add all relevant options
-  if(p_origin.m_deferrable != p_requested.m_deferrable)
-  {
-    query.AppendFormat("\n      %sDEFERRABLE",p_requested.m_deferrable == 0 ? "NOT " : "");
-  }
-  if(p_origin.m_initiallyDeffered != p_requested.m_initiallyDeffered)
-  {
-    query += "\n      INITIALLY ";
-    query += p_requested.m_initiallyDeffered ? "DEFERRED" : "IMMEDIATE";
-  }
-  if((p_origin.m_match      != p_requested.m_match)      ||
-     (p_origin.m_updateRule != p_requested.m_updateRule) ||
-     (p_origin.m_deleteRule != p_requested.m_deleteRule) )
-  {
-    // PostgreSQL not capable of altering these attributes, so re-create the constraint
-    query.Empty();
-  }
-  return query;
 }
 
 bool
@@ -981,190 +1262,6 @@ SQLInfoPostgreSQL::GetAssignmentSelectParenthesis() const
 
 // SQL CATALOG QUERIES
 // ===================================================================
-
-// Get SQL to see if a stored procedure exists in the database
-CString 
-SQLInfoPostgreSQL::GetSQLStoredProcedureExists(CString& p_name) const
-{
-  return "SELECT count(*)\n"
-         "  FROM pg_proc\n"
-         " WHERE proname = '" + p_name + "'\n;";
-}
-
-// Get DEFERRABLE clause to defer constraints
-CString
-SQLInfoPostgreSQL::GetConstraintDeferrable() const
-{
-  return " DEFERRABLE";
-}
-
-// Constraints deferred until the next commit
-CString 
-SQLInfoPostgreSQL::GetSQLDeferConstraints() const
-{
-  return "set transaction deferrable";
-}
-
-// Constraints back to immediate check
-CString 
-SQLInfoPostgreSQL::GetSQLConstraintsImmediate() const
-{
-  return "set transaction not deferrable";
-}
-
-// Get the SQL query to get the CHECK and UNIQUE constraints from the catalog
-CString 
-SQLInfoPostgreSQL::GetSQLGetConstraintsForTable(CString& p_tableName) const
-{
-  CString lowerName(p_tableName);
-  lowerName.MakeLower();
-  CString contabel = "SELECT con.conname\n"
-                     "      ,cla.relname\n"
-                     "  FROM pg_constraint con, pg_class cla\n"
-                     " WHERE con.contype in ('c','u')\n"
-                     "   AND con.conrelid = cla.oid\n"
-                     "   AND cla.relname = '" + lowerName + "'\n";
-  return contabel;
-}
-
-
-// Get the SQL query to get all the referential constraints from the catalog
-CString 
-SQLInfoPostgreSQL::GetSQLTableReferences(CString p_schema
-                                        ,CString p_tablename
-                                        ,CString p_constraint /*=""*/
-                                        ,int     p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
-{
-  p_schema.MakeLower();
-  p_tablename.MakeLower();
-  p_constraint.MakeLower();
-
-  CString query;
-
-  for(int ind = 1; ind <= p_maxColumns; ++ind)
-  {
-    CString part;
-    part.Format("SELECT con.conname       as constraint_name\n"
-                "      ,sch.nspname       as schema\n"
-                "      ,cla.relname       as table_name\n"
-                "      ,att.attname       as column_name\n"
-                "      ,pri.relname       as primary_table_name\n"
-                "      ,fky.attname       AS primary_column_name\n"
-                "      ,con.condeferrable as deferrable\n"
-                "      ,con.condeferred   as initially_deferred\n"
-                "      ,1                 as enabled\n"
-                "      ,case con.confmatchtype WHEN 's' THEN 1\n"
-                "                              WHEN 'f' THEN 1\n"
-                "                              ELSE  0\n"
-                "                              END as match_option\n"
-                "      ,case con.confdeltype   WHEN 'r' THEN 1\n"
-                "                              WHEN 'c' THEN 0\n"
-                "                              WHEN 'n' THEN 2\n"
-                "                              WHEN 'd' THEN 4\n"
-                "                              WHEN 'a' THEN 3\n"
-                "                              ELSE  0\n"
-                "                              END as update_rule\n"
-                "      ,case con.confupdtype   WHEN 'r' THEN 1\n"
-                "                              WHEN 'c' THEN 0\n"
-                "                              WHEN 'n' THEN 2\n"
-                "                              WHEN 'd' THEN 4\n"
-                "                              WHEN 'a' THEN 3\n"
-                "                              ELSE  0\n"
-                "                              END as delete_rule\n"
-                "  FROM pg_constraint con\n"
-                "      ,pg_class      cla\n"
-                "      ,pg_attribute  att\n"
-                "      ,pg_namespace  sch\n"
-                "      ,pg_class      pri\n"
-                "      ,pg_attribute  fky\n"
-                " WHERE con.contype      = 'f'\n"
-                "   AND con.conrelid     = cla.oid\n"
-                "   and cla.relnamespace = sch.oid\n"
-                "   and con.confrelid    = pri.oid\n"
-                "   and att.attrelid     = cla.oid\n"
-                "   and att.attnum       = con.conkey[%d]\n"
-                "   and fky.attrelid     = pri.oid\n"
-                "   and fky.attnum       = con.confkey[%d]\n"
-                "   AND cla.relname      = 'part'"
-               ,ind
-               ,ind);
-    if(!p_schema.IsEmpty())
-    {
-      part += "\n   AND sch.nspname = '" + p_schema + "'";
-    }
-    if(!p_tablename.IsEmpty())
-    {
-      part += "\n   AND cla.relname = '" + p_tablename + "'";
-    }
-    if(!p_constraint.IsEmpty())
-    {
-      part += "\n   AND con.conname = '" + p_constraint + "'";
-    }
-
-    // Append to query, multiple for multiple columns
-    if(!query.IsEmpty())
-    {
-      query += "\nUNION ALL\n";
-    }
-    query += part;
-  }
-  return query;
-}
-
-// Get the SQL to determine the sequence state in the database
-CString 
-SQLInfoPostgreSQL::GetSQLSequence(CString p_schema,CString p_tablename,CString p_postfix /*= "_seq"*/) const
-{
-  CString sequence = p_tablename + p_postfix;
-  sequence.MakeLower();
-  p_schema.MakeLower();
-
-  CString sql = "SELECT sequence_name\n"
-                "      ,start_value as current_value\n"
-                "      ,decode(increment,'1',1,0) *\n"
-                "       decode(cycle_option,'NO',1,0) as is_correct\n"
-                "  FROM information_schema.sequences\n"
-                " WHERE sequence_schema = '" + p_schema + "'\n"
-                "   AND sequence_name   = '" + sequence + "'\n";
-  return sql;
-}
-
-// Create a sequence in the database
-CString 
-SQLInfoPostgreSQL::GetSQLCreateSequence(CString p_schema,CString p_tablename,CString p_postfix /*= "_seq"*/,int p_startpos) const
-{
-  CString sql("CREATE SEQUENCE ");
-
-  if(!p_schema.IsEmpty())
-  {
-    sql += p_schema + ".";
-  }
-  sql += p_tablename + p_postfix;
-  sql.AppendFormat(" START WITH %d",p_startpos);
-  sql += " CACHE 1 NO CYCLE";
-  return sql;
-}
-
-// Remove a sequence from the database
-CString 
-SQLInfoPostgreSQL::GetSQLDropSequence(CString p_schema,CString p_tablename,CString p_postfix /*= "_seq"*/) const
-{
-  CString sql;
-  sql = "DROP SEQUENCE " + p_schema + "." + p_tablename + p_postfix;
-  return sql;
-}
-
-// Get the query to add rights to a sequence
-CString
-SQLInfoPostgreSQL::GetSQLSequenceRights(CString p_schema,CString p_tableName,CString p_postfix /*="_seq"*/) const
-{
-  CString sequence = p_tableName + p_postfix;
-  if(!p_schema.IsEmpty())
-  {
-    sequence = p_schema + "." + sequence;
-  }
-  return "GRANT SELECT, UPDATE ON " + sequence + " TO " + GetGrantedUsers();
-}
 
 // Removing a stored procedure
 void 
@@ -1215,13 +1312,6 @@ SQLInfoPostgreSQL::GetSQLSearchSession(const CString& /*p_databaseName*/,const C
   return query;
 }
 
-// Does the named constraint exist in the database
-bool    
-SQLInfoPostgreSQL::DoesConstraintExist(CString /*p_constraintName*/) const
-{
-  return true;
-}
-
 // Get the lock-table query
 CString 
 SQLInfoPostgreSQL::GetSQLLockTable(CString& p_tableName,bool p_exclusive) const
@@ -1249,26 +1339,8 @@ SQLInfoPostgreSQL::GetOnlyOneUserSession()
   return true;
 }
 
-// Gets the triggers for a table
-CString
-SQLInfoPostgreSQL::GetSQLTriggers(CString p_schema,CString p_table) const
-{
-  return "";
-}
-
 // SQL DDL STATEMENTS
 // ==================
-
-// Add a foreign key to a table
-CString
-SQLInfoPostgreSQL::GetCreateForeignKey(CString p_tablename,CString p_constraintname,CString p_column,CString p_refTable,CString p_primary)
-{
-  CString sql = "ALTER TABLE " + p_tablename + "\n"
-                "  ADD CONSTRAINT " + p_constraintname + "\n"
-                "      FOREIGN KEY (" + p_column + ")\n"
-                "      REFERENCES " + p_refTable + "(" + p_primary + ")";
-  return sql;
-}
 
 // Get the SQL to drop a view. If precursor is filled: run that SQL first!
 CString 
@@ -1283,13 +1355,6 @@ CString
 SQLInfoPostgreSQL::GetSQLCreateOrReplaceView(CString p_schema,CString p_view,CString p_asSelect) const
 {
   return "CREATE OR REPLACE VIEW " + p_schema + "." + p_view + "\n" + p_asSelect;
-}
-
-// Create or replace a trigger
-CString
-SQLInfoPostgreSQL::CreateOrReplaceTrigger(MetaTrigger& /*p_trigger*/) const
-{
-  return "";
 }
 
 // SQL DDL ACTIONS

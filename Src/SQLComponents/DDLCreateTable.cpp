@@ -294,7 +294,7 @@ DDLCreateTable::GetTriggerInfo()
   // Print all triggers
   for(auto& trigger : m_triggers)
   {
-    CString line = m_info->CreateOrReplaceTrigger(trigger);
+    CString line = m_info->GetCATALOGTriggerCreate(trigger);
     StashTheLine(line,";\n");
   }
 }

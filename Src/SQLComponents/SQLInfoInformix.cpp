@@ -676,21 +676,121 @@ SQLInfoInformix::GetCATALOGPrimaryDrop(CString /*p_schema*/,CString p_tablename,
 // ALL FOREIGN KEY FUNCTIONS
 
 CString
-SQLInfoInformix::GetCATALOGForeignExists(CString p_schema,CString p_tablename,CString p_constraintname) const
+SQLInfoInformix::GetCATALOGForeignExists(CString /*p_schema*/,CString p_tablename,CString p_constraintname) const
 {
-  return "";
+  p_tablename.MakeLower();
+  p_constraintname.MakeLower();
+
+  CString sql;
+  sql.Format("SELECT COUNT(*)\n"
+             "  FROM sysconstraints con\n"
+             "      ,systables      tab\n"
+             " WHERE tab.tabid      = con.tabid\n"
+             "   AND con.constrtype = 'R'\n"
+             "   AND tab.tablename  = '%s'\n"
+             "   AND con.constrname = '%s'"
+            ,p_tablename.GetString()
+            ,p_constraintname.GetString());
+  return sql;
 }
 
+// Get all attributes in order of MetaForeign for ALL FK constraints
 CString
-SQLInfoInformix::GetCATALOGForeignList(CString p_schema,CString p_tablename) const
+SQLInfoInformix::GetCATALOGForeignList(CString p_schema,CString p_tablename,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
 {
-  return "";
+  return GetCATALOGForeignAttributes(p_schema,p_tablename,"",p_maxColumns);
 }
 
+// Get all attributes in order of MetaForeign for 1 FK constraint
 CString
-SQLInfoInformix::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraintname) const
+SQLInfoInformix::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraint,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
 {
-  return "";
+  CString query;
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+  p_constraint.MakeLower();
+
+  for(int ind = 1;ind <= p_maxColumns; ++ind)
+  {
+    CString part;
+    part.Format("SELECT DBINFO('dbname') AS primary_catalog_name\n"
+                "       pri.owner        AS primary_schema_name\n"
+                "      ,pri.tabname      AS primary_table_name\n"
+                "      ,DBINFO('dbname') AS foreign_catalog_name\n"
+                "      ,tab.owner        AS foreign_schema_name\n"
+                "      ,tab.tabname      AS foreign_table_name\n"
+                "      ,pcn.constrname   AS primary_key_constraint\n"
+                "      ,con.constrname   AS foreign_key_constraint\n"
+                "      ,%d               AS key_sequence\n"
+                "      ,pcl.colname      AS primary_column_name\n"
+                "      ,col.colname      AS foreign_column_name\n"
+                "      ,CASE WHEN ref.updrule = 'R' THEN 1\n"
+                "            WHEN ref.updrule = 'C' THEN 0\n"
+                "            WHEN ref.updrule = 'N' THEN 2\n"
+                "            WHEN ref.updrule = 'D' THEN 4\n"
+                "            ELSE 0\n"
+                "       END  AS update_rule\n"
+                "      ,CASE WHEN ref.delrule = 'R' THEN 1\n"
+                "            WHEN ref.delrule = 'C' THEN 0\n"
+                "            WHEN ref.delrule = 'N' THEN 2\n"
+                "            WHEN ref.delrule = 'D' THEN 4\n"
+                "            ELSE 0\n"
+                "       END  AS delete_rule\n"
+                "      ,1    AS deferrable\n"
+                "      ,CASE WHEN ref.matchtype = 'N' THEN 0\n"
+                "            WHEN ref.matchtype = 'P' THEN 1\n"
+                "            ELSE 0\n"
+                "       END  AS match_option\n"
+                "      ,0    AS initially_deferred\n"
+                "      ,1    AS enabled\n"
+                "  FROM sysconstraints con\n"
+                "      ,systables      tab\n"
+                "      ,syscolumns     col\n"
+                "      ,sysreferences  ref\n"
+                "      ,systables      pri\n"
+                "      ,sysindexes     idx\n"
+                "      ,sysconstraints pcn\n"
+                "      ,sysindexes     pix\n"
+                "      ,syscolumns     pcl\n"
+                " WHERE tab.tabid      = con.tabid\n"
+                "   AND con.constrid   = ref.constrid\n"
+                "   AND ref.ptabid     = pri.tabid\n"
+                "   AND con.idxname    = idx.idxname\n"
+                "   AND col.tabid      = tab.tabid\n"
+                "   AND col.colno      = idx.part%d\n"
+                "   AND pcn.tabid      = pri.tabid\n"
+                "   AND pix.idxname    = pcn.idxname\n"
+                "   AND pcl.tabid      = pri.tabid\n"
+                "   AND pcl.colno      = pix.part%d\n"
+                "   and con.constrtype = 'R'\n"
+                "   AND pcn.constrtype = 'P'\n"
+               ,ind
+               ,ind
+               ,ind);
+    if(!p_schema.IsEmpty())
+    {
+      part += "    AND tab.owner = '" + p_schema + "'\n";
+    }
+    if(!p_tablename.IsEmpty())
+    {
+      part += "   AND tab.tabname    = '" + p_tablename + "'\n";
+    }
+    if(!p_constraint.IsEmpty())
+    {
+      part += "    AND con.constrname = '" + p_constraint + "'\n";
+    }
+    // Add to the query
+    if(!query.IsEmpty())
+    {
+      query += "\nUNION ALL\n\n";
+    }
+    query += part;
+  }
+
+  // Add ordering upto column number
+  query += " ORDER BY 1,2,3,4,5,6,7,8,9";
+
+  return query;
 }
 
 CString
@@ -754,18 +854,236 @@ SQLInfoInformix::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
 }
 
 CString
-SQLInfoInformix::GetCATALOGForeignDrop(CString p_schema,CString p_tablename,CString p_constraintname) const
+SQLInfoInformix::GetCATALOGForeignAlter(MForeignMap& p_original, MForeignMap& p_requested) const
+{
+  // Make sure we have both
+  if (p_original.empty() || p_requested.empty())
+  {
+    return "";
+  }
+
+  MetaForeign& original = p_original.front();
+  MetaForeign& requested = p_requested.front();
+
+  // Construct the correct tablename (NO schema)
+  CString table(original.m_fkTableName);
+
+  // The base foreign key command
+  CString query = "ALTER TABLE " + table + "\n"
+                  "  SET CONSTRAINTS " + original.m_foreignConstraint + "\n";
+
+  // Add all relevant options
+  if (original.m_initiallyDeferred != requested.m_initiallyDeferred)
+  {
+    query += requested.m_initiallyDeferred ? "DEFERRED" : "IMMEDIATE";
+  }
+  else if (original.m_enabled != requested.m_enabled)
+  {
+    query += requested.m_enabled ? "ENABLED" : "DISABLED";
+  }
+  return query;
+}
+
+CString
+SQLInfoInformix::GetCATALOGForeignDrop(CString /*p_schema*/,CString p_tablename,CString p_constraintname) const
+{
+  CString sql("ALTER TABLE " + p_tablename + "\n"
+              " DROP CONSTRAINT " + p_constraintname);
+  return sql;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL TRIGGER FUNCTIONS
+
+CString
+SQLInfoInformix::GetCATALOGTriggerExists(CString p_schema, CString p_tablename, CString p_triggername) const
+{
+  return "";
+}
+
+CString
+SQLInfoInformix::GetCATALOGTriggerList(CString p_schema, CString p_tablename) const
+{
+  return "";
+}
+
+CString
+SQLInfoInformix::GetCATALOGTriggerAttributes(CString p_schema, CString p_tablename, CString p_triggername) const
+{
+  return "";
+}
+
+CString
+SQLInfoInformix::GetCATALOGTriggerCreate(MetaTrigger& /*p_trigger*/) const
+{
+  return "";
+}
+
+CString
+SQLInfoInformix::GetCATALOGTriggerDrop(CString p_schema, CString p_tablename, CString p_triggername) const
 {
   return "";
 }
 
 //////////////////////////////////////////////////////////////////////////
+// ALL SEQUENCE FUNCTIONS
+
+CString
+SQLInfoInformix::GetCATALOGSequenceExists(CString p_schema, CString p_sequence) const
+{
+  p_schema.MakeLower();
+  p_sequence.MakeLower();
+  CString sql = "SELECT COUNT(*)\n"
+                "  FROM syssequences seq\n"
+                "      ,sysdomains   dom\n"
+                " WHERE dom.id    = seq.id\n"
+                "   AND dom.owner = '" + p_schema   + "'\n"
+                "   AND dom.name  = '" + p_sequence + "'\n";
+              //"   AND dom.type  = 3"; ??
+  return sql;
+}
+
+CString
+SQLInfoInformix::GetCATALOGSequenceAttributes(CString p_schema, CString p_sequence) const
+{
+  p_schema.MakeLower();
+  p_sequence.MakeLower();
+  CString sql = "SELECT ''            as catalog_name\n"
+                "      ,dom.owner     as schema_name\n"
+                "      ,dom.name      as sequence_name\n"
+                "      ,seq.start_val as current_value\n"
+                "      ,0             as minimal_value\n"
+                "      ,seq.inc_val   as increment\n"
+                "      ,seq.cache     as cache\n"
+                "      ,seq.cycle     as cycle\n"
+                "      ,seq.order     as ordering\n"
+                "  FROM syssequences seq\n"
+                "      ,sysdomains   dom\n"
+                " WHERE dom.id    = seq.id\n"
+                "   AND dom.owner = '" + p_schema   + "'\n"
+                "   AND dom.name  = '" + p_sequence + "'\n";
+              //"   AND dom.type  = 3"; ??
+  return sql;
+}
+
+CString
+SQLInfoInformix::GetCATALOGSequenceCreate(MetaSequence& p_sequence) const
+{
+  CString sql("CREATE SEQUENCE ");
+
+  if (!p_sequence.m_schemaName.IsEmpty())
+  {
+    sql += p_sequence.m_schemaName + ".";
+  }
+  sql += p_sequence.m_sequenceName;
+  sql.AppendFormat("\n START WITH %d", p_sequence.m_currentValue);
+  sql.AppendFormat("\n INCREMENT BY %d", p_sequence.m_increment);
+
+  sql += p_sequence.m_cycle ? "\n CYCLE" : "\n NOCYCLE";
+  sql += p_sequence.m_order ? "\n ORDER" : "\n NOORDER";
+  if (p_sequence.m_cache > 0)
+  {
+    sql.AppendFormat("\n CACHE %d",p_sequence.m_cache);
+  }
+  else
+  {
+    sql += "\n NOCACHE";
+  }
+  return sql;
+}
+
+CString
+SQLInfoInformix::GetCATALOGSequenceDrop(CString /*p_schema*/, CString p_sequence) const
+{
+  CString sql("DROP SEQUENCE " + p_sequence);
+  return sql;
+}
+
+//////////////////////////////////////////////////////////////////////////
 //
-// SQL/PSM
+// SQL/PSM PERSISTENT STORED MODULES 
+//         Also called SPL or PL/SQL
+// o GetPSM<Object[s]><Function>
+//   -Procedures / Functions
+//   - Exists					GetPSMProcedureExists
+//   - List					  GetPSMProcedureList
+//   - Attributes
+//   - Create
+//   - Drop
+//
+// o PSMWORDS
+//   - Declare
+//   - Assignment(LET)
+//   - IF statement
+//   - FOR statement
+//   - WHILE / LOOP statement
+//   - CURSOR and friends
+//
+// o CALL the FUNCTION/PROCEDURE
 //
 //////////////////////////////////////////////////////////////////////////
 
+CString
+SQLInfoInformix::GetPSMProcedureExists(CString /*p_schema*/, CString p_procedure) const
+{
+  p_procedure.MakeLower();
+  return    "select count(*)\n"
+            "  from sysprocedures\n"
+            " where procname='" + p_procedure + "'";
+}
 
+CString
+SQLInfoInformix::GetPSMProcedureList(CString p_schema) const
+{
+  return "";
+}
+
+CString
+SQLInfoInformix::GetPSMProcedureAttributes(CString p_schema, CString p_procedure) const
+{
+  return "";
+}
+
+CString
+SQLInfoInformix::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
+{
+  return "";
+}
+
+CString
+SQLInfoInformix::GetPSMProcedureDrop(CString p_schema, CString p_procedure) const
+{
+  return "";
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// SESSIONS
+// - Sessions (No create and drop)
+//   - GetSessionMyself
+//   - GetSessionExists
+//   - GetSessionList
+//   - GetSessionAttributes
+//     (was GetSessionAndTerminal)
+//     (was GetSessionUniqueID)
+// - Transactions
+//   - GetSessionDeferredConstraints
+//   - GetSessionImmediateConstraints
+//
+//////////////////////////////////////////////////////////////////////////
+
+CString
+SQLInfoInformix::GetSESSIONConstraintsDeferred() const
+{
+  return "SET CONSTRAINTS ALL DEFERRED";
+}
+
+CString
+SQLInfoInformix::GetSESSIONConstraintsImmediate() const
+{
+  return "SET CONSTRAINTS ALL IMMEDIATE";
+}
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -798,24 +1116,6 @@ CString
 SQLInfoInformix::GetSQLSelectIntoTemp(CString& p_tablename,CString& p_select) const
 {
   return p_select + " INTO TEMP " + p_tablename;
-}
-
-// Get the sql (if possible) to change the foreign key constraint
-CString 
-SQLInfoInformix::GetSQLAlterForeignKey(DBForeign& p_origin,DBForeign& p_requested) const
-{
-  CString query = "SET CONSTRAINTS " + p_origin.m_constraintname + " ";
-
-  // Add all relevant options
-  if(p_origin.m_initiallyDeffered != p_requested.m_initiallyDeffered)
-  {
-    query += p_requested.m_initiallyDeffered ? "DEFERRED" : "IMMEDIATE";
-  }
-  else if(p_origin.m_enabled != p_requested.m_enabled)
-  {
-    query += p_requested.m_enabled ? "ENABLED" : "DISABLED";
-  }
-  return query;
 }
 
 // Gets the fact if an IF statement needs to be bordered with BEGIN/END
@@ -864,202 +1164,6 @@ SQLInfoInformix::GetAssignmentSelectParenthesis() const
 
 // SQL CATALOG QUERIES
 // ==================================================================
-
-// Get SQL to check if a stored procedure already exists in the database
-CString
-SQLInfoInformix::GetSQLStoredProcedureExists(CString& p_name) const
-{
-  CString nameLower(p_name);
-  nameLower.MakeLower();
-  return    "select count(*)\n"
-            "  from sysprocedures\n"
-            " where procname='" + nameLower + "'";
-}
-
-// Gets DEFERRABLE for a constraint (or nothing)
-CString
-SQLInfoInformix::GetConstraintDeferrable() const
-{
-  return "";
-}
-
-// Defer Constraints until the next COMMIT;
-CString 
-SQLInfoInformix::GetSQLDeferConstraints() const
-{
-  return "SET CONSTRAINTS ALL DEFERRED";
-}
-
-// Reset constraints back to immediate
-CString 
-SQLInfoInformix::GetSQLConstraintsImmediate() const
-{
-  return "SET CONSTRAINTS ALL IMMEDIATE";
-}
-
-// Get SQL to select all constraints on a table from the catalog
-CString 
-SQLInfoInformix::GetSQLGetConstraintsForTable(CString& p_tableName) const
-{
-  CString lowerName(p_tableName);
-  lowerName.MakeLower();
-  CString contabel = "SELECT con.constrname "
-                    "      ,con.tabid "
-                    "      ,con.constrid "
-                    "  FROM sysconstraints con "
-                    "      ,systables tab "
-                    " WHERE tab.tabid   = con.tabid "
-                    "   AND con.constrtype in ('C', 'U') "
-                    "   AND tab.tabname = '" + lowerName + "'";
-  return contabel;
-}
-
-// Get SQL to read the referential constraints from the catalog
-CString 
-SQLInfoInformix::GetSQLTableReferences(CString p_schema
-                                      ,CString p_tablename
-                                      ,CString p_constraint /*=""*/
-                                      ,int     p_maxColumns /*= SQLINFO_MAX_COLUMNS*/) const
-{
-  CString query;
-  p_schema.MakeLower();
-  p_tablename.MakeLower();
-  p_constraint.MakeLower();
-
-  for(int ind = 1;ind <= p_maxColumns; ++ind)
-  {
-    CString part;
-    part.Format("SELECT con.constrname  AS foreign_key_constraint\n"
-                "      ,tab.owner       AS schema_name\n"
-                "      ,tab.tabname     AS table_name\n"
-                "      ,col.colname     AS column_name\n"
-                "      ,pri.tabname     AS primary_table_name\n"
-                "      ,pcl.colname     AS primary_column_name\n"
-                "      ,1               AS deferrable\n"
-                "      ,0               AS initially_deferred\n"
-                "      ,1               AS enabled\n"
-                "      ,CASE WHEN ref.matchtype = 'N' THEN 0\n"
-                "            WHEN ref.matchtype = 'P' THEN 1\n"
-                "            ELSE 0\n"
-                "       END  AS match_option\n"
-                "      ,CASE WHEN ref.updrule = 'R' THEN 1\n"
-                "            WHEN ref.updrule = 'C' THEN 0\n"
-                "            WHEN ref.updrule = 'N' THEN 2\n"
-                "            WHEN ref.updrule = 'D' THEN 4\n"
-                "            ELSE 0\n"
-                "       END  AS update_rule\n"
-                "      ,CASE WHEN ref.delrule = 'R' THEN 1\n"
-                "            WHEN ref.delrule = 'C' THEN 0\n"
-                "            WHEN ref.delrule = 'N' THEN 2\n"
-                "            WHEN ref.delrule = 'D' THEN 4\n"
-                "            ELSE 0\n"
-                "       END  AS delete_rule\n"
-                "  FROM sysconstraints con\n"
-                "      ,systables      tab\n"
-                "      ,syscolumns     col\n"
-                "      ,sysreferences  ref\n"
-                "      ,systables      pri\n"
-                "      ,sysindexes     idx\n"
-                "      ,sysconstraints pcn\n"
-                "      ,sysindexes     pix\n"
-                "      ,syscolumns     pcl\n"
-                " WHERE tab.tabid      = con.tabid\n"
-                "   AND con.constrid   = ref.constrid\n"
-                "   AND ref.ptabid     = pri.tabid\n"
-                "   AND con.idxname    = idx.idxname\n"
-                "   AND col.tabid      = tab.tabid\n"
-                "   AND col.colno      = idx.part%d\n"
-                "   AND pcn.tabid      = pri.tabid\n"
-                "   AND pix.idxname    = pcn.idxname\n"
-                "   AND pcl.tabid      = pri.tabid\n"
-                "   AND pcl.colno      = pix.part%d\n"
-                "   and con.constrtype = 'R'\n"
-                "   AND pcn.constrtype = 'P'\n"
-               ,ind
-               ,ind);
-    if(!p_schema.IsEmpty())
-    {
-      part += "\n    AND tab.owner = '" + p_schema + "'";
-    }
-    if(!p_tablename.IsEmpty())
-    {
-      part += "\n   AND tab.tabname    = '" + p_tablename + "'";
-    }
-    if(!p_constraint.IsEmpty())
-    {
-      part += "\n    AND con.constrname = '" + p_constraint + "'";
-    }
-    // Add to the query
-    if(!query.IsEmpty())
-    {
-      query += "\nUNION ALL\n";
-    }
-    query += part;
-  }
-  return query;
-}
-
-// Get the SQL to determine the sequence state in the database
-CString 
-SQLInfoInformix::GetSQLSequence(CString p_schema,CString p_tablename,CString p_postfix /*= "_seq"*/) const
-{
-  p_schema.MakeLower();
-  CString sequence = p_tablename + p_postfix;
-  sequence.MakeLower();
-  CString sql = "SELECT dom.name as sequence_name\n"
-                "      ,seq.start_val as current_value"
-                "      ,decode(seq.inc_val,1,1,0) *\n"
-                "       decode(seq.cycle,'0',1,0) *\n"
-                "       decode(seq.cache, 0, 1,0) *\n"
-                "       decode(seq.order,'1',1,0) as is_correct\n"
-                "  FROM syssequences seq\n"
-                "      ,sysdomains   dom\n"
-                " WHERE dom.id = seq.id\n"
-                "   AND dom.owner = '" + p_schema + "'\n"
-                "   AND dom.name  = '" + sequence + "'\n";
-              //"   AND dom.type  = 3"; ??
-  return sql;
-}
-
-// Create a sequence in the database
-CString 
-SQLInfoInformix::GetSQLCreateSequence(CString p_schema,CString p_tablename,CString p_postfix /*= "_seq"*/,int p_startpos) const
-{
-  CString sql("CREATE SEQUENCE ");
-  CString sequence = p_tablename + p_postfix;
-
-  if(!p_schema.IsEmpty())
-  {
-    sql += p_schema + ".";
-  }
-  sql += sequence;
-  sql.AppendFormat(" START WITH %d",p_startpos);
-  sql += " NOCYCLE NOCACHE ORDER";
-  return sql;
-}
-
-// Remove a sequence from the database
-CString 
-SQLInfoInformix::GetSQLDropSequence(CString p_schema,CString p_tablename,CString p_postfix /*= "_seq"*/) const
-{
-  CString sequence = p_tablename + p_postfix;
-  CString sql;
-  sql = "DROP SEQUENCE " + p_schema + "." + sequence;
-  return sql;
-}
-
-// Gets the SQL for the rights on the sequence
-CString
-SQLInfoInformix::GetSQLSequenceRights(CString p_schema,CString p_tablename,CString p_postfix /*="_seq"*/) const
-{
-  CString sequence = p_tablename + p_postfix;
-  if(!p_schema.IsEmpty())
-  {
-    sequence = p_schema + "." + sequence;
-  }
-  CString sql = "GRANT SELECT ON " + sequence + " TO " + GetGrantedUsers();
-  return sql;
-}
 
 // Remove a stored procedure from the database
 void
@@ -1121,20 +1225,6 @@ SQLInfoInformix::GetSQLSearchSession(const CString& p_databaseName,const CString
          "                 FROM " + p_sessionTable +"))";
 }
 
-// Does the named constraint exist in the database
-bool    
-SQLInfoInformix::DoesConstraintExist(CString p_constraintName) const
-{
-  CString constraint(p_constraintName);
-  constraint.MakeLower();
-
-  SQLQuery qry(m_database);
-  qry.DoSQLStatement("SELECT 1\n"
-                     "  FROM sysconstraints\n"
-                     " WHERE constrname = '" + p_constraintName + "'\n");
-  return qry.GetRecord();
-}
-
 // Gets the lock-table query
 CString 
 SQLInfoInformix::GetSQLLockTable(CString& p_tableName,bool p_exclusive) const
@@ -1164,26 +1254,8 @@ SQLInfoInformix::GetOnlyOneUserSession()
   return true;
 }
 
-// Gets the triggers for a table
-CString
-SQLInfoInformix::GetSQLTriggers(CString p_schema,CString p_table) const
-{
-  return "";
-}
-
 // SQL DDL STATEMENTS
 // ==================
-
-// Add a foreign key to a table
-CString 
-SQLInfoInformix::GetCreateForeignKey(CString p_tablename,CString p_constraintname,CString p_column,CString p_refTable,CString p_primary)
-{
-  CString sql = "ALTER TABLE " + p_tablename + "\n"
-                "  ADD CONSTRAINT FOREIGN KEY (" + p_column + ")\n"
-                "      REFERENCES " + p_refTable + "(" + p_primary + ")\n"
-                "      CONSTRAINT + " + p_constraintname;
-  return sql;
-}
 
 // Get the SQL to drop a view. If precursor is filled: run that SQL first!
 CString 
@@ -1198,13 +1270,6 @@ CString
 SQLInfoInformix::GetSQLCreateOrReplaceView(CString /*p_schema*/,CString p_view,CString p_asSelect) const
 {
   return "CREATE VIEW " + p_view + "\n" + p_asSelect;
-}
-
-// Create or replace a trigger
-CString
-SQLInfoInformix::CreateOrReplaceTrigger(MetaTrigger& /*p_trigger*/) const
-{
-  return "";
 }
 
 // SQL DDL ACTIONS

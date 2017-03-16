@@ -55,16 +55,16 @@ namespace SQLComponents
 
 typedef struct _metaInfoTable
 {
-  CString   m_catalog;          // Catalog name (database name)
-  CString   m_schema;           // Schema name (owner of the object)
-  CString   m_table;            // Table/view/synonym name
-  CString   m_objectType;       // Type of the object
-  CString   m_remarks;          // Using COMMENTS command
-  CString   m_fullObjectName;   // Full object name, conforming RDBMS rules
-                                // eg: type:catalog.schema.table
-                                // or: type:schema.table@catalog
-  CString   m_tablespace;       // Some engines need the storage space
-  bool      m_temporary;        // Temporary table (true) or persistent (false)
+  CString   m_catalog;                // Catalog name (database name)
+  CString   m_schema;                 // Schema name (owner of the object)
+  CString   m_table;                  // Table/view/synonym name
+  CString   m_objectType;             // Type of the object
+  CString   m_remarks;                // Using COMMENTS command
+  CString   m_fullObjectName;         // Full object name, conforming RDBMS rules
+                                      // eg: type:catalog.schema.table
+                                      // or: type:schema.table@catalog
+  CString   m_tablespace;             // Some engines need the storage space
+  bool      m_temporary { false };    // Temporary table (true) or persistent (false)
 }
 MetaTable;
 
@@ -74,19 +74,19 @@ using MTableMap = std::vector<MetaTable>;
 
 typedef struct _metaInfoColumn
 {
-  CString   m_catalog;          // Catalog name (database name)
-  CString   m_schema;           // Schema name (owner of the object)
-  CString   m_table;            // Table/view/synonym name
-  CString   m_column;           // Column name
-  CString   m_remarks;          // Using COMMENTS command
-  int       m_datatype;         // SQL Data type
-  CString   m_typename;         // Data type name (according to RDBMS)
-  int       m_precision;        // Precision
-  int       m_length;           // Total length in bytes
-  int       m_scale;            // Decimal/Numeric scale
-  int       m_nullable;         // Nullable SQL_NO_NULLS / SQL_NULLABLE / SQL_NULLABLE_UNKNOWN
-  CString   m_default;          // Default value of the column
-  int       m_position;         // Ordinal position in the table
+  CString   m_catalog;                // Catalog name (database name)
+  CString   m_schema;                 // Schema name (owner of the object)
+  CString   m_table;                  // Table/view/synonym name
+  CString   m_column;                 // Column name
+  CString   m_remarks;                // Using COMMENTS command
+  int       m_datatype    { 0 };      // SQL Data type
+  CString   m_typename;               // Data type name (according to RDBMS)
+  int       m_precision   { 0 };      // Precision
+  int       m_length      { 0 };      // Total length in bytes
+  int       m_scale       { 0 };      // Decimal/Numeric scale
+  int       m_nullable    { 0 };      // Nullable SQL_NO_NULLS / SQL_NULLABLE / SQL_NULLABLE_UNKNOWN
+  CString   m_default;                // Default value of the column
+  int       m_position    { 0 };      // Ordinal position in the table
 
   void GetPrecisionAndScale(CString& p_sql)
   {
@@ -124,12 +124,12 @@ using MColumnMap = std::vector<MetaColumn>;
 
 typedef struct _metaInfoPrimary
 {
-  CString  m_catalog;           // Catalog of the primary key table
-  CString  m_schema;            // Schema  of the primary key table
-  CString  m_table;             // Name    of the primary key table
-  CString  m_columnName;        // Name of the column of the primary key
-  int      m_columnPosition;    // Position of the column in the table
-  CString  m_constraintName;    // Name of the primary key constraint
+  CString  m_catalog;                 // Catalog of the primary key table
+  CString  m_schema;                  // Schema  of the primary key table
+  CString  m_table;                   // Name    of the primary key table
+  CString  m_columnName;              // Name of the column of the primary key
+  int      m_columnPosition { 0 };    // Position of the column in the table
+  CString  m_constraintName;          // Name of the primary key constraint
 }
 MetaPrimary;
 
@@ -141,25 +141,28 @@ using MPrimaryMap = std::vector<MetaPrimary>;
 typedef struct _metaInfoForeign
 {
   // Primary table
-  CString   m_pkCatalogName;      // Primary key catalog name
-  CString   m_pkSchemaName;       // Primary key schema name
-  CString   m_pkTableName;        // Primary key table name
+  CString   m_pkCatalogName;            // Primary key catalog name
+  CString   m_pkSchemaName;             // Primary key schema name
+  CString   m_pkTableName;              // Primary key table name
   // Foreign key table
-  CString   m_fkCatalogName;      // Foreign key catalog name
-  CString   m_fkSchemaName;       // Foreign key schema name
-  CString   m_fkTableName;        // Foreign key table name
+  CString   m_fkCatalogName;            // Foreign key catalog name
+  CString   m_fkSchemaName;             // Foreign key schema name
+  CString   m_fkTableName;              // Foreign key table name
   // Constraints naming
-  CString   m_primaryConstraint;  // Name of the primary key constraint
-  CString   m_foreignConstraint;  // Name of the foreign key constraint
+  CString   m_primaryConstraint;        // Name of the primary key constraint
+  CString   m_foreignConstraint;        // Name of the foreign key constraint
   // The column
-  int       m_keySequence;        // Ordinal sequence number
-  CString   m_pkColumnName;       // Corresponding column in the primary key table
-  CString   m_fkColumnName;       // Corresponding column of the foreign key
+  int       m_keySequence       { 0 };  // Ordinal sequence number
+  CString   m_pkColumnName;             // Corresponding column in the primary key table
+  CString   m_fkColumnName;             // Corresponding column of the foreign key
   // Options of the foreign key
-  int       m_updateRule;         // SQL_CASCADE / SQL_NO_ACTION / SQL_SET_NULL / SQL_SET_DEFAULT
-  int       m_deleteRule;         // SQL_CASCADE / SQL_NO_ACTION / SQL_SET_NULL / SQL_SET_DEFAULT
-  int       m_deferrable;         // SQL_INITIALLY_DEFERRED / SQL_INITIALLY_IMMEDIATE / SQL_NOT_DEFERRABLE
-  int       m_match;              // SQL_MATCH_FULL = 0 / SQL_MATCH_PARTIAL = 1 / SQL_MATCH_SIMPLE = 2
+  int       m_updateRule        { 0 };  // SQL_CASCADE(0) / SQL_NO_ACTION(3) / SQL_SET_NULL(2) / SQL_SET_DEFAULT(4) / SQL_RESTRICT(1)
+  int       m_deleteRule        { 0 };  // SQL_CASCADE(0) / SQL_NO_ACTION(3) / SQL_SET_NULL(2) / SQL_SET_DEFAULT(4) / SQL_RESTRICT(1)
+  int       m_deferrable        { 0 };  // SQL_INITIALLY_DEFERRED(5) / SQL_INITIALLY_IMMEDIATE(6) / SQL_NOT_DEFERRABLE(7)
+  int       m_match             { 0 };  // SQL_MATCH_FULL(0) / SQL_MATCH_PARTIAL(1) / SQL_MATCH_SIMPLE(2)
+  // Extra info by SQL
+  int       m_initiallyDeferred { 0 };  // 0=Immediate, 1=initially deferred
+  int       m_enabled           { 1 };  // 1=Disabled,  0=enabled
 }
 MetaForeign;
 
@@ -169,18 +172,18 @@ using MForeignMap = std::vector<MetaForeign>;
 
 typedef struct _metaInfoIndex
 {
-  CString   m_catalogName;    // Catalog (database name)
-  CString   m_schemaName;     // Schema owner
-  CString   m_tableName;      // Table name
-  bool      m_unique;         // true = UNIQUE
-  CString   m_indexName;      // Index name
-  int       m_indexType;      // SQL_TABLE_STAT / SQL_INDEX_CLUSTERED / SQL_INDEX_HASHED / SQL_INDEX_OTHER
-  int       m_position;       // Ordinal position (start at 1)
-  CString   m_columnName;     // Column in the index
-  CString   m_ascending;      // 'A', 'D', '' = unknown
-  long      m_cardinality;    // cardinality of index
-  long      m_pages;          // Pages of the index
-  CString   m_filter;         // filter or expression
+  CString   m_catalogName;              // Catalog (database name)
+  CString   m_schemaName;               // Schema owner
+  CString   m_tableName;                // Table name
+  bool      m_unique      { false };    // true = UNIQUE
+  CString   m_indexName;                // Index name
+  int       m_indexType   { 0 };        // SQL_TABLE_STAT / SQL_INDEX_CLUSTERED / SQL_INDEX_HASHED / SQL_INDEX_OTHER
+  int       m_position    { 0 };        // Ordinal position (start at 1)
+  CString   m_columnName;               // Column in the index
+  CString   m_ascending;                // 'A', 'D', '' = unknown
+  long      m_cardinality { 0 };        // cardinality of index
+  long      m_pages       { 0 };        // Pages of the index
+  CString   m_filter;                   // filter or expression
 }
 MetaIndex;
 
@@ -190,14 +193,14 @@ using MIndicesMap = std::vector<MetaIndex>;
 
 typedef struct _metaSpecialColumns
 {
-  CString   m_columnName;     // Extra column name by RDBMS
-  CString   m_typeName;       // Different datatype by RDBMS
-  int       m_datatype;       // Corresponding ODBC Datatype
-  int       m_columnSize;     // Display column size
-  int       m_bufferSize;     // Binary buffer size
-  int       m_decimalDigits;  // Decimal digits of the column
-  int       m_scope;          // SQL_SCOPE_CURROW  / SQL_SCOPE_TRANSACTION / SQL_SCOPE_SESSION
-  int       m_pseudo;         // SQL_PC_NOT_PSEUDO / SQL_PC_PSEUDO / SQL_PC_UNKNOWN
+  CString   m_columnName;               // Extra column name by RDBMS
+  CString   m_typeName;                 // Different datatype by RDBMS
+  int       m_datatype      { 0 };      // Corresponding ODBC Datatype
+  int       m_columnSize    { 0 };      // Display column size
+  int       m_bufferSize    { 0 };      // Binary buffer size
+  int       m_decimalDigits { 0 };      // Decimal digits of the column
+  int       m_scope         { 0 };      // SQL_SCOPE_CURROW  / SQL_SCOPE_TRANSACTION / SQL_SCOPE_SESSION
+  int       m_pseudo        { 0 };      // SQL_PC_NOT_PSEUDO / SQL_PC_PSEUDO / SQL_PC_UNKNOWN
 }
 MetaSpecialColumn;
 
@@ -207,13 +210,13 @@ using MSpecialColumnMap = std::vector<MetaSpecialColumn>;
 
 typedef struct _metaInfoPrivilege
 {
-  CString   m_catalogName;    // Catalog of the object
-  CString   m_schemaName;     // Schema of the object
-  CString   m_tableName;      // Table/object name
-  CString   m_grantor;        // Grantor granting the privilege
-  CString   m_grantee;        // Grantee receiving the privilege
-  CString   m_privilege;      // The privilege (CRUD etc)
-  bool      m_grantable;      // Can pass on the privilege to others
+  CString   m_catalogName;              // Catalog of the object
+  CString   m_schemaName;               // Schema of the object
+  CString   m_tableName;                // Table/object name
+  CString   m_grantor;                  // Grantor granting the privilege
+  CString   m_grantee;                  // Grantee receiving the privilege
+  CString   m_privilege;                // The privilege (CRUD etc)
+  bool      m_grantable { false };      // Can pass on the privilege to others
 }
 MetaPrivilege;
 
@@ -223,14 +226,14 @@ using MPrivilegeMap = std::vector<MetaPrivilege>;
 
 typedef struct _metaInfoProcedure
 {
-  CString   m_catalogName;        // Catalog of the procedure / function
-  CString   m_schemaName;         // Schema  of the procedure / function
-  CString   m_procedureName;      // Name    of the procedure / function
-  int       m_inputParameters;    // Number  of input parameters
-  int       m_outputParameters;   // Number  of output parameters
-  int       m_resultSets;         // Number  of result sets
-  CString   m_remarks;            // As in COMMENT command
-  int       m_procedureType;      // SQL_PT_PROCEDURE / SQL_PT_FUNCTION / SQL_PT_UNKNOWN
+  CString   m_catalogName;              // Catalog of the procedure / function
+  CString   m_schemaName;               // Schema  of the procedure / function
+  CString   m_procedureName;            // Name    of the procedure / function
+  int       m_inputParameters   { 0 };  // Number  of input parameters
+  int       m_outputParameters  { 0 };  // Number  of output parameters
+  int       m_resultSets        { 0 };  // Number  of result sets
+  CString   m_remarks;                  // As in COMMENT command
+  int       m_procedureType     { 0 };  // SQL_PT_PROCEDURE(1) / SQL_PT_FUNCTION(2) / SQL_PT_UNKNOWN(3)
 }
 MetaProcedure;
 
@@ -240,22 +243,22 @@ using MProcedureMap = std::vector<MetaProcedure>;
 
 typedef struct _metaInfoProcColumns
 {
-  CString   m_catalogName;      // Catalog of the procedure / function
-  CString   m_schemaName;       // Schema  of the procedure / function
-  CString   m_procedureName;    // Name    of the procedure / function
-  CString   m_columnName;       // Parameter / column name 
-  int       m_ordinalPosition;  // Positioning of the parameter
-  int       m_columnType;       // SQL_PARAM_INPUT / SQL_PARAM_OUTPUT etc. etc.
-  int       m_dataType;         // ODBC standard type name
-  CString   m_typeName;         // RDBMS type name
-  int       m_columnSize;       // Display size
-  int       m_bufferSize;       // Binary buffer size
-  int       m_decimalDigits;    // Number of decimal digits
-  int       m_radix;            // Radix display (2, 8, 10, 16)
-  int       m_nullable;         // SQL_NO_NULLS / SQL_NULLABLE / SQL_NULLABLE_UNKNOWN
-  CString   m_remarks;          // From the COMMENT command
-  CString   m_defaultValue;     // Default value
-  CString   m_isNullable;       // "NO" or "YES" (can include nulls)
+  CString   m_catalogName;              // Catalog of the procedure / function
+  CString   m_schemaName;               // Schema  of the procedure / function
+  CString   m_procedureName;            // Name    of the procedure / function
+  CString   m_columnName;               // Parameter / column name 
+  int       m_ordinalPosition { 0 };    // Positioning of the parameter
+  int       m_columnType      { 0 };    // SQL_PARAM_INPUT / SQL_PARAM_OUTPUT etc. etc.
+  int       m_dataType        { 0 };    // ODBC standard type name
+  CString   m_typeName;                 // RDBMS type name
+  int       m_columnSize      { 0 };    // Display size
+  int       m_bufferSize      { 0 };    // Binary buffer size
+  int       m_decimalDigits   { 0 };    // Number of decimal digits
+  int       m_radix           { 0 };    // Radix display (2, 8, 10, 16)
+  int       m_nullable        { 0 };    // SQL_NO_NULLS / SQL_NULLABLE / SQL_NULLABLE_UNKNOWN
+  CString   m_remarks;                  // From the COMMENT command
+  CString   m_defaultValue;             // Default value
+  CString   m_isNullable;               // "NO" or "YES" (can include nulls)
 }
 MetaProcedureColumn;
 
@@ -265,9 +268,9 @@ using MProcColumnMap = std::vector<MetaProcedureColumn>;
 
 typedef struct _metaInfoObject
 {
-  int       m_objectType;       // META_CATALOGS / META_SCHEMAS / META_TABLES
-  CString   m_objectName;       // Name of the object
-  CString   m_remarks;          // From the COMMENT command
+  int       m_objectType  { 0 };        // META_CATALOGS / META_SCHEMAS / META_TABLES
+  CString   m_objectName;               // Name of the object
+  CString   m_remarks;                  // From the COMMENT command
 }
 MetaObject;
 
@@ -277,26 +280,42 @@ using MMetaMap = std::vector<MetaObject>;
 
 typedef struct _metaTrigger
 {
-  CString   m_catalogName;      // Catalog name
-  CString   m_schemaName;       // Schema name
-  CString   m_tableName;        // Table name
-  CString   m_triggerName;      // Trigger name
-  CString   m_remarks;          // Remarks from COMMENT ON
-  int       m_position;         // Position in firing
-  bool      m_before;           // true = BEFORE, false = AFTER
-  bool      m_insert;           // INSERT into table
-  bool      m_update;           // UPDATE of a table
-  bool      m_delete;           // DELETE from a table
-  bool      m_select;           // SELECT from a table
-  bool      m_session;          // ON CONNECT / ON DISCONNECT
-  bool      m_transaction;      // ON BEGIN   / ON COMMIT
-  bool      m_rollback;         // ON ROLLBACK
-  CString   m_referencing;      // Referencing names OLD and NEW
-  bool      m_enabled;          // Enabled or disabled
-  CString   m_source;           // Source of the trigger
+  CString   m_catalogName;              // Catalog name
+  CString   m_schemaName;               // Schema name
+  CString   m_tableName;                // Table name
+  CString   m_triggerName;              // Trigger name
+  CString   m_remarks;                  // Remarks from COMMENT ON
+  int       m_position    { 0 };        // Position in firing
+  bool      m_before      { false };    // true = BEFORE, false = AFTER
+  bool      m_insert      { false };    // INSERT into table
+  bool      m_update      { false };    // UPDATE of a table
+  bool      m_delete      { false };    // DELETE from a table
+  bool      m_select      { false };    // SELECT from a table
+  bool      m_session     { false };    // ON CONNECT / ON DISCONNECT
+  bool      m_transaction { false };    // ON BEGIN   / ON COMMIT
+  bool      m_rollback    { false };    // ON ROLLBACK
+  CString   m_referencing;              // Referencing names OLD and NEW
+  bool      m_enabled     { false };    // Enabled or disabled
+  CString   m_source;                   // Source of the trigger
 }
 MetaTrigger;
 
 using MTriggerMap = std::vector<MetaTrigger>;
+
+typedef struct _metaSequence
+{
+  CString   m_catalogName;              // Catalog name
+  CString   m_schemaName;               // Schema name
+  CString   m_sequenceName;             // Sequence name
+  long      m_currentValue  { 1 };      // Current value (the sequence!)
+  long      m_minimalValue  { 1 };      // Minimal value in the series
+  long      m_increment     { 1 };      // Incremented each step
+  long      m_cache         { 0 };      // Caching in the database
+  bool      m_cycle         { false };  // Cycling of sets
+  bool      m_order         { true  };  // In-order over multiple machines
+}
+MetaSequence;
+
+using MSequenceMap = std::vector<MetaSequence>;
 
 };

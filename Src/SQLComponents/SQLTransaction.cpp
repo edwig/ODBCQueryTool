@@ -220,7 +220,7 @@ SQLTransaction::SetTransactionDeferred()
   {
     return false;
   }
-  CString sql = m_database->GetSQLInfoDB()->GetSQLDeferConstraints();
+  CString sql = m_database->GetSQLInfoDB()->GetSESSIONConstraintsDeferred();
   if(!sql.IsEmpty())
   {
     SQLQuery query(m_database);
@@ -231,7 +231,7 @@ SQLTransaction::SetTransactionDeferred()
 }
 
 // Setting a transaction in an immediate state
-// So that the constraints (uptil now) get checked immediatly
+// So that the constraints (uptil now) get checked immediately
 bool 
 SQLTransaction::SetTransactionImmediate()
 {
@@ -239,7 +239,7 @@ SQLTransaction::SetTransactionImmediate()
   {
     return false;
   }
-  CString sql = m_database->GetSQLInfoDB()->GetSQLConstraintsImmediate();
+  CString sql = m_database->GetSQLInfoDB()->GetSESSIONConstraintsImmediate();
   if(!sql.IsEmpty())
   {
     SQLQuery query(m_database);

@@ -701,19 +701,97 @@ SQLInfoOracle::GetCATALOGPrimaryDrop(CString p_schema,CString p_tablename,CStrin
 CString
 SQLInfoOracle::GetCATALOGForeignExists(CString p_schema,CString p_tablename,CString p_constraintname) const
 {
-  return "";
+  p_schema.MakeUpper();
+  p_tablename.MakeUpper();
+  p_constraintname.MakeUpper();
+
+  CString sql;
+  sql.Format("SELECT COUNT(*)\n"
+             "  FROM all_constraints  con\n"
+             " WHERE con.constraint_type = 'R'"
+             "   AND con.owner           = '" + p_schema + "'\n"
+             "   AND con.table_name      = '" + p_tablename + "'\n"
+             "   AND con.constraint_name = '" + p_constraintname + "'"
+            ,p_schema.GetString()
+            ,p_tablename.GetString()
+            ,p_constraintname.GetString());
+
+  return sql;
 }
 
 CString
-SQLInfoOracle::GetCATALOGForeignList(CString p_schema,CString p_tablename) const
+SQLInfoOracle::GetCATALOGForeignList(CString p_schema,CString p_tablename,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
 {
-  return "";
+  return GetCATALOGForeignAttributes(p_schema,p_tablename,"",p_maxColumns);
 }
 
 CString
-SQLInfoOracle::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraintname) const
+SQLInfoOracle::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraint,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
 {
-  return "";
+  // Oracle catalog is in uppercase
+  p_schema.MakeUpper();
+  p_tablename.MakeUpper();
+  p_constraint.MakeUpper();
+
+  // Minimal requirements of the catalog
+  if(p_schema.IsEmpty() || p_tablename.IsEmpty())
+  {
+    throw CString("Cannot get table references without schema/tablename");
+  }
+
+  CString query = "SELECT ora_database_name    AS primary_catalog_name\n"
+                  "      ,pri.owner            AS primary_schema_name\n"
+                  "      ,pri_table_name       AS primary_table_name\n"
+                  "      ,ora_database_name    AS foreign_catalog_name\n"
+                  "      ,con.owner            AS foreign_schema_name\n"
+                  "      ,con.table_name       AS table_name\n"
+                  "      ,pri.constraint_name  AS primary_key_constraint\n"
+                  "      ,con.constraint_name  AS foreign_key_constraint\n"
+                  "      ,col.position         AS key_sequence\n"
+                  "      ,pky.column_name      AS primary_key_column\n"
+                  "      ,col.column_name      AS foreign_key_column\n"
+                  "      ,0                    AS update_rule\n"
+                  "      ,CASE con.delete_rule WHEN 'RESTRICT'    THEN 1\n"
+                  "                            WHEN 'CASCADE'     THEN 0\n"
+                  "                            WHEN 'SET NULL'    THEN 2\n"
+                  "                            WHEN 'SET DEFAULT' THEN 4\n"
+                  "                            WHEN 'NO ACTION'   THEN 3\n"
+                  "                            ELSE 0 END AS delete_rule\n"
+                  "      ,CASE con.deferrable  WHEN 'NOT DEFERRABLE' THEN 0\n"
+                  "                            WHEN 'DEFERRABLE'     THEN 1\n"
+                  "                            ELSE 0 END AS DEFERRABLE\n"
+                  "      ,0                    AS match_option\n"
+                  "      ,CASE con.deferred    WHEN 'IMMEDIATE'      THEN 0\n"
+                  "                            ELSE 1 END AS initially_deferred\n"
+                  "      ,CASE con.status      WHEN 'ENABLED' THEN 1\n"
+                  "                            ELSE 0 END AS enabled\n"
+                  "  FROM all_constraints  con\n"
+                  "      ,all_cons_columns col\n"
+                  "      ,all_constraints  pri\n"
+                  "      ,all_cons_columns pky\n"
+                  " WHERE con.owner           = col.owner\n"
+                  "   AND con.constraint_name = col.constraint_name\n"
+                  "   AND con.table_name      = col.table_name\n"
+                  "   AND pri.owner           = con.r_owner\n"
+                  "   AND pri.constraint_name = con.r_constraint_name\n"
+                  "   AND pri.owner           = pky.owner\n"
+                  "   AND pri.constraint_name = pky.constraint_name\n"
+                  "   AND pri.table_name      = pky.table_name\n"
+                  "   AND col.position        = pky.position\n"
+                  "   AND con.constraint_type = 'R'";
+                  "   AND con.owner           = '" + p_schema    + "'\n"
+                  "   AND con.table_name      = '" + p_tablename + "'\n";
+
+  // Optionally a constraint name                
+  if(!p_constraint.IsEmpty())
+  {
+    query += "   AND con.constraint_name = '" + p_constraint + "'\n";
+  }
+
+  // Order upto the column number
+  query += " ORDER BY 1,2,3,4,5,6,7,8,9";
+
+  return query;
 }
 
 CString
@@ -779,18 +857,347 @@ SQLInfoOracle::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
 }
 
 CString
+SQLInfoOracle::GetCATALOGForeignAlter(MForeignMap& p_original, MForeignMap& p_requested) const
+{
+  // Make sure we have both
+  if (p_original.empty() || p_requested.empty())
+  {
+    return "";
+  }
+
+  MetaForeign& original = p_original.front();
+  MetaForeign& requested = p_requested.front();
+
+  // Construct the correct tablename
+  CString table(original.m_fkTableName);
+  if(!original.m_fkSchemaName.IsEmpty())
+  {
+    table = original.m_fkSchemaName + "." + table;
+  }
+
+  // The base foreign key command
+  CString query = "ALTER  TABLE " + table + "\n"
+                  "MODIFY CONSTRAINT " + original.m_foreignConstraint + "\n";
+
+  // Add all relevant options
+  if(original.m_deferrable != requested.m_deferrable)
+  {
+    query.AppendFormat("\n      %sDEFERRABLE", requested.m_deferrable == 0 ? "NOT " : "");
+  }
+  if(original.m_initiallyDeferred != requested.m_initiallyDeferred)
+  {
+    query += "\n      INITIALLY ";
+    query += requested.m_initiallyDeferred ? "DEFERRED" : "IMMEDIATE";
+  }
+  if (original.m_deleteRule != requested.m_deleteRule)
+  {
+    switch(requested.m_deleteRule)
+    {
+      case SQL_CASCADE:   query += "\n      ON DELETE CASCADE";     break;
+      case SQL_SET_NULL:  query += "\n      ON DELETE SET NULL";    break;
+      default:            // In essence: ON DELETE RESTRICT, 
+                          // But Oracle cannot do that, so return an empty string and drop the constraint
+      case SQL_RESTRICT:  query.Empty();
+    }
+  }
+  return query;
+}
+
+CString
 SQLInfoOracle::GetCATALOGForeignDrop(CString p_schema,CString p_tablename,CString p_constraintname) const
+{
+  CString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+              " DROP CONSTRAINT " + p_constraintname);
+  return sql;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL TRIGGER FUNCTIONS
+
+CString
+SQLInfoOracle::GetCATALOGTriggerExists(CString p_schema, CString p_tablename, CString p_triggername) const
+{
+  p_schema.MakeUpper();
+  p_tablename.MakeUpper();
+  p_triggername.MakeUpper();
+
+  CString sql;
+  sql.Format("SELECT COUNT(*)\n"
+             "  FROM all_triggers\n"
+             " WHERE table_owner  = '%s'\n"
+             "   AND table_name   = '%s'\n"
+             "   AND trigger_name = '%s'"
+            ,p_schema.GetString()
+            ,p_tablename.GetString()
+            ,p_triggername.GetString());
+  return sql;
+}
+
+CString
+SQLInfoOracle::GetCATALOGTriggerList(CString p_schema, CString p_tablename) const
+{
+  return GetCATALOGTriggerAttributes(p_schema,p_tablename,"");
+}
+
+CString
+SQLInfoOracle::GetCATALOGTriggerAttributes(CString p_schema, CString p_tablename, CString p_triggername) const
+{
+  p_schema.MakeUpper();
+  p_tablename.MakeUpper();
+  p_triggername.MakeUpper();
+
+  CString sql;
+  sql.Format("SELECT ''    AS catalog_name\n"
+             "      ,owner AS schema_name\n"
+             "      ,table_name\n"
+             "      ,trigger_name\n"
+             "      ,triggering_event || ' ON ' || table_name AS description\n"
+             "      ,0     AS position\n"
+             "      ,CASE WHEN (InStr(trigger_type,    'BEFORE') > 0) THEN 1 ELSE 0 END AS trigger_before\n"
+             "      ,CASE WHEN (InStr(triggering_event,'INSERT') > 0) THEN 1 ELSE 0 END AS trigger_insert\n"
+             "      ,CASE WHEN (InStr(triggering_event,'UPDATE') > 0) THEN 1 ELSE 0 END AS trigger_update\n" 
+             "      ,CASE WHEN (InStr(triggering_event,'DELETE') > 0) THEN 1 ELSE 0 END AS trigger_delete\n" 
+             "      ,CASE WHEN (InStr(triggering_event,'SELECT') > 0) THEN 1 ELSE 0 END AS trigger_select\n"
+             "      ,CASE WHEN (InStr(triggering_event,'LOGON')  > 0 OR\n"
+             "                  InStr(triggering_event,'LOGOFF') > 0 ) THEN 1 ELSE 0 END AS trigger_session\n"
+             "      ,0  AS trigger_transaction\n"
+             "      ,0  AS trigger_rollback\n"
+             "      ,referencing_names\n"
+             "      ,CASE status\n"
+             "            WHEN 'DISABLED' THEN 0\n"
+             "                            ELSE 1\n"
+             "            END AS trigger_status\n"
+             "      ,trigger_body AS source\n"
+             "  FROM all_triggers\n"
+             " WHERE table_owner = '%s'\n"
+             "   AND table_name  = '%s'"
+             ,p_schema.GetString()
+             ,p_tablename.GetString());
+  if(!p_triggername.IsEmpty())
+  {
+    sql += "\n   AND trigger_name = '" + p_triggername + "'";
+  }
+  return sql;
+}
+
+CString
+SQLInfoOracle::GetCATALOGTriggerCreate(MetaTrigger& p_trigger) const
+{
+  // Command + trigger name
+  CString sql("CREATE OR REPLACE TRIGGER ");
+  sql += p_trigger.m_schemaName;
+  sql += ".";
+  sql += p_trigger.m_triggerName;
+  sql += "\n";
+
+  // Before or after
+  sql += p_trigger.m_before ? "BEFORE " : "AFTER ";
+
+  // Trigger actions
+  if(p_trigger.m_insert)
+  {
+    sql += "INSERT";
+  }
+  if(p_trigger.m_update)
+  {
+    if(p_trigger.m_insert)
+    {
+      sql += " OR ";
+    }
+    sql += "UPDATE";
+  }
+  if(p_trigger.m_delete)
+  {
+    if(p_trigger.m_insert || p_trigger.m_update)
+    {
+      sql += " OR ";
+    }
+    sql += "DELETE";
+  }
+
+  // Add trigger table
+  sql += " ON ";
+  sql += p_trigger.m_tableName;
+  sql += "\n";
+
+  // Referencing clause
+  if(!p_trigger.m_referencing.IsEmpty())
+  {
+    sql += p_trigger.m_referencing;
+    sql += "\nFOR EACH ROW\n";
+  }
+
+  // Add trigger body
+  sql += p_trigger.m_source;
+
+  return sql;
+}
+
+CString
+SQLInfoOracle::GetCATALOGTriggerDrop(CString p_schema, CString p_tablename, CString p_triggername) const
 {
   return "";
 }
 
 //////////////////////////////////////////////////////////////////////////
+// ALL SEQUENCE FUNCTIONS
+
+CString
+SQLInfoOracle::GetCATALOGSequenceExists(CString p_schema, CString p_sequence) const
+{
+  p_schema.MakeUpper();
+  p_sequence.MakeUpper();
+
+  CString sql = "SELECT COUNT(*)\n"
+                "  FROM all_sequences\n"
+                " WHERE sequence_owner = '" + p_schema + "'\n"
+                "   AND sequence_name  = '" + p_sequence + "'";
+  return sql;
+}
+
+CString
+SQLInfoOracle::GetCATALOGSequenceAttributes(CString p_schema, CString p_sequence) const
+{
+  p_schema.MakeUpper();
+  p_sequence.MakeUpper();
+
+  CString sql = "SELECT ''              AS catalog_name\n"
+                "      ,sequence_owner  AS schema_name\n"
+                "      ,sequence_name\n"
+                "      ,last_number     AS current_value\n"
+                "      ,min_value       AS minimaml_value\n"
+                "      ,increment_by    AS increment\n"
+                "      ,decode(cycle_flag,'N',0,1) AS cycle\n"
+                "      ,cache_size                 AS cache\n"
+                "      ,decode(order_flag,'N',0,1) AS ordering\n"
+                "  FROM all_sequences\n"
+                " WHERE sequence_owner = '" + p_schema + "'\n"
+                "   AND sequence_name  = '" + p_sequence + "'";
+  return sql;
+}
+
+CString
+SQLInfoOracle::GetCATALOGSequenceCreate(MetaSequence& p_sequence) const
+{
+  CString sql("CREATE SEQUENCE ");
+
+  if (!p_sequence.m_schemaName.IsEmpty())
+  {
+    sql += p_sequence.m_schemaName + ".";
+  }
+  sql += p_sequence.m_sequenceName;
+  sql.AppendFormat("\n START WITH %d", p_sequence.m_currentValue);
+  sql.AppendFormat("\n INCREMENT BY %d", p_sequence.m_increment);
+
+  sql += p_sequence.m_cycle ? "\n CYCLE" : "\n NOCYCLE";
+  sql += p_sequence.m_order ? "\n ORDER" : "\n NOORDER";
+  if (p_sequence.m_cache > 0)
+  {
+    sql.AppendFormat("\n CACHE %d",p_sequence.m_cache);
+  }
+  else
+  {
+    sql += "\n NOCACHE";
+  }
+  return sql;
+}
+
+CString
+SQLInfoOracle::GetCATALOGSequenceDrop(CString p_schema, CString p_sequence) const
+{
+  CString sql("DROP SEQUENCE " + p_schema + "." + p_sequence);
+  return  sql;
+}
+
+//////////////////////////////////////////////////////////////////////////
 //
-// SQL/PSM
+// SQL/PSM PERSISTENT STORED MODULES 
+//         Also called SPL or PL/SQL
+// o GetPSM<Object[s]><Function>
+//   -Procedures / Functions
+//   - Exists					GetPSMProcedureExists
+//   - List					  GetPSMProcedureList
+//   - Attributes
+//   - Create
+//   - Drop
+//
+// o PSMWORDS
+//   - Declare
+//   - Assignment(LET)
+//   - IF statement
+//   - FOR statement
+//   - WHILE / LOOP statement
+//   - CURSOR and friends
+//
+// o CALL the FUNCTION/PROCEDURE
 //
 //////////////////////////////////////////////////////////////////////////
 
+CString
+SQLInfoOracle::GetPSMProcedureExists(CString p_schema, CString p_procedure) const
+{
+  p_schema.MakeUpper();
+  p_procedure.MakeUpper();
+  return "SELECT COUNT(*)\n"
+         "  FROM all_objects\n"
+         " WHERE object_name = '" + p_procedure + "'\n"
+         "   AND object_type = 'FUNCTION';";
+}
 
+CString
+SQLInfoOracle::GetPSMProcedureList(CString p_schema) const
+{
+  return "";
+}
+
+CString
+SQLInfoOracle::GetPSMProcedureAttributes(CString p_schema, CString p_procedure) const
+{
+  return "";
+}
+
+CString
+SQLInfoOracle::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
+{
+  return "";
+}
+
+CString
+SQLInfoOracle::GetPSMProcedureDrop(CString p_schema, CString p_procedure) const
+{
+  return "";
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+//
+// SESSIONS
+// - Sessions (No create and drop)
+//   - GetSessionMyself
+//   - GetSessionExists
+//   - GetSessionList
+//   - GetSessionAttributes
+//     (was GetSessionAndTerminal)
+//     (was GetSessionUniqueID)
+// - Transactions
+//   - GetSessionDeferredConstraints
+//   - GetSessionImmediateConstraints
+//
+//////////////////////////////////////////////////////////////////////////
+
+CString
+SQLInfoOracle::GetSESSIONConstraintsDeferred() const
+{
+  // Set to DEFERRED for Oracle
+  return "ALTER SESSION SET CONSTRAINTS = DEFERRED";
+}
+
+CString
+SQLInfoOracle::GetSESSIONConstraintsImmediate() const
+{
+  // Set to IMMEDIATE for Oracle
+  return "ALTER SESSION SET CONSTRAINTS = IMMEDIATE";
+}
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -829,45 +1236,6 @@ CString
 SQLInfoOracle::GetSQLSelectIntoTemp(CString& p_tablename,CString& p_select) const
 {
    return "INSERT INTO " + p_tablename + "\n" + p_select + ";\n";
-}
-
-// Get the sql (if possible) to change the foreign key constraint
-CString 
-SQLInfoOracle::GetSQLAlterForeignKey(DBForeign& p_origin,DBForeign& p_requested) const
-{
-  // Construct the correct tablename
-  CString table(p_origin.m_tablename);
-  if(!p_origin.m_schema.IsEmpty())
-  {
-    table = p_origin.m_schema + "." + table;
-  }
-
-  // The base foreign key command
-  CString query = "ALTER TABLE " + table + "\n"
-                  "MODIFY CONSTRAINT " + p_origin.m_constraintname + "\n";
-
-  // Add all relevant options
-  if(p_origin.m_deferrable != p_requested.m_deferrable)
-  {
-    query.AppendFormat("\n      %sDEFERRABLE",p_requested.m_deferrable == 0 ? "NOT " : "");
-  }
-  if(p_origin.m_initiallyDeffered != p_requested.m_initiallyDeffered)
-  {
-    query += "\n      INITIALLY ";
-    query += p_requested.m_initiallyDeffered ? "DEFERRED" : "IMMEDIATE";
-  }
-  if(p_origin.m_deleteRule != p_requested.m_deleteRule)
-  {
-    switch(p_requested.m_deleteRule)
-    {
-      case 1: query += "\n      ON DELETE CASCADE";     break;
-      case 2: query += "\n      ON DELETE SET NULL";    break;
-      default:// In essence: ON DELETE RESTRICT, 
-              // But Oracle cannot do that, so return an empty string and drop the constraint
-      case 0: query.Empty();
-    }
-  }
-  return query;
 }
 
 // Gets the fact if an IF statement needs to be bordered with BEGIN/END
@@ -917,189 +1285,6 @@ SQLInfoOracle::GetAssignmentSelectParenthesis() const
 
 // SQL CATALOG QUERIES
 // ===================================================================
-
-// Get SQL to check if a stored procedure already exists in the database
-CString 
-SQLInfoOracle::GetSQLStoredProcedureExists(CString& p_name) const
-{
-  CString uname(p_name);
-  uname.MakeUpper();
-  return "SELECT COUNT(*)\n"
-         "  FROM all_objects\n"
-         " WHERE UPPER(object_name) = '" + uname + "'\n"
-         "   AND object_type        = 'FUNCTION';";
-}
-
-// Gets DEFERRABLE for a constraint (or nothing)
-CString 
-SQLInfoOracle::GetConstraintDeferrable() const
-{
-  return " DEFERRABLE";
-}
-
-// Defer Constraints until the next COMMIT;
-CString 
-SQLInfoOracle::GetSQLDeferConstraints() const
-{
-  // Two SQL Forms for this
-  // 1) SET CONSTRAINTS ALL DEFERRED
-  // 2) ALTER SESSION SET CONSTRAINTS = DEFERRED
-  // In Oracle always deferred in a transaction
-  return "ALTER SESSION SET CONSTRAINTS = DEFERRED";
-}
-
-// Reset constraints back to immediate
-CString 
-SQLInfoOracle::GetSQLConstraintsImmediate() const
-{
-  // Two SQL forms for this:
-  // 1) SET CONSTRAINTS ALL IMMEDIATE
-  // 2) ALTER SESSION SET CONSTRAINTS = IMMEDIATE
-  // In oracle always deferred in a transaction
-  return "ALTER SESSION SET CONSTRAINTS = IMMEDIATE";
-}
-
-// Get SQL to select all constraints on a table from the catalog
-CString 
-SQLInfoOracle::GetSQLGetConstraintsForTable(CString& p_tableName) const
-{
-  // [EH] Expanded with a filter on SYS_ to prevent NOT NULL constraints
-  // to be dropped twice in a row
-  // [EH] Type 'R' filtered out, otherwise all reference constraints
-  // will be dropped at dropping the check constraints
-  CString upperName = p_tableName;
-  upperName.MakeUpper();
-  CString contabel = "SELECT con.constraint_name\n"
-                     "      ,con.table_name\n"
-                     "  FROM user_constraints con\n"
-                     " WHERE con.constraint_type in ('C','U')\n"
-                     "   AND con.table_name = '" + upperName + "'\n"
-                     "   AND NOT constraint_name like 'SYS_%'"; 
-  return contabel;
-}
-
-// Get SQL to read the referential constraints from the catalog
-CString 
-SQLInfoOracle::GetSQLTableReferences(CString p_schema
-                                    ,CString p_tablename
-                                    ,CString p_constraint /*=""*/
-                                    ,int     /* p_maxColumns = SQLINFO_MAX_COLUMNS*/) const
-{
-  // Oracle catalog is in uppercase
-  p_schema.MakeUpper();
-  p_tablename.MakeUpper();
-  p_constraint.MakeUpper();
-
-  // Minimal requirements of the catalog
-  if(p_schema.IsEmpty() || p_tablename.IsEmpty())
-  {
-    throw CString("Cannot get table references without schema/tablename");
-  }
-
-  CString query = "SELECT con.constraint_name  AS foreign_key_constraint\n"
-                  "      ,con.owner            AS schema_name\n"
-                  "      ,con.table_name       AS table_name\n"
-                  "      ,col.column_name      AS column_name\n"
-                  "      ,pri.table_name       AS primary_table_name\n"
-                  "      ,pky.column_name      AS primary_column_name\n"
-                  "      ,CASE con.deferrable  WHEN 'NOT DEFERRABLE' THEN 0\n"
-                  "                            WHEN 'DEFERRABLE'     THEN 1\n"
-                  "                            ELSE 0 END AS DEFERRABLE\n"
-                  "      ,CASE con.deferred    WHEN 'IMMEDIATE'      THEN 0\n"
-                  "                            ELSE 1 END AS initially_deferred\n"
-                  "      ,CASE con.status      WHEN 'ENABLED' THEN 1\n"
-                  "                            ELSE 0 END AS enabled\n"
-                  "      ,0                    AS match_option\n"
-                  "      ,0                    AS update_rule\n"
-                  "      ,CASE con.delete_rule WHEN 'RESTRICT'    THEN 1\n"
-                  "                            WHEN 'CASCADE'     THEN 0\n"
-                  "                            WHEN 'SET NULL'    THEN 2\n"
-                  "                            WHEN 'SET DEFAULT' THEN 4\n"
-                  "                            WHEN 'NO ACTION'   THEN 3\n"
-                  "                            ELSE 0 END AS delete_rule\n"
-                  "  FROM dba_constraints  con\n"
-                  "      ,dba_cons_columns col\n"
-                  "      ,dba_constraints  pri\n"
-                  "      ,dba_cons_columns pky\n"
-                  " WHERE con.owner           = col.owner\n"
-                  "   AND con.constraint_name = col.constraint_name\n"
-                  "   AND con.table_name      = col.table_name\n"
-                  "   AND pri.owner           = con.r_owner\n"
-                  "   AND pri.constraint_name = con.r_constraint_name\n"
-                  "   AND pri.owner           = pky.owner\n"
-                  "   AND pri.constraint_name = pky.constraint_name\n"
-                  "   AND pri.table_name      = pky.table_name\n"
-                  "   AND col.position        = pky.position\n"
-                  "   AND con.constraint_type = 'R'";
-                  "   AND con.owner           = '" + p_schema    + "'\n"
-                  "   AND con.table_name      = '" + p_tablename + "'";
-
-  // Optionally a constraint name                
-  if(!p_constraint.IsEmpty())
-  {
-    query += "\n   AND con.constraint_name = '" + p_constraint + "'";
-  }
-  return query;
-}
-
-// Get the SQL to determine the sequence state in the database
-CString 
-SQLInfoOracle::GetSQLSequence(CString p_schema,CString p_tablename,CString p_postfix /*= "_seq"*/) const
-{
-  p_schema.MakeUpper();
-  CString sequence = p_tablename + p_postfix;
-  sequence.MakeUpper();
-
-  CString sql = "SELECT sequence_name\n"
-                "      ,last_number AS current_value\n"
-                "      ,Decode(min_value,   1,1,0) *\n"
-                "       Decode(increment_by,1,1,0) *\n"
-                "       Decode(cycle_flag,'N',1,0) *\n"
-                "       Decode(cache_size,  0,1,0) AS is_correct\n"
-                "  FROM dba_sequences\n"
-                " WHERE sequence_owner = '" + p_schema + "'\n"
-                "   AND sequence_name  = '" + sequence + "'";
-  return sql;
-}
-
-// Create a sequence in the database
-CString 
-SQLInfoOracle::GetSQLCreateSequence(CString p_schema,CString p_tablename,CString p_postfix /*= "_seq"*/,int p_startpos) const
-{
-  CString sql("CREATE SEQUENCE ");
-
-  if(!p_schema.IsEmpty())
-  {
-    sql += p_schema + ".";
-  }
-  sql += p_tablename + p_postfix;
-  sql.AppendFormat(" START WITH %d",p_startpos);
-  sql += " NOCYCLE NOCACHE ORDER";
-  return sql;
-}
-
-// Remove a sequence from the database
-CString 
-SQLInfoOracle::GetSQLDropSequence(CString p_schema,CString p_tablename,CString p_postfix /*= "_seq"*/) const
-{
-  CString sql;
-  CString sequence = p_tablename + p_postfix;
-
-  sql = "DROP SEQUENCE " + p_schema + "." + sequence;
-  return sql;
-}
-
-// Gets the SQL for the rights on the sequence
-CString
-SQLInfoOracle::GetSQLSequenceRights(CString p_schema,CString p_tableName,CString p_postfix /*="_seq"*/) const
-{
-  CString sequence = p_tableName + p_postfix;
-  if(!p_schema.IsEmpty())
-  {
-    sequence = p_schema + "." + sequence;
-  }
-  return "GRANT SELECT, ALTER ON " + sequence + " TO " + GetGrantedUsers();
-}
 
 // Remove a stored procedure from the database
 void    
@@ -1153,20 +1338,6 @@ SQLInfoOracle::GetSQLSearchSession(const CString& /*p_databaseName*/,const CStri
           "         FROM "+ p_sessionTable+ ")";
 }
 
-// Does the named constraint exist in the database
-bool    
-SQLInfoOracle::DoesConstraintExist(CString p_constraintName) const
-{
-  CString constraint(p_constraintName);
-  constraint.MakeUpper();
-
-  SQLQuery qry(m_database);
-  qry.DoSQLStatement("SELECT 1\n"
-                     "  FROM all_constraints c\n"
-                     " WHERE c.constraint_name = '" + constraint + "'\n");
-  return qry.GetRecord();
-}
-
 // Gets the lock-table query
 CString 
 SQLInfoOracle::GetSQLLockTable(CString& p_tableName,bool p_exclusive) const
@@ -1198,53 +1369,8 @@ SQLInfoOracle::GetOnlyOneUserSession()
   return true;
 }
 
-// Gets the triggers for a table
-CString
-SQLInfoOracle::GetSQLTriggers(CString p_schema,CString p_table) const
-{
-  CString sql;
-  sql.Format("SELECT ''    AS catalog_name\n"
-             "      ,owner AS schema_name\n"
-             "      ,table_name\n"
-             "      ,trigger_name\n"
-             "      ,triggering_event || ' ON ' || table_name AS description\n"
-             "      ,0     AS position\n"
-             "      ,CASE WHEN (InStr(trigger_type,    'BEFORE') > 0) THEN 1 ELSE 0 END AS trigger_before\n"
-             "      ,CASE WHEN (InStr(triggering_event,'INSERT') > 0) THEN 1 ELSE 0 END AS trigger_insert\n"
-             "      ,CASE WHEN (InStr(triggering_event,'UPDATE') > 0) THEN 1 ELSE 0 END AS trigger_update\n" 
-             "      ,CASE WHEN (InStr(triggering_event,'DELETE') > 0) THEN 1 ELSE 0 END AS trigger_delete\n" 
-             "      ,CASE WHEN (InStr(triggering_event,'SELECT') > 0) THEN 1 ELSE 0 END AS trigger_select\n"
-             "      ,CASE WHEN (InStr(triggering_event,'LOGON')  > 0 OR\n"
-             "                  InStr(triggering_event,'LOGOFF') > 0 ) THEN 1 ELSE 0 END AS trigger_session\n"
-             "      ,0  AS trigger_transaction\n"
-             "      ,0  AS trigger_rollback\n"
-             "      ,referencing_names\n"
-             "      ,CASE status\n"
-             "            WHEN 'DISABLED' THEN 0\n"
-             "                            ELSE 1\n"
-             "            END AS trigger_status\n"
-             "      ,trigger_body AS source\n"
-             "  FROM all_triggers\n"
-             " WHERE table_owner = '%s'\n"
-             "   AND table_name  = '%s'"
-             ,p_schema.GetString()
-             ,p_table.GetString());
-  return sql;
-}
-
 // SQL DDL STATEMENTS
 // ==================
-
-// Add a foreign key to a table
-CString
-SQLInfoOracle::GetCreateForeignKey(CString p_tablename,CString p_constraintname,CString p_column,CString p_refTable,CString p_primary)
-{
-  CString sql = "ALTER TABLE " + p_tablename + "\n"
-                "  ADD CONSTRAINT " + p_constraintname + "\n"
-                "      FOREIGN KEY (" + p_column + ")\n"
-                "      REFERENCES " + p_refTable + "(" + p_primary + ")";
-  return sql;
-}
 
 // Get the SQL to drop a view. If precursor is filled: run that SQL first!
 CString 
@@ -1259,60 +1385,6 @@ CString
 SQLInfoOracle::GetSQLCreateOrReplaceView(CString p_schema,CString p_view,CString p_asSelect) const
 {
   return "CREATE OR REPLACE VIEW " + p_schema + "." + p_view + "\n" + p_asSelect;
-}
-
-// Create or replace a trigger
-CString
-SQLInfoOracle::CreateOrReplaceTrigger(MetaTrigger& p_trigger) const
-{
-  // Command + trigger name
-  CString sql("CREATE OR REPLACE TRIGGER ");
-  sql += p_trigger.m_schemaName;
-  sql += ".";
-  sql += p_trigger.m_triggerName;
-  sql += "\n";
-
-  // Before or after
-  sql += p_trigger.m_before ? "BEFORE " : "AFTER ";
-
-  // Trigger actions
-  if(p_trigger.m_insert)
-  {
-    sql += "INSERT";
-  }
-  if(p_trigger.m_update)
-  {
-    if(p_trigger.m_insert)
-    {
-      sql += " OR ";
-    }
-    sql += "UPDATE";
-  }
-  if(p_trigger.m_delete)
-  {
-    if(p_trigger.m_insert || p_trigger.m_update)
-    {
-      sql += " OR ";
-    }
-    sql += "DELETE";
-  }
-
-  // Add trigger table
-  sql += " ON ";
-  sql += p_trigger.m_tableName;
-  sql += "\n";
-
-  // Referencing clause
-  if(!p_trigger.m_referencing.IsEmpty())
-  {
-    sql += p_trigger.m_referencing;
-    sql += "\nFOR EACH ROW\n";
-  }
-
-  // Add trigger body
-  sql += p_trigger.m_source;
-
-  return sql;
 }
 
 // SQL DDL ACTIONS

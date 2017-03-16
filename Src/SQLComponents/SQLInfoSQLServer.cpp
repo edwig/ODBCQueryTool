@@ -649,19 +649,89 @@ SQLInfoSQLServer::GetCATALOGPrimaryDrop(CString p_schema,CString p_tablename,CSt
 CString
 SQLInfoSQLServer::GetCATALOGForeignExists(CString p_schema,CString p_tablename,CString p_constraintname) const
 {
-  return "";
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+  p_constraintname.MakeLower();
+
+  CString sql;
+  sql.Format("SELECT COUNT(*)\n"
+             "  FROM sys.foreign_keys fok\n"
+             "      ,sys.schemas      sch\n"
+             "      ,sys.tables       tab\n"
+             " WHERE fok.type = 'F'\n"
+             "   AND fok.parent_object_id = tab.object_id\n"
+             "   AND tab.schema_id        = sch.schema_id\n"
+             "   AND sch.name             = '" + p_schema + "'\n"
+             "   AND tab.name             = '" + p_tablename + "'\n"
+             "   AND fok.name             = '" + p_constraintname + "'"
+            ,p_schema.GetString()
+            ,p_tablename.GetString()
+            ,p_constraintname.GetString());
+  return sql;
 }
 
 CString
-SQLInfoSQLServer::GetCATALOGForeignList(CString p_schema,CString p_tablename) const
+SQLInfoSQLServer::GetCATALOGForeignList(CString p_schema,CString p_tablename,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
 {
-  return "";
+  return GetCATALOGForeignAttributes(p_schema,p_tablename,"",p_maxColumns);
 }
 
 CString
-SQLInfoSQLServer::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraintname) const
+SQLInfoSQLServer::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraint,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
 {
-  return "";
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+  p_constraint.MakeLower();
+  CString query = "SELECT db_name()         as primary_catalog_name\n"
+                  "      ,sch.name          as primary_schema_name\n"
+                  "      ,pri.name          as primary_table_name\n"
+                  "      ,db_name()         as foreign_catalog_name\n"
+                  "      ,sch.name          as foreign_schema_name\n"
+                  "      ,tab.name          as foreign_table_name\n"
+                  "      ,''                as primary_key_constraint\n"
+                  "      ,fok.name          as foreign_key_constraint\n"
+                  "      ,fkc.constraint_column_id      as key_sequence"
+                  "      ,pky.name          as primary_key_column\n"
+                  "      ,col.name          as foreign_key_column\n"
+                  "      ,fok.update_referential_action as update_rule\n"
+                  "      ,fok.delete_referential_action as delete_rule\n"
+                  "      ,0                 as deferrable\n"
+                  "      ,1                 as match_option\n"
+                  "      ,0                 as initially_deferred\n"
+                  "      ,fok.is_disabled   as disabled\n"
+                  "  FROM sys.foreign_keys        fok\n"
+                  "      ,sys.foreign_key_columns fkc\n"
+                  "      ,sys.schemas sch\n"
+                  "      ,sys.tables  tab\n"
+                  "      ,sys.columns col\n"
+                  "      ,sys.tables  pri\n"
+                  "      ,sys.columns pky\n"
+                  " WHERE fok.type = 'F'\n"
+                  "   AND fok.parent_object_id     = tab.object_id\n"
+                  "   AND tab.schema_id            = sch.schema_id\n"
+                  "   AND fkc.constraint_object_id = fok.object_id\n"
+                  "   AND fkc.parent_object_id     = col.object_id\n"
+                  "   AND fkc.parent_column_id     = col.column_id\n"
+                  "   AND fkc.referenced_object_id = pri.object_id\n"
+                  "   AND fkc.referenced_object_id = pky.object_id\n"
+                  "   AND fkc.referenced_column_id = pky.column_id\n";
+  if(!p_schema.IsEmpty())
+  {
+    query += "   AND sch.name = '" + p_schema + "'\n";
+  }
+  if(!p_tablename.IsEmpty())
+  {
+    query += "   AND tab.name = '" + p_tablename + "'\n";
+  }
+  if(!p_constraint.IsEmpty())
+  {
+    query += "   AND fok.name = '" + p_constraint + "'\n";
+  }
+
+  // Order upto column number
+  query += " ORDER BY 1,2,3,4,5,6,7,8,9";
+
+  return query;
 }
 
 CString
@@ -734,18 +804,281 @@ SQLInfoSQLServer::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
 }
 
 CString
+SQLInfoSQLServer::GetCATALOGForeignAlter(MForeignMap& /*p_original*/, MForeignMap& /*p_requested*/) const
+{
+  // MS-SQL Server cannot alter a foreign-key constraint.
+  // You must drop and then re-create your foreign key constraint
+  // So return an empty string to signal this!
+
+  // THIS IS POSSIBLE!
+  // ALTER TABLE schema.table { NOCHECK | CHECK } CONSTRAINT <constraintname>
+
+  return "";
+}
+
+CString
 SQLInfoSQLServer::GetCATALOGForeignDrop(CString p_schema,CString p_tablename,CString p_constraintname) const
+{
+  CString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+              " DROP CONSTRAINT " + p_constraintname);
+  return sql;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL TRIGGER FUNCTIONS
+
+CString
+SQLInfoSQLServer::GetCATALOGTriggerExists(CString p_schema, CString p_tablename, CString p_triggername) const
+{
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+  p_triggername.MakeLower();
+
+  CString sql;
+  sql.Format("SELECT COUNT(*)\n"
+             "  FROM sys.triggers trg\n"
+             "      ,sys.objects  tab\n"
+             "      ,sys.schemas  sch\n"
+             " WHERE sch.name      = '%s'\n"
+             "   AND tab.name      = '%s'\n"
+             "   AND trg.name      = '%s'\n"
+             "   AND tab.object_id = trg.parent_id\n"
+             "   AND tab.schema_id = sch.schema_id"
+            ,p_schema.GetString()
+            ,p_tablename.GetString()
+            ,p_triggername.GetString());
+  return sql;
+}
+
+CString
+SQLInfoSQLServer::GetCATALOGTriggerList(CString p_schema, CString p_tablename) const
+{
+  return GetCATALOGTriggerAttributes(p_schema,p_tablename,"");
+}
+
+CString
+SQLInfoSQLServer::GetCATALOGTriggerAttributes(CString p_schema, CString p_tablename, CString p_triggername) const
+{
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+  p_triggername.MakeLower();
+
+  CString sql;
+  sql.Format("SELECT ''       AS catalog_name\n"
+             "      ,sch.name AS schema_name\n"
+             "      ,tab.name AS table_name\n"
+             "      ,trg.name AS trigger_name\n"
+             "      ,trg.name + ' ON TABLE ' + tab.name AS trigger_description\n"
+             "      ,0        AS position\n"
+             "      ,0        AS trigger_before\n"
+             "      ,(SELECT CASE type_desc WHEN 'INSERT' THEN 1 ELSE 0 END\n"
+             "          FROM sys.trigger_events ev\n"
+             "         WHERE ev.object_id = trg.object_id) AS trigger_insert\n"
+             "      ,(SELECT CASE type_desc WHEN 'UPDATE' THEN 1 ELSE 0 END\n"
+             "          FROM sys.trigger_events ev\n"
+             "         WHERE ev.object_id = trg.object_id) AS trigger_update\n"
+             "      ,(SELECT CASE type_desc WHEN 'DELETE' THEN 1 ELSE 0 END\n"
+             "          FROM sys.trigger_events ev\n"
+             "         WHERE ev.object_id = trg.object_id) AS trigger_delete\n"
+             "      ,(SELECT CASE type_desc WHEN 'SELECT' THEN 1 ELSE 0 END\n"
+             "          FROM sys.trigger_events ev\n"
+             "         WHERE ev.object_id = trg.object_id) AS trigger_select\n"
+             "      ,0  AS trigger_session\n"
+             "   	  ,0  AS trigger_transaction\n"
+             "      ,0  AS trigger_rollback\n"
+             "      ,'' AS trigger_referencing\n"
+             "  	  ,CASE trg.is_disabled WHEN 0 THEN 1 ELSE 0 END AS trigger_enabled\n"
+             "  	  ,mod.definition AS trigger_source\n"
+             "  FROM sys.triggers    trg\n"
+             "      ,sys.sql_modules mod\n"
+             "      ,sys.objects     tab\n"
+             "      ,sys.schemas     sch\n"
+             " WHERE sch.name      = '%s'\n"
+             "   AND tab.name      = '%s'\n"
+             "   AND trg.object_id = mod.object_id\n"
+             "   AND tab.object_id = trg.parent_id\n"
+             "   AND tab.schema_id = sch.schema_id"
+            ,p_schema.GetString()
+            ,p_tablename.GetString());
+  if(!p_triggername.IsEmpty())
+  {
+    sql += "   AND trg.name = '" + p_triggername + "'";
+  }
+  return sql;
+}
+
+CString
+SQLInfoSQLServer::GetCATALOGTriggerCreate(MetaTrigger& p_trigger) const
+{
+  // Simply return the SYS.SQL_MODULE.definition block
+  CString sql(p_trigger.m_source);
+  sql.TrimRight(';');
+  return sql;
+}
+
+CString
+SQLInfoSQLServer::GetCATALOGTriggerDrop(CString p_schema, CString p_tablename, CString p_triggername) const
+{
+  return "";
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL SEQUENCE FUNCTIONS
+
+CString
+SQLInfoSQLServer::GetCATALOGSequenceExists(CString p_schema, CString p_sequence) const
+{
+  p_schema.MakeLower();
+  p_sequence.MakeLower();
+  CString sql = "SELECT COUNT(*)\n"
+                "  FROM sys.sequences seq\n"
+                "      ,sys.schemas   sch\n"
+                " WHERE sch.object_id = seq.schema_id\n"
+                "   AND seq.name = '" + p_sequence + "'\n"
+                "   AND sch.name = '" + p_schema   + "'";
+  return sql;
+}
+
+CString
+SQLInfoSQLServer::GetCATALOGSequenceAttributes(CString p_schema, CString p_sequence) const
+{
+  p_schema.MakeLower();
+  p_sequence.MakeLower();
+  CString sql = "SELECT ''       AS catalog_name\n"
+                "      ,sch.name AS schema_name\n"
+                "      ,seq.name AS sequence_name\n"
+                "      ,seq.current_value\n"
+                "      ,0        AS minimal_value\n"
+                "      ,1        AS increment\n"
+                "      ,seq.is_cached AS cache\n"
+                "      ,seq.is_cycling AS cycle\n"
+                "      ,0        AS ordering\n"
+                "  FROM sys.sequences seq\n"
+                "      ,sys.schemas   sch\n"
+                " WHERE sch.object_id = seq.schema_id\n"
+                "   AND seq.name = '" + p_sequence + "'\n"
+                "   AND sch.name = '" + p_schema   + "'";
+  return sql;
+}
+
+CString
+SQLInfoSQLServer::GetCATALOGSequenceCreate(MetaSequence& p_sequence) const
+{
+  CString sql("CREATE SEQUENCE ");
+
+  if (!p_sequence.m_schemaName.IsEmpty())
+  {
+    sql += p_sequence.m_schemaName + ".";
+  }
+  sql += p_sequence.m_sequenceName;
+  sql.AppendFormat("\n START WITH %d", p_sequence.m_currentValue);
+
+  sql += p_sequence.m_cycle ? "\n CYCLE" : "\n NOCYCLE";
+  if (p_sequence.m_cache > 0)
+  {
+    sql.AppendFormat("\n CACHE %d",p_sequence.m_cache);
+  }
+  else
+  {
+    sql += "\n NOCACHE";
+  }
+  return sql;
+}
+
+CString
+SQLInfoSQLServer::GetCATALOGSequenceDrop(CString p_schema, CString p_sequence) const
+{
+  CString sql("DROP SEQUENCE " + p_schema + "." + p_sequence);
+  return  sql;
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// SQL/PSM PERSISTENT STORED MODULES 
+//         Also called SPL or PL/SQL
+// o GetPSM<Object[s]><Function>
+//   -Procedures / Functions
+//   - Exists					GetPSMProcedureExists
+//   - List					  GetPSMProcedureList
+//   - Attributes
+//   - Create
+//   - Drop
+//
+// o PSMWORDS
+//   - Declare
+//   - Assignment(LET)
+//   - IF statement
+//   - FOR statement
+//   - WHILE / LOOP statement
+//   - CURSOR and friends
+//
+// o CALL the FUNCTION/PROCEDURE
+//
+//////////////////////////////////////////////////////////////////////////
+
+CString
+SQLInfoSQLServer::GetPSMProcedureExists(CString p_schema, CString p_procedure) const
+{
+  p_procedure.MakeUpper();
+  return "SELECT count(*)\n"
+         "  FROM all_objects\n"
+         " WHERE UPPER(object_name) = '" + p_procedure + "'\n"
+         "   AND object_type        = 'FUNCTION';";
+}
+
+CString
+SQLInfoSQLServer::GetPSMProcedureList(CString p_schema) const
+{
+  return "";
+}
+
+CString
+SQLInfoSQLServer::GetPSMProcedureAttributes(CString p_schema, CString p_procedure) const
+{
+  return "";
+}
+
+CString
+SQLInfoSQLServer::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
+{
+  return "";
+}
+
+CString
+SQLInfoSQLServer::GetPSMProcedureDrop(CString p_schema, CString p_procedure) const
 {
   return "";
 }
 
 //////////////////////////////////////////////////////////////////////////
 //
-// SQL/PSM
+// SESSIONS
+// - Sessions (No create and drop)
+//   - GetSessionMyself
+//   - GetSessionExists
+//   - GetSessionList
+//   - GetSessionAttributes
+//     (was GetSessionAndTerminal)
+//     (was GetSessionUniqueID)
+// - Transactions
+//   - GetSessionDeferredConstraints
+//   - GetSessionImmediateConstraints
 //
 //////////////////////////////////////////////////////////////////////////
 
+CString
+SQLInfoSQLServer::GetSESSIONConstraintsDeferred() const
+{
+  // SQL-Server cannot defer constraints
+  return "";
+}
 
+CString
+SQLInfoSQLServer::GetSESSIONConstraintsImmediate() const
+{
+  // SQL-Server constraints are always active
+  return "";
+}
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -782,16 +1115,6 @@ CString
 SQLInfoSQLServer::GetSQLSelectIntoTemp(CString& p_tablename,CString& p_select) const
 {
   return "INSERT INTO #" + p_tablename + "\n" + p_select + ";\n";
-}
-
-// Get the sql (if possible) to change the foreign key constraint
-CString 
-SQLInfoSQLServer::GetSQLAlterForeignKey(DBForeign& /*p_origin*/,DBForeign& /*p_requested*/) const
-{
-  // MS-SQL Server cannot alter a foreign-key constraint.
-  // You must drop and then re-create your foreign key constraint
-  // So return an empty string to signal this!
-  return "";
 }
 
 // Gets the fact if an IF statement needs to be bordered with BEGIN/END
@@ -851,161 +1174,6 @@ SQLInfoSQLServer::GetAssignmentSelectParenthesis() const
 // SQL CATALOG QUERIES
 // ===================================================================
 
-// Get SQL to check if a stored procedure already exists in the database
-CString 
-SQLInfoSQLServer::GetSQLStoredProcedureExists(CString& p_name) const
-{
-  CString unaam(p_name);
-  unaam.MakeUpper();
-  return "SELECT count(*)\n"
-         "  FROM all_objects\n"
-         " WHERE UPPER(object_name) = '" + unaam + "'\n"
-         "   AND object_type        = 'FUNCTION';";
-}
-
-// Gets DEFERRABLE for a constraint (or nothing)
-CString
-SQLInfoSQLServer::GetConstraintDeferrable() const
-{
-  return "";
-}
-
-// Defer Constraints until the next COMMIT;
-CString 
-SQLInfoSQLServer::GetSQLDeferConstraints() const
-{
-  return "";
-}
-
-// Reset constraints back to immediate
-CString 
-SQLInfoSQLServer::GetSQLConstraintsImmediate() const
-{
-  return "";
-}
-
-// Get SQL to select all constraints on a table from the catalog
-CString 
-SQLInfoSQLServer::GetSQLGetConstraintsForTable(CString& p_tableName) const
-{
-  CString contabel = "SELECT con.name\n"
-                     "      ,tab.name\n"
-                     "  FROM dbo.sysobjects con, dbo.sysobjects tab\n"
-                     " WHERE tab.name = '" + p_tableName + "'\n"
-                     "   AND tab.Id = con.parent_obj\n"
-                     "   AND con.xtype in ('C ', 'UQ')\n"
-                     "   AND con.type  in ('C ', 'K ')\n";
-  return contabel;
-}
-
-// Get SQL to read the referential constraints from the catalog
-CString 
-SQLInfoSQLServer::GetSQLTableReferences(CString p_schema
-                                       ,CString p_tablename
-                                       ,CString p_constraint /*=""*/
-                                       ,int     /*p_maxColumns = SQLINFO_MAX_COLUMNS*/) const
-{
-  p_schema.MakeLower();
-  p_tablename.MakeLower();
-  CString query = "SELECT fok.name          as foreign_key_constraint\n"
-                  "      ,sch.name          as schema_name\n"
-                  "      ,tab.name          as table_name\n"
-                  "      ,col.name          as column_name\n"
-                  "      ,pri.name          as primary_table_name\n"
-                  "      ,pky.name          as primary_key_column\n"
-                  "      ,0                 as deferrable\n"
-                  "      ,0                 as initially_deferred\n"
-                  "      ,fok.is_disabled   as disabled\n"
-                  "      ,1                 as match_option\n"
-                  "      ,fok.delete_referential_action as delete_rule\n"
-                  "      ,fok.update_referential_action as update_rule\n"
-                  "  FROM sys.foreign_keys        fok\n"
-                  "      ,sys.foreign_key_columns fkc\n"
-                  "      ,sys.schemas sch\n"
-                  "      ,sys.tables  tab\n"
-                  "      ,sys.columns col\n"
-                  "      ,sys.tables  pri\n"
-                  "      ,sys.columns pky\n"
-                  " WHERE fok.type = 'F'\n"
-                  "   AND fok.parent_object_id     = tab.object_id\n"
-                  "   AND tab.schema_id            = sch.schema_id\n"
-                  "   AND fkc.constraint_object_id = fok.object_id\n"
-                  "   AND fkc.parent_object_id     = col.object_id\n"
-                  "   AND fkc.parent_column_id     = col.column_id\n"
-                  "   AND fkc.referenced_object_id = pri.object_id\n"
-                  "   AND fkc.referenced_object_id = pky.object_id\n"
-                  "   AND fkc.referenced_column_id = pky.column_id";
-  if(!p_schema.IsEmpty())
-  {
-    query += "\n   AND sch.name = '" + p_schema + "'";
-  }
-  if(!p_tablename.IsEmpty())
-  {
-    query += "\n   AND tab.name = '" + p_tablename + "'";
-  }
-  if(!p_constraint.IsEmpty())
-  {
-    query += "\n   AND fok.name = '" + p_constraint + "'";
-  }
-  return query;
-}
-
-// Get the SQL to determine the sequence state in the database
-CString 
-SQLInfoSQLServer::GetSQLSequence(CString p_schema,CString p_tablename,CString p_postfix /*= "_seq"*/) const
-{
-  CString sequence = p_tablename + p_postfix;
-  sequence.MakeLower();
-  p_schema.MakeLower();
-  CString sql = "SELECT name as sequence_name\n"
-                "      ,current_value\n"
-                "      ,decode(is_cycling,0,1,0) *\n"
-                "       decode(is_cached, 0,1,0) as is_correct"
-                "  FROM sys.sequences seq\n"
-                "      ,sys.schemas   sch\n"
-                " WHERE sch.object_id = seq.schema_id\n"
-                "   AND seq.name = '" + sequence + "'\n"
-                "   AND sch.name = '" + p_schema + "'";
-  return sql;
-}
-
-// Create a sequence in the database
-CString 
-SQLInfoSQLServer::GetSQLCreateSequence(CString p_schema,CString p_tablename,CString p_postfix /*= "_seq"*/,int p_startpos) const
-{
-  CString sql("CREATE SEQUENCE ");
-
-  if(!p_schema.IsEmpty())
-  {
-    sql += p_schema + ".";
-  }
-  sql += p_tablename + p_postfix;
-  sql.AppendFormat(" START WITH %d",p_startpos);
-  sql += " NO CYCLE NO CACHE";
-  return sql;
-}
-
-// Remove a sequence from the database
-CString 
-SQLInfoSQLServer::GetSQLDropSequence(CString p_schema,CString p_tablename,CString p_postfix /*= "_seq"*/) const
-{
-  CString sql;
-  sql = "DROP SEQUENCE " + p_schema + "." + p_tablename + p_postfix;
-  return sql;
-}
-
-// Gets the SQL for the rights on the sequence
-CString
-SQLInfoSQLServer::GetSQLSequenceRights(CString p_schema,CString p_tableName,CString p_postfix /*="_seq"*/) const
-{
-  CString sequence = p_tableName + p_postfix;
-  if(!p_schema.IsEmpty())
-  {
-    sequence = p_schema + "." + sequence;
-  }
-  return "GRANT SELECT ON " + sequence + " TO " + GetGrantedUsers();
-}
-
 // Remove a stored procedure from the database
 void 
 SQLInfoSQLServer::DoRemoveProcedure(CString& p_procedureName) const
@@ -1062,14 +1230,6 @@ SQLInfoSQLServer::GetSQLSearchSession(const CString& /*p_databaseName*/,const CS
          "         FROM "+ p_sessionTable + ")";
 }
 
-// Does the named constraint exist in the database
-bool    
-SQLInfoSQLServer::DoesConstraintExist(CString p_constraintName) const
-{
-// To be implemented
-  return false;
-}
-
 // Gets the lock-table query
 CString 
 SQLInfoSQLServer::GetSQLLockTable(CString& p_tableName,bool p_exclusive) const
@@ -1107,63 +1267,9 @@ SQLInfoSQLServer::GetOnlyOneUserSession()
   return (var->GetAsSLong() <= 1);
 }
 
-// Gets the triggers for a table
-CString
-SQLInfoSQLServer::GetSQLTriggers(CString p_schema,CString p_table) const
-{
-  CString sql;
-  sql.Format("SELECT ''       AS catalog_name\n"
-             "      ,sch.name AS schema_name\n"
-             "      ,tab.name AS table_name\n"
-             "      ,trg.name AS trigger_name\n"
-             "      ,trg.name + ' ON TABLE ' + tab.name AS trigger_description\n"
-             "      ,0        AS position\n"
-             "      ,0        AS trigger_before\n"
-             "      ,(SELECT CASE type_desc WHEN 'INSERT' THEN 1 ELSE 0 END\n"
-             "          FROM sys.trigger_events ev\n"
-             "         WHERE ev.object_id = trg.object_id) AS trigger_insert\n"
-             "      ,(SELECT CASE type_desc WHEN 'UPDATE' THEN 1 ELSE 0 END\n"
-             "          FROM sys.trigger_events ev\n"
-             "         WHERE ev.object_id = trg.object_id) AS trigger_update\n"
-             "      ,(SELECT CASE type_desc WHEN 'DELETE' THEN 1 ELSE 0 END\n"
-             "          FROM sys.trigger_events ev\n"
-             "         WHERE ev.object_id = trg.object_id) AS trigger_delete\n"
-             "      ,(SELECT CASE type_desc WHEN 'SELECT' THEN 1 ELSE 0 END\n"
-             "          FROM sys.trigger_events ev\n"
-             "         WHERE ev.object_id = trg.object_id) AS trigger_select\n"
-             "      ,0  AS trigger_session\n"
-             "   	  ,0  AS trigger_transaction\n"
-             "      ,0  AS trigger_rollback\n"
-             "      ,'' AS trigger_referencing\n"
-             "  	  ,CASE trg.is_disabled WHEN 0 THEN 1 ELSE 0 END AS trigger_enabled\n"
-             "  	  ,mod.definition AS trigger_source\n"
-             "  FROM sys.triggers    trg\n"
-             "      ,sys.sql_modules mod\n"
-             "      ,sys.objects     tab\n"
-             "      ,sys.schemas     sch\n"
-             " WHERE sch.name      = '%s'\n"
-             "   AND tab.name      = '%s'\n"
-             "   AND trg.object_id = mod.object_id\n"
-             "   AND tab.object_id = trg.parent_id\n"
-             "   AND tab.schema_id = sch.schema_id"
-            ,p_schema.GetString()
-            ,p_table.GetString());
-  return sql;
-}
 
 // SQL DDL STATEMENTS
 // ==================
-
-// Add a foreign key to a table
-CString
-SQLInfoSQLServer::GetCreateForeignKey(CString p_tablename,CString p_constraintname,CString p_column,CString p_refTable,CString p_primary)
-{
-  CString sql = "ALTER TABLE " + p_tablename + "\n"
-                "  ADD CONSTRAINT " + p_constraintname + "\n"
-                "      FOREIGN KEY (" + p_column + ")\n"
-                "      REFERENCES " + p_refTable + "(" + p_primary + ")";
-  return sql;
-}
 
 // Get the SQL to drop a view. If precursor is filled: run that SQL first!
 CString 
@@ -1178,16 +1284,6 @@ CString
 SQLInfoSQLServer::GetSQLCreateOrReplaceView(CString p_schema,CString p_view,CString p_asSelect) const
 {
   return "CREATE VIEW " + p_schema + "." + p_view + "\n" + p_asSelect;
-}
-
-// Create or replace a trigger
-CString
-SQLInfoSQLServer::CreateOrReplaceTrigger(MetaTrigger& p_trigger) const
-{
-  // Simply return the SYS.SQL_MODULE.definition block
-  CString sql(p_trigger.m_source);
-  sql.TrimRight(';');
-  return sql;
 }
 
 // SQL DDL ACTIONS
