@@ -264,22 +264,6 @@ SQLInfoOracle::GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) const
   return CString("NVL(") + p_test + "," + p_isnull + ")";
 }
 
-// Code prefix for a select-into-temp
-CString
-SQLInfoOracle::GetSQLSelectIntoTempPrefix(CString p_tableName) const
-{
-  return "CREATE GLOBAL TEMPORARY TABLE " + p_tableName + "\n" +
-         "ON COMMIT PRESERVE ROWS\n" +
-         "AS\n";
-}
-
-// Code suffix for after a select-into-temp
-CString
-SQLInfoOracle::GetSQLSelectIntoTempSuffix(CString p_tableName) const
-{
-  return "";
-}
-
 // Gets the construction / select for generating a new serial identity
 CString
 SQLInfoOracle::GetSQLGenerateSerial(CString p_table) const
@@ -403,6 +387,33 @@ SQLInfoOracle::GetCATALOGTableDrop(CString p_schema,CString p_tablename) const
   }
   sql += p_tablename;
   return sql;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL TEMPORARY TABLE FUNCTIONS
+
+CString 
+SQLInfoOracle::GetCATALOGTemptableCreate(CString p_schema,CString p_tablename,CString p_select) const
+{
+  return "CREATE GLOBAL TEMPORARY TABLE " + p_schema + "." + p_tablename + "\nAS " + p_select +
+         "ON COMMIT PRESERVE ROWS";
+}
+
+CString 
+SQLInfoOracle::GetCATALOGTemptableIntoTemp(CString p_schema,CString p_tablename,CString p_select) const
+{
+  return "INSERT INTO " + p_schema + "." + p_tablename + "\n" + p_select;
+}
+
+CString 
+SQLInfoOracle::GetCATALOGTemptableDrop(CString p_schema,CString p_tablename) const
+{
+  CString tablename = p_schema + "." + p_tablename;
+  return "DELETE FROM "    + tablename + ";\n"
+         "<@>\n"
+         "TRUNCATE TABLE " + tablename + ";\n"
+         "<@>\n"
+         "DROP TABLE "     + tablename + ";\n";
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1110,6 +1121,52 @@ SQLInfoOracle::GetCATALOGSequenceDrop(CString p_schema, CString p_sequence) cons
 }
 
 //////////////////////////////////////////////////////////////////////////
+// ALL VIEW FUNCTIONS
+
+CString 
+SQLInfoOracle::GetCATALOGViewExists(CString p_schema,CString p_viewname) const
+{
+  p_schema.MakeUpper();
+  p_viewname.MakeUpper();
+  CString sql("SELECT COUNT(*)\n"
+              "  FROM all_views\n"
+              " WHERE view_name = '" + p_viewname + "'\n"
+              "   AND owner     = '" + p_schema   + "'");
+  return sql;
+}
+
+CString 
+SQLInfoOracle::GetCATALOGViewList(CString p_schema,CString p_pattern) const
+{
+  return "";
+}
+
+CString 
+SQLInfoOracle::GetCATALOGViewAttributes(CString p_schema,CString p_viewname) const
+{
+  return "";
+}
+
+CString 
+SQLInfoOracle::GetCATALOGViewCreate(CString p_schema,CString p_viewname,CString p_contents) const
+{
+  return "CREATE OR REPLACE VIEW " + p_schema + "." + p_viewname + "\n" + p_contents;
+}
+
+CString 
+SQLInfoOracle::GetCATALOGViewRename(CString p_schema,CString p_viewname,CString p_newname)    const
+{
+  return "";
+}
+
+CString 
+SQLInfoOracle::GetCATALOGViewDrop(CString p_schema,CString p_viewname,CString& p_precursor) const
+{
+  p_precursor.Empty();
+  return "DROP VIEW " + p_schema + "." + p_viewname;
+}
+
+//////////////////////////////////////////////////////////////////////////
 //
 // SQL/PSM PERSISTENT STORED MODULES 
 //         Also called SPL or PL/SQL
@@ -1185,13 +1242,63 @@ SQLInfoOracle::GetPSMProcedureDrop(CString p_schema, CString p_procedure) const
 //   - GetSessionExists
 //   - GetSessionList
 //   - GetSessionAttributes
-//     (was GetSessionAndTerminal)
-//     (was GetSessionUniqueID)
 // - Transactions
 //   - GetSessionDeferredConstraints
 //   - GetSessionImmediateConstraints
 //
 //////////////////////////////////////////////////////////////////////////
+
+CString
+SQLInfoOracle::GetSESSIONMyself() const
+{
+  CString sql = "SELECT audsid\n"
+                "      ,osuser\n"
+                "      ,terminal\n"
+                "      ,prev_exec_start\n" // moment
+                "      ,machine\n"         // remote 
+                "      ,program\n"         // process name
+                "      ,process\n"         // process ID
+                "  FROM v$session\n"
+                " WHERE type   = 'USER'\n"
+                "   AND audsid = sys_context('userenv','sessionid')";
+  return sql;
+}
+
+CString
+SQLInfoOracle::GetSESSIONExists(CString p_sessionID) const
+{
+  return "SELECT COUNT(*)\n"
+         "  FROM v$session\n"
+         " WHERE audsid = " + p_sessionID;
+}
+
+CString
+SQLInfoOracle::GetSESSIONList() const
+{
+  return GetSESSIONAttributes("");
+}
+
+CString
+SQLInfoOracle::GetSESSIONAttributes(CString p_sessionID) const
+{
+  CString sql = "SELECT audsid\n"
+                "      ,osuser\n"
+                "      ,terminal\n"
+                "      ,prev_exec_start\n" // moment
+                "      ,machine\n"         // remote 
+                "      ,program\n"         // process name
+                "      ,process\n"         // process ID
+                "  FROM v$session\n"
+                " WHERE type = 'USER'\n";
+  if(!p_sessionID.IsEmpty())
+  {
+    sql += "\n   AND audsid = " + p_sessionID;
+  }
+  return sql;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Transactions
 
 CString
 SQLInfoOracle::GetSESSIONConstraintsDeferred() const
@@ -1215,36 +1322,6 @@ SQLInfoOracle::GetSESSIONConstraintsImmediate() const
 
 // BOOLEANS EN STRINGS
 // ====================================================================
-
-// Get a query to create a temporary table from a select statement
-CString 
-SQLInfoOracle::GetSQLCreateTemporaryTable(CString& p_tablename,CString p_select) const
-{
-  return "CREATE GLOBAL TEMPORARY TABLE " + p_tablename + "\nAS " + p_select + 
-         "ON COMMIT PRESERVE ROWS";
-}
-
-// Get the query to remove a temporary table indefinite
-// BEWARE: Must be executed with a multi-statement stack!
-CString 
-SQLInfoOracle::GetSQLRemoveTemporaryTable(CString& p_tablename,int& p_number) const
-{
-  // Works only in Oracle in this way. If not an error will follow for the
-  // fact that the temporary table is still in use. The table definition 
-  // remains in the table catalog and can be different from and blocking
-  // newly defined temporary tables under the same name
-  p_number += 3;
-  return "DELETE FROM "    + p_tablename + ";\n"
-         "TRUNCATE TABLE " + p_tablename + ";\n"
-         "DROP TABLE "     + p_tablename + ";\n";
-}
-
-// Get a query to select into a temp table
-CString 
-SQLInfoOracle::GetSQLSelectIntoTemp(CString& p_tablename,CString& p_select) const
-{
-   return "INSERT INTO " + p_tablename + "\n" + p_select + ";\n";
-}
 
 // Gets the fact if an IF statement needs to be bordered with BEGIN/END
 bool
@@ -1294,50 +1371,6 @@ SQLInfoOracle::GetAssignmentSelectParenthesis() const
 // SQL CATALOG QUERIES
 // ===================================================================
 
-// Get SQL for your session and controlling terminal
-CString 
-SQLInfoOracle::GetSQLSessionAndTerminal() const
-{
-  CString query = "SELECT sys_context('userenv','sessionid')\n"
-                  "      ,sys_context('userenv','terminal')\n"    
-                  "  FROM DUAL";
-  return query;
-}
-
-// Get SQL to check if session number exists
-CString 
-SQLInfoOracle::GetSQLSessionExists(CString sessieId) const
-{
-  return "SELECT COUNT(*)\n"
-         "  FROM v$session\n"
-         " WHERE audsid = " + sessieId;
-}
-
-// Get SQL for unique session ID
-CString 
-SQLInfoOracle::GetSQLUniqueSessionId(const CString& /*p_databaseName*/,const CString& /*p_sessionTable*/) const
-{
-  // In Oracle the database is the instance. Database name is irrelevant
-  return "SELECT UNIQUE(audsid)\n"
-         "  FROM V$SESSION\n"
-         " WHERE audsid <> 0";
-}
-
-// Get SQL for searching a session
-CString 
-SQLInfoOracle::GetSQLSearchSession(const CString& /*p_databaseName*/,const CString& p_sessionTable) const
-{
-  // In Oracle the database is the instance. Database name is irrelevant
-  return  "SELECT audsid\n"
-          "       ,osuser\n"
-          "       ,terminal\n"
-          "  FROM V$SESSION\n"
-          " WHERE audsid <> 0\n"
-          "   AND NOT audsid IN\n"
-          "     ( SELECT sessie_nr\n"
-          "         FROM "+ p_sessionTable+ ")";
-}
-
 // Gets the lock-table query
 CString 
 SQLInfoOracle::GetSQLLockTable(CString& p_tableName,bool p_exclusive) const
@@ -1361,31 +1394,8 @@ SQLInfoOracle::GetSQLOptimizeTable(CString& p_owner,CString& p_tableName,int& p_
   return optim;
 }
 
-// Getting the fact that there is only **one** (1) user session in the database
-bool
-SQLInfoOracle::GetOnlyOneUserSession()
-{
-  // Yet to implement
-  return true;
-}
-
 // SQL DDL STATEMENTS
 // ==================
-
-// Get the SQL to drop a view. If precursor is filled: run that SQL first!
-CString 
-SQLInfoOracle::GetSQLDropView(CString p_schema,CString p_view,CString& p_precursor)
-{
-  p_precursor.Empty();
-  return "DROP VIEW " + p_schema + "." + p_view;
-}
-
-// Create or replace a database view
-CString 
-SQLInfoOracle::GetSQLCreateOrReplaceView(CString p_schema,CString p_view,CString p_asSelect) const
-{
-  return "CREATE OR REPLACE VIEW " + p_schema + "." + p_view + "\n" + p_asSelect;
-}
 
 // SQL DDL ACTIONS
 // ===================================================================
@@ -1405,71 +1415,6 @@ SQLInfoOracle::DoCommitDMLcommands() const
 {
   SQLQuery qry(m_database);
   qry.DoSQLStatement("COMMIT");
-}
-
-// Does the named view exists in the database
-bool
-SQLInfoOracle::DoesViewExists(CString& p_viewName)
-{
-  CString viewname(p_viewName);
-  viewname.MakeUpper();
-  SQLQuery query(m_database);
-  query.DoSQLStatement("SELECT COUNT(*)\n"
-                       "  FROM all_views\n"
-                       " WHERE view_name = '" + viewname + "'");
-  if(query.GetRecord())
-  {
-    return query.GetColumn(1)->GetAsSLong() == 1;
-  }
-  return false;
-}
-
-// Must create temporary tables runtime 
-bool
-SQLInfoOracle::GetMustMakeTemptablesAtRuntime() const
-{
-  // FALSE: GLOBAL TEMPORARY TABLES IN THE ENGINE
-  // TRUE:  TRUE SESSION TEMPTABLES MUST ALWAYS BE CREATED (Informix)
-  return false;
-}
-
-// Create a temporary table in an optimized manner with the given index column
-void    
-SQLInfoOracle::DoMakeTemporaryTable(CString& p_tableName,CString& p_content,CString& p_indexColumn) const
-{
-  SQLQuery query(m_database);
-  p_tableName.MakeUpper();
-
-  query.TryDoSQLStatement("TRUNCATE TABLE " + p_tableName);
-  query.TryDoSQLStatement("DROP TABLE "     + p_tableName);
-  CString create = "CREATE GLOBAL TEMPORARY TABLE " + p_tableName + " ON COMMIT PRESERVE ROWS\n" + p_content;
-  try
-  {
-    query.DoSQLStatement(create);
-
-    if(!p_indexColumn.IsEmpty())
-    {
-      create = "CREATE INDEX " + p_tableName + "_" + p_indexColumn + " ON " + p_tableName+ "(" + p_indexColumn+ ")";
-      query.DoSQLStatement(create);
-    }
-  }
-  catch(...)
-  {
-    throw CString("Cannot make a temporary table: ") + p_tableName;
-  }
-}
-
-// Remove a temporary table
-void
-SQLInfoOracle::DoRemoveTemporaryTable(CString& p_tableName) const
-{
-  SQLQuery query(m_database);
-
-  // Every error can be ignored. Can still be in use by another user and/or session
-  // The table contents will then removed for this session
-  query.TryDoSQLStatement("DELETE FROM "    + p_tableName);
-  query.TryDoSQLStatement("TRUNCATE TABLE " + p_tableName);
-  query.TryDoSQLStatement("DROP TABLE "     + p_tableName);
 }
 
 // PERSISTENT-STORED MODULES (SPL / PL/SQL)
@@ -1668,26 +1613,6 @@ SQLInfoOracle::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int
   return string;
 }
   
-// Get the SPL source code for a stored procedure as registered in the database
-CString 
-SQLInfoOracle::GetSPLSourcecodeFromDatabase(const CString& p_owner,const CString& p_procName) const
-{
-  CString sQuery;  
-  sQuery = "SELECT text\n"
-           "  FROM all_source\n"
-           " WHERE type  = 'FUNCTION'\n"
-           "   AND name  = UPPER('" + p_procName + "') "
-           "   AND owner = UPPER('" + p_owner    + "')";
-  SQLQuery qry(m_database);
-  qry.TryDoSQLStatement(sQuery);
-  CString sProcBody = "CREATE OR REPLACE ";
-  while (qry.GetRecord())
-  {
-    sProcBody += qry.GetColumn(1)->GetAsChar();
-  }
-  return sProcBody;
-}
-
 // Get the SPL datatype for integer
 CString 
 SQLInfoOracle::GetSPLIntegerType() const
@@ -1789,44 +1714,6 @@ SQLVariant*
 SQLInfoOracle::DoSQLCall(SQLQuery* /*p_query*/,CString& /*p_schema*/,CString& /*p_procedure*/)
 {
   return nullptr;
-}
-
-// SPECIALS
-// ==========================================================================
-
-// Translate database-errors to a human readable form
-CString 
-SQLInfoOracle::TranslateErrortext(int p_error,CString p_errorText) const
-{
-  // Check if we have work to do
-  if(p_error == 0)
-  {
-    return p_errorText;
-  }
-
-  // Read vendor error number
-  if(p_error == -1 && p_errorText.GetAt(3) == '-' && p_errorText.GetLength() > 10)
-  {
-    p_error = atoi(p_errorText.Mid(4, 5));
-  }
-
-  // Database error = %d : 
-  CString errorText = "Database error = ";
-
-  // Get error number -> error text
-  switch(p_error)
-  {
-    case   -95: errorText += "Removing of an object trough a logical update stored procedure '%s' is not possible"; break;
-    case   -96: break; // Generated by stored procedure
-    case   -97: errorText += "Removal denied: there are still references to the object%s."; break;
-    case   -99: errorText += "Wrong object ID in procedure '%s'.";  break;
-    case   942: errorText += "Table not found: '%s'.";              break;
-    case   904: errorText += "Column not found: '%s'.";             break;
-    case     1: errorText += "Cannot make a new object: Double value in unique index."; break;
-    case  2290: errorText += "Check constraint violation: '%s'.";   break;
-    case  2292: errorText += "Tried to delete an object to which a reference is still made from another table."; break;
-  }
-  return errorText;
 }
 
 // End of namespace

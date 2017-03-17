@@ -302,6 +302,8 @@ MetaTrigger;
 
 using MTriggerMap = std::vector<MetaTrigger>;
 
+// Results for Sequences - By SQLInfoDB!
+
 typedef struct _metaSequence
 {
   CString   m_catalogName;              // Catalog name
@@ -317,5 +319,22 @@ typedef struct _metaSequence
 MetaSequence;
 
 using MSequenceMap = std::vector<MetaSequence>;
+
+// Results for sessions - By SQLInfoDB!
+
+typedef struct _metaSession
+{
+  CString     m_session;      // UNIQUE session number within RDBMS
+  CString     m_user;         // User (OS or RDBMS user)
+  CString     m_terminal;     // OS terminal, IP address or Net name
+  // Newer fields
+  CString     m_logonMoment;  // Timestamp of logon
+  CString     m_remoteIP;     // Remote IP address
+  CString     m_processName;  // Remote process name
+  CString     m_processID;    // Remote process ID
+}
+MetaSession;
+
+using MSessionMap = std::vector<MetaSession>;
 
 };

@@ -125,12 +125,6 @@ public:
 
   // SQL
 
-  // Code prefix for a select-into-temp
-  CString GetSQLSelectIntoTempPrefix(CString p_tableName) const;
-
-  // Code suffix for after a select-into-temp
-  CString GetSQLSelectIntoTempSuffix(CString p_tableName) const;
-
   // Gets the construction / select for generating a new serial identity
   CString GetSQLGenerateSerial(CString p_table) const;
 
@@ -177,6 +171,10 @@ public:
   CString GetCATALOGTableCreate    (MetaTable& p_table,MetaColumn& p_column) const;
   CString GetCATALOGTableRename    (CString p_schema,CString p_tablename,CString p_newname) const;
   CString GetCATALOGTableDrop      (CString p_schema,CString p_tablename) const;
+  // All Temporary table functions
+  CString GetCATALOGTemptableCreate   (CString p_schema,CString p_tablename,CString p_select) const;
+  CString GetCATALOGTemptableIntoTemp (CString p_schema,CString p_tablename,CString p_select) const;
+  CString GetCATALOGTemptableDrop     (CString p_schema,CString p_tablename) const;
   // All column functions
   CString GetCATALOGColumnExists    (CString p_schema,CString p_tablename,CString p_columname) const;
   CString GetCATALOGColumnList      (CString p_schema,CString p_tablename) const;
@@ -215,6 +213,13 @@ public:
   CString GetCATALOGSequenceAttributes(CString p_schema,CString p_sequence) const;
   CString GetCATALOGSequenceCreate    (MetaSequence& p_sequence) const;
   CString GetCATALOGSequenceDrop      (CString p_schema,CString p_sequence) const;
+  // All view functions
+  CString GetCATALOGViewExists       (CString p_schema,CString p_viewname) const;
+  CString GetCATALOGViewList         (CString p_schema,CString p_pattern)  const;
+  CString GetCATALOGViewAttributes   (CString p_schema,CString p_viewname) const;
+  CString GetCATALOGViewCreate       (CString p_schema,CString p_viewname,CString p_contents)   const;
+  CString GetCATALOGViewRename       (CString p_schema,CString p_viewname,CString p_newname)    const;
+  CString GetCATALOGViewDrop         (CString p_schema,CString p_viewname,CString& p_precursor) const;
 
   //////////////////////////////////////////////////////////////////////////
   //
@@ -254,18 +259,19 @@ public:
   //   - GetSessionExists
   //   - GetSessionList
   //   - GetSessionAttributes
-  //     (was GetSessionAndTerminal)
-  //     (was GetSessionUniqueID)
   // - Transactions
   //   - GetSessionDeferredConstraints
   //   - GetSessionImmediateConstraints
   //
   //////////////////////////////////////////////////////////////////////////
 
+  CString GetSESSIONMyself() const;
+  CString GetSESSIONExists(CString p_sessionID) const;
+  CString GetSESSIONList() const;
+  CString GetSESSIONAttributes(CString p_sessionID) const;
+  // Transactions
   CString GetSESSIONConstraintsDeferred()  const;
   CString GetSESSIONConstraintsImmediate() const;
-
-
 
   //////////////////////////////////////////////////////////////////////////
   //
@@ -275,15 +281,6 @@ public:
 
   // BOOLEANS EN STRINGS
   // ===================
-
-  // Get a query to create a temporary table from a select statement
-  CString GetSQLCreateTemporaryTable(CString& p_tablename,CString p_select) const;
-
-  // Get the query to remove a temporary table indefinetly
-  CString GetSQLRemoveTemporaryTable(CString& p_tablename,int& p_number) const;
-
-  // Get a query to select into a temp table
-  CString GetSQLSelectIntoTemp(CString& p_tablename,CString& p_select) const;
 
   // Gets the fact if an IF statement needs to be bordered with BEGIN/END
   bool    GetCodeIfStatementBeginEnd() const;
@@ -306,35 +303,14 @@ public:
   // SQL CATALOG QUERIES
   // ===================
 
-  // Get SQL for your session and controlling terminal
-  CString GetSQLSessionAndTerminal() const;
-
-  // Get SQL to check if session number exists
-  CString GetSQLSessionExists(CString sessieId) const;
-
-  // Get SQL for unique session ID
-  CString GetSQLUniqueSessionId(const CString& p_databaseName,const CString& p_sessionTable) const;
-
-  // Get SQL for searching a session
-  CString GetSQLSearchSession(const CString& p_databaseName,const CString& p_sessionTable) const;
-
   // Get SQL to lock a table
   CString GetSQLLockTable(CString& p_tableName,bool p_exclusive) const;
 
   // Get query to optimize the table statistics
   CString GetSQLOptimizeTable(CString& p_owner,CString& p_tableName,int& p_number);
 
-  // Getting the fact that there is only **one** (1) user session in the database
-  bool    GetOnlyOneUserSession();
-
   // SQL DDL STATEMENTS
   // ==================
-
-  // Get the SQL to drop a view. If precursor is filled: run that SQL first!
-  CString GetSQLDropView(CString p_schema,CString p_view,CString& p_precursor);
-
-  // Create or replace a database view
-  CString GetSQLCreateOrReplaceView(CString p_schema,CString p_view,CString p_asSelect) const;
 
   // SQL DDL OPERATIONS
   // ==================
@@ -344,18 +320,6 @@ public:
 
   // Do the commit for the DML commands in the database
   void    DoCommitDMLcommands() const;
-
-  // Does the named view exists in the database
-  bool    DoesViewExists(CString& p_viewName);
-
-  // Must create temporary tables runtime 
-  bool    GetMustMakeTemptablesAtRuntime() const;
-
-  // Create a temporary table in an optimized manner with the given index column
-  void    DoMakeTemporaryTable(CString& p_tableName,CString& p_content,CString& p_indexColumn) const;
-
-  // Remove a temporary table
-  void    DoRemoveTemporaryTable(CString& p_tableName) const;
 
   // PERSISTENT-STORED MODULES (SPL / PL/SQL)
   // ====================================================================
@@ -399,9 +363,6 @@ public:
   // Stripped data for the parameter binding
   CString GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const;
 
-  // Get the SPL sourcecode for a stored procedure as registered in the database
-  CString GetSPLSourcecodeFromDatabase(const CString& p_owner,const CString& p_procName) const;
-
   // Get the SPL datatype for integer
   CString GetSPLIntegerType() const;
 
@@ -439,12 +400,6 @@ public:
 
   // Calling a stored function or procedure if the RDBMS does not support ODBC call escapes
   SQLVariant* DoSQLCall(SQLQuery* p_query,CString& p_schema,CString& p_procedure);
-
-  // SPECIALS
-  // ==========================================================================
-
-  // Translate database-errors to a human readable form
-  CString TranslateErrortext(int p_error,CString p_errorText) const;
 
 private:
   // IMPLEMENTATION OF the DoSQLCall interface

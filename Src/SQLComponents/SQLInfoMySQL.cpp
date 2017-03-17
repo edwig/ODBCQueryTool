@@ -253,20 +253,6 @@ SQLInfoMySQL::GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) const
   return "{fn IFNULL(" + p_test + "," + p_isnull + ")}";
 }
 
-// Code prefix for a select-into-temp
-CString
-SQLInfoMySQL::GetSQLSelectIntoTempPrefix(CString p_tableName) const
-{
-  return "CREATE TEMPORARY TABLE " + p_tableName + "\nAS\n";
-}
-
-// Code suffix for after a select-into-temp
-CString
-SQLInfoMySQL::GetSQLSelectIntoTempSuffix(CString p_tableName) const
-{
-  return "";
-}
-
 // Gets the construction / select for generating a new serial identity
 CString
 SQLInfoMySQL::GetSQLGenerateSerial(CString p_table) const
@@ -341,14 +327,14 @@ SQLInfoMySQL::GetSQLFromDualClause() const
 
 // Get SQL to check if a table already exists in the database
 CString
-SQLInfoMySQL::GetCATALOGTableExists(CString p_schema,CString p_tablename) const
+SQLInfoMySQL::GetCATALOGTableExists(CString /*p_schema*/,CString p_tablename) const
 {
   // Still to do in MySQL
   return "";
 }
 
 CString
-SQLInfoMySQL::GetCATALOGTablesList(CString p_schema,CString p_pattern) const
+SQLInfoMySQL::GetCATALOGTablesList(CString /*p_schema*/,CString p_pattern) const
 {
   // MS-Access cannot do this
   return "";
@@ -368,41 +354,58 @@ SQLInfoMySQL::GetCATALOGTableCreate(MetaTable& /*p_table*/,MetaColumn& /*p_colum
 }
 
 CString
-SQLInfoMySQL::GetCATALOGTableRename(CString p_schema,CString p_tablename,CString p_newname) const
+SQLInfoMySQL::GetCATALOGTableRename(CString /*p_schema*/,CString p_tablename,CString p_newname) const
 {
-  CString sql("RENAME TABLE" + p_schema + "." + p_tablename + " TO " + p_newname);
+  CString sql("RENAME TABLE" + p_tablename + " TO " + p_newname);
   return sql;
 }
 
 CString
-SQLInfoMySQL::GetCATALOGTableDrop(CString p_schema,CString p_tablename) const
+SQLInfoMySQL::GetCATALOGTableDrop(CString /*p_schema*/,CString p_tablename) const
 {
-  CString sql("DROP TABLE ");
-  if(!p_schema.IsEmpty())
-  {
-    sql += p_schema + ".";
-  }
-  sql += p_tablename;
+  CString sql("DROP TABLE " + p_tablename);
   return sql;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL TEMPORARY TABLE FUNCTIONS
+
+CString 
+SQLInfoMySQL::GetCATALOGTemptableCreate(CString /*p_schema*/,CString p_tablename,CString p_select) const
+{
+  // BEWARE: THIS IS A GUESS. 
+  return "CREATE TEMPORARY TABLE " + p_tablename + "\nAS " + p_select;
+}
+
+CString 
+SQLInfoMySQL::GetCATALOGTemptableIntoTemp(CString /*p_schema*/,CString p_tablename,CString p_select) const
+{
+  return "INSERT INTO " + p_tablename + "\n" + p_select;
+}
+
+CString 
+SQLInfoMySQL::GetCATALOGTemptableDrop(CString /*p_schema*/,CString p_tablename) const
+{
+  return "DROP TABLE " + p_tablename;
 }
 
 //////////////////////////////////////////////////////////////////////////
 // ALL COLUMN FUNCTIONS
 
 CString 
-SQLInfoMySQL::GetCATALOGColumnExists(CString p_schema,CString p_tablename,CString p_columname) const
+SQLInfoMySQL::GetCATALOGColumnExists(CString /*p_schema*/,CString p_tablename,CString p_columname) const
 {
   return "";
 }
 
 CString 
-SQLInfoMySQL::GetCATALOGColumnList(CString p_schema,CString p_tablename) const
+SQLInfoMySQL::GetCATALOGColumnList(CString /*p_schema*/,CString p_tablename) const
 {
   return "";
 }
 
 CString 
-SQLInfoMySQL::GetCATALOGColumnAttributes(CString p_schema,CString p_tablename,CString p_columname) const
+SQLInfoMySQL::GetCATALOGColumnAttributes(CString /*p_schema*/,CString p_tablename,CString p_columname) const
 {
   return "";
 }
@@ -410,7 +413,7 @@ SQLInfoMySQL::GetCATALOGColumnAttributes(CString p_schema,CString p_tablename,CS
 CString 
 SQLInfoMySQL::GetCATALOGColumnCreate(MetaColumn& p_column) const
 {
-  CString sql = "ALTER TABLE "  + p_column.m_schema + "." + p_column.m_table  + "\n";
+  CString sql = "ALTER TABLE "  + p_column.m_table  + "\n";
                 "  ADD COLUMN " + p_column.m_column + " " + p_column.m_typename;
   p_column.GetPrecisionAndScale(sql);
   p_column.GetNullable(sql);
@@ -424,7 +427,7 @@ CString
 SQLInfoMySQL::GetCATALOGColumnAlter(MetaColumn& p_column) const
 {
   // The MODIFY keyword is a-typical
-  CString sql = "ALTER  TABLE  " + p_column.m_schema + "." + p_column.m_table + "\n";
+  CString sql = "ALTER  TABLE  " + p_column.m_table + "\n";
                 "MODIFY COLUMN " + p_column.m_column + " " + p_column.m_typename;
   p_column.GetPrecisionAndScale(sql);
   p_column.GetNullable(sql);
@@ -439,7 +442,7 @@ CString
 SQLInfoMySQL::GetCATALOGColumnRename(CString p_schema,CString p_tablename,CString p_columnname,CString p_newname,CString /*p_datatype*/) const
 {
   // General ISO syntax
-  CString sql("ALTER  TABLE  " + p_schema + "." + p_tablename + "\n"
+  CString sql("ALTER  TABLE  " + p_tablename + "\n"
               "RENAME " + p_columnname + " TO " + p_newname + "\n");
   return sql;
 }
@@ -447,7 +450,7 @@ SQLInfoMySQL::GetCATALOGColumnRename(CString p_schema,CString p_tablename,CStrin
 CString 
 SQLInfoMySQL::GetCATALOGColumnDrop(CString p_schema,CString p_tablename,CString p_columnname) const
 {
-  CString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+  CString sql("ALTER TABLE  " + p_tablename + "\n"
               " DROP COLUMN " + p_columnname);
   return sql;
 }
@@ -457,7 +460,7 @@ SQLInfoMySQL::GetCATALOGColumnDrop(CString p_schema,CString p_tablename,CString 
 
 // All index functions
 CString
-SQLInfoMySQL::GetCATALOGIndexExists(CString p_schema,CString p_tablename,CString p_indexname) const
+SQLInfoMySQL::GetCATALOGIndexExists(CString /*p_schema*/,CString p_tablename,CString p_indexname) const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLStatistics instead (see SQLInfo class)
@@ -465,7 +468,7 @@ SQLInfoMySQL::GetCATALOGIndexExists(CString p_schema,CString p_tablename,CString
 }
 
 CString
-SQLInfoMySQL::GetCATALOGIndexList(CString p_schema,CString p_tablename) const
+SQLInfoMySQL::GetCATALOGIndexList(CString /*p_schema*/,CString p_tablename) const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLStatistics instead (see SQLInfo class)
@@ -473,7 +476,7 @@ SQLInfoMySQL::GetCATALOGIndexList(CString p_schema,CString p_tablename) const
 }
 
 CString
-SQLInfoMySQL::GetCATALOGIndexAttributes(CString p_schema,CString p_tablename,CString p_indexname) const
+SQLInfoMySQL::GetCATALOGIndexAttributes(CString /*p_schema*/,CString p_tablename,CString p_indexname) const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLStatistics instead (see SQLInfo class)
@@ -497,10 +500,6 @@ SQLInfoMySQL::GetCATALOGIndexCreate(MIndicesMap& p_indices) const
         query += "UNIQUE ";
       }
       query += "INDEX ";
-      if(!index.m_schemaName.IsEmpty())
-      {
-        query += index.m_schemaName + ".";
-      }
       query += index.m_indexName;
       query += " ON ";
       if(!index.m_schemaName.IsEmpty())
@@ -525,9 +524,9 @@ SQLInfoMySQL::GetCATALOGIndexCreate(MIndicesMap& p_indices) const
 }
 
 CString
-SQLInfoMySQL::GetCATALOGIndexDrop(CString p_schema,CString /*p_tablename*/,CString p_indexname) const
+SQLInfoMySQL::GetCATALOGIndexDrop(CString /*p_schema*/,CString /*p_tablename*/,CString p_indexname) const
 {
-  CString sql = "DROP INDEX " + p_schema + "." + p_indexname;
+  CString sql = "DROP INDEX " + p_indexname;
   return sql;
 }
 
@@ -542,14 +541,14 @@ SQLInfoMySQL::GetCATALOGIndexFilter(MetaIndex& /*p_index*/) const
 // ALL PRIMARY KEY FUNCTIONS
 
 CString
-SQLInfoMySQL::GetCATALOGPrimaryExists(CString p_schema,CString p_tablename) const
+SQLInfoMySQL::GetCATALOGPrimaryExists(CString /*p_schema*/,CString p_tablename) const
 {
   // To be implemented
   return "";
 }
 
 CString
-SQLInfoMySQL::GetCATALOGPrimaryAttributes(CString p_schema,CString p_tablename) const
+SQLInfoMySQL::GetCATALOGPrimaryAttributes(CString /*p_schema*/,CString p_tablename) const
 {
   // To be implemented
   return "";
@@ -564,10 +563,6 @@ SQLInfoMySQL::GetCATALOGPrimaryCreate(MPrimaryMap& p_primaries) const
   {
     if(prim.m_columnPosition == 1)
     {
-      if(!prim.m_schema.IsEmpty())
-      {
-        query += prim.m_schema + ".";
-      }
       query += prim.m_table + "\n";
       query += "  ADD CONSTRAINT " + prim.m_constraintName + "\n";
       query += "      PRIMARY KEY (";
@@ -584,9 +579,9 @@ SQLInfoMySQL::GetCATALOGPrimaryCreate(MPrimaryMap& p_primaries) const
 }
 
 CString
-SQLInfoMySQL::GetCATALOGPrimaryDrop(CString p_schema,CString p_tablename,CString p_constraintname) const
+SQLInfoMySQL::GetCATALOGPrimaryDrop(CString /*p_schema*/,CString p_tablename,CString p_constraintname) const
 {
-  CString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+  CString sql("ALTER TABLE " + p_tablename + "\n"
               " DROP CONSTRAINT " + p_constraintname);
   return sql;
 }
@@ -595,7 +590,7 @@ SQLInfoMySQL::GetCATALOGPrimaryDrop(CString p_schema,CString p_tablename,CString
 // ALL FOREIGN KEY FUNCTIONS
 
 CString
-SQLInfoMySQL::GetCATALOGForeignExists(CString p_schema,CString p_tablename,CString p_constraintname) const
+SQLInfoMySQL::GetCATALOGForeignExists(CString /*p_schema*/,CString p_tablename,CString p_constraintname) const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLForeignKeys instead (see SQLInfo class)
@@ -603,7 +598,7 @@ SQLInfoMySQL::GetCATALOGForeignExists(CString p_schema,CString p_tablename,CStri
 }
 
 CString
-SQLInfoMySQL::GetCATALOGForeignList(CString p_schema,CString p_tablename,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
+SQLInfoMySQL::GetCATALOGForeignList(CString /*p_schema*/,CString p_tablename,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLForeignKeys instead (see SQLInfo class)
@@ -611,7 +606,7 @@ SQLInfoMySQL::GetCATALOGForeignList(CString p_schema,CString p_tablename,int /*p
 }
 
 CString
-SQLInfoMySQL::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraintname,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
+SQLInfoMySQL::GetCATALOGForeignAttributes(CString /*p_schema*/,CString p_tablename,CString p_constraintname,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLForeignKeys instead (see SQLInfo class)
@@ -627,14 +622,6 @@ SQLInfoMySQL::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
   // Construct the correct tablename
   CString table(foreign.m_fkTableName);
   CString primary(foreign.m_pkTableName);
-  if(!foreign.m_fkSchemaName.IsEmpty())
-  {
-    table = foreign.m_fkSchemaName + "." + table;
-  }
-  if(!foreign.m_pkSchemaName.IsEmpty())
-  {
-    primary = foreign.m_pkSchemaName + "." + primary;
-  }
 
   // The base foreign key command
   CString query = "ALTER TABLE " + table + "\n"
@@ -709,10 +696,6 @@ SQLInfoMySQL::GetCATALOGForeignAlter(MForeignMap& p_original, MForeignMap& p_req
 
   // Construct the correct tablename
   CString table(original.m_fkTableName);
-  if(!original.m_fkSchemaName.IsEmpty())
-  {
-    table = original.m_fkSchemaName + "." + table;
-  }
 
   // The base foreign key command
   CString query = "ALTER TABLE " + table + "\n"
@@ -766,9 +749,9 @@ SQLInfoMySQL::GetCATALOGForeignAlter(MForeignMap& p_original, MForeignMap& p_req
 }
 
 CString
-SQLInfoMySQL::GetCATALOGForeignDrop(CString p_schema,CString p_tablename,CString p_constraintname) const
+SQLInfoMySQL::GetCATALOGForeignDrop(CString /*p_schema*/,CString p_tablename,CString p_constraintname) const
 {
-  CString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+  CString sql("ALTER TABLE " + p_tablename + "\n"
               " DROP CONSTRAINT " + p_constraintname);
   return sql;
 }
@@ -777,19 +760,19 @@ SQLInfoMySQL::GetCATALOGForeignDrop(CString p_schema,CString p_tablename,CString
 // ALL TRIGGER FUNCTIONS
 
 CString
-SQLInfoMySQL::GetCATALOGTriggerExists(CString p_schema, CString p_tablename, CString p_triggername) const
+SQLInfoMySQL::GetCATALOGTriggerExists(CString /*p_schema*/, CString p_tablename, CString p_triggername) const
 {
   return "";
 }
 
 CString
-SQLInfoMySQL::GetCATALOGTriggerList(CString p_schema, CString p_tablename) const
+SQLInfoMySQL::GetCATALOGTriggerList(CString /*p_schema*/, CString p_tablename) const
 {
   return "";
 }
 
 CString
-SQLInfoMySQL::GetCATALOGTriggerAttributes(CString p_schema, CString p_tablename, CString p_triggername) const
+SQLInfoMySQL::GetCATALOGTriggerAttributes(CString /*p_schema*/, CString p_tablename, CString p_triggername) const
 {
   return "";
 }
@@ -801,7 +784,7 @@ SQLInfoMySQL::GetCATALOGTriggerCreate(MetaTrigger& /*p_trigger*/) const
 }
 
 CString
-SQLInfoMySQL::GetCATALOGTriggerDrop(CString p_schema, CString p_tablename, CString p_triggername) const
+SQLInfoMySQL::GetCATALOGTriggerDrop(CString /*p_schema*/, CString p_tablename, CString p_triggername) const
 {
   return "";
 }
@@ -810,13 +793,13 @@ SQLInfoMySQL::GetCATALOGTriggerDrop(CString p_schema, CString p_tablename, CStri
 // ALL SEQUENCE FUNCTIONS
 
 CString
-SQLInfoMySQL::GetCATALOGSequenceExists(CString p_schema, CString p_sequence) const
+SQLInfoMySQL::GetCATALOGSequenceExists(CString /*p_schema*/, CString p_sequence) const
 {
   return "";
 }
 
 CString
-SQLInfoMySQL::GetCATALOGSequenceAttributes(CString p_schema, CString p_sequence) const
+SQLInfoMySQL::GetCATALOGSequenceAttributes(CString /*p_schema*/, CString p_sequence) const
 {
   return "";
 }
@@ -828,9 +811,49 @@ SQLInfoMySQL::GetCATALOGSequenceCreate(MetaSequence& /*p_sequence*/) const
 }
 
 CString
-SQLInfoMySQL::GetCATALOGSequenceDrop(CString p_schema, CString p_sequence) const
+SQLInfoMySQL::GetCATALOGSequenceDrop(CString /*p_schema*/, CString p_sequence) const
 {
   return "";
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL VIEW FUNCTIONS
+
+CString 
+SQLInfoMySQL::GetCATALOGViewExists(CString p_schema,CString p_viewname) const
+{
+  return "";
+}
+
+CString 
+SQLInfoMySQL::GetCATALOGViewList(CString p_schema,CString p_pattern) const
+{
+  return "";
+}
+
+CString 
+SQLInfoMySQL::GetCATALOGViewAttributes(CString p_schema,CString p_viewname) const
+{
+  return "";
+}
+
+CString 
+SQLInfoMySQL::GetCATALOGViewCreate(CString /*p_schema*/,CString p_viewname,CString p_contents) const
+{
+  return "CREATE VIEW " + p_viewname + "\n" + p_contents;
+}
+
+CString 
+SQLInfoMySQL::GetCATALOGViewRename(CString p_schema,CString p_viewname,CString p_newname)    const
+{
+  return "";
+}
+
+CString 
+SQLInfoMySQL::GetCATALOGViewDrop(CString /*p_schema*/,CString p_viewname,CString& p_precursor) const
+{
+  p_precursor.Empty();
+  return "DROP VIEW " + p_viewname;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -858,19 +881,19 @@ SQLInfoMySQL::GetCATALOGSequenceDrop(CString p_schema, CString p_sequence) const
 //////////////////////////////////////////////////////////////////////////
 
 CString
-SQLInfoMySQL::GetPSMProcedureExists(CString p_schema, CString p_procedure) const
+SQLInfoMySQL::GetPSMProcedureExists(CString /*p_schema*/, CString p_procedure) const
 {
   return "";
 }
 
 CString
-SQLInfoMySQL::GetPSMProcedureList(CString p_schema) const
+SQLInfoMySQL::GetPSMProcedureList(CString /*p_schema*/) const
 {
   return "";
 }
 
 CString
-SQLInfoMySQL::GetPSMProcedureAttributes(CString p_schema, CString p_procedure) const
+SQLInfoMySQL::GetPSMProcedureAttributes(CString /*p_schema*/, CString p_procedure) const
 {
   return "";
 }
@@ -882,7 +905,7 @@ SQLInfoMySQL::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
 }
 
 CString
-SQLInfoMySQL::GetPSMProcedureDrop(CString p_schema, CString p_procedure) const
+SQLInfoMySQL::GetPSMProcedureDrop(CString /*p_schema*/, CString p_procedure) const
 {
   return "";
 }
@@ -896,13 +919,38 @@ SQLInfoMySQL::GetPSMProcedureDrop(CString p_schema, CString p_procedure) const
 //   - GetSessionExists
 //   - GetSessionList
 //   - GetSessionAttributes
-//     (was GetSessionAndTerminal)
-//     (was GetSessionUniqueID)
 // - Transactions
 //   - GetSessionDeferredConstraints
 //   - GetSessionImmediateConstraints
 //
 //////////////////////////////////////////////////////////////////////////
+
+CString
+SQLInfoMySQL::GetSESSIONMyself() const
+{
+  return "";
+}
+
+CString
+SQLInfoMySQL::GetSESSIONExists(CString p_sessionID) const
+{
+  return "";
+}
+
+CString
+SQLInfoMySQL::GetSESSIONList() const
+{
+  return "";
+}
+
+CString
+SQLInfoMySQL::GetSESSIONAttributes(CString p_sessionID) const
+{
+  return "";
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Transactions
 
 CString
 SQLInfoMySQL::GetSESSIONConstraintsDeferred() const
@@ -927,30 +975,6 @@ SQLInfoMySQL::GetSESSIONConstraintsImmediate() const
 // BOOLEANS EN STRINGS
 // ====================================================================
 
-
-// Get a query to create a temporary table from a select statement
-CString
-SQLInfoMySQL::GetSQLCreateTemporaryTable(CString& p_tablename,CString p_select) const
-{
-  // BEWARE: THIS IS A GUESS. NO REAL DEFINITION IN ODBC
-  return "CREATE TEMPORARY TABLE " + p_tablename + "\nAS " + p_select;
-}
-
-// Get the query to remove a temporary table indefinetly
-// BEWARE: Must be executed with a multi-statement stack!
-CString
-SQLInfoMySQL::GetSQLRemoveTemporaryTable(CString& p_tablename,int& p_number) const
-{
-  p_number += 1;
-  return "DROP TABLE " + p_tablename + ";\n";
-}
-
-// Get a query to select into a temp table
-CString
-SQLInfoMySQL::GetSQLSelectIntoTemp(CString& p_tablename,CString& p_select) const
-{
-  return "INSERT INTO " + p_tablename + "\n" + p_select + ";\n";
-}
 
 // Gets the fact if an IF statement needs to be bordered with BEGIN/END
 bool
@@ -1000,38 +1024,6 @@ SQLInfoMySQL::GetAssignmentSelectParenthesis() const
 // SQL CATALOG QUERIES
 // ===================================================================
 
-// Get SQL for your session and controlling terminal
-CString
-SQLInfoMySQL::GetSQLSessionAndTerminal() const
-{
-  // To be implemented
-  return "";
-}
-
-// Get SQL to check if session number exists
-CString
-SQLInfoMySQL::GetSQLSessionExists(CString sessieId) const
-{
-  // To be implemented
-  return "";
-}
-
-// Get SQL for unique session ID
-CString
-SQLInfoMySQL::GetSQLUniqueSessionId(const CString& /*p_databaseName*/,const CString& /*p_sessionTable*/) const
-{
-  // To be implemented
-  return "";
-}
-
-// Get SQL for searching a session
-CString
-SQLInfoMySQL::GetSQLSearchSession(const CString& /*p_databaseName*/,const CString& /*p_sessionTable*/) const
-{
-  // To be implemented
-  return "";
-}
-
 // Get a lock-table query
 CString
 SQLInfoMySQL::GetSQLLockTable(CString& p_tableName,bool p_exclusive) const
@@ -1051,32 +1043,8 @@ SQLInfoMySQL::GetSQLOptimizeTable(CString& /*p_owner*/,CString& /*p_tableName*/,
   return "";
 }
 
-// Getting the fact that there is only **one** (1) user session in the database
-bool
-SQLInfoMySQL::GetOnlyOneUserSession()
-{
-  // No way to get the number of user sessions!
-  // So always continue with management functions
-  return true;
-}
-
 // SQL DDL STATEMENTS
 // ==================
-
-// Get the SQL to drop a view. If precursor is filled: run that SQL first!
-CString
-SQLInfoMySQL::GetSQLDropView(CString p_schema,CString p_view,CString& p_precursor)
-{
-  p_precursor.Empty();
-  return "DROP VIEW " + p_schema + "." + p_view;
-}
-
-// Create or replace a database view
-CString
-SQLInfoMySQL::GetSQLCreateOrReplaceView(CString p_schema,CString p_view,CString p_asSelect) const
-{
-  return "CREATE VIEW " + p_schema + "." + p_view + "\n" + p_asSelect;
-}
 
 // SQL DDL ACTIONS
 // ===================================================================
@@ -1094,68 +1062,6 @@ SQLInfoMySQL::DoCommitDDLcommands() const
 void
 SQLInfoMySQL::DoCommitDMLcommands() const
 {
-}
-
-// Does the named view exists in the database
-bool
-SQLInfoMySQL::DoesViewExists(CString& p_viewName)
-{
-  CString   errors;
-  MTableMap tables;
-
-  if(MakeInfoTableTablepart(p_viewName,tables,errors))
-  {
-    if(errors.IsEmpty() && !tables.empty())
-    {
-      return true;
-    }
-  }
-  return false;
-}
-
-// Must create temporary tables runtime 
-bool
-SQLInfoMySQL::GetMustMakeTemptablesAtRuntime() const
-{
-  // No way to know this: it's safe to assume we must create one
-  return true;
-}
-
-// Create a temporary table in an optimized manner with the given index column
-void
-SQLInfoMySQL::DoMakeTemporaryTable(CString& p_tableName,CString& p_content,CString& p_indexColumn) const
-{
-  SQLQuery query(m_database);
-  p_tableName.MakeUpper();
-
-  // Generic ISO SQL syntax
-  query.TryDoSQLStatement("DROP TABLE " + p_tableName);
-  CString create = "CREATE TEMPORARY TABLE " + p_tableName + "\n" + p_content;
-  try
-  {
-    query.DoSQLStatement(create);
-
-    if(!p_indexColumn.IsEmpty())
-    {
-      create = "CREATE INDEX " + p_tableName + "_" + p_indexColumn + " ON " + p_tableName + "(" + p_indexColumn + ")";
-      query.DoSQLStatement(create);
-    }
-  }
-  catch(...)
-  {
-    throw CString("Cannot make a temporary table: ") + p_tableName;
-  }
-}
-
-// Remove a temporary table
-void
-SQLInfoMySQL::DoRemoveTemporaryTable(CString& p_tableName) const
-{
-  SQLQuery query(m_database);
-
-  // Every error can be ignored. Can still be in use by another user and/or session
-  // The table contents will then removed for this session
-  query.TryDoSQLStatement("DROP TABLE " + p_tableName);
 }
 
 // PERSISTENT-STORED MODULES (SPL / PL/SQL)
@@ -1292,15 +1198,6 @@ SQLInfoMySQL::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int 
   return string;
 }
 
-// Get the SPL sourcecode for a stored procedure as registered in the database
-CString
-SQLInfoMySQL::GetSPLSourcecodeFromDatabase(const CString& /*p_owner*/,const CString& /*p_procName*/) const
-{
-  // No way of knowing this
-  return "";
-}
-
-
 // Get the SPL datatype for integer
 CString
 SQLInfoMySQL::GetSPLIntegerType() const
@@ -1345,9 +1242,9 @@ SQLInfoMySQL::GetSPLCursorRowDeclaration(CString& /*p_cursorName*/,CString& /*p_
 
 CString
 SQLInfoMySQL::GetSPLFetchCursorIntoVariables(CString               p_cursorName
-                                                      ,CString             /*p_variableName*/
-                                                      ,std::vector<CString>& p_columnNames
-                                                      ,std::vector<CString>& p_variableNames) const
+                                            ,CString             /*p_variableName*/
+                                            ,std::vector<CString>& p_columnNames
+                                            ,std::vector<CString>& p_variableNames) const
 {
   // General ISO SYNTAX
   CString query = "FETCH " + p_cursorName + " INTO ";
@@ -1402,18 +1299,6 @@ SQLVariant*
 SQLInfoMySQL::DoSQLCall(SQLQuery* /*p_query*/,CString& /*p_schema*/,CString& /*p_procedure*/)
 {
   return nullptr;
-}
-
-// SPECIALS
-// ==========================================================================
-
-// Translate database-errors to a human readable form
-CString
-SQLInfoMySQL::TranslateErrortext(int p_error,CString p_errorText) const
-{
-  CString errorText;
-  errorText.Format("ODBC error [%d:%s]",p_error,p_errorText.GetString());
-  return errorText;
 }
 
 // End of namespace

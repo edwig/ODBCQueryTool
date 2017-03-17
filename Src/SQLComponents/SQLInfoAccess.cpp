@@ -246,20 +246,6 @@ SQLInfoAccess::GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) const
   return CString("IIF(ISNULL(") + p_test + ")," + p_isnull + "," + p_test + ")";
 }
 
-// Code prefix for a select-into-temp
-CString 
-SQLInfoAccess::GetSQLSelectIntoTempPrefix(CString p_tableName) const
-{
-  return "";
-}
-
-// Code suffix for after a select-into-temp
-CString 
-SQLInfoAccess::GetSQLSelectIntoTempSuffix(CString p_tableName) const
-{
-  return "";
-}
-
 // Gets the construction / select for generating a new serial identity
 CString
 SQLInfoAccess::GetSQLGenerateSerial(CString p_table) const
@@ -370,6 +356,28 @@ CString
 SQLInfoAccess::GetCATALOGTableDrop(CString /*p_schema*/,CString p_tablename) const
 {
   return "DROP TABLE " + p_tablename;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL TEMPORARY TABLE FUNCTIONS
+
+CString 
+SQLInfoAccess::GetCATALOGTemptableCreate(CString /*p_schema*/,CString p_tablename,CString p_select) const
+{
+  return "CREATE TABLE #" + p_tablename + "\nAS " + p_select;
+}
+
+CString 
+SQLInfoAccess::GetCATALOGTemptableIntoTemp(CString /*p_schema*/,CString p_tablename,CString p_select) const
+{
+  return "INSERT INTO #" + p_tablename + "\n" + p_select;
+}
+CString 
+SQLInfoAccess::GetCATALOGTemptableDrop(CString /*p_schema*/,CString p_tablename) const
+{
+  return "DELETE FROM #"    + p_tablename + "\n"
+         "<@>\n"
+         "DROP TABLE #"     + p_tablename;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -760,6 +768,49 @@ SQLInfoAccess::GetCATALOGSequenceDrop(CString p_schema, CString p_sequence) cons
 }
 
 //////////////////////////////////////////////////////////////////////////
+// ALL VIEW FUNCTIONS
+
+CString 
+SQLInfoAccess::GetCATALOGViewExists(CString p_schema,CString p_viewname) const
+{
+  // Cannot query this, Use ODBC functions
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetCATALOGViewList(CString p_schema,CString p_pattern) const
+{
+  // Cannot query this, Use ODBC functions
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetCATALOGViewAttributes(CString p_schema,CString p_viewname) const
+{
+  // Cannot query this, Use ODBC functions
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetCATALOGViewCreate(CString /*p_schema*/,CString p_viewname,CString p_contents) const
+{
+  return "CREATE VIEW " + p_viewname + "\n" + p_contents;
+}
+
+CString 
+SQLInfoAccess::GetCATALOGViewRename(CString p_schema,CString p_viewname,CString p_newname)    const
+{
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetCATALOGViewDrop(CString /*p_schema*/,CString p_viewname,CString& p_precursor) const
+{
+  p_precursor.Empty();
+  return "DROP VIEW " + p_viewname;
+}
+
+//////////////////////////////////////////////////////////////////////////
 //
 // SQL/PSM PERSISTENT STORED MODULES 
 //         Also called SPL or PL/SQL
@@ -826,8 +877,6 @@ SQLInfoAccess::GetPSMProcedureDrop(CString p_schema,CString p_procedure) const
 //   - GetSessionExists
 //   - GetSessionList
 //   - GetSessionAttributes
-//     (was GetSessionAndTerminal)
-//     (was GetSessionUniqueID)
 // - Transactions
 //   - GetSessionDeferredConstraints
 //   - GetSessionImmediateConstraints
@@ -835,6 +884,37 @@ SQLInfoAccess::GetPSMProcedureDrop(CString p_schema,CString p_procedure) const
 //////////////////////////////////////////////////////////////////////////
 
 CString 
+SQLInfoAccess::GetSESSIONMyself() const
+{
+  // MS-Access has no info about processes
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetSESSIONExists(CString p_sessionID) const
+{
+  // MS-Access has no info about processes
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetSESSIONList() const
+{
+  // MS-Access has no info about processes
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetSESSIONAttributes(CString p_sessionID) const
+{
+  // MS-Access has no info about processes
+  return "";
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Transactions
+
+CString
 SQLInfoAccess::GetSESSIONConstraintsDeferred() const
 {
   // MS-Access cannot defer constraints
@@ -857,30 +937,6 @@ SQLInfoAccess::GetSESSIONConstraintsImmediate() const
 
 // BOOLEANS EN STRINGS
 // ====================================================================
-
-// Get a query to create a temporary table from a select statement
-CString 
-SQLInfoAccess::GetSQLCreateTemporaryTable(CString& p_tablename,CString p_select) const
-{
-  return "CREATE TABLE #" + p_tablename + "\nAS " + p_select;
-}
-
-// Get the query to remove a temporary table indefinetly
-// BEWARE: Must be executed with a multi-statement stack!
-CString
-SQLInfoAccess::GetSQLRemoveTemporaryTable(CString& p_tablename,int& p_number) const
-{
-  p_number += 2;
-  return "DELETE FROM #"    + p_tablename + ";\n"
-         "DROP TABLE #"     + p_tablename + ";\n";
-}
-
-// Get a query to select into a temp table
-CString 
-SQLInfoAccess::GetSQLSelectIntoTemp(CString& p_tablename,CString& p_select) const
-{
-  return "INSERT INTO #" + p_tablename + "\n" + p_select + ";\n";
-}
 
 // Gets the fact if an IF statement needs to be bordered with BEGIN/END
 bool
@@ -939,38 +995,6 @@ SQLInfoAccess::GetAssignmentSelectParenthesis() const
 // SQL CATALOG QUERIES
 // ===================================================================
 
-// Get SQL for your session and controlling terminal
-CString
-SQLInfoAccess::GetSQLSessionAndTerminal() const
-{
-  // MS-Access cannot query this
-  return "";
-}
-
-// Get SQL to check if session number exists
-CString 
-SQLInfoAccess::GetSQLSessionExists(CString p_sessionID) const
-{
-  // Cannot query this
-  return "";
-}
-
-// Get SQL for unique session ID
-CString 
-SQLInfoAccess::GetSQLUniqueSessionId(const CString& /*p_databaseName*/,const CString& /*p_sessionTable*/) const
-{
-  // Cannot query this
-  return "";
-}
-
-// Get SQL for searching a session
-CString 
-SQLInfoAccess::GetSQLSearchSession(const CString& /*p_databaseName*/,const CString& /*p_sessionTable*/) const
-{
-  // MS Access cannot search the session
-  return "";
-}
-
 // Gets the lock-table query
 CString 
 SQLInfoAccess::GetSQLLockTable(CString& p_tableName,bool p_exclusive) const
@@ -987,32 +1011,8 @@ SQLInfoAccess::GetSQLOptimizeTable(CString& /*p_owner*/,CString& /*p_tableName*/
   return "";
 }
 
-// Getting the fact that there is only **one** (1) user session in the database
-bool    
-SQLInfoAccess::GetOnlyOneUserSession()
-{
-  // No way to get the number of user sessions!
-  // So always continue with management functions
-  return true;
-}
-
 // SQL DDL STATEMENTS
 // ==================
-
-// Get the SQL to drop a view. If precursor is filled: run that SQL first!
-CString 
-SQLInfoAccess::GetSQLDropView(CString /*p_schema*/,CString p_view,CString& p_precursor)
-{
-  p_precursor.Empty();
-  return "DROP VIEW " + p_view;
-}
-
-// Create or replace a database view
-CString 
-SQLInfoAccess::GetSQLCreateOrReplaceView(CString /*p_schema*/,CString p_view,CString p_asSelect) const
-{
-  return "CREATE VIEW " + p_view + "\n" + p_asSelect;
-}
 
 // SQL DDL ACTIONS
 // ===================================================================
@@ -1031,59 +1031,6 @@ void
 SQLInfoAccess::DoCommitDMLcommands() const
 {
   // Not needed in MS-Access
-}
-
-// Does the named view exists in the database
-bool
-SQLInfoAccess::DoesViewExists(CString& /*p_viewName*/)
-{
-  // To be implemented
-  return true;
-}
-
-// Must create temporary tables runtime 
-bool 
-SQLInfoAccess::GetMustMakeTemptablesAtRuntime() const
-{
-  // FALSE: GLOBAL TEMPORARY TABLES IN THE ENGINE
-  return false;
-}
-
-// Create a temporary table in an optimized manner with the given index column
-void
-SQLInfoAccess::DoMakeTemporaryTable(CString& p_tableName,CString& p_content,CString& p_indexColumn) const
-{
-  SQLQuery query(m_database);
-
-  query.TryDoSQLStatement("TRUNCATE TABLE #" + p_tableName);
-  query.TryDoSQLStatement("DROP TABLE #"     + p_tableName);
-  CString create = "CREATE TABLE #" + p_tableName + p_content;
-  try
-  {
-    query.DoSQLStatement(create);
-    if(p_indexColumn!= "")
-    {
-      create = "CREATE INDEX " + p_tableName + "_" + p_indexColumn + " ON #" + p_tableName + "(" + p_indexColumn + ")";
-      query.DoSQLStatement(create);
-    }
-  }
-  catch(...)
-  {
-    throw CString("Cannot create a temporary table: " + p_tableName);
-  }
-}
-
-// Remove a temporary table
-void
-SQLInfoAccess::DoRemoveTemporaryTable(CString& p_tableName) const
-{
-  SQLQuery query(m_database);
-
-  // Every error can be ignored. Can still be in use by another user and/or session
-  // The table contents will then removed for this session
-  query.TryDoSQLStatement("DELETE FROM #"    + p_tableName);
-  query.TryDoSQLStatement("TRUNCATE TABLE #" + p_tableName);
-  query.TryDoSQLStatement("DROP TABLE #"     + p_tableName);
 }
 
 // PERSISTENT-STORED MODULES (SPL / PL/SQL)
@@ -1243,13 +1190,6 @@ SQLInfoAccess::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int
   return retval;
 }
 
-// Get the SPL sourcecode for a stored procedure as registered in the database
-CString 
-SQLInfoAccess::GetSPLSourcecodeFromDatabase(const CString& /*p_owner*/,const CString& /*p_procName*/) const
-{
-  return "";
-}
-
 // Get the SPL datatype for integer
 CString 
 SQLInfoAccess::GetSPLIntegerType() const
@@ -1355,24 +1295,6 @@ SQLVariant*
 SQLInfoAccess::DoSQLCall(SQLQuery* /*p_query*/,CString& /*p_schema*/,CString& /*p_procedure*/)
 {
   return nullptr;
-}
-
-// SPECIALS
-// ==========================================================================
-
-// Translate database-errors to a human readable form
-CString 
-SQLInfoAccess::TranslateErrortext(int p_error,CString p_errorText) const
-{
-  // Check if we have work to do
-  if(p_error == 0)
-  {
-    return p_errorText;
-  }
-
-  CString errorText;
-  errorText.Format("ODBC error [%d:%s]",p_error,p_errorText.GetString());
-  return errorText;
 }
 
 // End of namespace

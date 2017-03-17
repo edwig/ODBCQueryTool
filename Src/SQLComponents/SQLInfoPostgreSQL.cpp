@@ -258,20 +258,6 @@ SQLInfoPostgreSQL::GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) con
   return "{fn IFNULL(" + p_test + "," + p_isnull + ")}";
 }
 
-// Code prefix for a select-into-temp
-CString
-SQLInfoPostgreSQL::GetSQLSelectIntoTempPrefix(CString p_tableName) const
-{
-  return "CREATE GLOBAL TEMPORARY TABLE " + p_tableName + "\nWITHOUT OIDS AS\n";
-}
-
-// Code suffix for after a select-into-temp
-CString
-SQLInfoPostgreSQL::GetSQLSelectIntoTempSuffix(CString p_tableName) const
-{
-  return "";
-}
-
 // Gets the construction / select for generating a new serial identity
 CString
 SQLInfoPostgreSQL::GetSQLGenerateSerial(CString p_table) const
@@ -399,6 +385,32 @@ SQLInfoPostgreSQL::GetCATALOGTableDrop(CString p_schema,CString p_tablename) con
   }
   sql += p_tablename;
   return sql;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL TEMPORARY TABLE FUNCTIONS
+
+CString 
+SQLInfoPostgreSQL::GetCATALOGTemptableCreate(CString p_schema,CString p_tablename,CString p_select) const
+{
+  return "CREATE GLOBAL TEMPORARY TABLE " + p_schema + "." + p_tablename + " WITHOUT OIDS\nAS " + p_select;
+}
+
+CString 
+SQLInfoPostgreSQL::GetCATALOGTemptableIntoTemp(CString p_schema,CString p_tablename,CString p_select) const
+{
+  return "INSERT INTO " + p_schema + "." + p_tablename + "\n" + p_select;
+}
+
+CString 
+SQLInfoPostgreSQL::GetCATALOGTemptableDrop(CString p_schema,CString p_tablename) const
+{
+  CString tablename = p_schema + "." + p_tablename;
+  return "DELETE FROM "    + tablename + ";\n"
+         "<@>\n"
+         "TRUNCATE TABLE " + tablename + ";\n"
+         "<@>\n"
+         "DROP TABLE "     + tablename + ";\n";
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1100,6 +1112,51 @@ SQLInfoPostgreSQL::GetCATALOGSequenceDrop(CString p_schema, CString p_sequence) 
 }
 
 //////////////////////////////////////////////////////////////////////////
+// ALL VIEW FUNCTIONS
+
+CString 
+SQLInfoPostgreSQL::GetCATALOGViewExists(CString p_schema,CString p_viewname) const
+{
+  p_schema.MakeLower();
+  p_viewname.MakeLower();
+  CString sql("SELECT COUNT(*)\n"
+              "  FROM pg_views\n"  // TODO: Check the correct name
+              " WHERE view_name = '" + p_viewname + "'");
+  return sql;
+}
+
+CString 
+SQLInfoPostgreSQL::GetCATALOGViewList(CString p_schema,CString p_pattern) const
+{
+  return "";
+}
+
+CString 
+SQLInfoPostgreSQL::GetCATALOGViewAttributes(CString p_schema,CString p_viewname) const
+{
+  return "";
+}
+
+CString 
+SQLInfoPostgreSQL::GetCATALOGViewCreate(CString p_schema,CString p_viewname,CString p_contents) const
+{
+  return "CREATE OR REPLACE VIEW " + p_schema + "." + p_viewname + "\n" + p_contents;
+}
+
+CString 
+SQLInfoPostgreSQL::GetCATALOGViewRename(CString p_schema,CString p_viewname,CString p_newname)    const
+{
+  return "";
+}
+
+CString 
+SQLInfoPostgreSQL::GetCATALOGViewDrop(CString p_schema,CString p_viewname,CString& p_precursor) const
+{
+  p_precursor.Empty();
+  return "DROP VIEW " + p_schema + "." + p_viewname;
+}
+
+//////////////////////////////////////////////////////////////////////////
 //
 // SQL/PSM PERSISTENT STORED MODULES 
 //         Also called SPL or PL/SQL
@@ -1142,7 +1199,14 @@ SQLInfoPostgreSQL::GetPSMProcedureList(CString p_schema) const
 CString
 SQLInfoPostgreSQL::GetPSMProcedureAttributes(CString p_schema, CString p_procedure) const
 {
-  return "";
+  p_schema.MakeLower();
+  p_procedure.MakeLower();
+
+  CString sql = "SELECT TEXT from ALL_SOURCE "
+                "WHERE type = 'FUNCTION' "
+                "AND name  = '" + p_procedure + "'\n"
+                "AND owner = '" + p_schema    + "'";
+  return sql;
 }
 
 CString
@@ -1165,13 +1229,62 @@ SQLInfoPostgreSQL::GetPSMProcedureDrop(CString p_schema, CString p_procedure) co
 //   - GetSessionExists
 //   - GetSessionList
 //   - GetSessionAttributes
-//     (was GetSessionAndTerminal)
-//     (was GetSessionUniqueID)
 // - Transactions
 //   - GetSessionDeferredConstraints
 //   - GetSessionImmediateConstraints
 //
 //////////////////////////////////////////////////////////////////////////
+
+CString
+SQLInfoPostgreSQL::GetSESSIONMyself() const
+{
+  CString query = "SELECT procpid\n"
+                  "      ,user\n"
+                  "      ,datname\n"
+                  "      ,current_timestamp\n"  // moment
+                  "      ,''\n"         // remote address
+                  "      ,''\n"         // remote process name
+                  "      ,''\n"         // remote process ID
+                  "  FROM pg_stat_activity\n"
+                  " WHERE procpid = pg_backend_pid()";    
+  return query;
+}
+
+CString
+SQLInfoPostgreSQL::GetSESSIONExists(CString p_sessionID) const
+{
+  CString sql = "SELECT COUNT(*)\n"
+                "  FROM pg_stat_activity\n"
+                " WHERE procpid = " + p_sessionID;
+  return sql;
+}
+
+CString
+SQLInfoPostgreSQL::GetSESSIONList() const
+{
+  return GetSESSIONAttributes("");
+}
+
+CString
+SQLInfoPostgreSQL::GetSESSIONAttributes(CString p_sessionID) const
+{
+  CString sql = "SELECT procpid\n"
+                "      ,user\n"
+                "      ,datname\n"
+                "      ,current_timestamp\n"  // moment
+                "      ,''\n"         // remote address
+                "      ,''\n"         // remote process name
+                "      ,''\n"         // remote process ID
+                "  FROM pg_stat_activity";
+  if (!p_sessionID.IsEmpty())
+  {
+    sql += "\n WHERE procpid = " + p_sessionID;
+  }
+  return sql;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Transactions
 
 CString
 SQLInfoPostgreSQL::GetSESSIONConstraintsDeferred() const
@@ -1193,30 +1306,6 @@ SQLInfoPostgreSQL::GetSESSIONConstraintsImmediate() const
 
 // BOOLEANS AND STRINGS
 // ====================================================================
-
-// Get the query to create a temporary table from a SELECT statement
-CString 
-SQLInfoPostgreSQL::GetSQLCreateTemporaryTable(CString& p_tablename,CString p_select) const
-{
-  return "CREATE GLOBAL TEMPORARY TABLE " + p_tablename + "\nAS " + p_select;
-}
-
-// Get the query to remove a temporary table completely
-CString
-SQLInfoPostgreSQL::GetSQLRemoveTemporaryTable(CString& p_tablename,int& p_number) const
-{
-  p_number += 3;
-  return "DELETE FROM "    + p_tablename + ";\n"
-         "TRUNCATE TABLE " + p_tablename + ";\n"
-         "DROP TABLE "     + p_tablename + ";\n";
-}
-
-// Get the SQL query to select into a temporary table
-CString 
-SQLInfoPostgreSQL::GetSQLSelectIntoTemp(CString& p_tablename,CString& p_select) const
-{
-   return "INSERT INTO " + p_tablename + "\n" + p_select + ";\n";
-}
 
 bool
 SQLInfoPostgreSQL::GetCodeIfStatementBeginEnd() const
@@ -1263,48 +1352,6 @@ SQLInfoPostgreSQL::GetAssignmentSelectParenthesis() const
 // SQL CATALOG QUERIES
 // ===================================================================
 
-CString
-SQLInfoPostgreSQL::GetSQLSessionAndTerminal() const
-{
-  CString query = "SELECT procpid\n"
-                  "      ,datname\n"
-                  "  FROM pg_stat_activity\n"
-                  " WHERE procpid = pg_backend_pid()";    
-  return query;
-}
-
-// Get SQL to check if session number exists
-CString 
-SQLInfoPostgreSQL::GetSQLSessionExists(CString sessieId) const
-{
-  return "";
-}
-
-// Get SQL query for the unique session id
-CString 
-SQLInfoPostgreSQL::GetSQLUniqueSessionId(const CString& /*p_databaseName*/,const CString& /*p_sessionTable*/) const
-{
-  CString query = "SELECT DISTINCT procpid\n"
-                  "  FROM pg_stat_activity\n"
-                  " WHERE procpid <> 0";
-  return query;
-}
-
-// Finding the extra sessions
-CString 
-SQLInfoPostgreSQL::GetSQLSearchSession(const CString& /*p_databaseName*/,const CString& p_sessionTable) const
-{
-  CString query = "SELECT  procpid\n"
-                  "       ,usename\n"
-                  "       ,datname\n"
-                  "  FROM pg_stat_activity\n"
-                  " WHERE procpid <> 0\n"
-                  "   AND NOT procpid IN\n"
-                  "     ( SELECT sessie_nr\n"
-                  "         FROM "+ p_sessionTable + ")";
-  return query;
-}
-
 // Get the lock-table query
 CString 
 SQLInfoPostgreSQL::GetSQLLockTable(CString& p_tableName,bool p_exclusive) const
@@ -1324,31 +1371,8 @@ SQLInfoPostgreSQL::GetSQLOptimizeTable(CString& p_owner,CString& p_tableName,int
   return optim;
 }
 
-// Getting the fact that there is only **one** (1) user session in the database
-bool
-SQLInfoPostgreSQL::GetOnlyOneUserSession()
-{
-  // Yet to implement
-  return true;
-}
-
 // SQL DDL STATEMENTS
 // ==================
-
-// Get the SQL to drop a view. If precursor is filled: run that SQL first!
-CString 
-SQLInfoPostgreSQL::GetSQLDropView(CString p_schema,CString p_view,CString& p_precursor)
-{
-  p_precursor.Empty();
-  return "DROP VIEW " + p_schema + "." + p_view;
-}
-
-// Create or replace a database view
-CString 
-SQLInfoPostgreSQL::GetSQLCreateOrReplaceView(CString p_schema,CString p_view,CString p_asSelect) const
-{
-  return "CREATE OR REPLACE VIEW " + p_schema + "." + p_view + "\n" + p_asSelect;
-}
 
 // SQL DDL ACTIONS
 // ===================================================================
@@ -1367,66 +1391,6 @@ SQLInfoPostgreSQL::DoCommitDMLcommands() const
 {
   SQLQuery sql(m_database);
   sql.DoSQLStatement("commit");
-}
-
-// Does the named view exists in the database
-bool
-SQLInfoPostgreSQL::DoesViewExists(CString& p_viewName)
-{
-  CString viewname(p_viewName);
-  viewname.MakeUpper();
-  SQLQuery query(m_database);
-  query.DoSQLStatement("SELECT COUNT(*)\n"
-                       "  FROM pg_views\n"  // TODO: Check the correct name
-                       " WHERE view_name = '" + viewname + "'");
-  if(query.GetRecord())
-  {
-    return query.GetColumn(1)->GetAsSLong() == 1;
-  }
-  return false;
-}
-
-// Can create temporary tables at runtime?
-bool 
-SQLInfoPostgreSQL::GetMustMakeTemptablesAtRuntime() const
-{
-  return false;
-}
-
-// Create a temporary table in an optimized way
-void
-SQLInfoPostgreSQL::DoMakeTemporaryTable(CString& p_tableName,CString& p_content,CString& p_indexColumn) const
-{
-  SQLQuery sql(m_database);
-
-  sql.TryDoSQLStatement("TRUNCATE TABLE " + p_tableName);
-  sql.TryDoSQLStatement("DROP TABLE " + p_tableName);
-  CString create = "CREATE GLOBAL TEMPORARY TABLE " + p_tableName + "\n"
-                   "WITHOUT OIDS\n"
-                   "ON COMMIT PRESERVE ROWS\n" + p_content;
-  try
-  {
-    sql.DoSQLStatement(create);
-    if(p_indexColumn != "")
-    {
-      create = "CREATE INDEX " + p_tableName + "_" + p_indexColumn + " ON " + p_tableName + "(" + p_indexColumn + ")";
-      sql.DoSQLStatement(create);
-    }
-  }
-  catch(...)
-  {
-    throw CString("Cannot create temporary table: " + p_tableName);
-  }
-}
-
-// Remove temporary tabel
-void
-SQLInfoPostgreSQL::DoRemoveTemporaryTable(CString& p_tableName) const
-{
-  SQLQuery sql(m_database);
-  sql.TryDoSQLStatement("DELETE FROM "    + p_tableName);
-  sql.TryDoSQLStatement("TRUNCATE TABLE " + p_tableName);
-  sql.TryDoSQLStatement("DROP TABLE "     + p_tableName);
 }
 
 // PERSISTENT-STORED MODULES (SPL / PL/SQL)
@@ -1566,24 +1530,6 @@ SQLInfoPostgreSQL::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day
   retval.Format("%04d-%02d-%02d %02d:%02d:%02d"
                 ,p_year,p_month,p_day,p_hour,p_minute,p_second);
   return retval;
-}
-
-CString 
-SQLInfoPostgreSQL::GetSPLSourcecodeFromDatabase(const CString& p_owner,const CString& p_procName) const
-{
-  CString sQuery;  
-  sQuery = "SELECT TEXT from ALL_SOURCE "
-           "WHERE type = 'FUNCTION' "
-           "AND name  = LOWER('" + p_procName +  "') "
-           "AND owner = LOWER('" + p_owner + "')";
-  SQLQuery sql(m_database);
-  sql.TryDoSQLStatement(sQuery);
-  CString sProcBody = "CREATE OR REPLACE ";
-  while (sql.GetRecord())
-  {
-    sProcBody += sql.GetColumn(1)->GetAsChar();
-  }
-  return sProcBody;
 }
 
 // Get the SPL datatype for integer
@@ -1748,24 +1694,6 @@ SQLInfoPostgreSQL::DoSQLCall(SQLQuery* p_query,CString& p_schema,CString& p_proc
     return p_query->GetParameter(0);
   }
   return nullptr;
-}
-
-// SPECIALS
-// ==========================================================================
-
-// Translate database-errors to a human readable form
-CString 
-SQLInfoPostgreSQL::TranslateErrortext(int p_error,CString p_errorText) const
-{
-  // Check if we have work to do
-  if(p_error == 0)
-  {
-    return p_errorText;
-  }
-
-  CString errorText;
-  errorText.Format("ODBC error [%d:%s]",p_error,p_errorText.GetString());
-  return errorText;
 }
 
 //////////////////////////////////////////////////////////////////////////

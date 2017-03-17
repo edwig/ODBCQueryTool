@@ -252,21 +252,6 @@ SQLInfoGenericODBC::GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) co
   return "{fn IFNULL(" + p_test + "," + p_isnull + ")}";
 }
 
-// Code prefix for a select-into-temp
-CString
-SQLInfoGenericODBC::GetSQLSelectIntoTempPrefix(CString p_tableName) const
-{
-  return "CREATE TEMPORARY TABLE " + p_tableName + "\nAS\n";
-}
-
-// Code suffix for after a select-into-temp
-CString
-SQLInfoGenericODBC::GetSQLSelectIntoTempSuffix(CString p_tableName) const
-{
-  // No way to do this in the ODBC standard
-  return "";
-}
-
 // Gets the construction / select for generating a new serial identity
 CString
 SQLInfoGenericODBC::GetSQLGenerateSerial(CString p_table) const
@@ -405,6 +390,28 @@ SQLInfoGenericODBC::GetCATALOGTableDrop(CString p_schema,CString p_tablename) co
   }
   sql += p_tablename;
   return sql;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL TEMPORARY TABLE FUNCTIONS
+
+CString 
+SQLInfoGenericODBC::GetCATALOGTemptableCreate(CString p_schema,CString p_tablename,CString p_select) const
+{
+  // BEWARE: THIS IS A GUESS. NO REAL DEFINITION IN ODBC
+  return "CREATE TEMPORARY TABLE " + p_schema + "." + p_tablename + "\nAS " + p_select;
+}
+
+CString 
+SQLInfoGenericODBC::GetCATALOGTemptableIntoTemp(CString p_schema,CString p_tablename,CString p_select) const
+{
+  return "INSERT INTO " + p_schema + "." + p_tablename + "\n" + p_select + ";\n";
+}
+
+CString 
+SQLInfoGenericODBC::GetCATALOGTemptableDrop(CString p_schema,CString p_tablename) const
+{
+  return "DROP TABLE " + p_schema + "." + p_tablename;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -874,6 +881,46 @@ SQLInfoGenericODBC::GetCATALOGSequenceDrop(CString p_schema, CString p_sequence)
 }
 
 //////////////////////////////////////////////////////////////////////////
+// ALL VIEW FUNCTIONS
+
+CString 
+SQLInfoGenericODBC::GetCATALOGViewExists(CString p_schema,CString p_viewname) const
+{
+  return "";
+}
+
+CString 
+SQLInfoGenericODBC::GetCATALOGViewList(CString p_schema,CString p_pattern) const
+{
+  return "";
+}
+
+CString 
+SQLInfoGenericODBC::GetCATALOGViewAttributes(CString p_schema,CString p_viewname) const
+{
+  return "";
+}
+
+CString 
+SQLInfoGenericODBC::GetCATALOGViewCreate(CString p_schema,CString p_viewname,CString p_contents) const
+{
+  return "CREATE VIEW " + p_schema + "." + p_viewname + "\n" + p_contents;
+}
+
+CString 
+SQLInfoGenericODBC::GetCATALOGViewRename(CString p_schema,CString p_viewname,CString p_newname)    const
+{
+  return "";
+}
+
+CString 
+SQLInfoGenericODBC::GetCATALOGViewDrop(CString p_schema,CString p_viewname,CString& p_precursor) const
+{
+  p_precursor.Empty();
+  return "DROP VIEW " + p_schema + "." + p_viewname;
+}
+
+//////////////////////////////////////////////////////////////////////////
 //
 // SQL/PSM PERSISTENT STORED MODULES 
 //         Also called SPL or PL/SQL
@@ -936,13 +983,42 @@ SQLInfoGenericODBC::GetPSMProcedureDrop(CString p_schema, CString p_procedure) c
 //   - GetSessionExists
 //   - GetSessionList
 //   - GetSessionAttributes
-//     (was GetSessionAndTerminal)
-//     (was GetSessionUniqueID)
 // - Transactions
 //   - GetSessionDeferredConstraints
 //   - GetSessionImmediateConstraints
 //
 //////////////////////////////////////////////////////////////////////////
+
+CString
+SQLInfoGenericODBC::GetSESSIONMyself() const
+{
+  // Generic ISO ODBC has no info about other sessions
+  return "";
+}
+
+CString
+SQLInfoGenericODBC::GetSESSIONExists(CString p_sessionID) const
+{
+  // Generic ISO ODBC has no info about other sessions
+  return "";
+}
+
+CString
+SQLInfoGenericODBC::GetSESSIONList() const
+{
+  // Generic ISO ODBC has no info about other sessions
+  return "";
+}
+
+CString
+SQLInfoGenericODBC::GetSESSIONAttributes(CString p_sessionID) const
+{
+  // Generic ISO ODBC has no info about other sessions
+  return "";
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Transactions
 
 CString
 SQLInfoGenericODBC::GetSESSIONConstraintsDeferred() const
@@ -967,30 +1043,6 @@ SQLInfoGenericODBC::GetSESSIONConstraintsImmediate() const
 
 // BOOLEANS EN STRINGS
 // ====================================================================
-
-// Get a query to create a temporary table from a select statement
-CString 
-SQLInfoGenericODBC::GetSQLCreateTemporaryTable(CString& p_tablename,CString p_select) const
-{
-  // BEWARE: THIS IS A GUESS. NO REAL DEFINITION IN ODBC
-  return "CREATE TEMPORARY TABLE " + p_tablename + "\nAS " + p_select;
-}
-
-// Get the query to remove a temporary table indefinetly
-// BEWARE: Must be executed with a multi-statement stack!
-CString 
-SQLInfoGenericODBC::GetSQLRemoveTemporaryTable(CString& p_tablename,int& p_number) const
-{
-  p_number += 1;
-  return "DROP TABLE " + p_tablename + ";\n";
-}
-
-// Get a query to select into a temp table
-CString 
-SQLInfoGenericODBC::GetSQLSelectIntoTemp(CString& p_tablename,CString& p_select) const
-{
-  return "INSERT INTO " + p_tablename + "\n" + p_select + ";\n";
-}
 
 // Gets the fact if an IF statement needs to be bordered with BEGIN/END
 bool
@@ -1040,38 +1092,6 @@ SQLInfoGenericODBC::GetAssignmentSelectParenthesis() const
 // SQL CATALOG QUERIES
 // ===================================================================
 
-// Get SQL for your session and controlling terminal
-CString 
-SQLInfoGenericODBC::GetSQLSessionAndTerminal() const
-{
-  // To be implemented
-  return "";
-}
-
-// Get SQL to check if session number exists
-CString 
-SQLInfoGenericODBC::GetSQLSessionExists(CString sessieId) const
-{
-  // To be implemented
-  return "";
-}
-
-// Get SQL for unique session ID
-CString 
-SQLInfoGenericODBC::GetSQLUniqueSessionId(const CString& /*p_databaseName*/,const CString& /*p_sessionTable*/) const
-{
-  // To be implemented
-  return "";
-}
-
-// Get SQL for searching a session
-CString 
-SQLInfoGenericODBC::GetSQLSearchSession(const CString& /*p_databaseName*/,const CString& /*p_sessionTable*/) const
-{
-  // To be implemented
-  return "";
-}
-
 // Get a lock-table query
 CString 
 SQLInfoGenericODBC::GetSQLLockTable(CString& p_tableName,bool p_exclusive) const
@@ -1091,32 +1111,8 @@ SQLInfoGenericODBC::GetSQLOptimizeTable(CString& /*p_owner*/,CString& /*p_tableN
   return "";
 }
 
-// Getting the fact that there is only **one** (1) user session in the database
-bool
-SQLInfoGenericODBC::GetOnlyOneUserSession()
-{
-  // No way to get the number of user sessions!
-  // So always continue with management functions
-  return true;
-}
-
 // SQL DDL STATEMENTS
 // ==================
-
-// Get the SQL to drop a view. If precursor is filled: run that SQL first!
-CString 
-SQLInfoGenericODBC::GetSQLDropView(CString p_schema,CString p_view,CString& p_precursor)
-{
-  p_precursor.Empty();
-  return "DROP VIEW " + p_schema + "." + p_view;
-}
-
-// Create or replace a database view
-CString 
-SQLInfoGenericODBC::GetSQLCreateOrReplaceView(CString p_schema,CString p_view,CString p_asSelect) const
-{
-  return "CREATE VIEW " + p_schema + "." + p_view + "\n" + p_asSelect;
-}
 
 // SQL DDL ACTIONS
 // ===================================================================
@@ -1134,68 +1130,6 @@ SQLInfoGenericODBC::DoCommitDDLcommands() const
 void
 SQLInfoGenericODBC::DoCommitDMLcommands() const
 {
-}
-
-// Does the named view exists in the database
-bool
-SQLInfoGenericODBC::DoesViewExists(CString& p_viewName)
-{
-  CString   errors;
-  MTableMap tables;
-
-  if(MakeInfoTableTablepart(p_viewName,tables,errors))
-  {
-    if(errors.IsEmpty() && !tables.empty())
-    {
-      return true;
-    }
-  }
-  return false;
-}
-
-// Must create temporary tables runtime 
-bool
-SQLInfoGenericODBC::GetMustMakeTemptablesAtRuntime() const
-{
-  // No way to know this: it's safe to assume we must create one
-  return true;
-}
-
-// Create a temporary table in an optimized manner with the given index column
-void    
-SQLInfoGenericODBC::DoMakeTemporaryTable(CString& p_tableName,CString& p_content,CString& p_indexColumn) const
-{
-  SQLQuery query(m_database);
-  p_tableName.MakeUpper();
-
-  // Generic ISO SQL syntax
-  query.TryDoSQLStatement("DROP TABLE "     + p_tableName);
-  CString create = "CREATE TEMPORARY TABLE " + p_tableName + "\n" + p_content;
-  try
-  {
-    query.DoSQLStatement(create);
-
-    if(!p_indexColumn.IsEmpty())
-    {
-      create = "CREATE INDEX " + p_tableName + "_" + p_indexColumn + " ON " + p_tableName+ "(" + p_indexColumn+ ")";
-      query.DoSQLStatement(create);
-    }
-  }
-  catch(...)
-  {
-    throw CString("Cannot make a temporary table: ") + p_tableName;
-  }
-}
-
-// Remove a temporary table
-void
-SQLInfoGenericODBC::DoRemoveTemporaryTable(CString& p_tableName) const
-{
-  SQLQuery query(m_database);
-
-  // Every error can be ignored. Can still be in use by another user and/or session
-  // The table contents will then removed for this session
-  query.TryDoSQLStatement("DROP TABLE " + p_tableName);
 }
 
 // PERSISTENT-STORED MODULES (SPL / PL/SQL)
@@ -1332,15 +1266,6 @@ SQLInfoGenericODBC::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_da
   return string;
 }
 
-// Get the SPL sourcecode for a stored procedure as registered in the database
-CString 
-SQLInfoGenericODBC::GetSPLSourcecodeFromDatabase(const CString& /*p_owner*/,const CString& /*p_procName*/) const
-{
-  // No way of knowing this
-  return "";
-}
-
-
 // Get the SPL datatype for integer
 CString 
 SQLInfoGenericODBC::GetSPLIntegerType() const
@@ -1442,18 +1367,6 @@ SQLVariant*
 SQLInfoGenericODBC::DoSQLCall(SQLQuery* /*p_query*/,CString& /*p_schema*/,CString& /*p_procedure*/)
 {
   return nullptr;
-}
-
-// SPECIALS
-// ==========================================================================
-
-// Translate database-errors to a human readable form
-CString 
-SQLInfoGenericODBC::TranslateErrortext(int p_error,CString p_errorText) const
-{
-  CString errorText;
-  errorText.Format("ODBC error [%d:%s]",p_error,p_errorText.GetString());
-  return errorText;
 }
 
 // End of namespace

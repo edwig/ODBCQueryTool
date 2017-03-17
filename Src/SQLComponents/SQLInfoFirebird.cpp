@@ -251,20 +251,6 @@ SQLInfoFirebird::GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) const
   return "{fn IFNULL(" + p_test + "," + p_isnull + ")}";
 }
 
-// Code prefix for a select-into-temp
-CString
-SQLInfoFirebird::GetSQLSelectIntoTempPrefix(CString p_tableName) const
-{
-  return "";
-}
-
-// Code suffix for after a select-into-temp
-CString
-SQLInfoFirebird::GetSQLSelectIntoTempSuffix(CString p_tableName) const
-{
-  return "";
-}
-
 // Gets the construction / select for generating a new serial identity
 CString
 SQLInfoFirebird::GetSQLGenerateSerial(CString p_table) const
@@ -385,6 +371,28 @@ SQLInfoFirebird::GetCATALOGTableRename(CString /*p_schema*/,CString /*p_oldName*
 
 CString
 SQLInfoFirebird::GetCATALOGTableDrop(CString /*p_schema*/,CString p_tablename) const
+{
+  return "DROP TABLE " + p_tablename;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL TEMPORARY TABLE FUNCTIONS
+
+CString 
+SQLInfoFirebird::GetCATALOGTemptableCreate(CString /*p_schema*/,CString p_tablename,CString p_select) const
+{
+  return "CREATE GLOBAL TEMPORARY TABLE " + p_tablename + "\nAS " + p_select +
+         "ON COMMIT PRESERVE ROWS";
+}
+
+CString 
+SQLInfoFirebird::GetCATALOGTemptableIntoTemp(CString /*p_schema*/,CString p_tablename,CString p_select) const
+{
+  return "INSERT INTO " + p_tablename + "\n" + p_select;
+}
+
+CString 
+SQLInfoFirebird::GetCATALOGTemptableDrop(CString /*p_schema*/,CString p_tablename) const
 {
   return "DROP TABLE " + p_tablename;
 }
@@ -1067,6 +1075,60 @@ SQLInfoFirebird::GetCATALOGSequenceDrop(CString /*p_schema*/, CString p_sequence
 }
 
 //////////////////////////////////////////////////////////////////////////
+// ALL VIEW FUNCTIONS
+
+CString 
+SQLInfoFirebird::GetCATALOGViewExists(CString /*p_schema*/,CString p_viewname) const
+{
+  p_viewname.MakeUpper();
+
+  CString sql = "SELECT count(*)\n"
+                "  FROM rdb$relations\n"
+                " WHERE rdb$relation_name = '" + p_viewname + "'\n"
+                "   AND rdb$relation_type = 1";
+  return sql;
+}
+
+CString 
+SQLInfoFirebird::GetCATALOGViewList(CString p_schema,CString p_pattern) const
+{
+  return "";
+}
+
+CString 
+SQLInfoFirebird::GetCATALOGViewAttributes(CString p_schema,CString p_viewname) const
+{
+  return "";
+}
+
+CString 
+SQLInfoFirebird::GetCATALOGViewCreate(CString /*p_schema*/,CString p_viewname,CString p_contents) const
+{
+  return "RECREATE VIEW " + p_viewname + "\n" + p_contents;
+}
+
+CString 
+SQLInfoFirebird::GetCATALOGViewRename(CString p_schema,CString p_viewname,CString p_newname)    const
+{
+  return "";
+}
+
+CString 
+SQLInfoFirebird::GetCATALOGViewDrop(CString /*p_schema*/,CString p_viewname,CString& p_precursor) const
+{
+  p_viewname.MakeUpper();
+
+  // Firebird cannot drop a view if dependencies from stored procedures or functions
+  // still exist in the dependencies table. After Firebird 3.0 we need modification
+  // rights on this system catalog table!!
+  // Chances being that we re-create the view right away after the drop.
+  p_precursor = "DELETE FROM rdb$dependencies\n"
+                " WHERE rdb$depended_on_name = '" + p_viewname + "'\n"
+                "   AND rdb$depended_on_type = 0";
+  return "DROP VIEW " + p_viewname;
+}
+
+//////////////////////////////////////////////////////////////////////////
 //
 // SQL/PSM PERSISTENT STORED MODULES 
 //         Also called SPL or PL/SQL
@@ -1133,13 +1195,64 @@ SQLInfoFirebird::GetPSMProcedureDrop(CString p_schema, CString p_procedure) cons
 //   - GetSessionExists
 //   - GetSessionList
 //   - GetSessionAttributes
-//     (was GetSessionAndTerminal)
-//     (was GetSessionUniqueID)
 // - Transactions
 //   - GetSessionDeferredConstraints
 //   - GetSessionImmediateConstraints
 //
 //////////////////////////////////////////////////////////////////////////
+
+CString
+SQLInfoFirebird::GetSESSIONMyself() const
+{
+  CString query = "SELECT mon.mon$attachment_id\n"
+                  "      ,mon.mon$remote_os_user\n"
+                  "      ,mon.mon$remote_host\n"
+                  "      ,mon.mon$timestamp\n"
+                  "      ,mon.mon$remote_address\n"
+                  "      ,mon.mon$remote_process\n"
+                  "      ,mon.mon$remote_pid\n"
+                  "  FROM mon$attachments mon\n"
+                  " WHERE mon$attachment_id = current_connection";
+  return query;
+}
+
+CString
+SQLInfoFirebird::GetSESSIONExists(CString p_sessionID) const
+{
+  CString query;
+  query.Format("SELECT COUNT(*)\n"
+               "  FROM mon$attachments\n"
+               " WHERE mon$system_flag = 0\n"
+               "   AND mon$attachment_id = %s",p_sessionID.GetString());
+  return query;
+}
+
+CString
+SQLInfoFirebird::GetSESSIONList() const
+{
+  return GetSESSIONAttributes("");
+}
+
+CString
+SQLInfoFirebird::GetSESSIONAttributes(CString p_sessionID) const
+{
+  CString sql = "SELECT mon.mon$attachment_id\n"
+                "      ,mon.mon$remote_os_user\n"
+                "      ,mon.mon$remote_host\n"
+                "      ,mon.mon$timestamp\n"
+                "      ,mon.mon$remote_address\n"
+                "      ,mon.mon$remote_process\n"
+                "      ,mon.mon$remote_pid\n"
+                "  FROM mon$attachments mon";
+  if(!p_sessionID.IsEmpty())
+  {
+    sql += "\n WHERE mon$attachment_id = " + p_sessionID;
+  }
+  return sql;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Transactions
 
 CString
 SQLInfoFirebird::GetSESSIONConstraintsDeferred() const
@@ -1163,30 +1276,6 @@ SQLInfoFirebird::GetSESSIONConstraintsImmediate() const
 
 // BOOLEANS EN STRINGS
 // ====================================================================
-
-// Get the SQL Query to create a temporary table from a select statement;
-CString 
-SQLInfoFirebird::GetSQLCreateTemporaryTable(CString& p_tablename,CString p_select) const
-{
-  return "CREATE GLOBAL TEMPORARY TABLE " + p_tablename + "\nAS " + p_select +
-         "ON COMMIT PRESERVE ROWS";
-}
-
-// Get the SQL query to remove a temporary table
-CString
-SQLInfoFirebird::GetSQLRemoveTemporaryTable(CString& p_tablename,int& p_number) const
-{
-  // 'Simply' a drop from a table
-  p_number += 1;
-  return "DROP TABLE "     + p_tablename + ";\n";
-}
-
-// Getting the SQL query to select into a temporary table
-CString 
-SQLInfoFirebird::GetSQLSelectIntoTemp(CString& p_tablename,CString& p_select) const
-{
-  return "INSERT INTO " + p_tablename + "\n" + p_select + ";\n";
-}
 
 bool
 SQLInfoFirebird::GetCodeIfStatementBeginEnd() const
@@ -1234,51 +1323,6 @@ SQLInfoFirebird::GetAssignmentSelectParenthesis() const
 // SQL CATALOG QUERIES
 // ====================================================================
 
-CString
-SQLInfoFirebird::GetSQLSessionAndTerminal() const
-{
-  CString query = "SELECT mon.mon$attachment_id\n"
-                  "      ,mon.mon$timestamp\n"
-                  "      ,mon.mon$remote_address\n"
-                  "      ,mon.mon$remote_host\n"
-                  "      ,mon.mon$remote_process\n"
-                  "      ,mon.mon$remote_pid\n"
-                  "      ,mon.mon$remote_os_user\n"
-                  "  FROM mon$attachments mon\n"
-                  " WHERE mon$attachment_id = current_connection";
-  return query;
-}
-
-// Get SQL to check if session number exists
-CString 
-SQLInfoFirebird::GetSQLSessionExists(CString p_sessionID) const
-{
-  CString query;
-  query.Format("SELECT COUNT(*)\n"
-               "  FROM mon$attachments\n"
-               " WHERE mon$system_flag = 0\n"
-               "   AND mon$attachment_id = %s",p_sessionID.GetString());
-  return query;
-}
-
-// Get a query for an unique session id
-CString
-SQLInfoFirebird::GetSQLUniqueSessionId(const CString& /*p_databaseName*/,const CString& /*p_sessionTable*/) const
-{
-  CString query = "SELECT distinct(mon$attachment_id)\n"
-                  "  FROM mon$attachments\n"
-                  " WHERE mon$system_flag = 0";
-  return query;
-}
-
-// Get query to find the extra logged in sessions
-CString
-SQLInfoFirebird::GetSQLSearchSession(const CString& /*p_databaseName*/,const CString& /*p_sessionTable*/) const
-{
-  // No way in Firebird to find that
-  return "";
-}
-
 // returns a lock table statement
 CString 
 SQLInfoFirebird::GetSQLLockTable(CString& /*p_tableName*/,bool /*p_exclusive*/) const
@@ -1295,44 +1339,8 @@ SQLInfoFirebird::GetSQLOptimizeTable(CString& /*p_owner*/,CString& /*p_tableName
   return "";
 }
 
-// Getting the fact that there is only **one** (1) user session in the database
-bool
-SQLInfoFirebird::GetOnlyOneUserSession()
-{
-  CString sql("SELECT COUNT(*)\n"
-              "  FROM MON$ATTACHMENTS\n"
-              " WHERE MON$SYSTEM_FLAG = 0");
-
-  SQLQuery query(m_database);
-  SQLVariant* sessions = query.DoSQLStatementScalar(sql);
-  return sessions->GetAsSLong() <= 1;
-}
-
 // SQL DDL STATEMENTS
 // ==================
-
-// Get the SQL to drop a view. If precursor is filled: run that SQL first!
-CString 
-SQLInfoFirebird::GetSQLDropView(CString /*p_schema*/,CString p_view,CString& p_precursor)
-{
-  p_view.MakeUpper();
-
-  // Firebird cannot drop a view if dependencies from stored procedures or functions
-  // still exist in the dependencies table. After Firebird 3.0 we need modification
-  // rights on this system catalog table!!
-  // Changes being that we re-create the view right away after the drop.
-  p_precursor = "DELETE FROM rdb$dependencies\n"
-                " WHERE rdb$depended_on_name = '" + p_view + "'\n"
-                "   AND rdb$depended_on_type = 0";
-  return "DROP VIEW " + p_view;
-}
-
-// Create or replace a database view
-CString 
-SQLInfoFirebird::GetSQLCreateOrReplaceView(CString /*p_schema*/,CString p_view,CString p_asSelect) const
-{
-  return "RECREATE VIEW " + p_view + "\n" + p_asSelect;
-}
 
 // SQL DDL ACTIONS
 // ====================================================================
@@ -1359,54 +1367,6 @@ SQLInfoFirebird::DoCommitDMLcommands() const
 {
   SQLQuery sql(m_database);
   sql.DoSQLStatement("COMMIT");
-}
-
-// Does the named view exists in the database
-bool
-SQLInfoFirebird::DoesViewExists(CString& p_viewName)
-{
-  CString view(p_viewName);
-  view.MakeUpper();
-
-  CString sql = "SELECT count(*)\n"
-                "  FROM rdb$relations\n"
-                " WHERE rdb$relation_name = '" + view + "'\n"
-                "   AND rdb$relation_type = 1";
-  SQLQuery query(m_database);
-  return query.DoSQLStatementScalar(sql)->GetAsBoolean();
-}
-
-// Can create temporary tables at runtime
-bool 
-SQLInfoFirebird::GetMustMakeTemptablesAtRuntime() const
-{
-  return true;
-}
-
-// Creates a temporary table 
-void
-SQLInfoFirebird::DoMakeTemporaryTable(CString& p_tableName,CString& p_content,CString& /*p_indexColumn*/) const
-{
-  SQLQuery sql(m_database);
-  CString create = "CREATE GLOBAL TEMPORARY TABLE " + p_tableName + p_content;
-  try
-  {
-    sql.DoSQLStatement(create);
-  }
-  catch(CString& error)
-  {
-    // throw error if not succeeded
-    throw CString("Cannot create temporary table: " + p_tableName + " : " + error);
-  }
-}
-
-// Removal of the temporary table
-void
-SQLInfoFirebird::DoRemoveTemporaryTable(CString& p_tableName) const
-{
-  SQLQuery query(m_database);
-  // If table is not there, no error...
-  query.TryDoSQLStatement("DROP TABLE " + p_tableName);
 }
 
 // PERSISTENT-STORED MODULES (SPL / PL/SQL)
@@ -1531,13 +1491,6 @@ SQLInfoFirebird::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,i
   return retval;
 }
 
-CString 
-SQLInfoFirebird::GetSPLSourcecodeFromDatabase(const CString& /*p_owner*/,const CString& /*p_procName*/) const
-{
-  // @EH To be implemented
-  return "";
-}
-
 // Get the SPL datatype for integer
 CString 
 SQLInfoFirebird::GetSPLIntegerType() const
@@ -1655,26 +1608,6 @@ SQLInfoFirebird::DoSQLCall(SQLQuery* p_query,CString& /*p_schema*/,CString& p_pr
   // If result, return 0th parameter as the result
   return result ? p_query->GetParameter(0) : nullptr;
 }
-
-
-// SPECIALS
-// ==========================================================================
-
-// Translate database-errors to a human readable form
-CString 
-SQLInfoFirebird::TranslateErrortext(int p_error,CString p_errorText) const
-{
-  // Check if we have work to do
-  if(p_error == 0)
-  {
-    return p_errorText;
-  }
-
-  CString errorText;
-  errorText.Format("ODBC error [%d:%s]",p_error,p_errorText.GetString());
-  return errorText;
-}
-
 
 //////////////////////////////////////////////////////////////////////////
 //

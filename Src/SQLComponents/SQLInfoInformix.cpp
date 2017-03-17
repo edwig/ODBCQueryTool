@@ -264,20 +264,6 @@ SQLInfoInformix::GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) const
   return CString("NVL(") + p_test + "," + p_isnull + ")";
 }
 
-// Code prefix for a select-into-temp
-CString
-SQLInfoInformix::GetSQLSelectIntoTempPrefix(CString p_tableName) const
-{
-  return "";
-}
-
-// Code suffix for after a select-into-temp
-CString
-SQLInfoInformix::GetSQLSelectIntoTempSuffix(CString p_tableName) const
-{
-  return "INTO TEMP " + p_tableName + " WITH NO LOG\n";
-}
-
 // Gets the construction / select for generating a new serial identity
 CString 
 SQLInfoInformix::GetSQLGenerateSerial(CString p_table) const
@@ -391,6 +377,27 @@ SQLInfoInformix::GetCATALOGTableRename(CString /*p_schema*/,CString p_tablename,
 
 CString
 SQLInfoInformix::GetCATALOGTableDrop(CString /*p_schema*/,CString p_tablename) const
+{
+  return "DROP TABLE " + p_tablename;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL TEMPORARY TABLE FUNCTIONS
+
+CString 
+SQLInfoInformix::GetCATALOGTemptableCreate(CString /*p_schema*/,CString p_tablename,CString p_select) const
+{
+  return p_select + " INTO TEMP " + p_tablename + " WITH NO LOG";
+}
+
+CString 
+SQLInfoInformix::GetCATALOGTemptableIntoTemp(CString /*p_schema*/,CString p_tablename,CString p_select) const
+{
+  return p_select + " INTO TEMP " + p_tablename;
+}
+
+CString 
+SQLInfoInformix::GetCATALOGTemptableDrop(CString /*p_schema*/,CString p_tablename) const
 {
   return "DROP TABLE " + p_tablename;
 }
@@ -1000,6 +1007,51 @@ SQLInfoInformix::GetCATALOGSequenceDrop(CString /*p_schema*/, CString p_sequence
 }
 
 //////////////////////////////////////////////////////////////////////////
+// ALL VIEW FUNCTIONS
+
+CString 
+SQLInfoInformix::GetCATALOGViewExists(CString /*p_schema*/,CString p_viewname) const
+{
+  p_viewname.MakeLower();
+
+  CString sql = "SELECT count(*)\n"
+                "  FROM sysviews\n"
+                " WHERE viewname = '" + p_viewname + "'";
+  return sql;
+}
+
+CString 
+SQLInfoInformix::GetCATALOGViewList(CString p_schema,CString p_pattern) const
+{
+  return "";
+}
+
+CString 
+SQLInfoInformix::GetCATALOGViewAttributes(CString p_schema,CString p_viewname) const
+{
+  return "";
+}
+
+CString 
+SQLInfoInformix::GetCATALOGViewCreate(CString /*p_schema*/,CString p_viewname,CString p_contents) const
+{
+  return "CREATE VIEW " + p_viewname + "\n" + p_contents;
+}
+
+CString 
+SQLInfoInformix::GetCATALOGViewRename(CString p_schema,CString p_viewname,CString p_newname)    const
+{
+  return "";
+}
+
+CString 
+SQLInfoInformix::GetCATALOGViewDrop(CString /*p_schema*/,CString p_viewname,CString& p_precursor) const
+{
+  p_precursor.Empty();
+  return "DROP VIEW " + p_viewname;
+}
+
+//////////////////////////////////////////////////////////////////////////
 //
 // SQL/PSM PERSISTENT STORED MODULES 
 //         Also called SPL or PL/SQL
@@ -1039,9 +1091,16 @@ SQLInfoInformix::GetPSMProcedureList(CString p_schema) const
 }
 
 CString
-SQLInfoInformix::GetPSMProcedureAttributes(CString p_schema, CString p_procedure) const
+SQLInfoInformix::GetPSMProcedureAttributes(CString /*p_schema*/, CString p_procedure) const
 {
-  return "";
+  p_procedure.MakeLower();
+  CString sql = "SELECT sbody.data\n"
+                "  FROM sysprocbody sbody\n"
+                "      ,sysprocedures sproc\n"
+                " WHERE sbody.procid   = sproc.procid\n"
+                "   AND sproc.procname = '" + p_procedure + "'\n"
+                "   AND datakey        = 'T'";
+  return sql;
 }
 
 CString
@@ -1065,13 +1124,64 @@ SQLInfoInformix::GetPSMProcedureDrop(CString p_schema, CString p_procedure) cons
 //   - GetSessionExists
 //   - GetSessionList
 //   - GetSessionAttributes
-//     (was GetSessionAndTerminal)
-//     (was GetSessionUniqueID)
 // - Transactions
 //   - GetSessionDeferredConstraints
 //   - GetSessionImmediateConstraints
 //
 //////////////////////////////////////////////////////////////////////////
+
+CString
+SQLInfoInformix::GetSESSIONMyself() const
+{
+  CString query = "SELECT sid\n"
+                  "      ,user\n"
+                  "      ,tty\n"
+                  "      ,current_timestamp\n"  // timestamp
+                  "      ,''\n"                 // remote address
+                  "      ,''\n"                 // remote process name
+                  "      ,''\n"                 // remote process ID
+                  "  FROM sysmaster:syssessions\n"
+                  " WHERE sid =\n"
+                  "     ( SELECT dbinfo('sessionid')\n"
+                  "         FROM systables\n"
+                  "        WHERE tabid=1)";
+  return query;
+}
+
+CString
+SQLInfoInformix::GetSESSIONExists(CString p_sessionID) const
+{
+  return "SELECT COUNT(*)\n"
+         "  FROM sysmaster:syssessions\n"
+         " WHERE sid = " + p_sessionID;
+}
+
+CString
+SQLInfoInformix::GetSESSIONList() const
+{
+  return GetSESSIONAttributes("");
+}
+
+CString
+SQLInfoInformix::GetSESSIONAttributes(CString p_sessionID) const
+{
+  CString sql = "SELECT sid\n"
+                "      ,user\n"
+                "      ,tty\n"
+                "      ,current_timestamp\n"  // timestamp
+                "      ,''\n"                 // remote address
+                "      ,''\n"                 // remote process name
+                "      ,''\n"                 // remote process ID
+                "  FROM sysmaster:syssessions";
+  if (!p_sessionID.IsEmpty())
+  {
+    sql += "\n WHERE sid = " + p_sessionID;
+  }
+  return sql;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Transactions
 
 CString
 SQLInfoInformix::GetSESSIONConstraintsDeferred() const
@@ -1093,30 +1203,6 @@ SQLInfoInformix::GetSESSIONConstraintsImmediate() const
 
 // BOOLEANS AND STRINGS
 // ===================================================================
-
-// Get a query to create a temporary table from a select statement
-CString 
-SQLInfoInformix::GetSQLCreateTemporaryTable(CString& p_tablename,CString p_select) const
-{
-  return p_select + " INTO TEMP " + p_tablename + " WITH NO LOG";
-}
-
-// Get the query to remove a temporary table indefinetly
-// BEWARE: Must be executed with a multi-statement stack!
-CString
-SQLInfoInformix::GetSQLRemoveTemporaryTable(CString& p_tablename,int& p_number) const
-{
-  // 'Simply' a drop of a table
-  ++p_number;
-  return "DROP TABLE " + p_tablename + ";\n";
-}
-
-// Get a query to select into a temp table
-CString 
-SQLInfoInformix::GetSQLSelectIntoTemp(CString& p_tablename,CString& p_select) const
-{
-  return p_select + " INTO TEMP " + p_tablename;
-}
 
 // Gets the fact if an IF statement needs to be bordered with BEGIN/END
 bool
@@ -1165,57 +1251,6 @@ SQLInfoInformix::GetAssignmentSelectParenthesis() const
 // SQL CATALOG QUERIES
 // ==================================================================
 
-// Get SQL for your session and controlling terminal
-CString
-SQLInfoInformix::GetSQLSessionAndTerminal() const
-{
-  CString query = "SELECT sid\n"
-                  "      ,tty\n"
-                  "  FROM sysmaster:syssessions\n"
-                  " WHERE sid =\n"
-                  "     ( SELECT dbinfo('sessionid')\n"
-                  "         FROM systables\n"
-                  "        WHERE tabid=1)";
-  return query;
-}
-
-// Get SQL to check if session number exists
-CString 
-SQLInfoInformix::GetSQLSessionExists(CString sessieId) const
-{
-  return "SELECT COUNT(*)\n"
-         "  FROM sysmaster:syssessions\n"
-         " WHERE sid = " + sessieId;
-}
-
-// Get SQL for unique session ID
-CString 
-SQLInfoInformix::GetSQLUniqueSessionId(const CString& p_databaseName,const CString& /*p_sessionTable*/) const
-{
-  // INFORMIX has sessions on more than one database in the sysmaster table
-  // so we must limit on the current database that's in use
-  return "SELECT UNIQUE(odb_sessionid)\n"
-         "  FROM sysmaster:sysopendb\n"
-         " WHERE odb_dbname = '" + p_databaseName + "'";
-}
-
-// Get SQL for searching a session
-CString 
-SQLInfoInformix::GetSQLSearchSession(const CString& p_databaseName,const CString& p_sessionTable) const
-{
-  return "SELECT  sid\n"
-         "       ,username\n"
-         "       ,tty\n"
-         "  FROM  sysmaster:syssessions\n"
-         " WHERE  sid IN\n"
-         "      ( SELECT odb_sessionid\n"
-         "          FROM sysmaster:sysopendb\n"
-         "         WHERE odb_dbname = '" + p_databaseName + "'\n"
-         "           AND NOT odb_sessionid IN\n"
-         "             ( SELECT sessie_nr\n"
-         "                 FROM " + p_sessionTable +"))";
-}
-
 // Gets the lock-table query
 CString 
 SQLInfoInformix::GetSQLLockTable(CString& p_tableName,bool p_exclusive) const
@@ -1237,31 +1272,8 @@ SQLInfoInformix::GetSQLOptimizeTable(CString& /*p_owner*/,CString& p_tableName,i
   return optim;
 }
 
-// Getting the fact that there is only **one** (1) user session in the database
-bool
-SQLInfoInformix::GetOnlyOneUserSession()
-{
-  // Yet to implement
-  return true;
-}
-
 // SQL DDL STATEMENTS
 // ==================
-
-// Get the SQL to drop a view. If precursor is filled: run that SQL first!
-CString 
-SQLInfoInformix::GetSQLDropView(CString /*p_schema*/,CString p_view,CString& p_precursor)
-{
-  p_precursor.Empty();
-  return "DROP VIEW " + p_view;
-}
-
-// Create or replace a database view
-CString 
-SQLInfoInformix::GetSQLCreateOrReplaceView(CString /*p_schema*/,CString p_view,CString p_asSelect) const
-{
-  return "CREATE VIEW " + p_view + "\n" + p_asSelect;
-}
 
 // SQL DDL ACTIONS
 // ====================================================================
@@ -1281,64 +1293,6 @@ SQLInfoInformix::DoCommitDMLcommands() const
 {
   // Does NOTHING in INFOMRIX and cannot do something
   // Commit follows from a BEGIN/COMMIT transaction by AUTOCOMMIT from the driver
-}
-
-// Does the named view exists in the database
-bool
-SQLInfoInformix::DoesViewExists(CString& p_viewName)
-{
-  CString lowerName(p_viewName);
-  lowerName.MakeLower();
-
-  CString query = "SELECT count(*)\n"
-                  "  FROM sysviews\n"
-                  " WHERE viewname = '" + lowerName + "'";
-  SQLQuery sql(m_database);
-  sql.DoSQLStatement(query);
-  if(sql.GetRecord())
-  {
-    return sql.GetColumn(1)->GetAsSLong() > 0;
-  }
-  return false;
-}
-
-// Must create temporary tables runtime 
-bool 
-SQLInfoInformix::GetMustMakeTemptablesAtRuntime() const
-{
-  // FALSE: GLOBAL TEMPORARY TABLES IN THE ENGINE
-  // TRUE:  TRUE SESSION TEMPTABLES MUST ALWAYS BE CREATED (Informix)
-  return true;
-}
-
-// Create a temporary table in an optimized manner with the givven index column
-void
-SQLInfoInformix::DoMakeTemporaryTable(CString& p_tableName,CString& p_content,CString& p_indexColumn) const
-{
-  SQLQuery sql(m_database);
-  sql.TryDoSQLStatement("DROP TABLE " + p_tableName);
-  CString create = "CREATE TEMP TABLE " + p_tableName + " " + p_content;
-  try
-  {
-    sql.DoSQLStatement(create);
-    if(p_indexColumn != "")
-    {
-      create = "CREATE INDEX " + p_tableName + "_" + p_indexColumn + " ON " + p_tableName + "(" + p_indexColumn + ")";
-      sql.DoSQLStatement(create);
-    }
-  }
-  catch(...)
-  {
-    throw CString("Cannot make temporary table: " + p_tableName);
-  }
-}
-
-// Remove a temporary table
-void
-SQLInfoInformix::DoRemoveTemporaryTable(CString& p_tableName) const
-{
-  SQLQuery sql(m_database);
-  sql.TryDoSQLStatement("DROP TABLE " + p_tableName);
 }
 
 // PERSISTENT-STORED MODULES (SPL / PL/SQL)
@@ -1471,29 +1425,6 @@ SQLInfoInformix::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,i
   return string;
 }
 
-// Get the SPL sourcecode for a stored procedure as registered in the database
-CString 
-SQLInfoInformix::GetSPLSourcecodeFromDatabase(const CString& /*p_owner*/,const CString& p_procName) const
-{
-  CString sQuery;  
-  CString sName(p_procName);
-  sName.MakeLower();
-  sQuery = "SELECT sbody.data\n"
-           "  FROM sysprocbody sbody\n"
-           "      ,sysprocedures sproc\n"
-           " WHERE sbody.procid   = sproc.procid\n"
-           "   AND sproc.procname = '" + sName + "'\n"
-           "   AND datakey        = 'T'";
-  SQLQuery sql(m_database);
-  sql.TryDoSQLStatement(sQuery);
-  CString sProcBody;
-  while (sql.GetRecord())
-  {
-    sProcBody = sql.GetColumn(1)->GetAsChar();
-  }
-  return sProcBody;
-}
-
 // Get the SPL datatype for integer
 CString 
 SQLInfoInformix::GetSPLIntegerType() const
@@ -1597,24 +1528,6 @@ SQLVariant*
 SQLInfoInformix::DoSQLCall(SQLQuery* /*p_query*/,CString& /*p_schema*/,CString& /*p_procedure*/)
 {
   return nullptr;
-}
-
-// SPECIALS
-// ==========================================================================
-
-// Translate database-errors to a human readable form
-CString 
-SQLInfoInformix::TranslateErrortext(int p_error,CString p_errorText) const
-{
-  // Check if we have work to do
-  if(p_error == 0)
-  {
-    return p_errorText;
-  }
-
-  CString errorText;
-  errorText.Format("ODBC error [%d:%s]",p_error,p_errorText.GetString());
-  return errorText;
 }
 
 // End of namespace

@@ -255,20 +255,6 @@ SQLInfoSQLServer::GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) cons
   return CString("NVL(") + p_test + "," + p_isnull + ")";
 }
 
-// Code prefix for a select-into-temp
-CString
-SQLInfoSQLServer::GetSQLSelectIntoTempPrefix(CString p_tableName) const
-{
-  return "";
-}
-
-// Code suffix for after a select-into-temp
-CString
-SQLInfoSQLServer::GetSQLSelectIntoTempSuffix(CString p_tableName) const
-{
-  return "";
-}
-
 // Gets the construction / select for generating a new serial identity
 CString
 SQLInfoSQLServer::GetSQLGenerateSerial(CString p_table) const
@@ -313,6 +299,24 @@ SQLInfoSQLServer::GetSQLFromDualClause() const
 //////////////////////////////////////////////////////////////////////////
 //
 // CATALOG
+// o GetCATALOG<Object[s]><Function>
+//   Objects
+//   - Table
+//   - Column
+//   - Index
+//   - PrimaryKey
+//   - ForeignKey
+//   - Trigger
+//   - TemporaryTable 
+//   - View
+//   - Sequence
+//  Functions per object type
+//   - Exists
+//   - List
+//   - Attributes
+//   - Create
+//   - Alter (where possible)
+//   - Drop
 //
 //////////////////////////////////////////////////////////////////////////
 
@@ -370,6 +374,32 @@ CString
 SQLInfoSQLServer::GetCATALOGTableDrop(CString /*p_schema*/,CString p_tablename) const
 {
   return "DROP TABLE " + p_tablename;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// ALL TEMPORARY TABLE FUNCTIONS
+
+CString 
+SQLInfoSQLServer::GetCATALOGTemptableCreate(CString p_schema,CString p_tablename,CString p_select) const
+{
+  return "CREATE TABLE #" + p_schema + "." + p_tablename + "\nAS " + p_select;
+}
+
+CString 
+SQLInfoSQLServer::GetCATALOGTemptableIntoTemp(CString p_schema,CString p_tablename,CString p_select) const
+{
+  return "INSERT INTO #" + p_schema + "." + p_tablename + "\n" + p_select;
+}
+
+CString 
+SQLInfoSQLServer::GetCATALOGTemptableDrop(CString p_schema,CString p_tablename) const
+{
+  CString tablename = p_schema + "." + p_tablename;
+  return "DELETE FROM #"    + tablename + ";\n"
+         "<@>\n"
+         "TRUNCATE TABLE #" + tablename + ";\n"
+         "<@>\n"
+         "DROP TABLE #"     + tablename + ";\n";
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -993,6 +1023,46 @@ SQLInfoSQLServer::GetCATALOGSequenceDrop(CString p_schema, CString p_sequence) c
 }
 
 //////////////////////////////////////////////////////////////////////////
+// ALL VIEW FUNCTIONS
+
+CString 
+SQLInfoSQLServer::GetCATALOGViewExists(CString p_schema,CString p_viewname) const
+{
+  return "";
+}
+
+CString 
+SQLInfoSQLServer::GetCATALOGViewList(CString p_schema,CString p_pattern) const
+{
+  return "";
+}
+
+CString 
+SQLInfoSQLServer::GetCATALOGViewAttributes(CString p_schema,CString p_viewname) const
+{
+  return "";
+}
+
+CString 
+SQLInfoSQLServer::GetCATALOGViewCreate(CString p_schema,CString p_viewname,CString p_contents) const
+{
+  return "CREATE VIEW " + p_schema + "." + p_viewname + "\n" + p_contents;
+}
+
+CString 
+SQLInfoSQLServer::GetCATALOGViewRename(CString p_schema,CString p_viewname,CString p_newname)    const
+{
+  return "";
+}
+
+CString 
+SQLInfoSQLServer::GetCATALOGViewDrop(CString p_schema,CString p_viewname,CString& p_precursor) const
+{
+  p_precursor.Empty();
+  return "DROP VIEW " + p_schema + "." + p_viewname;
+}
+
+//////////////////////////////////////////////////////////////////////////
 //
 // SQL/PSM PERSISTENT STORED MODULES 
 //         Also called SPL or PL/SQL
@@ -1058,13 +1128,62 @@ SQLInfoSQLServer::GetPSMProcedureDrop(CString p_schema, CString p_procedure) con
 //   - GetSessionExists
 //   - GetSessionList
 //   - GetSessionAttributes
-//     (was GetSessionAndTerminal)
-//     (was GetSessionUniqueID)
 // - Transactions
 //   - GetSessionDeferredConstraints
 //   - GetSessionImmediateConstraints
 //
 //////////////////////////////////////////////////////////////////////////
+
+CString
+SQLInfoSQLServer::GetSESSIONMyself() const
+{
+  CString query = "SELECT rtrim(hostprocess)\n"
+                  "      ,user\n"
+                  "      ,rtrim(hostname)\n"    
+                  "      ,getdata()\n"  // moment
+                  "      ,''\n"         // remote address
+                  "      ,''\n"         // remote process name
+                  "      ,''\n"         // remote process ID
+                  "  FROM master.dbo.sysprocesses\n"
+                  " WHERE hostprocess = host_id()\n"
+                  "   AND hostname    = host_name()";
+  return query;
+}
+
+CString
+SQLInfoSQLServer::GetSESSIONExists(CString p_sessionID) const
+{
+  return "SELECT COUNT(*)\n"
+         "  FROM master.dbo.sysprocesses\n"
+         " WHERE rtrim(hostprocess) = " + p_sessionID;
+}
+
+CString
+SQLInfoSQLServer::GetSESSIONList() const
+{
+  return GetSESSIONAttributes("");
+}
+
+CString
+SQLInfoSQLServer::GetSESSIONAttributes(CString p_sessionID) const
+{
+  CString sql = "SELECT rtrim(hostprocess)\n"
+                "      ,user\n"
+                "      ,rtrim(hostname)\n"    
+                "      ,getdata()\n"  // moment
+                "      ,''\n"         // remote address
+                "      ,''\n"         // remote process name
+                "      ,''\n"         // remote process ID
+                "  FROM master.dbo.sysprocesses\n";
+  if(!p_sessionID.IsEmpty())
+  {
+    sql += "\n WHERE rtrim(hostprocess) = " + p_sessionID;
+  }
+  return sql;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Transactions
 
 CString
 SQLInfoSQLServer::GetSESSIONConstraintsDeferred() const
@@ -1088,34 +1207,6 @@ SQLInfoSQLServer::GetSESSIONConstraintsImmediate() const
 
 // BOOLEANS EN STRINGS
 // ====================================================================
-
-// Get a query to create a temporary table from a select statement
-CString 
-SQLInfoSQLServer::GetSQLCreateTemporaryTable(CString& p_tablename,CString p_select) const
-{
-  return "CREATE TABLE #" + p_tablename + "\nAS " + p_select;
-}
-
-// Get the query to remove a temporary table indefinetly
-// BEWARE: Must be executed with a multi-statement stack!
-CString
-SQLInfoSQLServer::GetSQLRemoveTemporaryTable(CString& p_tablename,int& p_number) const
-{
-  // Needed on MS_SQLServer because otherwise we get an error message
-  // that the temporary table is still in use, and so will leave a temporary
-  // table in the catalog, conflicting with a new temp table
-  p_number += 3;
-  return "DELETE FROM #"    + p_tablename + ";\n"
-         "TRUNCATE TABLE #" + p_tablename + ";\n"
-         "DROP TABLE #"     + p_tablename + ";\n";
-}
-
-// Get a query to select into a temp table
-CString 
-SQLInfoSQLServer::GetSQLSelectIntoTemp(CString& p_tablename,CString& p_select) const
-{
-  return "INSERT INTO #" + p_tablename + "\n" + p_select + ";\n";
-}
 
 // Gets the fact if an IF statement needs to be bordered with BEGIN/END
 bool
@@ -1174,53 +1265,6 @@ SQLInfoSQLServer::GetAssignmentSelectParenthesis() const
 // SQL CATALOG QUERIES
 // ===================================================================
 
-// Get SQL for your session and controlling terminal
-CString
-SQLInfoSQLServer::GetSQLSessionAndTerminal() const
-{
-  CString query = "SELECT rtrim(hostprocess)\n"
-                  "      ,rtrim(hostname)\n"    
-                  "  FROM master.dbo.sysprocesses\n"
-                  " WHERE hostprocess = host_id()\n"
-                  "   AND hostname = host_name()\n"
-                  "   AND rtrim(program_name) = 'Pronto'";
-  return query;
-}
-
-// Get SQL to check if session number exists
-CString 
-SQLInfoSQLServer::GetSQLSessionExists(CString p_sessionID) const
-{
-  return "SELECT DISTINCT rtrim(hostprocess)\n"
-         "  FROM master.dbo.sysprocesses\n"
-         " WHERE rtrim(hostprocess) <> " + p_sessionID;
-}
-
-// Get SQL for unique session ID
-CString 
-SQLInfoSQLServer::GetSQLUniqueSessionId(const CString& /*p_databaseName*/,const CString& /*p_sessionTable*/) const
-{
-  return "SELECT DISTINCT rtrim(hostprocess)\n"
-         "  FROM master.dbo.sysprocesses\n"
-         " WHERE rtrim(hostprocess) <> '0'\n"
-         "   AND dbid = db_id()";
-}
-
-// Get SQL for searching a session
-CString 
-SQLInfoSQLServer::GetSQLSearchSession(const CString& /*p_databaseName*/,const CString& p_sessionTable) const
-{
-  return "SELECT rtrim(hostprocess)\n"
-         "      ,rtrim(nt_username)\n"
-         "      ,rtrim(hostname)\n"
-         "  FROM master.dbo.sysprocesses\n"
-         " WHERE rtrim(hostprocess) <> '0'\n"
-         "   AND dbid = db_id()\n"
-         "   AND NOT rtrim(hostprocess) IN\n"
-         "     ( SELECT sessie_nr\n"
-         "         FROM "+ p_sessionTable + ")";
-}
-
 // Gets the lock-table query
 CString 
 SQLInfoSQLServer::GetSQLLockTable(CString& p_tableName,bool p_exclusive) const
@@ -1245,37 +1289,8 @@ SQLInfoSQLServer::GetSQLOptimizeTable(CString& p_owner,CString& p_tableName,int&
   return query;
 }
 
-// Getting the fact that there is only **one** (1) user session in the database
-bool
-SQLInfoSQLServer::GetOnlyOneUserSession()
-{
-  // Yet to implement
-  CString sql = "SELECT COUNT(*)\n"
-                "  FROM sys.sysprocesses\n"
-                " WHERE dbid = db_id()";
-  SQLQuery qry(m_database);
-  SQLVariant* var = qry.DoSQLStatementScalar(sql);
-  return (var->GetAsSLong() <= 1);
-}
-
-
 // SQL DDL STATEMENTS
 // ==================
-
-// Get the SQL to drop a view. If precursor is filled: run that SQL first!
-CString 
-SQLInfoSQLServer::GetSQLDropView(CString p_schema,CString p_view,CString& p_precursor)
-{
-  p_precursor.Empty();
-  return "DROP VIEW " + p_schema + "." + p_view;
-}
-
-// Create or replace a database view
-CString 
-SQLInfoSQLServer::GetSQLCreateOrReplaceView(CString p_schema,CString p_view,CString p_asSelect) const
-{
-  return "CREATE VIEW " + p_schema + "." + p_view + "\n" + p_asSelect;
-}
 
 // SQL DDL ACTIONS
 // ===================================================================
@@ -1295,60 +1310,6 @@ SQLInfoSQLServer::DoCommitDMLcommands() const
 {
 //   SQLQuery query(m_database);
 //   query.DoSQLStatement("COMMIT WORK");
-}
-
-// Does the named view exists in the database
-bool
-SQLInfoSQLServer::DoesViewExists(CString& /*p_viewName*/)
-{
-  // To be implemented
-  return true;
-}
-
-// Must create temporary tables runtime 
-bool 
-SQLInfoSQLServer::GetMustMakeTemptablesAtRuntime() const
-{
-  // FALSE: GLOBAL TEMPORARY TABLES IN THE ENGINE
-  // TRUE:  TRUE SESSION TEMPTABLES MUST ALWAYS BE CREATED (Informix)
-  return false;
-}
-
-// Create a temporary table in an optimized manner with the givven index column
-void
-SQLInfoSQLServer::DoMakeTemporaryTable(CString& p_tableName,CString& p_content,CString& p_indexColumn) const
-{
-  SQLQuery query(m_database);
-
-  query.TryDoSQLStatement("TRUNCATE TABLE #" + p_tableName);
-  query.TryDoSQLStatement("DROP TABLE #"     + p_tableName);
-  CString create = "CREATE TABLE #" + p_tableName + p_content;
-  try
-  {
-    query.DoSQLStatement(create);
-    if(p_indexColumn!= "")
-    {
-      create = "CREATE INDEX " + p_tableName + "_" + p_indexColumn + " ON #" + p_tableName + "(" + p_indexColumn + ")";
-      query.DoSQLStatement(create);
-    }
-  }
-  catch(...)
-  {
-    throw CString("Cannot create a temporary table: " + p_tableName);
-  }
-}
-
-// Remove a temporary table
-void
-SQLInfoSQLServer::DoRemoveTemporaryTable(CString& p_tableName) const
-{
-  SQLQuery query(m_database);
-
-  // Every error can be ignored. Can still be in use by another user and/or session
-  // The table contents will then removed for this session
-  query.TryDoSQLStatement("DELETE FROM #"    + p_tableName);
-  query.TryDoSQLStatement("TRUNCATE TABLE #" + p_tableName);
-  query.TryDoSQLStatement("DROP TABLE #"     + p_tableName);
 }
 
 // PERSISTENT-STORED MODULES (SPL / PL/SQL)
@@ -1508,13 +1469,6 @@ SQLInfoSQLServer::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,
   return retval;
 }
 
-// Get the SPL sourcecode for a stored procedure as registered in the database
-CString 
-SQLInfoSQLServer::GetSPLSourcecodeFromDatabase(const CString& /*p_owner*/,const CString& /*p_procName*/) const
-{
-  return "";
-}
-
 // Get the SPL datatype for integer
 CString 
 SQLInfoSQLServer::GetSPLIntegerType() const
@@ -1620,24 +1574,6 @@ SQLVariant*
 SQLInfoSQLServer::DoSQLCall(SQLQuery* /*p_query*/,CString& /*p_schema*/,CString& /*p_procedure*/)
 {
   return nullptr;
-}
-
-// SPECIALS
-// ==========================================================================
-
-// Translate database-errors to a human readable form
-CString 
-SQLInfoSQLServer::TranslateErrortext(int p_error,CString p_errorText) const
-{
-  // Check if we have work to do
-  if(p_error == 0)
-  {
-    return p_errorText;
-  }
-
-  CString errorText;
-  errorText.Format("ODBC error [%d:%s]",p_error,p_errorText.GetString());
-  return errorText;
 }
 
 // End of namespace
