@@ -146,6 +146,13 @@ SQLInfoFirebird::GetRDBMSMaxStatementLength() const
   return 0;
 }
 
+// Database must commit DDL commands in a transaction
+bool
+SQLInfoFirebird::GetRDBMSMustCommitDDL() const
+{
+  return true;
+}
+
 // KEYWORDS
 
 // Keyword for the current date and time
@@ -290,6 +297,81 @@ CString
 SQLInfoFirebird::GetSQLFromDualClause() const
 {
   return " FROM rdb$database";
+}
+
+// Get SQL to lock  a table 
+CString
+SQLInfoFirebird::GetSQLLockTable(CString p_schema, CString p_tablename, bool /*p_exclusive*/) const
+{
+  // Firebird does NOT have a LOCK-TABLE statement
+  return "";
+}
+
+// Get query to optimize the table statistics
+CString
+SQLInfoFirebird::GetSQLOptimizeTable(CString p_schema, CString p_tablename) const
+{
+  // Firebird has no SQL for this, it uses the "GFIX.EXE -sweep <database>" tool
+  return "";
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// SQL STRINGS
+//
+//////////////////////////////////////////////////////////////////////////
+
+CString
+SQLInfoFirebird::GetSQLString(const CString& p_string) const
+{
+  CString s = p_string;
+  s.Replace("'","''");
+  CString kwoot = GetKEYWORDQuoteCharacter();
+  return  kwoot + s + kwoot;
+}
+
+CString
+SQLInfoFirebird::GetSQLDateString(int p_year,int p_month,int p_day) const
+{
+  CString retval;
+  retval.Format("CAST '%02d/%02d/04d' AS DATE)",p_day,p_month,p_year); // American order!!
+  return retval;
+}
+
+CString
+SQLInfoFirebird::GetSQLTimeString(int p_hour,int p_minute,int p_second) const
+{
+  CString time;
+  time.Format("%2.2d:%2.2d:%2.2d",p_hour,p_minute,p_second);
+  return time;
+}
+
+CString
+SQLInfoFirebird::GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
+{
+  CString retval;
+  retval.Format("CAST('%02d/%02d/%04d %02d:%02d:%02d' AS TIMESTAMP)"
+                ,p_day,p_month,p_year       // American order !!
+                ,p_hour,p_minute,p_second); // 24 hour clock
+  return retval;
+}
+
+// Get date-time bound parameter string in database format
+CString
+SQLInfoFirebird::GetSQLDateTimeBoundString() const
+{
+  return "CAST(? AS TIMESTAMP)";
+}
+
+// Stripped data for the parameter binding
+CString
+SQLInfoFirebird::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
+{
+  CString retval;
+  retval.Format("%02d/%02d/%04d %02d:%02d:%02d"
+                ,p_day,p_month,p_year       // American order !!
+                ,p_hour,p_minute,p_second); // 24 hour clock
+  return retval;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1140,13 +1222,18 @@ SQLInfoFirebird::GetCATALOGViewDrop(CString /*p_schema*/,CString p_viewname,CStr
 //   - Create
 //   - Drop
 //
-// o PSMWORDS
-//   - Declare
-//   - Assignment(LET)
-//   - IF statement
-//   - FOR statement
-//   - WHILE / LOOP statement
-//   - CURSOR and friends
+// o PSM<Element>[End]
+//   - PSM Declaration(first,variable,datatype[,precision[,scale]])
+//   - PSM Assignment (variable,statement)
+//   - PSM IF         (condition)
+//   - PSM IFElse 
+//   - PSM IFEnd
+//   - PSM WHILE      (condition)
+//   - PSM WHILEEnd
+//   - PSM LOOP
+//   - PSM LOOPEnd
+//   - PSM BREAK
+//   - PSM RETURN     ([statement])
 //
 // o CALL the FUNCTION/PROCEDURE
 //
@@ -1186,6 +1273,233 @@ SQLInfoFirebird::GetPSMProcedureDrop(CString p_schema, CString p_procedure) cons
   return "";
 }
 
+CString
+SQLInfoFirebird::GetPSMProcedureErrors(CString p_schema,CString p_procedure) const
+{
+  // Firebird does not support procedure errors
+  return "";
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// ALL PSM LANGUAGE ELEMENTS
+//
+//////////////////////////////////////////////////////////////////////////
+
+CString
+SQLInfoFirebird::GetPSMDeclaration(bool    /*p_first*/
+                                  ,CString p_variable
+                                  ,int     p_datatype
+                                  ,int     p_precision /*= 0 */
+                                  ,int     p_scale     /*= 0 */
+                                  ,CString p_default   /*= ""*/
+                                  ,CString p_domain    /*= ""*/
+                                  ,CString p_asColumn  /*= ""*/) const
+{
+  CString line;
+  line.Format("DECLARE %s ",p_variable.GetString());
+
+  if(p_datatype)
+  {
+    // Getting type info and name
+    TypeInfo* info = GetTypeInfo(p_datatype);
+    line += info->m_type_name;
+
+    if(p_precision > 0)
+    {
+      line.AppendFormat("(%d",p_precision);
+      if(p_scale > 0)
+      {
+        line.AppendFormat("%d",p_scale);
+      }
+      line += ")";
+    }
+
+    if(!p_default.IsEmpty())
+    {
+      line += " DEFAULT " + p_default;
+    }
+  }
+  else if(!p_domain.IsEmpty())
+  {
+    line += " TYPE OF " + p_domain;
+  }
+  else if(!p_asColumn)
+  {
+    line += " TYPE OF COLUMN " + p_asColumn;
+  }
+  line += ";\n";
+  return line;
+}
+
+CString
+SQLInfoFirebird::GetPSMAssignment(CString p_variable,CString p_statement /*= ""*/) const
+{
+  CString line(p_variable);
+  line += " = ";
+  if(!p_statement.IsEmpty())
+  {
+    line += p_statement;
+    line += ";";
+  }
+  return line;
+}
+
+CString
+SQLInfoFirebird::GetPSMIF(CString p_condition) const
+{
+  CString line("IF (");
+  line += p_condition;
+  line += ")\n  BEGIN\n";
+  return line;
+}
+
+CString
+SQLInfoFirebird::GetPSMIFElse() const
+{
+  CString line("  END\n"
+               "ELSE\n"
+               "  BEGIN\n");
+  return line;
+}
+
+CString
+SQLInfoFirebird::GetPSMIFEnd() const
+{
+  CString line("  END;\n");
+  return line;
+}
+
+CString
+SQLInfoFirebird::GetPSMWhile(CString p_condition) const
+{
+  return "WHILE (" + p_condition + ") LOOP\n";
+}
+
+CString
+SQLInfoFirebird::GetPSMWhileEnd() const
+{
+  return "END LOOP;\n";
+}
+
+CString
+SQLInfoFirebird::GetPSMLOOP() const
+{
+  return "WHILE (true) DO BEGIN\n";
+}
+
+CString
+SQLInfoFirebird::GetPSMLOOPEnd() const
+{
+  return "END;\n";
+}
+
+CString
+SQLInfoFirebird::GetPSMBREAK() const
+{
+  return "BREAK;\n";
+}
+
+CString
+SQLInfoFirebird::GetPSMRETURN(CString p_statement /*= ""*/) const
+{
+  return "SUSPEND;\n";
+}
+
+CString
+SQLInfoFirebird::GetPSMExecute(CString p_procedure,MParameterMap& p_parameters) const
+{
+  // EXECUTE PROCEDURE name[(:param[,:param …])] [RETURNING_VALUES:param[,:param …]];
+  CString line;
+  line.Format("EXECUTE PROCEDURE %s (",p_procedure.GetString());
+  bool doReturning = false;
+  bool doMore = false;
+
+  for(auto& param : p_parameters)
+  {
+    // Extra ,
+    if(doMore) line += ",";
+    doMore = true;
+
+    // Append input and in/out parameters
+    if(param.m_type == 0 || param.m_type == 2)
+    {
+      line.AppendFormat(":%s",param.m_parameter.GetString());
+    }
+    // See if we must do 'returning' clause
+    if(param.m_type == 1 || param.m_type == 2)
+    {
+      doReturning = true;
+    }
+  }
+  line += ")";
+
+  // Do the returning clause
+  if(doReturning)
+  {
+    line += " RETURNING VALUES ";
+    doMore = false;
+    for(auto& param : p_parameters)
+    {
+      if(doMore) line += ",";
+      doMore = true;
+
+      if(param.m_type == 1 || param.m_type == 2)
+      {
+        line.AppendFormat(":%s",param.m_parameter.GetString());
+      }
+    }
+  }
+  line += ";\n";
+  return line;
+}
+
+// The CURSOR
+CString
+SQLInfoFirebird::GetPSMCursorDeclaration(CString p_cursorname,CString p_select) const
+{
+  return "DECLARE " + p_cursorname +" SCROLL CURSOR FOR (" + p_select + ");";
+}
+
+CString
+SQLInfoFirebird::GetPSMCursorFetch(CString p_cursorname,std::vector<CString>& /*p_columnnames*/,std::vector<CString>& p_variablenames) const
+{
+  CString query = "FETCH " + p_cursorname + " INTO ";
+  bool moreThenOne = false;
+
+  for(auto& var : p_variablenames)
+  {
+    if(moreThenOne) query += ",";
+    moreThenOne = true;
+
+    query += ":" + var;
+  }
+  query += ";";
+  return query;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// PSM Exceptions
+
+CString
+SQLInfoFirebird::GetPSMExceptionCatchNoData() const
+{
+  // SQLSTATE 02000 equals the error 100 Data not found
+//return "WHEN SQLCODE 100 DO\n";
+  return "WHEN SQLSTATE 02000 DO\n";
+}
+
+CString
+SQLInfoFirebird::GetPSMExceptionCatch(CString p_sqlState) const
+{
+  return "WHEN SQLSTATE " + p_sqlState + " DO\n";
+}
+
+CString
+SQLInfoFirebird::GetPSMExceptionRaise(CString p_sqlState) const
+{
+  return "EXCEPTION " + p_sqlState;
+}
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -1270,324 +1584,10 @@ SQLInfoFirebird::GetSESSIONConstraintsImmediate() const
 
 //////////////////////////////////////////////////////////////////////////
 //
-// OLD INTERFACE
+// Call FUNCTION/PROCEDURE from within program
+// As a RDBMS dependent extension of "DoSQLCall" of the SQLQuery object
 //
 //////////////////////////////////////////////////////////////////////////
-
-// BOOLEANS EN STRINGS
-// ====================================================================
-
-bool
-SQLInfoFirebird::GetCodeIfStatementBeginEnd() const
-{
-  // IF THEN ELSE END IF; always needs a BEGIN/END
-  return true;
-}
-
-// End of the IF statement
-CString 
-SQLInfoFirebird::GetCodeEndIfStatement() const
-{
-  return "\n";
-}
-
-CString 
-SQLInfoFirebird::GetAssignmentStatement(const CString& p_destiny,const CString& p_source) const
-{
-  return p_destiny + " = " + p_source + ";";
-}
-
-
-// Code to start a while loop
-CString
-SQLInfoFirebird::GetStartWhileLoop(CString p_condition) const
-{
-  return "WHILE " + p_condition + " LOOP\n";
-}
-
-// Code to end a WHILE loop
-CString
-SQLInfoFirebird::GetEndWhileLoop() const
-{
-  return "END LOOP;\n";
-}
-
-// The fact that a SELECT **must** be between parenthesis for an assignment
-bool 
-SQLInfoFirebird::GetAssignmentSelectParenthesis() const
-{
-  // waarde = (SELECT max kenmerk FROM tabel);
-  return true;
-}
-
-// SQL CATALOG QUERIES
-// ====================================================================
-
-// returns a lock table statement
-CString 
-SQLInfoFirebird::GetSQLLockTable(CString& /*p_tableName*/,bool /*p_exclusive*/) const
-{
-  // Firebird does NOT have a LOCK-TABLE statement
-  return "";
-}
-
-// Query to optimize a table
-CString 
-SQLInfoFirebird::GetSQLOptimizeTable(CString& /*p_owner*/,CString& /*p_tableName*/,int& /*p_number*/)
-{
-  // Firebird has no SQL for this, it uses the "gfix -sweep <database>" tool
-  return "";
-}
-
-// SQL DDL STATEMENTS
-// ==================
-
-// SQL DDL ACTIONS
-// ====================================================================
-
-// Process DDL commandos in the catalog
-void 
-SQLInfoFirebird::DoCommitDDLcommands() const
-{
-  SQLQuery sql(m_database);
-  try
-  {
-    sql.DoSQLStatement("COMMIT");
-  }
-  catch(...)
-  {
-    sql.TryDoSQLStatement("ROLLBACK");
-    throw CString("Rollback transaction");
-  }
-}
-
-// Explicit DML commando committing
-void
-SQLInfoFirebird::DoCommitDMLcommands() const
-{
-  SQLQuery sql(m_database);
-  sql.DoSQLStatement("COMMIT");
-}
-
-// PERSISTENT-STORED MODULES (SPL / PL/SQL)
-// ===================================================================
-
-// Getting the user errors from the database
-CString 
-SQLInfoFirebird::GetUserErrorText(CString& p_procName) const
-{
-  (void)p_procName;   // Not supported in Firebird.
-  return "";
-}
-
-// Getting assignment to a variable in SPL
-CString 
-SQLInfoFirebird::GetSPLAssignment(CString p_variable) const
-{
-  return p_variable + "=";
-}
-
-// Getting the start of a SPL while loop
-CString 
-SQLInfoFirebird::GetSPLStartWhileLoop(CString p_condition) const
-{
-  CString sql = "WHILE " + p_condition + " DO ";
-  return sql;
-}
-
-// The end of a while loop
-CString 
-SQLInfoFirebird::GetSPLEndWhileLoop() const
-{
-  // uses the BEGIN END after the DO
-  return "";
-}
-
-// Getting a stored procedure call from within SPL
-CString 
-SQLInfoFirebird::GetSQLSPLCall(CString p_procName) const
-{
-  return "SELECT vv_result,vv_sqlerror,vv_isamerror,vv_errordata FROM " + p_procName;
-}
-
-// Building a parameter list for calling a stored procedure
-CString 
-SQLInfoFirebird::GetBuildedParameterList(size_t p_numOfParameters) const
-{
-  // Always doing an ellipsis, even if no parameters are used
-  CString strParamLijst = "(";
-  for (size_t i = 0; i < p_numOfParameters; i++)
-  {
-    if(i) 
-    {
-      strParamLijst += ",";
-    }
-    strParamLijst += "?";
-  }
-  strParamLijst += ")";
-
-  return strParamLijst;
-}
-
-CString
-SQLInfoFirebird::GetParameterType(CString& p_type) const
-{
-  return p_type;
-}
-
-// GENERAL SQL ACTIONS
-// =================================================================
-
-CString 
-SQLInfoFirebird::GetSQLString(const CString& p_string) const
-{
-  CString s = p_string;
-  s.Replace("'","''");
-  CString kwoot = GetKEYWORDQuoteCharacter();
-  return  kwoot + s + kwoot;
-}
-
-CString 
-SQLInfoFirebird::GetSQLDateString(int p_year,int p_month,int p_day) const
-{
-  CString retval;
-  retval.Format("CAST '%02d/%02d/04d' AS DATE)",p_day,p_month,p_year); // American order!!
-  return retval;
-}
-
-CString 
-SQLInfoFirebird::GetSQLTimeString(int p_hour,int p_minute,int p_second) const
-{
-  CString time;
-  time.Format("%2.2d:%2.2d:%2.2d",p_hour,p_minute,p_second);
-  return time;
-}
-
-CString 
-SQLInfoFirebird::GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
-{
-  CString retval;
-  retval.Format("CAST('%02d/%02d/%04d %02d:%02d:%02d' AS TIMESTAMP)"
-               ,p_day,p_month,p_year       // American order !!
-               ,p_hour,p_minute,p_second); // 24 hour clock
-  return retval;
-}
-
-// Get date-time bound parameter string in database format
-CString 
-SQLInfoFirebird::GetSQLDateTimeBoundString() const
-{
-  return "CAST(? AS TIMESTAMP)";
-}
-
-// Stripped data for the parameter binding
-CString
-SQLInfoFirebird::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
-{
-  CString retval;
-  retval.Format("%02d/%02d/%04d %02d:%02d:%02d"
-                ,p_day,p_month,p_year       // American order !!
-                ,p_hour,p_minute,p_second); // 24 hour clock
-  return retval;
-}
-
-// Get the SPL datatype for integer
-CString 
-SQLInfoFirebird::GetSPLIntegerType() const
-{
-  return "integer";
-}
-
-// Get the SPL datatype for a decimal
-CString 
-SQLInfoFirebird::GetSPLDecimalType() const
-{
-  return "decimal";
-}
-
-// Get the SPL declaration for a cursor
-CString 
-SQLInfoFirebird::GetSPLCursorDeclaratie(CString& p_variableName,CString& p_query) const
-{
-  return "CURSOR " + p_variableName + " IS " + p_query + ";";
-}
-
-// Get the SPL cursor found row parameter
-CString 
-SQLInfoFirebird::GetSPLCursorFound(CString& p_cursorName) const
-{
-  return p_cursorName + "_found";
-}
-
-// Get the SPL cursor row-count variable
-CString 
-SQLInfoFirebird::GetSPLCursorRowCount(CString& /*p_variable*/) const
-{
-  // Not supported
-  return "";
-}
-
-// Get the SPL datatype for a declaration of a row-variable
-CString 
-SQLInfoFirebird::GetSPLCursorRowDeclaration(CString& /*p_cursorName*/,CString& /*p_variableName*/) const
-{
-  // TODO: Check
-  return "";
-}
-
-CString 
-SQLInfoFirebird::GetSPLFetchCursorIntoVariables(CString               p_cursorName
-                                               ,CString             /*p_variableName*/
-                                               ,std::vector<CString>& p_columnNames
-                                               ,std::vector<CString>& p_variableNames) const
-{
-  // TODO: Check
-  CString query = "FETCH " + p_cursorName + " INTO ";  
-
-  std::vector<CString>::iterator cNames;
-  std::vector<CString>::iterator vNames;
-  bool moreThenOne = false;
-
-  for(cNames  = p_columnNames.begin(), vNames  = p_variableNames.begin();
-    cNames != p_columnNames.end() && vNames != p_variableNames.end();
-    ++cNames, ++vNames)
-  {
-    query += (moreThenOne ? "," : "") + *vNames;
-  }
-  query += ";";
-  return query;
-}
-
-// Fetch the current SPL cursor row into the row variable
-CString 
-SQLInfoFirebird::GetSPLFetchCursorIntoRowVariable(CString& p_cursorName,CString p_variableName) const
-{ 
-  // TODO: CHeck
-  return "FETCH " + p_cursorName + " INTO " + p_variableName+ ";";
-}
-
-// Get the SPL no-data exception clause
-CString 
-SQLInfoFirebird::GetSPLNoDataFoundExceptionClause() const
-{
-  // TODO: Check
-  return "WHEN NO_DATA THEN";
-}
-
-// Get the SPL form of raising an exception
-CString 
-SQLInfoFirebird::GetSPLRaiseException(CString p_exceptionName) const
-{
-  // TODO Check
-  return "RAISE " + p_exceptionName + ";";
-}
-
-// Get the fact that the SPL has server functions that return more than 1 value
-bool    
-SQLInfoFirebird::GetSPLServerFunctionsWithReturnValues() const
-{
-  return true;
-}
 
 // Calling a stored function or procedure if the RDBMS does not support ODBC call escapes
 SQLVariant* 

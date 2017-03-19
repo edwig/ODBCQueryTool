@@ -161,6 +161,13 @@ SQLInfoInformix::GetRDBMSMaxStatementLength() const
   return 64000;
 }
 
+// Database must commit DDL commands in a transaction
+bool
+SQLInfoInformix::GetRDBMSMustCommitDDL() const
+{
+  return false;
+}
+
 // KEYWORDS
 
 // Keyword for the current date and time
@@ -305,6 +312,94 @@ SQLInfoInformix::GetSQLFromDualClause() const
 {
   // Systables entry in systables is guaranteed to always be there!
   return " FROM systables WHERE tabid = 1";
+}
+
+// Get SQL to lock  a table 
+CString
+SQLInfoInformix::GetSQLLockTable(CString /*p_schema*/, CString p_tablename, bool p_exclusive) const
+{
+  CString query = "LOCK TABLE " + p_tablename + " IN ";
+  query += p_exclusive ? "EXCLUSIVE" : "SHARE";
+  query += " MODE";
+  return query;
+}
+
+// Get query to optimize the table statistics
+CString
+SQLInfoInformix::GetSQLOptimizeTable(CString /*p_schema*/,CString p_tablename) const
+{
+  CString optim;
+  optim = "UPDATE STATISTICS LOW  FOR TABLE " + p_tablename + " DROP DISTRIBUTIONS;\n"
+          "<@>\n"
+          "UPDATE STATISTICS HIGH FOR TABLE " + p_tablename + ";\n";
+  return optim;
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// SQL STRINGS
+//
+//////////////////////////////////////////////////////////////////////////
+
+// Makes a SQL string from a given string, with all the right quotes
+CString
+SQLInfoInformix::GetSQLString(const CString& p_string) const
+{
+  CString str = p_string;
+  str.Replace("'","''");
+  CString kwoot = GetKEYWORDQuoteCharacter();
+  return kwoot + str + kwoot;
+}
+
+// Get date string in engine format
+CString
+SQLInfoInformix::GetSQLDateString(int p_year,int p_month,int p_day) const
+{
+  // Informix used to be depended on the DBFORMAT parameter
+  // This form is independent of it's setting!
+  CString dateString;
+  dateString.Format("DATETIME(%04d-%02d-%02d) YEAR TO DAY",p_year,p_month,p_day);
+  return dateString;
+}
+
+// Get time string in database engine format
+CString
+SQLInfoInformix::GetSQLTimeString(int p_hour,int p_minute,int p_second) const
+{
+  CString retval;
+  retval.Format("DATETIME (%02d:%02d:%02d) HOUR TO SECOND",p_hour,p_minute,p_second);
+  return retval;
+}
+
+// Get date-time string in database engine format
+CString
+SQLInfoInformix::GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
+{
+  // Informix used to be depended on the DBFORMAT parameter
+  // This form is independent of it's setting!
+  CString string;
+  string.Format("DATETIME(%04d-%02d-%02d %02d:%02d:%02d) YEAR TO SECOND"
+                ,p_day,p_month,p_year
+                ,p_hour,p_minute,p_second);
+  return string;
+}
+
+// Get date-time bound parameter string in database format
+CString
+SQLInfoInformix::GetSQLDateTimeBoundString() const
+{
+  return "TO_DATE(?,'%d-%m-%Y %H:%M:%S')";
+}
+
+// Stripped data for the parameter binding
+CString
+SQLInfoInformix::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
+{
+  CString string;
+  string.Format("%04d-%02d-%02d %02d:%02d:%02d"
+                ,p_day,p_month,p_year
+                ,p_hour,p_minute,p_second);
+  return string;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1063,13 +1158,18 @@ SQLInfoInformix::GetCATALOGViewDrop(CString /*p_schema*/,CString p_viewname,CStr
 //   - Create
 //   - Drop
 //
-// o PSMWORDS
-//   - Declare
-//   - Assignment(LET)
-//   - IF statement
-//   - FOR statement
-//   - WHILE / LOOP statement
-//   - CURSOR and friends
+// o PSM<Element>[End]
+//   - PSM Declaration(first,variable,datatype[,precision[,scale]])
+//   - PSM Assignment (variable,statement)
+//   - PSM IF         (condition)
+//   - PSM IFElse 
+//   - PSM IFEnd
+//   - PSM WHILE      (condition)
+//   - PSM WHILEEnd
+//   - PSM LOOP
+//   - PSM LOOPEnd
+//   - PSM BREAK
+//   - PSM RETURN     ([statement])
 //
 // o CALL the FUNCTION/PROCEDURE
 //
@@ -1115,6 +1215,223 @@ SQLInfoInformix::GetPSMProcedureDrop(CString p_schema, CString p_procedure) cons
   return "";
 }
 
+CString
+SQLInfoInformix::GetPSMProcedureErrors(CString p_schema,CString p_procedure) const
+{
+  // Informix does not support procedure errors
+  return "";
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// ALL PSM LANGUAGE ELEMENTS
+//
+//////////////////////////////////////////////////////////////////////////
+
+CString
+SQLInfoInformix::GetPSMDeclaration(bool    /*p_first*/
+                                  ,CString p_variable
+                                  ,int     p_datatype
+                                  ,int     p_precision /*= 0 */
+                                  ,int     p_scale     /*= 0 */
+                                  ,CString p_default   /*= ""*/
+                                  ,CString /*p_domain    = ""*/
+                                  ,CString p_asColumn  /*= ""*/) const
+{
+  CString line;
+  line.Format("DEFINE %s ",p_variable.GetString());
+
+  if(p_datatype)
+  {
+    // Getting type info and name
+    TypeInfo* info = GetTypeInfo(p_datatype);
+    line += info->m_type_name;
+
+    if(p_precision > 0)
+    {
+      line.AppendFormat("(%d",p_precision);
+      if(p_scale > 0)
+      {
+        line.AppendFormat("%d",p_scale);
+      }
+      line += ")";
+    }
+
+    if(!p_default.IsEmpty())
+    {
+      line += " DEFAULT " + p_default;
+    }
+  }
+  else if(!p_asColumn)
+  {
+    line += " LIKE " + p_asColumn;
+  }
+  line += ";\n";
+  return line;
+}
+
+CString
+SQLInfoInformix::GetPSMAssignment(CString p_variable,CString p_statement /*=""*/) const
+{
+  CString line("LET ");
+  line += p_variable;
+  line += " = ";
+  if(!p_statement.IsEmpty())
+  {
+    line += p_statement;
+    line += ";";
+  }
+  return line;
+}
+
+CString
+SQLInfoInformix::GetPSMIF(CString p_condition) const
+{
+  return "IF (" + p_condition + ") THEN\n";
+}
+
+CString
+SQLInfoInformix::GetPSMIFElse() const
+{
+  return "ELSE\n";
+}
+
+CString
+SQLInfoInformix::GetPSMIFEnd() const
+{
+  return "END IF;\n";
+}
+
+CString
+SQLInfoInformix::GetPSMWhile(CString p_condition) const
+{
+  return "WHILE (" + p_condition + ")\n";
+}
+
+CString
+SQLInfoInformix::GetPSMWhileEnd() const
+{
+  return "END WHILE;\n";
+}
+
+CString
+SQLInfoInformix::GetPSMLOOP() const
+{
+  return "LOOP\n";
+}
+
+CString
+SQLInfoInformix::GetPSMLOOPEnd() const
+{
+  return "END LOOP\n";
+}
+
+CString
+SQLInfoInformix::GetPSMBREAK() const
+{
+  return "EXIT\n"; // [FOR][LOOP][WHILE][FOREACH]
+}
+
+CString
+SQLInfoInformix::GetPSMRETURN(CString p_statement /*= ""*/) const
+{
+  CString line("RETURN");
+  if(!p_statement.IsEmpty())
+  {
+    line += " " + p_statement;
+  }
+  line += ";\n";
+  return line;
+}
+
+CString
+SQLInfoInformix::GetPSMExecute(CString p_procedure,MParameterMap& p_parameters) const
+{
+  // EXECUTE PROCEDURE name[(:param[,:param …])] [RETURNING_VALUES:param[,:param …]];
+  CString line;
+  line.Format("EXECUTE PROCEDURE %s (",p_procedure.GetString());
+  bool doReturning = false;
+  bool doMore = false;
+
+  for(auto& param : p_parameters)
+  {
+    // Extra ,
+    if(doMore) line += ",";
+    doMore = true;
+
+    // Append input and in/out parameters
+    if(param.m_type == 0 || param.m_type == 2)
+    {
+      line += param.m_parameter;
+    }
+    // See if we must do 'returning' clause
+    if(param.m_type == 1 || param.m_type == 2)
+    {
+      doReturning = true;
+    }
+  }
+  line += ")";
+
+  // Do the returning clause
+  if(doReturning)
+  {
+    line += " INTO ";
+    doMore = false;
+    for(auto& param : p_parameters)
+    {
+      // Extra ,
+      if(doMore) line += ",";
+      doMore = true;
+
+      if(param.m_type == 1 || param.m_type == 2)
+      {
+        line += param.m_parameter;
+      }
+    }
+  }
+  line += ";\n";
+  return line;
+}
+
+// The CURSOR
+CString
+SQLInfoInformix::GetPSMCursorDeclaration(CString p_cursorname,CString p_select) const
+{
+  return "FOREACH " + p_cursorname + " FOR " + p_select + "\n";
+}
+
+CString
+SQLInfoInformix::GetPSMCursorFetch(CString /*p_cursorname*/,std::vector<CString>& /*p_columnnames*/,std::vector<CString>& /*p_variablenames*/) const
+{
+  return "";
+}
+
+// END FOREACH; !!
+
+
+//////////////////////////////////////////////////////////////////////////
+// PSM Exceptions
+
+CString
+SQLInfoInformix::GetPSMExceptionCatchNoData() const
+{
+  return "ON EXCEPTION (100)\n";
+}
+
+CString
+SQLInfoInformix::GetPSMExceptionCatch(CString p_sqlState) const
+{
+  return "ON EXCEPTION (" + p_sqlState + ")\n";
+}
+
+CString
+SQLInfoInformix::GetPSMExceptionRaise(CString p_sqlState) const
+{
+  return "RAISE EXCEPTION " + p_sqlState;
+  // "[,isam-error [,'error text']]
+}
+
+// END EXCEPTION [WITH RESUME];
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -1197,331 +1514,10 @@ SQLInfoInformix::GetSESSIONConstraintsImmediate() const
 
 //////////////////////////////////////////////////////////////////////////
 //
-// OLD INTERFACE
+// Call FUNCTION/PROCEDURE from within program
+// As a RDBMS dependent extension of "DoSQLCall" of the SQLQuery object
 //
 //////////////////////////////////////////////////////////////////////////
-
-// BOOLEANS AND STRINGS
-// ===================================================================
-
-// Gets the fact if an IF statement needs to be bordered with BEGIN/END
-bool
-SQLInfoInformix::GetCodeIfStatementBeginEnd() const
-{
-  // IF THEN ELSE END IF; does not need a BEGIN/END per se.
-  return false;
-}
-
-// Gets the end of an IF statement
-CString 
-SQLInfoInformix::GetCodeEndIfStatement() const
-{
-  return "END IF;\n";
-}
-
-// Gets a complete assignment statement.
-CString 
-SQLInfoInformix::GetAssignmentStatement(const CString& p_destiny,const CString& p_source) const
-{
-  return "LET " + p_destiny + " = " + p_source + ";";
-}
-
-// Get the code to start a WHILE-loop
-CString
-SQLInfoInformix::GetStartWhileLoop(CString p_condition) const
-{
-  return "WHILE " + p_condition + "\n";
-}
-
-// Get the code to end a WHILE-loop
-CString
-SQLInfoInformix::GetEndWhileLoop() const
-{
-  return "END WHILE;\n";
-}
-
-// Gets the fact if a SELECT must be in between parenthesis for an assignment
-bool 
-SQLInfoInformix::GetAssignmentSelectParenthesis() const
-{
-  // waarde = (SELECT max kenmerk FROM tabel);
-  return true;
-}
-
-// SQL CATALOG QUERIES
-// ==================================================================
-
-// Gets the lock-table query
-CString 
-SQLInfoInformix::GetSQLLockTable(CString& p_tableName,bool p_exclusive) const
-{
-  CString query = "LOCK TABLE " + p_tableName + " IN "  ;
-  query += p_exclusive ? "EXCLUSIVE" : "SHARE";
-  query += " MODE";
-  return query;
-}
-
-// Get query to optimize the table statistics
-CString 
-SQLInfoInformix::GetSQLOptimizeTable(CString& /*p_owner*/,CString& p_tableName,int& p_number)
-{
-  CString optim;
-  optim = "UPDATE STATISTICS LOW  FOR TABLE " + p_tableName + " DROP DISTRIBUTIONS;\n"
-          "UPDATE STATISTICS HIGH FOR TABLE " + p_tableName + ";\n";
-  p_number += 2;
-  return optim;
-}
-
-// SQL DDL STATEMENTS
-// ==================
-
-// SQL DDL ACTIONS
-// ====================================================================
-
-// Do the commit for the DDL commands in the catalog
-void 
-SQLInfoInformix::DoCommitDDLcommands() const
-{
-  // Does NOTHING in INFOMRIX and cannot do something
-  // Commit follows from a BEGIN/COMMIT transaction by AUTOCOMMIT from the driver
-}
-
-// Do the commit for the DML commands in the database
-// ODBC driver auto commit mode will go wrong!!
-void
-SQLInfoInformix::DoCommitDMLcommands() const
-{
-  // Does NOTHING in INFOMRIX and cannot do something
-  // Commit follows from a BEGIN/COMMIT transaction by AUTOCOMMIT from the driver
-}
-
-// PERSISTENT-STORED MODULES (SPL / PL/SQL)
-// =====================================================================
-
-// Get the user error text from the database
-CString 
-SQLInfoInformix::GetUserErrorText(CString& p_procName) const
-{
-  (void)p_procName;   // Not in Informix.
-  return "";
-}
-
-// Get assignment to a variable in SPL
-CString 
-SQLInfoInformix::GetSPLAssignment(CString p_variable) const
-{
-  return "LET " + p_variable + " = ";
-}
-
-// Get the start of a SPL While loop
-CString 
-SQLInfoInformix::GetSPLStartWhileLoop(CString p_condition) const
-{
-  return "WHILE " + p_condition + "\n";
-}
-
-// Get the end of a SPL while loop
-CString 
-SQLInfoInformix::GetSPLEndWhileLoop() const
-{
-  return "END WHILE;\n";
-}
-
-// Get stored procedure call
-CString 
-SQLInfoInformix::GetSQLSPLCall(CString p_procName) const
-{
-  return "execute procedure " + p_procName;
-}
-
-// Build a parameter list for calling a stored procedure
-CString 
-SQLInfoInformix::GetBuildedParameterList(size_t p_numOfParameters) const
-{
-  // Stands for the '?' binding parameters in a stored-procedure
-  // ALWAYS an ellipsis, even if there are no parameters!
-  CString strParamLijst = "(";
-  for (size_t i = 0; i < p_numOfParameters; i++)
-  {
-    if(i) 
-    {
-      strParamLijst += ",";
-    }
-    strParamLijst += "?";
-  }
-  strParamLijst += ")";
-
-  return strParamLijst;
-}
-
-// Parameter type for stored procedure for a given column type for parameters and return types
-CString
-SQLInfoInformix::GetParameterType(CString& p_type) const
-{
-  return p_type;
-}
-
-// GENERAL SQL ACTIONS
-// =================================================================
-
-// Makes a SQL string from a given string, with all the right quotes
-CString 
-SQLInfoInformix::GetSQLString(const CString& p_string) const
-{
-  CString str = p_string;
-  str.Replace("'","''");
-  CString kwoot = GetKEYWORDQuoteCharacter();
-  return kwoot + str + kwoot;
-}
-
-// Get date string in engine format
-CString 
-SQLInfoInformix::GetSQLDateString(int p_year,int p_month,int p_day) const
-{
-  // Informix used to be depended on the DBFORMAT parameter
-  // This form is independent of it's setting!
-  CString dateString;
-  dateString.Format("DATETIME(%04d-%02d-%02d) YEAR TO DAY",p_year,p_month,p_day);
-  return dateString;
-}
-
-// Get time string in database engine format
-CString 
-SQLInfoInformix::GetSQLTimeString(int p_hour,int p_minute,int p_second) const
-{
-  CString retval;
-  retval.Format("DATETIME (%02d:%02d:%02d) HOUR TO SECOND",p_hour,p_minute,p_second);
-  return retval;
-}
-
-// Get date-time string in database engine format
-CString 
-SQLInfoInformix::GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
-{
-  // Informix used to be depended on the DBFORMAT parameter
-  // This form is independent of it's setting!
-  CString string;
-  string.Format("DATETIME(%04d-%02d-%02d %02d:%02d:%02d) YEAR TO SECOND"
-                ,p_day,p_month,p_year
-                ,p_hour,p_minute,p_second);
-  return string;
-}
-
-// Get date-time bound parameter string in database format
-CString 
-SQLInfoInformix::GetSQLDateTimeBoundString() const
-{
-  return "TO_DATE(?,'%d-%m-%Y %H:%M:%S')";
-}
-
-// Stripped data for the parameter binding
-CString
-SQLInfoInformix::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
-{
-  CString string;
-  string.Format("%04d-%02d-%02d %02d:%02d:%02d"
-                ,p_day,p_month,p_year
-                ,p_hour,p_minute,p_second);
-  return string;
-}
-
-// Get the SPL datatype for integer
-CString 
-SQLInfoInformix::GetSPLIntegerType() const
-{
-  return "integer";
-}
-
-// Get the SPL datatype for a decimal
-CString 
-SQLInfoInformix::GetSPLDecimalType() const
-{
-  return "decimal";
-}
-
-// Get the SPL declaration for a cursor
-CString 
-SQLInfoInformix::GetSPLCursorDeclaratie(CString& p_variableName,CString& p_query) const
-{
-  return "CURSOR " + p_variableName + " IS " + p_query + ";";
-}
-
-// Get the SPL cursor found row parameter
-CString 
-SQLInfoInformix::GetSPLCursorFound(CString& /*p_cursorName*/) const
-{
-  // TODO: To be implemented
-  return "";
-}
-
-// Get the SPL cursor row-count variable
-CString 
-SQLInfoInformix::GetSPLCursorRowCount(CString& /*p_variable*/) const
-{
-  // TODO: To be implemented
-  return "";
-}
-
-// Get the SPL datatype for a declaration of a row-variable
-CString 
-SQLInfoInformix::GetSPLCursorRowDeclaration(CString& /*p_cursorName*/,CString& /*p_variableName*/) const
-{
-  // TODO: To be implemented
-  return "";
-}
-
-CString 
-SQLInfoInformix::GetSPLFetchCursorIntoVariables(CString               p_cursorName
-                                               ,CString             /*p_variableName*/
-                                               ,std::vector<CString>& p_columnNames
-                                               ,std::vector<CString>& p_variableNames) const
-{
-  // TODO: CHeck
-  CString query = "FETCH " + p_cursorName + " INTO ";  
-
-  std::vector<CString>::iterator cNames;
-  std::vector<CString>::iterator vNames;
-  bool moreThenOne = false;
-
-  for(cNames  = p_columnNames.begin(), vNames  = p_variableNames.begin();
-    cNames != p_columnNames.end() && vNames != p_variableNames.end();
-    ++cNames, ++vNames)
-  {
-    query += (moreThenOne ? "," : "") + *vNames;
-  }
-  query += ";";
-  return query;
-}
-
-// Fetch the current SPL cursor row into the row variable
-CString 
-SQLInfoInformix::GetSPLFetchCursorIntoRowVariable(CString& p_cursorName,CString p_variableName) const
-{ 
-  return "FETCH " + p_cursorName + " INTO " + p_variableName+ ";";
-}
-
-// Get the SPL no-data exception clause
-CString 
-SQLInfoInformix::GetSPLNoDataFoundExceptionClause() const
-{
-  // TODO: Check
-  return "WHEN NO_DATA THEN";
-}
-
-// Get the SPL form of raising an exception
-CString 
-SQLInfoInformix::GetSPLRaiseException(CString p_exceptionName) const
-{
-  // TODO: Check
-  return "RAISE " + p_exceptionName + ";";
-}
-
-// Get the fact that the SPL has server functions that return more than 1 value
-bool    
-SQLInfoInformix::GetSPLServerFunctionsWithReturnValues() const
-{
-  return true;
-}
 
 // Calling a stored function or procedure if the RDBMS does not support ODBC call escapes
 SQLVariant*

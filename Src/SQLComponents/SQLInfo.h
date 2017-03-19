@@ -136,7 +136,7 @@ public:
   unsigned char* GetMetaPointer(unsigned char* p_buffer,bool p_meta);
 
   // Getting datatype info
-  TypeInfo* GetTypeInfo(int p_sqlDatatype);
+  TypeInfo* GetTypeInfo(int p_sqlDatatype) const;
 
   // CONNECTION ATTRIBUTES
 

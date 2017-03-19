@@ -154,6 +154,13 @@ SQLInfoSQLServer::GetRDBMSMaxStatementLength() const
   return 0;
 }
 
+// Database must commit DDL commands in a transaction
+bool
+SQLInfoSQLServer::GetRDBMSMustCommitDDL() const
+{
+  return true;
+}
+
 // KEYWORDS
 
 // Keyword for the current date and time
@@ -294,6 +301,89 @@ CString
 SQLInfoSQLServer::GetSQLFromDualClause() const
 {
   return "";
+}
+
+// Get SQL to lock  a table 
+CString
+SQLInfoSQLServer::GetSQLLockTable(CString p_schema, CString p_tablename, bool p_exclusive) const
+{
+  CString query = "SELECT * FROM " + p_schema + "." + p_tablename + " WITH ";
+  query += p_exclusive ? "(TABLOCKX)" : "(TABLOCK)";
+  return query;
+}
+
+// Get query to optimize the table statistics
+CString
+SQLInfoSQLServer::GetSQLOptimizeTable(CString p_schema, CString p_tablename) const
+{
+  CString query("UPDATE STATISTICS ");
+  if (!p_schema.IsEmpty())
+  {
+    query += p_schema;
+    query += ".";
+  }
+  query += p_tablename;
+  query += " WITH FULLSCAN";
+  return query;
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// SQL STRINGS
+//
+//////////////////////////////////////////////////////////////////////////
+
+// Makes a SQL string from a given string, with all the right quotes
+CString
+SQLInfoSQLServer::GetSQLString(const CString& p_string) const
+{
+  CString s = p_string;
+  s.Replace("'","''");
+  CString kwoot = GetKEYWORDQuoteCharacter();
+  return  kwoot + s + kwoot;
+}
+
+// Get date string in engine format
+CString
+SQLInfoSQLServer::GetSQLDateString(int p_year,int p_month,int p_day) const
+{
+  CString retval;
+  retval.Format("{d '%04d-%02d-%02d' }",p_year,p_month,p_day);
+  return retval;
+}
+
+// Get time string in database engine format
+CString
+SQLInfoSQLServer::GetSQLTimeString(int p_hour,int p_minute,int p_second) const
+{
+  CString retval;
+  retval.Format("{t '%02d:%02d:%02d' }",p_hour,p_minute,p_second);
+  return retval;
+}
+
+// Get date-time string in database engine format
+CString
+SQLInfoSQLServer::GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
+{
+  CString retval;
+  retval.Format("{ts '%04d-%02d-%02d %02d:%02d:%02d' }",p_year,p_month,p_day,p_hour,p_minute,p_second);
+  return retval;
+}
+
+// Get date-time bound parameter string in database format
+CString
+SQLInfoSQLServer::GetSQLDateTimeBoundString() const
+{
+  return "{ts ?}";
+}
+
+// Stripped data for the parameter binding
+CString
+SQLInfoSQLServer::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
+{
+  CString retval;
+  retval.Format("%04d-%02d-%02d %02d:%02d:%02d",p_year,p_month,p_day,p_hour,p_minute,p_second);
+  return retval;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1074,13 +1164,18 @@ SQLInfoSQLServer::GetCATALOGViewDrop(CString p_schema,CString p_viewname,CString
 //   - Create
 //   - Drop
 //
-// o PSMWORDS
-//   - Declare
-//   - Assignment(LET)
-//   - IF statement
-//   - FOR statement
-//   - WHILE / LOOP statement
-//   - CURSOR and friends
+// o PSM<Element>[End]
+//   - PSM Declaration(first,variable,datatype[,precision[,scale]])
+//   - PSM Assignment (variable,statement)
+//   - PSM IF         (condition)
+//   - PSM IFElse 
+//   - PSM IFEnd
+//   - PSM WHILE      (condition)
+//   - PSM WHILEEnd
+//   - PSM LOOP
+//   - PSM LOOPEnd
+//   - PSM BREAK
+//   - PSM RETURN     ([statement])
 //
 // o CALL the FUNCTION/PROCEDURE
 //
@@ -1119,6 +1214,222 @@ SQLInfoSQLServer::GetPSMProcedureDrop(CString p_schema, CString p_procedure) con
 {
   return "";
 }
+
+CString
+SQLInfoSQLServer::GetPSMProcedureErrors(CString p_schema,CString p_procedure) const
+{
+  // SQL-Server does not support procedure errors
+  return "";
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// ALL PSM LANGUAGE ELEMENTS
+//
+//////////////////////////////////////////////////////////////////////////
+
+CString
+SQLInfoSQLServer::GetPSMDeclaration(bool    /*p_first*/
+                                   ,CString p_variable
+                                   ,int     p_datatype
+                                   ,int     p_precision /*= 0 */
+                                   ,int     p_scale     /*= 0 */
+                                   ,CString p_default   /*= ""*/
+                                   ,CString p_domain    /*= ""*/
+                                   ,CString p_asColumn  /*= ""*/) const
+{
+  CString line;
+  line.Format("DECLARE @%s AS ",p_variable.GetString());
+
+  if(p_datatype)
+  {
+    // Getting type info and name
+    TypeInfo* info = GetTypeInfo(p_datatype);
+    line += info->m_type_name;
+
+    if(p_precision > 0)
+    {
+      line.AppendFormat("(%d",p_precision);
+      if(p_scale > 0)
+      {
+        line.AppendFormat("%d",p_scale);
+      }
+      line += ")";
+    }
+
+    if(!p_default.IsEmpty())
+    {
+      line += " = " + p_default;
+    }
+  }
+  line += ";\n";
+  return line;
+}
+
+CString
+SQLInfoSQLServer::GetPSMAssignment(CString p_variable,CString p_statement /*=""*/) const
+{
+  if(p_statement.Find("EXECUTE") == -1)
+  {
+    CString line = "SET " + p_variable + "=";
+    if(!p_statement.IsEmpty())
+    {
+      line += p_statement;
+      line += ";";
+    }
+    return line;
+  }
+  else
+  {
+    p_statement.Replace("(EXECUTE","EXECUTE");
+    p_statement.Replace("<@@@var@@@>",p_variable);
+    p_statement.Replace(";)",";");
+    return p_statement;
+  }
+}
+
+CString
+SQLInfoSQLServer::GetPSMIF(CString p_condition) const
+{
+  CString line("IF (");
+  line += p_condition;
+  line += ") THEN\n"
+          "  BEGIN\n";
+  return line;
+}
+
+CString
+SQLInfoSQLServer::GetPSMIFElse() const
+{
+  return "  END\n"
+         "ELSE\n"
+         "  BEGIN\n";
+}
+
+CString
+SQLInfoSQLServer::GetPSMIFEnd() const
+{
+  return "  END;\n";
+}
+
+CString
+SQLInfoSQLServer::GetPSMWhile(CString p_condition) const
+{
+  return "WHILE (" + p_condition + ")\n";
+}
+
+CString
+SQLInfoSQLServer::GetPSMWhileEnd() const
+{
+  return "";
+}
+
+CString
+SQLInfoSQLServer::GetPSMLOOP() const
+{
+  return "WHILE true\n";
+}
+
+CString
+SQLInfoSQLServer::GetPSMLOOPEnd() const
+{
+  return "";
+}
+
+CString
+SQLInfoSQLServer::GetPSMBREAK() const
+{
+  return "BREAK;\n";
+}
+
+CString
+SQLInfoSQLServer::GetPSMRETURN(CString p_statement /*= ""*/) const
+{
+  CString line("RETURN");
+  if(!p_statement.IsEmpty())
+  {
+    line += " " + p_statement;
+  }
+  line += ";\n";
+  return line;
+}
+
+CString
+SQLInfoSQLServer::GetPSMExecute(CString p_procedure,MParameterMap& p_parameters) const
+{
+  CString line;
+  line.Format("EXECUTE %s ",p_procedure.GetString());
+  bool cont = false;
+
+  for(auto& param : p_parameters)
+  {
+    // Continuing
+    if(cont) line += ",";
+    cont = true;
+
+    line += "@";
+    line += param.m_parameter;
+    line += " ";
+    switch(param.m_type)
+    {
+      case 0: break;
+      case 1: line += "OUTPUT"; break;
+      case 2: line += "INOUT";  break;
+    }
+    line += ";\n";
+  }
+  return line;
+}
+
+// The CURSOR
+CString
+SQLInfoSQLServer::GetPSMCursorDeclaration(CString p_cursorname,CString p_select) const
+{
+  return "CURSOR " + p_cursorname + " IS " + p_select + ";";
+}
+
+CString
+SQLInfoSQLServer::GetPSMCursorFetch(CString p_cursorname,std::vector<CString>& p_columnnames,std::vector<CString>& p_variablenames) const
+{
+  CString query = "FETCH " + p_cursorname + " INTO ";
+
+  std::vector<CString>::iterator cNames;
+  std::vector<CString>::iterator vNames;
+  bool moreThenOne = false;
+
+  for(cNames  = p_columnnames.begin(), vNames  = p_variablenames.begin();
+      cNames != p_columnnames.end() && vNames != p_variablenames.end();
+      ++cNames,++vNames)
+  {
+    query += (moreThenOne ? "," : "") + *vNames;
+  }
+  query += ";";
+  return query;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// PSM Exceptions
+
+CString
+SQLInfoSQLServer::GetPSMExceptionCatchNoData() const
+{
+  // SQL SERVER has BEGIN TRY .... END TRY -> BEGIN CATCH ... END CATCH
+  return "";
+}
+
+CString
+SQLInfoSQLServer::GetPSMExceptionCatch(CString p_sqlState) const
+{
+  // SQL SERVER has BEGIN TRY .... END TRY -> BEGIN CATCH ... END CATCH
+  return "";
+}
+
+CString
+SQLInfoSQLServer::GetPSMExceptionRaise(CString p_sqlState) const
+{
+  return "RAISE " + p_sqlState + ";\n";
+}
+
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -1201,373 +1512,10 @@ SQLInfoSQLServer::GetSESSIONConstraintsImmediate() const
 
 //////////////////////////////////////////////////////////////////////////
 //
-// OLD INTERFACE
+// Call FUNCTION/PROCEDURE from within program
+// As a RDBMS dependent extension of "DoSQLCall" of the SQLQuery object
 //
 //////////////////////////////////////////////////////////////////////////
-
-// BOOLEANS EN STRINGS
-// ====================================================================
-
-// Gets the fact if an IF statement needs to be bordered with BEGIN/END
-bool
-SQLInfoSQLServer::GetCodeIfStatementBeginEnd() const
-{
-  // IF THEN ELSE END IF; does not need a BEGIN/END per se.
-  return true;
-}
-
-// Gets the end of an IF statement
-CString 
-SQLInfoSQLServer::GetCodeEndIfStatement() const
-{
-  return "";
-}
-
-// Gets a complete assignment statement.
-CString 
-SQLInfoSQLServer::GetAssignmentStatement(const CString& p_destiny,const CString& p_source) const
-{
-  if(p_source.Find("EXECUTE") == -1)
-  {
-    return "SET " + p_destiny + " = " + p_source + ";";
-  }
-  else
-  {
-    CString sqlCode = p_source;
-    sqlCode.Replace("(EXECUTE", "EXECUTE");
-    sqlCode.Replace("<@@@var@@@>", p_destiny);
-    sqlCode.Replace(";)", ";");
-    return sqlCode;
-  }
-}
-
-// Get the code to start a WHILE-loop
-CString
-SQLInfoSQLServer::GetStartWhileLoop(CString p_condition) const
-{
-  return "WHILE " + p_condition + " LOOP\n";
-}
-
-// Get the code to end a WHILE-loop
-CString
-SQLInfoSQLServer::GetEndWhileLoop() const
-{
-  return "END LOOP;\n";
-}
-
-// Gets the fact if a SELECT must be in between parenthesis for an assignment
-bool 
-SQLInfoSQLServer::GetAssignmentSelectParenthesis() const
-{
-  return false;
-}
-
-// SQL CATALOG QUERIES
-// ===================================================================
-
-// Gets the lock-table query
-CString 
-SQLInfoSQLServer::GetSQLLockTable(CString& p_tableName,bool p_exclusive) const
-{
-  CString query = "SELECT * FROM " + p_tableName + " WITH "  ;
-  query += p_exclusive ? "(TABLOCKX)" : "(TABLOCK)";
-  return query;
-}
-
-// Get query to optimize the table statistics
-CString 
-SQLInfoSQLServer::GetSQLOptimizeTable(CString& p_owner,CString& p_tableName,int& /*p_number*/)
-{
-  CString query("UPDATE STATISTICS ");
-  if(!p_owner.IsEmpty())
-  {
-    query += p_owner;
-    query += ".";
-  }
-  query += p_tableName;
-  query += " WITH FULLSCAN";
-  return query;
-}
-
-// SQL DDL STATEMENTS
-// ==================
-
-// SQL DDL ACTIONS
-// ===================================================================
-
-// Do the commit for the DDL commands in the catalog
-void 
-SQLInfoSQLServer::DoCommitDDLcommands() const
-{
-  SQLQuery query(m_database);
-  query.DoSQLStatement("COMMIT WORK");
-}
-
-// Do the commit for the DML commands in the database
-// ODBC driver auto commit mode will go wrong!!
-void
-SQLInfoSQLServer::DoCommitDMLcommands() const
-{
-//   SQLQuery query(m_database);
-//   query.DoSQLStatement("COMMIT WORK");
-}
-
-// PERSISTENT-STORED MODULES (SPL / PL/SQL)
-// ====================================================================
-
-// Get the user error text from the database
-CString 
-SQLInfoSQLServer::GetUserErrorText(CString& /*p_procName*/) const
-{
-  return "";
-}
-
-// Get assignment to a variable in SPL
-CString 
-SQLInfoSQLServer::GetSPLAssignment(CString p_variable) const
-{
-  return "SET " + p_variable + " = ";
-}
-
-// Get the start of a SPL While loop
-CString 
-SQLInfoSQLServer::GetSPLStartWhileLoop(CString p_condition) const
-{
-  return "WHILE " + p_condition + "\n  BEGIN\n";
-}
-
-// Get the end of a SPL while loop
-CString 
-SQLInfoSQLServer::GetSPLEndWhileLoop() const
-{
-  return "END;\n";
-}
-
-// Get stored procedure call
-CString 
-SQLInfoSQLServer::GetSQLSPLCall(CString p_procName) const
-{
-
-  if (p_procName.Find("@out") == -1)
-  {
-    p_procName.Replace("(", " ");
-    p_procName.Replace(")", " ");
-    return "DECLARE\n"
-           "@vv_result INTEGER,\n"
-           "@vv_sqlerror INTEGER,\n"
-           "@vv_isamerror INTEGER,\n"
-           "@vv_errordata VARCHAR(255);\n"
-           "EXECUTE " + p_procName + ", @vv_result OUTPUT, @vv_sqlerror OUTPUT, @vv_isamerror OUTPUT, @vv_errordata OUTPUT;\n"
-           "SELECT @vv_result";
-  }
-  else
-  {
-    CString return_type = p_procName.Left(p_procName.Find('|'));
-    CString statement   = p_procName.Mid (p_procName.Find('|')+1);
-    return "DECLARE @out " + return_type + ";\n"
-           "EXECUTE " + statement + ";\n"
-           "SELECT @out";
-  }
-}
-
-// Build a parameter list for calling a stored procedure
-CString 
-SQLInfoSQLServer::GetBuildedParameterList(size_t p_numOfParameters) const
-{
-  // IF NO PARAMETERS, NO ELLIPSIS EITHER!!
-  CString strParamLijst;
-  if(p_numOfParameters >= 0)
-  {
-    for (size_t i = 0; i < p_numOfParameters; i++)
-    {
-      if(i!=0) 
-      {
-        strParamLijst += ",";
-      }
-      else
-      {
-        strParamLijst += "(";
-      }
-      strParamLijst += "?";
-    }
-    if(p_numOfParameters > 0)
-    {
-      strParamLijst += ")";
-    }
-  }
-  return strParamLijst;
-}
-
-// Parameter type for stored procedure for a given column type for parameters and return types
-CString
-SQLInfoSQLServer::GetParameterType(CString& p_type) const
-{
-  // char, varchar -> varchar
-  // decimal -> number
-
-  CString retval;
-  if (_strnicmp((LPCSTR)p_type,"char",4) == 0 ||
-      _strnicmp((LPCSTR)p_type,"varchar",7) == 0 )
-    retval = "varchar";
-  else if (_strnicmp((LPCSTR)p_type,"decimal",7) == 0 )
-    retval = "decimal";
-  else 
-    retval = p_type;
-  return p_type;
-}
-
-// Makes a SQL string from a given string, with all the right quotes
-CString 
-SQLInfoSQLServer::GetSQLString(const CString& p_string) const
-{
-  CString s = p_string;
-  s.Replace("'","''");
-  CString kwoot = GetKEYWORDQuoteCharacter();
-  return  kwoot + s + kwoot;
-}
-
-// Get date string in engine format
-CString 
-SQLInfoSQLServer::GetSQLDateString(int p_year,int p_month,int p_day) const
-{
-  CString retval;
-  retval.Format("{d '%04d-%02d-%02d' }",p_year,p_month,p_day);
-  return retval;
-}  
-
-// Get time string in database engine format
-CString 
-SQLInfoSQLServer::GetSQLTimeString(int p_hour,int p_minute,int p_second) const
-{
-  CString retval;
-  retval.Format("{t '%02d:%02d:%02d' }",p_hour,p_minute,p_second);
-  return retval;
-}  
-  
-// Get date-time string in database engine format
-CString 
-SQLInfoSQLServer::GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
-{
-  CString retval;
-  retval.Format("{ts '%04d-%02d-%02d %02d:%02d:%02d' }",p_year,p_month,p_day,p_hour,p_minute,p_second);
-  return retval;
-}  
-
-// Get date-time bound parameter string in database format
-CString 
-SQLInfoSQLServer::GetSQLDateTimeBoundString() const
-{
-  return "{ts ?}";
-}
-
-// Stripped data for the parameter binding
-CString
-SQLInfoSQLServer::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
-{
-  CString retval;
-  retval.Format("%04d-%02d-%02d %02d:%02d:%02d",p_year,p_month,p_day,p_hour,p_minute,p_second);
-  return retval;
-}
-
-// Get the SPL datatype for integer
-CString 
-SQLInfoSQLServer::GetSPLIntegerType() const
-{
-  return "integer";
-}
-
-// Get the SPL datatype for a decimal
-CString 
-SQLInfoSQLServer::GetSPLDecimalType() const
-{
-  return "number";
-}
-
-// Get the SPL declaration for a cursor
-CString 
-SQLInfoSQLServer::GetSPLCursorDeclaratie(CString& p_variableName,CString& p_query) const
-{
-  // TODO: Check
-  return "CURSOR " + p_variableName + " IS " + p_query + ";";
-}
-
-// Get the SPL cursor found row parameter
-CString 
-SQLInfoSQLServer::GetSPLCursorFound(CString& /*p_cursorName*/) const
-{
-  // TODO: Implement
-  return "";
-}
-
-// Get the SPL cursor row-count variable
-CString 
-SQLInfoSQLServer::GetSPLCursorRowCount(CString& /*p_variable*/) const
-{
-  // TODO: Implement
-  return "";
-}
-
-// Get the SPL datatype for a declaration of a row-variable
-CString 
-SQLInfoSQLServer::GetSPLCursorRowDeclaration(CString& /*p_cursorName*/,CString& /*p_variableName*/) const
-{
-  // TODO: Implement
-  return "";
-}
-
-CString 
-SQLInfoSQLServer::GetSPLFetchCursorIntoVariables(CString               p_cursorName
-                                                ,CString             /*p_variableName*/
-                                                ,std::vector<CString>& p_columnNames
-                                                ,std::vector<CString>& p_variableNames) const
-{
-  // TODO: Check
-  CString query = "FETCH " + p_cursorName + " INTO ";  
-
-  std::vector<CString>::iterator cNames;
-  std::vector<CString>::iterator vNames;
-  bool moreThenOne = false;
-
-  for(cNames  = p_columnNames.begin(), vNames  = p_variableNames.begin();
-      cNames != p_columnNames.end() && vNames != p_variableNames.end();
-      ++cNames, ++vNames)
-  {
-    query += (moreThenOne ? "," : "") + *vNames;
-  }
-  query += ";";
-  return query;
-}
-
-// Fetch the current SPL cursor row into the row variable
-CString 
-SQLInfoSQLServer::GetSPLFetchCursorIntoRowVariable(CString& p_cursorName,CString p_variableName) const
-{ 
-  // TODO: Check
-  return "FETCH " + p_cursorName + " INTO " + p_variableName+ ";";
-}
-
-// Get the SPL no-data exception clause
-CString 
-SQLInfoSQLServer::GetSPLNoDataFoundExceptionClause() const
-{
-  // TODO: Check
-  return "WHEN NO_DATA THEN";
-}
-
-// Get the SPL form of raising an exception
-CString 
-SQLInfoSQLServer::GetSPLRaiseException(CString p_exceptionName) const
-{
-  // TODO: Check
-  return "RAISE " + p_exceptionName + ";";
-}
-
-// Get the fact that the SPL has server functions that return more than 1 value
-bool    
-SQLInfoSQLServer::GetSPLServerFunctionsWithReturnValues() const
-{
-  return true;
-}
 
 // Calling a stored function or procedure if the RDBMS does not support ODBC call escapes
 SQLVariant*

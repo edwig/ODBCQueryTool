@@ -114,6 +114,10 @@ public:
   // Gets the maximum length of an SQL statement
   virtual unsigned long GetRDBMSMaxStatementLength() const = 0;
 
+  // Database must commit DDL commands in a transaction
+  virtual bool GetRDBMSMustCommitDDL() const = 0;
+
+  //////////////////////////////////////////////////////////////////////////
   // KEYWORDS
 
   // Keyword for the current date and time
@@ -159,7 +163,8 @@ public:
   // Gets the Not-NULL-Value statement of the database
   virtual CString GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) const = 0;
 
-  // SQL for sub processing
+  //////////////////////////////////////////////////////////////////////////
+  // SQL FOR SUB-PROCESSING
 
   // Gets the construction / select for generating a new serial identity
   virtual CString GetSQLGenerateSerial(CString p_table) const = 0;
@@ -174,6 +179,33 @@ public:
 
   // FROM-Part for a query to select only 1 (one) record
   virtual CString GetSQLFromDualClause() const = 0;
+
+  // Get SQL to lock  a table 
+  virtual CString GetSQLLockTable(CString p_schema,CString p_tablename, bool p_exclusive) const = 0;
+
+  // Get query to optimize the table statistics
+  virtual CString GetSQLOptimizeTable(CString p_schema, CString p_tablename) const = 0;
+
+  //////////////////////////////////////////////////////////////////////////
+  // SQL STRINGS
+
+  // Makes a SQL string from a given string, with all the right quotes
+  virtual CString GetSQLString(const CString& p_string) const = 0;
+
+  // Get date string in engine format
+  virtual CString GetSQLDateString(int p_year,int p_month,int p_day) const = 0;
+
+  // Get time string in database engine format
+  virtual CString GetSQLTimeString(int p_hour,int p_minute,int p_second) const = 0;
+
+  // Get date-time string in database engine format
+  virtual CString GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const = 0;
+
+  // Get date-time bound parameter string in database format
+  virtual CString GetSQLDateTimeBoundString() const = 0;
+
+  // Stripped data for the parameter binding
+  virtual CString GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const = 0;
 
   //////////////////////////////////////////////////////////////////////////
   //
@@ -259,8 +291,8 @@ public:
 
   //////////////////////////////////////////////////////////////////////////
   //
-  // SQL/PSM PERSISTENT STORED MODULES 
-  //         Also called SPL or PL/SQL
+  // PSM = PERSISTENT STORED MODULES (Also called SPL, PL/SQL, Transact-SQL)
+  //
   // o GetPSM<Object[s]><Function>
   //   -Procedures / Functions
   //   - Exists					GetPSMProcedureExists
@@ -269,23 +301,54 @@ public:
   //   - Create
   //   - Drop
   //
-  // o PSMWORDS
-  //   - Declare
-  //   - Assignment(LET)
-  //   - IF statement
-  //   - FOR statement
-  //   - WHILE / LOOP statement
-  //   - CURSOR and friends
+  // o PSM<Element>[End]
+  //   - PSM Declaration(first,variable,datatype[,precision[,scale]])
+  //   - PSM Assignment (variable,statement)
+  //   - PSM IF         (condition)
+  //   - PSM IFElse 
+  //   - PSM IFEnd
+  //   - PSM WHILE      (condition)
+  //   - PSM WHILEEnd
+  //   - PSM LOOP
+  //   - PSM LOOPEnd
+  //   - PSM BREAK
+  //   - PSM RETURN     ([statement])
   //
   // o CALL the FUNCTION/PROCEDURE
   //
   //////////////////////////////////////////////////////////////////////////
 
+  // All procedure functions
   virtual CString GetPSMProcedureExists    (CString p_schema,CString p_procedure) const = 0;
   virtual CString GetPSMProcedureList      (CString p_schema) const = 0;
   virtual CString GetPSMProcedureAttributes(CString p_schema,CString p_procedure) const = 0;
   virtual CString GetPSMProcedureCreate    (MetaProcedure& p_procedure) const = 0;
   virtual CString GetPSMProcedureDrop      (CString p_schema,CString p_procedure) const = 0;
+  virtual CString GetPSMProcedureErrors    (CString p_schema,CString p_procedure) const = 0;
+
+  // All Language elements
+  virtual CString GetPSMDeclaration(bool p_first,CString p_variable,int p_datatype,int p_precision = 0,int p_scale = 0,
+                                    CString p_default = "",CString p_domain = "",CString p_asColumn = "") const = 0;
+  virtual CString GetPSMAssignment (CString p_variable,CString p_statement = "") const = 0;
+  virtual CString GetPSMIF         (CString p_condition) const = 0;
+  virtual CString GetPSMIFElse     () const = 0;
+  virtual CString GetPSMIFEnd      () const = 0;
+  virtual CString GetPSMWhile      (CString p_condition) const = 0;
+  virtual CString GetPSMWhileEnd   () const = 0;
+  virtual CString GetPSMLOOP       () const = 0;
+  virtual CString GetPSMLOOPEnd    () const = 0;
+  virtual CString GetPSMBREAK      () const = 0;
+  virtual CString GetPSMRETURN     (CString p_statement = "") const = 0;
+  virtual CString GetPSMExecute    (CString p_procedure,MParameterMap& p_parameters) const = 0;
+
+  // The CURSOR
+  virtual CString GetPSMCursorDeclaration(CString p_cursorname,CString p_select) const = 0;
+  virtual CString GetPSMCursorFetch      (CString p_cursorname,std::vector<CString>& p_columnnames,std::vector<CString>& p_variablenames) const = 0;
+
+  // PSM Exceptions
+  virtual CString GetPSMExceptionCatchNoData() const = 0;
+  virtual CString GetPSMExceptionCatch      (CString p_sqlState) const = 0;
+  virtual CString GetPSMExceptionRaise      (CString p_sqlState) const = 0;
 
   //////////////////////////////////////////////////////////////////////////
   //
@@ -311,130 +374,10 @@ public:
 
   //////////////////////////////////////////////////////////////////////////
   //
-  // OLD INTERFACE
+  // Call FUNCTION/PROCEDURE from within program
+  // As a RDBMS dependent extension of "DoSQLCall" of the SQLQuery object
   //
   //////////////////////////////////////////////////////////////////////////
-
-
-  // SQL CATALOG QUERIES
-  // ===================
-
-  // DML
-
-  // Get SQL to lock  a table 
-  virtual CString GetSQLLockTable(CString& p_tableName, bool p_exclusive) const = 0;
-
-  // Get query to optimize the table statistics
-  virtual CString GetSQLOptimizeTable(CString& p_owner, CString& p_tableName, int& p_number) = 0;
-
-
-
-  // SQL DDL STATEMENTS
-  // ==================
-
-  // SQL DDL OPERATIONS
-  // ==================
-
-  // Do the commit for the DDL commands in the catalog
-  virtual void    DoCommitDDLcommands() const = 0;
-
-  // Do the commit for the DML commands in the database
-  virtual void    DoCommitDMLcommands() const = 0;
-
-  // PERSISTENT-STORED MODULES (SPL / PL/SQL)
-  // ====================================================================
-
-  // Get the user error text from the database
-  virtual CString GetUserErrorText(CString& p_procName) const = 0;
-
-  // Get assignment to a variable in SPL
-  virtual CString GetSPLAssignment(CString p_variable) const = 0;
-
-  // Gets the fact if an IF statement needs to be bordered with BEGIN/END
-  virtual bool    GetCodeIfStatementBeginEnd() const = 0;
-
-  // Gets the end of an IF statement
-  virtual CString GetCodeEndIfStatement() const = 0;
-
-  // Gets a complete assignment statement.
-  virtual CString GetAssignmentStatement(const CString& p_destiny,const CString& p_source) const = 0;
-
-  // Get the code to start a WHILE-loop
-  virtual CString GetStartWhileLoop(CString p_condition) const = 0;
-
-  // Get the code to end a WHILE-loop
-  virtual CString GetEndWhileLoop() const = 0;
-
-  // Gets the fact if a SELECT must be in between parenthesis for an assignment
-  virtual bool    GetAssignmentSelectParenthesis() const = 0;
-
-  // Get the start of a SPL While loop
-  virtual CString GetSPLStartWhileLoop(CString p_condition) const = 0;
-
-  // Get the end of a SPL while loop
-  virtual CString GetSPLEndWhileLoop() const = 0;
-
-  // Get stored procedure call
-  virtual CString GetSQLSPLCall(CString p_procName) const = 0;
-
-  // Build a parameter list for calling a stored procedure
-  virtual CString GetBuildedParameterList(size_t p_numOfParameters) const = 0;
-
-  // Parameter type for stored procedure for a given column type for parameters and return types
-  virtual CString GetParameterType(CString &p_type) const = 0;
-
-  // Makes a SQL string from a given string, with all the right quotes
-  virtual CString GetSQLString(const CString& p_string) const = 0;
-  
-  // Get date string in engine format
-  virtual CString GetSQLDateString(int p_year,int p_month,int p_day) const = 0;
-
-  // Get time string in database engine format
-  virtual CString GetSQLTimeString(int p_hour,int p_minute,int p_second) const = 0;
-
-  // Get date-time string in database engine format
-  virtual CString GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const = 0;
-  
-  // Get date-time bound parameter string in database format
-  virtual CString GetSQLDateTimeBoundString() const = 0;
-
-  // Stripped data for the parameter binding
-  virtual CString GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const = 0;
-
-  // Get the SPL datatype for integer
-  virtual CString GetSPLIntegerType() const = 0;
-  
-  // Get the SPL datatype for a decimal
-  virtual CString GetSPLDecimalType() const = 0;
-  
-  // Get the SPL declaration for a cursor
-  virtual CString GetSPLCursorDeclaratie(CString& p_variableName,CString& p_query) const = 0;
-
-  // Get the SPL cursor found row parameter
-  virtual CString GetSPLCursorFound(CString& p_cursorName) const = 0;
-
-  // Get the SPL cursor row-count variable
-  virtual CString GetSPLCursorRowCount(CString& p_variable) const = 0;
-
-  // Get the SPL datatype for a declaration of a row-variable
-  virtual CString GetSPLCursorRowDeclaration(CString& p_cursorName,CString& p_variableName) const = 0;
-
-  virtual CString GetSPLFetchCursorIntoVariables(CString               p_cursorName
-                                                ,CString               p_variableName
-                                                ,std::vector<CString>& p_columnNames
-                                                ,std::vector<CString>& p_variableNames) const = 0;
-                                                
-  // Fetch the current SPL cursor row into the row variable
-  virtual CString GetSPLFetchCursorIntoRowVariable(CString& p_cursorName,CString p_variableName) const = 0;
-
-  // Get the SPL no-data exception clause
-  virtual CString GetSPLNoDataFoundExceptionClause() const = 0;
-  
-  // Get the SPL form of raising an exception
-  virtual CString GetSPLRaiseException(CString p_exceptionName) const = 0;
-
-  // Get the fact that the SPL has server functions that return more than 1 value
-  virtual bool    GetSPLServerFunctionsWithReturnValues() const = 0;
 
   // Calling a stored function or procedure if the RDBMS does not support ODBC call escapes
   virtual SQLVariant* DoSQLCall(SQLQuery* p_query,CString& p_schema,CString& p_procedure) = 0;

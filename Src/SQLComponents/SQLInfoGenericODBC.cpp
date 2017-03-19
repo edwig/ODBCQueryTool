@@ -147,6 +147,13 @@ SQLInfoGenericODBC::GetRDBMSMaxStatementLength() const
   return 0;
 }
 
+// Database must commit DDL commands in a transaction
+bool
+SQLInfoGenericODBC::GetRDBMSMustCommitDDL() const
+{
+  return false;
+}
+
 // KEYWORDS
 
 // Keyword for the current date and time
@@ -297,6 +304,87 @@ SQLInfoGenericODBC::GetSQLFromDualClause() const
 {
   // No way of knowing this in standard ODBC
   return "";
+}
+
+// Get SQL to lock  a table 
+CString
+SQLInfoGenericODBC::GetSQLLockTable(CString p_schema, CString p_tablename, bool p_exclusive) const
+{
+  // Standard ISO SQL Syntax
+  CString query = "LOCK TABLE " + p_schema + "." + p_tablename + " IN ";
+  query += p_exclusive ? "EXCLUSIVE" : "SHARE";
+  query += " MODE";
+  return query;
+}
+
+// Get query to optimize the table statistics
+CString
+SQLInfoGenericODBC::GetSQLOptimizeTable(CString p_schema, CString p_tablename) const
+{
+  return "";
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// SQL STRINGS
+//
+//////////////////////////////////////////////////////////////////////////
+
+// Makes a SQL string from a given string, with all the right quotes
+CString
+SQLInfoGenericODBC::GetSQLString(const CString& p_string) const
+{
+  CString s = p_string;
+  s.Replace("'","''");
+  CString kwoot = GetKEYWORDQuoteCharacter();
+  return  kwoot + s + kwoot;
+}
+
+// Get date string in engine format
+CString
+SQLInfoGenericODBC::GetSQLDateString(int p_year,int p_month,int p_day) const
+{
+  CString dateString;
+  dateString.Format("{d '%04d-%02d-%02d'}",p_year,p_month,p_day);
+  return dateString;
+}
+
+// Get time string in database engine format
+CString
+SQLInfoGenericODBC::GetSQLTimeString(int p_hour,int p_minute,int p_second) const
+{
+  CString retval;
+  retval.Format("{t '%02d:%02d:%02d'}",p_hour,p_minute,p_second);
+  return retval;
+}
+
+// Get date-time string in database engine format
+CString
+SQLInfoGenericODBC::GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
+{
+  CString string;
+  string.Format("{ts '%04d-%02d-%02d %02d:%02d:%02d'}"
+                ,p_year,p_month,p_day // ODBC Ordering !!
+                ,p_hour,p_minute,p_second);
+  return string;
+}
+
+// Get date-time bound parameter string in database format
+CString
+SQLInfoGenericODBC::GetSQLDateTimeBoundString() const
+{
+  return "{ts ?}";
+}
+
+// Stripped data for the parameter binding
+CString
+SQLInfoGenericODBC::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
+{
+  CString string;
+  string.Format("%04d-%02d-%02d %02d:%02d:%02d"
+                ,p_year,p_month,p_day // ODBC Ordering !!
+                ,p_hour,p_minute,p_second);
+  return string;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -932,13 +1020,18 @@ SQLInfoGenericODBC::GetCATALOGViewDrop(CString p_schema,CString p_viewname,CStri
 //   - Create
 //   - Drop
 //
-// o PSMWORDS
-//   - Declare
-//   - Assignment(LET)
-//   - IF statement
-//   - FOR statement
-//   - WHILE / LOOP statement
-//   - CURSOR and friends
+// o PSM<Element>[End]
+//   - PSM Declaration(first,variable,datatype[,precision[,scale]])
+//   - PSM Assignment (variable,statement)
+//   - PSM IF         (condition)
+//   - PSM IFElse 
+//   - PSM IFEnd
+//   - PSM WHILE      (condition)
+//   - PSM WHILEEnd
+//   - PSM LOOP
+//   - PSM LOOPEnd
+//   - PSM BREAK
+//   - PSM RETURN     ([statement])
 //
 // o CALL the FUNCTION/PROCEDURE
 //
@@ -974,6 +1067,141 @@ SQLInfoGenericODBC::GetPSMProcedureDrop(CString p_schema, CString p_procedure) c
   return "";
 }
 
+CString
+SQLInfoGenericODBC::GetPSMProcedureErrors(CString p_schema,CString p_procedure) const
+{
+  // ISO SQL does not support procedure errors
+  return "";
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// ALL PSM LANGUAGE ELEMENTS
+//
+//////////////////////////////////////////////////////////////////////////
+
+CString
+SQLInfoGenericODBC::GetPSMDeclaration(bool    /*p_first*/
+                                     ,CString /*p_variable*/
+                                     ,int     /*p_datatype*/
+                                     ,int     /*p_precision*/ /*= 0 */
+                                     ,int     /*p_scale*/     /*= 0 */
+                                     ,CString /*p_default*/   /*= ""*/
+                                     ,CString /*p_domain*/    /*= ""*/
+                                     ,CString /*p_asColumn*/  /*= ""*/) const
+{
+  return "";
+}
+
+CString
+SQLInfoGenericODBC::GetPSMAssignment(CString p_variable,CString p_statement /*=""*/) const
+{
+  CString line(p_variable);
+  line += " [?=] ";
+  if(!p_statement.IsEmpty())
+  {
+    line += p_statement;
+    line += ";";
+  }
+  return line;
+}
+
+CString
+SQLInfoGenericODBC::GetPSMIF(CString p_condition) const
+{
+  CString line("IF (");
+  line += p_condition;
+  line += ") THEN\n";
+  return "";
+}
+
+CString
+SQLInfoGenericODBC::GetPSMIFElse() const
+{
+  return "  ELSE\n";
+}
+
+CString
+SQLInfoGenericODBC::GetPSMIFEnd() const
+{
+  return "END IF;\n";
+}
+
+CString
+SQLInfoGenericODBC::GetPSMWhile(CString p_condition) const
+{
+  return "WHILE (" + p_condition + ") LOOP\n";
+}
+
+CString
+SQLInfoGenericODBC::GetPSMWhileEnd() const
+{
+  return "END LOOP;\n";
+}
+
+CString
+SQLInfoGenericODBC::GetPSMLOOP() const
+{
+  return "";
+}
+
+CString
+SQLInfoGenericODBC::GetPSMLOOPEnd() const
+{
+  return "";
+}
+
+CString
+SQLInfoGenericODBC::GetPSMBREAK() const
+{
+  return "";
+}
+
+CString
+SQLInfoGenericODBC::GetPSMRETURN(CString p_statement /*= ""*/) const
+{
+  return "";
+}
+
+CString
+SQLInfoGenericODBC::GetPSMExecute(CString /*p_procedure*/,MParameterMap& /*p_parameters*/) const
+{
+  return "";
+}
+
+// The CURSOR
+CString
+SQLInfoGenericODBC::GetPSMCursorDeclaration(CString /*p_cursorname*/,CString /*p_select*/) const
+{
+  return "";
+}
+
+CString
+SQLInfoGenericODBC::GetPSMCursorFetch(CString /*p_cursorname*/,std::vector<CString>& /*p_columnnames*/,std::vector<CString>& /*p_variablenames*/) const
+{
+  return "";
+}
+
+//////////////////////////////////////////////////////////////////////////
+// PSM Exceptions
+
+CString
+SQLInfoGenericODBC::GetPSMExceptionCatchNoData() const
+{
+  return "";
+}
+
+CString
+SQLInfoGenericODBC::GetPSMExceptionCatch(CString p_sqlState) const
+{
+  return "";
+}
+
+CString
+SQLInfoGenericODBC::GetPSMExceptionRaise(CString p_sqlState) const
+{
+  return "";
+}
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -1034,333 +1262,12 @@ SQLInfoGenericODBC::GetSESSIONConstraintsImmediate() const
   return "";
 }
 
-
 //////////////////////////////////////////////////////////////////////////
 //
-// OLD INTERFACE
+// Call FUNCTION/PROCEDURE from within program
+// As a RDBMS dependent extension of "DoSQLCall" of the SQLQuery object
 //
 //////////////////////////////////////////////////////////////////////////
-
-// BOOLEANS EN STRINGS
-// ====================================================================
-
-// Gets the fact if an IF statement needs to be bordered with BEGIN/END
-bool
-SQLInfoGenericODBC::GetCodeIfStatementBeginEnd() const
-{
-  // IF THEN ELSE END IF; does not need a BEGIN/END per se.
-  return false;
-}
-
-// Gets the end of an IF statement
-CString 
-SQLInfoGenericODBC::GetCodeEndIfStatement() const
-{
-  return "END IF;\n";
-}
-
-// Gets a complete assignment statement.
-CString 
-SQLInfoGenericODBC::GetAssignmentStatement(const CString& p_destiny,const CString& p_source) const
-{
-  return p_destiny + " [?=] " + p_source + ";";
-}
-
-// Get the code to start a WHILE-loop
-CString 
-SQLInfoGenericODBC::GetStartWhileLoop(CString p_condition) const
-{
-  return "WHILE " + p_condition + " LOOP\n";
-}
-
-// Get the code to end a WHILE-loop
-CString 
-SQLInfoGenericODBC::GetEndWhileLoop() const
-{
-  return "END LOOP;\n";
-}
-
-// Gets the fact if a SELECT must be in between parenthesis for an assignment
-bool    
-SQLInfoGenericODBC::GetAssignmentSelectParenthesis() const
-{
-  // FALSE: value =  SELECT MAX(column) FROM table;
-  // TRUE : value = (SELECT MAX(column) FROM table);
-  return true;
-}
-
-// SQL CATALOG QUERIES
-// ===================================================================
-
-// Get a lock-table query
-CString 
-SQLInfoGenericODBC::GetSQLLockTable(CString& p_tableName,bool p_exclusive) const
-{
-  // Standard ISO SQL Syntax
-  CString query = "LOCK TABLE " + p_tableName + " IN "  ;
-  query += p_exclusive ? "EXCLUSIVE" : "SHARE";
-  query += " MODE";
-  return query;
-}
-
-// Get query to optimize the table statistics
-CString 
-SQLInfoGenericODBC::GetSQLOptimizeTable(CString& /*p_owner*/,CString& /*p_tableName*/,int& /*p_number*/)
-{
-  // To be implemented
-  return "";
-}
-
-// SQL DDL STATEMENTS
-// ==================
-
-// SQL DDL ACTIONS
-// ===================================================================
-
-// Do the commit for the DDL commands in the catalog
-void    
-SQLInfoGenericODBC::DoCommitDDLcommands() const
-{
-  // Does NOTHING In ORACLE and should do nothing
-  // commit for DDL is automatic and always
-}
-
-// Do the commit for the DML commands in the database
-// ODBC driver auto commit mode will go wrong!!
-void
-SQLInfoGenericODBC::DoCommitDMLcommands() const
-{
-}
-
-// PERSISTENT-STORED MODULES (SPL / PL/SQL)
-// ====================================================================
-
-// Get the user error text from the database
-CString
-SQLInfoGenericODBC::GetUserErrorText(CString& /*p_procName*/) const
-{
-  return "";
-}
-
-// Get assignment to a variable in SPL
-CString 
-SQLInfoGenericODBC::GetSPLAssignment(CString p_variable) const
-{
-  return p_variable + " [?=] ";
-}
-
-// Get the start of a SPL While loop
-CString 
-SQLInfoGenericODBC::GetSPLStartWhileLoop(CString p_condition) const
-{
-  return "WHILE " + p_condition + " LOOP\n";
-}
-
-// Get the end of a SPL while loop
-CString 
-SQLInfoGenericODBC::GetSPLEndWhileLoop() const
-{
-  return "END LOOP;\n";
-}
-
-// Get stored procedure call
-CString 
-SQLInfoGenericODBC::GetSQLSPLCall(CString p_procName) const
-{
-  // General ODBC escape syntax
-  return "{[?=] " + p_procName + ";}";
-}
-
-// Build a parameter list for calling a stored procedure
-CString
-SQLInfoGenericODBC::GetBuildedParameterList(size_t p_numOfParameters) const
-{
-  // The string of ? parameters for binding of a stored procedure
-  // In ORACLE: If no parameters, no ellipsis either!
-  CString strParamList;
-  if(p_numOfParameters >= 0)
-  {
-    for (size_t i = 0; i < p_numOfParameters; i++)
-    {
-      if(i!=0) 
-      {
-        strParamList += ",";
-      }
-      else
-      {
-        strParamList += "(";
-      }
-      strParamList += "?";
-    }
-    if(p_numOfParameters > 0)
-    {
-      strParamList += ")";
-    }
-  }
-  return strParamList;
-}
-
-
-// Parameter type for stored procedure for a given column type for parameters and return types
-CString 
-SQLInfoGenericODBC::GetParameterType(CString& p_type) const
-{
-  // No way of knowing this
-  return p_type;
-}
-
-// Makes a SQL string from a given string, with all the right quotes
-CString 
-SQLInfoGenericODBC::GetSQLString(const CString& p_string) const
-{
-  CString s = p_string;
-  s.Replace("'","''");
-  CString kwoot = GetKEYWORDQuoteCharacter();
-  return  kwoot + s + kwoot;
-}
-
-// Get date string in engine format
-CString 
-SQLInfoGenericODBC::GetSQLDateString(int p_year,int p_month,int p_day) const
-{
-  CString dateString;
-  dateString.Format("{d '%04d-%02d-%02d'}",p_year,p_month,p_day);
-  return dateString;
-}  
-
-// Get time string in database engine format
-CString 
-SQLInfoGenericODBC::GetSQLTimeString(int p_hour,int p_minute,int p_second) const
-{
-  CString retval;
-  retval.Format("{t '%02d:%02d:%02d'}",p_hour,p_minute,p_second);
-  return retval;
-}
-
-// Get date-time string in database engine format
-CString 
-SQLInfoGenericODBC::GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
-{
-  CString string;
-  string.Format("{ts '%04d-%02d-%02d %02d:%02d:%02d'}"
-                ,p_year,p_month,p_day // ODBC Ordering !!
-                ,p_hour,p_minute,p_second);
-  return string;
-}
-
-// Get date-time bound parameter string in database format
-CString 
-SQLInfoGenericODBC::GetSQLDateTimeBoundString() const
-{
-  return "{ts ?}";
-}
-
-// Stripped data for the parameter binding
-CString
-SQLInfoGenericODBC::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
-{
-  CString string;
-  string.Format("%04d-%02d-%02d %02d:%02d:%02d"
-                ,p_year,p_month,p_day // ODBC Ordering !!
-                ,p_hour,p_minute,p_second);
-  return string;
-}
-
-// Get the SPL datatype for integer
-CString 
-SQLInfoGenericODBC::GetSPLIntegerType() const
-{
-  return "INTEGER";
-}
-
-// Get the SPL datatype for a decimal
-CString 
-SQLInfoGenericODBC::GetSPLDecimalType() const
-{
-  return "DECIMAL";
-}
-
-// Get the SPL declaration for a cursor
-CString 
-SQLInfoGenericODBC::GetSPLCursorDeclaratie(CString& p_variableName,CString& p_query) const
-{
-  return "CURSOR " + p_variableName + " IS " + p_query + ";";
-}
-
-// Get the SPL cursor found row parameter
-CString 
-SQLInfoGenericODBC::GetSPLCursorFound(CString& /*p_cursorName*/) const
-{
-  return "";
-}
-
-// Get the SPL cursor row-count variable
-CString 
-SQLInfoGenericODBC::GetSPLCursorRowCount(CString& /*p_variable*/) const
-{
-  return "";
-}
-
-// Get the SPL datatype for a declaration of a row-variable
-CString 
-SQLInfoGenericODBC::GetSPLCursorRowDeclaration(CString& /*p_cursorName*/,CString& /*p_variableName*/) const
-{
-  return "";;
-}
-
-CString 
-SQLInfoGenericODBC::GetSPLFetchCursorIntoVariables(CString               p_cursorName
-                                              ,CString             /*p_variableName*/
-                                              ,std::vector<CString>& p_columnNames
-                                              ,std::vector<CString>& p_variableNames) const
-{
-  // General ISO SYNTAX
-  CString query = "FETCH " + p_cursorName + " INTO ";  
-
-  std::vector<CString>::iterator cNames;
-  std::vector<CString>::iterator vNames;
-  bool moreThenOne = false;
-
-  for(cNames  = p_columnNames.begin(), vNames  = p_variableNames.begin();
-    cNames != p_columnNames.end() && vNames != p_variableNames.end();
-    ++cNames, ++vNames)
-  {
-    query += (moreThenOne ? "," : "") + *vNames;
-  }
-  query += ";";
-  return query;
-}
-
-// Fetch the current SPL cursor row into the row variable
-CString 
-SQLInfoGenericODBC::GetSPLFetchCursorIntoRowVariable(CString& p_cursorName,CString p_variableName) const
-{ 
-  // Generic ISO SQL syntax
-  return "FETCH " + p_cursorName + " INTO " + p_variableName+ ";";
-}
-
-// Get the SPL no-data exception clause
-CString 
-SQLInfoGenericODBC::GetSPLNoDataFoundExceptionClause() const
-{
-  return "";
-}
-
-// Get the SPL form of raising an exception
-CString 
-SQLInfoGenericODBC::GetSPLRaiseException(CString /*p_exceptionName*/) const
-{
-  return "";
-}
-
-// Get the fact that the SPL has server functions that return more than 1 value
-bool    
-SQLInfoGenericODBC::GetSPLServerFunctionsWithReturnValues() const
-{
-  // No way of knowing this, 
-  // so it's safe to assume we cannot return more than 1 value
-  return false;
-}
 
 // Calling a stored function or procedure if the RDBMS does not support ODBC call escapes
 SQLVariant*

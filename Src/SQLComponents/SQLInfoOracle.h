@@ -78,6 +78,9 @@ public:
   // Gets the maximum length of an SQL statement
   unsigned long GetRDBMSMaxStatementLength() const;
 
+  // Database must commit DDL commands in a transaction
+  bool GetRDBMSMustCommitDDL() const;
+
   // KEYWORDS
 
   // Keyword for the current date and time
@@ -138,6 +141,33 @@ public:
 
   // FROM-Part for a query to select only 1 (one) record / or empty!
   CString GetSQLFromDualClause() const;
+
+  // Get SQL to lock  a table 
+  CString GetSQLLockTable(CString p_schema, CString p_tablename, bool p_exclusive) const;
+
+  // Get query to optimize the table statistics
+  CString GetSQLOptimizeTable(CString p_schema, CString p_tablename) const;
+
+  //////////////////////////////////////////////////////////////////////////
+  // SQL STRINGS
+
+  // Makes a SQL string from a given string, with all the right quotes
+  CString GetSQLString(const CString& p_string) const;
+
+  // Get date string in engine format
+  CString GetSQLDateString(int p_year,int p_month,int p_day) const;
+
+  // Get time string in database engine format
+  CString GetSQLTimeString(int p_hour,int p_minute,int p_second) const;
+
+  // Get date-time string in database engine format
+  CString GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const;
+
+  // Get date-time bound parameter string in database format
+  CString GetSQLDateTimeBoundString() const;
+
+  // Stripped data for the parameter binding
+  CString GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const;
 
   //////////////////////////////////////////////////////////////////////////
   //
@@ -233,24 +263,54 @@ public:
   //   - Create
   //   - Drop
   //
-  // o PSMWORDS
-  //   - Declare
-  //   - Assignment(LET)
-  //   - IF statement
-  //   - FOR statement
-  //   - WHILE / LOOP statement
-  //   - CURSOR and friends
+  // o PSM<Element>[End]
+  //   - PSM Declaration(first,variable,datatype[,precision[,scale]])
+  //   - PSM Assignment (variable,statement)
+  //   - PSM IF         (condition)
+  //   - PSM IFElse 
+  //   - PSM IFEnd
+  //   - PSM WHILE      (condition)
+  //   - PSM WHILEEnd
+  //   - PSM LOOP
+  //   - PSM LOOPEnd
+  //   - PSM BREAK
+  //   - PSM RETURN     ([statement])
   //
   // o CALL the FUNCTION/PROCEDURE
   //
   //////////////////////////////////////////////////////////////////////////
 
+  // All procedure functions
   CString GetPSMProcedureExists    (CString p_schema,CString p_procedure) const;
   CString GetPSMProcedureList      (CString p_schema) const;
   CString GetPSMProcedureAttributes(CString p_schema,CString p_procedure) const;
   CString GetPSMProcedureCreate    (MetaProcedure& p_procedure) const;
   CString GetPSMProcedureDrop      (CString p_schema,CString p_procedure) const;
+  CString GetPSMProcedureErrors    (CString p_schema,CString p_procedure) const;
 
+  // All Language elements
+  CString GetPSMDeclaration(bool p_first,CString p_variable,int p_datatype,int p_precision = 0,int p_scale = 0,
+                            CString p_default = "",CString p_domain = "",CString p_asColumn = "") const;
+  CString GetPSMAssignment (CString p_variable,CString p_statement = "") const;
+  CString GetPSMIF         (CString p_condition) const;
+  CString GetPSMIFElse     () const;
+  CString GetPSMIFEnd      () const;
+  CString GetPSMWhile      (CString p_condition) const;
+  CString GetPSMWhileEnd   () const;
+  CString GetPSMLOOP       () const;
+  CString GetPSMLOOPEnd    () const;
+  CString GetPSMBREAK      () const;
+  CString GetPSMRETURN     (CString p_statement = "") const;
+  CString GetPSMExecute    (CString p_procedure,MParameterMap& p_parameters) const;
+
+  // The CURSOR
+  CString GetPSMCursorDeclaration(CString p_cursorname,CString p_select) const;
+  CString GetPSMCursorFetch      (CString p_cursorname,std::vector<CString>& p_columnnames,std::vector<CString>& p_variablenames) const;
+
+  // PSM Exceptions
+  CString GetPSMExceptionCatchNoData() const;
+  CString GetPSMExceptionCatch(CString p_sqlState) const;
+  CString GetPSMExceptionRaise(CString p_sqlState) const;
 
   //////////////////////////////////////////////////////////////////////////
   //
@@ -274,135 +334,15 @@ public:
   CString GetSESSIONConstraintsDeferred()  const;
   CString GetSESSIONConstraintsImmediate() const;
 
-
   //////////////////////////////////////////////////////////////////////////
   //
-  // OLD INTERFACE
+  // Call FUNCTION/PROCEDURE from within program
+  // As a RDBMS dependent extension of "DoSQLCall" of the SQLQuery object
   //
   //////////////////////////////////////////////////////////////////////////
-
-  // BOOLEANS EN STRINGS
-  // ===================
-
-  // Gets the fact if an IF statement needs to be bordered with BEGIN/END
-  bool    GetCodeIfStatementBeginEnd() const;
-
-  // Gets the end of an IF statement
-  CString GetCodeEndIfStatement() const;
-
-  // Gets a complete assignment statement.
-  CString GetAssignmentStatement(const CString& p_destiny,const CString& p_source) const;
-
-  // Get the code to start a WHILE-loop
-  CString GetStartWhileLoop(CString p_condition) const;
-
-  // Get the code to end a WHILE-loop
-  CString GetEndWhileLoop() const;
-
-  // Gets the fact if a SELECT must be in between parenthesis for an assignment
-  bool    GetAssignmentSelectParenthesis() const;
-
-  // SQL CATALOG QUERIES
-  // ===================
-
-  // Get SQL to lock a table
-  CString GetSQLLockTable(CString& p_tableName,bool p_exclusive) const;
-
-  // Get query to optimize the table statistics
-  CString GetSQLOptimizeTable(CString& p_owner,CString& p_tableName,int& p_number);
-
-  // SQL DDL STATEMENTS
-  // ==================
-
-  // SQL DDL OPERATIONS
-  // ==================
-
-  // Do the commit for the DDL commands in the catalog
-  void    DoCommitDDLcommands() const;
-
-  // Do the commit for the DML commands in the database
-  void    DoCommitDMLcommands() const;
-
-  // PERSISTENT-STORED MODULES (SPL / PL/SQL)
-  // ====================================================================
-
-  // Get the user error text from the database
-  CString GetUserErrorText(CString& p_procName) const;
-
-  // Get assignment to a variable in SPL
-  CString GetSPLAssignment(CString p_variable) const;
-
-  // Get the start of a SPL While loop
-  CString GetSPLStartWhileLoop(CString p_condition) const;
-
-  // Get the end of a SPL while loop
-  CString GetSPLEndWhileLoop() const;
-
-  // Get stored procedure call
-  CString GetSQLSPLCall(CString p_procName) const;
-
-  // Build a parameter list for calling a stored procedure
-  CString GetBuildedParameterList(size_t p_numOfParameters) const;
-
-  // Parameter type for stored procedure for a given column type for parameters and return types
-  CString GetParameterType(CString &p_type) const;
-
-  // Makes a SQL string from a given string, with all the right quotes
-  CString GetSQLString(const CString& p_string) const;
-
-  // Get date string in engine format
-  CString GetSQLDateString(int p_year,int p_month,int p_day) const;
-
-  // Get time string in database engine format
-  CString GetSQLTimeString(int p_hour,int p_minute,int p_second) const;
-  
-  // Get date-time string in database engine format
-  CString GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const;
-
-  // Get date-time bound parameter string in database format
-  CString GetSQLDateTimeBoundString() const;
-
-  // Stripped data for the parameter binding
-  CString GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const;
-
-  // Get the SPL datatype for integer
-  CString GetSPLIntegerType() const;
-
-  // Get the SPL datatype for a decimal
-  CString GetSPLDecimalType() const;
-  
-  // Get the SPL declaration for a cursor
-  CString GetSPLCursorDeclaratie(CString& p_variableName,CString& p_query) const;
-
-  // Get the SPL cursor found row variable
-  CString GetSPLCursorFound(CString& p_cursorName) const;
-
-  // Get the SPL cursor row-count variable
-  CString GetSPLCursorRowCount(CString& p_variable) const;
-
-  // Get the SPL datatype for a declaration of a row-variable
-  CString GetSPLCursorRowDeclaration(CString& p_cursorName,CString& p_variableName) const;
-
-  CString GetSPLFetchCursorIntoVariables(CString                p_cursorName
-                                        ,CString                p_variableName
-                                        ,std::vector<CString>&  p_columnNames
-                                        ,std::vector<CString>&  p_variableNames) const;
-
-  // Fetch the current SPL cursor row into the row variable
-  CString GetSPLFetchCursorIntoRowVariable(CString& p_cursorName,CString p_variableName) const;
-
-  // Get the SPL no-data exception clause
-  CString GetSPLNoDataFoundExceptionClause() const;
-
-  // Get the SPL form of raising an exception
-  CString GetSPLRaiseException(CString p_exceptionName) const;
-
-  // Get the fact that the SPL has server functions that return more than 1 value
-  bool    GetSPLServerFunctionsWithReturnValues() const;
 
   // Calling a stored function or procedure if the RDBMS does not support ODBC call escapes
   SQLVariant* DoSQLCall(SQLQuery* p_query,CString& p_schema,CString& p_procedure);
-
 };
 
 // End of namespace

@@ -337,4 +337,13 @@ MetaSession;
 
 using MSessionMap = std::vector<MetaSession>;
 
+typedef struct _metaParameter
+{
+  CString  m_parameter;       // Name of the parameters
+  int      m_type;            // 0=input, 1=output, 2=in/out
+}
+MetaParameter;
+
+using MParameterMap = std::vector<MetaParameter>;
+
 };

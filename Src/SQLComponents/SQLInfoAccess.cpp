@@ -144,6 +144,13 @@ SQLInfoAccess::GetRDBMSMaxStatementLength() const
   return 0; 
 }
 
+// Database must commit DDL commands in a transaction
+bool 
+SQLInfoAccess::GetRDBMSMustCommitDDL() const
+{
+  return false;
+}
+
 // KEYWORDS
 
 // Keyword for the current date and time
@@ -288,6 +295,81 @@ CString
 SQLInfoAccess::GetSQLFromDualClause() const
 {
   return "";
+}
+
+// Get SQL to lock  a table 
+CString 
+SQLInfoAccess::GetSQLLockTable(CString /*p_schema*/, CString p_tablename, bool p_exclusive) const
+{
+  CString query = "SELECT * FROM " + p_tablename + " WITH ";
+  query += p_exclusive ? "(TABLOCKX)" : "(TABLOCK)";
+  return query;
+}
+
+// Get query to optimize the table statistics
+CString 
+SQLInfoAccess::GetSQLOptimizeTable(CString p_schema, CString p_tablename) const
+{
+  return "";
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// SQL STRINGS
+//
+//////////////////////////////////////////////////////////////////////////
+
+// Makes a SQL string from a given string, with all the right quotes
+CString
+SQLInfoAccess::GetSQLString(const CString& p_string) const
+{
+  CString s = p_string;
+  s.Replace("'","''");
+  CString kwoot = GetKEYWORDQuoteCharacter();
+  return  kwoot + s + kwoot;
+}
+
+// Get date string in engine format
+CString
+SQLInfoAccess::GetSQLDateString(int p_year,int p_month,int p_day) const
+{
+  CString retval;
+  retval.Format("{ d '%04d-%02d-%02d' }",p_year,p_month,p_day);
+  return retval;
+}
+
+// Get time string in database engine format
+CString
+SQLInfoAccess::GetSQLTimeString(int p_hour,int p_minute,int p_second) const
+{
+  CString retval;
+  retval.Format("{ t '%02d:%02d:%02d' }",p_hour,p_minute,p_second);
+  return retval;
+}
+
+// Get date-time string in database engine format
+CString
+SQLInfoAccess::GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
+{
+  CString retval;
+  retval.Format("{ ts '%04d-%02d-%02d %02d:%02d:%02d' }",p_year,p_month,p_day,p_hour,p_minute,p_second);
+  return retval;
+}
+
+// Get date-time bound parameter string in database format
+CString
+SQLInfoAccess::GetSQLDateTimeBoundString() const
+{
+  return "{ts ?}";
+}
+
+// Stripped data for the parameter binding
+CString
+SQLInfoAccess::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
+{
+  CString retval;
+  retval.Format("%04d-%02d-%02d %02d:%02d:%02d",p_year,p_month,p_day,p_hour,p_minute,p_second);
+  return retval;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -822,13 +904,18 @@ SQLInfoAccess::GetCATALOGViewDrop(CString /*p_schema*/,CString p_viewname,CStrin
 //   - Create
 //   - Drop
 //
-// o PSMWORDS
-//   - Declare
-//   - Assignment(LET)
-//   - IF statement
-//   - FOR statement
-//   - WHILE / LOOP statement
-//   - CURSOR and friends
+// o PSM<Element>[End]
+//   - PSM Declaration(first,variable,datatype[,precision[,scale]])
+//   - PSM Assignment (variable,statement)
+//   - PSM IF         (condition)
+//   - PSM IFElse 
+//   - PSM IFEnd
+//   - PSM WHILE      (condition)
+//   - PSM WHILEEnd
+//   - PSM LOOP
+//   - PSM LOOPEnd
+//   - PSM BREAK
+//   - PSM RETURN     ([statement])
 //
 // o CALL the FUNCTION/PROCEDURE
 //
@@ -866,6 +953,150 @@ CString
 SQLInfoAccess::GetPSMProcedureDrop(CString p_schema,CString p_procedure) const
 {
   // MS-Access does not support PSM
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetPSMProcedureErrors(CString p_schema,CString p_procedure) const
+{
+  // MS-Access does not support PSM
+  return "";
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// ALL PSM LANGUAGE ELEMENTS
+//
+//////////////////////////////////////////////////////////////////////////
+
+CString
+SQLInfoAccess::GetPSMDeclaration(bool    /*p_first*/
+                                ,CString /*p_variable*/
+                                ,int     /*p_datatype*/
+                                ,int     /*p_precision = 0*/
+                                ,int     /*p_scale     = 0*/
+                                ,CString /*p_default   = ""*/
+                                ,CString /*p_domain    = ""*/
+                                ,CString /*p_asColumn  = ""*/) const
+{
+  // MS-Access does not use PSM, but Visual Basic
+  return "";
+}
+CString 
+SQLInfoAccess::GetPSMAssignment(CString /*p_variable*/,CString /*p_statement = ""*/) const
+{
+  // MS-Access does not use PSM, but Visual Basic
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetPSMIF(CString /*p_condition*/) const
+{
+  // MS-Access does not use PSM, but Visual Basic
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetPSMIFElse() const
+{
+  // MS-Access does not use PSM, but Visual Basic
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetPSMIFEnd() const
+{
+  // MS-Access does not use PSM, but Visual Basic
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetPSMWhile(CString /*p_condition*/) const
+{
+  // MS-Access does not use PSM, but Visual Basic
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetPSMWhileEnd() const
+{
+  // MS-Access does not use PSM, but Visual Basic
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetPSMLOOP() const
+{
+  // MS-Access does not use PSM, but Visual Basic
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetPSMLOOPEnd() const
+{
+  // MS-Access does not use PSM, but Visual Basic
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetPSMBREAK() const
+{
+  // MS-Access does not use PSM, but Visual Basic
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetPSMRETURN(CString /*p_statement*/ /*= ""*/) const
+{
+  // MS-Access does not use PSM, but Visual Basic
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetPSMExecute(CString /*p_procedure*/,MParameterMap& /*p_parameters*/) const
+{
+  // MS-Access does not use PSM, but Visual Basic
+  return "";
+}
+
+//////////////////////////////////////////////////////////////////////////
+// The CURSOR
+
+CString 
+SQLInfoAccess::GetPSMCursorDeclaration(CString p_cursorname,CString p_select) const
+{
+  // MS-Access does not use PSM, but Visual Basic
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetPSMCursorFetch(CString /*p_cursorname*/,std::vector<CString>& /*p_columnnames*/,std::vector<CString>& /*p_variablenames*/) const
+{
+  // MS-Access does not use PSM, but Visual Basic
+  return "";
+}
+
+//////////////////////////////////////////////////////////////////////////
+// PSM Exceptions
+
+CString 
+SQLInfoAccess::GetPSMExceptionCatchNoData() const
+{
+  // MS-Access does not use PSM, but Visual Basic
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetPSMExceptionCatch(CString p_sqlState) const
+{
+  // MS-Access does not use PSM, but Visual Basic
+  return "";
+}
+
+CString 
+SQLInfoAccess::GetPSMExceptionRaise(CString p_sqlState) const
+{
+  // MS-Access does not use PSM, but Visual Basic
   return "";
 }
 
@@ -928,367 +1159,12 @@ SQLInfoAccess::GetSESSIONConstraintsImmediate() const
   return "";
 }
 
-
 //////////////////////////////////////////////////////////////////////////
 //
-// OLD INTERFACE
+// Call FUNCTION/PROCEDURE from within program
+// As a RDBMS dependent extension of "DoSQLCall" of the SQLQuery object
 //
 //////////////////////////////////////////////////////////////////////////
-
-// BOOLEANS EN STRINGS
-// ====================================================================
-
-// Gets the fact if an IF statement needs to be bordered with BEGIN/END
-bool
-SQLInfoAccess::GetCodeIfStatementBeginEnd() const
-{
-  // IF THEN ELSE END IF; does not need a BEGIN/END per se.
-  return true;
-}
-
-// Gets the end of an IF statement
-CString 
-SQLInfoAccess::GetCodeEndIfStatement() const
-{
-  return "";
-}
-
-// Gets a complete assignment statement.
-CString 
-SQLInfoAccess::GetAssignmentStatement(const CString& p_destiny,const CString& p_source) const
-{
-  if(p_source.Find("EXECUTE") == -1)
-  {
-    return "SET " + p_destiny + " = " + p_source + ";";
-  }
-  else
-  {
-    CString sqlCode = p_source;
-    sqlCode.Replace("(EXECUTE", "EXECUTE");
-    sqlCode.Replace("<@@@var@@@>", p_destiny);
-    sqlCode.Replace(";)", ";");
-    return sqlCode;
-  }
-}
-
-// Get the code to start a WHILE-loop
-CString
-SQLInfoAccess::GetStartWhileLoop(CString p_condition) const
-{
-  return "WHILE " + p_condition + " LOOP\n";
-}
-
-// Get the code to end a WHILE-loop
-CString
-SQLInfoAccess::GetEndWhileLoop() const
-{
-  return "END LOOP;\n";
-}
-
-// Gets the fact if a SELECT must be in between parenthesis for an assignment
-bool 
-SQLInfoAccess::GetAssignmentSelectParenthesis() const
-{
-  return false;
-}
-
-// SQL CATALOG QUERIES
-// ===================================================================
-
-// Gets the lock-table query
-CString 
-SQLInfoAccess::GetSQLLockTable(CString& p_tableName,bool p_exclusive) const
-{
-  CString query = "SELECT * FROM " + p_tableName + " WITH "  ;
-  query += p_exclusive ? "(TABLOCKX)" : "(TABLOCK)";
-  return query;
-}
-
-// Get query to optimize the table statistics
-CString 
-SQLInfoAccess::GetSQLOptimizeTable(CString& /*p_owner*/,CString& /*p_tableName*/,int& /*p_number*/)
-{
-  return "";
-}
-
-// SQL DDL STATEMENTS
-// ==================
-
-// SQL DDL ACTIONS
-// ===================================================================
-
-// Do the commit for the DDL commands in the catalog
-void 
-SQLInfoAccess::DoCommitDDLcommands() const
-{
-  SQLQuery query(m_database);
-  query.DoSQLStatement("COMMIT WORK");
-}
-
-// Do the commit for the DML commands in the database
-// ODBC driver auto commit mode will go wrong!!
-void
-SQLInfoAccess::DoCommitDMLcommands() const
-{
-  // Not needed in MS-Access
-}
-
-// PERSISTENT-STORED MODULES (SPL / PL/SQL)
-// ====================================================================
-
-// Get the user error text from the database
-CString 
-SQLInfoAccess::GetUserErrorText(CString& /*p_procName*/) const
-{
-  return "";
-}
-
-// Get assignment to a variable in SPL
-CString 
-SQLInfoAccess::GetSPLAssignment(CString p_variable) const
-{
-  return "SET " + p_variable + " = ";
-}
-
-// Get the start of a SPL While loop
-CString 
-SQLInfoAccess::GetSPLStartWhileLoop(CString p_condition) const
-{
-  return "WHILE " + p_condition + "\n  BEGIN\n";
-}
-
-// Get the end of a SPL while loop
-CString 
-SQLInfoAccess::GetSPLEndWhileLoop() const
-{
-  return "END;\n";
-}
-
-// Get stored procedure call
-CString 
-SQLInfoAccess::GetSQLSPLCall(CString p_procName) const
-{
-
-  if (p_procName.Find("@out") == -1)
-  {
-    p_procName.Replace("(", " ");
-    p_procName.Replace(")", " ");
-    return "DECLARE\n"
-      "@vv_result INTEGER,\n"
-      "@vv_sqlerror INTEGER,\n"
-      "@vv_isamerror INTEGER,\n"
-      "@vv_errordata VARCHAR(255);\n"
-      "EXECUTE " + p_procName + ", @vv_result OUTPUT, @vv_sqlerror OUTPUT, @vv_isamerror OUTPUT, @vv_errordata OUTPUT;\n"
-      "SELECT @vv_result";
-  }
-  else
-  {
-    CString return_type = p_procName.Left(p_procName.Find('|'));
-    CString statement   = p_procName.Mid (p_procName.Find('|')+1);
-    return "DECLARE @out " + return_type + ";\n"
-      "EXECUTE " + statement + ";\n"
-      "SELECT @out";
-  }
-}
-
-// Build a parameter list for calling a stored procedure
-CString 
-SQLInfoAccess::GetBuildedParameterList(size_t p_numOfParameters) const
-{
-  // IF NO PARAMETERS, NO ELLIPSIS EITHER!!
-  CString strParamLijst;
-  if(p_numOfParameters >= 0)
-  {
-    for (size_t i = 0; i < p_numOfParameters; i++)
-    {
-      if(i!=0) 
-      {
-        strParamLijst += ",";
-      }
-      else
-      {
-        strParamLijst += "(";
-      }
-      strParamLijst += "?";
-    }
-    if(p_numOfParameters > 0)
-    {
-      strParamLijst += ")";
-    }
-  }
-  return strParamLijst;
-}
-
-// Parameter type for stored procedure for a given column type for parameters and return types
-CString
-SQLInfoAccess::GetParameterType(CString& p_type) const
-{
-  // char, varchar -> varchar
-  // decimal -> number
-
-  CString retval;
-  if (_strnicmp((LPCSTR)p_type,"char",4) == 0 ||
-    _strnicmp((LPCSTR)p_type,"varchar",7) == 0 )
-    retval = "varchar";
-  else if (_strnicmp((LPCSTR)p_type,"decimal",7) == 0 )
-    retval = "decimal";
-  else 
-    retval = p_type;
-  return p_type;
-}
-
-// Makes a SQL string from a given string, with all the right quotes
-CString 
-SQLInfoAccess::GetSQLString(const CString& p_string) const
-{
-  CString s = p_string;
-  s.Replace("'","''");
-  CString kwoot = GetKEYWORDQuoteCharacter();
-  return  kwoot + s + kwoot;
-}
-
-// Get date string in engine format
-CString 
-SQLInfoAccess::GetSQLDateString(int p_year,int p_month,int p_day) const
-{
-  CString retval;
-  retval.Format("{ d '%04d-%02d-%02d' }",p_year,p_month,p_day);
-  return retval;
-}  
-
-// Get time string in database engine format
-CString 
-SQLInfoAccess::GetSQLTimeString(int p_hour,int p_minute,int p_second) const
-{
-  CString retval;
-  retval.Format("{ t '%02d:%02d:%02d' }",p_hour,p_minute,p_second);
-  return retval;
-}  
-
-// Get date-time string in database engine format
-CString 
-SQLInfoAccess::GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
-{
-  CString retval;
-  retval.Format("{ ts '%04d-%02d-%02d %02d:%02d:%02d' }",p_year,p_month,p_day,p_hour,p_minute,p_second);
-  return retval;
-}  
-
-// Get date-time bound parameter string in database format
-CString 
-SQLInfoAccess::GetSQLDateTimeBoundString() const
-{
-  return "{ts ?}";
-}
-
-// Stripped data for the parameter binding
-CString
-SQLInfoAccess::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
-{
-  CString retval;
-  retval.Format("%04d-%02d-%02d %02d:%02d:%02d",p_year,p_month,p_day,p_hour,p_minute,p_second);
-  return retval;
-}
-
-// Get the SPL datatype for integer
-CString 
-SQLInfoAccess::GetSPLIntegerType() const
-{
-  return "integer";
-}
-
-// Get the SPL datatype for a decimal
-CString 
-SQLInfoAccess::GetSPLDecimalType() const
-{
-  return "number";
-}
-
-// Get the SPL declaration for a cursor
-CString 
-SQLInfoAccess::GetSPLCursorDeclaratie(CString& p_variableName,CString& p_query) const
-{
-  // TODO: Check
-  return "CURSOR " + p_variableName + " IS " + p_query + ";";
-}
-
-// Get the SPL cursor found row parameter
-CString 
-SQLInfoAccess::GetSPLCursorFound(CString& /*p_cursorName*/) const
-{
-  // TODO: Implement
-  return "";
-}
-
-// Get the SPL cursor row-count variable
-CString 
-SQLInfoAccess::GetSPLCursorRowCount(CString& /*p_variable*/) const
-{
-  // TODO: Implement
-  return "";
-}
-
-// Get the SPL datatype for a declaration of a row-variable
-CString 
-SQLInfoAccess::GetSPLCursorRowDeclaration(CString& /*p_cursorName*/,CString& /*p_variableName*/) const
-{
-  // TODO: Implement
-  return "";
-}
-
-CString 
-SQLInfoAccess::GetSPLFetchCursorIntoVariables(CString               p_cursorName
-                                                 ,CString             /*p_variableName*/
-                                                 ,std::vector<CString>& p_columnNames
-                                                 ,std::vector<CString>& p_variableNames) const
-{
-  // TODO: Check
-  CString query = "FETCH " + p_cursorName + " INTO ";  
-
-  std::vector<CString>::iterator cNames;
-  std::vector<CString>::iterator vNames;
-  bool moreThenOne = false;
-
-  for(cNames  = p_columnNames.begin(), vNames  = p_variableNames.begin();
-    cNames != p_columnNames.end() && vNames != p_variableNames.end();
-    ++cNames, ++vNames)
-  {
-    query += (moreThenOne ? "," : "") + *vNames;
-  }
-  query += ";";
-  return query;
-}
-
-// Fetch the current SPL cursor row into the row variable
-CString 
-SQLInfoAccess::GetSPLFetchCursorIntoRowVariable(CString& p_cursorName,CString p_variableName) const
-{ 
-  // TODO: Check
-  return "FETCH " + p_cursorName + " INTO " + p_variableName+ ";";
-}
-
-// Get the SPL no-data exception clause
-CString 
-SQLInfoAccess::GetSPLNoDataFoundExceptionClause() const
-{
-  // TODO: Check
-  return "WHEN NO_DATA THEN";
-}
-
-// Get the SPL form of raising an exception
-CString 
-SQLInfoAccess::GetSPLRaiseException(CString p_exceptionName) const
-{
-  // TODO: Check
-  return "RAISE " + p_exceptionName + ";";
-}
-
-// Get the fact that the SPL has server functions that return more than 1 value
-bool    
-SQLInfoAccess::GetSPLServerFunctionsWithReturnValues() const
-{
-  return true;
-}
 
 // Calling a stored function or procedure if the RDBMS does not support ODBC call escapes
 SQLVariant*

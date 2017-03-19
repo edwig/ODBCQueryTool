@@ -154,6 +154,13 @@ SQLInfoPostgreSQL::GetRDBMSMaxStatementLength() const
   return 0;
 }
 
+// Database must commit DDL commands in a transaction
+bool
+SQLInfoPostgreSQL::GetRDBMSMustCommitDDL() const
+{
+  return true;
+}
+
 // KEYWORDS
 
 // Keyword for the current date and time
@@ -299,6 +306,81 @@ SQLInfoPostgreSQL::GetSQLFromDualClause() const
 {
   // PostgreSQL knows the bare SELECT
   return "";
+}
+
+// Get SQL to lock  a table 
+CString
+SQLInfoPostgreSQL::GetSQLLockTable(CString p_schema, CString p_tablename, bool p_exclusive) const
+{
+  CString query = "LOCK TABLE " + p_schema + "." + p_tablename + " IN ";
+  query += p_exclusive ? "EXCLUSIVE" : "SHARE";
+  query += " MODE";
+  return query;
+}
+
+// Get query to optimize the table statistics
+CString
+SQLInfoPostgreSQL::GetSQLOptimizeTable(CString p_schema, CString p_tablename) const
+{
+  CString optim = "VACUUM ANALYZE " + p_schema + "." + p_tablename;
+  return optim;
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// SQL STRINGS
+//
+//////////////////////////////////////////////////////////////////////////
+
+CString
+SQLInfoPostgreSQL::GetSQLString(const CString& p_string) const
+{
+  CString s = p_string;
+  s.Replace("'","''");
+  CString kwoot = GetKEYWORDQuoteCharacter();
+  return  kwoot + s + kwoot;
+}
+
+CString
+SQLInfoPostgreSQL::GetSQLDateString(int p_year,int p_month,int p_day) const
+{
+  CString dateString;
+  dateString.Format("TO_DATE('%04d-%02d-%02d','YYYY-MM-DD')",p_year,p_month,p_day);
+  return dateString;
+}
+
+CString
+SQLInfoPostgreSQL::GetSQLTimeString(int p_hour,int p_minute,int p_second) const
+{
+  CString timeString;
+  timeString.Format("'%02d:%02d:%02d'",p_hour,p_minute,p_second);
+  return timeString;
+}
+
+CString
+SQLInfoPostgreSQL::GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
+{
+  CString retval;
+  retval.Format("to_timestamp('%04d-%02d-%02d %02d:%02d:%02d','YYYY-MM-DD HH24:MI:SS')::timestamp"
+                ,p_year,p_month,p_day,p_hour,p_minute,p_second);
+  return retval;
+}
+
+// Get date-time bound parameter string in database format
+CString
+SQLInfoPostgreSQL::GetSQLDateTimeBoundString() const
+{
+  return "to_timestamp(?,'YYYY-MM-DD HH24:MI:SS')::timestamp";
+}
+
+// Stripped data for the parameter binding
+CString
+SQLInfoPostgreSQL::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
+{
+  CString retval;
+  retval.Format("%04d-%02d-%02d %02d:%02d:%02d"
+                ,p_year,p_month,p_day,p_hour,p_minute,p_second);
+  return retval;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1168,13 +1250,18 @@ SQLInfoPostgreSQL::GetCATALOGViewDrop(CString p_schema,CString p_viewname,CStrin
 //   - Create
 //   - Drop
 //
-// o PSMWORDS
-//   - Declare
-//   - Assignment(LET)
-//   - IF statement
-//   - FOR statement
-//   - WHILE / LOOP statement
-//   - CURSOR and friends
+// o PSM<Element>[End]
+//   - PSM Declaration(first,variable,datatype[,precision[,scale]])
+//   - PSM Assignment (variable,statement)
+//   - PSM IF         (condition)
+//   - PSM IFElse 
+//   - PSM IFEnd
+//   - PSM WHILE      (condition)
+//   - PSM WHILEEnd
+//   - PSM LOOP
+//   - PSM LOOPEnd
+//   - PSM BREAK
+//   - PSM RETURN     ([statement])
 //
 // o CALL the FUNCTION/PROCEDURE
 //
@@ -1219,6 +1306,201 @@ CString
 SQLInfoPostgreSQL::GetPSMProcedureDrop(CString p_schema, CString p_procedure) const
 {
   return "";
+}
+
+CString
+SQLInfoPostgreSQL::GetPSMProcedureErrors(CString p_schema,CString p_procedure) const
+{
+  return "";
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// ALL PSM LANGUAGE ELEMENTS
+//
+//////////////////////////////////////////////////////////////////////////
+
+CString
+SQLInfoPostgreSQL::GetPSMDeclaration(bool    /*p_first*/
+                                    ,CString p_variable
+                                    ,int     p_datatype
+                                    ,int     p_precision /*= 0 */
+                                    ,int     p_scale     /*= 0 */
+                                    ,CString p_default   /*= ""*/
+                                    ,CString p_domain    /*= ""*/
+                                    ,CString p_asColumn  /*= ""*/) const
+{
+  CString line;
+  line.Format("%s ",p_variable.GetString());
+
+  if(p_datatype)
+  {
+    // Getting type info and name
+    TypeInfo* info = GetTypeInfo(p_datatype);
+    line += info->m_type_name;
+
+    if(p_precision > 0)
+    {
+      line.AppendFormat("(%d",p_precision);
+      if(p_scale > 0)
+      {
+        line.AppendFormat("%d",p_scale);
+      }
+      line += ")";
+    }
+
+    if(!p_default.IsEmpty())
+    {
+      line += " DEFAULT " + p_default;
+    }
+  }
+  else if(!p_asColumn)
+  {
+    line += p_asColumn + "%TYPE";
+  }
+  line += ";\n";
+  return line;
+}
+
+CString
+SQLInfoPostgreSQL::GetPSMAssignment(CString p_variable,CString p_statement /*=""*/) const
+{
+  CString line(p_variable);
+  line += " := ";
+  if(!p_statement.IsEmpty())
+  {
+    line += p_statement;
+    line += ";";
+  }
+  return line;
+}
+
+CString
+SQLInfoPostgreSQL::GetPSMIF(CString p_condition) const
+{
+  CString line("IF (");
+  line += p_condition;
+  line += ") THEN\n";
+  return line;
+}
+
+CString
+SQLInfoPostgreSQL::GetPSMIFElse() const
+{
+  return "ELSE\n";
+}
+
+CString
+SQLInfoPostgreSQL::GetPSMIFEnd() const
+{
+  return "END IF;\n";
+}
+
+CString
+SQLInfoPostgreSQL::GetPSMWhile(CString p_condition) const
+{
+  return "WHILE (" + p_condition + ") LOOP\n";
+}
+
+CString
+SQLInfoPostgreSQL::GetPSMWhileEnd() const
+{
+  return "END LOOP;\n";
+}
+
+CString
+SQLInfoPostgreSQL::GetPSMLOOP() const
+{
+  return "LOOP\n";
+}
+
+CString
+SQLInfoPostgreSQL::GetPSMLOOPEnd() const
+{
+  return "END LOOP;\n";
+}
+
+CString
+SQLInfoPostgreSQL::GetPSMBREAK() const
+{
+  return "EXIT;\n";
+}
+
+CString
+SQLInfoPostgreSQL::GetPSMRETURN(CString p_statement /*= ""*/) const
+{
+  CString line("RETURN");
+  if(!p_statement.IsEmpty())
+  {
+    line += " " + p_statement;
+  }
+  line += ";\n";
+  return line;
+}
+
+CString
+SQLInfoPostgreSQL::GetPSMExecute(CString p_procedure,MParameterMap& p_parameters) const
+{
+  CString line;
+  line.Format("SELECT %s(",p_procedure.GetString());
+  bool doMore = false;
+
+  for(auto& param : p_parameters)
+  {
+    if(doMore) line += ",";
+    doMore = true;
+
+    line += param.m_parameter;
+  }
+  line += ");\n";
+  return line;
+}
+
+// The CURSOR
+CString
+SQLInfoPostgreSQL::GetPSMCursorDeclaration(CString p_cursorname,CString p_select) const
+{
+  return "DECLARE " + p_cursorname + " CURSOR FOR " + p_select + ";";
+}
+
+CString
+SQLInfoPostgreSQL::GetPSMCursorFetch(CString p_cursorname,std::vector<CString>& /*p_columnnames*/,std::vector<CString>& p_variablenames) const
+{
+  bool moreThenOne = false;
+  CString query = "OPEN  " + p_cursorname + ";\n"
+                  "FETCH " + p_cursorname + " INTO ";
+
+  for(auto& var : p_variablenames)
+  {
+    if(moreThenOne) query += ",";
+    moreThenOne = true;
+    query += var;
+  }
+  query += ";";
+  return query;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// PSM Exceptions
+
+CString
+SQLInfoPostgreSQL::GetPSMExceptionCatchNoData() const
+{
+  return "EXCEPTION WHEN 100 THEN\n";
+  // Followed by block and 'END;'
+}
+
+CString
+SQLInfoPostgreSQL::GetPSMExceptionCatch(CString p_sqlState) const
+{
+  return "EXCEPTION WHEN " + p_sqlState + " THEN\n";
+  // Followed by block and 'END;'
+}
+
+CString
+SQLInfoPostgreSQL::GetPSMExceptionRaise(CString p_sqlState) const
+{
+  return "RAISE EXCEPTION SQLSTATE " + p_sqlState + ";\n";
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1300,335 +1582,10 @@ SQLInfoPostgreSQL::GetSESSIONConstraintsImmediate() const
 
 //////////////////////////////////////////////////////////////////////////
 //
-// OLD INTERFACE
+// Call FUNCTION/PROCEDURE from within program
+// As a RDBMS dependent extension of "DoSQLCall" of the SQLQuery object
 //
 //////////////////////////////////////////////////////////////////////////
-
-// BOOLEANS AND STRINGS
-// ====================================================================
-
-bool
-SQLInfoPostgreSQL::GetCodeIfStatementBeginEnd() const
-{
-  // IF THEN ELSE END IF; does not necessarily need a BEGIN/END
-  return false;
-}
-
-// At the end of an IF statement
-CString 
-SQLInfoPostgreSQL::GetCodeEndIfStatement() const
-{
-  return "END IF;\n";
-}
-
-CString 
-SQLInfoPostgreSQL::GetAssignmentStatement(const CString& p_destiny,const CString& p_source) const
-{
-  return p_destiny + " := " + p_source + ";";
-}
-
-// Code to start an SPL WHIL loop
-CString
-SQLInfoPostgreSQL::GetStartWhileLoop(CString p_condition) const
-{
-  return "WHILE " + p_condition + " LOOP\n";
-}
-
-// Code to end a WHILE loop
-CString
-SQLInfoPostgreSQL::GetEndWhileLoop() const
-{
-  return "END LOOP;\n";
-}
-
-// Get the fact that we need to place a SELECT in parenthesis for an assignment in SPL
-bool 
-SQLInfoPostgreSQL::GetAssignmentSelectParenthesis() const
-{
-  // waarde = SELECT max kenmerk FROM tabel;
-  return false;
-}
-
-// SQL CATALOG QUERIES
-// ===================================================================
-
-// Get the lock-table query
-CString 
-SQLInfoPostgreSQL::GetSQLLockTable(CString& p_tableName,bool p_exclusive) const
-{
-  CString query = "LOCK TABLE " + p_tableName + " IN "  ;
-  query += p_exclusive ? "EXCLUSIVE" : "SHARE";
-  query += " MODE";
-  return query;
-}
-
-// Get the SQL query to optimize a table
-CString 
-SQLInfoPostgreSQL::GetSQLOptimizeTable(CString& p_owner,CString& p_tableName,int& p_number)
-{
-  CString optim = "VACUUM ANALYZE " + p_owner + "." + p_tableName + ";\n";
-  p_number += 1;
-  return optim;
-}
-
-// SQL DDL STATEMENTS
-// ==================
-
-// SQL DDL ACTIONS
-// ===================================================================
-
-// Committing the DDL commands explicitly
-void 
-SQLInfoPostgreSQL::DoCommitDDLcommands() const
-{
-  SQLQuery sql(m_database);
-  sql.DoSQLStatement("commit");
-}
-
-// ODBC driver auto commit goes wrong for this engine!
-void
-SQLInfoPostgreSQL::DoCommitDMLcommands() const
-{
-  SQLQuery sql(m_database);
-  sql.DoSQLStatement("commit");
-}
-
-// PERSISTENT-STORED MODULES (SPL / PL/SQL)
-// ====================================================================
-
-// Getting the user errors from the database
-CString 
-SQLInfoPostgreSQL::GetUserErrorText(CString& p_procName) const
-{
-  (void)p_procName;   // Not supported in postgreSQL.
-  return "";
-}
-
-// Getting the assignment to a variable in SPL
-CString 
-SQLInfoPostgreSQL::GetSPLAssignment(CString p_variable) const
-{
-  return p_variable + " := ";
-}
-
-// Getting the start of a WHILE loop
-CString 
-SQLInfoPostgreSQL::GetSPLStartWhileLoop(CString p_condition) const
-{
-  return "WHILE " + p_condition + " LOOP\n";
-}
-
-// At the end of a WHILE loop
-CString 
-SQLInfoPostgreSQL::GetSPLEndWhileLoop() const
-{
-  return "END LOOP;\n";
-}
-
-// Calling a stored procedure in SPL
-CString 
-SQLInfoPostgreSQL::GetSQLSPLCall(CString p_procName) const
-{
-  CString subsys = p_procName.Left(p_procName.Find("?"));
-  return "SELECT " + p_procName + ";";
-}
-
-// Build a parameter list for a call of a stored procedure within SPL
-CString 
-SQLInfoPostgreSQL::GetBuildedParameterList(size_t p_numOfParameters) const
-{
-  // IF NO parameters: NO ellipsis
-  CString strParamLijst;
-  if(p_numOfParameters >= 0)
-  {
-    for (size_t i = 0; i < p_numOfParameters; i++)
-    {
-      if(i != 0) 
-      {
-        strParamLijst += ",";
-      }
-      else
-      {
-        strParamLijst += "(";
-      }
-      strParamLijst += "?";
-    }
-    if(p_numOfParameters > 0)
-    {
-      strParamLijst += ")";
-    }
-  }
-  return strParamLijst;
-}
-
-CString
-SQLInfoPostgreSQL::GetParameterType(CString& p_type) const
-{
-  CString retval;
-  if (_strnicmp(p_type,"char",4) == 0 ||
-      _strnicmp(p_type,"varchar",7) == 0 )
-  {
-    retval = "varchar";
-  }
-  else if (_strnicmp(p_type,"decimal",7) == 0 )
-  {
-    retval = "decimal";
-  }
-  else 
-  {
-    retval = p_type;
-  }
-  return retval;
-}
-
-CString 
-SQLInfoPostgreSQL::GetSQLString(const CString& p_string) const
-{
-  CString s = p_string;
-  s.Replace("'","''");
-  CString kwoot = GetKEYWORDQuoteCharacter();
-  return  kwoot + s + kwoot;
-}
-
-CString 
-SQLInfoPostgreSQL::GetSQLDateString(int p_year,int p_month,int p_day) const
-{
-  CString dateString;
-  dateString.Format("TO_DATE('%04d-%02d-%02d','YYYY-MM-DD')",p_year,p_month,p_day);
-  return dateString;
-}  
-  
-CString 
-SQLInfoPostgreSQL::GetSQLTimeString(int p_hour,int p_minute,int p_second) const
-{
-  CString timeString;
-  timeString.Format("'%02d:%02d:%02d'",p_hour,p_minute,p_second);
-  return timeString;
-}  
-  
-CString 
-SQLInfoPostgreSQL::GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
-{
-  CString retval;
-  retval.Format("to_timestamp('%04d-%02d-%02d %02d:%02d:%02d','YYYY-MM-DD HH24:MI:SS')::timestamp"
-               ,p_year,p_month,p_day,p_hour,p_minute,p_second);
-  return retval;
-}  
-  
-// Get date-time bound parameter string in database format
-CString 
-SQLInfoPostgreSQL::GetSQLDateTimeBoundString() const
-{
-  return "to_timestamp(?,'YYYY-MM-DD HH24:MI:SS')::timestamp";
-}
-
-// Stripped data for the parameter binding
-CString
-SQLInfoPostgreSQL::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
-{
-  CString retval;
-  retval.Format("%04d-%02d-%02d %02d:%02d:%02d"
-                ,p_year,p_month,p_day,p_hour,p_minute,p_second);
-  return retval;
-}
-
-// Get the SPL datatype for integer
-CString 
-SQLInfoPostgreSQL::GetSPLIntegerType() const
-{
-  return "integer";
-}
-
-// Get the SPL datatype for a decimal
-CString 
-SQLInfoPostgreSQL::GetSPLDecimalType() const
-{
-  return "decimal";
-}
-
-// Get the SPL declaration for a cursor
-CString 
-SQLInfoPostgreSQL::GetSPLCursorDeclaratie(CString& p_variableName,CString& p_query) const
-{
-  return "cursor " + p_variableName + " is " + p_query + ";";
-}
-
-// Get the SPL cursor found row parameter
-CString 
-SQLInfoPostgreSQL::GetSPLCursorFound(CString& /*p_cursorName*/) const
-{
-  // TODO: To be implemented
-  return "";
-}
-
-// Get the SPL cursor row-count variable
-CString 
-SQLInfoPostgreSQL::GetSPLCursorRowCount(CString& /*p_variable*/) const
-{
-  // TODO: To be implemented
-  return "";
-}
-
-// Get the SPL datatype for a declaration of a row-variable
-CString 
-SQLInfoPostgreSQL::GetSPLCursorRowDeclaration(CString& /*p_cursorName*/,CString& /*p_variableName*/) const
-{
-  // TODO: To be implemented
-  return "";
-}
-
-CString 
-SQLInfoPostgreSQL::GetSPLFetchCursorIntoVariables(CString               p_cursorName
-                                                 ,CString             /*p_variableName*/
-                                                 ,std::vector<CString>& p_columnNames
-                                                 ,std::vector<CString>& p_variableNames) const
-{
-  CString query = "FETCH " + p_cursorName + " INTO ";  
-
-  std::vector<CString>::iterator cNames;
-  std::vector<CString>::iterator vNames;
-  bool moreThenOne = false;
-
-  for(cNames  = p_columnNames.begin(), vNames  = p_variableNames.begin();
-      cNames != p_columnNames.end() && vNames != p_variableNames.end();
-      ++cNames, ++vNames)
-  {
-    query += (moreThenOne ? "," : "") + *vNames;
-  }
-  query += ";";
-  return query;
-}
-
-// Fetch the current SPL cursor row into the row variable
-CString 
-SQLInfoPostgreSQL::GetSPLFetchCursorIntoRowVariable(CString& p_cursorName,CString p_variableName) const
-{ 
-  // TODO: Check
-  return "FETCH " + p_cursorName + " INTO " + p_variableName+ ";";
-}
-
-// Get the SPL no-data exception clause
-CString 
-SQLInfoPostgreSQL::GetSPLNoDataFoundExceptionClause() const
-{
-  // TODO: Check
-  return "WHEN NO_DATA_FOUND THEN";
-}
-
-// Get the SPL form of raising an exception
-CString 
-SQLInfoPostgreSQL::GetSPLRaiseException(CString p_exceptionName) const
-{
-  // TODO: Check
-  return "RAISE " + p_exceptionName + ";";
-}
-
-// Get the fact that the SPL has server functions that return more than 1 value
-bool    
-SQLInfoPostgreSQL::GetSPLServerFunctionsWithReturnValues() const
-{
-  return true;
-}
 
 // Calling a stored function or procedure if the RDBMS does not support ODBC call escapes
 SQLVariant*

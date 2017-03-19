@@ -735,15 +735,13 @@ SQLInfo::ReadingDataTypes()
 
 // Getting datatype info
 TypeInfo* 
-SQLInfo::GetTypeInfo(int p_sqlDatatype)
+SQLInfo::GetTypeInfo(int p_sqlDatatype) const
 {
-  DataTypeMap::iterator it;
-  
-  for(it = m_dataTypes.begin();it != m_dataTypes.end();++it)
+  for(auto& type : m_dataTypes)
   {
-    if(it->second->m_data_type == p_sqlDatatype)
+    if(type.second->m_data_type == p_sqlDatatype)
     {
-      return it->second;
+      return type.second;
     }
   }
   return nullptr;

@@ -162,6 +162,13 @@ SQLInfoOracle::GetRDBMSMaxStatementLength() const
   return 0;
 }
 
+// Database must commit DDL commands in a transaction
+bool
+SQLInfoOracle::GetRDBMSMustCommitDDL() const
+{
+  return false;
+}
+
 // KEYWORDS
 
 // Keyword for the current date and time
@@ -304,6 +311,98 @@ CString
 SQLInfoOracle::GetSQLFromDualClause() const
 {
   return " FROM dual";
+}
+
+// Get SQL to lock  a table 
+CString
+SQLInfoOracle::GetSQLLockTable(CString p_schema, CString p_tablename, bool p_exclusive) const
+{
+  CString query = "LOCK TABLE " + p_schema + "." + p_tablename + " IN ";
+  query += p_exclusive ? "EXCLUSIVE" : "SHARE";
+  query += " MODE";
+  return query;
+}
+
+// Get query to optimize the table statistics
+CString
+SQLInfoOracle::GetSQLOptimizeTable(CString p_schema, CString p_tablename) const
+{
+  CString optim;
+  // Optimize the table
+  optim = "call dbms_stats.gather_table_stats('" + p_schema + "','" + p_tablename + "')";
+  return optim;
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// SQL STRINGS
+//
+//////////////////////////////////////////////////////////////////////////
+
+// Makes a SQL string from a given string, with all the right quotes
+CString
+SQLInfoOracle::GetSQLString(const CString& p_string) const
+{
+  CString s = p_string;
+  s.Replace("'","''");
+  CString kwoot = GetKEYWORDQuoteCharacter();
+  return  kwoot + s + kwoot;
+}
+
+// Get date string in engine format
+CString
+SQLInfoOracle::GetSQLDateString(int p_year,int p_month,int p_day) const
+{
+  CString dateString;
+  dateString.Format("TO_DATE('%04d-%02d-%02d','YYYY-MM-DD')",p_year,p_month,p_day);
+  return dateString;
+}
+
+// Get time string in database engine format
+CString
+SQLInfoOracle::GetSQLTimeString(int p_hour,int p_minute,int p_second) const
+{
+  // The hour must be between 0 and 24
+  p_hour = p_hour % 24;
+  while(p_hour < 0) p_hour += 24;
+
+  // Make a decimal part of a day
+  int seconds = p_second + (p_minute * 60) + (p_hour * 60 * 60);
+  int dag = 24 * 60 * 60;
+  double val = (double)seconds / (double)dag;
+  CString timeString;
+  timeString.Format("%0.15f",val);
+
+  return timeString;
+}
+
+// Get date-time string in database engine format
+CString
+SQLInfoOracle::GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
+{
+  CString string;
+  string.Format("TO_DATE('%04d-%02d-%02d %02d:%02d:%02d','YYYY-MM-DD HH24:MI:SS')"
+                ,p_year,p_month,p_day
+                ,p_hour,p_minute,p_second);
+  return string;
+}
+
+// For parameter binding of a date-time string
+CString
+SQLInfoOracle::GetSQLDateTimeBoundString() const
+{
+  return "TO_DATE(?,'YYYY-MM-DD HH24:MI:SS')";
+}
+
+// Stripped data for the parameter binding
+CString
+SQLInfoOracle::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
+{
+  CString string;
+  string.Format("%04d-%02d-%02d %02d:%02d:%02d"
+                ,p_year,p_month,p_day
+                ,p_hour,p_minute,p_second);
+  return string;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1178,13 +1277,18 @@ SQLInfoOracle::GetCATALOGViewDrop(CString p_schema,CString p_viewname,CString& p
 //   - Create
 //   - Drop
 //
-// o PSMWORDS
-//   - Declare
-//   - Assignment(LET)
-//   - IF statement
-//   - FOR statement
-//   - WHILE / LOOP statement
-//   - CURSOR and friends
+// o PSM<Element>[End]
+//   - PSM Declaration(first,variable,datatype[,precision[,scale]])
+//   - PSM Assignment (variable,statement)
+//   - PSM IF         (condition)
+//   - PSM IFElse 
+//   - PSM IFEnd
+//   - PSM WHILE      (condition)
+//   - PSM WHILEEnd
+//   - PSM LOOP
+//   - PSM LOOPEnd
+//   - PSM BREAK
+//   - PSM RETURN     ([statement])
 //
 // o CALL the FUNCTION/PROCEDURE
 //
@@ -1231,6 +1335,248 @@ CString
 SQLInfoOracle::GetPSMProcedureDrop(CString p_schema, CString p_procedure) const
 {
   return "";
+}
+
+CString
+SQLInfoOracle::GetPSMProcedureErrors(CString p_schema,CString p_procedure) const
+{
+  CString query;
+  CString errorText;
+  p_schema.MakeUpper();
+  p_procedure.MakeUpper();
+  query = "SELECT line\n"
+          "      ,position\n"
+          "      ,text\n"
+          "  FROM user_errors\n"
+          " WHERE name = '" + p_procedure +"'";
+
+  SQLQuery qry1(m_database);
+  SQLQuery qry2(m_database);
+  qry1.DoSQLStatement(query);
+
+  while (qry1.GetRecord())
+  {
+    CString s = qry1.GetColumn(3)->GetAsChar();
+    if(s.Find("Statement ignored") < 0) 
+    {
+      s.Format("Error in line %d, column %d: %s\n",qry1.GetColumn(1)->GetAsSLong(),qry1.GetColumn(2)->GetAsSLong());
+      errorText += s;
+      query.Format( "SELECT text\n"
+                    "  FROM all_source\n"
+                    " WHERE type = 'FUNCTION'\n"
+                    "   AND name = '%s'\n"
+                    "   AND line = %d"
+                   ,p_procedure.GetString()
+                   ,qry1.GetColumn(1)->GetAsSLong());
+      qry2.DoSQLStatement(query);
+      while(qry2.GetRecord())
+      {
+        s.Format("Line %d: %s\n"
+                 ,qry1.GetColumn(1)->GetAsSLong()
+                 ,qry2.GetColumn(1)->GetAsChar());
+        errorText += s;
+      }
+    }
+  }
+  return errorText;
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// ALL PSM LANGUAGE ELEMENTS
+//
+//////////////////////////////////////////////////////////////////////////
+
+CString
+SQLInfoOracle::GetPSMDeclaration(bool    p_first
+                                ,CString p_variable
+                                ,int     p_datatype
+                                ,int     p_precision /*= 0 */
+                                ,int     p_scale     /*= 0 */
+                                ,CString p_default   /*= ""*/
+                                ,CString p_domain    /*= ""*/
+                                ,CString p_asColumn  /*= ""*/) const
+{
+  CString line;
+
+  if(p_first)
+  {
+    line = "DECLARE\n";
+  }
+  line += p_variable + " ";
+
+  if(p_datatype)
+  {
+    // Getting type info and name
+    TypeInfo* info = GetTypeInfo(p_datatype);
+    line += info->m_type_name;
+
+    if(p_precision > 0)
+    {
+      line.AppendFormat("(%d",p_precision);
+      if(p_scale > 0)
+      {
+        line.AppendFormat("%d",p_scale);
+      }
+      line += ")";
+    }
+
+    if(!p_default.IsEmpty())
+    {
+      line += " DEFAULT " + p_default;
+    }
+  }
+  else if(!p_domain.IsEmpty())
+  {
+    line += p_domain;
+  }
+  else if(!p_asColumn)
+  {
+    line += p_asColumn + "%TYPE";
+  }
+  line += ";\n";
+  return line;
+}
+
+CString
+SQLInfoOracle::GetPSMAssignment(CString p_variable,CString p_statement /*=""*/) const
+{
+  CString line(p_variable);
+  line += " := ";
+  if(!p_statement.IsEmpty())
+  {
+    line += p_statement;
+    line += ";";
+  }
+  return line;
+}
+
+CString
+SQLInfoOracle::GetPSMIF(CString p_condition) const
+{
+  CString line("IF (");
+  line += p_condition;
+  line += ") THEN\n";
+  return line;
+}
+
+CString
+SQLInfoOracle::GetPSMIFElse() const
+{
+  return "ELSE\n";
+}
+
+CString
+SQLInfoOracle::GetPSMIFEnd() const
+{
+  return "END IF;\n";
+}
+
+CString
+SQLInfoOracle::GetPSMWhile(CString p_condition) const
+{
+  return "WHILE (" + p_condition + ") LOOP\n";
+}
+
+CString
+SQLInfoOracle::GetPSMWhileEnd() const
+{
+  return "END LOOP;\n";
+}
+
+CString
+SQLInfoOracle::GetPSMLOOP() const
+{
+  return "LOOP\n";
+}
+
+CString
+SQLInfoOracle::GetPSMLOOPEnd() const
+{
+  return "END LOOP;\n";
+}
+
+CString
+SQLInfoOracle::GetPSMBREAK() const
+{
+  return "EXIT;\n";
+}
+
+CString
+SQLInfoOracle::GetPSMRETURN(CString p_statement /*= ""*/) const
+{
+  CString line("RETURN");
+  if(!p_statement.IsEmpty())
+  {
+    line += " (" + p_statement + ")";
+  }
+  line += ";\n";
+  return line;
+}
+
+CString
+SQLInfoOracle::GetPSMExecute(CString p_procedure,MParameterMap& p_parameters) const
+{
+  CString line;
+  line.Format("EXECUTE %s(",p_procedure.GetString());
+  bool doMore = false;
+
+  for(auto& param : p_parameters)
+  {
+    if(doMore) line += ",";
+    doMore = true;
+
+    line += param.m_parameter;
+  }
+  line += ");\n";
+  return line;
+}
+
+// The CURSOR
+CString
+SQLInfoOracle::GetPSMCursorDeclaration(CString p_cursorname,CString p_select) const
+{
+  return "CURSOR " + p_cursorname + " IS " + p_select + ";";
+}
+
+CString
+SQLInfoOracle::GetPSMCursorFetch(CString p_cursorname,std::vector<CString>& /*p_columnnames*/,std::vector<CString>& p_variablenames) const
+{
+  bool moreThenOne = false;
+  CString query = "OPEN  " + p_cursorname + ";\n"
+                  "FETCH " + p_cursorname + " INTO ";
+
+  for(auto& var : p_variablenames)
+  {
+    if(moreThenOne) query += ",";
+    moreThenOne = true;
+    query += var;
+  }
+  query += ";";
+  return query;
+}
+
+//////////////////////////////////////////////////////////////////////////
+// PSM Exceptions
+
+CString
+SQLInfoOracle::GetPSMExceptionCatchNoData() const
+{
+  return "EXCEPTION WHEN NO_DATA_FOUND THEN\n";
+  // followed by STATEMENTBLOCK and "END;"
+}
+
+CString
+SQLInfoOracle::GetPSMExceptionCatch(CString p_sqlState) const
+{
+  return "EXCEPTION WHEN " + p_sqlState + " THEN\n";
+  // followed by STATEMENTBLOCK and "END;"
+}
+
+CString
+SQLInfoOracle::GetPSMExceptionRaise(CString p_sqlState) const
+{
+  return "RAISE " + p_sqlState;
 }
 
 
@@ -1316,398 +1662,10 @@ SQLInfoOracle::GetSESSIONConstraintsImmediate() const
 
 //////////////////////////////////////////////////////////////////////////
 //
-// OLD INTERFACE
+// Call FUNCTION/PROCEDURE from within program
+// As a RDBMS dependent extension of "DoSQLCall" of the SQLQuery object
 //
 //////////////////////////////////////////////////////////////////////////
-
-// BOOLEANS EN STRINGS
-// ====================================================================
-
-// Gets the fact if an IF statement needs to be bordered with BEGIN/END
-bool
-SQLInfoOracle::GetCodeIfStatementBeginEnd() const
-{
-  // IF THEN ELSE END IF; does not need a BEGIN/END per se.
-  return false;
-}
-
-// Gets the end of an IF statement
-CString 
-SQLInfoOracle::GetCodeEndIfStatement() const
-{
-  return "END IF;\n";
-}
-
-// Gets a complete assignment statement.
-CString 
-SQLInfoOracle::GetAssignmentStatement(const CString& p_destiny,const CString& p_source) const
-{
-  return p_destiny + " := " + p_source + ";";
-}
-
-// Get the code to start a WHILE-loop
-CString 
-SQLInfoOracle::GetStartWhileLoop(CString p_condition) const
-{
-  return "WHILE " + p_condition + " LOOP\n";
-}
-
-// Get the code to end a WHILE-loop
-CString 
-SQLInfoOracle::GetEndWhileLoop() const
-{
-  return "END LOOP;\n";
-}
-
-// Gets the fact if a SELECT must be in between parenthesis for an assignment
-bool    
-SQLInfoOracle::GetAssignmentSelectParenthesis() const
-{
-  // FALSE: value =  SELECT MAX(column) FROM table;
-  // TRUE : value = (SELECT MAX(column) FROM table);
-  return false;
-}
-
-// SQL CATALOG QUERIES
-// ===================================================================
-
-// Gets the lock-table query
-CString 
-SQLInfoOracle::GetSQLLockTable(CString& p_tableName,bool p_exclusive) const
-{
-  CString query = "LOCK TABLE " + p_tableName + " IN "  ;
-  query += p_exclusive ? "EXCLUSIVE" : "SHARE";
-  query += " MODE";
-  return query;
-}
-
-// Get query to optimize the table statistics
-CString 
-SQLInfoOracle::GetSQLOptimizeTable(CString& p_owner,CString& p_tableName,int& p_number)
-{
-  CString optim;
-  // Optimize the table
-  optim = "call dbms_stats.gather_table_stats('" + p_owner + "','" + p_tableName + "');\n";
-  // Count number of statements
-  ++p_number;
-
-  return optim;
-}
-
-// SQL DDL STATEMENTS
-// ==================
-
-// SQL DDL ACTIONS
-// ===================================================================
-
-// Do the commit for the DDL commands in the catalog
-void    
-SQLInfoOracle::DoCommitDDLcommands() const
-{
-  // Does NOTHING In ORACLE and should do nothing
-  // commit for DDL is automatic and always
-}
-
-// Do the commit for the DML commands in the database
-// ODBC driver auto commit mode will go wrong!!
-void
-SQLInfoOracle::DoCommitDMLcommands() const
-{
-  SQLQuery qry(m_database);
-  qry.DoSQLStatement("COMMIT");
-}
-
-// PERSISTENT-STORED MODULES (SPL / PL/SQL)
-// ====================================================================
-
-// Get the user error text from the database
-CString
-SQLInfoOracle::GetUserErrorText(CString& p_procName) const
-{
-  CString query;
-  CString errorText;
-  CString procName(p_procName);
-  procName.MakeUpper();
-  query = "SELECT line\n"
-          "      ,position\n"
-          "      ,text\n"
-          "  FROM user_errors\n"
-          " WHERE name = '" + procName +"'";
-
-  SQLQuery qry1(m_database);
-  SQLQuery qry2(m_database);
-  qry1.DoSQLStatement(query);
-
-  while (qry1.GetRecord())
-  {
-    CString s = qry1.GetColumn(3)->GetAsChar();
-    if(s.Find("Statement ignored") < 0) 
-    {
-      s.Format("Error in line %d, column %d: %s\n",qry1.GetColumn(1)->GetAsSLong(),qry1.GetColumn(2)->GetAsSLong());
-      errorText += s;
-      query.Format( "SELECT text\n"
-                    "  FROM all_source\n"
-                    " WHERE type = 'FUNCTION'\n"
-                    "   AND name = '%s'\n"
-                    "   AND line = %d"
-                   ,procName.GetString()
-                   ,qry1.GetColumn(1)->GetAsSLong());
-      qry2.DoSQLStatement(query);
-      while(qry2.GetRecord())
-      {
-        s.Format("Line %d: %s\n",qry1.GetColumn(1)->GetAsSLong(),(LPCTSTR)qry2.GetColumn(1)->GetAsChar());
-        errorText += s;
-      }
-    }
-  }
-  return errorText;
-}
-
-// Get assignment to a variable in SPL
-CString 
-SQLInfoOracle::GetSPLAssignment(CString p_variable) const
-{
-  return p_variable + " := ";
-}
-
-// Get the start of a SPL While loop
-CString 
-SQLInfoOracle::GetSPLStartWhileLoop(CString p_condition) const
-{
-  return "WHILE " + p_condition + " LOOP\n";
-}
-
-// Get the end of a SPL while loop
-CString 
-SQLInfoOracle::GetSPLEndWhileLoop() const
-{
-  return "END LOOP;\n";
-}
-
-// Get stored procedure call
-CString 
-SQLInfoOracle::GetSQLSPLCall(CString p_procName) const
-{
-  // x used to be an integer. 
-  // In combination with some ODBC drivers from Oracle
-  // it created an Autonomous_transaction . 
-  return "DECLARE x VARCHAR2(254); BEGIN x := " + p_procName + "; END;";
-}
-
-// Build a parameter list for calling a stored procedure
-CString
-SQLInfoOracle::GetBuildedParameterList(size_t p_numOfParameters) const
-{
-  // The string of ? parameters for binding of a stored procedure
-  // In ORACLE: If no parameters, no ellipsis either!
-  CString strParamList;
-  if(p_numOfParameters >= 0)
-  {
-    for (size_t i = 0; i < p_numOfParameters; i++)
-    {
-      if(i!=0) 
-      {
-        strParamList += ",";
-      }
-      else
-      {
-        strParamList += "(";
-      }
-      strParamList += "?";
-    }
-    if(p_numOfParameters > 0)
-    {
-      strParamList += ")";
-    }
-  }
-  return strParamList;
-}
-
-// Parameter type for stored procedure for a given column type for parameters and return types
-CString 
-SQLInfoOracle::GetParameterType(CString& p_type) const
-{
-  // Beware: this is the spot where the ellipsis and width/precision
-  // are removed from the datatype, these cannot occur in Oracle
-  // parameters and return types
-
-  if (p_type.Left(4).CompareNoCase("CHAR")    == 0 || 
-      p_type.Left(7).CompareNoCase("VARCHAR") == 0  )
-  {
-    return "VARCHAR2";
-  }
-  else if (p_type.Left(7).CompareNoCase("DECIMAL") == 0 ||
-           p_type.Left(6).CompareNoCase("NUMBER")  == 0  )
-  {
-    return "NUMBER";
-  }
-  return p_type;
-}
-
-// GENERAL SQL ACTIONS
-// =================================================================
-
-// Makes a SQL string from a given string, with all the right quotes
-CString 
-SQLInfoOracle::GetSQLString(const CString& p_string) const
-{
-  CString s = p_string;
-  s.Replace("'","''");
-  CString kwoot = GetKEYWORDQuoteCharacter();
-  return  kwoot + s + kwoot;
-}
-
-// Get date string in engine format
-CString 
-SQLInfoOracle::GetSQLDateString(int p_year,int p_month,int p_day) const
-{
-  CString dateString;
-  dateString.Format("TO_DATE('%04d-%02d-%02d','YYYY-MM-DD')",p_year,p_month,p_day);
-  return dateString;
-}  
-  
-// Get time string in database engine format
-CString 
-SQLInfoOracle::GetSQLTimeString(int p_hour,int p_minute,int p_second) const
-{
-  // The hour must be between 0 and 24
-  p_hour = p_hour % 24;
-  while(p_hour < 0) p_hour += 24;
-
-  // Make a decimal part of a day
-  int seconds = p_second + (p_minute * 60) + (p_hour * 60 * 60);
-  int dag     = 24 * 60 * 60;
-  double val  = (double)seconds / (double) dag;
-  CString timeString;
-  timeString.Format("%0.15f",val);
-  
-  return timeString;
-}
-
-// Get date-time string in database engine format
-CString 
-SQLInfoOracle::GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
-{
-  CString string;
-  string.Format("TO_DATE('%04d-%02d-%02d %02d:%02d:%02d','YYYY-MM-DD HH24:MI:SS')"
-               ,p_year,p_month,p_day
-               ,p_hour,p_minute,p_second);
-  return string;
-}
-
-// For parameter binding of a date-time string
-CString
-SQLInfoOracle::GetSQLDateTimeBoundString() const
-{
-  return "TO_DATE(?,'YYYY-MM-DD HH24:MI:SS')";
-}
-
-// Stripped data for the parameter binding
-CString
-SQLInfoOracle::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
-{
-  CString string;
-  string.Format("%04d-%02d-%02d %02d:%02d:%02d"
-                ,p_year,p_month,p_day
-                ,p_hour,p_minute,p_second);
-  return string;
-}
-  
-// Get the SPL datatype for integer
-CString 
-SQLInfoOracle::GetSPLIntegerType() const
-{
-  // Integers get generated as NUMBER(10) in the database, 
-  // but this is the form as they appear in stored procedure language
-  return "NUMBER";
-}
-
-// Get the SPL datatype for a decimal
-CString 
-SQLInfoOracle::GetSPLDecimalType() const
-{
-  // Decimals are generated as DECIMAL(n,m)
-  // But this is the form as they appear in stored procedure language
-  return "NUMBER";
-}
-
-// Get the SPL declaration for a cursor
-CString 
-SQLInfoOracle::GetSPLCursorDeclaratie(CString& p_variableName,CString& p_query) const
-{
-  return "CURSOR " + p_variableName + " IS " + p_query + ";";
-}
-
-// Get the SPL cursor found row parameter
-CString 
-SQLInfoOracle::GetSPLCursorFound(CString& p_cursorName) const
-{
-  return p_cursorName + "%FOUND";
-}
-
-// Get the SPL cursor row-count variable
-CString 
-SQLInfoOracle::GetSPLCursorRowCount(CString& p_variable) const
-{
-  return p_variable + " := SQL%ROWCOUNT;\n";
-}
-
-// Get the SPL datatype for a declaration of a row-variable
-CString 
-SQLInfoOracle::GetSPLCursorRowDeclaration(CString& p_cursorName,CString& p_variableName) const
-{
-  return p_variableName + " " + p_cursorName + "%ROWTYPE;";
-}
-
-CString 
-SQLInfoOracle::GetSPLFetchCursorIntoVariables(CString               p_cursorName
-                                             ,CString             /*p_variableName*/
-                                             ,std::vector<CString>& p_columnNames
-                                             ,std::vector<CString>& p_variableNames) const
-{
-  CString query = "FETCH " + p_cursorName + " INTO ";  
-
-  std::vector<CString>::iterator cNames;
-  std::vector<CString>::iterator vNames;
-  bool moreThenOne = false;
-
-  for(cNames  = p_columnNames.begin(), vNames  = p_variableNames.begin();
-      cNames != p_columnNames.end() && vNames != p_variableNames.end();
-      ++cNames, ++vNames)
-  {
-    query += (moreThenOne ? "," : "") + *vNames;
-  }
-  query += ";";
-  return query;
-}
-
-// Fetch the current SPL cursor row into the row variable
-CString 
-SQLInfoOracle::GetSPLFetchCursorIntoRowVariable(CString& p_cursorName,CString p_variableName) const
-{ 
-  return "FETCH " + p_cursorName + " INTO " + p_variableName+ ";";
-}
-
-// Get the SPL no-data exception clause
-CString 
-SQLInfoOracle::GetSPLNoDataFoundExceptionClause() const
-{
-  return "WHEN NO_DATA_FOUND THEN";
-}
-
-// Get the SPL form of raising an exception
-CString 
-SQLInfoOracle::GetSPLRaiseException(CString p_exceptionName) const
-{
-  return "RAISE " + p_exceptionName + ";";
-}
-
-// Get the fact that the SPL has server functions that return more than 1 value
-bool    
-SQLInfoOracle::GetSPLServerFunctionsWithReturnValues() const
-{
-  return true;
-}
 
 // Calling a stored function or procedure if the RDBMS does not support ODBC call escapes
 SQLVariant*
