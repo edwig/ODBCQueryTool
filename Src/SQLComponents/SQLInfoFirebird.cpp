@@ -1120,16 +1120,37 @@ SQLInfoFirebird::GetCATALOGSequenceExists(CString /*p_schema*/, CString p_sequen
 }
 
 CString
+SQLInfoFirebird::GetCATALOGSequenceList(CString /*p_schema*/,CString p_pattern) const
+{
+  p_pattern.MakeUpper();
+  p_pattern = "%" + p_pattern + "%";
+
+  CString sql = "SELECT '' as catalog_name\n"
+                "      ,'' as schema_name\n"
+                "      ,trim(rdb$generator_name) as sequence_name\n" 
+                "      ,rdb$initial_value        as current_value\n"
+                "      ,0                        as minimal_value\n"
+                "      ,rdb$generator_increment  as increment\n"
+                "      ,0  as cache\n"
+                "      ,0  as cycle\n"
+                "      ,0  as ordering\n"
+                "  FROM rdb$generators\n"
+                " WHERE rdb$system_flag    = 0\n"
+                "   AND rdb$generator_name LIKE '" + p_pattern + "'";
+  return sql;
+}
+
+CString
 SQLInfoFirebird::GetCATALOGSequenceAttributes(CString /*p_schema*/, CString p_sequence) const
 {
   p_sequence.MakeUpper();
 
   CString sql = "SELECT '' as catalog_name\n"
-                "       '' as schema_name\n"
-                "      ,rdb$generator_name      as sequence_name\n" 
-                "      ,rdb$initial_value       as current_value\n"
-                "      ,0                       as minimal_value\n"
-                "      ,rdb$generator_increment as increment\n"
+                "      ,'' as schema_name\n"
+                "      ,trim(rdb$generator_name) as sequence_name\n" 
+                "      ,rdb$initial_value        as current_value\n"
+                "      ,0                        as minimal_value\n"
+                "      ,rdb$generator_increment  as increment\n"
                 "      ,0  as cache\n"
                 "      ,0  as cycle\n"
                 "      ,0  as ordering\n"
@@ -1243,22 +1264,73 @@ CString
 SQLInfoFirebird::GetPSMProcedureExists(CString /*p_schema*/, CString p_procedure) const
 {
   p_procedure.MakeUpper();
-  CString query = ( "SELECT COUNT(*) "
-                    "  FROM RDB$PROCEDURES "
-                    " WHERE RDB$PROCEDURE_NAME ='" + p_procedure + "';");
+  CString query = ("SELECT (SELECT COUNT(*) FROM rdb$functions  WHERE rdb$function_name  = '" + p_procedure + "')\n"
+                   "     + (SELECT COUNT(*) FROM rdb$procedures WHERE rdb$procedure_name = '" + p_procedure + "') as total\n"
+                   "  FROM rdb$database");
   return query;
 }
 
 CString
 SQLInfoFirebird::GetPSMProcedureList(CString p_schema) const
 {
-  return "";
+  CString query("SELECT trim(rdb$owner_name)    AS schema_name\n"
+                "      ,trim(rdb$function_name) AS procedure_name\n"
+                "  FROM rdb$functions\n"
+              //" WHERE rdb$function_name LIKE 'something%'\n"
+                " UNION ALL\n"
+                "SELECT trim(rdb$owner_name)     AS schema_name\n"
+                "      ,trim(rdb$procedure_name) AS procedure_name\n"
+                "  FROM rdb$procedures");
+              //" WHERE rdb$procedure_name LIKE 'MULT%'");
+    return query;
 }
 
 CString
-SQLInfoFirebird::GetPSMProcedureAttributes(CString p_schema, CString p_procedure) const
+SQLInfoFirebird::GetPSMProcedureAttributes(CString /*p_schema*/, CString p_procedure) const
 {
-  return "";
+  p_procedure.MakeUpper();
+  CString sql("SELECT ''             as catalog_name\n"
+              "      ,rdb$owner_name as schema_name\n"
+              "      ,rdb$procedure_name\n"
+              "      ,(SELECT COUNT(*)\n"
+              "          FROM rdb$procedure_parameters par\n"
+              "         WHERE par.rdb$procedure_name = pro.rdb$procedure_name\n"
+              "           AND par.rdb$parameter_type = 0) as input_parameters\n"
+              "      ,(SELECT COUNT(*)\n"
+              "          FROM rdb$procedure_parameters par\n"
+              "         WHERE par.rdb$procedure_name = pro.rdb$procedure_name\n"
+              "           AND par.rdb$parameter_type = 1) as output_parameters\n"
+              "      ,(SELECT COUNT(*)\n"
+              "          FROM rdb$procedure_parameters par\n"
+              "         WHERE par.rdb$procedure_name = pro.rdb$procedure_name\n"
+              "           AND par.rdb$parameter_type = 1) as result_sets\n"
+              "      ,rdb$description\n"
+              "      ,1 as procedure_type\n"
+              "      ,rdb$procedure_source as source\n"
+              "  FROM rdb$procedures pro\n"
+              " WHERE rdb$procedure_name = '" + p_procedure + "'\n"
+              " UNION ALL\n"
+              "SELECT ''             as catalog_name\n"
+              "      ,rdb$owner_name as schema_name\n"
+              "      ,rdb$function_name\n"
+              "      ,(SELECT COUNT(*)\n"
+              "          FROM rdb$function_arguments arg\n"
+              "         WHERE fun.rdb$function_name = arg.rdb$function_name\n"
+              "           AND arg.rdb$argument_position > 0) as input_parameters\n"
+              "      ,(SELECT COUNT(*)\n"
+              "          FROM rdb$function_arguments arg\n"
+              "         WHERE fun.rdb$function_name = arg.rdb$function_name\n"
+              "           AND arg.rdb$argument_position = 0) as output_parameters\n"
+              "      ,(SELECT COUNT(*)\n"
+              "          FROM rdb$function_arguments arg\n"
+              "         WHERE fun.rdb$function_name = arg.rdb$function_name\n"
+              "           AND arg.rdb$argument_position > 0) as result_sets\n"
+              "      ,rdb$description\n"
+              "      ,2 as procedure_type\n"
+              "      ,rdb$function_source as source\n"
+              "  FROM rdb$functions fun\n"
+              " WHERE rdb$function_name = '" + p_procedure + "'\n");
+  return sql;
 }
 
 CString
@@ -1270,7 +1342,8 @@ SQLInfoFirebird::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
 CString
 SQLInfoFirebird::GetPSMProcedureDrop(CString p_schema, CString p_procedure) const
 {
-  return "";
+  CString sql("DROP PROCEDURE " + p_procedure);
+  return sql;
 }
 
 CString
@@ -1279,6 +1352,58 @@ SQLInfoFirebird::GetPSMProcedureErrors(CString p_schema,CString p_procedure) con
   // Firebird does not support procedure errors
   return "";
 }
+
+// And it's parameters
+CString
+SQLInfoFirebird::GetPSMProcedureParameters(CString p_schema,CString p_procedure) const
+{
+  p_schema.MakeUpper();
+  p_procedure.MakeUpper();
+
+  CString sql = "SELECT '' as catalog_name\n"
+                "      ,(SELECT rdb$owner_name\n"
+                "          FROM rdb$procedures pro\n"
+                "         WHERE pro.rdb$procedure_name = par.rdb$procedure_name)\n"
+                "      ,par.rdb$procedure_name as procedure_name\n"
+                "      ,par.rdb$parameter_name as column_name\n"
+                "      ,par.rdb$parameter_number + par.rdb$parameter_type as ordinal_position\n"
+                "      ,(par.rdb$parameter_type * 3) + 1 as column_type\n"
+                "      ,fld.rdb$field_type    as field_type\n"
+                "      ,fld.RDB$FIELD_LENGTH  as par_precision\n"
+                "      ,fld.RDB$FIELD_SCALE   as scale\n"
+                "      ,10                    as radix\n"
+                "      ,par.rdb$null_flag     as nullable\n"
+                "      ,par.RDB$DESCRIPTION   as remarks\n"
+                "      ,par.RDB$DEFAULT_VALUE as default_value\n"
+                "      ,'YES'                 as isnullable\n"
+                "  FROM rdb$procedure_parameters par\n"
+                "      ,rdb$fields fld\n"
+                " WHERE fld.rdb$field_name = par.rdb$field_source\n"
+                "   AND par.rdb$procedure_name = '" + p_procedure + "'";
+  return sql;
+}
+
+
+// typedef struct _metaInfoProcColumns
+// {
+//   CString   m_catalogName;              // Catalog of the procedure / function
+//   CString   m_schemaName;               // Schema  of the procedure / function
+//   CString   m_procedureName;            // Name    of the procedure / function
+//   CString   m_columnName;               // Parameter / column name 
+//   int       m_ordinalPosition { 0 };    // Positioning of the parameter
+//   int       m_columnType      { 0 };    // SQL_PARAM_INPUT / SQL_PARAM_OUTPUT etc. etc.
+//   int       m_dataType        { 0 };    // ODBC standard type name
+//   CString   m_typeName;                 // RDBMS type name
+//   int       m_columnSize      { 0 };    // Display size
+//   int       m_bufferSize      { 0 };    // Binary buffer size
+//   int       m_decimalDigits   { 0 };    // Number of decimal digits
+//   int       m_radix           { 0 };    // Radix display (2, 8, 10, 16)
+//   int       m_nullable        { 0 };    // SQL_NO_NULLS / SQL_NULLABLE / SQL_NULLABLE_UNKNOWN
+//   CString   m_remarks;                  // From the COMMENT command
+//   CString   m_defaultValue;             // Default value
+//   CString   m_isNullable;               // "NO" or "YES" (can include nulls)
+// }
+// MetaProcedureColumn;
 
 //////////////////////////////////////////////////////////////////////////
 //

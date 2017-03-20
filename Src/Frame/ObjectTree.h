@@ -36,6 +36,7 @@ typedef enum treeTypes
  ,TREE_TRIGGERS
  ,TREE_PRIVILEGES
  ,TREE_PARAMETERS
+ ,TREE_SEQUENCES
 }
 TreeTypes;
 
@@ -60,6 +61,7 @@ typedef enum objectImage
  ,IMG_ACCESS
  ,IMG_SCHEMA
  ,IMG_INDEX
+ ,IMG_SEQUENCE
 }
 ObjectImage;
 
@@ -103,6 +105,7 @@ protected:
   void      FindSpecials   (HTREEITEM p_theItem);
   void      FindReferenced (HTREEITEM p_theItem);
   void      FindTriggers   (HTREEITEM p_theItem);
+  void      FindSequences  (HTREEITEM p_theItem);
   void      FindPrivileges (HTREEITEM p_theItem);
   void      FindProcedures (HTREEITEM p_theItem);
   void      FindParameters (HTREEITEM p_theItem);
@@ -112,7 +115,8 @@ protected:
   void      ForeignsToTree  (MForeignMap&       p_foreigns,  HTREEITEM p_item);
   void      ReferencedToTree(MForeignMap&       p_foreigns,  HTREEITEM p_item);
   void      TriggersToTree  (MTriggerMap&       p_triggers,  HTREEITEM p_item);
-  void      StatisticsToTree(MIndicesMap&    p_statistics,HTREEITEM p_item);
+  void      SequencesToTree (MSequenceMap&      p_sequences, HTREEITEM p_item);
+  void      StatisticsToTree(MIndicesMap&       p_statistics,HTREEITEM p_item);
   void      SpecialsToTree  (MSpecialColumnMap& p_specials,  HTREEITEM p_item);
   void      PrivilegesToTree(MPrivilegeMap&     p_privileges,HTREEITEM p_item);
   void      ParametersToTree(MProcColumnMap&    p_parameters,HTREEITEM p_item);

@@ -234,6 +234,8 @@ typedef struct _metaInfoProcedure
   int       m_resultSets        { 0 };  // Number  of result sets
   CString   m_remarks;                  // As in COMMENT command
   int       m_procedureType     { 0 };  // SQL_PT_PROCEDURE(1) / SQL_PT_FUNCTION(2) / SQL_PT_UNKNOWN(3)
+  // EXTRA INFO: NOT IN ODBC
+  CString   m_source;                   // Actual source of the procedure/function
 }
 MetaProcedure;
 

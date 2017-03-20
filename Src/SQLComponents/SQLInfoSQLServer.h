@@ -242,6 +242,7 @@ public:
   CString GetCATALOGTriggerDrop       (CString p_schema,CString p_tablename,CString p_triggername) const;
   // All sequence functions
   CString GetCATALOGSequenceExists    (CString p_schema,CString p_sequence) const;
+  CString GetCATALOGSequenceList      (CString p_schema,CString p_pattern)  const;
   CString GetCATALOGSequenceAttributes(CString p_schema,CString p_sequence) const;
   CString GetCATALOGSequenceCreate    (MetaSequence& p_sequence) const;
   CString GetCATALOGSequenceDrop      (CString p_schema,CString p_sequence) const;
@@ -289,6 +290,8 @@ public:
   CString GetPSMProcedureCreate    (MetaProcedure& p_procedure) const;
   CString GetPSMProcedureDrop      (CString p_schema,CString p_procedure) const;
   CString GetPSMProcedureErrors    (CString p_schema,CString p_procedure) const;
+  // And it's parameters
+  CString GetPSMProcedureParameters(CString p_schema,CString p_procedure) const;
 
   // All Language elements
   CString GetPSMDeclaration(bool p_first,CString p_variable,int p_datatype,int p_precision = 0,int p_scale = 0,

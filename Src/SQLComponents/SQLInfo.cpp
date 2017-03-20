@@ -2417,7 +2417,10 @@ SQLInfo::MakeInfoTablePrivileges(MPrivilegeMap& p_privileges,CString& p_errors)
 }
 
 bool
-SQLInfo::MakeInfoProcedureProcedurepart(CString p_procedure,MProcedureMap& p_procedures,CString& p_errors)
+SQLInfo::MakeInfoProcedureProcedurepart(CString         p_schema
+                                       ,CString         p_procedure
+                                       ,MProcedureMap&  p_procedures
+                                       ,CString&        p_errors)
 {
   SQLCHAR      szCatalogName     [SQL_MAX_BUFFER];
   SQLLEN       cbCatalogName     = 0;
@@ -2450,8 +2453,12 @@ SQLInfo::MakeInfoProcedureProcedurepart(CString p_procedure,MProcedureMap& p_pro
     // Oops: Cannot search directly on table name!
     switch(m_identifierCase)
     {
-      case SQL_IC_UPPER:     p_procedure.MakeUpper(); break;
-      case SQL_IC_LOWER:     p_procedure.MakeLower(); break;
+      case SQL_IC_UPPER:     p_schema.MakeUpper();
+                             p_procedure.MakeUpper();
+                             break;
+      case SQL_IC_LOWER:     p_schema.MakeUpper();
+                             p_procedure.MakeLower();
+                             break;
     }
   }
   // Split name in a maximum of three parts

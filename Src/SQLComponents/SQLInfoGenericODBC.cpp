@@ -951,6 +951,12 @@ SQLInfoGenericODBC::GetCATALOGSequenceExists(CString p_schema, CString p_sequenc
 }
 
 CString
+SQLInfoGenericODBC::GetCATALOGSequenceList(CString p_schema,CString p_pattern) const
+{
+  return "";
+}
+
+CString
 SQLInfoGenericODBC::GetCATALOGSequenceAttributes(CString p_schema, CString p_sequence) const
 {
   return "";
@@ -1071,6 +1077,13 @@ CString
 SQLInfoGenericODBC::GetPSMProcedureErrors(CString p_schema,CString p_procedure) const
 {
   // ISO SQL does not support procedure errors
+  return "";
+}
+
+// And it's parameters
+CString
+SQLInfoGenericODBC::GetPSMProcedureParameters(CString p_schema,CString p_procedure) const
+{
   return "";
 }
 

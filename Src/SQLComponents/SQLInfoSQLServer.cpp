@@ -1060,6 +1060,30 @@ SQLInfoSQLServer::GetCATALOGSequenceExists(CString p_schema, CString p_sequence)
 }
 
 CString
+SQLInfoSQLServer::GetCATALOGSequenceList(CString p_schema,CString p_pattern) const
+{
+  p_schema.MakeLower();
+  p_pattern.MakeLower();
+  p_pattern = "%" + p_pattern + "%";
+
+  CString sql = "SELECT ''       AS catalog_name\n"
+                "      ,sch.name AS schema_name\n"
+                "      ,seq.name AS sequence_name\n"
+                "      ,seq.current_value\n"
+                "      ,0        AS minimal_value\n"
+                "      ,1        AS increment\n"
+                "      ,seq.is_cached AS cache\n"
+                "      ,seq.is_cycling AS cycle\n"
+                "      ,0        AS ordering\n"
+                "  FROM sys.sequences seq\n"
+                "      ,sys.schemas   sch\n"
+                " WHERE sch.object_id = seq.schema_id\n"
+                "   AND seq.name LIKE '" + p_pattern + "'\n"
+                "   AND sch.name = '" + p_schema   + "'";
+  return sql;
+}
+
+CString
 SQLInfoSQLServer::GetCATALOGSequenceAttributes(CString p_schema, CString p_sequence) const
 {
   p_schema.MakeLower();
@@ -1219,6 +1243,13 @@ CString
 SQLInfoSQLServer::GetPSMProcedureErrors(CString p_schema,CString p_procedure) const
 {
   // SQL-Server does not support procedure errors
+  return "";
+}
+
+// And it's parameters
+CString
+SQLInfoSQLServer::GetPSMProcedureParameters(CString p_schema,CString p_procedure) const
+{
   return "";
 }
 

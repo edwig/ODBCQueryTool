@@ -49,6 +49,7 @@ DDLCreateTable::GetTableDDL(CString p_tableName)
     GetPrimaryKeyInfo();
     GetForeignKeyInfo();
     GetTriggerInfo();
+    GetSequenceInfo();
     GetAccessInfo();
   }
   catch(CString& error)
@@ -296,6 +297,27 @@ DDLCreateTable::GetTriggerInfo()
   {
     CString line = m_info->GetCATALOGTriggerCreate(trigger);
     StashTheLine(line,";\n");
+  }
+}
+
+void
+DDLCreateTable::GetSequenceInfo()
+{
+  CString errors;
+  CString line;
+
+  m_sequences.clear();
+  m_info->MakeInfoTableSequences(m_sequences,errors);
+  if(!errors.IsEmpty())
+  {
+    throw CString("Cannot find the sequences for table: ") + m_tableName + " : " + errors;
+  }
+
+  // Print all found sequences
+  for(auto& seq : m_sequences)
+  {
+    line = m_info->GetCATALOGSequenceCreate(seq);
+    StashTheLine(line,";",2);
   }
 }
 

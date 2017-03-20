@@ -53,6 +53,79 @@ SQLInfoDB::~SQLInfoDB()
 {
 }
 
+
+bool    
+SQLInfoDB::MakeInfoProcedureProcedurepart(CString         p_schema
+                                         ,CString         p_procedure
+                                         ,MProcedureMap&  p_procedures
+                                         ,CString&        p_errors)
+{
+  p_procedures.clear();
+
+  if(p_procedure.Compare("%") == 0)
+  {
+    CString sql = GetPSMProcedureList("");
+    if(!sql.IsEmpty())
+    {
+      SQLQuery qry(m_database);
+      qry.DoSQLStatement(sql);
+      while(qry.GetRecord())
+      {
+        MetaProcedure proc;
+        proc.m_schemaName    = qry.GetColumn(1)->GetAsChar();
+        proc.m_procedureName = qry.GetColumn(2)->GetAsChar();
+        p_procedures.push_back(proc);
+      }
+    }
+  }
+
+  // Let ODBC handle the call
+  if(p_procedures.empty())
+  {
+    return SQLInfo::MakeInfoProcedureProcedurepart(p_schema,p_procedure,p_procedures,p_errors);
+  }
+
+  // Call attributes per record
+  for(auto& proc : p_procedures)
+  {
+    CString sql = GetPSMProcedureAttributes(proc.m_schemaName,proc.m_procedureName);
+    if(!sql.IsEmpty())
+    {
+      SQLQuery qry(m_database);
+      qry.DoSQLStatement(sql);
+      while(qry.GetRecord())
+      {
+        proc.m_inputParameters  = qry.GetColumn(4)->GetAsSLong();
+        proc.m_outputParameters = qry.GetColumn(5)->GetAsSLong();
+        proc.m_resultSets       = qry.GetColumn(6)->GetAsSLong();
+        proc.m_remarks          = qry.GetColumn(7)->GetAsChar();
+        proc.m_procedureType    = qry.GetColumn(8)->GetAsSLong();
+        proc.m_source           = qry.GetColumn(9)->GetAsChar();
+      }
+    }
+  }
+  return !p_procedures.empty();
+}
+
+bool    
+SQLInfoDB::MakeInfoProcedureParameters(MProcColumnMap& p_parameters,CString& p_errors)
+{
+  CString sql = GetPSMProcedureParameters(m_searchSchemaName,m_searchTableName);
+  if(sql.IsEmpty())
+  {
+    // No SQL, let ODBC handle the parameters
+    return SQLInfo::MakeInfoProcedureParameters(p_parameters,p_errors);
+  }
+  SQLQuery qry(m_database);
+  qry.DoSQLStatement(sql);
+  while(qry.GetRecord())
+  {
+    MetaParameter param;
+  }
+  return !p_parameters.empty();
+}
+
+
 // Getting the info for the triggers is not a part of the standard
 // ODBC function set. It needs a RDBMS driver, so it is not in DBInfo but in DBInfoDB
 bool
@@ -112,7 +185,54 @@ SQLInfoDB::MakeInfoTableTriggers(MTriggerMap& p_triggers,CString& p_errors)
     // Pass on the database error
     p_errors = error;
   }
-  return p_triggers.size() > 0;
+  return !p_triggers.empty();
+}
+
+bool 
+SQLInfoDB::MakeInfoTableSequences(MSequenceMap& p_sequences,CString& p_errors)
+{
+  // Must have searched on a table first
+  if(m_searchTableName.IsEmpty())
+  {
+    p_errors = "Search for a table first!";
+    return false;
+  }
+
+  // Getting the database dependent SQL string
+  CString sql = GetCATALOGSequenceList(m_searchSchemaName,m_searchTableName);
+  if(sql.IsEmpty())
+  {
+    // No triggers to be gotten from this RDBMS
+    return false;
+  }
+
+  try
+  {
+    SQLQuery qry(m_database);
+    qry.DoSQLStatement(sql);
+    while(qry.GetRecord())
+    {
+      MetaSequence sequence;
+
+      sequence.m_catalogName  = qry.GetColumn(1)->GetAsChar();
+      sequence.m_schemaName   = qry.GetColumn(2)->GetAsChar();
+      sequence.m_sequenceName = qry.GetColumn(3)->GetAsChar();
+      sequence.m_currentValue = qry.GetColumn(4)->GetAsSLong();
+      sequence.m_minimalValue = qry.GetColumn(5)->GetAsSLong();
+      sequence.m_increment    = qry.GetColumn(6)->GetAsSLong();
+      sequence.m_cache        = qry.GetColumn(7)->GetAsSLong();
+      sequence.m_cycle        = qry.GetColumn(8)->GetAsBoolean();
+      sequence.m_order        = qry.GetColumn(9)->GetAsBoolean();
+
+      p_sequences.push_back(sequence);
+    }
+  }
+  catch(CString& error)
+  {
+    // Pass on the database error
+    p_errors = error;
+  }
+  return !p_sequences.empty();
 }
 
 // End of namespace

@@ -1166,6 +1166,28 @@ SQLInfoOracle::GetCATALOGSequenceExists(CString p_schema, CString p_sequence) co
 }
 
 CString
+SQLInfoOracle::GetCATALOGSequenceList(CString p_schema,CString p_pattern) const
+{
+  p_schema.MakeUpper();
+  p_pattern.MakeUpper();
+  p_pattern += "%" + p_pattern + "%";
+
+  CString sql = "SELECT ''              AS catalog_name\n"
+                "      ,sequence_owner  AS schema_name\n"
+                "      ,sequence_name\n"
+                "      ,last_number     AS current_value\n"
+                "      ,min_value       AS minimal_value\n"
+                "      ,increment_by    AS increment\n"
+                "      ,cache_size                 AS cache\n"
+                "      ,decode(cycle_flag,'N',0,1) AS cycle\n"
+                "      ,decode(order_flag,'N',0,1) AS ordering\n"
+                "  FROM all_sequences\n"
+                " WHERE sequence_owner = '" + p_schema + "'\n"
+                "   AND sequence_name LIKE '" + p_pattern + "'";
+  return sql;
+}
+
+CString
 SQLInfoOracle::GetCATALOGSequenceAttributes(CString p_schema, CString p_sequence) const
 {
   p_schema.MakeUpper();
@@ -1379,6 +1401,13 @@ SQLInfoOracle::GetPSMProcedureErrors(CString p_schema,CString p_procedure) const
     }
   }
   return errorText;
+}
+
+// And it's parameters
+CString
+SQLInfoOracle::GetPSMProcedureParameters(CString p_schema,CString p_procedure) const
+{
+  return "";
 }
 
 //////////////////////////////////////////////////////////////////////////

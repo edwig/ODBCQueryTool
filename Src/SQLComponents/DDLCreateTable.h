@@ -49,6 +49,7 @@ private:
   void    GetPrimaryKeyInfo();
   void    GetForeignKeyInfo();
   void    GetTriggerInfo();
+  void    GetSequenceInfo();
   void    GetAccessInfo();
 
   // Service routines
@@ -67,10 +68,11 @@ private:
   // Mappings
   MTableMap       m_tables;
   MColumnMap      m_columns;
-  MIndicesMap  m_indices;
+  MIndicesMap     m_indices;
   MPrimaryMap     m_primaries;
   MForeignMap     m_foreigns;
   MTriggerMap     m_triggers;
+  MSequenceMap    m_sequences;
   MPrivilegeMap   m_access;
 };
 

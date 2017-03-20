@@ -1147,6 +1147,28 @@ SQLInfoPostgreSQL::GetCATALOGSequenceExists(CString p_schema, CString p_sequence
 }
 
 CString
+SQLInfoPostgreSQL::GetCATALOGSequenceList(CString p_schema,CString p_pattern) const
+{
+  p_schema.MakeLower();
+  p_pattern.MakeLower();
+  p_pattern = "%" + p_pattern + "%";
+
+  CString sql = "SELECT ''              AS catalog_name\n"
+                "      ,sequence_schema AS schema_name\n"
+                "      ,sequence_name\n"
+                "      ,start_value     AS current_value\n"
+                "      ,0               AS minimal_value\n"
+                "      ,increment\n"
+                "      ,0               AS cache\n"
+                "      ,decode(cycle_option,'NO',1,0) AS cycle\n"
+                "      ,0               AS ordering\n"
+                "  FROM information_schema.sequences\n"
+                " WHERE sequence_schema  = '" + p_schema   + "'\n"
+                "   AND sequence_name LIKE '" + p_pattern+ "'";
+  return sql;
+}
+
+CString
 SQLInfoPostgreSQL::GetCATALOGSequenceAttributes(CString p_schema, CString p_sequence) const
 {
   p_schema.MakeLower();
@@ -1310,6 +1332,13 @@ SQLInfoPostgreSQL::GetPSMProcedureDrop(CString p_schema, CString p_procedure) co
 
 CString
 SQLInfoPostgreSQL::GetPSMProcedureErrors(CString p_schema,CString p_procedure) const
+{
+  return "";
+}
+
+// And it's parameters
+CString
+SQLInfoPostgreSQL::GetPSMProcedureParameters(CString p_schema,CString p_procedure) const
 {
   return "";
 }

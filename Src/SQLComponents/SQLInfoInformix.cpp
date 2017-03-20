@@ -1046,6 +1046,30 @@ SQLInfoInformix::GetCATALOGSequenceExists(CString p_schema, CString p_sequence) 
 }
 
 CString
+SQLInfoInformix::GetCATALOGSequenceList(CString p_schema,CString p_pattern) const
+{
+  p_schema.MakeLower();
+  p_pattern.MakeLower();
+  p_pattern = "%" + p_pattern + "%";
+  CString sql = "SELECT ''            as catalog_name\n"
+                "      ,dom.owner     as schema_name\n"
+                "      ,dom.name      as sequence_name\n"
+                "      ,seq.start_val as current_value\n"
+                "      ,0             as minimal_value\n"
+                "      ,seq.inc_val   as increment\n"
+                "      ,seq.cache     as cache\n"
+                "      ,seq.cycle     as cycle\n"
+                "      ,seq.order     as ordering\n"
+                "  FROM syssequences seq\n"
+                "      ,sysdomains   dom\n"
+                " WHERE dom.id    = seq.id\n"
+              //"   AND dom.owner = '" + p_schema   + "'\n"
+                "   AND dom.name  LIKE '" + p_pattern + "'\n";
+              //"   AND dom.type  = 3"; ??
+  return sql;
+}
+
+CString
 SQLInfoInformix::GetCATALOGSequenceAttributes(CString p_schema, CString p_sequence) const
 {
   p_schema.MakeLower();
@@ -1219,6 +1243,13 @@ CString
 SQLInfoInformix::GetPSMProcedureErrors(CString p_schema,CString p_procedure) const
 {
   // Informix does not support procedure errors
+  return "";
+}
+
+// And it's parameters
+CString
+SQLInfoInformix::GetPSMProcedureParameters(CString p_schema,CString p_procedure) const
+{
   return "";
 }
 

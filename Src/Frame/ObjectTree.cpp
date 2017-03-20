@@ -222,6 +222,7 @@ ObjectTree::OnSelChanged(NMHDR* pNMHDR,LRESULT* pResult)
         case TREE_SPECIALS:     FindSpecials(theItem);   break;
         case TREE_REFERENCEDBY: FindReferenced(theItem); break;
         case TREE_TRIGGERS:     FindTriggers(theItem);   break;
+        case TREE_SEQUENCES:    FindSequences(theItem);  break;
         case TREE_PRIVILEGES:   FindPrivileges(theItem); break;
         case TREE_PROCEDURES:   FindProcedures(theItem); break;
         case TREE_PARAMETERS:   FindParameters(theItem); break;
@@ -403,6 +404,7 @@ ObjectTree::PrepareTable(HTREEITEM p_theItem)
   HTREEITEM specials   = InsertItem("Special columns",p_theItem,TREE_SPECIALS);
   HTREEITEM referenced = InsertItem("Referenced by",  p_theItem,TREE_REFERENCEDBY);
   HTREEITEM triggers   = InsertItem("Triggers",       p_theItem,TREE_TRIGGERS);
+  HTREEITEM sequences  = InsertItem("Sequences",      p_theItem,TREE_SEQUENCES);
   HTREEITEM access     = InsertItem("Privileges",     p_theItem,TREE_PRIVILEGES);
 
   SetItemImage(columns,   IMG_COLUMN,  IMG_COLUMN);
@@ -412,6 +414,7 @@ ObjectTree::PrepareTable(HTREEITEM p_theItem)
   SetItemImage(specials,  IMG_COLUMN,  IMG_COLUMN);
   SetItemImage(referenced,IMG_FOREIGN, IMG_FOREIGN);
   SetItemImage(triggers,  IMG_TRIGGER, IMG_TRIGGER);
+  SetItemImage(sequences, IMG_SEQUENCE,IMG_SEQUENCE);
   SetItemImage(access,    IMG_ACCESS,  IMG_ACCESS);
 
   InsertNoInfo(columns);
@@ -421,6 +424,7 @@ ObjectTree::PrepareTable(HTREEITEM p_theItem)
   InsertNoInfo(specials);
   InsertNoInfo(referenced);
   InsertNoInfo(triggers);
+  InsertNoInfo(sequences);
   InsertNoInfo(access);
 }
 
@@ -469,7 +473,7 @@ ObjectTree::PresetProcedure(HTREEITEM p_theItem,MProcedureMap& p_procedures)
   COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
   CString errors;
   // Set procedure
-  return app->GetDatabase().GetSQLInfoDB()->MakeInfoProcedureProcedurepart(findproc,p_procedures,errors);
+  return app->GetDatabase().GetSQLInfoDB()->MakeInfoProcedureProcedurepart(schema,findproc,p_procedures,errors);
 }
 
 // Find all the columns in a table
@@ -587,6 +591,23 @@ ObjectTree::FindTriggers(HTREEITEM p_theItem)
   }
 }
 
+// Finding all sequences with a name that looks alike the tablename
+// Search is done on a LIKE '%tablename%'
+void
+ObjectTree::FindSequences(HTREEITEM p_theItem)
+{
+  if(PresetTable(p_theItem))
+  {
+    COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
+    MSequenceMap sequences;
+    CString      errors;
+
+    // Go find the sequences
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableSequences(sequences,errors);
+    SequencesToTree(sequences,p_theItem);
+  }
+}
+
 // Finding all table privileges on the table
 void
 ObjectTree::FindPrivileges(HTREEITEM p_theItem)
@@ -620,9 +641,16 @@ ObjectTree::FindProcedures(HTREEITEM p_theItem)
   int       schemaCount = 0;
   HTREEITEM schemaItem  = NULL;
 
-  // Go find the procedures
-  app->GetDatabase().GetSQLInfoDB()->MakeInfoProcedureProcedurepart(find,procedures,errors);
-
+  try
+  {
+    // Go find the procedures
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoProcedureProcedurepart("",find,procedures,errors);
+  }
+  catch(CString& er)
+  {
+    WideMessageBox(GetSafeHwnd(),er,"Querytool",MB_OK | MB_ICONERROR);
+    return;
+  }
   // See if we have something
   if(!procedures.empty())
   {
@@ -1148,6 +1176,51 @@ ObjectTree::TriggersToTree(MTriggerMap& p_triggers,HTREEITEM p_item)
     line.Format("SQL Source: %d characters",trigger.m_source.GetLength());
     item = InsertItem(line,trigItem);
     SetItemImage(item,IMG_TRIGGER,IMG_TRIGGER);
+  }
+}
+
+void      
+ObjectTree::SequencesToTree(MSequenceMap& p_sequences,HTREEITEM p_item)
+{
+  // Check if we have sequences
+  if(p_sequences.empty())
+  {
+    return;
+  }
+  RemoveNoInfo(p_item);
+
+  CString line;
+  for(auto& seq : p_sequences)
+  {
+    // The main sequence item
+    line.Format("Sequence name: %s",seq.m_sequenceName);
+    HTREEITEM seqItem = InsertItem(line,p_item);
+    SetItemImage(seqItem,IMG_SEQUENCE,IMG_SEQUENCE);
+
+    // All info on the item
+    line.Format("Minimum value: %d",seq.m_minimalValue);
+    HTREEITEM item = InsertItem(line,seqItem);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+
+    line.Format("Current value: %d",seq.m_currentValue);
+    item = InsertItem(line,seqItem);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+
+    line.Format("Increment with: %d",seq.m_increment);
+    item = InsertItem(line,seqItem);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+
+    line.Format("Caching size: %d",seq.m_cache);
+    item = InsertItem(line,seqItem);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+
+    line.Format("Re-Cycling of sets: %s",seq.m_cycle ? "yes" : "no");
+    item = InsertItem(line,seqItem);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+
+    line.Format("Cluster ordering: %s",seq.m_order ? "yes" : "no");
+    item = InsertItem(line,seqItem);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
   }
 }
 

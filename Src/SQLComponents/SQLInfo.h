@@ -123,14 +123,14 @@ public:
   bool MakeInfoTableColumns   (MColumnMap&        p_columns,   CString& p_errors);
   bool MakeInfoTablePrimary   (MPrimaryMap&       p_primaries, CString& p_errors);
   bool MakeInfoTableForeign   (MForeignMap&       p_foreigns,  CString& p_errors,bool p_referenced = false);
-  bool MakeInfoTableStatistics(MIndicesMap&    p_statistics,MPrimaryMap* p_keymap,CString& p_errors,bool p_all = true);
+  bool MakeInfoTableStatistics(MIndicesMap&       p_statistics,MPrimaryMap* p_keymap,CString& p_errors,bool p_all = true);
   bool MakeInfoTableSpecials  (MSpecialColumnMap& p_specials,  CString& p_errors);
   bool MakeInfoTablePrivileges(MPrivilegeMap&     p_privileges,CString& p_errors);
   // GETTING ALL THE INFO FOR ONE PROCEDURE
-  bool MakeInfoProcedureProcedurepart(CString p_procedure,MProcedureMap& p_procedures,CString& p_errors);
-  bool MakeInfoProcedureParameters   (MProcColumnMap& p_parameters,CString& p_errors);
+  virtual bool MakeInfoProcedureProcedurepart(CString p_schema,CString p_procedure,MProcedureMap& p_procedures,CString& p_errors);
+  virtual bool MakeInfoProcedureParameters   (MProcColumnMap& p_parameters,CString& p_errors);
   // GETTING ALL META TYPES
-  bool MakeInfoMetaTypes(MMetaMap& p_objects,int p_type,CString& p_errors);
+  virtual bool MakeInfoMetaTypes(MMetaMap& p_objects,int p_type,CString& p_errors);
 
   // Meta pointer to SQLGet<META> functions
   unsigned char* GetMetaPointer(unsigned char* p_buffer,bool p_meta);

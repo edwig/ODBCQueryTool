@@ -46,7 +46,6 @@ public:
   // Perform cleanup
  ~SQLDataSetXLS(); 
 
-#ifdef SQL_COMPONENTS_MFC
  // Read in a XLS and optionally make a backup
   bool ReadXLS(CString p_sheet);
   // Begin transaction
@@ -106,8 +105,10 @@ private:
   bool  SplitRow(CString& p_input,WordList &RowValues); 
   // Trim whitespace in between delimiters
   void  TrimRow(CString& p_row);
-
-#endif  // END OF SQL_COMPONENTS_MFC
+  // Read an ASCII string from a file
+  bool  ReadString(FILE* p_file,CString& p_string);
+  // Write an ASCII string to a file
+  bool  WriteString(FILE* p_file,CString& p_string,bool p_appendCRLF = false);
 
   BasicExcel*     m_workbook;    // Excel workbook instance
   BasicXmlExcel*  m_xmlWorkbook; // New OOXML Workbook
@@ -125,8 +126,6 @@ private:
   CString m_lastError;       // Last error message
 
 };
-
-#ifdef SQL_COMPONENTS_MFC
 
 inline void
 SQLDataSetXLS::SetDelimiterLeft(CString p_delim)
@@ -164,6 +163,5 @@ SQLDataSetXLS::CloseWorksheet()
   return Close();
 }
 
-#endif
 // End of namespace
 }

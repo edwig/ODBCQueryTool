@@ -62,7 +62,10 @@ public:
 
   // OVERRIDES AND EXTRAS OF THE ODBC SQL<object> functions
 
-  bool    MakeInfoTableTriggers(MTriggerMap& p_triggers,CString& p_errors);
+  bool    MakeInfoTableTriggers (MTriggerMap&  p_triggers, CString& p_errors);
+  bool    MakeInfoTableSequences(MSequenceMap& p_sequences,CString& p_errors);
+  bool    MakeInfoProcedureProcedurepart(CString p_schema,CString p_procedure,MProcedureMap& p_procedures,CString& p_errors);
+  bool    MakeInfoProcedureParameters(MProcColumnMap& p_parameters,CString& p_errors);
 
   // PURE VIRTUAL INTERFACE
 
@@ -278,6 +281,7 @@ public:
   virtual CString GetCATALOGTriggerDrop       (CString p_schema,CString p_tablename,CString p_triggername) const = 0;
   // All sequence functions
   virtual CString GetCATALOGSequenceExists    (CString p_schema,CString p_sequence) const = 0;
+  virtual CString GetCATALOGSequenceList      (CString p_schema,CString p_pattern)  const = 0;
   virtual CString GetCATALOGSequenceAttributes(CString p_schema,CString p_sequence) const = 0;
   virtual CString GetCATALOGSequenceCreate    (MetaSequence& p_sequence) const = 0;
   virtual CString GetCATALOGSequenceDrop      (CString p_schema,CString p_sequence) const = 0;
@@ -325,6 +329,8 @@ public:
   virtual CString GetPSMProcedureCreate    (MetaProcedure& p_procedure) const = 0;
   virtual CString GetPSMProcedureDrop      (CString p_schema,CString p_procedure) const = 0;
   virtual CString GetPSMProcedureErrors    (CString p_schema,CString p_procedure) const = 0;
+  // And it's parameters
+  virtual CString GetPSMProcedureParameters(CString p_schema,CString p_procedure) const = 0;
 
   // All Language elements
   virtual CString GetPSMDeclaration(bool p_first,CString p_variable,int p_datatype,int p_precision = 0,int p_scale = 0,

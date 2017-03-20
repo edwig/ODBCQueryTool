@@ -102,8 +102,6 @@ SQLDataSetXLS::~SQLDataSetXLS()
   }
 }
 
-#ifdef SQL_COMPONENTS_MFC
-
 // Read in a XLS and optionally make a backup
 bool
 SQLDataSetXLS::ReadXLS(CString p_sheet)
@@ -180,7 +178,8 @@ SQLDataSetXLS::Commit()
   }
   if(m_xmlExcel)
   {
-    m_workbook->Save();
+    // No save method (yet)
+    // m_xmlWorkbook->Save();
     m_transaction = false;
     return true;
   }
@@ -188,13 +187,8 @@ SQLDataSetXLS::Commit()
   {
     try
     {
-      CFile *File = NULL;
-      File = new CFile(m_file, CFile::modeCreate | CFile::modeWrite  | CFile::shareDenyNone);
-      if (File != NULL)
-      {
-        CArchive *Archive = NULL;
-        Archive = new CArchive(File, CArchive::store);
-        if (Archive != NULL)
+      FILE* file = nullptr;
+      fopen_s(&file,m_file,"w");;
         {
           // Write the header of the file
           CString text;
@@ -203,8 +197,7 @@ SQLDataSetXLS::Commit()
             if(ind) text += m_separator;
             text += "\"" + m_names[ind] + "\"";
           }
-          Archive->WriteString(text);
-          Archive->WriteString("\r\n");
+        WriteString(file,text,true);
 
           // Write all the rows of the file
           for (int i = 0; i < GetNumberOfRecords(); ++i)
@@ -216,16 +209,12 @@ SQLDataSetXLS::Commit()
               if(ind) text += m_separator;
               text += CString("\"") + CString(record->GetField(ind)->GetAsChar()) + "\"";
             }
-            Archive->WriteString(text);
-            Archive->WriteString("\r\n");
+          WriteString(file,text,true);
           }
-          delete Archive;
-          delete File;
+        fclose(file);
           m_transaction = false;
           return true;
         }
-        delete File;
-      }
     }
     catch(...)
     {
@@ -610,50 +599,43 @@ SQLDataSetXLS::Open()
   {
     try
     {
-      CFile *File = NULL;
-      File = new CFile(m_file, CFile::modeRead | CFile::shareDenyNone);
-      if (File != NULL)
+      FILE* file = nullptr;
+      fopen_s(&file,m_file,"r");
+      if(file)
       {
         CString tempString;
-        CArchive *Archive = NULL;
-        Archive = new CArchive(File, CArchive::load);
-        if (Archive != NULL)
+        Close();
+        int rows = 0;
+        bool result = true;
+        // Read and store all rows in memory
+        m_transaction = true;
+        // Read and store all rows in memory
+        while(ReadString(file,tempString))
         {
-          Close();
-          int rows = 0;
-          bool result = true;
-          // Read and store all rows in memory
-          m_transaction = true;
-          // Read and store all rows in memory
-          while(Archive->ReadString(tempString))
+          ATLTRACE("INPUT: %s\n",tempString.GetString());
+          WordList values;
+          if(SplitRow(tempString,values) == false)
           {
-            TRACE("INPUT: %s\n",tempString.GetString());
-            WordList values;
-            if(SplitRow(tempString,values) == false)
-            {
-              result = false;
-              break;
-            }
-            if(rows++ == 0)
-            {
-              // Add header fields
-              AddHeaders(values,true);
-              continue;
-            }
-            AddRow(values);
-            values.clear();
+            result = false;
+            break;
           }
-          delete Archive;
-          delete File;
-
-          if(GetNumberOfFields() != 0)
+          if(rows++ == 0)
           {
-            m_append = true;
+            // Add header fields
+            AddHeaders(values,true);
+            continue;
           }
-          m_transaction = false;
-          return result;
+          AddRow(values);
+          values.clear();
         }
-        delete File;
+        fclose(file);
+
+        if(GetNumberOfFields() != 0)
+        {
+          m_append = true;
+        }
+        m_transaction = false;
+        return result;
       }
     }
     catch(...)
@@ -851,6 +833,50 @@ SQLDataSetXLS::TrimRow(CString& p_row)
   }
 }
 
+// Read an ASCII string from a file
+bool  
+SQLDataSetXLS::ReadString(FILE* p_file,CString& p_string)
+{
+  int ch = 0;
+  bool reading = true;
+  do 
+  {
+    ch = fgetc(p_file);
+    if(ch != '\n' && ch != EOF)
+    {
+      p_string += (char) ch;
+    }
+    else
+    {
+      reading = false;
+      if(ch == '\n' && p_string.GetLength() > 0)
+      {
+        int len = p_string.GetLength() - 1;
+        if(p_string.GetAt(len) == '\r')
+        {
+          p_string.SetAt(len,0);
+        }
+      }
+    }
+  } 
+  while(reading);
+
+  // Return false on end of file
+  return ch != EOF;
+}
+
+// Write an ASCII string to a file
+bool  
+SQLDataSetXLS::WriteString(FILE* p_file,CString& p_string,bool p_appendCRLF /*=false*/)
+{
+  fputs(p_string.GetString(),p_file);
+  if(p_appendCRLF)
+  {
+    fputs("\r\n",p_file);
+  }
+  return true;
+}
+
 // Get last error message
 CString 
 SQLDataSetXLS::GetLastError()
@@ -863,6 +889,5 @@ SQLDataSetXLS::GetLastError()
   return m_lastError;   
 } 
 
-#endif
 // End of namespace
 }

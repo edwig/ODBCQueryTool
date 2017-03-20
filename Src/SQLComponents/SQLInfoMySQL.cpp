@@ -888,6 +888,12 @@ SQLInfoMySQL::GetCATALOGSequenceExists(CString /*p_schema*/, CString p_sequence)
 }
 
 CString
+SQLInfoMySQL::GetCATALOGSequenceList(CString p_schema,CString p_pattern) const
+{
+  return "";
+}
+
+CString
 SQLInfoMySQL::GetCATALOGSequenceAttributes(CString /*p_schema*/, CString p_sequence) const
 {
   return "";
@@ -1006,6 +1012,13 @@ SQLInfoMySQL::GetPSMProcedureDrop(CString /*p_schema*/, CString p_procedure) con
 
 CString
 SQLInfoMySQL::GetPSMProcedureErrors(CString p_schema,CString p_procedure) const
+{
+  return "";
+}
+
+// And it's parameters
+CString
+SQLInfoMySQL::GetPSMProcedureParameters(CString p_schema,CString p_procedure) const
 {
   return "";
 }
