@@ -120,7 +120,9 @@ public:
   // GETTING ALL THE TABLES OF A NAME PATTERN
   // GETTING ALL THE INFO FOR ONE TABLE
   bool MakeInfoTableTablepart (CString p_findTable,MTableMap& p_tables,CString& p_errors);
+protected:
   bool MakeInfoTableColumns   (MColumnMap&        p_columns,   CString& p_errors);
+public:
   bool MakeInfoTablePrimary   (MPrimaryMap&       p_primaries, CString& p_errors);
   bool MakeInfoTableForeign   (MForeignMap&       p_foreigns,  CString& p_errors,bool p_referenced = false);
   bool MakeInfoTableStatistics(MIndicesMap&       p_statistics,MPrimaryMap* p_keymap,CString& p_errors,bool p_all = true);

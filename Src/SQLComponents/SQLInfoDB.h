@@ -62,6 +62,7 @@ public:
 
   // OVERRIDES AND EXTRAS OF THE ODBC SQL<object> functions
 
+  bool    MakeInfoTableColumns  (MColumnMap& p_columns,CString& p_errors,CString p_schema,CString p_tablename,CString p_columname = "");
   bool    MakeInfoTableTriggers (MTriggerMap&  p_triggers, CString& p_errors);
   bool    MakeInfoTableSequences(MSequenceMap& p_sequences,CString& p_errors);
   bool    MakeInfoProcedureProcedurepart(CString p_schema,CString p_procedure,MProcedureMap& p_procedures,CString& p_errors);

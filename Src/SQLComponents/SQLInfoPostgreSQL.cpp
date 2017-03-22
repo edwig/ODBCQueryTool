@@ -519,82 +519,83 @@ SQLInfoPostgreSQL::GetCATALOGColumnExists(CString p_schema,CString p_tablename,C
 CString 
 SQLInfoPostgreSQL::GetCATALOGColumnList(CString p_schema,CString p_tablename) const
 {
-  p_schema.MakeLower();
-  p_tablename.MakeLower();
-
-  CString query =  "SELECT att.attname\n"
-                   "      ,att.attnum\n"
-                   "      ,typname\n"
-                   "      ,typlen\n"
-                   "      ,attnotnull\n"
-                   "      ,(atttypmod - 4) / 65536\n"
-                   "      ,(atttypmod - 4) % 65536\n"
-                   "  FROM pg_class      tab\n"
-                   "      ,pg_namespaces sch\n"
-                   "      ,pg_attribute  att\n"
-                   "      ,pg_type       typ\n"
-                   "      ,pg_attrdef    def\n"
-                   " WHERE tab.relname  = '" + p_tablename + "'\n"
-                   "   AND sch.name     = '" + p_schema + "'\n"
-                   "   AND sch.oid      = tab.relnamespace\n"
-                   "   AND tab.relkind  = 'r'\n"
-                   "   AND tab.oid      = att.attrelid\n"
-                   "   AND att.atttypid = pg_type.oid\n"
-                   "   AND def.adrelid  = att.attrelid\n"
-                   "   AND def.adnum    = att.attnum\n"
-                   "   AND attnum > 0\n"
-                   "   AND typlen < 0\n"
-                   "   AND typname = 'numeric'\n"
-                   "UNION\n"
-                   "SELECT attname\n"
-                   "      ,attnum\n"
-                   "      ,typname\n"
-                   "      ,(atttypmod - 4) AS typlen\n"
-                   "      ,attnotnull\n"
-                   "      ,0\n"
-                   "      ,0\n"
-                   "  FROM pg_class      tab\n"
-                   "      ,pg_namespaces sch\n"
-                   "      ,pg_attribute  att\n"
-                   "      ,pg_type       typ\n"
-                   "      ,pg_attrdef    def\n"
-                   " WHERE tab.relname  = '" + p_tablename + "'\n"
-                   "   AND sch.name     = '" + p_schema + "'\n"
-                   "   AND sch.oid      = tab.relnamespace\n"
-                   "   AND tab.relkind  = 'r'\n"
-                   "   AND tab.oid      = att.attrelid\n"
-                   "   AND att.atttypid = typ.oid\n"
-                   "   AND def.adrelid  = att.attrelid\n"
-                   "   AND def.adnum    = att.attnum\n"
-                   "   AND attnum > 0\n"
-                   "   AND typlen < 0\n"
-                   "   AND typname = 'varchar'\n"
-                   "UNION\n"
-                   "SELECT attname\n"
-                   "      ,attnum\n"
-                   "      ,typname\n"
-                   "      ,typlen\n"
-                   "      ,attnotnull\n"
-                   "      ,0\n"
-                   "      ,0\n"
-                   "  FROM pg_class      tab\n"
-                   "      ,pg_namespaces sch\n"
-                   "      ,pg_attribute  att\n"
-                   "      ,pg_type       typ\n"
-                   "      ,pg_attrdef    def\n"
-                   " WHERE tab.relname  = '" + p_tablename + "'\n"
-                   "   AND sch.name     = '" + p_schema + "'\n"
-                   "   AND sch.oid      = tab.relnamespace\n"
-                   "   AND tab.relkind  = 'r'\n"
-                   "   AND tab.oid      = att.attrelid\n"
-                   "   AND att.atttypid = typ.oid\n"
-                   "   AND def.adrelid  = att.attrelid\n"
-                   "   AND def.adnum    = att.attnum\n"
-                   "   AND attnum > 0\n"
-                   "   AND typlen > 0\n"
-                   "   AND typname not in ('numeric', 'varchar')\n"
-                   " ORDER BY attnum";
-  return query;
+  return "";
+//   p_schema.MakeLower();
+//   p_tablename.MakeLower();
+// 
+//   CString query =  "SELECT att.attname\n"
+//                    "      ,att.attnum\n"
+//                    "      ,typname\n"
+//                    "      ,typlen\n"
+//                    "      ,attnotnull\n"
+//                    "      ,(atttypmod - 4) / 65536\n"
+//                    "      ,(atttypmod - 4) % 65536\n"
+//                    "  FROM pg_class      tab\n"
+//                    "      ,pg_namespaces sch\n"
+//                    "      ,pg_attribute  att\n"
+//                    "      ,pg_type       typ\n"
+//                    "      ,pg_attrdef    def\n"
+//                    " WHERE tab.relname  = '" + p_tablename + "'\n"
+//                    "   AND sch.name     = '" + p_schema + "'\n"
+//                    "   AND sch.oid      = tab.relnamespace\n"
+//                    "   AND tab.relkind  = 'r'\n"
+//                    "   AND tab.oid      = att.attrelid\n"
+//                    "   AND att.atttypid = pg_type.oid\n"
+//                    "   AND def.adrelid  = att.attrelid\n"
+//                    "   AND def.adnum    = att.attnum\n"
+//                    "   AND attnum > 0\n"
+//                    "   AND typlen < 0\n"
+//                    "   AND typname = 'numeric'\n"
+//                    "UNION\n"
+//                    "SELECT attname\n"
+//                    "      ,attnum\n"
+//                    "      ,typname\n"
+//                    "      ,(atttypmod - 4) AS typlen\n"
+//                    "      ,attnotnull\n"
+//                    "      ,0\n"
+//                    "      ,0\n"
+//                    "  FROM pg_class      tab\n"
+//                    "      ,pg_namespaces sch\n"
+//                    "      ,pg_attribute  att\n"
+//                    "      ,pg_type       typ\n"
+//                    "      ,pg_attrdef    def\n"
+//                    " WHERE tab.relname  = '" + p_tablename + "'\n"
+//                    "   AND sch.name     = '" + p_schema + "'\n"
+//                    "   AND sch.oid      = tab.relnamespace\n"
+//                    "   AND tab.relkind  = 'r'\n"
+//                    "   AND tab.oid      = att.attrelid\n"
+//                    "   AND att.atttypid = typ.oid\n"
+//                    "   AND def.adrelid  = att.attrelid\n"
+//                    "   AND def.adnum    = att.attnum\n"
+//                    "   AND attnum > 0\n"
+//                    "   AND typlen < 0\n"
+//                    "   AND typname = 'varchar'\n"
+//                    "UNION\n"
+//                    "SELECT attname\n"
+//                    "      ,attnum\n"
+//                    "      ,typname\n"
+//                    "      ,typlen\n"
+//                    "      ,attnotnull\n"
+//                    "      ,0\n"
+//                    "      ,0\n"
+//                    "  FROM pg_class      tab\n"
+//                    "      ,pg_namespaces sch\n"
+//                    "      ,pg_attribute  att\n"
+//                    "      ,pg_type       typ\n"
+//                    "      ,pg_attrdef    def\n"
+//                    " WHERE tab.relname  = '" + p_tablename + "'\n"
+//                    "   AND sch.name     = '" + p_schema + "'\n"
+//                    "   AND sch.oid      = tab.relnamespace\n"
+//                    "   AND tab.relkind  = 'r'\n"
+//                    "   AND tab.oid      = att.attrelid\n"
+//                    "   AND att.atttypid = typ.oid\n"
+//                    "   AND def.adrelid  = att.attrelid\n"
+//                    "   AND def.adnum    = att.attnum\n"
+//                    "   AND attnum > 0\n"
+//                    "   AND typlen > 0\n"
+//                    "   AND typname not in ('numeric', 'varchar')\n"
+//                    " ORDER BY attnum";
+//   return query;
 }
 
 CString 
@@ -608,12 +609,12 @@ SQLInfoPostgreSQL::GetCATALOGColumnCreate(MetaColumn& p_column) const
 {
   CString sql = "ALTER TABLE "  + p_column.m_schema + "." + p_column.m_table  + "\n";
                 "  ADD COLUMN " + p_column.m_column + " " + p_column.m_typename;
-  if(p_column.m_precision)
+  if(p_column.m_columnSize)
   {
-    sql.AppendFormat("(%d",p_column.m_precision);
-    if(p_column.m_scale)
+    sql.AppendFormat("(%d",p_column.m_columnSize);
+    if(p_column.m_decimalDigits)
     {
-      sql.AppendFormat(",%d",p_column.m_scale);
+      sql.AppendFormat(",%d",p_column.m_decimalDigits);
     }
     sql += ")";
   }

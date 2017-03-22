@@ -491,12 +491,12 @@ SQLInfoAccess::GetCATALOGColumnCreate(MetaColumn& p_column) const
 {
   CString sql = "ALTER TABLE " + p_column.m_table + "\n";
   "  ADD COLUMN " + p_column.m_column + " " + p_column.m_typename;
-  if(p_column.m_precision)
+  if(p_column.m_columnSize)
   {
-    sql.AppendFormat("(%d",p_column.m_precision);
-    if(p_column.m_scale)
+    sql.AppendFormat("(%d",p_column.m_columnSize);
+    if(p_column.m_decimalDigits)
     {
-      sql.AppendFormat(",%d",p_column.m_scale);
+      sql.AppendFormat(",%d",p_column.m_decimalDigits);
     }
     sql += ")";
   }

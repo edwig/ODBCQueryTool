@@ -535,36 +535,38 @@ SQLInfoOracle::GetCATALOGColumnExists(CString p_schema,CString p_tablename,CStri
 CString 
 SQLInfoOracle::GetCATALOGColumnList(CString p_schema,CString p_tablename) const
 {
-  CString sql = GetCATALOGColumnAttributes(p_schema,p_tablename,"");
-
-  int pos = sql.ReverseFind('\n');
-  sql = sql.Mid(pos + 1) + " ORDER BY column_id";
-
-  return sql;
+  return "";
+//   CString sql = GetCATALOGColumnAttributes(p_schema,p_tablename,"");
+// 
+//   int pos = sql.ReverseFind('\n');
+//   sql = sql.Mid(pos + 1) + " ORDER BY column_id";
+// 
+//   return sql;
 }
 
 CString 
 SQLInfoOracle::GetCATALOGColumnAttributes(CString p_schema,CString p_tablename,CString p_columnname) const
 {
-  p_schema.MakeUpper();
-  p_tablename.MakeUpper();
-  p_columnname.MakeUpper();
-
-  // name, number, type, length, nullable, precision, scale
-  CString sql = "SELECT column_name\n"          // 1 -> Columnname
-                "      ,column_id\n"            // 2 -> Position
-                "      ,data_type\n"            // 3 -> Datatype
-                "      ,data_length\n"          // 4 -> Length
-                "      ,CASE WHEN nullable = 'Y' THEN 1 ELSE 0 END\n" // 5-> Nullable
-                "      ,data_precision\n"       // 5 -> Precision
-                "      ,data_scale\n"           // 6 -> Scale
-                "      ,data_default\n"         // 7 -> Default
-                "  FROM all_tab_columns\n"
-                " WHERE owner       = '" + p_schema     + "'\n"
-                "   AND table_name  = '" + p_tablename  + "'\n"
-                "   AND column_name = '" + p_columnname + "'";
-                // BEWARE: Columnname filter must be last for previous method!
-  return sql;
+  return "";
+//   p_schema.MakeUpper();
+//   p_tablename.MakeUpper();
+//   p_columnname.MakeUpper();
+// 
+//   // name, number, type, length, nullable, precision, scale
+//   CString sql = "SELECT column_name\n"          // 1 -> Columnname
+//                 "      ,column_id\n"            // 2 -> Position
+//                 "      ,data_type\n"            // 3 -> Datatype
+//                 "      ,data_length\n"          // 4 -> Length
+//                 "      ,CASE WHEN nullable = 'Y' THEN 1 ELSE 0 END\n" // 5-> Nullable
+//                 "      ,data_precision\n"       // 5 -> Precision
+//                 "      ,data_scale\n"           // 6 -> Scale
+//                 "      ,data_default\n"         // 7 -> Default
+//                 "  FROM all_tab_columns\n"
+//                 " WHERE owner       = '" + p_schema     + "'\n"
+//                 "   AND table_name  = '" + p_tablename  + "'\n"
+//                 "   AND column_name = '" + p_columnname + "'";
+//                 // BEWARE: Columnname filter must be last for previous method!
+//   return sql;
 }
 
 CString 

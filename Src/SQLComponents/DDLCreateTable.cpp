@@ -95,6 +95,7 @@ DDLCreateTable::GetTableInfo()
   // Construct table name
   if(!table.m_schema.IsEmpty())
   {
+    m_schema    = table.m_schema;
     m_tableName = table.m_schema + "." + table.m_table;
   }
   else
@@ -121,7 +122,7 @@ DDLCreateTable::GetColumnInfo()
 
   // Find column info
   m_columns.clear();
-  if(!m_info->MakeInfoTableColumns(m_columns,errors) || m_columns.empty())
+  if(!m_info->MakeInfoTableColumns(m_columns,errors,m_schema,m_tableName) || m_columns.empty())
   {
     throw CString("Cannot find columns for table: ") + m_tableName + " : " + errors;
   }
@@ -144,9 +145,9 @@ DDLCreateTable::GetColumnInfo()
     if(type)
     {
       line += ReplaceLengthPrecScale(type->m_create_params
-                                    ,column.m_length
-                                    ,column.m_precision
-                                    ,column.m_scale);
+                                    ,column.m_columnSize
+                                    ,column.m_columnSize
+                                    ,column.m_decimalDigits);
     }
     // optional default value
     if(!column.m_default.IsEmpty() && column.m_default.CompareNoCase("null"))

@@ -445,6 +445,8 @@ ObjectTree::PresetTable(HTREEITEM p_theItem)
   {
     findtable = schema + "." + table;
   }
+  m_schema = schema;
+  m_table  = table;
 
   COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
   // Set table to use
@@ -486,7 +488,7 @@ ObjectTree::FindColumns(HTREEITEM p_theItem)
     MColumnMap columns;
     CString    errors;
     COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableColumns(columns,errors);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableColumns(columns,errors,m_schema,m_table);
     ColumnListToTree(columns,p_theItem);
   }
 }
@@ -785,12 +787,12 @@ ObjectTree::ColumnListToTree(MColumnMap& p_columns,HTREEITEM p_item)
   for(auto& column : p_columns)
   {
     CString line  = column.m_column + " " + column.m_typename;
-    if(column.m_precision > 0)
+    if(column.m_columnSize > 0)
     {
-      line.AppendFormat(" (%d",column.m_precision);
-      if(column.m_scale)
+      line.AppendFormat(" (%d",column.m_columnSize);
+      if(column.m_decimalDigits)
       {
-        line.AppendFormat(",%d)",column.m_scale);
+        line.AppendFormat(",%d)",column.m_decimalDigits);
       }
       else
       {

@@ -62,6 +62,7 @@ private:
 
   // Private data for the DDL creation
   SQLInfoDB* m_info;
+  CString    m_schema;
   CString    m_tableName;
   CString    m_ddl;
 

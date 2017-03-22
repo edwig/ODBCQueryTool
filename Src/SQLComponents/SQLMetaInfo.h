@@ -74,28 +74,33 @@ using MTableMap = std::vector<MetaTable>;
 
 typedef struct _metaInfoColumn
 {
-  CString   m_catalog;                // Catalog name (database name)
-  CString   m_schema;                 // Schema name (owner of the object)
-  CString   m_table;                  // Table/view/synonym name
-  CString   m_column;                 // Column name
-  CString   m_remarks;                // Using COMMENTS command
-  int       m_datatype    { 0 };      // SQL Data type
-  CString   m_typename;               // Data type name (according to RDBMS)
-  int       m_precision   { 0 };      // Precision
-  int       m_length      { 0 };      // Total length in bytes
-  int       m_scale       { 0 };      // Decimal/Numeric scale
-  int       m_nullable    { 0 };      // Nullable SQL_NO_NULLS / SQL_NULLABLE / SQL_NULLABLE_UNKNOWN
-  CString   m_default;                // Default value of the column
-  int       m_position    { 0 };      // Ordinal position in the table
+  CString   m_catalog;                // 01 Catalog name (database name)
+  CString   m_schema;                 // 02 Schema name (owner of the object)
+  CString   m_table;                  // 03 Table/view/synonym name
+  CString   m_column;                 // 04 Column name
+  int       m_datatype      { 0 };    // 05 SQL Data type
+  CString   m_typename;               // 06 Data type name (according to RDBMS)
+  int       m_columnSize    { 0 };    // 07 Display column size or precision
+  int       m_bufferLength  { 0 };    // 08 Internal buffer size
+  int       m_decimalDigits { 0 };    // 09 Also known as scale
+  int       m_numRadix      { 0 };    // 10 Radix of the column size
+  int       m_nullable      { 2 };    // 11 Nullable SQL_NO_NULLS(0) / SQL_NULLABLE (1) / SQL_NULLABLE_UNKNOWN (2)
+  CString   m_remarks;                // 12 Using COMMENTS command
+  CString   m_default;                // 13 Default value of the column
+  int       m_datatype3     { 0 };    // 14 ODBC3 datatype (mostly m_datatype)
+  int       m_sub_datatype  { 0 };    // 15 Datetime sub type 
+  int       m_octet_length  { 0 };    // 16 (VAR)CHAR octet length for Unicode
+  int       m_position      { 0 };    // 17 Ordinal position in the table
+  CString   m_isNullable;             // 18 'YES', 'NO' or 'UNKNOWN'
 
   void GetPrecisionAndScale(CString& p_sql)
   {
-    if(m_precision > 0)
+    if(m_columnSize > 0)
     {
-      p_sql.AppendFormat("(%d",m_precision);
-      if(m_scale > 0)
+      p_sql.AppendFormat("(%d",m_columnSize);
+      if(m_decimalDigits > 0)
       {
-        p_sql.AppendFormat(",%d",m_scale);
+        p_sql.AppendFormat(",%d",m_decimalDigits);
       }
       p_sql += ")";
     }
@@ -111,7 +116,7 @@ typedef struct _metaInfoColumn
   {
     if(!m_default.IsEmpty())
     {
-      p_sql += " DEFAULT ";
+      //p_sql += " DEFAULT ";
       p_sql += m_default;
     }
   }

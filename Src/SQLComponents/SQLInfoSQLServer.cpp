@@ -516,42 +516,44 @@ SQLInfoSQLServer::GetCATALOGColumnExists(CString p_schema,CString p_tablename,CS
 CString 
 SQLInfoSQLServer::GetCATALOGColumnList(CString p_schema,CString p_tablename) const
 {
-  CString sql = GetCATALOGColumnAttributes(p_schema,p_tablename,"");
-
-  int pos = sql.ReverseFind('\n');
-  sql = sql.Mid(pos + 1) + " ORDER BY col.colid";
-
-  return sql;
+  return "";
+//   CString sql = GetCATALOGColumnAttributes(p_schema,p_tablename,"");
+// 
+//   int pos = sql.ReverseFind('\n');
+//   sql = sql.Mid(pos + 1) + " ORDER BY col.colid";
+// 
+//   return sql;
 }
 
 CString 
 SQLInfoSQLServer::GetCATALOGColumnAttributes(CString p_schema,CString p_tablename,CString p_columnname) const
 {
-  p_schema.MakeLower();
-  p_tablename.MakeLower();
-  p_columnname.MakeLower();
-
-  CString sql = "SELECT col.name\n"         // 1 -> column name
-                "      ,col.colid\n"        // 2 -> position
-                "      ,typ.name\n"         // 3 -> typename
-                "      ,col.length\n"       // 4 -> length
-                "      ,col.isnullable\n"   // 5 -> Nullable
-                "      ,col.prec\n"         // 6 -> Precision
-                "      ,col.scale\n"        // 7 -> Scale
-                "      ,replace(replace('#' + com.text + '#', '#(', ''), ')#', '')\n" // 8 -> Default
-                "  FROM sys.sysobjects  obj\n"
-                "      ,sys.schemas     sch\n"
-                "      ,sys.syscolumns  col\n"
-                "      ,sys.systypes    typ\n"
-                "      ,sys.syscomments com\n"
-                " WHERE obj.schema_id = sch.schema_id\n"
-                "   AND obj.Id        = col.id\n"
-                "   AND col.xtype     = typ.xtype\n"
-                "   AND col.cdefault  = com.id\n"
-                "   AND sch.name      = '" + p_schema     + "'\n"
-                "   AND obj.name      = '" + p_tablename  + "'\n"
-                "   AND col.name      = '" + p_columnname + "'";
-  return sql;
+  return "";
+//   p_schema.MakeLower();
+//   p_tablename.MakeLower();
+//   p_columnname.MakeLower();
+// 
+//   CString sql = "SELECT col.name\n"         // 1 -> column name
+//                 "      ,col.colid\n"        // 2 -> position
+//                 "      ,typ.name\n"         // 3 -> typename
+//                 "      ,col.length\n"       // 4 -> length
+//                 "      ,col.isnullable\n"   // 5 -> Nullable
+//                 "      ,col.prec\n"         // 6 -> Precision
+//                 "      ,col.scale\n"        // 7 -> Scale
+//                 "      ,replace(replace('#' + com.text + '#', '#(', ''), ')#', '')\n" // 8 -> Default
+//                 "  FROM sys.sysobjects  obj\n"
+//                 "      ,sys.schemas     sch\n"
+//                 "      ,sys.syscolumns  col\n"
+//                 "      ,sys.systypes    typ\n"
+//                 "      ,sys.syscomments com\n"
+//                 " WHERE obj.schema_id = sch.schema_id\n"
+//                 "   AND obj.Id        = col.id\n"
+//                 "   AND col.xtype     = typ.xtype\n"
+//                 "   AND col.cdefault  = com.id\n"
+//                 "   AND sch.name      = '" + p_schema     + "'\n"
+//                 "   AND obj.name      = '" + p_tablename  + "'\n"
+//                 "   AND col.name      = '" + p_columnname + "'";
+//   return sql;
 }
 
 CString 

@@ -1638,17 +1638,27 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns,CString& p_errors)
   SQLLEN       cbRemarks     = 0;
   SQLCHAR      szDefault     [2 * SQL_MAX_BUFFER + 1];
   SQLLEN       cbDefault     = 0;
+  SQLCHAR      szNullable    [SQL_MAX_BUFFER+1];
+  SQLLEN       cbIsNullable  = 0;
   SQLSMALLINT  DataType      = 0;
   SQLLEN       cbDataType    = 0;
   SQLINTEGER   Precision     = 0;
   SQLINTEGER   Length        = 0;
   SQLSMALLINT  Scale         = 0;
   SQLSMALLINT  Nullable      = 0;
+  SQLSMALLINT  NumRadix      = 0;
+  SQLSMALLINT  DataType3     = 0;
+  SQLSMALLINT  TypeSub       = 0;
+  SQLINTEGER   OctetLength   = 0;
   SQLINTEGER   Position      = 0;
   SQLLEN       cbPrecision   = 0;
   SQLLEN       cbLength      = 0;
   SQLLEN       cbScale       = 0;
   SQLLEN       cbNullable    = 0;
+  SQLLEN       cbNumRadix    = 0;
+  SQLLEN       cbDataType3   = 0;
+  SQLLEN       cbTypeSub     = 0;
+  SQLLEN       cbOctetLength = 0;
   SQLLEN       cbPosition    = 0;
 
   // Check whether we can do this
@@ -1691,10 +1701,16 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns,CString& p_errors)
      SQLBindCol(m_hstmt, 7, SQL_C_SLONG, &Precision,    4,              &cbPrecision);
      SQLBindCol(m_hstmt, 8, SQL_C_SLONG, &Length,       4,              &cbLength);
      SQLBindCol(m_hstmt, 9, SQL_C_SSHORT,&Scale,        2,              &cbScale);
+     SQLBindCol(m_hstmt,10, SQL_C_SHORT, &NumRadix,     2,              &cbNumRadix);
      SQLBindCol(m_hstmt,11, SQL_C_SSHORT,&Nullable,     2,              &cbNullable);
      SQLBindCol(m_hstmt,12, SQL_C_CHAR,   szRemarks,  2*SQL_MAX_BUFFER, &cbRemarks);
      SQLBindCol(m_hstmt,13, SQL_C_CHAR,   szDefault,  2*SQL_MAX_BUFFER, &cbDefault);
+     SQLBindCol(m_hstmt,14, SQL_C_SHORT, &DataType3,    2,              &cbDataType3);
+     SQLBindCol(m_hstmt,15, SQL_C_SHORT, &TypeSub,      2,              &cbTypeSub);
+     SQLBindCol(m_hstmt,16, SQL_C_SLONG, &OctetLength,  4,              &cbOctetLength);
      SQLBindCol(m_hstmt,17, SQL_C_SLONG, &Position,     4,              &cbPosition);
+     SQLBindCol(m_hstmt,18, SQL_C_CHAR,  &szNullable,   SQL_MAX_BUFFER, &cbIsNullable);
+
      while(true)
      {
        m_retCode = SqlFetch(m_hstmt);
@@ -1712,32 +1728,31 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns,CString& p_errors)
          CString type;
          MetaColumn theColumn;
 
-         // Reset the structure
-         theColumn.m_datatype  = 0;
-         theColumn.m_precision = 0;
-         theColumn.m_scale     = 0;
-         theColumn.m_length    = 0;
-         theColumn.m_nullable  = 0;
-
          // Fill in the structure
-         if(cbCatalogName > 0) theColumn.m_catalog = szCatalogName;
-         if(cbSchemaName  > 0) theColumn.m_schema  = szSchemaName;
-         if(cbTableName   > 0) theColumn.m_table   = szTableName;
-         if(cbColumnName  > 0) theColumn.m_column  = szColumnName;
-         if(cbRemarks     > 0) theColumn.m_remarks = szRemarks;
-         if(cbDefault     > 0) theColumn.m_default = szDefault;
+         if(cbCatalogName > 0) theColumn.m_catalog    = szCatalogName; // 1
+         if(cbSchemaName  > 0) theColumn.m_schema     = szSchemaName;  // 2
+         if(cbTableName   > 0) theColumn.m_table      = szTableName;   // 3
+         if(cbColumnName  > 0) theColumn.m_column     = szColumnName;  // 4
+         if(cbRemarks     > 0) theColumn.m_remarks    = szRemarks;     // 12
+         if(cbDefault     > 0) theColumn.m_default    = szDefault;     // 13
+         if(cbIsNullable  > 0) theColumn.m_isNullable = szNullable;    // 18
          // Numbers
-         if(cbNullable > 0) theColumn.m_nullable = Nullable;
-         if(cbPosition > 0) theColumn.m_position = Position;
-         if(cbDataType > 0)
+         if(cbLength      > 0) theColumn.m_bufferLength = Length;      // 8
+         if(cbNumRadix    > 0) theColumn.m_numRadix     = NumRadix;    // 10
+         if(cbNullable    > 0) theColumn.m_nullable     = Nullable;    // 11
+         if(cbDataType3   > 0) theColumn.m_datatype3    = DataType3;   // 14
+         if(cbTypeSub     > 0) theColumn.m_sub_datatype = TypeSub;     // 15
+         if(cbOctetLength > 0) theColumn.m_octet_length = OctetLength; // 16
+         if(cbPosition    > 0) theColumn.m_position     = Position;    // 17
+         if(cbDataType  > 0)
          {
-           theColumn.m_datatype = DataType;
+           theColumn.m_datatype = DataType;                            // 5
            type = ODBCDataType(DataType);
            if(cbTypeName > 0)
            {
              if(type.CompareNoCase((char*)szTypeName))
              {
-               type = szTypeName;
+               type = szTypeName;                                      // 6
              }
            }
          }
@@ -1750,10 +1765,10 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns,CString& p_errors)
          // PRECISION and SCALE
          if(cbPrecision > 0 && Precision > 0)
          {
-           theColumn.m_precision = Precision;
+           theColumn.m_columnSize = Precision;                        // 7
            if(cbScale > 0)
            {
-             theColumn.m_scale = Scale;
+             theColumn.m_decimalDigits = Scale;                       // 9
            }
          }
          // Save the result

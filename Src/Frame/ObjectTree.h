@@ -128,6 +128,9 @@ protected:
   CString     m_filter;
   bool        m_busy;
   CImageList  m_imageList;
+  // Currently searching for...
+  CString     m_schema;
+  CString     m_table;
 
 public:
   afx_msg void OnSelChanged(NMHDR* pNMHDR, LRESULT* pResult);

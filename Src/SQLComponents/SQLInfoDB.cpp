@@ -55,6 +55,67 @@ SQLInfoDB::~SQLInfoDB()
 
 
 bool    
+SQLInfoDB::MakeInfoTableColumns(MColumnMap& p_columns
+                               ,CString&    p_errors
+                               ,CString     p_schema
+                               ,CString     p_tablename
+                               ,CString     p_columname /*=""*/)
+{
+  // Clear results
+  p_columns.clear();
+  p_errors.Empty();
+
+  CString sql = GetCATALOGColumnAttributes(p_schema,p_tablename,p_columname);
+  if(sql.IsEmpty())
+  {
+    MTableMap tables;
+    if(SQLInfo::MakeInfoTableTablepart(p_tablename,tables,p_errors))
+    {
+      return SQLInfo::MakeInfoTableColumns(p_columns,p_errors);
+    }
+  }
+  else
+  {
+    SQLQuery qry(m_database);
+    qry.DoSQLStatement(sql);
+    while(qry.GetRecord())
+    {
+      MetaColumn column;
+
+      column.m_catalog        = qry.GetColumn(1)->GetAsChar();
+      column.m_schema         = qry.GetColumn(2)->GetAsChar();
+      column.m_table          = qry.GetColumn(3)->GetAsChar();
+      column.m_column         = qry.GetColumn(4)->GetAsChar();
+      column.m_datatype       = qry.GetColumn(5)->GetAsSLong();
+      column.m_typename       = qry.GetColumn(6)->GetAsChar();
+      column.m_columnSize     = qry.GetColumn(7)->GetAsSLong();
+      column.m_bufferLength   = qry.GetColumn(8)->GetAsSLong();
+      column.m_decimalDigits  = qry.GetColumn(9)->GetAsSLong();
+      column.m_numRadix       = qry.GetColumn(10)->GetAsSLong();
+      column.m_nullable       = qry.GetColumn(11)->GetAsSLong();
+      column.m_remarks        = qry.GetColumn(12)->GetAsChar();
+      column.m_default        = qry.GetColumn(13)->GetAsChar();
+      column.m_datatype3      = qry.GetColumn(14)->GetAsSLong();
+      column.m_sub_datatype   = qry.GetColumn(15)->GetAsSLong();
+      column.m_octet_length   = qry.GetColumn(16)->GetAsSLong();
+      column.m_position       = qry.GetColumn(17)->GetAsSLong();
+      column.m_isNullable     = qry.GetColumn(18)->GetAsChar();
+
+      column.m_catalog    = column.m_catalog.Trim();
+      column.m_table      = column.m_table.Trim();
+      column.m_column     = column.m_column.Trim();
+      column.m_typename   = column.m_typename.Trim();
+      column.m_remarks    = column.m_remarks.Trim();
+      column.m_default    = column.m_default.Trim();
+      column.m_isNullable = column.m_isNullable.Trim();
+
+      p_columns.push_back(column);
+    }
+  }
+  return !p_columns.empty();
+}
+
+bool    
 SQLInfoDB::MakeInfoProcedureProcedurepart(CString         p_schema
                                          ,CString         p_procedure
                                          ,MProcedureMap&  p_procedures

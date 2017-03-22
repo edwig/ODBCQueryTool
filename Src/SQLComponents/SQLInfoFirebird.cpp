@@ -498,12 +498,7 @@ SQLInfoFirebird::GetCATALOGColumnExists(CString p_schema,CString p_tablename,CSt
 CString 
 SQLInfoFirebird::GetCATALOGColumnList(CString p_schema,CString p_tablename) const
 {
-  CString sql(GetCATALOGColumnAttributes(p_schema,p_tablename,""));
-  int pos = sql.ReverseFind('\n');
-  // Remove field filter and add ordering
-  sql = sql.Mid(pos + 1) + " ORDER BY col.rdb$field_position";
-
-  return sql;
+  return GetCATALOGColumnAttributes(p_schema,p_tablename,"");
 }
 
 CString 
@@ -511,20 +506,157 @@ SQLInfoFirebird::GetCATALOGColumnAttributes(CString /*p_schema*/,CString p_table
 {
   p_tablename.MakeUpper();
   p_columnname.MakeUpper();
-  CString sql = "SELECT col.rdb$field_name\n"        // 0 -> Name
-                "      ,col.rdb$field_position\n"    // 1 -> Position
-                "      ,typ.rdb$field_type\n"        // 2 -> type
-                "      ,typ.rdb$field_length\n"      // 3 -> length
-                "      ,typ.rdb$null_flag\n"         // 4 -> nn 1 = not null / 0 is null
-                "      ,typ.rdb$field_precision\n"   // 5 -> precision
-                "      ,typ.rdb$field_scale\n"       // 6 -> scale (neg)
-                "      ,col.rdb$default_source\n"    // 7 -> default value
-                "  FROM rdb$relation_fields col\n"
-                "      ,rdb$fields typ\n"
-                " WHERE col.rdb$field_source  = typ.rdb$field_name\n"
-                "   AND col.rdb$relation_name = '" + p_tablename  + "'\n"
-                "   AND col.rdb$field_name    = '" + p_columnname + "'";
-                // Beware: last filter line must be column name for previous method!
+  CString sql;
+
+  sql = "SELECT cast('' as varchar(255))                   as table_catalog\n"         // 1  - VARCHAR
+        "      ,cast(tbl.rdb$owner_name    as varchar(31)) as table_schema\n"	         // 2  - VARCHAR
+        "      ,cast(col.rdb$relation_name as varchar(31)) as table_name\n"            // 3  - VARCHAR NOT NULL
+        "      ,cast(col.rdb$field_name    as varchar(31)) as column_name\n"           // 4  - VARCHAR NOT NULL
+        "      ,CASE fld.rdb$field_type\n"
+        "            WHEN 7  THEN CASE fld.rdb$field_sub_type\n"
+        "                              WHEN 1 THEN 2\n"
+        "                              WHEN 2 THEN 2\n"
+        "                                     ELSE 5\n"
+        "                              END\n"
+        "            WHEN 8  THEN CASE fld.rdb$field_sub_type\n"
+        "                              WHEN 1 THEN 2\n"
+        "                              WHEN 2 THEN 2\n"
+        "                                     ELSE 4\n"
+        "                              END\n"
+        "            WHEN 10 THEN 7\n"
+        "            WHEN 12 THEN 10\n"
+        "            WHEN 13 THEN 13\n"
+        "            WHEN 14 THEN 1\n"
+        "            WHEN 16 THEN CASE fld.rdb$field_sub_type\n"
+        "                              WHEN 1 THEN 2\n"
+        "                              WHEN 2 THEN 2\n"
+        "                                     ELSE -5\n"
+        "                         END\n"
+        "            WHEN 23 THEN -7\n"
+        "            WHEN 27 THEN 8\n"
+        "            WHEN 35 THEN 11\n"
+        "            WHEN 37 THEN 12\n"
+        "            WHEN 261 THEN CASE fld.rdb$field_sub_type\n"
+        "                               WHEN 0 THEN -4\n"
+        "                               WHEN 1 THEN -1\n"
+        "                                      ELSE -10\n"
+        "                          END\n"
+        "                     ELSE 0\n"
+        "       END                           as data_type\n"	          // 5  - SMALLINT NOT NULL
+        "      ,CASE fld.rdb$field_type\n"
+        "            WHEN 7  THEN CASE fld.rdb$field_sub_type\n"
+        "                              WHEN 1 THEN 'NUMERIC'\n"
+        "                              WHEN 2 THEN 'DECIMAL'\n"
+        "                                     ELSE 'SMALLINT'\n"
+        "                              END\n"
+        "            WHEN 8  THEN CASE fld.rdb$field_sub_type\n"
+        "                              WHEN 1 THEN 'NUMERIC'\n"
+        "                              WHEN 2 THEN 'DECIMAL'\n"
+        "                                     ELSE 'INTEGER'\n"
+        "                              END\n"
+        "            WHEN 10 THEN 'FLOAT'\n"
+        "            WHEN 12 THEN 'DATE'\n"
+        "            WHEN 13 THEN 'TIME'\n"
+        "            WHEN 14 THEN 'CHAR'\n"
+        "            WHEN 16 THEN CASE fld.rdb$field_sub_type\n"
+        "                              WHEN 1 THEN 'NUMERIC'\n"
+        "                              WHEN 2 THEN 'DECIMAL'\n"
+        "                                     ELSE 'BIGINT'\n"
+        "                         END\n"
+        "            WHEN 23 THEN 'BOOLEAN'\n"
+        "            WHEN 27 THEN 'DOUBLE PRECISION'\n"
+        "            WHEN 35 THEN 'TIMESTAMP'\n"
+        "            WHEN 37 THEN 'VARCHAR'\n"
+        "            WHEN 261 THEN CASE fld.rdb$field_sub_type\n"
+        "                               WHEN 0 THEN 'BLOB SUB_TYPE 0'\n"
+        "                               WHEN 1 THEN 'BLOB SUB_TYPE TEXT'\n"
+        "                                      ELSE 'BLOB'\n"
+        "                          END\n"
+        "                     ELSE 'UNKNOWN'\n"
+        "       END                                        as type_name\n"		// 6  - VARCHAR NOT NULL
+        "      ,CASE fld.rdb$field_type\n"
+        "            WHEN 7  THEN CASE fld.rdb$field_sub_type\n"
+        "                              WHEN 1 THEN fld.rdb$field_precision\n"
+        "                              WHEN 2 THEN fld.rdb$field_precision\n"
+        "                                     ELSE 5\n"
+        "                              END\n"
+        "            WHEN 8  THEN CASE fld.rdb$field_sub_type\n"
+        "                              WHEN 1 THEN fld.rdb$field_precision\n"
+        "                              WHEN 2 THEN fld.rdb$field_precision\n"
+        "                                     ELSE 11\n"
+        "                              END\n"
+        "            WHEN 10 THEN 12\n"
+        "            WHEN 12 THEN 10\n"
+        "            WHEN 13 THEN 13\n"
+        "            WHEN 14 THEN fld.rdb$field_length\n"
+        "            WHEN 16 THEN CASE fld.rdb$field_sub_type\n"
+        "                              WHEN 1 THEN fld.rdb$field_precision\n"
+        "                              WHEN 2 THEN fld.rdb$field_precision\n"
+        "                                     ELSE 22\n"
+        "                         END\n"
+        "            WHEN 23 THEN 1\n"
+        "            WHEN 27 THEN 20\n"
+        "            WHEN 35 THEN 26\n"
+        "            WHEN 37 THEN fld.rdb$field_length\n"
+        "            WHEN 261 THEN 2147483648\n"
+        "       END                                        as column_size\n"      		    // 7  - INTEGER
+        "      ,cast(fld.rdb$field_length as integer)      as buffer_length\n"	          // 8  - INTEGER
+        "      ,cast (fld.rdb$field_scale as smallint)*-1  as decimal_digits\n"		        // 9  - SMALLINT
+        "      ,10                                         as num_prec_radix\n"           // 10 - SMALLINT
+        "      ,(coalesce(col.rdb$null_flag,0,0)-1)*-1     as nullable\n"        				  // 11 - SMALLINT NOT NULL
+        "      ,cast (col.rdb$description    as varchar(512)) as remarks\n"               // 12 - VARCHAR
+        "      ,cast (col.rdb$default_source as varchar(512)) as column_def\n"            // 13 - VARCHAR
+        "      ,CASE fld.rdb$field_type\n"
+        "            WHEN 7  THEN CASE fld.rdb$field_sub_type\n"
+        "                              WHEN 1 THEN 2\n"
+        "                              WHEN 2 THEN 2\n"
+        "                                     ELSE 5\n"
+        "                              END\n"
+        "            WHEN 8  THEN CASE fld.rdb$field_sub_type\n"
+        "                              WHEN 1 THEN 2\n"
+        "                              WHEN 2 THEN 2\n"
+        "                                     ELSE 4\n"
+        "                              END\n"
+        "            WHEN 10 THEN 7\n"
+        "            WHEN 12 THEN 9\n"
+        "            WHEN 13 THEN 10\n"
+        "            WHEN 14 THEN 1\n"
+        "            WHEN 16 THEN CASE fld.rdb$field_sub_type\n"
+        "                              WHEN 1 THEN 2\n"
+        "                              WHEN 2 THEN 2\n"
+        "                                     ELSE -5\n"
+        "                         END\n"
+        "            WHEN 23 THEN -7\n"
+        "            WHEN 27 THEN 8\n"
+        "            WHEN 35 THEN 11\n"
+        "            WHEN 37 THEN 12\n"
+        "            WHEN 261 THEN CASE fld.rdb$field_sub_type\n"
+        "                               WHEN 0 THEN -4\n"
+        "                               WHEN 1 THEN -1\n"
+        "                                      ELSE -10\n"
+        "                          END\n"
+        "                     ELSE 0\n"
+        "       END                                         as sql_data_type\n" 			    // 14 - SMALLINT NOT NULL
+        "      ,CAST(0 AS SMALLINT)                         as sql_datetime_sub\n"        // 15 - SMALLINT
+        "      ,fld.rdb$field_length / rdb$character_length as char_octet_length\n"    		// 16 - INTEGER
+        "      ,col.rdb$field_position + 1                  as ordinal_position\n"				// 17 - INTEGER NOT NULL
+        "      ,CASE (coalesce(col.rdb$null_flag,0,0)-1)*-1\n"
+        "            WHEN 0 THEN 'NO'\n"
+        "            WHEN 1 THEN 'YES'\n"
+        "                   ELSE 'UNKNOWN'\n"
+        "       END                                         AS is_nullable\n"             // 18 - VARCHAR
+        "  FROM rdb$relation_fields  col\n"
+        "      ,rdb$fields           fld\n"
+        "      ,rdb$relations        tbl\n"
+        " WHERE col.rdb$field_source  = fld.rdb$field_name\n"
+        "     AND col.rdb$relation_name = tbl.rdb$relation_name\n"
+        "     AND tbl.rdb$relation_name = '" + p_tablename + "'\n";
+  // Optionally add the column name
+  if(!p_columnname.IsEmpty())
+  {
+    sql += "   AND col.rdb$field_name = '" + p_columnname + "'\n";
+  }
+  sql += " ORDER BY col.rdb$field_position";
   return sql;
 }
 

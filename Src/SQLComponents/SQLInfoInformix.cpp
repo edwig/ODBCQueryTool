@@ -517,34 +517,36 @@ SQLInfoInformix::GetCATALOGColumnExists(CString p_schema,CString p_tablename,CSt
 CString 
 SQLInfoInformix::GetCATALOGColumnList(CString p_schema,CString p_tablename) const
 {
-  CString sql = GetCATALOGColumnAttributes(p_schema,p_tablename,"");
-
-  int pos = sql.ReverseFind('\n');
-  sql = sql.Mid(pos + 1) + " ORDER BY col.colno";
-
-  return sql;
+  return "";
+//   CString sql = GetCATALOGColumnAttributes(p_schema,p_tablename,"");
+// 
+//   int pos = sql.ReverseFind('\n');
+//   sql = sql.Mid(pos + 1) + " ORDER BY col.colno";
+// 
+//   return sql;
 }
 
 CString 
 SQLInfoInformix::GetCATALOGColumnAttributes(CString /*p_schema*/,CString p_tablename,CString p_columnname) const
 {
-  p_tablename.MakeLower();
-  p_columnname.MakeLower();
-  CString select = "SELECT col.colname\n"       // 1 -> Name
-                   "      ,col.colno\n"         // 2 -> Position
-                   "      ,col.coltype\n"       // 3 -> datatype
-                   "      ,col.collength\n"     // 4 -> Length
-                   "      ,def.default\n"       // 5 -> Default
-                   "  FROM systables   tab\n"
-                   "      ,syscolumns  col\n"
-                   "      ,sysdefaults def\n"
-                   " WHERE col.tabid   = tab.tabid\n"
-                   "   AND def.tabid   = tab.tabid\n"
-                   "   AND def.colno   = col.colno\n"
-                   "   AND tab.tabname = '" + p_tablename  + "'\n"
-                   "   AND col.colname = '" + p_columnname + "'";
-                   // Beware: columnname filter must be last for previous method!
-  return select;
+  return "";
+//   p_tablename.MakeLower();
+//   p_columnname.MakeLower();
+//   CString select = "SELECT col.colname\n"       // 1 -> Name
+//                    "      ,col.colno\n"         // 2 -> Position
+//                    "      ,col.coltype\n"       // 3 -> datatype
+//                    "      ,col.collength\n"     // 4 -> Length
+//                    "      ,def.default\n"       // 5 -> Default
+//                    "  FROM systables   tab\n"
+//                    "      ,syscolumns  col\n"
+//                    "      ,sysdefaults def\n"
+//                    " WHERE col.tabid   = tab.tabid\n"
+//                    "   AND def.tabid   = tab.tabid\n"
+//                    "   AND def.colno   = col.colno\n"
+//                    "   AND tab.tabname = '" + p_tablename  + "'\n"
+//                    "   AND col.colname = '" + p_columnname + "'";
+//                    // Beware: columnname filter must be last for previous method!
+//   return select;
 }
 
 CString 
