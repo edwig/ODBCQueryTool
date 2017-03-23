@@ -439,20 +439,16 @@ SQLInfoInformix::GetCATALOGTableExists(CString /*p_schema*/,CString p_tablename)
 }
 
 CString
-SQLInfoInformix::GetCATALOGTablesList(CString /*p_schema*/,CString p_pattern) const
+SQLInfoInformix::GetCATALOGTablesList(CString p_schema,CString p_pattern) const
 {
-  p_pattern.MakeLower();
-  CString query = "SELECT tabname\n"
-                  "  FROM systables\n"
-                  " WHERE tabname like '" + p_pattern + "'";
-  return query;
+  return GetCATALOGTableAttributes(p_schema,p_pattern,"");
 }
 
-bool
-SQLInfoInformix::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/,MetaTable& /*p_table*/) const
+CString
+SQLInfoInformix::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_type*/) const
 {
   // Getting the temp table status
-  return false;
+  return "";
 }
 
 CString
@@ -1219,14 +1215,15 @@ SQLInfoInformix::GetPSMProcedureList(CString p_schema) const
 CString
 SQLInfoInformix::GetPSMProcedureAttributes(CString /*p_schema*/, CString p_procedure) const
 {
-  p_procedure.MakeLower();
-  CString sql = "SELECT sbody.data\n"
-                "  FROM sysprocbody sbody\n"
-                "      ,sysprocedures sproc\n"
-                " WHERE sbody.procid   = sproc.procid\n"
-                "   AND sproc.procname = '" + p_procedure + "'\n"
-                "   AND datakey        = 'T'";
-  return sql;
+  return "";
+//   p_procedure.MakeLower();
+//   CString sql = "SELECT sbody.data\n"
+//                 "  FROM sysprocbody sbody\n"
+//                 "      ,sysprocedures sproc\n"
+//                 " WHERE sbody.procid   = sproc.procid\n"
+//                 "   AND sproc.procname = '" + p_procedure + "'\n"
+//                 "   AND datakey        = 'T'";
+//   return sql;
 }
 
 CString
@@ -1393,12 +1390,12 @@ SQLInfoInformix::GetPSMExecute(CString p_procedure,MParameterMap& p_parameters) 
     doMore = true;
 
     // Append input and in/out parameters
-    if(param.m_type == 0 || param.m_type == 2)
+    if(param.m_columnType == SQL_PARAM_INPUT || param.m_columnType == SQL_PARAM_INPUT_OUTPUT)
     {
       line += param.m_parameter;
     }
     // See if we must do 'returning' clause
-    if(param.m_type == 1 || param.m_type == 2)
+    if(param.m_columnType == SQL_PARAM_OUTPUT || param.m_columnType == SQL_PARAM_INPUT_OUTPUT)
     {
       doReturning = true;
     }
@@ -1416,7 +1413,7 @@ SQLInfoInformix::GetPSMExecute(CString p_procedure,MParameterMap& p_parameters) 
       if(doMore) line += ",";
       doMore = true;
 
-      if(param.m_type == 1 || param.m_type == 2)
+      if(param.m_columnType == SQL_PARAM_OUTPUT || param.m_columnType == SQL_PARAM_INPUT_OUTPUT)
       {
         line += param.m_parameter;
       }

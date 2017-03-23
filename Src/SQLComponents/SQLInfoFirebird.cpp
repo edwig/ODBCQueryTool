@@ -412,29 +412,71 @@ SQLInfoFirebird::GetCATALOGTableExists(CString /*p_schema*/,CString p_tablename)
 CString
 SQLInfoFirebird::GetCATALOGTablesList(CString p_schema,CString p_pattern) const
 {
-  p_pattern.MakeUpper();
-  CString query = "SELECT rdb$relation_name\n"
-                  "  FROM rdb$relations\n"
-                  " WHERE rdb$relation_name like '" + p_pattern + "'";
-  return query;
+  return GetCATALOGTableAttributes(p_schema,p_pattern,"");
 }
 
 // Attributes can fill in 'm_temporary' 
-bool
-SQLInfoFirebird::GetCATALOGTableAttributes(CString /*p_schema*/,CString p_tablename,MetaTable& p_table) const
+CString
+SQLInfoFirebird::GetCATALOGTableAttributes(CString /*p_schema*/,CString p_tablename,CString p_type) const
 {
   p_tablename.MakeUpper();
-  CString query = "SELECT rdb$relation_type\n"
-                  "  FROM rdb$relations\n"
-                  " WHERE rdb$relation_name = ?";
-  SQLQuery qry(m_database);
-  SQLVariant* var = qry.DoSQLStatementScalar(query,p_tablename);
-  if(var)
+  CString sql = "SELECT CAST('' AS VARCHAR(31))             AS table_catalog\n"
+                "      ,CAST(rdb$owner_name AS VARCHAR(31)) AS table_schema\n"
+                "      ,trim(rdb$relation_name)             AS table_name\n"
+                "      ,CASE rdb$relation_type\n"
+                "            WHEN 0 THEN CASE rdb$system_flag\n"
+                "                             WHEN 0 THEN 'TABLE'\n"
+                "                             WHEN 1 THEN 'SYSTEM TABLE'\n"
+                "                                    ELSE  'UNKNOWN'\n"
+                "                        END\n"
+                "            WHEN 1 THEN 'VIEW'\n"
+                "            WHEN 2 THEN 'TABLE'\n"
+                "            WHEN 3 THEN 'SYSTEM TABLE'\n"
+                "            WHEN 4 THEN 'GLOBAL TEMPORARY'\n"
+                "            WHEN 5 THEN 'LOCAL TEMPORARY'\n"
+                "                   ELSE 'UNKNOWN'\n"
+                "       END               AS table_type\n"
+                "      ,rdb$description   AS remarks\n"
+                "      ,trim(rdb$owner_name) || '.' || trim(rdb$relation_name) AS full_name\n"
+                "      ,cast('' as varchar(31)) as storage_space\n"
+                "  FROM rdb$relations";
+  if(!p_tablename.IsEmpty())
   {
-    p_table.m_temporary = var->GetAsBoolean();
-    return true;
+    sql += "\n WHERE rdb$relation_name ";
+    sql += (p_tablename.Find("%") >= 0) ? "LIKE '" : "= '";
+    sql += p_tablename + "'";
   }
-  return false;
+
+  if(p_type.Compare("TABLE") == 0)
+  {
+    sql += "\n   AND rdb$relation_type IN (0,2)"
+           "\n   AND rdb$system_flag   = 0";
+  }
+  else if(p_type.Compare("VIEW") == 0)
+  {
+    sql += "\n   AND rdb$relation_type = 1"
+           "\n   AND rdb$system_flag   = 0";
+  }
+  else if(p_type.Compare("SYSTEM TABLE") == 0)
+  {
+    sql += "\n   AND rdb$relation_type IN (0,3)"
+           "\n   AND rdb$system_flag   = 1";
+  }
+  else if(p_type.Compare("GLOBAL TEMPORARY") == 0)
+  {
+    sql += "\n   AND rdb$relation_type = 4"
+           "\n   AND rdb$system_flag   = 0";
+  }
+  else if(p_type.Compare("LOCAL TEMPORARY") == 0)
+  {
+    sql += "\n   AND rdb$relation_type = 5"
+           "\n   AND rdb$system_flag   = 0";
+  }
+  else
+  {
+    // Just search
+  }
+  return sql;
 }
 
 CString
@@ -598,7 +640,7 @@ SQLInfoFirebird::GetCATALOGColumnAttributes(CString /*p_schema*/,CString p_table
         "            WHEN 27 THEN 20\n"
         "            WHEN 35 THEN 26\n"
         "            WHEN 37 THEN fld.rdb$field_length\n"
-        "            WHEN 261 THEN 2147483648\n"
+        "            WHEN 261 THEN 2147483647\n"
         "       END                                        as column_size\n"      		    // 7  - INTEGER
         "      ,cast(fld.rdb$field_length as integer)      as buffer_length\n"	          // 8  - INTEGER
         "      ,cast (fld.rdb$field_scale as smallint)*-1  as decimal_digits\n"		        // 9  - SMALLINT
@@ -831,15 +873,16 @@ SQLInfoFirebird::GetCATALOGPrimaryExists(CString /*p_schema*/,CString p_tablenam
 CString
 SQLInfoFirebird::GetCATALOGPrimaryAttributes(CString /*p_schema*/,CString p_tablename) const
 {
-  p_tablename.MakeUpper();
-  CString sql = "SELECT rdb$constraint_name\n"      // 1 -> Constraint name
-                "      ,rdb$index_name\n"           // 2 -> Index name
-                "      ,rdb$deferrable\n"           // 3 ->
-                "      ,rdb$initially_deferred\n"
-                "  FROM rdb$relation_constraints\n"
-                " WHERE rdb$relation_name   = '" + p_tablename + "'\n"
-                "   AND rdb$constraint_type = 'PRIMARY KEY'";
-  return sql;
+  return "";
+//   p_tablename.MakeUpper();
+//   CString sql = "SELECT rdb$constraint_name\n"      // 1 -> Constraint name
+//                 "      ,rdb$index_name\n"           // 2 -> Index name
+//                 "      ,rdb$deferrable\n"           // 3 ->
+//                 "      ,rdb$initially_deferred\n"
+//                 "  FROM rdb$relation_constraints\n"
+//                 " WHERE rdb$relation_name   = '" + p_tablename + "'\n"
+//                 "   AND rdb$constraint_type = 'PRIMARY KEY'";
+//   return sql;
 }
 
 CString
@@ -1158,14 +1201,33 @@ SQLInfoFirebird::GetCATALOGTriggerAttributes(CString p_schema, CString p_tablena
              "       END AS trigger_enabled\n"
              "      ,rdb$trigger_source\n"
              "  FROM rdb$triggers\n"
-             " WHERE rdb$relation_name = '%s'\n"
-             "   AND rdb$system_flag   = 0\n"
-            ,p_schema.GetString()
-            ,p_tablename.GetString());
+             " WHERE rdb$system_flag   = 0\n"
+            ,p_schema.GetString());
 
+  // Add tablename filter
+  if(!p_tablename.IsEmpty())
+  {
+    if(p_tablename.Find('%') >= 0)
+    {
+      sql.AppendFormat("   AND rdb$relation_name LIKE '%s'\n",p_tablename.GetString());
+    }
+    else
+    {
+      sql.AppendFormat("   AND rdb$relation_name = '%s'\n",p_tablename.GetString());
+    }
+  }
+
+  // Add trigger name filter
   if(!p_triggername.IsEmpty())
   {
-    sql.AppendFormat("   AND rdb$trigger_name = '%s'\n",p_triggername.GetString());
+    if(p_triggername.Find('%') >= 0)
+    {
+      sql.AppendFormat("   AND rdb$trigger_name LIKE '%s'\n",p_triggername.GetString());
+    }
+    else
+    {
+      sql.AppendFormat("   AND rdb$trigger_name = '%s'\n",p_triggername.GetString());
+    }
   }
 
   sql += " ORDER BY rdb$trigger_sequence";
@@ -1405,64 +1467,59 @@ SQLInfoFirebird::GetPSMProcedureExists(CString /*p_schema*/, CString p_procedure
 CString
 SQLInfoFirebird::GetPSMProcedureList(CString p_schema) const
 {
-  CString query("SELECT trim(rdb$owner_name)    AS schema_name\n"
-                "      ,trim(rdb$function_name) AS procedure_name\n"
-                "  FROM rdb$functions\n"
-              //" WHERE rdb$function_name LIKE 'something%'\n"
-                " UNION ALL\n"
-                "SELECT trim(rdb$owner_name)     AS schema_name\n"
-                "      ,trim(rdb$procedure_name) AS procedure_name\n"
-                "  FROM rdb$procedures");
-              //" WHERE rdb$procedure_name LIKE 'MULT%'");
-    return query;
+  return GetPSMProcedureAttributes(p_schema,"");
 }
 
 CString
 SQLInfoFirebird::GetPSMProcedureAttributes(CString /*p_schema*/, CString p_procedure) const
 {
   p_procedure.MakeUpper();
-  CString sql("SELECT ''             as catalog_name\n"
-              "      ,rdb$owner_name as schema_name\n"
-              "      ,rdb$procedure_name\n"
-              "      ,(SELECT COUNT(*)\n"
-              "          FROM rdb$procedure_parameters par\n"
-              "         WHERE par.rdb$procedure_name = pro.rdb$procedure_name\n"
-              "           AND par.rdb$parameter_type = 0) as input_parameters\n"
-              "      ,(SELECT COUNT(*)\n"
-              "          FROM rdb$procedure_parameters par\n"
-              "         WHERE par.rdb$procedure_name = pro.rdb$procedure_name\n"
-              "           AND par.rdb$parameter_type = 1) as output_parameters\n"
-              "      ,(SELECT COUNT(*)\n"
-              "          FROM rdb$procedure_parameters par\n"
-              "         WHERE par.rdb$procedure_name = pro.rdb$procedure_name\n"
-              "           AND par.rdb$parameter_type = 1) as result_sets\n"
-              "      ,rdb$description\n"
-              "      ,1 as procedure_type\n"
-              "      ,rdb$procedure_source as source\n"
-              "  FROM rdb$procedures pro\n"
-              " WHERE rdb$procedure_name = '" + p_procedure + "'\n"
-              " UNION ALL\n"
-              "SELECT ''             as catalog_name\n"
-              "      ,rdb$owner_name as schema_name\n"
-              "      ,rdb$function_name\n"
-              "      ,(SELECT COUNT(*)\n"
-              "          FROM rdb$function_arguments arg\n"
-              "         WHERE fun.rdb$function_name = arg.rdb$function_name\n"
-              "           AND arg.rdb$argument_position > 0) as input_parameters\n"
-              "      ,(SELECT COUNT(*)\n"
-              "          FROM rdb$function_arguments arg\n"
-              "         WHERE fun.rdb$function_name = arg.rdb$function_name\n"
-              "           AND arg.rdb$argument_position = 0) as output_parameters\n"
-              "      ,(SELECT COUNT(*)\n"
-              "          FROM rdb$function_arguments arg\n"
-              "         WHERE fun.rdb$function_name = arg.rdb$function_name\n"
-              "           AND arg.rdb$argument_position > 0) as result_sets\n"
-              "      ,rdb$description\n"
-              "      ,2 as procedure_type\n"
-              "      ,rdb$function_source as source\n"
-              "  FROM rdb$functions fun\n"
-              " WHERE rdb$function_name = '" + p_procedure + "'\n");
-  return sql;
+  CString sql1 ("SELECT ''             as catalog_name\n"
+                "      ,rdb$owner_name as schema_name\n"
+                "      ,rdb$procedure_name\n"
+                "      ,(SELECT COUNT(*)\n"
+                "          FROM rdb$procedure_parameters par\n"
+                "         WHERE par.rdb$procedure_name = pro.rdb$procedure_name\n"
+                "           AND par.rdb$parameter_type = 0) as input_parameters\n"
+                "      ,(SELECT COUNT(*)\n"
+                "          FROM rdb$procedure_parameters par\n"
+                "         WHERE par.rdb$procedure_name = pro.rdb$procedure_name\n"
+                "           AND par.rdb$parameter_type = 1) as output_parameters\n"
+                "      ,(SELECT COUNT(*)\n"
+                "          FROM rdb$procedure_parameters par\n"
+                "         WHERE par.rdb$procedure_name = pro.rdb$procedure_name\n"
+                "           AND par.rdb$parameter_type = 1) as result_sets\n"
+                "      ,rdb$description\n"
+                "      ,1 as procedure_type\n" // SQL_PROCEDURE
+                "      ,rdb$procedure_source as source\n"
+                "  FROM rdb$procedures pro\n");
+
+  CString sql2 ("SELECT ''             as catalog_name\n"
+                "      ,rdb$owner_name as schema_name\n"
+                "      ,rdb$function_name\n"
+                "      ,(SELECT COUNT(*)\n"
+                "          FROM rdb$function_arguments arg\n"
+                "         WHERE fun.rdb$function_name = arg.rdb$function_name\n"
+                "           AND arg.rdb$argument_position > 0) as input_parameters\n"
+                "      ,(SELECT COUNT(*)\n"
+                "          FROM rdb$function_arguments arg\n"
+                "         WHERE fun.rdb$function_name = arg.rdb$function_name\n"
+                "           AND arg.rdb$argument_position = 0) as output_parameters\n"
+                "      ,(SELECT COUNT(*)\n"
+                "          FROM rdb$function_arguments arg\n"
+                "         WHERE fun.rdb$function_name = arg.rdb$function_name\n"
+                "           AND arg.rdb$argument_position > 0) as result_sets\n"
+                "      ,rdb$description\n"
+                "      ,2 as procedure_type\n" // SQL_FUNCTION
+                "      ,rdb$function_source as source\n"
+                "  FROM rdb$functions fun\n");
+
+  if(!p_procedure.IsEmpty())
+  {
+    sql1 += " WHERE rdb$procedure_name = '" + p_procedure + "'\n";
+    sql2 += " WHERE rdb$function_name  = '" + p_procedure + "'\n";
+  }
+  return sql1 + " UNION ALL\n" + sql2;
 }
 
 CString
@@ -1487,55 +1544,304 @@ SQLInfoFirebird::GetPSMProcedureErrors(CString p_schema,CString p_procedure) con
 
 // And it's parameters
 CString
-SQLInfoFirebird::GetPSMProcedureParameters(CString p_schema,CString p_procedure) const
+SQLInfoFirebird::GetPSMProcedureParameters(CString /*p_schema*/,CString p_procedure) const
 {
-  p_schema.MakeUpper();
   p_procedure.MakeUpper();
 
   CString sql = "SELECT '' as catalog_name\n"
-                "      ,(SELECT rdb$owner_name\n"
+                "      ,(SELECT trim(rdb$owner_name)\n"
                 "          FROM rdb$procedures pro\n"
-                "         WHERE pro.rdb$procedure_name = par.rdb$procedure_name)\n"
-                "      ,par.rdb$procedure_name as procedure_name\n"
-                "      ,par.rdb$parameter_name as column_name\n"
-                "      ,par.rdb$parameter_number + par.rdb$parameter_type as ordinal_position\n"
+                "         WHERE pro.rdb$procedure_name = par.rdb$procedure_name) as schema_name\n"
+                "      ,trim(par.rdb$procedure_name) as procedure_name\n"
+                "      ,trim(par.rdb$parameter_name) as column_name\n"
                 "      ,(par.rdb$parameter_type * 3) + 1 as column_type\n"
-                "      ,fld.rdb$field_type    as field_type\n"
-                "      ,fld.RDB$FIELD_LENGTH  as par_precision\n"
-                "      ,fld.RDB$FIELD_SCALE   as scale\n"
+                "      ,CASE fld.rdb$field_type\n"
+                "            WHEN 7  THEN CASE fld.rdb$field_sub_type\n"
+                "                              WHEN 1 THEN 2\n"
+                "                              WHEN 2 THEN 2\n"
+                "                                     ELSE 5\n"
+                "                              END\n"
+                "            WHEN 8  THEN CASE fld.rdb$field_sub_type\n"
+                "                              WHEN 1 THEN 2\n"
+                "                              WHEN 2 THEN 2\n"
+                "                                     ELSE 4\n"
+                "                              END\n"
+                "            WHEN 10 THEN 7\n"
+                "            WHEN 12 THEN 10\n"
+                "            WHEN 13 THEN 13\n"
+                "            WHEN 14 THEN 1\n"
+                "            WHEN 16 THEN CASE fld.rdb$field_sub_type\n"
+                "                              WHEN 1 THEN 2\n"
+                "                              WHEN 2 THEN 2\n"
+                "                                     ELSE -5\n"
+                "                         END\n"
+                "            WHEN 23 THEN -7\n"
+                "            WHEN 27 THEN 8\n"
+                "            WHEN 35 THEN 11\n"
+                "            WHEN 37 THEN 12\n"
+                "            WHEN 261 THEN CASE fld.rdb$field_sub_type\n"
+                "                               WHEN 0 THEN -4\n"
+                "                               WHEN 1 THEN -1\n"
+                "                                      ELSE -10\n"
+                "                          END\n"
+                "                     ELSE 0\n"
+                "       END                           as data_type\n"
+                "      ,CASE fld.rdb$field_type\n"
+                "            WHEN 7  THEN CASE fld.rdb$field_sub_type\n"
+                "                              WHEN 1 THEN 'NUMERIC'\n"
+                "                              WHEN 2 THEN 'DECIMAL'\n"
+                "                                     ELSE 'SMALLINT'\n"
+                "                              END\n"
+                "            WHEN 8  THEN CASE fld.rdb$field_sub_type\n"
+                "                              WHEN 1 THEN 'NUMERIC'\n"
+                "                              WHEN 2 THEN 'DECIMAL'\n"
+                "                                     ELSE 'INTEGER'\n"
+                "                              END\n"
+                "            WHEN 10 THEN 'FLOAT'\n"
+                "            WHEN 12 THEN 'DATE'\n"
+                "            WHEN 13 THEN 'TIME'\n"
+                "            WHEN 14 THEN 'CHAR'\n"
+                "            WHEN 16 THEN CASE fld.rdb$field_sub_type\n"
+                "                              WHEN 1 THEN 'NUMERIC'\n"
+                "                              WHEN 2 THEN 'DECIMAL'\n"
+                "                                     ELSE 'BIGINT'\n"
+                "                         END\n"
+                "            WHEN 23 THEN 'BOOLEAN'\n"
+                "            WHEN 27 THEN 'DOUBLE PRECISION'\n"
+                "            WHEN 35 THEN 'TIMESTAMP'\n"
+                "            WHEN 37 THEN 'VARCHAR'\n"
+                "            WHEN 261 THEN CASE fld.rdb$field_sub_type\n"
+                "                               WHEN 0 THEN 'BLOB SUB_TYPE 0'\n"
+                "                               WHEN 1 THEN 'BLOB SUB_TYPE TEXT'\n"
+                "                                      ELSE 'BLOB'\n"
+                "                          END\n"
+                "                     ELSE 'UNKNOWN'\n"
+                "       END                                        as type_name\n"		// 6  - VARCHAR NOT NULL
+                "      ,CASE fld.rdb$field_type\n"
+                "            WHEN 7  THEN CASE fld.rdb$field_sub_type\n"
+                "                              WHEN 1 THEN fld.rdb$field_precision\n"
+                "                              WHEN 2 THEN fld.rdb$field_precision\n"
+                "                                     ELSE 5\n"
+                "                              END\n"
+                "            WHEN 8  THEN CASE fld.rdb$field_sub_type\n"
+                "                              WHEN 1 THEN fld.rdb$field_precision\n"
+                "                              WHEN 2 THEN fld.rdb$field_precision\n"
+                "                                     ELSE 11\n"
+                "                              END\n"
+                "            WHEN 10 THEN 12\n"
+                "            WHEN 12 THEN 10\n"
+                "            WHEN 13 THEN 13\n"
+                "            WHEN 14 THEN fld.rdb$field_length\n"
+                "            WHEN 16 THEN CASE fld.rdb$field_sub_type\n"
+                "                              WHEN 1 THEN fld.rdb$field_precision\n"
+                "                              WHEN 2 THEN fld.rdb$field_precision\n"
+                "                                     ELSE 22\n"
+                "                         END\n"
+                "            WHEN 23 THEN 1\n"
+                "            WHEN 27 THEN 20\n"
+                "            WHEN 35 THEN 26\n"
+                "            WHEN 37 THEN fld.rdb$field_length\n"
+                "            WHEN 261 THEN 2147483647\n"
+                "       END                                        as column_size\n"
+                "      ,cast(fld.rdb$field_length as integer)      as buffer_length\n"
+                "      ,cast (fld.rdb$field_scale as smallint)*-1  as scale\n"
                 "      ,10                    as radix\n"
-                "      ,par.rdb$null_flag     as nullable\n"
+                "      ,(coalesce(par.rdb$null_flag,0,0)-1)*-1     as nullable\n"
                 "      ,par.RDB$DESCRIPTION   as remarks\n"
-                "      ,par.RDB$DEFAULT_VALUE as default_value\n"
-                "      ,'YES'                 as isnullable\n"
+                "      ,par.RDB$DEFAULT_source as default_value\n"
+                "      ,CASE fld.rdb$field_type\n"
+                "            WHEN 7  THEN CASE fld.rdb$field_sub_type\n"
+                "                              WHEN 1 THEN 2\n"
+                "                              WHEN 2 THEN 2\n"
+                "                                     ELSE 5\n"
+                "                              END\n"
+                "            WHEN 8  THEN CASE fld.rdb$field_sub_type\n"
+                "                              WHEN 1 THEN 2\n"
+                "                              WHEN 2 THEN 2\n"
+                "                                     ELSE 4\n"
+                "                              END\n"
+                "            WHEN 10 THEN 7\n"
+                "            WHEN 12 THEN 9\n"
+                "            WHEN 13 THEN 10\n"
+                "            WHEN 14 THEN 1\n"
+                "            WHEN 16 THEN CASE fld.rdb$field_sub_type\n"
+                "                              WHEN 1 THEN 2\n"
+                "                              WHEN 2 THEN 2\n"
+                "                                     ELSE -5\n"
+                "                         END\n"
+                "            WHEN 23 THEN -7\n"
+                "            WHEN 27 THEN 8\n"
+                "            WHEN 35 THEN 11\n"
+                "            WHEN 37 THEN 12\n"
+                "            WHEN 261 THEN CASE fld.rdb$field_sub_type\n"
+                "                               WHEN 0 THEN -4\n"
+                "                               WHEN 1 THEN -1\n"
+                "                                      ELSE -10\n"
+                "                          END\n"
+                "                     ELSE 0\n"
+                "       END                                         as sql_data_type\n"
+                "      ,CAST(0 AS SMALLINT)                         as sql_datetime_sub\n"
+                "      ,fld.rdb$field_length / rdb$character_length as char_octet_length\n"
+                "      ,par.rdb$parameter_number + par.rdb$parameter_type as ordinal_position\n"
+                "      ,CASE (coalesce(par.rdb$null_flag,0,0)-1)*-1\n"
+                "            WHEN 0 THEN 'NO'\n"
+                "            WHEN 1 THEN 'YES'\n"
+                "                   ELSE 'UNKNOWN'\n"
+                "        END        AS is_nullable\n"
                 "  FROM rdb$procedure_parameters par\n"
                 "      ,rdb$fields fld\n"
                 " WHERE fld.rdb$field_name = par.rdb$field_source\n"
-                "   AND par.rdb$procedure_name = '" + p_procedure + "'";
+                "   AND par.rdb$procedure_name = '" + p_procedure + "'\n"
+                "UNION ALL\n"
+                "SELECT '' as catalog_name\n"
+                "      ,(SELECT trim(rdb$owner_name)\n"
+                "          FROM rdb$functions fun\n"
+                "         WHERE fun.rdb$function_name = par.rdb$function_name)\n"
+                "      ,trim(par.rdb$function_name) as procedure_name\n"
+                "      ,trim(par.rdb$argument_name) as column_name\n"
+                "      ,CASE par.rdb$argument_name IS NULL\n"
+                "            WHEN TRUE THEN 5\n"
+                "                      ELSE 2 \n"
+                "       END as column_type\n"
+                "      ,CASE fld.rdb$field_type\n"
+                "            WHEN 7  THEN CASE fld.rdb$field_sub_type\n"
+                "                              WHEN 1 THEN 2\n"
+                "                              WHEN 2 THEN 2\n"
+                "                                     ELSE 5\n"
+                "                              END\n"
+                "            WHEN 8  THEN CASE fld.rdb$field_sub_type\n"
+                "                              WHEN 1 THEN 2\n"
+                "                              WHEN 2 THEN 2\n"
+                "                                     ELSE 4\n"
+                "                              END\n"
+                "            WHEN 10 THEN 7\n"
+                "            WHEN 12 THEN 10\n"
+                "            WHEN 13 THEN 13\n"
+                "            WHEN 14 THEN 1\n"
+                "            WHEN 16 THEN CASE fld.rdb$field_sub_type\n"
+                "                              WHEN 1 THEN 2\n"
+                "                              WHEN 2 THEN 2\n"
+                "                                     ELSE -5\n"
+                "                         END\n"
+                "            WHEN 23 THEN -7\n"
+                "            WHEN 27 THEN 8\n"
+                "            WHEN 35 THEN 11\n"
+                "            WHEN 37 THEN 12\n"
+                "            WHEN 261 THEN CASE fld.rdb$field_sub_type\n"
+                "                               WHEN 0 THEN -4\n"
+                "                               WHEN 1 THEN -1\n"
+                "                                      ELSE -10\n"
+                "                          END\n"
+                "                     ELSE 0\n"
+                "       END                           as data_type\n"
+                "      ,CASE fld.rdb$field_type\n"
+                "            WHEN 7  THEN CASE fld.rdb$field_sub_type\n"
+                "                              WHEN 1 THEN 'NUMERIC'\n"
+                "                              WHEN 2 THEN 'DECIMAL'\n"
+                "                                     ELSE 'SMALLINT'\n"
+                "                              END\n"
+                "            WHEN 8  THEN CASE fld.rdb$field_sub_type\n"
+                "                              WHEN 1 THEN 'NUMERIC'\n"
+                "                              WHEN 2 THEN 'DECIMAL'\n"
+                "                                     ELSE 'INTEGER'\n"
+                "                              END\n"
+                "            WHEN 10 THEN 'FLOAT'\n"
+                "            WHEN 12 THEN 'DATE'\n"
+                "            WHEN 13 THEN 'TIME'\n"
+                "            WHEN 14 THEN 'CHAR'\n"
+                "            WHEN 16 THEN CASE fld.rdb$field_sub_type\n"
+                "                              WHEN 1 THEN 'NUMERIC'\n"
+                "                              WHEN 2 THEN 'DECIMAL'\n"
+                "                                     ELSE 'BIGINT'\n"
+                "                         END\n"
+                "            WHEN 23 THEN 'BOOLEAN'\n"
+                "            WHEN 27 THEN 'DOUBLE PRECISION'\n"
+                "            WHEN 35 THEN 'TIMESTAMP'\n"
+                "            WHEN 37 THEN 'VARCHAR'\n"
+                "            WHEN 261 THEN CASE fld.rdb$field_sub_type\n"
+                "                               WHEN 0 THEN 'BLOB SUB_TYPE 0'\n"
+                "                               WHEN 1 THEN 'BLOB SUB_TYPE TEXT'\n"
+                "                                      ELSE 'BLOB'\n"
+                "                          END\n"
+                "                     ELSE 'UNKNOWN'\n"
+                "       END                                        as type_name\n"		// 6  - VARCHAR NOT NULL
+                "      ,CASE fld.rdb$field_type\n"
+                "            WHEN 7  THEN CASE fld.rdb$field_sub_type\n"
+                "                              WHEN 1 THEN fld.rdb$field_precision\n"
+                "                              WHEN 2 THEN fld.rdb$field_precision\n"
+                "                                     ELSE 5\n"
+                "                              END\n"
+                "            WHEN 8  THEN CASE fld.rdb$field_sub_type\n"
+                "                              WHEN 1 THEN fld.rdb$field_precision\n"
+                "                              WHEN 2 THEN fld.rdb$field_precision\n"
+                "                                     ELSE 11\n"
+                "                              END\n"
+                "            WHEN 10 THEN 12\n"
+                "            WHEN 12 THEN 10\n"
+                "            WHEN 13 THEN 13\n"
+                "            WHEN 14 THEN fld.rdb$field_length\n"
+                "            WHEN 16 THEN CASE fld.rdb$field_sub_type\n"
+                "                              WHEN 1 THEN fld.rdb$field_precision\n"
+                "                              WHEN 2 THEN fld.rdb$field_precision\n"
+                "                                     ELSE 22\n"
+                "                         END\n"
+                "            WHEN 23 THEN 1\n"
+                "            WHEN 27 THEN 20\n"
+                "            WHEN 35 THEN 26\n"
+                "            WHEN 37 THEN fld.rdb$field_length\n"
+                "            WHEN 261 THEN 2147483647\n"
+                "       END           as column_size\n"
+                "      ,cast(fld.rdb$field_length as integer)      as buffer_length\n"
+                "      ,cast (fld.rdb$field_scale as smallint)*-1  as scale\n"
+                "      ,10                    as radix\n"
+                "      ,(coalesce(par.rdb$null_flag,0,0)-1)*-1     as nullable\n"
+                "      ,par.rdb$description   as remarks\n"
+                "      ,par.rdb$default_source as default_value\n"
+                "      ,CASE fld.rdb$field_type\n"
+                "            WHEN 7  THEN CASE fld.rdb$field_sub_type\n"
+                "                              WHEN 1 THEN 2\n"
+                "                              WHEN 2 THEN 2\n"
+                "                                     ELSE 5\n"
+                "                              END\n"
+                "            WHEN 8  THEN CASE fld.rdb$field_sub_type\n"
+                "                              WHEN 1 THEN 2\n"
+                "                              WHEN 2 THEN 2\n"
+                "                                     ELSE 4\n"
+                "                              END\n"
+                "            WHEN 10 THEN 7\n"
+                "            WHEN 12 THEN 9\n"
+                "            WHEN 13 THEN 10\n"
+                "            WHEN 14 THEN 1\n"
+                "            WHEN 16 THEN CASE fld.rdb$field_sub_type\n"
+                "                              WHEN 1 THEN 2\n"
+                "                              WHEN 2 THEN 2\n"
+                "                                     ELSE -5\n"
+                "                         END\n"
+                "            WHEN 23 THEN -7\n"
+                "            WHEN 27 THEN 8\n"
+                "            WHEN 35 THEN 11\n"
+                "            WHEN 37 THEN 12\n"
+                "            WHEN 261 THEN CASE fld.rdb$field_sub_type\n"
+                "                               WHEN 0 THEN -4\n"
+                "                               WHEN 1 THEN -1\n"
+                "                                      ELSE -10\n"
+                "                          END\n"
+                "                     ELSE 0\n"
+                "       END                  as sql_data_type\n"
+                "      ,CAST(0 AS SMALLINT)  as sql_datetime_sub\n"
+                "      ,fld.rdb$field_length / fld.rdb$character_length as char_octet_length\n"
+                "      ,par.rdb$argument_position as ordinal_position\n"
+                "      ,CASE (coalesce(par.rdb$null_flag,0,0)-1)*-1\n"
+                "            WHEN 0 THEN 'NO'\n"
+                "            WHEN 1 THEN 'YES'\n"
+                "                   ELSE 'UNKNOWN'\n"
+                "        END        AS is_nullable\n"
+                "  FROM rdb$function_arguments par\n"
+                "      ,rdb$fields fld\n"
+                " WHERE fld.rdb$field_name = par.rdb$field_source\n"
+                "   AND par.rdb$function_name = '" + p_procedure + "'";
   return sql;
 }
-
-
-// typedef struct _metaInfoProcColumns
-// {
-//   CString   m_catalogName;              // Catalog of the procedure / function
-//   CString   m_schemaName;               // Schema  of the procedure / function
-//   CString   m_procedureName;            // Name    of the procedure / function
-//   CString   m_columnName;               // Parameter / column name 
-//   int       m_ordinalPosition { 0 };    // Positioning of the parameter
-//   int       m_columnType      { 0 };    // SQL_PARAM_INPUT / SQL_PARAM_OUTPUT etc. etc.
-//   int       m_dataType        { 0 };    // ODBC standard type name
-//   CString   m_typeName;                 // RDBMS type name
-//   int       m_columnSize      { 0 };    // Display size
-//   int       m_bufferSize      { 0 };    // Binary buffer size
-//   int       m_decimalDigits   { 0 };    // Number of decimal digits
-//   int       m_radix           { 0 };    // Radix display (2, 8, 10, 16)
-//   int       m_nullable        { 0 };    // SQL_NO_NULLS / SQL_NULLABLE / SQL_NULLABLE_UNKNOWN
-//   CString   m_remarks;                  // From the COMMENT command
-//   CString   m_defaultValue;             // Default value
-//   CString   m_isNullable;               // "NO" or "YES" (can include nulls)
-// }
-// MetaProcedureColumn;
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -1679,12 +1985,12 @@ SQLInfoFirebird::GetPSMExecute(CString p_procedure,MParameterMap& p_parameters) 
     doMore = true;
 
     // Append input and in/out parameters
-    if(param.m_type == 0 || param.m_type == 2)
+    if(param.m_columnType == SQL_PARAM_INPUT || param.m_columnType == SQL_PARAM_INPUT_OUTPUT)
     {
       line.AppendFormat(":%s",param.m_parameter.GetString());
     }
     // See if we must do 'returning' clause
-    if(param.m_type == 1 || param.m_type == 2)
+    if(param.m_columnType == SQL_PARAM_OUTPUT || param.m_columnType == SQL_PARAM_INPUT_OUTPUT)
     {
       doReturning = true;
     }
@@ -1701,7 +2007,7 @@ SQLInfoFirebird::GetPSMExecute(CString p_procedure,MParameterMap& p_parameters) 
       if(doMore) line += ",";
       doMore = true;
 
-      if(param.m_type == 1 || param.m_type == 2)
+      if(param.m_columnType == SQL_PARAM_OUTPUT || param.m_columnType == SQL_PARAM_INPUT_OUTPUT)
       {
         line.AppendFormat(":%s",param.m_parameter.GetString());
       }

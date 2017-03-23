@@ -429,11 +429,11 @@ SQLInfoMySQL::GetCATALOGTablesList(CString /*p_schema*/,CString p_pattern) const
   return "";
 }
 
-bool
-SQLInfoMySQL::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/,MetaTable& /*p_table*/) const
+CString
+SQLInfoMySQL::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_type*/) const
 {
   // Getting the temp table status
-  return false;
+  return "";
 }
 
 CString

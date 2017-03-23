@@ -430,19 +430,19 @@ SQLInfoSQLServer::GetCATALOGTablesList(CString p_schema,CString p_pattern) const
 {
   p_schema.MakeLower();
   p_pattern.MakeLower();
-  CString query = "SELECT count(*)\n"
-                  "  FROM dbo.sysobjects tab\n"
-                  "      ,dbo.sysschemas sch\n"
-                  " WHERE sch.name      = '" + p_schema  + "'\n"
-                  "   AND tab.name   like '" + p_pattern + "'\n"
-                  "   AND tab.schema_id = sch.schema_id\n";
-  return query;
+//   CString query = "SELECT count(*)\n"
+//                   "  FROM dbo.sysobjects tab\n"
+//                   "      ,dbo.sysschemas sch\n"
+//                   " WHERE sch.name      = '" + p_schema  + "'\n"
+//                   "   AND tab.name   like '" + p_pattern + "'\n"
+//                   "   AND tab.schema_id = sch.schema_id\n";
+//   return query;
+  return "";
 }
 
-bool
-SQLInfoSQLServer::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/,MetaTable& /*p_table*/) const
+CString
+SQLInfoSQLServer::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_type*/) const
 {
-  // Getting the temp table status
   return false;
 }
 
@@ -1403,11 +1403,11 @@ SQLInfoSQLServer::GetPSMExecute(CString p_procedure,MParameterMap& p_parameters)
     line += "@";
     line += param.m_parameter;
     line += " ";
-    switch(param.m_type)
+    switch(param.m_columnType)
     {
       case 0: break;
-      case 1: line += "OUTPUT"; break;
-      case 2: line += "INOUT";  break;
+      case SQL_PARAM_OUTPUT:       line += "OUTPUT"; break;
+      case SQL_PARAM_INPUT_OUTPUT: line += "INOUT";  break;
     }
     line += ";\n";
   }

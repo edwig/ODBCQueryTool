@@ -412,8 +412,8 @@ SQLInfoAccess::GetCATALOGTablesList(CString /*p_schema*/,CString /*p_pattern*/) 
   return "";
 }
 
-bool
-SQLInfoAccess::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/,MetaTable& /*p_table*/) const
+CString 
+SQLInfoAccess::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_type*/) const
 {
   // MS-Access cannot do this
   return false;

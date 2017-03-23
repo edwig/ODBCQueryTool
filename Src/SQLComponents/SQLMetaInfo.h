@@ -60,7 +60,7 @@ typedef struct _metaInfoTable
   CString   m_table;                  // Table/view/synonym name
   CString   m_objectType;             // Type of the object
   CString   m_remarks;                // Using COMMENTS command
-  CString   m_fullObjectName;         // Full object name, conforming RDBMS rules
+  CString   m_fullName;         // Full object name, conforming RDBMS rules
                                       // eg: type:catalog.schema.table
                                       // or: type:schema.table@catalog
   CString   m_tablespace;             // Some engines need the storage space
@@ -248,28 +248,33 @@ using MProcedureMap = std::vector<MetaProcedure>;
 
 // Results from "SQLProcedureColumns"
 
-typedef struct _metaInfoProcColumns
-{
-  CString   m_catalogName;              // Catalog of the procedure / function
-  CString   m_schemaName;               // Schema  of the procedure / function
-  CString   m_procedureName;            // Name    of the procedure / function
-  CString   m_columnName;               // Parameter / column name 
-  int       m_ordinalPosition { 0 };    // Positioning of the parameter
-  int       m_columnType      { 0 };    // SQL_PARAM_INPUT / SQL_PARAM_OUTPUT etc. etc.
-  int       m_dataType        { 0 };    // ODBC standard type name
-  CString   m_typeName;                 // RDBMS type name
-  int       m_columnSize      { 0 };    // Display size
-  int       m_bufferSize      { 0 };    // Binary buffer size
-  int       m_decimalDigits   { 0 };    // Number of decimal digits
-  int       m_radix           { 0 };    // Radix display (2, 8, 10, 16)
-  int       m_nullable        { 0 };    // SQL_NO_NULLS / SQL_NULLABLE / SQL_NULLABLE_UNKNOWN
-  CString   m_remarks;                  // From the COMMENT command
-  CString   m_defaultValue;             // Default value
-  CString   m_isNullable;               // "NO" or "YES" (can include nulls)
-}
-MetaProcedureColumn;
+// Parameters for a procedure
 
-using MProcColumnMap = std::vector<MetaProcedureColumn>;
+typedef struct _metaParameter
+{
+  CString  m_catalog;         // 01 Catalog of the procedure of the parameter
+  CString  m_schema;          // 02 Schema  of the procedure of the parameter
+  CString  m_procedure;       // 03 Procedure or function name
+  CString  m_parameter;       // 04 Name of the parameters
+  int      m_columnType;      // 05 SQL_PARAM_INPUT (1) / SQL_PARAM_INPUT_OUTPUT (2) / SQL_PARAM_OUTPUT (4) / SQL_RETURN_VALUE (5) / SQL_RESULT_COL (3)
+  int      m_datatype;        // 06 ODBC datatype 
+  CString  m_typeName;        // 07 Type name
+  int      m_columnSize;      // 08 Column size or display size
+  int      m_bufferLength;    // 09 Database buffer length
+  int      m_decimalDigits;   // 10 Decimal digits after the comma
+  int      m_numRadix;        // 11 Decimal radix
+  int      m_nullable;        // 12 Is Nullable
+  CString  m_remarks;         // 13 From the COMMENT command
+  CString  m_default;         // 14 Default value of the parameter
+  int      m_datatype3;       // 15 ODBC 3 datatype
+  int      m_subType;         // 16 Date time subtype of ODBC 3
+  int      m_octetLength;     // 17 Octet length for Unicode
+  int      m_position;        // 18 Ordinal position of the parameter (0 = return value)
+  CString  m_isNullable;      // 19 'YES' or 'NO'
+}
+MetaParameter;
+
+using MParameterMap = std::vector<MetaParameter>;
 
 // Results for Meta objects in the catalog(s)
 
@@ -344,13 +349,5 @@ MetaSession;
 
 using MSessionMap = std::vector<MetaSession>;
 
-typedef struct _metaParameter
-{
-  CString  m_parameter;       // Name of the parameters
-  int      m_type;            // 0=input, 1=output, 2=in/out
-}
-MetaParameter;
-
-using MParameterMap = std::vector<MetaParameter>;
 
 };

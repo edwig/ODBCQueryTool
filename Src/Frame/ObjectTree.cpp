@@ -336,7 +336,7 @@ ObjectTree::FindTables(HTREEITEM p_theItem)
   HTREEITEM schemaItem  = 0;
 
   // Go  find it
-  app->GetDatabase().GetSQLInfoDB()->MakeInfoTableTablepart(find,tables,errors);
+  app->GetDatabase().GetSQLInfoDB()->MakeInfoTableTablepart(tables,errors,"",find);
 
   if(!errors.IsEmpty())
   {
@@ -448,11 +448,12 @@ ObjectTree::PresetTable(HTREEITEM p_theItem)
   m_schema = schema;
   m_table  = table;
 
-  COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
-  // Set table to use
-  MTableMap tables;
-  CString   errors;
-  return app->GetDatabase().GetSQLInfoDB()->MakeInfoTableTablepart(findtable,tables,errors);
+//   COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
+//   // Set table to use
+//   MTableMap tables;
+//   CString   errors;
+//   return app->GetDatabase().GetSQLInfoDB()->MakeInfoTableTablepart(tables,errors,m_schema,m_table);
+  return true;
 }
 
 // Before expanding a node, find the procedure again
@@ -471,11 +472,14 @@ ObjectTree::PresetProcedure(HTREEITEM p_theItem,MProcedureMap& p_procedures)
   {
     findproc = schema + "." + procedure;
   }
+  m_schema    = schema;
+  m_procedure = procedure;
 
-  COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
-  CString errors;
-  // Set procedure
-  return app->GetDatabase().GetSQLInfoDB()->MakeInfoProcedureProcedurepart(schema,findproc,p_procedures,errors);
+//   COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
+//   CString errors;
+//   // Set procedure
+//   return app->GetDatabase().GetSQLInfoDB()->MakeInfoProcedureProcedurepart(schema,findproc,p_procedures,errors);
+  return true;
 }
 
 // Find all the columns in a table
@@ -505,7 +509,7 @@ ObjectTree::FindPrimary(HTREEITEM p_theItem)
     CString     errors;
 
     // Go find the primary key
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTablePrimary(primaries,errors);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTablePrimary(primaries,errors,m_schema,m_table);
     PrimariesToTree(primaries,p_theItem);
   }
 }
@@ -588,7 +592,7 @@ ObjectTree::FindTriggers(HTREEITEM p_theItem)
     CString     errors;
 
     // Go find the triggers
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableTriggers(triggers,errors);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableTriggers(triggers,errors,m_schema,m_table);
     TriggersToTree(triggers,p_theItem);
   }
 }
@@ -605,7 +609,7 @@ ObjectTree::FindSequences(HTREEITEM p_theItem)
     CString      errors;
 
     // Go find the sequences
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableSequences(sequences,errors);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableSequences(sequences,errors,m_schema,m_table);
     SequencesToTree(sequences,p_theItem);
   }
 }
@@ -713,6 +717,15 @@ ObjectTree::FindParameters(HTREEITEM p_theItem)
   MProcedureMap procedures;
   if(PresetProcedure(p_theItem,procedures))
   {
+    // Go find the procedures
+    COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
+    MProcedureMap procedures;
+    CString   errors;
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoProcedureProcedurepart(m_schema,m_procedure,procedures,errors);
+    if(procedures.empty())
+    {
+      return;
+    }
     MetaProcedure& procedure = procedures.front();
     CString   line;
     HTREEITEM proc  = GetParentItem(p_theItem);
@@ -725,7 +738,7 @@ ObjectTree::FindParameters(HTREEITEM p_theItem)
       RemoveNoInfo(info);
     }
 
-    line = "SPL type: ";
+    line = "PSM type: ";
     switch(procedure.m_procedureType)      
     {
       case SQL_PT_PROCEDURE:  line += "PROCEDURE"; break;
@@ -752,14 +765,9 @@ ObjectTree::FindParameters(HTREEITEM p_theItem)
     item = InsertItem(line,info);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    // Now getting the parameter list
-    COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
-    WordList params;
-
     // Go find the parameters for the procedure
-    CString errors;
-    MProcColumnMap parameters;
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoProcedureParameters(parameters,errors);
+    MParameterMap parameters;
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoProcedureParameters(parameters,errors,procedure.m_schemaName,procedure.m_procedureName);
     ParametersToTree(parameters,param);
 
     // Reset BOTH node data pointers
@@ -1254,7 +1262,7 @@ ObjectTree::PrivilegesToTree(MPrivilegeMap& p_privileges,HTREEITEM p_item)
 }
 
 void
-ObjectTree::ParametersToTree(MProcColumnMap& p_parameters,HTREEITEM p_item)
+ObjectTree::ParametersToTree(MParameterMap& p_parameters,HTREEITEM p_item)
 {
   // Check for parameters
   if(p_parameters.empty())
@@ -1270,7 +1278,7 @@ ObjectTree::ParametersToTree(MProcColumnMap& p_parameters,HTREEITEM p_item)
   for(auto& param : p_parameters)
   {
     CString line;
-    line.Format("%d: %s",param.m_ordinalPosition,param.m_columnName);
+    line.Format("%d: %s",param.m_position,param.m_parameter);
     switch(param.m_nullable)
     {
       case SQL_NO_NULLS:         line += " (NOT NULL)"; break;
@@ -1298,7 +1306,7 @@ ObjectTree::ParametersToTree(MProcColumnMap& p_parameters,HTREEITEM p_item)
     HTREEITEM item = InsertItem(line,paramItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("ODBC Datatype: %s",info->ODBCDataType(param.m_dataType));
+    line.Format("ODBC Datatype: %s",info->ODBCDataType(param.m_datatype));
     item = InsertItem(line,paramItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
@@ -1310,7 +1318,7 @@ ObjectTree::ParametersToTree(MProcColumnMap& p_parameters,HTREEITEM p_item)
     item = InsertItem(line,paramItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Buffersize: %d",param.m_bufferSize);
+    line.Format("Buffersize: %d",param.m_bufferLength);
     item = InsertItem(line,paramItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
@@ -1318,11 +1326,11 @@ ObjectTree::ParametersToTree(MProcColumnMap& p_parameters,HTREEITEM p_item)
     item = InsertItem(line,paramItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Radix: %d",param.m_radix);
+    line.Format("Radix: %d",param.m_numRadix);
     item = InsertItem(line,paramItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Default value: %s",param.m_defaultValue);
+    line.Format("Default value: %s",param.m_default);
     item = InsertItem(line,paramItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 

@@ -119,7 +119,7 @@ protected:
   void      StatisticsToTree(MIndicesMap&       p_statistics,HTREEITEM p_item);
   void      SpecialsToTree  (MSpecialColumnMap& p_specials,  HTREEITEM p_item);
   void      PrivilegesToTree(MPrivilegeMap&     p_privileges,HTREEITEM p_item);
-  void      ParametersToTree(MProcColumnMap&    p_parameters,HTREEITEM p_item);
+  void      ParametersToTree(MParameterMap&     p_parameters,HTREEITEM p_item);
 
   CString   ForeignRuleToString(int p_rule);
   CString   DeferrableToString(int p_defer);
@@ -131,6 +131,7 @@ protected:
   // Currently searching for...
   CString     m_schema;
   CString     m_table;
+  CString     m_procedure;
 
 public:
   afx_msg void OnSelChanged(NMHDR* pNMHDR, LRESULT* pResult);

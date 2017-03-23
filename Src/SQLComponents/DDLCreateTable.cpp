@@ -83,7 +83,7 @@ DDLCreateTable::GetTableInfo()
 
   // Find table info
   m_tables.clear();
-  if(!m_info->MakeInfoTableTablepart(m_tableName,m_tables,errors) || m_tables.empty())
+  if(!m_info->MakeInfoTableTablepart(m_tables,errors,"",m_tableName) || m_tables.empty())
   {
     throw CString("Cannot find table: ") + m_tableName + " : " + errors;
   }
@@ -226,7 +226,7 @@ DDLCreateTable::GetPrimaryKeyInfo()
 
   // Find column info
   m_primaries.clear();
-  m_info->MakeInfoTablePrimary(m_primaries,errors);
+  m_info->MakeInfoTablePrimary(m_primaries,errors,m_schema,m_tableName);
   if(!errors.IsEmpty())
   {
     throw CString("Cannot find the primary key for table: ") + m_tableName + " : " + errors;
@@ -287,7 +287,7 @@ DDLCreateTable::GetTriggerInfo()
   CString errors;
 
   m_triggers.clear();
-  m_info->MakeInfoTableTriggers(m_triggers,errors);
+  m_info->MakeInfoTableTriggers(m_triggers,errors,m_schema,m_tableName);
   if(!errors.IsEmpty())
   {
     throw CString("Cannot find the triggers for table: ") + m_tableName + " : " + errors;
@@ -308,7 +308,7 @@ DDLCreateTable::GetSequenceInfo()
   CString line;
 
   m_sequences.clear();
-  m_info->MakeInfoTableSequences(m_sequences,errors);
+  m_info->MakeInfoTableSequences(m_sequences,errors,m_schema,m_tableName);
   if(!errors.IsEmpty())
   {
     throw CString("Cannot find the sequences for table: ") + m_tableName + " : " + errors;

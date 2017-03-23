@@ -425,22 +425,22 @@ SQLInfoPostgreSQL::GetCATALOGTableExists(CString p_schema,CString p_tablename) c
 CString
 SQLInfoPostgreSQL::GetCATALOGTablesList(CString p_schema,CString p_pattern) const
 {
-  p_schema.MakeLower();
-  p_pattern.MakeLower();
-  CString query = "SELECT count(*)\n"
-                  "  FROM pg_class cl\n"
-                  "      ,pg_namespace ns\n"
-                  " WHERE cl.relnamespace = ns.oid\n"
-                  "   AND ns.nspname = '" + p_schema    + "'\n"
-                  "   AND cl.relname like '" + p_pattern + "'";
-  return query;
+  return "";
+//   p_schema.MakeLower();
+//   p_pattern.MakeLower();
+//   CString query = "SELECT count(*)\n"
+//                   "  FROM pg_class cl\n"
+//                   "      ,pg_namespace ns\n"
+//                   " WHERE cl.relnamespace = ns.oid\n"
+//                   "   AND ns.nspname = '" + p_schema    + "'\n"
+//                   "   AND cl.relname like '" + p_pattern + "'";
+//   return query;
 }
 
-bool
-SQLInfoPostgreSQL::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/,MetaTable& /*p_table*/) const
+CString
+SQLInfoPostgreSQL::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_type*/) const
 {
-  // Getting the temp table status
-  return false;
+  return "";
 }
 
 CString
@@ -1309,14 +1309,15 @@ SQLInfoPostgreSQL::GetPSMProcedureList(CString p_schema) const
 CString
 SQLInfoPostgreSQL::GetPSMProcedureAttributes(CString p_schema, CString p_procedure) const
 {
-  p_schema.MakeLower();
-  p_procedure.MakeLower();
-
-  CString sql = "SELECT TEXT from ALL_SOURCE "
-                "WHERE type = 'FUNCTION' "
-                "AND name  = '" + p_procedure + "'\n"
-                "AND owner = '" + p_schema    + "'";
-  return sql;
+//   p_schema.MakeLower();
+//   p_procedure.MakeLower();
+// 
+//   CString sql = "SELECT TEXT from ALL_SOURCE "
+//                 "WHERE type = 'FUNCTION' "
+//                 "AND name  = '" + p_procedure + "'\n"
+//                 "AND owner = '" + p_schema    + "'";
+//   return sql;
+  return "";
 }
 
 CString

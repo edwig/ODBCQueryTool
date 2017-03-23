@@ -62,11 +62,13 @@ public:
 
   // OVERRIDES AND EXTRAS OF THE ODBC SQL<object> functions
 
-  bool    MakeInfoTableColumns  (MColumnMap& p_columns,CString& p_errors,CString p_schema,CString p_tablename,CString p_columname = "");
-  bool    MakeInfoTableTriggers (MTriggerMap&  p_triggers, CString& p_errors);
-  bool    MakeInfoTableSequences(MSequenceMap& p_sequences,CString& p_errors);
+  bool    MakeInfoTableTablepart(MTableMap&    p_tables,   CString& p_errors,CString p_schema,CString p_tablename);
+  bool    MakeInfoTableColumns  (MColumnMap&   p_columns,  CString& p_errors,CString p_schema,CString p_tablename,CString p_columname = "");
+  bool    MakeInfoTablePrimary  (MPrimaryMap&  p_primary,  CString& p_errors,CString p_schema,CString p_tablename);
+  bool    MakeInfoTableTriggers (MTriggerMap&  p_triggers, CString& p_errors,CString p_schema,CString p_tablename,CString p_trigger   = "");
+  bool    MakeInfoTableSequences(MSequenceMap& p_sequences,CString& p_errors,CString p_schema,CString p_tablename);
   bool    MakeInfoProcedureProcedurepart(CString p_schema,CString p_procedure,MProcedureMap& p_procedures,CString& p_errors);
-  bool    MakeInfoProcedureParameters(MProcColumnMap& p_parameters,CString& p_errors);
+  bool    MakeInfoProcedureParameters(MParameterMap& p_parameters,CString& p_errors,CString p_schema,CString p_procedure);
 
   // PURE VIRTUAL INTERFACE
 
@@ -239,7 +241,7 @@ public:
   // All table functions
   virtual CString GetCATALOGTableExists       (CString p_schema,CString p_tablename) const = 0;
   virtual CString GetCATALOGTablesList        (CString p_schema,CString p_pattern)   const = 0;
-  virtual bool    GetCATALOGTableAttributes   (CString p_schema,CString p_tablename,MetaTable& p_table) const = 0;
+  virtual CString GetCATALOGTableAttributes   (CString p_schema,CString p_tablename,CString p_type) const = 0;
   virtual CString GetCATALOGTableCreate       (MetaTable& p_table,MetaColumn& p_column) const = 0;
   virtual CString GetCATALOGTableRename       (CString p_schema,CString p_tablename,CString p_newname) const = 0;
   virtual CString GetCATALOGTableDrop         (CString p_schema,CString p_tablename) const = 0;

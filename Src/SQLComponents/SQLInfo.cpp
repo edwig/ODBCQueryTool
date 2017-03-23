@@ -1167,7 +1167,7 @@ SQLInfo::GetPrimaryKeyInfo(CString&     p_tablename
     // Table could not be found
     return false;
   }
-  MakeInfoTablePrimary(p_primaries,errors);
+  MakeInfoTablePrimary(p_primaries,errors,m_searchSchemaName,m_searchTableName);
   if(!p_primaries.size())
   {
     // If no primary key found, search for the first unique key
@@ -1176,7 +1176,7 @@ SQLInfo::GetPrimaryKeyInfo(CString&     p_tablename
   }
   else
   {
-    // Return the constraint name seperatly
+    // Return the constraint name separately
     p_primary = p_primaries.front().m_constraintName;
   }
   return (p_primaries.size() > 0);
@@ -1579,7 +1579,7 @@ SQLInfo::MakeInfoTableTablepart(CString p_findTable,MTableMap& p_tables,CString&
 
          // Build "TYPE: catalog.schema.table" object type name
 
-         theTable.m_fullObjectName = MakeObjectName((SQLCHAR*)theTable.m_catalog.GetString()
+         theTable.m_fullName = MakeObjectName((SQLCHAR*)theTable.m_catalog.GetString()
                                                    ,(SQLCHAR*)theTable.m_schema.GetString()
                                                    ,(SQLCHAR*)theTable.m_table.GetString()
                                                    ,(SQLCHAR*)theTable.m_objectType.GetString());
@@ -1796,13 +1796,8 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns,CString& p_errors)
 }
 
 bool
-SQLInfo::MakeInfoTablePrimary(MPrimaryMap& p_primaries,CString& p_errors)
+SQLInfo::MakeInfoTablePrimary(MPrimaryMap& p_primaries,CString& p_errors,CString p_schema,CString p_tablename)
 {
-  if(m_searchTableName.IsEmpty())
-  {
-    p_errors = "Search for a table first!";
-    return false;
-  }
   SQLCHAR      szCatalogName [SQL_MAX_BUFFER];
   SQLLEN       cbCatalogName = 0;
   SQLCHAR      szSchemaName  [SQL_MAX_BUFFER];
@@ -1823,8 +1818,8 @@ SQLInfo::MakeInfoTablePrimary(MPrimaryMap& p_primaries,CString& p_errors)
     return false;
   }
   strcpy_s((char*)szCatalogName,SQL_MAX_IDENTIFIER,m_searchCatalogName.GetString());
-  strcpy_s((char*)szSchemaName, SQL_MAX_IDENTIFIER,m_searchSchemaName.GetString());
-  strcpy_s((char*)szTableName,  SQL_MAX_IDENTIFIER,m_searchTableName.GetString());
+  strcpy_s((char*)szSchemaName, SQL_MAX_IDENTIFIER,p_schema.GetString());
+  strcpy_s((char*)szTableName,  SQL_MAX_IDENTIFIER,p_tablename.GetString());
 
   CloseStatement();
   bool meta = GetStatement(false);
@@ -2573,7 +2568,7 @@ SQLInfo::MakeInfoProcedureProcedurepart(CString         p_schema
 }
 
 bool
-SQLInfo::MakeInfoProcedureParameters(MProcColumnMap& p_parameters,CString& p_errors)
+SQLInfo::MakeInfoProcedureParameters(MParameterMap& p_parameters,CString& p_errors)
 {
   SQLCHAR      szCatalogName     [SQL_MAX_BUFFER];
   SQLLEN       cbCatalogName     = 0;
@@ -2607,6 +2602,12 @@ SQLInfo::MakeInfoProcedureParameters(MProcColumnMap& p_parameters,CString& p_err
   SQLLEN       cbOrdinalPos      = 0;
   SQLCHAR      szIsNullable      [10];
   SQLLEN       cbIsNullable      = 0;
+  SQLSMALLINT    DataType3       = 0;
+  SQLLEN       cbDataType3       = 0;
+  SQLSMALLINT    SubType         = 0;
+  SQLLEN       cbSubType         = 0;
+  SQLINTEGER     OctetLength     = 0;
+  SQLLEN       cbOctetLength     = 0;
 
   // Check whether we can do this
   if(!SupportedFunction(SQL_API_SQLPROCEDURECOLUMNS))
@@ -2645,6 +2646,9 @@ SQLInfo::MakeInfoProcedureParameters(MProcColumnMap& p_parameters,CString& p_err
     SQLBindCol(m_hstmt,12, SQL_C_SSHORT,&Nullable,     0,              &cbNullable);
     SQLBindCol(m_hstmt,13, SQL_C_CHAR, szRemarks,     2*SQL_MAX_BUFFER,&cbRemarks);
     SQLBindCol(m_hstmt,14, SQL_C_CHAR, szDefaultValue,2*SQL_MAX_BUFFER,&cbDefaultValue);
+    SQLBindCol(m_hstmt,15, SQL_C_SSHORT,&DataType3,    2,              &cbDataType3);
+    SQLBindCol(m_hstmt,16, SQL_C_SSHORT,&SubType,      2,              &cbSubType);
+    SQLBindCol(m_hstmt,17, SQL_C_LONG,  &OctetLength,  4,              &cbOctetLength);
     SQLBindCol(m_hstmt,18, SQL_C_LONG,  &OrdinalPos,   0,              &cbOrdinalPos);
     SQLBindCol(m_hstmt,19, SQL_C_CHAR, szIsNullable,   10,             &cbIsNullable);
     while(true)
@@ -2661,25 +2665,29 @@ SQLInfo::MakeInfoProcedureParameters(MProcColumnMap& p_parameters,CString& p_err
       }
       if(m_retCode == SQL_SUCCESS || m_retCode == SQL_SUCCESS_WITH_INFO)
       {
-        MetaProcedureColumn par;
+        MetaParameter par;
         // Strings
-        if(cbCatalogName   > 0) par.m_catalogName   = szCatalogName;
-        if(cbSchemaName    > 0) par.m_schemaName    = szSchemaName;
-        if(cbProcedureName > 0) par.m_procedureName = szProcedureName;
-        if(cbColumnName    > 0) par.m_columnName    = szColumnName;
-        if(cbTypeName      > 0) par.m_typeName      = szTypeName;
-        if(cbRemarks       > 0) par.m_remarks       = szRemarks;
-        if(cbDefaultValue  > 0) par.m_defaultValue  = szDefaultValue;
-        if(cbIsNullable    > 0) par.m_isNullable    = szIsNullable;
+        if(cbCatalogName   > 0) par.m_catalog    = szCatalogName;
+        if(cbSchemaName    > 0) par.m_schema     = szSchemaName;
+        if(cbProcedureName > 0) par.m_procedure  = szProcedureName;
+        if(cbColumnName    > 0) par.m_parameter  = szColumnName;
+        if(cbTypeName      > 0) par.m_typeName   = szTypeName;
+        if(cbRemarks       > 0) par.m_remarks    = szRemarks;
+        if(cbDefaultValue  > 0) par.m_default    = szDefaultValue;
+        if(cbIsNullable    > 0) par.m_isNullable = szIsNullable;
         // Numbers
         par.m_columnType    = cbColumnType    > 0 ? ColumnType    : 0;
-        par.m_dataType      = cbDataType      > 0 ? DataType      : 0;
+        par.m_datatype      = cbDataType      > 0 ? DataType      : 0;
         par.m_columnSize    = cbColumnSize    > 0 ? ColumnSize    : 0;
-        par.m_bufferSize    = cbBufferSize    > 0 ? BufferSize    : 0;
+        par.m_bufferLength  = cbBufferSize    > 0 ? BufferSize    : 0;
         par.m_decimalDigits = cbDecimalDigits > 0 ? DecimalDigits : 0;
-        par.m_radix         = cbRadix         > 0 ? Radix         : 0;
+        par.m_numRadix      = cbRadix         > 0 ? Radix         : 0;
         par.m_nullable      = cbNullable      > 0 ? Nullable      : 0;
-        par.m_ordinalPosition = cbOrdinalPos  > 0 ? OrdinalPos    : 0;
+        par.m_position      = cbOrdinalPos    > 0 ? OrdinalPos    : 0;
+        par.m_datatype3     = cbDataType3     > 0 ? DataType3     : 0;
+        par.m_subType       = cbSubType       > 0 ? SubType       : 0;
+        par.m_octetLength   = cbOctetLength   > 0 ? OctetLength   : 0;
+
         // Keep record
         p_parameters.push_back(par);
       }

@@ -446,20 +446,20 @@ SQLInfoOracle::GetCATALOGTableExists(CString p_schema,CString p_tablename) const
 CString
 SQLInfoOracle::GetCATALOGTablesList(CString p_schema,CString p_pattern) const
 {
-  p_schema.MakeUpper();
-  p_pattern.MakeUpper();
-  CString query = "SELECT table_name\n"
-                  "  FROM ALL_TABLES\n"
-                  " WHERE owner      = '" + p_schema + "'\n"
-                  "   AND table_name like '" + p_pattern + "'";
-  return query;
+  return "";
+//   p_schema.MakeUpper();
+//   p_pattern.MakeUpper();
+//   CString query = "SELECT table_name\n"
+//                   "  FROM ALL_TABLES\n"
+//                   " WHERE owner      = '" + p_schema + "'\n"
+//                   "   AND table_name like '" + p_pattern + "'";
+//   return query;
 }
 
-bool
-SQLInfoOracle::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/,MetaTable& /*p_table*/) const
+CString
+SQLInfoOracle::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_type*/) const
 {
-  // Getting the temp table status
-  return false;
+  return "";
 }
 
 CString
@@ -1338,15 +1338,16 @@ SQLInfoOracle::GetPSMProcedureList(CString p_schema) const
 CString
 SQLInfoOracle::GetPSMProcedureAttributes(CString p_schema, CString p_procedure) const
 {
-  p_schema.MakeUpper();
-  p_procedure.MakeUpper();
-
-  CString sql("SELECT 'CREATE OR REPLACE ' || text\n"
-              "  FROM all_source\n"
-              " WHERE type  = 'FUNCTION'\n"
-              "   AND name  = '" + p_procedure + "'\n"
-              "   AND owner = '" + p_schema    + "'");
-  return sql;
+  return "";
+//   p_schema.MakeUpper();
+//   p_procedure.MakeUpper();
+// 
+//   CString sql("SELECT 'CREATE OR REPLACE ' || text\n"
+//               "  FROM all_source\n"
+//               " WHERE type  = 'FUNCTION'\n"
+//               "   AND name  = '" + p_procedure + "'\n"
+//               "   AND owner = '" + p_schema    + "'");
+//   return sql;
 }
 
 CString

@@ -417,41 +417,22 @@ SQLInfoGenericODBC::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_da
 CString
 SQLInfoGenericODBC::GetCATALOGTableExists(CString p_schema,CString p_tablename) const
 {
-  WordList list;
-  SQLInfo* info = (SQLInfo*)this;
-  CString table(p_tablename);
-
-  // Construct compounded name
-  if(!p_schema.IsEmpty())
-  {
-    table = p_schema + "." + p_tablename;
-  }
-  // Get from SQLTables
-  MTableMap tables;
-  CString   errors;
-
-  if(info->MakeInfoTableTablepart(p_tablename,tables,errors))
-  {
-    if(!tables.empty())
-    {
-      return tables.front().m_table;
-    }
-  }
+  // Cannot do this, let ODBC handle this
   return "";
 }
 
 CString
 SQLInfoGenericODBC::GetCATALOGTablesList(CString p_schema,CString p_pattern) const
 {
-  // cannot do this
+  // Cannot do this, let ODBC handle this
   return "";
 }
 
-bool
-SQLInfoGenericODBC::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/,MetaTable& /*p_table*/) const
+CString
+SQLInfoGenericODBC::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_type*/) const
 {
-  // cannot do this
-  return false;
+  // Cannot do this, let ODBC handle this
+  return "";
 }
 
 CString
