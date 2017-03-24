@@ -792,22 +792,23 @@ SQLInfoPostgreSQL::GetCATALOGPrimaryExists(CString p_schema,CString p_tablename)
 CString
 SQLInfoPostgreSQL::GetCATALOGPrimaryAttributes(CString p_schema,CString p_tablename) const
 {
-  p_schema.MakeLower();
-  p_tablename.MakeLower();
-
-  CString query = "SELECT con.conname       as constraint_name\n"
-                  "      ,con.conname       as index_name\n"
-                  "      ,con.condeferrable as deferrable\n"
-                  "      ,con.deferred      as initially_deferred\n"
-                  "  FROM pg_class      tab\n"
-                  "      ,pg_constraint con\n"
-                  "      ,pg_namespaces sch\n"
-                  " WHERE tab.relnamespace = sch.oid\n"
-                  "   AND tab.oid          = con.conrelid\n"
-                  "   AND con.contype      = 'p'\n"
-                  "   AND sch.name         = '" + p_schema    + "'\n"
-                  "   AND tab.relname      = '" + p_tablename + "'";
-  return query;
+//   p_schema.MakeLower();
+//   p_tablename.MakeLower();
+// 
+//   CString query = "SELECT con.conname       as constraint_name\n"
+//                   "      ,con.conname       as index_name\n"
+//                   "      ,con.condeferrable as deferrable\n"
+//                   "      ,con.deferred      as initially_deferred\n"
+//                   "  FROM pg_class      tab\n"
+//                   "      ,pg_constraint con\n"
+//                   "      ,pg_namespaces sch\n"
+//                   " WHERE tab.relnamespace = sch.oid\n"
+//                   "   AND tab.oid          = con.conrelid\n"
+//                   "   AND con.contype      = 'p'\n"
+//                   "   AND sch.name         = '" + p_schema    + "'\n"
+//                   "   AND tab.relname      = '" + p_tablename + "'";
+//   return query;
+  return "";
 }
 
 CString

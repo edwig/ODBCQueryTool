@@ -110,16 +110,16 @@ protected:
   void      FindProcedures (HTREEITEM p_theItem);
   void      FindParameters (HTREEITEM p_theItem);
 
-  void      ColumnListToTree(MColumnMap&        p_columns,   HTREEITEM p_item);
-  void      PrimariesToTree (MPrimaryMap&       p_primaries, HTREEITEM p_item);
-  void      ForeignsToTree  (MForeignMap&       p_foreigns,  HTREEITEM p_item);
-  void      ReferencedToTree(MForeignMap&       p_foreigns,  HTREEITEM p_item);
-  void      TriggersToTree  (MTriggerMap&       p_triggers,  HTREEITEM p_item);
-  void      SequencesToTree (MSequenceMap&      p_sequences, HTREEITEM p_item);
-  void      StatisticsToTree(MIndicesMap&       p_statistics,HTREEITEM p_item);
-  void      SpecialsToTree  (MSpecialColumnMap& p_specials,  HTREEITEM p_item);
-  void      PrivilegesToTree(MPrivilegeMap&     p_privileges,HTREEITEM p_item);
-  void      ParametersToTree(MParameterMap&     p_parameters,HTREEITEM p_item);
+  void      ColumnListToTree(MColumnMap&    p_columns,   HTREEITEM p_item);
+  void      PrimariesToTree (MPrimaryMap&   p_primaries, HTREEITEM p_item);
+  void      ForeignsToTree  (MForeignMap&   p_foreigns,  HTREEITEM p_item);
+  void      ReferencedToTree(MForeignMap&   p_foreigns,  HTREEITEM p_item);
+  void      TriggersToTree  (MTriggerMap&   p_triggers,  HTREEITEM p_item);
+  void      SequencesToTree (MSequenceMap&  p_sequences, HTREEITEM p_item);
+  void      StatisticsToTree(MIndicesMap&   p_statistics,HTREEITEM p_item);
+  void      SpecialsToTree  (MSpecialsMap&  p_specials,  HTREEITEM p_item);
+  void      PrivilegesToTree(MPrivilegeMap& p_privileges,HTREEITEM p_item);
+  void      ParametersToTree(MParameterMap& p_parameters,HTREEITEM p_item);
 
   CString   ForeignRuleToString(int p_rule);
   CString   DeferrableToString(int p_defer);

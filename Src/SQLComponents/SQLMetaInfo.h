@@ -209,7 +209,7 @@ typedef struct _metaSpecialColumns
 }
 MetaSpecialColumn;
 
-using MSpecialColumnMap = std::vector<MetaSpecialColumn>;
+using MSpecialsMap = std::vector<MetaSpecialColumn>;
 
 // Results from "SQLTablePrivileges" 
 

@@ -146,15 +146,15 @@ InfoTree::MakeTreeInfo()
   MMetaMap  objects;
   HTREEITEM meta     = InsertItem("Meta-objects in the database",infoItemDB);
   HTREEITEM catalogs = InsertItem("Catalogs",meta);
-  m_info->MakeInfoMetaTypes(objects,META_CATALOGS,errors);
+  m_info->MakeInfoMetaTypes(objects,errors,META_CATALOGS);
   MetaListToTree(objects,catalogs,errors);
 
   HTREEITEM schemas  = InsertItem("Schemas",meta);
-  m_info->MakeInfoMetaTypes(objects,META_SCHEMAS,errors);
+  m_info->MakeInfoMetaTypes(objects,errors,META_SCHEMAS);
   MetaListToTree(objects,schemas,errors);
 
   HTREEITEM obtypes  = InsertItem("Object types",meta);
-  m_info->MakeInfoMetaTypes(objects,META_TABLES,errors);
+  m_info->MakeInfoMetaTypes(objects,errors,META_TABLES);
   MetaListToTree(objects,obtypes,errors);
 
   // ODBC DRIVER

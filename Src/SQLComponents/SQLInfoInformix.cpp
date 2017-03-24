@@ -721,17 +721,18 @@ SQLInfoInformix::GetCATALOGPrimaryExists(CString /*p_schema*/,CString p_tablenam
 CString
 SQLInfoInformix::GetCATALOGPrimaryAttributes(CString p_schema,CString p_tablename) const
 {
-  p_tablename.MakeLower();
-  CString sql = "SELECT constrname\n"
-                "      ,'' as indexname\n"
-                "      ,'Y' as deferrable\n"
-                "      ,'N' as initially_deferred\n"
-                "  FROM systables      tab\n"
-                "      ,sysconstraints con\n"
-                " WHERE con.constrtype = 'P'\n"
-                "   AND con.tabid      = tab.tabid\n"
-                "   AND tab.tabname    = '" + p_tablename + "'";
-  return sql;
+//   p_tablename.MakeLower();
+//   CString sql = "SELECT constrname\n"
+//                 "      ,'' as indexname\n"
+//                 "      ,'Y' as deferrable\n"
+//                 "      ,'N' as initially_deferred\n"
+//                 "  FROM systables      tab\n"
+//                 "      ,sysconstraints con\n"
+//                 " WHERE con.constrtype = 'P'\n"
+//                 "   AND con.tabid      = tab.tabid\n"
+//                 "   AND tab.tabname    = '" + p_tablename + "'";
+//   return sql;
+  return "";
 }
 
 CString

@@ -1162,7 +1162,7 @@ SQLInfo::GetPrimaryKeyInfo(CString&     p_tablename
 
   MTableMap tables;
   CString   errors;
-  if(!MakeInfoTableTablepart(p_tablename,tables,errors))
+  if(!MakeInfoTableTablepart(tables,errors,p_tablename))
   {
     // Table could not be found
     return false;
@@ -1172,7 +1172,7 @@ SQLInfo::GetPrimaryKeyInfo(CString&     p_tablename
   {
     // If no primary key found, search for the first unique key
     MIndicesMap statistics;
-    MakeInfoTableStatistics(statistics,&p_primaries,errors,false);
+    MakeInfoTableStatistics(statistics,errors,&p_primaries,false);
   }
   else
   {
@@ -1227,13 +1227,21 @@ SQLInfo::CloseStatement()
 }
 
 // Get the catalog.schema.table from a user string
+// "X:catalog.schema.table" where X is:
+// - T -> Table
+// - V -> View
+// - S -> Synonym
+// - A -> Alias
+// - G -> Global temporary
+// - L -> Local temporary
+// - C -> System table (Catalog)
 void
 SQLInfo::GetObjectName(CString& pattern
                       ,unsigned char* search_catalog
                       ,unsigned char* search_schema
                       ,unsigned char* search_table
                       ,unsigned char* search_type)
-  {
+{
   search_catalog[0] = 0;
   search_schema [0] = 0;
   search_table  [0] = 0;
@@ -1368,6 +1376,9 @@ SQLInfo::GetObjectName(CString& pattern
 }
 
 // Reprint the catalog.schema.table combination
+// in system settings of the RDBMS.
+// so can be: "X: schema.table@catalog"
+// Or ANSI:   "X: catalog:schema.table"
 CString
 SQLInfo::MakeObjectName(SQLCHAR* search_catalog
                        ,SQLCHAR* search_schema
@@ -1464,7 +1475,7 @@ SQLInfo::ODBCDataType(int DataType)
 // GETTING ALL THE TABLES OF A NAME PATTERN
 // GETTING ALL THE INFO FOR ONE TABLE
 bool
-SQLInfo::MakeInfoTableTablepart(CString p_findTable,MTableMap& p_tables,CString& p_errors)
+SQLInfo::MakeInfoTableTablepart(MTableMap& p_tables,CString& p_errors,CString p_findTable)
 {
   SQLCHAR      szCatalogName [SQL_MAX_BUFFER];
   SQLLEN       cbCatalogName = 0;
@@ -2024,7 +2035,7 @@ SQLInfo::MakeInfoTableForeign(MForeignMap& p_foreigns
         // Constraint names
         if(cbFKKeyName > 0) foreign.m_foreignConstraint = szFKKeyName;
         if(cbPKKeyName > 0) foreign.m_primaryConstraint = szPKKeyName;
-        // Statusses of the foreign key relation
+        // Statuses of the foreign key relation
         foreign.m_keySequence = cbKeySeq     > 0 ? KeySeq     : 0;
         foreign.m_updateRule  = cbUpdateRule > 0 ? UpdateRule : 0;
         foreign.m_deleteRule  = cbDeleteRule > 0 ? DeleteRule : 0;
@@ -2056,9 +2067,9 @@ SQLInfo::MakeInfoTableForeign(MForeignMap& p_foreigns
 
 bool
 SQLInfo::MakeInfoTableStatistics(MIndicesMap& p_statistics
-                                ,MPrimaryMap*    p_keymap
-                                ,CString&        p_errors
-                                ,bool            p_all /*=true*/)
+                                ,CString&     p_errors
+                                ,MPrimaryMap* p_keymap
+                                ,bool         p_all /*=true*/)
 {
   if(m_searchTableName.IsEmpty())
   {
@@ -2199,7 +2210,7 @@ SQLInfo::MakeInfoTableStatistics(MIndicesMap& p_statistics
 }
 
 bool 
-SQLInfo::MakeInfoTableSpecials(MSpecialColumnMap& p_specials,CString& p_errors)
+SQLInfo::MakeInfoTableSpecials(MSpecialsMap& p_specials,CString& p_errors)
 {
   if(m_searchTableName.IsEmpty())
   {
@@ -2427,10 +2438,10 @@ SQLInfo::MakeInfoTablePrivileges(MPrivilegeMap& p_privileges,CString& p_errors)
 }
 
 bool
-SQLInfo::MakeInfoProcedureProcedurepart(CString         p_schema
-                                       ,CString         p_procedure
-                                       ,MProcedureMap&  p_procedures
-                                       ,CString&        p_errors)
+SQLInfo::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
+                              ,CString&        p_errors
+                              ,CString         p_schema
+                              ,CString         p_procedure)
 {
   SQLCHAR      szCatalogName     [SQL_MAX_BUFFER];
   SQLLEN       cbCatalogName     = 0;
@@ -2568,7 +2579,7 @@ SQLInfo::MakeInfoProcedureProcedurepart(CString         p_schema
 }
 
 bool
-SQLInfo::MakeInfoProcedureParameters(MParameterMap& p_parameters,CString& p_errors)
+SQLInfo::MakeInfoPSMParameters(MParameterMap& p_parameters,CString& p_errors)
 {
   SQLCHAR      szCatalogName     [SQL_MAX_BUFFER];
   SQLLEN       cbCatalogName     = 0;
@@ -2782,7 +2793,7 @@ SQLInfo::GetMetaPointer(unsigned char* p_buffer,bool p_meta)
 
 // GETTING ALL META TYPES
 bool
-SQLInfo::MakeInfoMetaTypes(MMetaMap& p_objects,int p_type,CString& p_errors)
+SQLInfo::MakeInfoMetaTypes(MMetaMap& p_objects,CString& p_errors,int p_type)
 {
   CString      sitem;
   SQLCHAR      szCatalogName [SQL_MAX_BUFFER];

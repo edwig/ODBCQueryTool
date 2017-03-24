@@ -181,7 +181,7 @@ DDLCreateTable::GetIndexInfo()
 
   // Find column info
   m_indices.clear();
-  m_info->MakeInfoTableStatistics(m_indices,nullptr,errors);
+  m_info->MakeInfoTableStatistics(m_indices,errors,nullptr);
   if(!errors.IsEmpty())
   {
     throw CString("Cannot find indices for table: ") + m_tableName + " : " + errors;

@@ -448,11 +448,12 @@ ObjectTree::PresetTable(HTREEITEM p_theItem)
   m_schema = schema;
   m_table  = table;
 
-//   COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
-//   // Set table to use
-//   MTableMap tables;
-//   CString   errors;
-//   return app->GetDatabase().GetSQLInfoDB()->MakeInfoTableTablepart(tables,errors,m_schema,m_table);
+  // Remove after all functions have all search parameters!
+  COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
+  // Set table to use
+  MTableMap tables;
+  CString   errors;
+  return app->GetDatabase().GetSQLInfoDB()->MakeInfoTableTablepart(tables,errors,m_schema,m_table);
   return true;
 }
 
@@ -475,10 +476,11 @@ ObjectTree::PresetProcedure(HTREEITEM p_theItem,MProcedureMap& p_procedures)
   m_schema    = schema;
   m_procedure = procedure;
 
-//   COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
-//   CString errors;
-//   // Set procedure
-//   return app->GetDatabase().GetSQLInfoDB()->MakeInfoProcedureProcedurepart(schema,findproc,p_procedures,errors);
+  // Remove after all functions have all search parameters!
+  COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
+  CString errors;
+  // Set procedure
+  return app->GetDatabase().GetSQLInfoDB()->MakeInfoPSMProcedures(p_procedures,errors,schema,findproc);
   return true;
 }
 
@@ -543,7 +545,7 @@ ObjectTree::FindStatistics(HTREEITEM p_theItem)
     CString         errors;
 
     // Go find the indices and statistics
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableStatistics(statistics,nullptr,errors);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableStatistics(statistics,errors,nullptr);
     StatisticsToTree(statistics,p_theItem);
   }
 }
@@ -555,7 +557,7 @@ ObjectTree::FindSpecials(HTREEITEM p_theItem)
   if(PresetTable(p_theItem))
   {
     COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
-    MSpecialColumnMap specials;
+    MSpecialsMap specials;
     CString errors;
 
     // Go find the special columns
@@ -650,7 +652,7 @@ ObjectTree::FindProcedures(HTREEITEM p_theItem)
   try
   {
     // Go find the procedures
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoProcedureProcedurepart("",find,procedures,errors);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoPSMProcedures(procedures,errors,"",find);
   }
   catch(CString& er)
   {
@@ -721,7 +723,7 @@ ObjectTree::FindParameters(HTREEITEM p_theItem)
     COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
     MProcedureMap procedures;
     CString   errors;
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoProcedureProcedurepart(m_schema,m_procedure,procedures,errors);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoPSMProcedures(procedures,errors,m_schema,m_procedure);
     if(procedures.empty())
     {
       return;
@@ -767,7 +769,7 @@ ObjectTree::FindParameters(HTREEITEM p_theItem)
 
     // Go find the parameters for the procedure
     MParameterMap parameters;
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoProcedureParameters(parameters,errors,procedure.m_schemaName,procedure.m_procedureName);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoPSMParameters(parameters,errors,procedure.m_schemaName,procedure.m_procedureName);
     ParametersToTree(parameters,param);
 
     // Reset BOTH node data pointers
@@ -1070,7 +1072,7 @@ ObjectTree::StatisticsToTree(MIndicesMap& p_statistics,HTREEITEM p_item)
 }
 
 void
-ObjectTree::SpecialsToTree(MSpecialColumnMap& p_specials,HTREEITEM p_item)
+ObjectTree::SpecialsToTree(MSpecialsMap& p_specials,HTREEITEM p_item)
 {
   // Check for special columns
   if(p_specials.empty())

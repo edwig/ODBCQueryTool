@@ -60,15 +60,17 @@ public:
   void    SetGrantedUsers(CString p_users);
   CString GetGrantedUsers() const;
 
-  // OVERRIDES AND EXTRAS OF THE ODBC SQL<object> functions
+  // OVERRIDES AND EXTRAS OF THE ODBC MakeInfo<object> functions
 
+  // Tables
   bool    MakeInfoTableTablepart(MTableMap&    p_tables,   CString& p_errors,CString p_schema,CString p_tablename);
   bool    MakeInfoTableColumns  (MColumnMap&   p_columns,  CString& p_errors,CString p_schema,CString p_tablename,CString p_columname = "");
   bool    MakeInfoTablePrimary  (MPrimaryMap&  p_primary,  CString& p_errors,CString p_schema,CString p_tablename);
   bool    MakeInfoTableTriggers (MTriggerMap&  p_triggers, CString& p_errors,CString p_schema,CString p_tablename,CString p_trigger   = "");
   bool    MakeInfoTableSequences(MSequenceMap& p_sequences,CString& p_errors,CString p_schema,CString p_tablename);
-  bool    MakeInfoProcedureProcedurepart(CString p_schema,CString p_procedure,MProcedureMap& p_procedures,CString& p_errors);
-  bool    MakeInfoProcedureParameters(MParameterMap& p_parameters,CString& p_errors,CString p_schema,CString p_procedure);
+  // Procedures
+  bool    MakeInfoPSMProcedures(MProcedureMap& p_procedures,CString& p_errors,CString p_schema,CString p_procedure);
+  bool    MakeInfoPSMParameters(MParameterMap& p_parameters,CString& p_errors,CString p_schema,CString p_procedure);
 
   // PURE VIRTUAL INTERFACE
 

@@ -873,16 +873,22 @@ SQLInfoFirebird::GetCATALOGPrimaryExists(CString /*p_schema*/,CString p_tablenam
 CString
 SQLInfoFirebird::GetCATALOGPrimaryAttributes(CString /*p_schema*/,CString p_tablename) const
 {
-  return "";
-//   p_tablename.MakeUpper();
-//   CString sql = "SELECT rdb$constraint_name\n"      // 1 -> Constraint name
-//                 "      ,rdb$index_name\n"           // 2 -> Index name
-//                 "      ,rdb$deferrable\n"           // 3 ->
-//                 "      ,rdb$initially_deferred\n"
-//                 "  FROM rdb$relation_constraints\n"
-//                 " WHERE rdb$relation_name   = '" + p_tablename + "'\n"
-//                 "   AND rdb$constraint_type = 'PRIMARY KEY'";
-//   return sql;
+  p_tablename.MakeUpper();
+  CString sql = "SELECT cast('' as varchar(31))     as catalog_name\n"
+                "      ,cast('' as varchar(31))     as schema_name\n"
+                "      ,trim(con.rdb$relation_name) as table_name\n"
+                "      ,trim(ind.rdb$field_name)    as column_name\n"
+                "      ,ind.rdb$field_position + 1  as col_position\n"
+                "      ,con.rdb$constraint_name\n"
+                "      ,con.rdb$index_name\n"
+                "      ,con.rdb$deferrable\n"
+                "      ,con.rdb$initially_deferred\n"
+                "  FROM rdb$relation_constraints con\n"
+                "      ,rdb$index_segments ind\n"
+                " WHERE ind.rdb$index_name = con.rdb$index_name\n"
+                "   AND con.rdb$constraint_type = 'PRIMARY KEY'\n"
+                "   AND con.rdb$relation_name   = '" + p_tablename + "'";
+  return sql;
 }
 
 CString

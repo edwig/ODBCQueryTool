@@ -63,16 +63,25 @@ SQLInfoDB::MakeInfoTableTablepart(MTableMap& p_tables
   p_tables.clear();
   p_errors.Empty();
 
+  CString sql;
   SQLCHAR catalog[SQL_MAX_BUFFER];
   SQLCHAR schema [SQL_MAX_BUFFER];
   SQLCHAR tablenm[SQL_MAX_BUFFER];
   SQLCHAR type   [SQL_MAX_BUFFER];
   GetObjectName(p_tablename,catalog,schema,tablenm,type);
 
-  CString sql = GetCATALOGTableAttributes(CString(schema),CString(tablenm),CString(type));
+  if(schema[0] == 0)
+  {
+    strncpy_s((char*)schema,SQL_MAX_BUFFER,p_schema.GetString(),_TRUNCATE);
+  }
+ 
+  if(catalog[0] == 0)
+  {
+    sql = GetCATALOGTableAttributes(CString(schema),CString(tablenm),CString(type));
+  }
   if(sql.IsEmpty())
   {
-    return SQLInfo::MakeInfoTableTablepart(p_tablename,p_tables,p_errors);
+    return SQLInfo::MakeInfoTableTablepart(p_tables,p_errors,p_tablename);
   }
 
   SQLQuery qry(m_database);
@@ -86,13 +95,23 @@ SQLInfoDB::MakeInfoTableTablepart(MTableMap& p_tables
     table.m_table      = qry.GetColumn(3)->GetAsChar();
     table.m_objectType = qry.GetColumn(4)->GetAsChar();
     table.m_remarks    = qry.GetColumn(5)->GetAsChar();
-    table.m_fullName   = qry.GetColumn(6)->GetAsChar();
-    table.m_tablespace = qry.GetColumn(7)->GetAsChar();
-    // preset temporary
-    table.m_temporary  = table.m_objectType.Find("TEMPORARY") >= 0;
+    table.m_tablespace = qry.GetColumn(6)->GetAsChar();
+    table.m_temporary  = qry.GetColumn(7)->GetAsBoolean();
 
     p_tables.push_back(table);
   }
+
+  // Remove after all functions have all search parameters!
+  if(p_tables.size() == 1)
+  {
+    MetaTable& tab = p_tables.front();
+
+    m_searchCatalogName = tab.m_catalog;
+    m_searchSchemaName  = tab.m_schema;
+    m_searchTableName   = tab.m_table;
+    m_searchTableType   = tab.m_objectType;
+  }
+
   return !p_tables.empty();
 }
 
@@ -111,7 +130,7 @@ SQLInfoDB::MakeInfoTableColumns(MColumnMap& p_columns
   if(sql.IsEmpty())
   {
     MTableMap tables;
-    if(SQLInfo::MakeInfoTableTablepart(p_tablename,tables,p_errors))
+    if(SQLInfo::MakeInfoTableTablepart(tables,p_errors,p_tablename))
     {
       return SQLInfo::MakeInfoTableColumns(p_columns,p_errors);
     }
@@ -177,17 +196,23 @@ SQLInfoDB::MakeInfoTablePrimary(MPrimaryMap&  p_primaries
   {
     MetaPrimary prim;
 
+    prim.m_catalog        = qry.GetColumn(1)->GetAsChar();
+    prim.m_schema         = qry.GetColumn(2)->GetAsChar();
+    prim.m_table          = qry.GetColumn(3)->GetAsChar();
+    prim.m_columnName     = qry.GetColumn(4)->GetAsChar();
+    prim.m_columnPosition = qry.GetColumn(5)->GetAsSLong();
+    prim.m_constraintName = qry.GetColumn(6)->GetAsChar();
+
     p_primaries.push_back(prim);
   }
   return !p_primaries.empty();
 }
 
-
 bool    
-SQLInfoDB::MakeInfoProcedureProcedurepart(CString         p_schema
-                                         ,CString         p_procedure
-                                         ,MProcedureMap&  p_procedures
-                                         ,CString&        p_errors)
+SQLInfoDB::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
+                                         ,CString&        p_errors
+                                         ,CString         p_schema
+                                         ,CString         p_procedure)
 {
   CString sql;
 
@@ -213,7 +238,7 @@ SQLInfoDB::MakeInfoProcedureProcedurepart(CString         p_schema
   // Let ODBC handle the call
   if(sql.IsEmpty())
   {
-    return SQLInfo::MakeInfoProcedureProcedurepart(p_schema,p_procedure,p_procedures,p_errors);
+    return SQLInfo::MakeInfoPSMProcedures(p_procedures,p_errors,p_schema,p_procedure);
   }
 
   if(!sql.IsEmpty())
@@ -241,7 +266,7 @@ SQLInfoDB::MakeInfoProcedureProcedurepart(CString         p_schema
 }
 
 bool    
-SQLInfoDB::MakeInfoProcedureParameters(MParameterMap& p_parameters
+SQLInfoDB::MakeInfoPSMParameters(MParameterMap& p_parameters
                                       ,CString&       p_errors
                                       ,CString        p_schema
                                       ,CString        p_procedure)
@@ -250,7 +275,7 @@ SQLInfoDB::MakeInfoProcedureParameters(MParameterMap& p_parameters
   if(sql.IsEmpty())
   {
     // No SQL, let ODBC handle the parameters
-    return SQLInfo::MakeInfoProcedureParameters(p_parameters,p_errors);
+    return SQLInfo::MakeInfoPSMParameters(p_parameters,p_errors);
   }
   SQLQuery qry(m_database);
   qry.DoSQLStatement(sql);
