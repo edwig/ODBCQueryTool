@@ -63,14 +63,19 @@ public:
   // OVERRIDES AND EXTRAS OF THE ODBC MakeInfo<object> functions
 
   // Tables
-  bool    MakeInfoTableTablepart(MTableMap&    p_tables,   CString& p_errors,CString p_schema,CString p_tablename);
-  bool    MakeInfoTableColumns  (MColumnMap&   p_columns,  CString& p_errors,CString p_schema,CString p_tablename,CString p_columname = "");
-  bool    MakeInfoTablePrimary  (MPrimaryMap&  p_primary,  CString& p_errors,CString p_schema,CString p_tablename);
+  bool    MakeInfoTableObject   (MTableMap&    p_tables,   CString& p_errors,CString p_schema,CString p_tablename);  // Not known which type!
+  bool    MakeInfoTableTable    (MTableMap&    p_tables,   CString& p_errors,CString p_schema,CString p_tablename);  // TABLE   only
+  bool    MakeInfoTableView     (MTableMap&    p_tables,   CString& p_errors,CString p_schema,CString p_tablename);  // VIEW    only
+  bool    MakeInfoTableSynonyms (MTableMap&    p_tables,   CString& p_errors,CString p_schema,CString p_tablename);  // SYNONYM only
+  bool    MakeInfoTableCatalog  (MTableMap&    p_tables,   CString& p_errors,CString p_schema,CString p_tablename);  // CATALOG only
+  // Attributes of a table
+  bool    MakeInfoTableColumns  (MColumnMap&   p_columns,  CString& p_errors,CString p_schema,CString p_tablename,CString p_columname = "") override;
+  bool    MakeInfoTablePrimary  (MPrimaryMap&  p_primary,  CString& p_errors,CString p_schema,CString p_tablename)                          override;
   bool    MakeInfoTableTriggers (MTriggerMap&  p_triggers, CString& p_errors,CString p_schema,CString p_tablename,CString p_trigger   = "");
   bool    MakeInfoTableSequences(MSequenceMap& p_sequences,CString& p_errors,CString p_schema,CString p_tablename);
   // Procedures
-  bool    MakeInfoPSMProcedures(MProcedureMap& p_procedures,CString& p_errors,CString p_schema,CString p_procedure);
-  bool    MakeInfoPSMParameters(MParameterMap& p_parameters,CString& p_errors,CString p_schema,CString p_procedure);
+  bool    MakeInfoPSMProcedures(MProcedureMap& p_procedures,CString& p_errors,CString p_schema,CString p_procedure) override;
+  bool    MakeInfoPSMParameters(MParameterMap& p_parameters,CString& p_errors,CString p_schema,CString p_procedure) override;
 
   // PURE VIRTUAL INTERFACE
 
@@ -243,7 +248,9 @@ public:
   // All table functions
   virtual CString GetCATALOGTableExists       (CString p_schema,CString p_tablename) const = 0;
   virtual CString GetCATALOGTablesList        (CString p_schema,CString p_pattern)   const = 0;
-  virtual CString GetCATALOGTableAttributes   (CString p_schema,CString p_tablename,CString p_type) const = 0;
+  virtual CString GetCATALOGTableAttributes   (CString p_schema,CString p_tablename) const = 0;
+  virtual CString GetCATALOGTableSynonyms     (CString p_schema,CString p_tablename) const = 0;
+  virtual CString GetCATALOGTableCatalog      (CString p_schema,CString p_tablename) const = 0;
   virtual CString GetCATALOGTableCreate       (MetaTable& p_table,MetaColumn& p_column) const = 0;
   virtual CString GetCATALOGTableRename       (CString p_schema,CString p_tablename,CString p_newname) const = 0;
   virtual CString GetCATALOGTableDrop         (CString p_schema,CString p_tablename) const = 0;
@@ -394,6 +401,9 @@ public:
   virtual SQLVariant* DoSQLCall(SQLQuery* p_query,CString& p_schema,CString& p_procedure) = 0;
   
 private:
+  // Read a tables cursor from the database
+  bool  ReadTablesFromQuery(SQLQuery& p_query,MTableMap& p_tables);
+  // All default granted users for GRANT statements
   CString m_grantedUsers;
 };
 

@@ -441,8 +441,22 @@ SQLInfoSQLServer::GetCATALOGTablesList(CString p_schema,CString p_pattern) const
 }
 
 CString
-SQLInfoSQLServer::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_type*/) const
+SQLInfoSQLServer::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/) const
 {
+  return false;
+}
+
+CString
+SQLInfoSQLServer::GetCATALOGTableSynonyms(CString /*p_schema*/,CString /*p_tablename*/) const
+{
+  // MS-Access cannot do this
+  return false;
+}
+
+CString
+SQLInfoSQLServer::GetCATALOGTableCatalog(CString /*p_schema*/,CString /*p_tablename*/) const
+{
+  // MS-Access cannot do this
   return false;
 }
 

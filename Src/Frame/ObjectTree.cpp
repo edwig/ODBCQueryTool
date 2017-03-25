@@ -95,21 +95,18 @@ ObjectTree::ClearTree()
   HTREEITEM tables     = InsertItem("Tables",    root,TREE_TABLES);
   HTREEITEM views      = InsertItem("Views",     root,TREE_TABLES);
   HTREEITEM catalogs   = InsertItem("Catalog" ,  root,TREE_TABLES);
-  HTREEITEM aliasses   = InsertItem("Aliasses",  root,TREE_TABLES);
   HTREEITEM synonyms   = InsertItem("Synonyms",  root,TREE_TABLES);
   HTREEITEM procedures = InsertItem("Procedures",root,TREE_PROCEDURES);
 
   SetItemImage(tables,    IMG_TABLES,     IMG_TABLES);
   SetItemImage(views,     IMG_VIEWS,      IMG_VIEWS);
   SetItemImage(catalogs,  IMG_CATALOGS,   IMG_CATALOGS);
-  SetItemImage(aliasses,  IMG_ALIASSES,   IMG_ALIASSES);
-  SetItemImage(synonyms,  IMG_ALIASSES,   IMG_ALIASSES);
+  SetItemImage(synonyms,  IMG_SYNONYMS,   IMG_SYNONYMS);
   SetItemImage(procedures,IMG_PROCEDURES, IMG_PROCEDURES);
 
   InsertNoInfo(tables);
   InsertNoInfo(views);
   InsertNoInfo(catalogs);
-  InsertNoInfo(aliasses);
   InsertNoInfo(synonyms);
   InsertNoInfo(procedures);
 
@@ -133,7 +130,6 @@ ObjectTree::IsSpecialNode(CString& p_name)
   if(p_name.Compare("Tables")     == 0)  return true;
   if(p_name.Compare("Views")      == 0)  return true;
   if(p_name.Compare("Catalog")    == 0)  return true;
-  if(p_name.Compare("Aliases")    == 0)  return true;
   if(p_name.Compare("Synonyms")   == 0)  return true;
   if(p_name.Compare("Procedures") == 0)  return true;
 
@@ -146,8 +142,7 @@ ObjectTree::TypeToImage(CString p_type)
   if(p_type == "T") return IMG_TABLE;
   if(p_type == "V") return IMG_VIEW;
   if(p_type == "C") return IMG_CATALOG;
-  if(p_type == "A") return IMG_ALIAS;
-  if(p_type == "S") return IMG_ALIAS;
+  if(p_type == "S") return IMG_SYNONYM;
   if(p_type == "P") return IMG_PROCEDURE;
 
   return IMG_TABLES;
@@ -238,44 +233,17 @@ ObjectTree::OnSelChanged(NMHDR* pNMHDR,LRESULT* pResult)
   m_busy = false;
 }
 
-// Move the string list to the tree
-// 1) Remove the 'no info' marker if the list is filled
-// 2) Add items, with respect to the '+' and '-' marker
-// 3) '+' -> One extra level in the tree
-// 4) '-' -> One level back in the tree
-void
-ObjectTree::WordListToTree(WordList& p_list,HTREEITEM p_item,ObjectImage p_image)
+CString
+ObjectTree::GetObjectType(CString p_type)
 {
-  // We now have information. Remove the 'No information' marker
-  if(!p_list.empty())
+  switch(p_type.GetAt(0))
   {
-    RemoveNoInfo(p_item);
+    case 'T': return "TABLE"; break;
+    case 'V': return "VIEW";  break;
+    case 'C': return "CATALOG"; break;
+    case 'S': return "SYNONYM"; break;
   }
-
-  HTREEITEM item = p_item;
-  HTREEITEM last = NULL;
-
-  // Add the contents of the list
-  for(auto& line : p_list)
-  {
-    if(line == "+" && last)
-    {
-      // Indent one level
-      item = last;
-      continue;
-    }
-    if(line == "-")
-    {
-      // Reset to original
-      item = p_item;
-    }
-    else
-    {
-      last = InsertItem(line,item);
-      SetItemImage(last,p_image,p_image);
-    }
-  }
-  p_list.clear();
+  return "";
 }
 
 // Expand the first table in the tree
@@ -312,23 +280,17 @@ ObjectTree::ExpandFirstTable(CString p_table)
 void
 ObjectTree::FindTables(HTREEITEM p_theItem)
 {
-  CString text = GetItemText(p_theItem);
-  CString type = text.Left(1);
-  CString find = type + ":";
-  if(m_filter.IsEmpty())
-  {
-    find += "%";
-  }
-  else
-  {
-    find += m_filter;
-    if(find.Right(1) != "%")
-    {
-      find += "%";
-    }
-  }
-
   COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
+  SQLInfoDB* info = app->GetDatabase().GetSQLInfoDB();
+
+  CString text = GetItemText(p_theItem);
+  CString type = GetObjectType(text);
+
+  CString catalog;
+  CString schema;
+  CString table;
+  info->GetObjectName(m_filter,catalog,schema,table);
+
   MTableMap tables;
   CString   errors;
   CString   lastSchema;
@@ -336,7 +298,14 @@ ObjectTree::FindTables(HTREEITEM p_theItem)
   HTREEITEM schemaItem  = 0;
 
   // Go  find it
-  app->GetDatabase().GetSQLInfoDB()->MakeInfoTableTablepart(tables,errors,"",find);
+  switch(type.GetAt(0))
+  {
+    case 'T': info->MakeInfoTableTable   (tables,errors,schema,table); break;
+    case 'V': info->MakeInfoTableView    (tables,errors,schema,table); break;
+    case 'C': info->MakeInfoTableCatalog (tables,errors,schema,table); break;
+    case 'S': info->MakeInfoTableSynonyms(tables,errors,schema,table); break;
+    default:  info->MakeInfoTableObject  (tables,errors,schema,table); break;
+  }
 
   if(!errors.IsEmpty())
   {
@@ -448,12 +417,6 @@ ObjectTree::PresetTable(HTREEITEM p_theItem)
   m_schema = schema;
   m_table  = table;
 
-  // Remove after all functions have all search parameters!
-  COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
-  // Set table to use
-  MTableMap tables;
-  CString   errors;
-  return app->GetDatabase().GetSQLInfoDB()->MakeInfoTableTablepart(tables,errors,m_schema,m_table);
   return true;
 }
 
@@ -476,11 +439,6 @@ ObjectTree::PresetProcedure(HTREEITEM p_theItem,MProcedureMap& p_procedures)
   m_schema    = schema;
   m_procedure = procedure;
 
-  // Remove after all functions have all search parameters!
-  COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
-  CString errors;
-  // Set procedure
-  return app->GetDatabase().GetSQLInfoDB()->MakeInfoPSMProcedures(p_procedures,errors,schema,findproc);
   return true;
 }
 
@@ -528,7 +486,7 @@ ObjectTree::FindForeign(HTREEITEM p_theItem)
     CString     errors;
 
     // Go find the foreign keys
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableForeign(foreigns,errors);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableForeign(foreigns,errors,m_schema,m_table);
     ForeignsToTree(foreigns,p_theItem);
   }
 }
@@ -545,7 +503,7 @@ ObjectTree::FindStatistics(HTREEITEM p_theItem)
     CString         errors;
 
     // Go find the indices and statistics
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableStatistics(statistics,errors,nullptr);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableStatistics(statistics,errors,m_schema,m_table,nullptr);
     StatisticsToTree(statistics,p_theItem);
   }
 }
@@ -561,7 +519,7 @@ ObjectTree::FindSpecials(HTREEITEM p_theItem)
     CString errors;
 
     // Go find the special columns
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableSpecials(specials,errors);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableSpecials(specials,errors,m_schema,m_table);
     SpecialsToTree(specials,p_theItem);
   }
 }
@@ -578,7 +536,7 @@ ObjectTree::FindReferenced(HTREEITEM p_theItem)
     CString     errors;
 
     // Go find the referencing tables
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableForeign(foreigns,errors,true);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableForeign(foreigns,errors,m_schema,m_table,true);
     ReferencedToTree(foreigns,p_theItem);
   }
 }
@@ -627,7 +585,7 @@ ObjectTree::FindPrivileges(HTREEITEM p_theItem)
     CString errors;
 
     // Go find the privileges on the table
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTablePrivileges(privileges,errors);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTablePrivileges(privileges,errors,m_schema,m_table);
     PrivilegesToTree(privileges,p_theItem);
   }
 }

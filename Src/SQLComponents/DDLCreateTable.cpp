@@ -83,7 +83,7 @@ DDLCreateTable::GetTableInfo()
 
   // Find table info
   m_tables.clear();
-  if(!m_info->MakeInfoTableTablepart(m_tables,errors,"",m_tableName) || m_tables.empty())
+  if(!m_info->MakeInfoTableTable(m_tables,errors,"",m_tableName) || m_tables.empty())
   {
     throw CString("Cannot find table: ") + m_tableName + " : " + errors;
   }
@@ -181,7 +181,7 @@ DDLCreateTable::GetIndexInfo()
 
   // Find column info
   m_indices.clear();
-  m_info->MakeInfoTableStatistics(m_indices,errors,nullptr);
+  m_info->MakeInfoTableStatistics(m_indices,errors,m_schema,m_tableName,nullptr);
   if(!errors.IsEmpty())
   {
     throw CString("Cannot find indices for table: ") + m_tableName + " : " + errors;
@@ -248,7 +248,7 @@ DDLCreateTable::GetForeignKeyInfo()
 
   // Find column info
   m_foreigns.clear();
-  m_info->MakeInfoTableForeign(m_foreigns,errors);
+  m_info->MakeInfoTableForeign(m_foreigns,errors,m_schema,m_tableName);
   if(!errors.IsEmpty())
   {
     throw CString("Cannot find the foreign keys for table: ") + m_tableName + " : " + errors;
@@ -330,7 +330,7 @@ DDLCreateTable::GetAccessInfo()
 
   // Find column info
   m_access.clear();
-  m_info->MakeInfoTablePrivileges(m_access,errors);
+  m_info->MakeInfoTablePrivileges(m_access,errors,m_schema,m_tableName);
   if(!errors.IsEmpty())
   {
     throw CString("Cannot find the privileges for table: ") + m_tableName + " : " + errors;

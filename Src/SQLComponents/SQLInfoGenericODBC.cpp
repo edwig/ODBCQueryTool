@@ -429,10 +429,24 @@ SQLInfoGenericODBC::GetCATALOGTablesList(CString p_schema,CString p_pattern) con
 }
 
 CString
-SQLInfoGenericODBC::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_type*/) const
+SQLInfoGenericODBC::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/) const
 {
   // Cannot do this, let ODBC handle this
   return "";
+}
+
+CString
+SQLInfoGenericODBC::GetCATALOGTableSynonyms(CString /*p_schema*/,CString /*p_tablename*/) const
+{
+  // Cannot do this, let ODBC handle this
+  return false;
+}
+
+CString
+SQLInfoGenericODBC::GetCATALOGTableCatalog(CString /*p_schema*/,CString /*p_tablename*/) const
+{
+  // Cannot do this, let ODBC handle this
+  return false;
 }
 
 CString

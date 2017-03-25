@@ -412,26 +412,20 @@ SQLInfoFirebird::GetCATALOGTableExists(CString /*p_schema*/,CString p_tablename)
 CString
 SQLInfoFirebird::GetCATALOGTablesList(CString p_schema,CString p_pattern) const
 {
-  return GetCATALOGTableAttributes(p_schema,p_pattern,"");
+  return GetCATALOGTableAttributes(p_schema,p_pattern);
 }
 
 // Attributes can fill in 'm_temporary' 
 CString
-SQLInfoFirebird::GetCATALOGTableAttributes(CString /*p_schema*/,CString p_tablename,CString p_type) const
+SQLInfoFirebird::GetCATALOGTableAttributes(CString /*p_schema*/,CString p_tablename) const
 {
   p_tablename.MakeUpper();
   CString sql = "SELECT CAST('' AS VARCHAR(31))             AS table_catalog\n"
                 "      ,CAST(rdb$owner_name AS VARCHAR(31)) AS table_schema\n"
                 "      ,trim(rdb$relation_name)             AS table_name\n"
                 "      ,CASE rdb$relation_type\n"
-                "            WHEN 0 THEN CASE rdb$system_flag\n"
-                "                             WHEN 0 THEN 'TABLE'\n"
-                "                             WHEN 1 THEN 'SYSTEM TABLE'\n"
-                "                                    ELSE  'UNKNOWN'\n"
-                "                        END\n"
-                "            WHEN 1 THEN 'VIEW'\n"
+                "            WHEN 0 THEN 'TABLE'\n"
                 "            WHEN 2 THEN 'TABLE'\n"
-                "            WHEN 3 THEN 'SYSTEM TABLE'\n"
                 "            WHEN 4 THEN 'GLOBAL TEMPORARY'\n"
                 "            WHEN 5 THEN 'LOCAL TEMPORARY'\n"
                 "                   ELSE 'UNKNOWN'\n"
@@ -439,42 +433,44 @@ SQLInfoFirebird::GetCATALOGTableAttributes(CString /*p_schema*/,CString p_tablen
                 "      ,rdb$description   AS remarks\n"
                 "      ,trim(rdb$owner_name) || '.' || trim(rdb$relation_name) AS full_name\n"
                 "      ,cast('' as varchar(31)) as storage_space\n"
-                "  FROM rdb$relations";
+                "  FROM rdb$relations\n"
+                " WHERE rdb$system_flag = 0\n"
+                "   AND rdb$relation_type IN (0,2,4,5)\n";
   if(!p_tablename.IsEmpty())
   {
-    sql += "\n WHERE rdb$relation_name ";
+    sql += "\n   AND rdb$relation_name ";
     sql += (p_tablename.Find("%") >= 0) ? "LIKE '" : "= '";
     sql += p_tablename + "'";
   }
+  return sql;
+}
 
-  if(p_type.Compare("TABLE") == 0)
+CString
+SQLInfoFirebird::GetCATALOGTableSynonyms(CString /*p_schema*/,CString /*p_tablename*/) const
+{
+  // Firebird does not implement ALIAS and SYNONYM
+  return false;
+}
+
+CString
+SQLInfoFirebird::GetCATALOGTableCatalog(CString /*p_schema*/,CString p_tablename) const
+{
+  p_tablename.MakeUpper();
+  CString sql = "SELECT CAST('' AS varchar(31))             AS table_catalog\n"
+                "      ,CAST(rdb$owner_name AS varchar(31)) AS table_schema\n"
+                "      ,trim(rdb$relation_name)             AS table_name\n"
+                "      ,CAST('SYSTEM TABLE' as varchar(31)) AS table_type\n"
+                "      ,rdb$description   AS remarks\n"
+                "      ,trim(rdb$owner_name) || '.' || trim(rdb$relation_name) AS full_name\n"
+                "      ,cast('' as varchar(31)) as storage_space\n"
+                "  FROM rdb$relations\n"
+                " WHERE rdb$relation_type IN (0,3)\n"
+                "   AND rdb$system_flag = 1\n";
+  if(!p_tablename.IsEmpty())
   {
-    sql += "\n   AND rdb$relation_type IN (0,2)"
-           "\n   AND rdb$system_flag   = 0";
-  }
-  else if(p_type.Compare("VIEW") == 0)
-  {
-    sql += "\n   AND rdb$relation_type = 1"
-           "\n   AND rdb$system_flag   = 0";
-  }
-  else if(p_type.Compare("SYSTEM TABLE") == 0)
-  {
-    sql += "\n   AND rdb$relation_type IN (0,3)"
-           "\n   AND rdb$system_flag   = 1";
-  }
-  else if(p_type.Compare("GLOBAL TEMPORARY") == 0)
-  {
-    sql += "\n   AND rdb$relation_type = 4"
-           "\n   AND rdb$system_flag   = 0";
-  }
-  else if(p_type.Compare("LOCAL TEMPORARY") == 0)
-  {
-    sql += "\n   AND rdb$relation_type = 5"
-           "\n   AND rdb$system_flag   = 0";
-  }
-  else
-  {
-    // Just search
+    sql += "\n   AND rdb$relation_name ";
+    sql += (p_tablename.Find("%") >= 0) ? "LIKE '" : "= '";
+    sql += p_tablename + "'";
   }
   return sql;
 }
@@ -1395,13 +1391,30 @@ SQLInfoFirebird::GetCATALOGViewExists(CString /*p_schema*/,CString p_viewname) c
 CString 
 SQLInfoFirebird::GetCATALOGViewList(CString p_schema,CString p_pattern) const
 {
-  return "";
+  return GetCATALOGViewAttributes(p_schema,p_pattern);
 }
 
 CString 
-SQLInfoFirebird::GetCATALOGViewAttributes(CString p_schema,CString p_viewname) const
+SQLInfoFirebird::GetCATALOGViewAttributes(CString /*p_schema*/,CString p_viewname) const
 {
-  return "";
+  p_viewname.MakeUpper();
+  CString sql = "SELECT CAST('' AS VARCHAR(31))             AS table_catalog\n"
+                "      ,CAST(rdb$owner_name AS VARCHAR(31)) AS table_schema\n"
+                "      ,trim(rdb$relation_name)             AS table_name\n"
+                "      ,CAST('VIEW' as varchar(31))         AS table_type\n"
+                "      ,rdb$description   AS remarks\n"
+                "      ,trim(rdb$owner_name) || '.' || trim(rdb$relation_name) AS full_name\n"
+                "      ,cast('' as varchar(31)) as storage_space\n"
+                "  FROM rdb$relations\n"
+                " WHERE rdb$relation_type = 1\n"
+                "   AND rdb$system_flag   = 0\n";
+  if(!p_viewname.IsEmpty())
+  {
+    sql += "\n AND rdb$relation_name ";
+    sql += (p_viewname.Find("%") >= 0) ? "LIKE '" : "= '";
+    sql += p_viewname + "'";
+  }
+  return sql;
 }
 
 CString 

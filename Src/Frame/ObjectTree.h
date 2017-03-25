@@ -50,8 +50,8 @@ typedef enum objectImage
  ,IMG_CATALOG
  ,IMG_PROCEDURES
  ,IMG_PROCEDURE
- ,IMG_ALIASSES
- ,IMG_ALIAS
+ ,IMG_SYNONYMS
+ ,IMG_SYNONYM
  ,IMG_COLUMN
  ,IMG_PRIMARY
  ,IMG_FOREIGN
@@ -91,8 +91,8 @@ protected:
 
   void      InsertNoInfo   (HTREEITEM p_item);
   void      RemoveNoInfo   (HTREEITEM p_item);
-  void      WordListToTree (WordList& p_list,HTREEITEM p_item,ObjectImage p_image);
-  bool      IsSpecialNode  (CString& p_name);
+  CString   GetObjectType  (CString   p_type);
+  bool      IsSpecialNode  (CString&  p_name);
   void      SetItemCount   (HTREEITEM p_theItem,int p_size);
   bool      PresetTable    (HTREEITEM p_theItem);
   bool      PresetProcedure(HTREEITEM p_theItem,MProcedureMap& p_procedures);

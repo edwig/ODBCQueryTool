@@ -438,9 +438,23 @@ SQLInfoPostgreSQL::GetCATALOGTablesList(CString p_schema,CString p_pattern) cons
 }
 
 CString
-SQLInfoPostgreSQL::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_type*/) const
+SQLInfoPostgreSQL::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/) const
 {
   return "";
+}
+
+CString
+SQLInfoPostgreSQL::GetCATALOGTableSynonyms(CString /*p_schema*/,CString /*p_tablename*/) const
+{
+  // MS-Access cannot do this
+  return false;
+}
+
+CString
+SQLInfoPostgreSQL::GetCATALOGTableCatalog(CString /*p_schema*/,CString /*p_tablename*/) const
+{
+  // MS-Access cannot do this
+  return false;
 }
 
 CString

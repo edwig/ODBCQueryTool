@@ -972,32 +972,32 @@ InfoTree::MakeTreeInfo()
   InsertItem("RDBMS version: "         + m_info->GetVersionRDBMS(),         infoItemVersion);
 }
 
-void
-InfoTree::WordListToTree(WordList& p_list,HTREEITEM p_item)
-{
-  HTREEITEM item = p_item;
-  HTREEITEM last = NULL;
-  for(WordList::iterator it = p_list.begin(); it != p_list.end(); ++it)
-  {
-    CString line = *it;
-    if(line == "+" && last)
-    {
-      // één inspringen
-      item = last;
-      continue;
-    }
-    if(line == "-")
-    {
-      // Reset to original
-      item = p_item;
-    }
-    else
-    {
-      last = InsertItem(line,item);
-    }
-  }
-  p_list.clear();
-}
+// void
+// InfoTree::WordListToTree(WordList& p_list,HTREEITEM p_item)
+// {
+//   HTREEITEM item = p_item;
+//   HTREEITEM last = NULL;
+//   for(WordList::iterator it = p_list.begin(); it != p_list.end(); ++it)
+//   {
+//     CString line = *it;
+//     if(line == "+" && last)
+//     {
+//       // één inspringen
+//       item = last;
+//       continue;
+//     }
+//     if(line == "-")
+//     {
+//       // Reset to original
+//       item = p_item;
+//     }
+//     else
+//     {
+//       last = InsertItem(line,item);
+//     }
+//   }
+//   p_list.clear();
+// }
 
 void
 InfoTree::MetaListToTree(MMetaMap& p_list,HTREEITEM p_item,CString& p_errors)

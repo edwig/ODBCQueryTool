@@ -122,16 +122,16 @@ public:
   // GETTING ALL THE INFO FOR ONE PROCEDURE
   // GETTING ALL META TYPES
 protected:
-  virtual bool MakeInfoTableTablepart (MTableMap&     p_tables,    CString& p_errors,CString p_findTable);
-  virtual bool MakeInfoTableColumns   (MColumnMap&    p_columns,   CString& p_errors);
+  virtual bool MakeInfoTableTable     (MTableMap&     p_tables,    CString& p_errors,CString p_schema,CString p_tablename,CString p_type);
+  virtual bool MakeInfoTableColumns   (MColumnMap&    p_columns,   CString& p_errors,CString p_schema,CString p_tablename,CString p_columnname = "");
   virtual bool MakeInfoTablePrimary   (MPrimaryMap&   p_primaries, CString& p_errors,CString p_schema,CString p_tablename);
   virtual bool MakeInfoPSMProcedures  (MProcedureMap& p_procedures,CString& p_errors,CString p_schema,CString p_procedure);
-  virtual bool MakeInfoPSMParameters  (MParameterMap& p_parameters,CString& p_errors);
+  virtual bool MakeInfoPSMParameters  (MParameterMap& p_parameters,CString& p_errors,CString p_schema,CString p_procedure);
 public:
-  virtual bool MakeInfoTableForeign   (MForeignMap&   p_foreigns,  CString& p_errors,bool p_referenced = false);
-  virtual bool MakeInfoTableStatistics(MIndicesMap&   p_statistics,CString& p_errors,MPrimaryMap* p_keymap,bool p_all = true);
-  virtual bool MakeInfoTableSpecials  (MSpecialsMap&  p_specials,  CString& p_errors);
-  virtual bool MakeInfoTablePrivileges(MPrivilegeMap& p_privileges,CString& p_errors);
+  virtual bool MakeInfoTableForeign   (MForeignMap&   p_foreigns,  CString& p_errors,CString p_schema,CString p_tablename,bool p_referenced = false);
+  virtual bool MakeInfoTableStatistics(MIndicesMap&   p_statistics,CString& p_errors,CString p_schema,CString p_tablename,MPrimaryMap* p_keymap,bool p_all = true);
+  virtual bool MakeInfoTableSpecials  (MSpecialsMap&  p_specials,  CString& p_errors,CString p_schema,CString p_tablename);
+  virtual bool MakeInfoTablePrivileges(MPrivilegeMap& p_privileges,CString& p_errors,CString p_schema,CString p_tablename);
   virtual bool MakeInfoMetaTypes      (MMetaMap&      p_objects,   CString& p_errors,int p_type);
 
   // Meta pointer to SQLGet<META> functions
@@ -313,6 +313,9 @@ public:
   SQLUSMALLINT* GetFunctionArrayV2();
   SQLUSMALLINT* GetFunctionArrayV3();
 
+  // Get the catalog.schema.table from a user string
+  void    GetObjectName(CString pattern,CString& p_catalog,CString& p_schema,CString& p_table);
+  
 private:
   // SQLDatabase has access to attribute methods
   friend SQLDatabase;
@@ -338,14 +341,7 @@ private:
   bool    SetAttributeInteger(CString description,SQLINTEGER  attrib,SQLUINTEGER value);
   // Setting a STRING attribute
   bool    SetAttributeString(CString description,SQLINTEGER attrib,SQLCHAR* value);
-
 protected:
-  // Get the catalog.schema.table from a user string
-  void    GetObjectName (CString& name
-                        ,unsigned char* search_catalog
-                        ,unsigned char* search_schema
-                        ,unsigned char* search_table
-                        ,unsigned char* search_type);
   // Reprint the catalog.schema.table combination
   CString MakeObjectName(SQLCHAR* search_catalog
                         ,SQLCHAR* search_schema
@@ -360,12 +356,6 @@ protected:
   HDBC           m_hdbc;               // Database handle (if open)
   HSTMT          m_hstmt;              // Statement handle for info of tables/procedures
   RETCODE        m_retCode;            // Generic return code from ::SQL function
-
-  // Temporary caching of the current object being queried
-  CString     m_searchCatalogName;
-  CString     m_searchSchemaName;
-  CString     m_searchTableName;
-  CString     m_searchTableType;
 
   WordList    m_ODBCKeywords;          // Stationary ODBC keywords
   WordList    m_RDBMSkeywords;         // Keywords  reported by the RDBMS

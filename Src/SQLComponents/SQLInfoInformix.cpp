@@ -441,14 +441,28 @@ SQLInfoInformix::GetCATALOGTableExists(CString /*p_schema*/,CString p_tablename)
 CString
 SQLInfoInformix::GetCATALOGTablesList(CString p_schema,CString p_pattern) const
 {
-  return GetCATALOGTableAttributes(p_schema,p_pattern,"");
+  return GetCATALOGTableAttributes(p_schema,p_pattern);
 }
 
 CString
-SQLInfoInformix::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_type*/) const
+SQLInfoInformix::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/) const
 {
   // Getting the temp table status
   return "";
+}
+
+CString
+SQLInfoInformix::GetCATALOGTableSynonyms(CString /*p_schema*/,CString /*p_tablename*/) const
+{
+  // MS-Access cannot do this
+  return false;
+}
+
+CString
+SQLInfoInformix::GetCATALOGTableCatalog(CString /*p_schema*/,CString /*p_tablename*/) const
+{
+  // MS-Access cannot do this
+  return false;
 }
 
 CString

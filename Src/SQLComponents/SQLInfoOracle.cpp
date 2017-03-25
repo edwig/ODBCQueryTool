@@ -457,15 +457,12 @@ SQLInfoOracle::GetCATALOGTablesList(CString p_schema,CString p_pattern) const
 }
 
 CString
-SQLInfoOracle::GetCATALOGTableAttributes(CString p_schema,CString p_tablename,CString p_type) const
+SQLInfoOracle::GetCATALOGTableAttributes(CString p_schema,CString p_tablename) const
 {
-  CString sql1;
-  CString sql2;
-  CString sql3;
-  CString sql4;
+  CString sql;
 
   // TABLES
-  sql1 = "SELECT ora_database_name AS table_catalog\n"
+  sql  = "SELECT ora_database_name AS table_catalog\n"
          "      ,tab.owner         AS table_schema\n"
          "      ,tab.table_name    AS table_name\n"
          "      ,CASE tab.TEMPORARY\n"
@@ -484,58 +481,17 @@ SQLInfoOracle::GetCATALOGTableAttributes(CString p_schema,CString p_tablename,CS
          "                      ON (com.owner      = tab.owner\n"
          "                     AND  com.table_name = tab.table_name)\n"
          " WHERE com.table_type = 'TABLE'\n";
-  // VIEWS
-  sql2 = "SELECT ora_database_name AS table_catalog\n"
-         "      ,viw.owner         AS table_schema\n"
-         "      ,viw.view_name     AS table_name\n"
-         "      ,'VIEW'            AS object_type\n"
-         "      ,com.comments      AS remarks\n"
-         "      ,''                AS tablespace_name\n"
-         "      ,0                 AS TEMPORARY\n"
-         "  FROM all_views viw LEFT OUTER JOIN all_tab_comments com\n"
-         "                     ON (viw.owner     = com.owner\n"
-         "                    AND  viw.view_name = com.table_name)\n"
-         " WHERE com.table_type = 'VIEW'\n";
-  // SYSTEM
-  sql3 = "SELECT ora_database_name AS table_catalog\n"
-         "      ,obj.owner         AS table_schema\n"
-         "      ,obj.object_name   AS table_name\n"
-         "      ,'SYSTEM TABLE'    AS object_type\n"
-         "      ,com.comments      AS remarks\n"
-         "      ,''                AS tablespace_name\n"
-         "      ,0                AS temporary\n"
-         "  FROM all_objects obj LEFT OUTER JOIN all_tab_comments com\n"
-         "                       ON (com.owner      = obj.owner\n"
-         "                      AND  com.table_name = obj.object_name)\n"
-         " WHERE obj.owner IN ('SYS','SYSTEM')\n"
-         "   AND obj.object_type IN ('TABLE','VIEW')\n"
-         "   AND obj.object_name NOT LIKE ('%$%')\n";
-  // SYNONYMS
-  sql4 = "SELECT ora_database_name AS table_catalog\n"
-         "      ,table_owner  AS table_schema\n"
-         "      ,synonym_name AS table_name\n"
-         "      ,'SYNONYM'    AS object_type\n"
-         "      ,''           AS remarks\n"
-         "      ,''           AS tablespace_name\n"
-         "      ,0            AS temporary\n"
-         "  FROM all_synonyms syn\n"
-         " WHERE 1=1\n";
+
 
   if(!p_schema.IsEmpty())
   {
     if(p_schema.Find('%') >= 0)
     {
-      sql1 += "  AND tab.owner   LIKE '" + p_schema + "'\n";
-      sql2 += "  AND viw.owner   LIKE '" + p_schema + "'\n";
-      sql3 += "  AND obj.owner   LIKE '" + p_schema + "'\n";
-      sql4 += "  AND table_owner LIKE '" + p_schema + "'\n";
+      sql += "  AND tab.owner   LIKE '" + p_schema + "'\n";
     }
     else
     {
-      sql1 += "  AND tab.owner   = '" + p_schema + "'\n";
-      sql2 += "  AND viw.owner   = '" + p_schema + "'\n";
-      sql3 += "  AND obj.owner   = '" + p_schema + "'\n";
-      sql4 += "  AND table_owner = '" + p_schema + "'\n";
+      sql += "  AND tab.owner   = '" + p_schema + "'\n";
     }
   }
 
@@ -543,48 +499,93 @@ SQLInfoOracle::GetCATALOGTableAttributes(CString p_schema,CString p_tablename,CS
   {
     if(p_tablename.Find('%') >= 0)
     {
-      sql1 += "   AND tab.table_name  LIKE '" + p_tablename + "'\n";
-      sql2 += "   AND viw.view_name   LIKE '" + p_tablename + "'\n";
-      sql3 += "   AND obj.object_name LIKE '" + p_tablename + "'\n";
-      sql4 += "   AND synonym_name    LIKE '" + p_tablename + "'\n";
+      sql += "   AND tab.table_name  LIKE '" + p_tablename + "'\n";
     }
     else
     {
-      sql1 += "   AND tab.table_name  = '" + p_tablename + "'\n";
-      sql2 += "   AND viw.view_name   = '" + p_tablename + "'\n";
-      sql3 += "   AND obj.object_name = '" + p_tablename + "'\n";
-      sql4 += "   AND synonym_name    = '" + p_tablename + "'\n";
+      sql += "   AND tab.table_name  = '" + p_tablename + "'\n";
     }
   }
 
-  CString order(" ORDER BY 1,2,3");
-
-  // See if we want only one of these
-  if(p_type.Compare("TABLE") == 0)
-  {
-    return sql1 + order;
-  }
-  else if(p_type.Compare("VIEW") == 0)
-  {
-    return sql2 + order;
-  }
-  else if(p_type.Compare("SYSTEM TABLE") == 0)
-  {
-    return sql3 + order;
-  }
-  else if(p_type.Compare("SYNONYM") == 0)
-  {
-    return sql4 + order;
-  }
-  else if(p_type.IsEmpty())
-  {
-    // NO TYPE: RETURN EVERYTHING!
-    CString uni("UNION ALL\n");
-    return sql1 + uni + sql2 + uni + sql3 + uni + sql4 + order;
-  }
-  // Unknown type. DO NOT KNOW HOW TO DO THIS
-  return "";
+  sql += " ORDER BY 1,2,3";
+  return sql;
 }
+
+CString 
+SQLInfoOracle::GetCATALOGTableSynonyms(CString p_schema,CString p_tablename) const
+{
+  CString sql = "SELECT ora_database_name AS table_catalog\n"
+                "      ,table_owner  AS table_schema\n"
+                "      ,synonym_name AS table_name\n"
+                "      ,'SYNONYM'    AS object_type\n"
+                "      ,''           AS remarks\n"
+                "      ,''           AS tablespace_name\n"
+                "      ,0            AS temporary\n"
+                "  FROM all_synonyms syn\n";
+
+  if(!p_schema.IsEmpty())
+  {
+    sql += " WHERE table_owner ";
+    sql += p_schema.Find('%') >= 0 ? "LIKE '" : " = '";
+    sql += p_schema + "'\n";
+  }
+
+  if(!p_tablename.IsEmpty())
+  {
+    sql += p_schema.IsEmpty() ? " WHERE " : "   AND ";
+    sql += "synonym_name ";
+    sql += p_tablename.Find('%') >= 0 ? "LIKE '" : "= '";
+    sql += p_tablename + "'\n";
+  }
+  sql += " ORDER BY 1,2,3";
+  return sql;
+}
+
+CString 
+SQLInfoOracle::GetCATALOGTableCatalog(CString p_schema,CString p_tablename) const
+{
+  CString sql = "SELECT ora_database_name AS table_catalog\n"
+                "      ,obj.owner         AS table_schema\n"
+                "      ,obj.object_name   AS table_name\n"
+                "      ,'SYSTEM TABLE'    AS object_type\n"
+                "      ,com.comments      AS remarks\n"
+                "      ,''                AS tablespace_name\n"
+                "      ,0                 AS temporary\n"
+                "  FROM all_objects obj LEFT OUTER JOIN all_tab_comments com\n"
+                "                       ON (com.owner      = obj.owner\n"
+                "                      AND  com.table_name = obj.object_name)\n"
+                " WHERE obj.owner IN ('SYS','SYSTEM')\n"
+                "   AND obj.object_type IN ('TABLE','VIEW')\n"
+                "   AND obj.object_name NOT LIKE ('%$%')\n";
+
+  if(!p_schema.IsEmpty())
+  {
+    if(p_schema.Find('%') >= 0)
+    {
+      sql += "  AND obj.owner   LIKE '" + p_schema + "'\n";
+    }
+    else
+    {
+      sql += "  AND obj.owner   = '" + p_schema + "'\n";
+    }
+  }
+
+  if(!p_tablename.IsEmpty())
+  {
+    if(p_tablename.Find('%') >= 0)
+    {
+      sql += "   AND obj.object_name LIKE '" + p_tablename + "'\n";
+    }
+    else
+    {
+      sql += "   AND obj.object_name = '" + p_tablename + "'\n";
+    }
+  }
+
+  sql += " ORDER BY 1,2,3";
+  return sql;
+}
+
 
 CString
 SQLInfoOracle::GetCATALOGTableCreate(MetaTable& /*p_table*/,MetaColumn& /*p_column*/) const
@@ -1391,7 +1392,44 @@ SQLInfoOracle::GetCATALOGViewList(CString p_schema,CString p_pattern) const
 CString 
 SQLInfoOracle::GetCATALOGViewAttributes(CString p_schema,CString p_viewname) const
 {
-  return "";
+  // VIEWS
+  CString sql = "SELECT ora_database_name AS table_catalog\n"
+                "      ,viw.owner         AS table_schema\n"
+                "      ,viw.view_name     AS table_name\n"
+                "      ,'VIEW'            AS object_type\n"
+                "      ,com.comments      AS remarks\n"
+                "      ,''                AS tablespace_name\n"
+                "      ,0                 AS TEMPORARY\n"
+                "  FROM all_views viw LEFT OUTER JOIN all_tab_comments com\n"
+                "                     ON (viw.owner     = com.owner\n"
+                "                    AND  viw.view_name = com.table_name)\n"
+                " WHERE com.table_type = 'VIEW'\n";
+  if(!p_schema.IsEmpty())
+  {
+    if(p_schema.Find('%') >= 0)
+    {
+      sql += "  AND viw.owner   LIKE '" + p_schema + "'\n";
+    }
+    else
+    {
+      sql += "  AND viw.owner   = '" + p_schema + "'\n";
+    }
+  }
+
+  if(!p_viewname.IsEmpty())
+  {
+    if(p_viewname.Find('%') >= 0)
+    {
+      sql += "   AND viw.view_name   LIKE '" + p_viewname + "'\n";
+    }
+    else
+    {
+      sql += "   AND viw.view_name   = '" + p_viewname + "'\n";
+    }
+  }
+
+  sql += " ORDER BY 1,2,3";
+  return sql;
 }
 
 CString 

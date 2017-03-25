@@ -430,10 +430,24 @@ SQLInfoMySQL::GetCATALOGTablesList(CString /*p_schema*/,CString p_pattern) const
 }
 
 CString
-SQLInfoMySQL::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_type*/) const
+SQLInfoMySQL::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/) const
 {
   // Getting the temp table status
   return "";
+}
+
+CString
+SQLInfoMySQL::GetCATALOGTableSynonyms(CString /*p_schema*/,CString /*p_tablename*/) const
+{
+  // MS-Access cannot do this
+  return false;
+}
+
+CString
+SQLInfoMySQL::GetCATALOGTableCatalog(CString /*p_schema*/,CString /*p_tablename*/) const
+{
+  // MS-Access cannot do this
+  return false;
 }
 
 CString

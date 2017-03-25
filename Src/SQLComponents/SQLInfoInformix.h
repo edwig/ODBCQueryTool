@@ -199,12 +199,14 @@ public:
   //////////////////////////////////////////////////////////////////////////
 
   // All table functions
-  CString GetCATALOGTableExists    (CString p_schema,CString p_tablename) const;
-  CString GetCATALOGTablesList     (CString p_schema,CString p_pattern)   const;
-  CString GetCATALOGTableAttributes(CString p_schema,CString p_tablename,CString p_type) const;
-  CString GetCATALOGTableCreate    (MetaTable& p_table,MetaColumn& p_column) const;
-  CString GetCATALOGTableRename    (CString p_schema,CString p_tablename,CString p_newname) const;
-  CString GetCATALOGTableDrop      (CString p_schema,CString p_tablename) const;
+  CString GetCATALOGTableExists       (CString p_schema,CString p_tablename) const;
+  CString GetCATALOGTablesList        (CString p_schema,CString p_pattern)   const;
+  CString GetCATALOGTableAttributes   (CString p_schema,CString p_tablename) const;
+  CString GetCATALOGTableSynonyms     (CString p_schema,CString p_tablename) const;
+  CString GetCATALOGTableCatalog      (CString p_schema,CString p_tablename) const;
+  CString GetCATALOGTableCreate       (MetaTable& p_table,MetaColumn& p_column) const;
+  CString GetCATALOGTableRename       (CString p_schema,CString p_tablename,CString p_newname) const;
+  CString GetCATALOGTableDrop         (CString p_schema,CString p_tablename) const;
   // All Temporary table functions
   CString GetCATALOGTemptableCreate   (CString p_schema,CString p_tablename,CString p_select) const;
   CString GetCATALOGTemptableIntoTemp (CString p_schema,CString p_tablename,CString p_select) const;

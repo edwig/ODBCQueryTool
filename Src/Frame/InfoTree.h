@@ -58,7 +58,7 @@ private:
   void MakeTreeODBCExtensions(HTREEITEM item);
   // All ODBC Info to a tree control
   void MakeTreeInfoFunctions(HTREEITEM item);
-  void WordListToTree(WordList& p_list,HTREEITEM p_item);
+//void WordListToTree(WordList& p_list,HTREEITEM p_item);
   void MetaListToTree(MMetaMap& p_list,HTREEITEM p_item,CString& p_errors);
 
 
