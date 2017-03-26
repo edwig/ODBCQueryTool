@@ -895,7 +895,7 @@ SQLInfoPostgreSQL::GetCATALOGForeignList(CString p_schema,CString p_tablename,in
 }
 
 CString
-SQLInfoPostgreSQL::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraint,bool /*p_referenced = false*/,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
+SQLInfoPostgreSQL::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraint,bool p_referenced /*=false*/,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
@@ -907,15 +907,15 @@ SQLInfoPostgreSQL::GetCATALOGForeignAttributes(CString p_schema,CString p_tablen
   {
     CString part;
     part.Format("SELECT current_database() as primary_catalog_name\n"
-                "      ,sch.nspname        as primary_schema_name\n"
+                "      ,psc.nspname        as primary_schema_name\n"
                 "      ,pri.relname        as primary_table_name\n"
                 "      ,current_database() as foreign_catalog_name\n"
                 "      ,sch.nspname        as foreign_schema_name\n"
                 "      ,cla.relname        as foreign_table_name\n"
-                "      ,''                 as primary_constraint_name\n"
-                "      ,con.conname        as constraint_name\n"
+                "      ,prc.conname        as primary_constraint_name\n"
+                "      ,con.conname        as foreign_constraint_name\n"
                 "      ,%d                 as key_sequence"
-                "      ,fky.attname        as primary_key_column\n"
+                "      ,pky.attname        as primary_key_column\n"
                 "      ,att.attname        as foreign_key_column\n"
                 "      ,case con.confupdtype   WHEN 'r' THEN 1\n"
                 "                              WHEN 'c' THEN 0\n"
@@ -943,30 +943,55 @@ SQLInfoPostgreSQL::GetCATALOGForeignAttributes(CString p_schema,CString p_tablen
                 "      ,pg_attribute  att\n"
                 "      ,pg_namespace  sch\n"
                 "      ,pg_class      pri\n"
-                "      ,pg_attribute  fky\n"
+                "      ,pg_attribute  pky\n"
+                "      ,pg_namespace  psc\n"
+                "      ,pg_constraint prc\n"
                 " WHERE con.contype      = 'f'\n"
                 "   AND con.conrelid     = cla.oid\n"
                 "   and cla.relnamespace = sch.oid\n"
                 "   and con.confrelid    = pri.oid\n"
+                "   and pri.relnamespace = psc.oid\n"
+                "   and prc.conrelid     = pri.oid\n"
+                "   and prc.contype      = 'p'\n"
                 "   and att.attrelid     = cla.oid\n"
                 "   and att.attnum       = con.conkey[%d]\n"
-                "   and fky.attrelid     = pri.oid\n"
-                "   and fky.attnum       = con.confkey[%d]\n"
-                "   AND cla.relname      = 'part'"
+                "   and pky.attrelid     = pri.oid\n"
+                "   and pky.attnum       = con.confkey[%d]\n"
                ,ind
                ,ind
                ,ind);
     if(!p_schema.IsEmpty())
     {
-      part += "\n   AND sch.nspname = '" + p_schema + "'";
+      if(p_referenced)
+      {
+        part += "\n   AND psc.nspname = '" + p_schema + "'";
+      }
+      else
+      {
+        part += "\n   AND sch.nspname = '" + p_schema + "'";
+      }
     }
     if(!p_tablename.IsEmpty())
     {
-      part += "\n   AND cla.relname = '" + p_tablename + "'";
+      if(p_referenced)
+      {
+        part += "\n   AND pri.relname = '" + p_tablename + "'";
+      }
+      else
+      {
+        part += "\n   AND cla.relname = '" + p_tablename + "'";
+      }
     }
     if(!p_constraint.IsEmpty())
     {
-      part += "\n   AND con.conname = '" + p_constraint + "'";
+      if(p_referenced)
+      {
+        part += "\n   AND prc.conname = '" + p_constraint + "'";
+      }
+      else
+      {
+        part += "\n   AND con.conname = '" + p_constraint + "'";
+      }
     }
 
     // Append to query, multiple for multiple columns
@@ -1176,11 +1201,21 @@ SQLInfoPostgreSQL::GetCATALOGSequenceList(CString p_schema,CString p_pattern) co
                 "      ,0               AS minimal_value\n"
                 "      ,increment\n"
                 "      ,0               AS cache\n"
-                "      ,decode(cycle_option,'NO',1,0) AS cycle\n"
+                "      ,case cycle_option\n"
+                "            when 'NO' then 1\n"
+                "                      else 0\n"
+                "       end             AS cycle\n"
                 "      ,0               AS ordering\n"
-                "  FROM information_schema.sequences\n"
-                " WHERE sequence_schema  = '" + p_schema   + "'\n"
-                "   AND sequence_name LIKE '" + p_pattern+ "'";
+                "  FROM information_schema.sequences\n";
+  if(!p_schema.IsEmpty())
+  {
+    sql += " WHERE sequence_schema  = '" + p_schema + "'\n";
+  }
+  if(!p_pattern.IsEmpty())
+  {
+    sql += p_schema.IsEmpty() ? " WHERE " : "   AND ";
+    sql += "sequence_name LIKE '" + p_pattern + "'";
+  }
   return sql;
 }
 
@@ -1197,7 +1232,10 @@ SQLInfoPostgreSQL::GetCATALOGSequenceAttributes(CString p_schema, CString p_sequ
                 "      ,0               AS minimal_value\n"
                 "      ,increment\n"
                 "      ,0               AS cache\n"
-                "      ,decode(cycle_option,'NO',1,0) AS cycle\n"
+                "      ,case cycle_option\n"
+                "            when 'NO' then 1\n"
+                "                      else 0\n"
+                "       end             AS cycle\n"
                 "      ,0               AS ordering\n"
                 "  FROM information_schema.sequences\n"
                 " WHERE sequence_schema = '" + p_schema   + "'\n"

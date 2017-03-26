@@ -2388,12 +2388,6 @@ SQLInfo::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
       }
       if(m_retCode == SQL_SUCCESS || m_retCode == SQL_SUCCESS_WITH_INFO)
       {
-        if(_stricmp((char*)searchName,(char*)szProcedureName) && !findAll)
-        {
-          // Oracle Propriety ODBC driver does this for synonym names
-          // Search further on for the real function/procedure name
-          continue;
-        }
         MetaProcedure proc;
         // Strings
         if(cbCatalogName   > 0) proc.m_catalogName   = szCatalogName;

@@ -384,7 +384,7 @@ SQLInfoDB::MakeInfoTableStatistics(MIndicesMap& p_indices
   CString sql = GetCATALOGIndexAttributes(p_schema,p_tablename,"");
   if(sql.IsEmpty())
   {
-    return MakeInfoTableStatistics(p_indices,p_errors,p_schema,p_tablename,p_keymap,p_all);
+    return SQLInfo::MakeInfoTableStatistics(p_indices,p_errors,p_schema,p_tablename,p_keymap,p_all);
   }
 
   try
