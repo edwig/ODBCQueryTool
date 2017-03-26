@@ -304,7 +304,7 @@ SQLQuery::SetSpeedThreshold(double p_seconds)
 inline SQLVariant&
 SQLQuery::operator[](int p_index)
 {
-  return *(GetColumn(p_index));
+  return *GetColumn(p_index);
 }
 
 // End of namespace

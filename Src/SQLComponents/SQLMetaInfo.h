@@ -135,6 +135,9 @@ typedef struct _metaInfoPrimary
   CString  m_columnName;              // Name of the column of the primary key
   int      m_columnPosition { 0 };    // Position of the column in the table
   CString  m_constraintName;          // Name of the primary key constraint
+  // Extra by SQL
+  int       m_deferrable       { 0 }; // SQL_INITIALLY_DEFERRED(5) / SQL_INITIALLY_IMMEDIATE(6) / SQL_NOT_DEFERRABLE(7)
+  int       m_initiallyDeferred{ 0 }; // 0=Immediate, 1=initially deferred
 }
 MetaPrimary;
 
@@ -177,18 +180,18 @@ using MForeignMap = std::vector<MetaForeign>;
 
 typedef struct _metaInfoIndex
 {
-  CString   m_catalogName;              // Catalog (database name)
-  CString   m_schemaName;               // Schema owner
-  CString   m_tableName;                // Table name
-  bool      m_unique      { false };    // true = UNIQUE
-  CString   m_indexName;                // Index name
-  int       m_indexType   { 0 };        // SQL_TABLE_STAT / SQL_INDEX_CLUSTERED / SQL_INDEX_HASHED / SQL_INDEX_OTHER
-  int       m_position    { 0 };        // Ordinal position (start at 1)
-  CString   m_columnName;               // Column in the index
-  CString   m_ascending;                // 'A', 'D', '' = unknown
-  long      m_cardinality { 0 };        // cardinality of index
-  long      m_pages       { 0 };        // Pages of the index
-  CString   m_filter;                   // filter or expression
+  CString   m_catalogName;              // 01 Catalog (database name)
+  CString   m_schemaName;               // 02 Schema owner
+  CString   m_tableName;                // 03 Table name
+  bool      m_unique      { false };    // 04 true = UNIQUE
+  CString   m_indexName;                // 05 Index name
+  int       m_indexType   { 0 };        // 06 SQL_TABLE_STAT / SQL_INDEX_CLUSTERED / SQL_INDEX_HASHED / SQL_INDEX_OTHER
+  int       m_position    { 0 };        // 07 Ordinal position (start at 1)
+  CString   m_columnName;               // 08 Column in the index
+  CString   m_ascending;                // 09 'A', 'D', '' = unknown
+  long      m_cardinality { 0 };        // 10 cardinality of index
+  long      m_pages       { 0 };        // 11 Pages of the index
+  CString   m_filter;                   // 12 filter or expression
 }
 MetaIndex;
 

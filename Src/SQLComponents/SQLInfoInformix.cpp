@@ -818,7 +818,7 @@ SQLInfoInformix::GetCATALOGForeignList(CString p_schema,CString p_tablename,int 
 
 // Get all attributes in order of MetaForeign for 1 FK constraint
 CString
-SQLInfoInformix::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraint,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
+SQLInfoInformix::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraint,bool /*p_referenced = false*/,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
 {
   CString query;
   p_schema.MakeLower();

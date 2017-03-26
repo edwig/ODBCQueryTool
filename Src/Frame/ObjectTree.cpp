@@ -51,7 +51,7 @@ ObjectTree::CreateImageList()
   // Set bitmap in image list, white is background color
   m_imageList.Add(&bitmap,RGB(0,0,0));
 
-  // Set the image list in the treecontrol
+  // Set the image list in the tree control
   SetImageList(&m_imageList,TVSIL_NORMAL);
 }
 
@@ -94,20 +94,26 @@ ObjectTree::ClearTree()
 
   HTREEITEM tables     = InsertItem("Tables",    root,TREE_TABLES);
   HTREEITEM views      = InsertItem("Views",     root,TREE_TABLES);
+  HTREEITEM sequences  = InsertItem("Sequences", root,TREE_SEQUENCES);
   HTREEITEM catalogs   = InsertItem("Catalog" ,  root,TREE_TABLES);
   HTREEITEM synonyms   = InsertItem("Synonyms",  root,TREE_TABLES);
+  HTREEITEM triggers   = InsertItem("Triggers",  root,TREE_TRIGGERS);
   HTREEITEM procedures = InsertItem("Procedures",root,TREE_PROCEDURES);
 
   SetItemImage(tables,    IMG_TABLES,     IMG_TABLES);
   SetItemImage(views,     IMG_VIEWS,      IMG_VIEWS);
+  SetItemImage(sequences, IMG_SEQUENCE,   IMG_SEQUENCE);
   SetItemImage(catalogs,  IMG_CATALOGS,   IMG_CATALOGS);
   SetItemImage(synonyms,  IMG_SYNONYMS,   IMG_SYNONYMS);
+  SetItemImage(triggers,  IMG_TRIGGER,    IMG_TRIGGER);
   SetItemImage(procedures,IMG_PROCEDURES, IMG_PROCEDURES);
 
   InsertNoInfo(tables);
   InsertNoInfo(views);
+  InsertNoInfo(sequences);
   InsertNoInfo(catalogs);
   InsertNoInfo(synonyms);
+  InsertNoInfo(triggers);
   InsertNoInfo(procedures);
 
   m_busy = false;
@@ -129,8 +135,10 @@ ObjectTree::IsSpecialNode(CString& p_name)
   // See if it is a type node instead of a schema name
   if(p_name.Compare("Tables")     == 0)  return true;
   if(p_name.Compare("Views")      == 0)  return true;
+  if(p_name.Compare("Sequences")  == 0)  return true;
   if(p_name.Compare("Catalog")    == 0)  return true;
   if(p_name.Compare("Synonyms")   == 0)  return true;
+  if(p_name.Compare("Triggers")   == 0)  return true;
   if(p_name.Compare("Procedures") == 0)  return true;
 
   return false;
@@ -143,6 +151,7 @@ ObjectTree::TypeToImage(CString p_type)
   if(p_type == "V") return IMG_VIEW;
   if(p_type == "C") return IMG_CATALOG;
   if(p_type == "S") return IMG_SYNONYM;
+  if(p_type == "R") return IMG_TRIGGER;
   if(p_type == "P") return IMG_PROCEDURE;
 
   return IMG_TABLES;
@@ -208,20 +217,22 @@ ObjectTree::OnSelChanged(NMHDR* pNMHDR,LRESULT* pResult)
     {
       switch(data)
       {
-        case TREE_TABLES:       FindTables(theItem);     break;
-        case TREE_TABLE:        PrepareTable(theItem);   break;
-        case TREE_COLUMNS:      FindColumns(theItem);    break;
-        case TREE_PRIMARY:      FindPrimary(theItem);    break;
-        case TREE_FOREIGN:      FindForeign(theItem);    break;
-        case TREE_STATISTICS:   FindStatistics(theItem); break;
-        case TREE_SPECIALS:     FindSpecials(theItem);   break;
-        case TREE_REFERENCEDBY: FindReferenced(theItem); break;
-        case TREE_TRIGGERS:     FindTriggers(theItem);   break;
-        case TREE_SEQUENCES:    FindSequences(theItem);  break;
-        case TREE_PRIVILEGES:   FindPrivileges(theItem); break;
-        case TREE_PROCEDURES:   FindProcedures(theItem); break;
-        case TREE_PARAMETERS:   FindParameters(theItem); break;
-        default:                /* NOTHING */            break;
+        case TREE_TABLES:       FindTables(theItem);      break;
+        case TREE_TABLE:        PrepareTable(theItem);    break;
+        case TREE_COLUMNS:      FindColumns(theItem);     break;
+        case TREE_PRIMARY:      FindPrimary(theItem);     break;
+        case TREE_FOREIGN:      FindForeign(theItem);     break;
+        case TREE_STATISTICS:   FindStatistics(theItem);  break;
+        case TREE_SPECIALS:     FindSpecials(theItem);    break;
+        case TREE_REFERENCEDBY: FindReferenced(theItem);  break;
+        case TREE_TABTRIGGERS:  FindTabTriggers(theItem); break;
+        case TREE_TABSEQUENCES: FindTabSequences(theItem);break;
+        case TREE_PRIVILEGES:   FindPrivileges(theItem);  break;
+        case TREE_SEQUENCES:    FindSequences(theItem);   break;
+        case TREE_TRIGGERS:     FindTriggers(theItem);    break;
+        case TREE_PROCEDURES:   FindProcedures(theItem);  break;
+        case TREE_PARAMETERS:   FindParameters(theItem);  break;
+        default:                /* NOTHING */             break;
       }
       Expand(theItem,TVE_EXPAND);
 
@@ -372,8 +383,8 @@ ObjectTree::PrepareTable(HTREEITEM p_theItem)
   HTREEITEM indices    = InsertItem("Statistics",     p_theItem,TREE_STATISTICS);
   HTREEITEM specials   = InsertItem("Special columns",p_theItem,TREE_SPECIALS);
   HTREEITEM referenced = InsertItem("Referenced by",  p_theItem,TREE_REFERENCEDBY);
-  HTREEITEM triggers   = InsertItem("Triggers",       p_theItem,TREE_TRIGGERS);
-  HTREEITEM sequences  = InsertItem("Sequences",      p_theItem,TREE_SEQUENCES);
+  HTREEITEM triggers   = InsertItem("Triggers",       p_theItem,TREE_TABTRIGGERS);
+  HTREEITEM sequences  = InsertItem("Sequences",      p_theItem,TREE_TABSEQUENCES);
   HTREEITEM access     = InsertItem("Privileges",     p_theItem,TREE_PRIVILEGES);
 
   SetItemImage(columns,   IMG_COLUMN,  IMG_COLUMN);
@@ -543,7 +554,7 @@ ObjectTree::FindReferenced(HTREEITEM p_theItem)
 
 // Find all triggers on the table
 void
-ObjectTree::FindTriggers(HTREEITEM p_theItem)
+ObjectTree::FindTabTriggers(HTREEITEM p_theItem)
 {
   if(PresetTable(p_theItem))
   {
@@ -560,7 +571,7 @@ ObjectTree::FindTriggers(HTREEITEM p_theItem)
 // Finding all sequences with a name that looks alike the tablename
 // Search is done on a LIKE '%tablename%'
 void
-ObjectTree::FindSequences(HTREEITEM p_theItem)
+ObjectTree::FindTabSequences(HTREEITEM p_theItem)
 {
   if(PresetTable(p_theItem))
   {
@@ -587,6 +598,162 @@ ObjectTree::FindPrivileges(HTREEITEM p_theItem)
     // Go find the privileges on the table
     app->GetDatabase().GetSQLInfoDB()->MakeInfoTablePrivileges(privileges,errors,m_schema,m_table);
     PrivilegesToTree(privileges,p_theItem);
+  }
+}
+
+// Finding all sequences
+void
+ObjectTree::FindSequences(HTREEITEM p_theItem)
+{
+  COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
+  HTREEITEM    schemaItem  = NULL;
+  int          schemaCount = 0;
+  MSequenceMap sequences;
+  CString      errors;
+  CString      lastSchema;
+
+  app->GetDatabase().GetSQLInfoDB()->MakeInfoTableSequences(sequences,errors,"","%");
+
+  if(!errors.IsEmpty())
+  {
+    WideMessageBox(GetSafeHwnd(),errors,"Querytool",MB_OK | MB_ICONERROR);
+    return;
+  }
+
+  // See if we have something
+  if(!sequences.empty())
+  {
+    RemoveNoInfo(p_theItem);
+  }
+
+  // Setting count of objects
+  SetItemCount(p_theItem,(int)sequences.size());
+
+  for(auto& seq : sequences)
+  {
+    HTREEITEM sequence = NULL;
+    CString schema = seq.m_schemaName;
+    CString object = seq.m_sequenceName;
+    schema.Trim();
+    object.Trim();
+
+    if(schema.IsEmpty())
+    {
+      // No schema found, just add the item
+      sequence = InsertItem(object,p_theItem);
+    }
+    else
+    {
+      if((schema.Compare(lastSchema) == 0) && schemaItem)
+      {
+        sequence = InsertItem(object,schemaItem);
+        SetItemCount(schemaItem,++schemaCount);
+      }
+      else
+      {
+        lastSchema = schema;
+        schemaItem = InsertItem(schema,p_theItem);
+        sequence   = InsertItem(object,schemaItem);
+        schemaCount = 1;
+        SetItemCount(schemaItem,schemaCount);
+        SetItemImage(schemaItem,IMG_SCHEMA,IMG_SCHEMA);
+      }
+    }
+    SetItemImage(sequence,IMG_SEQUENCE,IMG_SEQUENCE);
+
+    // All info on the item
+    CString line;
+    line.Format("Minimum value: %d",seq.m_minimalValue);
+    HTREEITEM item = InsertItem(line,sequence);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+
+    line.Format("Current value: %d",seq.m_currentValue);
+    item = InsertItem(line,sequence);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+
+    line.Format("Increment with: %d",seq.m_increment);
+    item = InsertItem(line,sequence);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+
+    line.Format("Caching size: %d",seq.m_cache);
+    item = InsertItem(line,sequence);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+
+    line.Format("Re-Cycling of sets: %s",seq.m_cycle ? "yes" : "no");
+    item = InsertItem(line,sequence);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+
+    line.Format("Cluster ordering: %s",seq.m_order ? "yes" : "no");
+    item = InsertItem(line,sequence);
+    SetItemImage(item,IMG_INFO,IMG_INFO);
+  }
+}
+
+void
+ObjectTree::FindTriggers(HTREEITEM p_theItem)
+{
+  COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
+  HTREEITEM   schemaItem = NULL;
+  int         schemaCount = 0;
+  MTriggerMap triggers;
+  CString     errors;
+  CString     lastSchema;
+
+  app->GetDatabase().GetSQLInfoDB()->MakeInfoTableTriggers(triggers,errors,"","","");
+
+  if(!errors.IsEmpty())
+  {
+    WideMessageBox(GetSafeHwnd(),errors,"Querytool",MB_OK | MB_ICONERROR);
+    return;
+  }
+
+  // See if we have something
+  if(!triggers.empty())
+  {
+    RemoveNoInfo(p_theItem);
+  }
+
+  // Setting count of objects
+  SetItemCount(p_theItem,(int)triggers.size());
+
+  for(auto& trig : triggers)
+  {
+    HTREEITEM trigger = NULL;
+    CString schema = trig.m_schemaName;
+    CString object = trig.m_triggerName;
+    if(!trig.m_referencing.IsEmpty())
+    {
+      object.AppendFormat(" (%s)",trig.m_remarks);
+    }
+    schema.Trim();
+    object.Trim();
+
+    if(schema.IsEmpty())
+    {
+      // No schema found, just add the item
+      trigger = InsertItem(object,p_theItem);
+    }
+    else
+    {
+      if((schema.Compare(lastSchema) == 0) && schemaItem)
+      {
+        trigger = InsertItem(object,schemaItem);
+        SetItemCount(schemaItem,++schemaCount);
+      }
+      else
+      {
+        lastSchema = schema;
+        schemaItem = InsertItem(schema,p_theItem);
+        trigger    = InsertItem(object,schemaItem);
+        schemaCount = 1;
+        SetItemCount(schemaItem,schemaCount);
+        SetItemImage(schemaItem,IMG_SCHEMA,IMG_SCHEMA);
+      }
+    }
+    SetItemImage(trigger,IMG_TRIGGER,IMG_TRIGGER);
+
+    // Set in the tree
+    TriggerToTree(trig,trigger);
   }
 }
 
@@ -932,15 +1099,13 @@ ObjectTree::ReferencedToTree(MForeignMap& p_foreigns,HTREEITEM p_item)
       info = InsertItem(line,keyItem);
       SetItemImage(info,IMG_INFO,IMG_INFO);
 
-      // Deferable
+      // Deferrable
       line = "Deferrable: " + DeferrableToString(foreign.m_deferrable);
       info = InsertItem(line,keyItem);
       SetItemImage(info,IMG_INFO,IMG_INFO);
 
       // Primary key + columns
-      line.Format("Primary key: %s (%s)"
-                  ,foreign.m_pkTableName
-                  ,foreign.m_primaryConstraint);
+      line.Format("Foreign key: %s",foreign.m_foreignConstraint);
       primkey = InsertItem(line,keyItem);
       SetItemImage(primkey,IMG_FOREIGN,IMG_FOREIGN);
     }
@@ -1108,45 +1273,73 @@ ObjectTree::TriggersToTree(MTriggerMap& p_triggers,HTREEITEM p_item)
     // Name of the trigger + position in firing (0 = no order)
     CString line;
     line.Format("%d: %s",trigger.m_position,trigger.m_triggerName);
-    if(trigger.m_remarks)
+    if(!trigger.m_remarks.IsEmpty())
     {
       line.AppendFormat(" (%s)",trigger.m_remarks);
     }
     HTREEITEM trigItem = InsertItem(line,p_item);
     SetItemImage(trigItem,IMG_TRIGGER,IMG_TRIGGER);
 
-    // Active trigger
-    line.Format("Trigger is: %s",trigger.m_enabled ? "enabled" : "disabled");
-    HTREEITEM item = InsertItem(line,trigItem);
-    SetItemImage(item,IMG_TRIGGER,IMG_TRIGGER);
+    TriggerToTree(trigger,trigItem);
+  }
+}
 
-    // Type before/after
-    line.Format("Trigger fires: %s",trigger.m_before ? "before" : "after");
-    item = InsertItem(line,trigItem);
-    SetItemImage(item,IMG_TRIGGER,IMG_TRIGGER);
+void
+ObjectTree::TriggerToTree(MetaTrigger& p_trigger,HTREEITEM p_item)
+{
+  CString line;
 
-    // Fires on INSERT/UPDATE/DELETE/SELECT
-    line = "Trigger on DML: ";
-    if(trigger.m_insert) line += "insert,";
-    if(trigger.m_update) line += "update,";
-    if(trigger.m_delete) line += "delete,";
-    if(trigger.m_select) line += "select,";
-    line.TrimRight(',');
-    item = InsertItem(line,trigItem);
-    SetItemImage(item,IMG_TRIGGER,IMG_TRIGGER);
+  // Active trigger
+  line.Format("Trigger is: %s",p_trigger.m_enabled ? "enabled" : "disabled");
+  HTREEITEM item = InsertItem(line,p_item);
+  SetItemImage(item,IMG_TRIGGER,IMG_TRIGGER);
 
-    // Referencing statement (if any)
-    if(!trigger.m_referencing.IsEmpty())
-    {
-      line.Format("Referencing: %s",trigger.m_referencing);
-      item = InsertItem(line,trigItem);
-      SetItemImage(item,IMG_TRIGGER,IMG_TRIGGER);
-    }
-    // Source
-    line.Format("SQL Source: %d characters",trigger.m_source.GetLength());
-    item = InsertItem(line,trigItem);
+  // Type before/after
+  line.Format("Trigger fires: %s",p_trigger.m_before ? "before" : "after");
+  item = InsertItem(line,p_item);
+  SetItemImage(item,IMG_TRIGGER,IMG_TRIGGER);
+
+  // Trigger currently enabled
+  line.Format("Trigger enabled: %s",p_trigger.m_enabled ? "yes" : "no");
+  item = InsertItem(line,p_item);
+  SetItemImage(item,IMG_TRIGGER,IMG_TRIGGER);
+
+  // Ordering of firing
+  if(p_trigger.m_position > 0)
+  {
+    line.Format("Trigger order: %d",p_trigger.m_position);
+  }
+  else
+  {
+    line = "Trigger order: indetermined";
+  }
+  item = InsertItem(line,p_item);
+  SetItemImage(item,IMG_TRIGGER,IMG_TRIGGER);
+
+  // Fires on INSERT/UPDATE/DELETE/SELECT
+  line = "Trigger on DML: ";
+  if(p_trigger.m_insert)      line += "insert,";
+  if(p_trigger.m_update)      line += "update,";
+  if(p_trigger.m_delete)      line += "delete,";
+  if(p_trigger.m_select)      line += "select,";
+  if(p_trigger.m_session)     line += "session,";
+  if(p_trigger.m_transaction) line += "transaction,";
+  if(p_trigger.m_rollback)    line += "rollback,";
+  line.TrimRight(',');
+  item = InsertItem(line,p_item);
+  SetItemImage(item,IMG_TRIGGER,IMG_TRIGGER);
+
+  // Referencing statement (if any)
+  if(!p_trigger.m_referencing.IsEmpty())
+  {
+    line.Format("Referencing: %s",p_trigger.m_referencing);
+    item = InsertItem(line,p_item);
     SetItemImage(item,IMG_TRIGGER,IMG_TRIGGER);
   }
+  // Source
+  line.Format("SQL Source: %d characters",p_trigger.m_source.GetLength());
+  item = InsertItem(line,p_item);
+  SetItemImage(item,IMG_TRIGGER,IMG_TRIGGER);
 }
 
 void      

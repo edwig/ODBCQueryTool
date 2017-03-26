@@ -729,7 +729,7 @@ SQLInfoGenericODBC::GetCATALOGForeignList(CString p_schema,CString p_tablename,i
 }
 
 CString
-SQLInfoGenericODBC::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraintname,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
+SQLInfoGenericODBC::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraintname,bool /*p_referenced = false*/,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLForeignKeys instead (see SQLInfo class)

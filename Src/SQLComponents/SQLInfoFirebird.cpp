@@ -446,10 +446,24 @@ SQLInfoFirebird::GetCATALOGTableAttributes(CString /*p_schema*/,CString p_tablen
 }
 
 CString
-SQLInfoFirebird::GetCATALOGTableSynonyms(CString /*p_schema*/,CString /*p_tablename*/) const
+SQLInfoFirebird::GetCATALOGTableSynonyms(CString /*p_schema*/,CString p_tablename) const
 {
-  // Firebird does not implement ALIAS and SYNONYM
-  return false;
+  p_tablename.MakeUpper();
+  CString sql = "SELECT CAST('' AS varchar(31))             AS table_catalog\n"
+                "      ,trim(rdb$owner_name)                AS table_schema\n"
+                "      ,trim(rdb$relation_name)             AS table_name\n"
+                "      ,CAST('SYSTEM TABLE' as varchar(31)) AS table_type\n"
+                "      ,rdb$description                     AS remarks\n"
+                "      ,trim(rdb$owner_name) || '.' || trim(rdb$relation_name) AS full_name\n"
+                "      ,cast('' as varchar(31)) as storage_space\n"
+                "  FROM rdb$relations";
+  if(!p_tablename.IsEmpty())
+  {
+    sql += "\n WHERE rdb$relation_name ";
+    sql += (p_tablename.Find("%") >= 0) ? "LIKE '" : "= '";
+    sql += p_tablename + "'";
+  }
+  return sql;
 }
 
 CString
@@ -457,10 +471,10 @@ SQLInfoFirebird::GetCATALOGTableCatalog(CString /*p_schema*/,CString p_tablename
 {
   p_tablename.MakeUpper();
   CString sql = "SELECT CAST('' AS varchar(31))             AS table_catalog\n"
-                "      ,CAST(rdb$owner_name AS varchar(31)) AS table_schema\n"
+                "      ,trim(rdb$owner_name)                AS table_schema\n"
                 "      ,trim(rdb$relation_name)             AS table_name\n"
                 "      ,CAST('SYSTEM TABLE' as varchar(31)) AS table_type\n"
-                "      ,rdb$description   AS remarks\n"
+                "      ,rdb$description                     AS remarks\n"
                 "      ,trim(rdb$owner_name) || '.' || trim(rdb$relation_name) AS full_name\n"
                 "      ,cast('' as varchar(31)) as storage_space\n"
                 "  FROM rdb$relations\n"
@@ -757,29 +771,46 @@ SQLInfoFirebird::GetCATALOGIndexExists(CString /*p_schema*/,CString /*p_tablenam
 }
 
 CString
-SQLInfoFirebird::GetCATALOGIndexList(CString /*p_schema*/,CString p_tablename)   const
+SQLInfoFirebird::GetCATALOGIndexList(CString p_schema,CString p_tablename) const
 {
-  p_tablename.MakeUpper();
-
-  CString query = "SELECT idx.rdb$index_name\n"
-                  "      ,col.rdb$field_name\n"
-                  "      ,col.rdb$field_position\n"
-                  "      ,idx.rdb$unique_flag\n" // 1 if unique, null if not
-                  "      ,idx.rdb$index_type\n"  // 1 if descending, null,0 on ascending
-                  "      ,idx.rdb$expression_source\n"
-                  "  FROM rdb$indices idx\n"
-                  "      ,rdb$index_segments col\n"
-                  " WHERE idx.rdb$index_name    = col.rdb$index_name\n"
-                  "   AND idx.rdb$system_flag   = 0\n"
-                  "   AND idx.rdb$relation_name = '" + p_tablename + "'\n"
-                  " ORDER BY 1";
-  return query;
+  return GetCATALOGIndexAttributes(p_schema,p_tablename,"");
 }
 
 CString
-SQLInfoFirebird::GetCATALOGIndexAttributes(CString p_schema,CString p_tablename,CString p_indexname)  const
+SQLInfoFirebird::GetCATALOGIndexAttributes(CString /*p_schema*/,CString p_tablename,CString p_indexname) const
 {
-  return "";
+  p_tablename.MakeUpper();
+  p_indexname.MakeUpper();
+
+  CString query = "SELECT CAST('' as varchar(31))     as index_catalog\n"
+                  "      ,TRIM(tab.rdb$owner_name)    as index_schema\n"
+                  "      ,TRIM(idx.rdb$relation_name) as index_table\n"
+                  "      ,idx.rdb$unique_flag         as index_unique\n"
+                  "      ,TRIM(idx.rdb$index_name)    as index_name\n"
+                  "      ,1                           as index_type\n"
+                  "      ,col.rdb$field_position + 1  as index_position\n"
+                  "      ,TRIM(col.rdb$field_name)    as column_name\n"
+                  "      ,CASE idx.rdb$index_type\n"
+                  "            WHEN 0 THEN 'A'\n"
+                  "            WHEN 1 THEN 'D'\n"
+                  "                   ELSE 'A'\n"
+                  "       END                         as index_ascending\n"
+                  "      ,idx.rdb$statistics          as cardinality\n"
+                  "      ,col.rdb$statistics          as index_pages\n"
+                  "      ,trim(idx.rdb$expression_source) as index_filter\n"
+                  "  FROM rdb$indices        idx\n"
+                  "      ,rdb$index_segments col\n"
+                  "      ,rdb$relations      tab\n"
+                  " WHERE idx.rdb$index_name    = col.rdb$index_name\n"
+                  "   AND idx.rdb$relation_name = tab.rdb$relation_name\n"
+                  "   AND idx.rdb$system_flag   = 0\n"
+                  "   AND idx.rdb$relation_name = '" + p_tablename + "'\n";
+  if(!p_indexname.IsEmpty())
+  {
+    query += "   AND idx.rdb$index_name = '" + p_indexname + "'\n";
+  }
+  query += " ORDER BY 6";
+  return query;
 }
 
 CString
@@ -875,7 +906,7 @@ SQLInfoFirebird::GetCATALOGPrimaryAttributes(CString /*p_schema*/,CString p_tabl
                 "      ,trim(con.rdb$relation_name) as table_name\n"
                 "      ,trim(ind.rdb$field_name)    as column_name\n"
                 "      ,ind.rdb$field_position + 1  as col_position\n"
-                "      ,con.rdb$constraint_name\n"
+                "      ,con.rdb$constraint_name     as col_constraint\n"
                 "      ,con.rdb$index_name\n"
                 "      ,con.rdb$deferrable\n"
                 "      ,con.rdb$initially_deferred\n"
@@ -950,23 +981,27 @@ SQLInfoFirebird::GetCATALOGForeignList(CString p_schema,CString p_tablename,int 
 }
 
 CString
-SQLInfoFirebird::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraint,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
+SQLInfoFirebird::GetCATALOGForeignAttributes(CString p_schema
+                                            ,CString p_tablename
+                                            ,CString p_constraint
+                                            ,bool    p_referenced /*=false*/
+                                            ,int    /*p_maxColumns =SQLINFO_MAX_COLUMNS*/) const
 {
   p_schema.MakeUpper();
   p_tablename.MakeUpper();
   p_constraint.MakeUpper();
   CString query;
-  query.Format( "SELECT mon.mon$database_name           AS primary_key_catalog\n"
+  query.Format( "SELECT trim(mon.mon$database_name)     AS primary_key_catalog\n"
                 "      ,'%s'                            AS primary_key_schema\n"
-                "      ,idx.rdb$relation_name           AS primary_key_table\n"
-                "      ,mon.mon$database_name           AS foreign_key_catalog\n"
+                "      ,trim(idx.rdb$relation_name)     AS primary_key_table\n"
+                "      ,trim(mon.mon$database_name)     AS foreign_key_catalog\n"
                 "      ,'%s'                            AS foreign_key_schema\n"
-                "      ,con.rdb$relation_name           AS foreign_key_table\n"
-                "      ,ref.rdb$const_name_uq           AS primary_key_constraint\n"
-                "      ,con.rdb$constraint_name         AS foreign_key_constraint\n"
-                "      ,%d                              AS key_sequence\n"
-                "      ,seg.rdb$field_name              AS foreign_key_column_name\n"
-                "      ,psg.rdb$field_name              AS primary_key_column_name\n"
+                "      ,trim(con.rdb$relation_name)     AS foreign_key_table\n"
+                "      ,trim(ref.rdb$const_name_uq)     AS primary_key_constraint\n"
+                "      ,trim(con.rdb$constraint_name)   AS foreign_key_constraint\n"
+                "      ,seg.rdb$field_position + 1      AS key_sequence\n"
+                "      ,trim(psg.rdb$field_name)        AS foreign_key_column_name\n"
+                "      ,trim(seg.rdb$field_name)        AS primary_key_column_name\n"
                 "      ,case ref.rdb$update_rule        WHEN 'RESTRICT'     THEN 1\n"
                 "                                       WHEN 'CASCADE'      THEN 0\n"
                 "                                       WHEN 'SET NULL'     THEN 2\n"
@@ -1003,14 +1038,28 @@ SQLInfoFirebird::GetCATALOGForeignAttributes(CString p_schema,CString p_tablenam
                 ,p_schema.GetString());
   if(!p_tablename.IsEmpty())
   {
-    query += "   AND con.rdb$relation_name   = '" + p_tablename + "'\n";
+    if(p_referenced)
+    {
+      query += "   AND idx.rdb$relation_name   = '" + p_tablename + "'\n";
+    }
+    else
+    {
+      query += "   AND con.rdb$relation_name   = '" + p_tablename + "'\n";
+    }
   }
   if(!p_constraint.IsEmpty())
   {
-    query += "   AND con.rdb$constraint_name = '" + p_constraint + "'\n";
+    if(p_referenced)
+    {
+      query += "   AND ref.rdb$constraint_name = '" + p_constraint + "'\n";
+    }
+    else
+    {
+      query += "   AND con.rdb$constraint_name = '" + p_constraint + "'\n";
+    }
   }
 
-  // Add ordering upto column number
+  // Add ordering up to column number
   query += " ORDER BY 1,2,3,4,5,6,7,8,9";
 
   return query;
@@ -1134,8 +1183,10 @@ SQLInfoFirebird::GetCATALOGTriggerAttributes(CString p_schema, CString p_tablena
   p_triggername.MakeUpper();
 
   CString sql;
-  sql.Format("SELECT '' AS catalog_name\n"
-             "      ,'%s' AS schema_name\n"
+  sql.Format("SELECT cast('' as varchar(31)) AS catalog_name\n"
+             "      ,(SELECT trim(tab.rdb$owner_name)\n"
+             "          FROM rdb$relations tab\n"
+             "         WHERE tab.rdb$relation_name = trg.rdb$relation_name) AS schema_name\n"
              "      ,rdb$relation_name\n"
              "      ,rdb$trigger_name\n"
              "      ,rdb$description\n"
@@ -1202,7 +1253,7 @@ SQLInfoFirebird::GetCATALOGTriggerAttributes(CString p_schema, CString p_tablena
              "                   ELSE false\n"
              "       END AS trigger_enabled\n"
              "      ,rdb$trigger_source\n"
-             "  FROM rdb$triggers\n"
+             "  FROM rdb$triggers trg\n"
              " WHERE rdb$system_flag   = 0\n"
             ,p_schema.GetString());
 
@@ -1321,8 +1372,8 @@ SQLInfoFirebird::GetCATALOGSequenceList(CString /*p_schema*/,CString p_pattern) 
   p_pattern.MakeUpper();
   p_pattern = "%" + p_pattern + "%";
 
-  CString sql = "SELECT '' as catalog_name\n"
-                "      ,'' as schema_name\n"
+  CString sql = "SELECT cast('' as varchar(31))  as catalog_name\n"
+                "      ,trim(rdb$owner_name)     as schema_name\n"
                 "      ,trim(rdb$generator_name) as sequence_name\n" 
                 "      ,rdb$initial_value        as current_value\n"
                 "      ,0                        as minimal_value\n"
@@ -1341,8 +1392,8 @@ SQLInfoFirebird::GetCATALOGSequenceAttributes(CString /*p_schema*/, CString p_se
 {
   p_sequence.MakeUpper();
 
-  CString sql = "SELECT '' as catalog_name\n"
-                "      ,'' as schema_name\n"
+  CString sql = "SELECT cast('' as varchar(31))  as catalog_name\n"
+                "      ,trim(rdb$owner_name)     as schema_name\n"
                 "      ,trim(rdb$generator_name) as sequence_name\n" 
                 "      ,rdb$initial_value        as current_value\n"
                 "      ,0                        as minimal_value\n"

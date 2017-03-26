@@ -895,7 +895,7 @@ SQLInfoPostgreSQL::GetCATALOGForeignList(CString p_schema,CString p_tablename,in
 }
 
 CString
-SQLInfoPostgreSQL::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraint,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
+SQLInfoPostgreSQL::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraint,bool /*p_referenced = false*/,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();

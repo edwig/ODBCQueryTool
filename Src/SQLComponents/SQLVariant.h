@@ -231,6 +231,7 @@ public:
    operator SQLTime();
    operator SQLTimestamp();
    operator SQLInterval();
+   operator CString();
    operator bcd();
 
 private:

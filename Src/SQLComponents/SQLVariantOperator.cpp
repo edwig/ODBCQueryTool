@@ -545,6 +545,11 @@ SQLVariant::operator SQLInterval()
   return GetAsSQLInterval();
 }
 
+SQLVariant::operator CString()
+{
+  return CString(GetAsChar());
+}
+
 SQLVariant::operator bcd()
 {
   return GetAsBCD();

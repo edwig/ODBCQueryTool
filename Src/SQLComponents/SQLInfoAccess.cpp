@@ -709,7 +709,7 @@ SQLInfoAccess::GetCATALOGForeignList(CString /*p_schema*/,CString /*p_tablename*
 }
 
 CString
-SQLInfoAccess::GetCATALOGForeignAttributes(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_constraintname*/,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
+SQLInfoAccess::GetCATALOGForeignAttributes(CString /*p_schema*/,CString /*p_tablename*/,CString /*p_constraintname*/,bool/* p_referenced = false*/,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
 {
   // MS-Access cannot get this information, Use ODBC functions
   return "";

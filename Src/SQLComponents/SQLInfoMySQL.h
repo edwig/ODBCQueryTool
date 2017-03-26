@@ -230,7 +230,7 @@ public:
   // All foreign key functions
   CString GetCATALOGForeignExists    (CString p_schema,CString p_tablename,CString p_constraintname) const;
   CString GetCATALOGForeignList      (CString p_schema,CString p_tablename,int p_maxColumns = SQLINFO_MAX_COLUMNS) const;
-  CString GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraintname,int p_maxColumns = SQLINFO_MAX_COLUMNS) const;
+  CString GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraintname,bool p_referenced = false,int p_maxColumns = SQLINFO_MAX_COLUMNS) const;
   CString GetCATALOGForeignCreate    (MForeignMap& p_foreigns) const;
   CString GetCATALOGForeignAlter     (MForeignMap& p_original,MForeignMap& p_requested) const;
   CString GetCATALOGForeignDrop      (CString p_schema,CString p_tablename,CString p_constraintname) const;

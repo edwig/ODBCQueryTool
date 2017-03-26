@@ -963,7 +963,7 @@ SQLInfoOracle::GetCATALOGForeignList(CString p_schema,CString p_tablename,int p_
 }
 
 CString
-SQLInfoOracle::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraint,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
+SQLInfoOracle::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraint,bool /*p_referenced = false*/,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
 {
   // Oracle catalog is in uppercase
   p_schema.MakeUpper();

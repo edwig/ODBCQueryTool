@@ -709,7 +709,7 @@ SQLInfoMySQL::GetCATALOGForeignList(CString /*p_schema*/,CString p_tablename,int
 }
 
 CString
-SQLInfoMySQL::GetCATALOGForeignAttributes(CString /*p_schema*/,CString p_tablename,CString p_constraintname,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
+SQLInfoMySQL::GetCATALOGForeignAttributes(CString /*p_schema*/,CString p_tablename,CString p_constraintname,bool /*p_referenced = false*/,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLForeignKeys instead (see SQLInfo class)

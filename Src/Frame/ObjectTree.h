@@ -33,10 +33,12 @@ typedef enum treeTypes
  ,TREE_STATISTICS
  ,TREE_SPECIALS
  ,TREE_REFERENCEDBY
- ,TREE_TRIGGERS
+ ,TREE_TABTRIGGERS
  ,TREE_PRIVILEGES
  ,TREE_PARAMETERS
+ ,TREE_TABSEQUENCES
  ,TREE_SEQUENCES
+ ,TREE_TRIGGERS
 }
 TreeTypes;
 
@@ -85,30 +87,33 @@ public:
 
 private:
   ObjectImage TypeToImage(CString p_type);
+  void      TriggerToTree(MetaTrigger& trigger,HTREEITEM trigItem);
 
 protected:
   DECLARE_MESSAGE_MAP();
 
-  void      InsertNoInfo   (HTREEITEM p_item);
-  void      RemoveNoInfo   (HTREEITEM p_item);
-  CString   GetObjectType  (CString   p_type);
-  bool      IsSpecialNode  (CString&  p_name);
-  void      SetItemCount   (HTREEITEM p_theItem,int p_size);
-  bool      PresetTable    (HTREEITEM p_theItem);
-  bool      PresetProcedure(HTREEITEM p_theItem,MProcedureMap& p_procedures);
-  void      FindTables     (HTREEITEM p_theItem);
-  void      PrepareTable   (HTREEITEM p_theItem);
-  void      FindColumns    (HTREEITEM p_theItem);
-  void      FindPrimary    (HTREEITEM p_theItem);
-  void      FindForeign    (HTREEITEM p_theItem);
-  void      FindStatistics (HTREEITEM p_theItem);
-  void      FindSpecials   (HTREEITEM p_theItem);
-  void      FindReferenced (HTREEITEM p_theItem);
-  void      FindTriggers   (HTREEITEM p_theItem);
-  void      FindSequences  (HTREEITEM p_theItem);
-  void      FindPrivileges (HTREEITEM p_theItem);
-  void      FindProcedures (HTREEITEM p_theItem);
-  void      FindParameters (HTREEITEM p_theItem);
+  void      InsertNoInfo    (HTREEITEM p_item);
+  void      RemoveNoInfo    (HTREEITEM p_item);
+  CString   GetObjectType   (CString   p_type);
+  bool      IsSpecialNode   (CString&  p_name);
+  void      SetItemCount    (HTREEITEM p_theItem,int p_size);
+  bool      PresetTable     (HTREEITEM p_theItem);
+  bool      PresetProcedure (HTREEITEM p_theItem,MProcedureMap& p_procedures);
+  void      FindTables      (HTREEITEM p_theItem);
+  void      PrepareTable    (HTREEITEM p_theItem);
+  void      FindColumns     (HTREEITEM p_theItem);
+  void      FindPrimary     (HTREEITEM p_theItem);
+  void      FindForeign     (HTREEITEM p_theItem);
+  void      FindStatistics  (HTREEITEM p_theItem);
+  void      FindSpecials    (HTREEITEM p_theItem);
+  void      FindReferenced  (HTREEITEM p_theItem);
+  void      FindTabTriggers (HTREEITEM p_theItem);
+  void      FindTabSequences(HTREEITEM p_theItem);
+  void      FindPrivileges  (HTREEITEM p_theItem);
+  void      FindSequences   (HTREEITEM p_theItem);
+  void      FindTriggers    (HTREEITEM p_theItem);
+  void      FindProcedures  (HTREEITEM p_theItem);
+  void      FindParameters  (HTREEITEM p_theItem);
 
   void      ColumnListToTree(MColumnMap&    p_columns,   HTREEITEM p_item);
   void      PrimariesToTree (MPrimaryMap&   p_primaries, HTREEITEM p_item);

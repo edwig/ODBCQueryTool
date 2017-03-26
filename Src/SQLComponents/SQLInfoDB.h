@@ -63,16 +63,18 @@ public:
   // OVERRIDES AND EXTRAS OF THE ODBC MakeInfo<object> functions
 
   // Tables
-  bool    MakeInfoTableObject   (MTableMap&    p_tables,   CString& p_errors,CString p_schema,CString p_tablename);  // Not known which type!
-  bool    MakeInfoTableTable    (MTableMap&    p_tables,   CString& p_errors,CString p_schema,CString p_tablename);  // TABLE   only
-  bool    MakeInfoTableView     (MTableMap&    p_tables,   CString& p_errors,CString p_schema,CString p_tablename);  // VIEW    only
-  bool    MakeInfoTableSynonyms (MTableMap&    p_tables,   CString& p_errors,CString p_schema,CString p_tablename);  // SYNONYM only
-  bool    MakeInfoTableCatalog  (MTableMap&    p_tables,   CString& p_errors,CString p_schema,CString p_tablename);  // CATALOG only
+  bool    MakeInfoTableObject    (MTableMap&    p_tables,   CString& p_errors,CString p_schema,CString p_tablename);  // Not known which type!
+  bool    MakeInfoTableTable     (MTableMap&    p_tables,   CString& p_errors,CString p_schema,CString p_tablename);  // TABLE   only
+  bool    MakeInfoTableView      (MTableMap&    p_tables,   CString& p_errors,CString p_schema,CString p_tablename);  // VIEW    only
+  bool    MakeInfoTableSynonyms  (MTableMap&    p_tables,   CString& p_errors,CString p_schema,CString p_tablename);  // SYNONYM only
+  bool    MakeInfoTableCatalog   (MTableMap&    p_tables,   CString& p_errors,CString p_schema,CString p_tablename);  // CATALOG only
   // Attributes of a table
-  bool    MakeInfoTableColumns  (MColumnMap&   p_columns,  CString& p_errors,CString p_schema,CString p_tablename,CString p_columname = "") override;
-  bool    MakeInfoTablePrimary  (MPrimaryMap&  p_primary,  CString& p_errors,CString p_schema,CString p_tablename)                          override;
-  bool    MakeInfoTableTriggers (MTriggerMap&  p_triggers, CString& p_errors,CString p_schema,CString p_tablename,CString p_trigger   = "");
-  bool    MakeInfoTableSequences(MSequenceMap& p_sequences,CString& p_errors,CString p_schema,CString p_tablename);
+  bool    MakeInfoTableColumns   (MColumnMap&   p_columns,  CString& p_errors,CString p_schema,CString p_tablename,CString p_columname = "") override;
+  bool    MakeInfoTablePrimary   (MPrimaryMap&  p_primary,  CString& p_errors,CString p_schema,CString p_tablename)                          override;
+  bool    MakeInfoTableForeign   (MForeignMap&  p_foreigns, CString& p_errors,CString p_schema,CString p_tablename,bool p_referenced   = false) override;
+  bool    MakeInfoTableStatistics(MIndicesMap&  p_indices,  CString& p_errors,CString p_schema,CString p_tablename,MPrimaryMap* p_keymap,bool p_all = true) override;
+  bool    MakeInfoTableTriggers  (MTriggerMap&  p_triggers, CString& p_errors,CString p_schema,CString p_tablename,CString p_trigger   = "");
+  bool    MakeInfoTableSequences (MSequenceMap& p_sequences,CString& p_errors,CString p_schema,CString p_tablename);
   // Procedures
   bool    MakeInfoPSMProcedures(MProcedureMap& p_procedures,CString& p_errors,CString p_schema,CString p_procedure) override;
   bool    MakeInfoPSMParameters(MParameterMap& p_parameters,CString& p_errors,CString p_schema,CString p_procedure) override;
@@ -281,7 +283,7 @@ public:
   // All foreign key functions
   virtual CString GetCATALOGForeignExists     (CString p_schema,CString p_tablename,CString p_constraintname) const = 0;
   virtual CString GetCATALOGForeignList       (CString p_schema,CString p_tablename,int p_maxColumns = SQLINFO_MAX_COLUMNS) const = 0;
-  virtual CString GetCATALOGForeignAttributes (CString p_schema,CString p_tablename,CString p_constraintname,int p_maxColumns = SQLINFO_MAX_COLUMNS) const = 0;
+  virtual CString GetCATALOGForeignAttributes (CString p_schema,CString p_tablename,CString p_constraintname,bool p_referenced = false,int p_maxColumns = SQLINFO_MAX_COLUMNS) const = 0;
   virtual CString GetCATALOGForeignCreate     (MForeignMap& p_foreigns) const = 0;
   virtual CString GetCATALOGForeignAlter      (MForeignMap& p_original,MForeignMap& p_requested) const = 0;
   virtual CString GetCATALOGForeignDrop       (CString p_schema,CString p_tablename,CString p_constraintname) const = 0;

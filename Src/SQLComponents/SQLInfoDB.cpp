@@ -210,13 +210,13 @@ SQLInfoDB::ReadTablesFromQuery(SQLQuery& p_query,MTableMap& p_tables)
   {
     MetaTable table;
 
-    table.m_catalog    = p_query.GetColumn(1)->GetAsChar();
-    table.m_schema     = p_query.GetColumn(2)->GetAsChar();
-    table.m_table      = p_query.GetColumn(3)->GetAsChar();
-    table.m_objectType = p_query.GetColumn(4)->GetAsChar();
-    table.m_remarks    = p_query.GetColumn(5)->GetAsChar();
-    table.m_tablespace = p_query.GetColumn(6)->GetAsChar();
-    table.m_temporary  = p_query.GetColumn(7)->GetAsBoolean();
+    table.m_catalog    = (CString) p_query[1];
+    table.m_schema     = (CString) p_query[2];
+    table.m_table      = (CString) p_query[3];
+    table.m_objectType = (CString) p_query[4];
+    table.m_remarks    = (CString) p_query[5];
+    table.m_tablespace = (CString) p_query[6];
+    table.m_temporary  = (bool)    p_query[7];
 
     p_tables.push_back(table);
   }
@@ -243,24 +243,24 @@ SQLInfoDB::MakeInfoTableColumns(MColumnMap& p_columns
     {
       MetaColumn column;
 
-      column.m_catalog        = qry.GetColumn(1)->GetAsChar();
-      column.m_schema         = qry.GetColumn(2)->GetAsChar();
-      column.m_table          = qry.GetColumn(3)->GetAsChar();
-      column.m_column         = qry.GetColumn(4)->GetAsChar();
-      column.m_datatype       = qry.GetColumn(5)->GetAsSLong();
-      column.m_typename       = qry.GetColumn(6)->GetAsChar();
-      column.m_columnSize     = qry.GetColumn(7)->GetAsSLong();
-      column.m_bufferLength   = qry.GetColumn(8)->GetAsSLong();
-      column.m_decimalDigits  = qry.GetColumn(9)->GetAsSLong();
-      column.m_numRadix       = qry.GetColumn(10)->GetAsSLong();
-      column.m_nullable       = qry.GetColumn(11)->GetAsSLong();
-      column.m_remarks        = qry.GetColumn(12)->GetAsChar();
-      column.m_default        = qry.GetColumn(13)->GetAsChar();
-      column.m_datatype3      = qry.GetColumn(14)->GetAsSLong();
-      column.m_sub_datatype   = qry.GetColumn(15)->GetAsSLong();
-      column.m_octet_length   = qry.GetColumn(16)->GetAsSLong();
-      column.m_position       = qry.GetColumn(17)->GetAsSLong();
-      column.m_isNullable     = qry.GetColumn(18)->GetAsChar();
+      column.m_catalog        = (CString) qry[1];
+      column.m_schema         = (CString) qry[2];
+      column.m_table          = (CString) qry[3];
+      column.m_column         = (CString) qry[4];
+      column.m_datatype       = (int)     qry[5];
+      column.m_typename       = (CString) qry[6];
+      column.m_columnSize     = (int)     qry[7];
+      column.m_bufferLength   = (int)     qry[8];
+      column.m_decimalDigits  = (int)     qry[9];
+      column.m_numRadix       = (int)     qry[10];
+      column.m_nullable       = (int)     qry[11];
+      column.m_remarks        = (CString) qry[12];
+      column.m_default        = (CString) qry[13];
+      column.m_datatype3      = (int)     qry[14];
+      column.m_sub_datatype   = (int)     qry[15];
+      column.m_octet_length   = (int)     qry[16];
+      column.m_position       = (int)     qry[17];
+      column.m_isNullable     = (CString) qry[18];
 
       column.m_catalog    = column.m_catalog.Trim();
       column.m_table      = column.m_table.Trim();
@@ -301,6 +301,7 @@ SQLInfoDB::MakeInfoTablePrimary(MPrimaryMap&  p_primaries
     {
       MetaPrimary prim;
 
+      prim.m_catalog        = (CString) qry[1];
       prim.m_catalog        = qry.GetColumn(1)->GetAsChar();
       prim.m_schema         = qry.GetColumn(2)->GetAsChar();
       prim.m_table          = qry.GetColumn(3)->GetAsChar();
@@ -317,6 +318,105 @@ SQLInfoDB::MakeInfoTablePrimary(MPrimaryMap&  p_primaries
     p_errors.Append(er);
   }
   return 0;
+}
+
+bool    
+SQLInfoDB::MakeInfoTableForeign(MForeignMap&  p_foreigns
+                               ,CString&      p_errors
+                               ,CString       p_schema
+                               ,CString       p_tablename
+                               ,bool          p_referenced /* = false */) 
+{
+  CString sql = GetCATALOGForeignAttributes(p_schema,p_tablename,"",p_referenced);
+  if(sql.IsEmpty())
+  {
+    return SQLInfo::MakeInfoTableForeign(p_foreigns,p_errors,p_schema,p_tablename,p_referenced);
+  }
+  try
+  {
+    SQLQuery query(m_database);
+    query.DoSQLStatement(sql);
+    while(query.GetRecord())
+    {
+      MetaForeign foreign;
+
+      foreign.m_pkCatalogName     = (CString) query[1];
+      foreign.m_pkSchemaName      = (CString) query[2];
+      foreign.m_pkTableName       = (CString) query[3];
+      foreign.m_fkCatalogName     = (CString) query[4];
+      foreign.m_fkSchemaName      = (CString) query[5];
+      foreign.m_fkTableName       = (CString) query[6];
+
+      foreign.m_primaryConstraint = (CString) query[7];
+      foreign.m_foreignConstraint = (CString) query[8];
+
+      foreign.m_keySequence       = (int)     query[9];
+      foreign.m_pkColumnName      = (CString) query[10];
+      foreign.m_fkColumnName      = (CString) query[11];
+
+      foreign.m_updateRule        = (int)     query[12];
+      foreign.m_deleteRule        = (int)     query[13];
+      foreign.m_deferrable        = (int)     query[14];
+      foreign.m_match             = (int)     query[15];
+
+      foreign.m_initiallyDeferred = (int)     query[16];
+      foreign.m_enabled           = (int)     query[17];
+
+      p_foreigns.push_back(foreign);
+    }
+    return !p_foreigns.empty();
+  }
+  catch(CString& er)
+  {
+    p_errors.Append(er);
+  }
+  return 0;
+}
+
+bool    
+SQLInfoDB::MakeInfoTableStatistics(MIndicesMap& p_indices
+                                  ,CString&     p_errors
+                                  ,CString      p_schema
+                                  ,CString      p_tablename
+                                  ,MPrimaryMap* p_keymap
+                                  ,bool         p_all /*= true*/)
+{
+  CString sql = GetCATALOGIndexAttributes(p_schema,p_tablename,"");
+  if(sql.IsEmpty())
+  {
+    return MakeInfoTableStatistics(p_indices,p_errors,p_schema,p_tablename,p_keymap,p_all);
+  }
+
+  try
+  {
+    SQLQuery query(m_database);
+    query.DoSQLStatement(sql);
+    while(query.GetRecord())
+    {
+      MetaIndex index;
+
+      index.m_catalogName = (CString) query[1];
+      index.m_schemaName  = (CString) query[2];
+      index.m_tableName   = (CString) query[3];
+      index.m_unique      = (bool)    query[4];
+      index.m_indexName   = (CString) query[5];
+      index.m_indexType   = (int)     query[6];
+      index.m_position    = (int)     query[7];
+      index.m_columnName  = (CString) query[8];
+      index.m_ascending   = (CString) query[9];
+      index.m_cardinality = (int)     query[10];
+      index.m_pages       = (int)     query[11];
+      index.m_filter      = (CString) query[12];
+
+      p_indices.push_back(index);
+    }
+    return !p_indices.empty();
+  }
+  catch(CString& er)
+  {
+    p_errors.Append(er);
+  }
+  return false;
 }
 
 bool    
