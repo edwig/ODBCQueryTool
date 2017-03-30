@@ -446,14 +446,7 @@ SQLInfoOracle::GetCATALOGTableExists(CString p_schema,CString p_tablename) const
 CString
 SQLInfoOracle::GetCATALOGTablesList(CString p_schema,CString p_pattern) const
 {
-  return "";
-//   p_schema.MakeUpper();
-//   p_pattern.MakeUpper();
-//   CString query = "SELECT table_name\n"
-//                   "  FROM ALL_TABLES\n"
-//                   " WHERE owner      = '" + p_schema + "'\n"
-//                   "   AND table_name like '" + p_pattern + "'";
-//   return query;
+  return GetCATALOGTableAttributes(p_schema,p_pattern);
 }
 
 CString
@@ -963,7 +956,11 @@ SQLInfoOracle::GetCATALOGForeignList(CString p_schema,CString p_tablename,int p_
 }
 
 CString
-SQLInfoOracle::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraint,bool /*p_referenced = false*/,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
+SQLInfoOracle::GetCATALOGForeignAttributes(CString  p_schema
+                                          ,CString  p_tablename
+                                          ,CString  p_constraint
+                                          ,bool     p_referenced /*=false*/
+                                          ,int    /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
 {
   // Oracle catalog is in uppercase
   p_schema.MakeUpper();
@@ -978,7 +975,7 @@ SQLInfoOracle::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,
 
   CString query = "SELECT ora_database_name    AS primary_catalog_name\n"
                   "      ,pri.owner            AS primary_schema_name\n"
-                  "      ,pri_table_name       AS primary_table_name\n"
+                  "      ,pri.table_name       AS primary_table_name\n"
                   "      ,ora_database_name    AS foreign_catalog_name\n"
                   "      ,con.owner            AS foreign_schema_name\n"
                   "      ,con.table_name       AS table_name\n"
@@ -1016,13 +1013,41 @@ SQLInfoOracle::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,
                   "   AND pri.table_name      = pky.table_name\n"
                   "   AND col.position        = pky.position\n"
                   "   AND con.constraint_type = 'R'";
-                  "   AND con.owner           = '" + p_schema    + "'\n"
-                  "   AND con.table_name      = '" + p_tablename + "'\n";
 
-  // Optionally a constraint name                
+  // Optionally add our filters
+  if(!p_schema.IsEmpty())
+  {
+    if(p_referenced)
+    {
+      query += "   AND pri.owner           = '" + p_schema + "'\n";
+    }
+    else
+    {
+      query += "   AND con.owner           = '" + p_schema + "'\n";
+    }
+  }
+  if(!p_tablename.IsEmpty())
+  {
+    if(p_referenced)
+    {
+      query += "   AND pri.table_name      = '" + p_tablename + "'\n";
+    }
+    else
+    {
+      query += "   AND con.table_name      = '" + p_tablename + "'\n";
+    }
+
+  }
   if(!p_constraint.IsEmpty())
   {
-    query += "   AND con.constraint_name = '" + p_constraint + "'\n";
+    if(p_referenced)
+    {
+      query += "   AND pri.constraint_name = '" + p_constraint + "'\n";
+    }
+    else
+    {
+      query += "   AND con.constraint_name = '" + p_constraint + "'\n";
+    }
   }
 
   // Order upto the column number
@@ -1183,37 +1208,43 @@ SQLInfoOracle::GetCATALOGTriggerAttributes(CString p_schema, CString p_tablename
   p_tablename.MakeUpper();
   p_triggername.MakeUpper();
 
-  CString sql;
-  sql.Format("SELECT ''    AS catalog_name\n"
-             "      ,owner AS schema_name\n"
-             "      ,table_name\n"
-             "      ,trigger_name\n"
-             "      ,triggering_event || ' ON ' || table_name AS description\n"
-             "      ,0     AS position\n"
-             "      ,CASE WHEN (InStr(trigger_type,    'BEFORE') > 0) THEN 1 ELSE 0 END AS trigger_before\n"
-             "      ,CASE WHEN (InStr(triggering_event,'INSERT') > 0) THEN 1 ELSE 0 END AS trigger_insert\n"
-             "      ,CASE WHEN (InStr(triggering_event,'UPDATE') > 0) THEN 1 ELSE 0 END AS trigger_update\n" 
-             "      ,CASE WHEN (InStr(triggering_event,'DELETE') > 0) THEN 1 ELSE 0 END AS trigger_delete\n" 
-             "      ,CASE WHEN (InStr(triggering_event,'SELECT') > 0) THEN 1 ELSE 0 END AS trigger_select\n"
-             "      ,CASE WHEN (InStr(triggering_event,'LOGON')  > 0 OR\n"
-             "                  InStr(triggering_event,'LOGOFF') > 0 ) THEN 1 ELSE 0 END AS trigger_session\n"
-             "      ,0  AS trigger_transaction\n"
-             "      ,0  AS trigger_rollback\n"
-             "      ,referencing_names\n"
-             "      ,CASE status\n"
-             "            WHEN 'DISABLED' THEN 0\n"
-             "                            ELSE 1\n"
-             "            END AS trigger_status\n"
-             "      ,trigger_body AS source\n"
-             "  FROM all_triggers\n"
-             " WHERE table_owner = '%s'\n"
-             "   AND table_name  = '%s'"
-             ,p_schema.GetString()
-             ,p_tablename.GetString());
+  CString sql = "SELECT ''    AS catalog_name\n"
+                "      ,owner AS schema_name\n"
+                "      ,table_name\n"
+                "      ,trigger_name\n"
+                "      ,triggering_event || ' ON ' || table_name AS description\n"
+                "      ,0     AS position\n"
+                "      ,CASE WHEN (InStr(trigger_type,    'BEFORE') > 0) THEN 1 ELSE 0 END AS trigger_before\n"
+                "      ,CASE WHEN (InStr(triggering_event,'INSERT') > 0) THEN 1 ELSE 0 END AS trigger_insert\n"
+                "      ,CASE WHEN (InStr(triggering_event,'UPDATE') > 0) THEN 1 ELSE 0 END AS trigger_update\n" 
+                "      ,CASE WHEN (InStr(triggering_event,'DELETE') > 0) THEN 1 ELSE 0 END AS trigger_delete\n" 
+                "      ,CASE WHEN (InStr(triggering_event,'SELECT') > 0) THEN 1 ELSE 0 END AS trigger_select\n"
+                "      ,CASE WHEN (InStr(triggering_event,'LOGON')  > 0 OR\n"
+                "                  InStr(triggering_event,'LOGOFF') > 0 ) THEN 1 ELSE 0 END AS trigger_session\n"
+                "      ,0  AS trigger_transaction\n"
+                "      ,0  AS trigger_rollback\n"
+                "      ,referencing_names\n"
+                "      ,CASE status\n"
+                "            WHEN 'DISABLED' THEN 0\n"
+                "                            ELSE 1\n"
+                "            END AS trigger_status\n"
+                "      ,trigger_body AS source\n"
+                "  FROM dba_triggers\n";
+  if(!p_schema.IsEmpty())
+  {
+    sql += " WHERE table_owner = '" + p_schema + "'\n";
+  }
+  if(!p_tablename.IsEmpty())
+  {
+    sql += p_schema.IsEmpty() ? " WHERE " : "   AND ";
+    sql += "table_name = '" + p_tablename + "'\n";
+  } 
   if(!p_triggername.IsEmpty())
   {
-    sql += "\n   AND trigger_name = '" + p_triggername + "'";
+    sql += p_schema.IsEmpty() && p_tablename.IsEmpty() ? " WHERE " : "   AND ";
+    sql += "trigger_name = '" + p_triggername + "'\n";
   }
+  sql += " ORDER BY 1,2,3,4";
   return sql;
 }
 
@@ -1297,20 +1328,29 @@ SQLInfoOracle::GetCATALOGSequenceList(CString p_schema,CString p_pattern) const
 {
   p_schema.MakeUpper();
   p_pattern.MakeUpper();
-  p_pattern += "%" + p_pattern + "%";
-
+  if(!p_pattern.IsEmpty() && p_pattern != "%")
+  {
+    p_pattern = "%" + p_pattern + "%";
+  }
   CString sql = "SELECT ''              AS catalog_name\n"
                 "      ,sequence_owner  AS schema_name\n"
                 "      ,sequence_name\n"
                 "      ,last_number     AS current_value\n"
                 "      ,min_value       AS minimal_value\n"
-                "      ,increment_by    AS increment\n"
+                "      ,increment_by    AS seq_increment\n"
                 "      ,cache_size                 AS cache\n"
                 "      ,decode(cycle_flag,'N',0,1) AS cycle\n"
                 "      ,decode(order_flag,'N',0,1) AS ordering\n"
-                "  FROM all_sequences\n"
-                " WHERE sequence_owner = '" + p_schema + "'\n"
-                "   AND sequence_name LIKE '" + p_pattern + "'";
+                "  FROM dba_sequences\n";
+  if (!p_schema.IsEmpty())
+  {
+    sql += " WHERE sequence_owner = '" + p_schema + "'\n";
+  }
+  if (!p_pattern.IsEmpty())
+  {
+    sql += p_schema.IsEmpty() ? " WHERE " : "   AND ";
+    sql += "sequence_name  LIKE '" + p_pattern + "'";
+  }
   return sql;
 }
 
@@ -1325,13 +1365,20 @@ SQLInfoOracle::GetCATALOGSequenceAttributes(CString p_schema, CString p_sequence
                 "      ,sequence_name\n"
                 "      ,last_number     AS current_value\n"
                 "      ,min_value       AS minimaml_value\n"
-                "      ,increment_by    AS increment\n"
-                "      ,decode(cycle_flag,'N',0,1) AS cycle\n"
+                "      ,increment_by    AS seq_increment\n"
                 "      ,cache_size                 AS cache\n"
+                "      ,decode(cycle_flag,'N',0,1) AS cycle\n"
                 "      ,decode(order_flag,'N',0,1) AS ordering\n"
-                "  FROM all_sequences\n"
-                " WHERE sequence_owner = '" + p_schema + "'\n"
-                "   AND sequence_name  = '" + p_sequence + "'";
+                "  FROM dba_sequences\n";
+  if(!p_schema.IsEmpty())
+  {
+    sql += " WHERE sequence_owner = '" + p_schema + "'\n";
+  }
+  if(!p_sequence.IsEmpty())
+  {
+    sql += p_schema.IsEmpty() ? " WHERE " : "   AND ";
+    sql += "sequence_name  = '" + p_sequence + "'";
+  }
   return sql;
 }
 
