@@ -1080,8 +1080,10 @@ SQLInfoSQLServer::GetCATALOGSequenceList(CString p_schema,CString p_pattern) con
 {
   p_schema.MakeLower();
   p_pattern.MakeLower();
-  p_pattern = "%" + p_pattern + "%";
-
+  if(p_pattern != "%")
+  {
+    p_pattern = "%" + p_pattern + "%";
+  }
   CString sql = "SELECT ''       AS catalog_name\n"
                 "      ,sch.name AS schema_name\n"
                 "      ,seq.name AS sequence_name\n"
@@ -1094,8 +1096,12 @@ SQLInfoSQLServer::GetCATALOGSequenceList(CString p_schema,CString p_pattern) con
                 "  FROM sys.sequences seq\n"
                 "      ,sys.schemas   sch\n"
                 " WHERE sch.object_id = seq.schema_id\n"
-                "   AND seq.name LIKE '" + p_pattern + "'\n"
-                "   AND sch.name = '" + p_schema   + "'";
+                "   AND seq.name LIKE '" + p_pattern + "'\n";
+  if(!p_schema.IsEmpty())
+  {
+    sql += "   AND sch.name = '" + p_schema + "'\n";
+  }
+  sql += " ORDER BY 1,2,3";
   return sql;
 }
 
@@ -1115,9 +1121,16 @@ SQLInfoSQLServer::GetCATALOGSequenceAttributes(CString p_schema, CString p_seque
                 "      ,0        AS ordering\n"
                 "  FROM sys.sequences seq\n"
                 "      ,sys.schemas   sch\n"
-                " WHERE sch.object_id = seq.schema_id\n"
-                "   AND seq.name = '" + p_sequence + "'\n"
-                "   AND sch.name = '" + p_schema   + "'";
+                " WHERE sch.object_id = seq.schema_id\n";
+  if(!p_schema.IsEmpty())
+  {
+    sql += "   AND sch.name = '" + p_schema + "'\n";
+  }
+  if(!p_sequence.IsEmpty())
+  {
+    sql += "   AND seq.name = '" + p_sequence + "'\n";
+  }
+  sql += " ORDER BY 1,2,3";
   return sql;
 }
 

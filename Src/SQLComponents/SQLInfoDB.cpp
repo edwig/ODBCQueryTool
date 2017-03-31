@@ -633,7 +633,15 @@ SQLInfoDB::MakeInfoTableSequences(MSequenceMap& p_sequences,CString& p_errors,CS
   }
   catch(CString& er)
   {
-    p_errors.Append(er);
+    if(er.Find("[42S02]") > 0)
+    {
+      // Older versions of MS-SQLServer return this SQLSTATE
+      p_errors.Append("Version of RDBMS that does not support SEQUENCE feature (yet)!");
+    }
+    else
+    {
+      p_errors.Append(er);
+    }
   }
   return 0;
 }

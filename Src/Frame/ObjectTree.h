@@ -139,7 +139,7 @@ protected:
   CString     m_procedure;
 
 public:
-  afx_msg void OnSelChanged(NMHDR* pNMHDR, LRESULT* pResult);
+  afx_msg void OnItemExpanding(NMHDR* pNMHDR, LRESULT* pResult);
 };
 
 inline void

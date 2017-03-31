@@ -23,8 +23,7 @@
 IMPLEMENT_DYNAMIC(ObjectTree,CTreeCtrl)
 
 BEGIN_MESSAGE_MAP(ObjectTree,CTreeCtrl)
-  ON_NOTIFY_REFLECT(TVN_SELCHANGED,   OnSelChanged)
-  ON_NOTIFY_REFLECT(TVN_ITEMEXPANDING,OnSelChanged)
+  ON_NOTIFY_REFLECT(TVN_ITEMEXPANDING,OnItemExpanding)
 END_MESSAGE_MAP()
 
 ObjectTree::ObjectTree()
@@ -194,7 +193,7 @@ ObjectTree::InsertItem(CString p_string,HTREEITEM p_item,int p_data /*=0*/)
 
 // Expanding a node, if not already done
 void 
-ObjectTree::OnSelChanged(NMHDR* pNMHDR,LRESULT* pResult)
+ObjectTree::OnItemExpanding(NMHDR* pNMHDR,LRESULT* pResult)
 {
   // Guard against re-entrance in the UI thread
   if(m_busy)

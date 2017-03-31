@@ -1349,8 +1349,9 @@ SQLInfoOracle::GetCATALOGSequenceList(CString p_schema,CString p_pattern) const
   if (!p_pattern.IsEmpty())
   {
     sql += p_schema.IsEmpty() ? " WHERE " : "   AND ";
-    sql += "sequence_name  LIKE '" + p_pattern + "'";
+    sql += "sequence_name  LIKE '" + p_pattern + "'\n";
   }
+  sql += " ORDER BY 1,2,3";
   return sql;
 }
 
@@ -1377,8 +1378,9 @@ SQLInfoOracle::GetCATALOGSequenceAttributes(CString p_schema, CString p_sequence
   if(!p_sequence.IsEmpty())
   {
     sql += p_schema.IsEmpty() ? " WHERE " : "   AND ";
-    sql += "sequence_name  = '" + p_sequence + "'";
+    sql += "sequence_name  = '" + p_sequence + "'\n";
   }
+  sql += " ORDER BY 1,2,3";
   return sql;
 }
 
