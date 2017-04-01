@@ -425,22 +425,44 @@ SQLInfoPostgreSQL::GetCATALOGTableExists(CString p_schema,CString p_tablename) c
 CString
 SQLInfoPostgreSQL::GetCATALOGTablesList(CString p_schema,CString p_pattern) const
 {
-  return "";
-//   p_schema.MakeLower();
-//   p_pattern.MakeLower();
-//   CString query = "SELECT count(*)\n"
-//                   "  FROM pg_class cl\n"
-//                   "      ,pg_namespace ns\n"
-//                   " WHERE cl.relnamespace = ns.oid\n"
-//                   "   AND ns.nspname = '" + p_schema    + "'\n"
-//                   "   AND cl.relname like '" + p_pattern + "'";
-//   return query;
+  return GetCATALOGTableAttributes(p_schema,p_pattern);
 }
 
 CString
-SQLInfoPostgreSQL::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/) const
+SQLInfoPostgreSQL::GetCATALOGTableAttributes(CString p_schema,CString p_tablename) const
 {
-  return "";
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+  CString query = "SELECT current_catalog as table_catalog\n"
+                  "      ,sch.nspname     as table_schema\n"
+                  "      ,tab.relname     as table_name\n"
+                  "      ,'TABLE'         as object_type\n"
+                  "      ,''              as remarks\n"
+                  "      ,sch.nspname || '.' || tab.relname as fullname\n"
+                  "      ,tsp.spcname     as tablespace\n"
+                  "      ,CASE tab.relpersistence\n"
+                  "            WHEN 'p' THEN 0\n"
+                  "                     ELSE 1\n"
+                  "       END as temporary\n"
+                  "  FROM pg_catalog.pg_class tab\n"
+                  "       left       join pg_catalog.pg_namespace  sch on tab.relnamespace  = sch.oid\n"
+                  "       left outer join pg_catalog.pg_tablespace tsp ON tab.reltablespace = tsp.oid\n"
+                  " WHERE tab.relkind = 'r'\n"
+                  "   AND substring(sch.nspname,1,3) <> 'pg_'\n"
+                  "   AND sch.nspname <> 'information_schema'\n";
+  if(!p_schema.IsEmpty())
+  {
+    query += "    AND sch.name = '" + p_schema + "'\n";
+  }
+  if(!p_tablename.IsEmpty())
+  {
+    query += "   AND tab.relname ";
+    query += p_tablename.Find('%') >= 0 ? "LIKE '" : "= '";
+    query += p_tablename + "'\n";
+  }
+  query += " ORDER BY 1,2,3";
+                  
+  return query;
 }
 
 CString
@@ -451,10 +473,41 @@ SQLInfoPostgreSQL::GetCATALOGTableSynonyms(CString /*p_schema*/,CString /*p_tabl
 }
 
 CString
-SQLInfoPostgreSQL::GetCATALOGTableCatalog(CString /*p_schema*/,CString /*p_tablename*/) const
+SQLInfoPostgreSQL::GetCATALOGTableCatalog(CString p_schema,CString p_tablename) const
 {
-  // MS-Access cannot do this
-  return false;
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+  CString query = "SELECT current_catalog as table_catalog\n"
+                  "      ,sch.nspname     as table_schema\n"
+                  "      ,tab.relname     as table_name\n"
+                  "      ,'TABLE'         as object_type\n"
+                  "      ,''              as remarks\n"
+                  "      ,sch.nspname || '.' || tab.relname as fullname\n"
+                  "      ,tsp.spcname     as tablespace\n"
+                  "      ,CASE tab.relpersistence\n"
+                  "            WHEN 'p' THEN 0\n"
+                  "                     ELSE 1\n"
+                  "       END as temporary\n"
+                  "  FROM pg_catalog.pg_class tab\n"
+                  "       left       join pg_catalog.pg_namespace  sch on tab.relnamespace  = sch.oid\n"
+                  "       left outer join pg_catalog.pg_tablespace tsp ON tab.reltablespace = tsp.oid\n"
+                  " WHERE tab.relkind IN ('t','v')\n"
+                  "   AND (substring(sch.nspname,1,3) = 'pg_'\n"
+                  "    OR sch.nspname = 'information_schema')\n"
+                  "   AND sch.nspname <> 'pg_toast'\n";
+  if(!p_schema.IsEmpty())
+  {
+    query += "    AND sch.name = '" + p_schema + "'\n";
+  }
+  if(!p_tablename.IsEmpty())
+  {
+    query += "   AND tab.relname ";
+    query += p_tablename.Find('%') >= 0 ? "LIKE '" : "= '";
+    query += p_tablename + "'\n";
+  }
+  query += " ORDER BY 1,2,3";
+                  
+  return query;
 }
 
 CString
@@ -1144,19 +1197,74 @@ SQLInfoPostgreSQL::GetCATALOGForeignDrop(CString p_schema,CString p_tablename,CS
 CString
 SQLInfoPostgreSQL::GetCATALOGTriggerExists(CString p_schema, CString p_tablename, CString p_triggername) const
 {
-  return "";
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+  p_triggername.MakeLower();
+  CString sql = "SELECT COUNT(*)\n"
+                "  FROM information_schema.triggers\n"
+                " WHERE event_object_schema = '" + p_schema + "'\n"
+                "   AND event_object_table  = '" + p_tablename + "'\n"
+                "   AND trigger_name        = '" + p_triggername + "'";
+  return sql;
 }
 
 CString
 SQLInfoPostgreSQL::GetCATALOGTriggerList(CString p_schema, CString p_tablename) const
 {
-  return "";
+  return GetCATALOGTriggerAttributes(p_schema,p_tablename,"");
 }
 
 CString
 SQLInfoPostgreSQL::GetCATALOGTriggerAttributes(CString p_schema, CString p_tablename, CString p_triggername) const
 {
-  return "";
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+  p_triggername.MakeLower();
+  CString sql;
+  sql = "SELECT event_object_catalog\n"
+        "      ,event_object_schema\n"
+        "      ,event_object_table\n"
+        "      ,trigger_name\n"
+        "      ,'' AS trigger_remarks\n"
+        "      ,0  AS trigger_position\n"
+        "      ,CASE action_timing\n"
+        "            WHEN 'AFTER' THEN FALSE ELSE TRUE\n"
+        "       END AS trigger_before\n"
+        "      ,CASE event_manipulation\n"
+        "            WHEN 'INSERT' THEN TRUE ELSE FALSE\n"
+        "       END AS trigger_insert\n"
+        "      ,CASE event_manipulation\n"
+        "            WHEN 'UPDATE' THEN TRUE ELSE FALSE\n"
+        "       END AS trigger_update\n"
+        "      ,CASE event_manipulation\n"
+        "            WHEN 'DELETE' THEN TRUE ELSE FALSE\n"
+        "       END AS trigger_delete\n"
+        "      ,CASE event_manipulation\n"
+        "            WHEN 'SELECT' THEN TRUE ELSE FALSE\n"
+        "       END AS trigger_select\n"
+        "      ,FALSE AS trigger_session\n"
+        "      ,FALSE AS trigger_transaction\n"
+        "      ,FALSE AS trigger_rollback\n"
+        "      ,''    AS trigger_referencing\n"
+        "      ,TRUE  AS trigger_enabled\n"
+        "      ,action_statement AS trigger_source\n"
+        "  FROM information_schema.triggers\n";
+  if(!p_schema.IsEmpty())
+  {
+    sql += " WHERE event_object_schema = '" + p_schema + "'\n";
+  }
+  if(!p_tablename.IsEmpty())
+  {
+    sql += p_schema.IsEmpty() ? " WHERE " : "   AND ";
+    sql += "event_object_table = '" + p_tablename + "'\n";
+  }
+  if(!p_triggername.IsEmpty())
+  {
+    sql += p_schema.IsEmpty() && p_tablename.IsEmpty() ? " WHERE " : "   AND ";
+    sql += "trigger_name = '" + p_triggername + "'\n";
+  }
+  sql += " ORDER BY 1,2,3,4";
+  return sql;
 }
 
 CString
@@ -1286,14 +1394,43 @@ SQLInfoPostgreSQL::GetCATALOGViewExists(CString p_schema,CString p_viewname) con
 CString 
 SQLInfoPostgreSQL::GetCATALOGViewList(CString p_schema,CString p_pattern) const
 {
-  return "";
+  return GetCATALOGViewAttributes(p_schema,p_pattern);
 }
 
 CString 
 SQLInfoPostgreSQL::GetCATALOGViewAttributes(CString p_schema,CString p_viewname) const
 {
-  return "";
-}
+  p_schema.MakeLower();
+  p_viewname.MakeLower();
+  CString query = "SELECT current_catalog as table_catalog\n"
+                  "      ,sch.nspname     as table_schema\n"
+                  "      ,tab.relname     as table_name\n"
+                  "      ,'TABLE'         as object_type\n"
+                  "      ,''              as remarks\n"
+                  "      ,sch.nspname || '.' || tab.relname as fullname\n"
+                  "      ,''              as tablespace\n"
+                  "      ,CASE tab.relpersistence\n"
+                  "            WHEN 'p' THEN 0\n"
+                  "                     ELSE 1\n"
+                  "       END as temporary\n"
+                  "  FROM pg_catalog.pg_class tab\n"
+                  "       left join pg_catalog.pg_namespace sch on tab.relnamespace = sch.oid\n"
+                  " WHERE tab.relkind = 'v'\n"
+                  "   AND substring(sch.nspname,1,3) <> 'pg_'\n"
+                  "   AND sch.nspname <> 'information_schema'\n";
+  if(!p_schema.IsEmpty())
+  {
+    query += "    AND sch.name = '" + p_schema + "'\n";
+  }
+  if(!p_viewname.IsEmpty())
+  {
+    query += "   AND tab.relname ";
+    query += p_viewname.Find('%') >= 0 ? "LIKE '" : "= '";
+    query += p_viewname + "'\n";
+  }
+  query += " ORDER BY 1,2,3";
+                  
+  return query;}
 
 CString 
 SQLInfoPostgreSQL::GetCATALOGViewCreate(CString p_schema,CString p_viewname,CString p_contents) const
@@ -1395,7 +1532,49 @@ SQLInfoPostgreSQL::GetPSMProcedureErrors(CString p_schema,CString p_procedure) c
 CString
 SQLInfoPostgreSQL::GetPSMProcedureParameters(CString p_schema,CString p_procedure) const
 {
-  return "";
+  p_schema.MakeLower();
+  p_procedure.MakeLower();
+  CString sql;
+
+  sql = "SELECT par.specific_catalog\n"
+        "      ,par.specific_schema\n"
+        "      ,fun.routine_name\n"
+        "      ,par.parameter_name\n"
+        "      ,case par.parameter_mode\n"
+        "            when 'IN'    then 1\n"
+        "            when 'OUT'   then 4\n"
+        "            when 'INOUT' then 2\n"
+        "       end as columntype\n"
+        "      ,1 as datatype\n"
+        "      ,par.data_type as typename\n"
+        "      ,par.character_maximum_length\n"
+        "      ,par.numeric_precision\n"
+        "      ,par.numeric_scale\n"
+        "      ,par.numeric_precision_radix\n"
+        "      ,1 as is_nullable\n"
+        "      ,'' as remarks\n"
+        "      ,par.parameter_default\n"
+        "      ,1 as datatype3\n"
+        "      ,par.interval_precision as subtype\n"
+        "      ,par.character_octet_length\n"
+        "      ,par.ordinal_position\n"
+        "      ,'YES' as isNullable\n"
+        "  FROM information_schema.parameters par\n"
+        "      ,information_schema.routines fun\n"
+        " WHERE par.specific_catalog = fun.specific_catalog\n"
+        "   AND par.specific_schema  = fun.specific_schema\n"
+        "   AND par.specific_name    = fun.specific_name\n";
+  if(!p_schema.IsEmpty())
+  {
+    sql += "   AND fun.specific_schema = '" + p_schema + "'\n";
+  }
+  if(!p_procedure.IsEmpty())
+  {
+    sql += "   AND fun.routine_name    = '" + p_procedure + "'\n";
+  }
+  sql += " ORDER BY 1,2,3,18";
+
+  return sql;
 }
 
 //////////////////////////////////////////////////////////////////////////
