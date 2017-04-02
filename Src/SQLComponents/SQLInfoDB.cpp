@@ -186,6 +186,8 @@ SQLInfoDB::MakeInfoTableCatalog(MTableMap&  p_tables
   CString sql = GetCATALOGTableCatalog(p_schema,p_tablename);
   if(sql.IsEmpty())
   {
+    p_schema = "%";
+    p_tablename = "%";
     // Ask ODBC driver to find system tables
     return SQLInfo::MakeInfoTableTable(p_tables,p_errors,p_schema,p_tablename,"SYSTEM TABLE");
   }

@@ -443,21 +443,45 @@ SQLInfoSQLServer::GetCATALOGTablesList(CString p_schema,CString p_pattern) const
 CString
 SQLInfoSQLServer::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tablename*/) const
 {
-  return false;
+  return "";
 }
 
 CString
 SQLInfoSQLServer::GetCATALOGTableSynonyms(CString /*p_schema*/,CString /*p_tablename*/) const
 {
-  // MS-Access cannot do this
-  return false;
+  return "";
 }
 
 CString
-SQLInfoSQLServer::GetCATALOGTableCatalog(CString /*p_schema*/,CString /*p_tablename*/) const
+SQLInfoSQLServer::GetCATALOGTableCatalog(CString p_schema,CString p_tablename) const
 {
-  // MS-Access cannot do this
-  return false;
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+
+  CString query = "SELECT db_name()      AS table_catalog\n"
+                  "      ,usr.name       AS schema_name\n"
+                  "      ,obj.name       AS table_name\n"
+                  "      ,'SYSTEM TABLE' AS object_type\n"
+                  "      ,''             AS remarks\n"
+                  "      ,'master.' + usr.name + '.' + obj.name as fullname\n"
+                  "      ,db_name() as tablespace\n"
+                  "      ,0         as temporary\n"
+                  "  FROM master.sys.sysobjects obj\n"
+                  "      ,master.sys.sysusers   usr\n"
+                  " WHERE xtype IN ('V','S')\n"
+                  "   AND obj.uid = usr.uid\n";
+  if(!p_schema.IsEmpty())
+  {
+    query += "   AND usr.name      = '" + p_schema + "'\n";
+  }
+  if(!p_tablename.IsEmpty())
+  {
+    query += "   AND tab.name ";
+    query += p_tablename.Find('%') >= 0 ? "LIKE '" : "= '";
+    query += p_tablename + "'\n";
+  }
+  query += " ORDER BY 1,2,3";
+  return query;
 }
 
 CString
@@ -813,7 +837,11 @@ SQLInfoSQLServer::GetCATALOGForeignList(CString p_schema,CString p_tablename,int
 }
 
 CString
-SQLInfoSQLServer::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraint,bool /*p_referenced = false*/,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
+SQLInfoSQLServer::GetCATALOGForeignAttributes(CString p_schema
+                                             ,CString p_tablename
+                                             ,CString p_constraint
+                                             ,bool    p_referenced /*=false*/
+                                             ,int   /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
@@ -824,9 +852,9 @@ SQLInfoSQLServer::GetCATALOGForeignAttributes(CString p_schema,CString p_tablena
                   "      ,db_name()         as foreign_catalog_name\n"
                   "      ,sch.name          as foreign_schema_name\n"
                   "      ,tab.name          as foreign_table_name\n"
-                  "      ,''                as primary_key_constraint\n"
+                  "      ,prk.name          as primary_key_constraint\n"
                   "      ,fok.name          as foreign_key_constraint\n"
-                  "      ,fkc.constraint_column_id      as key_sequence"
+                  "      ,fkc.constraint_column_id as key_sequence\n"
                   "      ,pky.name          as primary_key_column\n"
                   "      ,col.name          as foreign_key_column\n"
                   "      ,fok.update_referential_action as update_rule\n"
@@ -837,11 +865,12 @@ SQLInfoSQLServer::GetCATALOGForeignAttributes(CString p_schema,CString p_tablena
                   "      ,fok.is_disabled   as disabled\n"
                   "  FROM sys.foreign_keys        fok\n"
                   "      ,sys.foreign_key_columns fkc\n"
-                  "      ,sys.schemas sch\n"
-                  "      ,sys.tables  tab\n"
-                  "      ,sys.columns col\n"
-                  "      ,sys.tables  pri\n"
-                  "      ,sys.columns pky\n"
+                  "      ,sys.schemas    sch\n"
+                  "      ,sys.tables     tab\n"
+                  "      ,sys.columns    col\n"
+                  "      ,sys.tables     pri\n"
+                  "      ,sys.columns    pky\n"
+                  "      ,sys.sysobjects prk\n"
                   " WHERE fok.type = 'F'\n"
                   "   AND fok.parent_object_id     = tab.object_id\n"
                   "   AND tab.schema_id            = sch.schema_id\n"
@@ -850,21 +879,37 @@ SQLInfoSQLServer::GetCATALOGForeignAttributes(CString p_schema,CString p_tablena
                   "   AND fkc.parent_column_id     = col.column_id\n"
                   "   AND fkc.referenced_object_id = pri.object_id\n"
                   "   AND fkc.referenced_object_id = pky.object_id\n"
-                  "   AND fkc.referenced_column_id = pky.column_id\n";
+                  "   AND fkc.referenced_column_id = pky.column_id\n"
+                  "   AND prk.parent_obj           = pri.object_id\n"
+                  "   AND prk.xtype                = 'PK'\n"
+                  "   AND prk.type                 = 'K '\n";
   if(!p_schema.IsEmpty())
   {
     query += "   AND sch.name = '" + p_schema + "'\n";
   }
   if(!p_tablename.IsEmpty())
   {
-    query += "   AND tab.name = '" + p_tablename + "'\n";
+    if(p_referenced)
+    {
+      query += "   AND pri.name = '" + p_tablename + "'\n";
+    }
+    else
+    {
+      query += "   AND tab.name = '" + p_tablename + "'\n";
+    }
   }
   if(!p_constraint.IsEmpty())
   {
-    query += "   AND fok.name = '" + p_constraint + "'\n";
+    if(p_referenced)
+    {
+      query += "   AND prk.name = '" + p_constraint + "'\n";
+    }
+    else
+    {
+      query += "   AND fok.name = '" + p_constraint + "'\n";
+    }
   }
-
-  // Order upto column number
+  // Order up to column number
   query += " ORDER BY 1,2,3,4,5,6,7,8,9";
 
   return query;
@@ -1087,15 +1132,15 @@ SQLInfoSQLServer::GetCATALOGSequenceList(CString p_schema,CString p_pattern) con
   CString sql = "SELECT ''       AS catalog_name\n"
                 "      ,sch.name AS schema_name\n"
                 "      ,seq.name AS sequence_name\n"
-                "      ,seq.current_value\n"
-                "      ,0        AS minimal_value\n"
-                "      ,1        AS increment\n"
-                "      ,seq.is_cached AS cache\n"
-                "      ,seq.is_cycling AS cycle\n"
-                "      ,0        AS ordering\n"
+                "      ,CAST(current_value AS INTEGER) AS current_value\n"
+                "      ,CAST(minimum_value AS INTEGER) AS minimum_value\n"
+                "      ,CAST(increment     AS INTEGER) AS increment_value\n"
+                "      ,cache_size AS CACHE\n"
+                "      ,is_cycling\n"
+                "      ,0 ordering\n"
                 "  FROM sys.sequences seq\n"
                 "      ,sys.schemas   sch\n"
-                " WHERE sch.object_id = seq.schema_id\n"
+                " WHERE sch.schema_id = seq.schema_id\n"
                 "   AND seq.name LIKE '" + p_pattern + "'\n";
   if(!p_schema.IsEmpty())
   {
@@ -1113,15 +1158,15 @@ SQLInfoSQLServer::GetCATALOGSequenceAttributes(CString p_schema, CString p_seque
   CString sql = "SELECT ''       AS catalog_name\n"
                 "      ,sch.name AS schema_name\n"
                 "      ,seq.name AS sequence_name\n"
-                "      ,seq.current_value\n"
-                "      ,0        AS minimal_value\n"
-                "      ,1        AS increment\n"
-                "      ,seq.is_cached AS cache\n"
-                "      ,seq.is_cycling AS cycle\n"
-                "      ,0        AS ordering\n"
+                "      ,CAST(current_value AS INTEGER) AS current_value\n"
+                "      ,CAST(minimum_value AS INTEGER) AS minimum_value\n"
+                "      ,CAST(increment     AS INTEGER) AS increment_value\n"
+                "      ,cache_size AS CACHE\n"
+                "      ,is_cycling\n"
+                "      ,0 ordering\n"
                 "  FROM sys.sequences seq\n"
                 "      ,sys.schemas   sch\n"
-                " WHERE sch.object_id = seq.schema_id\n";
+                " WHERE sch.schema_id = seq.schema_id\n";
   if(!p_schema.IsEmpty())
   {
     sql += "   AND sch.name = '" + p_schema + "'\n";
