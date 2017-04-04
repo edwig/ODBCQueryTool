@@ -430,14 +430,31 @@ SQLInfoSQLServer::GetCATALOGTablesList(CString p_schema,CString p_pattern) const
 {
   p_schema.MakeLower();
   p_pattern.MakeLower();
-//   CString query = "SELECT count(*)\n"
-//                   "  FROM dbo.sysobjects tab\n"
-//                   "      ,dbo.sysschemas sch\n"
-//                   " WHERE sch.name      = '" + p_schema  + "'\n"
-//                   "   AND tab.name   like '" + p_pattern + "'\n"
-//                   "   AND tab.schema_id = sch.schema_id\n";
-//   return query;
-  return "";
+
+  CString query = "SELECT db_name()  AS table_catalog\n"
+                  "      ,usr.name   AS schema_name\n"
+                  "      ,obj.name   AS table_name\n"
+                  "      ,'TABLE'    AS object_type\n"
+                  "      ,''         AS remarks\n"
+                  "      ,'master.' + usr.name + '.' + obj.name as fullname\n"
+                  "      ,db_name() as tablespace\n"
+                  "      ,0         as temporary\n"
+                  "  FROM sys.sysobjects obj\n"
+                  "      ,sys.sysusers   usr\n"
+                  " WHERE xtype   = 'U'\n"
+                  "   AND obj.uid = usr.uid\n";
+  if (!p_schema.IsEmpty())
+  {
+    query += "   AND usr.name = '" + p_schema + "'\n";
+  }
+  if (!p_pattern.IsEmpty())
+  {
+    query += "   AND tab.name ";
+    query += p_pattern.Find('%') >= 0 ? "LIKE '" : "= '";
+    query += p_pattern + "'\n";
+  }
+  query += " ORDER BY 1,2,3";
+  return query;
 }
 
 CString
@@ -685,7 +702,7 @@ SQLInfoSQLServer::GetCATALOGIndexAttributes(CString p_schema,CString p_tablename
 
 // Get SQL to create an index for a table
 // CREATE [UNIQUE] INDEX indexname ON [<schema>.]tablename(column [ASC|DESC] [,...]);
-// Beware: no schema name for indexname. Automatically in the table schema
+// Beware: no schema name for index name. Automatically in the table schema
 CString
 SQLInfoSQLServer::GetCATALOGIndexCreate(MIndicesMap& p_indices) const
 {
@@ -754,7 +771,7 @@ SQLInfoSQLServer::GetCATALOGPrimaryExists(CString p_schema,CString p_tablename) 
                   " WHERE tab.id    = con.parent_obj\n"
                   "   AND tab.uid   = use.uid\n"
                   "   AND con.xtype = 'PK'\n"
-                  "   AND con.type  = 'K '"
+                  "   AND con.type  = 'K'"
                   "   AND use.name  = '" + p_schema    + "'\n"
                   "   AND tab.name  = '" + p_tablename + "'";
   return query;
@@ -1098,9 +1115,15 @@ SQLInfoSQLServer::GetCATALOGTriggerCreate(MetaTrigger& p_trigger) const
 }
 
 CString
-SQLInfoSQLServer::GetCATALOGTriggerDrop(CString p_schema, CString p_tablename, CString p_triggername) const
+SQLInfoSQLServer::GetCATALOGTriggerDrop(CString p_schema, CString /*p_tablename*/, CString p_triggername) const
 {
-  return "";
+  CString sql("DROP TRIGGER ");
+  if(!p_schema.IsEmpty())
+  {
+    sql += p_schema + ".";
+  }
+  sql += p_triggername;
+  return sql;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1222,14 +1245,39 @@ SQLInfoSQLServer::GetCATALOGViewExists(CString p_schema,CString p_viewname) cons
 CString 
 SQLInfoSQLServer::GetCATALOGViewList(CString p_schema,CString p_pattern) const
 {
-  return "";
+  return GetCATALOGViewAttributes(p_schema, p_pattern);
 }
 
 CString 
 SQLInfoSQLServer::GetCATALOGViewAttributes(CString p_schema,CString p_viewname) const
 {
-  return "";
-}
+  p_schema.MakeLower();
+  p_viewname.MakeLower();
+
+  CString query = "SELECT db_name()  AS table_catalog\n"
+                  "      ,usr.name   AS schema_name\n"
+                  "      ,obj.name   AS table_name\n"
+                  "      ,'VIEW'     AS object_type\n"
+                  "      ,''         AS remarks\n"
+                  "      ,'master.' + usr.name + '.' + obj.name as fullname\n"
+                  "      ,db_name() as tablespace\n"
+                  "      ,0         as temporary\n"
+                  "  FROM sys.sysobjects obj\n"
+                  "      ,sys.sysusers   usr\n"
+                  " WHERE xtype   = 'V'\n"
+                  "   AND obj.uid = usr.uid\n";
+  if (!p_schema.IsEmpty())
+  {
+    query += "   AND usr.name = '" + p_schema + "'\n";
+  }
+  if (!p_viewname.IsEmpty())
+  {
+    query += "   AND tab.name ";
+    query += p_viewname.Find('%') >= 0 ? "LIKE '" : "= '";
+    query += p_viewname + "'\n";
+  }
+  query += " ORDER BY 1,2,3";
+  return query;}
 
 CString 
 SQLInfoSQLServer::GetCATALOGViewCreate(CString p_schema,CString p_viewname,CString p_contents) const

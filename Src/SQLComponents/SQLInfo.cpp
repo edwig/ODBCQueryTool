@@ -1291,7 +1291,7 @@ SQLInfo::MakeObjectName(SQLCHAR* search_catalog
   {
     objectName += CString(search_table);
   }
-  if(strlen((char*)search_catalog))
+  if(search_catalog && strlen((char*)search_catalog))
   {
     CString separator = m_catalogNameSeparator;
     if(separator.IsEmpty())
@@ -1307,7 +1307,7 @@ SQLInfo::MakeObjectName(SQLCHAR* search_catalog
       objectName = CString(search_catalog) + separator + objectName;
     }
   }
-  if(strlen((char*)search_type))
+  if(search_type && strlen((char*)search_type))
   {
     objectName = CString(search_type) + ": " + objectName;
   }
