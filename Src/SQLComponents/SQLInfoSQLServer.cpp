@@ -1091,13 +1091,21 @@ SQLInfoSQLServer::GetCATALOGTriggerAttributes(CString p_schema, CString p_tablen
              "      ,sys.sql_modules mod\n"
              "      ,sys.objects     tab\n"
              "      ,sys.schemas     sch\n"
-             " WHERE sch.name      = '%s'\n"
-             "   AND tab.name      = '%s'\n"
-             "   AND trg.object_id = mod.object_id\n"
+             " WHERE trg.object_id = mod.object_id\n"
              "   AND tab.object_id = trg.parent_id\n"
              "   AND tab.schema_id = sch.schema_id"
             ,p_schema.GetString()
             ,p_tablename.GetString());
+  if(!p_schema.IsEmpty())
+  {
+    sql += "   AND sch.name = '" + p_schema + "'\n";
+  }
+  if(!p_tablename.IsEmpty())
+  {
+    sql += "   AND tab.name ";
+    sql += p_tablename.Find('%') >= 0 ? "LIKE '" : "= '";
+    sql += p_tablename + "'\n";
+  }
   if(!p_triggername.IsEmpty())
   {
     sql += "   AND trg.name = '" + p_triggername + "'";
@@ -1345,6 +1353,12 @@ SQLInfoSQLServer::GetPSMProcedureList(CString p_schema) const
 
 CString
 SQLInfoSQLServer::GetPSMProcedureAttributes(CString p_schema, CString p_procedure) const
+{
+  return "";
+}
+
+CString
+SQLInfoSQLServer::GetPSMProcedureSourcecode(CString p_schema, CString p_procedure) const
 {
   return "";
 }

@@ -462,6 +462,10 @@ SQLInfoDB::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
       proc.m_procedureType    = qry.GetColumn(8)->GetAsSLong();
       proc.m_source           = qry.GetColumn(9)->GetAsChar();
 
+      if(proc.m_source.Compare("<@>") == 0)
+      {
+        proc.m_source = GetSourcecode(proc.m_schemaName, proc.m_procedureName);
+      }
       p_procedures.push_back(proc);
     }
     return !p_procedures.empty();
@@ -471,6 +475,23 @@ SQLInfoDB::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
     p_errors.Append(er);
   }
   return 0;
+}
+
+CString
+SQLInfoDB::GetSourcecode(CString p_schema, CString p_procedure)
+{
+  CString sourcecode;
+  CString sql = GetPSMProcedureSourcecode(p_schema, p_procedure);
+  if(!sql.IsEmpty())
+  {
+    SQLQuery query(m_database);
+    query.DoSQLStatement(sql);
+    while (query.GetRecord())
+    {
+      sourcecode += (CString)query[1];
+    }
+  }
+  return sourcecode;
 }
 
 bool    

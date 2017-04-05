@@ -17,7 +17,7 @@
 */
 #pragma once
 #include "SQLInfo.h"
-#include <list>
+#include <map>
 
 using namespace SQLComponents;
 
@@ -39,6 +39,7 @@ typedef enum treeTypes
  ,TREE_TABSEQUENCES
  ,TREE_SEQUENCES
  ,TREE_TRIGGERS
+ ,TREE_SOURCECODE
 }
 TreeTypes;
 
@@ -64,10 +65,11 @@ typedef enum objectImage
  ,IMG_SCHEMA
  ,IMG_INDEX
  ,IMG_SEQUENCE
+ ,IMG_SOURCE
 }
 ObjectImage;
 
-//using WordList = std::list<CString>;
+using SourceList = std::map<CString,CString>;
 
 class ObjectTree: public CTreeCtrl
 {
@@ -101,6 +103,9 @@ protected:
   bool      PresetProcedure (HTREEITEM p_theItem,MProcedureMap& p_procedures);
   void      FindTables      (HTREEITEM p_theItem);
   void      PrepareTable    (HTREEITEM p_theItem);
+
+  void      DispatchTreeAction(DWORD_PTR p_action, HTREEITEM p_theItem);
+
   void      FindColumns     (HTREEITEM p_theItem);
   void      FindPrimary     (HTREEITEM p_theItem);
   void      FindForeign     (HTREEITEM p_theItem);
@@ -114,6 +119,7 @@ protected:
   void      FindTriggers    (HTREEITEM p_theItem);
   void      FindProcedures  (HTREEITEM p_theItem);
   void      FindParameters  (HTREEITEM p_theItem);
+  void      FindSourcecode  (HTREEITEM p_theItem);
 
   void      ColumnListToTree(MColumnMap&    p_columns,   HTREEITEM p_item);
   void      PrimariesToTree (MPrimaryMap&   p_primaries, HTREEITEM p_item);
@@ -128,6 +134,7 @@ protected:
 
   CString   ForeignRuleToString(int p_rule);
   CString   DeferrableToString(int p_defer);
+  bool      ShowSourcecode(CString p_schema, CString p_procedure);
 
   // Data
   CString     m_filter;
@@ -137,9 +144,11 @@ protected:
   CString     m_schema;
   CString     m_table;
   CString     m_procedure;
-
+  // Expanding source code
+  SourceList  m_source;
 public:
   afx_msg void OnItemExpanding(NMHDR* pNMHDR, LRESULT* pResult);
+  afx_msg void OnItemClicked  (NMHDR* pNMHDR, LRESULT* pResult);
 };
 
 inline void

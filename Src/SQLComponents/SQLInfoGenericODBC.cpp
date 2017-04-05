@@ -1057,6 +1057,12 @@ SQLInfoGenericODBC::GetPSMProcedureAttributes(CString p_schema, CString p_proced
 }
 
 CString
+SQLInfoGenericODBC::GetPSMProcedureSourcecode(CString p_schema, CString p_procedure) const
+{
+  return "";
+}
+
+CString
 SQLInfoGenericODBC::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
 {
   return "";

@@ -1549,16 +1549,63 @@ SQLInfoOracle::GetPSMProcedureList(CString p_schema) const
 CString
 SQLInfoOracle::GetPSMProcedureAttributes(CString p_schema, CString p_procedure) const
 {
-  return "";
-//   p_schema.MakeUpper();
-//   p_procedure.MakeUpper();
-// 
-//   CString sql("SELECT 'CREATE OR REPLACE ' || text\n"
-//               "  FROM all_source\n"
-//               " WHERE type  = 'FUNCTION'\n"
-//               "   AND name  = '" + p_procedure + "'\n"
-//               "   AND owner = '" + p_schema    + "'");
-//   return sql;
+  p_schema.MakeUpper();
+  p_procedure.MakeUpper();
+  CString sql;
+  sql = "SELECT ora_database_name AS procedure_catalog\n"
+        "      ,owner             AS procedure_schema\n"
+        "      ,object_name       AS procedure_name\n"
+        "      ,(SELECT COUNT(*)\n"
+        "          FROM all_arguments par\n"
+        "         WHERE par.owner       = pro.owner\n"
+        "           AND par.object_name = pro.object_name\n"
+        "           AND par.in_out IN ('IN','IN/OUT')) as input_params\n"
+        "      ,(SELECT COUNT(*)\n"
+        "          FROM all_arguments par\n"
+        "         WHERE par.owner       = pro.owner\n"
+        "           AND par.object_name = pro.object_name\n"
+        "           AND par.in_out IN ('OUT','IN/OUT')) as output_params\n"
+        "      ,0   AS result_sets\n"
+        "      ,''  AS remarks\n"
+        "      ,CASE object_type \n"
+        "            WHEN 'PROCEDURE' THEN 1\n"
+        "            WHEN 'FUNCTION'  THEN 2\n"
+        "                             ELSE 3\n"
+        "       END AS procedure_type\n"
+        "      ,'<@>' as source\n"
+        "  FROM all_procedures pro\n"
+        " WHERE object_type IN ('PROCEDURE','FUNCTION')\n";
+  if(!p_schema.IsEmpty())
+  {
+    sql += "   AND owner = '" + p_schema + "'\n";
+  }
+  if(!p_procedure.IsEmpty())
+  {
+    sql += "   AND object_name = '" + p_procedure + "'\n";
+  }
+  return sql;
+}
+
+CString
+SQLInfoOracle::GetPSMProcedureSourcecode(CString p_schema, CString p_procedure) const
+{
+  p_schema.MakeUpper();
+  p_procedure.MakeUpper();
+  CString sql;
+
+  sql = "SELECT text\n"
+        "  FROM all_source\n";
+  if(!p_schema.IsEmpty())
+  {
+    sql += " WHERE owner = '" + p_schema + "'\n";
+  }
+  if(!p_procedure.IsEmpty())
+  {
+    sql += p_schema.IsEmpty() ? " WHERE " : "   AND ";
+    sql += " name  = '" + p_procedure + "'\n";
+  }
+  sql += " ORDER BY owner,name,line";
+  return sql;
 }
 
 CString

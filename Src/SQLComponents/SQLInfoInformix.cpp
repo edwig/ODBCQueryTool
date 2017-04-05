@@ -1242,6 +1242,12 @@ SQLInfoInformix::GetPSMProcedureAttributes(CString /*p_schema*/, CString p_proce
 }
 
 CString
+SQLInfoInformix::GetPSMProcedureSourcecode(CString p_schema, CString p_procedure) const
+{
+  return "";
+}
+
+CString
 SQLInfoInformix::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
 {
   return "";

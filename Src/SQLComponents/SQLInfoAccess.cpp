@@ -962,6 +962,13 @@ SQLInfoAccess::GetPSMProcedureAttributes(CString p_schema, CString p_procedure) 
   // MS-Access does not support PSM
   return "";
 }
+
+CString 
+SQLInfoAccess::GetPSMProcedureSourcecode(CString p_schema, CString p_procedure) const
+{
+  // MS-Access does not support PSM
+  return "";
+}
   
 CString 
 SQLInfoAccess::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const

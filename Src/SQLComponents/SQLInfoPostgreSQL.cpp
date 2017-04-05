@@ -1511,6 +1511,12 @@ SQLInfoPostgreSQL::GetPSMProcedureAttributes(CString p_schema, CString p_procedu
 }
 
 CString
+SQLInfoPostgreSQL::GetPSMProcedureSourcecode(CString p_schema, CString p_procedure) const
+{
+  return "";
+}
+
+CString
 SQLInfoPostgreSQL::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
 {
   return "";

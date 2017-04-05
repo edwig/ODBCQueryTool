@@ -1544,9 +1544,9 @@ CString
 SQLInfoFirebird::GetPSMProcedureAttributes(CString /*p_schema*/, CString p_procedure) const
 {
   p_procedure.MakeUpper();
-  CString sql1 ("SELECT ''             as catalog_name\n"
-                "      ,rdb$owner_name as schema_name\n"
-                "      ,rdb$procedure_name\n"
+  CString sql1 ("SELECT '' as catalog_name\n"
+                "      ,trim(rdb$owner_name) as schema_name\n"
+                "      ,trim(rdb$procedure_name)\n"
                 "      ,(SELECT COUNT(*)\n"
                 "          FROM rdb$procedure_parameters par\n"
                 "         WHERE par.rdb$procedure_name = pro.rdb$procedure_name\n"
@@ -1564,9 +1564,9 @@ SQLInfoFirebird::GetPSMProcedureAttributes(CString /*p_schema*/, CString p_proce
                 "      ,rdb$procedure_source as source\n"
                 "  FROM rdb$procedures pro\n");
 
-  CString sql2 ("SELECT ''             as catalog_name\n"
-                "      ,rdb$owner_name as schema_name\n"
-                "      ,rdb$function_name\n"
+  CString sql2 ("SELECT '' as catalog_name\n"
+                "      ,trim(rdb$owner_name) as schema_name\n"
+                "      ,trim(rdb$function_name)\n"
                 "      ,(SELECT COUNT(*)\n"
                 "          FROM rdb$function_arguments arg\n"
                 "         WHERE fun.rdb$function_name = arg.rdb$function_name\n"
@@ -1590,6 +1590,13 @@ SQLInfoFirebird::GetPSMProcedureAttributes(CString /*p_schema*/, CString p_proce
     sql2 += " WHERE rdb$function_name  = '" + p_procedure + "'\n";
   }
   return sql1 + " UNION ALL\n" + sql2;
+}
+
+CString
+SQLInfoFirebird::GetPSMProcedureSourcecode(CString p_schema, CString p_procedure) const
+{
+  // Source code already gotten with attributes
+  return "";
 }
 
 CString

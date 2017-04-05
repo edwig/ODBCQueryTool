@@ -291,6 +291,7 @@ public:
   CString GetPSMProcedureExists    (CString p_schema,CString p_procedure) const;
   CString GetPSMProcedureList      (CString p_schema) const;
   CString GetPSMProcedureAttributes(CString p_schema,CString p_procedure) const;
+  CString GetPSMProcedureSourcecode(CString p_schema,CString p_procedure) const;
   CString GetPSMProcedureCreate    (MetaProcedure& p_procedure) const;
   CString GetPSMProcedureDrop      (CString p_schema,CString p_procedure) const;
   CString GetPSMProcedureErrors    (CString p_schema,CString p_procedure) const;

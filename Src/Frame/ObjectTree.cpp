@@ -24,6 +24,7 @@ IMPLEMENT_DYNAMIC(ObjectTree,CTreeCtrl)
 
 BEGIN_MESSAGE_MAP(ObjectTree,CTreeCtrl)
   ON_NOTIFY_REFLECT(TVN_ITEMEXPANDING,OnItemExpanding)
+  ON_NOTIFY_REFLECT(NM_DBLCLK,        OnItemClicked)
 END_MESSAGE_MAP()
 
 ObjectTree::ObjectTree()
@@ -114,6 +115,9 @@ ObjectTree::ClearTree()
   InsertNoInfo(synonyms);
   InsertNoInfo(triggers);
   InsertNoInfo(procedures);
+
+  // Free all trigger and procedure source code
+  m_source.clear();
 
   m_busy = false;
 }
@@ -214,33 +218,67 @@ ObjectTree::OnItemExpanding(NMHDR* pNMHDR,LRESULT* pResult)
     DWORD_PTR data = GetItemData(theItem);
     if(data)
     {
-      switch(data)
-      {
-        case TREE_TABLES:       FindTables(theItem);      break;
-        case TREE_TABLE:        PrepareTable(theItem);    break;
-        case TREE_COLUMNS:      FindColumns(theItem);     break;
-        case TREE_PRIMARY:      FindPrimary(theItem);     break;
-        case TREE_FOREIGN:      FindForeign(theItem);     break;
-        case TREE_STATISTICS:   FindStatistics(theItem);  break;
-        case TREE_SPECIALS:     FindSpecials(theItem);    break;
-        case TREE_REFERENCEDBY: FindReferenced(theItem);  break;
-        case TREE_TABTRIGGERS:  FindTabTriggers(theItem); break;
-        case TREE_TABSEQUENCES: FindTabSequences(theItem);break;
-        case TREE_PRIVILEGES:   FindPrivileges(theItem);  break;
-        case TREE_SEQUENCES:    FindSequences(theItem);   break;
-        case TREE_TRIGGERS:     FindTriggers(theItem);    break;
-        case TREE_PROCEDURES:   FindProcedures(theItem);  break;
-        case TREE_PARAMETERS:   FindParameters(theItem);  break;
-        default:                /* NOTHING */             break;
-      }
-      Expand(theItem,TVE_EXPAND);
+      DispatchTreeAction(data,theItem);
 
-      // Resetting the item, so we do this only **ONCE**
-      SetItemData(theItem,0);
+      Expand(theItem,TVE_EXPAND);
     }
   }
   // Ready
   m_busy = false;
+}
+
+void
+ObjectTree::OnItemClicked(NMHDR* pNMHDR, LRESULT* pResult)
+{
+  // Guard against re-entrance in the UI thread
+  if(m_busy)
+  {
+    return;
+  }
+  m_busy = true;
+
+  // See if database is open
+  COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
+  if(app->DatabaseIsOpen())
+  {
+    // See which action to take
+    HTREEITEM theItem = GetSelectedItem();
+    DWORD_PTR data    = GetItemData(theItem);
+    if(data)
+    {
+      DispatchTreeAction(data,theItem);
+    }
+  }
+  // Ready
+  m_busy = false;
+}
+
+void
+ObjectTree::DispatchTreeAction(DWORD_PTR p_action,HTREEITEM theItem)
+{
+  switch(p_action)
+  {
+    case TREE_TABLES:       FindTables(theItem);      break;
+    case TREE_TABLE:        PrepareTable(theItem);    break;
+    case TREE_COLUMNS:      FindColumns(theItem);     break;
+    case TREE_PRIMARY:      FindPrimary(theItem);     break;
+    case TREE_FOREIGN:      FindForeign(theItem);     break;
+    case TREE_STATISTICS:   FindStatistics(theItem);  break;
+    case TREE_SPECIALS:     FindSpecials(theItem);    break;
+    case TREE_REFERENCEDBY: FindReferenced(theItem);  break;
+    case TREE_TABTRIGGERS:  FindTabTriggers(theItem); break;
+    case TREE_TABSEQUENCES: FindTabSequences(theItem);break;
+    case TREE_PRIVILEGES:   FindPrivileges(theItem);  break;
+    case TREE_SEQUENCES:    FindSequences(theItem);   break;
+    case TREE_TRIGGERS:     FindTriggers(theItem);    break;
+    case TREE_PROCEDURES:   FindProcedures(theItem);  break;
+    case TREE_PARAMETERS:   FindParameters(theItem);  break;
+    case TREE_SOURCECODE:   FindSourcecode(theItem);  
+                            return;
+    default:                /* NOTHING */             break;
+  }
+  // Resetting the item, so we do this only **ONCE**
+  SetItemData(theItem, 0);
 }
 
 CString
@@ -720,10 +758,6 @@ ObjectTree::FindTriggers(HTREEITEM p_theItem)
     HTREEITEM trigger = NULL;
     CString schema = trig.m_schemaName;
     CString object = trig.m_triggerName;
-    if(!trig.m_referencing.IsEmpty())
-    {
-      object.AppendFormat(" (%s)",trig.m_remarks);
-    }
     schema.Trim();
     object.Trim();
 
@@ -891,6 +925,13 @@ ObjectTree::FindParameters(HTREEITEM p_theItem)
     item = InsertItem(line,info);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
+    // Source
+    CString name = procedure.m_schemaName + "." + procedure.m_procedureName;
+    m_source.insert(std::make_pair(name, procedure.m_source));
+    line.Format("SQL Source: %d characters", procedure.m_source.GetLength());
+    item = InsertItem(line,info,TREE_SOURCECODE);
+    SetItemImage(item,IMG_SOURCE,IMG_SOURCE);
+
     // Go find the parameters for the procedure
     MParameterMap parameters;
     app->GetDatabase().GetSQLInfoDB()->MakeInfoPSMParameters(parameters,errors,procedure.m_schemaName,procedure.m_procedureName);
@@ -900,6 +941,51 @@ ObjectTree::FindParameters(HTREEITEM p_theItem)
     SetItemData(info,0);
     SetItemData(param,0);
   }
+}
+
+void
+ObjectTree::FindSourcecode(HTREEITEM p_theItem)
+{
+  CString tableproc;
+  MProcedureMap procedures;
+  if (PresetProcedure(p_theItem,procedures))
+  {
+    // For triggers it's the first node
+    if(ShowSourcecode(m_schema,m_procedure))
+    {
+      return;
+    }
+    tableproc = m_procedure;
+    // For procedures, it's a node deeper in the tree
+    HTREEITEM par = GetParentItem(p_theItem);
+    if(PresetProcedure(par,procedures))
+    {
+      if(ShowSourcecode(m_schema,m_procedure))
+      {
+        return;
+      }
+    }
+    // For tables, it's even a node deeper
+    par = GetParentItem(par);
+    if(PresetProcedure(par,procedures))
+    {
+      ShowSourcecode(m_schema,tableproc);
+    }
+  }
+}
+
+bool
+ObjectTree::ShowSourcecode(CString p_schema, CString p_procedure)
+{
+  CString name = p_schema + "." + p_procedure;
+  SourceList::iterator it = m_source.find(name);
+  if (it != m_source.end())
+  {
+    CString source = it->second;
+    WideMessageBox(GetSafeHwnd(), source, "Sourcecode", MB_OK);
+    return true;
+  }
+  return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1270,15 +1356,8 @@ ObjectTree::TriggersToTree(MTriggerMap& p_triggers,HTREEITEM p_item)
   for(auto& trigger : p_triggers)
   {
     // Name of the trigger + position in firing (0 = no order)
-    CString line;
-    line.Format("%d: %s",trigger.m_position,trigger.m_triggerName);
-    if(!trigger.m_remarks.IsEmpty())
-    {
-      line.AppendFormat(" (%s)",trigger.m_remarks);
-    }
-    HTREEITEM trigItem = InsertItem(line,p_item);
+    HTREEITEM trigItem = InsertItem(trigger.m_triggerName,p_item);
     SetItemImage(trigItem,IMG_TRIGGER,IMG_TRIGGER);
-
     TriggerToTree(trigger,trigItem);
   }
 }
@@ -1315,6 +1394,11 @@ ObjectTree::TriggerToTree(MetaTrigger& p_trigger,HTREEITEM p_item)
   item = InsertItem(line,p_item);
   SetItemImage(item,IMG_TRIGGER,IMG_TRIGGER);
 
+  // Remarks
+  line = "Remarks on trigger: " + p_trigger.m_remarks;
+  item = InsertItem(line,p_item);
+  SetItemImage(item, IMG_TRIGGER, IMG_TRIGGER);
+
   // Fires on INSERT/UPDATE/DELETE/SELECT
   line = "Trigger on DML: ";
   if(p_trigger.m_insert)      line += "insert,";
@@ -1336,9 +1420,11 @@ ObjectTree::TriggerToTree(MetaTrigger& p_trigger,HTREEITEM p_item)
     SetItemImage(item,IMG_TRIGGER,IMG_TRIGGER);
   }
   // Source
+  CString name = p_trigger.m_schemaName + "." + p_trigger.m_triggerName;
+  m_source.insert(std::make_pair(name,p_trigger.m_source));
   line.Format("SQL Source: %d characters",p_trigger.m_source.GetLength());
-  item = InsertItem(line,p_item);
-  SetItemImage(item,IMG_TRIGGER,IMG_TRIGGER);
+  item = InsertItem(line,p_item,TREE_SOURCECODE);
+  SetItemImage(item,IMG_SOURCE,IMG_SOURCE);
 }
 
 void      
@@ -1491,3 +1577,4 @@ ObjectTree::ParametersToTree(MParameterMap& p_parameters,HTREEITEM p_item)
     SetItemImage(item,IMG_INFO,IMG_INFO);
   }
 }
+

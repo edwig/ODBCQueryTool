@@ -1130,6 +1130,13 @@ SQLInfoMySQL::GetPSMProcedureAttributes(CString p_schema, CString p_procedure) c
 }
 
 CString
+SQLInfoMySQL::GetPSMProcedureSourcecode(CString p_schema, CString p_procedure) const
+{
+  // Source-code already gotten with attributes
+  return "";
+}
+
+CString
 SQLInfoMySQL::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
 {
   return "";

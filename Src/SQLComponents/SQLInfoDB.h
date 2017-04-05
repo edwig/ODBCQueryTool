@@ -340,6 +340,7 @@ public:
   virtual CString GetPSMProcedureExists    (CString p_schema,CString p_procedure) const = 0;
   virtual CString GetPSMProcedureList      (CString p_schema) const = 0;
   virtual CString GetPSMProcedureAttributes(CString p_schema,CString p_procedure) const = 0;
+  virtual CString GetPSMProcedureSourcecode(CString p_schema,CString p_procedure) const = 0;
   virtual CString GetPSMProcedureCreate    (MetaProcedure& p_procedure) const = 0;
   virtual CString GetPSMProcedureDrop      (CString p_schema,CString p_procedure) const = 0;
   virtual CString GetPSMProcedureErrors    (CString p_schema,CString p_procedure) const = 0;
@@ -404,7 +405,10 @@ public:
   
 private:
   // Read a tables cursor from the database
-  bool  ReadTablesFromQuery(SQLQuery& p_query,MTableMap& p_tables);
+  bool    ReadTablesFromQuery(SQLQuery& p_query,MTableMap& p_tables);
+  // Read extra source code for database that can only do it by an extra procedure
+  CString GetSourcecode(CString p_schema, CString p_procedure);
+
   // All default granted users for GRANT statements
   CString m_grantedUsers;
 };
