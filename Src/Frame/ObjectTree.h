@@ -147,8 +147,8 @@ protected:
   // Expanding source code
   SourceList  m_source;
 public:
-  afx_msg void OnItemExpanding(NMHDR* pNMHDR, LRESULT* pResult);
-  afx_msg void OnItemClicked  (NMHDR* pNMHDR, LRESULT* pResult);
+  afx_msg void OnItemExpanding    (NMHDR* pNMHDR, LRESULT* pResult);
+  afx_msg void OnItemDoubleClicked(NMHDR* pNMHDR, LRESULT* pResult);
 };
 
 inline void

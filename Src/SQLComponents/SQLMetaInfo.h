@@ -40,7 +40,6 @@ namespace SQLComponents
 #define OBJECT_TYPE_LOCALTEMP     "LOCAL TEMPORARY"   // Local temporary table only visible to current session
 #define OBJECT_TYPE_ALIAS         "ALIAS"             // MSSQL server like alias to another database/table
 #define OBJECT_TYPE_SYNONYM       "SYNONYM"           // Oracle/Informix like alias to another database/table
-#define OBJECT_TYPE_SYSVIEW       "SYSTEM VIEW"       // Added for ORACLE: View over one or more system tables
 
 // Foreign key options, not in sqlext.h
 

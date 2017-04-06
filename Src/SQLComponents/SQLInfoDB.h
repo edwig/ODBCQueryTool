@@ -78,6 +78,8 @@ public:
   // Procedures
   bool    MakeInfoPSMProcedures(MProcedureMap& p_procedures,CString& p_errors,CString p_schema,CString p_procedure) override;
   bool    MakeInfoPSMParameters(MParameterMap& p_parameters,CString& p_errors,CString p_schema,CString p_procedure) override;
+  // Read extra source code for database that can only do it by an extra procedure
+  CString MakeInfoPSMSourcecode(CString p_schema, CString p_procedure);
 
   // PURE VIRTUAL INTERFACE
 
@@ -406,8 +408,6 @@ public:
 private:
   // Read a tables cursor from the database
   bool    ReadTablesFromQuery(SQLQuery& p_query,MTableMap& p_tables);
-  // Read extra source code for database that can only do it by an extra procedure
-  CString GetSourcecode(CString p_schema, CString p_procedure);
 
   // All default granted users for GRANT statements
   CString m_grantedUsers;

@@ -2314,7 +2314,6 @@ SQLInfo::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
   SQLLEN       cbRemarks         = 0;
   SQLSMALLINT    ProcedureType   = 0;
   SQLLEN       cbProcedureType   = 0;
-  SQLCHAR      searchName[SQL_MAX_BUFFER];
   bool         findAll = false;
 
   // Check whether we can do this

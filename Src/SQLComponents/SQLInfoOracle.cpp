@@ -478,29 +478,19 @@ SQLInfoOracle::GetCATALOGTableAttributes(CString p_schema,CString p_tablename) c
 
   if(!p_schema.IsEmpty())
   {
-    if(p_schema.Find('%') >= 0)
-    {
-      sql += "  AND tab.owner   LIKE '" + p_schema + "'\n";
-    }
-    else
-    {
-      sql += "  AND tab.owner   = '" + p_schema + "'\n";
-    }
+    sql += "   AND tab.owner ";
+    sql += p_schema.Find('%') >= 0 ? "LIKE '" : "= '";
+    sql += p_schema + "'\n";
   }
 
   if(!p_tablename.IsEmpty())
   {
-    if(p_tablename.Find('%') >= 0)
-    {
-      sql += "   AND tab.table_name  LIKE '" + p_tablename + "'\n";
-    }
-    else
-    {
-      sql += "   AND tab.table_name  = '" + p_tablename + "'\n";
-    }
+    sql += "   AND tab.table_name ";
+    sql += p_tablename.Find('%') >= 0 ? "LIKE '" : "= '";
+    sql += p_tablename + "'\n";
   }
-
   sql += " ORDER BY 1,2,3";
+
   return sql;
 }
 
@@ -1559,11 +1549,13 @@ SQLInfoOracle::GetPSMProcedureAttributes(CString p_schema, CString p_procedure) 
         "          FROM all_arguments par\n"
         "         WHERE par.owner       = pro.owner\n"
         "           AND par.object_name = pro.object_name\n"
+        "           AND par.object_id   = pro.object_id\n"
         "           AND par.in_out IN ('IN','IN/OUT')) as input_params\n"
         "      ,(SELECT COUNT(*)\n"
         "          FROM all_arguments par\n"
         "         WHERE par.owner       = pro.owner\n"
         "           AND par.object_name = pro.object_name\n"
+        "           AND par.object_id   = pro.object_id\n"
         "           AND par.in_out IN ('OUT','IN/OUT')) as output_params\n"
         "      ,0   AS result_sets\n"
         "      ,''  AS remarks\n"
@@ -1581,7 +1573,9 @@ SQLInfoOracle::GetPSMProcedureAttributes(CString p_schema, CString p_procedure) 
   }
   if(!p_procedure.IsEmpty())
   {
-    sql += "   AND object_name = '" + p_procedure + "'\n";
+    sql += "   AND object_name ";
+    sql += p_procedure.Find('%') >= 0 ? "LIKE '" : "= '";
+    sql += p_procedure + "'\n";
   }
   return sql;
 }

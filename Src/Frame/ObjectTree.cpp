@@ -24,7 +24,7 @@ IMPLEMENT_DYNAMIC(ObjectTree,CTreeCtrl)
 
 BEGIN_MESSAGE_MAP(ObjectTree,CTreeCtrl)
   ON_NOTIFY_REFLECT(TVN_ITEMEXPANDING,OnItemExpanding)
-  ON_NOTIFY_REFLECT(NM_DBLCLK,        OnItemClicked)
+  ON_NOTIFY_REFLECT(NM_DBLCLK,        OnItemDoubleClicked)
 END_MESSAGE_MAP()
 
 ObjectTree::ObjectTree()
@@ -87,11 +87,16 @@ ObjectTree::RemoveNoInfo(HTREEITEM p_item)
 void
 ObjectTree::ClearTree()
 {
+  // Stop actions on the tree
   m_busy = true;
 
-  DeleteAllItems();
-  HTREEITEM root = GetRootItem();
+  // De-allocating large tree's can take a lot of time in the next step
+  CWaitCursor takeADeepSigh;
 
+  DeleteAllItems();
+
+  // Rebuild the basic tree
+  HTREEITEM root       = GetRootItem();
   HTREEITEM tables     = InsertItem("Tables",    root,TREE_TABLES);
   HTREEITEM views      = InsertItem("Views",     root,TREE_TABLES);
   HTREEITEM sequences  = InsertItem("Sequences", root,TREE_SEQUENCES);
@@ -100,6 +105,7 @@ ObjectTree::ClearTree()
   HTREEITEM triggers   = InsertItem("Triggers",  root,TREE_TRIGGERS);
   HTREEITEM procedures = InsertItem("Procedures",root,TREE_PROCEDURES);
 
+  // Setting images on all nodes
   SetItemImage(tables,    IMG_TABLES,     IMG_TABLES);
   SetItemImage(views,     IMG_VIEWS,      IMG_VIEWS);
   SetItemImage(sequences, IMG_SEQUENCE,   IMG_SEQUENCE);
@@ -108,6 +114,7 @@ ObjectTree::ClearTree()
   SetItemImage(triggers,  IMG_TRIGGER,    IMG_TRIGGER);
   SetItemImage(procedures,IMG_PROCEDURES, IMG_PROCEDURES);
 
+  // Setting a no-info message on all nodes
   InsertNoInfo(tables);
   InsertNoInfo(views);
   InsertNoInfo(sequences);
@@ -119,6 +126,7 @@ ObjectTree::ClearTree()
   // Free all trigger and procedure source code
   m_source.clear();
 
+  // Actions allowed again
   m_busy = false;
 }
 
@@ -228,7 +236,7 @@ ObjectTree::OnItemExpanding(NMHDR* pNMHDR,LRESULT* pResult)
 }
 
 void
-ObjectTree::OnItemClicked(NMHDR* pNMHDR, LRESULT* pResult)
+ObjectTree::OnItemDoubleClicked(NMHDR* pNMHDR, LRESULT* pResult)
 {
   // Guard against re-entrance in the UI thread
   if(m_busy)
@@ -253,6 +261,7 @@ ObjectTree::OnItemClicked(NMHDR* pNMHDR, LRESULT* pResult)
   m_busy = false;
 }
 
+// After a 'expand' or a double-click action do this!
 void
 ObjectTree::DispatchTreeAction(DWORD_PTR p_action,HTREEITEM theItem)
 {
@@ -286,8 +295,8 @@ ObjectTree::GetObjectType(CString p_type)
 {
   switch(p_type.GetAt(0))
   {
-    case 'T': return "TABLE"; break;
-    case 'V': return "VIEW";  break;
+    case 'T': return "TABLE";   break;
+    case 'V': return "VIEW";    break;
     case 'C': return "CATALOG"; break;
     case 'S': return "SYNONYM"; break;
   }
@@ -643,14 +652,21 @@ void
 ObjectTree::FindSequences(HTREEITEM p_theItem)
 {
   COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
+  SQLInfoDB* info = app->GetDatabase().GetSQLInfoDB();
   HTREEITEM    schemaItem  = NULL;
   int          schemaCount = 0;
   MSequenceMap sequences;
   CString      errors;
   CString      lastSchema;
 
-  app->GetDatabase().GetSQLInfoDB()->MakeInfoTableSequences(sequences,errors,"","%");
+  // Find filtered name
+  CString catalog;
+  CString schema;
+  CString table;
+  info->GetObjectName(m_filter,catalog,schema,table);
 
+  // Get relevant sequences
+  info->MakeInfoTableSequences(sequences,errors,schema,table);
   if(!errors.IsEmpty())
   {
     WideMessageBox(GetSafeHwnd(),errors,"Querytool",MB_OK | MB_ICONERROR);
@@ -730,14 +746,21 @@ void
 ObjectTree::FindTriggers(HTREEITEM p_theItem)
 {
   COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
+  SQLInfoDB* info = app->GetDatabase().GetSQLInfoDB();
   HTREEITEM   schemaItem = NULL;
   int         schemaCount = 0;
   MTriggerMap triggers;
   CString     errors;
   CString     lastSchema;
 
-  app->GetDatabase().GetSQLInfoDB()->MakeInfoTableTriggers(triggers,errors,"","","");
+  // Find filtered name
+  CString catalog;
+  CString schema;
+  CString table;
+  info->GetObjectName(m_filter,catalog,schema,table);
 
+  // Find relevant triggers
+  info->MakeInfoTableTriggers(triggers,errors,schema,table,"");
   if(!errors.IsEmpty())
   {
     WideMessageBox(GetSafeHwnd(),errors,"Querytool",MB_OK | MB_ICONERROR);
@@ -794,23 +817,24 @@ ObjectTree::FindTriggers(HTREEITEM p_theItem)
 void
 ObjectTree::FindProcedures(HTREEITEM p_theItem)
 {
-  CString find = m_filter.IsEmpty() ? "%" : m_filter;
-  if(find.Right(1) != "%")
-  {
-    find += "%";
-  }
-
   COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
+  SQLInfoDB* info = app->GetDatabase().GetSQLInfoDB();
   MProcedureMap procedures;
   CString   errors;
   CString   lastSchema;
   int       schemaCount = 0;
   HTREEITEM schemaItem  = NULL;
 
+  // Find filtered name
+  CString catalog;
+  CString schema;
+  CString table;
+  info->GetObjectName(m_filter, catalog, schema, table);
+
   try
   {
     // Go find the procedures
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoPSMProcedures(procedures,errors,"",find);
+    info->MakeInfoPSMProcedures(procedures,errors,schema,table);
   }
   catch(CString& er)
   {
@@ -982,6 +1006,12 @@ ObjectTree::ShowSourcecode(CString p_schema, CString p_procedure)
   if (it != m_source.end())
   {
     CString source = it->second;
+    if(source == "<@>")
+    {
+      COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
+      SQLInfoDB* info = app->GetDatabase().GetSQLInfoDB();
+      source = info->MakeInfoPSMSourcecode(p_schema,p_procedure);
+    }
     WideMessageBox(GetSafeHwnd(), source, "Sourcecode", MB_OK);
     return true;
   }
@@ -1552,11 +1582,11 @@ ObjectTree::ParametersToTree(MParameterMap& p_parameters,HTREEITEM p_item)
     item = InsertItem(line,paramItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Columnsize: %d",param.m_columnSize);
+    line.Format("Column size: %d",param.m_columnSize);
     item = InsertItem(line,paramItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Buffersize: %d",param.m_bufferLength);
+    line.Format("Buffer size: %d",param.m_bufferLength);
     item = InsertItem(line,paramItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 

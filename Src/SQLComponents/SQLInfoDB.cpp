@@ -464,7 +464,7 @@ SQLInfoDB::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
 
       if(proc.m_source.Compare("<@>") == 0)
       {
-        proc.m_source = GetSourcecode(proc.m_schemaName, proc.m_procedureName);
+        proc.m_source = MakeInfoPSMSourcecode(proc.m_schemaName, proc.m_procedureName);
       }
       p_procedures.push_back(proc);
     }
@@ -478,7 +478,7 @@ SQLInfoDB::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
 }
 
 CString
-SQLInfoDB::GetSourcecode(CString p_schema, CString p_procedure)
+SQLInfoDB::MakeInfoPSMSourcecode(CString p_schema, CString p_procedure)
 {
   CString sourcecode;
   CString sql = GetPSMProcedureSourcecode(p_schema, p_procedure);
