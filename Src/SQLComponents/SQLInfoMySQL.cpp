@@ -910,15 +910,57 @@ SQLInfoMySQL::GetCATALOGTriggerExists(CString /*p_schema*/, CString p_tablename,
 }
 
 CString
-SQLInfoMySQL::GetCATALOGTriggerList(CString /*p_schema*/, CString p_tablename) const
+SQLInfoMySQL::GetCATALOGTriggerList(CString p_schema, CString p_tablename) const
 {
-  return "";
+  return GetCATALOGTriggerAttributes(p_schema,p_tablename,"");
 }
 
 CString
-SQLInfoMySQL::GetCATALOGTriggerAttributes(CString /*p_schema*/, CString p_tablename, CString p_triggername) const
+SQLInfoMySQL::GetCATALOGTriggerAttributes(CString p_schema, CString p_tablename, CString p_triggername) const
 {
-  return "";
+  CString sql;
+  sql = "SELECT event_object_catalog\n"
+        "      ,event_object_schema\n"
+        "      ,event_object_table\n"
+        "      ,trigger_name\n"
+        "      ,'' AS trigger_remarks\n"
+        "      ,action_order  AS trigger_position\n"
+        "      ,CASE action_timing\n"
+        "            WHEN 'AFTER' THEN FALSE ELSE TRUE\n"
+        "       END AS trigger_before\n"
+        "      ,CASE event_manipulation\n"
+        "            WHEN 'INSERT' THEN TRUE ELSE FALSE\n"
+        "       END AS trigger_insert\n"
+        "      ,CASE event_manipulation\n"
+        "            WHEN 'UPDATE' THEN TRUE ELSE FALSE\n"
+        "       END AS trigger_update\n"
+        "      ,CASE event_manipulation\n"
+        "            WHEN 'DELETE' THEN TRUE ELSE FALSE\n"
+        "       END AS trigger_delete\n"
+        "      ,FALSE AS trigger_select\n"
+        "      ,FALSE AS trigger_session\n"
+        "      ,FALSE AS trigger_transaction\n"
+        "      ,FALSE AS trigger_rollback\n"
+        "      ,''    AS trigger_referencing\n"
+        "      ,TRUE  AS trigger_enabled\n"
+        "      ,action_statement AS trigger_source\n"
+        "  FROM information_schema.triggers\n";
+  if(!p_schema.IsEmpty())
+  {
+    sql += " WHERE event_object_schema = '" + p_schema + "'\n";
+  }
+  if(!p_tablename.IsEmpty())
+  {
+    sql += p_schema.IsEmpty() ? " WHERE " : "   AND ";
+    sql += "event_object_table = '" + p_tablename + "'\n";
+  }
+  if(!p_triggername.IsEmpty())
+  {
+    sql += p_schema.IsEmpty() && p_tablename.IsEmpty() ? " WHERE " : "   AND ";
+    sql += "trigger_name = '" + p_triggername + "'\n";
+  }
+  sql += " ORDER BY 1,2,3,4";
+  return sql;
 }
 
 CString

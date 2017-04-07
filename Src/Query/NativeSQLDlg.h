@@ -21,22 +21,26 @@
 
 #pragma once
 #include "resource.h"
+#include "afxdialogex.h"
 
 // CNativeSQLDlg dialog
 
-class CNativeSQLDlg : public CDialog
+class CNativeSQLDlg : public CDialogEx
 {
 	DECLARE_DYNAMIC(CNativeSQLDlg)
 
 public:
 	CNativeSQLDlg(CWnd*   pParent = NULL
-               ,CString native  = ""); 
+               ,CString native  = ""
+               ,CString title   = ""); 
 	virtual ~CNativeSQLDlg();
   void SetMonoFont();
+  BOOL OnInitDialog();
 
   // Dialog Data
 	enum { IDD = IDD_NATIVE_SQL };
 protected:
+  CString m_title;
   CString m_native;
   CFont   m_font;
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support

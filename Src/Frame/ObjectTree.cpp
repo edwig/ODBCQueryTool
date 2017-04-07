@@ -19,6 +19,7 @@
 #include "ObjectTree.h"
 #include "OpenEditorApp.h"
 #include "SQLInfoDB.h"
+#include "Query\NativeSQLDlg.h"
 
 IMPLEMENT_DYNAMIC(ObjectTree,CTreeCtrl)
 
@@ -1012,7 +1013,13 @@ ObjectTree::ShowSourcecode(CString p_schema, CString p_procedure)
       SQLInfoDB* info = app->GetDatabase().GetSQLInfoDB();
       source = info->MakeInfoPSMSourcecode(p_schema,p_procedure);
     }
-    WideMessageBox(GetSafeHwnd(), source, "Sourcecode", MB_OK);
+
+    // Prepare for MFC edit control
+    source.Replace("\n","\r\n");
+
+    // Show in source code popup
+    CNativeSQLDlg dlg(this,source,"Persistent Stored Module");
+    dlg.DoModal();
     return true;
   }
   return false;

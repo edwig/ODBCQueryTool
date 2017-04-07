@@ -637,6 +637,46 @@ SQLQuery::DoSQLStatementNonQuery(const CString& p_statement)
   return GetNumberOfRows();
 }
 
+// Batching multiple SQL statements by "<@>" separation
+// Only Non-Query statements can be run in the top of the batch
+// Only the LAST statement can be a SELECT statement!
+// AND all parameters across all statements must be EXACTLY the same!
+void        
+SQLQuery::DoSQLStatementBatch(CString p_statements)
+{
+  CString statement;
+  int pos = p_statements.Find(SQL_STATEMENT_SEPARATOR);
+
+  while((pos >= 0) || !p_statements.IsEmpty())
+  {
+    // Find one statement
+    statement = (pos >= 0) ? p_statements.Left(pos) : p_statements;
+
+    // Fire the statement
+    if(!statement.IsEmpty())
+    {
+      if(pos >= 0)
+      {
+        DoSQLStatementNonQuery(statement);
+      }
+      else
+      {
+        DoSQLStatement(statement);
+      }
+    }
+    // Find next statement
+    if(pos >= 0)
+    {
+      p_statements = p_statements.Mid(pos + SQL_SEPARATOR_LENGTH);
+      pos = p_statements.Find(SQL_STATEMENT_SEPARATOR);
+    }
+    else
+    {
+      p_statements.Empty();
+    }
+  }
+}
+
 void 
 SQLQuery::DoSQLPrepare(const CString& p_statement)
 {

@@ -47,6 +47,10 @@ namespace SQLComponents
 // After this amount of seconds it's been toooooo long
 #define QUERY_TOO_LONG 2.0
 
+// Separates SQL statements in a string of batched SQL's
+#define SQL_STATEMENT_SEPARATOR "<@>"
+#define SQL_SEPARATOR_LENGTH    3
+
 class bcd;
 class SQLDate;
 class SQLDatabase;
@@ -115,6 +119,8 @@ public:
   int         DoSQLStatementNonQuery(const CString& p_statement,const bcd&  p_param1);
   // Variant with a catch to it
   void        TryDoSQLStatement(const CString& p_statement);
+  // Batching multiple SQL statements
+  void        DoSQLStatementBatch(CString p_statements);
 
   // Call FUNCTION / PROCEDURE
   SQLVariant* DoSQLCall(CString p_schema,CString p_procedure,bool p_hasReturn = false);

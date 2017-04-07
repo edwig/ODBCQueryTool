@@ -20,11 +20,14 @@
 #include "NativeSQLDlg.h"
 
 // CNativeSQLDlg dialog
+IMPLEMENT_DYNAMIC(CNativeSQLDlg, CDialogEx)
 
-IMPLEMENT_DYNAMIC(CNativeSQLDlg, CDialog)
-CNativeSQLDlg::CNativeSQLDlg(CWnd* pParent /*=NULL*/,CString native)
-	            :CDialog(CNativeSQLDlg::IDD, pParent)
-              ,m_native(native)
+CNativeSQLDlg::CNativeSQLDlg(CWnd*   p_parent
+                            ,CString p_native
+                            ,CString p_title)
+	            :CDialogEx(CNativeSQLDlg::IDD, p_parent)
+              ,m_native(p_native)
+              ,m_title(p_title)
 {
 }
 
@@ -67,12 +70,23 @@ CNativeSQLDlg::SetMonoFont()
 void CNativeSQLDlg::DoDataExchange(CDataExchange* pDX)
 {
   SetMonoFont();
-  CDialog::DoDataExchange(pDX);
+  CDialogEx::DoDataExchange(pDX);
   DDX_Text(pDX, IDC_EDIT_NATIVE_SQL, m_native);
 }
 
-//BEGIN_MESSAGE_MAP(CNativeSQLDlg, CDialog)
+//BEGIN_MESSAGE_MAP(CNativeSQLDlg, CDialogEx)
 	//ON_STN_CLICKED(IDC_OEA_LOGO, OnStnClickedOeaLogo)
 //END_MESSAGE_MAP()
 
 
+BOOL 
+CNativeSQLDlg::OnInitDialog()
+{
+  CDialogEx::OnInitDialog();
+
+  if(!m_title.IsEmpty())
+  {
+    SetWindowText(m_title);
+  }
+  return TRUE;
+}
