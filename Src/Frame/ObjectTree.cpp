@@ -627,7 +627,7 @@ ObjectTree::FindTabSequences(HTREEITEM p_theItem)
     CString      errors;
 
     // Go find the sequences
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableSequences(sequences,errors,m_schema,m_table);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableSequences(sequences,errors,m_schema,m_table + "%");
     SequencesToTree(sequences,p_theItem);
   }
 }
@@ -1007,7 +1007,7 @@ ObjectTree::ShowSourcecode(CString p_schema, CString p_procedure)
   if (it != m_source.end())
   {
     CString source = it->second;
-    if(source == "<@>")
+    if(source == "<@>" || source.IsEmpty())
     {
       COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
       SQLInfoDB* info = app->GetDatabase().GetSQLInfoDB();

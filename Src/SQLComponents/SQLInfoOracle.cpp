@@ -1587,7 +1587,9 @@ SQLInfoOracle::GetPSMProcedureSourcecode(CString p_schema, CString p_procedure) 
   p_procedure.MakeUpper();
   CString sql;
 
-  sql = "SELECT text\n"
+  sql = "SELECT 0 as object_id\n"
+        "      ,0 as object_line\n"
+        "      ,text\n"
         "  FROM all_source\n";
   if(!p_schema.IsEmpty())
   {

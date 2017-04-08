@@ -462,7 +462,7 @@ SQLInfoDB::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
       proc.m_procedureType    = qry.GetColumn(8)->GetAsSLong();
       proc.m_source           = qry.GetColumn(9)->GetAsChar();
 
-      if(proc.m_source.Compare("<@>") == 0)
+      if(proc.m_source.IsEmpty() || proc.m_source.Compare("<@>") == 0)
       {
         proc.m_source = MakeInfoPSMSourcecode(proc.m_schemaName, proc.m_procedureName);
       }
@@ -488,7 +488,7 @@ SQLInfoDB::MakeInfoPSMSourcecode(CString p_schema, CString p_procedure)
     query.DoSQLStatement(sql);
     while (query.GetRecord())
     {
-      sourcecode += (CString)query[1];
+      sourcecode += (CString)query[3];
     }
   }
   return sourcecode;
@@ -603,6 +603,10 @@ SQLInfoDB::MakeInfoTableTriggers(MTriggerMap& p_triggers
       trigger.m_source.Trim();
       trigger.m_source.Replace("\r\n","\n");
 
+      if(trigger.m_source.Compare("<@>") == 0)
+      {
+        trigger.m_source = MakeInfoPSMSourcecode(trigger.m_schemaName,trigger.m_triggerName);
+      }
       p_triggers.push_back(trigger);
     }
     return !p_triggers.empty();
