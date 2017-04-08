@@ -1152,12 +1152,13 @@ SQLQuery::FetchCursorName()
   SQLCHAR cursorName[SQL_MAX_IDENTIFIER + 1];
   cursorName[0] = 0;
 
+  // Not all RDBMS'es return cursor names for all types of queries
+  // So this could go wrong, we ignore the errors!!
   m_retCode = SqlGetCursorName(m_hstmt,cursorName,SQL_MAX_IDENTIFIER,&length);
-  if(!SQL_SUCCEEDED(m_retCode))
+  if(SQL_SUCCEEDED(m_retCode))
   {
-    throw CString("Cannot get the cursor name of the query.");
+    m_cursorName = cursorName;
   }
-  m_cursorName = cursorName;
 }
 
 // Try to get the row count for an INSERT/UPDATE/DELETE command

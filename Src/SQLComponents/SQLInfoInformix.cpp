@@ -452,17 +452,38 @@ SQLInfoInformix::GetCATALOGTableAttributes(CString /*p_schema*/,CString /*p_tabl
 }
 
 CString
-SQLInfoInformix::GetCATALOGTableSynonyms(CString /*p_schema*/,CString /*p_tablename*/) const
+SQLInfoInformix::GetCATALOGTableSynonyms(CString p_schema,CString p_tablename) const
 {
-  // MS-Access cannot do this
-  return false;
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+  CString sql = "SELECT Trim(DBINFO('dbname')) AS synonym_catalog\n"
+                "      ,Trim(tab.owner)   AS synonym_schema\n"
+                "      ,Trim(tab.tabname) AS synonym_table\n"
+                "      ,'SYNONYM'         AS object_type\n"
+                "      ,''                AS remarks\n"
+                "      ,Trim(tab.owner) || '.' || Trim(tab.tabname) AS fullname\n"
+                "      ,''                AS storage\n"
+                "      ,0                 AS temporary\n"
+                "  FROM systables tab\n"
+                " WHERE tabtype = 'S'\n";
+  if(!p_schema.IsEmpty())
+  {
+    sql += "   AND owner = '" + p_schema + "'\n";
+  }
+  if(!p_tablename.IsEmpty())
+  {
+    sql += "   and tabname ";
+    sql += p_tablename.Find('%') >= 0 ? "LIKE '" : "= '";
+    sql += p_tablename + "'\n";
+  }
+  sql += " ORDER BY 1,2,3";
+  return sql;
 }
 
 CString
 SQLInfoInformix::GetCATALOGTableCatalog(CString /*p_schema*/,CString /*p_tablename*/) const
 {
-  // MS-Access cannot do this
-  return false;
+  return "";
 }
 
 CString
@@ -818,7 +839,11 @@ SQLInfoInformix::GetCATALOGForeignList(CString p_schema,CString p_tablename,int 
 
 // Get all attributes in order of MetaForeign for 1 FK constraint
 CString
-SQLInfoInformix::GetCATALOGForeignAttributes(CString p_schema,CString p_tablename,CString p_constraint,bool /*p_referenced = false*/,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
+SQLInfoInformix::GetCATALOGForeignAttributes(CString p_schema
+                                            ,CString p_tablename
+                                            ,CString p_constraint
+                                            ,bool    p_referenced /*= false*/
+                                            ,int     p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
 {
   CString query;
   p_schema.MakeLower();
@@ -828,17 +853,17 @@ SQLInfoInformix::GetCATALOGForeignAttributes(CString p_schema,CString p_tablenam
   for(int ind = 1;ind <= p_maxColumns; ++ind)
   {
     CString part;
-    part.Format("SELECT DBINFO('dbname') AS primary_catalog_name\n"
-                "       pri.owner        AS primary_schema_name\n"
-                "      ,pri.tabname      AS primary_table_name\n"
-                "      ,DBINFO('dbname') AS foreign_catalog_name\n"
-                "      ,tab.owner        AS foreign_schema_name\n"
-                "      ,tab.tabname      AS foreign_table_name\n"
-                "      ,pcn.constrname   AS primary_key_constraint\n"
-                "      ,con.constrname   AS foreign_key_constraint\n"
-                "      ,%d               AS key_sequence\n"
-                "      ,pcl.colname      AS primary_column_name\n"
-                "      ,col.colname      AS foreign_column_name\n"
+    part.Format("SELECT trim(DBINFO('dbname')) AS primary_catalog_name\n"
+                "      ,trim(pri.owner)        AS primary_schema_name\n"
+                "      ,trim(pri.tabname)      AS primary_table_name\n"
+                "      ,trim(DBINFO('dbname')) AS foreign_catalog_name\n"
+                "      ,trim(tab.owner)        AS foreign_schema_name\n"
+                "      ,trim(tab.tabname)      AS foreign_table_name\n"
+                "      ,trim(pcn.constrname)   AS primary_key_constraint\n"
+                "      ,trim(con.constrname)   AS foreign_key_constraint\n"
+                "      ,%d                     AS key_sequence\n"
+                "      ,trim(pcl.colname)      AS primary_column_name\n"
+                "      ,trim(col.colname)      AS foreign_column_name\n"
                 "      ,CASE WHEN ref.updrule = 'R' THEN 1\n"
                 "            WHEN ref.updrule = 'C' THEN 0\n"
                 "            WHEN ref.updrule = 'N' THEN 2\n"
@@ -884,15 +909,36 @@ SQLInfoInformix::GetCATALOGForeignAttributes(CString p_schema,CString p_tablenam
                ,ind);
     if(!p_schema.IsEmpty())
     {
-      part += "    AND tab.owner = '" + p_schema + "'\n";
+      if(p_referenced)
+      {
+        part += "   AND pri.owner      = '" + p_schema + "'\n";
+      }
+      else
+      {
+        part += "   AND tab.owner      = '" + p_schema + "'\n";
+      }
     }
     if(!p_tablename.IsEmpty())
     {
-      part += "   AND tab.tabname    = '" + p_tablename + "'\n";
+      if(p_referenced)
+      {
+        part += "   AND pri.tabname    = '" + p_tablename + "'\n";
+      }
+      else
+      {
+        part += "   AND tab.tabname    = '" + p_tablename + "'\n";
+      }
     }
     if(!p_constraint.IsEmpty())
     {
-      part += "    AND con.constrname = '" + p_constraint + "'\n";
+      if(p_referenced)
+      {
+        part += "    AND pcn.constrname = '" + p_constraint + "'\n";
+      }
+      else
+      {
+        part += "    AND con.constrname = '" + p_constraint + "'\n";
+      }
     }
     // Add to the query
     if(!query.IsEmpty())
@@ -902,7 +948,7 @@ SQLInfoInformix::GetCATALOGForeignAttributes(CString p_schema,CString p_tablenam
     query += part;
   }
 
-  // Add ordering upto column number
+  // Add ordering up to column number
   query += " ORDER BY 1,2,3,4,5,6,7,8,9";
 
   return query;
@@ -1061,25 +1107,7 @@ SQLInfoInformix::GetCATALOGSequenceExists(CString p_schema, CString p_sequence) 
 CString
 SQLInfoInformix::GetCATALOGSequenceList(CString p_schema,CString p_pattern) const
 {
-  p_schema.MakeLower();
-  p_pattern.MakeLower();
-  p_pattern = "%" + p_pattern + "%";
-  CString sql = "SELECT ''            as catalog_name\n"
-                "      ,dom.owner     as schema_name\n"
-                "      ,dom.name      as sequence_name\n"
-                "      ,seq.start_val as current_value\n"
-                "      ,0             as minimal_value\n"
-                "      ,seq.inc_val   as increment\n"
-                "      ,seq.cache     as cache\n"
-                "      ,seq.cycle     as cycle\n"
-                "      ,seq.order     as ordering\n"
-                "  FROM syssequences seq\n"
-                "      ,sysdomains   dom\n"
-                " WHERE dom.id    = seq.id\n"
-              //"   AND dom.owner = '" + p_schema   + "'\n"
-                "   AND dom.name  LIKE '" + p_pattern + "'\n";
-              //"   AND dom.type  = 3"; ??
-  return sql;
+  return GetCATALOGSequenceAttributes(p_schema,p_pattern);
 }
 
 CString
@@ -1087,9 +1115,9 @@ SQLInfoInformix::GetCATALOGSequenceAttributes(CString p_schema, CString p_sequen
 {
   p_schema.MakeLower();
   p_sequence.MakeLower();
-  CString sql = "SELECT ''            as catalog_name\n"
-                "      ,dom.owner     as schema_name\n"
-                "      ,dom.name      as sequence_name\n"
+  CString sql = "SELECT trim(DBINFO('dbname')) as catalog_name\n"
+                "      ,trim(tab.owner)        as schema_name\n"
+                "      ,trim(tab.tabname)      as sequence_name\n"
                 "      ,seq.start_val as current_value\n"
                 "      ,0             as minimal_value\n"
                 "      ,seq.inc_val   as increment\n"
@@ -1097,11 +1125,19 @@ SQLInfoInformix::GetCATALOGSequenceAttributes(CString p_schema, CString p_sequen
                 "      ,seq.cycle     as cycle\n"
                 "      ,seq.order     as ordering\n"
                 "  FROM syssequences seq\n"
-                "      ,sysdomains   dom\n"
-                " WHERE dom.id    = seq.id\n"
-                "   AND dom.owner = '" + p_schema   + "'\n"
-                "   AND dom.name  = '" + p_sequence + "'\n";
-              //"   AND dom.type  = 3"; ??
+                "      ,systables    tab\n"
+                " WHERE tab.tabid   = seq.tabid\n"
+                "   AND tab.tabtype = 'Q'\n";
+  if(!p_schema.IsEmpty())
+  {
+    sql += "   AND dom.owner   = '" + p_schema + "'\n";
+  }
+  if(!p_sequence.IsEmpty())
+  {
+    sql += "   AND dom.name    ";
+    sql += p_sequence.Find('%') >= 0 ? "LIKE '" : "= '";
+    sql += p_sequence + "'\n";
+  }
   return sql;
 }
 

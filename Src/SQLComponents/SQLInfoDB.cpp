@@ -617,13 +617,6 @@ SQLInfoDB::MakeInfoTableTriggers(MTriggerMap& p_triggers
 bool 
 SQLInfoDB::MakeInfoTableSequences(MSequenceMap& p_sequences,CString& p_errors,CString p_schema,CString p_tablename)
 {
-  // Must have searched on a table first
-  if(p_tablename.IsEmpty())
-  {
-    p_errors = "Make a selection first";
-    return false;
-  }
-
   // Getting the database dependent SQL string
   CString sql = GetCATALOGSequenceList(p_schema,p_tablename);
   if(sql.IsEmpty())
