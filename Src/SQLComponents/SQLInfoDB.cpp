@@ -220,6 +220,13 @@ SQLInfoDB::ReadTablesFromQuery(SQLQuery& p_query,MTableMap& p_tables)
     table.m_tablespace = (CString) p_query[6];
     table.m_temporary  = (bool)    p_query[7];
 
+    table.m_catalog.Trim();
+    table.m_schema.Trim();
+    table.m_table.Trim();
+    table.m_objectType.Trim();
+    table.m_remarks.Trim();
+    table.m_tablespace.Trim();
+
     p_tables.push_back(table);
   }
   return !p_tables.empty();

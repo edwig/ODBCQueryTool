@@ -95,13 +95,9 @@ DDLCreateTable::GetTableInfo()
   // Construct table name
   if(!table.m_schema.IsEmpty())
   {
-    m_schema    = table.m_schema;
-    m_tableName = table.m_schema + "." + table.m_table;
+    m_schema = table.m_schema;
   }
-  else
-  {
-    m_tableName = table.m_table;
-  }
+  m_tableName = table.m_table;
 
   // Optional remarks to begin with
   if(!table.m_remarks.IsEmpty())
@@ -110,7 +106,12 @@ DDLCreateTable::GetTableInfo()
   }
 
   // Do our DDL part
-  m_ddl += "CREATE " + table.m_objectType + " " + m_tableName;
+  m_ddl += "CREATE " + table.m_objectType + " ";
+  if(!m_schema.IsEmpty())
+  {
+    m_ddl += m_schema + ".";
+  }
+  m_ddl += m_tableName;
   m_ddl += "\n(\n";
 }
 
@@ -150,10 +151,20 @@ DDLCreateTable::GetColumnInfo()
                                     ,column.m_decimalDigits);
     }
     // optional default value
-    if(!column.m_default.IsEmpty() && column.m_default.CompareNoCase("null"))
+    if(!column.m_default.IsEmpty() && 
+        column.m_default.CompareNoCase("null") &&
+        column.m_default.Compare("''") &&
+        column.m_default.Compare("0"))
     {
       line += " DEFAULT ";
-      line += column.m_default;
+      if(column.m_default.Left(8).CompareNoCase("default ") == 0)
+      {
+        line += column.m_default.Mid(8);
+      }
+      else
+      {
+        line += column.m_default;
+      }
     }
     // optional NOT NULL status
     if(column.m_nullable == SQL_NO_NULLS)

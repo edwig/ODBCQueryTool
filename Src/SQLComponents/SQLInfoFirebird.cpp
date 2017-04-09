@@ -420,9 +420,9 @@ CString
 SQLInfoFirebird::GetCATALOGTableAttributes(CString /*p_schema*/,CString p_tablename) const
 {
   p_tablename.MakeUpper();
-  CString sql = "SELECT CAST('' AS VARCHAR(31))             AS table_catalog\n"
-                "      ,CAST(rdb$owner_name AS VARCHAR(31)) AS table_schema\n"
-                "      ,trim(rdb$relation_name)             AS table_name\n"
+  CString sql = "SELECT CAST('' AS VARCHAR(31))  AS table_catalog\n"
+                "      ,trim(rdb$owner_name)     AS table_schema\n"
+                "      ,trim(rdb$relation_name)  AS table_name\n"
                 "      ,CASE rdb$relation_type\n"
                 "            WHEN 0 THEN 'TABLE'\n"
                 "            WHEN 2 THEN 'TABLE'\n"
@@ -430,7 +430,7 @@ SQLInfoFirebird::GetCATALOGTableAttributes(CString /*p_schema*/,CString p_tablen
                 "            WHEN 5 THEN 'LOCAL TEMPORARY'\n"
                 "                   ELSE 'UNKNOWN'\n"
                 "       END               AS table_type\n"
-                "      ,rdb$description   AS remarks\n"
+                "      ,trim(rdb$description) AS remarks\n"
                 "      ,trim(rdb$owner_name) || '.' || trim(rdb$relation_name) AS full_name\n"
                 "      ,cast('' as varchar(31)) as storage_space\n"
                 "  FROM rdb$relations\n"
@@ -560,10 +560,10 @@ SQLInfoFirebird::GetCATALOGColumnAttributes(CString /*p_schema*/,CString p_table
   p_columnname.MakeUpper();
   CString sql;
 
-  sql = "SELECT cast('' as varchar(255))                   as table_catalog\n"         // 1  - VARCHAR
-        "      ,cast(tbl.rdb$owner_name    as varchar(31)) as table_schema\n"	         // 2  - VARCHAR
-        "      ,cast(col.rdb$relation_name as varchar(31)) as table_name\n"            // 3  - VARCHAR NOT NULL
-        "      ,cast(col.rdb$field_name    as varchar(31)) as column_name\n"           // 4  - VARCHAR NOT NULL
+  sql = "SELECT cast('' as varchar(255))    as table_catalog\n"         // 1  - VARCHAR
+        "      ,trim(tbl.rdb$owner_name)    as table_schema\n"	         // 2  - VARCHAR
+        "      ,trim(col.rdb$relation_name) as table_name\n"            // 3  - VARCHAR NOT NULL
+        "      ,trim(col.rdb$field_name)    as column_name\n"           // 4  - VARCHAR NOT NULL
         "      ,CASE fld.rdb$field_type\n"
         "            WHEN 7  THEN CASE fld.rdb$field_sub_type\n"
         "                              WHEN 1 THEN 2\n"
@@ -656,8 +656,8 @@ SQLInfoFirebird::GetCATALOGColumnAttributes(CString /*p_schema*/,CString p_table
         "      ,cast (fld.rdb$field_scale as smallint)*-1  as decimal_digits\n"		        // 9  - SMALLINT
         "      ,10                                         as num_prec_radix\n"           // 10 - SMALLINT
         "      ,(coalesce(col.rdb$null_flag,0,0)-1)*-1     as nullable\n"        				  // 11 - SMALLINT NOT NULL
-        "      ,cast (col.rdb$description    as varchar(512)) as remarks\n"               // 12 - VARCHAR
-        "      ,cast (col.rdb$default_source as varchar(512)) as column_def\n"            // 13 - VARCHAR
+        "      ,trim(col.rdb$description)                  as remarks\n"                  // 12 - VARCHAR
+        "      ,trim(col.rdb$default_source)               as column_def\n"               // 13 - VARCHAR
         "      ,CASE fld.rdb$field_type\n"
         "            WHEN 7  THEN CASE fld.rdb$field_sub_type\n"
         "                              WHEN 1 THEN 2\n"
