@@ -6,8 +6,8 @@
 ; Copyright (c) 2016 ir. W.E. Huisman
 ; All rights reserved
 ;
-; Last change:       18-12-2016
-; Versionnumber:     1.5.0
+; Last change:       09-04-2017
+; Versionnumber:     2.1.0
 ;-------------------------------------------------------
  !define PRODUCT_BITNESS                      "32-Bits"
  !ifndef InvoerMap

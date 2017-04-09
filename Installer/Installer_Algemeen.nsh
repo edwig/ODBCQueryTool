@@ -3,15 +3,15 @@
 ; Project:      Open ODBC Querytool
 ; Auteurs:      Edo Huisman
 ;
-; Copyright (c) 2016 ir. W.E. Huisman
+; Copyright (c) 2017 ir. W.E. Huisman
 ; All rights reserved
 ;
-; Last change:       18-02-2017
-; Versionnumber:     2.0.0
+; Last change:       09-03-2017
+; Versionnumber:     2.1.0
 ;-------------------------------------------------------
  !define PRODUCT_NAME                         "OpenODBCQuerytool"
- !define PRODUCT_VERSION                      "2.0.0"
- !define PRODUCT_BUILDNUMBER                  "200"
+ !define PRODUCT_VERSION                      "2.1.0"
+ !define PRODUCT_BUILDNUMBER                  "204"
  !define PRODUCT_PUBLISHER                    "EDO"
  !define PRODUCT_WEB_SITE                     "https://sourceforge.net/projects/odbcquerytool"
  !define PRODUCT_DIR_REGKEY                   "Software\Microsoft\Windows\CurrentVersion\App Paths\${PRODUCT_NAME}"

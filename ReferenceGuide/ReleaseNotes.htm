@@ -9,6 +9,70 @@
 </head>
 
 <body>
+    <h1>Releasenotes version 2.1.0</h1>
+
+    <p>In this release much work has been done for the object tree. The object tree is now fully functional with the folllowing
+    objects</p>
+
+    <ul>
+        <li>Tables
+
+            <ul>
+                <li>Table columns</li>
+
+                <li>Primary and foreign keys</li>
+
+                <li>Indices and table statistics</li>
+
+                <li>Special (unique) columns not visible as table columns</li>
+
+                <li>Other table referencing this table</li>
+
+                <li>Triggers for the table</li>
+
+                <li>Sequences for the table</li>
+
+                <li>Granted rights on the table</li>
+            </ul>
+        </li>
+
+        <li>Views</li>
+
+        <li>Catalog tables</li>
+
+        <li>Synonyms</li>
+
+        <li>Sequences</li>
+
+        <li>Triggers</li>
+
+        <li>Stored procedures</li>
+    </ul>
+
+    <p>&nbsp;</p>
+
+    <p>Sequences, triggers and catalog tables are objects that are not directly supported by ODBC. For these objects the tree
+    will only fully function:</p>
+
+    <div style="MARGIN-LEFT: 2em">
+        <ol>
+            <li>Firebird 3.x and higher</li>
+
+            <li>PostgreSQL 9.x and higher</li>
+
+            <li>MySQL 5.7 and higher</li>
+
+            <li>Oracle 11.2 and higher</li>
+
+            <li>IBM-Informix 12.x and higher</li>
+        </ol>
+    </div>
+
+    <p>&nbsp;</p>
+
+    <p>For triggers and stored procedures: you can see the full source code of the persistent-stored-module by double clicking
+    on the 'S'ourcecode node under the trigger or stored procedure.</p>
+
     <h1>Releasenotes version 2.0.0</h1>
 
     <p>This is the 10th year anniversary edition of the Open ODBC Querytool!<br>
