@@ -165,13 +165,15 @@
 #define ID_SUPPORT                      40060
 #define ID_HELP_BUG                     40061
 #define ID_HELP_FEATURE                 40062
+#define ID_HELP_SFNET                   40063
+#define ID_HELP_GITHUB                  40064
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        137
-#define _APS_NEXT_COMMAND_VALUE         40063
+#define _APS_NEXT_RESOURCE_VALUE        138
+#define _APS_NEXT_COMMAND_VALUE         40065
 #define _APS_NEXT_CONTROL_VALUE         1042
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

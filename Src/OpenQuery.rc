@@ -1476,6 +1476,9 @@ BEGIN
         MENUITEM "Report a bug...",             ID_HELP_BUG
         MENUITEM "Report a feature request...", 40062
         MENUITEM SEPARATOR
+        MENUITEM "Sourceforge web page",        40063
+        MENUITEM "Github web page",             40064
+        MENUITEM SEPARATOR
         MENUITEM "&About ODBC Query Tool...",   ID_APP_ABOUT
     END
 END
@@ -1772,6 +1775,7 @@ BEGIN
     ID_SUPPORT              "Report a bug in the program, or file a feature request"
     ID_HELP_BUG             "Report a bug in the program by email..."
     ID_HELP_FEATURE         "Report a feature request by email...."
+    ID_HELP_SFNET           "To SourceForge web page"
 END
 
 STRINGTABLE
@@ -1801,6 +1805,11 @@ BEGIN
     ID_QUERY_PAGEBACK       "Go a page back in the query results"
     ID_QUERY_SIZEDATA       "Size the columns by data width"
     ID_QUERY_SIZEBOTH       "Size the columns by both header and data width"
+END
+
+STRINGTABLE
+BEGIN
+    ID_HELP_GITHUB          "Go to the github.com webpage"
 END
 
 #endif    // English (United States) resources

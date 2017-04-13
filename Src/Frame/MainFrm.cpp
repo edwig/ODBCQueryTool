@@ -46,6 +46,8 @@ BEGIN_MESSAGE_MAP(CMDIMainFrame, CWorkbookMDIFrame)
     ON_COMMAND(ID_VIEW_DATABASEBAR,          OnDatabaseBar)
     ON_COMMAND(ID_HELP_BUG,                  OnSupportBug)
     ON_COMMAND(ID_HELP_FEATURE,              OnSupportFeature)
+    ON_COMMAND(ID_HELP_SFNET,                OnWebSourceforge)
+    ON_COMMAND(ID_HELP_GITHUB,               OnWebGithub)
     ON_UPDATE_COMMAND_UI(ID_ODBC_CONNECT,    OnUpdateConnect)
     ON_UPDATE_COMMAND_UI(ID_ODBC_DISCONNECT, OnUpdateDisconnect)
     ON_UPDATE_COMMAND_UI(ID_ODBC_BEGIN,      OnUpdateBegin)
@@ -361,6 +363,20 @@ CMDIMainFrame::SendSupportEmail(CString p_subject,CString p_body)
 
   CWaitCursor aSigh;
   ShellExecute(GetSafeHwnd(),command,parameters,NULL,NULL,SW_SHOWNORMAL);
+}
+
+void
+CMDIMainFrame::OnWebSourceforge()
+{
+  CString source("https://sourceforge.net/projects/odbcquerytool/");
+  ShellExecute(NULL,"open",source,NULL,NULL,SW_SHOWMAXIMIZED);
+}
+
+void
+CMDIMainFrame::OnWebGithub()
+{
+  CString github("https://github.com/edwig/ODBCQueryTool/");
+  ShellExecute(NULL,"open", github,NULL,NULL,SW_SHOWMAXIMIZED);
 }
 
 //#endif

@@ -48,6 +48,8 @@ public:
   afx_msg void OnDatabaseBar();
   afx_msg void OnSupportBug();
   afx_msg void OnSupportFeature();
+  afx_msg void OnWebSourceforge();
+  afx_msg void OnWebGithub();
   afx_msg void OnUpdateConnect(CCmdUI* pCmdUI);
   afx_msg void OnUpdateDisconnect(CCmdUI* pCmdUI);
   afx_msg void OnUpdateConnectBarVisible(CCmdUI* pCmdUI);
