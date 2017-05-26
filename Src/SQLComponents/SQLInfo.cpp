@@ -1256,15 +1256,15 @@ SQLInfo::GetObjectName(CString  p_pattern
       p_catalog = qualifier.Left(pos);
     }
   }
-  if(m_maxCatalogName && p_catalog.GetLength() > (size_t)m_maxCatalogName)
+  if(m_maxCatalogName && p_catalog.GetLength() > (int)m_maxCatalogName)
   {
     InfoMessageBox("Requested catalog name is longer than this ODBC database supports!",MB_OK);
   }
-  if(m_maxSchemaName  && p_schema.GetLength()  > (size_t)m_maxSchemaName)
+  if(m_maxSchemaName  && p_schema.GetLength()  > (int)m_maxSchemaName)
   {
     InfoMessageBox("Requested schema name is longer than this ODBC database supports!",MB_OK);
   }
-  if(m_maxTableName   && p_table.GetLength()   > (size_t)m_maxTableName)
+  if(m_maxTableName   && p_table.GetLength()   > (int)m_maxTableName)
   {
     InfoMessageBox("Requested table name is longer than this ODBC database supports!",MB_OK);
   }

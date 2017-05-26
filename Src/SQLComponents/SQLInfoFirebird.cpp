@@ -1411,7 +1411,7 @@ CString
 SQLInfoFirebird::GetCATALOGSequenceCreate(MetaSequence& p_sequence) const
 {
   CString sql;
-  sql.Format("CREATE SEQUENCE %s START WITH %d"
+  sql.Format("CREATE SEQUENCE %s START WITH %-12.0f"
             ,p_sequence.m_sequenceName.GetString()
             ,p_sequence.m_currentValue);
   return sql;
@@ -1537,7 +1537,27 @@ SQLInfoFirebird::GetPSMProcedureExists(CString /*p_schema*/, CString p_procedure
 CString
 SQLInfoFirebird::GetPSMProcedureList(CString p_schema) const
 {
-  return GetPSMProcedureAttributes(p_schema,"");
+  p_schema.MakeUpper();
+  CString sql1("SELECT '' as catalog_name\n"
+               "      ,trim(rdb$owner_name) as schema_name\n"
+               "      ,trim(rdb$procedure_name)\n"
+               "  FROM rdb$procedures pro\n");
+  if(!p_schema.IsEmpty())
+  {
+    sql1 += " WHERE pro.rdb$owner = '" + p_schema + "'\n";
+  }
+
+  CString sql2("SELECT '' as catalog_name\n"
+               "      ,trim(rdb$owner_name) as schema_name\n"
+               "      ,trim(rdb$function_name)\n"
+               "  FROM rdb$functions fun\n");
+
+  if(!p_schema.IsEmpty())
+  {
+    sql2 += " WHERE fun.rdb$owner = '" + p_schema + "'\n";
+  }
+
+  return sql1 + " UNION ALL\n" + sql2 + " ORDER BY 1,2,3";
 }
 
 CString

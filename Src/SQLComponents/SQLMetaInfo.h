@@ -323,8 +323,8 @@ typedef struct _metaSequence
   CString   m_catalogName;              // Catalog name
   CString   m_schemaName;               // Schema name
   CString   m_sequenceName;             // Sequence name
-  long      m_currentValue  { 1 };      // Current value (the sequence!)
-  long      m_minimalValue  { 1 };      // Minimal value in the series
+  double    m_currentValue  { 1 };      // Current value (the sequence!)
+  double    m_minimalValue  { 1 };      // Minimal value in the series
   long      m_increment     { 1 };      // Incremented each step
   long      m_cache         { 0 };      // Caching in the database
   bool      m_cycle         { false };  // Cycling of sets

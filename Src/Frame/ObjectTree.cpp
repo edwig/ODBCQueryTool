@@ -717,11 +717,11 @@ ObjectTree::FindSequences(HTREEITEM p_theItem)
 
     // All info on the item
     CString line;
-    line.Format("Minimum value: %d",seq.m_minimalValue);
+    line.Format("Minimum value: %-12.0f",seq.m_minimalValue);
     HTREEITEM item = InsertItem(line,sequence);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Current value: %d",seq.m_currentValue);
+    line.Format("Current value: %-12.0f",seq.m_currentValue);
     item = InsertItem(line,sequence);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
@@ -1483,11 +1483,11 @@ ObjectTree::SequencesToTree(MSequenceMap& p_sequences,HTREEITEM p_item)
     SetItemImage(seqItem,IMG_SEQUENCE,IMG_SEQUENCE);
 
     // All info on the item
-    line.Format("Minimum value: %d",seq.m_minimalValue);
+    line.Format("Minimum value: %-12.0f",seq.m_minimalValue);
     HTREEITEM item = InsertItem(line,seqItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Current value: %d",seq.m_currentValue);
+    line.Format("Current value: %-12.0f",seq.m_currentValue);
     item = InsertItem(line,seqItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 

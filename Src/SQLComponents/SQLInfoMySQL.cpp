@@ -1120,7 +1120,18 @@ SQLInfoMySQL::GetPSMProcedureExists(CString p_schema, CString p_procedure) const
 CString
 SQLInfoMySQL::GetPSMProcedureList(CString p_schema) const
 {
-  return GetPSMProcedureAttributes(p_schema,"");
+  CString sql;
+  sql = "SELECT routine_catalog\n"
+        "      ,routine_schema\n"
+        "      ,routine_name\n"
+        "  FROM information_schema.routines fun\n";
+  if (!p_schema.IsEmpty())
+  {
+    sql += " WHERE routine_schema = '" + p_schema + "'\n";
+  }
+  sql += " ORDER BY 1,2,3";
+
+  return sql;
 }
 
 CString

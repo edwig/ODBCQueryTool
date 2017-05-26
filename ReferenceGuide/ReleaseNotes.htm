@@ -9,6 +9,19 @@
 </head>
 
 <body>
+    <h1>Releasenotes 2.2.0</h1>
+
+    <p>This is a bug release as a result of testing on the Oracle 12.2c database</p>
+
+    <ul>
+        <li>Synonyms minimum and maximum fields have been changed to 'double' instead of a 'long' because of the catalog
+        changes in Oracle.</li>
+
+        <li>The performance of retrieving stored procedures and functions has been improved. This was neccesary due to the
+        changes in the Oracle catalog where the "all_source" did not perform any more. All Oracle catalog tables are now
+        changed from the 'all_*' tot the 'dba_*' variant.</li>
+    </ul>
+
     <h1>Releasenotes version 2.1.0</h1>
 
     <p>In this release much work has been done for the object tree. The object tree is now fully functional with the folllowing

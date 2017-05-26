@@ -6,12 +6,12 @@
 ; Copyright (c) 2017 ir. W.E. Huisman
 ; All rights reserved
 ;
-; Last change:       09-03-2017
-; Versionnumber:     2.1.0
+; Last change:       26-05-2017
+; Versionnumber:     2.2.0
 ;-------------------------------------------------------
  !define PRODUCT_NAME                         "OpenODBCQuerytool"
- !define PRODUCT_VERSION                      "2.1.0"
- !define PRODUCT_BUILDNUMBER                  "204"
+ !define PRODUCT_VERSION                      "2.2.0"
+ !define PRODUCT_BUILDNUMBER                  "206"
  !define PRODUCT_PUBLISHER                    "EDO"
  !define PRODUCT_WEB_SITE                     "https://sourceforge.net/projects/odbcquerytool"
  !define PRODUCT_DIR_REGKEY                   "Software\Microsoft\Windows\CurrentVersion\App Paths\${PRODUCT_NAME}"
@@ -107,7 +107,7 @@
  !insertmacro MUI_PAGE_WELCOME
 ;--------------------------------------------------------------------------------------------------------
 ; Directory page
- !insertmacro MUI_PAGE_LICENSE "..\..\license.txt"
+ !insertmacro MUI_PAGE_LICENSE "license.txt"
  !insertmacro MUI_PAGE_COMPONENTS
  !insertmacro MUI_PAGE_DIRECTORY
  !insertmacro MUI_PAGE_INSTFILES

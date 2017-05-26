@@ -1191,7 +1191,7 @@ SQLInfoInformix::GetCATALOGSequenceCreate(MetaSequence& p_sequence) const
     sql += p_sequence.m_schemaName + ".";
   }
   sql += p_sequence.m_sequenceName;
-  sql.AppendFormat("\n START WITH %d", p_sequence.m_currentValue);
+  sql.AppendFormat("\n START WITH %-12.0f", p_sequence.m_currentValue);
   sql.AppendFormat("\n INCREMENT BY %d", p_sequence.m_increment);
 
   sql += p_sequence.m_cycle ? "\n CYCLE" : "\n NOCYCLE";

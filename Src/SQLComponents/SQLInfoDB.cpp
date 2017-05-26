@@ -436,7 +436,7 @@ SQLInfoDB::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
 {
   CString sql;
 
-  if(p_procedure.Compare("%") == 0)
+  if(p_procedure.IsEmpty() || p_procedure.Compare("%") == 0)
   {
     sql = GetPSMProcedureList(p_schema);
   }
@@ -455,25 +455,44 @@ SQLInfoDB::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
   {
     SQLQuery qry(m_database);
     qry.DoSQLStatement(sql);
-    while(qry.GetRecord())
+    
+    if(qry.GetNumberOfColumns() == 3)
     {
-      MetaProcedure proc;
-
-      proc.m_catalogName      = qry.GetColumn(1)->GetAsChar();
-      proc.m_schemaName       = qry.GetColumn(2)->GetAsChar();
-      proc.m_procedureName    = qry.GetColumn(3)->GetAsChar();
-      proc.m_inputParameters  = qry.GetColumn(4)->GetAsSLong();
-      proc.m_outputParameters = qry.GetColumn(5)->GetAsSLong();
-      proc.m_resultSets       = qry.GetColumn(6)->GetAsSLong();
-      proc.m_remarks          = qry.GetColumn(7)->GetAsChar();
-      proc.m_procedureType    = qry.GetColumn(8)->GetAsSLong();
-      proc.m_source           = qry.GetColumn(9)->GetAsChar();
-
-      if(proc.m_source.IsEmpty() || proc.m_source.Compare("<@>") == 0)
+      // Name only
+      while(qry.GetRecord())
       {
-        proc.m_source = MakeInfoPSMSourcecode(proc.m_schemaName, proc.m_procedureName);
+        MetaProcedure proc;
+
+        proc.m_catalogName   = qry.GetColumn(1)->GetAsChar();
+        proc.m_schemaName    = qry.GetColumn(2)->GetAsChar();
+        proc.m_procedureName = qry.GetColumn(3)->GetAsChar();
+
+        p_procedures.push_back(proc);
       }
-      p_procedures.push_back(proc);
+    }
+    else
+    {
+      // List complete procedure
+      while(qry.GetRecord())
+      {
+        MetaProcedure proc;
+
+        proc.m_catalogName      = qry.GetColumn(1)->GetAsChar();
+        proc.m_schemaName       = qry.GetColumn(2)->GetAsChar();
+        proc.m_procedureName    = qry.GetColumn(3)->GetAsChar();
+        proc.m_inputParameters  = qry.GetColumn(4)->GetAsSLong();
+        proc.m_outputParameters = qry.GetColumn(5)->GetAsSLong();
+        proc.m_resultSets       = qry.GetColumn(6)->GetAsSLong();
+        proc.m_remarks          = qry.GetColumn(7)->GetAsChar();
+        proc.m_procedureType    = qry.GetColumn(8)->GetAsSLong();
+        proc.m_source           = qry.GetColumn(9)->GetAsChar();
+
+        if(proc.m_source.IsEmpty() || proc.m_source.Compare("<@>") == 0)
+        {
+          proc.m_source = MakeInfoPSMSourcecode(proc.m_schemaName, proc.m_procedureName);
+        }
+        p_procedures.push_back(proc);
+      }
     }
     return !p_procedures.empty();
   }
@@ -647,8 +666,8 @@ SQLInfoDB::MakeInfoTableSequences(MSequenceMap& p_sequences,CString& p_errors,CS
       sequence.m_catalogName  = qry.GetColumn(1)->GetAsChar();
       sequence.m_schemaName   = qry.GetColumn(2)->GetAsChar();
       sequence.m_sequenceName = qry.GetColumn(3)->GetAsChar();
-      sequence.m_currentValue = qry.GetColumn(4)->GetAsSLong();
-      sequence.m_minimalValue = qry.GetColumn(5)->GetAsSLong();
+      sequence.m_currentValue = qry.GetColumn(4)->GetAsDouble();
+      sequence.m_minimalValue = qry.GetColumn(5)->GetAsDouble();
       sequence.m_increment    = qry.GetColumn(6)->GetAsSLong();
       sequence.m_cache        = qry.GetColumn(7)->GetAsSLong();
       sequence.m_cycle        = qry.GetColumn(8)->GetAsBoolean();

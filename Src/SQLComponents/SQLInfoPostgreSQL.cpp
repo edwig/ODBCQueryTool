@@ -1361,7 +1361,7 @@ SQLInfoPostgreSQL::GetCATALOGSequenceCreate(MetaSequence& p_sequence) const
     sql += p_sequence.m_schemaName + ".";
   }
   sql += p_sequence.m_sequenceName;
-  sql.AppendFormat(" START WITH %d", p_sequence.m_currentValue);
+  sql.AppendFormat(" START WITH %-12.0f", p_sequence.m_currentValue);
   if(p_sequence.m_cache)
   {
     sql.AppendFormat(" CACHE %d",p_sequence.m_cache);
