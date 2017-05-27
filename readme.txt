@@ -22,6 +22,12 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes version 2.2.0
+--------------------------
+- Sequences and procedures in the treeview are working in Oracle 12.2c
+- Sequences metadata current and start values have been changed from long to double
+  to accomodate Oracle 12.2 changes.
+
 Releasenotes version 2.1.0
 --------------------------
 In this release much work has been done for the object tree. The object tree 
