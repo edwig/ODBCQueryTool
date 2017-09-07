@@ -22,7 +22,7 @@
     <ProjectName>SQLComponents</ProjectName>
     <ProjectGuid>{0E56E030-9CDD-47A7-B580-DCD4E103F968}</ProjectGuid>
     <RootNamespace>SQLComponenten</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">

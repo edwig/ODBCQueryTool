@@ -102,17 +102,18 @@ COpenEditorApp::~COpenEditorApp()
 {
   if(m_transaction)
   {
-    // TODO: Rollback question
+    // Rollback our last transaction
     m_transaction->Rollback();
     delete m_transaction;
     m_transaction = NULL;
   }
-  if(m_database)
+
+  // Close our database
+  m_database.IsOpen();
   {
-    m_database->Close();
-    delete m_database;
-    m_database = NULL;
+    m_database.Close();
   }
+
   VarMap::iterator it = m_variables.begin();
   while(it != m_variables.end())
   {
@@ -750,7 +751,7 @@ void COpenEditorApp::OnCHMHelp()
 SQLDatabase&
 COpenEditorApp::GetDatabase()
 {
-  return *m_database;
+  return m_database;
 }
 
 bool
@@ -838,14 +839,11 @@ COpenEditorApp::OpenDatabaseConnectie()
   {
     Common::SetStatusText(status, TRUE);
     CWaitCursor take_a_deep_sigh;
-    if(m_database)
+    m_database.IsOpen();
     {
-      m_database->Close();
-      delete m_database;
-      m_database = NULL;
+      m_database.Close();
     }
-    m_database = new SQLDatabase();
-    m_database->Open(connectStr,m_safty);
+    m_database.Open(connectStr,m_safty);
   }
   catch(CString& error)
   {
@@ -910,7 +908,7 @@ COpenEditorApp::UpdateDatabaseConnector()
 afx_msg void 
 COpenEditorApp::OnConnect()
 {
-  if(m_database && m_database->IsOpen())
+  if(m_database.IsOpen())
   {
     AfxMessageBox("Already connected to an ODBC datasource!");
     return;
@@ -962,9 +960,9 @@ afx_msg void
 COpenEditorApp::OnDisconnect()
 {
   // Close a still open database
-  if(m_database && m_database->IsOpen())
+  if(m_database.IsOpen())
   {
-    if(m_database->GetTransaction())
+    if(m_database.GetTransaction())
     {
       CString warning;
       warning.Format("There is still a running transaction to database: %s.\r\n"
@@ -975,10 +973,7 @@ COpenEditorApp::OnDisconnect()
       }
       OnODBCRollback();
     }
-    m_database->Close();
-    // By setting database to NULL, we gain time to exit the proxy thread
-    delete m_database;
-    m_database = NULL;
+    m_database.Close();
 
     // OK, It's disconnected
     if(!m_isClosing)
@@ -1073,7 +1068,7 @@ COpenEditorApp::TableDDL(CString& p_table)
 
     try
     {
-      DDLCreateTable create(m_database->GetSQLInfoDB());
+      DDLCreateTable create(m_database.GetSQLInfoDB());
       create.GetTableDDL(p_table);
       create.SaveDDL(filename);
       AfxGetApp()->OpenDocumentFile(filename);
@@ -1088,18 +1083,15 @@ COpenEditorApp::TableDDL(CString& p_table)
 bool
 COpenEditorApp::DatabaseIsOpen()
 {
-  return (m_database && m_database->IsOpen());
+  return m_database.IsOpen();
 }
 
 bool
 COpenEditorApp::DatabaseHasTransaction()
 {
-  if(m_database)
+  if(m_database.GetTransaction())
   {
-    if(m_database->GetTransaction())
-    {
-      return true;
-    }
+    return true;
   }
   return false;
 }
@@ -1107,18 +1099,18 @@ COpenEditorApp::DatabaseHasTransaction()
 void 
 COpenEditorApp::OnODBCBegin()
 {
-  if(!m_database)
+  if(!m_database.IsOpen())
   {
     AfxMessageBox("BEGIN: There is no current connection to a database",MB_OK |MB_ICONEXCLAMATION);
     return;
   }
-  m_transaction = new SQLTransaction(m_database,"Transaction");
+  m_transaction = new SQLTransaction(&m_database,"Transaction");
 }
 
 void 
 COpenEditorApp::OnODBCCommit()
 {
-  if(!m_database)
+  if(!m_database.IsOpen())
   {
     AfxMessageBox("BEGIN: There is no current connection to a database",MB_OK |MB_ICONEXCLAMATION);
     return;
@@ -1134,7 +1126,7 @@ COpenEditorApp::OnODBCCommit()
 void 
 COpenEditorApp::OnODBCRollback()
 {
-  if(!m_database)
+  if(!m_database.IsOpen())
   {
     AfxMessageBox("BEGIN: There is no current connection to a database",MB_OK |MB_ICONEXCLAMATION);
     return;
@@ -1152,7 +1144,7 @@ COpenEditorApp::OnODBCRollback()
 BOOL
 COpenEditorApp::SaveAllModified()
 {
-  if(m_database && m_database->GetTransaction())
+  if(m_database.GetTransaction())
   {
     CString warning;
     warning.Format("There is still a running transaction to database: %s.\r\n"

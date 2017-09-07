@@ -116,7 +116,7 @@ private:
   bool    ParseConnectString();
   void    RefreshODBCPanels();
 
-  mutable SQLDatabase*    m_database;
+  mutable SQLDatabase     m_database;
   mutable SQLTransaction* m_transaction;
   mutable CString         m_user;
   mutable CString         m_password;

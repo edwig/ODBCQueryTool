@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2004 Edwig Huisman
+    Copyright (C) 2004 - 2017 Edwig Huisman
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -258,7 +258,7 @@ void ConnectionDlg::DoDataExchange(CDataExchange* pDX)
     DDX_Check(pDX,IDC_CON_AUTOCOMMIT,number);
   }
   // Set the apply button
-  GetDlgItem(IDC_APPLY)->EnableWindow(m_totalApply && (*m_database));
+  GetDlgItem(IDC_APPLY)->EnableWindow(m_totalApply && m_database);
 }
 
 BEGIN_MESSAGE_MAP(ConnectionDlg, CDialog)
@@ -332,13 +332,12 @@ ConnectionDlg::Connect()
   try
   {
     Common::SetStatusText(status, TRUE);
-    if(*m_database)
+    if(m_database->IsOpen())
     {
-      delete (*m_database);
+      m_database->Close();
     }
-    *m_database = new SQLDatabase();
     OnApplyBefore();
-    (*m_database)->Open(connectStr,m_safty);
+    m_database->Open(connectStr,m_safty);
   }
   catch(CString& error)
   {
@@ -390,7 +389,7 @@ ConnectionDlg::OnOK()
   if(m_moment)
   {
     // Dialog used on living connection
-    if(m_totalApply && (*m_database))
+    if(m_totalApply && m_database)
     {
       OnApplyAfter();
     }
@@ -416,9 +415,9 @@ void
 ConnectionDlg::OnDead()
 {
   // Nothing to do to be dead
-  if(*m_database)
+  if(m_database->IsOpen())
   {
-    m_connDead = (*m_database)->GetSQLInfoDB()->GetConnectionDead();
+    m_connDead = m_database->GetSQLInfoDB()->GetConnectionDead();
   }
   else
   {
@@ -430,9 +429,9 @@ ConnectionDlg::OnDead()
 void
 ConnectionDlg::OnQuiet()
 {
-  if(*m_database)
+  if(m_database->IsOpen())
   {
-    m_quietMode = (*m_database)->GetSQLInfoDB()->GetAttributeQuiet();
+    m_quietMode = m_database->GetSQLInfoDB()->GetAttributeQuiet();
   }
   else
   {
@@ -444,9 +443,9 @@ ConnectionDlg::OnQuiet()
 void
 ConnectionDlg::OnAutoIPD()
 {
-  if(*m_database)
+  if(m_database->IsOpen())
   {
-    if((*m_database)->GetSQLInfoDB()->GetAttributeAutoIPD() == -1)
+    if(m_database->GetSQLInfoDB()->GetAttributeAutoIPD() == -1)
     {
       m_autoIPD = false;
     }
@@ -576,7 +575,7 @@ ConnectionDlg::SetLogin(bool    moment
 }
 
 void
-ConnectionDlg::SetDataConnector(SQLDatabase** database)
+ConnectionDlg::SetDataConnector(SQLDatabase* database)
 {
   m_database  = database;
   GetConnectionAttributes();
@@ -626,24 +625,24 @@ ConnectionDlg::SetDialogControls()
 void
 ConnectionDlg::GetConnectionAttributes()
 {
-  if(*m_database)
+  if(m_database)
   {
-    m_readOnly     = (*m_database)->GetReadOnly();
-    m_loginTimeout = (*m_database)->GetLoginTimeout();
-    m_connDead     = (*m_database)->GetSQLInfoDB()->GetConnectionDead();
-    m_tracing      = (*m_database)->GetSQLInfoDB()->GetAttributeTracing();
-    m_traceFile    = (*m_database)->GetSQLInfoDB()->GetAttributeTraceFile();
-    m_catalog      = (*m_database)->GetSQLInfoDB()->GetAttributeCatalog();
-    m_fileDSN      = (*m_database)->GetSQLInfoDB()->GetAttributeFileDSN();
-    m_fileDSNSave  = (*m_database)->GetSQLInfoDB()->GetAttributeFileDSNSave();
-    m_connTimeout  = (*m_database)->GetSQLInfoDB()->GetAttributeConnTimeout();
-    m_packetSize   = (*m_database)->GetSQLInfoDB()->GetAttributePacketSize();
-    m_metadataID   = (*m_database)->GetSQLInfoDB()->GetAttributeMetadataID();
-    m_txnLevel     = (*m_database)->GetSQLInfoDB()->GetAttributeTransLevel();
-    m_transLib     = (*m_database)->GetSQLInfoDB()->GetAttributeTranslib();
-    m_transOption  = (*m_database)->GetSQLInfoDB()->GetAttributeTransoption();
-    m_quietMode    = (*m_database)->GetSQLInfoDB()->GetAttributeQuiet();
-    m_autoCommit   = (*m_database)->GetTransaction() ? false : true;
+    m_readOnly     = m_database->GetReadOnly();
+    m_loginTimeout = m_database->GetLoginTimeout();
+    m_connDead     = m_database->GetSQLInfoDB()->GetConnectionDead();
+    m_tracing      = m_database->GetSQLInfoDB()->GetAttributeTracing();
+    m_traceFile    = m_database->GetSQLInfoDB()->GetAttributeTraceFile();
+    m_catalog      = m_database->GetSQLInfoDB()->GetAttributeCatalog();
+    m_fileDSN      = m_database->GetSQLInfoDB()->GetAttributeFileDSN();
+    m_fileDSNSave  = m_database->GetSQLInfoDB()->GetAttributeFileDSNSave();
+    m_connTimeout  = m_database->GetSQLInfoDB()->GetAttributeConnTimeout();
+    m_packetSize   = m_database->GetSQLInfoDB()->GetAttributePacketSize();
+    m_metadataID   = m_database->GetSQLInfoDB()->GetAttributeMetadataID();
+    m_txnLevel     = m_database->GetSQLInfoDB()->GetAttributeTransLevel();
+    m_transLib     = m_database->GetSQLInfoDB()->GetAttributeTranslib();
+    m_transOption  = m_database->GetSQLInfoDB()->GetAttributeTransoption();
+    m_quietMode    = m_database->GetSQLInfoDB()->GetAttributeQuiet();
+    m_autoCommit   = m_database->GetTransaction() ? false : true;
     if(m_tracing && m_traceFile.IsEmpty())
     {
       m_traceFile = "<Not set: search for SQL.LOG>";
@@ -655,34 +654,34 @@ ConnectionDlg::GetConnectionAttributes()
 void
 ConnectionDlg::OnApplyBefore()
 {
-  if(m_loginTimeoutApply && (*m_database))
+  if(m_loginTimeoutApply && m_database->IsOpen())
   {
-    (*m_database)->SetLoginTimeout(m_loginTimeout);
+    m_database->SetLoginTimeout(m_loginTimeout);
     m_loginTimeoutApply = false;
   }
-  if(m_readOnlyApply && (*m_database))
+  if(m_readOnlyApply && m_database->IsOpen())
   {
-    (*m_database)->SetReadOnly(m_readOnly);
+    m_database->SetReadOnly(m_readOnly);
     m_readOnlyApply = false;
   }
-  if(m_fileDSNApply && (*m_database))
+  if(m_fileDSNApply && m_database->IsOpen())
   {
-    (*m_database)->GetSQLInfoDB()->SetAttributeFileDSN(m_fileDSN);
+    m_database->GetSQLInfoDB()->SetAttributeFileDSN(m_fileDSN);
     m_fileDSNApply = false;
   }
-  if(m_fileDSNSaveApply && (*m_database))
+  if(m_fileDSNSaveApply && m_database->IsOpen())
   {
-    (*m_database)->GetSQLInfoDB()->SetAttributeFileDSNSave(m_fileDSNSave);
+    m_database->GetSQLInfoDB()->SetAttributeFileDSNSave(m_fileDSNSave);
     m_fileDSNSaveApply = false;
   }
-  if(m_odbcCursorsApply && (*m_database))
+  if(m_odbcCursorsApply && m_database->IsOpen())
   {
-    (*m_database)->GetSQLInfoDB()->SetAttributeOdbcCursors(m_odbcCursors);
+    m_database->GetSQLInfoDB()->SetAttributeOdbcCursors(m_odbcCursors);
     m_odbcCursorsApply = false;
   }
-  if(m_packetSizeApply && (*m_database))
+  if(m_packetSizeApply && m_database->IsOpen())
   {
-    if(!(*m_database)->GetSQLInfoDB()->SetAttributePacketSize(m_packetSize))
+    if(!m_database->GetSQLInfoDB()->SetAttributePacketSize(m_packetSize))
     {
       m_packetSize = 0;
     }
@@ -696,7 +695,7 @@ ConnectionDlg::OnApplyAfter()
 {
   if(m_readOnlyApply)
   {
-    if(!(*m_database)->SetReadOnly(m_readOnly))
+    if(!m_database->SetReadOnly(m_readOnly))
     {
       // Could not apply on the datasource
       m_readOnly = !m_readOnly;
@@ -708,7 +707,7 @@ ConnectionDlg::OnApplyAfter()
     if(( m_tracing && !m_traceFile.IsEmpty()) ||
        (!m_tracing &&  m_traceFile.IsEmpty()) )
     {
-      if(!(*m_database)->GetSQLInfoDB()->SetAttributeTraceFile(m_traceFile))
+      if(!m_database->GetSQLInfoDB()->SetAttributeTraceFile(m_traceFile))
       {
         m_traceFile = "";
       }
@@ -725,7 +724,7 @@ ConnectionDlg::OnApplyAfter()
     {
       m_traceFile = "";
     }
-    if(!(*m_database)->GetSQLInfoDB()->SetAttributeTracing(m_tracing))
+    if(!m_database->GetSQLInfoDB()->SetAttributeTracing(m_tracing))
     {
       m_tracing = !m_tracing;
     }
@@ -733,7 +732,7 @@ ConnectionDlg::OnApplyAfter()
   }
   if(m_connTimeoutApply)
   {
-    if(!(*m_database)->GetSQLInfoDB()->SetAttributeConnTimeout(m_connTimeout))
+    if(!m_database->GetSQLInfoDB()->SetAttributeConnTimeout(m_connTimeout))
     {
       m_connTimeout = 0;
     }
@@ -741,7 +740,7 @@ ConnectionDlg::OnApplyAfter()
   }
   if(m_metadataIDApply)
   {
-    if(!(*m_database)->GetSQLInfoDB()->SetAttributeMetadataID(m_metadataID))
+    if(!m_database->GetSQLInfoDB()->SetAttributeMetadataID(m_metadataID))
     {
       m_metadataID = false;
     }
@@ -749,12 +748,12 @@ ConnectionDlg::OnApplyAfter()
   }
   if(m_txnLevelApply)
   {
-    (*m_database)->GetSQLInfoDB()->SetAttributeTransLevel(m_txnLevel);
+    m_database->GetSQLInfoDB()->SetAttributeTransLevel(m_txnLevel);
     m_txnLevelApply = false;
   }
   if(m_transLibApply)
   {
-    if(!(*m_database)->GetSQLInfoDB()->SetAttributeTranslib(m_transLib))
+    if(!m_database->GetSQLInfoDB()->SetAttributeTranslib(m_transLib))
     {
       m_transLib = "";
     }
@@ -762,7 +761,7 @@ ConnectionDlg::OnApplyAfter()
   }
   if(m_transOptionApply)
   {
-    if(!(*m_database)->GetSQLInfoDB()->SetAttributeTransoption(m_transOption))
+    if(!m_database->GetSQLInfoDB()->SetAttributeTransoption(m_transOption))
     {
       m_transOption = 0;
     }
@@ -801,11 +800,11 @@ ConnectionDlg::GetDSNDirectory()
       DWORD dwDataBufSize = sizeof(szData);
 
       if (RegQueryValueEx(hKey
-        ,"DefaultDSNDir"
-        ,NULL
-        ,&dwKeyDataType
-        ,(LPBYTE)&szData
-        ,&dwDataBufSize) == ERROR_SUCCESS)
+                        ,"DefaultDSNDir"
+                        ,NULL
+                        ,&dwKeyDataType
+                        ,(LPBYTE)&szData
+                        ,&dwDataBufSize) == ERROR_SUCCESS)
       {
         directory = szData;
       }

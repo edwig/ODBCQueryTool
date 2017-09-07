@@ -1,5 +1,5 @@
 /* 
-    Copyright (C) 2004 Edwig Huisman
+    Copyright (C) 2004 - 2017 Edwig Huisman
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,8 +25,8 @@ IMPLEMENT_DYNAMIC(CAboutDlg, CDialog)
 CAboutDlg::CAboutDlg(CWnd* pParent /*=NULL*/)
           :CDialog(CAboutDlg::IDD, pParent)
 {
-  m_license = "ODBC Query Tool 2.2.0 Build: 206"
-              "\r\nCopyright (c) 2006-2017 Edwig Huisman" 
+  m_license = "ODBC Query Tool 2.2.1 Build: 207"
+              "\r\nCopyright (c) 2004-2017 Edwig Huisman" 
               "\r\n\r\nThis program is free software; you can redistribute it" 
               "\r\n\r\nThis program is distributed in the hope that it will be useful,"
               " but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY"

@@ -1,5 +1,5 @@
 /*
-    Copyright (C) 2004 Edwig Huisman
+    Copyright (C) 2004 - 2017 Edwig Huisman
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ public:
                ,CString password
                ,CString datasource
                ,bool    safty);
-  void    SetDataConnector(SQLDatabase** database);
+  void    SetDataConnector(SQLDatabase* database);
   CString GetUser()       { return m_user;       };
   CString GetPassword()   { return m_password;   };
   CString GetDataSource() { return m_datasource; };
@@ -125,5 +125,5 @@ private:
   bool    m_totalApply;
 
   // Connect 
-  SQLDatabase** m_database;
+  SQLDatabase* m_database;
 };
