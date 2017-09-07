@@ -19,6 +19,7 @@
 #include "OpenEditorApp.h"
 #include "MultConnectionsDlg.h"
 #include "Query\codeer.h"
+#include "Common\WideMessageBox.h"
 #include <KnownFolders.h>
 #include <direct.h>
 #include <wincrypt.h>
@@ -365,10 +366,20 @@ MultConnectionsDlg::OnOK()
 {
   UpdateData(Controls2Data);
 
-  if(m_UserEdit == "" || m_UserPassword == "" || m_DataSource == "")
+  if(m_DataSource == "")
   {
-    AfxMessageBox("For an ODBC login the values of (user,password,datasource) must be set");
+    AfxMessageBox("For an ODBC login we need at least a datasource",MB_OK | MB_ICONERROR);
     return;
+  }
+  if(m_UserEdit == "" || m_UserPassword == "" )
+  {
+    if(WideMessageBox(GetSafeHwnd()
+                     ,"For this datasource the user/password combination is not completely filled in. Proceed anyway?"
+                     ,"Open ODBCQuerytool"
+                     ,MB_YESNO | MB_ICONEXCLAMATION) == IDNO)
+    {
+      return;
+    }
   }
   CString timesUsed("1");
   CString lastUsage = Current();
