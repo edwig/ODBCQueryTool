@@ -941,16 +941,22 @@ COpenEditorApp::OnConnect()
                       ,connection.GetPassword()
                       ,connection.GetDataSource()
                       ,connection.GetSafty());
-      connect.SetDataConnector(&m_database);
-      result = connect.DoModal();
-      if(result == IDOK)
+      if(connect.SetDataConnector(&m_database))
       {
-        m_user         = connect.GetUser();
-        m_password     = connect.GetPassword();
-        m_datasource   = connect.GetDataSource();
-        m_safty        = connect.GetSafty();
-        UpdateDatabaseConnector();
-        return;
+        result = connect.DoModal();
+        if(result == IDOK)
+        {
+          m_user = connect.GetUser();
+          m_password = connect.GetPassword();
+          m_datasource = connect.GetDataSource();
+          m_safty = connect.GetSafty();
+          UpdateDatabaseConnector();
+          return;
+        }
+      }
+      else
+      {
+        AfxMessageBox("Cannot open database. Provide correct user/password details",MB_OK | MB_ICONERROR);
       }
     }
   }

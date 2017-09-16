@@ -24,13 +24,16 @@
 #define WINVER 0x0510 
 #endif
 
-#define VC_EXTRALEAN		// Exclude rarely-used stuff from Windows headers
+#define VC_EXTRALEAN		                    // Exclude rarely-used stuff from Windows headers
+
 #define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS  // some CString constructors will be explicit
+#define _AFX_NO_MFC_CONTROLS_IN_DIALOGS     // remove support for MFC controls in dialogs
+
 #define _AFX_ALL_WARNINGS   // turns off MFC's hiding of some common and often safely ignored warning messages
 #include <afxwin.h>         // MFC core and standard components
 #include <afxext.h>         // MFC extensions
-#include <afxdtctl.h>		// MFC support for Internet Explorer 4 Common Controls
-#include <afxcmn.h>			// MFC support for Windows Common Controls
+#include <afxdtctl.h>		    // MFC support for Internet Explorer 4 Common Controls
+#include <afxcmn.h>			    // MFC support for Windows Common Controls
 
 #define _OE_DEFAULT_HANDLER_ _COMMON_DEFAULT_HANDLER_
 

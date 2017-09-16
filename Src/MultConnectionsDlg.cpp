@@ -371,16 +371,6 @@ MultConnectionsDlg::OnOK()
     AfxMessageBox("For an ODBC login we need at least a datasource",MB_OK | MB_ICONERROR);
     return;
   }
-  if(m_UserEdit == "" || m_UserPassword == "" )
-  {
-    if(WideMessageBox(GetSafeHwnd()
-                     ,"For this datasource the user/password combination is not completely filled in. Proceed anyway?"
-                     ,"Open ODBCQuerytool"
-                     ,MB_YESNO | MB_ICONEXCLAMATION) == IDNO)
-    {
-      return;
-    }
-  }
   CString timesUsed("1");
   CString lastUsage = Current();
 
@@ -404,6 +394,20 @@ MultConnectionsDlg::OnOK()
   }
   else
   {
+    // Newly defined combination.
+    // Test for user/password 
+
+    if(m_UserEdit == "" || m_UserPassword == "" )
+    {
+      if(WideMessageBox(GetSafeHwnd()
+                       ,"For this datasource the user/password combination is not completely filled in. Proceed anyway?"
+                       ,"Open ODBCQuerytool"
+                       ,MB_YESNO | MB_ICONEXCLAMATION) == IDNO)
+      {
+        return;
+      }
+    }
+
     CConnectionDlgSetting setting(m_nextSection++
                                  ,m_UserEdit
                                  ,password

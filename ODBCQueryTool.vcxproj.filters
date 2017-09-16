@@ -895,9 +895,6 @@
     <Text Include="bugs.txt">
       <Filter>Installation files</Filter>
     </Text>
-    <Text Include="history.txt">
-      <Filter>Installation files</Filter>
-    </Text>
     <Text Include="license.txt">
       <Filter>Installation files</Filter>
     </Text>

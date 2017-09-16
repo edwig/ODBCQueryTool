@@ -955,7 +955,6 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="bugs.txt" />
-    <Text Include="history.txt" />
     <Text Include="license.txt" />
     <Text Include="plan.txt" />
     <Text Include="readme.txt" />

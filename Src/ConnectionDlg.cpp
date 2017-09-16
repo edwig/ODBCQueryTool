@@ -574,11 +574,21 @@ ConnectionDlg::SetLogin(bool    moment
   m_safty      = safty;
 }
 
-void
+bool
 ConnectionDlg::SetDataConnector(SQLDatabase* database)
 {
   m_database  = database;
+
+  if(!m_database->IsOpen())
+  {
+    m_database->Open(m_datasource,m_user,m_password,m_safty);
+    if(!m_database->IsOpen())
+    {
+      return false;
+    }
+  }
   GetConnectionAttributes();
+  return true;
 }
 
 // Set controls read-only read-write

@@ -37,7 +37,7 @@ public:
                ,CString password
                ,CString datasource
                ,bool    safty);
-  void    SetDataConnector(SQLDatabase* database);
+  bool    SetDataConnector(SQLDatabase* database);
   CString GetUser()       { return m_user;       };
   CString GetPassword()   { return m_password;   };
   CString GetDataSource() { return m_datasource; };

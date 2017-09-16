@@ -22,6 +22,11 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes version 2.2.1
+--------------------------
+- It is now possible to login on a database without a user/password combination
+  e.g. a spreadsheet or a MS-Access database
+
 Releasenotes version 2.2.0
 --------------------------
 - Sequences and procedures in the treeview are working in Oracle 12.2c
