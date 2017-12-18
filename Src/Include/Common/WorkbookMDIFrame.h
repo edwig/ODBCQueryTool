@@ -34,6 +34,7 @@ class CWorkbookControlBar : public baseCMyBar
     afx_msg void OnContextMenu (CWnd*, CPoint);
     afx_msg void OnCbar_Docking();
     afx_msg void OnCbar_Hide();
+    afx_msg void OnCbar_Select();
 	DECLARE_MESSAGE_MAP()
 };
 

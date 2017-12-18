@@ -60,6 +60,7 @@ COEditorView::OnScriptExecute()
   int endFileLine = GetLineCount();
   int curLine     = GetPosition().line;
   long ticks = GetTickCount();
+  bool first = true;
   CWaitCursor take_a_deep_sigh;
 
   m_queryPanel->ChangePanel(QPW_OUTPUT_VIEW);
@@ -76,6 +77,7 @@ COEditorView::OnScriptExecute()
     {
       break;
     }
+    first = false;
     if(m_interval && (odbcCommand.GetAt(0) != ':'))
     {
       if(!ExecuteQueryRepeat(startline,odbcCommand,false))
@@ -110,6 +112,11 @@ COEditorView::OnScriptExecute()
     // Get the new current line
     curLine = GetPosition().line;
     endFileLine = GetLineCount();
+  }
+
+  if(first)
+  {
+    AfxMessageBox("No query to execute",MB_OK | MB_ICONEXCLAMATION);
   }
   // Total batch time
   WriteStatisticsLine("Script","End of script",false,ticks);

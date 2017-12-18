@@ -7,11 +7,11 @@
 ; All rights reserved
 ;
 ; Last change:       16-09-2017
-; Versionnumber:     2.2.1
+; Versionnumber:     2.2.2
 ;-------------------------------------------------------
  !define PRODUCT_NAME                         "OpenODBCQuerytool"
- !define PRODUCT_VERSION                      "2.2.1"
- !define PRODUCT_BUILDNUMBER                  "207"
+ !define PRODUCT_VERSION                      "2.2.2"
+ !define PRODUCT_BUILDNUMBER                  "208"
  !define PRODUCT_PUBLISHER                    "EDO"
  !define PRODUCT_WEB_SITE                     "https://sourceforge.net/projects/odbcquerytool"
  !define PRODUCT_DIR_REGKEY                   "Software\Microsoft\Windows\CurrentVersion\App Paths\${PRODUCT_NAME}"

@@ -24,8 +24,8 @@
 IMPLEMENT_DYNAMIC(ObjectTree,CTreeCtrl)
 
 BEGIN_MESSAGE_MAP(ObjectTree,CTreeCtrl)
-  ON_NOTIFY_REFLECT(TVN_ITEMEXPANDING,OnItemExpanding)
-  ON_NOTIFY_REFLECT(NM_DBLCLK,        OnItemDoubleClicked)
+  ON_NOTIFY_REFLECT(TVN_ITEMEXPANDING, OnItemExpanding)
+  ON_NOTIFY_REFLECT(NM_DBLCLK,         OnItemDoubleClicked)
 END_MESSAGE_MAP()
 
 ObjectTree::ObjectTree()
@@ -260,6 +260,79 @@ ObjectTree::OnItemDoubleClicked(NMHDR* pNMHDR, LRESULT* pResult)
   }
   // Ready
   m_busy = false;
+}
+
+bool
+ObjectTree::OnTableOrView(HTREEITEM p_theItem)
+{
+  HTREEITEM itemSchema  = GetParentItem(p_theItem);
+  HTREEITEM itemSpecial = GetParentItem(itemSchema);
+
+  CString table   = GetItemText(p_theItem);
+  CString schema  = GetItemText(itemSchema);
+  CString special = GetItemText(itemSpecial);
+  table.Trim();
+  schema.Trim();
+  special.Trim();
+  if(IsSpecialNode(special))
+  {
+    if(special == "Tables" || special == "Views")
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
+
+// From pop-up menu
+void
+ObjectTree::OnTableFirst(HTREEITEM p_theItem)
+{
+  HTREEITEM itemSchema  = GetParentItem(p_theItem);
+  HTREEITEM itemSpecial = GetParentItem(itemSchema);
+
+  CString table   = GetItemText(p_theItem);
+  CString schema  = GetItemText(itemSchema);
+  CString special = GetItemText(itemSpecial);
+  table.Trim();
+  schema.Trim();
+  special.Trim();
+  if(IsSpecialNode(special))
+  {
+    if(special == "Tables" || special == "Views")
+    {
+      if(theApp.GetDatabase().GetSQLInfoDB()->GetCatalogNameUsage() & SQL_CU_DML_STATEMENTS)
+      {
+        if(!IsSpecialNode(schema))
+        {
+          table = schema + "." + table;
+        }
+      }
+      theApp.SelectFirst100(table);
+    }
+  }
+}
+
+void      
+ObjectTree::OnTableDDL(HTREEITEM p_theItem)
+{
+  HTREEITEM itemSchema  = GetParentItem(p_theItem);
+  HTREEITEM itemSpecial = GetParentItem(itemSchema);
+
+  CString table   = GetItemText(p_theItem);
+  CString schema  = GetItemText(itemSchema);
+  CString special = GetItemText(itemSpecial);
+  table.Trim();
+  schema.Trim();
+  special.Trim();
+  if(IsSpecialNode(special))
+  {
+    if(special == "Tables" || special == "Views")
+    {
+      theApp.TableDDL(table);
+    }
+  }
 }
 
 // After a 'expand' or a double-click action do this!

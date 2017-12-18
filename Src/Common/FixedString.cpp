@@ -61,12 +61,12 @@ namespace Common
 
 	void FixedString::_Xlen() // report a length_error
 	{
-		_THROW(std::length_error, _string_is_too_long);
+    throw std::length_error(_string_is_too_long);
 	}
 
 	void FixedString::_Xran() // report an out_of_range error
 	{
-		_THROW(std::out_of_range, "FixedString invalid subscript.");
+		throw std::out_of_range("FixedString invalid subscript.");
 	}
 }
 

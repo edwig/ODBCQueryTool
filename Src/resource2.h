@@ -57,6 +57,8 @@
 #define IDC_CON_DATASOURCE              138
 #define IDC_TYPE1                       138
 #define IDC_DATATYPE                    138
+#define IDR_MENU1                       138
+#define IDR_OE_TABLES_POPUP             138
 #define IDC_TYPE2                       140
 #define IDC_SIZE2                       141
 #define IDC_EXEC2                       142
@@ -167,13 +169,18 @@
 #define ID_HELP_FEATURE                 40062
 #define ID_HELP_SFNET                   40063
 #define ID_HELP_GITHUB                  40064
+#define ID_POPUP_SELECT                 40065
+#define ID_CBAR_SEL100                  40066
+#define ID_TEST_SELECTFIRST100          40067
+#define ID_TABLE_DDL                    40068
+#define ID_TABLE_FIRST                  40069
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        138
-#define _APS_NEXT_COMMAND_VALUE         40065
+#define _APS_NEXT_RESOURCE_VALUE        139
+#define _APS_NEXT_COMMAND_VALUE         40070
 #define _APS_NEXT_CONTROL_VALUE         1042
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

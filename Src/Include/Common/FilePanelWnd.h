@@ -101,12 +101,15 @@ public:
     afx_msg void OnExplorerTree_DblClick(NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg void OnExplorerTree_RClick  (NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg void OnDrivers_RClick       (NMHDR* pNMHDR, LRESULT* pResult);
+    afx_msg void OnTableTree_RClick          (NMHDR* pNMHDR, LRESULT* pResult);
     afx_msg void OnTimer(UINT_PTR nIDEvent);
     afx_msg void OnFpwOpen();
     afx_msg void OnFpwRefresh();
     afx_msg void OnFpwSetWorDir();
     afx_msg void OnFpwRefreshDrivers();
     afx_msg void OnFpwRefreshOdbc();
+    afx_msg void OnTableFirst();
+    afx_msg void OnTableDDL();
     afx_msg BOOL OnTooltipNotify(UINT wnd,NMHDR* tooltip,LRESULT* res);
 };
 

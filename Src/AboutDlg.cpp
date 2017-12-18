@@ -25,21 +25,26 @@ IMPLEMENT_DYNAMIC(CAboutDlg, CDialog)
 CAboutDlg::CAboutDlg(CWnd* pParent /*=NULL*/)
           :CDialog(CAboutDlg::IDD, pParent)
 {
-  m_license = "ODBC Query Tool 2.2.1 Build: 207"
+  m_license = "ODBC Query Tool 2.2.2 Build: 208"
               "\r\nCopyright (c) 2004-2017 Edwig Huisman" 
-              "\r\n\r\nThis program is free software; you can redistribute it" 
-              "\r\n\r\nThis program is distributed in the hope that it will be useful,"
+              "\r\n"
+              "\r\nThis program is free software; you can redistribute it" 
+              "\r\n"
+              "\r\nThis program is distributed in the hope that it will be useful,"
               " but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY"
               " or FITNESS FOR A PARTICULAR PURPOSE. See the license file for more details."
-              "\r\n\r\nCredits go to the following persons:"
-              "\r\n\r\nFor the OpenEditor: Aleksey Kochetov"
+              "\r\n"
+              "\r\nCredits go to the following persons:"
+              "\r\n"
+              "\r\nFor the OpenEditor: Aleksey Kochetov"
               "\r\nFor his superb data grid: Chris Maunder"
-              "\r\nFor the ODBCRecordset: B.P. Nebbeling"
+              "\r\nFor the ODBC ideas: B.P. Nebbeling"
               "\r\nFor all the testing: Vincent Heuveling"
               "\r\nFor editable query grids: Marco Brattinga"
               "\r\nFor NUMERIC corrections: Ibo Boekestijn"
               "\r\nFor GUID corrections: Dann Corbit"
-              "\r\nFor documentation ideas: Chandra Sekhar";
+              "\r\nFor documentation ideas: Chandra Sekhar"
+              "\r\nFor the table ideas: Dennis Walkewitz";
 }
 
 CAboutDlg::~CAboutDlg()

@@ -526,8 +526,16 @@ void Storage::GetLine  (int line, const char*& ptr) const
 
 void Storage::GetLine (int line, const char*& ptr, int& len) const
 {
+  if(line >= 0 && line < m_Lines.size())
+  {
     ptr = m_Lines.at(line).data();
     len = (int)m_Lines[line].length();
+  }
+  else
+  {
+    ptr = nullptr;
+    len = 0;
+  }
 }
 
 void Storage::Insert (char ch, int line, int pos)

@@ -1825,6 +1825,21 @@ LANGUAGE LANG_DUTCH, SUBLANG_DUTCH
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// Menu
+//
+
+IDR_OE_TABLES_POPUP MENU
+BEGIN
+    POPUP "Tables"
+    BEGIN
+        MENUITEM "Select first 100",            ID_TABLE_FIRST
+        MENUITEM "Table DDL",                   40068
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // Icon
 //
 

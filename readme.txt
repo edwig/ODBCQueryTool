@@ -22,6 +22,17 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes version 2.2.2
+--------------------------
+- Compileable in Visual Studio 2017 (fixed std::string throws)
+- Fixed 'no error on F5 after end-of-file' bug
+- Fixed CTRL-F12 file error after installation
+- Fixed CTRL-F12 error after END-OF-FILE in the buffer
+- NEW FEATURE: right click on a ODBC table in the table tree to
+  - SELECT first 100 rows of the table
+  - Create a DDL script of the table
+  Both right-click menu items only work on a table or a view node
+
 Releasenotes version 2.2.1
 --------------------------
 - It is now possible to login on a database without a user/password combination

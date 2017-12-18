@@ -1066,9 +1066,15 @@ COpenEditorApp::TableDDL(CString& p_table)
   if(m_pMainWnd)
   {
     CWaitCursor take_a_deep_sigh;
+
+    // Get the temp directory
     CString directory;
     directory.GetEnvironmentVariable("TMP");
-    CString filename("CreateTable_");
+    directory.TrimRight('\\');
+    // Get a filename for the table
+    CString filename(directory);
+    filename += "\\";
+    filename += "CreateTable_";
     filename += p_table;
     filename += ".sql";
 
@@ -1082,6 +1088,51 @@ COpenEditorApp::TableDDL(CString& p_table)
     catch(CString& error)
     {
       DoMessageBox("Cannot create DDL for table: " + p_table + "\n" + error,MB_OK | MB_ICONERROR,0);
+    }
+  }
+}
+
+void
+COpenEditorApp::SelectFirst100(CString& p_table)
+{
+  if(m_pMainWnd)
+  {
+    CWaitCursor take_a_deep_sigh;
+
+    // Get the temp directory
+    CString directory;
+    directory.GetEnvironmentVariable("TMP");
+    directory.TrimRight('\\');
+    // Get a filename for the table
+    CString filename(directory);
+    filename += "\\";
+    filename += "Select_";
+    filename += p_table;
+    filename += ".sql";
+
+    try
+    {
+      CString select("SELECT * FROM ");
+      select += p_table;
+      select += ";\n";
+
+      FILE* fp = nullptr;
+      fopen_s(&fp,filename,"w");
+      if(fp)
+      {
+        fputs(select,fp);
+        fclose(fp);
+      }
+
+      // Open as a document
+      AfxGetApp()->OpenDocumentFile(filename);
+      // Execute the script
+      m_pMainWnd->PostMessage(WM_COMMAND,ID_SCRIPT_CURRENT,0);
+
+    }
+    catch(CString& error)
+    {
+      DoMessageBox("Cannot create select script for table: " + p_table + "\n" + error,MB_OK | MB_ICONERROR,0);
     }
   }
 }

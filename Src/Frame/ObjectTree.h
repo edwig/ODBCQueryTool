@@ -87,6 +87,11 @@ public:
 
   HTREEITEM InsertItem(CString p_string,HTREEITEM p_item,int p_data = 0);
 
+  // From pop-up menu
+  void      OnTableFirst (HTREEITEM p_item);
+  void      OnTableDDL   (HTREEITEM p_item);
+  bool      OnTableOrView(HTREEITEM p_item);
+
 private:
   ObjectImage TypeToImage(CString p_type);
   void      TriggerToTree(MetaTrigger& trigger,HTREEITEM trigItem);

@@ -439,7 +439,11 @@ BOOL COEditorView::OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINF
 
 	    return CView::OnCmdMsg(nID, nCode, pExtra, pHandlerInfo);
     }
-    _OE_DEFAULT_HANDLER_;
+    catch(...)
+    {
+      int a = 1;
+    }
+    // _OE_DEFAULT_HANDLER_;
 
     return TRUE;
 }

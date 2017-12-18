@@ -121,12 +121,15 @@ BEGIN_MESSAGE_MAP(CFilePanelWnd, CTabCtrl)
     ON_NOTIFY(NM_DBLCLK,  ID_FPW_EXPLORER,  OnExplorerTree_DblClick)
     ON_NOTIFY(NM_RCLICK,  ID_FPW_EXPLORER,  OnExplorerTree_RClick)
     ON_NOTIFY(NM_RCLICK,  ID_FPW_DRIVES,    OnDrivers_RClick)
+    ON_NOTIFY(NM_RCLICK,  ID_FPW_TABLE,     OnTableTree_RClick)
     ON_NOTIFY_EX(TTN_NEEDTEXT,0,            OnTooltipNotify)
     ON_WM_TIMER()
     ON_COMMAND(ID_FPW_OPEN,           OnFpwOpen)
     ON_COMMAND(ID_FPW_REFRESH,        OnFpwRefresh)
     ON_COMMAND(ID_FPW_SET_DEF_DIR,    OnFpwSetWorDir)
     ON_COMMAND(ID_FPW_REFRESH_DRIVERS,OnFpwRefreshDrivers)
+    ON_COMMAND(ID_TABLE_FIRST,        OnTableFirst)
+    ON_COMMAND(ID_TABLE_DDL,          OnTableDDL)
 END_MESSAGE_MAP()
 
 
@@ -774,7 +777,28 @@ void CFilePanelWnd::OnDrivers_RClick (NMHDR*, LRESULT* pResult)
   *pResult = 1;
 }
 
-void CFilePanelWnd::OnFpwOpen ()
+void 
+CFilePanelWnd::OnTableTree_RClick(NMHDR* pNMHDR,LRESULT* pResult)
+{
+  CPoint point;
+  ::GetCursorPos(&point);
+
+  HTREEITEM hCurSel = m_tableTree.GetNextItem(TVI_ROOT,TVGN_CARET);
+  if(hCurSel)
+  {
+    if(m_tableTree.OnTableOrView(hCurSel))
+    {
+      CMenu menu;
+      VERIFY(menu.LoadMenu(IDR_OE_TABLES_POPUP));
+      CMenu* pPopup = menu.GetSubMenu(0);
+      ASSERT(pPopup != NULL);
+      pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON,point.x,point.y,this);
+    }
+  }
+  *pResult = 1;
+}
+
+void CFilePanelWnd::OnFpwOpen()
 {
   HTREEITEM hCurSel = m_explorerTree.GetNextItem(TVI_ROOT, TVGN_CARET);
   if (hCurSel)
@@ -1026,4 +1050,24 @@ CFilePanelWnd::PreTranslateMessage(MSG* pMsg)
     }
   }
   return CTabCtrl::PreTranslateMessage(pMsg);
+}
+
+void 
+CFilePanelWnd::OnTableFirst()
+{
+  HTREEITEM hCurSel = m_tableTree.GetNextItem(TVI_ROOT,TVGN_CARET);
+  if(hCurSel)
+  {
+    m_tableTree.OnTableFirst(hCurSel);
+  }
+}
+
+void 
+CFilePanelWnd::OnTableDDL()
+{
+  HTREEITEM hCurSel = m_tableTree.GetNextItem(TVI_ROOT,TVGN_CARET);
+  if(hCurSel)
+  {
+    m_tableTree.OnTableDDL(hCurSel);
+  }
 }

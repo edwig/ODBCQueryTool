@@ -73,6 +73,7 @@ public:
   void    OnActivateApp (BOOL bActive);
   void    FindTable     (CString& table);
   void    TableDDL      (CString& p_table);
+  void    SelectFirst100(CString& p_table);
   CString FindNativeSQL (CString& command);
   void    ReportCapabilities();
   void    OnSessionStatus();
