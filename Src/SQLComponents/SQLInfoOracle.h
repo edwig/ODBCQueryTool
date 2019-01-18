@@ -194,6 +194,8 @@ public:
   //
   //////////////////////////////////////////////////////////////////////////
 
+  // Meta info about meta types
+  CString GetCATALOGMetaTypes(int p_type) const;
   // All table functions
   CString GetCATALOGTableExists    (CString p_schema,CString p_tablename) const;
   CString GetCATALOGTablesList     (CString p_schema,CString p_pattern)   const;

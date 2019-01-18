@@ -412,6 +412,15 @@ SQLInfoGenericODBC::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_da
 //
 //////////////////////////////////////////////////////////////////////////
 
+// Meta info about meta types
+// Standard ODBC functions are good enough
+CString
+SQLInfoGenericODBC::GetCATALOGMetaTypes(int p_type) const
+{
+  UNREFERENCED_PARAMETER(p_type);
+  return "";
+}
+
 // ALL FUNCTIONS FOR TABLE(s)
 
 CString

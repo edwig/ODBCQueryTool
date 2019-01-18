@@ -326,7 +326,6 @@ void CFilePanelWnd::ChangeTab (int nTab)
   if (nTab == FPW_ODBCTREE_TAB && !m_isOdbcInitialized)
   {
     OnFpwRefreshOdbc();
-    m_isOdbcInitialized = true;
   }
   if (nTab == FPW_TABLETREE_TAB)
   {
@@ -893,6 +892,8 @@ CFilePanelWnd::OnFpwRefreshOdbc()
 
   m_tableTree.SetFilter("");
   m_tableTree.ClearTree();
+
+  m_isOdbcInitialized = true;
 }
 
 void 

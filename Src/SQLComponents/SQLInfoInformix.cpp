@@ -427,6 +427,15 @@ SQLInfoInformix::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,i
 //
 //////////////////////////////////////////////////////////////////////////
 
+// Meta info about meta types
+// Standard ODBC functions are good enough
+CString
+SQLInfoInformix::GetCATALOGMetaTypes(int p_type) const
+{
+  UNREFERENCED_PARAMETER(p_type);
+  return "";
+}
+
 // Get SQL to check if a table already exists in the database
 CString
 SQLInfoInformix::GetCATALOGTableExists(CString /*p_schema*/,CString p_tablename) const

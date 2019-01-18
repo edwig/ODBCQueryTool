@@ -398,6 +398,14 @@ SQLInfoFirebird::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,i
 //
 //////////////////////////////////////////////////////////////////////////
 
+// Meta info about meta types
+// Standard ODBC functions are good enough
+CString 
+SQLInfoFirebird::GetCATALOGMetaTypes(int p_type) const
+{
+  return "";
+}
+
 // Get SQL to check if a table already exists in the database
 CString
 SQLInfoFirebird::GetCATALOGTableExists(CString /*p_schema*/,CString p_tablename) const

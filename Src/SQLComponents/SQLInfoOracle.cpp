@@ -430,6 +430,41 @@ SQLInfoOracle::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int
 //
 //////////////////////////////////////////////////////////////////////////
 
+// Meta info about meta types
+// Standard ODBC functions are ***NOT*** good enough (6 seconds per connect)
+// So we provide our own queries for these functions
+CString
+SQLInfoOracle::GetCATALOGMetaTypes(int p_type) const
+{
+  CString sql;
+
+  switch(p_type)
+  {
+    case META_CATALOGS: sql = "SELECT UPPER(Value) AS catalog\n"
+                              "      ,''           AS remarks\n"
+                              "  FROM v$parameter\n"
+                              " WHERE name = 'db_name'\n"
+                              "UNION\n"
+                              "SELECT db_link\n"
+                              "      ,''\n"
+                              "  FROM dba_db_links";
+                        break;
+    case META_SCHEMAS:  sql = "SELECT DISTINCT username\n"
+                              "      ,'' AS remarks\n"
+                              "  FROM all_users";
+                        break;
+    case META_TABLES:   sql = "SELECT 'TABLE' AS table_type\n"
+                              "      ,''      AS remarks\n"
+                              "  FROM dual\n"
+                              "UNION\n"
+                              "SELECT 'VIEW'\n"
+                              "      ,''\n"
+                              "  FROM dual";
+                        break;
+  }
+  return sql;
+}
+
 // Get SQL to check if a table already exists in the database
 CString
 SQLInfoOracle::GetCATALOGTableExists(CString p_schema,CString p_tablename) const

@@ -397,6 +397,15 @@ SQLInfoAccess::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int
 //
 //////////////////////////////////////////////////////////////////////////
 
+// Meta info about meta types
+// Standard ODBC functions are good enough
+CString
+SQLInfoAccess::GetCATALOGMetaTypes(int p_type) const
+{
+  UNREFERENCED_PARAMETER(p_type);
+  return "";
+}
+
 // Get SQL to check if a table already exists in the database
 CString
 SQLInfoAccess::GetCATALOGTableExists(CString /*p_schema*/,CString /*p_tablename*/) const
