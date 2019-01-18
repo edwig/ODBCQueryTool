@@ -252,10 +252,6 @@ SQLDatabase::Open(CString const& p_connectString,bool p_readOnly)
   // Time to set our attributes
   SetAttributesBeforeConnect();
 
-  char* lek = (char*) malloc(12345);
-  strcpy_s(lek,12345,"hoezo?");
-
-
   // The Connect function wants a non-const ptr
   SQLCHAR* pszConnect = (SQLCHAR*)p_connectString.GetString();
   SQLCHAR  szConnectOut[CONNECTSTRING_MAXLEN + 1];
