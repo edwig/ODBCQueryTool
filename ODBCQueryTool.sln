@@ -1,13 +1,13 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.25420.1
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.271
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ODBCQueryTool", "ODBCQueryTool.vcxproj", "{B9835D63-5C8A-4ADC-A3D7-699D75875770}"
 	ProjectSection(ProjectDependencies) = postProject
 		{0E56E030-9CDD-47A7-B580-DCD4E103F968} = {0E56E030-9CDD-47A7-B580-DCD4E103F968}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SQLComponents", "Src\SQLComponents\SQLComponenten.vcxproj", "{0E56E030-9CDD-47A7-B580-DCD4E103F968}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SQLComponents", "Src\SQLComponents\SQLComponents.vcxproj", "{0E56E030-9CDD-47A7-B580-DCD4E103F968}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,5 +36,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {A67FB055-03F8-45B1-BF2C-AADBB9339E9C}
 	EndGlobalSection
 EndGlobal

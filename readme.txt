@@ -22,6 +22,14 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes version 2.3.0
+--------------------------
+- Fixed performance bug in starting of Oracle 12 database. Knocked of 6 seconds
+  of each login for meta info of tables and catalogs.
+- Oracle databases now also display all linked catalogs in the driver page
+- Connection errors at login are now shown
+- Upgraded to the latest MS-Windows 10 SDK build (17763)
+
 Releasenotes version 2.2.2
 --------------------------
 - Compileable in Visual Studio 2017 (fixed std::string throws)

@@ -403,6 +403,7 @@ SQLInfoFirebird::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,i
 CString 
 SQLInfoFirebird::GetCATALOGMetaTypes(int p_type) const
 {
+  UNREFERENCED_PARAMETER(p_type);
   return "";
 }
 

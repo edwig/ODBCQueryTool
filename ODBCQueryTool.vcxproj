@@ -22,7 +22,7 @@
     <ProjectGuid>{B9835D63-5C8A-4ADC-A3D7-699D75875770}</ProjectGuid>
     <RootNamespace>ODBCQueryTool</RootNamespace>
     <Keyword>MFCProj</Keyword>
-    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -898,13 +898,14 @@
     <ClInclude Include="Src\Frame\WinException.h" />
     <ClInclude Include="Include\COMMON\WorkbookBar.h" />
     <ClInclude Include="Include\COMMON\WorkbookMDIFrame.h" />
+    <ClInclude Include="Src\Version.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Installer\Installer_32bits\Installer_32Bits.nsi" />
     <None Include="Installer\Installer_64bits\Installer_64Bits.nsi" />
     <None Include="Installer\Installer_Algemeen.nsh" />
     <None Include="OpenEditor.rh" />
-    <None Include="res\OpenQuery.rc2" />
+    <None Include="Src\res\OpenQuery.rc2" />
     <None Include="_Data\languages.dat" />
     <None Include="_Data\settings.dat" />
     <None Include="_Data\templates.dat" />

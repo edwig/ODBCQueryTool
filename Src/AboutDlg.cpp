@@ -18,6 +18,7 @@
 
 #include "stdafx.h"
 #include "AboutDlg.h"
+#include "Version.h"
 
 // CAboutDlg dialog
 
@@ -25,8 +26,8 @@ IMPLEMENT_DYNAMIC(CAboutDlg, CDialog)
 CAboutDlg::CAboutDlg(CWnd* pParent /*=NULL*/)
           :CDialog(CAboutDlg::IDD, pParent)
 {
-  m_license = "ODBC Query Tool 2.2.2 Build: 208"
-              "\r\nCopyright (c) 2004-2017 Edwig Huisman" 
+  m_license = "ODBC Query Tool " ODBCQUERYTOOL_VERSION " Build: " ODBCQUERYTOOL_BUILD
+              "\r\n" ODBCQUERYTOOL_COPYRIGHT
               "\r\n"
               "\r\nThis program is free software; you can redistribute it" 
               "\r\n"
@@ -41,6 +42,7 @@ CAboutDlg::CAboutDlg(CWnd* pParent /*=NULL*/)
               "\r\nFor the ODBC ideas: B.P. Nebbeling"
               "\r\nFor all the testing: Vincent Heuveling"
               "\r\nFor editable query grids: Marco Brattinga"
+              "\r\nFor the binary coded decimal: Henrik Vestermark"
               "\r\nFor NUMERIC corrections: Ibo Boekestijn"
               "\r\nFor GUID corrections: Dann Corbit"
               "\r\nFor documentation ideas: Chandra Sekhar"

@@ -35,7 +35,8 @@ END
 BEGIN
     "#include ""afxres.h""\r\n"
     "#include ""OpenEditor.rh""\r\n"
-    "\0"
+    "#include ""res\\OpenQuery.rc2""\r\n"
+  "\0"
 END
 
 3 TEXTINCLUDE 
@@ -52,6 +53,7 @@ BEGIN
     "#endif //_WIN32\r\n"
     "#include ""afxres.rc""         // Standard components\r\n"
     "#include ""afxprint.rc""       // printing/print preview resources\r\n"
+    "#include ""res\\OpenQuery.rc2""\r\n"
     "#endif\r\n"
     "\0"
 END
@@ -133,46 +135,6 @@ BEGIN
     BUTTON      ID_EDIT_BKM_REMOVE_ALL
 END
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Version
-//
-
-VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,0,3,33
- PRODUCTVERSION 1,0,3,33
- FILEFLAGSMASK 0x3fL
-#ifdef _DEBUG
- FILEFLAGS 0x9L
-#else
- FILEFLAGS 0x8L
-#endif
- FILEOS 0x4L
- FILETYPE 0x1L
- FILESUBTYPE 0x0L
-BEGIN
-    BLOCK "StringFileInfo"
-    BEGIN
-        BLOCK "040904b0"
-        BEGIN
-            VALUE "Comments", "Stable production version"
-            VALUE "CompanyName", "Built by Edwig Huisman"
-            VALUE "FileDescription", "ODBC Query Tool"
-            VALUE "FileVersion", "1, 0, 3, 33"
-            VALUE "InternalName", "ODBCQueryTool"
-            VALUE "LegalCopyright", "Copyright (C) 2006-2011"
-            VALUE "OriginalFilename", "ODBCQueryTool.exe"
-            VALUE "PrivateBuild", "Build 33"
-            VALUE "ProductName", "ODBC Query Tool"
-            VALUE "ProductVersion", "1, 0, 3, 33"
-        END
-    END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x409, 1200
-    END
-END
 
 #endif    // Neutral resources
 /////////////////////////////////////////////////////////////////////////////
@@ -1960,6 +1922,7 @@ LANGUAGE 9, 1
 #endif //_WIN32
 #include "afxres.rc"         // Standard components
 #include "afxprint.rc"       // printing/print preview resources
+#include "res\OpenQuery.rc2"
 #endif
 
 /////////////////////////////////////////////////////////////////////////////

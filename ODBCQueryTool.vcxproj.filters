@@ -740,13 +740,13 @@
     <ClInclude Include="Src\Frame\InfoTree.h">
       <Filter>Frame\Frame headers</Filter>
     </ClInclude>
+    <ClInclude Include="Src\Version.h">
+      <Filter>Source Files\Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="OpenEditor.rh">
       <Filter>Source Files\Header Files</Filter>
-    </None>
-    <None Include="res\OpenQuery.rc2">
-      <Filter>Resource Files</Filter>
     </None>
     <None Include="_Data\languages.dat">
       <Filter>Data</Filter>
@@ -783,6 +783,9 @@
     </None>
     <None Include="Installer\Installer_32bits\Installer_32Bits.nsi">
       <Filter>Installation files</Filter>
+    </None>
+    <None Include="Src\res\OpenQuery.rc2">
+      <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

@@ -270,8 +270,9 @@ SQLDatabase::Open(CString const& p_connectString,bool p_readOnly)
   // If connection fails
   if(!Check(res))
   {
+    CString error(GetErrorString());
     Close();
-    throw CString("Error at opening database: ") + GetErrorString();
+    throw CString("Error at opening database: ") + error;
   }
   // Remember the returned completed connect string of the database
   // This contains all the database option settings from the ODBC Driver
