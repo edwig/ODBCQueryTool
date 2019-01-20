@@ -26,8 +26,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #pragma once
 #include "SQLComponents.h"
@@ -40,13 +40,13 @@ namespace SQLComponents
   void    InitCodePageNames();
   // Convert strings from/to Unicode
   bool    TryConvertWideString(const uchar* p_buffer
-                            ,int          p_length
-                            ,CString      p_charset
-                            ,CString&     p_string
-                            ,bool&        p_foundBOM);
+                               ,int          p_length
+                               ,CString      p_charset
+                               ,CString&     p_string
+                               ,bool&        p_foundBOM);
   bool    TryCreateWideString(const CString& p_string
-                            ,const CString  p_charset
-                            ,const bool     p_doBom
+                              ,const CString  p_charset
+                              ,const bool     p_doBom
                               ,uchar**  p_buffer
                               ,int&     p_length);
   // Getting the codepage number from the charset

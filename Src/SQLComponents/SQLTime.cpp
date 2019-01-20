@@ -2,7 +2,7 @@
 //
 // File: SQLTime.cpp
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #include "StdAfx.h"
 #include "SQLComponents.h"
@@ -141,7 +141,7 @@ SQLTime::SetTime()
     // Reset the time to NULL
     SetNull();
     // Then throw the error
-    throw error;
+    throw StdException(error);
   }
 }
 
@@ -339,24 +339,24 @@ SQLTime::ParseTime(const CString& p_string)
                     ,&m_theTime.m_second);
     if(n < 2)
     {
-      throw CString("Wrong format for conversion to time. Must be in the format: hh:mm[:ss]");
+      throw StdException("Wrong format for conversion to time. Must be in the format: hh:mm[:ss]");
     }
   }
 
   // Check for correct values
   if (m_theTime.m_hour < 0 || m_theTime.m_hour > 23)
   {
-    throw CString("Incorrect time format: the value of the hour must be between 0 and 23 (inclusive)");
+    throw StdException("Incorrect time format: the value of the hour must be between 0 and 23 (inclusive)");
   }
 
   if (m_theTime.m_minute < 0 || m_theTime.m_minute > 59)
   {
-    throw CString("Incorrect time format: the value of minutes must be between 0 and 59 (inclusive)");
+    throw StdException("Incorrect time format: the value of minutes must be between 0 and 59 (inclusive)");
   }
 
   if (m_theTime.m_second < 0 || m_theTime.m_second > 59)
   {
-    throw CString("Incorrect time format: the value of the seconds must be between 0 and 59 (inclusive)");
+    throw StdException("Incorrect time format: the value of the seconds must be between 0 and 59 (inclusive)");
   }
   SetTime();
 }
@@ -412,7 +412,7 @@ SQLTime::ParseXMLTime(const CString& p_string)
   //  Parse the string
   // changed char to unsigned int for 64 bit implementation
   char sep1,sep2,sep3,sep4,sep5;
-  int n = sscanf_s(p_string,"%1d%1d%c%1d%1d%c%1d%1d%c%d%c%1d%1d%c%1d%1d",
+  int n = sscanf_s(p_string,"%1u%1u%c%1u%1u%c%1u%1u%c%u%c%1u%1u%c%1u%1u",
                   &uu[0],&uu[1],
                   &sep1,(unsigned int) sizeof(char),
                   &mi[0],&mi[1],
@@ -596,7 +596,7 @@ SQLTime::operator+(const SQLInterval& p_interval) const
   }
   if(!p_interval.GetIsTimeType())
   {
-    throw CString("Cannot add incompatible interval to time type");
+    throw StdException("Cannot add incompatible interval to time type");
   }
   TimeValue value = m_seconds + p_interval.GetSeconds();
   SQLTime time((__int64) value);
@@ -615,7 +615,7 @@ SQLTime::operator-(const SQLInterval& p_interval) const
   }
   if(!p_interval.GetIsTimeType())
   {
-    throw CString("Cannot add incompatible interval to time type");
+    throw StdException("Cannot add incompatible interval to time type");
   }
   TimeValue value = m_seconds - p_interval.GetSeconds();
   SQLTime time((__int64)value);

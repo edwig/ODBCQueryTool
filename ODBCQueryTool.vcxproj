@@ -129,7 +129,7 @@
       <Culture>0x0413</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>odbc32.lib;crypt32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>rpcrt4.lib;odbc32.lib;crypt32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(SolutionDir)$(TargetName).exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -175,7 +175,7 @@
       <Culture>0x0413</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>crypt32.lib;shlwapi.lib;odbc32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>rpcrt4.lib;crypt32.lib;shlwapi.lib;odbc32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(SolutionDir)$(TargetName).exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -224,7 +224,7 @@
       <Culture>0x0413</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>odbc32.lib;crypt32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>rpcrt4.lib;odbc32.lib;crypt32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>.\ODBCQueryTool.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <SubSystem>Windows</SubSystem>
@@ -276,7 +276,7 @@
       <Culture>0x0413</Culture>
     </ResourceCompile>
     <Link>
-      <AdditionalDependencies>odbc32.lib;crypt32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>rpcrt4.lib;odbc32.lib;crypt32.lib;shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(SolutionDir)$(ProjectName)$(Platform).exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <SubSystem>Windows</SubSystem>

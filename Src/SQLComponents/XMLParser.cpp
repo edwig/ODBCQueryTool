@@ -26,14 +26,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #include "stdafx.h"
 #include "XMLParser.h"
 #include "XMLMessage.h"
 #include "DefuseBOM.h"
 #include "ConvertWideString.h"
+
+#ifndef COMPILED_TOGETHER_WITH_MARLIN
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -217,6 +219,11 @@ XMLParser::ParseMessage(CString& p_message,WhiteSpace p_whiteSpace /*=PRESERVE_W
     // Error message text already set
     m_message->m_internalError = error;
   }
+  catch(StdException& ex)
+  {
+    m_message->m_internalError = XmlError::XE_NotAnXMLMessage;
+    m_message->m_internalErrorString = ex.GetErrorMessage();
+  }
 
   // Conclusion of condensed level
   m_message->SetCondensed(m_spaces < m_elements);
@@ -295,7 +302,7 @@ XMLParser::SetError(XmlError p_error,const uchar* p_text,bool p_throw /*=true*/)
   // Passing it on
   if(p_throw)
   {
-    throw p_error;
+    throw StdException((int)p_error);
   }
 }
 
@@ -789,3 +796,5 @@ XMLParser::MakeElement(CString& p_namespace,CString& p_name)
 
 // End of namespace
 }
+
+#endif // COMPILED_TOGETHER_WITH_MARLIN

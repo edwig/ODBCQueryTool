@@ -361,7 +361,7 @@ VariablesDlg::OnCbnSelchangeInout1()
     CString typeName;
     m_inoutCombo1.GetLBText(num,typeName);
     int type = m_variable1->FindParamtype((char*)typeName.GetString());
-    m_variable1->SetParameterType(type);
+    m_variable1->SetParameterType((SQLParamType)type);
   }
 }
 
@@ -375,7 +375,7 @@ VariablesDlg::OnCbnSelchangeInout2()
     CString typeName;
     m_inoutCombo2.GetLBText(num,typeName);
     int type = m_variable2->FindParamtype((char*)typeName.GetString());
-    m_variable2->SetParameterType(type);
+    m_variable2->SetParameterType((SQLParamType)type);
   }
 }
 
@@ -389,7 +389,7 @@ VariablesDlg::OnCbnSelchangeInout3()
     CString typeName;
     m_inoutCombo3.GetLBText(num,typeName);
     int type = m_variable3->FindParamtype((char*)typeName.GetString());
-    m_variable3->SetParameterType(type);
+    m_variable3->SetParameterType((SQLParamType)type);
   }
 }
 
@@ -403,7 +403,7 @@ VariablesDlg::OnCbnSelchangeInout4()
     CString typeName;
     m_inoutCombo4.GetLBText(num,typeName);
     int type = m_variable4->FindParamtype((char*)typeName.GetString());
-    m_variable4->SetParameterType(type);
+    m_variable4->SetParameterType((SQLParamType)type);
   }
 }
 

@@ -2,7 +2,7 @@
 //
 // File: SQLInterval.cpp
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #include "StdAfx.h"
 #include "SQLComponents.h"
@@ -170,7 +170,7 @@ SQLInterval::SetInterval(SQLINTERVAL p_type,int p_years,int p_months)
   }
   else
   {
-    throw CString("Cannot set day-second interval type from year-month value");
+    throw StdException("Cannot set day-second interval type from year-month value");
   }
 }
 
@@ -185,7 +185,7 @@ SQLInterval::SetInterval(SQLINTERVAL p_type,int p_days,int p_hours,int p_minutes
      p_type == SQL_IS_MONTH ||
      p_type == SQL_IS_YEAR_TO_MONTH)
   {
-    throw CString("Cannot set year-month interval type from day-second value");
+    throw StdException("Cannot set year-month interval type from day-second value");
   }
   // Re-init the interval
   memset(&m_interval,0,sizeof(SQL_INTERVAL_STRUCT));
@@ -768,7 +768,7 @@ SQLInterval::AddYears(int p_years)
   }
   else
   {
-    throw CString("Cannot add years to a day-second interval");
+    throw StdException("Cannot add years to a day-second interval");
   }
   RecalculateValue();
 }
@@ -787,7 +787,7 @@ SQLInterval::AddMonths(int p_months)
   }
   else
   {
-    throw CString("Cannot add months to a day-second interval");
+    throw StdException("Cannot add months to a day-second interval");
   }
   Normalise();
   RecalculateValue();
@@ -802,7 +802,7 @@ SQLInterval::AddDays(int p_days)
   }
   else
   {
-    throw CString("Cannot add days to a year-month interval type");
+    throw StdException("Cannot add days to a year-month interval type");
   }
   RecalculateInterval();
 }
@@ -817,7 +817,7 @@ SQLInterval::AddHours(int p_hours)
   }
   else
   {
-    throw CString("Cannot add hours to a year-month interval type");
+    throw StdException("Cannot add hours to a year-month interval type");
   }
   RecalculateInterval();
 }
@@ -831,7 +831,7 @@ SQLInterval::AddMinutes(int p_minutes)
   }
   else
   {
-    throw CString("Cannot add minutes to a year-month interval type");
+    throw StdException("Cannot add minutes to a year-month interval type");
   }
   RecalculateInterval();
 }
@@ -845,7 +845,7 @@ SQLInterval::AddSeconds(int p_seconds)
   }
   else
   {
-    throw CString("Cannot add seconds to a year-month interval type");
+    throw StdException("Cannot add seconds to a year-month interval type");
   }
   RecalculateInterval();
 }
@@ -859,7 +859,7 @@ SQLInterval::AddFraction(int p_fraction)
   }
   else
   {
-    throw CString("Cannot add a fraction to a year-month interval type");
+    throw StdException("Cannot add a fraction to a year-month interval type");
   }
   RecalculateInterval();
 }
@@ -1109,7 +1109,7 @@ SQLInterval::ParseInterval(CString p_duration)
                 break;
       case 'H': if(!didTime)
                 {
-                  throw CString("Illegal duriation period (hours without a 'T')");
+                  throw StdException("Illegal duriation period (hours without a 'T')");
                 }
                 m_interval.intval.day_second.hour = value;
                 break;
@@ -1125,7 +1125,7 @@ SQLInterval::ParseInterval(CString p_duration)
                 break;
       case 'S': if(!didTime)
                 {
-                  throw CString("Illegal duration period (seconds without a 'T')");
+                  throw StdException("Illegal duration period (seconds without a 'T')");
                 }
                 m_interval.intval.day_second.second   = value;
                 m_interval.intval.day_second.fraction = fraction;
@@ -1161,7 +1161,7 @@ SQLInterval::ParseInterval(CString p_duration)
     // with the SQL definition of an interval, like Month-to-Day
     CString error;
     error.Format("XML duration period not compatible with SQL (%c to %c)",firstMarker,lastMarker);
-    throw error;
+    throw StdException(error);
   }
 
   // Found everything: wrap up
@@ -1391,37 +1391,37 @@ SQLInterval::RecalculateInterval()
                                   break;
     case SQL_IS_MONTH:            m_interval.intval.year_month.month    = (SQLUINTEGER) value;
                                   break;
-    case SQL_IS_DAY:              m_interval.intval.day_second.day      = (SQLUINTEGER) value / NANOSECONDS_PER_SEC / SECONDS_PER_DAY;
+    case SQL_IS_DAY:              m_interval.intval.day_second.day      = (SQLUINTEGER) (value / NANOSECONDS_PER_SEC / SECONDS_PER_DAY);
                                   break;
-    case SQL_IS_HOUR:             m_interval.intval.day_second.hour     = (SQLUINTEGER) value / NANOSECONDS_PER_SEC / SECONDS_PER_HOUR;
+    case SQL_IS_HOUR:             m_interval.intval.day_second.hour     = (SQLUINTEGER) (value / NANOSECONDS_PER_SEC / SECONDS_PER_HOUR);
                                   break;
-    case SQL_IS_MINUTE:           m_interval.intval.day_second.minute   = (SQLUINTEGER) value / NANOSECONDS_PER_SEC / SECONDS_PER_MINUTE;
+    case SQL_IS_MINUTE:           m_interval.intval.day_second.minute   = (SQLUINTEGER) (value / NANOSECONDS_PER_SEC / SECONDS_PER_MINUTE);
                                   break;
-    case SQL_IS_SECOND:           m_interval.intval.day_second.second   = (SQLUINTEGER) value / NANOSECONDS_PER_SEC;
-                                  m_interval.intval.day_second.fraction = (SQLUINTEGER) value % NANOSECONDS_PER_SEC;
+    case SQL_IS_SECOND:           m_interval.intval.day_second.second   = (SQLUINTEGER) (value / NANOSECONDS_PER_SEC);
+                                  m_interval.intval.day_second.fraction = (SQLUINTEGER) (value % NANOSECONDS_PER_SEC);
                                   break;
     case SQL_IS_YEAR_TO_MONTH:    m_interval.intval.year_month.month    = (SQLUINTEGER) value;
                                   Normalise();
                                   break;
-    case SQL_IS_DAY_TO_HOUR:      m_interval.intval.day_second.hour     = (SQLUINTEGER) value / NANOSECONDS_PER_SEC / SECONDS_PER_HOUR;
+    case SQL_IS_DAY_TO_HOUR:      m_interval.intval.day_second.hour     = (SQLUINTEGER) (value / NANOSECONDS_PER_SEC / SECONDS_PER_HOUR);
                                   Normalise();
                                   break;
-    case SQL_IS_DAY_TO_MINUTE:    m_interval.intval.day_second.minute   = (SQLUINTEGER) value / NANOSECONDS_PER_SEC / SECONDS_PER_MINUTE;
+    case SQL_IS_DAY_TO_MINUTE:    m_interval.intval.day_second.minute   = (SQLUINTEGER) (value / NANOSECONDS_PER_SEC / SECONDS_PER_MINUTE);
                                   Normalise();
                                   break;
-    case SQL_IS_DAY_TO_SECOND:    m_interval.intval.day_second.second   = (SQLUINTEGER) value / NANOSECONDS_PER_SEC;
-                                  m_interval.intval.day_second.fraction = (SQLUINTEGER) value % NANOSECONDS_PER_SEC;
+    case SQL_IS_DAY_TO_SECOND:    m_interval.intval.day_second.second   = (SQLUINTEGER) (value / NANOSECONDS_PER_SEC);
+                                  m_interval.intval.day_second.fraction = (SQLUINTEGER) (value % NANOSECONDS_PER_SEC);
                                   Normalise();
                                   break;
-    case SQL_IS_HOUR_TO_MINUTE:   m_interval.intval.day_second.minute   = (SQLUINTEGER) value / NANOSECONDS_PER_SEC / SECONDS_PER_MINUTE;
+    case SQL_IS_HOUR_TO_MINUTE:   m_interval.intval.day_second.minute   = (SQLUINTEGER) (value / NANOSECONDS_PER_SEC / SECONDS_PER_MINUTE);
                                   Normalise();
                                   break;
-    case SQL_IS_HOUR_TO_SECOND:   m_interval.intval.day_second.second   = (SQLUINTEGER) value / NANOSECONDS_PER_SEC;
-                                  m_interval.intval.day_second.fraction = (SQLUINTEGER) value % NANOSECONDS_PER_SEC;
+    case SQL_IS_HOUR_TO_SECOND:   m_interval.intval.day_second.second   = (SQLUINTEGER) (value / NANOSECONDS_PER_SEC);
+                                  m_interval.intval.day_second.fraction = (SQLUINTEGER) (value % NANOSECONDS_PER_SEC);
                                   Normalise();
                                   break;
-    case SQL_IS_MINUTE_TO_SECOND: m_interval.intval.day_second.second   = (SQLUINTEGER) value / NANOSECONDS_PER_SEC;
-                                  m_interval.intval.day_second.fraction = (SQLUINTEGER) value % NANOSECONDS_PER_SEC;
+    case SQL_IS_MINUTE_TO_SECOND: m_interval.intval.day_second.second   = (SQLUINTEGER) (value / NANOSECONDS_PER_SEC);
+                                  m_interval.intval.day_second.fraction = (SQLUINTEGER) (value % NANOSECONDS_PER_SEC);
                                   Normalise();
                                   break;
   }
@@ -1498,7 +1498,7 @@ SQLInterval::operator+(const SQLTime& p_time) const
   }
   else
   {
-    throw CString("Cannot add a time and and non-time interval");
+    throw StdException("Cannot add a time and and non-time interval");
   }
 }
 
@@ -1560,7 +1560,7 @@ SQLInterval::operator+(const SQLInterval& p_interval) const
   }
   else
   {
-    throw CString("Cannot add two ordinal different intervals");
+    throw StdException("Cannot add two ordinal different intervals");
   }
 }
 
@@ -1589,7 +1589,7 @@ SQLInterval::operator-(const SQLInterval& p_interval) const
   }
   else
   {
-    throw CString("Cannot subtract two ordinal different intervals");
+    throw StdException("Cannot subtract two ordinal different intervals");
   }
 }
 

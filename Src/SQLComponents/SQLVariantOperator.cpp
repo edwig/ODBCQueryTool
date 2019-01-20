@@ -2,7 +2,7 @@
 //
 // File: SQLVariantOperator.cpp
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,14 +21,15 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #include "stdafx.h"
 #include "SQLComponents.h"
 #include "SQLVariant.h"
 #include "SQLVariantOperator.h"
 #include "SQLDate.h"
+#include "SQLGuid.h"
 #include "bcd.h"
 
 #ifdef _DEBUG
@@ -162,7 +163,7 @@ SQLVariant::operator=(unsigned short p_data)
 }
 
 SQLVariant& 
-SQLVariant::operator=(long p_data)
+SQLVariant::operator=(int p_data)
 {
   Init();
   m_datatype    = SQL_C_SLONG;
@@ -174,7 +175,7 @@ SQLVariant::operator=(long p_data)
 }
 
 SQLVariant& 
-SQLVariant::operator=(unsigned long p_data)
+SQLVariant::operator=(unsigned int p_data)
 {
   Init();
   m_datatype    = SQL_C_ULONG;
@@ -424,6 +425,26 @@ SQLVariant::operator=(SQLInterval& p_data)
   return *this;
 }
 
+// SQLGuid
+SQLVariant& 
+SQLVariant::operator =(SQLGuid& p_guid)
+{
+  Init();
+  m_datatype    = SQL_C_GUID;
+  m_sqlDatatype = SQL_GUID;
+
+  if(p_guid.IsValid())
+  {
+    m_indicator = 0;
+    memcpy_s(&m_data.m_dataGUID,sizeof(SQLGUID),p_guid.AsGUID(),sizeof(SQLGUID));
+  }
+  else
+  {
+    m_indicator = SQL_NULL_DATA;
+  }
+  return *this;
+}
+
 // Binary Coded Decimal
 SQLVariant& 
 SQLVariant::operator=(bcd& p_bcd)
@@ -543,6 +564,11 @@ SQLVariant::operator SQLTimestamp()
 SQLVariant::operator SQLInterval()
 {
   return GetAsSQLInterval();
+}
+
+SQLVariant::operator SQLGuid()
+{
+  return GetAsSQLGuid();
 }
 
 SQLVariant::operator CString()

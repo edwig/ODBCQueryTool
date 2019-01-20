@@ -2,7 +2,7 @@
 //
 // File: SQLComponents.h
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,11 +21,12 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #pragma once
 #include "SQLLanguage.h"
+#include "StdException.h"
 
 // Everything in this library is part of this namespace
 namespace SQLComponents
@@ -34,9 +35,9 @@ namespace SQLComponents
 // General version, date and copyright
 // of the SQLComponents library
 
-#define SQL_COMPONENTS_VERSION   "1.4.2"
-#define SQL_COMPONENTS_DATE      "28-01-2017"
-#define SQL_COMPONENTS_COPYRIGHT "Copyright (c) 2017 ir. W.E. Huisman"
+#define SQL_COMPONENTS_VERSION   "1.5.4"
+#define SQL_COMPONENTS_DATE      "19-01-2019"
+#define SQL_COMPONENTS_COPYRIGHT "Copyright (c) 2019 ir. W.E. Huisman"
 
 // SQL/CLI Standard states that 128 is the maximum length
 // for any identifier in any namespace

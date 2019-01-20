@@ -2,7 +2,7 @@
 //
 // File: SQLMutation.cpp
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #include "stdafx.h"
 #include "SQLComponents.h"
@@ -151,7 +151,7 @@ SQLMutation::CurrentMutationID()
 {
   if(m_stack.size())
   {
-    m_stack.back()->m_mutationID;
+    return m_stack.back()->m_mutationID;
   }
   return 0;
 }
@@ -166,12 +166,11 @@ SQLMutation::MixedMutations(int p_mutationID)
   }
 
   MutType type = MUT_NoMutation;
-  MutationStack::iterator it;
-  for(it = m_stack.begin(); it != m_stack.end(); ++it);
+  for(auto& mutate : m_stack)
   {
-    if((*it)->m_mutationID > 0)
+    if(mutate->m_mutationID > 0)
     {
-      if((*it)->m_mutationID == p_mutationID)
+      if(mutate->m_mutationID == p_mutationID)
       {
         if(type == MUT_OnlyOthers)
         {
@@ -196,7 +195,7 @@ SQLMutation::MixedMutations(int p_mutationID)
   return type;
 }
 
-// Reduce all mutations after synchronisation with the database
+// Reduce all mutations after synchronization with the database
 // Leaving only the last mutation (TOS) intact.
 void
 SQLMutation::Reduce()

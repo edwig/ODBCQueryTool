@@ -2,7 +2,7 @@
 //
 // File: SQLVariantOperatorMod.cpp
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #include "stdafx.h"
 #include "SQLComponents.h"
@@ -66,7 +66,7 @@ static SQL_OperSLongModChar(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperULongModChar(SQLVariant& p_left,SQLVariant& p_right)
 {
-  unsigned long result = p_left.GetAsULong();
+  unsigned int result = p_left.GetAsULong();
   result %= p_right.GetAsULong();
   return SQLVariant(result);
 }
@@ -163,7 +163,7 @@ static SQL_OperUShortModSShort(SQLVariant& p_left,SQLVariant& p_right)
 
 SQLVariant static SQL_OperSLongModSShort(SQLVariant& p_left,SQLVariant& p_right)
 {
-  long result = p_left.GetAsSLong();
+  int result = p_left.GetAsSLong();
   result %= p_right.GetAsSLong();
   return SQLVariant(result);
 }
@@ -171,7 +171,7 @@ SQLVariant static SQL_OperSLongModSShort(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperULongModSShort(SQLVariant& p_left,SQLVariant& p_right)
 {
-  unsigned long result = p_left.GetAsULong();
+  unsigned int result = p_left.GetAsULong();
   result %= p_right.GetAsULong();
   return SQLVariant(result);
 }
@@ -286,7 +286,7 @@ static SQL_OperUShortModUShort(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperSLongModUShort(SQLVariant& p_left,SQLVariant& p_right)
 {
-  long result = p_left.GetAsSLong();
+  int result = p_left.GetAsSLong();
   result %= p_right.GetAsSLong();
   return SQLVariant(result);
 }
@@ -294,7 +294,7 @@ static SQL_OperSLongModUShort(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperUlongModUShort(SQLVariant& p_left,SQLVariant& p_right)
 {
-  unsigned long result = p_left.GetAsULong();
+  unsigned int result = p_left.GetAsULong();
   result %= p_right.GetAsULong();
   return SQLVariant(result);
 }
@@ -383,7 +383,7 @@ static SQL_OperIntDSModUShort(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperCharModSLong(SQLVariant& p_left,SQLVariant& p_right)
 {
-  long result = p_left.GetAsSLong();
+  int result = p_left.GetAsSLong();
   result %= p_right.GetAsSLong();
   return SQLVariant(result);
 }
@@ -407,7 +407,7 @@ static SQL_OperUShortModSLong(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperSLongModSLong(SQLVariant& p_left,SQLVariant& p_right)
 {
-  long result = p_left.GetAsSLong();
+  int result = p_left.GetAsSLong();
   result %= p_right.GetAsSLong();
   return SQLVariant(result);
 }
@@ -415,7 +415,7 @@ static SQL_OperSLongModSLong(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperULongModSLong(SQLVariant& p_left,SQLVariant& p_right)
 {
-  unsigned long result = p_left.GetAsULong();
+  unsigned int result = p_left.GetAsULong();
   result %= p_right.GetAsULong();
   return SQLVariant(result);
 }
@@ -504,7 +504,7 @@ static SQL_OperIntDSModSLong(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperCharModULong(SQLVariant& p_left,SQLVariant& p_right)
 {
-  unsigned long result = p_left.GetAsULong();
+  unsigned int result = p_left.GetAsULong();
   result %= p_right.GetAsULong();
   return SQLVariant(result);
 }
@@ -536,7 +536,7 @@ static SQL_OperSLongModULong(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperULongModULong(SQLVariant& p_left,SQLVariant& p_right)
 {
-  unsigned long result = p_left.GetAsULong();
+  unsigned int result = p_left.GetAsULong();
   result %= p_right.GetAsULong();
   return SQLVariant(result);
 }
@@ -648,7 +648,7 @@ static SQL_OperUShortModFloat(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperSLongModFloat(SQLVariant& p_left,SQLVariant& p_right)
 {
-  long result = p_left.GetAsSLong();
+  int result = p_left.GetAsSLong();
   result %= p_right.GetAsSLong();
   return SQLVariant(result);
 }
@@ -656,7 +656,7 @@ static SQL_OperSLongModFloat(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperULongModFloat(SQLVariant& p_left,SQLVariant& p_right)
 {
-  unsigned long result = p_left.GetAsULong();
+  unsigned int result = p_left.GetAsULong();
   result %= p_right.GetAsULong();
   return SQLVariant(result);
 }
@@ -768,7 +768,7 @@ static SQL_OperUShortModDouble(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperSLongModDouble(SQLVariant& p_left,SQLVariant& p_right)
 {
-  long result = p_left.GetAsSLong();
+  int result = p_left.GetAsSLong();
   result %= p_right.GetAsSLong();
   return SQLVariant(result);
 }
@@ -776,7 +776,7 @@ static SQL_OperSLongModDouble(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperULongModDouble(SQLVariant& p_left,SQLVariant& p_right)
 {
-  unsigned long result = p_left.GetAsULong();
+  unsigned int result = p_left.GetAsULong();
   result %= p_right.GetAsULong();
   return SQLVariant(result);
 }
@@ -887,14 +887,14 @@ static SQL_OperUShortModBit(SQLVariant& p_left,SQLVariant& /*p_right*/)
 SQLVariant 
 static SQL_OperSLongModBit(SQLVariant& p_left,SQLVariant& /*p_right*/)
 {
-  long result = p_left.GetAsSLong();
+  int result = p_left.GetAsSLong();
   return SQLVariant(result);
 }
 
 SQLVariant 
 static SQL_OperULongModBit(SQLVariant& p_left,SQLVariant& /*p_right*/)
 {
-  unsigned long result = p_left.GetAsULong();
+  unsigned int result = p_left.GetAsULong();
   return SQLVariant(result);
 }
 
@@ -997,7 +997,7 @@ static SQL_OperUShortModSTiny(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperSLongModSTiny(SQLVariant& p_left,SQLVariant& p_right)
 {
-  long result = p_left.GetAsSLong();
+  int result = p_left.GetAsSLong();
   result %= p_right.GetAsSLong();
   return SQLVariant(result);
 }
@@ -1005,7 +1005,7 @@ static SQL_OperSLongModSTiny(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperULongModSTiny(SQLVariant& p_left,SQLVariant& p_right)
 {
-  unsigned long result = p_left.GetAsULong();
+  unsigned int result = p_left.GetAsULong();
   result %= p_right.GetAsULong();
   return SQLVariant(result);
 }
@@ -1118,7 +1118,7 @@ static SQL_OperUShortModUTiny(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperSLongModUTiny(SQLVariant& p_left,SQLVariant& p_right)
 {
-  long result = p_left.GetAsSLong();
+  int result = p_left.GetAsSLong();
   result %= p_right.GetAsSLong();
   return SQLVariant(result);
 }
@@ -1126,7 +1126,7 @@ static SQL_OperSLongModUTiny(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperULongModUTiny(SQLVariant& p_left,SQLVariant& p_right)
 {
-  unsigned long result = p_left.GetAsULong();
+  unsigned int result = p_left.GetAsULong();
   result %= p_right.GetAsULong();
   return SQLVariant(result);
 }
@@ -1240,7 +1240,7 @@ static SQL_OperUShortModSBig(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperSLongModSBig(SQLVariant& p_left,SQLVariant& p_right)
 {
-  long result = p_left.GetAsSLong();
+  int result = p_left.GetAsSLong();
   result %= p_right.GetAsSLong();
   return SQLVariant(result);
 }
@@ -1248,7 +1248,7 @@ static SQL_OperSLongModSBig(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperULongModSBig(SQLVariant& p_left,SQLVariant& p_right)
 {
-  unsigned long result = p_left.GetAsULong();
+  unsigned int result = p_left.GetAsULong();
   result %= p_right.GetAsULong();
   return SQLVariant(result);
 }
@@ -1361,7 +1361,7 @@ static SQL_OperUShortModUBig(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperSLongModUBig(SQLVariant& p_left,SQLVariant& p_right)
 {
-  long result = p_left.GetAsSLong();
+  int result = p_left.GetAsSLong();
   result %= p_right.GetAsSLong();
   return SQLVariant(result);
 }
@@ -1369,7 +1369,7 @@ static SQL_OperSLongModUBig(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperULongModUBig(SQLVariant& p_left,SQLVariant& p_right)
 {
-  unsigned long result = p_left.GetAsULong();
+  unsigned int result = p_left.GetAsULong();
   result %= p_right.GetAsULong();
   return SQLVariant(result);
 }
@@ -1484,7 +1484,7 @@ static SQL_OperUShortModNum(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperSLongModNum(SQLVariant& p_left,SQLVariant& p_right)
 {
-  long num = p_left.GetAsSLong() % p_right.GetAsBCD().AsLong();
+  int num = p_left.GetAsSLong() % p_right.GetAsBCD().AsLong();
   SQLVariant var(num);
   return var;
 }
@@ -1492,7 +1492,7 @@ static SQL_OperSLongModNum(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperULongModNum(SQLVariant& p_left,SQLVariant& p_right)
 {
-  unsigned long num = p_left.GetAsULong() % p_right.GetAsBCD().AsInt64();
+  unsigned int num = p_left.GetAsULong() % p_right.GetAsBCD().AsInt64();
   SQLVariant var(num);
   return var;
 }
@@ -1625,7 +1625,7 @@ SQLVariant::operator%(SQLVariant& p_right)
   // Check whether there is something to modulo by!
   if(p_right.IsEmpty())
   {
-    throw CString("Cannot do a modulo by zero/empty");
+    throw StdException("Cannot do a modulo by zero/empty");
   }
 
   // Find our comparison function
@@ -1640,7 +1640,7 @@ SQLVariant::operator%(SQLVariant& p_right)
   CString rightType = FindDatatype(p_right.m_datatype);
   CString error;
   error.Format("Cannot do the modulo operator on (%s % %s)",leftType.GetString(),rightType.GetString());
-  throw error;
+  throw StdException(error);
 }
 
 // End of namespace

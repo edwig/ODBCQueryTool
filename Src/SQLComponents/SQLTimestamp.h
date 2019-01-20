@@ -2,7 +2,7 @@
 //
 // File: SQLTimestamp.h
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #pragma once
 #include "SQLLanguage.h"
@@ -43,7 +43,9 @@ class SQLDatabase;
 #define SECONDS_PER_HOUR   (60*60)     // One hour in seconds
 #define SECONDS_PER_MINUTE (60)        // One minute in seconds
 // Number of nanoseconds per second
+#ifndef NANOSECONDS_PER_SEC
 #define NANOSECONDS_PER_SEC 1000000000
+#endif
 // Modified Julian Day Shift from Epoch (Astronomically)
 // Actually it's 2,400,000.5 days (12:00 (noon) januari 1st -4713 BC)
 #define MJD_EPOCH 2400001

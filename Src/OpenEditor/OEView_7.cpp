@@ -677,7 +677,7 @@ COEditorView::ExecuteQuery(int      p_line
   int      numVariables     = (int)variables.size();
   CString  partialCommand;
 
-  // Init the query recordset
+  // Init the SQLQuery object
   m_query.Init(&database);
 
   odbcCommand.TrimLeft('\n');
@@ -823,6 +823,16 @@ COEditorView::ExecuteQuery(int      p_line
     WriteOutputLine(p_line,m_query.GetNumberOfRows(),partialCommand,errorText);
     panelWindow = QPW_OUTPUT_VIEW;
   }
+  catch(StdException& ex)
+  {
+    if(!batch)
+    {
+      AfxMessageBox(ex.GetErrorMessage(),MB_OK|MB_ICONERROR);
+    }
+    WriteStatisticsLine("2 =>", "Error: " + partialCommand);
+    WriteOutputLine(p_line,m_query.GetNumberOfRows(),partialCommand,ex.GetErrorMessage());
+    panelWindow = QPW_OUTPUT_VIEW;
+  }
   catch(...)
   {
     if(!batch)
@@ -884,13 +894,28 @@ COEditorView::GetLineFromQuery(int row)
 void
 COEditorView::ReadRestOfQuery()
 {
-  if(m_query.GetRecord())
+  try
   {
-    do 
+    if(m_query.GetRecord())
     {
-      GetLineFromQuery(++m_linesFetched);
-    } 
-    while(m_query.GetRecord());
+      do 
+      {
+        GetLineFromQuery(++m_linesFetched);
+      } 
+      while(m_query.GetRecord());
+    }
+  }
+  catch(CString& er)
+  {
+    CString error("ERROR reading query: ");
+    error += er;
+    AfxMessageBox(error,MB_OK|MB_ICONERROR);
+  }
+  catch(StdException& ex)
+  {
+    CString error("ERROR reading query: ");
+    error += ex.GetErrorMessage();
+    AfxMessageBox(error,MB_OK|MB_ICONERROR);
   }
   // Reset to 0, so grid will not attempt a second time
   m_linesFetched = 0;
@@ -1146,9 +1171,28 @@ COEditorView::UpdateTable(int row,int col,CString text)
     return false;
   }
   query += searchCondition;
-  SQLQuery rs(&database);
-  rs.DoSQLStatement(query);
 
+  try
+  {
+    SQLQuery rs(&database);
+    SQLTransaction trans(&database,"update");
+    rs.DoSQLStatement(query);
+    trans.Commit();
+  }
+  catch(CString& er)
+  {
+    CString error("Error while updating record: ");
+    error += er;
+    AfxMessageBox(error,MB_OK|MB_ICONERROR);
+    return false;
+  }
+  catch (StdException& ex)
+  {
+    CString error("Error while updating record: ");
+    error += ex.GetErrorMessage();
+    AfxMessageBox(error,MB_OK|MB_ICONERROR);
+    return false;
+  }
   CString info = "Row updated by primary/unique key: ";
   info += m_primaryName;
   Common::SetStatusText(info);
@@ -1453,7 +1497,7 @@ COEditorView::ScriptCommandVariable(int p_line,int p_varNum,CString p_tail)
         if(paramType > 0)
         {
           p_tail = p_tail.Mid(pos+1);
-          var->SetParameterType(paramType);
+          var->SetParameterType((SQLParamType)paramType);
           if(m_scriptOutput)
           {
             fprintf(m_scriptOutput,":PARAM variable%d [%s]\n",p_varNum,word.GetString());
@@ -1643,7 +1687,7 @@ COEditorView::ScriptSelect(int p_line)
 	    var->SetData(type,data);
       vars.insert(std::make_pair(k,var));
     }
-    var->SetParameterType(SQL_RESULT_COL);
+    var->SetParameterType(P_SQL_RESULT_COL);
     CString result;
 	  column->GetAsString(result);
     result.Format(":COLUMN [%d] = [%s]\n",k,result);

@@ -2,7 +2,7 @@
 //
 // File: SQLInfo.cpp
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #include "stdafx.h"
 #include "SQLComponents.h"
@@ -51,7 +51,9 @@ namespace SQLComponents
   { \
   m_retCode = SQL_ERROR; \
   m_retCode = (SQLFunc); \
-  } catch(...) {}
+  } catch(StdException& ex)\
+  {     ReThrowSafeException(ex);\
+  }
 
 SQLInfo::SQLInfo(SQLDatabase* p_database)
         :m_database(p_database)
@@ -90,7 +92,7 @@ SQLInfo::Init()
   m_odbc_conformance    = 0;
   m_cli_conformance     = 0;
   m_maxTableName        = 0;
-  m_maxColumnName       = 0;
+  m_maxColumnName        = 0;
   m_oj_cap              = 0;
   m_oj_cap92            = 0;
   m_txn_cap             = 0;
@@ -499,6 +501,7 @@ SQLInfo::GetInfo()
   m_predicates          = GetInfoInteger(SQL_SQL92_PREDICATES);
   m_catalogLocation     = GetInfoShortInteger(SQL_CATALOG_LOCATION);
   m_catalogUsage        = GetInfoInteger(SQL_CATALOG_USAGE);
+  m_schemaUsage         = GetInfoInteger(SQL_SCHEMA_USAGE);
   m_datetimeLiterals    = GetInfoInteger(SQL_DATETIME_LITERALS);
   m_funcNumeric         = GetInfoInteger(SQL_NUMERIC_FUNCTIONS);
   m_funcString          = GetInfoInteger(SQL_STRING_FUNCTIONS);
@@ -789,13 +792,13 @@ int
 SQLInfo::GetAttributeInteger(LPCTSTR description,SQLINTEGER attrib)
 {
   SQLUINTEGER value = 0;
-  SQLINTEGER  cbMax = 0;
+  SQLINTEGER cbMax = 0;
   
   SQLRETURN nRetCode = SQLGetConnectAttr(m_hdbc
-                                        ,attrib
-                                        ,(SQLPOINTER)&value
+                              ,attrib
+                              ,(SQLPOINTER)&value
                                         ,sizeof(value)
-                                        ,&cbMax);
+                              ,&cbMax);
   if(!m_database->Check(nRetCode))
   {
     CString error;
@@ -1146,8 +1149,8 @@ SQLInfo::CanStartTransaction()
 
 // Get information about the primary key of a table
 bool 
-SQLInfo::GetPrimaryKeyInfo(CString&     p_tablename
-                          ,CString&     p_primary
+SQLInfo::GetPrimaryKeyInfo(CString&    p_tablename
+                          ,CString&    p_primary
                           ,MPrimaryMap& p_primaries)
 {
   // Make sure we have the info
@@ -1185,7 +1188,7 @@ SQLInfo::GetStatement(bool p_metadataID /*= true*/)
   {
     CString errorText = "Error in ODBC statement: ";
     errorText += m_database->GetErrorString(m_hstmt);
-    throw errorText;
+    throw StdException(errorText);
   }
   SQLUINTEGER meta = p_metadataID ? SQL_TRUE : SQL_FALSE;
   // On Various ODBC databases metadata is or is not case-sensitive. To work around
@@ -1260,11 +1263,11 @@ SQLInfo::GetObjectName(CString  p_pattern
   {
     InfoMessageBox("Requested catalog name is longer than this ODBC database supports!",MB_OK);
   }
-  if(m_maxSchemaName  && p_schema.GetLength()  > (int)m_maxSchemaName)
+  if(m_maxSchemaName  && p_schema.GetLength() > (int)m_maxSchemaName)
   {
     InfoMessageBox("Requested schema name is longer than this ODBC database supports!",MB_OK);
   }
-  if(m_maxTableName   && p_table.GetLength()   > (int)m_maxTableName)
+  if(m_maxTableName   && p_table.GetLength() > (int)m_maxTableName)
   {
     InfoMessageBox("Requested table name is longer than this ODBC database supports!",MB_OK);
   }
@@ -1483,17 +1486,17 @@ SQLInfo::MakeInfoTableTable(MTableMap& p_tables
          theTable.m_temporary = false;
 
          // Put primary info in the MetaTable object
-         if(cbCatalogName > 0) theTable.m_catalog     = szCatalogName;
-         if(cbSchemaName  > 0) theTable.m_schema      = szSchemaName;
-         if(cbTableName   > 0) theTable.m_table       = szTableName;
-         if(cbRemarks     > 0) theTable.m_remarks     = szRemarks;
+         if(cbCatalogName > 0) theTable.m_catalog = szCatalogName;
+         if(cbSchemaName  > 0) theTable.m_schema  = szSchemaName;
+         if(cbTableName   > 0) theTable.m_table   = szTableName;
+         if(cbRemarks     > 0) theTable.m_remarks = szRemarks;
          if(cbTableType   > 0) theTable.m_objectType  = szTableType;
 
          // Build "TYPE: catalog.schema.table" object type name
          theTable.m_fullName = MakeObjectName((SQLCHAR*)theTable.m_catalog.GetString()
-                                             ,(SQLCHAR*)theTable.m_schema.GetString()
-                                             ,(SQLCHAR*)theTable.m_table.GetString()
-                                             ,(SQLCHAR*)theTable.m_objectType.GetString());
+                                                   ,(SQLCHAR*)theTable.m_schema.GetString()
+                                                   ,(SQLCHAR*)theTable.m_table.GetString()
+                                                   ,(SQLCHAR*)theTable.m_objectType.GetString());
          // Remember this table as a result
          p_tables.push_back(theTable);
        }
@@ -1510,7 +1513,7 @@ SQLInfo::MakeInfoTableTable(MTableMap& p_tables
 
     p_errors += ". Error in ODBC statement: ";
     p_errors += m_database->GetErrorString(m_hstmt);
-  }
+    }
   CloseStatement();
   return p_tables.size() > 0;
 }
@@ -1521,7 +1524,7 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns
                              ,CString     p_schema
                              ,CString     p_tablename
                              ,CString     p_columname /*=""*/)
-{
+  {
   SQLCHAR      szCatalogName [SQL_MAX_BUFFER+1];
   SQLLEN       cbCatalogName = 0;
   SQLCHAR      szSchemaName  [SQL_MAX_BUFFER+1];
@@ -1538,7 +1541,7 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns
   SQLLEN       cbDefault     = 0;
   SQLCHAR      szNullable    [SQL_MAX_BUFFER+1];
   SQLLEN       cbIsNullable  = 0;
-  SQLSMALLINT  DataType      = 0;
+  SQLSMALLINT  DataType    = 0;
   SQLLEN       cbDataType    = 0;
   SQLINTEGER   Precision     = 0;
   SQLINTEGER   Length        = 0;
@@ -1643,14 +1646,14 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns
          if(cbTypeSub     > 0) theColumn.m_sub_datatype = TypeSub;     // 15
          if(cbOctetLength > 0) theColumn.m_octet_length = OctetLength; // 16
          if(cbPosition    > 0) theColumn.m_position     = Position;    // 17
-         if(cbDataType  > 0)
+         if(cbDataType > 0)
          {
            theColumn.m_datatype = DataType;                            // 5
            type = ODBCDataType(DataType);
-           if(cbTypeName > 0)
+         if(cbTypeName > 0)
+         {
+           if(type.CompareNoCase((char*)szTypeName))
            {
-             if(type.CompareNoCase((char*)szTypeName))
-             {
                type = szTypeName;                                      // 6
              }
            }
@@ -1777,7 +1780,7 @@ SQLInfo::MakeInfoTablePrimary(MPrimaryMap& p_primaries,CString& p_errors,CString
     p_errors += MakeObjectName(catalog,schema,table,(unsigned char*)"");
     p_errors += ". Error in ODBC statement: ";
     p_errors += m_database->GetErrorString(m_hstmt);
-  }
+    }
   CloseStatement();
   return p_primaries.size() > 0;
 }
@@ -1869,36 +1872,36 @@ SQLInfo::MakeInfoTableForeign(MForeignMap& p_foreigns
                                ));
   if(m_retCode == SQL_SUCCESS)
   {
-    SQLBindCol(m_hstmt, 1, SQL_C_CHAR, szPKCatalogName,SQL_MAX_BUFFER, &cbPKCatalogName);
-    SQLBindCol(m_hstmt, 2, SQL_C_CHAR, szPKSchemaName, SQL_MAX_BUFFER, &cbPKSchemaName);
-    SQLBindCol(m_hstmt, 3, SQL_C_CHAR, szPKTableName,  SQL_MAX_BUFFER, &cbPKTableName);
-    SQLBindCol(m_hstmt, 4, SQL_C_CHAR, szPKColumnName, SQL_MAX_BUFFER, &cbPKColumnName);
-    SQLBindCol(m_hstmt, 5, SQL_C_CHAR, szFKCatalogName,SQL_MAX_BUFFER, &cbFKCatalogName);
-    SQLBindCol(m_hstmt, 6, SQL_C_CHAR, szFKSchemaName, SQL_MAX_BUFFER, &cbFKSchemaName);
-    SQLBindCol(m_hstmt, 7, SQL_C_CHAR, szFKTableName,  SQL_MAX_BUFFER, &cbFKTableName);
-    SQLBindCol(m_hstmt, 8, SQL_C_CHAR, szFKColumnName, SQL_MAX_BUFFER, &cbFKColumnName);
-    SQLBindCol(m_hstmt, 9, SQL_C_SSHORT,&KeySeq,       0,              &cbKeySeq);
-    SQLBindCol(m_hstmt,10, SQL_C_SSHORT,&UpdateRule,   0,              &cbUpdateRule);
-    SQLBindCol(m_hstmt,11, SQL_C_SSHORT,&DeleteRule,   0,              &cbDeleteRule);
-    SQLBindCol(m_hstmt,12, SQL_C_CHAR, szFKKeyName,    SQL_MAX_BUFFER, &cbFKKeyName);
-    SQLBindCol(m_hstmt,13, SQL_C_CHAR, szPKKeyName,    SQL_MAX_BUFFER, &cbPKKeyName);
-    SQLBindCol(m_hstmt,14, SQL_C_SSHORT,&Deferrab,     0,              &cbDeferrab);
-    while(true)
-    {
-      m_retCode = SqlFetch(m_hstmt);
-      if(m_retCode == SQL_ERROR || m_retCode == SQL_SUCCESS_WITH_INFO)
-      {
-        CString err = m_database->GetErrorString(m_hstmt);
-        InfoMessageBox(err,MB_OK);
-        if(m_retCode == SQL_ERROR)
-        {
-          return false;
-        }
-      }
-      if(m_retCode == SQL_SUCCESS || m_retCode == SQL_SUCCESS_WITH_INFO)
-      {
+     SQLBindCol(m_hstmt, 1, SQL_C_CHAR, szPKCatalogName,SQL_MAX_BUFFER, &cbPKCatalogName);
+     SQLBindCol(m_hstmt, 2, SQL_C_CHAR, szPKSchemaName, SQL_MAX_BUFFER, &cbPKSchemaName);
+     SQLBindCol(m_hstmt, 3, SQL_C_CHAR, szPKTableName,  SQL_MAX_BUFFER, &cbPKTableName);
+     SQLBindCol(m_hstmt, 4, SQL_C_CHAR, szPKColumnName, SQL_MAX_BUFFER, &cbPKColumnName);
+     SQLBindCol(m_hstmt, 5, SQL_C_CHAR, szFKCatalogName,SQL_MAX_BUFFER, &cbFKCatalogName);
+     SQLBindCol(m_hstmt, 6, SQL_C_CHAR, szFKSchemaName, SQL_MAX_BUFFER, &cbFKSchemaName);
+     SQLBindCol(m_hstmt, 7, SQL_C_CHAR, szFKTableName,  SQL_MAX_BUFFER, &cbFKTableName);
+     SQLBindCol(m_hstmt, 8, SQL_C_CHAR, szFKColumnName, SQL_MAX_BUFFER, &cbFKColumnName);
+     SQLBindCol(m_hstmt, 9, SQL_C_SSHORT,&KeySeq,       0,              &cbKeySeq);
+     SQLBindCol(m_hstmt,10, SQL_C_SSHORT,&UpdateRule,   0,              &cbUpdateRule);
+     SQLBindCol(m_hstmt,11, SQL_C_SSHORT,&DeleteRule,   0,              &cbDeleteRule);
+     SQLBindCol(m_hstmt,12, SQL_C_CHAR, szFKKeyName,    SQL_MAX_BUFFER, &cbFKKeyName);
+     SQLBindCol(m_hstmt,13, SQL_C_CHAR, szPKKeyName,    SQL_MAX_BUFFER, &cbPKKeyName);
+     SQLBindCol(m_hstmt,14, SQL_C_SSHORT,&Deferrab,     0,              &cbDeferrab);
+     while(true)
+     {
+       m_retCode = SqlFetch(m_hstmt);
+       if(m_retCode == SQL_ERROR || m_retCode == SQL_SUCCESS_WITH_INFO)
+       {
+         CString err = m_database->GetErrorString(m_hstmt);
+         InfoMessageBox(err,MB_OK);
+         if(m_retCode == SQL_ERROR)
+         {
+           return false;
+         }
+       }
+       if(m_retCode == SQL_SUCCESS || m_retCode == SQL_SUCCESS_WITH_INFO)
+       {
         MetaForeign foreign;
-        
+
         // Primary table size
         if(cbPKCatalogName > 0) foreign.m_pkCatalogName = szPKCatalogName;
         if(cbPKSchemaName  > 0) foreign.m_pkSchemaName  = szPKSchemaName;
@@ -1920,12 +1923,12 @@ SQLInfo::MakeInfoTableForeign(MForeignMap& p_foreigns
         foreign.m_match       = SQL_MATCH_FULL;
          // Keep the foreign key
         p_foreigns.push_back(foreign);
-      }
-      else
-      {
+       }
+       else
+       {
          break;
-      }
-    }
+       }
+     }
   }
   else
   {
@@ -1938,13 +1941,13 @@ SQLInfo::MakeInfoTableForeign(MForeignMap& p_foreigns
   return p_foreigns.size() > 0;
 }
 
-bool
+bool 
 SQLInfo::MakeInfoTableStatistics(MIndicesMap& p_statistics
                                 ,CString&     p_errors
                                 ,CString      p_schema
                                 ,CString      p_tablename
-                                ,MPrimaryMap* p_keymap
-                                ,bool         p_all /*=true*/)
+                                ,MPrimaryMap*    p_keymap
+                                ,bool            p_all /*=true*/)
 {
   SQLCHAR      szCatalogName [SQL_MAX_BUFFER + 1] = "";
   SQLLEN       cbCatalogName = 0;
@@ -2046,8 +2049,8 @@ SQLInfo::MakeInfoTableStatistics(MIndicesMap& p_statistics
         p_statistics.push_back(stat);
 
         if(p_keymap)
-        {
-          // Record the columns of the unique key
+            {
+              // Record the columns of the unique key
           MetaPrimary primary;
           primary.m_catalog         = szCatalogName;
           primary.m_schema          = szSchemaName;
@@ -2070,7 +2073,7 @@ SQLInfo::MakeInfoTableStatistics(MIndicesMap& p_statistics
     p_errors += MakeObjectName(catalog,schema,table,(unsigned char*)"");
     p_errors += ". Error in ODBC statement: ";
     p_errors += m_database->GetErrorString(m_hstmt);
-  }
+    }
   CloseStatement();
   return p_statistics.size() > 0;
 }
@@ -2080,7 +2083,7 @@ SQLInfo::MakeInfoTableSpecials(MSpecialsMap& p_specials
                               ,CString&      p_errors
                               ,CString       p_schema
                               ,CString       p_tablename)
-{
+  {
   SQLCHAR      szCatalogName [SQL_MAX_BUFFER];
   SQLCHAR      szSchemaName  [SQL_MAX_BUFFER];
   SQLCHAR      szTableName   [SQL_MAX_BUFFER];
@@ -2532,10 +2535,10 @@ SQLInfo::MakeInfoPSMParameters(MParameterMap& p_parameters
         if(cbSchemaName    > 0) par.m_schema     = szSchemaName;
         if(cbProcedureName > 0) par.m_procedure  = szProcedureName;
         if(cbColumnName    > 0) par.m_parameter  = szColumnName;
-        if(cbTypeName      > 0) par.m_typeName   = szTypeName;
-        if(cbRemarks       > 0) par.m_remarks    = szRemarks;
+        if(cbTypeName      > 0) par.m_typeName      = szTypeName;
+        if(cbRemarks       > 0) par.m_remarks       = szRemarks;
         if(cbDefaultValue  > 0) par.m_default    = szDefaultValue;
-        if(cbIsNullable    > 0) par.m_isNullable = szIsNullable;
+        if(cbIsNullable    > 0) par.m_isNullable    = szIsNullable;
         // Numbers
         par.m_columnType    = cbColumnType    > 0 ? ColumnType    : 0;
         par.m_datatype      = cbDataType      > 0 ? DataType      : 0;
@@ -2589,7 +2592,7 @@ SQLInfo::NativeSQL(HDBC hdbc,CString& sqlCommand)
   }
   if(!hdbc)
   {
-    throw CString("NativeSQL called without an opened database!");
+    throw StdException("NativeSQL called without an opened database!");
   }
 
   // Perform the conversion call

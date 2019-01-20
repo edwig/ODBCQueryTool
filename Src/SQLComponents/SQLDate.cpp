@@ -2,7 +2,7 @@
 //
 // File: SQLDate.h
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #include "Stdafx.h"
 #include "SQLComponents.h"
@@ -258,7 +258,7 @@ SQLDate::AsString() const
   CString buffer;
   if(IsNull() == false)
   {
-    buffer.Format("%02d-%02d-%04d", Day(), Month(), Year());
+    buffer.Format("%02ld-%02ld-%04ld", Day(), Month(), Year());
   }
   return buffer;
 }
@@ -352,7 +352,7 @@ SQLDate::FullDate(Language p_lang /*=LN_DEFAULT*/) const
     }
     if(p_lang >= LN_DUTCH && p_lang <= LN_FRENCH)
     {
-      fullName.Format("%s %d %s %d",WeekDayName(p_lang).GetString(),Day(),MonthName(p_lang).GetString(),Year());
+      fullName.Format("%s %ld %s %ld",WeekDayName(p_lang).GetString(),Day(),MonthName(p_lang).GetString(),Year());
     }
   }
   return fullName;
@@ -514,7 +514,7 @@ SQLDate::CalculateDate(const CString& p_datum)
     if(!ParseDate(datum,&jaar,&maand,&dag))
     {
       // Wrong formatted date
-      throw CString("Date has a wrong format");
+      throw StdException("Date has a wrong format");
     }
     // Speciaal geval: Pronto doet dit
     // 00-00-00 -> wordt vandaag
@@ -1148,7 +1148,7 @@ SQLDate::operator+(const SQLInterval& p_interval) const
   // Check if interval is the correct type
   if(p_interval.GetIsYearMonthType())
   {
-    throw CString("Incompatible interval to add to a date");
+    throw StdException("Incompatible interval to add to a date");
   }
   // Do the calculation
   SQLDate date(*this);
@@ -1181,7 +1181,7 @@ SQLDate::operator-(const SQLInterval& p_interval) const
   // Check if interval is the correct type
   if(p_interval.GetIsYearMonthType())
   {
-    throw CString("Incompatible interval to add to a date");
+    throw StdException("Incompatible interval to add to a date");
   }
   // Do the calculation
   SQLDate date(*this);

@@ -2,7 +2,7 @@
 //
 // File: SQLQuery.cpp
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #include "stdafx.h"
 #include "SQLComponents.h"
@@ -96,6 +96,7 @@ SQLQuery::Init(SQLDatabase* p_database)
   m_boundDone        = false;
   m_lastError        = "";
   m_maxRows          = 0;
+  m_maxColumnLength  = 0;
   m_isSelectQuery    = false;
   m_speedThreshold   = QUERY_TOO_LONG;
   m_connection       = NULL;
@@ -126,7 +127,7 @@ SQLQuery::Close()
         GetLastError("Closing the cursor: ");
 
         // Some databases give a SQLSTATE = 24000 if the cursor was at the end
-        // This is documented behaviour of SQLCloseCursor
+        // This is documented behavior of SQLCloseCursor
         if(m_database)
         {
           if(m_database->GetSQLState() != "24000")
@@ -144,7 +145,7 @@ SQLQuery::Close()
     if(!SQL_SUCCEEDED(m_retCode))
     {
       GetLastError("Freeing the cursor: ");
-      throw m_lastError;
+      throw StdException(m_lastError);
     }
   }
   // Clear number map
@@ -195,27 +196,27 @@ SQLQuery::Open()
     if(!SQL_SUCCEEDED(m_retCode))
     {
       GetLastError("Getting statement handle: ");
-      throw m_lastError;
+      throw StdException(m_lastError);
     }
   }
   else
   {
     if(m_connection == SQL_NULL_HANDLE)
     {
-      throw CString("No database handle. Are you logged in to a database?");
+      throw StdException("No database handle. Are you logged in to a database?");
     }
     // Create the statement handle
     SQLRETURN res = SqlAllocHandle(SQL_HANDLE_STMT,m_connection,&m_hstmt);
     if(!SQL_SUCCEEDED(res))
     {
       GetLastError("Error creating a statement handle: ");
-      throw m_lastError;
+      throw StdException(m_lastError);
     }
   }
 
   if(m_hstmt == NULL)
   {
-    throw CString("No database connection at SQLQUery::Open function");
+    throw StdException("No database connection at SQLQUery::Open function");
   }
   // DISABLED!!
   // Without escape scanning other things will go wrong.
@@ -226,7 +227,7 @@ SQLQuery::Open()
   //   if (!SQL_SUCCEEDED(m_retCode))
   //   {
   //     GetLastError("Cannot set NOSCAN attribute: ");
-  //     throw m_lastError;
+  //     throw StdException(m_lastError);
   //   }
 
   // Change cursor type to the cheapest qua performance
@@ -234,7 +235,7 @@ SQLQuery::Open()
   if(!SQL_SUCCEEDED(m_retCode))
   {
     GetLastError("Cannot set CURSOR-FORWARD-ONLY attribute: ");
-    throw m_lastError;
+    throw StdException(m_lastError);
   }
 
   // Set max-rows if our database DOES support it (Oracle!)
@@ -244,7 +245,7 @@ SQLQuery::Open()
     if(!SQL_SUCCEEDED(m_retCode))
     {
       GetLastError("Cannot set MAX_ROWS attribute: ");
-      throw m_lastError;
+      throw StdException(m_lastError);
     }
   }
 
@@ -255,7 +256,7 @@ SQLQuery::Open()
     if(!SQL_SUCCEEDED(m_retCode))
     {
       GetLastError("Cannot set CONCURRENCY attribute: ");
-      throw m_lastError;
+      throw StdException(m_lastError);
     }
   }
 
@@ -357,7 +358,7 @@ SQLQuery::ReportQuerySpeed(LARGE_INTEGER p_start)
 // Private and hidden setting of the parameter
 // The p_param is **NOT** copied, but stored and owned by the SQLQuery
 void
-SQLQuery::InternalSetParameter(int p_num,SQLVariant* p_param,int p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::InternalSetParameter(int p_num,SQLVariant* p_param,SQLParamType p_type /*=P_SQL_PARAM_INPUT*/)
 {
   p_param->SetParameterType(p_type);
   VarMap::iterator it = m_parameters.find(p_num);
@@ -373,68 +374,160 @@ SQLQuery::InternalSetParameter(int p_num,SQLVariant* p_param,int p_type /*=SQL_P
   }
 }
 
+// Setting the maximum size of a SQLCHAR parameter
+void 
+SQLQuery::SetParameterMaxSize(int p_num,unsigned p_maxSize)
+{
+  MaxSizeMap::iterator it = m_paramMaxSizes.find(p_num);
+  if(it == m_paramMaxSizes.end())
+  {
+    m_paramMaxSizes.insert(std::make_pair(p_num,p_maxSize));
+  }
+  else
+  {
+    it->second = p_maxSize;
+  }
+}
+
 // Setting a parameter. Copies the SQLVariant!!
 void
-SQLQuery::SetParameter(int p_num,SQLVariant* p_param,int p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameter(int p_num,SQLVariant* p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
 {
   SQLVariant* var = new SQLVariant(p_param);
   InternalSetParameter(p_num,var,p_type);
 }
 
 void 
-SQLQuery::SetParameter(int p_num,long p_param,int p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameter(int p_num,int p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
 {
   SQLVariant* var = new SQLVariant(p_param);
   InternalSetParameter(p_num,var,p_type);
 }
 
 void 
-SQLQuery::SetParameterUL(int p_num,unsigned long p_param,int p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameterUL(int p_num,unsigned int p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
 {
   SQLVariant *var = new SQLVariant(p_param);
   InternalSetParameter(p_num,var,p_type);
 }
 
 void 
-SQLQuery::SetParameter(int p_num,const char* p_param,int p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameter(int p_num,const char* p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
 {
   SQLVariant* var = new SQLVariant(p_param);
   InternalSetParameter(p_num,var,p_type);
 }
 
 void 
-SQLQuery::SetParameter(int p_num,CString& p_param,int p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameter(int p_num,CString& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
 {
   SQLVariant* var = new SQLVariant(p_param);
   InternalSetParameter(p_num,var,p_type);
 }
 
 void 
-SQLQuery::SetParameter(int p_num,SQLDate& p_param,int p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameter(int p_num,SQLDate& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
 {
   SQLVariant* var = new SQLVariant(&p_param);
   InternalSetParameter(p_num,var,p_type);
 }
 
 void 
-SQLQuery::SetParameter (int p_num,SQLTime& p_param,int p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameter (int p_num,SQLTime& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
 {
   SQLVariant* var = new SQLVariant(&p_param);
   InternalSetParameter(p_num,var,p_type);
 }
 
 void 
-SQLQuery::SetParameter(int p_num,SQLTimestamp& p_param,int p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameter(int p_num,SQLTimestamp& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
 {
   SQLVariant* var = new SQLVariant(&p_param);
   InternalSetParameter(p_num,var,p_type);
 }
 
 void
-SQLQuery::SetParameter(int p_num,const bcd& p_param,int p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameter(int p_num,const bcd& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
 {
   SQLVariant* var = new SQLVariant(&p_param);
   InternalSetParameter(p_num,var,p_type);
+}
+
+//////////////////////////////////////////////////////////////////////////
+// Variants of SetParameter without an explicit parameter number
+//////////////////////////////////////////////////////////////////////////
+
+// Setting a parameter. Copies the SQLVariant!!
+void
+SQLQuery::SetParameter(SQLVariant* p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+{
+  int size = (int) m_parameters.size() + 1;
+  SQLVariant* var = new SQLVariant(p_param);
+  InternalSetParameter(size,var,p_type);
+}
+
+void
+SQLQuery::SetParameter(int p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+{
+  int size = (int)m_parameters.size() + 1;
+  SQLVariant* var = new SQLVariant(p_param);
+  InternalSetParameter(size,var,p_type);
+}
+
+void
+SQLQuery::SetParameterUL(unsigned int p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+{
+  int size = (int)m_parameters.size() + 1;
+  SQLVariant *var = new SQLVariant(p_param);
+  InternalSetParameter(size,var,p_type);
+}
+
+void
+SQLQuery::SetParameter(const char* p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+{
+  int size = (int)m_parameters.size() + 1;
+  SQLVariant* var = new SQLVariant(p_param);
+  InternalSetParameter(size,var,p_type);
+}
+
+void
+SQLQuery::SetParameter(CString& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+{
+  int size = (int)m_parameters.size() + 1;
+  SQLVariant* var = new SQLVariant(p_param);
+  InternalSetParameter(size,var,p_type);
+}
+
+void
+SQLQuery::SetParameter(SQLDate& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+{
+  int size = (int)m_parameters.size() + 1;
+  SQLVariant* var = new SQLVariant(&p_param);
+  InternalSetParameter(size,var,p_type);
+}
+
+void
+SQLQuery::SetParameter(SQLTime& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+{
+  int size = (int)m_parameters.size() + 1;
+  SQLVariant* var = new SQLVariant(&p_param);
+  InternalSetParameter(size,var,p_type);
+}
+
+void
+SQLQuery::SetParameter(SQLTimestamp& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+{
+  int size = (int)m_parameters.size() + 1;
+  SQLVariant* var = new SQLVariant(&p_param);
+  InternalSetParameter(size,var,p_type);
+}
+
+void
+SQLQuery::SetParameter(const bcd& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+{
+  int size = (int)m_parameters.size() + 1;
+  SQLVariant* var = new SQLVariant(&p_param);
+  InternalSetParameter(size,var,p_type);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -471,7 +564,7 @@ SQLQuery::DoSQLStatement(const CString& p_statement)
   if(p_statement.IsEmpty())
   {
     m_lastError = "Error in SQL statement: Empty statement.";
-    throw m_lastError;
+    throw StdException(m_lastError);
   }
   // Begin of query clock
   LARGE_INTEGER start;
@@ -481,18 +574,13 @@ SQLQuery::DoSQLStatement(const CString& p_statement)
   Close();
   Open();
 
+  // See if it is a 'SELECT' query
   m_isSelectQuery = false;
   if(p_statement.Left(6).CompareNoCase("select") == 0)
   {
     m_isSelectQuery = true;
   }
 
-  if(m_database && m_database->LogLevel() >= LOGLEVEL_MAX)
-  {
-    m_database->LogPrint(LOGLEVEL_MAX,"[Database query]\n");
-    m_database->LogPrint(LOGLEVEL_MAX,p_statement.GetString());
-    m_database->LogPrint(LOGLEVEL_MAX,"\n");
-  }
   // Bind parameters
   BindParameters();
 
@@ -507,11 +595,19 @@ SQLQuery::DoSQLStatement(const CString& p_statement)
     m_database->ReplaceMacros(statement);
   }
 
+  // Log the query, just before we run it, replaced macro's and all
+  if(m_database && m_database->LogLevel() >= LOGLEVEL_MAX)
+  {
+    m_database->LogPrint(LOGLEVEL_MAX,"[Database query]\n");
+    m_database->LogPrint(LOGLEVEL_MAX,statement.GetString());
+    m_database->LogPrint(LOGLEVEL_MAX,"\n");
+  }
+
   // The Oracle 10.2.0.3.0 ODBC Driver - and later versions - contain a bug
   // in the processing of the query-strings which crashes it in CharNextW
   // by a missing NULL-Terminator. By changing the length of the statement
   // _including_ the terminating NUL, it won't crash at all
-  // NOTE: This alsoo means we cannot use the SQL_NTS terminator
+  // NOTE: This also means we cannot use the SQL_NTS terminator
   SQLINTEGER lengthStatement = statement.GetLength() + 1;
 
   // GO DO IT RIGHT AWAY
@@ -536,7 +632,7 @@ SQLQuery::DoSQLStatement(const CString& p_statement)
       CString fout;
       fout.Format("Error [%d] in getting the number of columns from a query: ",m_retCode);
       GetLastError(fout);
-      throw m_lastError;
+      throw StdException(m_lastError);
     }
     FetchCursorName();
   }
@@ -545,7 +641,7 @@ SQLQuery::DoSQLStatement(const CString& p_statement)
     // rcExec == SQL_ERROR
     // rcExec == SQL_INVALID_HANDLE
     GetLastError("Error in SQL statement: ");
-    throw m_lastError;
+    throw StdException(m_lastError);
   }
   else
   {
@@ -567,8 +663,9 @@ SQLQuery::TryDoSQLStatement(const CString& p_statement)
   {
     DoSQLStatement(p_statement);
   }
-  catch(...)
+  catch(StdException& error)
   {
+    ReThrowSafeException(error);
     // Do Nothing, ignoring the error
   }
 }
@@ -631,7 +728,7 @@ SQLQuery::DoSQLStatementNonQuery(const CString& p_statement)
 {
   if(p_statement.Left(6).CompareNoCase("select") == 0)
   {
-    throw CString("SQL Non-query cannot contain a 'SELECT' statement");
+    throw StdException("SQL Non-query cannot contain a 'SELECT' statement");
   }
   DoSQLStatement(p_statement);
   return GetNumberOfRows();
@@ -683,7 +780,7 @@ SQLQuery::DoSQLPrepare(const CString& p_statement)
   if(p_statement.IsEmpty())
   {
     m_lastError = "Error in SQL statement: Empty statement.";
-    throw m_lastError;
+    throw StdException(m_lastError);
   }
   // close last m_hstmt if still open
   Close();
@@ -706,6 +803,21 @@ SQLQuery::DoSQLPrepare(const CString& p_statement)
     m_database->ReplaceMacros(statement);
   }
 
+  // See if it is a 'SELECT' query
+  m_isSelectQuery = false;
+  if(p_statement.Left(6).CompareNoCase("select") == 0)
+  {
+    m_isSelectQuery = true;
+  }
+
+  // Log the query, just before we run it, replaced macro's and all
+  if(m_database && m_database->LogLevel() >= LOGLEVEL_MAX)
+  {
+    m_database->LogPrint(LOGLEVEL_MAX,"[Database query]\n");
+    m_database->LogPrint(LOGLEVEL_MAX,statement.GetString());
+    m_database->LogPrint(LOGLEVEL_MAX,"\n");
+  }
+
   // The Oracle 10.2.0.3.0 ODBC Driver - and later versions - contain a bug
   // in the processing of the query-strings which crashes it in CharNexW
   // by a missing NUL-Terminator. By changing the length of the statement
@@ -713,7 +825,7 @@ SQLQuery::DoSQLPrepare(const CString& p_statement)
   SQLINTEGER lengthStatement = statement.GetLength() + 1;
 
   // GO DO THE PREPARE
-  m_retCode = SqlPrepare(m_hstmt,(SQLCHAR*)(LPCSTR)p_statement,lengthStatement);
+  m_retCode = SqlPrepare(m_hstmt,(SQLCHAR*)(LPCSTR)statement,lengthStatement);
   if(SQL_SUCCEEDED(m_retCode))
   {
     m_prepareDone = true;
@@ -723,7 +835,7 @@ SQLQuery::DoSQLPrepare(const CString& p_statement)
     // rcExec == SQL_ERROR
     // rcExec == SQL_INVALID_HANDLE
     GetLastError("Error in SQL statement: ");
-    throw m_lastError;
+    throw StdException(m_lastError);
   }
 }
 
@@ -735,7 +847,7 @@ SQLQuery::DoSQLExecute(bool p_rebind /*=false*/)
   if(!m_prepareDone)
   {
     m_lastError = "Internal error: SQLExecute without SQLPrepare.";
-    throw m_lastError;
+    throw StdException(m_lastError);
   }
   
   if(!m_boundDone || p_rebind)
@@ -769,7 +881,7 @@ SQLQuery::DoSQLExecute(bool p_rebind /*=false*/)
       CString fout;
       fout.Format("Error [%d] in determining the number of columns in the query: ",m_retCode);
       GetLastError(fout);
-      throw m_lastError;
+      throw StdException(m_lastError);
     }
     FetchCursorName();
   }
@@ -778,7 +890,7 @@ SQLQuery::DoSQLExecute(bool p_rebind /*=false*/)
     // rcExec == SQL_ERROR
     // rcExec == SQL_INVALID_HANDLE
     GetLastError("Error in SQL statement: ");
-    throw m_lastError;
+    throw StdException(m_lastError);
   }
   else
   {
@@ -798,6 +910,12 @@ SQLQuery::BindParameters()
   if(m_parameters.empty())
   {
     return;
+  }
+
+  // See if we must truncate input CHAR parameters
+  if(!m_paramMaxSizes.empty())
+  {
+    TruncateInputParameters();
   }
 
   // See if we have an extra function-return parameter
@@ -851,13 +969,34 @@ SQLQuery::BindParameters()
     {
       GetLastError("Cannot bind parameter. Error: ");
       m_lastError.AppendFormat(" Parameter: %d",icol);
-      throw m_lastError;
+      throw StdException(m_lastError);
     }
 
     // Bind NUMERIC/DECIMAL precision and scale
     if(dataType == SQL_C_NUMERIC)
     {
       BindColumnNumeric((ushort)icol,var,SQL_PARAM_INPUT);
+    }
+  }
+}
+
+// Truncate CHAR parameters on input to reflect the size of the database column
+// Parameter size can be set with SetParameterMaxSize()!
+void
+SQLQuery::TruncateInputParameters()
+{
+  for(auto& param : m_parameters)
+  {
+    SQLVariant* parm = param.second;
+
+    // If CHAR/VARCHAR column does not support more than this amount of characters
+    if(parm->GetDataType() == SQL_C_CHAR && parm->GetParameterType() == P_SQL_PARAM_INPUT)
+    {
+      MaxSizeMap::iterator ms = m_paramMaxSizes.find(param.first);
+      if (ms != m_paramMaxSizes.end())
+      {
+        parm->TruncateSpace(ms->second);
+      }
     }
   }
 }
@@ -930,7 +1069,7 @@ SQLQuery::BindColumns()
       CString fout;
       fout.Format("Error [%d] at the determining of the attributes of column [%d] : ",m_retCode,icol);
       GetLastError(fout);
-      throw m_lastError;
+      throw StdException(m_lastError);
     }
 
     int type = SQLType2CType(dataType);
@@ -946,23 +1085,23 @@ SQLQuery::BindColumns()
       }
       else
       {
-        int BUFFERSIZE = m_bufferSize ? m_bufferSize : OPTIM_BUFFERSIZE;
-        if(precision > (unsigned)BUFFERSIZE)
+      int BUFFERSIZE = m_bufferSize ? m_bufferSize : OPTIM_BUFFERSIZE;
+      if(precision > (unsigned)BUFFERSIZE)
+      {
+        // Must use AT_EXEC SQLGetData Interface
+        atexec = min((int)m_maxColumnLength,BUFFERSIZE);
+        if(atexec == 0)
         {
-          // Must use AT_EXEC SQLGetData Interface
-          atexec = min((int)m_maxColumnLength,BUFFERSIZE);
-          if(atexec == 0)
-          {
-            // Provide arbitrary border value
-            atexec = BUFFERSIZE;
-          }
-          precision = atexec;
+          // Provide arbitrary border value
+          atexec = BUFFERSIZE;
         }
-        // Some ODBC drivers crash as a result of the fact
-        // that CHAR types could be WCHAR types and they 
-        // reserve the privilege to allocate double the memory
-        // IF YOU DON'T DO THIS, YOU WILL CRASH!!
-        precision *= 2;
+        precision = atexec;
+      }
+      // Some ODBC drivers crash as a result of the fact
+      // that CHAR types could be WCHAR types and they 
+      // reserve the privilege to allocate double the memory
+      // IF YOU DON'T DO THIS, YOU WILL CRASH!!
+      precision *= 2;
       }
     }
     // Create new variant and reserve space for CHAR and BINARY types
@@ -1021,7 +1160,7 @@ SQLQuery::BindColumns()
       {
         GetLastError("Cannot bind to column. Error: ");
         m_lastError.AppendFormat(" Column number: %d",icol);
-        throw m_lastError;
+        throw StdException(m_lastError);
       }
 
       // Now do the SQL_NUMERIC precision/scale binding
@@ -1085,7 +1224,7 @@ SQLQuery::BindColumnNumeric(SQLSMALLINT p_column,SQLVariant* p_var,int p_type)
   }
   CString error;
   error.Format("Cannot bind NUMERIC attributes PRECISION/SCALE for column: %d",p_column);
-  throw error;
+  throw StdException(error);
 }
 
 int 
@@ -1237,7 +1376,7 @@ SQLQuery::GetRecord()
     return false;
   }
   GetLastError("Error in fetch-next-record: ");
-  throw m_lastError;
+  throw StdException(m_lastError);
 }
 
 // Retrieve the piece-by-piece data at exec time of the SQLFetch
@@ -1329,7 +1468,7 @@ SQLQuery::DoCancelQuery()
     if(SQL_SUCCEEDED(m_retCode))
     {
       GetLastError("Parallel cancel SQL statement: ");
-      throw m_lastError;
+      throw StdException(m_lastError);
     }
   }
 }
@@ -1431,13 +1570,13 @@ SQLQuery::GetLastError(CString p_prefix /*=""*/)
     SQLSMALLINT messageLen = 0;
 
     m_retCode = SqlError(SQL_NULL_HENV
-                       ,SQL_NULL_HDBC
-                       ,m_hstmt
-                       ,SqlState
-                       ,&nativeError
-                       ,ErrorMsg
-                       ,SQL_MAX_MESSAGE_LENGTH
-                       ,&messageLen);
+                        ,SQL_NULL_HDBC
+                        ,m_hstmt
+                        ,SqlState
+                        ,&nativeError
+                        ,ErrorMsg
+                        ,SQL_MAX_MESSAGE_LENGTH
+                        ,&messageLen);
     if(!SQL_SUCCEEDED(m_retCode) || m_retCode == SQL_NO_DATA)
     {
       break;
@@ -1560,7 +1699,7 @@ SQLQuery::GetColumnLength(int p_column)
     if (!SQL_SUCCEEDED(m_retCode))
     {
       GetLastError();
-      throw m_lastError;
+      throw StdException(m_lastError);
     }
   }
   return (int)integerValue;
@@ -1586,7 +1725,7 @@ SQLQuery::GetColumnDisplaySize(int p_column)
     if (!SQL_SUCCEEDED(m_retCode))
     {
       GetLastError();
-      throw m_lastError;
+      throw StdException(m_lastError);
     }
   }
   return (int)integerValue;
@@ -1626,7 +1765,7 @@ SQLQuery::DescribeColumn(int           p_col
   if(!SQL_SUCCEEDED(m_retCode))
   {
     GetLastError();
-    throw m_lastError;
+    throw StdException(m_lastError);
   }
   // Explicit 2.x call (SQLColAttributes instead of SQLColAttribute)
   m_retCode = SqlColAttributes(m_hstmt
@@ -1639,7 +1778,7 @@ SQLQuery::DescribeColumn(int           p_col
   if(!SQL_SUCCEEDED(m_retCode))
   {
     GetLastError();
-    throw m_lastError;
+    throw StdException(m_lastError);
   }
   // Explicit 2.x call (SQLColAttributes instead of SQLColAttribute)
   m_retCode = SqlColAttributes(m_hstmt
@@ -1652,7 +1791,7 @@ SQLQuery::DescribeColumn(int           p_col
   if(!SQL_SUCCEEDED(m_retCode))
   {
     GetLastError();
-    throw m_lastError;
+    throw StdException(m_lastError);
   }
   // Rebinding
   sqlType = SQLType2CType(sqlType);
@@ -1682,7 +1821,7 @@ SQLVariant*
 SQLQuery::DoSQLCall(CString p_schema,CString p_procedure,const int p_param1)
 {
   SQLVariant* var = new SQLVariant((long)p_param1);
-  InternalSetParameter(1,var,SQL_PARAM_INPUT);
+  InternalSetParameter(1,var,P_SQL_PARAM_INPUT);
   return DoSQLCall(p_schema,p_procedure,true);
 }
 
@@ -1690,7 +1829,7 @@ SQLVariant*
 SQLQuery::DoSQLCall(CString p_schema,CString p_procedure,const char* p_param1)
 {
   SQLVariant* var = new SQLVariant(p_param1);
-  InternalSetParameter(1,var,SQL_PARAM_INPUT);
+  InternalSetParameter(1,var,P_SQL_PARAM_INPUT);
   return DoSQLCall(p_schema,p_procedure,true);
 }
 
@@ -1698,7 +1837,7 @@ SQLVariant*
 SQLQuery::DoSQLCall(CString p_schema,CString p_procedure,const bcd& p_param1)
 {
   SQLVariant* var = new SQLVariant(&p_param1);
-  InternalSetParameter(1,var,SQL_PARAM_INPUT);
+  InternalSetParameter(1,var,P_SQL_PARAM_INPUT);
   return DoSQLCall(p_schema,p_procedure,true);
 }
 
@@ -1709,7 +1848,7 @@ SQLQuery::DoSQLCall(CString p_schema,CString p_procedure,bool p_hasReturn /*=fal
   // Check we have a database object and not a isolated HDBC
   if(m_database == nullptr)
   {
-    throw CString("Cannot do a function/procedure call without a database object");
+    throw StdException("Cannot do a function/procedure call without a database object");
   }
 
   // Make sure we have a minimal output parameter (SQL_SLONG !!)
@@ -1717,7 +1856,7 @@ SQLQuery::DoSQLCall(CString p_schema,CString p_procedure,bool p_hasReturn /*=fal
   if(p_hasReturn && m_parameters.find(0) == m_parameters.end())
   {
     SQLVariant* var = new SQLVariant((long)0L);
-    InternalSetParameter(0,var,SQL_PARAM_OUTPUT);
+    InternalSetParameter(0,var,P_SQL_PARAM_OUTPUT);
   }
 
   // Is we support standard ODBC, do that call
@@ -1812,7 +1951,7 @@ SQLQuery::LimitOutputParameters()
   for(auto& param : m_parameters)
   {
     int type = param.second->GetParameterType();
-    if(type == SQL_PARAM_OUTPUT || type == SQL_PARAM_INPUT_OUTPUT)
+    if(type == P_SQL_PARAM_OUTPUT || type == P_SQL_PARAM_INPUT_OUTPUT)
     {
       if(param.second->GetDataType() == SQL_C_CHAR)
       {

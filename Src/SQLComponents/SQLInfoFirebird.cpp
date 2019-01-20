@@ -2,7 +2,7 @@
 //
 // File: SQLInfoFirebird.cpp
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #include "stdafx.h"
 #include "SQLComponents.h"
@@ -258,11 +258,25 @@ SQLInfoFirebird::GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) const
   return "{fn IFNULL(" + p_test + "," + p_isnull + ")}";
 }
 
+// Gets the construction for inline generating a key within an INSERT statement
+CString
+SQLInfoFirebird::GetSQLNewSerial(CString p_table, CString p_sequence) const
+{
+  CString sequence(p_sequence);
+  if (sequence.IsEmpty() && !p_table.IsEmpty())
+  {
+    sequence = p_table + "_seq";
+  }
+
+  // Select next value from a generator sequence
+  return "(next value for " + sequence + ")";
+}
+
 // Gets the construction / select for generating a new serial identity
 CString
 SQLInfoFirebird::GetSQLGenerateSerial(CString p_table) const
 {
-  return "SELECT " + p_table + "_seq.nextval FROM DUAL";
+  return "SELECT (next value for " + p_table + "_seq) FROM RDB$DATABASE";
 }
 
 // Gets the construction / select for the resulting effective generated serial
@@ -334,7 +348,7 @@ CString
 SQLInfoFirebird::GetSQLDateString(int p_year,int p_month,int p_day) const
 {
   CString retval;
-  retval.Format("CAST '%02d/%02d/04d' AS DATE)",p_day,p_month,p_year); // American order!!
+  retval.Format("CAST '%02d/%02d/%04d' AS DATE)",p_day,p_month,p_year); // American order!!
   return retval;
 }
 
@@ -442,6 +456,11 @@ SQLInfoFirebird::GetCATALOGTableAttributes(CString /*p_schema*/,CString p_tablen
                 "      ,trim(rdb$description) AS remarks\n"
                 "      ,trim(rdb$owner_name) || '.' || trim(rdb$relation_name) AS full_name\n"
                 "      ,cast('' as varchar(31)) as storage_space\n"
+                "      ,CASE rdb$relation_type\n"
+                "            WHEN 4 THEN 1\n"
+                "            WHEN 5 THEN 1\n"
+                "                   ELSE 0\n"
+                "       END  AS temporary_table\n"
                 "  FROM rdb$relations\n"
                 " WHERE rdb$system_flag = 0\n"
                 "   AND rdb$relation_type IN (0,2,4,5)\n";
@@ -464,7 +483,7 @@ SQLInfoFirebird::GetCATALOGTableSynonyms(CString /*p_schema*/,CString p_tablenam
                 "      ,CAST('SYSTEM TABLE' as varchar(31)) AS table_type\n"
                 "      ,rdb$description                     AS remarks\n"
                 "      ,trim(rdb$owner_name) || '.' || trim(rdb$relation_name) AS full_name\n"
-                "      ,cast('' as varchar(31)) as storage_space\n"
+                "      ,cast('' as varchar(31))             AS storage_space\n"
                 "  FROM rdb$relations";
   if(!p_tablename.IsEmpty())
   {
@@ -723,7 +742,7 @@ SQLInfoFirebird::GetCATALOGColumnAttributes(CString /*p_schema*/,CString p_table
 
 CString SQLInfoFirebird::GetCATALOGColumnCreate(MetaColumn& p_column) const
 {
-  CString sql  = "ALTER TABLE "  + p_column.m_table  + "\n";
+  CString sql  = "ALTER TABLE "  + p_column.m_table  + "\n"
                  "  ADD COLUMN " + p_column.m_column + " " + p_column.m_typename;
   p_column.GetPrecisionAndScale(sql);
   p_column.GetNullable(sql);
@@ -734,7 +753,7 @@ CString SQLInfoFirebird::GetCATALOGColumnAlter(MetaColumn& p_column) const
 {
   // The extra 'TYPE' keyword  is a-typical
   // The SET/DROP for the NULL is a-typical
-  CString sql  = "ALTER TABLE "  + p_column.m_table  + "\n";
+  CString sql  = "ALTER TABLE "  + p_column.m_table  + "\n"
                  "      MODIFY COLUMN " + p_column.m_column + " TYPE " + p_column.m_typename;
   p_column.GetPrecisionAndScale(sql);
   if(p_column.m_nullable)
@@ -910,13 +929,13 @@ CString
 SQLInfoFirebird::GetCATALOGPrimaryAttributes(CString /*p_schema*/,CString p_tablename) const
 {
   p_tablename.MakeUpper();
-  CString sql = "SELECT cast('' as varchar(31))     as catalog_name\n"
-                "      ,cast('' as varchar(31))     as schema_name\n"
-                "      ,trim(con.rdb$relation_name) as table_name\n"
-                "      ,trim(ind.rdb$field_name)    as column_name\n"
-                "      ,ind.rdb$field_position + 1  as col_position\n"
-                "      ,con.rdb$constraint_name     as col_constraint\n"
-                "      ,con.rdb$index_name\n"
+  CString sql = "SELECT cast('' as varchar(31))       as catalog_name\n"
+                "      ,cast('' as varchar(31))       as schema_name\n"
+                "      ,trim(con.rdb$relation_name)   as table_name\n"
+                "      ,trim(ind.rdb$field_name)      as column_name\n"
+                "      ,ind.rdb$field_position + 1    as col_position\n"
+                "      ,trim(con.rdb$constraint_name) as col_constraint\n"
+                "      ,trim(con.rdb$index_name)      as index_name\n"
                 "      ,con.rdb$deferrable\n"
                 "      ,con.rdb$initially_deferred\n"
                 "  FROM rdb$relation_constraints con\n"
@@ -1191,8 +1210,7 @@ SQLInfoFirebird::GetCATALOGTriggerAttributes(CString p_schema, CString p_tablena
   p_triggername.MakeUpper();
   p_triggername.MakeUpper();
 
-  CString sql;
-  sql.Format("SELECT cast('' as varchar(31)) AS catalog_name\n"
+  CString sql("SELECT cast('' as varchar(31)) AS catalog_name\n"
              "      ,(SELECT trim(tab.rdb$owner_name)\n"
              "          FROM rdb$relations tab\n"
              "         WHERE tab.rdb$relation_name = trg.rdb$relation_name) AS schema_name\n"
@@ -1263,8 +1281,7 @@ SQLInfoFirebird::GetCATALOGTriggerAttributes(CString p_schema, CString p_tablena
              "       END AS trigger_enabled\n"
              "      ,rdb$trigger_source\n"
              "  FROM rdb$triggers trg\n"
-             " WHERE rdb$system_flag   = 0\n"
-            ,p_schema.GetString());
+             " WHERE rdb$system_flag   = 0\n");
 
   // Add tablename filter
   if(!p_tablename.IsEmpty())
@@ -2329,7 +2346,7 @@ SQLInfoFirebird::DoSQLCallProcedure(SQLQuery* p_query,CString& p_procedure)
         SQLVariant* target = p_query->GetParameter(++setIndex);
         if(target == nullptr)
         {
-          throw CString("Wrong number of output parameters for procedure call");
+          throw StdException("Wrong number of output parameters for procedure call");
         }
         type = target->GetParameterType();
       }

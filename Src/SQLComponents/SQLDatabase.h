@@ -2,7 +2,7 @@
 //
 // File: Database.h
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #pragma once
 #include "SQLComponents.h"
@@ -218,6 +218,7 @@ public:
   CString        GetStrippedSQLTimeString(int p_hour,int p_minute,int p_second);
   CString        GetSQLDateString        (int p_day, int p_month, int p_year);
   CString        GetCurrentTimestampQualifier();
+  CString        GetSQL_NewSerial(CString p_table,CString p_sequence);
   CString        GetSQL_GenerateSerial(CString p_table);
   int            GetSQL_EffectiveSerial(CString p_oid_string);
   CString        GetTimestampAsString(const SQLTimestamp& p_timestamp);

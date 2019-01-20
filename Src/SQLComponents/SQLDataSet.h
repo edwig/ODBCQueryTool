@@ -2,7 +2,7 @@
 //
 // File: SQLDataSet.h
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #pragma once
 #include "SQLDatabase.h"
@@ -83,7 +83,7 @@ typedef std::vector<SQLVariant*>  VariantSet;
 typedef std::vector<SQLParameter> ParameterSet;
 typedef std::vector<CString>      NamenMap;
 typedef std::vector<int>          TypenMap;
-typedef std::map<int,int>         ObjectMap;
+typedef std::map<CString,int>     ObjectMap;
 typedef std::list<CString>        WordList;
 
 class SQLDataSet
@@ -99,7 +99,7 @@ public:
   bool Open(bool p_stopIfNoColumns = false);
   // Append (read extra) into the dataset
   bool Append();
-  // Remove resultset
+  // Remove result set
   void Close();
 
   // Navigate in the records
@@ -152,13 +152,15 @@ public:
   // Set primary key column name (for updates)
   void         SetPrimaryKeyColumn(CString p_name);
   void         SetPrimaryKeyColumn(WordList& p_list);
-  // Set searchable column
-  void         SetSearchableColumn(CString p_name);
+  // Setting the sequence/generator name to something different than "<tablename>_seq"
+  void         SetSequenceName(CString p_sequence);
   // Set parameter for a query
   void         SetParameter(SQLParameter p_parameter);
   void         SetParameter(CString p_naam,SQLVariant p_waarde);
   // Set filters for a query
-  void         SetFilters(SQLFilterSet& p_filters);
+  void         SetFilters(SQLFilterSet* p_filters);
+  // Set columns that can be updated
+  void         SetUpdateColumns(WordList p_list);
   // Set the status to modified/saved
   void         SetStatus(int m_add,int m_delete = 0);
   // Set a field value in the current record
@@ -191,6 +193,8 @@ public:
   // Getting info about the primary key
   CString      GetPrimarySchema();
   CString      GetPrimaryTableName();
+  // Getting the sequence name
+  CString      GetSequenceName();
 
   // XML Saving and loading
   bool         XMLSave(CString p_filename,CString p_name,XMLEncoding p_encoding = XMLEncoding::ENC_UTF8);
@@ -203,7 +207,7 @@ private:
   // Parse the selection
   CString      ParseSelection(SQLQuery& p_query);
   // Parse the fitlers
-  CString      ParseFilters();
+  CString      ParseFilters(SQLQuery& p_query);
   // Get the variant of a parameter
   SQLVariant*  GetParameter(CString& p_name);
   // Get all the columns of the record
@@ -218,8 +222,11 @@ private:
   bool         GetPrimaryKeyInfo();
   // Check that all primary key columns are in the dataset
   bool         CheckPrimaryKeyColumns();
-  // Find primary key in the column names
-  int          FindSearchColumn();
+  // Read in a record from a SQLQuery
+  bool         ReadRecordFromQuery(SQLQuery& p_query,bool p_modifiable,bool p_append = false);
+  // Make a primary key record
+  CString      MakePrimaryKey(SQLRecord*  p_record);
+  CString      MakePrimaryKey(VariantSet& p_primary);
   // Forget about a record in the recordset
   bool         ForgetRecord(SQLRecord* p_record,bool p_force);
   void         ForgetPrimaryObject(SQLRecord* p_record);
@@ -233,7 +240,7 @@ private:
 
   CString      GetSQLDelete  (SQLQuery* p_query,SQLRecord* p_record);
   CString      GetSQLUpdate  (SQLQuery* p_query,SQLRecord* p_record);
-  CString      GetSQLInsert  (SQLQuery* p_query,SQLRecord* p_record);
+  CString      GetSQLInsert  (SQLQuery* p_query,SQLRecord* p_record,CString& p_serial);
   CString      GetWhereClause(SQLQuery* p_query,SQLRecord* p_record,int& p_parameter);
 
   // Private data of the dataset
@@ -245,18 +252,18 @@ private:
   CString      m_selection;
   CString      m_primarySchema;
   CString      m_primaryTableName;
+  CString      m_sequenceName;
   ParameterSet m_parameters;
-  SQLFilterSet m_filters;
   NamenMap     m_primaryKey;
-  // Object mapping
-  CString      m_searchColumn; 
-  ObjectMap    m_objects;
+  SQLFilterSet* m_filters;
+  WordList     m_updateColumns;
 protected:
   int          m_status;
   int          m_current;
   NamenMap     m_names;
   TypenMap     m_types;
   RecordSet    m_records;
+  ObjectMap    m_objects;
 };
 
 inline void 
@@ -290,6 +297,12 @@ SQLDataSet::SetPrimaryTable(CString p_schema,CString p_tableName)
 {
   m_primarySchema    = p_schema;
   m_primaryTableName = p_tableName;
+}
+
+inline void
+SQLDataSet::SetSequenceName(CString p_sequence)
+{
+  m_sequenceName = p_sequence;
 }
 
 inline int
@@ -335,12 +348,6 @@ SQLDataSet::GetPrimaryTableName()
 }
 
 inline void
-SQLDataSet::SetSearchableColumn(CString p_name)
-{
-  m_searchColumn = p_name;
-}
-
-inline void
 SQLDataSet::SetPrimaryKeyColumn(CString p_name)
 {
   m_primaryKey.push_back(p_name);
@@ -350,6 +357,12 @@ inline int
 SQLDataSet::Current()
 {
   return m_current;
+}
+
+inline void
+SQLDataSet::SetUpdateColumns(WordList p_list)
+{
+  m_updateColumns = p_list;
 }
 
 inline void

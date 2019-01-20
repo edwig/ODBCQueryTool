@@ -2,7 +2,7 @@
 //
 // File: SQLVariantFormat.cpp
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #include "stdafx.h"
 #include "SQLComponents.h"
@@ -129,58 +129,62 @@ SQLVariantFormat::ReFormat()
 
 // All words get a initial capital
 // The rest of the words become lower case
+// Diacritic letters within words will be left alone
 void
 SQLVariantFormat::StringInitCapital()
 {
   bool doCapital = true;
-  for(int ind = 0;ind < m_format.GetLength(); ++ind)
+  int  length = m_format.GetLength();
+  unsigned char* buffer = (unsigned char*)m_format.GetBuffer();
+
+  for(int ind = 0; ind < length; ++ind)
   {
-    int ch = m_format.GetAt(ind);
-    if(ch > 0 && ch <= 127)
+    int ch = buffer[ind];
+
+    if(isblank(ch))
+    {
+      doCapital = true;
+    }
+    else
     {
       if(isalpha(ch))
       {
         if(doCapital)
         {
-          m_format.SetAt(ind,(unsigned char)toupper(ch));
+          m_format.SetAt(ind, (unsigned char)toupper(ch));
           doCapital = false;
         }
         else
         {
-          m_format.SetAt(ind,(unsigned char)tolower(ch));
+          m_format.SetAt(ind, (unsigned char)tolower(ch));
         }
       }
-      else
-      {
-        doCapital = true;
-      }
+      doCapital = false;
     }
   }
 }
 
-// First letter of the string becomes a capital
+// First character of the string becomes a capital
 // The rest becomes all lower case
+// But only if the first character is NOT a diacritic character
 void
 SQLVariantFormat::StringStartCapital()
 {
   bool doCapital = true;
-  for(int ind = 0;ind < m_format.GetLength(); ++ind)
+  int  length = m_format.GetLength();
+  unsigned char* buffer = (unsigned char*)m_format.GetBuffer();
+
+  for(int ind = 0;ind < length; ++ind)
   {
-    int ch = m_format.GetAt(ind);
-    if(ch > 0 && ch <= 127)
+    int ch = buffer[ind];
+
+    if(isblank(ch) == false)
     {
       if(isalpha(ch))
       {
-        if(doCapital)
-        {
-          m_format.SetAt(ind,(char)toupper(ch));
-          doCapital = false;
-        }
-        else
-        {
-          m_format.SetAt(ind,(char)tolower(ch));
-        }
+        m_format.SetAt(ind,doCapital ? (unsigned char)toupper(ch) : (unsigned char) tolower(ch));
       }
+      doCapital = false;
     }
   }
 }
@@ -511,7 +515,7 @@ SQLVariantFormat::GetDateFromStringVariant(SQLVariant* p_variant,CString p_forma
 {
   ZeroMemory(p_date,sizeof(DATE_STRUCT));
 
-  CString datum = p_variant->GetAsChar();
+  CString datum = p_variant ? p_variant->GetAsChar() : "";
   if(datum.IsEmpty() && !p_format.IsEmpty())
   {
     datum = p_format;
@@ -531,8 +535,9 @@ SQLVariantFormat::GetDateFromStringVariant(SQLVariant* p_variant,CString p_forma
       lang.AsDateStruct(p_date);
       return true;
     }
-    catch (...)
+    catch(StdException& er)
     {
+      ReThrowSafeException(er);
     }
     return false;
   }
@@ -597,10 +602,6 @@ SQLVariantFormat::FormatDate(CString p_pattern)
     // Is there a date present in the string?
     if (hasDate)
     {
-      if(m_variant == NULL || m_variant->IsEmpty())
-      {
-        return OK;
-      }
       if(!GetDateFromStringVariant(m_variant,m_format,&date))
       {
         return ER_FormatDateTypeValue;
@@ -856,8 +857,9 @@ SQLVariantFormat::DateCalculate(char p_operator,CString p_argument)
       SQLInterval intval = other - date;
       m_format.Format("%d",intval.GetDays());
     }
-    catch(...)
+    catch(StdException& ex)
     {
+      ReThrowSafeException(ex);
       // Does nothing. Underlying date is unchanged
     }
   }
@@ -965,7 +967,7 @@ SQLVariantFormat::FormatVariantForSQL(SQLDatabase* p_database)
   else
   {
     CString datatypeString = m_variant->FindDatatype(datatype);
-    throw CString("Cannot prepare datatype for query: " + datatypeString);
+    throw StdException("Cannot prepare datatype for query: " + datatypeString);
   }
   return text;
 }

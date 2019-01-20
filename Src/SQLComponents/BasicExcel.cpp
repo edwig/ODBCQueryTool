@@ -24,8 +24,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #include "ExcelFormat.h"
 
@@ -112,37 +112,39 @@ CompoundFile::SetError(HRESULT hr)
 {
   switch(hr)
   {
-    case S_OK:                      strcpy(_error,"Indicates that the storage object was successfully opened.");
+    case S_OK:                      strcpy_s(_error,ERROR_SIZE,"Indicates that the storage object was successfully opened.");
                                     break;
-    case STG_E_FILENOTFOUND:        strcpy(_error,"Indicates that the specified file does not exist.");
+    case STG_E_FILENOTFOUND:        strcpy_s(_error,ERROR_SIZE,"Indicates that the specified file does not exist.");
                                     break;
-    case STG_E_ACCESSDENIED:        strcpy(_error,"Access denied because the caller does not have enough permissions, or another caller has the file open and locked.");
+    case STG_E_ACCESSDENIED:        strcpy_s(_error,ERROR_SIZE,"Access denied because the caller does not have enough permissions, or another caller has the file open and locked.");
                                     break;
-    case STG_E_LOCKVIOLATION:       strcpy(_error,"Access denied because another caller has the file open and locked.");
+    case STG_E_LOCKVIOLATION:       strcpy_s(_error,ERROR_SIZE,"Access denied because another caller has the file open and locked.");
                                     break;
-    case STG_E_SHAREVIOLATION:      strcpy(_error,"Access denied because another caller has the file open and locked.");
+    case STG_E_SHAREVIOLATION:      strcpy_s(_error,ERROR_SIZE,"Access denied because another caller has the file open and locked.");
                                     break;
-    case STG_E_FILEALREADYEXISTS:   strcpy(_error,"Indicates that the file exists but is not a storage object.");
+    case STG_E_FILEALREADYEXISTS:   strcpy_s(_error,ERROR_SIZE,"Indicates that the file exists but is not a storage object.");
                                     break;
-    case STG_E_TOOMANYOPENFILES:    strcpy(_error,"Indicates that the storage object was not opened because there are too many open files.");
+    case STG_E_TOOMANYOPENFILES:    strcpy_s(_error,ERROR_SIZE,"Indicates that the storage object was not opened because there are too many open files.");
                                     break;
-    case STG_E_INSUFFICIENTMEMORY:  strcpy(_error,"Indicates that the storage object was not opened due to inadequate memory.");
+    case STG_E_INSUFFICIENTMEMORY:  strcpy_s(_error,ERROR_SIZE,"Indicates that the storage object was not opened due to inadequate memory.");
                                     break;
-    case STG_E_INVALIDNAME:         strcpy(_error,"Indicates a non-valid name in the name parameter.");
+    case STG_E_INVALIDNAME:         strcpy_s(_error,ERROR_SIZE,"Indicates a non-valid name in the name parameter.");
                                     break;
-    case STG_E_INVALIDPOINTER:      strcpy(_error,"Indicates a non-valid pointer in one of the parameters: snbExclude, pwcsName, pstgPriority, or ppStgOpen.");
+    case STG_E_INVALIDPOINTER:      strcpy_s(_error,ERROR_SIZE,"Indicates a non-valid pointer in one of the parameters: snbExclude, pwcsName, pstgPriority, or ppStgOpen.");
                                     break;
-    case STG_E_INVALIDFLAG:         strcpy(_error,"Indicates a non-valid flag combination in the accessmode parameter");
+    case STG_E_INVALIDFLAG:         strcpy_s(_error,ERROR_SIZE,"Indicates a non-valid flag combination in the accessmode parameter");
                                     break;
-    case STG_E_INVALIDFUNCTION:     strcpy(_error,"Indicates STGM_DELETEONRELEASE specified in the accessmode parameter.");
+    case STG_E_INVALIDFUNCTION:     strcpy_s(_error,ERROR_SIZE,"Indicates STGM_DELETEONRELEASE specified in the accessmode parameter.");
                                     break;
-    case STG_E_OLDFORMAT:           strcpy(_error,"Indicates that the storage object being opened was created by the Beta 1 storage provider. This format is no longer supported.");
+    case STG_E_OLDFORMAT:           strcpy_s(_error,ERROR_SIZE,"Indicates that the storage object being opened was created by the Beta 1 storage provider. This format is no longer supported.");
                                     break;
-    case STG_E_NOTSIMPLEFORMAT:     strcpy(_error,"Indicates that the STGM_SIMPLE flag was specified in the accessmode parameter and the storage object being opened was not written in simple mode.");
+    case STG_E_NOTSIMPLEFORMAT:     strcpy_s(_error,ERROR_SIZE,"Indicates that the STGM_SIMPLE flag was specified in the accessmode parameter and the storage object being opened was not written in simple mode.");
                                     break;
-    case STG_E_OLDDLL:              strcpy(_error,"The DLL used to open this storage object is a version of the DLL that is older than the one used to create it.");
+    case STG_E_OLDDLL:              strcpy_s(_error,ERROR_SIZE,"The DLL used to open this storage object is a version of the DLL that is older than the one used to create it.");
                                     break;
-    case STG_E_PATHNOTFOUND:        strcpy(_error,"Specified path does not exist.");
+    case STG_E_PATHNOTFOUND:        strcpy_s(_error,ERROR_SIZE,"Specified path does not exist.");
+                                    break;
+    default:                        strcpy_s(_error,ERROR_SIZE,"Unknown error code");
                                     break;
   }
 }
@@ -555,15 +557,10 @@ bool Block::Erase(SECT index)
         ++j;
       }
     }
-// Close / Clear / Open may lead to bugs when another process accesss the file (ie.: Anti-Virus)
-//		file_.close();
-//		file_.open(&*(filename_.begin()), ios_base::out | ios_base::trunc | ios_base::binary);
     file_.write(buffer, fileSize_); // Write the new file.
 
     // flush the file immediatelly
     file_.flush();
-//		file_.close();
-//		file_.open(&*(filename_.begin()), mode_ | ios_base::binary);
 
     delete[] buffer;
     return true;
@@ -651,7 +648,7 @@ void CompoundFile::Header::Write(char* block)
 // REQUIRE: Block of data must be at least 512 bytes in size.
 {
   LittleEndian::Write(block, _abSig, 0x0000, 8);
-//	LittleEndian::Write(block, _clid, 0x0008, 16);
+//LittleEndian::Write(block, _clid, 0x0008, 16)
   LittleEndian::Write(block, *(const LONGINT*)&_clid.Data1, 0x0008, 8);
   LittleEndian::Write(block, *(const LONGINT*)&_clid.Data4, 0x0010, 8);
   LittleEndian::Write(block, _ulMinorVersion, 0x0018, 2);
@@ -680,7 +677,7 @@ void CompoundFile::Header::Read(char* block)
 // REQUIRE: Block of data must be at least 512 bytes in size.
 {
   LittleEndian::Read(block, _abSig, 0x0000, 8);
-//	LittleEndian::Read(block, _clid, 0x0008, 16);
+//LittleEndian::Read(block, _clid, 0x0008, 16)
   LittleEndian::Read(block, *(LONGINT*)&_clid.Data1, 0x0008, 8);
   LittleEndian::Read(block, *(LONGINT*)&_clid.Data4, 0x0010, 8);
   LittleEndian::Read(block, _ulMinorVersion, 0x0018, 2);
@@ -746,7 +743,7 @@ void CompoundFile::DirectoryEntry::Write(char* block)
   LittleEndian::Write(block, _sidLeftSib, 0x44, 4);
   LittleEndian::Write(block, _sidRightSib, 0x48, 4);
   LittleEndian::Write(block, _sidChild, 0x4C, 4);
-//	LittleEndian::Write(block, _clsId, 0x50, 16);
+//LittleEndian::Write(block, _clsId, 0x50, 16)
   LittleEndian::Write(block, *(const LONGINT*)&_clsId.Data1, 0x50, 16);
   LittleEndian::Write(block, *(const LONGINT*)&_clsId.Data4, 0x58, 16);
   LittleEndian::Write(block, _dwUserFlags, 0x60, 4);
@@ -770,7 +767,7 @@ void CompoundFile::DirectoryEntry::Read(char* block)
   LittleEndian::Read(block, _sidLeftSib, 0x44, 4);
   LittleEndian::Read(block, _sidRightSib, 0x48, 4);
   LittleEndian::Read(block, _sidChild, 0x4C, 4);
-//	LittleEndian::Read(block, _clsId, 0x50, 16);
+//LittleEndian::Read(block, _clsId, 0x50, 16)
   LittleEndian::Read(block, *(LONGINT*)&_clsId.Data1, 0x50, 16);
   LittleEndian::Read(block, *(LONGINT*)&_clsId.Data4, 0x58, 16);
   LittleEndian::Read(block, _dwUserFlags, 0x60, 4);
@@ -1629,12 +1626,12 @@ ULONG CompoundFile::ReadData(SECT startIndex, char* data, bool isBig)
   } else {
     GetBlockIndices(startIndex, indices, false);
     size_t minIndex = *min_element(indices.begin(), indices.end());
-//		size_t maxIndex = *max_element(indices.begin(), indices.end());
+//	ize_t maxIndex = *max_element(indices.begin(), indices.end())
     size_t smallBlocksPerBigBlock = header_.bigBlockSize_ / header_.smallBlockSize_;
     size_t minBlock = minIndex / smallBlocksPerBigBlock;
-//		size_t maxBlock = maxIndex / smallBlocksPerBigBlock +
-//						  (maxIndex % smallBlocksPerBigBlock ? 1 : 0);
-//		size_t totalBlocks = maxBlock - minBlock;
+//	size_t maxBlock = maxIndex / smallBlocksPerBigBlock +
+//                   (maxIndex % smallBlocksPerBigBlock ? 1 : 0)
+//  size_t totalBlocks = maxBlock - minBlock
     char* buffer = new char[DataSize(dirEntries_[0]->_sectStart, true)];
     ReadData(dirEntries_[0]->_sectStart, buffer, true);
 
@@ -2485,15 +2482,15 @@ void CompoundFile::DecreasePropertyReferences(CompoundFile::PropertyTree* parent
 
 namespace YExcel
 {
-using namespace YCompoundFiles;
 
-#ifdef _WIN32
-using namespace WinCompFiles;
-#endif
+using YCompoundFiles::LittleEndian;
 
 /************************************************************************************************************/
 Record::Record() : dataSize_(0), recordSize_(4), code_(0) {}
-Record::~Record() {}
+Record::~Record() 
+{
+  // Virtual destructor needed
+}
 
 ULONG Record::Read(const char* data)
 {
@@ -2644,13 +2641,13 @@ SmallString::SmallString(const SmallString& s) :
   {
     size_t len = strlen(s.name_);
     name_ = new char[len+1];
-    strcpy(name_, s.name_);
+    strcpy_s(name_,len + 1,s.name_);
   }
   if (s.wname_)
   {
     size_t len = wcslen(s.wname_);
     wname_ = new wchar_t[len+1];
-    wcscpy(wname_, s.wname_);
+    wcscpy_s(wname_,len+1,s.wname_);
   }
 }
 
@@ -2668,14 +2665,14 @@ SmallString::operator=(const SmallString& s)
   {
     size_t len = strlen(s.name_);
     name_ = new char[len+1];
-    strcpy(name_, s.name_);
+    strcpy_s(name_,len+1,s.name_);
   }
 
   if (s.wname_) 
   {
     size_t len = wcslen(s.wname_);
     wname_ = new wchar_t[len+1];
-    wcscpy(wname_, s.wname_);
+    wcscpy_s(wname_,len+1,s.wname_);
   }
 
   return *this;
@@ -2686,7 +2683,7 @@ const SmallString& SmallString::operator=(const char* str)
   Reset();
   size_t len = strlen(str);
   name_ = new char[len+1];
-  strcpy(name_, str);
+  strcpy_s(name_,len + 1,str);
   return *this;
 }
 const SmallString& SmallString::operator=(const wchar_t* str)
@@ -2786,7 +2783,6 @@ ULONG SmallString::StringSize()
 
 /************************************************************************************************************/
 LargeString::LargeString() : unicode_(-1), richtext_(0), phonetic_(0) {}
-LargeString::~LargeString() {}
 
 LargeString::LargeString(const LargeString& s) :
   name_(s.name_), wname_(s.wname_),
@@ -2794,11 +2790,14 @@ LargeString::LargeString(const LargeString& s) :
 
 LargeString& LargeString::operator=(const LargeString& s)
 {
-  unicode_ = s.unicode_;
-  richtext_ = s.richtext_;
-  phonetic_ = s.phonetic_;
-  name_ = s.name_;
-  wname_ = s.wname_;
+  if(&s != this)
+  {
+    unicode_  = s.unicode_;
+    richtext_ = s.richtext_;
+    phonetic_ = s.phonetic_;
+    name_     = s.name_;
+    wname_    = s.wname_;
+  }
   return *this;
 }
 
@@ -3003,6 +3002,7 @@ Workbook::Workbook()
 ULONG Workbook::Read(const char* data)
 {
   ULONG bytesRead = 0;
+  Record rec;
 
   short code;
   LittleEndian::Read(data, code, 0, 2);
@@ -3047,15 +3047,9 @@ ULONG Workbook::Read(const char* data)
         bytesRead += sst_.Read(data+bytesRead);
         break;
 
-//			case CODE::EXTSST:
-//				bytesRead += extSST_.Read(data+bytesRead);
-//				break;
-
       default:
-      {
-        Record rec;
+        // Read by
         bytesRead += rec.Read(data+bytesRead);
-      }
     }
 
     LittleEndian::Read(data, code, bytesRead, 2);
@@ -3071,30 +3065,40 @@ ULONG Workbook::Write(char* data)
   bytesWritten += window1_.Write(data+bytesWritten);
 
   size_t maxFonts = fonts_.size();
-  {for(size_t i=0; i<maxFonts; ++i) {bytesWritten += fonts_[i].Write(data+bytesWritten);}}
+  for(size_t i=0; i<maxFonts; ++i)
+  {
+    bytesWritten += fonts_[i].Write(data+bytesWritten);
+  }
 
   //MF
   size_t maxFormats = formats_.size();
+  for(size_t i=0; i<maxFormats; ++i) 
   {
-    for(size_t i=0; i<maxFormats; ++i) 
+    if(formats_[i].index_ >= FIRST_USER_FORMAT_IDX)	// only write user defined formats
     {
-      if (formats_[i].index_ >= FIRST_USER_FORMAT_IDX)	// only write user defined formats
-        bytesWritten += formats_[i].Write(data+bytesWritten);
+      bytesWritten += formats_[i].Write(data + bytesWritten);
     }
   }
 
   size_t maxXFs = XFs_.size();
-  {for(size_t i=0; i<maxXFs; ++i) {bytesWritten += XFs_[i].Write(data+bytesWritten);}}
+  for(size_t i=0; i<maxXFs; ++i) 
+  {
+    bytesWritten += XFs_[i].Write(data+bytesWritten);
+  }
 
   size_t maxStyles = styles_.size();
-  {for(size_t i=0; i<maxStyles; ++i) {bytesWritten += styles_[i].Write(data+bytesWritten);}}
+  for(size_t i=0; i<maxStyles; ++i) 
+  {
+    bytesWritten += styles_[i].Write(data+bytesWritten);
+  }
 
   size_t maxBoundSheets = boundSheets_.size();
-  {for(size_t i=0; i<maxBoundSheets; ++i) {bytesWritten += boundSheets_[i].Write(data+bytesWritten);}}
+  for(size_t i=0; i<maxBoundSheets; ++i) 
+  {
+    bytesWritten += boundSheets_[i].Write(data+bytesWritten);
+  }
 
   bytesWritten += sst_.Write(data+bytesWritten);
-//	bytesWritten += extSST_.Write(data+bytesWritten);
-
   bytesWritten += eof_.Write(data+bytesWritten);
 
   return bytesWritten;
@@ -3109,23 +3113,33 @@ ULONG Workbook::DataSize()
 
   //MF
   size_t maxFormats = formats_.size();
-  {for(size_t i=0; i<maxFormats; ++i) {
-    if (formats_[i].index_ >= FIRST_USER_FORMAT_IDX)	// only write user defined formats
+  for(size_t i=0; i<maxFormats; ++i) 
+  {
+    if(formats_[i].index_ >= FIRST_USER_FORMAT_IDX)	// only write user defined formats
+    {
       size += formats_[i].RecordSize();
-  }}
+    }
+  }
 
   size_t maxXFs = XFs_.size();
-  {for(size_t i=0; i<maxXFs; ++i) {size += XFs_[i].RecordSize();}}
+  for(size_t i=0; i<maxXFs; ++i) 
+  {
+    size += XFs_[i].RecordSize();
+  }
 
   size_t maxStyles = styles_.size();
-  {for(size_t i=0; i<maxStyles; ++i) {size += styles_[i].RecordSize();}}
+  for(size_t i=0; i<maxStyles; ++i) 
+  {
+    size += styles_[i].RecordSize();
+  }
 
   size_t maxBoundSheets = boundSheets_.size();
-  {for(size_t i=0; i<maxBoundSheets; ++i)
-    size += boundSheets_[i].RecordSize();}
+  for(size_t i=0; i<maxBoundSheets; ++i)
+  {
+    size += boundSheets_[i].RecordSize();
+  }
 
   size += sst_.RecordSize();
-//	size += extSST_.RecordSize();
   size += eof_.RecordSize();
 
   return size;
@@ -3384,47 +3398,59 @@ ULONG Workbook::SharedStringTable::Read(const char* data)
   strings_.resize(uniqueStringsTotal_);
 
   ULONG npos = 8;
-  if (continueIndices_.empty()) {
+  if (continueIndices_.empty()) 
+  {
     for(ULONG i=0; i<uniqueStringsTotal_; ++i)
+    {
       npos += strings_[i].Read(&*(data_.begin())+npos);
-  } else {
+    }
+  } 
+  else 
+  {
     // Require special handling since CONTINUE records are present
     ULONG maxContinue = (ULONG) continueIndices_.size();
 
-    for(ULONG i=0, c=0; i<uniqueStringsTotal_; ++i) {
+    for(ULONG i=0, c=0; i<uniqueStringsTotal_; ++i) 
+    {
       char unicode;
       ULONG stringSize;
       LittleEndian::Read(data_, stringSize, npos, 2);
       LittleEndian::Read(data_, unicode, npos+2, 1);
       int multiplier = (unicode & 1) ? 2 : 1;
 
-      if (c >= maxContinue || npos+stringSize*multiplier+3 <= continueIndices_[c]) {
+      if (c >= maxContinue || npos+stringSize*multiplier+3 <= continueIndices_[c]) 
+      {
         // String to be read is not split into two records
         npos += strings_[i].Read(&*(data_.begin())+npos);
-      } else {
+      } 
+      else 
+      {
         // String to be read is split into two or more records
         int bytesRead = 2;// Start from unicode field
 
         int size = continueIndices_[c] - npos - 1 - bytesRead;
         ++c;
 
-        if (size > 0) {
+        if (size > 0) 
+        {
           size /= multiplier; // Number of characters available for string in current record.
           bytesRead += strings_[i].ContinueRead(&*(data_.begin())+npos+bytesRead, size);
           stringSize -= size;
           size = 0;
         }
 
-        while(c<maxContinue && npos+stringSize+1>continueIndices_[c]) {
+        while(c<maxContinue && npos+stringSize+1>continueIndices_[c]) 
+        {
           ULONG dataSize = (continueIndices_[c] - continueIndices_[c-1] - 1) / multiplier;
           bytesRead += strings_[i].ContinueRead(&*(data_.begin())+npos+bytesRead, dataSize);
           stringSize -= dataSize + 1;
           ++c;
         }
 
-        if (stringSize > 0)
-          bytesRead += strings_[i].ContinueRead(&*(data_.begin())+npos+bytesRead, stringSize);
-
+        if(stringSize > 0)
+        {
+          bytesRead += strings_[i].ContinueRead(&*(data_.begin()) + npos + bytesRead,stringSize);
+        }
         npos += bytesRead;
       }
     }
@@ -3440,12 +3466,16 @@ ULONG Workbook::SharedStringTable::Write(char* data)
   LittleEndian::Write(data_, uniqueStringsTotal_, 4, 4);
 
   size_t maxContinue = continueIndices_.size();
-  for(size_t i=0, c=0, npos=8; i<uniqueStringsTotal_; ++i) {
+  for(size_t i=0, c=0, npos=8; i<uniqueStringsTotal_; ++i) 
+  {
     npos += strings_[i].Write(&*(data_.begin())+npos);
 
-    if (c<maxContinue && npos==continueIndices_[c])
+    if(c < maxContinue && npos == continueIndices_[c])
+    {
       ++c;
-    else if (c<maxContinue && npos>continueIndices_[c]) {
+    }
+    else if (c<maxContinue && npos>continueIndices_[c]) 
+    {
       // Insert unicode flag where appropriate for CONTINUE records.
       data_.insert(data_.begin()+continueIndices_[c], strings_[i].unicode_);
       data_.pop_back();
@@ -3462,33 +3492,43 @@ ULONG Workbook::SharedStringTable::DataSize()
   continueIndices_.clear();
   SECT curMax = 8224;
 
-  for(ULONG i=0; i<uniqueStringsTotal_; ++i) {
+  for(ULONG i=0; i<uniqueStringsTotal_; ++i) 
+  {
     ULONG stringSize = strings_[i].StringSize();
 
-    if (dataSize_+stringSize+3 <= curMax)
+    if(dataSize_ + stringSize + 3 <= curMax)
+    {
       dataSize_ += stringSize + 3;
-    else {
+    }
+    else 
+    {
       // If have >= 12 bytes (2 for size, 1 for unicode and >=9 for data, can split string
       // otherwise, end record and start continue record.
       bool unicode = strings_[i].unicode_ & 1;
-      if (curMax - dataSize_ >= 12) {
-        if (unicode && !((curMax-dataSize_)%2))
+      if (curMax - dataSize_ >= 12) 
+      {
+        if(unicode && !((curMax - dataSize_) % 2))
+        {
           --curMax;	// Make sure space reserved for unicode strings is even.
-
+        }
         continueIndices_.push_back(curMax);
         stringSize -= (curMax - dataSize_ - 3);
         dataSize_ = curMax;
         curMax += 8224;
 
         size_t additionalContinueRecords = unicode ? stringSize/8222 : stringSize/8223; // 8222 or 8223 because the first byte is for unicode identifier
-        for(size_t j=0; j<additionalContinueRecords; ++j) {
-          if (unicode) {
+        for(size_t j=0; j<additionalContinueRecords; ++j) 
+        {
+          if (unicode) 
+          {
             --curMax;
             continueIndices_.push_back(curMax);
             curMax += 8223;
             dataSize_ += 8223;
             stringSize -= 8222;
-          } else {
+          } 
+          else 
+          {
             continueIndices_.push_back(curMax);
             curMax += 8224;
             dataSize_ += 8224;
@@ -3497,15 +3537,21 @@ ULONG Workbook::SharedStringTable::DataSize()
         }
 
         dataSize_ += stringSize + 1;
-      } else {
+      } 
+      else 
+      {
         continueIndices_.push_back(dataSize_);
         curMax = dataSize_ + 8224;
-        if (dataSize_+stringSize+3 < curMax)
+        if(dataSize_ + stringSize + 3 < curMax)
+        {
           dataSize_ += stringSize + 3;
-        else {
+        }
+        else 
+        {
           // If have >= 12 bytes (2 for size, 1 for unicode and >=9 for data, can split string
           // otherwise, end record and start continue record.
-          if (curMax - dataSize_ >= 12) {
+          if (curMax - dataSize_ >= 12) 
+          {
             if (unicode && !((curMax-dataSize_)%2)) --curMax;	// Make sure space reserved for unicode strings is even.
             continueIndices_.push_back(curMax);
             stringSize -= (curMax - dataSize_ - 3);
@@ -3513,14 +3559,18 @@ ULONG Workbook::SharedStringTable::DataSize()
             curMax += 8224;
 
             size_t additionalContinueRecords = unicode ? stringSize/8222 : stringSize/8223; // 8222 or 8223 because the first byte is for unicode identifier
-            for(size_t j=0; j<additionalContinueRecords; ++j) {
-              if (unicode) {
+            for(size_t j=0; j<additionalContinueRecords; ++j) 
+            {
+              if (unicode) 
+              {
                 --curMax;
                 continueIndices_.push_back(curMax);
                 curMax += 8223;
                 dataSize_ += 8223;
                 stringSize -= 8222;
-              } else {
+              } 
+              else 
+              {
                 continueIndices_.push_back(curMax);
                 curMax += 8224;
                 dataSize_ += 8224;
@@ -3619,7 +3669,8 @@ ULONG Worksheet::Read(const char* data)
 {
   ULONG bytesRead = 0;
 
-  try {
+  try 
+  {
     short code;
     LittleEndian::Read(data, code, 0, 2);
 
@@ -3655,14 +3706,10 @@ ULONG Worksheet::Read(const char* data)
           bytesRead += mergedCells_.Read(data+bytesRead);
           break;
 
-//				case CODE::SXFORMULA:
-//					bytesRead += 4;	// skip SXFORMULA record
-//					break;
 #ifdef _DEBUG
         case 0:
         case (USHORT)0xcdcd:
         case (USHORT)0xfdfd:
-//					assert(0);//@@
           break;
 #endif
 
@@ -3675,10 +3722,11 @@ ULONG Worksheet::Read(const char* data)
     }
 
     bytesRead += eof_.RecordSize();
-  } catch(EXCEPTION_YEOF& e) {
+  } 
+  catch(EXCEPTION_YEOF& e) 
+  {
     bytesRead += e._bytesRead;
   }
-
   return bytesRead;
 }
 
@@ -4114,7 +4162,8 @@ ULONG Worksheet::CellTable::RowBlock::CellBlock::Formula::Read(const char* data)
   short code;
   LittleEndian::Read(data, code, offset, 2);
 
-  switch(code) {
+  switch(code) 
+  {
     case CODE::ARRAY:
       type_ = code;
       array_.Read(data+offset);
@@ -4138,6 +4187,7 @@ ULONG Worksheet::CellTable::RowBlock::CellBlock::Formula::Read(const char* data)
       table_.Read(data+offset);
       offset += table_.RecordSize();
       break;
+    default: break;
   }
   LittleEndian::Read(data, code, offset, 2);
 
@@ -4160,7 +4210,8 @@ ULONG Worksheet::CellTable::RowBlock::CellBlock::Formula::Write(char* data)
   Record::Write(data);
 
   ULONG offset = dataSize_ + 4;
-  switch(type_) {
+  switch(type_) 
+  {
     case CODE::ARRAY:
       array_.Write(data+offset);
       offset += array_.RecordSize();
@@ -4180,6 +4231,8 @@ ULONG Worksheet::CellTable::RowBlock::CellBlock::Formula::Write(char* data)
       table_.Write(data+offset);
       offset += table_.RecordSize();
       break;
+
+    default: break;
   }
 
   if (!string_.empty())
@@ -4196,7 +4249,8 @@ ULONG Worksheet::CellTable::RowBlock::CellBlock::Formula::RecordSize()
   ULONG dataSize = DataSize();
   recordSize_ = dataSize + 4*(dataSize/8224 + 1);
 
-  switch(type_) {
+  switch(type_) 
+  {
     case CODE::ARRAY:
       recordSize_ += array_.RecordSize();
       break;
@@ -4212,6 +4266,8 @@ ULONG Worksheet::CellTable::RowBlock::CellBlock::Formula::RecordSize()
     case CODE::TABLE:
       recordSize_ += table_.RecordSize();
       break;
+
+    default: break;
   }
 
   if (!string_.empty())
@@ -4402,20 +4458,25 @@ ULONG Worksheet::CellTable::RowBlock::CellBlock::Formula::String::Read(const cha
   wstr_ = new wchar_t[stringSize+1];
   ULONG bytesRead = 7;
 
-  if (flag_ == 0) { // compressed UTF16LE string?
-    char* str = (char*) alloca(stringSize+1);
+  if (flag_ == 0) 
+  {
+    // compressed UTF16LE string?
+	char* str = new char[stringSize + 1];
     LittleEndian::ReadString(data_, str, 3, stringSize);
     str[stringSize] = 0;
     mbstowcs(wstr_, str, stringSize);
     wstr_[stringSize] = 0;
     bytesRead += stringSize;
-  } else {
+	delete [] str;
+  } 
+  else 
+  {
     LittleEndian::ReadString(data_, wstr_, 3, stringSize);
     wstr_[stringSize] = 0;
     bytesRead += stringSize*2;
   }
 
-  return bytesRead;//RecordSize();
+  return bytesRead;
 }
 ULONG Worksheet::CellTable::RowBlock::CellBlock::Formula::String::Write(char* data)
 {
@@ -4425,11 +4486,16 @@ ULONG Worksheet::CellTable::RowBlock::CellBlock::Formula::String::Write(char* da
   LittleEndian::Write(data_, stringSize, 0, 2);
   LittleEndian::Write(data_, flag_, 2, 1);
 
-  if (flag_ == 0) { // compressed UTF16LE string?
-    char* str = (char*) alloca(stringSize);
+  if (flag_ == 0) 
+  {
+	  // compressed UTF16LE string?
+	  char* str = new char[stringSize + 1];
     wcstombs(str, wstr_, stringSize);
     LittleEndian::WriteString(data_, str, 3, stringSize);
-  } else {
+	  delete [] str;
+  }
+  else 
+  {
     LittleEndian::WriteString(data_, wstr_, 3, stringSize);
   }
 
@@ -4501,7 +4567,8 @@ Worksheet::CellTable::RowBlock::CellBlock::~CellBlock()
 
 void Worksheet::CellTable::RowBlock::CellBlock::Reset()
 {
-  switch(type_) {
+  switch(type_) 
+  {
     case CODE::BLANK:
       delete _union.blank_;
       break;
@@ -4533,6 +4600,8 @@ void Worksheet::CellTable::RowBlock::CellBlock::Reset()
     case CODE::FORMULA:
       delete _union.formula_;
       break;
+
+    default: break;
   }
 
   type_ = -1;
@@ -4597,42 +4666,34 @@ ULONG Worksheet::CellTable::RowBlock::CellBlock::Read(const char* data)
 
   switch(type_) {
     case CODE::BLANK:
-      //_union.blank_ = new Blank;
       bytesRead += _union.blank_->Read(data);
       break;
 
     case CODE::MULBLANK:
-      //_union.mulblank_ = new MulBlank;
       bytesRead += _union.mulblank_->Read(data);
       break;
 
     case CODE::BOOLERR:
-      //_union.boolerr_ = new BoolErr;
       bytesRead += _union.boolerr_->Read(data);
       break;
 
     case CODE::LABELSST:
-      //_union.labelsst_ = new LabelSST;
       bytesRead += _union.labelsst_->Read(data);
       break;
 
     case CODE::MULRK:
-      //_union.mulrk_ = new MulRK;
       bytesRead +=_union. mulrk_->Read(data);
       break;
 
     case CODE::NUMBER:
-      //_union.number_ = new Number;
       bytesRead += _union.number_->Read(data);
       break;
 
     case CODE::RK:
-      //_union.rk_ = new RK;
       bytesRead += _union.rk_->Read(data);
       break;
 
     case CODE::FORMULA:
-      //_union.formula_ = new Formula;
       bytesRead += _union.formula_->Read(data);
       break;
   }
@@ -4643,7 +4704,8 @@ ULONG Worksheet::CellTable::RowBlock::CellBlock::Write(char* data)
 {
   ULONG bytesWritten = 0;
 
-  switch(type_) {
+  switch(type_) 
+  {
     case CODE::BLANK:
       bytesWritten += _union.blank_->Write(data);
       break;
@@ -4675,13 +4737,16 @@ ULONG Worksheet::CellTable::RowBlock::CellBlock::Write(char* data)
     case CODE::FORMULA:
       bytesWritten += _union.formula_->Write(data);
       break;
+
+    default: break;
   }
 
   return bytesWritten;
 }
 ULONG Worksheet::CellTable::RowBlock::CellBlock::DataSize()
 {
-  switch(type_) {
+  switch(type_) 
+  {
     case CODE::BLANK:
       return _union.blank_->DataSize();
 
@@ -4705,12 +4770,14 @@ ULONG Worksheet::CellTable::RowBlock::CellBlock::DataSize()
 
     case CODE::FORMULA:
       return _union.formula_->DataSize();
+
+    default: abort();
   }
-  abort();
 }
 ULONG Worksheet::CellTable::RowBlock::CellBlock::RecordSize()
 {
-  switch(type_) {
+  switch(type_) 
+  {
     case CODE::BLANK:
       return _union.blank_->RecordSize();
 
@@ -4734,12 +4801,14 @@ ULONG Worksheet::CellTable::RowBlock::CellBlock::RecordSize()
 
     case CODE::FORMULA:
       return _union.formula_->RecordSize();
+
+    default: abort();
   }
-  abort();
 }
 USHORT Worksheet::CellTable::RowBlock::CellBlock::RowIndex()
 {
-  switch(type_) {
+  switch(type_) 
+  {
     case CODE::BLANK:
       return _union.blank_->rowIndex_;
 
@@ -4763,12 +4832,15 @@ USHORT Worksheet::CellTable::RowBlock::CellBlock::RowIndex()
 
     case CODE::FORMULA:
       return _union.formula_->rowIndex_;
+
+    default: break;
   }
   abort();
 }
 USHORT Worksheet::CellTable::RowBlock::CellBlock::ColIndex()
 {
-  switch(type_) {
+  switch(type_) 
+  {
     case CODE::BLANK:
       return _union.blank_->colIndex_;
 
@@ -4792,6 +4864,8 @@ USHORT Worksheet::CellTable::RowBlock::CellBlock::ColIndex()
 
     case CODE::FORMULA:
       return _union.formula_->colIndex_;
+
+    default: break;
   }
   abort();
 }
@@ -4890,16 +4964,16 @@ ULONG Worksheet::CellTable::RowBlock::Write(char* data)
   ULONG bytesWritten = 0;
 
   size_t maxRows = rows_.size();
-  {for(size_t i=0; i<maxRows; ++i)
+  for(size_t i=0; i<maxRows; ++i)
   {
     bytesWritten += rows_[i].Write(data+bytesWritten);
-  }}
+  }
 
   size_t maxCellBlocks = cellBlocks_.size();
-  {for(size_t i=0; i<maxCellBlocks; ++i)
+  for(size_t i=0; i<maxCellBlocks; ++i)
   {
     bytesWritten += cellBlocks_[i]->Write(data+bytesWritten);
-  }}
+  }
 
   bytesWritten += dbcell_.Write(data+bytesWritten);
   return bytesWritten;
@@ -4908,12 +4982,16 @@ ULONG Worksheet::CellTable::RowBlock::DataSize()
 {
   ULONG dataSize = 0;
   size_t maxRows = rows_.size();
-  {for(size_t i=0; i<maxRows; ++i)
-    dataSize += rows_[i].RecordSize();}
+  for(size_t i=0; i<maxRows; ++i)
+  {
+    dataSize += rows_[i].RecordSize();
+  }
 
   size_t maxCellBlocks = cellBlocks_.size();
-  {for(size_t i=0; i<maxCellBlocks; ++i)
-    dataSize += cellBlocks_[i]->RecordSize();}
+  for(size_t i=0; i<maxCellBlocks; ++i)
+  {
+    dataSize += cellBlocks_[i]->RecordSize();
+  }
 
   dataSize += dbcell_.RecordSize();
   return dataSize;
@@ -5311,7 +5389,7 @@ bool BasicExcel::Save()
     vector<char> data(minBytes, 0);
     Write(&*(data).begin());
 
-    if (file_.WriteFile("Workbook", data, (ULONG)data.size()) != SUCCESS)
+    if (file_.WriteFile("Workbook", data, (ULONG)data.size()) != WinCompFiles::SUCCESS)
       return false;
     else
       return true;
@@ -5328,7 +5406,7 @@ bool BasicExcel::SaveAs(const char* filename)
   if (!file_.Create(filename))
     return false;
 
-  if (file_.MakeFile("Workbook") != SUCCESS)
+  if (file_.MakeFile("Workbook") != WinCompFiles::SUCCESS)
     return false;
 
   return Save();
@@ -5343,7 +5421,7 @@ bool BasicExcel::SaveAs(const wchar_t* filename)
   if (!file_.Create(filename))
     return false;
 
-  if (file_.MakeFile("Workbook") != SUCCESS)
+  if (file_.MakeFile("Workbook") != WinCompFiles::SUCCESS)
     return false;
 
   return Save();
@@ -5413,7 +5491,7 @@ BasicExcelWorksheet* BasicExcel::AddWorksheet(int sheetIndex)
 
   do {
     char sname[50];
-    sprintf(sname, "Sheet%d", sheetNo++);
+    sprintf_s(sname,50,"Sheet%d", sheetNo++);
     yesheet = AddWorksheet(sname, sheetIndex);
   } while(!yesheet);
 
@@ -5579,7 +5657,8 @@ bool BasicExcel::GetSheetName(int sheetIndex, char* name)
 {
   if (!(workbook_.boundSheets_[sheetIndex].name_.unicode_ & 1))
   {
-    strcpy(name, workbook_.boundSheets_[sheetIndex].name_.name_);
+    int len = (int) strlen(workbook_.boundSheets_[sheetIndex].name_.name_) + 1;
+    strcpy_s(name,len,workbook_.boundSheets_[sheetIndex].name_.name_);
     return true;
   }
   else return false;
@@ -5709,19 +5788,13 @@ size_t BasicExcel::Read(const char* data, size_t dataSize)
         bytesRead += workbook_.Read(data+bytesRead);
         break;
 
-      case VISUAL_BASIC_MODULE:
-        bytesRead += rec.Read(data+bytesRead);
-        break;
-
       case WORKSHEET:
         worksheets_.push_back(Worksheet());
         bytesRead += worksheets_.back().Read(data+bytesRead);
         break;
 
-      case CHART:
-        bytesRead += rec.Read(data+bytesRead);
-        break;
-
+      case CHART:               // Fall through
+      case VISUAL_BASIC_MODULE: // Fall through
       default:
         bytesRead += rec.Read(data+bytesRead);
         break;
@@ -5750,7 +5823,6 @@ size_t BasicExcel::Write(char* data)
 
 void BasicExcel::AdjustStreamPositions()
 {
-//	AdjustExtSSTPositions();
   AdjustBoundSheetBOFPositions();
   AdjustDBCellPositions();
 }
@@ -5782,19 +5854,19 @@ void BasicExcel::AdjustDBCellPositions()
       ULONG firstRowOffset = 0;
 
       size_t maxRows = worksheets_[i].cellTable_.rowBlocks_[j].rows_.size();
-      {for(size_t k=0; k<maxRows; ++k)
+      for(size_t k=0; k<maxRows; ++k)
       {
         offset += worksheets_[i].cellTable_.rowBlocks_[j].rows_[k].RecordSize();
         firstRowOffset += worksheets_[i].cellTable_.rowBlocks_[j].rows_[k].RecordSize();
-      }}
+      }
       USHORT cellOffset = (USHORT)firstRowOffset - 20; // a ROW record is 20 bytes long
 
       size_t maxCellBlocks = worksheets_[i].cellTable_.rowBlocks_[j].cellBlocks_.size();
-      {for(size_t k=0; k<maxCellBlocks; ++k)
+      for(size_t k=0; k<maxCellBlocks; ++k)
       {
         offset += worksheets_[i].cellTable_.rowBlocks_[j].cellBlocks_[k]->RecordSize();
         firstRowOffset += worksheets_[i].cellTable_.rowBlocks_[j].cellBlocks_[k]->RecordSize();
-      }}
+      }
 
       // Adjust Index DBCellPos_ absolute offset
       worksheets_[i].index_.DBCellPos_[j] = offset;
@@ -5833,23 +5905,38 @@ void BasicExcel::AdjustExtSSTPositions()
   offset += workbook_.window1_.RecordSize();
 
   size_t maxFonts = workbook_.fonts_.size();
-  {for(size_t i=0; i<maxFonts; ++i) {offset += workbook_.fonts_[i].RecordSize();}}
+  for(size_t i=0; i<maxFonts; ++i) 
+  {
+    offset += workbook_.fonts_[i].RecordSize();
+  }
 
   //MF
   size_t maxFormats = workbook_.formats_.size();
-  {for(size_t i=0; i<maxFormats; ++i) {
-    if (workbook_.formats_[i].index_ >= FIRST_USER_FORMAT_IDX)	// only write user defined formats
+  for(size_t i=0; i<maxFormats; ++i) 
+  {
+    if(workbook_.formats_[i].index_ >= FIRST_USER_FORMAT_IDX)	// only write user defined formats
+    {
       offset += workbook_.formats_[i].RecordSize();
-  }}
+    }
+  }
 
   size_t maxXFs = workbook_.XFs_.size();
-  {for(size_t i=0; i<maxXFs; ++i) {offset += workbook_.XFs_[i].RecordSize();}}
+  for(size_t i=0; i<maxXFs; ++i) 
+  {
+    offset += workbook_.XFs_[i].RecordSize();
+  }
 
   size_t maxStyles = workbook_.styles_.size();
-  {for(size_t i=0; i<maxStyles; ++i) {offset += workbook_.styles_[i].RecordSize();}}
+  for(size_t i=0; i<maxStyles; ++i) 
+  {
+    offset += workbook_.styles_[i].RecordSize();
+  }
 
   size_t maxBoundSheets = workbook_.boundSheets_.size();
-  {for(size_t i=0; i<maxBoundSheets; ++i) {offset += workbook_.boundSheets_[i].RecordSize();}}
+  for(size_t i=0; i<maxBoundSheets; ++i) 
+  {
+    offset += workbook_.boundSheets_[i].RecordSize();
+  }
 
   workbook_.extSST_.stringsTotal_ = 10;
   ULONG maxPortions = (workbook_.sst_.uniqueStringsTotal_ / workbook_.extSST_.stringsTotal_ +
@@ -5859,47 +5946,62 @@ void BasicExcel::AdjustExtSSTPositions()
   workbook_.extSST_.unused_.resize(maxPortions);
 
   ULONG relativeOffset = 8;
-  for(size_t i=0; i<maxPortions; ++i) {
+  for(size_t i=0; i<maxPortions; ++i) 
+  {
     workbook_.extSST_.streamPos_[i] = offset + 4 + relativeOffset;
     workbook_.extSST_.firstStringPos_[i] = 4 + (USHORT)relativeOffset;
     workbook_.extSST_.unused_[i] = 0;
 
-    for(size_t j=0; (int)j<workbook_.extSST_.stringsTotal_; ++j) {
-      if (i*workbook_.extSST_.stringsTotal_+j >= workbook_.sst_.strings_.size())
+    for(size_t j=0; (int)j<workbook_.extSST_.stringsTotal_; ++j) 
+    {
+      if(i*workbook_.extSST_.stringsTotal_ + j >= workbook_.sst_.strings_.size())
+      {
         break;
-
+      }
       ULONG stringSize = workbook_.sst_.strings_[i*workbook_.extSST_.stringsTotal_+j].StringSize();
 
-      if (relativeOffset+stringSize+3 < 8224)
+      if(relativeOffset + stringSize + 3 < 8224)
+      {
         relativeOffset += stringSize + 3;
-      else {
+      }
+      else 
+      {
         // If have >= 12 bytes (2 for size, 1 for unicode and >=9 for data, can split string
         // otherwise, end record and start continue record.
-        if (8224 - relativeOffset >= 12) {
+        if (8224 - relativeOffset >= 12) 
+        {
           stringSize -= (8224 - relativeOffset - 3);
           offset += 12 + relativeOffset;
           relativeOffset = 0;
 
           size_t additionalContinueRecords = stringSize / 8223; // 8223 because the first byte is for unicode
-          for(size_t k=0; k<additionalContinueRecords; ++k)
+          for(size_t k = 0; k < additionalContinueRecords; ++k)
+          {
             stringSize -= 8223;
-
+          }
           relativeOffset += stringSize + 1;
-        } else {
-          if (relativeOffset+stringSize+3 < 8224)
+        } 
+        else 
+        {
+          if(relativeOffset + stringSize + 3 < 8224)
+          {
             relativeOffset += stringSize + 3;
-          else {
+          }
+          else 
+          {
             // If have >= 12 bytes (2 for size, 1 for unicode and >=9 for data, can split string
             // otherwise, end record and start continue record.
-            if (8224 - relativeOffset >= 12) {
+            if (8224 - relativeOffset >= 12) 
+            {
               stringSize -= (8224 - relativeOffset - 3);
               offset += 12 + relativeOffset;
               relativeOffset = 0;
 
               size_t additionalContinueRecords = stringSize / 8223; // 8223 because the first byte is for unicode
-              for(size_t k=0; k<additionalContinueRecords; ++k)
+              for(size_t k = 0; k < additionalContinueRecords; ++k)
+              {
                 stringSize -= 8223;
-
+              }
               relativeOffset += stringSize + 1;
             }
           }
@@ -5916,11 +6018,14 @@ void BasicExcel::UpdateYExcelWorksheet()
   yesheets_.clear();
   yesheets_.reserve(maxWorksheets);
 
-  for(int i=0; i<maxWorksheets; ++i) {
+  for(int i=0; i<maxWorksheets; ++i) 
+  {
     yesheets_.push_back(new BasicExcelWorksheet(this, i));
 
-    for(size_t j=0; j<worksheets_[i].colinfos_.colinfo_.size(); ++j)
+    for(size_t j = 0; j < worksheets_[i].colinfos_.colinfo_.size(); ++j)
+    {
       yesheets_[i]->colInfos_.colinfo_.push_back(worksheets_[i].colinfos_.colinfo_[j]);
+    }
   }
 }
 
@@ -5929,11 +6034,8 @@ void BasicExcel::UpdateWorksheets()
 {
   // Constants.
   const int maxWorksheets = (int) yesheets_.size();
-  Worksheet::CellTable::RowBlock rowBlock;
   Worksheet::CellTable::RowBlock::Row row;
-  Worksheet::CellTable::RowBlock::CellBlock::MulRK::XFRK xfrk;
   LargeString largeString;
-  Worksheet::ColInfo oneCol;
 
   map<vector<char>, size_t> stringMap;
   map<vector<char>, size_t>::iterator stringMapIt;
@@ -5948,7 +6050,8 @@ void BasicExcel::UpdateWorksheets()
   workbook_.sst_.uniqueStringsTotal_ = 0;
   workbook_.sst_.strings_.clear();
 
-  for(int s=0; s<maxWorksheets; ++s) {
+  for(int s=0; s<maxWorksheets; ++s) 
+  {
     const BasicExcelWorksheet& sheet = *yesheets_[s];
     Worksheet& rawSheet = worksheets_[s];
 
@@ -5992,7 +6095,6 @@ void BasicExcel::UpdateWorksheets()
           const BasicExcelCell* cell = sheet.Cell(r, c);
 
           int cellType = cell->Type();
-  //				if (cellType != BasicExcelCell::UNDEFINED)	// Current cell contains some data
           // Write cell content, even if blank in order to keep format
           {
             if (rawSheet.index_.firstUsedRowIndex_ == 100000) 
@@ -6219,12 +6321,15 @@ void BasicExcel::UpdateWorksheets()
     }
 
     // assemble the MERGECELL records
-    for(int mr=0; mr<maxRows; ++mr) {
-      for(int c=0; c<maxCols; ++c) {
+    for(int mr=0; mr<maxRows; ++mr) 
+    {
+      for(int c=0; c<maxCols; ++c) 
+      {
         const BasicExcelCell* cell = sheet.Cell(mr,c);
 
         // Merged cells
-        if (cell->GetMergedRows() > 1 || cell->GetMergedColumns() > 1) {
+        if (cell->GetMergedRows() > 1 || cell->GetMergedColumns() > 1) 
+        {
           YExcel::Worksheet::MergedCells::MergedCell mergedCell;
 
           mergedCell.firstRow_    = (USHORT) mr;
@@ -6238,7 +6343,8 @@ void BasicExcel::UpdateWorksheets()
     }
 
     // If worksheet has no data
-    if (rawSheet.index_.firstUsedRowIndex_ == 100000) {
+    if (rawSheet.index_.firstUsedRowIndex_ == 100000) 
+    {
       // Set firstUsedRowIndex.
       rawSheet.index_.firstUsedRowIndex_ = 0;
       rawSheet.dimensions_.firstUsedRowIndex_ = 0;
@@ -6248,7 +6354,8 @@ void BasicExcel::UpdateWorksheets()
       rawSheet.index_.DBCellPos_.resize(nm);
     }
 
-    if (rawSheet.dimensions_.firstUsedColIndex_ == 1000) {
+    if (rawSheet.dimensions_.firstUsedColIndex_ == 1000) 
+    {
       // Set firstUsedColIndex.
       rawSheet.dimensions_.firstUsedColIndex_ = 0;
     }
@@ -6289,7 +6396,8 @@ bool BasicExcelWorksheet::GetSheetName(char* name)
 {
   if (!(excel_->workbook_.boundSheets_[sheetIndex_].name_.unicode_ & 1))
   {
-    strcpy(name, excel_->workbook_.boundSheets_[sheetIndex_].name_.name_);
+    int len = (int)strlen(excel_->workbook_.boundSheets_[sheetIndex_].name_.name_) + 1;
+    strcpy_s(name,len,excel_->workbook_.boundSheets_[sheetIndex_].name_.name_);
     return true;
   }
   else return false;
@@ -6354,7 +6462,7 @@ void BasicExcelWorksheet::Print(ostream& os, char delimiter, char textQualifier)
           break;
 
         case BasicExcelCell::DOUBLE:
-          os << setprecision(15) << cell->GetDouble();
+          os << std::setprecision(15) << cell->GetDouble();
           break;
 
         case BasicExcelCell::STRING:
@@ -6382,14 +6490,15 @@ void BasicExcelWorksheet::Print(ostream& os, char delimiter, char textQualifier)
         case BasicExcelCell::WSTRING:
         {
           // Print out string enclosed with textQualifier (does not work).
-          //os << textQualifier << cell->GetWString() << textQualifier;
           break;
         }
       }
-      if (c < maxCols_-1)
+      if(c < maxCols_ - 1)
+      {
         os << delimiter;
+      }
     }
-    os << endl;
+    os << std::endl;
   }
 }
 
@@ -6613,37 +6722,31 @@ void BasicExcelWorksheet::UpdateCells()
   //MF calculate sheet dimension independent from the DIMENSIONS record
   calculate_dimension(rRowBlocks, maxRows_, maxCols_);
 
-//	const Worksheet::Dimensions& dimension = excel_->worksheets_[sheetIndex_].dimensions_;
-//	maxRows_ = dimension.lastUsedRowIndexPlusOne_;
-//	maxCols_ = dimension.lastUsedColIndexPlusOne_;
-
   // Resize the cells to the size of the worksheet
   vector<BasicExcelCell> cellCol(maxCols_);
   cells_.resize(maxRows_, cellCol);
 
   size_t maxRowBlocks = rRowBlocks.size();
-  for(size_t i=0; i<maxRowBlocks; ++i) {
+  for(size_t i=0; i<maxRowBlocks; ++i) 
+  {
     vector<SmartPtr<Worksheet::CellTable::RowBlock::CellBlock> >& rCellBlocks = rRowBlocks[i].cellBlocks_;
     size_t maxCells = rCellBlocks.size();
 
-    for(size_t j=0; j<maxCells; ++j) {
+    for(size_t j=0; j<maxCells; ++j) 
+    {
       int row = rCellBlocks[j]->RowIndex();
       int col = rCellBlocks[j]->ColIndex();
 
-      if (row >= maxRows_) {
+      if (row >= maxRows_) 
+      {
         // skip empty rows a the bottom
         continue;
-//				// resize on unexpected row values
-//				maxRows_ = row + 1;
-//				cells_.resize(maxRows_, cellCol);
       }
 
-      if (col >= maxCols_) {
+      if (col >= maxCols_) 
+      {
         // skip empty columns a the right sheet border
         continue;
-//				// resize on unexpected column values
-//				if (col >= (int)cells_[row].size())
-//					cells_[row].resize(col+1);
       }
 
       switch(rCellBlocks[j]->type_) {
@@ -6751,17 +6854,6 @@ void BasicExcelWorksheet::MergeCells(int row, int col, USHORT rowRange, USHORT c
 
   cell->SetMergedRows(rowRange);
   cell->SetMergedColumns(colRange);
-
-/* Assembling MERGECELL records is accomplished in BasicExcel::UpdateWorksheets()
-  Worksheet::MergedCells::MergedCell mergedCell;
-  mergedCell.firstRow_ = row;
-  mergedCell.lastRow_ = row + rowRange - 1;
-  mergedCell.firstColumn_ = col;
-  mergedCell.lastColumn_ = col + colRange - 1;
-
-  Worksheet& worksheet = excel_->worksheets_[sheetIndex_];
-  worksheet.mergedCells_.mergedCellsVector_.push_back(mergedCell);
-*/
 }
 
 #endif
@@ -6863,8 +6955,11 @@ bool BasicExcelCell::Get(char* str) const
   if (type_ == STRING) 
   {
     if (str_.empty()) *str = '\0';
-    else strcpy(str, &*(str_.begin()));
-
+    else
+    {
+      int len = (int)str_.size();
+      strcpy_s(str,len + 1,&*(str_.begin()));
+    }
     return true;
   } 
   else 
@@ -7079,7 +7174,7 @@ BasicExcelCell::SetString(const char* str)
   {
     type_ = STRING;
     str_ = vector<char>(length+1);
-    strcpy(&*(str_.begin()), str);
+    strcpy_s(&*(str_.begin()),length+1, str);
     wstr_.clear();
   } 
   else

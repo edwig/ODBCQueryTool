@@ -2,7 +2,7 @@
 //
 // File: SQLRecord.h
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,11 +21,12 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #pragma once
 #include "SQLMutation.h"
+#include "XMLMessage.h"
 #include <vector>
 
 namespace SQLComponents
@@ -42,10 +43,8 @@ namespace SQLComponents
 typedef std::vector<SQLMutation*> SQLFields;
 typedef unsigned long ulong;
 
-// Foreward declaration
+// Forward declaration
 class SQLDataSet;
-class XMLMessage;
-class XMLElement;
 class SQLVariant;
 
 class SQLRecord
@@ -57,21 +56,48 @@ public:
   int         GetStatus();
   SQLVariant* GetField(int p_num);
   SQLVariant* GetField(CString p_name);
+  int         GetGenerator();
+  // Setting a generator column
+  void        SetGenerator(int p_generator);
   // Adding a field to the record
   void        AddField(SQLVariant* p_field,bool p_insert = false);
   // Setting different value without changing status
   void        SetField   (int     p_num, SQLVariant* p_field,int p_mutationID = 0);
   void        SetField   (CString p_name,SQLVariant* p_field,int p_mutationID = 0);
   // Setting different value AND changing record/set status
-  void        ModifyField(int     p_num, void*       p_field,int p_mutationID = 0);
-  void        ModifyField(CString p_name,void*       p_field,int p_mutationID = 0);
-  void        ModifyField(int     p_num, SQLVariant* p_field,int p_mutationID = 0);
-  void        ModifyField(CString p_name,SQLVariant* p_field,int p_mutationID = 0);
+//   void        ModifyField(int         p_num, void*       p_field,int p_mutationID = 0);
+//   void        ModifyField(const char* p_name,void*       p_field,int p_mutationID = 0);
+  void        ModifyField(int         p_num, SQLVariant* p_field,int p_mutationID = 0);
+  void        ModifyField(const char* p_name,SQLVariant* p_field,int p_mutationID = 0);
+
+  // Modify a field from these base datatypes (Everything in a SQLVariant)
+  void        ModifyField(const char* p_name,bool&              p_field,int p_mutationID = 0);
+  void        ModifyField(const char* p_name,char&              p_field,int p_mutationID = 0);
+  void        ModifyField(const char* p_name,const char*        p_field,int p_mutationID = 0);
+  void        ModifyField(const char* p_name,unsigned char&     p_field,int p_mutationID = 0);
+  void        ModifyField(const char* p_name,short&             p_field,int p_mutationID = 0);
+  void        ModifyField(const char* p_name,unsigned short&    p_field,int p_mutationID = 0);
+  void        ModifyField(const char* p_name,int&               p_field,int p_mutationID = 0);
+  void        ModifyField(const char* p_name,unsigned int&      p_field,int p_mutationID = 0);
+  void        ModifyField(const char* p_name,float&             p_field,int p_mutationID = 0);
+  void        ModifyField(const char* p_name,double&            p_field,int p_mutationID = 0);
+  void        ModifyField(const char* p_name,__int64&           p_field,int p_mutationID = 0);
+  void        ModifyField(const char* p_name,unsigned __int64&  p_field,int p_mutationID = 0);
+  void        ModifyField(const char* p_name,SQLDate&           p_field,int p_mutationID = 0);
+  void        ModifyField(const char* p_name,SQLTime&           p_field,int p_mutationID = 0);
+  void        ModifyField(const char* p_name,SQLTimestamp&      p_field,int p_mutationID = 0);
+  void        ModifyField(const char* p_name,SQLInterval&       p_field,int p_mutationID = 0);
+  void        ModifyField(const char* p_name,SQLGuid&           p_field,int p_mutationID = 0);
+  void        ModifyField(const char* p_name,CString&           p_field,int p_mutationID = 0);
+  void        ModifyField(const char* p_name,bcd&               p_field,int p_mutationID = 0);
+
   // See if the record has been changed
   bool        IsModified();
   // See if a field is modified
   bool        IsModified(int p_num);
   bool        IsModified(CString p_name);
+  // Set the status of the record to 'Inserted'
+  void        Inserted();
   // Set the status of the record to 'Deleted'
   void        Delete();
   // Reset the mutation stacks after database upgrade of the record
@@ -93,18 +119,35 @@ public:
   void        Acquire();
   bool        Release();
 
+  // Getting contents of the record as a SQLVariant pointer
+  SQLVariant& operator[](int p_index);
+  SQLVariant& operator[](const char* p_name);
+
 private:
   SQLDataSet* m_dataSet;
   bool        m_modifiable;
   int         m_status;
   ulong       m_reference;
   SQLFields   m_fields;
+  int         m_generator;
 };
 
 inline int
 SQLRecord::GetStatus()
 {
   return m_status;
+}
+
+inline void
+SQLRecord::SetGenerator(int p_generator)
+{
+  m_generator = p_generator;
+}
+
+inline int
+SQLRecord::GetGenerator()
+{
+  return m_generator;
 }
 
 // End of namespace

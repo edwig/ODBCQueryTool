@@ -2,7 +2,7 @@
 //
 // File: SQLTimestamp.cpp
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #include "StdAfx.h"
 #include "SQLComponents.h"
@@ -197,8 +197,8 @@ SQLTimestamp::RecalculateValue()
   {
     SetNull();
     CString error;
-    error.Format("Day of the month must be between 1 and %d inclusive.",daysInMonth);
-    throw error;
+    error.Format("Day of the month must be between 1 and %ld inclusive.",daysInMonth);
+    throw StdException(error);
   }
   // Calculate the Astronomical Julian Day Number (JD)
   // Method P.D-Smith: Practical Astronomy
@@ -263,9 +263,9 @@ SQLTimestamp::Normalise()
   m_timestamp.m_month = (char)  ((factorG > 13) ? factorG - 13 : factorG - 1);
   m_timestamp.m_year  = (short) ((m_timestamp.m_month > 2) ? factorD - 4716 : factorD - 4715);
 
-  long seconden        = m_value  % SECONDS_PER_DAY;
+  long seconden        =         m_value  % SECONDS_PER_DAY;
   m_timestamp.m_hour   = (char) (seconden / SECONDS_PER_HOUR);
-  int rest             = seconden % SECONDS_PER_HOUR;
+  int rest             =         seconden % SECONDS_PER_HOUR;
   m_timestamp.m_minute = (char) (rest     / SECONDS_PER_MINUTE);
   m_timestamp.m_second = (char) (rest     % SECONDS_PER_MINUTE);
   // Fraction not set from normalized value
@@ -285,32 +285,32 @@ SQLTimestamp::Validate()
   if (m_timestamp.m_year <= 0 || m_timestamp.m_year >= 10000)
   {
     SetNull();
-    throw CString("Year must be between 1 and 9999 inclusive.");
+    throw StdException("Year must be between 1 and 9999 inclusive.");
   }
   if (m_timestamp.m_month <= 0 || m_timestamp.m_month >= 13)
   {
     SetNull();
-    throw CString("Month must be between 1 and 12 inclusive.");
+    throw StdException("Month must be between 1 and 12 inclusive.");
   }
   if (m_timestamp.m_hour < 0 || m_timestamp.m_hour >= 24)
   {
     SetNull();
-    throw CString("Hour must be between 0 and 23 inclusive.");
+    throw StdException("Hour must be between 0 and 23 inclusive.");
   }
   if (m_timestamp.m_minute < 0 || m_timestamp.m_minute >= 60)
   {
     SetNull();
-    throw CString("Minute must be between 0 and 59 inclusive.");
+    throw StdException("Minute must be between 0 and 59 inclusive.");
   }
   if (m_timestamp.m_second < 0 || m_timestamp.m_second >= 62)
   {
     SetNull();
-    throw CString("Number of seconds must be between 0 and 61 inclusive.");
+    throw StdException("Number of seconds must be between 0 and 61 inclusive.");
   }
   if (m_fraction < 0 || m_fraction > NANOSECONDS_PER_SEC)
   {
     SetNull();
-    throw CString("Fraction of seconds must be between 0 and 999,999,999");
+    throw StdException("Fraction of seconds must be between 0 and 999,999,999");
   }
 }
 
@@ -518,15 +518,16 @@ SQLTimestamp::AddYears(int p_number) const
     {
       return SQLTimestamp(Year() + p_number, Month(), Day(), Hour(), Minute(), Second());
     }
-    catch(CString& s)
+    catch(StdException& er)
     {
-      if (Month() == 2 && Day() == 29) // Correction for leap year
+      ReThrowSafeException(er);
+      if(Month() == 2 && Day() == 29) // Correction for leap year
       {
         // 29-2-1968 plus 1 year becomes 28-2-1969
         return SQLTimestamp(Year() + p_number, Month(), Day() - 1, Hour(), Minute(), Second());
       }
       // Throw on our error (something else went wrong)
-      throw s;
+      throw StdException(er.GetErrorMessage());
     }
   }
   return *this;
@@ -1111,7 +1112,7 @@ SQLTimestamp::operator+(const SQLInterval& p_interval) const
   // Check on correct ordinal interval type
   if(p_interval.GetIsYearMonthType())
   {
-    throw CString("Cannot add a year-month interval to a timestamp");
+    throw StdException("Cannot add a year-month interval to a timestamp");
   }
   // Do the calculation
   int sign = p_interval.GetIsNegative() ? -1 : 1;
@@ -1133,7 +1134,7 @@ SQLTimestamp::operator-(const SQLInterval& p_interval) const
   // Check on correct ordinal interval type
   if(p_interval.GetIsYearMonthType())
   {
-    throw CString("Cannot subtract a year-month interval from a timestamp");
+    throw StdException("Cannot subtract a year-month interval from a timestamp");
   }
   // Do the calculation
   int sign = p_interval.GetIsNegative() ? -1 : 1;

@@ -24,13 +24,14 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   25-05-2015
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #pragma once
 #include "unzip.h"
 #include <vector>
 #include <map>
+#include "XMLMessage.h"
 
 // Macro's for finding the cell's row/col
 #define CELLNUM(row,col)  (((col) << 20) | (row))
@@ -42,8 +43,6 @@ namespace SQLComponents
 
 // Forward definition
 class BasicXmlExcel;
-class XMLMessage;
-class XMLElement;
 
 // Type of cells
 typedef enum _celltype

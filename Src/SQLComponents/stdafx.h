@@ -7,7 +7,6 @@
 
 // All programs are MBCS programs
 #define NO_WARN_MBCS_MFC_DEPRECATION
-#define SQL_COMPONENTS_MFC
 
 // Using current OS SDK (Windows 8/10)
 #include "targetver.h"
@@ -15,8 +14,8 @@
 // Use default IO library and MBCS Character set
 #include <stdio.h>
 #include <tchar.h>
-#define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS  // some CString constructors will be explicit
-#define _AFX_NO_MFC_CONTROLS_IN_DIALOGS     // remove support for MFC controls in dialogs
+#define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS      // some CString constructors will be explicit
+//#define _AFX_NO_MFC_CONTROLS_IN_DIALOGS         // remove support for MFC controls in dialogs
 
 // Exclude rarely-used stuff from Windows headers
 #ifndef VC_EXTRALEAN
@@ -28,17 +27,10 @@
 //    so we also need to include the full set
 // So we include the full MFC set, otherwise: we just need CString
 //
-#ifdef SQL_COMPONENTS_MFC
 #include <afx.h>
 #include <afxwin.h>             // MFC core and standard components
 #include <afxext.h>             // MFC extensions
 #include <afxcmn.h>             // MFC support for Windows Common Controls
-#else
-// Just ATLString and CString
-#include <atlstr.h>             
-// We want memory leak reporting if we do not use MFC
-#include "SQLMemoryDebug.h"
-#endif
 
 // Autolink records only generated OUTSIDE this library
 #define SQL_COMPONENTS_NOAUTOLINK

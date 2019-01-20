@@ -2,7 +2,7 @@
 //
 // File: SQLInfoInformix.cpp
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #include "stdafx.h"
 #include "SQLComponents.h"
@@ -269,6 +269,14 @@ CString
 SQLInfoInformix::GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) const
 {
   return CString("NVL(") + p_test + "," + p_isnull + ")";
+}
+
+// Gets the construction for inline generating a key within an INSERT statement
+CString
+SQLInfoInformix::GetSQLNewSerial(CString /*p_table*/, CString /*p_sequence*/) const
+{
+  // Insert a zero in an SERIAL column
+  return "0";
 }
 
 // Gets the construction / select for generating a new serial identity
@@ -592,7 +600,7 @@ SQLInfoInformix::GetCATALOGColumnAttributes(CString /*p_schema*/,CString p_table
 CString 
 SQLInfoInformix::GetCATALOGColumnCreate(MetaColumn& p_column) const
 {
-  CString sql = "ALTER TABLE "  + p_column.m_table  + "\n";
+  CString sql = "ALTER TABLE "  + p_column.m_table  + "\n"
                 "  ADD COLUMN " + p_column.m_column + " " + p_column.m_typename;
   p_column.GetPrecisionAndScale(sql);
   p_column.GetNullable(sql);
@@ -607,7 +615,7 @@ CString
 SQLInfoInformix::GetCATALOGColumnAlter(MetaColumn& p_column) const
 {
   // The MODIFY keyword is a-typical
-  CString sql = "ALTER  TABLE  " + p_column.m_table  + "\n";
+  CString sql = "ALTER  TABLE  " + p_column.m_table  + "\n"
                 "MODIFY COLUMN " + p_column.m_column + " " + p_column.m_typename;
   p_column.GetPrecisionAndScale(sql);
   p_column.GetNullable(sql);
@@ -1665,12 +1673,12 @@ SQLInfoInformix::GetPSMExecute(CString p_procedure,MParameterMap& p_parameters) 
     doMore = true;
 
     // Append input and in/out parameters
-    if(param.m_columnType == SQL_PARAM_INPUT || param.m_columnType == SQL_PARAM_INPUT_OUTPUT)
+    if(param.m_columnType == P_SQL_PARAM_INPUT || param.m_columnType == P_SQL_PARAM_INPUT_OUTPUT)
     {
       line += param.m_parameter;
     }
     // See if we must do 'returning' clause
-    if(param.m_columnType == SQL_PARAM_OUTPUT || param.m_columnType == SQL_PARAM_INPUT_OUTPUT)
+    if(param.m_columnType == P_SQL_PARAM_OUTPUT || param.m_columnType == P_SQL_PARAM_INPUT_OUTPUT)
     {
       doReturning = true;
     }
@@ -1688,7 +1696,7 @@ SQLInfoInformix::GetPSMExecute(CString p_procedure,MParameterMap& p_parameters) 
       if(doMore) line += ",";
       doMore = true;
 
-      if(param.m_columnType == SQL_PARAM_OUTPUT || param.m_columnType == SQL_PARAM_INPUT_OUTPUT)
+      if(param.m_columnType == P_SQL_PARAM_OUTPUT || param.m_columnType == P_SQL_PARAM_INPUT_OUTPUT)
       {
         line += param.m_parameter;
       }

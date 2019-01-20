@@ -2,7 +2,7 @@
 //
 // File: SQLFilter.cpp
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,12 +21,13 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #include "stdafx.h"
 #include "SQLFilter.h"
 #include "SQLRecord.h"
+#include "SQLQuery.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -36,6 +37,33 @@ static char THIS_FILE[] = __FILE__;
 
 namespace SQLComponents
 {
+
+// Word translation of filters, needed for XMLMessages
+typedef struct _filterName
+{
+  const char* m_name;
+  int         m_filter;
+}
+FilterName;
+
+FilterName sqfilter[] =
+{
+   { "Equal",         OP_Equal        }
+  ,{ "LikeBegin",     OP_LikeBegin    }
+  ,{ "LikeMiddle",    OP_LikeMiddle   }
+  ,{ "IN",            OP_IN           }
+  ,{ "IsNULL",        OP_IsNULL       }
+  ,{ "IsNotNULL",     OP_IsNotNULL    }
+  ,{ "Greater",       OP_Greater      }
+  ,{ "GreaterEqual",  OP_GreaterEqual }
+  ,{ "Smaller",       OP_Smaller      }
+  ,{ "GreaterEqual",  OP_GreaterEqual }
+  ,{ "NotEqual",      OP_NotEqual     }
+  ,{ "Between",       OP_Between      }
+  ,{ "Exists",        OP_Exists       }
+  ,{ "NOP",           OP_NOP          }
+};
+
 
 // XTOR: Creates a new filter
 //       Used for filters without an operand, or more than one
@@ -53,9 +81,81 @@ SQLFilter::SQLFilter(CString p_field,SQLOperator p_operator,SQLVariant* p_value)
 {
   if(p_value)
   {
-    m_values.push_back(p_value);
+    m_values.push_back(new SQLVariant(p_value));
   }
 }
+
+// XTOR from a single integer
+SQLFilter::SQLFilter(CString p_field,SQLOperator p_operator,int p_value)
+          :m_field(p_field)
+          ,m_operator(p_operator)
+{
+  SQLVariant* val = new SQLVariant(p_value);
+  m_values.push_back(val);
+}
+
+// XTOR from a single CString
+SQLFilter::SQLFilter(CString p_field,SQLOperator p_operator,CString p_value)
+          :m_field(p_field)
+          ,m_operator(p_operator)
+{
+  SQLVariant* val = new SQLVariant(p_value);
+  m_values.push_back(val);
+}
+
+// XTOR from a single operator
+SQLFilter::SQLFilter(SQLOperator p_operator)
+          :m_operator(p_operator)
+{
+}
+
+// XTOR from another filter
+SQLFilter::SQLFilter(SQLFilter* p_other)
+{
+  *this = *p_other;
+}
+
+// XTOR from another filter
+SQLFilter::SQLFilter(SQLFilter& p_other)
+{
+  *this = p_other;
+}
+
+// DTOR: Remove all variant values
+SQLFilter::~SQLFilter()
+{
+  for(auto& val : m_values)
+  {
+    delete val;
+  }
+  m_values.clear();
+}
+
+// Copy a SQLFilter
+SQLFilter&
+SQLFilter::operator=(const SQLFilter& p_other)
+{
+  // Check if we are not copying ourselves
+  if(this == &p_other)
+  {
+    return *this;
+  }
+  // Copy all values
+  m_field            = p_other.m_field;
+  m_operator         = p_other.m_operator;
+  m_expression       = p_other.m_expression;
+  m_negate           = p_other.m_negate;
+  m_openParenthesis  = p_other.m_openParenthesis;
+  m_closeParenthesis = p_other.m_closeParenthesis;
+
+  for(auto& variant : p_other.m_values)
+  {
+    var* value = new SQLVariant(variant);
+    m_values.push_back(value);
+  }
+  return *this;
+}
+
 
 // Getting one of the values of the filter
 SQLVariant* 
@@ -70,27 +170,40 @@ SQLFilter::GetValue(int p_number)
 
 // Getting the SQL Condition
 CString
-SQLFilter::GetSQLFilter()
+SQLFilter::GetSQLFilter(SQLQuery& p_query)
 {
+  CString sql;
+
+  // Add an extra parenthesis level
+  if(m_openParenthesis)
+  {
+    sql = "(";
+  }
+
   // Add the field
-  CString sql(m_field);
+  if(!m_field.IsEmpty())
+  {
+    sql += m_field;
+  }
 
   // Add the operator
   switch(m_operator)
   {
-    case OP_Equal:        sql += " = ";      break;
-    case OP_NotEqual:     sql += " <> ";     break;
-    case OP_Greater:      sql += " > ";      break;
-    case OP_GreaterEqual: sql += " >= ";     break;
-    case OP_Smaller:      sql += " < ";      break;
-    case OP_SmallerEqual: sql += " <= ";     break;
-    case OP_LikeBegin:    sql += " LIKE '";  break;
-    case OP_LikeMiddle:   sql += " LIKE '%"; break;
-    case OP_IsNULL:       sql += " IS NULL"; break;
-    case OP_IN:           sql += " IN (";    break;
-    case OP_Between:      sql += " BETWEEN ";break;
+    case OP_Equal:        sql += " = ";         break;
+    case OP_NotEqual:     sql += " <> ";        break;
+    case OP_Greater:      sql += " > ";         break;
+    case OP_GreaterEqual: sql += " >= ";        break;
+    case OP_Smaller:      sql += " < ";         break;
+    case OP_SmallerEqual: sql += " <= ";        break;
+    case OP_LikeBegin:    sql += " LIKE '";     break;
+    case OP_LikeMiddle:   sql += " LIKE '%";    break;
+    case OP_IsNULL:       sql += " IS NULL";    break;
+    case OP_IsNotNULL:    sql += " IS NOT NULL";break;
+    case OP_IN:           sql += " IN (";       break;
+    case OP_Between:      sql += " BETWEEN ";   break;
+    case OP_Exists:       sql += " EXISTS ";    break;
     case OP_NOP:          // Fall through
-    default:              throw CString("SQLFilter without an operator!");
+    default:              throw StdException("SQLFilter without an operator!");
   }
 
   // In case of a LIKE search of a character field
@@ -100,23 +213,30 @@ SQLFilter::GetSQLFilter()
   }
   else if(m_operator == OP_IN)
   {
-    ConstructIN(sql);
+    ConstructIN(sql,p_query);
   }
   else if(m_operator == OP_Between)
   {
-    ConstructBetween(sql);
+    ConstructBetween(sql,p_query);
   }
-  else if(m_operator != OP_IsNULL)
+  else if(m_operator != OP_IsNULL && m_operator != OP_IsNotNULL)
   {
     // For all other operators, getting the argument
     // Getting the value as an SQL expression string (with ODBC escapes)
-    ConstructOperand(sql);
+    ConstructOperand(sql,p_query);
   }
 
   // See if we must NEGATE the condition
+  // Beware that it is OUTSIDE the parenthesis
   if(m_negate)
   {
     sql = "NOT " + sql;
+  }
+
+  // End an extra parenthesis level
+  if(m_closeParenthesis)
+  {
+    sql = ")";
   }
 
   return sql;
@@ -131,7 +251,7 @@ SQLFilter::MatchRecord(SQLRecord* p_record)
   // Check that we do NOT have a free expression
   if(!m_expression.IsEmpty())
   {
-    throw CString("Cannot match a filter internally on an expression!");
+    throw StdException("Cannot match a filter internally on an expression!");
   }
 
   // Getting the left hand operand
@@ -153,9 +273,10 @@ SQLFilter::MatchRecord(SQLRecord* p_record)
     case OP_LikeBegin:    result = MatchLikeBegin   (field); break;
     case OP_LikeMiddle:   result = MatchLikeMiddle  (field); break;
     case OP_IsNULL:       result = MatchIsNULL      (field); break;
+    case OP_IsNotNULL:    result = MatchIsNotNull   (field); break;
     case OP_IN:           result = MatchIN          (field); break;
     case OP_Between:      result = MatchBetween     (field); break;
-    default:              throw CString("SQLFilter with unknown operator!");
+    default:              throw StdException("SQLFilter with unknown operator!");
   }
   // Return the correct result
   return m_negate ? !result : result;
@@ -173,7 +294,7 @@ SQLFilter::CheckValue()
 {
   if(m_values.empty())
   {
-    throw CString("No operand value for SQLFilter provided!");
+    throw StdException("No operand value for SQLFilter provided!");
   }
 }
 
@@ -183,19 +304,20 @@ SQLFilter::CheckTwoValues()
 {
   if(m_values.size() != 2)
   {
-    throw CString("SQLFilter with BETWEEN operator and number of arguments is not two (2) values");
+    throw StdException("SQLFilter with BETWEEN operator and number of arguments is not two (2) values");
   }
 }
 
 // Constructing the default operand
 void
-SQLFilter::ConstructOperand(CString& p_sql)
+SQLFilter::ConstructOperand(CString& p_sql,SQLQuery& p_query)
 {
   if(m_expression.IsEmpty())
   {
     // Check that we have a value, and use it
     CheckValue();
-    p_sql += m_values[0]->GetAsSQLString();
+    p_sql += "?";
+    p_query.SetParameter(m_values[0]);
   }
   else
   {
@@ -214,7 +336,7 @@ SQLFilter::ConstructLike(CString& p_sql)
   // Check that we do the operation on a character string
   if(m_values[0]->GetDataType() != SQL_C_CHAR)
   {
-    throw CString("Cannot use LIKE on a non-string data type!");
+    throw StdException("Cannot use LIKE on a non-string data type!");
   }
   // Get string without leading/trailing quote
   CString value;
@@ -226,28 +348,28 @@ SQLFilter::ConstructLike(CString& p_sql)
 
 // Constructing the IN clause
 void
-SQLFilter::ConstructIN(CString& p_sql)
+SQLFilter::ConstructIN(CString& p_sql,SQLQuery& p_query)
 {
-  // Getting a series of values, comma seperated
+  // Getting a series of values, comma separated
   for(auto& var : m_values)
   {
-    p_sql += var->GetAsSQLString();
-    p_sql += ",";
+    p_sql += "?,";
+    p_query.SetParameter(var);
   }
   p_sql.TrimRight(',');
   p_sql += ")";
 }
 
-// Constructiong the BETWEEN clause
+// Constructing the BETWEEN clause
 void
-SQLFilter::ConstructBetween(CString& p_sql)
+SQLFilter::ConstructBetween(CString& p_sql,SQLQuery& p_query)
 {
   // CHeck that we have EXACTLY two values
   CheckTwoValues();
 
-  p_sql += m_values[0]->GetAsSQLString();
-  p_sql += " AND ";
-  p_sql += m_values[1]->GetAsSQLString();
+  p_sql += "? AND ? ";
+  p_query.SetParameter(m_values[0]);
+  p_query.SetParameter(m_values[1]);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -331,6 +453,12 @@ SQLFilter::MatchIsNULL(SQLVariant* p_field)
 }
 
 bool
+SQLFilter::MatchIsNotNull(SQLVariant* p_field)
+{
+  return !p_field->IsNULL();
+}
+
+bool
 SQLFilter::MatchIN(SQLVariant* p_field)
 {
   // Simply walk the vector of values for a match
@@ -359,4 +487,78 @@ SQLFilter::MatchBetween(SQLVariant* p_field)
   return false;
 }
 
+//////////////////////////////////////////////////////////////////////////
+//
+// Static translation functions (thread safe)
+//
+//////////////////////////////////////////////////////////////////////////
+
+// Translate a string from the message to an operator
+SQLOperator 
+StringToSQLOperator(CString p_oper)
+{
+  FilterName* filter = sqfilter;
+
+  while(filter->m_filter != OP_NOP)
+  {
+    if(p_oper.Compare(filter->m_name) == 0)
+    {
+      return static_cast<SQLOperator>(filter->m_filter);
+    }
+    ++filter;
+  }
+  return OP_NOP;
 }
+
+// Translate an operator to a string
+CString
+SQLOperatorToString(SQLOperator p_oper)
+{
+  FilterName* filter = sqfilter;
+
+  while(filter->m_filter != OP_NOP)
+  {
+    if(filter->m_filter == p_oper)
+    {
+      return filter->m_name;
+    }
+    ++filter;
+  }
+  return "";
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// HERE IT COMES ALL TOGETHER
+// We parse a FilterSet to a condition filter for a WHERE part
+//
+//////////////////////////////////////////////////////////////////////////
+
+CString 
+SQLFilterSet::ParseFiltersToCondition(SQLQuery& p_query)
+{
+  CString query;
+  bool first = true;
+
+  // Add all filters
+  for(auto& filt : m_filters)
+  {
+    if(first == true)
+    {
+      first = false;
+    }
+    else if(filt->GetOperator() == SQLOperator::OP_OR)
+    {
+      query += "\n    OR ";
+      continue;
+    }
+    query += "\n   AND ";
+    query += filt->GetSQLFilter(p_query);
+  }
+  return query;
+}
+
+
+
+}
+

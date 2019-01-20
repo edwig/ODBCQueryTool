@@ -160,6 +160,12 @@
     <ClCompile Include="SQLInfoMySQL.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SQLGuid.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StdException.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BasicExcel.h">
@@ -310,6 +316,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SQLInfoMySQL.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SQLGuid.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StdException.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

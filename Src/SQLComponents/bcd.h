@@ -9,8 +9,8 @@
 //
 // Copyright (c) 2013-2017 ir W. E. Huisman
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #pragma once
 #include <sqltypes.h>   // Needed for conversions of SQL_NUMERIC_STRUCT
@@ -38,8 +38,12 @@ const int bcdPrecision = bcdDigits * bcdLength;
 using uchar  = unsigned char;
 using ushort = unsigned short;
 using ulong  = unsigned long;
+
 #ifndef int64
 using int64  = __int64;
+#endif
+
+#ifndef uint64
 using uint64 = unsigned __int64;
 #endif
 
@@ -176,6 +180,8 @@ public:
   void    Round(int p_precision = 0);
   // Truncate to a specified fraction (decimals behind the .)
   void    Truncate(int p_precision = 0);  
+  // Change the sign
+  void    Negate();
   
   // MATHEMATICAL FUNCTIONS
 
@@ -238,7 +244,7 @@ public:
   // Get as a mathematical string
   CString AsString(int p_format = Bookkeeping,bool p_printPositive = false) const;
   // Get as a display string (by desktop locale)
-  CString AsDisplayString() const;
+  CString AsDisplayString(int p_decimals = 2) const;
   // Get as an ODBC SQL NUMERIC(p,s)
   void    AsNumeric(SQL_NUMERIC_STRUCT* p_numeric) const;
   
@@ -340,7 +346,7 @@ private:
   bcd  PositiveDivision(bcd& p_arg1,bcd& p_arg2) const;
 
   // STORAGE OF THE NUMBER
-  uchar  m_sign;                // bitfield sign
+  Sign   m_sign;                // 0 = Positive, 1 = Negative
   short  m_exponent;            // +/- 10E32768
   long   m_mantissa[bcdLength]; // Up to (bcdDigits * bcdLength) digits
 };

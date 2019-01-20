@@ -2,7 +2,7 @@
 //
 // File: SQLVariant.cpp
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #include "StdAfx.h"
 #include "SQLComponents.h"
@@ -31,6 +31,7 @@
 #include "SQLDate.h"
 #include "SQLTime.h"
 #include "SQLTimestamp.h"
+#include "SQLGuid.h"
 #include "bcd.h"
 #include <math.h>
 #include <float.h>
@@ -48,8 +49,8 @@ namespace SQLComponents
 // Translation list of SQL datatype constants and names
 typedef struct _types
 {
-  char*  name;
-  int    type;
+  char* name;
+  int   type;
 }
 DataTypes;
 
@@ -115,13 +116,13 @@ static DataTypes allOther[] =
 // Names must appear in this order to work properly!!
 static DataTypes allParams[] = 
 {
-  { "<UNKNOWN>", SQL_PARAM_TYPE_UNKNOWN }    // 0
- ,{ "INPUT",     SQL_PARAM_INPUT        }    // 1
- ,{ "INOUT",     SQL_PARAM_INPUT_OUTPUT }    // 2
- ,{ "COLUMN",    SQL_RESULT_COL         }    // 3
- ,{ "OUTPUT",    SQL_PARAM_OUTPUT       }    // 4
- ,{ "RETURN",    SQL_RETURN_VALUE       }    // 5
- ,{ NULL,        0                      }
+  { "<UNKNOWN>", P_SQL_PARAM_TYPE_UNKNOWN }    // 0
+ ,{ "INPUT",     P_SQL_PARAM_INPUT        }    // 1
+ ,{ "INOUT",     P_SQL_PARAM_INPUT_OUTPUT }    // 2
+ ,{ "COLUMN",    P_SQL_RESULT_COL         }    // 3
+ ,{ "OUTPUT",    P_SQL_PARAM_OUTPUT       }    // 4
+ ,{ "RETURN",    P_SQL_RETURN_VALUE       }    // 5
+ ,{ NULL,        0                        }
 };
 
 // General constructors
@@ -138,10 +139,10 @@ SQLVariant::SQLVariant(int p_type,int p_space)
 }
 
 // XTOR from SQLVariant pointer
-SQLVariant::SQLVariant(SQLVariant* that)
+SQLVariant::SQLVariant(SQLVariant* p_that)
 {
   // Use assignment operator
-  *this = *that;
+  *this = *p_that;
 }
 
 // XTOR From another SQLVariant reference
@@ -185,7 +186,7 @@ SQLVariant::SQLVariant(unsigned short p_short)
 }
 
 // XTOR SQL_C_LONG / SQL_C_SLONG
-SQLVariant::SQLVariant(long p_long)
+SQLVariant::SQLVariant(int p_long)
 {
   Init();
   m_datatype    = SQL_C_SLONG;
@@ -195,7 +196,7 @@ SQLVariant::SQLVariant(long p_long)
 }
 
 // XTOR SQL_C_ULONG
-SQLVariant::SQLVariant(unsigned long p_long)
+SQLVariant::SQLVariant(unsigned int p_long)
 {
   Init();
   m_datatype    = SQL_C_ULONG;
@@ -426,6 +427,15 @@ SQLVariant::SQLVariant(const bcd* p_bcd)
   p_bcd->AsNumeric(&m_data.m_dataNUMERIC);
 }
 
+SQLVariant::SQLVariant(SQLGuid* p_guid)
+{
+  Init();
+  m_datatype    = SQL_C_GUID;
+  m_sqlDatatype = SQL_GUID;
+  m_indicator   = 0;
+  memcpy_s(&m_data.m_dataGUID,sizeof(SQLGUID),p_guid->AsGUID(),sizeof(SQLGUID));
+}
+
 // GENERAL DTOR
 SQLVariant::~SQLVariant()
 {
@@ -437,6 +447,9 @@ SQLVariant::~SQLVariant()
 void
 SQLVariant::Init()
 {
+  // Set contents of m_data to zero's
+  ZeroMemory(&m_data,sizeof(m_data));
+
   ResetDataType(0);
   m_binaryLength    = 0;
   m_binaryPieceSize = 0;
@@ -477,7 +490,7 @@ SQLVariant::ShrinkSpace()
   {
     return;
   }
-  if((m_paramType != SQL_PARAM_OUTPUT) && (m_paramType != SQL_PARAM_INPUT_OUTPUT))
+  if((m_paramType != P_SQL_PARAM_OUTPUT) && (m_paramType != P_SQL_PARAM_INPUT_OUTPUT))
   {
     return;
   }
@@ -500,6 +513,17 @@ SQLVariant::ShrinkSpace()
   }
 }
 
+// Truncate the CHAR data, but leave the data pointer
+// otherwise we would lose the data binding
+void    
+SQLVariant::TruncateSpace(unsigned p_length)
+{
+  if(m_datatype == SQL_C_CHAR && ((unsigned)m_binaryLength > p_length))
+  {
+    m_data.m_dataCHAR[m_binaryLength = p_length] = 0;
+    m_indicator = p_length > 0 ? SQL_NTS : SQL_NULL_DATA;
+  }
+}
 
 // Check if the data is 'empty'
 // CHAR -> Empty string, scalar types are 0 or 0.0
@@ -765,10 +789,10 @@ SQLVariant::FindSQLDatatype(int p_type)
 }
 
 void
-SQLVariant::SetParameterType(int p_type)
+SQLVariant::SetParameterType(SQLParamType p_type)
 {
-  if(p_type >= SQL_PARAM_TYPE_UNKNOWN &&
-     p_type <= SQL_RETURN_VALUE)
+  if(p_type >= P_SQL_PARAM_TYPE_UNKNOWN &&
+     p_type <= P_SQL_RETURN_VALUE)
   {
     m_paramType = p_type;
   }
@@ -809,7 +833,7 @@ SQLVariant::SetFromBinaryStreamData(int   p_type
     }
     else
     {
-      throw CString("Cannot set variant from binary stream data.");
+      throw StdException("Cannot set variant from binary stream data.");
     }
   }
 }
@@ -856,7 +880,7 @@ SQLVariant::GetAsString(CString& result)
     case SQL_C_TINYINT:                   // Fall through
     case SQL_C_STINYINT:                  result.Format("%d",(int)m_data.m_dataTINYINT);
                                           break;
-    case SQL_C_UTINYINT:                  result.Format("%d",(unsigned)m_data.m_dataUTINYINT);
+    case SQL_C_UTINYINT:                  result.Format("%u",(unsigned)m_data.m_dataUTINYINT);
                                           break;
     case SQL_C_SBIGINT:                   result.Format("%I64d",m_data.m_dataSBIGINT);
                                           break;
@@ -1084,6 +1108,8 @@ SQLVariant::GetDataSize()
 //
 //////////////////////////////////////////////////////////////////////////
 
+__declspec(thread) char g_waarde[2 * sizeof(SQL_NUMERIC_STRUCT)+1];
+
 const char*
 SQLVariant::GetAsChar()
 {
@@ -1097,9 +1123,10 @@ SQLVariant::GetAsChar()
   }
   // Should be: ThrowErrorDatatype(SQL_C_CHAR);
   // Sometimes we come her unexpectedly in various programs
-  CString value;
-  GetAsString(value);
-  return value;
+  CString waarde;
+  GetAsString(waarde);
+  strncpy_s(g_waarde,waarde.GetString(),2 * sizeof(SQL_NUMERIC_STRUCT));
+  return g_waarde;
 }
 
 void*
@@ -1126,6 +1153,11 @@ SQLVariant::GetAsBoolean()
 short
 SQLVariant::GetAsSShort()
 {
+  if(m_indicator == SQL_NULL_DATA)
+  {
+    return 0;
+  }
+
   switch(m_datatype)
   {
     case SQL_C_CHAR:     return SQL_SLongToShort(atoi(m_data.m_dataCHAR));
@@ -1177,6 +1209,11 @@ SQLVariant::GetAsSShort()
 unsigned short
 SQLVariant::GetAsUShort()
 {
+  if(m_indicator == SQL_NULL_DATA)
+  {
+    return 0;
+  }
+
   switch(m_datatype)
   {
     case SQL_C_CHAR:     return SQL_SLongToUShort(atoi(m_data.m_dataCHAR));
@@ -1226,9 +1263,14 @@ SQLVariant::GetAsUShort()
   return 0;
 }
 
-long
+int
 SQLVariant::GetAsSLong()
 {
+  if(m_indicator == SQL_NULL_DATA)
+  {
+    return 0;
+  }
+
   switch(m_datatype)
   {
     case SQL_C_CHAR:     return (long)atoi(m_data.m_dataCHAR);
@@ -1278,9 +1320,14 @@ SQLVariant::GetAsSLong()
 }
 
 
-unsigned long
+unsigned int
 SQLVariant::GetAsULong()
 {
+  if(m_indicator == SQL_NULL_DATA)
+  {
+    return 0;
+  }
+
   switch(m_datatype)
   {
     case SQL_C_CHAR:     return SQL_LongToULong(atoi(m_data.m_dataCHAR));
@@ -1333,6 +1380,11 @@ SQLVariant::GetAsULong()
 float
 SQLVariant::GetAsFloat()
 {
+  if(m_indicator == SQL_NULL_DATA)
+  {
+    return 0.0;
+  }
+
   switch(m_datatype)
   {
     case SQL_C_CHAR:     return SQL_DoubleToFloat(atof(m_data.m_dataCHAR));
@@ -1384,6 +1436,11 @@ SQLVariant::GetAsFloat()
 double
 SQLVariant::GetAsDouble()
 {
+  if(m_indicator == SQL_NULL_DATA)
+  {
+    return 0.0;
+  }
+
   switch(m_datatype)
   {
     case SQL_C_CHAR:     return atof(m_data.m_dataCHAR);
@@ -1438,6 +1495,11 @@ SQLVariant::GetAsDouble()
 char
 SQLVariant::GetAsBit()
 {
+  if(m_indicator == SQL_NULL_DATA)
+  {
+    return 0;
+  }
+
   switch(m_datatype)
   {
     case SQL_C_CHAR:     return m_data.m_dataCHAR[0]  != 0;
@@ -1447,8 +1509,8 @@ SQLVariant::GetAsBit()
     case SQL_C_LONG:     // fall through
     case SQL_C_SLONG:    return m_data.m_dataLONG     != 0;
     case SQL_C_ULONG:    return m_data.m_dataULONG    != 0;
-    case SQL_C_FLOAT:    return m_data.m_dataFLOAT    != 0.0;
-    case SQL_C_DOUBLE:   return m_data.m_dataDOUBLE   != 0.0;
+    case SQL_C_FLOAT:    return m_data.m_dataFLOAT  < -FLT_EPSILON || FLT_EPSILON < m_data.m_dataFLOAT;
+    case SQL_C_DOUBLE:   return m_data.m_dataDOUBLE < -DBL_EPSILON || DBL_EPSILON < m_data.m_dataDOUBLE;
     case SQL_C_BIT:      return m_data.m_dataBIT;
     case SQL_C_TINYINT:  // fall through
     case SQL_C_STINYINT: return m_data.m_dataTINYINT  != 0;
@@ -1493,6 +1555,11 @@ SQLVariant::GetAsBit()
 char
 SQLVariant::GetAsSTinyInt()
 {
+  if(m_indicator == SQL_NULL_DATA)
+  {
+    return 0;
+  }
+
   switch(m_datatype)
   {
     case SQL_C_CHAR:     return SQL_SLongToTinyInt(atoi(m_data.m_dataCHAR));
@@ -1548,6 +1615,11 @@ SQLVariant::GetAsSTinyInt()
 unsigned char
 SQLVariant::GetAsUTinyInt()
 {
+  if(m_indicator == SQL_NULL_DATA)
+  {
+    return 0;
+  }
+
   switch(m_datatype)
   {
     case SQL_C_CHAR:     return SQL_SLongToUTinyInt(atoi(m_data.m_dataCHAR));
@@ -1602,6 +1674,11 @@ SQLVariant::GetAsUTinyInt()
 SQLBIGINT
 SQLVariant::GetAsSBigInt()
 {
+  if(m_indicator == SQL_NULL_DATA)
+  {
+    return 0;
+  }
+
   switch(m_datatype)
   {
     case SQL_C_CHAR:     return _atoi64(m_data.m_dataCHAR);
@@ -1656,6 +1733,11 @@ SQLVariant::GetAsSBigInt()
 SQLUBIGINT
 SQLVariant::GetAsUBigInt()
 {
+  if(m_indicator == SQL_NULL_DATA)
+  {
+    return 0;
+  }
+
   switch(m_datatype)
   {
     case SQL_C_CHAR:     return SQL_SBIGINTToUBIGINT(_atoi64(m_data.m_dataCHAR));
@@ -1817,13 +1899,14 @@ SQLVariant::GetAsDate()
     try
     {
       SQLDate date(m_data.m_dataCHAR);
+      memset(&g_date,0,sizeof(DATE_STRUCT));
       date.AsDateStruct(&g_date);
-      return &g_date;
     }
-    catch(CString& /*er*/)
+    catch(StdException& er)
     {
-      throw;
+      ReThrowSafeException(er);
     }
+    return &g_date;
   }
   ThrowErrorDatatype(SQL_C_DATE);
   return NULL;
@@ -1847,13 +1930,14 @@ SQLVariant::GetAsTime()
     try
     {
       SQLTime time(m_data.m_dataCHAR);
+      memset(&g_time,0,sizeof(TIME_STRUCT));
       time.AsTimeStruct(&g_time);
-      return &g_time;
     }
-    catch(CString& /*er*/)
+    catch(StdException& er)
     {
-      throw;
+      ReThrowSafeException(er);
     }
+    return &g_time;
   }
   ThrowErrorDatatype(SQL_C_TIME);
   return NULL;
@@ -1881,13 +1965,14 @@ SQLVariant::GetAsTimestamp()
     try
     {
       SQLTimestamp stamp(m_data.m_dataCHAR);
+      memset(&g_timestamp,0,sizeof(TIMESTAMP_STRUCT));
       stamp.AsTimeStampStruct(&g_timestamp);
-      return &g_timestamp;
     }
-    catch(CString& /*er*/)
+    catch(StdException& er)
     {
-      throw;
+      ReThrowSafeException(er);
     }
+    return &g_timestamp;
   }
   ThrowErrorDatatype(SQL_C_TIMESTAMP);
   return NULL;
@@ -1995,6 +2080,18 @@ SQLVariant::GetAsSQLInterval()
   return interval;
 }
 
+SQLGuid
+SQLVariant::GetAsSQLGuid()
+{
+  if(IsNULL())
+  {
+    SQLGuid guid;
+    return guid;
+  }
+  SQLGuid guid(&m_data.m_dataGUID);
+  return guid;
+}
+
 int
 SQLVariant::GetFraction()
 {
@@ -2015,7 +2112,7 @@ SQLVariant::GetNumericPrecision()
   {
     return m_data.m_dataNUMERIC.precision;
   }
-  throw CString("Cannot get the numeric precision of this datatype");
+  throw StdException("Cannot get the numeric precision of this datatype");
 }
 
 // Only for SQL_NUMERIC: The scale
@@ -2033,6 +2130,11 @@ SQLVariant::GetNumericScale()
 bcd
 SQLVariant::GetAsBCD()
 {
+  if(m_indicator == SQL_NULL_DATA)
+  {
+    return bcd();
+  }
+
   switch(m_datatype)
   {
     case SQL_C_CHAR:     return bcd(m_data.m_dataCHAR);
@@ -2272,17 +2374,17 @@ SQLVariant::SetData(int p_type,const char* p_data)
                                           break;
     case SQL_C_GUID:                      //aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee 
                                           scannum = sscanf_s(p_data,"{%lX-%hX-%hX-%2hhX%2hhX-%2hhX%2hhX%2hhX%2hhX%2hhX%2hhX}"
-                                                          ,&m_data.m_dataGUID.Data1 
-                                                          ,&m_data.m_dataGUID.Data2 
-                                                          ,&m_data.m_dataGUID.Data3 
-                                                          ,&m_data.m_dataGUID.Data4[0]
-                                                          ,&m_data.m_dataGUID.Data4[1]
-                                                          ,&m_data.m_dataGUID.Data4[2]
-                                                          ,&m_data.m_dataGUID.Data4[3]
-                                                          ,&m_data.m_dataGUID.Data4[4]
-                                                          ,&m_data.m_dataGUID.Data4[5]
-                                                          ,&m_data.m_dataGUID.Data4[6]
-                                                          ,&m_data.m_dataGUID.Data4[7]);
+                                                            ,&m_data.m_dataGUID.Data1 
+                                                            ,&m_data.m_dataGUID.Data2 
+                                                            ,&m_data.m_dataGUID.Data3 
+                                                            ,&m_data.m_dataGUID.Data4[0]
+                                                            ,&m_data.m_dataGUID.Data4[1]
+                                                            ,&m_data.m_dataGUID.Data4[2]
+                                                            ,&m_data.m_dataGUID.Data4[3]
+                                                            ,&m_data.m_dataGUID.Data4[4]
+                                                            ,&m_data.m_dataGUID.Data4[5]
+                                                            ,&m_data.m_dataGUID.Data4[6]
+                                                            ,&m_data.m_dataGUID.Data4[7]);
                                           if(scannum != 11)
                                           {
                                             memset(&m_data.m_dataGUID,0,sizeof(SQLGUID));
@@ -2317,8 +2419,8 @@ SQLVariant::SetData(int p_type,const char* p_data)
                                           break;
     case SQL_C_TIMESTAMP:                 // Fall through
     case SQL_C_TYPE_TIMESTAMP:            scannum = sscanf_s(p_data,"%d-%d-%d %d:%d:%lf"
-                                                          ,&year,&month,&day
-                                                          ,&hour,&min,&seconds);
+                                                            ,&year,&month,&day
+                                                            ,&hour,&min,&seconds);
                                           if(scannum == 6)
                                           {
                                             m_data.m_dataTIMESTAMP.year   = (SQLSMALLINT)  year;
@@ -2463,6 +2565,127 @@ SQLVariant::SetData(int p_type,const char* p_data)
   return retval;
 }
 
+// Set from a raw data pointer
+// Data **MUST** be of the same data type as the SQLVariant !!
+// Beware: parameter p_size is needed in case of a SQL_C_BINARY type
+void
+SQLVariant::SetFromRawDataPointer(void* p_pointer,int p_size /*= 0*/)
+{
+  // Free previously allocated data
+  if(m_datatype == SQL_C_CHAR || m_datatype == SQL_C_BINARY)
+  {
+    free(m_data.m_dataCHAR);
+    m_data.m_dataCHAR = nullptr;
+
+    if (m_datatype == SQL_C_CHAR)
+    {
+      p_size = (int) strlen((char*)p_pointer);
+    }
+  }
+
+  // Default for ordinal values is NOT-NULL
+  m_indicator = 0;
+
+  // Record data of the type
+  switch (m_datatype)
+  {
+    case SQL_C_CHAR:                      m_binaryLength = (int)(p_size);
+                                          m_data.m_dataCHAR = (char*)malloc(m_binaryLength + 1);
+                                          strcpy_s(m_data.m_dataCHAR,m_binaryLength + 1,(const char*)p_pointer);
+                                          m_indicator = p_size > 0 ? SQL_NTS : SQL_NULL_DATA;
+                                          break;
+    case SQL_C_BINARY:                    m_binaryLength = p_size;
+                                          m_indicator = m_binaryLength > 0 ? m_binaryLength : SQL_NULL_DATA;
+                                          m_data.m_dataBINARY = (unsigned char*)malloc(1 + m_binaryLength);
+                                          memcpy_s(m_data.m_dataBINARY,p_size,p_pointer,p_size);
+                                          break;
+    case SQL_C_SHORT:                     // Fall through
+    case SQL_C_SSHORT:                    m_data.m_dataSHORT = *((short*) p_pointer);
+                                          break;
+    case SQL_C_USHORT:                    m_data.m_dataUSHORT = *((unsigned short*) p_pointer);
+                                          break;
+    case SQL_C_LONG:                      // Fall through
+    case SQL_C_SLONG:                     m_data.m_dataLONG = *((long *) p_pointer);
+                                          break;
+    case SQL_C_ULONG:                     m_data.m_dataULONG = *((unsigned long *) p_pointer);
+                                          break;
+    case SQL_C_FLOAT:                     m_data.m_dataFLOAT = *((float *)p_pointer);
+                                          break;
+    case SQL_C_DOUBLE:                    m_data.m_dataDOUBLE = *((double *)p_pointer);
+                                          break;
+    case SQL_C_BIT:                       m_data.m_dataBIT = *((unsigned char*)p_pointer);
+                                          break;
+    case SQL_C_TINYINT:                   // Fall through
+    case SQL_C_STINYINT:                  m_data.m_dataTINYINT = *((char *)p_pointer);
+                                          break;
+    case SQL_C_UTINYINT:                  m_data.m_dataTINYINT = *((unsigned char*)p_pointer);
+                                          break;
+    case SQL_C_SBIGINT:                   m_data.m_dataSBIGINT = *((__int64*)p_pointer);
+                                          break;
+    case SQL_C_UBIGINT:                   m_data.m_dataUBIGINT = *((unsigned __int64*)p_pointer);
+                                          break;
+    case SQL_C_NUMERIC:                   memcpy_s(&m_data.m_dataNUMERIC,sizeof(SQL_NUMERIC_STRUCT),(SQL_NUMERIC_STRUCT*)p_pointer,sizeof(SQL_NUMERIC_STRUCT));
+                                          break;
+    case SQL_C_GUID:                      memcpy_s(&m_data.m_dataGUID,sizeof(SQLGUID),(SQLGUID*)p_pointer,sizeof(SQLGUID));
+                                          break;
+    case SQL_C_DATE:                      // Fall Through
+    case SQL_C_TYPE_DATE:                 memcpy_s(&m_data.m_dataDATE,sizeof(DATE_STRUCT),(DATE_STRUCT*)p_pointer,sizeof(DATE_STRUCT));
+                                          break;
+    case SQL_C_TIME:                      // Fall through
+    case SQL_C_TYPE_TIME:                 memcpy_s(&m_data.m_dataTIME,sizeof(TIME_STRUCT),(TIME_STRUCT*)p_pointer,sizeof(TIME_STRUCT));
+                                          break;
+    case SQL_C_TIMESTAMP:                 // Fall through
+    case SQL_C_TYPE_TIMESTAMP:            memcpy_s(&m_data.m_dataTIMESTAMP,sizeof(TIMESTAMP_STRUCT),(TIMESTAMP_STRUCT*)p_pointer,sizeof(TIMESTAMP_STRUCT));
+                                          break;
+    case SQL_C_INTERVAL_YEAR:             // Fall through
+    case SQL_C_INTERVAL_MONTH:            // Fall through
+    case SQL_C_INTERVAL_DAY:              // Fall through
+    case SQL_C_INTERVAL_HOUR:             // Fall through
+    case SQL_C_INTERVAL_MINUTE:           // Fall through
+    case SQL_C_INTERVAL_SECOND:           // Fall through
+    case SQL_C_INTERVAL_YEAR_TO_MONTH:    // Fall through
+    case SQL_C_INTERVAL_DAY_TO_HOUR:      // Fall through
+    case SQL_C_INTERVAL_DAY_TO_MINUTE:    // Fall through
+    case SQL_C_INTERVAL_DAY_TO_SECOND:    // Fall through
+    case SQL_C_INTERVAL_HOUR_TO_MINUTE:   // Fall through
+    case SQL_C_INTERVAL_HOUR_TO_SECOND:   // Fall through
+    case SQL_C_INTERVAL_MINUTE_TO_SECOND: memcpy_s(&m_data.m_dataINTERVAL,sizeof(SQL_INTERVAL_STRUCT),(SQL_INTERVAL_STRUCT*)p_pointer,sizeof(SQL_INTERVAL_STRUCT));
+                                          break;
+    default:                              m_indicator = SQL_NULL_DATA;
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// BLOB Functions
+//
+//////////////////////////////////////////////////////////////////////////
+
+void
+SQLVariant::AttachBinary(void* p_pointer,unsigned long p_size /*= 0*/)
+{
+  // Forget previous allocations
+  ResetDataType(0);
+
+  // Set relevant members
+  m_datatype          = SQL_C_BINARY;
+  m_sqlDatatype       = SQL_LONGVARBINARY;
+  m_useAtExec         = true;
+  m_binaryPieceSize   = 4 * 1000; // Default is 1 TCP/IP block
+  m_indicator         = p_size > 0 ? p_size : SQL_NULL_DATA;
+  // Connect the binary block
+  m_binaryLength      = p_size;
+  m_data.m_dataBINARY = p_pointer;
+}
+
+void
+SQLVariant::DetachBinary()
+{
+  // We forget about the binary block
+  // We must **NEVER** do a free on it!!
+  Init();
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // CONVERSION ROUTINES BEGIN HERE
@@ -2545,7 +2768,7 @@ SQLVariant::ThrowErrorDatatype(int p_getas)
   char* type  = SQLVariant::FindDatatype(m_datatype);
   char* getas = SQLVariant::FindDatatype(p_getas);
   error.Format("Cannot get a %s as a %s datatype.",type,getas);
-  throw error;
+  throw StdException(error);
 }
 
 // End of namespace

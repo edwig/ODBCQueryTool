@@ -2,7 +2,7 @@
 //
 // File: SQLInfo.h
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #pragma once
 #include "SQLComponents.h"
@@ -68,8 +68,6 @@ typedef struct _TypeInfo
 TypeInfo;
 
 typedef std::map<CString,TypeInfo*> DataTypeMap;
-
-
 typedef std::list<CString>          WordList;
 
 class SQLInfo 
@@ -268,6 +266,7 @@ public:
   SQLSMALLINT   GetIdentifierCase();
   SQLSMALLINT   GetCatalogLocation();
   SQLUINTEGER   GetCatalogNameUsage();
+  SQLUINTEGER   GetSchemaNameUsage();
   SQLSMALLINT   GetNULLCollation();
   SQLSMALLINT   GetNULLConcatBehaviour();
   SQLSMALLINT   GetColumnsCanBeNULL();
@@ -341,6 +340,7 @@ private:
   bool    SetAttributeInteger(CString description,SQLINTEGER  attrib,SQLUINTEGER value);
   // Setting a STRING attribute
   bool    SetAttributeString(CString description,SQLINTEGER attrib,SQLCHAR* value);
+
 protected:
   // Reprint the catalog.schema.table combination
   CString MakeObjectName(SQLCHAR* search_catalog
@@ -418,6 +418,7 @@ protected:
   CString      m_procedureName;         // Standard is 'procedure'
   SQLUSMALLINT m_catalogLocation;       // Before schema or after tablename
   SQLUINTEGER  m_catalogUsage;          // Where catalog names can be used
+  SQLUINTEGER  m_schemaUsage;           // WHere schema names can be used
   CString      m_catalogNameSeparator;  // Separator for the catalog name
   SQLSMALLINT  m_identifierCase;        // Case-specific of names in the catalog
 
@@ -1055,6 +1056,12 @@ inline SQLUINTEGER
 SQLInfo::GetCatalogNameUsage()
 {
   return m_catalogUsage;
+}
+
+inline SQLUINTEGER
+SQLInfo::GetSchemaNameUsage()
+{
+  return m_schemaUsage;
 }
 
 inline SQLSMALLINT   

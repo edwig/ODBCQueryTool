@@ -2,7 +2,7 @@
 //
 // File: SQLMetaInfo.h
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #pragma once
 #include "SQLComponents.h"
@@ -59,7 +59,7 @@ typedef struct _metaInfoTable
   CString   m_table;                  // Table/view/synonym name
   CString   m_objectType;             // Type of the object
   CString   m_remarks;                // Using COMMENTS command
-  CString   m_fullName;         // Full object name, conforming RDBMS rules
+  CString   m_fullName;               // Full object name, conforming RDBMS rules
                                       // eg: type:catalog.schema.table
                                       // or: type:schema.table@catalog
   CString   m_tablespace;             // Some engines need the storage space
@@ -135,8 +135,8 @@ typedef struct _metaInfoPrimary
   int      m_columnPosition { 0 };    // Position of the column in the table
   CString  m_constraintName;          // Name of the primary key constraint
   // Extra by SQL
-  int       m_deferrable       { 0 }; // SQL_INITIALLY_DEFERRED(5) / SQL_INITIALLY_IMMEDIATE(6) / SQL_NOT_DEFERRABLE(7)
-  int       m_initiallyDeferred{ 0 }; // 0=Immediate, 1=initially deferred
+  int      m_deferrable       { 0 };  // SQL_INITIALLY_DEFERRED(5) / SQL_INITIALLY_IMMEDIATE(6) / SQL_NOT_DEFERRABLE(7)
+  int      m_initiallyDeferred{ 0 };  // 0=Immediate, 1=initially deferred
 }
 MetaPrimary;
 
@@ -342,7 +342,7 @@ typedef struct _metaSession
   CString     m_user;         // User (OS or RDBMS user)
   CString     m_terminal;     // OS terminal, IP address or Net name
   // Newer fields
-  CString     m_logonMoment;  // Timestamp of logon
+  CString     m_logonMoment;  // Timestamp of login
   CString     m_remoteIP;     // Remote IP address
   CString     m_processName;  // Remote process name
   CString     m_processID;    // Remote process ID
@@ -350,6 +350,5 @@ typedef struct _metaSession
 MetaSession;
 
 using MSessionMap = std::vector<MetaSession>;
-
 
 };

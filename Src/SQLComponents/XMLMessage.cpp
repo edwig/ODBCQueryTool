@@ -26,14 +26,16 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #include "stdafx.h"
 #include "SQLComponents.h"
 #include "XMLMessage.h"
 #include "XMLParser.h"
 #include "ConvertWideString.h"
+
+#ifndef COMPILED_TOGETHER_WITH_MARLIN
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -469,7 +471,7 @@ XMLMessage::AddElement(XMLElement* p_base,CString p_name,XmlDataType p_type,CStr
   // Check for stupid programmers
   if(p_name.Find(' ') > 0)
   {
-    throw CString("XML Messages with spaces in elementnames are invalid!");
+    throw StdException("XML Messages with spaces in elementnames are invalid!");
   }
 
   XmlElementMap& elements = p_base ? p_base->m_elements : m_root.m_elements;
@@ -1113,3 +1115,5 @@ XMLMessage::SetSendUnicode(bool p_unicode)
 
 // End of namespace
 }
+
+#endif // COMPILED_TOGETHER_WITH_MARLIN

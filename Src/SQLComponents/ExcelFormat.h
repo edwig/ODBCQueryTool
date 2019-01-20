@@ -19,9 +19,12 @@
 
 #include "BasicExcel.h"
 
-namespace ExcelFormat {
+using YExcel::BasicExcel;
+using YExcel::Workbook;
+using YExcel::BasicExcelCell;
 
-using namespace YExcel;
+
+namespace ExcelFormat {
 
 
 #define XLS_FORMAT_GENERAL		L"General"
@@ -196,8 +199,9 @@ struct ExcelFont
 struct CellFormat;
 
  // Excel cell format manager class
-struct XLSFormatManager
+class XLSFormatManager
 {
+public:
   XLSFormatManager(BasicExcel& xls);
 
   const Workbook::Font& get_font(const CellFormat& fmt) const;

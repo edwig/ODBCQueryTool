@@ -2,7 +2,7 @@
 //
 // File: SQLVariantOperatorSub.cpp
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #include "stdafx.h"
 #include "SQLComponents.h"
@@ -63,7 +63,7 @@ static SQL_OperSLongSubChar(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperULongSubChar(SQLVariant& p_left,SQLVariant& p_right)
 {
-  unsigned long result = p_left.GetAsULong();
+  unsigned int result = p_left.GetAsULong();
   result -= p_right.GetAsULong();
   return SQLVariant(result);
 }
@@ -171,7 +171,7 @@ SQLVariant static SQL_OperSLongSubSShort(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperULongSubSShort(SQLVariant& p_left,SQLVariant& p_right)
 {
-  unsigned long result = p_left.GetAsULong();
+  unsigned int result = p_left.GetAsULong();
   result -= p_right.GetAsULong();
   return SQLVariant(result);
 }
@@ -280,7 +280,7 @@ static SQL_OperSLongSubUShort(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperUlongSubUShort(SQLVariant& p_left,SQLVariant& p_right)
 {
-  unsigned long result = p_left.GetAsULong();
+  unsigned int result = p_left.GetAsULong();
   result -= p_right.GetAsULong();
   return SQLVariant(result);
 }
@@ -389,7 +389,7 @@ static SQL_OperSLongSubSLong(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperULongSubSLong(SQLVariant& p_left,SQLVariant& p_right)
 {
-  unsigned long result = p_left.GetAsULong();
+  unsigned int result = p_left.GetAsULong();
   result -= p_right.GetAsULong();
   return SQLVariant(result);
 }
@@ -466,7 +466,7 @@ static SQL_OperNumSubSLong(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperCharSubULong(SQLVariant& p_left,SQLVariant& p_right)
 {
-  unsigned long result = p_left.GetAsULong();
+  unsigned int result = p_left.GetAsULong();
   result -= p_right.GetAsULong();
   return SQLVariant(result);
 }
@@ -498,7 +498,7 @@ static SQL_OperSLongSubULong(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperULongSubULong(SQLVariant& p_left,SQLVariant& p_right)
 {
-  unsigned long result = p_left.GetAsULong();
+  unsigned int result = p_left.GetAsULong();
   result -= p_right.GetAsULong();
   return SQLVariant(result);
 }
@@ -607,7 +607,7 @@ static SQL_OperSLongSubFloat(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperULongSubFloat(SQLVariant& p_left,SQLVariant& p_right)
 {
-  unsigned long result = p_left.GetAsULong();
+  unsigned int result = p_left.GetAsULong();
   result -= p_right.GetAsULong();
   return SQLVariant(result);
 }
@@ -716,7 +716,7 @@ static SQL_OperSLongSubDouble(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperULongSubDouble(SQLVariant& p_left,SQLVariant& p_right)
 {
-  unsigned long result = p_left.GetAsULong();
+  unsigned int result = p_left.GetAsULong();
   result -= p_right.GetAsULong();
   return SQLVariant(result);
 }
@@ -837,7 +837,7 @@ static SQL_OperSLongSubBit(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperULongSubBit(SQLVariant& p_left,SQLVariant& p_right)
 {
-  unsigned long result = p_left.GetAsULong();
+  unsigned int result = p_left.GetAsULong();
   if(p_right.GetAsBit())
   {
     --result;
@@ -967,7 +967,7 @@ static SQL_OperSLongSubSTiny(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperULongSubSTiny(SQLVariant& p_left,SQLVariant& p_right)
 {
-  unsigned long result = p_left.GetAsULong();
+  unsigned int result = p_left.GetAsULong();
   result -= p_right.GetAsULong();
   return SQLVariant(result);
 }
@@ -1076,7 +1076,7 @@ static SQL_OperSLongSubUTiny(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperULongSubUTiny(SQLVariant& p_left,SQLVariant& p_right)
 {
-  unsigned long result = p_left.GetAsULong();
+  unsigned int result = p_left.GetAsULong();
   result -= p_right.GetAsULong();
   return SQLVariant(result);
 }
@@ -1185,7 +1185,7 @@ static SQL_OperSLongSubSBig(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperULongSubSBig(SQLVariant& p_left,SQLVariant& p_right)
 {
-  unsigned long result = p_left.GetAsULong();
+  unsigned int result = p_left.GetAsULong();
   result -= p_right.GetAsULong();
   return SQLVariant(result);
 }
@@ -1294,7 +1294,7 @@ static SQL_OperSLongSubUBig(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperULongSubUBig(SQLVariant& p_left,SQLVariant& p_right)
 {
-  unsigned long result = p_left.GetAsULong();
+  unsigned int result = p_left.GetAsULong();
   result -= p_right.GetAsULong();
   return SQLVariant(result);
 }
@@ -1405,7 +1405,7 @@ static SQL_OperSLongSubNum(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperULongSubNum(SQLVariant& p_left,SQLVariant& p_right)
 {
-  unsigned long num = p_left.GetAsULong() - (unsigned long) p_right.GetAsBCD().AsInt64();
+  unsigned int num = p_left.GetAsULong() - (unsigned long) p_right.GetAsBCD().AsInt64();
   SQLVariant var(num);
   return var;
 }
@@ -1610,7 +1610,7 @@ SQLVariant::operator-(SQLVariant& p_right)
   CString rightType = FindDatatype(p_right.m_datatype);
   CString error;
   error.Format("Cannot do the subtract operator on (%s - %s)",leftType.GetString(),rightType.GetString());
-  throw error;
+  throw StdException(error);
 }
 
 // End of namespace

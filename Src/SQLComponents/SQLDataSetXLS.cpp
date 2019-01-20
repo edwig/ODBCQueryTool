@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -23,8 +23,8 @@
 // Loosely based on the article by: Yap Chun Wei
 // http://www.codeproject.com/Articles/1636/CSpreadSheet-A-Class-to-Read-and-Write-to-Excel-an
 // 
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #include "stdafx.h"
 #include "SQLComponents.h"
@@ -188,38 +188,44 @@ SQLDataSetXLS::Commit()
     try
     {
       FILE* file = nullptr;
-      fopen_s(&file,m_file,"w");;
+      if(fopen_s(&file,m_file,"w") == 0)
+      {
+        // Write the header of the file
+        CString text;
+        for(unsigned ind = 0;ind < m_names.size();++ind)
         {
-          // Write the header of the file
-          CString text;
-          for(unsigned ind = 0;ind < m_names.size();++ind)
-          {
-            if(ind) text += m_separator;
-            text += "\"" + m_names[ind] + "\"";
-          }
+          if(ind) text += m_separator;
+          text += "\"" + m_names[ind] + "\"";
+        }
         WriteString(file,text,true);
 
-          // Write all the rows of the file
-          for (int i = 0; i < GetNumberOfRecords(); ++i)
+        // Write all the rows of the file
+        for (int i = 0; i < GetNumberOfRecords(); ++i)
+        {
+          text.Empty();
+          SQLRecord* record = GetRecord(i);
+          for(int ind = 0;ind < GetNumberOfFields(); ++ind)
           {
-            text.Empty();
-            SQLRecord* record = GetRecord(i);
-            for(int ind = 0;ind < GetNumberOfFields(); ++ind)
-            {
-              if(ind) text += m_separator;
-              text += CString("\"") + CString(record->GetField(ind)->GetAsChar()) + "\"";
-            }
-          WriteString(file,text,true);
+            if(ind) text += m_separator;
+            text += CString("\"") + CString(record->GetField(ind)->GetAsChar()) + "\"";
           }
-        fclose(file);
-          m_transaction = false;
-          return true;
+          WriteString(file,text,true);
         }
+        fclose(file);
+        m_transaction = false;
+        return true;
+      }
     }
-    catch(...)
+    catch(StdException& er)
     {
+      ReThrowSafeException(er);
+      m_lastError = er.GetErrorMessage();
     }
-    m_lastError = "Error writing file\n";
+    catch(CException& er)
+    {
+      m_lastError = MessageFromException(er);
+    }
+    m_lastError += "Error writing file\n";
     return false;
   }
 }
@@ -539,12 +545,13 @@ SQLDataSetXLS::Open()
         }
       }
     }
-    catch(CString str)
+    catch(StdException& ex)
     {
-      m_lastError = "Error reading spreadhseet: " + str;
+      ReThrowSafeException(ex);
+      m_lastError = "Error reading spreadhseet: " + ex.GetErrorMessage();
       return false;
     }
-    catch (...)
+    catch(...)
     {
       m_lastError = "Error reading spreadsheet\n";
       return false;
@@ -638,10 +645,12 @@ SQLDataSetXLS::Open()
         return result;
       }
     }
-    catch(...)
+    catch(StdException& ex)
     {
+      ReThrowSafeException(ex);
+      m_lastError = ex.GetErrorMessage();
     }
-    m_lastError = "Error in opening file\n";
+    m_lastError += "Error in opening file\n";
     return false;
   }
 }

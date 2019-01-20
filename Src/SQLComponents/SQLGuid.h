@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////
 //
-// File: SQLStatement.cpp
+// File: SQLGuid.h
 //
 // Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
@@ -24,63 +24,38 @@
 // Last Revision:   20-01-2019
 // Version number:  1.5.4
 //
-#include "stdafx.h"
-#include "SQLComponents.h"
-#include "SQLStatement.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
+#pragma once
+#include <sqltypes.h>   // Needed for conversions of SQLGUID
 
 namespace SQLComponents
 {
 
-SQLStatement::SQLStatement()
-              :m_number(0)
-              ,m_minNumber(0)
-              ,m_maxNumber(0)
-              ,m_customer(false)
+class SQLGuid
 {
-}
+public:
+  SQLGuid();
+  SQLGuid(const SQLGuid& p_guid);
+  SQLGuid(const SQLGUID* p_guid);
+  SQLGuid(const CString  p_string);
 
-SQLStatement::SQLStatement(int p_number,char* p_statement,int p_minimum,int p_maximum)
-              :m_number(p_number)
-              ,m_statement(p_statement)
-              ,m_minNumber(p_minimum)
-              ,m_maxNumber(p_maximum)
-              ,m_customer(false)
-{
-}
+  bool     New();
+  // Set from external values
+  bool     Set(const CString  p_string);
+  bool     Set(const SQLGUID* p_guid);
 
-// DTOR
-SQLStatement::~SQLStatement()
-{
-}
+  // Get the internals
+  bool     IsValid();
+  SQLGUID* AsGUID();
+  CString  AsString();
 
-bool
-SQLStatement::CheckRecords(int p_records)
-{
-  CString fout;
-  if(m_minNumber > 0 && p_records < m_minNumber)
-  {
-    fout.Format("SQL %d has only %d record(s) (too few) minimum = %d",m_number,p_records,m_minNumber);
-		return true;
-  }
-  if(m_maxNumber > 0 && p_records > m_maxNumber)
-  {
-    fout.Format("SQL %d has %d records(s) (too much) maximum = %i",m_number,p_records,m_maxNumber);
-    return true;
-  }
-  return false;
-}
+  // Operators
+  bool     operator ==(const SQLGuid& p_other);
+  SQLGuid& operator  =(const SQLGuid& p_other);
+private:
+  bool     GenerateGUID();
+  // DATA
+  bool     m_initialized { false };
+  SQLGUID  m_guid;
+};
 
-void
-SQLStatement::AddToStatement(CString& p_statement)
-{
-  m_statement += p_statement;
-}
-
-// End of namespace
 }

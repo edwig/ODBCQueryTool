@@ -2,7 +2,7 @@
 //
 // File: SQLTransaction.cpp
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #include "stdafx.h"
 #include "SQLComponents.h"
@@ -75,10 +75,10 @@ SQLTransaction::~SQLTransaction()
   {
     Rollback();
   }
-  catch(CString& error)
+  catch(StdException& error)
   {
     CString message;
-    message.Format("Error in rollback of transaction [%s] : %s\n",m_name.GetString(),error.GetString());
+    message.Format("Error in rollback of transaction [%s] : %s\n",m_name.GetString(),error.GetErrorMessage().GetString());
     if(m_database)
     {
       m_database->LogPrint(LOGLEVEL_ERROR,message);
@@ -101,7 +101,7 @@ SQLTransaction::Start(CString p_name, bool p_startSubtransaction)
   {
     CString message;
     message.Format("Error in start-transaction [%s] : Already started a transaction",m_name.GetString());
-    throw message;
+    throw StdException(message);
   }
 
   // Try to start the transaction
@@ -114,7 +114,7 @@ SQLTransaction::Start(CString p_name, bool p_startSubtransaction)
     SQLRETURN ret = SqlSetConnectAttr(m_hdbc,SQL_ATTR_AUTOCOMMIT,(SQLPOINTER)SQL_AUTOCOMMIT_OFF,SQL_IS_UINTEGER);
     if(!SQL_SUCCEEDED(ret))
     {
-      throw CString("Error setting autocommit mode to 'off', starting transaction: ") + m_name;
+      throw StdException("Error setting autocommit mode to 'off', starting transaction: " + m_name);
     }
   }
   // We are alive!
@@ -130,7 +130,7 @@ SQLTransaction::Commit()
   {
     CString message;
     message.Format("Error in commit of [%s] : transaction object is not opened",m_name.GetString());
-    throw message;
+    throw StdException(message);
   }
 
   // We are no longer started/active, so we do nothing else after destruction
@@ -151,7 +151,7 @@ SQLTransaction::Commit()
     if(!SQL_SUCCEEDED(ret))
     {
       // Throw something, so we reach the catch block
-      throw CString("Error commiting transaction: " + m_name);
+      throw StdException("Error commiting transaction: " + m_name);
     }
     ret = SqlSetConnectAttr(m_hdbc,SQL_ATTR_AUTOCOMMIT,(SQLPOINTER)SQL_AUTOCOMMIT_ON,SQL_IS_UINTEGER);
     if(!SQL_SUCCEEDED(ret))
@@ -189,7 +189,7 @@ SQLTransaction::Rollback()
     if(!SQL_SUCCEEDED(ret))
     {
       // Throw something, so we reach the catch block
-      throw CString("Error commiting transaction: " + m_name);
+      throw StdException("Error commiting transaction: " + m_name);
     }
     ret = SqlSetConnectAttr(m_hdbc,SQL_ATTR_AUTOCOMMIT,(SQLPOINTER)SQL_AUTOCOMMIT_ON,SQL_IS_UINTEGER);
     if(!SQL_SUCCEEDED(ret))

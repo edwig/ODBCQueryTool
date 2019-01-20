@@ -26,10 +26,14 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #pragma once
+
+#ifdef COMPILED_TOGETHER_WITH_MARLIN
+#include "..\Marlin\XMLDataType.h"
+#else
 
 // XML DATA TYPES
 #define XDT_String              0x00000001
@@ -102,3 +106,5 @@
 
 // The XML Datatype holds datatypes AND wsdl options
 typedef unsigned XmlDataType;
+
+#endif // COMPILED_TOGETHER_WITH_MARLIN

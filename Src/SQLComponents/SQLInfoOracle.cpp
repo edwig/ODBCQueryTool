@@ -2,7 +2,7 @@
 //
 // File: SQLInfoOracle.cpp
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #include "stdafx.h"
 #include "SQLComponents.h"
@@ -269,6 +269,20 @@ CString
 SQLInfoOracle::GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) const
 {
   return CString("NVL(") + p_test + "," + p_isnull + ")";
+}
+
+// Gets the construction for inline generating a key within an INSERT statement
+CString
+SQLInfoOracle::GetSQLNewSerial(CString p_table, CString p_sequence) const
+{
+  CString sequence(p_sequence);
+  if (sequence.IsEmpty() && !p_table.IsEmpty())
+  {
+    sequence = p_table + "_seq";
+  }
+
+  // Select next value from a generator sequence
+  return sequence + ".NEXTVAL";
 }
 
 // Gets the construction / select for generating a new serial identity
@@ -564,7 +578,7 @@ SQLInfoOracle::GetCATALOGTableSynonyms(CString p_schema,CString p_tablename) con
   return sql;
 }
 
-CString 
+CString
 SQLInfoOracle::GetCATALOGTableCatalog(CString p_schema,CString p_tablename) const
 {
   p_schema.MakeUpper();
@@ -723,7 +737,7 @@ SQLInfoOracle::GetCATALOGColumnAttributes(CString p_schema,CString p_tablename,C
 CString 
 SQLInfoOracle::GetCATALOGColumnCreate(MetaColumn& p_column) const
 {
-  CString sql = "ALTER TABLE "  + p_column.m_schema + "." + p_column.m_table  + "\n";
+  CString sql = "ALTER TABLE "  + p_column.m_schema + "." + p_column.m_table  + "\n"
                 "  ADD COLUMN " + p_column.m_column + " " + p_column.m_typename;
   p_column.GetPrecisionAndScale(sql);
   p_column.GetNullable(sql);
@@ -737,7 +751,7 @@ SQLInfoOracle::GetCATALOGColumnCreate(MetaColumn& p_column) const
 CString 
 SQLInfoOracle::GetCATALOGColumnAlter(MetaColumn& p_column) const
 {
-  CString sql = "ALTER  TABLE  " + p_column.m_schema + "." + p_column.m_table  + "\n";
+  CString sql = "ALTER  TABLE  " + p_column.m_schema + "." + p_column.m_table  + "\n"
                 "MODIFY COLUMN " + p_column.m_column + " " + p_column.m_typename;
   p_column.GetPrecisionAndScale(sql);
   p_column.GetNullable(sql);
@@ -888,9 +902,11 @@ SQLInfoOracle::GetCATALOGIndexFilter(MetaIndex& p_index) const
       var->GetAsString(expression);
     }
   }
-  catch(CString& error)
+  catch(StdException& error)
   {
-    throw CString("Cannot find index filter: ") + error;
+    ReThrowSafeException(error);
+    CString message = ("Cannot find index filter: ") + error.GetErrorMessage();
+    throw StdException(message);
   }
   return expression;
 }
@@ -1003,7 +1019,7 @@ SQLInfoOracle::GetCATALOGForeignAttributes(CString  p_schema
   // Minimal requirements of the catalog
   if(p_schema.IsEmpty() || p_tablename.IsEmpty())
   {
-    throw CString("Cannot get table references without schema/tablename");
+    throw StdException("Cannot get table references without schema/tablename");
   }
 
   CString query = "SELECT ora_database_name    AS primary_catalog_name\n"
@@ -1695,7 +1711,9 @@ SQLInfoOracle::GetPSMProcedureErrors(CString p_schema,CString p_procedure) const
     CString s = qry1.GetColumn(3)->GetAsChar();
     if(s.Find("Statement ignored") < 0) 
     {
-      s.Format("Error in line %d, column %d: %s\n",qry1.GetColumn(1)->GetAsSLong(),qry1.GetColumn(2)->GetAsSLong());
+      s.Format("Error in line %d, column %d: %s\n",qry1.GetColumn(1)->GetAsSLong()
+	                                              ,qry1.GetColumn(2)->GetAsSLong()
+						                          ,qry1.GetColumn(3)->GetAsChar());
       errorText += s;
       query.Format( "SELECT text\n"
                     "  FROM dba_source\n"

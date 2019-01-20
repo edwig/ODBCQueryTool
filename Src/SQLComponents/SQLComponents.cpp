@@ -2,7 +2,7 @@
 //
 // File: SQLComponents.h
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,23 +21,12 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #include "stdafx.h"
 #include "SQLComponents.h"
 #include "ConvertWideString.h"
-
-#ifdef _DEBUG
-// C-Runtime memory state for debug leak detection
-static _CrtMemState state;
-
-// To execute at the end of the program
-void __cdecl AtExitOfSQLComponents(void)
-{
-  _CrtMemDumpAllObjectsSince(&state);
-}
-#endif
 
 namespace SQLComponents
 {
@@ -46,6 +35,10 @@ namespace SQLComponents
   // Initialization of the SQLComponents library
   void InitSQLComponents(Language p_language)
   {
+    // Use StdExceptions in this library
+    // BEWARE: All threads must call this function!!
+    _set_se_translator(SeTranslator);
+
     // Setting our default language for SQLDate, SQLTime and SQLTimestamp processing
     SetDefaultSQLLanguage(p_language);
 
@@ -58,16 +51,8 @@ namespace SQLComponents
     // Initialize the code page name system
     InitCodePageNames();
 
-#ifdef _DEBUG
-#ifndef SQL_COMPONENTS_MFC
-    // Create a memory checkpoint
-    _CrtMemCheckpoint(&state);
-
-    // Do reporting of memory leaks if we have no MFC loaded
-    // By registering our AtExit function
-    atexit(::AtExitOfSQLComponents);
-#endif // SQL_COMPONENTS_MFC
-#endif // _DEBUG
+    // Initialize the COM subsystem
+    CoInitialize(nullptr);
 
     // We are now officially 'in business' :-)
     g_SQLComponentsInitialized = true;
@@ -78,7 +63,7 @@ namespace SQLComponents
   {
     if(g_SQLComponentsInitialized == false)
     {
-      throw CString("Call InitSQLComponents() before you use the 'SQLComponents' library.");
+      throw StdException("Call InitSQLComponents() before you use the 'SQLComponents' library.");
     }
   }
 }

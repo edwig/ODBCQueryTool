@@ -2,7 +2,7 @@
 //
 // File: SQLInfoPostgreSQL.cpp
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #include "stdafx.h"
 #include "SQLComponents.h"
@@ -263,6 +263,20 @@ CString
 SQLInfoPostgreSQL::GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) const
 {
   return "{fn IFNULL(" + p_test + "," + p_isnull + ")}";
+}
+
+// Gets the construction for inline generating a key within an INSERT statement
+CString
+SQLInfoPostgreSQL::GetSQLNewSerial(CString p_table, CString p_sequence) const
+{
+  CString sequence(p_sequence);
+  if (sequence.IsEmpty() && !p_table.IsEmpty())
+  {
+    sequence = p_table + "_seq";
+  }
+
+  // Select next value from a generator sequence
+  return sequence + ".NEXTVAL";
 }
 
 // Gets the construction / select for generating a new serial identity
@@ -585,7 +599,7 @@ SQLInfoPostgreSQL::GetCATALOGColumnExists(CString p_schema,CString p_tablename,C
                  "      ,pg_namespaces sch\n"
                  "      ,pg_attribute  att\n"
                  " WHERE tab.relname = '" + p_tablename  + "'\n"
-                 "   AND sch.name    = '" + p_schema     + "'\n";
+                 "   AND sch.name    = '" + p_schema     + "'\n"
                  "   AND att.attname = '" + p_columnname + "'\n"
                  "   AND tab.oid     = att.attrelid\n"
                  "   AND sch.oid     = tab.relnamespace\n";
@@ -683,7 +697,7 @@ SQLInfoPostgreSQL::GetCATALOGColumnAttributes(CString p_schema,CString p_tablena
 CString 
 SQLInfoPostgreSQL::GetCATALOGColumnCreate(MetaColumn& p_column) const
 {
-  CString sql = "ALTER TABLE "  + p_column.m_schema + "." + p_column.m_table  + "\n";
+  CString sql = "ALTER TABLE "  + p_column.m_schema + "." + p_column.m_table  + "\n"
                 "  ADD COLUMN " + p_column.m_column + " " + p_column.m_typename;
   if(p_column.m_columnSize)
   {
@@ -1395,7 +1409,7 @@ SQLInfoPostgreSQL::GetCATALOGViewExists(CString p_schema,CString p_viewname) con
   p_schema.MakeLower();
   p_viewname.MakeLower();
   CString sql("SELECT COUNT(*)\n"
-              "  FROM pg_views\n"  // TODO: Check the correct name
+              "  FROM pg_views\n" 
               " WHERE view_name = '" + p_viewname + "'");
   return sql;
 }
@@ -1896,7 +1910,7 @@ SQLInfoPostgreSQL::DoSQLCall(SQLQuery* p_query,CString& p_schema,CString& p_proc
         SQLVariant* target = p_query->GetParameter(++setIndex);
         if(target == nullptr)
         {
-          throw CString("Wrong number of output parameters for procedure call");
+          throw StdException("Wrong number of output parameters for procedure call");
         }
         type = target->GetParameterType();
         dataType = target->GetDataType();

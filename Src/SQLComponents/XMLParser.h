@@ -26,11 +26,15 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #pragma once
 #include "XMLMessage.h"
+
+#ifdef COMPILED_TOGETHER_WITH_MARLIN
+#include "..\Marlin\XMLParser.h"
+#else
 
 namespace SQLComponents
 {
@@ -121,3 +125,5 @@ XMLParser::SetUTF8()
 
 // End of namespace
 }
+
+#endif // COMPILED_TOGETHER_WITH_MARLIN

@@ -2,7 +2,7 @@
 //
 // File: SQLVariantTrim.cpp
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2018 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   08-01-2017
-// Version number:  1.4.0
+// Last Revision:   20-01-2019
+// Version number:  1.5.4
 //
 #include "stdafx.h"
 #include "SQLComponents.h"
@@ -51,7 +51,7 @@ void SQL_ThrowErrorTruncate(int p_from,int p_to)
   char* from = SQLVariant::FindDatatype(p_from);
   char* to   = SQLVariant::FindDatatype(p_to);
   error.Format("Cannot truncate %s to %s",from,to);
-  throw error;
+  throw StdException(error);
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -167,8 +167,14 @@ enum DECOLOR
 #include <fstream>
 #include <map>
 #include <vector>
-#include <string>	//MF
-using namespace std;
+#include <string>	
+using std::vector;
+using std::map;
+using std::string;
+using std::wstring;
+using std::iostream;
+using std::ios_base;
+using std::ostream;
 
  // get facet from locale for GCC
 #ifndef _USE
@@ -187,6 +193,8 @@ using namespace std;
 #else
 #define SIZEOFWCHAR_T sizeof(wchar_t)
 #endif
+
+#define ERROR_SIZE 256
 
 
   //MF string conversion functions
@@ -282,7 +290,7 @@ struct CompoundFile
 private:
   void      SetError(HRESULT hr);
   IStorage*	_pStg;
-  char      _error[256];
+  char      _error[ERROR_SIZE];
 };
 
 } // namespace WinCompFiles
@@ -902,11 +910,8 @@ struct CellFormat;
 
 namespace YExcel
 {
-using namespace YCompoundFiles;
+using WinCompFiles::CompoundFile;
 
-#ifdef _WIN32
-using namespace WinCompFiles;
-#endif
 
 struct CODE
 {
@@ -1069,7 +1074,6 @@ struct SmallString
 struct LargeString
 {
   LargeString();
-  ~LargeString();
   LargeString(const LargeString& s);
 
   LargeString& operator=(const LargeString& s);
@@ -1297,8 +1301,8 @@ struct EXCEPTION_YEOF
   ULONG _bytesRead;
 };
 
-//MF
-using namespace RefCount;
+using RefCount::RefCnt;
+using RefCount::SmartPtr;
 
 class Worksheet
 {
