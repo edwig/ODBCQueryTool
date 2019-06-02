@@ -23,15 +23,14 @@
 //
 #pragma once
 
-
 // General text version
-#define ODBCQUERYTOOL_VERSION  "2.3.0"
-#define ODBCQUERYTOOL_BUILD    "209"
+#define ODBCQUERYTOOL_VERSION  "2.3.1"
+#define ODBCQUERYTOOL_BUILD    "210"
 #define ODBCQUERYTOOL_COPYRIGHT "Copyright (c) Edwig Huisman 2004-2019"
 
 // For the resource files
 #define QT_RES_VERSION 2
 #define QT_RES_MAJOR   3
-#define QT_RES_MINOR   0
-#define QT_RES_BUILD   209
-#define QT_RES_FILE    "2,3,0,209"
+#define QT_RES_MINOR   1
+#define QT_RES_BUILD   210
+#define QT_RES_FILE    "2,3,1,210"

@@ -20,6 +20,7 @@
 #include <string>
 #include <sstream>
 #include <COMMON/ExceptionHelper.h>
+#include <StdException.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -74,6 +75,17 @@ namespace Common
 
         print_exception(o.str());
     }
+
+    void default_handler(StdException& x, const char* file, int line)
+    {
+      ostringstream o;
+      o << "Unexpected exception \"" << x.GetErrorMessage() << "\" is being caught at " << file << '(' << line << ").\n\n"
+        << "Please notify me about this problem. You can use email to edwig.huisman@hetnet.nl\n"
+           "Thank you\n";
+
+      print_exception(o.str());
+    }
+
 
 #ifdef _AFX
     void default_handler (CException* /*x*/, const char* /*file*/, int /*line*/)

@@ -342,6 +342,11 @@ BOOL COEDocument::OnOpenDocument (LPCTSTR lpszPathName)
         DEFAULT_HANDLER(x); 
         return FALSE;
     }
+    catch (StdException& x)
+    {
+      DEFAULT_HANDLER(x);
+      return false;
+    }
     catch (...)   
     { 
         DEFAULT_HANDLER_ALL; 

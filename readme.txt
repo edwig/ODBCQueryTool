@@ -22,6 +22,12 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes version 2.3.1
+--------------------------
+- Fixed the integration of the SQLComponents StdException into the exception 
+  handling of the OpenEditor source code. This makes it better in catching user
+  mistakes in SQL and logging in into databases.
+
 Releasenotes version 2.3.0
 --------------------------
 - Fixed performance bug in starting of Oracle 12 database. Knocked of 6 seconds
