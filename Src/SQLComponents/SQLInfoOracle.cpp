@@ -2,7 +2,7 @@
 //
 // File: SQLInfoOracle.cpp
 //
-// Copyright (c) 1998-2018 ir. W.E. Huisman
+// Copyright (c) 1998-2019 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   20-01-2019
-// Version number:  1.5.4
+// Last Revision:  15-06-2019
+// Version number: 1.5.5
 //
 #include "stdafx.h"
 #include "SQLComponents.h"
@@ -345,6 +345,20 @@ SQLInfoOracle::GetSQLOptimizeTable(CString p_schema, CString p_tablename) const
   // Optimize the table
   optim = "call dbms_stats.gather_table_stats('" + p_schema + "','" + p_tablename + "')";
   return optim;
+}
+
+// Transform query to select top <n> rows:
+// Works from Oracle 12c and upward!!!
+CString
+SQLInfoOracle::GetSQLTopNRows(CString p_sql,int p_top) const
+{
+  if(p_top > 0)
+  {
+    CString limit;
+    limit.Format("\n FETCH FIRST %d ROWS WITH TIES",p_top);
+    p_sql += limit;
+  }
+  return p_sql;
 }
 
 //////////////////////////////////////////////////////////////////////////

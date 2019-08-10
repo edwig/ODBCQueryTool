@@ -10,7 +10,7 @@
 ; Versionnumber:     2.3.0
 ;-------------------------------------------------------
  !define PRODUCT_NAME                         "OpenODBCQuerytool"
- !define PRODUCT_VERSION                      "2.3.1"
+ !define PRODUCT_VERSION                      "2.3.2"
  !define PRODUCT_BUILDNUMBER                  "210"
  !define PRODUCT_PUBLISHER                    "EDO"
  !define PRODUCT_WEB_SITE                     "https://sourceforge.net/projects/odbcquerytool"

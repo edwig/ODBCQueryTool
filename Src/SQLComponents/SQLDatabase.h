@@ -2,7 +2,7 @@
 //
 // File: Database.h
 //
-// Copyright (c) 1998-2018 ir. W.E. Huisman
+// Copyright (c) 1998-2019 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   20-01-2019
-// Version number:  1.5.4
+// Last Revision:  15-06-2019
+// Version number: 1.5.5
 //
 #pragma once
 #include "SQLComponents.h"
@@ -157,6 +157,8 @@ public:
 
   // DATABASE POOL METHODS
   void           SetDatasource(CString p_dsn);
+  void           SetConnectionName(CString p_connectionName);
+  void           SetUserName(CString p_user);
   void           SetLastActionTime();
   bool           PastWaitingTime();
 
@@ -164,6 +166,7 @@ public:
   CString        GetUserName();
   CString        GetPassword();
   CString        GetDatasource();
+  CString        GetConnectionName();
   CString        GetDatabaseTypeName();
   CString        GetDatabaseName();         // Real database name
   DatabaseType   GetDatabaseType();
@@ -281,6 +284,7 @@ protected:
   int               m_loginTimeout = { LOGIN_TIMEOUT };  // Timeout before login fails
   bool              m_mars         = { true          };  // Multiple Active Record Sets
   bool              m_readOnly     = { false         };  // ReadOnly connection
+  CString           m_connectionName;                    // Can differ from m_datasource !!
   CString	          m_DBName;
   CString	          m_DBVersion;
   CString	          m_DriverName;
@@ -360,6 +364,12 @@ inline CString
 SQLDatabase::GetDatasource()
 {
   return m_datasource;
+}
+
+inline CString
+SQLDatabase::GetConnectionName()
+{
+  return m_connectionName;
 }
 
 inline int

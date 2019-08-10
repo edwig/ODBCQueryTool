@@ -18,6 +18,7 @@
 
 #include "stdafx.h"
 #include "OpenEditor/OELanguage.h"
+#include <stdexcept>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

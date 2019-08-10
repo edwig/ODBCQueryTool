@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 1998-2018 ir. W.E. Huisman
+// Copyright (c) 1998-2019 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -23,8 +23,8 @@
 // Loosely based on the article by: Yap Chun Wei
 // http://www.codeproject.com/Articles/1636/CSpreadSheet-A-Class-to-Read-and-Write-to-Excel-an
 // 
-// Last Revision:   20-01-2019
-// Version number:  1.5.4
+// Last Revision:  15-06-2019
+// Version number: 1.5.5
 //
 #include "stdafx.h"
 #include "SQLComponents.h"

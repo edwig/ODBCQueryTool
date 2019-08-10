@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   20-01-2019
-// Version number:  1.5.4
+// Last Revision:  15-06-2019
+// Version number: 1.5.5
 //
 #pragma once
 #include "SQLInfoDB.h"
@@ -154,6 +154,9 @@ public:
 
   // Get query to optimize the table statistics
   CString GetSQLOptimizeTable(CString p_schema, CString p_tablename) const;
+
+  // Transform query to select top <n> rows
+  CString GetSQLTopNRows(CString p_sql,int p_top) const;
 
   //////////////////////////////////////////////////////////////////////////
   // SQL STRINGS

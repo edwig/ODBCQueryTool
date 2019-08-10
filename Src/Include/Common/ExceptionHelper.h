@@ -32,6 +32,7 @@ namespace Common
     void default_handler (const char* er,        const char* file,int line);
     void default_handler (const std::exception&, const char* file,int line);
     void default_handler (      StdException&,   const char* file,int line);
+    void default_handler (const CString&,        const char* file,int line);
 #ifdef _AFX
     void default_handler (CException*, const char* file, int line);
 #endif//_AFX
@@ -48,6 +49,7 @@ namespace Common
     catch (CException* x)           { DEFAULT_HANDLER(x); } \
     catch (const std::exception& x) { DEFAULT_HANDLER(x); } \
     catch (StdException& x)         { DEFAULT_HANDLER(x); } \
+    catch (const CString& x)        { DEFAULT_HANDLER(x); } \
     catch (...)                     { DEFAULT_HANDLER_ALL; }
 #else
 #define _COMMON_DEFAULT_HANDLER_ \

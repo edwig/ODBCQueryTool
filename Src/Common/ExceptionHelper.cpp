@@ -66,6 +66,16 @@ namespace Common
         print_exception(o.str());
     }
 
+    void default_handler(const CString& er, const char* file, int line)
+    {
+      ostringstream o;
+      o << "Unexpected exception \"" << er << "\" is being caught at " << file << '(' << line << ").\n\n"
+        << "Please notify me about this problem. You can use email to edwig.huisman@hetnet.nl\n"
+           "Thank you\n";
+
+      print_exception(o.str());
+    }
+
     void default_handler (const std::exception& x, const char* file, int line)
     {
         ostringstream o;

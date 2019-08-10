@@ -2,7 +2,7 @@
 //
 // File: SQLDatabase.cpp
 //
-// Copyright (c) 1998-2018 ir. W.E. Huisman
+// Copyright (c) 1998-2019 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   20-01-2019
-// Version number:  1.5.4
+// Last Revision:  15-06-2019
+// Version number: 1.5.5
 //
 #include "stdafx.h"
 #include "SQLComponents.h"
@@ -161,6 +161,26 @@ SQLDatabase::SetDatasource(CString p_dsn)
   if(m_datasource.IsEmpty())
   {
     m_datasource = p_dsn;
+  }
+}
+
+// Can be set once (1 time) by the DatabasePool
+void
+SQLDatabase::SetConnectionName(CString p_connectionName)
+{
+  if(m_connectionName.IsEmpty())
+  {
+    m_connectionName = p_connectionName;
+  }
+}
+
+// Can be set once (1 time) by the DatabasePool
+void
+SQLDatabase::SetUserName(CString p_user)
+{
+  if(m_username.IsEmpty())
+  {
+    m_username = p_user;
   }
 }
 

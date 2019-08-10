@@ -2,7 +2,7 @@
 //
 // File: SQLFilter.h
 //
-// Copyright (c) 1998-2018 ir. W.E. Huisman
+// Copyright (c) 1998-2019 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,37 +21,19 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   20-01-2019
-// Version number:  1.5.4
+// Last Revision:  15-06-2019
+// Version number: 1.5.5
 //
 #pragma once
 #include "SQLComponents.h"
 #include "SQLVariant.h"
+#include "SQLOperator.h"
+#include "SQLFunction.h"
+#include "SQLTimestampExtract.h"
 #include <vector>
 
 namespace SQLComponents
 {
-
-// Operator for a condition filter
-typedef enum _sqlOperator
-{
-   OP_NOP = 0
-  ,OP_Equal = 1
-  ,OP_NotEqual
-  ,OP_Greater
-  ,OP_GreaterEqual
-  ,OP_Smaller
-  ,OP_SmallerEqual
-  ,OP_IsNULL
-  ,OP_IsNotNULL
-  ,OP_LikeBegin
-  ,OP_LikeMiddle
-  ,OP_IN
-  ,OP_Between
-  ,OP_Exists
-  ,OP_OR               // OR chaining to next filter(s)
-}
-SQLOperator;
 
 // Forward declarations
 class SQLRecord;
@@ -87,6 +69,11 @@ public:
   // Setting a parenthesis level
   void        SetOpenParenthesis();
   void        SetCloseParenthesis();
+  // Setting an extra function
+  void        SetFunction(SQLFunction p_function);
+  // Setting an extract part or timestamp add/difference part
+  void        SetExtractPart  (SQLExtractPart       p_part);
+  void        SetTimestampPart(SQLTimestampCalcPart p_part);
 
   // OPERATIONS
 
@@ -103,8 +90,12 @@ public:
   SQLVariant* GetValue();
   SQLVariant* GetValue(int p_number);
   CString     GetExpression();
+  SQLFunction GetFunction();
   bool        GetNegate();
+  SQLExtractPart        GetExtractPart();
+  SQLTimestampCalcPart  GetTimestampPart();
 
+  // Filter assignment to another filter
   SQLFilter&  operator=(const SQLFilter& p_other);
 private:
   // Check that we have at least one operand value
@@ -118,6 +109,12 @@ private:
   void        ConstructIN(CString& p_sql,SQLQuery& p_query);
   // Constructing the BETWEEN clause
   void        ConstructBetween(CString& p_sql,SQLQuery& p_query);
+  // Constructing a FUNCTION(field)
+  CString     ConstructFunctionSQL(SQLQuery& p_query);
+  // Constructing the extraction part in the EXTRACT function
+  CString     ConstructExtractPart();
+  // Constructing the calculation part in the TIMESTAMPADD/TIMESTAMPDIFF functions
+  CString     ConstructTimestampCalcPart();
 
   // Internal matching
   bool        MatchEqual       (SQLVariant* p_field);
@@ -138,9 +135,16 @@ private:
   SQLOperator m_operator;           // Operator of the condition
   VariantSet  m_values;             // Multiple values for IN and BETWEEN
   CString     m_expression;         // Free expression (no values!)
+  SQLFunction m_function         { FN_NOP };   // Extra function for the field operator
   bool        m_negate { false };   // Negate the whole condition
-  bool        m_openParenthesis  { false };
-  bool        m_closeParenthesis { false };
+  bool        m_openParenthesis  { false  };   // Start with an opening parenthesis
+  bool        m_closeParenthesis { false  };   // End with a closing parenthesis
+  union       {                                // Parts for functions EXTRACT/TIMESTAMP ADD/DIFF
+                SQLExtractPart        m_extract  { TS_EXT_NONE  };
+                SQLTimestampCalcPart  m_calcpart;
+              }
+              m_extract;
+
 };
 
 inline CString
@@ -202,6 +206,42 @@ inline void
 SQLFilter::SetCloseParenthesis()
 {
   m_closeParenthesis = true;
+}
+
+inline void
+SQLFilter::SetFunction(SQLFunction p_function)
+{
+  m_function = p_function;
+}
+
+inline SQLFunction
+SQLFilter::GetFunction()
+{
+  return m_function;
+}
+
+inline void
+SQLFilter::SetExtractPart(SQLExtractPart p_part)
+{
+  m_extract.m_extract = p_part;
+}
+
+inline void
+SQLFilter::SetTimestampPart(SQLTimestampCalcPart p_part)
+{
+  m_extract.m_calcpart = p_part;
+}
+
+inline SQLExtractPart
+SQLFilter::GetExtractPart()
+{
+  return m_extract.m_extract;
+}
+
+inline SQLTimestampCalcPart
+SQLFilter::GetTimestampPart()
+{
+  return m_extract.m_calcpart;
 }
 
 //////////////////////////////////////////////////////////////////////////

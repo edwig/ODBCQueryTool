@@ -19,6 +19,7 @@
 #include "stdafx.h"
 #define FIXEDSTRING_MODULE
 #include <COMMON/FixedString.h>
+#include <stdexcept>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

@@ -2,7 +2,7 @@
 //
 // File: SQLInfoPostgreSQL.cpp
 //
-// Copyright (c) 1998-2018 ir. W.E. Huisman
+// Copyright (c) 1998-2019 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,8 +21,8 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Last Revision:   20-01-2019
-// Version number:  1.5.4
+// Last Revision:  15-06-2019
+// Version number: 1.5.5
 //
 #include "stdafx.h"
 #include "SQLComponents.h"
@@ -338,6 +338,20 @@ SQLInfoPostgreSQL::GetSQLOptimizeTable(CString p_schema, CString p_tablename) co
 {
   CString optim = "VACUUM ANALYZE " + p_schema + "." + p_tablename;
   return optim;
+}
+
+// Transform query to select top <n> rows
+CString
+SQLInfoPostgreSQL::GetSQLTopNRows(CString p_sql,int p_top) const
+{
+  if(p_top > 0 && p_sql.Find("SELECT ") == 0)
+  {
+    CString selectFirst;
+    selectFirst.Format("SELECT LIMIT %d ",p_top);
+
+    p_sql.Replace("SELECT ",selectFirst);
+  }
+  return p_sql;
 }
 
 //////////////////////////////////////////////////////////////////////////

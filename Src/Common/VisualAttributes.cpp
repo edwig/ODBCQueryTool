@@ -19,6 +19,7 @@
 #include "stdafx.h"
 #include <string>
 #include "COMMON\VisualAttributes.h"
+#include <stdexcept>
 
 #ifdef _DEBUG
 #undef THIS_FILE
