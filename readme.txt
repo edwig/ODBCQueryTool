@@ -22,6 +22,11 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes version 2.3.2
+--------------------------
+- Fixed more exception errors 
+- Upgraded to latest Windows 10 SDK
+
 Releasenotes version 2.3.1
 --------------------------
 - Fixed the integration of the SQLComponents StdException into the exception 
