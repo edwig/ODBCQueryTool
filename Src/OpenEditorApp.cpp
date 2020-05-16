@@ -435,6 +435,7 @@ BOOL COpenEditorApp::InitInstance()
   catch (CException* x)       { DEFAULT_HANDLER(x);  return FALSE; }
   catch (std::exception& x)   { DEFAULT_HANDLER(x);  return FALSE; }
   catch (StdException& x)     { DEFAULT_HANDLER(x);  return FALSE; }
+  catch (CString& x)          { DEFAULT_HANDLER(x);  return FALSE; }
   catch (...)                 { DEFAULT_HANDLER_ALL; return FALSE; }
 
   if(m_hMutex)

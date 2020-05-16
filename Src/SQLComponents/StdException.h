@@ -12,6 +12,9 @@
 
 #include <eh.h>
 
+// Macro to be used in conjunction with the first three CTOR's
+#define StandardException(x)   StdException((x),__FILE__,__LINE__)
+
 // Macro to re-throw a safe exception
 #define ReThrowSafeException(ex) if(ex.GetSafeExceptionCode()) throw ex;
 
@@ -21,7 +24,7 @@ public:
   // Application type constructors
   StdException(int p_errorCode);
   StdException(const char* p_fault);
-  StdException(const CString& p_fault);
+  StdException(const CString& p_fault,char* p_file = nullptr,int p_line = 0);
   StdException(int p_errorCode,const char* p_fault);
   // Construct from a SafeExceptionHandler (SEH)
 	StdException(UINT p_safe,_EXCEPTION_POINTERS* p_exceptionPointers);
@@ -34,12 +37,17 @@ public:
   CString              GetApplicationFault();
   CString              GetErrorMessage();
   BOOL                 GetErrorMessage(LPTSTR p_error,UINT p_maxSize,PUINT p_helpContext = NULL);
+  char*                GetFilename();
+  int                  GetLinenumber();
 
 private:
   UINT                 m_safeExceptionCode { 0 };
 	_EXCEPTION_POINTERS* m_exceptionPointers { nullptr };
   UINT                 m_applicationCode   { 0 };
   CString              m_applicationFault;
+  // Where the exception came from
+  char*                m_filename          { nullptr };
+  int                  m_line              { 0 };
 };
 
 void SeTranslator(UINT p_safe,_EXCEPTION_POINTERS* p_exceptionPointers);

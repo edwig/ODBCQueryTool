@@ -86,11 +86,18 @@ SQLInfoOracle::GetRDBMSPhysicalDatabaseName() const
 
   CString query = "SELECT SYS_CONTEXT('USERENV','DB_NAME')\n"
                   "  FROM DUAL";
-  SQLQuery qry(m_database);
-  qry.DoSQLStatement(query);
-  if(qry.GetRecord())
+  try
   {
-    return qry.GetColumn(1)->GetAsChar();
+    SQLQuery qry(m_database);
+    qry.DoSQLStatement(query);
+    if(qry.GetRecord())
+    {
+      return qry.GetColumn(1)->GetAsChar();
+    }
+  }
+  catch(StdException&)
+  {
+    return "";
   }
   return CString("");
 }
@@ -1716,35 +1723,42 @@ SQLInfoOracle::GetPSMProcedureErrors(CString p_schema,CString p_procedure) const
           "  FROM user_errors\n"
           " WHERE name = '" + p_procedure +"'";
 
-  SQLQuery qry1(m_database);
-  SQLQuery qry2(m_database);
-  qry1.DoSQLStatement(query);
-
-  while (qry1.GetRecord())
+  try
   {
-    CString s = qry1.GetColumn(3)->GetAsChar();
-    if(s.Find("Statement ignored") < 0) 
+    SQLQuery qry1(m_database);
+    SQLQuery qry2(m_database);
+    qry1.DoSQLStatement(query);
+
+    while (qry1.GetRecord())
     {
-      s.Format("Error in line %d, column %d: %s\n",qry1.GetColumn(1)->GetAsSLong()
-	                                              ,qry1.GetColumn(2)->GetAsSLong()
-						                          ,qry1.GetColumn(3)->GetAsChar());
-      errorText += s;
-      query.Format( "SELECT text\n"
-                    "  FROM dba_source\n"
-                    " WHERE type = 'FUNCTION'\n"
-                    "   AND name = '%s'\n"
-                    "   AND line = %d"
-                   ,p_procedure.GetString()
-                   ,qry1.GetColumn(1)->GetAsSLong());
-      qry2.DoSQLStatement(query);
-      while(qry2.GetRecord())
+      CString s = qry1.GetColumn(3)->GetAsChar();
+      if(s.Find("Statement ignored") < 0) 
       {
-        s.Format("Line %d: %s\n"
-                 ,qry1.GetColumn(1)->GetAsSLong()
-                 ,qry2.GetColumn(1)->GetAsChar());
+        s.Format("Error in line %d, column %d: %s\n",qry1.GetColumn(1)->GetAsSLong()
+	                                                ,qry1.GetColumn(2)->GetAsSLong()
+						                            ,qry1.GetColumn(3)->GetAsChar());
         errorText += s;
+        query.Format( "SELECT text\n"
+                      "  FROM dba_source\n"
+                      " WHERE type = 'FUNCTION'\n"
+                      "   AND name = '%s'\n"
+                      "   AND line = %d"
+                     ,p_procedure.GetString()
+                     ,qry1.GetColumn(1)->GetAsSLong());
+        qry2.DoSQLStatement(query);
+        while(qry2.GetRecord())
+        {
+          s.Format("Line %d: %s\n"
+                   ,qry1.GetColumn(1)->GetAsSLong()
+                   ,qry2.GetColumn(1)->GetAsChar());
+          errorText += s;
+        }
       }
     }
+  }
+  catch(StdException& er)
+  {
+    errorText = er.GetErrorMessage();
   }
   return errorText;
 }

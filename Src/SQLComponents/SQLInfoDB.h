@@ -53,7 +53,7 @@ class SQLInfoDB : public SQLInfo
 {
 public:
   SQLInfoDB(SQLDatabase* p_database);
- ~SQLInfoDB();
+  virtual ~SQLInfoDB();
 
   // DB INTERFACE
 

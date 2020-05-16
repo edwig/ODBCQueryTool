@@ -89,8 +89,9 @@ namespace Common
     void default_handler(StdException& x, const char* file, int line)
     {
       ostringstream o;
-      o << "Unexpected exception \"" << x.GetErrorMessage() << "\" is being caught at " << file << '(' << line << ").\n\n"
-        << "Please notify me about this problem. You can use email to edwig.huisman@hetnet.nl\n"
+      o << "UNEXPECTED EXCEPTION:\n\n" << x.GetErrorMessage();
+      o << "\nError is being caught at " << file << '(' << line << ").\n";
+      o << "Please notify me about this problem. You can use email to edwig.huisman@hetnet.nl\n"
            "Thank you\n";
 
       print_exception(o.str());

@@ -22,6 +22,15 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes version 2.3.3
+--------------------------
+- Fixed a bug in the startup cycle on the first discovery queries.
+  It turned out that there where a few tables for in there that not all users
+  have rights on to see (e.g. Oracle: "dba_db_links")
+  Similar bugs for Informix, Firebird, PostgreSQL and SQLServer have been fixed
+- Errors in SQL now turn up always with the erring SQL statement in them, so we
+  can always see what went wrong.
+
 Releasenotes version 2.3.2
 --------------------------
 - Fixed more exception errors 

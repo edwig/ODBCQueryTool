@@ -75,13 +75,17 @@ SQLInfoPostgreSQL::GetRDBMSVendorName() const
 CString
 SQLInfoPostgreSQL::GetRDBMSPhysicalDatabaseName() const
 {
-  SQLQuery sql(m_database);
-  CString query = "SELECT current_database()";
-  sql.DoSQLStatement(query);
-  if(sql.GetRecord())
+  try
   {
-    return sql.GetColumn(1)->GetAsChar();
+    SQLQuery sql(m_database);
+    CString query = "SELECT current_database()";
+    sql.DoSQLStatement(query);
+    if(sql.GetRecord())
+    {
+      return sql.GetColumn(1)->GetAsChar();
+    }
   }
+  catch(StdException&) { }
   return "";
 }
 
@@ -1901,61 +1905,65 @@ SQLInfoPostgreSQL::DoSQLCall(SQLQuery* p_query,CString& p_schema,CString& p_proc
   // instead you have to do a "SELECT procedure(?,?)" 
   // The result set is the set of output parameters
   // DOES ONLY SUPPORT A SINGLE ROW RESULT SET!!
-  SQLQuery query(m_database);
-  CString sql   = ConstructSQLForProcedureCall(p_query,&query,p_schema,p_procedure);
-  int numReturn = GetCountReturnParameters(p_query);
-
-  query.DoSQLStatement(sql);
-  if(query.GetRecord())
+  try
   {
-    // Processing the result
-    int setIndex = -1;
-    int recIndex = 0;
-    for(int resIndex = 1; resIndex <= query.GetNumberOfColumns(); ++resIndex)
+    SQLQuery query(m_database);
+    CString sql   = ConstructSQLForProcedureCall(p_query,&query,p_schema,p_procedure);
+    int numReturn = GetCountReturnParameters(p_query);
+
+    query.DoSQLStatement(sql);
+    if(query.GetRecord())
     {
-      SQLVariant var;
-      int dataType = 0;
-      int type = 0;
-      bool ready = false;
-
-      // Finding the next OUTPUT parameter in the original query call
-      do
+      // Processing the result
+      int setIndex = -1;
+      int recIndex = 0;
+      for(int resIndex = 1; resIndex <= query.GetNumberOfColumns(); ++resIndex)
       {
-        SQLVariant* target = p_query->GetParameter(++setIndex);
-        if(target == nullptr)
+        SQLVariant var;
+        int dataType = 0;
+        int type = 0;
+        bool ready = false;
+
+        // Finding the next OUTPUT parameter in the original query call
+        do
         {
-          throw StdException("Wrong number of output parameters for procedure call");
+          SQLVariant* target = p_query->GetParameter(++setIndex);
+          if(target == nullptr)
+          {
+            throw StdException("Wrong number of output parameters for procedure call");
+          }
+          type = target->GetParameterType();
+          dataType = target->GetDataType();
         }
-        type = target->GetParameterType();
-        dataType = target->GetDataType();
-      }
-      while(type != SQL_PARAM_OUTPUT && type != SQL_PARAM_INPUT_OUTPUT);
+        while(type != SQL_PARAM_OUTPUT && type != SQL_PARAM_INPUT_OUTPUT);
 
-      // Getting the next result from the result set
-      SQLVariant* result = query.GetColumn(resIndex);
-      if(result->GetDataType() == SQL_C_CHAR)
-      {
-        const char* resPointer = result->GetAsChar();
-        if(resPointer && *resPointer == '(' && numReturn)
+        // Getting the next result from the result set
+        SQLVariant* result = query.GetColumn(resIndex);
+        if(result->GetDataType() == SQL_C_CHAR)
         {
-          var = GetVarFromRecord(dataType,(char*)resPointer,recIndex++,ready);
-          resIndex = 0;
-          result = &var;
+          const char* resPointer = result->GetAsChar();
+          if(resPointer && *resPointer == '(' && numReturn)
+          {
+            var = GetVarFromRecord(dataType,(char*)resPointer,recIndex++,ready);
+            resIndex = 0;
+            result = &var;
+          }
+        }
+
+        // Storing the result;
+        p_query->SetParameter(setIndex,result);
+
+        // At the end of a multi-parameter record?
+        if(ready)
+        {
+          break;
         }
       }
-
-      // Storing the result;
-      p_query->SetParameter(setIndex,result);
-
-      // At the end of a multi-parameter record?
-      if(ready)
-      {
-        break;
-      }
+      // Returning the first return column as the result of the procedure
+      return p_query->GetParameter(0);
     }
-    // Returning the first return column as the result of the procedure
-    return p_query->GetParameter(0);
   }
+  catch(StdException&) { }
   return nullptr;
 }
 

@@ -52,8 +52,10 @@ StdException::StdException(const char* p_fault)
 {
 }
 
-StdException::StdException(const CString& p_fault)
+StdException::StdException(const CString& p_fault,char* p_file /*= nullptr*/,int p_line /*= 0*/)
             :m_applicationFault(p_fault)
+            ,m_filename(p_file)
+            ,m_line(p_line)
 {
 }
 
@@ -150,6 +152,10 @@ StdException::GetErrorMessage()
 	  default:  errorstring = "Unknown exception.";
 		          break;
 	}
+  if (m_filename && m_line)
+  {
+    errorstring.AppendFormat("\nError is being created at: %s (%d).",m_filename,m_line);
+  }
 	return errorstring;
 }
 
@@ -168,6 +174,18 @@ StdException::GetErrorMessage(LPTSTR p_error,UINT p_maxSize,PUINT p_helpContext 
   // Copy it out
   strncpy_s(p_error,p_maxSize,error.GetString(),error.GetLength() + 1);
   return TRUE;
+}
+
+char*
+StdException::GetFilename()
+{
+  return m_filename;
+}
+
+int
+StdException::GetLinenumber()
+{
+  return m_line;
 }
 
 CString

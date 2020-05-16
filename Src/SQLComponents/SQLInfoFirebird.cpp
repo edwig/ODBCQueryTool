@@ -2340,38 +2340,42 @@ SQLInfoFirebird::DoSQLCallFunction(SQLQuery* p_query,CString& p_function)
 bool
 SQLInfoFirebird::DoSQLCallProcedure(SQLQuery* p_query,CString& p_procedure)
 {
-  SQLQuery query(m_database);
-  CString sql = ConstructSQLForProcedureCall(p_query,&query,p_procedure);
-
-  query.DoSQLStatement(sql);
-  if(query.GetRecord())
+  try
   {
-    // Processing the result
-    int type     = 0;
-    int setIndex = -1;
-    for(int resIndex = 1;resIndex <= query.GetNumberOfColumns();++resIndex)
+    SQLQuery query(m_database);
+    CString sql = ConstructSQLForProcedureCall(p_query,&query,p_procedure);
+
+    query.DoSQLStatement(sql);
+    if(query.GetRecord())
     {
-      // Getting the next result from the result set
-      SQLVariant* result = query.GetColumn(resIndex);
-
-      // Finding the next OUTPUT parameter in the original query call
-      do
+      // Processing the result
+      int type     = 0;
+      int setIndex = -1;
+      for(int resIndex = 1;resIndex <= query.GetNumberOfColumns();++resIndex)
       {
-        SQLVariant* target = p_query->GetParameter(++setIndex);
-        if(target == nullptr)
-        {
-          throw StdException("Wrong number of output parameters for procedure call");
-        }
-        type = target->GetParameterType();
-      }
-      while(type != SQL_PARAM_OUTPUT && type != SQL_PARAM_INPUT_OUTPUT);
+        // Getting the next result from the result set
+        SQLVariant* result = query.GetColumn(resIndex);
 
-      // Storing the result;
-      p_query->SetParameter(setIndex,result);
+        // Finding the next OUTPUT parameter in the original query call
+        do
+        {
+          SQLVariant* target = p_query->GetParameter(++setIndex);
+          if(target == nullptr)
+          {
+            throw StdException("Wrong number of output parameters for procedure call");
+          }
+          type = target->GetParameterType();
+        }
+        while(type != SQL_PARAM_OUTPUT && type != SQL_PARAM_INPUT_OUTPUT);
+
+        // Storing the result;
+        p_query->SetParameter(setIndex,result);
+      }
+      // Returning the first return column as the result of the procedure
+      return true;
     }
-    // Returning the first return column as the result of the procedure
-    return true;
   }
+  catch(StdException&) { }
   return false;
 }
 

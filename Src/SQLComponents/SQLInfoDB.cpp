@@ -111,9 +111,9 @@ SQLInfoDB::MakeInfoMetaTypes(MMetaMap& p_objects,CString& p_errors,int p_type)
     qry.DoSQLStatement(sql);
     return ReadMetaTypesFromQuery(qry,p_objects,p_type);
   }
-  catch(CString& er)
+  catch(StdException& er)
   {
-    p_errors.Append(er);
+    p_errors += er.GetErrorMessage();
   }
   return 0;
 }

@@ -78,11 +78,18 @@ SQLInfoSQLServer::GetRDBMSPhysicalDatabaseName() const
   CString query = "SELECT name\n"
                   "  FROM master.dbo.sysdatabases\n"
                   " WHERE dbid = db_id()";
-  SQLQuery qry(m_database);
-  qry.DoSQLStatement(query);
-  if(qry.GetRecord())
+  try
   {
-    return qry.GetColumn(1)->GetAsChar();
+    SQLQuery qry(m_database);
+    qry.DoSQLStatement(query);
+    if(qry.GetRecord())
+    {
+      return qry.GetColumn(1)->GetAsChar();
+    }
+  }
+  catch(StdException&)
+  {
+    return "";
   }
   return CString("");
 }

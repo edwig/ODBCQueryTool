@@ -83,11 +83,18 @@ SQLInfoInformix::GetRDBMSPhysicalDatabaseName() const
   CString query = "SELECT scs_currdb\n"
                   "  FROM sysmaster:syssqlcurses\n"
                   " WHERE scs_sessionid = DBINFO('sessionid')";
-  SQLQuery qry(m_database);
-  qry.DoSQLStatement(query);
-  if(qry.GetRecord())
+  try
   {
-    return qry.GetColumn(1)->GetAsChar();
+    SQLQuery qry(m_database);
+    qry.DoSQLStatement(query);
+    if(qry.GetRecord())
+    {
+      return qry.GetColumn(1)->GetAsChar();
+    }
+  }
+  catch(StdException&)
+  {
+    return "";
   }
   return CString("");
 }

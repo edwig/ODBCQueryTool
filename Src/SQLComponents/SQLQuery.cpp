@@ -641,7 +641,10 @@ SQLQuery::DoSQLStatement(const CString& p_statement)
     // rcExec == SQL_ERROR
     // rcExec == SQL_INVALID_HANDLE
     GetLastError("Error in SQL statement: ");
-    throw StdException(m_lastError);
+    m_lastError += "\n";
+    m_lastError += statement;
+    m_lastError += "\n";
+    throw StandardException(m_lastError);
   }
   else
   {
@@ -728,7 +731,7 @@ SQLQuery::DoSQLStatementNonQuery(const CString& p_statement)
 {
   if(p_statement.Left(6).CompareNoCase("select") == 0)
   {
-    throw StdException("SQL Non-query cannot contain a 'SELECT' statement");
+    throw StdException("SQL Non-query cannot contain a 'SELECT' statement:\n" + p_statement);
   }
   DoSQLStatement(p_statement);
   return GetNumberOfRows();
@@ -835,7 +838,10 @@ SQLQuery::DoSQLPrepare(const CString& p_statement)
     // rcExec == SQL_ERROR
     // rcExec == SQL_INVALID_HANDLE
     GetLastError("Error in SQL statement: ");
-    throw StdException(m_lastError);
+    m_lastError += "\n";
+    m_lastError += statement;
+    m_lastError += "\n";
+    throw StandardException(m_lastError);
   }
 }
 

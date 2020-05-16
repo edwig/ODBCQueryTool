@@ -4,7 +4,7 @@ The licences of the OPEN ODBC QueryTool are dual:
    the standard MIT licencse, as included in the source files
    You can also find this module under https://github.com/Edwig/SQLComponents
 
-// Copyright (c) 1998- 2015 ir. W.E. Huisman
+// Copyright (c) 1998- 2020 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
