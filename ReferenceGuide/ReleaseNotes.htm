@@ -9,6 +9,32 @@
 </head>
 
 <body>
+    <h3>Releasenotes 2.4.0</h3>
+
+    <p>The source code of the SQLComponents are now replaced by a deployment ZIP file&nbsp;in the root directory of the
+    project. The ZIP contains the include directory&nbsp;of that component and the four library files.<br>
+    For a full explanation, see: <a href=
+    "https://github.com/edwig/SQLComponents">https://github.com/edwig/SQLComponents</a>.<br></p>
+
+    <p>Various discovery methods for the info tree have been improved in speed for the Oracle database. The methods are:<br>
+    &nbsp; - SQLColumns&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt; Discovery of all columns
+    of a table<br>
+    &nbsp; - SQLStatistics&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt; Discovery of all indices of a
+    table<br>
+    &nbsp; - SQLTablePrivileges&nbsp;&nbsp; -&gt; Discovery of all table privileges<br>
+    &nbsp; - SQLColumnPrivileges -&gt; Discovery of all column privileges (NEW !)<br></p>
+
+    <p>There is a new setting. See menu: "Text / Permanent settings / SQL Settings". A new checkbox is added "Prefer ODBC
+    Meta-SQL". These are the settings:<br>
+    off : If a meta-sql is present in SQLComponents, that one is used,&nbsp;otherwise the ODBC discovery is used;<br>
+    on&nbsp;: The ODBC discovery routines are always used.<br>
+    &nbsp;&nbsp;<br>
+    So now it is possible to switch between the on-board SQL meta queries or the&nbsp;ones provided by the standard ODBC driver
+    (even if they are slower an more incorrect). However: it is advisable to <strong>LEAVE the option in the OFF
+    position</strong> for performance sake.</p>
+
+    <p>Support for "MariaDB" (the fork of MySQL) has been added.</p>
+
     <h3>Releasenotes 2.3.3</h3>
 
     <p>Fixed a bug in the startup cycle on the first discovery queries. It turned out that there where a few tables for in

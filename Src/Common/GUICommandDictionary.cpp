@@ -512,7 +512,6 @@ bool addDblKeyAccel (ACCEL& accel, VKey vKey, Command commandId)
 
 bool GUICommandDictionary::GetDblKeyDescription (int dblKeyAccelInx, string& desc, VKey vKey)
 {
-    desc.empty();
     if (dblKeyAccelInx < static_cast<int>(g_dblKeyAccels.size()))
     {
         g_vkMap.make_accel_desc(g_dblKeyAccels[dblKeyAccelInx].m_firstKeyAccel, desc, vKey);

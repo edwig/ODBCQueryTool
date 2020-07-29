@@ -476,6 +476,7 @@ void COpenEditorApp::OnEditPermanetSettings()
     COEDocument::ShowSettingsDialog();
     setlocale(LC_ALL, COEDocument::GetSettingsManager().GetGlobalSettings().GetLocale().c_str());
     UpdateAccelAndMenu();
+    RefreshODBCPanels();
   }
   _OE_DEFAULT_HANDLER_;
 }

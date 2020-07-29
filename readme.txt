@@ -22,6 +22,27 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes version 2.4.0
+--------------------------
+- The source code of the SQLComponents are now replaced by a deployment ZIP file
+  in the root directory of the project. The ZIP contains the include directory
+  of that component and the four library files.
+  For a full explanation, see: https://github.com/edwig/SQLComponents
+- Various discovery methods for the info tree have been improved in speed for the
+  Oracle database. The methods are:
+  - SQLColumns          -> Discovery of all columns of a table
+  - SQLStatistics       -> Discovery of all indices of a table
+  - SQLTablePrivileges  -> Discovery of all table privileges 
+  - SQLColumnPrivileges -> Discovery of all column privileges (NEW !)
+- New setting. See menu: "Text / Permanent settings / SQL Settings"
+  A new checkbox is added "Prefer ODBC Meta-SQL". These are the settings:
+  off : If a meta-sql is present in SQLComponents, that one is used, 
+        otherwise the ODBC discovery is used;
+  on  : The ODBC discovery routines are always used.
+  
+  So now it is possible to switch between the on-board SQL meta queries or the 
+  ones provided by the standard ODBC driver (even if they are slower an more incorrect).
+
 Releasenotes version 2.3.3
 --------------------------
 - Fixed a bug in the startup cycle on the first discovery queries.

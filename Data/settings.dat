@@ -30,6 +30,7 @@ FileStartDirectory=C:\\
 SQLPrefetchLines=200
 SQLQueryTerminator=/
 SQLQueryFont=Tahoma;8
+PreferODBCMetaSQL=0
 DefFileExtension=sql
 UndoLimit=1000
 UndoMemLimit=1024000

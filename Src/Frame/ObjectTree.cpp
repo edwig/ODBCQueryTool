@@ -341,24 +341,25 @@ ObjectTree::DispatchTreeAction(DWORD_PTR p_action,HTREEITEM theItem)
 {
   switch(p_action)
   {
-    case TREE_TABLES:       FindTables(theItem);      break;
-    case TREE_TABLE:        PrepareTable(theItem);    break;
-    case TREE_COLUMNS:      FindColumns(theItem);     break;
-    case TREE_PRIMARY:      FindPrimary(theItem);     break;
-    case TREE_FOREIGN:      FindForeign(theItem);     break;
-    case TREE_STATISTICS:   FindStatistics(theItem);  break;
-    case TREE_SPECIALS:     FindSpecials(theItem);    break;
-    case TREE_REFERENCEDBY: FindReferenced(theItem);  break;
-    case TREE_TABTRIGGERS:  FindTabTriggers(theItem); break;
-    case TREE_TABSEQUENCES: FindTabSequences(theItem);break;
-    case TREE_PRIVILEGES:   FindPrivileges(theItem);  break;
-    case TREE_SEQUENCES:    FindSequences(theItem);   break;
-    case TREE_TRIGGERS:     FindTriggers(theItem);    break;
-    case TREE_PROCEDURES:   FindProcedures(theItem);  break;
-    case TREE_PARAMETERS:   FindParameters(theItem);  break;
+    case TREE_TABLES:       FindTables(theItem);          break;
+    case TREE_TABLE:        PrepareTable(theItem);        break;
+    case TREE_COLUMNS:      FindColumns(theItem);         break;
+    case TREE_PRIMARY:      FindPrimary(theItem);         break;
+    case TREE_FOREIGN:      FindForeign(theItem);         break;
+    case TREE_STATISTICS:   FindStatistics(theItem);      break;
+    case TREE_SPECIALS:     FindSpecials(theItem);        break;
+    case TREE_REFERENCEDBY: FindReferenced(theItem);      break;
+    case TREE_TABTRIGGERS:  FindTabTriggers(theItem);     break;
+    case TREE_TABSEQUENCES: FindTabSequences(theItem);    break;
+    case TREE_PRIVILEGES:   FindPrivileges(theItem);      break;
+    case TREE_COLPRIVILEGES:FindColumnPrivileges(theItem);break;
+    case TREE_SEQUENCES:    FindSequences(theItem);       break;
+    case TREE_TRIGGERS:     FindTriggers(theItem);        break;
+    case TREE_PROCEDURES:   FindProcedures(theItem);      break;
+    case TREE_PARAMETERS:   FindParameters(theItem);      break;
     case TREE_SOURCECODE:   FindSourcecode(theItem);  
                             return;
-    default:                /* NOTHING */             break;
+    default:                /* NOTHING */ break;
   }
   // Resetting the item, so we do this only **ONCE**
   SetItemData(theItem, 0);
@@ -497,15 +498,16 @@ ObjectTree::FindTables(HTREEITEM p_theItem)
 void
 ObjectTree::PrepareTable(HTREEITEM p_theItem)
 {
-  HTREEITEM columns    = InsertItem("Columns",        p_theItem,TREE_COLUMNS);
-  HTREEITEM primary    = InsertItem("Primary key",    p_theItem,TREE_PRIMARY);
-  HTREEITEM foreigns   = InsertItem("Foreign keys",   p_theItem,TREE_FOREIGN);
-  HTREEITEM indices    = InsertItem("Statistics",     p_theItem,TREE_STATISTICS);
-  HTREEITEM specials   = InsertItem("Special columns",p_theItem,TREE_SPECIALS);
-  HTREEITEM referenced = InsertItem("Referenced by",  p_theItem,TREE_REFERENCEDBY);
-  HTREEITEM triggers   = InsertItem("Triggers",       p_theItem,TREE_TABTRIGGERS);
-  HTREEITEM sequences  = InsertItem("Sequences",      p_theItem,TREE_TABSEQUENCES);
-  HTREEITEM access     = InsertItem("Privileges",     p_theItem,TREE_PRIVILEGES);
+  HTREEITEM columns    = InsertItem("Columns",          p_theItem,TREE_COLUMNS);
+  HTREEITEM primary    = InsertItem("Primary key",      p_theItem,TREE_PRIMARY);
+  HTREEITEM foreigns   = InsertItem("Foreign keys",     p_theItem,TREE_FOREIGN);
+  HTREEITEM indices    = InsertItem("Statistics",       p_theItem,TREE_STATISTICS);
+  HTREEITEM specials   = InsertItem("Special columns",  p_theItem,TREE_SPECIALS);
+  HTREEITEM referenced = InsertItem("Referenced by",    p_theItem,TREE_REFERENCEDBY);
+  HTREEITEM triggers   = InsertItem("Triggers",         p_theItem,TREE_TABTRIGGERS);
+  HTREEITEM sequences  = InsertItem("Sequences",        p_theItem,TREE_TABSEQUENCES);
+  HTREEITEM tabaccess  = InsertItem("Table privileges", p_theItem,TREE_PRIVILEGES);
+  HTREEITEM colaccess  = InsertItem("Column privileges",p_theItem,TREE_COLPRIVILEGES);
 
   SetItemImage(columns,   IMG_COLUMN,  IMG_COLUMN);
   SetItemImage(primary,   IMG_PRIMARY, IMG_PRIMARY);
@@ -515,7 +517,8 @@ ObjectTree::PrepareTable(HTREEITEM p_theItem)
   SetItemImage(referenced,IMG_FOREIGN, IMG_FOREIGN);
   SetItemImage(triggers,  IMG_TRIGGER, IMG_TRIGGER);
   SetItemImage(sequences, IMG_SEQUENCE,IMG_SEQUENCE);
-  SetItemImage(access,    IMG_ACCESS,  IMG_ACCESS);
+  SetItemImage(tabaccess, IMG_ACCESS,  IMG_ACCESS);
+  SetItemImage(colaccess, IMG_ACCESS,  IMG_ACCESS);
 
   InsertNoInfo(columns);
   InsertNoInfo(primary);
@@ -525,7 +528,8 @@ ObjectTree::PrepareTable(HTREEITEM p_theItem)
   InsertNoInfo(referenced);
   InsertNoInfo(triggers);
   InsertNoInfo(sequences);
-  InsertNoInfo(access);
+  InsertNoInfo(tabaccess);
+  InsertNoInfo(colaccess);
 }
 
 // Before expanding a node, find the table again
@@ -544,8 +548,8 @@ ObjectTree::PresetTable(HTREEITEM p_theItem)
   if(!IsSpecialNode(schema))
   {
     findtable = schema + "." + table;
+    m_schema = schema;
   }
-  m_schema = schema;
   m_table  = table;
 
   return true;
@@ -630,8 +634,8 @@ ObjectTree::FindStatistics(HTREEITEM p_theItem)
   if(PresetTable(p_theItem))
   {
     COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
-    MIndicesMap  statistics;
-    CString         errors;
+    MIndicesMap statistics;
+    CString errors;
 
     // Go find the indices and statistics
     app->GetDatabase().GetSQLInfoDB()->MakeInfoTableStatistics(statistics,errors,m_schema,m_table,nullptr);
@@ -720,6 +724,23 @@ ObjectTree::FindPrivileges(HTREEITEM p_theItem)
     PrivilegesToTree(privileges,p_theItem);
   }
 }
+
+// Finding all column privileges on the table columns
+void
+ObjectTree::FindColumnPrivileges(HTREEITEM p_theItem)
+{
+  if(PresetTable(p_theItem))
+  {
+    COpenEditorApp* app = (COpenEditorApp*)AfxGetApp();
+    MPrivilegeMap privileges;
+    CString errors;
+
+    // Go find the privileges on the table
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoColumnPrivileges(privileges,errors,m_schema,m_table);
+    ColumnPrivilegesToTree(privileges,p_theItem);
+  }
+}
+
 
 // Finding all sequences
 void
@@ -1104,6 +1125,34 @@ ObjectTree::ShowSourcecode(CString p_schema, CString p_procedure)
 //
 //////////////////////////////////////////////////////////////////////////
 
+// void
+// DebugColumn(MetaColumn& p_column)
+// {
+//   CString text("SQL TABLE COLUMN\n\n");
+// 
+//   text.AppendFormat("SCHEMA  NAME     : %s\n",p_column.m_schema);
+//   text.AppendFormat("TABLE   NAME     : %s\n",p_column.m_table);
+//   text.AppendFormat("COLUMN  NAME     : %s\n",p_column.m_column);
+//   text.AppendFormat("DATATYPE SQL     : %d\n",p_column.m_datatype);
+//   text.AppendFormat("NAME DATATYPE    : %s\n",p_column.m_typename);
+//   text.AppendFormat("COLUMN SIZE      : %d\n",p_column.m_columnSize);
+//   text.AppendFormat("BUFFER LENGTH    : %d\n",p_column.m_bufferLength);
+//   text.AppendFormat("DECIMAL DIGITS   : %d\n",p_column.m_decimalDigits);
+//   text.AppendFormat("RADIX            : %d\n",p_column.m_numRadix);
+//   text.AppendFormat("NULLABLE         : %d\n",p_column.m_nullable);
+//   text.AppendFormat("REMARKS          : %s\n", p_column.m_remarks);
+//   text.AppendFormat("DEFAULT VALUE    : %s\n", p_column.m_default);
+//   text.AppendFormat("DATATYPE VER 3   : %d\n", p_column.m_datatype3);
+//   text.AppendFormat("SUB DATATYPE     : %d\n", p_column.m_sub_datatype);
+//   text.AppendFormat("OCTET LENGTH     : %d\n", p_column.m_octet_length);
+//   text.AppendFormat("POSITION         : %d\n", p_column.m_position);
+//   text.AppendFormat("IS NULLABLE      : %s\n", p_column.m_isNullable);
+// 
+//   TRACE("\n");
+//   TRACE(text);
+//   TRACE("\n");
+// }
+
 void
 ObjectTree::ColumnListToTree(MColumnMap& p_columns,HTREEITEM p_item)
 {
@@ -1116,6 +1165,8 @@ ObjectTree::ColumnListToTree(MColumnMap& p_columns,HTREEITEM p_item)
   // Process columns
   for(auto& column : p_columns)
   {
+//  DebugColumn(column);
+
     CString line  = column.m_column + " " + column.m_typename;
     if(column.m_columnSize > 0)
     {
@@ -1341,7 +1392,7 @@ ObjectTree::StatisticsToTree(MIndicesMap& p_statistics,HTREEITEM p_item)
       {
         // New index on a table
         line.Format("Index name: %s",stat.m_indexName);
-        if(stat.m_unique)
+        if(stat.m_nonunique == false)
         {
           line += " (Unique)";
         }
@@ -1599,6 +1650,34 @@ ObjectTree::PrivilegesToTree(MPrivilegeMap& p_privileges,HTREEITEM p_item)
     line.Format("%s was granted %s by %s"
                 ,priv.m_grantee
                 ,priv.m_privilege
+                ,priv.m_grantor);
+    if(priv.m_grantable)
+    {
+      line += " (With GRANT OPTION)";
+    }
+    HTREEITEM item = InsertItem(line,p_item);
+    SetItemImage(item,IMG_ACCESS,IMG_ACCESS);
+  }
+}
+
+void
+ObjectTree::ColumnPrivilegesToTree(MPrivilegeMap& p_privileges,HTREEITEM p_item)
+{
+  // Check for privileges
+  if(p_privileges.empty())
+  {
+    return;
+  }
+  RemoveNoInfo(p_item);
+
+  // Do all privileges records
+  for(auto& priv : p_privileges)
+  {
+    CString line;
+    line.Format("%s was granted %s on column %s by %s"
+                ,priv.m_grantee
+                ,priv.m_privilege
+                ,priv.m_columnName
                 ,priv.m_grantor);
     if(priv.m_grantable)
     {

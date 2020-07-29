@@ -20,6 +20,7 @@
 #include <COMMON/ExceptionHelper.h>
 #include <Common/DirSelectDlg.h>
 #include "OpenEditor/OESQLSettingsPage.h"
+#include "OpenEditorApp.h"
 
 COESQLSettingsPage::COESQLSettingsPage (SettingsManager& manager)
 	                 :CPropertyPage(COESQLSettingsPage::IDD)
@@ -30,6 +31,7 @@ COESQLSettingsPage::COESQLSettingsPage (SettingsManager& manager)
     m_prefetchLines   = settings.GetSQLPrefetchLines();
     m_queryTerminator = settings.GetSQLQueryTerminator().c_str();
     m_queryFont       = settings.GetSQLQueryFont().c_str();
+    m_odbcMetaSQL     = settings.GetPreferODBCMetaSQL();
 }
 
 COESQLSettingsPage::~COESQLSettingsPage()
@@ -38,21 +40,30 @@ COESQLSettingsPage::~COESQLSettingsPage()
 
 void COESQLSettingsPage::DoDataExchange(CDataExchange* pDX)
 {
-  DDX_Text(pDX,IDC_OE_SQLPREFETCHLINES,m_prefetchLines);
-  DDX_Text(pDX,IDC_OE_SQLTERMINATOR,   m_queryTerminator);
-  DDX_Text(pDX,IDC_FONT,               m_queryFont);
+  DDX_Text   (pDX,IDC_OE_SQLPREFETCHLINES,m_prefetchLines);
+  DDX_Text   (pDX,IDC_OE_SQLTERMINATOR,   m_queryTerminator);
+  DDX_Text   (pDX,IDC_FONT,               m_queryFont);
+  DDX_Control(pDX,IDC_META,               m_buttonODBC);
 }
 
 
 BEGIN_MESSAGE_MAP(COESQLSettingsPage, CPropertyPage)
-//    ON_BN_CLICKED(IDC_OE_BACKUP,         OnUpdateData)
-//    ON_BN_CLICKED(IDC_OE_BACKUP_TO_FILE, OnUpdateData)
-//    ON_BN_CLICKED(IDC_OE_BACKUP_TO_DIR,  OnUpdateData)
-//    ON_BN_CLICKED(IDC_OE_BACKUP_DIR_CHANGE, OnBnClicked_FileBackupDirChange)
-ON_EN_CHANGE(IDC_FONT,      &COESQLSettingsPage::OnEnChangeFont)
-ON_BN_CLICKED(IDC_BUT_FONT, &COESQLSettingsPage::OnBnClickedButFont)
+  ON_EN_CHANGE(IDC_OE_SQLPREFETCHLINES,&COESQLSettingsPage::OnEnChangePrefetch)
+  ON_EN_CHANGE(IDC_OE_SQLTERMINATOR,   &COESQLSettingsPage::OnEnChangeTerminator)
+  ON_EN_CHANGE(IDC_FONT,               &COESQLSettingsPage::OnEnChangeFont)
+  ON_BN_CLICKED(IDC_BUT_FONT,          &COESQLSettingsPage::OnBnClickedButFont)
+  ON_BN_CLICKED(IDC_META,              &COESQLSettingsPage::OnBnClickedPreferODBC)
 END_MESSAGE_MAP()
 
+BOOL
+COESQLSettingsPage::OnInitDialog()
+{
+  CPropertyPage::OnInitDialog();
+
+  m_buttonODBC.SetCheck(m_odbcMetaSQL);
+
+  return TRUE;
+}
 
 // COESQLSettingsPage message handlers
 
@@ -62,11 +73,13 @@ BOOL COESQLSettingsPage::OnApply()
     {
         OpenEditor::GlobalSettings& settings = m_manager.GetGlobalSettings();
         
-        settings.SetSQLPrefetchLines(m_prefetchLines);
         std::string term = m_queryTerminator;
-        settings.SetSQLQueryTerminator(term);
         std::string font = m_queryFont;
+
+        settings.SetSQLPrefetchLines(m_prefetchLines);
+        settings.SetSQLQueryTerminator(term);
         settings.SetSQLQueryFont(font);
+        settings.SetPreferODBCMetaSQL(m_odbcMetaSQL);
     }
     _OE_DEFAULT_HANDLER_;
 
@@ -78,6 +91,17 @@ void COESQLSettingsPage::OnUpdateData()
     UpdateData();
 }
 
+void
+COESQLSettingsPage::OnEnChangePrefetch()
+{
+  UpdateData();
+}
+
+void
+COESQLSettingsPage::OnEnChangeTerminator()
+{
+  UpdateData();
+}
 
 void 
 COESQLSettingsPage::OnEnChangeFont()
@@ -109,7 +133,7 @@ COESQLSettingsPage::OnBnClickedButFont()
   if(fontSize < 8 ) fontSize = 8;
   if(fontSize > 24) fontSize = 24;
 
-  // Vul logic font op basis van huidig font
+  // Fill in logic font on the basis of the current font
   lFont.lfHeight         = -MulDiv(fontSize, GetDeviceCaps(GetDC()->m_hDC, LOGPIXELSY),72);
   lFont.lfWidth          = 0;
   lFont.lfEscapement     = 0;
@@ -124,7 +148,7 @@ COESQLSettingsPage::OnBnClickedButFont()
   lFont.lfPitchAndFamily = FF_DONTCARE;  // FF_MODERN
   strcpy_s(lFont.lfFaceName,LF_FACESIZE,fontName);
 
-  // Vul choosefont
+  // Fill in font to choose
   cFont.iPointSize  = fontSize;
   cFont.nSizeMin    = 8;
   cFont.nSizeMax    = 24;
@@ -134,13 +158,13 @@ COESQLSettingsPage::OnBnClickedButFont()
   cFont.nFontType   = SCREEN_FONTTYPE|PRINTER_FONTTYPE|REGULAR_FONTTYPE;
   cFont.Flags       = CF_BOTH|CF_INITTOLOGFONTSTRUCT|CF_LIMITSIZE; // CF_FIXEDPITCHONLY
 
-  // Kies nu een ander font
+  // Let the user choose another font
   if(!ChooseFont(&cFont))
   {
-    // Geen ander font gekozen
+    // No other font chosen
     return;
   }
-  // Controleer op overbodige keuze
+  // Check on redundant choices
   if(lFont.lfWeight    != FW_NORMAL ||
      lFont.lfItalic    != FALSE     ||
      lFont.lfUnderline != FALSE     ||
@@ -151,7 +175,7 @@ COESQLSettingsPage::OnBnClickedButFont()
               ,"Warning"
               ,MB_OK|MB_ICONINFORMATION);
   }
-  // Registreer keuze
+  // Register the choice
   bool changed = false;
   if(strlen(lFont.lfFaceName) > 2)
   {
@@ -169,4 +193,10 @@ COESQLSettingsPage::OnBnClickedButFont()
     m_queryFont.Format("%s;%d",fontName,fontSize);
     UpdateData(FALSE);
   }
+}
+
+void
+COESQLSettingsPage::OnBnClickedPreferODBC()
+{
+  m_odbcMetaSQL = m_buttonODBC.GetCheck() > 0;
 }

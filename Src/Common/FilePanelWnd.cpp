@@ -27,6 +27,7 @@
 #include "COMMON/GUICommandDictionary.h"
 #include "COMMON/DocManagerExt.h"
 #include "OpenEditorApp.h"
+#include "OpenEditor/OEDocument.h"
 #include "SQLDatabase.h"
 
 #define FPW_TABLETREE_TAB   0
@@ -887,9 +888,21 @@ CFilePanelWnd::OnFpwRefreshOdbc()
   CWaitCursor sighAndWait;
   COpenEditorApp* app =(COpenEditorApp *) AfxGetApp();
 
+  // Get option for the preferred META-SQL
+  const OpenEditor::SettingsManager& manager = COEDocument::GetSettingsManager();
+  const OpenEditor::GlobalSettings& settings = manager.GetGlobalSettings();
+  bool  prefer = settings.GetPreferODBCMetaSQL();
+  // Set the option
+  SQLInfoDB* info = app->GetDatabase().GetSQLInfoDB();
+  if(info)
+  {
+    info->SetPreferODBC(prefer);
+  }
+  // Connect the database to the tree
   m_odbcTree.SetDatabase(&(app->GetDatabase()));
   m_odbcTree.MakeTreeInfo();
 
+  // Clear the tree
   m_tableTree.SetFilter("");
   m_tableTree.ClearTree();
 

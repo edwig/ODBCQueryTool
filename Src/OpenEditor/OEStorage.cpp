@@ -962,8 +962,6 @@ void Storage::GetBookmarkedLines (std::vector<int>& lines, EBookmarkGroup group)
 {
     _CHECK_AND_THROW_(group < BOOKMARK_GROUPS_SIZE, "Invalid value for bookmark group!");
 
-    lines.empty();
-
     unsigned mask = 1 << group;
 
     for (int line = 0, nlines = (int)m_Lines.size(); line < nlines; line++)

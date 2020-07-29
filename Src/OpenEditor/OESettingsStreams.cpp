@@ -90,6 +90,7 @@ void SettingsManagerWriter::operator << (const SettingsManager& mgr)
     OESMS_WRITE_MEMBER(settings, SQLQueryTerminator);
     OESMS_WRITE_MEMBER(settings, SQLQueryFont);
 
+    OESMS_WRITE_MEMBER(settings, PreferODBCMetaSQL);
     OESMS_WRITE_MEMBER(settings, DefFileExtension);
     OESMS_WRITE_MEMBER(settings, UndoLimit);
     OESMS_WRITE_MEMBER(settings, UndoMemLimit);
@@ -174,6 +175,7 @@ void SettingsManagerReader::operator >> (SettingsManager& mgr)
     OESMS_READ_MEMBER(settings, SQLQueryTerminator);
     OESMS_READ_MEMBER(settings, SQLQueryFont);
 
+    OESMS_READ_MEMBER(settings, PreferODBCMetaSQL);
     OESMS_VER_READ_MEMBER(1013, settings, DefFileExtension, "sql");
     OESMS_READ_MEMBER(settings, UndoLimit);
     OESMS_VER_READ_MEMBER(1013, settings, UndoMemLimit, 1000);

@@ -1006,7 +1006,7 @@ InfoTree::MetaListToTree(MMetaMap& p_list,HTREEITEM p_item,CString& p_errors)
   for(auto& object : p_list)
   {
     CString line = object.m_objectName;
-    if(!object.m_remarks)
+    if(!object.m_remarks.IsEmpty())
     {
       line.AppendFormat(" (%s)",object.m_remarks);
     }

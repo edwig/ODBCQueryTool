@@ -9,6 +9,7 @@
 //
 #include "afxres.h"
 #include "OpenEditor.rh"
+#include "res\OpenQuery.rc2"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -36,7 +37,7 @@ BEGIN
     "#include ""afxres.h""\r\n"
     "#include ""OpenEditor.rh""\r\n"
     "#include ""res\\OpenQuery.rc2""\r\n"
-  "\0"
+    "\0"
 END
 
 3 TEXTINCLUDE 
@@ -134,7 +135,6 @@ BEGIN
     BUTTON      ID_EDIT_BKM_PREV
     BUTTON      ID_EDIT_BKM_REMOVE_ALL
 END
-
 
 #endif    // Neutral resources
 /////////////////////////////////////////////////////////////////////////////
@@ -778,13 +778,14 @@ STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "SQL Settings"
 FONT 8, "MS Sans Serif", 0, 0, 0x0
 BEGIN
-    EDITTEXT        IDC_OE_SQLPREFETCHLINES,75,7,40,14,ES_AUTOHSCROLL
     LTEXT           "Prefetch lines",IDC_OE_STATICSQL1,7,10,62,8
-    EDITTEXT        IDC_OE_SQLTERMINATOR,75,26,40,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_OE_SQLPREFETCHLINES,75,7,40,14,ES_AUTOHSCROLL
     LTEXT           "Query terminator",IDC_OE_STATICSQL2,7,29,64,8
+    EDITTEXT        IDC_OE_SQLTERMINATOR,75,26,40,14,ES_AUTOHSCROLL
+    LTEXT           "Font in query grid",IDC_STATIC,7,47,60,8
     EDITTEXT        IDC_FONT,75,43,113,14,ES_AUTOHSCROLL | ES_READONLY
     PUSHBUTTON      "[...]",IDC_BUT_FONT,191,43,23,14
-    LTEXT           "Font in query grid",IDC_STATIC,7,47,60,8
+    CONTROL         "Prefer ODBC Meta-SQL",IDC_META,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,75,63,191,10
 END
 
 IDD_NATIVE_SQL DIALOGEX 0, 0, 460, 263
@@ -1481,6 +1482,11 @@ BEGIN
     0,
     100, 100, 0, 0,
     0, 0, 100, 100
+END
+
+IDD_OE_SQLSETTINGS AFX_DIALOG_LAYOUT
+BEGIN
+    0
 END
 
 

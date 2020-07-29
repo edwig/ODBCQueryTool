@@ -1,0 +1,13 @@
+Build instructions for QL-Language project
+==========================================
+
+1) The source code of SQLComponents (https://github.com/edwig/SQLComponents)
+   is no longer a part of this source tree. 
+   See that project for the full workings of that component.
+   Instead a "SQLComponents.zip" file is delivered in the root directory
+2) Unzip the "SQLComponents.zip" file with the "here" option.
+   This should leave you with the following:
+   /Include/SQLComponents       directory with all interface headers
+   /lib/SQLComponents_XXX.lib   Four library files debug/release Win32/X64
+3) Load the QL_Language project in VisualStudio
+4) Hit the "build" key.

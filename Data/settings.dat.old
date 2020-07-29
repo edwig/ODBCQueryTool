@@ -1,7 +1,7 @@
 Version=1018
 Locale=English
 KeymapLayout=Default
-AllowMultipleInstances=0
+AllowMultipleInstances=1
 NewDocOnStartup=1
 MaximizeFirstDocument=1
 WorkDirFollowsDocument=1
@@ -30,6 +30,7 @@ FileStartDirectory=C:\\
 SQLPrefetchLines=200
 SQLQueryTerminator=/
 SQLQueryFont=Tahoma;8
+PreferODBCMetaSQL=0
 DefFileExtension=sql
 UndoLimit=1000
 UndoMemLimit=1024000

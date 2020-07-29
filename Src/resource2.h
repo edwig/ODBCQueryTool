@@ -52,6 +52,7 @@
 #define IDC_CHECK1                      137
 #define IDC_WHOLE_WORD                  137
 #define IDC_EXEC1                       137
+#define IDC_META                        137
 #define IDC_COMBO1                      138
 #define IDC_FIND_FINDWHAT               138
 #define IDC_CON_DATASOURCE              138
@@ -179,7 +180,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        139
+#define _APS_NEXT_RESOURCE_VALUE        140
 #define _APS_NEXT_COMMAND_VALUE         40070
 #define _APS_NEXT_CONTROL_VALUE         1042
 #define _APS_NEXT_SYMED_VALUE           101

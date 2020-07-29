@@ -35,6 +35,7 @@ typedef enum treeTypes
  ,TREE_REFERENCEDBY
  ,TREE_TABTRIGGERS
  ,TREE_PRIVILEGES
+ ,TREE_COLPRIVILEGES
  ,TREE_PARAMETERS
  ,TREE_TABSEQUENCES
  ,TREE_SEQUENCES
@@ -125,6 +126,7 @@ protected:
   void      FindProcedures  (HTREEITEM p_theItem);
   void      FindParameters  (HTREEITEM p_theItem);
   void      FindSourcecode  (HTREEITEM p_theItem);
+  void      FindColumnPrivileges(HTREEITEM p_theItem);
 
   void      ColumnListToTree(MColumnMap&    p_columns,   HTREEITEM p_item);
   void      PrimariesToTree (MPrimaryMap&   p_primaries, HTREEITEM p_item);
@@ -136,6 +138,7 @@ protected:
   void      SpecialsToTree  (MSpecialsMap&  p_specials,  HTREEITEM p_item);
   void      PrivilegesToTree(MPrivilegeMap& p_privileges,HTREEITEM p_item);
   void      ParametersToTree(MParameterMap& p_parameters,HTREEITEM p_item);
+  void      ColumnPrivilegesToTree(MPrivilegeMap& p_privileges,HTREEITEM p_item);
 
   CString   ForeignRuleToString(int p_rule);
   CString   DeferrableToString(int p_defer);

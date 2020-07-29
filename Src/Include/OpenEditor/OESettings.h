@@ -199,6 +199,7 @@ namespace OpenEditor
         OES_DECLARE_PROPERTY(string, SQLQueryTerminator);
         OES_DECLARE_PROPERTY(string, SQLQueryFont);
 
+        OES_DECLARE_PROPERTY(bool,   PreferODBCMetaSQL);
         OES_DECLARE_PROPERTY(bool,   AllowMultipleInstances);
         OES_DECLARE_PROPERTY(bool,   NewDocOnStartup);
         OES_DECLARE_PROPERTY(bool,   MaximizeFirstDocument);
@@ -285,6 +286,7 @@ namespace OpenEditor
         OES_DECLARE_ABSTR_PROPERTY(string, SQLQueryTerminator);
         OES_DECLARE_ABSTR_PROPERTY(string, SQLQueryFont);
 
+        OES_DECLARE_ABSTR_PROPERTY(bool,   PreferODBCMetaSQL);
         OES_DECLARE_ABSTR_PROPERTY(bool,   AllowMultipleInstances);
         OES_DECLARE_ABSTR_PROPERTY(bool,   NewDocOnStartup);
         OES_DECLARE_ABSTR_PROPERTY(bool,   MaximizeFirstDocument);
@@ -381,6 +383,7 @@ namespace OpenEditor
         OES_DECLARE_GLOBAL_PROPERTY(string, SQLQueryTerminator);
         OES_DECLARE_GLOBAL_PROPERTY(string, SQLQueryFont);
 
+        OES_DECLARE_GLOBAL_PROPERTY(bool,   PreferODBCMetaSQL);
         OES_DECLARE_GLOBAL_PROPERTY(bool,   AllowMultipleInstances);
         OES_DECLARE_GLOBAL_PROPERTY(bool,   NewDocOnStartup);
         OES_DECLARE_GLOBAL_PROPERTY(bool,   MaximizeFirstDocument);
@@ -499,6 +502,7 @@ namespace OpenEditor
         OES_AGGREGATE_PROPERTY(string, SQLQueryTerminator);
         OES_AGGREGATE_PROPERTY(string, SQLQueryFont);
 
+        OES_AGGREGATE_PROPERTY(bool,   PreferODBCMetaSQL);
         OES_AGGREGATE_PROPERTY(bool,   AllowMultipleInstances);
         OES_AGGREGATE_PROPERTY(bool,   NewDocOnStartup);
         OES_AGGREGATE_PROPERTY(bool,   MaximizeFirstDocument);

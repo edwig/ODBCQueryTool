@@ -38,21 +38,27 @@ public:
 	enum { IDD = IDD_OE_SQLSETTINGS };
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+  virtual void DoDataExchange(CDataExchange* pDX) override;
+  virtual BOOL OnInitDialog() override;
 
 	DECLARE_MESSAGE_MAP()
 public:
-    virtual BOOL OnApply();
+  virtual BOOL OnApply();
 
-    SettingsManager& m_manager;
+  SettingsManager& m_manager;
 
-    int     m_prefetchLines;
-    CString m_queryTerminator;
-    CString m_queryFont;
+  int     m_prefetchLines;
+  CString m_queryTerminator;
+  CString m_queryFont;
+  bool    m_odbcMetaSQL;
+  CButton m_buttonODBC;
 
-    afx_msg void OnUpdateData();
-    afx_msg void OnEnChangeFont();
-    afx_msg void OnBnClickedButFont();
+  afx_msg void OnUpdateData();
+  afx_msg void OnEnChangePrefetch();
+  afx_msg void OnEnChangeTerminator();
+  afx_msg void OnEnChangeFont();
+  afx_msg void OnBnClickedButFont();
+  afx_msg void OnBnClickedPreferODBC();
 };
 
 #endif//__OESQLSettingsPage_h__
