@@ -595,8 +595,10 @@ namespace OpenEditor
     inline
     InstanceSettings::~InstanceSettings ()
     {
-        if (m_classSettings)
-            m_classSettings->RemoveSubscriber(this);
+      if(m_classSettings)
+      {
+        m_classSettings->RemoveSubscriber(this);
+      }
     }
 
     inline

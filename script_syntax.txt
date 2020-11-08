@@ -15,8 +15,8 @@ the results of your testing in.
 :file close;
 
 The command words do as presumed:
-- open	 : will open a file in writing mode
-- write	 : is an alias for 'open'
+- open   : will open a file in writing mode
+- write  : is an alias for 'open'
 - append : will open it in appended writing mode
 - close  : will close the file again.
 
@@ -51,50 +51,50 @@ This defines the second variable as an resulting variable
 as output from a stored procedure.
 
 Legal values for [param] are:
-INPUT	: Input variable for '?' binding in a query
-OUTPUT	: Output variable for a function/procedure
-INOUT	: Input/Output variable for a function/procedure
+INPUT   : Input variable for '?' binding in a query
+OUTPUT  : Output variable for a function/procedure
+INOUT   : Input/Output variable for a function/procedure
 RESULT  : Result of a function call
 COLUMN  : Resulting column of a query
 
 Legal values for 'datatype' are:
-CHAR						      : All types of CHAR,VARCHAR,WCHAR etc.
-SHORT						      : 16 bit signed integer
-SHORT (Signed)				: 16 bit signed integer
-SHORT (Unsigned)			: 16 bit unsigned integer
-LONG						      : 32 bit signed integer
-LONG (Signed)				  : 32 bit signed integer
-LONG (Unsigned)				: 32 bit unsigned integer
-FLOAT						      : 16 bit floating point
-DOUBLE						    : 32 bit floating point
-BIT							      : 1 bit
-TINYINT						    : 8 bit signed integer
-TINYINT (Signed)			: 8 bit signed integer
-TINYINT (Unsigned)		: 8 bit unsigned integer
-BIGINT (Signed)				: 64 bit signed integer
-BIGINT (Unsigned)			: 64 bit unsigned integer
-NUMERIC						    : 38 decimal floating point BCD number
-GUID						      : Microsoft GUID
-BINARY						    : All types of BINARY,VARBINARY,LONGVARBINARY etc.
-DATE						      : year-month-day
-TIME						      : hour:min:sec
-TIMESTAMP					    : year-month-day hour:min:sec[.fractions]  (Fraction <= 3)
-TYPE DATE					    : year-month-day (not screwed up)
-TYPE TIME					    : hour:min:sec   (not screwed up)
-TYPE TIMESTAMP				: year-month-day hour:min:sec[.fractions]  (Fraction <= 9)
-INTERVAL YEAR				  : years
-INTERVAL MONTH				: months
-INTERVAL DAY				  : days
-INTERVAL HOUR				  : hours
-INTERVAL MINUTE				: minutes
-INTERVAL SECOND				: seconds
-INTERVAL YEAR TO MONTH		: years-months
-INTERVAL DAY TO HOUR		  : days hours
-INTERVAL DAY TO MINUTE		: days hours:mins
-INTERVAL DAY TO SECOND		: days hours:mins:secs
-INTERVAL HOUR TO MINUTE		: hours:mins
-INTERVAL HOUR TO SECOND		: hours:mins:secs
-INTERVAL MINUTE TO SECOND	: mins:secs
+CHAR                        : All types of CHAR,VARCHAR,WCHAR etc.
+SHORT                       : 16 bit signed integer
+SHORT (Signed)              : 16 bit signed integer
+SHORT (Unsigned)            : 16 bit unsigned integer
+LONG                        : 32 bit signed integer
+LONG (Signed)               : 32 bit signed integer
+LONG (Unsigned)             : 32 bit unsigned integer
+FLOAT                       : 16 bit floating point
+DOUBLE                      : 32 bit floating point
+BIT                         : 1 bit
+TINYINT                     : 8 bit signed integer
+TINYINT (Signed)            : 8 bit signed integer
+TINYINT (Unsigned)          : 8 bit unsigned integer
+BIGINT (Signed)             : 64 bit signed integer
+BIGINT (Unsigned)           : 64 bit unsigned integer
+NUMERIC                     : 38 decimal floating point BCD number
+GUID                        : Microsoft GUID
+BINARY                      : All types of BINARY,VARBINARY,LONGVARBINARY etc.
+DATE                        : year-month-day
+TIME                        : hour:min:sec
+TIMESTAMP                   : year-month-day hour:min:sec[.fractions]  (Fraction <= 3)
+TYPE DATE                   : year-month-day (not screwed up)
+TYPE TIME                   : hour:min:sec   (not screwed up)
+TYPE TIMESTAMP              : year-month-day hour:min:sec[.fractions]  (Fraction <= 9)
+INTERVAL YEAR               : years
+INTERVAL MONTH              : months
+INTERVAL DAY                : days
+INTERVAL HOUR               : hours
+INTERVAL MINUTE             : minutes
+INTERVAL SECOND             : seconds
+INTERVAL YEAR TO MONTH      : years-months
+INTERVAL DAY TO HOUR        : days hours
+INTERVAL DAY TO MINUTE      : days hours:mins
+INTERVAL DAY TO SECOND      : days hours:mins:secs
+INTERVAL HOUR TO MINUTE     : hours:mins
+INTERVAL HOUR TO SECOND     : hours:mins:secs
+INTERVAL MINUTE TO SECOND   : mins:secs
 
 The 'if' command
 ----------------
@@ -127,16 +127,16 @@ You can set as much rebinds as you want, or clear all rebindings with the
 For CHAR and BINARY types, you can rebind against the SQL_XXX types
 (use values from the first column as the second datatype in the rebind command)
 
-Rebind to this		  SQL_TYPE	        SQL_C_TYPE		  Oracle type
-------------------  ----------------- ---------------	--------------
-CHAR                SQL_CHAR          SQL_C_CHAR      CHAR
-WCHAR               SQL_WCHAR		      SQL_C_CHAR		  NCHAR
-VARCHAR				      SQL_VARCHAR		    SQL_C_CHAR		  VARCHAR2
-WVARCHAR			      SQL_WVARCHAR	    SQL_C_CHAR		  NVARCHAR2
-LONGVARCHAR			    SQL_LONGVARCHAR	  SQL_C_CHAR		  CLOB        (used to be LONG)
-BINARY              SQL_BINARY        SQL_C_BINARY    RAW
-VARBINARY			      SQL_VARBINARY	    SQL_C_BINARY	  LONG RAW
-LONGVARBINARY		    SQL_LONGVARBINARY SQL_C_BINARY		BLOB
+Rebind to this      SQL_TYPE          SQL_C_TYPE        Oracle type
+------------------  ----------------- ---------------   --------------
+CHAR                SQL_CHAR          SQL_C_CHAR        CHAR
+WCHAR               SQL_WCHAR         SQL_C_CHAR        NCHAR
+VARCHAR             SQL_VARCHAR       SQL_C_CHAR        VARCHAR2
+WVARCHAR            SQL_WVARCHAR      SQL_C_CHAR        NVARCHAR2
+LONGVARCHAR         SQL_LONGVARCHAR   SQL_C_CHAR        CLOB        (used to be LONG)
+BINARY              SQL_BINARY        SQL_C_BINARY      RAW
+VARBINARY           SQL_VARBINARY     SQL_C_BINARY      LONG RAW
+LONGVARBINARY       SQL_LONGVARBINARY SQL_C_BINARY      BLOB
 
 The 'atexec' command
 --------------------
@@ -223,23 +223,6 @@ drop table test_long;
 
 
 PERFORMANCE TESTING ENHANCEMENT
-
-The "logformat" command
------------------
-Results of the queries and the speed logging are written to the logfile
-Syntax of the command is
-
-:logformat [QUERY] [SPEED] [OUTPUT]
-
-Here the keywords stand for:
-QUERY  - The records of the query grid
-SPEED  - The log records of the ODBC recordset
-OUTPUT - The records of the speed output grid (prepare/execute/fetch cycles)
-
-QUERY  records are written in COLUMN/ROW format
-SPEED  records are written in CSV (comma serperated values) format for analysys
-       in a spreadsheet program
-OUTPUT records are written in ....       
 
 The "repeat" command
 --------------------

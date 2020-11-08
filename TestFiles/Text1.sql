@@ -1,1 +1,5 @@
-test
+SELECT *
+  FROM DETAIL
+ WHERE mast_id = 1;
+
+ BEGIN

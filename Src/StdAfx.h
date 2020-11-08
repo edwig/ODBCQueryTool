@@ -21,7 +21,7 @@
 // Was 0x0600 (vista) Back to 0x0510 (XP)
 // Support problems with fonts and ShGetFolderPath
 #ifndef WINVER
-#define WINVER 0x0510 
+#define WINVER 0x0600 
 #endif
 
 #define VC_EXTRALEAN		                    // Exclude rarely-used stuff from Windows headers

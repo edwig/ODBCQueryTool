@@ -22,6 +22,20 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes version 2.5.0
+--------------------------
+- Fixed a bug in the saving of the permanent file settings causing the application
+  to crash after changing the file settings (e.g. tabs and space inserts).
+  See: Menu / Text / File settings & information
+- Fixed a bug in the parameter binding of a query with the ":variable<n>" settings
+  for a "?" binding in a query.
+  See the file "script_syntax.txt" for more details
+- Fixed a bug in the ":select on" command of the scripting syntax
+  Columnnames and row values are now correctly written to the script output file, 
+  provided that you have used the ":file" command previously.
+  See the file "script_syntax.txt" for more details
+
+
 Releasenotes version 2.4.0
 --------------------------
 - The source code of the SQLComponents are now replaced by a deployment ZIP file

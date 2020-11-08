@@ -12,6 +12,7 @@ rmdir /q/s Src\SQLComponents\Release
 rmdir /q/s Src\SQLComponents\x64
 rmdir /q/s ipch
 rmdir /q/s lib
+rmdir /q/s Include
 rmdir /q/s ".vs"
 
 del ReferenceGuide\*.chm

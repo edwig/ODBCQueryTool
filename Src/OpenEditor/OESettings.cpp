@@ -39,44 +39,37 @@ namespace OpenEditor
 
 void BaseSettings::AddSubscriber (SettingsSubscriber* psubscriber) const
 {
-    if (psubscriber)
-    {
-        std::vector<SettingsSubscriber*>::iterator
-            it(m_subscribers.begin()), end(m_subscribers.end());
-
-        for (; it != end && *it != psubscriber; it++);
-
-        if (it == end)
-        {
-            m_subscribers.push_back(psubscriber);
-//            psubscriber->OnSettingsChanged();
-        }
-    }
+  if (psubscriber)
+  {
+     m_subscribers.push_back(psubscriber);
+  }
 }
 
 
-void BaseSettings::RemoveSubscriber (SettingsSubscriber* psubscriber) const
+void BaseSettings::RemoveSubscriber(SettingsSubscriber* psubscriber) const
 {
-    if (psubscriber)
+  if(psubscriber)
+  {
+    std::vector<SettingsSubscriber*>::iterator it = m_subscribers.begin();
+    while(it != m_subscribers.end())
     {
-        std::vector<SettingsSubscriber*>::iterator
-            it(m_subscribers.begin()), end(m_subscribers.end());
-
-        for (; it != end && *it != psubscriber; it++);
-
-        if (*it == psubscriber)
-           m_subscribers.erase(it);
+      if(*it == psubscriber)
+      {
+        it = m_subscribers.erase(it);
+        continue;
+      }
+      ++it;
     }
+  }
 }
 
 
 void BaseSettings::NotifySettingsChanged ()
 {
-    std::vector<SettingsSubscriber*>::iterator
-        it(m_subscribers.begin()), end(m_subscribers.end());
-
-    for (; it != end; it++)
-        (*it)->OnSettingsChanged();
+  for(auto& subscriber : m_subscribers)
+  {
+    subscriber->OnSettingsChanged();
+  }
 }
 
 

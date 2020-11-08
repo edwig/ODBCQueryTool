@@ -73,6 +73,9 @@
       <UniqueIdentifier>{c302bd92-9453-499c-b442-5f98ffeeb8d0}</UniqueIdentifier>
       <Extensions>txt</Extensions>
     </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{d4ef30ea-9a29-443a-8583-42a2f9da397d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Src\AboutDlg.cpp">
@@ -742,6 +745,216 @@
     </ClInclude>
     <ClInclude Include="Src\Version.h">
       <Filter>Source Files\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\BasicExcel.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\BasicXmlExcel.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\bcd.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\ConvertWideString.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\CrackURL.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\DDLCreateTable.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\DefuseBOM.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\ExcelFormat.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\FileBuffer.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\Locker.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\Namespace.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLAssociation.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLAutoDBS.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLColumnInfo.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLComponents.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLComponentsVersion.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLConnections.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLDatabase.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLDatabasePool.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLDataSet.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLDataSetXLS.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLDate.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLDriverManager.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLError.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLFilter.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLFormatErrors.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLFunction.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLGetExePath.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLGuid.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLInfo.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLInfoAccess.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLInfoDB.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLInfoFirebird.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLInfoGenericODBC.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLInfoInformix.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLInfoMariaDB.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLInfoMySQL.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLInfoOracle.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLInfoPostgreSQL.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLInfoSQLServer.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLInterval.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLLanguage.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLMemoryDebug.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLMessage.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLMetaInfo.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLMutation.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLOperator.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLQuery.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLRecord.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLStatement.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLTime.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLTimestamp.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLTimestampExtract.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLTransaction.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLVariant.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLVariantFormat.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLVariantOperator.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLVariantTrim.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\SQLWrappers.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\stdafx.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\stdafx_org.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\StdException.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\targetver.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\unzip.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\xmem.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\XMLDataType.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\XMLMessage.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\XMLParser.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\XMLRestriction.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\SQLComponents\XMLTemporal.h">
+      <Filter>Include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

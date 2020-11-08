@@ -434,7 +434,6 @@ public:
   int  LinesFetchedSoFar();
   bool IsDigits(char* token);
 
-
   // Write a line with info to the statistics view
   void    WriteStatisticsLine(CString p_step
                              ,CString p_line
@@ -458,7 +457,8 @@ public:
   bool    ScriptCommandAtExec   (int p_line,CString p_tail);
   bool    ScriptCommandRepeat   (int p_line,CString p_tail);
   bool    ScriptCommandEndRepeat(int p_line,CString p_tail);
-  void    ScriptSelect(int p_line);
+  int     ScriptSelect(int p_line);
+  void    ScriptSelect(int p_line,int p_longest,int p_row);
   long    MilisecondsToMinute();
 
   CGridView*      m_gridView;

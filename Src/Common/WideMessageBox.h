@@ -12,6 +12,8 @@
 
 typedef HRESULT (CALLBACK *PFTASKDIALOGCALLBACK)(__in HWND hwnd, __in UINT msg, __in WPARAM wParam, __in LPARAM lParam, __in LONG_PTR lpRefData);
 
+#if WINVER < 0x600
+
 enum _TASKDIALOG_FLAGS
 {
   TDF_ENABLE_HYPERLINKS               = 0x0001,
@@ -139,6 +141,7 @@ typedef struct _TASKDIALOGCONFIG
   UINT        cxWidth;                                // width of the Task Dialog's client area in DLU's. If 0, Task Dialog will calculate the ideal width.
 } TASKDIALOGCONFIG;
 
+#endif
 
 WINCOMMCTRLAPI HRESULT WINAPI TaskDialogIndirect(__in const TASKDIALOGCONFIG *pTaskConfig, __out_opt int *pnButton, __out_opt int *pnRadioButton, __out_opt BOOL *pfVerificationFlagChecked);
 WINCOMMCTRLAPI HRESULT WINAPI TaskDialog(__in_opt HWND hwndParent, __in_opt HINSTANCE hInstance, __in_opt PCWSTR pszWindowTitle, __in_opt PCWSTR pszMainInstruction, __in_opt PCWSTR pszContent, TASKDIALOG_COMMON_BUTTON_FLAGS dwCommonButtons, __in_opt PCWSTR pszIcon, __out_opt int *pnButton);
