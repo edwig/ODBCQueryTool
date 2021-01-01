@@ -139,6 +139,8 @@ protected:
   void      PrivilegesToTree(MPrivilegeMap& p_privileges,HTREEITEM p_item);
   void      ParametersToTree(MParameterMap& p_parameters,HTREEITEM p_item);
   void      ColumnPrivilegesToTree(MPrivilegeMap& p_privileges,HTREEITEM p_item);
+  void      ColumnDetailsToTree(MetaColumn& p_column,    HTREEITEM p_item);
+  void      AddErrorsToTree(CString p_errors,HTREEITEM p_theItem);
 
   CString   ForeignRuleToString(int p_rule);
   CString   DeferrableToString(int p_defer);

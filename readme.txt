@@ -22,6 +22,16 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes version 2.5.1
+--------------------------
+- Fixed various bugs in the handling of the MariaDB database in Oracle mode
+  Prefer to turn OFF the "Strict ODBC" handling in the general SQL settings
+  for this database type, as the replacement SQL's work better for this database
+  - Columns and other attributes of tables in other schema's can be discovered
+    than just the currently active database schema.
+  - All database types are tested and some minor bugs in the handling of 'text'
+    and 'longtext' columns have been fixed.
+
 Releasenotes version 2.5.0
 --------------------------
 - Fixed a bug in the saving of the permanent file settings causing the application

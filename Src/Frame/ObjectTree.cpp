@@ -589,6 +589,7 @@ ObjectTree::FindColumns(HTREEITEM p_theItem)
     COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
     app->GetDatabase().GetSQLInfoDB()->MakeInfoTableColumns(columns,errors,m_schema,m_table);
     ColumnListToTree(columns,p_theItem);
+    AddErrorsToTree(errors,p_theItem);
   }
 }
 
@@ -606,6 +607,7 @@ ObjectTree::FindPrimary(HTREEITEM p_theItem)
     // Go find the primary key
     app->GetDatabase().GetSQLInfoDB()->MakeInfoTablePrimary(primaries,errors,m_schema,m_table);
     PrimariesToTree(primaries,p_theItem);
+    AddErrorsToTree(errors,p_theItem);
   }
 }
 
@@ -623,6 +625,7 @@ ObjectTree::FindForeign(HTREEITEM p_theItem)
     // Go find the foreign keys
     app->GetDatabase().GetSQLInfoDB()->MakeInfoTableForeign(foreigns,errors,m_schema,m_table);
     ForeignsToTree(foreigns,p_theItem);
+    AddErrorsToTree(errors,p_theItem);
   }
 }
 
@@ -640,6 +643,7 @@ ObjectTree::FindStatistics(HTREEITEM p_theItem)
     // Go find the indices and statistics
     app->GetDatabase().GetSQLInfoDB()->MakeInfoTableStatistics(statistics,errors,m_schema,m_table,nullptr);
     StatisticsToTree(statistics,p_theItem);
+    AddErrorsToTree(errors,p_theItem);
   }
 }
 
@@ -656,6 +660,7 @@ ObjectTree::FindSpecials(HTREEITEM p_theItem)
     // Go find the special columns
     app->GetDatabase().GetSQLInfoDB()->MakeInfoTableSpecials(specials,errors,m_schema,m_table);
     SpecialsToTree(specials,p_theItem);
+    AddErrorsToTree(errors,p_theItem);
   }
 }
 
@@ -673,6 +678,7 @@ ObjectTree::FindReferenced(HTREEITEM p_theItem)
     // Go find the referencing tables
     app->GetDatabase().GetSQLInfoDB()->MakeInfoTableForeign(foreigns,errors,m_schema,m_table,true);
     ReferencedToTree(foreigns,p_theItem);
+    AddErrorsToTree(errors,p_theItem);
   }
 }
 
@@ -689,6 +695,7 @@ ObjectTree::FindTabTriggers(HTREEITEM p_theItem)
     // Go find the triggers
     app->GetDatabase().GetSQLInfoDB()->MakeInfoTableTriggers(triggers,errors,m_schema,m_table);
     TriggersToTree(triggers,p_theItem);
+    AddErrorsToTree(errors,p_theItem);
   }
 }
 
@@ -706,6 +713,7 @@ ObjectTree::FindTabSequences(HTREEITEM p_theItem)
     // Go find the sequences
     app->GetDatabase().GetSQLInfoDB()->MakeInfoTableSequences(sequences,errors,m_schema,m_table + "%");
     SequencesToTree(sequences,p_theItem);
+    AddErrorsToTree(errors,p_theItem);
   }
 }
 
@@ -722,6 +730,7 @@ ObjectTree::FindPrivileges(HTREEITEM p_theItem)
     // Go find the privileges on the table
     app->GetDatabase().GetSQLInfoDB()->MakeInfoTablePrivileges(privileges,errors,m_schema,m_table);
     PrivilegesToTree(privileges,p_theItem);
+    AddErrorsToTree(errors,p_theItem);
   }
 }
 
@@ -738,6 +747,7 @@ ObjectTree::FindColumnPrivileges(HTREEITEM p_theItem)
     // Go find the privileges on the table
     app->GetDatabase().GetSQLInfoDB()->MakeInfoColumnPrivileges(privileges,errors,m_schema,m_table);
     ColumnPrivilegesToTree(privileges,p_theItem);
+    AddErrorsToTree(errors,p_theItem);
   }
 }
 
@@ -1055,6 +1065,7 @@ ObjectTree::FindParameters(HTREEITEM p_theItem)
     MParameterMap parameters;
     app->GetDatabase().GetSQLInfoDB()->MakeInfoPSMParameters(parameters,errors,procedure.m_schemaName,procedure.m_procedureName);
     ParametersToTree(parameters,param);
+    AddErrorsToTree(errors,p_theItem);
 
     // Reset BOTH node data pointers
     SetItemData(info,0);
@@ -1125,33 +1136,26 @@ ObjectTree::ShowSourcecode(CString p_schema, CString p_procedure)
 //
 //////////////////////////////////////////////////////////////////////////
 
-// void
-// DebugColumn(MetaColumn& p_column)
-// {
-//   CString text("SQL TABLE COLUMN\n\n");
-// 
-//   text.AppendFormat("SCHEMA  NAME     : %s\n",p_column.m_schema);
-//   text.AppendFormat("TABLE   NAME     : %s\n",p_column.m_table);
-//   text.AppendFormat("COLUMN  NAME     : %s\n",p_column.m_column);
-//   text.AppendFormat("DATATYPE SQL     : %d\n",p_column.m_datatype);
-//   text.AppendFormat("NAME DATATYPE    : %s\n",p_column.m_typename);
-//   text.AppendFormat("COLUMN SIZE      : %d\n",p_column.m_columnSize);
-//   text.AppendFormat("BUFFER LENGTH    : %d\n",p_column.m_bufferLength);
-//   text.AppendFormat("DECIMAL DIGITS   : %d\n",p_column.m_decimalDigits);
-//   text.AppendFormat("RADIX            : %d\n",p_column.m_numRadix);
-//   text.AppendFormat("NULLABLE         : %d\n",p_column.m_nullable);
-//   text.AppendFormat("REMARKS          : %s\n", p_column.m_remarks);
-//   text.AppendFormat("DEFAULT VALUE    : %s\n", p_column.m_default);
-//   text.AppendFormat("DATATYPE VER 3   : %d\n", p_column.m_datatype3);
-//   text.AppendFormat("SUB DATATYPE     : %d\n", p_column.m_sub_datatype);
-//   text.AppendFormat("OCTET LENGTH     : %d\n", p_column.m_octet_length);
-//   text.AppendFormat("POSITION         : %d\n", p_column.m_position);
-//   text.AppendFormat("IS NULLABLE      : %s\n", p_column.m_isNullable);
-// 
-//   TRACE("\n");
-//   TRACE(text);
-//   TRACE("\n");
-// }
+void
+ObjectTree::ColumnDetailsToTree(MetaColumn& p_column,HTREEITEM p_item)
+{
+  CString text;
+
+  text.Format("Datatype SQL = %d\n",      p_column.m_datatype);      InsertItem(text,p_item);
+  text.Format("Name datatype = %s\n",     p_column.m_typename);      InsertItem(text,p_item);
+  text.Format("Column size = %d\n",       p_column.m_columnSize);    InsertItem(text,p_item);
+  text.Format("Buffer length = %u\n",     p_column.m_bufferLength);  InsertItem(text,p_item);
+  text.Format("Decimal digits = %d\n",    p_column.m_decimalDigits); InsertItem(text,p_item);
+  text.Format("radix = %d\n",             p_column.m_numRadix);      InsertItem(text,p_item);
+  text.Format("nullable = %d\n",          p_column.m_nullable);      InsertItem(text,p_item);
+  text.Format("remarks = %s\n",           p_column.m_remarks);       InsertItem(text,p_item);
+  text.Format("Default value = %s\n",     p_column.m_default);       InsertItem(text,p_item);
+  text.Format("Datatype version 3 = %d\n",p_column.m_datatype3);     InsertItem(text,p_item);
+  text.Format("Datatype sub = %d\n",      p_column.m_sub_datatype);  InsertItem(text,p_item);
+  text.Format("Octet length = %d\n",      p_column.m_octet_length);  InsertItem(text,p_item);
+  text.Format("Ordinal position = %d\n",  p_column.m_position);      InsertItem(text,p_item);
+  text.Format("Is nullable = %s\n",       p_column.m_isNullable);    InsertItem(text,p_item);
+}
 
 void
 ObjectTree::ColumnListToTree(MColumnMap& p_columns,HTREEITEM p_item)
@@ -1165,10 +1169,8 @@ ObjectTree::ColumnListToTree(MColumnMap& p_columns,HTREEITEM p_item)
   // Process columns
   for(auto& column : p_columns)
   {
-//  DebugColumn(column);
-
     CString line  = column.m_column + " " + column.m_typename;
-    if(column.m_columnSize > 0)
+    if((column.m_columnSize > 0) && (column.m_typename.Find('(') < 0))
     {
       line.AppendFormat(" (%d",column.m_columnSize);
       if(column.m_decimalDigits)
@@ -1196,6 +1198,8 @@ ObjectTree::ColumnListToTree(MColumnMap& p_columns,HTREEITEM p_item)
     }
     HTREEITEM item = InsertItem(line,p_item);
     SetItemImage(item,IMG_COLUMN,IMG_COLUMN);
+
+    ColumnDetailsToTree(column,item);
   }
 }
 
@@ -1767,3 +1771,13 @@ ObjectTree::ParametersToTree(MParameterMap& p_parameters,HTREEITEM p_item)
   }
 }
 
+void
+ObjectTree::AddErrorsToTree(CString p_errors,HTREEITEM p_theItem)
+{
+  if(!p_errors.IsEmpty())
+  {
+    CString line("ERROR: ");
+    line += p_errors;
+    InsertItem(line,p_theItem);
+  }
+}

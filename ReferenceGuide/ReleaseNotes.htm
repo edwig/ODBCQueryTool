@@ -9,6 +9,16 @@
 </head>
 
 <body>
+    <h3>Releasenotes 2.5.1</h3>
+
+    <p>Fixed various bugs in the handling of the MariaDB database in Oracle mode. Prefer to turn OFF the "Strict ODBC" handling
+    in the general SQL settings for this database type, as the replacement SQL's work better for this database</p>
+
+    <p>Columns and other attributes of tables in other schema's can be discovered than just the currently active database
+    schema.</p>
+
+    <p>All database types are tested and some minor bugs in the handling of 'text' and 'longtext' columns have been fixed.</p>
+
     <h3>Releasenotes 2.5.0</h3>
 
     <p>Fixed a bug in the saving of the permanent file settings causing the application to crash after changing the file
