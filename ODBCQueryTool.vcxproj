@@ -106,7 +106,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\src\include;.\src;$(SolutionDir)Include\SQLComponents;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\QueryTool\include;.\QueryTool;$(SolutionDir)Include\SQLComponents;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>SQL_COMPONENTS_MFC;NO_WARN_MBCS_MFC_DEPRECATION;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -152,7 +152,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>.\src\include;.\src;$(SolutionDir)Include\SQLComponents;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\QueryTool\include;.\QueryTool;$(SolutionDir)Include\SQLComponents;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>SQL_COMPONENTS_MFC;NO_WARN_MBCS_MFC_DEPRECATION;WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ExceptionHandling>Async</ExceptionHandling>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -200,7 +200,7 @@
     <ClCompile>
       <Optimization>Full</Optimization>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>.\src;.\src\include;$(SolutionDir)Include\SQLComponents;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\QueryTool;.\QueryTool\include;$(SolutionDir)Include\SQLComponents;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>SQL_COMPONENTS_MFC;NO_WARN_MBCS_MFC_DEPRECATION;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -252,7 +252,7 @@
     <ClCompile>
       <Optimization>Full</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>.\src;.\src\include;$(SolutionDir)Include\SQLComponents;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\QueryTool;.\QueryTool\include;$(SolutionDir)Include\SQLComponents;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>SQL_COMPONENTS_MFC;NO_WARN_MBCS_MFC_DEPRECATION;WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling>Async</ExceptionHandling>
@@ -290,7 +290,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Src\AboutDlg.cpp">
+    <ClCompile Include="QueryTool\AboutDlg.cpp">
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(Filename)1.obj</ObjectFileName>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
@@ -298,315 +298,256 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
       <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(Filename)1.obj</ObjectFileName>
     </ClCompile>
-    <ClCompile Include="Src\ConnectionDlg.cpp" />
-    <ClCompile Include="Src\Frame\InfoTree.cpp" />
-    <ClCompile Include="Src\Frame\ObjectTree.cpp" />
-    <ClCompile Include="Src\MultConnectionsDlg.cpp" />
-    <ClCompile Include="Src\OpenEditorApp.cpp" />
-    <ClCompile Include="Src\Query\Codeer.cpp" />
-    <ClCompile Include="Src\Query\NativeSQLDlg.cpp" />
-    <ClCompile Include="Src\Query\RebindDlg.cpp" />
-    <ClCompile Include="Src\Query\VariablesDlg.cpp" />
-    <ClCompile Include="Src\StdAfx.cpp">
+    <ClCompile Include="QueryTool\ConnectionDlg.cpp" />
+    <ClCompile Include="QueryTool\Frame\InfoTree.cpp" />
+    <ClCompile Include="QueryTool\Frame\ObjectTree.cpp" />
+    <ClCompile Include="QueryTool\MultConnectionsDlg.cpp" />
+    <ClCompile Include="QueryTool\OpenEditorApp.cpp" />
+    <ClCompile Include="QueryTool\Query\Codeer.cpp" />
+    <ClCompile Include="QueryTool\Query\NativeSQLDlg.cpp" />
+    <ClCompile Include="QueryTool\Query\RebindDlg.cpp" />
+    <ClCompile Include="QueryTool\Query\VariablesDlg.cpp" />
+    <ClCompile Include="QueryTool\StdAfx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEAutocompleteCtrl.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEAutocompleteCtrl.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OECommonLanguageSupport.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OECommonLanguageSupport.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEContext_1.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEContext_1.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEContext_2.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEContext_2.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEContext_3.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEContext_3.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEContext_4.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEContext_4.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEContext_5.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEContext_5.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEDocument.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEDocument.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEHelpers_1.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEHelpers_1.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEHelpers_2.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEHelpers_2.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEHelpers_3.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEHelpers_3.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEHighlighter.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEHighlighter.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEHighlighter_1.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEHighlighter_1.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEHighlighter_2.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEHighlighter_2.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OELanguage.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OELanguage.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OELanguageManager.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OELanguageManager.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OELanguageStreams.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OELanguageStreams.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEMatchSearcher.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEMatchSearcher.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEPlsSqlParser.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEPlsSqlParser.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEPlsSqlSupport.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEPlsSqlSupport.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEPlsSqlSyntax.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEPlsSqlSyntax.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OESettings.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OESettings.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OESettingsStreams.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OESettingsStreams.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEStorage.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEStorage.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEStreams.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEStreams.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OESyntaxParser.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OESyntaxParser.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OETemplates.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OETemplates.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OETemplateStreams.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OETemplateStreams.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEUndo.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEUndo.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEView_1.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEView_1.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEView_2.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEView_2.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEView_3.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEView_3.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEView_4.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEView_4.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEView_5.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEView_5.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEView_6.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEView_6.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEView_7.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEView_7.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEViewPaintAccessories.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEViewPaintAccessories.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\COMMON\AppGlobal.cpp">
+    <ClCompile Include="QueryTool\COMMON\AppGlobal.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\COMMON\AppUtilities.cpp">
+    <ClCompile Include="QueryTool\COMMON\AppUtilities.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="Src\Common\arg_shared.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
-    </ClCompile>
-    <ClCompile Include="SRC\COMMON\DirSelectDlg.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
-    </ClCompile>
-    <ClCompile Include="SRC\COMMON\EditWithSelPos.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
-    </ClCompile>
-    <ClCompile Include="SRC\COMMON\ExceptionHelper.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
-    </ClCompile>
-    <ClCompile Include="Src\Common\FileSelectDialog.cpp" />
-    <ClCompile Include="SRC\COMMON\FixedString.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
-    </ClCompile>
-    <ClCompile Include="SRC\COMMON\GUICommandDictionary.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
-    </ClCompile>
-    <ClCompile Include="SRC\COMMON\MemoryMappedFile.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
-    </ClCompile>
-    <ClCompile Include="SRC\COMMON\PropertySheetMem.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
-    </ClCompile>
-    <ClCompile Include="SRC\COMMON\QuickArray.cpp">
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
-      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
-      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
-    </ClCompile>
-    <ClCompile Include="Src\Common\regexp.cpp">
+    <ClCompile Include="QueryTool\Common\arg_shared.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
@@ -616,165 +557,224 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="SRC\COMMON\StrHelpers.cpp">
+    <ClCompile Include="QueryTool\COMMON\DirSelectDlg.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\COMMON\VisualAttributes.cpp">
+    <ClCompile Include="QueryTool\COMMON\EditWithSelPos.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\COMMON\VisualAttributesPage.cpp">
+    <ClCompile Include="QueryTool\COMMON\ExceptionHelper.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="Src\Common\WideMessageBox.cpp" />
-    <ClCompile Include="SRC\OpenEditor\OEBackupPage.cpp">
+    <ClCompile Include="QueryTool\Common\FileSelectDialog.cpp" />
+    <ClCompile Include="QueryTool\COMMON\FixedString.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEBlockPage.cpp">
+    <ClCompile Include="QueryTool\COMMON\GUICommandDictionary.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEClassPage.cpp">
+    <ClCompile Include="QueryTool\COMMON\MemoryMappedFile.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEEditingPage.cpp">
+    <ClCompile Include="QueryTool\COMMON\PropertySheetMem.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEFileInfoDlg.cpp">
+    <ClCompile Include="QueryTool\COMMON\QuickArray.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEFilePage.cpp">
+    <ClCompile Include="QueryTool\Common\regexp.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Use</PrecompiledHeader>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Use</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Use</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="QueryTool\COMMON\StrHelpers.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="Src\OpenEditor\OEFindFiles.cpp">
+    <ClCompile Include="QueryTool\COMMON\VisualAttributes.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEFindReplaceDlg.cpp">
+    <ClCompile Include="QueryTool\COMMON\VisualAttributesPage.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEGeneralPage.cpp">
+    <ClCompile Include="QueryTool\Common\WideMessageBox.cpp" />
+    <ClCompile Include="QueryTool\OpenEditor\OEBackupPage.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEGoToDialog.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEBlockPage.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEPrintPageSetup.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEClassPage.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OEPropPage.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEEditingPage.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OESaveModifiedDlg.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEFileInfoDlg.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="Src\OpenEditor\OESQLSettingsPage.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEFilePage.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OETemplatesDlg.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEFindFiles.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\OpenEditor\OETemplatesPage.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEFindReplaceDlg.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="Src\GridControl\GridCell.cpp" />
-    <ClCompile Include="Src\GridControl\GridCellBase.cpp" />
-    <ClCompile Include="Src\GridControl\GridCtrl.cpp" />
-    <ClCompile Include="Src\GridControl\GridDropTarget.cpp" />
-    <ClCompile Include="Src\GridControl\InPlaceEdit.cpp" />
-    <ClCompile Include="Src\GridControl\TitleTip.cpp" />
-    <ClCompile Include="Src\Query\GridView.cpp" />
-    <ClCompile Include="Src\Query\QueryBar.cpp" />
-    <ClCompile Include="Src\Query\QueryPanelWnd.cpp" />
-    <ClCompile Include="Src\Frame\ChildFrm.cpp" />
-    <ClCompile Include="Src\Frame\ConnectionBar.cpp" />
-    <ClCompile Include="Src\Frame\DirTreeCtrl.cpp" />
-    <ClCompile Include="SRC\COMMON\DocManagerExt.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEGeneralPage.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\COMMON\FakeRClick.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEGoToDialog.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\COMMON\FilePanelWnd.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEPrintPageSetup.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="Src\Frame\FileWatch.cpp" />
-    <ClCompile Include="Src\Frame\MainFrm.cpp" />
-    <ClCompile Include="Src\Frame\scbarcf.cpp" />
-    <ClCompile Include="Src\Frame\scbarg.cpp" />
-    <ClCompile Include="Src\Frame\sizecbar.cpp" />
-    <ClCompile Include="Src\Frame\SortStringArray.cpp" />
-    <ClCompile Include="Src\Frame\WinException.cpp" />
-    <ClCompile Include="SRC\COMMON\WorkbookBar.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OEPropPage.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
-    <ClCompile Include="SRC\COMMON\WorkbookMDIFrame.cpp">
+    <ClCompile Include="QueryTool\OpenEditor\OESaveModifiedDlg.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
+    </ClCompile>
+    <ClCompile Include="QueryTool\OpenEditor\OESQLSettingsPage.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
+    </ClCompile>
+    <ClCompile Include="QueryTool\OpenEditor\OETemplatesDlg.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
+    </ClCompile>
+    <ClCompile Include="QueryTool\OpenEditor\OETemplatesPage.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
+    </ClCompile>
+    <ClCompile Include="QueryTool\GridControl\GridCell.cpp" />
+    <ClCompile Include="QueryTool\GridControl\GridCellBase.cpp" />
+    <ClCompile Include="QueryTool\GridControl\GridCtrl.cpp" />
+    <ClCompile Include="QueryTool\GridControl\GridDropTarget.cpp" />
+    <ClCompile Include="QueryTool\GridControl\InPlaceEdit.cpp" />
+    <ClCompile Include="QueryTool\GridControl\TitleTip.cpp" />
+    <ClCompile Include="QueryTool\Query\GridView.cpp" />
+    <ClCompile Include="QueryTool\Query\QueryBar.cpp" />
+    <ClCompile Include="QueryTool\Query\QueryPanelWnd.cpp" />
+    <ClCompile Include="QueryTool\Frame\ChildFrm.cpp" />
+    <ClCompile Include="QueryTool\Frame\ConnectionBar.cpp" />
+    <ClCompile Include="QueryTool\Frame\DirTreeCtrl.cpp" />
+    <ClCompile Include="QueryTool\COMMON\DocManagerExt.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
+    </ClCompile>
+    <ClCompile Include="QueryTool\COMMON\FakeRClick.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
+    </ClCompile>
+    <ClCompile Include="QueryTool\COMMON\FilePanelWnd.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
+    </ClCompile>
+    <ClCompile Include="QueryTool\Frame\FileWatch.cpp" />
+    <ClCompile Include="QueryTool\Frame\MainFrm.cpp" />
+    <ClCompile Include="QueryTool\Frame\scbarcf.cpp" />
+    <ClCompile Include="QueryTool\Frame\scbarg.cpp" />
+    <ClCompile Include="QueryTool\Frame\sizecbar.cpp" />
+    <ClCompile Include="QueryTool\Frame\SortStringArray.cpp" />
+    <ClCompile Include="QueryTool\Frame\WinException.cpp" />
+    <ClCompile Include="QueryTool\COMMON\WorkbookBar.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
+      <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">EnableFastChecks</BasicRuntimeChecks>
+    </ClCompile>
+    <ClCompile Include="QueryTool\COMMON\WorkbookMDIFrame.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Disabled</Optimization>
       <BasicRuntimeChecks Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">EnableFastChecks</BasicRuntimeChecks>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Disabled</Optimization>
@@ -852,61 +852,61 @@
     <ClInclude Include="Include\SQLComponents\XMLParser.h" />
     <ClInclude Include="Include\SQLComponents\XMLRestriction.h" />
     <ClInclude Include="Include\SQLComponents\XMLTemporal.h" />
-    <ClInclude Include="Src\AboutDlg.h" />
-    <ClInclude Include="Src\ConnectionDlg.h" />
-    <ClInclude Include="Src\Frame\InfoTree.h" />
-    <ClInclude Include="Src\Frame\ObjectTree.h" />
-    <ClInclude Include="Src\Include\Common\FilePanelWnd.h" />
-    <ClInclude Include="Src\MultConnectionsDlg.h" />
-    <ClInclude Include="Src\OpenEditorApp.h" />
-    <ClInclude Include="Src\Query\codeer.h" />
-    <ClInclude Include="Src\Query\NativeSQLDlg.h" />
-    <ClInclude Include="Src\Query\RebindDlg.h" />
-    <ClInclude Include="Src\Query\VariablesDlg.h" />
-    <ClInclude Include="Src\resource.h" />
-    <ClInclude Include="Src\resource1.h" />
-    <ClInclude Include="Src\resource2.h" />
-    <ClInclude Include="Src\StdAfx.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OEAutocompleteCtrl.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OEBackupPage.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OEBlockPage.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OEClassPage.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OECommonLanguageSupport.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OEContext.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OEDocument.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OEEditingPage.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OEFileInfoDlg.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OEFilePage.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OEFindFiles.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OEFindReplaceDlg.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OEGeneralPage.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OEGoToDialog.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OEHelpers.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OEHighlighter.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OELanguage.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OELanguageManager.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OELanguageStreams.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OELanguageSupport.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OEMatchSearcher.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OEPlsSqlParser.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OEPlsSqlSupport.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OEPlsSqlSyntax.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OEPrintPageSetup.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OEPropPage.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OESaveModifiedDlg.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OESettings.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OESettingsStreams.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OESQLSettingsPage.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OEStorage.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OEStreams.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OESyntaxParser.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OETemplates.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OETemplatesDlg.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OETemplatesPage.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OETemplateStreams.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OEUndo.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OEView.h" />
-    <ClInclude Include="Src\Include\OpenEditor\OEViewPaintAccessories.h" />
+    <ClInclude Include="QueryTool\AboutDlg.h" />
+    <ClInclude Include="QueryTool\ConnectionDlg.h" />
+    <ClInclude Include="QueryTool\Frame\InfoTree.h" />
+    <ClInclude Include="QueryTool\Frame\ObjectTree.h" />
+    <ClInclude Include="QueryTool\Include\Common\FilePanelWnd.h" />
+    <ClInclude Include="QueryTool\MultConnectionsDlg.h" />
+    <ClInclude Include="QueryTool\OpenEditorApp.h" />
+    <ClInclude Include="QueryTool\Query\codeer.h" />
+    <ClInclude Include="QueryTool\Query\NativeSQLDlg.h" />
+    <ClInclude Include="QueryTool\Query\RebindDlg.h" />
+    <ClInclude Include="QueryTool\Query\VariablesDlg.h" />
+    <ClInclude Include="QueryTool\resource.h" />
+    <ClInclude Include="QueryTool\resource1.h" />
+    <ClInclude Include="QueryTool\resource2.h" />
+    <ClInclude Include="QueryTool\StdAfx.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OEAutocompleteCtrl.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OEBackupPage.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OEBlockPage.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OEClassPage.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OECommonLanguageSupport.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OEContext.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OEDocument.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OEEditingPage.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OEFileInfoDlg.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OEFilePage.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OEFindFiles.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OEFindReplaceDlg.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OEGeneralPage.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OEGoToDialog.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OEHelpers.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OEHighlighter.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OELanguage.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OELanguageManager.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OELanguageStreams.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OELanguageSupport.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OEMatchSearcher.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OEPlsSqlParser.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OEPlsSqlSupport.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OEPlsSqlSyntax.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OEPrintPageSetup.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OEPropPage.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OESaveModifiedDlg.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OESettings.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OESettingsStreams.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OESQLSettingsPage.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OEStorage.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OEStreams.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OESyntaxParser.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OETemplates.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OETemplatesDlg.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OETemplatesPage.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OETemplateStreams.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OEUndo.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OEView.h" />
+    <ClInclude Include="QueryTool\Include\OpenEditor\OEViewPaintAccessories.h" />
     <ClInclude Include="Include\COMMON\AppGlobal.h" />
     <ClInclude Include="Include\COMMON\AppUtilities.h" />
     <ClInclude Include="Include\Common\arg_compiler.h" />
@@ -915,7 +915,7 @@
     <ClInclude Include="Include\COMMON\EditWithSelPos.h" />
     <ClInclude Include="Include\COMMON\ExceptionHelper.h" />
     <ClInclude Include="Include\COMMON\Fastmap.h" />
-    <ClInclude Include="Src\Common\FileSelectDialog.h" />
+    <ClInclude Include="QueryTool\Common\FileSelectDialog.h" />
     <ClInclude Include="Include\COMMON\FixedString.h" />
     <ClInclude Include="Include\COMMON\FixedString.h.+iterator.h" />
     <ClInclude Include="Include\COMMON\GUICommandDictionary.h" />
@@ -926,7 +926,7 @@
     <ClInclude Include="Include\COMMON\StrHelpers.h" />
     <ClInclude Include="Include\COMMON\VisualAttributes.h" />
     <ClInclude Include="Include\COMMON\VisualAttributesPage.h" />
-    <ClInclude Include="Src\Common\WideMessageBox.h" />
+    <ClInclude Include="QueryTool\Common\WideMessageBox.h" />
     <ClInclude Include="Include\OpenEditor\OEBackupPage.h" />
     <ClInclude Include="Include\OpenEditor\OEBlockPage.h" />
     <ClInclude Include="Include\OpenEditor\OEClassPage.h" />
@@ -943,39 +943,39 @@
     <ClInclude Include="Include\OpenEditor\OESQLSettingsPage.h" />
     <ClInclude Include="Include\OpenEditor\OETemplatesDlg.h" />
     <ClInclude Include="Include\OpenEditor\OETemplatesPage.h" />
-    <ClInclude Include="Src\GridControl\CellRange.h" />
-    <ClInclude Include="Src\GridControl\GridCell.h" />
-    <ClInclude Include="Src\GridControl\GridCellBase.h" />
-    <ClInclude Include="Src\GridControl\GridCtrl.h" />
-    <ClInclude Include="Src\GridControl\GridDropTarget.h" />
-    <ClInclude Include="Src\GridControl\InPlaceEdit.h" />
-    <ClInclude Include="Src\GridControl\MemDC.h" />
-    <ClInclude Include="Src\GridControl\TitleTip.h" />
-    <ClInclude Include="Src\Query\GridView.h" />
-    <ClInclude Include="Src\Query\QueryBar.h" />
-    <ClInclude Include="Src\Query\QueryPanelWnd.h" />
-    <ClInclude Include="Src\Frame\ChildFrm.h" />
-    <ClInclude Include="Src\Frame\ConnectionBar.h" />
-    <ClInclude Include="Src\Frame\DirTreeCtrl.h" />
+    <ClInclude Include="QueryTool\GridControl\CellRange.h" />
+    <ClInclude Include="QueryTool\GridControl\GridCell.h" />
+    <ClInclude Include="QueryTool\GridControl\GridCellBase.h" />
+    <ClInclude Include="QueryTool\GridControl\GridCtrl.h" />
+    <ClInclude Include="QueryTool\GridControl\GridDropTarget.h" />
+    <ClInclude Include="QueryTool\GridControl\InPlaceEdit.h" />
+    <ClInclude Include="QueryTool\GridControl\MemDC.h" />
+    <ClInclude Include="QueryTool\GridControl\TitleTip.h" />
+    <ClInclude Include="QueryTool\Query\GridView.h" />
+    <ClInclude Include="QueryTool\Query\QueryBar.h" />
+    <ClInclude Include="QueryTool\Query\QueryPanelWnd.h" />
+    <ClInclude Include="QueryTool\Frame\ChildFrm.h" />
+    <ClInclude Include="QueryTool\Frame\ConnectionBar.h" />
+    <ClInclude Include="QueryTool\Frame\DirTreeCtrl.h" />
     <ClInclude Include="Include\COMMON\DocManagerExt.h" />
     <ClInclude Include="Include\COMMON\FakeRClick.h" />
-    <ClInclude Include="Src\Frame\FileWatch.h" />
-    <ClInclude Include="Src\Frame\MainFrm.h" />
-    <ClInclude Include="Src\Frame\scbarcf.h" />
-    <ClInclude Include="Src\Frame\scbarg.h" />
-    <ClInclude Include="Src\Frame\sizecbar.h" />
-    <ClInclude Include="Src\Frame\SortStringArray.h" />
-    <ClInclude Include="Src\Frame\WinException.h" />
+    <ClInclude Include="QueryTool\Frame\FileWatch.h" />
+    <ClInclude Include="QueryTool\Frame\MainFrm.h" />
+    <ClInclude Include="QueryTool\Frame\scbarcf.h" />
+    <ClInclude Include="QueryTool\Frame\scbarg.h" />
+    <ClInclude Include="QueryTool\Frame\sizecbar.h" />
+    <ClInclude Include="QueryTool\Frame\SortStringArray.h" />
+    <ClInclude Include="QueryTool\Frame\WinException.h" />
     <ClInclude Include="Include\COMMON\WorkbookBar.h" />
     <ClInclude Include="Include\COMMON\WorkbookMDIFrame.h" />
-    <ClInclude Include="Src\Version.h" />
+    <ClInclude Include="QueryTool\Version.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Installer\Installer_32bits\Installer_32Bits.nsi" />
     <None Include="Installer\Installer_64bits\Installer_64Bits.nsi" />
     <None Include="Installer\Installer_Algemeen.nsh" />
     <None Include="OpenEditor.rh" />
-    <None Include="Src\res\OpenQuery.rc2" />
+    <None Include="QueryTool\res\OpenQuery.rc2" />
     <None Include="_Data\languages.dat" />
     <None Include="_Data\settings.dat" />
     <None Include="_Data\templates.dat" />
@@ -989,40 +989,40 @@
   <ItemGroup>
     <Image Include="res\add.ico" />
     <Image Include="res\bmp00006.bmp" />
-    <Image Include="Src\res\bitmap1.bmp" />
-    <Image Include="Src\res\bmp00006.bmp" />
+    <Image Include="QueryTool\res\bitmap1.bmp" />
+    <Image Include="QueryTool\res\bmp00006.bmp" />
     <Image Include="res\border_b.bmp" />
     <Image Include="res\connectb.bmp" />
-    <Image Include="Src\res\connectb.bmp" />
+    <Image Include="QueryTool\res\connectb.bmp" />
     <Image Include="res\database.bmp" />
-    <Image Include="Src\res\database.bmp" />
+    <Image Include="QueryTool\res\database.bmp" />
     <Image Include="res\down.ico" />
-    <Image Include="Src\res\error.ico" />
+    <Image Include="QueryTool\res\error.ico" />
     <Image Include="res\error.ico" />
-    <Image Include="Src\res\explorer_state_list.bmp" />
+    <Image Include="QueryTool\res\explorer_state_list.bmp" />
     <Image Include="res\explorer_state_list.bmp" />
     <Image Include="res\ico00001.ico" />
-    <Image Include="Src\res\ico00001.ico" />
-    <Image Include="Src\res\ico00002.ico" />
+    <Image Include="QueryTool\res\ico00001.ico" />
+    <Image Include="QueryTool\res\ico00002.ico" />
     <Image Include="res\ico00002.ico" />
-    <Image Include="Src\res\icon1.ico" />
+    <Image Include="QueryTool\res\icon1.ico" />
     <Image Include="res\icon1.ico" />
-    <Image Include="Src\res\OpenQueryDoc.ico" />
+    <Image Include="QueryTool\res\OpenQueryDoc.ico" />
     <Image Include="res\OpenQueryDoc.ico" />
-    <Image Include="Src\res\Query.ico" />
+    <Image Include="QueryTool\res\Query.ico" />
     <Image Include="res\QUERY.ICO" />
-    <Image Include="Src\res\querybar.bmp" />
+    <Image Include="QueryTool\res\querybar.bmp" />
     <Image Include="res\querybar.bmp" />
     <Image Include="res\querysta.bmp" />
-    <Image Include="Src\res\querysta.bmp" />
+    <Image Include="QueryTool\res\querysta.bmp" />
     <Image Include="res\remove.ico" />
     <Image Include="res\Toolbar.bmp" />
     <Image Include="res\toolbar1.bmp" />
     <Image Include="res\up.ico" />
-    <Image Include="Src\res\rdbms_objects.bmp" />
+    <Image Include="QueryTool\res\rdbms_objects.bmp" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Src\OpenQuery.rc">
+    <ResourceCompile Include="QueryTool\OpenQuery.rc">
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)src</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)src</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)src</AdditionalIncludeDirectories>
@@ -1041,7 +1041,7 @@
   </ImportGroup>
   <ProjectExtensions>
     <VisualStudio>
-      <UserProperties RESOURCE_FILE="Src\OpenQuery.rc" />
+      <UserProperties RESOURCE_FILE="QueryTool\OpenQuery.rc" />
     </VisualStudio>
   </ProjectExtensions>
 </Project>
