@@ -16,9 +16,9 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include "resource.h"
-#include "OpenEditor/OEPrintPageSetup.h"
+#include "OEPrintPageSetup.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -26,70 +26,76 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define OEPP_GET_PROPERTY(N) \
-    m_##N = settings.GetPrint##N();
-#define OEPP_GET_STR_PROPERTY(N) \
-    m_##N = settings.GetPrint##N().c_str();
-#define OEPP_SET_PROPERTY(N) \
-    settings.SetPrint##N(m_##N);
-#define OEPP_SET_STR_PROPERTY(N) \
-    settings.SetPrint##N((const char*)m_##N);
-
+#define OEPP_GET_PROPERTY(N)         m_##N = settings.GetPrint##N();
+#define OEPP_GET_STR_PROPERTY(N)     m_##N = settings.GetPrint##N().c_str();
+#define OEPP_SET_PROPERTY(N)         settings.SetPrint##N(m_##N);
+#define OEPP_SET_STR_PROPERTY(N)     settings.SetPrint##N((const char*)m_##N);
 
 /////////////////////////////////////////////////////////////////////////////
 // COEPrintPageSetup dialog
 
 COEPrintPageSetup::COEPrintPageSetup(OpenEditor::SettingsManager& manager)
-	: CDialog(COEPrintPageSetup::IDD, NULL),
-    m_manager(manager)
+	                :StyleDialog(COEPrintPageSetup::IDD, NULL)
+                  ,m_manager(manager)
 {
-	//{{AFX_DATA_INIT(COEPrintPageSetup)
-	//}}AFX_DATA_INIT
+  const OpenEditor::GlobalSettings& settings = m_manager.GetGlobalSettings();
 
-    const OpenEditor::GlobalSettings& settings = m_manager.GetGlobalSettings();
+  OEPP_GET_PROPERTY(BlackAndWhite);
+  OEPP_GET_STR_PROPERTY(Header);
+  OEPP_GET_STR_PROPERTY(Footer);
 
-    OEPP_GET_PROPERTY(BlackAndWhite);
-    OEPP_GET_STR_PROPERTY(Header);
-    OEPP_GET_STR_PROPERTY(Footer);
-
-    OEPP_GET_PROPERTY(LeftMargin);
-    OEPP_GET_PROPERTY(RightMargin);
-    OEPP_GET_PROPERTY(TopMargin);
-    OEPP_GET_PROPERTY(BottomMargin);
+  OEPP_GET_PROPERTY(LeftMargin);
+  OEPP_GET_PROPERTY(RightMargin);
+  OEPP_GET_PROPERTY(TopMargin);
+  OEPP_GET_PROPERTY(BottomMargin);
 }
 
 
 void COEPrintPageSetup::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(COEPrintPageSetup)
-	//}}AFX_DATA_MAP
-	DDX_Check(pDX, IDC_PPS_BLACK_AND_WHITE, m_BlackAndWhite);
-	DDX_Text(pDX, IDC_PPS_HEADER, m_Header);
-	DDX_Text(pDX, IDC_PPS_FOOTER, m_Footer);
-	DDX_Text(pDX, IDC_PPS_LEFT,   m_LeftMargin);
-	DDV_MinMaxDouble(pDX,         m_LeftMargin, 0., 9999.);
-	DDX_Text(pDX, IDC_PPS_RIGHT,  m_RightMargin);
-	DDV_MinMaxDouble(pDX,         m_RightMargin, 0., 9999.);
-	DDX_Text(pDX, IDC_PPS_TOP,    m_TopMargin);
-	DDV_MinMaxDouble(pDX,         m_TopMargin, 0., 9999.);
-	DDX_Text(pDX, IDC_PPS_BOTTOM, m_BottomMargin);
-	DDV_MinMaxDouble(pDX,         m_BottomMargin, 0., 9999.);
+	StyleDialog::DoDataExchange(pDX);
 
-    if (pDX->m_bSaveAndValidate)
-    {
-        OpenEditor::GlobalSettings& settings = m_manager.GetGlobalSettings();
+  DDX_Check  (pDX,IDC_PPS_BLACK_AND_WHITE, m_BlackAndWhite);
+  DDX_Control(pDX,IDC_PPS_HEADER,m_editHeader,m_Header);
+  DDX_Control(pDX,IDC_PPS_FOOTER,m_editFooter,m_Footer);
+
+  DDX_Control(pDX,IDC_PPS_LEFT,  m_editLeft,m_LeftMargin);
+	DDV_MinMaxDouble(pDX,          m_LeftMargin,0.,9999.);
+
+  DDX_Control(pDX,IDC_PPS_RIGHT, m_editRight,m_RightMargin);
+	DDV_MinMaxDouble(pDX,          m_RightMargin, 0., 9999.);
+
+  DDX_Control(pDX,IDC_PPS_TOP,   m_editTop,m_TopMargin);
+	DDV_MinMaxDouble(pDX,          m_TopMargin, 0., 9999.);
+
+  DDX_Control(pDX,IDC_PPS_BOTTOM,m_editBottom,m_BottomMargin);
+	DDV_MinMaxDouble(pDX,          m_BottomMargin, 0., 9999.);
+
+  DDX_Control(pDX, IDOK,         m_buttonOK);
+  DDX_Control(pDX, IDCANCEL,     m_buttonCancel);
+
+  if (pDX->m_bSaveAndValidate)
+  {
+    OpenEditor::GlobalSettings& settings = m_manager.GetGlobalSettings();
 
 #pragma warning (disable : 4800)
-        OEPP_SET_PROPERTY(BlackAndWhite);
-        OEPP_SET_STR_PROPERTY(Header);
-        OEPP_SET_STR_PROPERTY(Footer);
+    OEPP_SET_PROPERTY(BlackAndWhite);
+    OEPP_SET_STR_PROPERTY(Header);
+    OEPP_SET_STR_PROPERTY(Footer);
 
-        OEPP_SET_PROPERTY(LeftMargin);
-        OEPP_SET_PROPERTY(RightMargin);
-        OEPP_SET_PROPERTY(TopMargin);
-        OEPP_SET_PROPERTY(BottomMargin);
-    }
+    OEPP_SET_PROPERTY(LeftMargin);
+    OEPP_SET_PROPERTY(RightMargin);
+    OEPP_SET_PROPERTY(TopMargin);
+    OEPP_SET_PROPERTY(BottomMargin);
+  }
+}
+
+BOOL
+COEPrintPageSetup::OnInitDialog()
+{
+  StyleDialog::OnInitDialog();
+  SetWindowText("Print page setup");
+  return InitFirstFocus();
 }
 
 /*

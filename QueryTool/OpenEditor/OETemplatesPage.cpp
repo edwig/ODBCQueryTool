@@ -16,12 +16,12 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include <COMMON/ExceptionHelper.h>
-#include "OpenEditor/OETemplates.h"
-#include "OpenEditor/OETemplatesPage.h"
-#include "OpenEditor/OETemplatesDlg.h"
-#include "OpenEditor/OELanguageManager.h"
+#include "OETemplates.h"
+#include "OETemplatesPage.h"
+#include "OETemplatesDlg.h"
+#include "OELanguageManager.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -29,28 +29,28 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-    using namespace std;
-    using namespace OpenEditor;
+using namespace std;
+using namespace OpenEditor;
 
-    static struct 
-    {
-        const char* title;
-        int width;
-        int format;
-    }
-    g_columns[] =
-    {
-        { "Name",   170, LVCFMT_LEFT  },
-        { "Key",    125, LVCFMT_LEFT  },
-        { "MinLen",  60, LVCFMT_RIGHT },
-    };
+static struct 
+{
+    const char* title;
+    int width;
+    int format;
+}
+g_columns[] =
+{
+    { "Name",   170, LVCFMT_LEFT  },
+    { "Key",    125, LVCFMT_LEFT  },
+    { "MinLen",  60, LVCFMT_RIGHT },
+};
 
 /////////////////////////////////////////////////////////////////////////////
 // COETemplatesPage property page
 
-COETemplatesPage::COETemplatesPage (SettingsManager& manager) 
-: CPropertyPage(COETemplatesPage::IDD),
-m_manager(manager)
+COETemplatesPage::COETemplatesPage(SettingsManager& manager,CWnd* p_parent)
+                 :StyleDialog(COETemplatesPage::IDD,p_parent)
+                 ,m_manager(manager)
 {
 }
 
@@ -58,76 +58,79 @@ COETemplatesPage::~COETemplatesPage()
 {
 }
 
-int COETemplatesPage::getCurrentSelection () const
+int 
+COETemplatesPage::getCurrentSelection () const
 {
-    POSITION pos = m_templateList.GetFirstSelectedItemPosition();
-    
-    if (pos) 
-        return m_templateList.GetNextSelectedItem(pos);
-
-    throw std::logic_error("No current selection");
+  POSITION pos = m_templateList.GetFirstSelectedItemPosition();
+  if (pos)
+  {
+    return m_templateList.GetNextSelectedItem(pos);
+  }
+  throw std::logic_error("No current selection");
 }
 
-void COETemplatesPage::DoDataExchange(CDataExchange* pDX)
+void 
+COETemplatesPage::DoDataExchange(CDataExchange* pDX)
 {
-	CPropertyPage::DoDataExchange(pDX);
-	DDX_Control(pDX, IDC_OET_TEMPL_LIST, m_templateList);
-	DDX_Text(pDX, IDC_OET_CATEGORY, m_templateName);
+	StyleDialog::DoDataExchange(pDX);
+
+  DDX_CBString(pDX,IDC_OET_CATEGORY,            m_comboTemplate,m_templateName);
+  DDX_Control (pDX,IDC_OET_LIST_IF_ALTERNATIVE, m_alternative);
+	DDX_Control (pDX,IDC_OET_TEMPL_LIST,          m_templateList);
 }
 
-
-BEGIN_MESSAGE_MAP(COETemplatesPage, CPropertyPage)
-    ON_NOTIFY(LVN_GETDISPINFO, IDC_OET_TEMPL_LIST, OnLvnGetdispinfo_TemplList)
-    ON_BN_CLICKED(IDC_OET_ADD_TEMPL, OnBnClicked_AddTempl)
-    ON_BN_CLICKED(IDC_OET_EDIT_TEMPL, OnBnClicked_EditTempl)
-    ON_BN_CLICKED(IDC_OET_DEL_TEMPL, OnBnClicked_DelTempl)
-    ON_BN_CLICKED(IDC_OET_MOVE_DOWN_TEMPL, OnBnClicked_MoveDownTempl)
-    ON_BN_CLICKED(IDC_OET_MOVE_UP_TEMPL, OnBnClicked_MoveUpTempl)
-    ON_NOTIFY(NM_DBLCLK, IDC_OET_TEMPL_LIST, OnNMDblclk_TemplList)
-    ON_CBN_SELCHANGE(IDC_OET_CATEGORY, OnCbnSelchange_Category)
-    ON_BN_CLICKED(IDC_OET_LIST_IF_ALTERNATIVE, OnBnClicked_ListIfAlternative)
+BEGIN_MESSAGE_MAP(COETemplatesPage, StyleDialog)
+  ON_NOTIFY(LVN_GETDISPINFO, IDC_OET_TEMPL_LIST, OnLvnGetdispinfo_TemplList)
+  ON_BN_CLICKED(IDC_OET_ADD_TEMPL,            OnBnClicked_AddTempl)
+  ON_BN_CLICKED(IDC_OET_EDIT_TEMPL,           OnBnClicked_EditTempl)
+  ON_BN_CLICKED(IDC_OET_DEL_TEMPL,            OnBnClicked_DelTempl)
+  ON_BN_CLICKED(IDC_OET_MOVE_DOWN_TEMPL,      OnBnClicked_MoveDownTempl)
+  ON_BN_CLICKED(IDC_OET_MOVE_UP_TEMPL,        OnBnClicked_MoveUpTempl)
+  ON_NOTIFY(NM_DBLCLK, IDC_OET_TEMPL_LIST,    OnNMDblclk_TemplList)
+  ON_CBN_SELCHANGE(IDC_OET_CATEGORY,          OnCbnSelchange_Category)
+  ON_BN_CLICKED(IDC_OET_LIST_IF_ALTERNATIVE,  OnBnClicked_ListIfAlternative)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // COETemplatesPage message handlers
 
-BOOL COETemplatesPage::OnInitDialog() 
+BOOL 
+COETemplatesPage::OnInitDialog() 
 {
-	CPropertyPage::OnInitDialog();
+	StyleDialog::OnInitDialog();
 
-    try 
-    {
-        m_templateList.SetExtendedStyle(LVS_EX_FULLROWSELECT);
-
-        SendDlgItemMessage(IDC_OET_CATEGORY, CB_RESETCONTENT);
+  try 
+  {
+    // All template categories
+    m_comboTemplate.ResetContent();
         
-        const OpenEditor::TemplateCollection& templColl 
-            = m_manager.GetTemplateCollection();
+    const OpenEditor::TemplateCollection& templColl = m_manager.GetTemplateCollection();
+    OpenEditor::TemplateCollection::ConstIterator 
+        it = templColl.Begin(),
+        end = templColl.End();
 
-        OpenEditor::TemplateCollection::ConstIterator 
-            it = templColl.Begin(),
-            end = templColl.End();
-
-        for (; it != end; it++)
-            SendDlgItemMessage(IDC_OET_CATEGORY, CB_ADDSTRING, 0, 
-                (LPARAM)it->first.c_str());
-    	
-        SendDlgItemMessage(IDC_OET_CATEGORY, CB_SETCURSEL, 0);
-        OnCbnSelchange_Category();
-
-        LV_COLUMN lvcolumn;
-        lvcolumn.mask = LVCF_FMT | LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH;
-
-        for (int i = 0; i < sizeof g_columns/sizeof g_columns[0]; i++) 
-        {
-            lvcolumn.pszText  = (LPSTR)(LPCSTR)g_columns[i].title;
-            lvcolumn.iSubItem = i;
-            lvcolumn.fmt      = g_columns[i].format;
-            lvcolumn.cx       = g_columns[i].width;
-            m_templateList.InsertColumn(i, &lvcolumn);
-        }
+    for(; it != end; it++)
+    {
+      m_comboTemplate.AddString(it->first.c_str());
     }
-    _OE_DEFAULT_HANDLER_;
+    m_comboTemplate.SetCurSel(0);
+    OnCbnSelchange_Category();
+
+    m_templateList.SetExtendedStyle(LVS_EX_FULLROWSELECT);
+
+    LV_COLUMN lvcolumn;
+    lvcolumn.mask = LVCF_FMT | LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH;
+
+    for (int i = 0; i < sizeof g_columns/sizeof g_columns[0]; i++) 
+    {
+        lvcolumn.pszText  = (LPSTR)(LPCSTR)g_columns[i].title;
+        lvcolumn.iSubItem = i;
+        lvcolumn.fmt      = g_columns[i].format;
+        lvcolumn.cx       = g_columns[i].width;
+        m_templateList.InsertColumn(i, &lvcolumn);
+    }
+  }
+  _OE_DEFAULT_HANDLER_;
 	
 	return TRUE;
 }
@@ -135,92 +138,109 @@ BOOL COETemplatesPage::OnInitDialog()
 
 void COETemplatesPage::OnLvnGetdispinfo_TemplList(NMHDR *pNMHDR, LRESULT *pResult)
 {
-    NMLVDISPINFO *pDispInfo = reinterpret_cast<NMLVDISPINFO*>(pNMHDR);
+  NMLVDISPINFO *pDispInfo = reinterpret_cast<NMLVDISPINFO*>(pNMHDR);
 
-    try
+  try
+  {
+    static char buffer[40];
+
+    const Template::Entry& entry 
+        = m_currTemplate->GetEntry(pDispInfo->item.iItem);
+
+    switch (pDispInfo->item.iSubItem)
     {
-        static char buffer[40];
-
-        const Template::Entry& entry 
-            = m_currTemplate->GetEntry(pDispInfo->item.iItem);
-
-        switch (pDispInfo->item.iSubItem)
-        {
-        case 0: pDispInfo->item.pszText = (LPSTR)(LPCSTR)entry.name.c_str();    break;
-        case 1: pDispInfo->item.pszText = (LPSTR)(LPCSTR)entry.keyword.c_str(); break;
-        case 2: pDispInfo->item.pszText = (LPSTR)(LPCSTR)itoa(entry.minLength, buffer, 10); break;
-        }
+      case 0: pDispInfo->item.pszText = (LPSTR)(LPCSTR)entry.name.c_str();    break;
+      case 1: pDispInfo->item.pszText = (LPSTR)(LPCSTR)entry.keyword.c_str(); break;
+      case 2: _itoa_s(entry.minLength, buffer, 40, 10);
+              pDispInfo->item.pszText = (LPSTR)(LPCSTR)buffer; break;
     }
-    _OE_DEFAULT_HANDLER_;
+  }
+  _OE_DEFAULT_HANDLER_;
 
-    *pResult = 0;
+  *pResult = 0;
 }
 
-void COETemplatesPage::OnBnClicked_AddTempl()
+void 
+COETemplatesPage::OnBnClicked_AddTempl()
 {
-    Template::Entry entry;
-    if (COETemplatesDlg(this, COETemplatesDlg::emInsert, entry, m_textAttr).DoModal() == IDOK)
+  Template::Entry entry;
+  if (COETemplatesDlg(this, COETemplatesDlg::emInsert, entry, m_textAttr).DoModal() == IDOK)
+  {
+    LV_ITEM lvitem;
+    memset(&lvitem, 0, sizeof lvitem);
+    lvitem.iItem = !m_currTemplate->GetCount() ? 0 : getCurrentSelection() + 1;
+    m_currTemplate->InsertEntry(lvitem.iItem, entry);
+    insertTemplListline(lvitem);
+    m_templateList.SetItemState(lvitem.iItem, LVIS_SELECTED, LVIS_SELECTED);
+  }
+}
+
+void 
+COETemplatesPage::OnBnClicked_EditTempl()
+{
+  int index = getCurrentSelection();
+  Template::Entry entry = m_currTemplate->GetEntry(index);
+  if (COETemplatesDlg(this, COETemplatesDlg::emEdit, entry, m_textAttr).DoModal() == IDOK)
+  {
+    m_currTemplate->UpdateEntry(index, entry);
+    m_templateList.Update(index);
+  }
+}
+
+void 
+COETemplatesPage::OnBnClicked_DelTempl()
+{
+  int index = getCurrentSelection();
+  Template::Entry entry = m_currTemplate->GetEntry(index);
+  if (COETemplatesDlg(this, COETemplatesDlg::emDelete, entry, m_textAttr).DoModal() == IDOK)
+  {
+    m_currTemplate->DeleteEntry(index);
+    m_templateList.DeleteItem(index);
+    if (index < m_currTemplate->GetCount() || --index >= 0)
     {
-        LV_ITEM lvitem;
-        memset(&lvitem, 0, sizeof lvitem);
-        lvitem.iItem = !m_currTemplate->GetCount() ? 0 : getCurrentSelection() + 1;
-        m_currTemplate->InsertEntry(lvitem.iItem, entry);
-        insertTemplListline(lvitem);
-        m_templateList.SetItemState(lvitem.iItem, LVIS_SELECTED, LVIS_SELECTED);
+      m_templateList.SetItemState(index, LVIS_SELECTED, LVIS_SELECTED);
     }
+  }
 }
 
-void COETemplatesPage::OnBnClicked_EditTempl()
+void 
+COETemplatesPage::OnBnClicked_MoveDownTempl()
 {
-    int index = getCurrentSelection();
-    Template::Entry entry = m_currTemplate->GetEntry(index);
-    if (COETemplatesDlg(this, COETemplatesDlg::emEdit, entry, m_textAttr).DoModal() == IDOK)
-    {
-        m_currTemplate->UpdateEntry(index, entry);
-        m_templateList.Update(index);
-    }
+  int index = getCurrentSelection();
+  if (m_currTemplate->MoveDown(index))
+  {
+    m_templateList.SetItemState(index + 1, LVIS_SELECTED, LVIS_SELECTED);
+  }
+  else
+  {
+    MessageBeep((UINT)-1);
+  }
+  m_templateList.Invalidate();
 }
 
-void COETemplatesPage::OnBnClicked_DelTempl()
+void 
+COETemplatesPage::OnBnClicked_MoveUpTempl()
 {
-    int index = getCurrentSelection();
-    Template::Entry entry = m_currTemplate->GetEntry(index);
-    if (COETemplatesDlg(this, COETemplatesDlg::emDelete, entry, m_textAttr).DoModal() == IDOK)
-    {
-        m_currTemplate->DeleteEntry(index);
-        m_templateList.DeleteItem(index);
-        if (index < m_currTemplate->GetCount() || --index >= 0)
-            m_templateList.SetItemState(index, LVIS_SELECTED, LVIS_SELECTED);
-    }
+  int index = getCurrentSelection();
+  if (m_currTemplate->MoveUp(index))
+  {
+    m_templateList.SetItemState(index - 1, LVIS_SELECTED, LVIS_SELECTED);
+  }
+  else
+  {
+    MessageBeep((UINT)-1);
+  }
 }
 
-void COETemplatesPage::OnBnClicked_MoveDownTempl()
+void 
+COETemplatesPage::OnNMDblclk_TemplList (NMHDR*, LRESULT *pResult)
 {
-    int index = getCurrentSelection();
-    if (m_currTemplate->MoveDown(index))
-        m_templateList.SetItemState(index+1, LVIS_SELECTED, LVIS_SELECTED);
-    else
-        MessageBeep((UINT)-1);
-
-    m_templateList.Invalidate();
+  OnBnClicked_EditTempl();
+  *pResult = 0;
 }
 
-void COETemplatesPage::OnBnClicked_MoveUpTempl()
-{
-    int index = getCurrentSelection();
-    if (m_currTemplate->MoveUp(index))
-        m_templateList.SetItemState(index-1, LVIS_SELECTED, LVIS_SELECTED);
-    else
-        MessageBeep((UINT)-1);
-}
-
-void COETemplatesPage::OnNMDblclk_TemplList (NMHDR*, LRESULT *pResult)
-{
-    OnBnClicked_EditTempl();
-    *pResult = 0;
-}
-
-void COETemplatesPage::OnCbnSelchange_Category()
+void 
+COETemplatesPage::OnCbnSelchange_Category()
 {
   try 
   {
@@ -243,38 +263,40 @@ void COETemplatesPage::OnCbnSelchange_Category()
       }
       m_textAttr = m_manager.FindByName(m_templateName).GetVisualAttributesSet().FindByName("Text");
 
-      CheckDlgButton(IDC_OET_LIST_IF_ALTERNATIVE
-                    ,m_currTemplate->GetAlwaysListIfAlternative() ? BST_CHECKED : BST_UNCHECKED);
+      m_alternative.SetCheck(m_currTemplate->GetAlwaysListIfAlternative());
     }
   }
   _OE_DEFAULT_HANDLER_;
 }
 
-void COETemplatesPage::insertTemplListline (LV_ITEM& lvitem)
+void 
+COETemplatesPage::insertTemplListline (LV_ITEM& lvitem)
 {
-    lvitem.iSubItem = 0;
-    lvitem.mask     = LVIF_TEXT;
-    lvitem.pszText  = LPSTR_TEXTCALLBACK;
-    lvitem.iItem = m_templateList.InsertItem(&lvitem);
+  lvitem.iSubItem = 0;
+  lvitem.mask     = LVIF_TEXT;
+  lvitem.pszText  = LPSTR_TEXTCALLBACK;
+  lvitem.iItem    = m_templateList.InsertItem(&lvitem);
 
-    lvitem.mask = LVIF_TEXT;
-    for (lvitem.iSubItem = 1; lvitem.iSubItem < sizeof g_columns/sizeof g_columns[0]; lvitem.iSubItem++)
-        m_templateList.SetItem(&lvitem);
+  lvitem.mask = LVIF_TEXT;
+  for (lvitem.iSubItem = 1; lvitem.iSubItem < sizeof g_columns / sizeof g_columns[0]; lvitem.iSubItem++)
+  {
+    m_templateList.SetItem(&lvitem);
+  }
 }
 
 LRESULT COETemplatesPage::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
-    try
-    {
-        return CPropertyPage::WindowProc(message, wParam, lParam);
-    }
-    _OE_DEFAULT_HANDLER_;
+  try
+  {
+    return StyleDialog::WindowProc(message, wParam, lParam);
+  }
+  _OE_DEFAULT_HANDLER_;
 
-    return 0;
+  return 0;
 }
 
-void COETemplatesPage::OnBnClicked_ListIfAlternative()
+void 
+COETemplatesPage::OnBnClicked_ListIfAlternative()
 {
-    m_currTemplate->SetAlwaysListIfAlternative(
-        IsDlgButtonChecked(IDC_OET_LIST_IF_ALTERNATIVE) ? true : false);
+    m_currTemplate->SetAlwaysListIfAlternative(m_alternative.GetCheck() ? true : false);
 }

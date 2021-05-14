@@ -24,7 +24,7 @@
 
 // CAboutDlg dialog
 
-class CAboutDlg : public CDialog
+class CAboutDlg : public StyleDialog
 {
 	DECLARE_DYNAMIC(CAboutDlg)
 
@@ -36,11 +36,14 @@ public:
 	enum { IDD = IDD_OE_ABOUTBOX };
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+  virtual void DoDataExchange(CDataExchange* pDX) override;
+  virtual BOOL OnInitDialog() override;
 
 	DECLARE_MESSAGE_MAP()
 public:
-    CString m_license;
+  StyleEdit   m_editLicense;
+  CString     m_license;
+  StyleButton m_buttonOK;
 	afx_msg void OnStnClickedOeaLogo();
 };
 

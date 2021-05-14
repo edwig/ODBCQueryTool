@@ -22,8 +22,8 @@
     30.03.2003 improvement, SQR support has been added
 */
 
-#include "stdafx.h"
-#include "OpenEditor/OEHighlighter.h"
+#include "pch.h"
+#include "OEHighlighter.h"
 #include "COMMON/VisualAttributes.h"
 
 #ifdef _DEBUG
@@ -179,7 +179,7 @@ void SqrHighlighter::NextWord (const char* str, int len)
         switch (*str)
         {
         case '#':
-            if (!strnicmp(str, "#debug", sizeof("#debug")-1))
+            if (!_strnicmp(str, "#debug", sizeof("#debug")-1))
             {
                 m_current = m_preprocessorAttrs;
                 break;

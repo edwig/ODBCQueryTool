@@ -26,7 +26,7 @@
 #include "Common/FakeRClick.h"
 #include "Query/GridView.h"
 #include "Query/QueryBar.h"
-#include "Frame/ChildFrm.h"
+#include "ChildFrm.h"
 
 // Defines which pane we mean
 #define QPW_QUERY_VIEW         0

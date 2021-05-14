@@ -16,25 +16,17 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include <string>
 #include <strstream>
 #include <COMMON/ExceptionHelper.h>
-#include "OpenEditor/OEGeneralPage.h"
+#include "OEGeneralPage.h"
 
-    const char* COEGeneralPage::m_keymapLayoutList = "ConText;Custom;Default;EditPlus2;TextPad;UltraEdit;";
+const char* COEGeneralPage::m_keymapLayoutList = "ConText;Custom;Default;EditPlus2;TextPad;UltraEdit;";
 
-COEGeneralPage::COEGeneralPage (SettingsManager& manager)
-	: CPropertyPage(COEGeneralPage::IDD)
-    , m_manager(manager)
-    /*, m_AllowMultipleInstances(FALSE)
-    , m_NewDocOnStartup(FALSE)
-    , m_MaximizeFirstDocument(FALSE)
-    , m_WorkDirFollowsDoc(FALSE)
-    , m_SaveCursPosAndBookmarks(FALSE)
-    , m_SaveMainWindowPosition(FALSE)
-    , m_keymapLayout(_T(""))
-    , m_locale(_T(""))*/
+COEGeneralPage::COEGeneralPage (SettingsManager& manager,CWnd* p_parent)
+               :StyleDialog(COEGeneralPage::IDD,p_parent)
+               ,m_manager(manager)
 {
     const OpenEditor::GlobalSettings& settings = m_manager.GetGlobalSettings();
     m_AllowMultipleInstances  = settings.GetAllowMultipleInstances() ? TRUE : FALSE;
@@ -53,53 +45,60 @@ COEGeneralPage::~COEGeneralPage()
 
 void COEGeneralPage::DoDataExchange(CDataExchange* pDX)
 {
-    CPropertyPage::DoDataExchange(pDX);
-    DDX_Check(pDX, IDC_OE_GEN_MULTIPLE_INST, m_AllowMultipleInstances);
-    DDX_Check(pDX, IDC_OE_GEN_NEW_DOC_ON_STARTUP, m_NewDocOnStartup);
-    DDX_Check(pDX, IDC_OE_GEN_MAXIMIZE_FIRST_DOC, m_MaximizeFirstDocument);
+    StyleDialog::DoDataExchange(pDX);
+    DDX_Control(pDX,IDC_OE_GEN_MULTIPLE_INST,        m_checkAllowMultiple);
+    DDX_Control(pDX,IDC_OE_GEN_NEW_DOC_ON_STARTUP,   m_checkNewDocOnStartup);
+    DDX_Control(pDX,IDC_OE_GEN_MAXIMIZE_FIRST_DOC,   m_checkMaximizeFirstDoc);
+    DDX_Control(pDX,IDC_OE_GEN_WORK_DIR_FOLLOWS_DOC, m_checkWorkDirFollowsDoc);
+    DDX_Control(pDX,IDC_OE_GEN_SAVE_CURS_N_BOOKMARKS,m_checkSaveCursPosBookmarks);
+    DDX_Control(pDX,IDC_OE_GEN_SAVE_MAIN_WIN_POS,    m_checkSaveMainWindowPos);
+
+    DDX_Check(pDX, IDC_OE_GEN_MULTIPLE_INST,        m_AllowMultipleInstances);
+    DDX_Check(pDX, IDC_OE_GEN_NEW_DOC_ON_STARTUP,   m_NewDocOnStartup);
+    DDX_Check(pDX, IDC_OE_GEN_MAXIMIZE_FIRST_DOC,   m_MaximizeFirstDocument);
     DDX_Check(pDX, IDC_OE_GEN_WORK_DIR_FOLLOWS_DOC, m_WorkDirFollowsDoc);
-    DDX_Check(pDX, IDC_OE_GEN_SAVE_CURS_N_BOOKMARKS, m_SaveCursPosAndBookmarks);
-    DDX_Check(pDX, IDC_OE_GEN_SAVE_MAIN_WIN_POS, m_SaveMainWindowPosition);
+    DDX_Check(pDX, IDC_OE_GEN_SAVE_CURS_N_BOOKMARKS,m_SaveCursPosAndBookmarks);
+    DDX_Check(pDX, IDC_OE_GEN_SAVE_MAIN_WIN_POS,    m_SaveMainWindowPosition);
     
+    DDX_CBString(pDX, IDC_OE_GEN_KEYMAP_LAYOUT,     m_comboKeymap,m_keymapLayout);
+    DDX_CBString(pDX, IDC_OE_GEN_LOCALE,            m_comboLocale,m_locale);
+
     if (!pDX->m_bSaveAndValidate)
     {
-        HWND hList = ::GetDlgItem(m_hWnd, IDC_OE_GEN_KEYMAP_LAYOUT);
-
-        if (!::SendMessage(hList, CB_GETCOUNT, 0, 0))
+      if(m_comboKeymap.GetCount() == 0)
+      {
+        std::istrstream in(m_keymapLayoutList);
+        std::string line;
+        while (std::getline(in, line, ';'))
         {
-            std::istrstream in(m_keymapLayoutList);
-            std::string line;
-            while (std::getline(in, line, ';'))
-                ::SendMessage(hList, CB_ADDSTRING, 0, (LPARAM)line.c_str());
+          m_comboKeymap.AddString(line.c_str());
         }
+      }
     }
-    
-    DDX_CBString(pDX, IDC_OE_GEN_KEYMAP_LAYOUT, m_keymapLayout);
-    DDX_CBString(pDX, IDC_OE_GEN_LOCALE, m_locale);
 }
 
 
 //BEGIN_MESSAGE_MAP(COEGeneralPage, CPropertyPage)
 //END_MESSAGE_MAP()
 
-
 // COEGeneralPage message handlers
 
-BOOL COEGeneralPage::OnApply()
+BOOL 
+COEGeneralPage::OnApply()
 {
-    try
-    {
-        OpenEditor::GlobalSettings& settings = m_manager.GetGlobalSettings();
-        settings.SetAllowMultipleInstances(m_AllowMultipleInstances  ? true : false,  false /*notify*/);
-        settings.SetNewDocOnStartup(m_NewDocOnStartup                ? true : false,  false /*notify*/);
-        settings.SetMaximizeFirstDocument(m_MaximizeFirstDocument    ? true : false,  false /*notify*/);
-        settings.SetWorkDirFollowsDocument(m_WorkDirFollowsDoc       ? true : false,  false /*notify*/);
-        settings.SetSaveCurPosAndBookmarks(m_SaveCursPosAndBookmarks ? true : false,  false /*notify*/);
-        settings.SetSaveMainWinPosition(m_SaveMainWindowPosition     ? true : false,  false /*notify*/);
-        settings.SetKeymapLayout((LPCSTR)m_keymapLayout);
-        settings.SetLocale((LPCSTR)m_locale);
-    }
-    _OE_DEFAULT_HANDLER_;
+  try
+  {
+    OpenEditor::GlobalSettings& settings = m_manager.GetGlobalSettings();
+    settings.SetAllowMultipleInstances(m_AllowMultipleInstances  ? true : false,  false /*notify*/);
+    settings.SetNewDocOnStartup       (m_NewDocOnStartup         ? true : false,  false /*notify*/);
+    settings.SetMaximizeFirstDocument (m_MaximizeFirstDocument   ? true : false,  false /*notify*/);
+    settings.SetWorkDirFollowsDocument(m_WorkDirFollowsDoc       ? true : false,  false /*notify*/);
+    settings.SetSaveCurPosAndBookmarks(m_SaveCursPosAndBookmarks ? true : false,  false /*notify*/);
+    settings.SetSaveMainWinPosition   (m_SaveMainWindowPosition  ? true : false,  false /*notify*/);
+    settings.SetKeymapLayout          ((LPCSTR)m_keymapLayout);
+    settings.SetLocale((LPCSTR)m_locale);
+  }
+  _OE_DEFAULT_HANDLER_;
 
 	return TRUE;
 }

@@ -15,14 +15,15 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
-#include "stdafx.h"
-#include "OpenEditorApp.h"
+#include "pch.h"
+#include "QueryTool.h"
 #include "MultConnectionsDlg.h"
 #include "Query\codeer.h"
-#include "Common\WideMessageBox.h"
+#include "COmmon\AppGlobal.h"
 #include <KnownFolders.h>
 #include <direct.h>
 #include <wincrypt.h>
+#include <SQLDatabase.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -30,13 +31,12 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-
 /////////////////////////////////////////////////////////////////////////////
 // MultConnectionsDlg dialog
 
 
 MultConnectionsDlg::MultConnectionsDlg(CWnd* pParent /*=NULL*/)
-                   :CDialog(MultConnectionsDlg::IDD, pParent)
+                   :StyleDialog(IDD_CONNECTION, pParent)
                    ,m_UserEdit("")
                    ,m_UserPassword("")
                    ,m_DataSource("")
@@ -56,34 +56,37 @@ MultConnectionsDlg::~MultConnectionsDlg()
 
 void MultConnectionsDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
-  DDX_Control(pDX,IDC_CON_USER,       m_boxUserEdit);
-  DDX_Control(pDX,IDC_CON_PASSWORD,   m_boxUserPassword);
-  DDX_Control(pDX,IDC_CON_DATASOURCES,m_boxDataSource);
-  DDX_Control(pDX,IDC_CON_SAFTY,      m_boxSafty);
+	StyleDialog::DoDataExchange(pDX);
+
+  DDX_Control(pDX,IDC_CON_LIST,       m_list);
+  DDX_Control(pDX,IDC_CON_USER,       m_boxUserEdit,    m_UserEdit);
+  DDX_Control(pDX,IDC_CON_PASSWORD,   m_boxUserPassword,m_UserPassword);
+  DDX_Control(pDX,IDC_CON_DATASOURCES,m_comboDataSource);
+  DDX_Control(pDX,IDC_CON_SAFTY,      m_comboSafty);
+  DDX_Control(pDX,IDC_CON_TEST,       m_buttonTest);
+  DDX_Control(pDX,IDC_CON_DELETE,     m_buttonDelete);
+  DDX_Control(pDX,IDC_CON_DETAILS,    m_buttonDetails);
+  DDX_Control(pDX,IDC_CON_HELP,       m_buttonHelp);
+  DDX_Control(pDX,IDOK,               m_buttonOK);
+  DDX_Control(pDX,IDCANCEL,           m_buttonCancel);
 
   CString data;
   if(pDX->m_bSaveAndValidate == (BOOL)Controls2Data)
   {
-    DDX_Text(pDX,IDC_CON_USER,         data);     m_UserEdit     = data;
-    DDX_Text(pDX,IDC_CON_PASSWORD,     data);     m_UserPassword = data;
-    DDX_Text(pDX,IDC_CON_DATASOURCES,  data);     m_DataSource   = data;
-    DDX_Text(pDX,IDC_CON_SAFTY,        data); 
-//  m_Safty = (data == "Read only (production)") ? true : false;
-    m_Safty = m_boxSafty.GetCurSel();
+    m_Safty = m_comboSafty.GetCurSel();
   }
   else // Data2Controls
   {
-    data = m_UserEdit;      DDX_Text (pDX,IDC_CON_USER,         data);
-    data = m_UserPassword;  DDX_Text (pDX,IDC_CON_PASSWORD,     data);
-    data = m_DataSource;    DDX_Text (pDX,IDC_CON_DATASOURCES,  data);
-//  data =  m_Safty ? "Read only (production)" : "None (development)";
-//  DDX_Text (pDX,IDC_CON_SAFTY,data);
-    m_boxSafty.SetCurSel(m_Safty ? 1 : 0);
+    m_comboSafty.SetCurSel(m_Safty ? 1 : 0);
+    int ind = m_comboDataSource.FindStringExact(0,m_DataSource);
+    if (ind >= 0)
+    {
+      m_comboDataSource.SetCurSel(ind);
+    }
   }
 }
 
-BEGIN_MESSAGE_MAP(MultConnectionsDlg, CDialog)
+BEGIN_MESSAGE_MAP(MultConnectionsDlg, StyleDialog)
     ON_NOTIFY    (NM_DBLCLK, IDC_CON_LIST, OnDblclk_list)
     ON_NOTIFY    (NM_CLICK,  IDC_CON_LIST, OnClick_list)
     ON_BN_CLICKED(IDC_CON_TEST,            OnBnClicked_test)
@@ -91,6 +94,105 @@ BEGIN_MESSAGE_MAP(MultConnectionsDlg, CDialog)
     ON_BN_CLICKED(IDC_CON_DETAILS,         OnDetails)
     ON_CBN_SELCHANGE(IDC_CON_SAFTY, &MultConnectionsDlg::OnCbnSelchangeConSafty)
 END_MESSAGE_MAP()
+
+BOOL 
+MultConnectionsDlg::OnInitDialog()
+{
+  StyleDialog::OnInitDialog();
+  SetWindowText("ODBC Connections");
+
+  // Fill the connection dialog
+  InitGridEmpty(4);
+  m_list.ShowWindow(SW_SHOW);
+  m_list.SetSingleRowSelection(true);
+
+  m_comboSafty.AddString("None (development)");
+  m_comboSafty.AddString("Read only (production)");
+
+  // Read in all settings
+  CString mUser;
+  CString mDatasource;
+  CString mPassword;
+  bool    mSafty   = 0;
+  int     mSave    = 0;
+  int     maxTimes = 0;
+
+  ReadSettings();
+  GetDatasourcesFromODBCManager();
+  ConSetIter iter;
+  for(iter  = m_settings.begin();
+      iter != m_settings.end();
+      ++iter)
+  {
+    int times = atol(iter->GetTimesUsed());
+    if(times > maxTimes)
+    {
+      maxTimes    = times;
+      mUser       = iter->GetUser();
+      mDatasource = iter->GetDatasource();
+      mPassword   = iter->GetPassword();
+      mSafty      = iter->GetSafty();
+    }
+    // Insert into the ListCtrl
+    InsertListline(iter->GetDatasource()
+                  ,iter->GetUser()
+                  ,iter->GetTimesUsed()
+                  ,iter->GetLastUsage());
+  }
+  m_list.AutoSizeColumns(GVS_BOTH);
+  m_list.ExpandLastColumn();
+  // Set the boxes with the maxvalue
+  m_UserEdit     = mUser;
+  m_UserPassword = mPassword;
+  m_DataSource   = mDatasource;
+  m_Safty        = mSafty;
+  UpdateData(Data2Controls);
+
+  // Leave the focus for the first input
+  if(mPassword == "")
+  {
+    m_boxUserPassword.SetFocus();
+  }
+  else
+  {
+    m_boxUserEdit.SetFocus();
+  }
+  // Set the font for the list
+  SetListFont();
+
+  SetCanResize();
+
+  return true;
+}
+
+void
+MultConnectionsDlg::SetupDynamicLayout()
+{
+  StyleDialog::SetupDynamicLayout();
+
+  CMFCDynamicLayout& manager = *GetDynamicLayout();
+#ifdef _DEBUG
+  manager.AssertValid();
+#endif
+
+  manager.AddItem(m_list,           manager.MoveNone(),                         manager.SizeHorizontalAndVertical(100,100));
+  manager.AddItem(IDC_STATIC1,      manager.MoveHorizontal(100),                manager.SizeNone());
+  manager.AddItem(IDC_STATIC2,      manager.MoveHorizontal(100),                manager.SizeNone());
+  manager.AddItem(IDC_STATIC3,      manager.MoveHorizontal(100),                manager.SizeNone());
+  manager.AddItem(IDC_STATIC4,      manager.MoveHorizontal(100),                manager.SizeNone());
+  manager.AddItem(IDC_CON_DATASOURCES,  manager.MoveHorizontal(100),                manager.SizeNone());
+  manager.AddItem(IDC_CON_PASSWORD, manager.MoveHorizontal(100),                manager.SizeNone());
+  manager.AddItem(IDC_CON_USER,     manager.MoveHorizontal(100),                manager.SizeNone());
+  manager.AddItem(IDC_CON_SAFTY,    manager.MoveHorizontal(100),                manager.SizeNone());
+  manager.AddItem(m_buttonTest,     manager.MoveHorizontalAndVertical(100,100), manager.SizeNone());
+  manager.AddItem(m_buttonDelete,   manager.MoveHorizontalAndVertical(100,100), manager.SizeNone());
+  manager.AddItem(m_buttonDetails,  manager.MoveHorizontalAndVertical(100,100), manager.SizeNone());
+  manager.AddItem(m_buttonHelp,     manager.MoveHorizontalAndVertical(100,100), manager.SizeNone());
+  manager.AddItem(m_buttonOK,       manager.MoveHorizontalAndVertical(100,100), manager.SizeNone());
+  manager.AddItem(m_buttonCancel,   manager.MoveHorizontalAndVertical(100,100), manager.SizeNone());
+
+  manager.Adjust();
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // MultConnectionsDlg message handlers
@@ -105,7 +207,7 @@ MultConnectionsDlg::OnDblclk_list(NMHDR* hdr, LRESULT *pResult)
 void
 MultConnectionsDlg::OnClick_list(NMHDR* hdr, LRESULT *pResult)
 {
-  CCellID cell = m_list.GetFocusCell();
+  MCCellID cell = m_list.GetFocusCell();
   int index = cell.row;
   if(index >= 1)
   {
@@ -147,7 +249,7 @@ MultConnectionsDlg::FindSetting(CString user
 void
 MultConnectionsDlg::InsertItem(int p_row,int p_col,CString& p_text,UINT p_format /* = 0 */)
 {
-  GV_ITEM item;
+  MC_ITEM item;
   item.mask    = GVIF_TEXT | GVIF_FORMAT;
   item.row     = p_row;
   item.col     = p_col;
@@ -157,7 +259,7 @@ MultConnectionsDlg::InsertItem(int p_row,int p_col,CString& p_text,UINT p_format
 }
 
 int 
-MultConnectionsDlg::InsertListline (char *p_datasource
+MultConnectionsDlg::InsertListline (CString& p_datasource
                                    ,CString& p_user
                                    ,CString& p_total
                                    ,CString& p_lasttime)
@@ -206,7 +308,7 @@ MultConnectionsDlg::InitGridEmpty(int p_type,bool nofirst /* = false */)
     return;
   }
   
-  GV_ITEM item;
+  MC_ITEM item;
   item.mask = GVIF_TEXT | GVIF_FORMAT;
   item.row = 0;
   item.col = 0;
@@ -214,12 +316,12 @@ MultConnectionsDlg::InitGridEmpty(int p_type,bool nofirst /* = false */)
 
   item.strText = "Datasource";
   m_list.SetItem(&item);
-  m_list.SetColumnWidth(0,200);
+  m_list.SetColumnWidth(0,250);
 
   item.col     = 1;
   item.strText = "User";
   m_list.SetItem(&item);
-  m_list.SetColumnWidth(0,200);
+  m_list.SetColumnWidth(0,300);
 
   item.col     = 3;
   item.strText = "Last time";
@@ -230,86 +332,12 @@ MultConnectionsDlg::InitGridEmpty(int p_type,bool nofirst /* = false */)
   item.strText = "Total";
   item.nFormat |= DT_SORT_NUMERIC;
   m_list.SetItem(&item);
-  m_list.SetColumnWidth(0,120);
+  m_list.SetColumnWidth(0,180);
 
   // Sync with the outside world
 	m_list.AutoSize();
   m_list.AutoSizeColumns(GVS_BOTH);
   m_list.ExpandLastColumn();
-}
-
-BOOL 
-MultConnectionsDlg::OnInitDialog()
-{
-  CDialog::OnInitDialog();
-
-  // Fill the connection dialog
-  if(!m_list.Create(CRect(7,7,420,260)
-                   ,this
-                   ,IDC_CON_LIST
-                   ,WS_CHILD | WS_TABSTOP | WS_VISIBLE))
-  {
-    TRACE0("Cannot create ODBC list");
-  }
-  InitGridEmpty(4);
-  m_list.ShowWindow(SW_SHOW);
-  m_list.SetSingleRowSelection(true);
-
-  // Read in all settings
-  CString mUser;
-  CString mDatasource;
-  CString mPassword;
-  bool    mSafty   = 0;
-  int     mSave    = 0;
-  int     maxTimes = 0;
-
-  ReadSettings();
-  GetDatasourcesFromODBCManager();
-  ConSetIter iter;
-  for(iter  = m_settings.begin();
-      iter != m_settings.end();
-      ++iter)
-  {
-    int times = atol(iter->GetTimesUsed());
-    if(times > maxTimes)
-    {
-      maxTimes    = times;
-      mUser       = iter->GetUser();
-      mDatasource = iter->GetDatasource();
-      mPassword   = iter->GetPassword();
-      mSafty      = iter->GetSafty();
-    }
-    char datasource[50];
-
-    sprintf(datasource,iter->GetDatasource());
-    // Insert into the ListCtrl
-    InsertListline(datasource
-                  ,iter->GetUser()
-                  ,iter->GetTimesUsed()
-                  ,iter->GetLastUsage());
-  }
-  m_list.AutoSizeColumns(GVS_BOTH);
-  m_list.ExpandLastColumn();
-  // Set the boxes with the maxvalue
-  m_UserEdit     = mUser;
-  m_UserPassword = mPassword;
-  m_DataSource   = mDatasource;
-  m_Safty        = mSafty;
-  UpdateData(Data2Controls);
-
-  // Leave the focus for the first input
-  if(mPassword == "")
-  {
-    m_boxUserPassword.SetFocus();
-  }
-  else
-  {
-    m_boxUserEdit.SetFocus();
-  }
-  // Set the font for the list
-  SetListFont();
-
-  return true;
 }
 
 void
@@ -348,15 +376,17 @@ MultConnectionsDlg::Current()
   _tzset();
   time_t ltime;
   time(&ltime);
-  struct tm* now = localtime(&ltime);
+  struct tm now;
+  struct tm* ptnow = &now;
+  localtime_s(ptnow,&ltime);
   CString moment;
   moment.Format("%4d-%02d-%02d %d:%02d:%02d"
-               ,now->tm_year + 1900
-               ,now->tm_mon  + 1
-               ,now->tm_mday
-               ,now->tm_hour
-               ,now->tm_min
-               ,now->tm_sec);
+               ,now.tm_year + 1900
+               ,now.tm_mon  + 1
+               ,now.tm_mday
+               ,now.tm_hour
+               ,now.tm_min
+               ,now.tm_sec);
   return moment;
 }
 
@@ -399,7 +429,7 @@ MultConnectionsDlg::OnOK()
 
     if(m_UserEdit == "" || m_UserPassword == "" )
     {
-      if(WideMessageBox(GetSafeHwnd()
+      if(StyleMessageBox(this
                        ,"For this datasource the user/password combination is not completely filled in. Proceed anyway?"
                        ,"Open ODBCQuerytool"
                        ,MB_YESNO | MB_ICONEXCLAMATION) == IDNO)
@@ -420,7 +450,7 @@ MultConnectionsDlg::OnOK()
   SaveSettings();
 
   m_boxUserEdit.SetFocus();
-  CDialog::OnOK();
+  StyleDialog::OnOK();
 }
 
 void
@@ -556,7 +586,7 @@ MultConnectionsDlg::GetDatasourcesFromODBCManager()
                           ,&desLen);
     while(res == SQL_SUCCESS)
     {
-      m_boxDataSource.AddString((const char *)DataSourceBuffer);
+      m_comboDataSource.AddString((const char *)DataSourceBuffer);
       // For all next datasources
       res = ::SQLDataSources(ODBCHandle
                             ,SQL_FETCH_NEXT
@@ -579,7 +609,7 @@ MultConnectionsDlg::OnBnClicked_test()
 {
   UpdateData(Controls2Data);
 
-  CCellID cell = m_list.GetFocusCell();
+  MCCellID cell = m_list.GetFocusCell();
   int index = cell.row;
   if(index > 0)
   {
@@ -658,7 +688,7 @@ MultConnectionsDlg::OnBnClicked_test()
 void 
 MultConnectionsDlg::OnBnClicked_delete()
 {
-  CCellID cell = m_list.GetFocusCell();
+  MCCellID cell = m_list.GetFocusCell();
   int row = cell.row;
   if(row > 0)
   {
@@ -669,7 +699,7 @@ MultConnectionsDlg::OnBnClicked_delete()
     {
       CString question;
       question.Format("Do you want to delete the datasource '%s' for user '%s'?",source,user);
-      if(WideMessageBox(m_hWnd,question,"ODBCQueryTool",MB_YESNO|MB_TASKMODAL|MB_DEFBUTTON2) != IDYES)
+      if(StyleMessageBox(this,question,"ODBCQueryTool",MB_YESNO|MB_TASKMODAL|MB_DEFBUTTON2) != IDYES)
       {
         // Then don't do it
         return;
@@ -790,7 +820,7 @@ MultConnectionsDlg::CreateINIDirectory()
       int er = GetLastError();
       if(er != EEXIST && er != ERROR_ALREADY_EXISTS)
       {
-        WideMessageBox(GetSafeHwnd(),"Cannot create directory: " + directory,"Error",MB_OK|MB_ICONERROR);
+        StyleMessageBox(this,"Cannot create directory: " + directory,"Error",MB_OK|MB_ICONERROR);
       }
     }
     directory += "\\OpenODBCQuerytool";
@@ -799,7 +829,7 @@ MultConnectionsDlg::CreateINIDirectory()
       int er = GetLastError();
       if(er != EEXIST && er != ERROR_ALREADY_EXISTS)
       {
-        WideMessageBox(GetSafeHwnd(),"Cannot create directory: " + directory,"Error",MB_OK|MB_ICONERROR);
+        StyleMessageBox(this,"Cannot create directory: " + directory,"Error",MB_OK|MB_ICONERROR);
       }
     }
   }
@@ -811,7 +841,7 @@ MultConnectionsDlg::CreateINIDirectory()
 //
 /////////////////////////////
 
-CConnectionDlgSetting::CConnectionDlgSetting(int    section
+CConnectionDlgSetting::CConnectionDlgSetting(int     section
                                             ,CString user
                                             ,CString password
                                             ,CString datasource

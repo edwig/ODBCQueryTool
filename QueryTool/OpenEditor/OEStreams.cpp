@@ -18,16 +18,18 @@
 
 // 02.06.2003 bug fix, diagnostics improvement
 
-#include "stdafx.h"
+#include "pch.h"
 #include "COMMON/StrHelpers.h"
 #include <COMMON/ExceptionHelper.h>
-#include "OpenEditor/OEStreams.h"
+#include "OEStreams.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+#pragma warning (disable: 4996)
 
 namespace OpenEditor
 {

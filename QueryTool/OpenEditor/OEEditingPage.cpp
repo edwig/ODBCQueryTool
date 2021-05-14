@@ -20,9 +20,9 @@
 29.06.2003 improvement, "Restrict cursor" has been replaced with "Cursor beyond EOL" and "Cursor beyond EOF"
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include <COMMON/ExceptionHelper.h>
-#include "OpenEditor/OEEditingPage.h"
+#include "OEEditingPage.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -30,33 +30,24 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-    using OpenEditor::GlobalSettings;
+using OpenEditor::GlobalSettings;
 
 /////////////////////////////////////////////////////////////////////////////
 // COEEditingPage property page
 
-COEEditingPage::COEEditingPage(SettingsManager& manager)
-: CPropertyPage(COEEditingPage::IDD),
-  m_manager(manager)
+COEEditingPage::COEEditingPage(SettingsManager& manager,CWnd* p_parent)
+               :StyleDialog(COEEditingPage::IDD,p_parent)
+               ,m_manager(manager)
 {
-    /*
-	//{{AFX_DATA_INIT(COEEditingPage)
-    m_UndoAfterSaving(FALSE)
-	m_MaxUndoCount = 0;
-    m_UndoMemLimit = 0;
-	m_RestrictCursor = FALSE;
-	m_TruncateSpaces = FALSE;
-	//}}AFX_DATA_INIT
-    */
+  const GlobalSettings& settings = m_manager.GetGlobalSettings();
 
-    const GlobalSettings& settings = m_manager.GetGlobalSettings();
-    m_DefFileExtension = settings.GetDefFileExtension().c_str();
-    m_UndoMemLimit    = settings.GetUndoMemLimit() / 1024;
-    m_MaxUndoCount    = settings.GetUndoLimit();
-    m_UndoAfterSaving = settings.GetUndoAfterSaving() ? TRUE : FALSE;
-    m_TruncateSpaces  = settings.GetTruncateSpaces() ? TRUE : FALSE;
-	m_CursorBeyondEOL = settings.GetCursorBeyondEOL() ? TRUE : FALSE;
-	m_CursorBeyondEOF = settings.GetCursorBeyondEOF() ? TRUE : FALSE;
+  m_DefFileExtension = settings.GetDefFileExtension().c_str();
+  m_UndoMemLimit     = settings.GetUndoMemLimit() / 1024;
+  m_MaxUndoCount     = settings.GetUndoLimit();
+  m_UndoAfterSaving  = settings.GetUndoAfterSaving() ? TRUE : FALSE;
+  m_TruncateSpaces   = settings.GetTruncateSpaces()  ? TRUE : FALSE;
+	m_CursorBeyondEOL  = settings.GetCursorBeyondEOL() ? TRUE : FALSE;
+	m_CursorBeyondEOF  = settings.GetCursorBeyondEOF() ? TRUE : FALSE;
 }
 
 COEEditingPage::~COEEditingPage()
@@ -65,66 +56,65 @@ COEEditingPage::~COEEditingPage()
 
 void COEEditingPage::DoDataExchange(CDataExchange* pDX)
 {
-    CPropertyPage::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(COEEditingPage)
-    DDX_Text(pDX, IDC_OE_MAX_UNDO_COUNT, m_MaxUndoCount);
-    DDX_Check(pDX, IDC_OE_TRUNCATE_SPACES, m_TruncateSpaces);
-    //}}AFX_DATA_MAP
-    DDX_Check(pDX, IDC_OE_UNDO_AFTER_SAVING, m_UndoAfterSaving);
-    DDX_Text(pDX, IDC_OE_DEF_EXT, m_DefFileExtension);
-    DDV_MaxChars(pDX, m_DefFileExtension, 16);
-    DDX_Text(pDX, IDC_OE_MAX_UNDO_MEM, m_UndoMemLimit);
+  StyleDialog::DoDataExchange(pDX);
 
-    DDV_MinMaxUInt(pDX, m_MaxUndoCount, 0, 1000000);
-    SendDlgItemMessage(IDC_OE_MAX_UNDO_COUNT_SPIN, UDM_SETRANGE32, 0, 1000000);
-    DDV_MinMaxUInt(pDX, m_UndoMemLimit, 0, 1000000);
-    SendDlgItemMessage(IDC_OE_MAX_UNDO_MEM_SPIN, UDM_SETRANGE32, 0, 1000000);
+  DDX_Control(pDX,IDC_OE_DEF_EXT,            m_editDefExt,   m_DefFileExtension);
+  DDX_Control(pDX,IDC_OE_MAX_UNDO_MEM,       m_editUndoLimit,m_UndoMemLimit);
+  DDX_Control(pDX,IDC_OE_MAX_UNDO_COUNT,     m_editUndoCount,m_MaxUndoCount);
+  DDX_Control(pDX,IDC_OE_MAX_UNDO_MEM_SPIN,  m_spinLimit,   &m_editUndoLimit);
+  DDX_Control(pDX,IDC_OE_MAX_UNDO_COUNT_SPIN,m_spinCount,   &m_editUndoCount);
+  DDX_Control(pDX,IDC_OE_TRUNCATE_SPACES,    m_checkTruncSpaces);
+  DDX_Control(pDX,IDC_OE_UNDO_AFTER_SAVING,  m_checkUndoAfter);
+  DDX_Control(pDX,IDC_OE_CURSOR_BEYOND_EOL,  m_checkCursorBEOL);
+  DDX_Control(pDX,IDC_OE_CURSOR_BEYOND_EOF,  m_checkCursorBEOF);
 
-    DDX_Check(pDX, IDC_OE_CURSOR_BEYOND_EOL, m_CursorBeyondEOL);
-    DDX_Check(pDX, IDC_OE_CURSOR_BEYOND_EOF, m_CursorBeyondEOF);
+  DDX_Check(pDX, IDC_OE_TRUNCATE_SPACES,     m_TruncateSpaces);
+  DDX_Check(pDX, IDC_OE_UNDO_AFTER_SAVING,   m_UndoAfterSaving);
+  DDX_Check(pDX, IDC_OE_CURSOR_BEYOND_EOL,   m_CursorBeyondEOL);
+  DDX_Check(pDX, IDC_OE_CURSOR_BEYOND_EOF,   m_CursorBeyondEOF);
 
-    if (!pDX->m_bSaveAndValidate)
-    {
-        ::EnableWindow(
-            ::GetDlgItem(m_hWnd, IDC_OE_CURSOR_BEYOND_EOF),
-            m_CursorBeyondEOL
-            );
-    }
+  DDV_MaxChars (pDX, m_DefFileExtension, 16);
+  DDV_MinMaxInt(pDX, m_MaxUndoCount, 0, 1000000);
+  DDV_MinMaxInt(pDX, m_UndoMemLimit, 0, 1000000);
+
+  if (!pDX->m_bSaveAndValidate)
+  {
+    m_checkCursorBEOF.EnableWindow(m_CursorBeyondEOL);
+  }
+  m_spinLimit.SetRange32(0, 1000000);
+  m_spinCount.SetRange32(0, 1000000);
 }
 
-
-BEGIN_MESSAGE_MAP(COEEditingPage, CPropertyPage)
-	//{{AFX_MSG_MAP(COEEditingPage)
-	//}}AFX_MSG_MAP
-    ON_BN_CLICKED(IDC_OE_CURSOR_BEYOND_EOL, OnBnClicked_CursorBeyondEol)
+BEGIN_MESSAGE_MAP(COEEditingPage,StyleDialog)
+  ON_BN_CLICKED(IDC_OE_CURSOR_BEYOND_EOL, OnBnClicked_CursorBeyondEol)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // COEEditingPage message handlers
 
-BOOL COEEditingPage::OnApply()
+BOOL 
+COEEditingPage::OnApply()
 {
-    try
-    {
-        GlobalSettings& settings = m_manager.GetGlobalSettings();
-        settings.SetDefFileExtension((LPCSTR)m_DefFileExtension,      false /*notify*/);
-        settings.SetUndoMemLimit   (m_UndoMemLimit * 1024,            false /*notify*/);
-        settings.SetUndoLimit      (m_MaxUndoCount,                   false /*notify*/);
-        settings.SetUndoAfterSaving(m_UndoAfterSaving ? true : false, false /*notify*/);
-        settings.SetTruncateSpaces (m_TruncateSpaces ? true : false,  false /*notify*/);
-        settings.SetCursorBeyondEOL(m_CursorBeyondEOL ? true : false, false /*notify*/);
-        settings.SetCursorBeyondEOF(m_CursorBeyondEOL
-                                    && m_CursorBeyondEOF ? true : false, false /*notify*/);
-    }
-    _OE_DEFAULT_HANDLER_;
+  try
+  {
+    GlobalSettings& settings = m_manager.GetGlobalSettings();
+    settings.SetDefFileExtension((LPCSTR)m_DefFileExtension,      false /*notify*/);
+    settings.SetUndoMemLimit   (m_UndoMemLimit * 1024,            false /*notify*/);
+    settings.SetUndoLimit      (m_MaxUndoCount,                   false /*notify*/);
+    settings.SetUndoAfterSaving(m_UndoAfterSaving ? true : false, false /*notify*/);
+    settings.SetTruncateSpaces (m_TruncateSpaces  ? true : false, false /*notify*/);
+    settings.SetCursorBeyondEOL(m_CursorBeyondEOL ? true : false, false /*notify*/);
+    settings.SetCursorBeyondEOF(m_CursorBeyondEOL
+                                && m_CursorBeyondEOF ? true : false, false /*notify*/);
+  }
+  _OE_DEFAULT_HANDLER_;
 
 	return TRUE;
 }
 
-void COEEditingPage::OnBnClicked_CursorBeyondEol ()
+void 
+COEEditingPage::OnBnClicked_CursorBeyondEol()
 {
-    ::EnableWindow(
-        ::GetDlgItem(m_hWnd, IDC_OE_CURSOR_BEYOND_EOF),
-        ::IsDlgButtonChecked(m_hWnd, IDC_OE_CURSOR_BEYOND_EOL) == BST_CHECKED
-        );
+  BOOL check = m_checkCursorBEOL.GetCheck();
+  m_checkCursorBEOF.EnableWindow(check);
 }

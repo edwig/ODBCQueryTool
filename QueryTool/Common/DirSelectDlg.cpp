@@ -18,7 +18,7 @@
 
 // 04/02/2002 it has been reimplemented with Shell API.
 
-#include "stdafx.h"
+#include "pch.h"
 #include <Shlobj.h>
 #include <Common/DirSelectDlg.h>
 
@@ -150,7 +150,7 @@ BOOL CDirSelectDlg::OnInitDialog()
         else
         {
             MessageBeep((UINT)-1);
-            WideMessageBox(NULL,"Cannot open \"Browse For Folder\" dialog.", "ERROR", MB_OK|MB_ICONSTOP);
+            StyleMessageBox(NULL,"Cannot open \"Browse For Folder\" dialog.", "ERROR", MB_OK|MB_ICONSTOP);
         }
 
         return retVal;

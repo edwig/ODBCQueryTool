@@ -18,9 +18,9 @@
 
 // 08.11.2003 bug fix, file extension is not recognized properly if it's shorter then 3 chars
 
-#include "stdafx.h"
-#include "OpenEditor/OESettings.h"
-#include "OpenEditor/OEHelpers.h"
+#include "pch.h"
+#include "OESettings.h"
+#include "OEHelpers.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

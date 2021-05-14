@@ -16,9 +16,9 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include <COMMON/ExceptionHelper.h>
-#include "OpenEditor/OEPropPage.h"
+#include "OEPropPage.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -29,142 +29,199 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // COEPropPage property page
 
-COEPropPage::COEPropPage(const SettingsManager& manager, InstanceSettings& settings)  
-: CPropertyPage(COEPropPage::IDD),
-m_manager(manager), m_settings(settings)
+COEPropPage::COEPropPage(const SettingsManager& manager, InstanceSettings& settings,CWnd* p_parent)  
+            :StyleDialog(COEPropPage::IDD,p_parent)
+            ,m_manager(manager)
+            ,m_settings(settings)
 {
-    m_dataInitialized = false;
-
-	//{{AFX_DATA_INIT(COEPropPage)
-	//}}AFX_DATA_INIT
+  m_initialized = false;
 }
 
 COEPropPage::~COEPropPage()
 {
 }
 
-void COEPropPage::DoDataExchange(CDataExchange* pDX)
+void 
+COEPropPage::DoDataExchange(CDataExchange* pDX)
 {
-	CPropertyPage::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(COEPropPage)
-	//}}AFX_DATA_MAP
+	StyleDialog::DoDataExchange(pDX);
+
+  DDX_Control(pDX, IDC_OEC_LANGUAGE,            m_comboLanguage);
+  DDX_Control(pDX, IDC_OEC_FILE_TYPE,           m_comboFileType);
+  DDX_Control(pDX, IDC_OEC_TAB_SIZE,            m_editTabSize,    m_tabSize);
+  DDX_Control(pDX, IDC_OEC_INDENT_SIZE,         m_editIndentSize, m_indentSize);
+  DDX_Control(pDX, IDC_OEC_TAB_SIZE_SPIN,       m_spinTabSize,   &m_editTabSize);
+  DDX_Control(pDX, IDC_OEC_INDENT_SIZE_SPIN,    m_spinIndentSize,&m_editIndentSize);
+  DDX_Control(pDX, IDC_OEC_INSERT_SPACES,       m_radioInsSpaces);
+  DDX_Control(pDX, IDC_OEC_KEEP_TABS,           m_radioKeepTabs);
+  DDX_Control(pDX, IDC_OEC_INDENT_TYPE_NONE,    m_radioIndNone);
+  DDX_Control(pDX, IDC_OEC_INDENT_TYPE_DEFAULT, m_radioIndDefault);
+  DDX_Control(pDX, IDC_OEC_INDENT_TYPE_SMART,   m_radioIndSmart);
+
+  DDV_StyleMinMaxInt(pDX, IDC_OEC_TAB_SIZE,     m_tabSize,   0,32);
+  DDV_StyleMinMaxInt(pDX, IDC_OEC_INDENT_SIZE,  m_indentSize,0,32);
 }
 
 
-BEGIN_MESSAGE_MAP(COEPropPage, CPropertyPage)
-	//{{AFX_MSG_MAP(COEPropPage)
-	ON_CBN_SELCHANGE(IDC_OEC_LANGUAGE, OnSelChangeLanguage)
-	ON_EN_CHANGE(IDC_OEC_TAB_SIZE, OnChangeData)
-	ON_CBN_SELCHANGE(IDC_OEC_FILE_TYPE, OnChangeData)
-	ON_EN_CHANGE(IDC_OEC_INDENT_SIZE, OnChangeData)
-	ON_BN_CLICKED(IDC_OEC_INDENT_TYPE_DEFAULT, OnChangeData)
-	ON_BN_CLICKED(IDC_OEC_INDENT_TYPE_NONE, OnChangeData)
-	ON_BN_CLICKED(IDC_OEC_INDENT_TYPE_SMART, OnChangeData)
-    ON_BN_CLICKED(IDC_OEC_INSERT_SPACES, OnChangeData)
-    ON_BN_CLICKED(IDC_OEC_KEEP_TABS, OnChangeData)
-	//}}AFX_MSG_MAP
+BEGIN_MESSAGE_MAP(COEPropPage, StyleDialog)
+	ON_CBN_SELCHANGE(IDC_OEC_LANGUAGE,            OnCbnSelChangeLanguage)
+  ON_CBN_SELCHANGE(IDC_OEC_FILE_TYPE,           OnCbnSelChangeFileType)
+	ON_EN_CHANGE    (IDC_OEC_TAB_SIZE,            OnEnChangeTabSize)
+  ON_EN_CHANGE    (IDC_OEC_INDENT_SIZE,         OnEnChangeIndentSize)
+  ON_BN_CLICKED   (IDC_OEC_INSERT_SPACES,       OnBnClickedInsertSpaces)
+  ON_BN_CLICKED   (IDC_OEC_KEEP_TABS,           OnBnClickedKeepTabs)
+	ON_BN_CLICKED   (IDC_OEC_INDENT_TYPE_DEFAULT, OnBnClickedIndDefault)
+	ON_BN_CLICKED   (IDC_OEC_INDENT_TYPE_NONE,    OnBnClickedIndNone)
+	ON_BN_CLICKED   (IDC_OEC_INDENT_TYPE_SMART,   OnBnClickedIndSmart)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // COEPropPage message handlers
 
-LRESULT COEPropPage::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) 
+LRESULT 
+COEPropPage::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) 
 {
-    try 
-    {
-        return CPropertyPage::WindowProc(message, wParam, lParam);
-    }
-    _OE_DEFAULT_HANDLER_;
+  try 
+  {
+    return StyleDialog::WindowProc(message, wParam, lParam);
+  }
+  _OE_DEFAULT_HANDLER_;
 
-    return 0;
+  return 0;
 }
 
-
-BOOL COEPropPage::OnInitDialog() 
+BOOL 
+COEPropPage::OnInitDialog() 
 {
-	CPropertyPage::OnInitDialog();
+	StyleDialog::OnInitDialog();
 
-    SendDlgItemMessage(IDC_OEC_LANGUAGE, CB_RESETCONTENT);
-    
-    int count = m_manager.GetClassCount();
-    for (int i(0); i < count; i++)
-    {
-        const std::string& name = m_manager.GetClassByPos(i).GetName();
+  int count = m_manager.GetClassCount();
+  for (int i(0); i < count; i++)
+  {
+      const std::string& name = m_manager.GetClassByPos(i).GetName();
 
-        SendDlgItemMessage(IDC_OEC_LANGUAGE, CB_ADDSTRING, 0, (LPARAM)name.c_str());
+      m_comboLanguage.AddString(name.c_str());
+      if (name == m_settings.GetName())
+      {
+        m_comboLanguage.SetCurSel(i);
+      }
+  }
 
-        if (name == m_settings.GetName())
-            SendDlgItemMessage(IDC_OEC_LANGUAGE, CB_SETCURSEL, i);
-    }
+  m_comboFileType.AddString("Default");
+  m_comboFileType.AddString("Windows (LF/CR)");
+  m_comboFileType.AddString("Unix (LF)");
+  m_comboFileType.AddString("Mac OS (CR/LF)");
 
-    SendDlgItemMessage(IDC_OEC_FILE_TYPE, CB_RESETCONTENT);
-    SendDlgItemMessage(IDC_OEC_FILE_TYPE, CB_ADDSTRING, 0, (LPARAM)"Default");
-    SendDlgItemMessage(IDC_OEC_FILE_TYPE, CB_ADDSTRING, 0, (LPARAM)"Dos (LF/CR)");
-    SendDlgItemMessage(IDC_OEC_FILE_TYPE, CB_ADDSTRING, 0, (LPARAM)"Unix (LF)");
-    SendDlgItemMessage(IDC_OEC_FILE_TYPE, CB_ADDSTRING, 0, (LPARAM)"Mac (CR/LF)");
+  // Set spin controls and buddies.
+  m_spinTabSize   .SetRange(0, 32);
+  m_spinIndentSize.SetRange(0, 32);
 
-    doSelChangeLanguage();
-    
-    SendDlgItemMessage(IDC_OEC_INDENT_SIZE_SPIN, UDM_SETRANGE32, 0, 32);
-    SendDlgItemMessage(IDC_OEC_TAB_SIZE_SPIN,    UDM_SETRANGE32, 0, 32);
-
-	return TRUE;
+  ChangeLanguage();
+  return TRUE;
 }
 
-
-void COEPropPage::doSelChangeLanguage ()
+void 
+COEPropPage::ChangeLanguage()
 {
-    m_dataInitialized = false;
+  m_initialized = false;
 
-    char buff[80];
-    SetDlgItemText(IDC_OEC_INDENT_SIZE, itoa(m_settings.GetIndentSpacing(), buff, 10));
-    SetDlgItemText(IDC_OEC_TAB_SIZE,    itoa(m_settings.GetTabSpacing(), buff, 10));   
+  switch(m_settings.GetTabExpand())
+  {
+    case 0: m_radioKeepTabs .SetCheck(1); break;
+    case 1: m_radioInsSpaces.SetCheck(1); break;
+  }
+  switch(m_settings.GetIndentType())
+  {
+    case 0: m_radioIndNone   .SetCheck(1); break;
+    case 1: m_radioIndDefault.SetCheck(1); break;
+    case 2: m_radioIndSmart  .SetCheck(1); break;
+  }
+  m_comboFileType.SetCurSel(m_settings.GetFileSaveAs() + 1);
+  m_indentSize = m_settings.GetIndentSpacing();
+  m_tabSize    = m_settings.GetTabSpacing();
 
-    CheckRadioButton(IDC_OEC_INDENT_TYPE_NONE, 
-                     IDC_OEC_INDENT_TYPE_NONE + 2, 
-                     IDC_OEC_INDENT_TYPE_NONE + m_settings.GetIndentType());
-
-    CheckRadioButton(IDC_OEC_INSERT_SPACES, 
-                     IDC_OEC_INSERT_SPACES + 1, 
-                     IDC_OEC_INSERT_SPACES + (m_settings.GetTabExpand() ? 0 : 1));
-
-    SendDlgItemMessage(IDC_OEC_FILE_TYPE, CB_SETCURSEL, m_settings.GetFileSaveAs() + 1);
-
-    m_dataInitialized = true;
+  m_initialized = true;
+  UpdateData(FALSE);
 }
 
-
-void COEPropPage::OnSelChangeLanguage() 
+void 
+COEPropPage::OnCbnSelChangeLanguage() 
 {
-    m_settings.SetClassSetting(&m_manager.GetClassByPos((int)SendDlgItemMessage(IDC_OEC_LANGUAGE, CB_GETCURSEL)));
-    doSelChangeLanguage();
+  int ind = m_comboLanguage.GetCurSel();
+  if (ind >= 0)
+  {
+    m_settings.SetClassSetting(&m_manager.GetClassByPos(ind));
+    ChangeLanguage();
+  }
 }
 
-
-
-void COEPropPage::OnChangeData() 
+void
+COEPropPage::OnCbnSelChangeFileType()
 {
-    if (m_dataInitialized)
-    {
-        char buff[80];
-        GetDlgItemText(IDC_OEC_INDENT_SIZE, buff, sizeof(buff));
-	    m_settings.SetIndentSpacing(atoi(buff), false);
-        GetDlgItemText(IDC_OEC_TAB_SIZE, buff, sizeof(buff));
-	    m_settings.SetTabSpacing(atoi(buff), false);
-
-        if (IsDlgButtonChecked(IDC_OEC_INDENT_TYPE_SMART))
-	        m_settings.SetIndentType(2, false);
-        else if (IsDlgButtonChecked(IDC_OEC_INDENT_TYPE_DEFAULT))
-	        m_settings.SetIndentType(1, false);
-        else
-	        m_settings.SetIndentType(0, false);
-
-        if (IsDlgButtonChecked(IDC_OEC_INSERT_SPACES))
-	        m_settings.SetTabExpand(true, false);
-        else
-	        m_settings.SetTabExpand(false, false);
-
-        m_settings.SetFileSaveAs((int)SendDlgItemMessage(IDC_OEC_FILE_TYPE, CB_GETCURSEL) - 1, false);
-    }
+  int ind = m_comboFileType.GetCurSel();
+  if (ind >= 0)
+  {
+    m_settings.SetFileSaveAs(ind - 1);
+  }
 }
 
+void
+COEPropPage::OnEnChangeTabSize()
+{
+  if(m_initialized)
+  {
+    UpdateData();
+    m_settings.SetTabSpacing(m_tabSize);
+  }
+}
+
+void
+COEPropPage::OnEnChangeIndentSize()
+{
+  if(m_initialized)
+  {
+    UpdateData();
+    m_settings.SetIndentSpacing(m_indentSize);
+  }
+}
+
+void 
+COEPropPage::OnBnClickedInsertSpaces()
+{
+  bool ins = m_radioInsSpaces.GetCheck() > 0;
+  m_settings.SetTabExpand(ins, false);
+}
+
+void 
+COEPropPage::OnBnClickedKeepTabs()
+{
+  int keep = m_radioKeepTabs.GetCheck() > 0;
+  m_settings.SetTabExpand(!keep,false);
+}
+
+void 
+COEPropPage::OnBnClickedIndNone()
+{
+  if(m_radioIndNone.GetCheck())
+  {
+    m_settings.SetIndentType(0,false);
+  }
+}
+
+void 
+COEPropPage::OnBnClickedIndDefault()
+{
+  if(m_radioIndDefault.GetCheck())
+  {
+    m_settings.SetIndentType(1,false);
+  }
+}
+
+void 
+COEPropPage::OnBnClickedIndSmart()
+{
+  if (m_radioIndSmart.GetCheck())
+  {
+    m_settings.SetIndentType(2,false);
+  }
+}

@@ -6,13 +6,12 @@
 ; Copyright (c) 2016 ir. W.E. Huisman
 ; All rights reserved
 ;
-; Last change:       09-04-2017
-; Versionnumber:     2.1.0
+; Last change:       14-05-2021
+; Versionnumber:     3.0.0
 ;-------------------------------------------------------
- !define PRODUCT_BITNESS                      "32-Bits"
- !ifndef InvoerMap
- !define InvoerMap                            "..\..\"
- !endif
+ !define PRODUCT_BITNESS      "32-Bits"
+ !define InputDir             "..\..\Bin_Releasex86\"
+ !define RootDir              "..\..\"
 
  !include ..\Installer_Algemeen.nsh
  

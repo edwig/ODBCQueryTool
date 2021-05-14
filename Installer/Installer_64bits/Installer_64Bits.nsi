@@ -3,16 +3,15 @@
 ; Project:      Open ODBC Querytool
 ; Auteurs:      Edo Huisman
 ;
-; Copyright (c) 2016 ir. W.E. Huisman
+; Copyright (c) 2006-2021 ir. W.E. Huisman
 ; All rights reserved
 ;
-; Last change:       09-03-2017
-; Versionnumber:     2.1.0
+; Last change:       15-05-2021
+; Versionnumber:     3.0.0
 ;-------------------------------------------------------
- !define PRODUCT_BITNESS                      "64-Bits"
- !ifndef InvoerMap
- !define InvoerMap                            "..\..\"
- !endif
+ !define PRODUCT_BITNESS      "64-Bits"
+ !define InputDir             "..\..\Bin_Releasex64\"
+ !define RootDir              "..\..\"
 
  !include ..\Installer_Algemeen.nsh
  

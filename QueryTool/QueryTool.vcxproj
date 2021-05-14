@@ -1,0 +1,526 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{F7E4D3BD-6248-493C-9DFB-94C33B0BD1E2}</ProjectGuid>
+    <Keyword>MFCProj</Keyword>
+    <RootNamespace>QueryTool</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <UseOfMfc>Static</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <UseOfMfc>Static</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <UseOfMfc>Static</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <UseOfMfc>Static</UseOfMfc>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)bin_$(Configuration)x86\</OutDir>
+    <TargetName>ODBC$(ProjectName)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)bin_$(Configuration)$(Platform)\</OutDir>
+    <TargetName>ODBC$(ProjectName)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)bin_$(Configuration)x86\</OutDir>
+    <TargetName>ODBC$(ProjectName)</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)bin_$(Configuration)$(Platform)\</OutDir>
+    <TargetName>ODBC$(ProjectName)</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)QueryTool;$(SolutionDir)QueryTool\OpenEditor\Include;$(SolutionDir)SQLComponents;$(SolutionDir)QueryTool\GridControl;$(SolutionDir)QueryTool\Query;$(SolutionDir)StyleFramework;$(SolutionDir)StyleFramework\Grid;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>rpcrt4.lib;crypt32.lib;shlwapi.lib;odbc32.lib;</AdditionalDependencies>
+    </Link>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <ValidateAllParameters>true</ValidateAllParameters>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <PreBuildEvent>
+      <Command>mkdir $(OutDir)Data
+copy $(SolutionDir)\Data\*.*  $(OutDir)\Data\</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Copy settings files</Message>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)QueryTool;$(SolutionDir)QueryTool\OpenEditor\Include;$(SolutionDir)SQLComponents;$(SolutionDir)QueryTool\GridControl;$(SolutionDir)QueryTool\Query;$(SolutionDir)StyleFramework;$(SolutionDir)StyleFramework\Grid;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>rpcrt4.lib;crypt32.lib;shlwapi.lib;odbc32.lib;</AdditionalDependencies>
+    </Link>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <ValidateAllParameters>true</ValidateAllParameters>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <PreBuildEvent>
+      <Command>mkdir $(OutDir)Data
+copy $(SolutionDir)\Data\*.*  $(OutDir)\Data\</Command>
+      <Message>Copy settings files</Message>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)QueryTool;$(SolutionDir)QueryTool\OpenEditor\Include;$(SolutionDir)SQLComponents;$(SolutionDir)QueryTool\GridControl;$(SolutionDir)QueryTool\Query;$(SolutionDir)StyleFramework;$(SolutionDir)StyleFramework\Grid;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>rpcrt4.lib;crypt32.lib;shlwapi.lib;odbc32.lib;</AdditionalDependencies>
+    </Link>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <ValidateAllParameters>true</ValidateAllParameters>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <PreBuildEvent>
+      <Command>mkdir $(OutDir)Data
+copy $(SolutionDir)\Data\*.*  $(OutDir)\Data\</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Copy settings files</Message>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)QueryTool;$(SolutionDir)QueryTool\OpenEditor\Include;$(SolutionDir)SQLComponents;$(SolutionDir)QueryTool\GridControl;$(SolutionDir)QueryTool\Query;$(SolutionDir)StyleFramework;$(SolutionDir)StyleFramework\Grid;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>rpcrt4.lib;crypt32.lib;shlwapi.lib;odbc32.lib;</AdditionalDependencies>
+    </Link>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <ValidateAllParameters>true</ValidateAllParameters>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <PreBuildEvent>
+      <Command>mkdir $(OutDir)Data
+copy $(SolutionDir)\Data\*.*  $(OutDir)\Data\</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Copy settings files</Message>
+    </PreBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="AboutDlg.h" />
+    <ClInclude Include="ChildFrm.h" />
+    <ClInclude Include="Common\AppGlobal.h" />
+    <ClInclude Include="Common\AppUtilities.h" />
+    <ClInclude Include="Common\arg_shared.h" />
+    <ClInclude Include="Common\DirSelectDlg.h" />
+    <ClInclude Include="Common\DocManagerExt.h" />
+    <ClInclude Include="Common\ExceptionHelper.h" />
+    <ClInclude Include="Common\FileSelectDialog.h" />
+    <ClInclude Include="Common\FixedString.h" />
+    <ClInclude Include="Common\GUICommandDictionary.h" />
+    <ClInclude Include="Common\MemoryMappedFile.h" />
+    <ClInclude Include="Common\PropertySheetMem.h" />
+    <ClInclude Include="Common\QuickArray.h" />
+    <ClInclude Include="Common\regexp.h" />
+    <ClInclude Include="Common\StrHelpers.h" />
+    <ClInclude Include="Common\VisualAttributes.h" />
+    <ClInclude Include="Common\VisualAttributesPage.h" />
+    <ClInclude Include="ConnectionBar.h" />
+    <ClInclude Include="ConnectionDlg.h" />
+    <ClInclude Include="FileWatch.h" />
+    <ClInclude Include="framework.h" />
+    <ClInclude Include="GridControl\MCellRange.h" />
+    <ClInclude Include="GridControl\MGridCell.h" />
+    <ClInclude Include="GridControl\MGridCellBase.h" />
+    <ClInclude Include="GridControl\MGridCtrl.h" />
+    <ClInclude Include="GridControl\MGridDropTarget.h" />
+    <ClInclude Include="GridControl\MInPlaceEdit.h" />
+    <ClInclude Include="GridControl\MMemDC.h" />
+    <ClInclude Include="GridControl\MTitleTip.h" />
+    <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="MultConnectionsDlg.h" />
+    <ClInclude Include="OpenEditor\Include\OEAutocompleteCtrl.h" />
+    <ClInclude Include="OpenEditor\Include\OEBackupPage.h" />
+    <ClInclude Include="OpenEditor\Include\OEBlockPage.h" />
+    <ClInclude Include="OpenEditor\Include\OEClassPage.h" />
+    <ClInclude Include="OpenEditor\Include\OECommonLanguageSupport.h" />
+    <ClInclude Include="OpenEditor\Include\OEContext.h" />
+    <ClInclude Include="OpenEditor\Include\OEDocument.h" />
+    <ClInclude Include="OpenEditor\Include\OEDocumentDlg.h" />
+    <ClInclude Include="OpenEditor\Include\OEEditingPage.h" />
+    <ClInclude Include="OpenEditor\Include\OEFileInfoDlg.h" />
+    <ClInclude Include="OpenEditor\Include\OEFilePage.h" />
+    <ClInclude Include="OpenEditor\Include\OEFindFiles.h" />
+    <ClInclude Include="OpenEditor\Include\OEFindReplaceDlg.h" />
+    <ClInclude Include="OpenEditor\Include\OEGeneralPage.h" />
+    <ClInclude Include="OpenEditor\Include\OEGoToDialog.h" />
+    <ClInclude Include="OpenEditor\Include\OEHelpers.h" />
+    <ClInclude Include="OpenEditor\Include\OEHighlighter.h" />
+    <ClInclude Include="OpenEditor\Include\OELanguage.h" />
+    <ClInclude Include="OpenEditor\Include\OELanguageManager.h" />
+    <ClInclude Include="OpenEditor\Include\OELanguageStreams.h" />
+    <ClInclude Include="OpenEditor\Include\OELanguageSupport.h" />
+    <ClInclude Include="OpenEditor\Include\OEMatchSearcher.h" />
+    <ClInclude Include="OpenEditor\Include\OEPlsSqlParser.h" />
+    <ClInclude Include="OpenEditor\Include\OEPlsSqlSupport.h" />
+    <ClInclude Include="OpenEditor\Include\OEPlsSqlSyntax.h" />
+    <ClInclude Include="OpenEditor\Include\OEPrintPageSetup.h" />
+    <ClInclude Include="OpenEditor\Include\OEPropPage.h" />
+    <ClInclude Include="OpenEditor\Include\OESaveModifiedDlg.h" />
+    <ClInclude Include="OpenEditor\Include\OESettings.h" />
+    <ClInclude Include="OpenEditor\Include\OESettingsDlg.h" />
+    <ClInclude Include="OpenEditor\Include\OESettingsStreams.h" />
+    <ClInclude Include="OpenEditor\Include\OESQLSettingsPage.h" />
+    <ClInclude Include="OpenEditor\Include\OEStorage.h" />
+    <ClInclude Include="OpenEditor\Include\OEStreams.h" />
+    <ClInclude Include="OpenEditor\Include\OESyntaxParser.h" />
+    <ClInclude Include="OpenEditor\Include\OETemplates.h" />
+    <ClInclude Include="OpenEditor\Include\OETemplatesDlg.h" />
+    <ClInclude Include="OpenEditor\Include\OETemplatesPage.h" />
+    <ClInclude Include="OpenEditor\Include\OETemplateStreams.h" />
+    <ClInclude Include="OpenEditor\Include\OEUndo.h" />
+    <ClInclude Include="OpenEditor\Include\OEView.h" />
+    <ClInclude Include="OpenEditor\Include\OEViewPaintAccessories.h" />
+    <ClInclude Include="OutputWnd.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="QueryTool.h" />
+    <ClInclude Include="QueryToolDoc.h" />
+    <ClInclude Include="QueryToolView.h" />
+    <ClInclude Include="Query\codeer.h" />
+    <ClInclude Include="Query\DirTreeCtrl.h" />
+    <ClInclude Include="Query\DirTreeView.h" />
+    <ClInclude Include="Query\GridView.h" />
+    <ClInclude Include="Query\InfoTree.h" />
+    <ClInclude Include="Query\InfoView.h" />
+    <ClInclude Include="Query\NativeSQLDlg.h" />
+    <ClInclude Include="Query\ObjectTree.h" />
+    <ClInclude Include="Query\ObjectView.h" />
+    <ClInclude Include="Query\QueryBar.h" />
+    <ClInclude Include="Query\QueryPanelWnd.h" />
+    <ClInclude Include="Query\RebindDlg.h" />
+    <ClInclude Include="Query\VariablesDlg.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="SortStringArray.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="Version.h" />
+    <ClInclude Include="ViewTree.h" />
+    <ClInclude Include="WinException.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AboutDlg.cpp" />
+    <ClCompile Include="ChildFrm.cpp" />
+    <ClCompile Include="Common\AppGlobal.cpp" />
+    <ClCompile Include="Common\AppUtilities.cpp" />
+    <ClCompile Include="Common\arg_shared.cpp" />
+    <ClCompile Include="Common\DirSelectDlg.cpp" />
+    <ClCompile Include="Common\DocManagerExt.cpp" />
+    <ClCompile Include="Common\ExceptionHelper.cpp" />
+    <ClCompile Include="Common\FileSelectDialog.cpp" />
+    <ClCompile Include="Common\FixedString.cpp" />
+    <ClCompile Include="Common\GUICommandDictionary.cpp" />
+    <ClCompile Include="Common\MemoryMappedFile.cpp" />
+    <ClCompile Include="Common\PropertySheetMem.cpp" />
+    <ClCompile Include="Common\QuickArray.cpp" />
+    <ClCompile Include="Common\regexp.cpp" />
+    <ClCompile Include="Common\StrHelpers.cpp" />
+    <ClCompile Include="Common\VisualAttributes.cpp" />
+    <ClCompile Include="Common\VisualAttributesPage.cpp" />
+    <ClCompile Include="ConnectionBar.cpp" />
+    <ClCompile Include="ConnectionDlg.cpp" />
+    <ClCompile Include="FileWatch.cpp" />
+    <ClCompile Include="GridControl\MGridCell.cpp" />
+    <ClCompile Include="GridControl\MGridCellBase.cpp" />
+    <ClCompile Include="GridControl\MGridCtrl.cpp" />
+    <ClCompile Include="GridControl\MGridDropTarget.cpp" />
+    <ClCompile Include="GridControl\MInPlaceEdit.cpp" />
+    <ClCompile Include="GridControl\MTitleTip.cpp" />
+    <ClCompile Include="MainFrm.cpp" />
+    <ClCompile Include="MultConnectionsDlg.cpp" />
+    <ClCompile Include="OpenEditor\OEAutocompleteCtrl.cpp" />
+    <ClCompile Include="OpenEditor\OEBackupPage.cpp" />
+    <ClCompile Include="OpenEditor\OEBlockPage.cpp" />
+    <ClCompile Include="OpenEditor\OEClassPage.cpp" />
+    <ClCompile Include="OpenEditor\OECommonLanguageSupport.cpp" />
+    <ClCompile Include="OpenEditor\OEContext_1.cpp" />
+    <ClCompile Include="OpenEditor\OEContext_2.cpp" />
+    <ClCompile Include="OpenEditor\OEContext_3.cpp" />
+    <ClCompile Include="OpenEditor\OEContext_4.cpp" />
+    <ClCompile Include="OpenEditor\OEContext_5.cpp" />
+    <ClCompile Include="OpenEditor\OEDocument.cpp" />
+    <ClCompile Include="OpenEditor\OEDocumentDlg.cpp" />
+    <ClCompile Include="OpenEditor\OEEditingPage.cpp" />
+    <ClCompile Include="OpenEditor\OEFileInfoDlg.cpp" />
+    <ClCompile Include="OpenEditor\OEFilePage.cpp" />
+    <ClCompile Include="OpenEditor\OEFindFiles.cpp" />
+    <ClCompile Include="OpenEditor\OEFindReplaceDlg.cpp" />
+    <ClCompile Include="OpenEditor\OEGeneralPage.cpp" />
+    <ClCompile Include="OpenEditor\OEGoToDialog.cpp" />
+    <ClCompile Include="OpenEditor\OEHelpers_1.cpp" />
+    <ClCompile Include="OpenEditor\OEHelpers_2.cpp" />
+    <ClCompile Include="OpenEditor\OEHelpers_3.cpp" />
+    <ClCompile Include="OpenEditor\OEHighlighter.cpp" />
+    <ClCompile Include="OpenEditor\OEHighlighter_1.cpp" />
+    <ClCompile Include="OpenEditor\OEHighlighter_2.cpp" />
+    <ClCompile Include="OpenEditor\OELanguage.cpp" />
+    <ClCompile Include="OpenEditor\OELanguageManager.cpp" />
+    <ClCompile Include="OpenEditor\OELanguageStreams.cpp" />
+    <ClCompile Include="OpenEditor\OEMatchSearcher.cpp" />
+    <ClCompile Include="OpenEditor\OEPlsSqlParser.cpp" />
+    <ClCompile Include="OpenEditor\OEPlsSqlSupport.cpp" />
+    <ClCompile Include="OpenEditor\OEPlsSqlSyntax.cpp" />
+    <ClCompile Include="OpenEditor\OEPrintPageSetup.cpp" />
+    <ClCompile Include="OpenEditor\OEPropPage.cpp" />
+    <ClCompile Include="OpenEditor\OESaveModifiedDlg.cpp" />
+    <ClCompile Include="OpenEditor\OESettings.cpp" />
+    <ClCompile Include="OpenEditor\OESettingsDlg.cpp" />
+    <ClCompile Include="OpenEditor\OESettingsStreams.cpp" />
+    <ClCompile Include="OpenEditor\OESQLSettingsPage.cpp" />
+    <ClCompile Include="OpenEditor\OEStorage.cpp" />
+    <ClCompile Include="OpenEditor\OEStreams.cpp" />
+    <ClCompile Include="OpenEditor\OESyntaxParser.cpp" />
+    <ClCompile Include="OpenEditor\OETemplates.cpp" />
+    <ClCompile Include="OpenEditor\OETemplatesDlg.cpp" />
+    <ClCompile Include="OpenEditor\OETemplatesPage.cpp" />
+    <ClCompile Include="OpenEditor\OETemplateStreams.cpp" />
+    <ClCompile Include="OpenEditor\OEUndo.cpp" />
+    <ClCompile Include="OpenEditor\OEViewPaintAccessories.cpp" />
+    <ClCompile Include="OpenEditor\OEView_1.cpp" />
+    <ClCompile Include="OpenEditor\OEView_2.cpp" />
+    <ClCompile Include="OpenEditor\OEView_3.cpp" />
+    <ClCompile Include="OpenEditor\OEView_4.cpp" />
+    <ClCompile Include="OpenEditor\OEView_5.cpp" />
+    <ClCompile Include="OpenEditor\OEView_6.cpp" />
+    <ClCompile Include="OpenEditor\OEView_7.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="OutputWnd.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="QueryTool.cpp" />
+    <ClCompile Include="QueryToolDoc.cpp" />
+    <ClCompile Include="QueryToolView.cpp" />
+    <ClCompile Include="Query\Codeer.cpp" />
+    <ClCompile Include="Query\DirTreeCtrl.cpp" />
+    <ClCompile Include="Query\DirTreeView.cpp" />
+    <ClCompile Include="Query\GridView.cpp" />
+    <ClCompile Include="Query\InfoTree.cpp" />
+    <ClCompile Include="Query\InfoView.cpp" />
+    <ClCompile Include="Query\NativeSQLDlg.cpp" />
+    <ClCompile Include="Query\ObjectTree.cpp" />
+    <ClCompile Include="Query\ObjectView.cpp" />
+    <ClCompile Include="Query\QueryBar.cpp" />
+    <ClCompile Include="Query\QueryPanelWnd.cpp" />
+    <ClCompile Include="Query\RebindDlg.cpp" />
+    <ClCompile Include="Query\VariablesDlg.cpp" />
+    <ClCompile Include="SortStringArray.cpp" />
+    <ClCompile Include="ViewTree.cpp" />
+    <ClCompile Include="WinException.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Data\context.keymap" />
+    <None Include="..\Data\custom.keymap" />
+    <None Include="..\Data\default.keymap" />
+    <None Include="..\Data\editplus2.keymap" />
+    <None Include="..\Data\languages.dat" />
+    <None Include="..\Data\settings.dat" />
+    <None Include="..\Data\settings.dat.old" />
+    <None Include="..\Data\templates.dat" />
+    <None Include="..\Data\templates.dat.old" />
+    <None Include="..\Data\textpad.keymap" />
+    <None Include="..\Data\ultraedit.keymap" />
+    <None Include="QueryTool.reg" />
+    <None Include="res\QueryTool.rc2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="QueryTool.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Icons\12_help.ico" />
+    <Image Include="Icons\30_Save.ico" />
+    <Image Include="Icons\60_OK.ico" />
+    <Image Include="Icons\61_Cancel.ico" />
+    <Image Include="Icons\63_RemoveObject.ico" />
+    <Image Include="Icons\73_map-openen.ico" />
+    <Image Include="Icons\80_Calender.ico" />
+    <Image Include="res\classview.bmp" />
+    <Image Include="res\classview_hc.bmp" />
+    <Image Include="res\class_view.ico" />
+    <Image Include="res\class_view_hc.ico" />
+    <Image Include="res\connectb.bmp" />
+    <Image Include="res\database.bmp" />
+    <Image Include="res\error.ico" />
+    <Image Include="res\explorer.bmp" />
+    <Image Include="res\explorer_hc.bmp" />
+    <Image Include="res\explorer_state_list.bmp" />
+    <Image Include="res\fileview.bmp" />
+    <Image Include="res\fileview_hc.bmp" />
+    <Image Include="res\file_view.ico" />
+    <Image Include="res\file_view_hc.ico" />
+    <Image Include="res\ico00001.ico" />
+    <Image Include="res\ico00002.ico" />
+    <Image Include="res\icon1.ico" />
+    <Image Include="res\menuimages.bmp" />
+    <Image Include="res\menuimages_hc.bmp" />
+    <Image Include="res\OpenEditor.bmp" />
+    <Image Include="res\OpenQueryDoc.ico" />
+    <Image Include="res\output_wnd.ico" />
+    <Image Include="res\output_wnd_hc.ico" />
+    <Image Include="res\QUERY.ICO" />
+    <Image Include="res\querybar.bmp" />
+    <Image Include="res\querysta.bmp" />
+    <Image Include="res\QueryTool.ico" />
+    <Image Include="res\QueryToolDoc.ico" />
+    <Image Include="res\rdbms_objects.bmp" />
+    <Image Include="res\ScrollBar1.bmp" />
+    <Image Include="res\ScrollBar2.bmp" />
+    <Image Include="res\ScrollBar3.bmp" />
+    <Image Include="res\ScrollBar4.bmp" />
+    <Image Include="res\ScrollBar5.bmp" />
+    <Image Include="res\ScrollBar6.bmp" />
+    <Image Include="res\sort.bmp" />
+    <Image Include="res\sort_hc.bmp" />
+    <Image Include="res\Toolbar.bmp" />
+    <Image Include="res\Toolbar256.bmp" />
+    <Image Include="res\userimages.bmp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

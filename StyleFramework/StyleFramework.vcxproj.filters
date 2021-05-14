@@ -1,0 +1,369 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Grid">
+      <UniqueIdentifier>{1fb4a51c-5ea7-4583-b3d0-07b3f459a4bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Grid\Header Files">
+      <UniqueIdentifier>{59b22038-9771-41f7-8a8f-0e2ae48ba7a2}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GrayWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleButton.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleCheckbox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleColors.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleFonts.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleFrameWndEx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleMessageBox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SkinScrollbar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SkinScrollWnd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleListCtrl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Grid\CellRange.h">
+      <Filter>Grid\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Grid\GridCell.h">
+      <Filter>Grid\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Grid\GridCellBase.h">
+      <Filter>Grid\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Grid\GridCellCheck.h">
+      <Filter>Grid\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Grid\GridCellCombo.h">
+      <Filter>Grid\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Grid\GridCellDateTime.h">
+      <Filter>Grid\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Grid\GridCellNumeric.h">
+      <Filter>Grid\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Grid\GridCellURL.h">
+      <Filter>Grid\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Grid\GridCtrl.h">
+      <Filter>Grid\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Grid\GridView.h">
+      <Filter>Grid\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Grid\InPlaceEdit.h">
+      <Filter>Grid\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Grid\MemDC.h">
+      <Filter>Grid\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Grid\TitleTip.h">
+      <Filter>Grid\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleGridCtrl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleDialogCA.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleDialog.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleMacros.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CWSExpander.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RegistryManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleListBox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleFrameWnd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleMDIFrameWnd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleUtilities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleTreeCtrl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleProgressCtrl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LinePrinter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleDIB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleFormView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleCalendar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleToast.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleStatic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleComboBox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleFrameWork.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleEdit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleTabCtrl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleSpinButtonCtrl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleTexts.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleHyperlink.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="GrayWindow.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleButton.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleCheckBox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleColors.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleFonts.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleFrameWndEx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleMessageBox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SkinScrollbar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SkinScrollWnd.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleListCtrl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Grid\GridCell.cpp">
+      <Filter>Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="Grid\GridCellBase.cpp">
+      <Filter>Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="Grid\GridCellCheck.cpp">
+      <Filter>Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="Grid\GridCellCombo.cpp">
+      <Filter>Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="Grid\GridCellDateTime.cpp">
+      <Filter>Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="Grid\GridCellNumeric.cpp">
+      <Filter>Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="Grid\GridCellURL.cpp">
+      <Filter>Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="Grid\GridCtrl.cpp">
+      <Filter>Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="Grid\GridView.cpp">
+      <Filter>Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="Grid\InPlaceEdit.cpp">
+      <Filter>Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="Grid\TitleTip.cpp">
+      <Filter>Grid</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleGridCtrl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleDialogCA.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleDialog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RegistryManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleListBox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleFrameWnd.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleMDIFrameWnd.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleUtilities.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleTreeCtrl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleProgressCtrl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LinePrinter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleDIB.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleFormView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleCalendar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleToast.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleStatic.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleComboBox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleEdit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleTabCtrl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleSpinButtonCtrl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleTexts.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleHyperlink.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="StyleFramework.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\StyleFramework.rc2">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Icons\60_OK.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Icons\61_Cancel.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Icons\63_RemoveObject.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Icons\30_Save.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\MyFrame.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ScrollBar1.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ScrollBar2.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ScrollBar3.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ScrollBar4.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ScrollBar5.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ScrollBar6.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Icons\80_Calender.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Icons\12_help.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Icons\73_map-openen.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="WorkToDo.txt" />
+  </ItemGroup>
+</Project>

@@ -1,10 +1,12 @@
 /////////////////////////////////////////////////////////////////////////////
 //
 
-#include "StdAfx.h"
+#include "pch.h"
 #include "Common/RegExp.h"
 #include <stdio.h>
 #include <ctype.h>
+
+#pragma warning (disable: 4996)
 
 #define	MAXPAT		1000 /* Max length of compiled pattern	*/
 #define	TRUE		     1

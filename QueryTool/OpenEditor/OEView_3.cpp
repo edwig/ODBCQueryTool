@@ -27,9 +27,9 @@
         optimize OnHScroll & OnVScroll, add SrollWindow
 
 */
-#include "stdafx.h"
-#include "OpenEditor/OEDocument.h"
-#include "OpenEditor/OEView.h"
+#include "pch.h"
+#include "OEDocument.h"
+#include "OEView.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

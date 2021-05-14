@@ -20,6 +20,7 @@
 // ConnectionDlg.h : header file
 //
 #include "Query/GridView.h"
+#include "MGridCtrl.h"
 #include "resource.h"
 #include <sql.h>
 #include <sqlext.h>
@@ -36,7 +37,7 @@ const bool Data2Controls = false;
 class CConnectionDlgSetting
 {
 public:
-   CConnectionDlgSetting(int    section
+   CConnectionDlgSetting(int     section
                         ,CString user
                         ,CString password
                         ,CString datasource
@@ -53,11 +54,11 @@ public:
   CString GetTimesUsed()    { return m_timesUsed;   }
   bool    GetSafty()        { return m_safty;       }
   // Setters
-  void   SetSection(int section)    { m_section   = section; }
+  void   SetSection(int section)     { m_section   = section; }
   void   SetPassword (CString word)  { m_password  = word;  }
   void   SetLastUsage(CString usage) { m_lastUsage = usage; }
   void   SetTimesUsed(CString used)  { m_timesUsed = used;  }
-  void   SetSafty(bool safty)       { m_safty     = safty; }
+  void   SetSafty(bool safty)        { m_safty     = safty; }
 
 private:
   int     m_section;
@@ -71,12 +72,12 @@ private:
 
 typedef std::vector<CConnectionDlgSetting>::iterator ConSetIter;
 
-class MultConnectionsDlg : public CDialog
+class MultConnectionsDlg : public StyleDialog
 {
 // Construction
 public:
 	MultConnectionsDlg(CWnd* pParent = NULL);   // standard constructor
-  ~MultConnectionsDlg();                      // Standard destructor
+ ~MultConnectionsDlg();                       // Standard destructor
 
   // Getters
   CString GetUser()         { return m_UserEdit;    }
@@ -102,7 +103,9 @@ protected:
   virtual void OnDetails();
 	DECLARE_MESSAGE_MAP()
 private:
-  int InsertListline (char *p_datasource
+  virtual void SetupDynamicLayout() override;
+
+  int InsertListline (CString& p_datasource
                      ,CString& p_user
                      ,CString& p_total
                      ,CString& p_lasttime);
@@ -118,21 +121,27 @@ private:
   void        SetListFont();
   CString     Current();  
   
-  CGridCtrl   m_list;
-  CEdit       m_boxUserEdit;
-  CEdit       m_boxUserPassword;
-  CComboBox   m_boxDataSource;
-  CComboBox   m_boxSafty;
+  MCGridCtrl    m_list;
+  StyleEdit     m_boxUserEdit;
+  StyleEdit     m_boxUserPassword;
+  StyleComboBox m_comboDataSource;
+  StyleComboBox m_comboSafty;
+  StyleButton   m_buttonTest;
+  StyleButton   m_buttonDelete;
+  StyleButton   m_buttonDetails;
+  StyleButton   m_buttonHelp;
+  StyleButton   m_buttonOK;
+  StyleButton   m_buttonCancel;
 
-  CString     m_UserEdit;
-  CString     m_UserPassword;
-  CString     m_DataSource;
-  bool        m_Safty;
-  int         m_nextSection;
+  CString       m_UserEdit;
+  CString       m_UserPassword;
+  CString       m_DataSource;
+  bool          m_Safty;
+  int           m_nextSection;
   
-  bool        m_vista; // MS-Vista and above
-  CString     m_applicDirectory;
-  CString     m_ODBC_iniFile;
+  bool          m_vista; // MS-Vista and above
+  CString       m_applicDirectory;
+  CString       m_ODBC_iniFile;
 
   std::vector<CConnectionDlgSetting> m_settings;
 public:

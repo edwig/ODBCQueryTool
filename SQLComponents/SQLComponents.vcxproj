@@ -1,0 +1,344 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectName>SQLComponents</ProjectName>
+    <ProjectGuid>{0E56E030-9CDD-47A7-B580-DCD4E103F968}</ProjectGuid>
+    <RootNamespace>SQLComponenten</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <UseOfMfc>Static</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <VCToolsVersion />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <UseOfMfc>Static</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <VCToolsVersion />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <UseOfMfc>Static</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <VCToolsVersion />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v142</PlatformToolset>
+    <UseOfMfc>Static</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <VCToolsVersion />
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>14.0.25420.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)lib\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <TargetName>$(ProjectName)_x86D</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(SolutionDir)lib\</OutDir>
+    <IntDir>$(Configuration)\$(Platform)\</IntDir>
+    <TargetName>$(ProjectName)_x64D</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)lib\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+    <TargetName>$(ProjectName)_x86R</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(SolutionDir)lib\</OutDir>
+    <IntDir>$(Platform)\$(Configuration)\</IntDir>
+    <TargetName>$(ProjectName)_x64R</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Lib>
+      <AdditionalOptions>/ignore:4221 %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ProgramDataBaseFileName>$(OutDir)$(TargetName).pdb</ProgramDataBaseFileName>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Lib>
+      <AdditionalOptions>/ignore:4221 %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Lib>
+      <AdditionalOptions>/ignore:4221 %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Midl>
+      <TargetEnvironment>X64</TargetEnvironment>
+    </Midl>
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <ProgramDataBaseFileName>$(IntDir)$(TargetName).pdb</ProgramDataBaseFileName>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Lib>
+      <AdditionalOptions>/ignore:4221 %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="BasicExcel.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="BasicXmlExcel.cpp" />
+    <ClCompile Include="bcd.cpp">
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Level4</WarningLevel>
+    </ClCompile>
+    <ClCompile Include="ConvertWideString.cpp" />
+    <ClCompile Include="CrackURL.cpp" />
+    <ClCompile Include="DDLCreateTable.cpp" />
+    <ClCompile Include="DefuseBOM.cpp" />
+    <ClCompile Include="ExcelFormat.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="FileBuffer.cpp" />
+    <ClCompile Include="Namespace.cpp" />
+    <ClCompile Include="SQLConnections.cpp" />
+    <ClCompile Include="SQLDatabasePool.cpp" />
+    <ClCompile Include="SQLDriverManager.cpp" />
+    <ClCompile Include="SQLGetExePath.cpp" />
+    <ClCompile Include="SQLGuid.cpp" />
+    <ClCompile Include="SQLAssociation.cpp" />
+    <ClCompile Include="SQLColumnInfo.cpp" />
+    <ClCompile Include="SQLComponents.cpp" />
+    <ClCompile Include="SQLDatabase.cpp" />
+    <ClCompile Include="SQLDataSet.cpp" />
+    <ClCompile Include="SQLDataSetXLS.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="SQLDate.cpp" />
+    <ClCompile Include="SQLError.cpp" />
+    <ClCompile Include="SQLFilter.cpp" />
+    <ClCompile Include="SQLInfo.cpp" />
+    <ClCompile Include="SQLInfoAccess.cpp" />
+    <ClCompile Include="SQLInfoDB.cpp" />
+    <ClCompile Include="SQLInfoFirebird.cpp" />
+    <ClCompile Include="SQLInfoGenericODBC.cpp" />
+    <ClCompile Include="SQLInfoInformix.cpp" />
+    <ClCompile Include="SQLInfoMariaDB.cpp" />
+    <ClCompile Include="SQLInfoMySQL.cpp" />
+    <ClCompile Include="SQLInfoOracle.cpp" />
+    <ClCompile Include="SQLInfoPostgreSQL.cpp" />
+    <ClCompile Include="SQLInfoSQLServer.cpp" />
+    <ClCompile Include="SQLInterval.cpp" />
+    <ClCompile Include="SQLLanguage.cpp" />
+    <ClCompile Include="SQLMessage.cpp" />
+    <ClCompile Include="SQLMutation.cpp" />
+    <ClCompile Include="SQLQuery.cpp" />
+    <ClCompile Include="SQLRecord.cpp" />
+    <ClCompile Include="SQLStatement.cpp" />
+    <ClCompile Include="SQLTime.cpp" />
+    <ClCompile Include="SQLTimestamp.cpp" />
+    <ClCompile Include="SQLTransaction.cpp" />
+    <ClCompile Include="SQLVariant.cpp" />
+    <ClCompile Include="SQLVariantFormat.cpp" />
+    <ClCompile Include="SQLVariantOperator.cpp" />
+    <ClCompile Include="SQLVariantOperatorAdd.cpp" />
+    <ClCompile Include="SQLVariantOperatorDiv.cpp" />
+    <ClCompile Include="SQLVariantOperatorEqual.cpp" />
+    <ClCompile Include="SQLVariantOperatorGreatEqual.cpp" />
+    <ClCompile Include="SQLVariantOperatorGreater.cpp" />
+    <ClCompile Include="SQLVariantOperatorMod.cpp" />
+    <ClCompile Include="SQLVariantOperatorMul.cpp" />
+    <ClCompile Include="SQLVariantOperatorSmallEqual.cpp" />
+    <ClCompile Include="SQLVariantOperatorSmaller.cpp" />
+    <ClCompile Include="SQLVariantOperatorSub.cpp" />
+    <ClCompile Include="SQLVariantTrim.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="StdException.cpp" />
+    <ClCompile Include="unzip.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="XMLDataType.cpp" />
+    <ClCompile Include="XMLMessage.cpp" />
+    <ClCompile Include="XMLParser.cpp" />
+    <ClCompile Include="XMLRestriction.cpp" />
+    <ClCompile Include="XMLTemporal.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CrackURL.h" />
+    <ClInclude Include="FileBuffer.h" />
+    <ClInclude Include="Namespace.h" />
+    <ClInclude Include="SQLAutoDBS.h" />
+    <ClInclude Include="BasicExcel.h" />
+    <ClInclude Include="BasicXmlExcel.h" />
+    <ClInclude Include="bcd.h" />
+    <ClInclude Include="ConvertWideString.h" />
+    <ClInclude Include="DDLCreateTable.h" />
+    <ClInclude Include="DefuseBOM.h" />
+    <ClInclude Include="ExcelFormat.h" />
+    <ClInclude Include="SQLComponentsVersion.h" />
+    <ClInclude Include="SQLConnections.h" />
+    <ClInclude Include="SQLDatabasePool.h" />
+    <ClInclude Include="SQLDriverManager.h" />
+    <ClInclude Include="SQLFunction.h" />
+    <ClInclude Include="SQLGetExePath.h" />
+    <ClInclude Include="SQLGuid.h" />
+    <ClInclude Include="Locker.h" />
+    <ClInclude Include="SQLAssociation.h" />
+    <ClInclude Include="SQLColumnInfo.h" />
+    <ClInclude Include="SQLComponents.h" />
+    <ClInclude Include="SQLDatabase.h" />
+    <ClInclude Include="SQLDataSet.h" />
+    <ClInclude Include="SQLDataSetXLS.h" />
+    <ClInclude Include="SQLDate.h" />
+    <ClInclude Include="SQLError.h" />
+    <ClInclude Include="SQLFilter.h" />
+    <ClInclude Include="SQLFormatErrors.h" />
+    <ClInclude Include="SQLInfo.h" />
+    <ClInclude Include="SQLInfoAccess.h" />
+    <ClInclude Include="SQLInfoDB.h" />
+    <ClInclude Include="SQLInfoFirebird.h" />
+    <ClInclude Include="SQLInfoGenericODBC.h" />
+    <ClInclude Include="SQLInfoInformix.h" />
+    <ClInclude Include="SQLInfoMariaDB.h" />
+    <ClInclude Include="SQLInfoMySQL.h" />
+    <ClInclude Include="SQLInfoOracle.h" />
+    <ClInclude Include="SQLInfoPostgreSQL.h" />
+    <ClInclude Include="SQLInfoSQLServer.h" />
+    <ClInclude Include="SQLInterval.h" />
+    <ClInclude Include="SQLLanguage.h" />
+    <ClInclude Include="SQLMemoryDebug.h" />
+    <ClInclude Include="SQLMessage.h" />
+    <ClInclude Include="SQLMetaInfo.h" />
+    <ClInclude Include="SQLMutation.h" />
+    <ClInclude Include="SQLOperator.h" />
+    <ClInclude Include="SQLQuery.h" />
+    <ClInclude Include="SQLRecord.h" />
+    <ClInclude Include="SQLStatement.h" />
+    <ClInclude Include="SQLTime.h" />
+    <ClInclude Include="SQLTimestamp.h" />
+    <ClInclude Include="SQLTimestampExtract.h" />
+    <ClInclude Include="SQLTransaction.h" />
+    <ClInclude Include="SQLVariant.h" />
+    <ClInclude Include="SQLVariantFormat.h" />
+    <ClInclude Include="SQLVariantOperator.h" />
+    <ClInclude Include="SQLVariantTrim.h" />
+    <ClInclude Include="SQLWrappers.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="StdException.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="unzip.h" />
+    <ClInclude Include="XMLDataType.h" />
+    <ClInclude Include="XMLMessage.h" />
+    <ClInclude Include="XMLParser.h" />
+    <ClInclude Include="XMLRestriction.h" />
+    <ClInclude Include="XMLTemporal.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

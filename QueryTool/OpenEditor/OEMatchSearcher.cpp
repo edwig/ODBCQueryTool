@@ -16,12 +16,12 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include <COMMON/AppGlobal.h>
 #include <COMMON/ExceptionHelper.h>
-#include "OpenEditor/OEHelpers.h"
-#include "OpenEditor/OEContext.h"
-#include "OpenEditor/OEMatchSearcher.h"
+#include "OEHelpers.h"
+#include "OEContext.h"
+#include "OEMatchSearcher.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

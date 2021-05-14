@@ -15,21 +15,21 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
-#include "stdafx.h"
+#include "pch.h"
 #include "VariablesDlg.h"
 #include "RebindDlg.h"
 
 #pragma warning (disable: 4800)
 // VariablesDlg dialog
 
-IMPLEMENT_DYNAMIC(VariablesDlg, CDialog)
+IMPLEMENT_DYNAMIC(VariablesDlg, StyleDialog)
 
 VariablesDlg::VariablesDlg(CWnd*    p_parent
-                         ,SQLVariant* p_variable1
-                         ,SQLVariant* p_variable2
-                         ,SQLVariant* p_variable3
-                         ,SQLVariant* p_variable4)
-	           :CDialog(VariablesDlg::IDD, p_parent)
+                          ,SQLVariant* p_variable1
+                          ,SQLVariant* p_variable2
+                          ,SQLVariant* p_variable3
+                          ,SQLVariant* p_variable4)
+	           :StyleDialog(VariablesDlg::IDD, p_parent)
              ,m_variable1(p_variable1)
              ,m_variable2(p_variable2)
              ,m_variable3(p_variable3)
@@ -43,38 +43,37 @@ VariablesDlg::~VariablesDlg()
 
 void VariablesDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
-  DDX_Text   (pDX,IDC_VAR1,  m_variableString1);
+	StyleDialog::DoDataExchange(pDX);
+  DDX_Control(pDX,IDC_VAR1,  m_editVariable1,m_variableString1);
   DDX_Control(pDX,IDC_TYPE1, m_typeCombo1);
-  DDX_Text   (pDX,IDC_SIZE1, m_length1);
+  DDX_Control(pDX,IDC_SIZE1, m_editLength1,m_length1);
   DDX_Control(pDX,IDC_EXEC1, m_AtExec1);
   DDX_Control(pDX,IDC_INOUT1,m_inoutCombo1);
 
-  DDX_Text   (pDX,IDC_VAR2,  m_variableString2);
+  DDX_Control(pDX,IDC_VAR2,  m_editVariable2,m_variableString2);
   DDX_Control(pDX,IDC_TYPE2, m_typeCombo2);
-  DDX_Text   (pDX,IDC_SIZE2, m_length2);
+  DDX_Control(pDX,IDC_SIZE2, m_editLength2,m_length2);
   DDX_Control(pDX,IDC_EXEC2, m_AtExec2);
   DDX_Control(pDX,IDC_INOUT2,m_inoutCombo2);
 
-  DDX_Text   (pDX,IDC_VAR3,  m_variableString3);
+  DDX_Control(pDX,IDC_VAR3,  m_editVariable3,m_variableString3);
   DDX_Control(pDX,IDC_TYPE3, m_typeCombo3);
-  DDX_Text   (pDX,IDC_SIZE3, m_length3);
+  DDX_Control(pDX,IDC_SIZE3, m_editLength3,m_length3);
   DDX_Control(pDX,IDC_EXEC3, m_AtExec3);
   DDX_Control(pDX,IDC_INOUT3,m_inoutCombo3);
 
-  DDX_Text   (pDX,IDC_VAR4,  m_variableString4);
+  DDX_Control(pDX,IDC_VAR4,  m_editVariable4,m_variableString4);
   DDX_Control(pDX,IDC_TYPE4, m_typeCombo4);
-  DDX_Text   (pDX,IDC_SIZE4, m_length4);
+  DDX_Control(pDX,IDC_SIZE4, m_editLength4,m_length4);
   DDX_Control(pDX,IDC_EXEC4, m_AtExec4);
   DDX_Control(pDX,IDC_INOUT4,m_inoutCombo4);
 
-  if(pDX->m_bSaveAndValidate)
-  {
-
-  }
+  DDX_Control(pDX,IDC_BIND,  m_buttonRebind);
+  DDX_Control(pDX,IDOK,      m_buttonOK);
+  DDX_Control(pDX,IDCANCEL,  m_buttonCancel);
 }
 
-BEGIN_MESSAGE_MAP(VariablesDlg, CDialog)
+BEGIN_MESSAGE_MAP(VariablesDlg, StyleDialog)
   ON_EN_KILLFOCUS (IDC_VAR1,  &VariablesDlg::OnEnChangeVar1)
   ON_CBN_SELCHANGE(IDC_TYPE1, &VariablesDlg::OnCbnSelchangeType1)
   ON_EN_KILLFOCUS (IDC_SIZE1, &VariablesDlg::OnEnChangeSize1)
@@ -107,7 +106,8 @@ END_MESSAGE_MAP()
 BOOL
 VariablesDlg::OnInitDialog()
 {
-  CDialog::OnInitDialog();
+  StyleDialog::OnInitDialog();
+  SetWindowText("Variables (binding)");
   
   DataTypes* types = allTypes;
   while(types->name)

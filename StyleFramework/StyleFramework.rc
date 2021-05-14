@@ -1,0 +1,207 @@
+// Microsoft Visual C++ generated resource script.
+//
+#pragma code_page(65001)
+
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#ifndef APSTUDIO_INVOKED
+#include "targetver.h"
+#endif
+#include "afxres.h"
+#include "verrsrc.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_HELP                ICON                    "Icons\\12_help.ico"
+
+IDI_OK                  ICON                    "Icons\\60_OK.ico"
+
+IDI_CANCEL              ICON                    "Icons\\61_Cancel.ico"
+
+IDI_REMOVE              ICON                    "Icons\\63_RemoveObject.ico"
+
+IDI_SAVE                ICON                    "Icons\\30_Save.ico"
+
+IDI_CALENDAR            ICON                    "Icons\\80_Calender.ico"
+
+IDI_DIRECTORY           ICON                    "Icons\\73_map-openen.ico"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_SCROLLBAR1          BITMAP                  "res\\ScrollBar1.bmp"
+
+IDB_SCROLLBAR2          BITMAP                  "res\\ScrollBar2.bmp"
+
+IDB_SCROLLBAR3          BITMAP                  "res\\ScrollBar3.bmp"
+
+IDB_SCROLLBAR4          BITMAP                  "res\\ScrollBar4.bmp"
+
+IDB_SCROLLBAR5          BITMAP                  "res\\ScrollBar5.bmp"
+
+IDB_SCROLLBAR6          BITMAP                  "res\\ScrollBar6.bmp"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_BOODSCHAP DIALOGEX 0, 0, 287, 113
+STYLE DS_SETFONT | DS_CENTER | WS_POPUP
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    EDITTEXT        IDC_BOODSCHAP,0,0,264,112,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
+END
+
+IDD_CALENDAR DIALOGEX 0, 0, 96, 95
+STYLE DS_SETFONT | WS_POPUP
+FONT 10, "Verdana", 400, 0, 0x0
+BEGIN
+    CONTROL         "",IDC_MONTH,"SysMonthCal32",MCS_WEEKNUMBERS | WS_TABSTOP,-1,-2,96,81
+END
+
+IDD_TOAST DIALOGEX 0, 0, 231, 37
+STYLE DS_SETFONT | WS_POPUP | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+FONT 10, "Verdana", 400, 0, 0x0
+BEGIN
+    LTEXT           "Static",IDC_TOAST,0,0,231,37,SS_NOTIFY
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_BOODSCHAP, DIALOG
+    BEGIN
+    END
+
+    IDD_CALENDAR, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 84
+    END
+
+    IDD_TOAST, DIALOG
+    BEGIN
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_BOODSCHAP AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_CALENDAR AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_TOAST AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#ifndef APSTUDIO_INVOKED\r\n"
+    "#include ""targetver.h""\r\n"
+    "#endif\r\n"
+    "#include ""afxres.h""\r\n"
+    "#include ""verrsrc.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#include ""res\\StyleFramework.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""      // Standard components\r\n"
+    "#if !defined(_AFXDLL)\r\n"
+    "#include ""afxribbon.rc""   // MFC ribbon and control bar resources\r\n"
+    "#endif\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE 9, 1
+#include "res\StyleFramework.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"      // Standard components
+#if !defined(_AFXDLL)
+#include "afxribbon.rc"   // MFC ribbon and control bar resources
+#endif
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

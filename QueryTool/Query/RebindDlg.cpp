@@ -16,9 +16,9 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include "RebindDlg.h"
-#include "OpenEditorApp.h"
+#include "QueryTool.h"
 #include "SQLVariant.h"
 
 DataTypes allTypes[] = 
@@ -80,10 +80,10 @@ DataTypes allParams[] =
 
 // RebindDlg dialog
 
-IMPLEMENT_DYNAMIC(RebindDlg, CDialog)
+IMPLEMENT_DYNAMIC(RebindDlg, StyleDialog)
 
 RebindDlg::RebindDlg(CWnd* pParent /*=NULL*/)
-          :CDialog(RebindDlg::IDD, pParent)
+          :StyleDialog(RebindDlg::IDD, pParent)
 {
 }
 
@@ -93,13 +93,16 @@ RebindDlg::~RebindDlg()
 
 void RebindDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
+	StyleDialog::DoDataExchange(pDX);
   DDX_Control(pDX,IDC_DATATYPE, m_typeCombo);
   DDX_Control(pDX,IDC_REBIND,   m_rebindCombo);
+  DDX_Control(pDX,IDC_RESET,    m_buttonReset);
+  DDX_Control(pDX,IDC_ADD,      m_buttonAdd);
+  DDX_Control(pDX,IDOK,         m_buttonOK);
+  DDX_Control(pDX,IDCANCEL,     m_buttonCancel);
 }
 
-
-BEGIN_MESSAGE_MAP(RebindDlg, CDialog)
+BEGIN_MESSAGE_MAP(RebindDlg, StyleDialog)
   ON_CBN_SELCHANGE(IDC_DATATYPE,&RebindDlg::OnCbnSelchangeDatatype)
   ON_CBN_SELCHANGE(IDC_REBIND,  &RebindDlg::OnCbnSelchangeRebind)
   ON_BN_CLICKED   (IDC_RESET,   &RebindDlg::OnBnClickedReset)
@@ -110,11 +113,13 @@ END_MESSAGE_MAP()
 BOOL
 RebindDlg::OnInitDialog()
 {
-  CDialog::OnInitDialog();
+  StyleDialog::OnInitDialog();
+  SetWindowText("Rebind datatype");
+
   DataTypes* types = allTypes;
   while(types->name)
   {
-    m_typeCombo.AddString(types->name);
+    m_typeCombo  .AddString(types->name);
     m_rebindCombo.AddString(types->name);
     ++types;
   }

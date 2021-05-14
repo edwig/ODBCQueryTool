@@ -1,12 +1,12 @@
 // GridView.cpp : implementation of the CGridView class
 //
-#include "stdafx.h"
-#include "OpenEditor\OEDocument.h"
-#include "OpenEditorApp.h"
+#include "pch.h"
+#include "OEDocument.h"
+#include "QueryTool.h"
 #include "GridView.h"
 #include "resource.h"
-#include "OpenEditor/OEView.h"
-#include "OpenEditor/OESettings.h"
+#include "OEView.h"
+#include "OESettings.h"
 #include "BasicExcel.h"
 #include "ExcelFormat.h"
 
@@ -169,7 +169,7 @@ void CGridView::OnInitialUpdate()
 	if (m_pGridCtrl == NULL)
 	{
 		// Create the Gridctrl object
-		m_pGridCtrl = new CGridCtrl;
+		m_pGridCtrl = new MCGridCtrl;
 		if (!m_pGridCtrl) 
     {
       return;
@@ -247,7 +247,7 @@ void CGridView::OnToggleReadonly()
 {
   if (m_pGridCtrl && IsWindow(m_pGridCtrl->m_hWnd))
   {
-    CCellID cell = m_pGridCtrl->GetFocusCell();
+    MCCellID cell = m_pGridCtrl->GetFocusCell();
     if (m_pGridCtrl->IsValid(cell))
     {
       int nState = m_pGridCtrl->GetItemState(cell.row, cell.col);
@@ -320,7 +320,7 @@ CGridView::InitGridEmpty(int p_type,bool nofirst /* = false */)
     {
       if(col) break;
     }
-    GV_ITEM item;
+    MC_ITEM item;
     item.mask = GVIF_TEXT | GVIF_FORMAT;
     item.row = 0;
     item.col = col;
@@ -373,7 +373,7 @@ CGridView::AppendRow(LPCTSTR p_heading)
 void
 CGridView::InsertItem(int p_row,int p_col,CString& p_text,UINT p_format /* = 0 */,int p_sqlType /*=0*/)
 {
-  GV_ITEM item;
+  MC_ITEM item;
   item.mask    = GVIF_TEXT | GVIF_FORMAT;
   item.row     = p_row;
   item.col     = p_col;
@@ -391,7 +391,7 @@ CGridView::InsertItem(int p_row,int p_col,CString& p_text,UINT p_format /* = 0 *
 void
 CGridView::InsertImage(int p_row,int p_col,int p_image)
 {
-  GV_ITEM item;
+  MC_ITEM item;
   item.mask   = GVIF_IMAGE;
   item.row    = p_row;
   item.col    = p_col;
@@ -441,7 +441,7 @@ CGridView::GotoQueryBegin()
 {
   int row  = 1;
   int col;
-  CCellID cell = m_pGridCtrl->GetFocusCell();
+  MCCellID cell = m_pGridCtrl->GetFocusCell();
   col = (cell.col == -1) ? 0 : cell.col;
   m_pGridCtrl->SetFocusCell(row,col);
   cell = m_pGridCtrl->GetFocusCell();
@@ -473,7 +473,7 @@ CGridView::GotoQueryPrev()
 {
   int row,col;
   int rows = m_pGridCtrl->GetRowCount();
-  CCellID cell = m_pGridCtrl->GetFocusCell();
+  MCCellID cell = m_pGridCtrl->GetFocusCell();
   row = (cell.row == -1) ? rows - 1 : cell.row;
   col = (cell.col == -1) ? 1 : cell.col;
   if(row > 1)
@@ -497,7 +497,7 @@ CGridView::GotoQueryNext()
   int row,col;
   int rows = m_pGridCtrl->GetRowCount();
 
-  CCellID cell = m_pGridCtrl->GetFocusCell();
+  MCCellID cell = m_pGridCtrl->GetFocusCell();
   row = (cell.row == -1) ? rows - 1 : cell.row;
   col = (cell.col == -1) ? 1 : cell.col;
   if(row < rows-1)
@@ -543,7 +543,7 @@ CGridView::GotoQueryEnd()
   int rows = m_pGridCtrl->GetRowCount();
   int row  = (rows >= 1) ? rows - 1 : 0;
   int col;
-  CCellID cell = m_pGridCtrl->GetFocusCell();
+  MCCellID cell = m_pGridCtrl->GetFocusCell();
 
   // Detect query to read in
   if(m_editorView->LinesFetchedSoFar())
@@ -566,7 +566,7 @@ CGridView::AtBegin()
 {
   if(m_pGridCtrl)
   {
-    CCellID cell = m_pGridCtrl->GetFocusCell();
+    MCCellID cell = m_pGridCtrl->GetFocusCell();
     int rows = m_pGridCtrl->GetRowCount() - 1;
     if(! rows || (cell.row == -1)) return true;
     return (cell.row <= 1);
@@ -584,7 +584,7 @@ CGridView::AtEnd()
       // Still lines to be fetched
       return false;
     }
-    CCellID cell = m_pGridCtrl->GetFocusCell();
+    MCCellID cell = m_pGridCtrl->GetFocusCell();
     int rows = m_pGridCtrl->GetRowCount() -1;
     if(! rows || (cell.row == -1)) return true;
     return (cell.row >= rows);
@@ -682,9 +682,9 @@ using namespace ExcelFormat;
 void
 CGridView::ExportToExcelXLS()
 {
-  char tempdir [MAX_FNAME_LEN + 1];
-  char filename[MAX_FNAME_LEN + 1];
-  char newname [MAX_FNAME_LEN + 1];
+  char tempdir [MAX_FNAME_LEN + 10];
+  char filename[MAX_FNAME_LEN + 10];
+  char newname [MAX_FNAME_LEN + 10];
   CWaitCursor take_a_deep_sigh;
 
   if (!GetTempPath(MAX_FNAME_LEN, tempdir))
@@ -727,7 +727,7 @@ CGridView::ExportToExcelXLS()
     for (int x = 0; x < m_pGridCtrl->GetColumnCount(); ++x)
     {
       BasicExcelCell* cell = sheet->Cell(y,x);
-      CGridCellBase* gridcell = m_pGridCtrl->GetCell(y,x);
+      MCGridCellBase* gridcell = m_pGridCtrl->GetCell(y,x);
       if(gridcell)
       {
         SQLVariant var;
@@ -836,15 +836,15 @@ CGridView::ExportToExcelXLS()
   excel.Close();
 
   // Now rename to .xls
-  strcpy(newname, filename);
+  strcpy_s(newname,MAX_FNAME_LEN,filename);
   char *xls = strstr(newname, ".tmp");
   if (xls)
   {
-    strcpy(xls, ".xls");
+    strcpy_s(xls,5,".xls");
     rename(filename, newname);
   }
   // Startup with Excel
-  COpenEditorApp* app = (COpenEditorApp *)AfxGetApp();
+  QueryToolApp* app = (QueryToolApp *)AfxGetApp();
   app->RunShellCommand(tempdir, "open", newname, NULL);
 }
 
@@ -865,8 +865,9 @@ CGridView::ExportToExcelSLK()
   {
     AfxMessageBox("Cannot find a temporary file for 'Excel-Export'",MB_OK);
   }
-  FILE* out = fopen(filename,"wt");
-  if(out == NULL)
+  FILE* out = nullptr;
+  fopen_s(&out,filename, "wt");
+  if(out == nullptr)
   {
     AfxMessageBox("Cannot open a temporary file for 'Excel-Export'",MB_OK);
     return;
@@ -893,18 +894,18 @@ CGridView::ExportToExcelSLK()
   }
   // Print the ending flag
   fprintf(out,excel_footer);
-  // Finaly close the directory
+  // finally close the directory
   fclose(out);
   // Now rename to .slk
-  strcpy(newname,filename);
+  strcpy_s(newname,MAX_FNAME_LEN,filename);
   char *slk = strstr(newname,".tmp"); 
   if(slk)
   {
-    strcpy(slk,".slk");
+    strcpy_s(slk,5,".slk");
     rename(filename,newname);
   }
   // Startup with Excel
-  COpenEditorApp* app = (COpenEditorApp *) AfxGetApp();
+  QueryToolApp* app = (QueryToolApp*) AfxGetApp();
   app->RunShellCommand(tempdir,"open",newname,NULL);
 }
 
@@ -935,8 +936,9 @@ CGridView::ExportToHTML()
   {
     AfxMessageBox("Cannot find a temporary file for 'HTML-Export'",MB_OK);
   }
-  FILE* out = fopen(filename,"wt");
-  if(out == NULL)
+  FILE* out = nullptr;
+  fopen_s(&out,filename, "wt");
+  if(out == nullptr)
   {
     AfxMessageBox("Cannot open a temporary file for 'HTML-Export'",MB_OK);
     return;
@@ -975,18 +977,18 @@ CGridView::ExportToHTML()
   }
   // Print the ending flag
   fprintf(out,html_footer);
-  // Finaly close the directory
+  // finally close the directory
   fclose(out);
   // Now rename to .html
-  strcpy(newname,filename);
+  strcpy_s(newname,MAX_FNAME_LEN,filename);
   char *html = strstr(newname,".tmp"); 
   if(html)
   {
-    strcpy(html,".html");
+    strcpy_s(html,6,".html");
     rename(filename,newname);
   }
   // Startup with HTML viewer
-  COpenEditorApp* app = (COpenEditorApp *) AfxGetApp();
+  QueryToolApp* app = (QueryToolApp*) AfxGetApp();
   app->RunShellCommand(tempdir,"open",newname,NULL);
 }
 
@@ -1008,7 +1010,8 @@ CGridView::ExportToTXT()
   {
     AfxMessageBox("Cannot find a temporary file for 'TXT-Export'",MB_OK);
   }
-  FILE* out = fopen(filename,"wt");
+  FILE* out = nullptr;
+  fopen_s(&out,filename, "wt");
   if(out == NULL)
   {
     AfxMessageBox("Cannot open a temporary file for 'TXT-Export'",MB_OK);
@@ -1064,18 +1067,18 @@ CGridView::ExportToTXT()
     }
     fputc('\n',out);
   }
-  // Finaly close the file
+  // final close the file
   fclose(out);
   // Now rename to .txt
-  strcpy(newname,filename);
+  strcpy_s(newname,MAX_FNAME_LEN,filename);
   char *html = strstr(newname,".tmp"); 
   if(html)
   {
-    strcpy(html,".txt");
+    strcpy_s(html,5,".txt");
     rename(filename,newname);
   }
   // Startup with TXT viewer
-  COpenEditorApp* app = (COpenEditorApp *) AfxGetApp();
+  QueryToolApp* app = (QueryToolApp*) AfxGetApp();
   app->RunShellCommand(tempdir,"open",newname,NULL);
 
   // Cleanup
@@ -1087,7 +1090,7 @@ CGridView::ExportToTXT()
 void
 CGridView::OnBeginEdit(NMHDR* pNMHDR, LRESULT* pResult)
 {
-  NM_GRIDVIEW *cel = (NM_GRIDVIEW*)pNMHDR;
+  MG_NM_GRIDVIEW *cel = (MG_NM_GRIDVIEW*)pNMHDR;
   int col = cel->iColumn;
   int row = cel->iRow;
   if(m_editorView->CanEdit())
@@ -1104,7 +1107,7 @@ CGridView::OnBeginEdit(NMHDR* pNMHDR, LRESULT* pResult)
 void
 CGridView::OnEndInPlaceEdit(NMHDR* pNMHDR, LRESULT* pResult)
 {
-  NM_GRIDVIEW *cel = (NM_GRIDVIEW*)pNMHDR;
+  MG_NM_GRIDVIEW *cel = (MG_NM_GRIDVIEW*)pNMHDR;
   int col = cel->iColumn;
   int row = cel->iRow;
 

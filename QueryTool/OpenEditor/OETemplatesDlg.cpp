@@ -16,134 +16,136 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include "resource.h"
-#include "OpenEditor/OETemplatesDlg.h"
+#include "OETemplatesDlg.h"
 
 //using OpenEditor::Template::Entry;
 using Common::VisualAttribute;
 
 // COETemplatesDlg dialog
 
-COETemplatesDlg::COETemplatesDlg (CWnd* pParent
-                                 ,Mode mode
-                                 ,OpenEditor::Template::Entry& entry
-                                 ,const VisualAttribute& textAttr)
-	: CDialog(COETemplatesDlg::IDD, pParent),
-    m_mode(mode),
-    m_entry(entry),
-    m_textAttr(textAttr),
-    m_cursorPosMarker('^')
+COETemplatesDlg::COETemplatesDlg(CWnd* pParent
+                                ,Mode mode
+                                ,OpenEditor::Template::Entry& entry
+                                ,const VisualAttribute& textAttr)
+	              :StyleDialog(COETemplatesDlg::IDD, pParent)
+                ,m_mode(mode)
+                ,m_entry(entry)
+                ,m_textAttr(textAttr)
+                ,m_cursorPosMarker('^')
 {
-    m_name         = m_entry.name.c_str();
-    m_keyword      = m_entry.keyword.c_str();
-    m_minKeyLength = m_entry.minLength;
-    m_text         = m_entry.text.c_str();
+  m_name         = m_entry.name.c_str();
+  m_keyword      = m_entry.keyword.c_str();
+  m_minKeyLength = m_entry.minLength;
+  m_text         = m_entry.text.c_str();
 
-    const char* ptr, *buff;
-    buff = ptr = m_text.LockBuffer();
+  const char* ptr, *buff;
+  buff = ptr = m_text.LockBuffer();
     
-    for (int line = m_entry.curLine; ptr && line >= 0; ptr++)
-    {
-        if (*ptr == '\r') line--;
-        if (!line) break;
-    }
+  for (int line = m_entry.curLine; ptr && line >= 0; ptr++)
+  {
+    if (*ptr == '\r') line--;
+    if (!line) break;
+  }
 
-    ptr += m_entry.curPos + (m_entry.curLine ? 2 : 0);
-    m_text.UnlockBuffer();
-    m_text.Insert((int)(ptr - buff), m_cursorPosMarker);
+  ptr += m_entry.curPos + (m_entry.curLine ? 2 : 0);
+  m_text.UnlockBuffer();
+  m_text.Insert((int)(ptr - buff), m_cursorPosMarker);
 }
 
 COETemplatesDlg::~COETemplatesDlg()
 {
 }
 
-void COETemplatesDlg::DoDataExchange(CDataExchange* pDX)
+void 
+COETemplatesDlg::DoDataExchange(CDataExchange* pDX)
 {
-    CDialog::DoDataExchange(pDX);
-    DDX_Text(pDX, IDC_OETF_NAME, m_name);
-    DDX_Text(pDX, IDC_OETF_KEYWORD, m_keyword);
-    DDX_Text(pDX, IDC_OETF_TEXT, m_text);
+  StyleDialog::DoDataExchange(pDX);
 
-    DDX_Text(pDX, IDC_OETF_MIN_LENGTH, m_minKeyLength);
-    DDV_MinMaxInt(pDX, m_minKeyLength, 0, 999);
-    SendDlgItemMessage(IDC_OETF_MIN_LENGTH_SPIN, UDM_SETRANGE32, 0, 999);
+  DDX_Control(pDX, IDC_OETF_NAME,           m_editName,     m_name);
+  DDX_Control(pDX, IDC_OETF_KEYWORD,        m_editKeyword,  m_keyword);
+  DDX_Control(pDX, IDC_OETF_MIN_LENGTH,     m_editMinLength,m_minKeyLength);
+  DDX_Control(pDX, IDC_OETF_TEXT,           m_editText,     m_text);
+  DDX_Control(pDX, IDC_OETF_MIN_LENGTH_SPIN,m_spinLength,  &m_editMinLength);
+  DDX_Control(pDX, IDOK,                    m_buttonOK);
+  DDX_Control(pDX, IDCANCEL,                m_buttonCancel);
+
+  DDV_MinMaxInt(pDX, m_minKeyLength, 0, 999);
 }
 
-
-BEGIN_MESSAGE_MAP(COETemplatesDlg, CDialog)
-    ON_BN_CLICKED(IDOK, OnOk)
+BEGIN_MESSAGE_MAP(COETemplatesDlg,StyleDialog)
+  ON_BN_CLICKED(IDOK, OnOk)
 END_MESSAGE_MAP()
-
 
 // COETemplatesDlg message handlers
 
-BOOL COETemplatesDlg::OnInitDialog()
+BOOL 
+COETemplatesDlg::OnInitDialog()
 {
-    CDialog::OnInitDialog();
+  StyleDialog::OnInitDialog();
 
-    LOGFONT logfont;
-    memset(&logfont, 0, sizeof(logfont));
+  LOGFONT logfont;
+  memset(&logfont, 0, sizeof(logfont));
 
-    logfont.lfHeight         = -10 * m_textAttr.m_FontSize;
-    logfont.lfCharSet        = DEFAULT_CHARSET;
-    logfont.lfOutPrecision   = CLIP_DEFAULT_PRECIS;
-    logfont.lfClipPrecision  = CLIP_DEFAULT_PRECIS;
-    logfont.lfQuality        = DEFAULT_QUALITY;
-    logfont.lfPitchAndFamily = FIXED_PITCH;
-    strncpy(logfont.lfFaceName, m_textAttr.m_FontName.c_str(), LF_FACESIZE-1);
+  logfont.lfHeight         = -10 * m_textAttr.m_FontSize;
+  logfont.lfCharSet        = DEFAULT_CHARSET;
+  logfont.lfOutPrecision   = CLIP_DEFAULT_PRECIS;
+  logfont.lfClipPrecision  = CLIP_DEFAULT_PRECIS;
+  logfont.lfQuality        = DEFAULT_QUALITY;
+  logfont.lfPitchAndFamily = FIXED_PITCH;
+    
+  strncpy_s(logfont.lfFaceName, m_textAttr.m_FontName.c_str(), LF_FACESIZE-1);
 
 
-    CWnd* pWndText = GetDlgItem(IDC_OETF_TEXT);
-    CClientDC dc(pWndText);
-    m_textFont.CreatePointFontIndirect(&logfont, &dc);
-    pWndText->SetFont(&m_textFont);
+  CClientDC dc(&m_editText);
+  m_textFont.CreatePointFontIndirect(&logfont, &dc);
+  m_editText.SetFont(&m_textFont);
 
-    switch (m_mode)
-    {
-    case emInsert:
-        SetWindowText("Insert Template");
-        break;
-    case emEdit:
-        SetWindowText("Edit Template");
-        break;
-    case emDelete:
-        SetWindowText("Delete Template");
-        ::EnableWindow(::GetDlgItem(*this, IDC_OETF_NAME), FALSE);
-        ::EnableWindow(::GetDlgItem(*this, IDC_OETF_KEYWORD), FALSE);
-        ::EnableWindow(::GetDlgItem(*this, IDC_OETF_MIN_LENGTH), FALSE);
-        ::EnableWindow(::GetDlgItem(*this, IDC_OETF_TEXT), FALSE);
-        break;
-    }
-
-    return TRUE;
+  switch (m_mode)
+  {
+    case emInsert:  SetWindowText("Insert Template");
+                    break;
+    case emEdit:    SetWindowText("Edit Template");
+                    break;
+    case emDelete:  SetWindowText("Delete Template");
+                    m_editName     .EnableWindow(FALSE);
+                    m_editKeyword  .EnableWindow(FALSE);
+                    m_editMinLength.EnableWindow(FALSE);
+                    m_editText     .EnableWindow(FALSE);
+                    break;
+  }
+  m_spinLength.SetRange32(0,999);
+  return TRUE;
 }
 
-void COETemplatesDlg::OnOk()
+void 
+COETemplatesDlg::OnOk()
 {
-    OnOK();
+  OnOK();
 
-    m_entry.name = m_name;
-    m_entry.keyword = m_keyword;
-    m_entry.minLength = m_minKeyLength;
+  m_entry.name      = m_name;
+  m_entry.keyword   = m_keyword;
+  m_entry.minLength = m_minKeyLength;
     
-    m_entry.curPos = m_entry.curLine = 0;
-    const char* buff = m_text.LockBuffer();
-    const char* pos = strchr(buff, m_cursorPosMarker);
+  m_entry.curPos   = m_entry.curLine = 0;
+  const char* buff = m_text.LockBuffer();
+  const char* pos  = strchr(buff, m_cursorPosMarker);
     
-    for (const char* ptr = buff; pos && ptr < pos; ptr++, m_entry.curPos++)
+  for (const char* ptr = buff; pos && ptr < pos; ptr++, m_entry.curPos++)
+  {
+    if (*ptr == '\r')
     {
-        if (*ptr == '\r')
-        {
-            m_entry.curLine++;
-            m_entry.curPos = 0;
-        }
+      m_entry.curLine++;
+      m_entry.curPos = 0;
     }
-    if (m_entry.curLine) m_entry.curPos -=2;
-    m_text.UnlockBuffer();
+  }
+  if (m_entry.curLine) m_entry.curPos -=2;
+  m_text.UnlockBuffer();
     
-    if (pos)
-        m_text.Delete((int)(pos - buff), 1);
-
-    m_entry.text = m_text;
+  if (pos)
+  {
+    m_text.Delete((int)(pos - buff), 1);
+  }
+  m_entry.text = m_text;
 }

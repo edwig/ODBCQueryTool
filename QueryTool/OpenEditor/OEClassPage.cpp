@@ -16,11 +16,11 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include "resource.h"
 #include "COMMON/StrHelpers.h"
 #include <COMMON/ExceptionHelper.h>
-#include "OpenEditor/OEClassPage.h"
+#include "OEClassPage.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -31,169 +31,180 @@ static char THIS_FILE[] = __FILE__;
 /////////////////////////////////////////////////////////////////////////////
 // COEClassPage property page
 
-COEClassPage::COEClassPage(SettingsManager& manager) 
-: CPropertyPage(COEClassPage::IDD),
-m_manager(manager)
+COEClassPage::COEClassPage(SettingsManager& manager,CWnd* p_parent) 
+             :StyleDialog(COEClassPage::IDD,p_parent)
+             ,m_manager(manager)
+             ,m_dataInitialized(false)
 {
-    m_dataInitialized = false;
-	//{{AFX_DATA_INIT(COEClassPage)
-	//}}AFX_DATA_INIT
 }
 
 COEClassPage::~COEClassPage()
 {
 }
 
-void COEClassPage::DoDataExchange(CDataExchange* pDX)
+// Check if resources still OK!
+#if (!(IDC_OEC_INDENT_TYPE_NONE < IDC_OEC_INDENT_TYPE_DEFAULT && IDC_OEC_INDENT_TYPE_DEFAULT < IDC_OEC_INDENT_TYPE_SMART))
+#error("check resource indentifiers defenition: IDC_OEC_INDENT_TYPE_NONE, IDC_OEC_INDENT_TYPE_DEFAULT, IDC_OEC_INDENT_TYPE_SMART")
+#endif
+#if (!(IDC_OEC_INSERT_SPACES < IDC_OEC_KEEP_TABS))
+#error("check resource indentifiers defenition: IDC_OEC_INSERT_SPACES, IDC_OEC_KEEP_TABS")
+#endif
+
+void 
+COEClassPage::DoDataExchange(CDataExchange* pDX)
 {
-    CPropertyPage::DoDataExchange(pDX);
-    //{{AFX_DATA_MAP(COEClassPage)
-    //}}AFX_DATA_MAP
+  StyleDialog::DoDataExchange(pDX);
+
+  DDX_CBString(pDX, IDC_OEC_CLASS,              m_comboClass,         m_class);
+  DDX_Control (pDX, IDC_OEC_FILE_EXTENSIONS,    m_editFileExtensions, m_fileExtensions);
+  DDX_CBString(pDX, IDC_OEC_FILE_TYPE,          m_comboFileType,      m_fileType);
+  DDX_Control (pDX, IDC_OEC_DELIMITERS,         m_editDelimiters,     m_delimiters);
+  DDX_Control (pDX, IDC_OEC_TAB_SIZE,           m_editTabSize,        m_tabSize);
+  DDX_Control (pDX, IDC_OEC_INDENT_SIZE,        m_editIndentSize,     m_indentSize);
+  DDX_Control (pDX, IDC_OEC_TAB_SIZE_SPIN,      m_spinTabSize,       &m_editTabSize);
+  DDX_Control (pDX, IDC_OEC_INDENT_SIZE_SPIN,   m_spinIndentSize,    &m_editIndentSize);
+  DDX_Control (pDX, IDC_OEC_INSERT_SPACES,      m_checkInsertSpaces);
+  DDX_Control (pDX, IDC_OEC_KEEP_TABS,          m_checkKeepTabs);
+  DDX_Control (pDX, IDC_OEC_INDENT_TYPE_NONE,   m_checkIndentNone);
+  DDX_Control (pDX, IDC_OEC_INDENT_TYPE_DEFAULT,m_checkIndentDefault);
+  DDX_Control (pDX, IDC_OEC_INDENT_TYPE_SMART,  m_checkIndentSmart);
+  DDX_Control (pDX, IDC_OEC_LINE_NUMBERS,       m_checkLineNumbers);
+  DDX_Control (pDX, IDC_OEC_VISIBLE_SPACES,     m_checkVisibleSpaces);
+  DDX_Control (pDX, IDC_OEC_NORMALIZE_KEYWORDS, m_checkNormalizeKW);
+
+  if (pDX->m_bSaveAndValidate)
+  {
+    m_insertSpaces = IsDlgButtonChecked(IDC_OEC_INSERT_SPACES);
+
+         if (IsDlgButtonChecked(IDC_OEC_INDENT_TYPE_SMART))   m_indent = 2;
+    else if (IsDlgButtonChecked(IDC_OEC_INDENT_TYPE_DEFAULT)) m_indent = 1;
+    else m_indent = 0;
+  }
+  else
+  {
+    CheckRadioButton(IDC_OEC_INSERT_SPACES, 
+                     IDC_OEC_INSERT_SPACES + 1, 
+                     IDC_OEC_INSERT_SPACES + (m_insertSpaces ? 0 : 1));
+    CheckRadioButton(IDC_OEC_INDENT_TYPE_NONE, 
+                     IDC_OEC_INDENT_TYPE_NONE + 2, 
+                     IDC_OEC_INDENT_TYPE_NONE + m_indent);
+  }
 }
 
 
-BEGIN_MESSAGE_MAP(COEClassPage, CPropertyPage)
-	//{{AFX_MSG_MAP(COEClassPage)
-	ON_CBN_SELCHANGE(IDC_OEC_CLASS, OnSelChangeLanguage)
-	ON_EN_CHANGE(IDC_OEC_TAB_SIZE, OnChangeData)
-	ON_EN_CHANGE(IDC_OEC_DELIMITERS, OnChangeData)
-	ON_EN_CHANGE(IDC_OEC_FILE_EXTENSIONS, OnChangeData)
-	ON_CBN_SELCHANGE(IDC_OEC_FILE_TYPE, OnChangeData)
-	ON_EN_CHANGE(IDC_OEC_INDENT_SIZE, OnChangeData)
-	ON_BN_CLICKED(IDC_OEC_INDENT_TYPE_DEFAULT, OnChangeData)
-	ON_BN_CLICKED(IDC_OEC_INDENT_TYPE_NONE, OnChangeData)
-	ON_BN_CLICKED(IDC_OEC_INDENT_TYPE_SMART, OnChangeData)
-    ON_BN_CLICKED(IDC_OEC_INSERT_SPACES, OnChangeData)
-    ON_BN_CLICKED(IDC_OEC_KEEP_TABS, OnChangeData)
-    ON_BN_CLICKED(IDC_OEC_LINE_NUMBERS, OnChangeData)
-    ON_BN_CLICKED(IDC_OEC_VISIBLE_SPACES, OnChangeData)
-    ON_BN_CLICKED(IDC_OEC_NORMALIZE_KEYWORDS, OnChangeData)
-	//}}AFX_MSG_MAP
+BEGIN_MESSAGE_MAP(COEClassPage, StyleDialog)
+  ON_CBN_SELCHANGE(IDC_OEC_CLASS,           OnSelChangeLanguage)
+  ON_EN_CHANGE(IDC_OEC_FILE_EXTENSIONS,     OnChangeData)
+  ON_CBN_SELCHANGE(IDC_OEC_FILE_TYPE,       OnChangeData)
+  ON_EN_CHANGE(IDC_OEC_DELIMITERS,          OnChangeData)
+  ON_EN_CHANGE(IDC_OEC_TAB_SIZE,            OnChangeData)
+  ON_EN_CHANGE(IDC_OEC_INDENT_SIZE,         OnChangeData)
+  ON_BN_CLICKED(IDC_OEC_INSERT_SPACES,      OnChangeData)
+  ON_BN_CLICKED(IDC_OEC_KEEP_TABS,          OnChangeData)
+  ON_BN_CLICKED(IDC_OEC_INDENT_TYPE_NONE,   OnChangeData)
+  ON_BN_CLICKED(IDC_OEC_INDENT_TYPE_DEFAULT,OnChangeData)
+  ON_BN_CLICKED(IDC_OEC_INDENT_TYPE_SMART,  OnChangeData)
+  ON_BN_CLICKED(IDC_OEC_LINE_NUMBERS,       OnChangeData)
+  ON_BN_CLICKED(IDC_OEC_VISIBLE_SPACES,     OnChangeData)
+  ON_BN_CLICKED(IDC_OEC_NORMALIZE_KEYWORDS, OnChangeData)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // COEClassPage message handlers
 
-LRESULT COEClassPage::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) 
+LRESULT 
+COEClassPage::WindowProc(UINT message, WPARAM wParam, LPARAM lParam) 
 {
-    try 
-    {
-        return CPropertyPage::WindowProc(message, wParam, lParam);
-    }
-    _OE_DEFAULT_HANDLER_;
+  try 
+  {
+    return StyleDialog::WindowProc(message, wParam, lParam);
+  }
+  _OE_DEFAULT_HANDLER_;
 
-    return 0;
+  return 0;
 }
 
-
-BOOL COEClassPage::OnInitDialog() 
+BOOL 
+COEClassPage::OnInitDialog() 
 {
-    m_dataInitialized = false;
+	StyleDialog::OnInitDialog();
 
-	CPropertyPage::OnInitDialog();
-
-    SendDlgItemMessage(IDC_OEC_CLASS, CB_RESETCONTENT);
+  // Fill combo box
+  m_comboClass.ResetContent();
+  int count = m_manager.GetClassCount();
+  for (int i(0); i < count; i++)
+  {
+    m_comboClass.AddString(m_manager.GetClassByPos(i).GetName().c_str());
+  }
     
-    int count = m_manager.GetClassCount();
-    for (int i(0); i < count; i++)
-        SendDlgItemMessage(IDC_OEC_CLASS, CB_ADDSTRING, 0, 
-              (LPARAM)m_manager.GetClassByPos(i).GetName().c_str());
-    
-    SendDlgItemMessage(IDC_OEC_FILE_TYPE, CB_RESETCONTENT);
-    SendDlgItemMessage(IDC_OEC_FILE_TYPE, CB_ADDSTRING, 0, (LPARAM)"Dos (LF/CR)");
-    SendDlgItemMessage(IDC_OEC_FILE_TYPE, CB_ADDSTRING, 0, (LPARAM)"Unix (LF)");
-    SendDlgItemMessage(IDC_OEC_FILE_TYPE, CB_ADDSTRING, 0, (LPARAM)"Mac (CR/LF)");
+  // Fill file types
+  m_comboFileType.ResetContent();
+  m_comboFileType.AddString("Windows (LF/CR)");
+  m_comboFileType.AddString("Unix (LF)");
+  m_comboFileType.AddString("Mac OS (CR/LF)");
 	
-    SendDlgItemMessage(IDC_OEC_CLASS, CB_SETCURSEL, 0);
-    OnSelChangeLanguage();
+  m_comboClass.SetCurSel(0);
+  OnSelChangeLanguage();
     
-    SendDlgItemMessage(IDC_OEC_INDENT_SIZE_SPIN, UDM_SETRANGE32, 0, 32);
-    SendDlgItemMessage(IDC_OEC_TAB_SIZE_SPIN,    UDM_SETRANGE32, 0, 32);
+  m_spinTabSize   .SetRange32(0,32);
+  m_spinIndentSize.SetRange32(0,32);
 
 	return TRUE;
 }
 
+#pragma warning (disable: 4996)
 
 void COEClassPage::OnSelChangeLanguage() 
 {
-    ClassSettings& settings 
-        = m_manager.GetClassByPos((int)SendDlgItemMessage(IDC_OEC_CLASS, CB_GETCURSEL));
+  m_dataInitialized = false;
 
-    m_dataInitialized = false;
+  int category = m_comboClass.GetCurSel();
+  ClassSettings& settings = m_manager.GetClassByPos(category);
+  m_comboClass.GetLBText(category,m_class);
 
-    char buff[80];
+  std::string delim;
+  Common::to_printable_str(settings.GetDelimiters().c_str(), delim);
+  m_delimiters = delim.c_str();
+
+  int ind = m_comboFileType.SetCurSel(settings.GetFileCreateAs());
+  m_comboFileType.GetLBText(ind, m_fileType);
+
+  m_fileExtensions  = settings.GetExtensions().c_str();
+  m_tabSize         = settings.GetTabSpacing();
+  m_indentSize      = settings.GetIndentSpacing();
+  m_insertSpaces    = settings.GetTabExpand();
+  m_indent          = settings.GetIndentType();
+
+  m_checkLineNumbers  .SetCheck(settings.GetLineNumbers());
+  m_checkVisibleSpaces.SetCheck(settings.GetVisibleSpaces());
+  m_checkNormalizeKW  .SetCheck(settings.GetNormalizeKeywords());
+
+  m_dataInitialized = true;
+  UpdateData(FALSE);
+}
+
+void 
+COEClassPage::OnChangeData() 
+{
+  if(m_dataInitialized)
+  {
+    UpdateData();
+
+    ClassSettings& settings = m_manager.GetClassByPos(m_comboClass.GetCurSel());
+
+    settings.SetExtensions((std::string)m_fileExtensions, false);
 
     std::string delim;
-    Common::to_printable_str(settings.GetDelimiters().c_str(), delim);
-    SetDlgItemText(IDC_OEC_DELIMITERS,     delim.c_str());           
-    SetDlgItemText(IDC_OEC_FILE_EXTENSIONS,settings.GetExtensions().c_str());           
-    SetDlgItemText(IDC_OEC_INDENT_SIZE,    itoa(settings.GetIndentSpacing(), buff, 10));
-    SetDlgItemText(IDC_OEC_TAB_SIZE,       itoa(settings.GetTabSpacing(), buff, 10));   
-
-#if (!(IDC_OEC_INDENT_TYPE_NONE < IDC_OEC_INDENT_TYPE_DEFAULT && IDC_OEC_INDENT_TYPE_DEFAULT < IDC_OEC_INDENT_TYPE_SMART))
-#error("check resource indentifiers defenition: IDC_OEC_INDENT_TYPE_NONE, IDC_OEC_INDENT_TYPE_DEFAULT, IDC_OEC_INDENT_TYPE_SMART")
-#endif
-    CheckRadioButton(IDC_OEC_INDENT_TYPE_NONE, 
-                     IDC_OEC_INDENT_TYPE_NONE + 2, 
-                     IDC_OEC_INDENT_TYPE_NONE + settings.GetIndentType());
-
-#if (!(IDC_OEC_INSERT_SPACES < IDC_OEC_KEEP_TABS))
-#error("check resource indentifiers defenition: IDC_OEC_INSERT_SPACES, IDC_OEC_KEEP_TABS")
-#endif
-    CheckRadioButton(IDC_OEC_INSERT_SPACES, 
-                     IDC_OEC_INSERT_SPACES + 1, 
-                     IDC_OEC_INSERT_SPACES + (settings.GetTabExpand() ? 0 : 1));
-
-    SendDlgItemMessage(IDC_OEC_FILE_TYPE, CB_SETCURSEL, settings.GetFileCreateAs());
-
-    CheckDlgButton(IDC_OEC_LINE_NUMBERS,   settings.GetLineNumbers() ? BST_CHECKED : BST_UNCHECKED);
-    CheckDlgButton(IDC_OEC_VISIBLE_SPACES, settings.GetVisibleSpaces() ? BST_CHECKED : BST_UNCHECKED);
-    CheckDlgButton(IDC_OEC_NORMALIZE_KEYWORDS, settings.GetNormalizeKeywords() ? BST_CHECKED : BST_UNCHECKED);
-
-    m_dataInitialized = true;
+    Common::to_unprintable_str (m_delimiters,delim);
+	  settings.SetDelimiters(delim, false);
+    settings.SetFileCreateAs  (m_comboFileType.GetCurSel(), false);
+    settings.SetIndentSpacing (m_indentSize,    false);
+    settings.SetTabSpacing    (m_tabSize,       false);
+    settings.SetTabExpand     (m_insertSpaces,  false);
+    settings.SetIndentType    (m_indent,        false);
+    // Checks
+    settings.SetLineNumbers      (m_checkLineNumbers  .GetCheck() ? true : false, false);
+    settings.SetVisibleSpaces    (m_checkVisibleSpaces.GetCheck() ? true : false, false);
+    settings.SetNormalizeKeywords(m_checkNormalizeKW  .GetCheck() ? true : false, false);
+  }
 }
-
-
-
-void COEClassPage::OnChangeData() 
-{
-    if (m_dataInitialized)
-    {
-        ClassSettings& settings 
-            = m_manager.GetClassByPos((int)SendDlgItemMessage(IDC_OEC_CLASS, CB_GETCURSEL));
-
-        char buff[256];
-        GetDlgItemText(IDC_OEC_DELIMITERS, buff, sizeof(buff));
-        
-        std::string delim;
-        Common::to_unprintable_str (buff, delim);
-	    settings.SetDelimiters(delim, false);
-
-        GetDlgItemText(IDC_OEC_FILE_EXTENSIONS, buff, sizeof(buff));
-	    settings.SetExtensions(buff, false);
-
-        GetDlgItemText(IDC_OEC_INDENT_SIZE, buff, sizeof(buff));
-	    settings.SetIndentSpacing(atoi(buff), false);
-        GetDlgItemText(IDC_OEC_TAB_SIZE, buff, sizeof(buff));
-	    settings.SetTabSpacing(atoi(buff), false);
-
-        if (IsDlgButtonChecked(IDC_OEC_INDENT_TYPE_SMART))
-	        settings.SetIndentType(2, false);
-        else if (IsDlgButtonChecked(IDC_OEC_INDENT_TYPE_DEFAULT))
-	        settings.SetIndentType(1, false);
-        else
-	        settings.SetIndentType(0, false);
-
-        if (IsDlgButtonChecked(IDC_OEC_INSERT_SPACES))
-	        settings.SetTabExpand(true, false);
-        else
-	        settings.SetTabExpand(false, false);
-
-        settings.SetFileCreateAs((int)SendDlgItemMessage(IDC_OEC_FILE_TYPE, CB_GETCURSEL), false);
-
-        settings.SetLineNumbers(IsDlgButtonChecked(IDC_OEC_LINE_NUMBERS) ? true : false, false);
-        settings.SetVisibleSpaces(IsDlgButtonChecked(IDC_OEC_VISIBLE_SPACES) ? true : false, false);
-        settings.SetNormalizeKeywords(IsDlgButtonChecked(IDC_OEC_NORMALIZE_KEYWORDS) ? true : false, false);
-    }
-}
-

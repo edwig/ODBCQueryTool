@@ -16,11 +16,11 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include <algorithm>
 #include <COMMON/ExceptionHelper.h>
-#include "OpenEditor/OETemplates.h"
-#include "OpenEditor/OESettingsStreams.h"
+#include "OETemplates.h"
+#include "OESettingsStreams.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

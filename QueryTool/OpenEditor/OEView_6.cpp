@@ -20,9 +20,9 @@
     16.03.2003 bug fix, keyword normalization fails in many cases
 */
 
-#include "stdafx.h"
-#include "OpenEditor/OEView.h"
-#include "OpenEditor/OEHighlighter.h"
+#include "pch.h"
+#include "OEView.h"
+#include "OEHighlighter.h"
 
 
 #ifdef _DEBUG

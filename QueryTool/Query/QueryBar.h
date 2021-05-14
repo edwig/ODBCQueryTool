@@ -20,7 +20,7 @@
 #define QUERYBAR_H
 
 #include "stdafx.h"
-#include "OpenEditorApp.h"
+#include "QueryTool.h"
 #include "MultConnectionsDlg.h"
 
 class QueryBar : public CToolBar

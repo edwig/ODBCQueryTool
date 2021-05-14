@@ -1,0 +1,113 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Pages">
+      <UniqueIdentifier>{6651e437-13ff-4d07-9e40-0f6acb2403e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Project Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ODBCQueryTool.hhc">
+      <Filter>Project Files</Filter>
+    </None>
+    <None Include="ODBCQueryTool.hhk">
+      <Filter>Project Files</Filter>
+    </None>
+    <None Include="ODBCQueryTool.hhp">
+      <Filter>Project Files</Filter>
+    </None>
+    <None Include="ReleaseNotes.htm">
+      <Filter>Pages</Filter>
+    </None>
+    <None Include="Welcome.htm">
+      <Filter>Pages</Filter>
+    </None>
+    <None Include="TheEditor\The_open_editor.htm">
+      <Filter>Pages</Filter>
+    </None>
+    <None Include="Querying\FindingTables.html">
+      <Filter>Pages</Filter>
+    </None>
+    <None Include="Querying\Querying.htm">
+      <Filter>Pages</Filter>
+    </None>
+    <None Include="Querying\Scripting.htm">
+      <Filter>Pages</Filter>
+    </None>
+    <None Include="ODBCQuickReference\ODBC_SQL_Reference.htm">
+      <Filter>Pages</Filter>
+    </None>
+    <None Include="ODBCQuickReference\Elements\Datatypes.htm">
+      <Filter>Pages</Filter>
+    </None>
+    <None Include="ODBCQuickReference\Elements\OBJECT PRIVILEGES.htm">
+      <Filter>Pages</Filter>
+    </None>
+    <None Include="ODBCQuickReference\Elements\Operators.htm">
+      <Filter>Pages</Filter>
+    </None>
+    <None Include="ODBCQuickReference\Elements\Privileges.htm">
+      <Filter>Pages</Filter>
+    </None>
+    <None Include="ODBCQuickReference\Elements\Pseudocolumns.htm">
+      <Filter>Pages</Filter>
+    </None>
+    <None Include="ODBCQuickReference\Elements\rltEF.htm">
+      <Filter>Pages</Filter>
+    </None>
+    <None Include="ODBCQuickReference\Functions\Conversion Functions.htm">
+      <Filter>Pages</Filter>
+    </None>
+    <None Include="ODBCQuickReference\Functions\Group Functions.htm">
+      <Filter>Pages</Filter>
+    </None>
+    <None Include="ODBCQuickReference\Functions\Numeric_functions.htm">
+      <Filter>Pages</Filter>
+    </None>
+    <None Include="ODBCQuickReference\Functions\String_functions.htm">
+      <Filter>Pages</Filter>
+    </None>
+    <None Include="ODBCQuickReference\Functions\System_functions.htm">
+      <Filter>Pages</Filter>
+    </None>
+    <None Include="ODBCQuickReference\Functions\Time_Date_Interval_Functions.htm">
+      <Filter>Pages</Filter>
+    </None>
+    <None Include="ODBCQuickReference\SQL_Elements\base-table-name.htm">
+      <Filter>Pages</Filter>
+    </None>
+    <None Include="ODBCQuickReference\SQL_Elements\column-name.htm">
+      <Filter>Pages</Filter>
+    </None>
+    <None Include="ODBCQuickReference\SQL_Elements\data-type.htm">
+      <Filter>Pages</Filter>
+    </None>
+    <None Include="ODBCQuickReference\SQL_Elements\expression.htm">
+      <Filter>Pages</Filter>
+    </None>
+    <None Include="ODBCQuickReference\SQL_Elements\pattern.htm">
+      <Filter>Pages</Filter>
+    </None>
+    <None Include="ODBCQuickReference\SQL_Elements\referenced-table-name.htm">
+      <Filter>Pages</Filter>
+    </None>
+    <None Include="ODBCQuickReference\SQL_Elements\search-condition.htm">
+      <Filter>Pages</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="EDO.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Website_picture.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+</Project>

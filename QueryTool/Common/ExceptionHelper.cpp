@@ -16,7 +16,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include <string>
 #include <sstream>
 #include <COMMON/ExceptionHelper.h>
@@ -37,7 +37,9 @@ namespace Common
 #ifdef _AFX
     inline
     void print_exception (const string& str) 
-        { WideMessageBox(NULL,str.c_str(), "ERROR",MB_OK|MB_ICONSTOP); }
+    { 
+      StyleMessageBox(nullptr,str.c_str(), "ERROR",MB_OK|MB_ICONSTOP); 
+    }
 #else
     inline
     void print_exception (const string& str) 

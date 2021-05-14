@@ -17,14 +17,15 @@
 */
 
 #pragma once
+#include "SQLDatabase.h"
 
 // Timeout and net wait defaults
 #define DEFAULT_LOGIN_TIMEOUT 15    // seconds to before fail on connect
 #define DEFAULT_QUERY_TIMEOUT 15    // seconds to before fail waiting for results
 
-class ConnectionDlg : public CDialog
+class ConnectionDlg : public StyleDialog
 {
-// Construction
+  // Construction
 public:
 	 ConnectionDlg(CWnd* pParent = NULL);   // standard constructor
   ~ConnectionDlg();      // Standard destructor
@@ -86,7 +87,42 @@ private:
   CString   m_datasource;
   bool      m_safty;
   CString   m_catalog;          // Static attribute
-  CComboBox m_boxSafty;
+
+  StyleComboBox m_comboDatasource;
+  StyleEdit     m_editUser;
+  StyleEdit     m_editPassword;
+  StyleComboBox m_comboSafty;
+  StyleComboBox m_comboDriver;
+  StyleEdit     m_editFileDsn;
+  StyleButton   m_buttonFileDsn;
+  StyleEdit     m_editFileDsnSave;
+  StyleButton   m_buttonFileDsnSave;
+  StyleCheckbox m_checkOptUser;
+  StyleCheckbox m_checkPassword;
+  StyleCheckbox m_checkTraceConn;
+  StyleEdit     m_editCatalog;
+  StyleEdit     m_editTracefile;
+  StyleButton   m_buttonLogfile;
+  StyleEdit     m_editTransLib;
+  StyleButton   m_buttonTranslib;
+  StyleEdit     m_editLoginTimeout;
+  StyleEdit     m_editConnTimeout;
+  StyleComboBox m_comboCursor;
+  StyleEdit     m_editTransOption;
+  StyleComboBox m_comboIsolation;
+  StyleButton   m_buttonRDBMS;
+  StyleEdit     m_editPacketSize;
+  StyleCheckbox m_checkReadonly;
+  StyleCheckbox m_checkDeadConnection;
+  StyleCheckbox m_checkMetadata;
+  StyleCheckbox m_checkQuiet;
+  StyleCheckbox m_checkAutoIPD;
+  StyleCheckbox m_checkAutoCommit;
+  StyleButton   m_buttonSimple;
+  StyleButton   m_buttonHelp;
+  StyleButton   m_buttonApply;
+  StyleButton   m_buttonOK;
+  StyleButton   m_buttonCancel;
 
   // Connection status
   bool    m_readOnly;         // Read-only status
@@ -100,10 +136,13 @@ private:
   bool    m_fileDSNApply;
   CString m_fileDSNSave;      // Saved DSN file after success
   bool    m_fileDSNSaveApply; // Reapply
+  CString m_strLoginTimeout;
   int     m_loginTimeout;     // Timout at login (default = 15)
   bool    m_loginTimeoutApply;// Reapply
+  CString m_strConnTimeout;
   int     m_connTimeout;      // Timeout at connection level (default = 0)
   bool    m_connTimeoutApply; // Reapply
+  CString m_strPacketSize;
   int     m_packetSize;       // Network packet size
   bool    m_packetSizeApply;  // Reapply
   bool    m_metadataID;       // METADATA-ID
@@ -114,6 +153,7 @@ private:
   bool    m_txnLevelApply;    // Reapply
   CString m_transLib;         // Translation library
   bool    m_transLibApply;    // Reapply
+  CString m_strTransOption;
   int     m_transOption;      // Option at start of translation library
   bool    m_transOptionApply; // Reapply
   int     m_quietMode;        // WIndow handle

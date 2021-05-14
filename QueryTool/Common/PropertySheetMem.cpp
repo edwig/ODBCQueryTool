@@ -1,7 +1,8 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "Common/PropertySheetMem.h"
 
-namespace Common {
+namespace Common 
+{
 
 // CPropertySheetMem
 BEGIN_MESSAGE_MAP(CPropertySheetMem, CPropertySheet)

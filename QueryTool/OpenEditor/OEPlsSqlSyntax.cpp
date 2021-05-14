@@ -16,11 +16,11 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include <map>
 #include <COMMON/AppGlobal.h>
 #include <COMMON/ExceptionHelper.h>
-#include "OpenEditor/OEPlsSqlSyntax.h"
+#include "OEPlsSqlSyntax.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

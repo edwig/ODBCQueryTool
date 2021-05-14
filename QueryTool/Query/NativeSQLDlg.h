@@ -25,7 +25,7 @@
 
 // CNativeSQLDlg dialog
 
-class CNativeSQLDlg : public CDialogEx
+class CNativeSQLDlg : public StyleDialog
 {
 	DECLARE_DYNAMIC(CNativeSQLDlg)
 
@@ -40,9 +40,13 @@ public:
   // Dialog Data
 	enum { IDD = IDD_NATIVE_SQL };
 protected:
-  CString m_title;
-  CString m_native;
-  CFont   m_font;
+  virtual void CNativeSQLDlg::SetupDynamicLayout() override;
+
+  StyleEdit   m_editNative;
+  StyleButton m_buttonOK;
+  CString     m_title;
+  CString     m_native;
+  CFont       m_font;
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//DECLARE_MESSAGE_MAP()
 };

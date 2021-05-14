@@ -16,8 +16,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#include "stdafx.h"
-#include "OpenEditor/OEHighlighter.h"
+#include "pch.h"
+#include "OEHighlighter.h"
 #include "COMMON/VisualAttributes.h"
 
 #ifdef _DEBUG
@@ -276,7 +276,7 @@ bool CommonHighlighter::openingOfSeq (const char* str, int len)
             for (; it != m_startLineComment.end(); it++)
                 if (len == static_cast<int>(it->length()) // 10.03.2003 bug fix, start-line comment (promt & remark) should be separeted by delimiter from text
                 && (m_caseSensiteve && !strncmp(str, it->c_str(), it->length())
-                    || !m_caseSensiteve && !strnicmp(str, it->c_str(), it->length()))
+                    || !m_caseSensiteve && !_strnicmp(str, it->c_str(), it->length()))
                 )
                 {
                     comment = true;

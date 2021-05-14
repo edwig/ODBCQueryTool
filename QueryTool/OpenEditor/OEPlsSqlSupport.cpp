@@ -20,9 +20,9 @@
     16.03.2003 bug fix, plsql match sometimes fails after some edit operations
 */
 
-#include "stdafx.h"
-#include "OpenEditor/OEContext.h"
-#include "OpenEditor/OEPlsSqlSupport.h"
+#include "pch.h"
+#include "OEContext.h"
+#include "OEPlsSqlSupport.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

@@ -20,11 +20,11 @@
     16.03.2003 bug fix, plsql match sometimes fails after some edit operations
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include <map>
 #include <COMMON/ExceptionHelper.h>
-#include "OpenEditor/OEContext.h"
-#include "OpenEditor/OEPlsSqlParser.h"
+#include "OEContext.h"
+#include "OEPlsSqlParser.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

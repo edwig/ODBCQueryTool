@@ -7,12 +7,26 @@ attrib -h ".vs"
 rmdir /q/s Debug
 rmdir /q/s Release
 rmdir /q/s x64
-rmdir /q/s Src\SQLComponents\Debug
-rmdir /q/s Src\SQLComponents\Release
-rmdir /q/s Src\SQLComponents\x64
-rmdir /q/s ipch
+rmdir /q/s bin_Debugx64
+rmdir /q/s bin_Debugx86
+rmdir /q/s bin_Releasex64
+rmdir /q/s bin_Releasex86
+rmdir /q/s Installer\Debug
+rmdir /q/s Installer\Release
+rmdir /q/s Installer\x64
+rmdir /q/s QueryTool\Debug
+rmdir /q/s QueryTool\Release
+rmdir /q/s QueryTool\x64
+rmdir /q/s ReferenceGuide\Debug
+rmdir /q/s ReferenceGuide\Release
+rmdir /q/s ReferenceGuide\x64
+rmdir /q/s SQLComponents\Debug
+rmdir /q/s SQLComponents\Release
+rmdir /q/s SQLComponents\x64
+rmdir /q/s StyleFramework\Debug
+rmdir /q/s StyleFramework\Release
+rmdir /q/s StyleFramework\x64
 rmdir /q/s lib
-rmdir /q/s Include
 rmdir /q/s ".vs"
 
 del ReferenceGuide\*.chm

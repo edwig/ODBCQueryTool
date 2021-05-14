@@ -6,12 +6,12 @@
 ; Copyright (c) 2017 ir. W.E. Huisman
 ; All rights reserved
 ;
-; Last change:       31-12-2020
-; Versionnumber:     2.5.1
+; Last change:       14-05-2021
+; Versionnumber:     3.0.0
 ;-------------------------------------------------------
  !define PRODUCT_NAME                         "OpenODBCQuerytool"
- !define PRODUCT_VERSION                      "2.5.1"
- !define PRODUCT_BUILDNUMBER                  "216"
+ !define PRODUCT_VERSION                      "3.0.0"
+ !define PRODUCT_BUILDNUMBER                  "322"
  !define PRODUCT_PUBLISHER                    "EDO"
  !define PRODUCT_WEB_SITE                     "https://sourceforge.net/projects/odbcquerytool"
  !define PRODUCT_DIR_REGKEY                   "Software\Microsoft\Windows\CurrentVersion\App Paths\${PRODUCT_NAME}"
@@ -25,7 +25,7 @@
  !define InvoerMapData                        "..\..\Data"
 
 ;--------------------------------------------------------------------------------------------------------
- var huidigeVersie
+ var currentVersion
 
  ;--------------------------------------------------------------------------------------------------------
  !include "MUI2.nsh"
@@ -134,33 +134,30 @@ Section "The Program" prog_always
  ; Explicit overwrite of files
  SetOverwrite on
  
- ; Correct input directory
- !define InvoerMapBin "${InvoerMap}\\"
- 
  SetOutPath  "$INSTDIR"
  DetailPrint "Output directory set to: $INSTDIR"
  DetailPrint "Copying the files..."
- File "${InvoerMapBin}bugs.txt"
- File "${InvoerMapBin}license.rtf"
- File "${InvoerMapBin}ODBCQueryTool.chm"
- File "${InvoerMapBin}ODBCQueryTool.exe"
- File "${InvoerMapBin}plan.txt"
- File "${InvoerMapBin}QUERY.ICO"
- File "${InvoerMapBin}readme.txt"
- File "${InvoerMapBin}script_syntax.txt"
+ File "${RootDir}bugs.txt"
+ File "${RootDir}license.rtf"
+ File "${InputDir}ODBCQueryTool.chm"
+ File "${InputDir}ODBCQueryTool.exe"
+ File "${RootDir}plan.txt"
+ File "${RootDIr}QUERY.ICO"
+ File "${RootDir}readme.txt"
+ File "${RootDir}script_syntax.txt"
  
  SetOutPath "$INSTDIR\Data"
  DetailPrint "Output directory set to: $INSTDIR\Data"
  DetailPrint "Copying of the minimal data set..."
- File "${INvoerMap}\Data\context.keymap"
- File "${INvoerMap}\Data\custom.keymap"
- File "${INvoerMap}\Data\default.keymap"
- File "${INvoerMap}\Data\editplus2.keymap"
- File "${INvoerMap}\Data\languages.dat"
- File "${INvoerMap}\Data\settings.dat"
- File "${INvoerMap}\Data\templates.dat"
- File "${INvoerMap}\Data\textpad.keymap"
- File "${INvoerMap}\Data\ultraedit.keymap"
+ File "${RootDir}\Data\context.keymap"
+ File "${RootDir}\Data\custom.keymap"
+ File "${RootDir}\Data\default.keymap"
+ File "${RootDir}\Data\editplus2.keymap"
+ File "${RootDir}\Data\languages.dat"
+ File "${RootDir}\Data\settings.dat"
+ File "${RootDir}\Data\templates.dat"
+ File "${RootDir}\Data\textpad.keymap"
+ File "${RootDir}\Data\ultraedit.keymap"
 SectionEnd
 
 Section "Create startmenu" Create_Startmenu
@@ -196,26 +193,26 @@ Function .onInit
  SectionSetFlags ${prog_always} $0
 
 ;Check if there is a newer version of the product
- Readregstr $huidigeVersie "${PRODUCT_UNINST_ROOT_KEY}" "${PRODUCT_UNINST_KEY}" "DisplayVersion"
- IntCmp $huidigeVersie "${PRODUCT_VERSION}.${PRODUCT_BUILDNUMBER}" versieGelijk SetupVersieNieuwer HuidigVersieNieuwer
+ Readregstr $currentVersion "${PRODUCT_UNINST_ROOT_KEY}" "${PRODUCT_UNINST_KEY}" "DisplayVersion"
+ IntCmp $currentVersion "${PRODUCT_VERSION}.${PRODUCT_BUILDNUMBER}" versionTheSame SetupVersionNewer CurrentVersionNewer
 
- versieGelijk:
-  Messagebox MB_YESNO "This version of ${PRODUCT_NAME} is already installed. Do you want to re-install it? " /SD IDYES IDNO nietRepareren
-  goto SetupVersieNieuwer
+ versionTheSame:
+  Messagebox MB_YESNO "This version of ${PRODUCT_NAME} is already installed. Do you want to re-install it? " /SD IDYES IDNO doNotRepair
+  goto SetupVersionNewer
 
- nietRepareren:
+ doNotRepair:
   abort
 
- HuidigVersieNieuwer:
+ CurrentVersionNewer:
   Messagebox MB_YESNO "There is already a newer version of ${PRODUCT_NAME} installed on your system. \
              Do you want to overwrite it with the current (lower) version of the product?" \
-            /SD IDNO IDYES tochInstalleren
+            /SD IDNO IDYES doInstallAfterAll
 
   abort
- tochInstalleren:
- Delete "$INSTDIR\Uninstall ${PRODUCT_NAME} $huidigeVersie.exe"
+ doInstallAfterAll:
+ Delete "$INSTDIR\Uninstall ${PRODUCT_NAME} $currentVersion.exe"
 
- SetupVersieNieuwer:
+ SetupVersionNewer:
 ;  InitPluginsDir
 ;  File /oname=$PLUGINSDIR\edo.png "edo.png"
 ;  IfSilent +2
@@ -290,7 +287,7 @@ Section Uninstall
  
  ;De-Registring of the product.
  DetailPrint "De-registration of ${PRODUCT_NAME}"
- Delete "$INSTDIR\Uninstall ${PRODUCT_NAME} $huidigeVersie.exe"
+ Delete "$INSTDIR\Uninstall ${PRODUCT_NAME} $currentVersion.exe"
  DeleteRegKey ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}"
 
  DetailPrint "End of de-registration of ${PRODUCT_NAME}"

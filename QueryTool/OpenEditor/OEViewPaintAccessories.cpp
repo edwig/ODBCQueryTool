@@ -16,9 +16,9 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#include "stdafx.h"
-#include "OpenEditor/OEHighlighter.h"
-#include "OpenEditor/OEViewPaintAccessories.h"
+#include "pch.h"
+#include "OEHighlighter.h"
+#include "OEViewPaintAccessories.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -115,7 +115,7 @@ void COEViewPaintAccessories::OnSettingsChanged (CWnd* pwnd, const VisualAttribu
     logfont.lfClipPrecision  = CLIP_DEFAULT_PRECIS;
     logfont.lfQuality        = DEFAULT_QUALITY;
     logfont.lfPitchAndFamily = FIXED_PITCH;
-    strncpy(logfont.lfFaceName, textAttr.m_FontName.c_str(), LF_FACESIZE-1);
+    strncpy_s(logfont.lfFaceName, textAttr.m_FontName.c_str(), LF_FACESIZE-1);
 
 
     for (int i = 0; i < 8; i++)

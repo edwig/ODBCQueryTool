@@ -29,11 +29,11 @@
 */
 
 
-#include "stdafx.h"
+#include "pch.h"
 #include <COMMON/ExceptionHelper.h>
-#include "OpenEditor/OESettings.h"
-#include "OpenEditor/OEStorage.h"
-#include "OpenEditor/OELanguageManager.h"
+#include "OESettings.h"
+#include "OEStorage.h"
+#include "OELanguageManager.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -690,24 +690,34 @@ void Storage::DeleteLines (int line, int count)
 {
 	if (line < static_cast<int>(m_Lines.size()))
 	{
-        m_actionSeq++;
+    m_actionSeq++;
 
-        StringArray lines(count, 1024);
-        for (int i = 0; i < count; i++)
+    StringArray lines(count, 1024);
+    for (int i = 0; i < count; i++)
+    {
+      if (((int)lines.size()) > (line + i))
+      {
+        const String& str = m_Lines[line + i];
+        lines.append().assign(str.data(), str.length(), true);
+
+        if (str.tag.bmkmask)
         {
-            const String& str = m_Lines[line + i];
-            lines.append().assign(str.data(), str.length(), true);
-
-            if (str.tag.bmkmask)
-                for (int j(0); j < BOOKMARK_GROUPS_SIZE; j++)
-                    if (str.tag.bmkmask & (1 << j))
-                        m_BookmarkCountersByGroup[j]--;
+          for (int j(0); j < BOOKMARK_GROUPS_SIZE; j++)
+          {
+            if (str.tag.bmkmask & (1 << j))
+            {
+              m_BookmarkCountersByGroup[j]--;
+            }
+          }
         }
-        m_Lines.erase(line, count);
-        PUSH_IN_UNDO_STACK(new UndoDeleteLines(line, lines));
+      }
+    }
+    m_Lines.erase(line, count);
+    
+    PUSH_IN_UNDO_STACK(new UndoDeleteLines(line, lines));
 
 		Notify_ChangedLinesQuantity(max(0, line - 1), -count);
-        Notify_ChangedLines(line, (int)m_Lines.size());
+    Notify_ChangedLines(line, (int)m_Lines.size());
 	}
 }
 

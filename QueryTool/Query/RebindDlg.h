@@ -32,26 +32,30 @@ extern DataTypes allParams[];
 
 // RebindDlg dialog
 
-class RebindDlg : public CDialog
+class RebindDlg : public StyleDialog
 {
 	DECLARE_DYNAMIC(RebindDlg)
 
 public:
 	RebindDlg(CWnd* pParent = NULL);   // standard constructor
 	virtual ~RebindDlg();
-  BOOL OnInitDialog();
+  BOOL OnInitDialog() override;
 
 // Dialog Data
 	enum { IDD = IDD_REBIND };
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+  virtual void DoDataExchange(CDataExchange* pDX) override;
 	DECLARE_MESSAGE_MAP()
 
-  int       m_type;
-  int       m_rebind;
-  CComboBox m_typeCombo;
-  CComboBox m_rebindCombo;
+  int           m_type;
+  int           m_rebind;
+  StyleComboBox m_typeCombo;
+  StyleComboBox m_rebindCombo;
+  StyleButton   m_buttonReset;
+  StyleButton   m_buttonAdd;
+  StyleButton   m_buttonOK;
+  StyleButton   m_buttonCancel;
 public:
   afx_msg void OnCbnSelchangeDatatype();
   afx_msg void OnCbnSelchangeRebind();

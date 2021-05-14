@@ -16,8 +16,8 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#include "stdafx.h"
-#include "OpenEditor/OEGoToDialog.h"
+#include "pch.h"
+#include "OEGoToDialog.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -29,25 +29,27 @@ static char THIS_FILE[] = __FILE__;
 // COEGoToDialog dialog
 
 
-COEGoToDialog::COEGoToDialog(CWnd* pParent /*=NULL*/)
-	: CDialog(COEGoToDialog::IDD, pParent)
+COEGoToDialog::COEGoToDialog(CWnd* pParent,int whereFrom,int whereTo,CString p_info)
+	            :StyleDialog(COEGoToDialog::IDD, pParent)
+              ,m_WhereTo(whereTo)
+              ,m_WhereFrom(whereFrom)
+              ,m_InfoString(p_info)
 {
-	//{{AFX_DATA_INIT(COEGoToDialog)
-	m_WhereTo = 0;
-	m_WhereFrom = -1;
-	m_InfoString = _T("");
-	//}}AFX_DATA_INIT
 }
 
-
-void COEGoToDialog::DoDataExchange(CDataExchange* pDX)
+void 
+COEGoToDialog::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(COEGoToDialog)
-	DDX_Text(pDX, IDC_OEGT_WHERE_TO, m_WhereTo);
-	DDX_Radio(pDX, IDC_OEGT_WHERE_FROM1, m_WhereFrom);
-	DDX_Text(pDX, IDC_OEGT_INFO, m_InfoString);
-	//}}AFX_DATA_MAP
+	StyleDialog::DoDataExchange(pDX);
+
+  DDX_Control(pDX, IDC_OEGT_WHERE_TO,   m_editTo,  m_WhereTo);
+  DDX_Control(pDX, IDC_OEGT_INFO,       m_editInfo,m_InfoString);
+  DDX_Control(pDX, IDC_OEGT_WHERE_FROM1,m_checkTop);
+  DDX_Control(pDX, IDC_OEGT_WHERE_FROM2,m_checkBottom);
+  DDX_Control(pDX, IDC_OEGT_WHERE_FROM3,m_checkCurrent);
+  DDX_Radio  (pDX, IDC_OEGT_WHERE_FROM1,m_WhereFrom);
+  DDX_Control(pDX, IDOK,                m_buttonOK);
+  DDX_Control(pDX, IDCANCEL,            m_buttonCancel);
 }
 
 /*
@@ -56,5 +58,15 @@ BEGIN_MESSAGE_MAP(COEGoToDialog, CDialog)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 */
+
+BOOL
+COEGoToDialog::OnInitDialog()
+{
+  StyleDialog::OnInitDialog();
+  SetWindowText("Goto line");
+
+  return InitFirstFocus();
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // COEGoToDialog message handlers

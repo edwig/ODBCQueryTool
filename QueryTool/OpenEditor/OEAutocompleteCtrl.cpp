@@ -21,10 +21,12 @@
     16.03.2003 bug fix, autocomplete template list does not show properly on the second monitor
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include "resource.h"
-#include "OpenEditor/OEView.h"
-#include "OpenEditor/OEAutocompleteCtrl.h"
+#include "OEView.h"
+#include "OEAutocompleteCtrl.h"
+
+#pragma warning(disable: 4996)
 
 #ifdef _AFXDLL
 #define COMPILE_MULTIMON_STUBS
@@ -201,7 +203,7 @@ void COEAutocompleteCtrl::CheckMatch (bool init)
             }
             EnsureVisible(index, FALSE);
  
-            UINT state = (substring.length() && !strnicmp(substring.c_str(), GetItemText(index, 0), substring.length())) 
+            UINT state = (substring.length() && !_strnicmp(substring.c_str(), GetItemText(index, 0), substring.length())) 
                  ? LVIS_FOCUSED|LVIS_SELECTED : LVIS_FOCUSED;
             
             SetItemState(index, state, state);

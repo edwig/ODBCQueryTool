@@ -19,7 +19,7 @@
 // 28.08.2002 improvement, double key accelerator, for example "Ctrl+K,B"
 // 07.04.2003 bug fix, no menu shortcut labels on Win95,... because of SDK incompatibility
 
-#include "stdafx.h"
+#include "pch.h"
 #include <map>
 #include <string>
 #include <vector>

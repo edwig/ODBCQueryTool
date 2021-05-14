@@ -1,72 +1,57 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "resource.h"
-#include "OpenEditor\OESaveModifiedDlg.h"
+#include "OESaveModifiedDlg.h"
 
 
 // CSaveModifiedDlg dialog
 
 COESaveModifiedDlg::COESaveModifiedDlg(DocSavingList& list)
-	: CDialog(COESaveModifiedDlg::IDD),
-    m_list(list)
+	                 :StyleDialog(COESaveModifiedDlg::IDD)
+                   ,m_list(list)
 {
 }
 
-BEGIN_MESSAGE_MAP(COESaveModifiedDlg, CDialog)
+void COESaveModifiedDlg::DoDataExchange(CDataExchange* pDX)
+{
+  StyleDialog::DoDataExchange(pDX);
+
+  DDX_Control(pDX,IDC_OESA_LIST,m_listBox);
+  DDX_Control(pDX,IDOK,         m_buttonYes);
+  DDX_Control(pDX,IDNO,         m_buttonNo);
+  DDX_Control(pDX,IDCANCEL,     m_buttonCancel);
+
+}
+
+
+BEGIN_MESSAGE_MAP(COESaveModifiedDlg, StyleDialog)
     ON_BN_CLICKED(IDNO, OnNO)
 END_MESSAGE_MAP()
 
 BOOL COESaveModifiedDlg::OnInitDialog()
 {
-    CDialog::OnInitDialog();
+  StyleDialog::OnInitDialog();
 
-    CString title;
-    title.LoadString(IDR_MAINFRAME);
-    SetWindowText(title);
+  CString title;
+  title.LoadString(IDR_MAINFRAME);
+  SetWindowText(title);
 
-    HWND hList = ::GetDlgItem(m_hWnd, IDC_OESA_LIST);
-    
-    _ASSERTE(hList);
+  for (auto& item : m_list)
+  {
+    title = item.first->GetTitle();
+    m_listBox.AddString(title);
+  }
 
-    if (hList)
-    {
-        int maxWidth = 0;
-        CClientDC dc(this);
-        CFont* pOrgFont = dc.SelectObject(GetFont());
-
-        for (DocSavingListConst_Iterator it = m_list.begin(); it != m_list.end(); ++it)
-        {
-            title = it->first->GetPathName();
-            if (title.IsEmpty()) title = it->first->GetTitle();
-            int index = (int)::SendMessage(hList, LB_ADDSTRING, NULL, (LPARAM)(LPCSTR)title);
-            ::SendMessage(hList, LB_SETSEL, it->second ? TRUE : FALSE, index);
-
-            CSize size = dc.GetTextExtent(title);
-            if (maxWidth < size.cx) maxWidth = size.cx;
-        }
-
-        ::SendMessage(hList, LB_SETHORIZONTALEXTENT, maxWidth + 10, 0);
-        dc.SelectObject(pOrgFont);
-   }
-
-    return TRUE;
+  return TRUE;
 }
 
-void COESaveModifiedDlg::OnOK()
+void 
+COESaveModifiedDlg::OnOK()
 {
-    HWND hList = ::GetDlgItem(m_hWnd, IDC_OESA_LIST);
-    
-    DocSavingList_Iterator it = m_list.begin();
-
-    for (int index = 0; it != m_list.end(); ++it, ++index)
-    {
-        it->second = ::SendMessage(hList, LB_GETSEL, index, 0L) ? true : false;
-    }
-
-    CDialog::OnOK();
+  CDialog::OnOK();
 }
 
-
-void COESaveModifiedDlg::OnNO()
+void 
+COESaveModifiedDlg::OnNO()
 {
-    EndDialog(IDNO);
+  EndDialog(IDNO);
 }

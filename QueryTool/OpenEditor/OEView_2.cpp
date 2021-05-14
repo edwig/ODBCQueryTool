@@ -21,10 +21,10 @@
     29.06.2003 bug fix, selected text foreground color cannot be changed for "Text" class
 */
 
-#include "stdafx.h"
-#include "OpenEditor/OEDocument.h"
-#include "OpenEditor/OEView.h"
-#include "OpenEditor/OEHighlighter.h"
+#include "pch.h"
+#include "OEDocument.h"
+#include "OEView.h"
+#include "OEHighlighter.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -57,7 +57,7 @@ void COEditorView::DrawLineNumber (CDC& dc, RECT rc, int line)
     rc.right -= (m_Rulers[0].m_CharSize*3)/4;
 
     char buff[40];
-    itoa(line + 1, buff, 10);
+    _itoa_s(line + 1, buff, 40,10);
     dc.SetBkMode(TRANSPARENT);
     dc.SetTextColor(GetSysColor(COLOR_BTNTEXT));
     
@@ -94,7 +94,7 @@ void COEditorView::DrawRandomBookmark (CDC& dc, RECT rc, int index, bool halfcli
         dc.SelectClipRgn(NULL);
 
     char buff[40];
-    itoa(index, buff, 10);
+    _itoa_s(index, buff,40, 10);
     dc.SetBkMode(TRANSPARENT);
     dc.SetTextColor(m_paintAccessories->m_RndBmkForeground);
 

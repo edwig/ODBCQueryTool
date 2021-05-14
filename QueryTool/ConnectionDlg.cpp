@@ -15,11 +15,11 @@
     along with this program; if not, write to the Free Software
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
-#include "stdafx.h"
-#include "OpenEditorApp.h"
+#include "pch.h"
+#include "QueryTool.h"
 #include "ConnectionDlg.h"
 #include "Common/FileSelectDialog.h"
-#include "SQLDatabase.h"
+#include "Common/AppGlobal.h"
 #include "SQLInfoDB.h"
 
 #ifdef _DEBUG
@@ -32,7 +32,7 @@ const bool Controls2Data = true;   // UpdateData
 const bool Data2Controls = false;
 
 ConnectionDlg::ConnectionDlg(CWnd* pParent /*=NULL*/)
-	            :CDialog(ConnectionDlg::IDD, pParent)
+	            :StyleDialog(ConnectionDlg::IDD, pParent)
               ,m_database(NULL)
               ,m_connDead(false)
               ,m_readOnly(false)
@@ -70,100 +70,103 @@ ConnectionDlg::~ConnectionDlg()
 
 void ConnectionDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
+	StyleDialog::DoDataExchange(pDX);
+
+  DDX_Control(pDX,IDC_CON_DATASOURCE,   m_comboDatasource);
+  DDX_Control(pDX,IDC_CON_USER,         m_editUser,     m_user);
+  DDX_Control(pDX,IDC_CON_PASSWORD,     m_editPassword, m_password);
+  DDX_Control(pDX,IDC_CON_SAFTY,        m_comboSafty);
+  DDX_Control(pDX,IDC_CON_DRIVER,       m_comboDriver);
+  DDX_Control(pDX,IDC_CON_FILE_DSN,     m_editFileDsn,m_fileDSN);
+  DDX_Control(pDX,IDC_BTN_FILEDSN,      m_buttonFileDsn);
+  DDX_Control(pDX,IDC_CON_SAVE_DSN,     m_editFileDsnSave,m_fileDSNSave);
+  DDX_Control(pDX,IDC_BTN_SAVEDSN,      m_buttonFileDsnSave);
+  DDX_Control(pDX,IDC_OPT_USER,         m_checkOptUser);
+  DDX_Control(pDX,IDC_OPT_PWD,          m_checkPassword);
+  DDX_Control(pDX,IDC_TRACE_CONN,       m_checkTraceConn);
+  DDX_Control(pDX,IDC_CON_CATALOG,      m_editCatalog,m_catalog);
+  DDX_Control(pDX,IDC_CON_TRACEFILE,    m_editTracefile,m_traceFile);
+  DDX_Control(pDX,IDC_BTN_LOGFILE,      m_buttonLogfile);
+  DDX_Control(pDX,IDC_CON_TRANSLIB,     m_editTransLib,m_transLib);
+  DDX_Control(pDX,IDC_BTN_TRANSLIB,     m_buttonTranslib);
+  DDX_Control(pDX,IDC_CON_LOGINTIMEOUT, m_editLoginTimeout,m_strLoginTimeout);
+  DDX_Control(pDX,IDC_CON_CONNTIMEOUT,  m_editConnTimeout, m_strConnTimeout);
+  DDX_Control(pDX,IDC_CON_CURSORLIB,    m_comboCursor);
+  DDX_Control(pDX,IDC_CON_TRANSOPTION,  m_editTransOption,m_strTransOption);
+  DDX_Control(pDX,IDC_CON_ISOLATION,    m_comboIsolation);
+  DDX_Control(pDX,IDC_BTN_RDBMS,        m_buttonRDBMS);
+  DDX_Control(pDX,IDC_CON_PACKETSIZE,   m_editPacketSize, m_strPacketSize);
+  DDX_Control(pDX,IDC_CON_READONLY,     m_checkReadonly);
+  DDX_Control(pDX,IDC_CON_DEAD,         m_checkDeadConnection);
+  DDX_Control(pDX,IDC_CON_METADATAID,   m_checkMetadata);
+  DDX_Control(pDX,IDC_CON_QUIET,        m_checkQuiet);
+  DDX_Control(pDX,IDC_CON_AUTOIPD,      m_checkAutoIPD);
+  DDX_Control(pDX,IDC_CON_AUTOCOMMIT,   m_checkAutoCommit);
+
+  DDX_Control(pDX,IDC_CON_SIMPLE,       m_buttonSimple);
+  DDX_Control(pDX,IDC_CON_HELPEX,       m_buttonHelp);
+  DDX_Control(pDX,IDC_APPLY,            m_buttonApply);
+  DDX_Control(pDX,IDOK,                 m_buttonOK);
+  DDX_Control(pDX,IDCANCEL,             m_buttonCancel);
 
   CString sitem;
   int number;
+
   if(pDX->m_bSaveAndValidate == (BOOL)Controls2Data)
   {
-    DDX_Text   (pDX,IDC_CON_USER,sitem);       m_user       = sitem;
-    DDX_Text   (pDX,IDC_CON_PASSWORD,sitem);   m_password   = sitem;
-    DDX_Text   (pDX,IDC_CON_DATASOURCE,sitem); m_datasource = sitem;
-    DDX_Control(pDX,IDC_CON_SAFTY,m_boxSafty); 
-    m_safty = m_boxSafty.GetCurSel() > 0;
-//  m_safty = (sitem == "Read only (production)") ? true : false;
-    // Read-only
-    DDX_Check(pDX,IDC_CON_READONLY,number);
-    if((number != 0) != m_readOnly)
+    int ind = m_comboDatasource.GetCurSel();
+    if (ind >= 0)
     {
-      m_totalApply    = true;
-      m_readOnlyApply = true;
-      m_readOnly      = (number != 0);
+      m_comboDatasource.GetLBText(ind, m_datasource);
     }
-    DDX_Check(pDX,IDC_CON_METADATAID,number);
-    if((number!=0) != m_metadataID)
+    m_safty = m_comboSafty.GetCurSel() > 0;
+    if(!m_fileDSN.IsEmpty())
     {
-      m_totalApply      = true;
-      m_metadataIDApply = true;
-      m_metadataID      = (number != 0);
+      m_totalApply = true;
+      m_fileDSNApply = true;
     }
-    DDX_Check(pDX,IDC_TRACE_CONN,number);
-    if((number!=0) != m_tracing)
+    if(m_tracing != m_checkTraceConn.GetCheck() > 0)
     {
       m_totalApply   = true;
       m_tracingApply = true;
-      m_tracing      = (number != 0);
+      m_tracing      = m_checkTraceConn.GetCheck();
     }
-    DDX_Text(pDX,IDC_CON_TRACEFILE,sitem);
-    if(sitem != m_traceFile)
+    if(!m_traceFile.IsEmpty())
     {
       m_totalApply     = true;
       m_traceFileApply = true;
-      m_traceFile      = sitem;
     }
-    DDX_Text(pDX,IDC_CON_FILE_DSN,sitem);
-    if(sitem != m_fileDSN)
+    if(!m_transLib.IsEmpty())
     {
-      m_totalApply   = true;
-      m_fileDSNApply = true;
-      m_fileDSN      = sitem;
+      m_totalApply    = true;
+      m_transLibApply = true;
     }
-    DDX_Text(pDX,IDC_CON_SAVE_DSN,sitem);
-    if(sitem != m_fileDSNSave)
-    {
-      m_totalApply       = true;
-      m_fileDSNSaveApply = true;
-      m_fileDSNSave      = sitem;
-    }
-    DDX_Text(pDX,IDC_CON_LOGINTIMEOUT,sitem);
-    number = atoi(sitem); 
+    number = atoi(m_strLoginTimeout); 
     if(number >= 0 && number != m_loginTimeout)
     {
       m_totalApply        = true;
-      m_loginTimeout      = number;
       m_loginTimeoutApply = true;
+      m_loginTimeout      = number;
     }
-    DDX_Text(pDX,IDC_CON_CONNTIMEOUT,sitem);
-    number = atoi(sitem);
+    number = atoi(m_strConnTimeout);
     if(number >= 0 && number != m_connTimeout)
     {
       m_totalApply       = true;
-      m_connTimeout      = number;
       m_connTimeoutApply = true;
+      m_connTimeout      = number;
     }
-    DDX_Text(pDX,IDC_CON_PACKETSIZE,sitem);
-    number = atoi(sitem);
-    if(number >= 0 && number != m_packetSize)
-    {
-      m_totalApply      = true;
-      m_packetSizeApply = true;
-      m_packetSize      = number;
-    }
-    // SQL_CUR_USE_IF_NEEDED = 0 -> First string
-    // SQL_CUR_USE_ODBC      = 1 -> Second string
-    // SQL_CUR_USE_DRIVER    = 2 -> Third String
-    DDX_CBIndex(pDX,IDC_CON_CURSORLIB,number);
-    if(number >= 0 && number <= 2 && number != m_odbcCursors)
+    number = atoi(m_strTransOption);
+    if(number != m_transOption)
     {
       m_totalApply       = true;
-      m_odbcCursorsApply = true;
-      m_odbcCursors      = number;
+      m_transOptionApply = true;
+      m_transOption      = number;
     }
     // SQL_TXN_READ_UNCOMMITTED  = 1
     // SQL_TXN_READ_COMMITTED    = 2
     // SQL_TXN_REPEATABLE_READ   = 4
     // SQL_TXN_SERIALIZABLE      = 8
-    DDX_CBIndex(pDX,IDC_CON_ISOLATION,number);
+    number = m_comboIsolation.GetCurSel();
     switch(number)
     {
       case 0: number = SQL_TXN_READ_UNCOMMITTED; break;
@@ -171,77 +174,83 @@ void ConnectionDlg::DoDataExchange(CDataExchange* pDX)
       case 2: number = SQL_TXN_REPEATABLE_READ;  break;
       case 3: number = SQL_TXN_SERIALIZABLE;     break;
     }
+    // SQL_CUR_USE_IF_NEEDED = 0 -> First string
+    // SQL_CUR_USE_ODBC      = 1 -> Second string
+    // SQL_CUR_USE_DRIVER    = 2 -> Third String
+    number = m_comboCursor.GetCurSel();
+    if(number >= 0 && number <= 2 && number != m_odbcCursors)
+    {
+      m_totalApply       = true;
+      m_odbcCursorsApply = true;
+      m_odbcCursors      = number;
+    }
+
+    number = atoi(m_strPacketSize);
+    if(number >= 0 && number != m_packetSize)
+    {
+      m_totalApply      = true;
+      m_packetSizeApply = true;
+      m_packetSize      = number;
+    }
+
+    // Checks
+    number = m_checkReadonly.GetCheck() > 0;
+    if((number != 0) != m_readOnly)
+    {
+      m_totalApply    = true;
+      m_readOnlyApply = true;
+      m_readOnly      = (number != 0);
+    }
+    number = m_checkMetadata.GetCheck() > 0;
+    if((number!=0) != m_metadataID)
+    {
+      m_totalApply      = true;
+      m_metadataIDApply = true;
+      m_metadataID      = (number != 0);
+    }
+    number = m_checkAutoCommit.GetCheck() > 0;
+    if (number != m_autoCommit)
+    {
+      m_totalApply = true;
+      m_autoCommitApply = true;
+      m_autoCommit = number;
+    }
+    number = m_comboIsolation.GetCurSel();
     if(number >= 0 && number != m_txnLevel)
     {
       m_totalApply    = true;
       m_txnLevelApply = true;
       m_txnLevel      = number;
     }
-    DDX_Text(pDX,IDC_CON_TRANSLIB,sitem); 
-    if(sitem != m_transLib)
-    {
-      m_totalApply    = true;
-      m_transLib      = sitem;
-      m_transLibApply = true;
-    }
-    DDX_Text(pDX,IDC_CON_TRANSOPTION,sitem);
-    number = atoi(sitem);
-    if(number != m_transOption)
-    {
-      m_totalApply       = true;
-      m_transOptionApply = true;
-      m_transOption      = number;
-    }
-    DDX_Check(pDX,IDC_CON_AUTOCOMMIT,number);
-    if(number != m_autoCommit)
-    {
-      m_totalApply      = true;
-      m_autoCommitApply = true;
-      m_autoCommit      = number;
-    }
   }
   else // Data2Controls
   {
-    DDX_Text(pDX,IDC_CON_USER,      m_user);
-    DDX_Text(pDX,IDC_CON_PASSWORD,  m_password);
-    DDX_Text(pDX,IDC_CON_DATASOURCE,m_datasource);
-    DDX_Control(pDX,IDC_CON_SAFTY,  m_boxSafty);
-//  sitem =  m_safty ? "Read only (production)" : "None (development)";
-//  DDX_Text (pDX,IDC_CON_SAFTY,sitem);
-    m_boxSafty.SetCurSel(m_safty ? 1 : 0);
+    int ind = m_comboDatasource.FindStringExact(0, m_datasource);
+    if (ind < 0)
+    {
+      ind = m_comboDatasource.AddString(m_datasource);
+    }
+    m_comboDatasource.SetCurSel(ind);
+    m_comboSafty.SetCurSel(m_safty ? 1 : 0);
+    m_checkTraceConn.SetCheck(m_tracing);
 
-    number = m_readOnly;
-    DDX_Check(pDX,IDC_CON_READONLY,number);
-    number = m_connDead;
-    DDX_Check(pDX,IDC_CON_DEAD,number);
-    number = m_tracing;
-    DDX_Check(pDX,IDC_TRACE_CONN,  number);
-    DDX_Text(pDX,IDC_CON_TRACEFILE,m_traceFile);
-    DDX_Text(pDX,IDC_CON_CATALOG,  m_catalog);
-    DDX_Text(pDX,IDC_CON_FILE_DSN, m_fileDSN);
-    DDX_Text(pDX,IDC_CON_SAVE_DSN, m_fileDSNSave);
-    sitem.Format("%d",m_loginTimeout);
-    DDX_Text(pDX,IDC_CON_LOGINTIMEOUT,sitem);
-    sitem.Format("%d",m_connTimeout);
-    DDX_Text(pDX,IDC_CON_CONNTIMEOUT, sitem);
-    sitem.Format("%d",m_packetSize);
-    DDX_Text(pDX,IDC_CON_PACKETSIZE,  sitem);
-    number = m_metadataID;
-    DDX_Check(pDX,IDC_CON_METADATAID,number);
-    number = (m_quietMode > 0);
-    DDX_Check(pDX,IDC_CON_QUIET,number);
-    number = m_autoIPD;
-    DDX_Check(pDX,IDC_CON_AUTOIPD,number);
+    m_strLoginTimeout.Format("%d", m_loginTimeout);
+    m_editLoginTimeout.SetWindowText(m_strLoginTimeout);
 
-    // SQL_CUR_USE_IF_NEEDED = 0 -> First string
-    // SQL_CUR_USE_ODBC      = 1 -> Second string
-    // SQL_CUR_USE_DRIVER    = 2 -> Third String
-    DDX_CBIndex(pDX,IDC_CON_CURSORLIB,m_odbcCursors);
+    m_strConnTimeout.Format("%d",m_connTimeout);
+    m_editConnTimeout.SetWindowText(m_strConnTimeout);
+
+    m_strTransOption.Format("%d", m_transOption);
+    m_editTransOption.SetWindowText(m_strTransOption);
+
+    m_strPacketSize.Format("%d", m_packetSize);
+    m_editPacketSize.SetWindowText(m_strPacketSize);
 
     // SQL_TXN_READ_UNCOMMITTED  = 1
     // SQL_TXN_READ_COMMITTED    = 2
     // SQL_TXN_REPEATABLE_READ   = 4
     // SQL_TXN_SERIALIZABLE      = 8
+    number = 1;
     switch(m_txnLevel)
     {
       case SQL_TXN_READ_UNCOMMITTED: number = 0; break;
@@ -249,19 +258,26 @@ void ConnectionDlg::DoDataExchange(CDataExchange* pDX)
       case SQL_TXN_REPEATABLE_READ:  number = 2; break;
       case SQL_TXN_SERIALIZABLE:     number = 3; break;
     }
-    DDX_CBIndex(pDX,IDC_CON_ISOLATION,number);
+    m_comboIsolation.SetCurSel(number);
 
-    DDX_Text(pDX,IDC_CON_TRANSLIB,m_transLib);
-    sitem.Format("%d",m_transOption);
-    DDX_Text(pDX,IDC_CON_TRANSOPTION,sitem);
-    number = m_autoCommit != 0;
-    DDX_Check(pDX,IDC_CON_AUTOCOMMIT,number);
+    // SQL_CUR_USE_IF_NEEDED = 0 -> First string
+    // SQL_CUR_USE_ODBC      = 1 -> Second string
+    // SQL_CUR_USE_DRIVER    = 2 -> Third String
+    m_comboCursor.SetCurSel(m_odbcCursors);
+
+    // Checks
+    m_checkReadonly      .SetCheck(m_readOnly);
+    m_checkDeadConnection.SetCheck(m_connDead);
+    m_checkMetadata      .SetCheck(m_metadataID);
+    m_checkQuiet         .SetCheck(m_quietMode);
+    m_checkAutoIPD       .SetCheck(m_autoIPD);
+    m_checkAutoCommit    .SetCheck(m_autoCommit);
   }
   // Set the apply button
   GetDlgItem(IDC_APPLY)->EnableWindow(m_totalApply && m_database);
 }
 
-BEGIN_MESSAGE_MAP(ConnectionDlg, CDialog)
+BEGIN_MESSAGE_MAP(ConnectionDlg, StyleDialog)
     ON_BN_CLICKED  (IDC_CON_SIMPLE,       OnSimple)
     ON_BN_CLICKED  (IDC_CON_DEAD,         OnDead)
     ON_BN_CLICKED  (IDC_CON_QUIET,        OnQuiet)
@@ -290,8 +306,23 @@ END_MESSAGE_MAP()
 BOOL 
 ConnectionDlg::OnInitDialog()
 {
-   BOOL res = CDialog::OnInitDialog();
+   BOOL res = StyleDialog::OnInitDialog();
+   SetWindowText("ODBC Connection");
+
+   m_comboSafty.AddString("None (development)");
+   m_comboSafty.AddString("Read only (production)");
+
+   m_comboCursor.AddString("1: Use if needed");
+   m_comboCursor.AddString("2: Use ODBC cursors");
+   m_comboCursor.AddString("3: Use RDBMS");
+
+   m_comboIsolation.AddString("1: Read uncommitted");
+   m_comboIsolation.AddString("2: Read committed");
+   m_comboIsolation.AddString("3: Repeatable read");
+   m_comboIsolation.AddString("4: Serializable");
+
    SetDialogControls();
+   UpdateData(FALSE);
    return res;
 }
 
@@ -341,7 +372,7 @@ ConnectionDlg::Connect()
   }
   catch(CString& error)
   {
-    strncpy(buffer,error.GetString(),1024);
+    strncpy_s(buffer,error.GetString(),1024);
     didError = true;
   }
   catch (CException* e)
@@ -353,24 +384,24 @@ ConnectionDlg::Connect()
   }
   catch (...)
   {
-    strcpy(buffer,"No connection with the database");
+    strcpy_s(buffer,1024,"No connection with the database");
     didError = true;
   }
   if(didError)
   {
     char buffer2[2048];
-    strcpy(buffer2,buffer);
+    strcpy_s(buffer2,2048,buffer);
 
     if(m_password != "")
     {
       m_password = "********";
     }
-    strcat(buffer2,"\r\nDatasource = \"");
-    strcat(buffer2,m_datasource);
-    strcat(buffer2,"\" User = \"");
-    strcat(buffer2,m_user);
-    strcat(buffer2,"\" Password = \"");
-    strcat(buffer2,m_password);
+    strcat_s(buffer2,2048,"\r\nDatasource = \"");
+    strcat_s(buffer2,2048,m_datasource);
+    strcat_s(buffer2,2048,"\" User = \"");
+    strcat_s(buffer2,2048,m_user);
+    strcat_s(buffer2,2048,"\" Password = \"");
+    strcat_s(buffer2,2048,m_password);
     AfxMessageBox(buffer2);
     Common::SetStatusText("", TRUE);
   }
@@ -402,7 +433,7 @@ ConnectionDlg::OnOK()
       return;
     }
   }
-  CDialog::OnOK();
+  StyleDialog::OnOK();
 }
 
 void
@@ -623,7 +654,7 @@ ConnectionDlg::SetDialogControls()
   wind = GetDlgItem(IDC_OPT_USER);          wind->EnableWindow(m_moment == 0);
   wind = GetDlgItem(IDC_OPT_PWD);           wind->EnableWindow(m_moment == 0);
   // Buttons
-  wind = GetDlgItem(IDC_CON_SIMPLE);        if(m_moment) wind->DestroyWindow();
+  wind = GetDlgItem(IDC_CON_SIMPLE);        if(m_moment) wind->ShowWindow(SW_HIDE);
   wind = GetDlgItem(IDC_BTN_RDBMS);         wind->EnableWindow(m_moment == 0);
   wind = GetDlgItem(IDC_APPLY);             wind->EnableWindow(false);
   // File buttons
@@ -829,4 +860,3 @@ ConnectionDlg::GetDSNDirectory()
   }
   return directory;
 }
-

@@ -22,6 +22,10 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes version 3.0.0
+--------------------------
+- Completely rewritten interface in the latest modern MFC style.
+
 Releasenotes version 2.5.1
 --------------------------
 - Fixed various bugs in the handling of the MariaDB database in Oracle mode

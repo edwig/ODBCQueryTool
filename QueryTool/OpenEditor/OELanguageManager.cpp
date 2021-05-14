@@ -16,10 +16,10 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#include "stdafx.h"
-#include "OpenEditor/OELanguageManager.h"
-#include "OpenEditor/OECommonLanguageSupport.h"
-#include "OpenEditor/OEPlsSqlSupport.h"
+#include "pch.h"
+#include "OELanguageManager.h"
+#include "OECommonLanguageSupport.h"
+#include "OEPlsSqlSupport.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

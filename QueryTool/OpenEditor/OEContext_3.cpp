@@ -29,12 +29,12 @@
 // 26.05.2003 bug fix, selection may still be out of visible text after undo
 // 03.06.2003 bug fix, sql find match fails on select/insert/... if there is no ending ';'
 
-#include "stdafx.h"
+#include "pch.h"
 #include <algorithm>
 #include <strstream>
 #include <COMMON/AppGlobal.h>
 #include <COMMON/ExceptionHelper.h>
-#include "OpenEditor/OEContext.h"
+#include "OEContext.h"
 
 
 #ifdef _DEBUG

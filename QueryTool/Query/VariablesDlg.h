@@ -24,7 +24,7 @@ using namespace SQLComponents;
 
 // VariablesDlg dialog
 
-class VariablesDlg : public CDialog
+class VariablesDlg : public StyleDialog
 {
 	DECLARE_DYNAMIC(VariablesDlg)
 
@@ -47,37 +47,49 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 
-  SQLVariant*  m_variable1;
-  CString      m_variableString1;
-  CComboBox    m_typeCombo1;
-  int          m_type1;
-  int          m_length1;
-  CButton      m_AtExec1;
-  CComboBox    m_inoutCombo1;
+  SQLVariant*   m_variable1;
+  StyleEdit     m_editVariable1;
+  CString       m_variableString1;
+  StyleComboBox m_typeCombo1;
+  int           m_type1;
+  StyleEdit     m_editLength1;
+  int           m_length1;
+  StyleCheckbox m_AtExec1;
+  StyleComboBox m_inoutCombo1;
 
-  SQLVariant*  m_variable2;
-  CString      m_variableString2;
-  CComboBox    m_typeCombo2;
-  int          m_type2;
-  int          m_length2;
-  CButton      m_AtExec2;
-  CComboBox    m_inoutCombo2;
+  SQLVariant*   m_variable2;
+  StyleEdit     m_editVariable2;
+  CString       m_variableString2;
+  StyleComboBox m_typeCombo2;
+  int           m_type2;
+  StyleEdit     m_editLength2;
+  int           m_length2;
+  StyleCheckbox m_AtExec2;
+  StyleComboBox m_inoutCombo2;
+  
+  SQLVariant*   m_variable3;
+  StyleEdit     m_editVariable3;
+  CString       m_variableString3;
+  StyleComboBox m_typeCombo3;
+  int           m_type3;
+  StyleEdit     m_editLength3;
+  int           m_length3;
+  StyleCheckbox m_AtExec3;
+  StyleComboBox m_inoutCombo3;
 
-  SQLVariant*  m_variable3;
-  CString      m_variableString3;
-  CComboBox    m_typeCombo3;
-  int          m_type3;
-  int          m_length3;
-  CButton      m_AtExec3;
-  CComboBox    m_inoutCombo3;
+  SQLVariant*   m_variable4;
+  StyleEdit     m_editVariable4;
+  CString       m_variableString4;
+  StyleComboBox m_typeCombo4;
+  int           m_type4;
+  StyleEdit     m_editLength4;
+  int           m_length4;
+  StyleCheckbox m_AtExec4;
+  StyleComboBox m_inoutCombo4;
 
-  SQLVariant*  m_variable4;
-  CString      m_variableString4;
-  CComboBox    m_typeCombo4;
-  int          m_type4;
-  int          m_length4;
-  CButton      m_AtExec4;
-  CComboBox    m_inoutCombo4;
+  StyleButton   m_buttonRebind;
+  StyleButton   m_buttonOK;
+  StyleButton   m_buttonCancel;
 
 public:
   afx_msg void OnEnChangeVar1();

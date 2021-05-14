@@ -24,10 +24,10 @@
     29.06.2003 improvement, "Restrict cursor" has been replaced with "Cursor beyond EOL" and "Cursor beyond EOF"
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include <algorithm>
 #include <COMMON/ExceptionHelper.h>
-#include "OpenEditor/OEContext.h"
+#include "OEContext.h"
 
 
 #ifdef _DEBUG

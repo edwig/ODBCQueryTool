@@ -16,38 +16,41 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include <COMMON/ExceptionHelper.h>
 #include <Common/DirSelectDlg.h>
-#include "OpenEditor/OESQLSettingsPage.h"
-#include "OpenEditorApp.h"
+#include "OESQLSettingsPage.h"
+#include "QueryTool.h"
 
-COESQLSettingsPage::COESQLSettingsPage (SettingsManager& manager)
-	                 :CPropertyPage(COESQLSettingsPage::IDD)
+COESQLSettingsPage::COESQLSettingsPage(SettingsManager& manager,CWnd* p_parent)
+	                 :StyleDialog(COESQLSettingsPage::IDD,p_parent)
                    ,m_manager(manager)
 {
-    const OpenEditor::GlobalSettings& settings = m_manager.GetGlobalSettings();
+  const OpenEditor::GlobalSettings& settings = m_manager.GetGlobalSettings();
 
-    m_prefetchLines   = settings.GetSQLPrefetchLines();
-    m_queryTerminator = settings.GetSQLQueryTerminator().c_str();
-    m_queryFont       = settings.GetSQLQueryFont().c_str();
-    m_odbcMetaSQL     = settings.GetPreferODBCMetaSQL();
+  m_prefetch    = settings.GetSQLPrefetchLines();
+  m_terminator  = settings.GetSQLQueryTerminator().c_str();
+  m_font        = settings.GetSQLQueryFont().c_str();
+  m_odbcMetaSQL = settings.GetPreferODBCMetaSQL();
 }
 
 COESQLSettingsPage::~COESQLSettingsPage()
 {
 }
 
-void COESQLSettingsPage::DoDataExchange(CDataExchange* pDX)
+void 
+COESQLSettingsPage::DoDataExchange(CDataExchange* pDX)
 {
-  DDX_Text   (pDX,IDC_OE_SQLPREFETCHLINES,m_prefetchLines);
-  DDX_Text   (pDX,IDC_OE_SQLTERMINATOR,   m_queryTerminator);
-  DDX_Text   (pDX,IDC_FONT,               m_queryFont);
+  StyleDialog::DoDataExchange(pDX);
+
+  DDX_Control(pDX,IDC_OE_SQLPREFETCHLINES,m_editPrefetch,  m_prefetch);
+  DDX_Control(pDX,IDC_OE_SQLTERMINATOR,   m_editTerminator,m_terminator);
+  DDX_Control(pDX,IDC_FONT,               m_editFont,      m_font);
+  DDX_Control(pDX,IDC_BUT_FONT,           m_buttonFont);
   DDX_Control(pDX,IDC_META,               m_buttonODBC);
 }
 
-
-BEGIN_MESSAGE_MAP(COESQLSettingsPage, CPropertyPage)
+BEGIN_MESSAGE_MAP(COESQLSettingsPage,StyleDialog)
   ON_EN_CHANGE(IDC_OE_SQLPREFETCHLINES,&COESQLSettingsPage::OnEnChangePrefetch)
   ON_EN_CHANGE(IDC_OE_SQLTERMINATOR,   &COESQLSettingsPage::OnEnChangeTerminator)
   ON_EN_CHANGE(IDC_FONT,               &COESQLSettingsPage::OnEnChangeFont)
@@ -58,10 +61,9 @@ END_MESSAGE_MAP()
 BOOL
 COESQLSettingsPage::OnInitDialog()
 {
-  CPropertyPage::OnInitDialog();
+  StyleDialog::OnInitDialog();
 
   m_buttonODBC.SetCheck(m_odbcMetaSQL);
-
   return TRUE;
 }
 
@@ -69,19 +71,19 @@ COESQLSettingsPage::OnInitDialog()
 
 BOOL COESQLSettingsPage::OnApply()
 {
-    try
-    {
-        OpenEditor::GlobalSettings& settings = m_manager.GetGlobalSettings();
+  try
+  {
+    OpenEditor::GlobalSettings& settings = m_manager.GetGlobalSettings();
         
-        std::string term = m_queryTerminator;
-        std::string font = m_queryFont;
+    std::string term = m_terminator;
+    std::string font = m_font;
 
-        settings.SetSQLPrefetchLines(m_prefetchLines);
-        settings.SetSQLQueryTerminator(term);
-        settings.SetSQLQueryFont(font);
-        settings.SetPreferODBCMetaSQL(m_odbcMetaSQL);
-    }
-    _OE_DEFAULT_HANDLER_;
+    settings.SetSQLPrefetchLines(m_prefetch);
+    settings.SetSQLQueryTerminator(term);
+    settings.SetSQLQueryFont(font);
+    settings.SetPreferODBCMetaSQL(m_odbcMetaSQL);
+  }
+  _OE_DEFAULT_HANDLER_;
 
 	return TRUE;
 }
@@ -120,11 +122,11 @@ COESQLSettingsPage::OnBnClickedButFont()
   // Split current font registry in name and size
   CString fontName;
   int     fontSize;
-  int pos = m_queryFont.Find(';');
+  int pos = m_font.Find(';');
   if(pos)
   {
-    fontName = m_queryFont.Left(pos);
-    fontSize = atoi(m_queryFont.Mid(pos+1));
+    fontName = m_font.Left(pos);
+    fontSize = atoi(m_font.Mid(pos+1));
   }
   if(fontName.IsEmpty())
   {
@@ -190,7 +192,7 @@ COESQLSettingsPage::OnBnClickedButFont()
   if(changed)
   {
     // Show changes
-    m_queryFont.Format("%s;%d",fontName,fontSize);
+    m_font.Format("%s;%d",fontName,fontSize);
     UpdateData(FALSE);
   }
 }

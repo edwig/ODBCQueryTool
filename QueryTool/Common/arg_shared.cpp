@@ -37,7 +37,7 @@
 	**-------------------------------------------------------------------*/
 	
 
-#include "StdAfx.h"
+#include "pch.h"
 #include <Common/arg_shared.h>
 #include <functional>
 //#include ARG_STLHDR(functional)

@@ -16,7 +16,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include "Shlwapi.h"
 #include "COMMON/AppUtilities.h"
 #include "COMMON/AppGlobal.h"
@@ -24,25 +24,25 @@
 #include "COMMON\StrHelpers.h"
 #include "COMMON/VisualAttributesPage.h"
 #include "COMMON/PropertySheetMem.h"
-#include "OpenEditor/OEDocument.h"
-#include "OpenEditor/OEView.h"
-#include "OpenEditor/OEPrintPageSetup.h"
-#include "OpenEditor/OEEditingPage.h"
-#include "OpenEditor/OEBlockPage.h"
-#include "OpenEditor/OEClassPage.h"
-#include "OpenEditor/OESettings.h"
-#include "OpenEditor/OESettingsStreams.h"
-#include <OpenEditor/OELanguageStreams.h>
-#include "OpenEditor/OETemplateStreams.h"
-#include "OpenEditor/OEFileInfoDlg.h"
-#include "OpenEditor/OEFileInfoDlg.h"
-#include "OpenEditor/OEGeneralPage.h"
-#include "OpenEditor/OEFilePage.h"
-#include "OpenEditor/OEBackupPage.h"
-#include "OpenEditor/OEPropPage.h"
-#include "OpenEditor/OETemplatesPage.h"
-#include "OpenEditor/OEDocument.h"
-#include <OpenEditor/OESQLSettingsPage.h>
+#include "OEDocument.h"
+#include "OEView.h"
+#include "OEPrintPageSetup.h"
+#include "OEEditingPage.h"
+#include "OEBlockPage.h"
+#include "OEClassPage.h"
+#include "OESettings.h"
+#include "OESettingsStreams.h"
+#include <OELanguageStreams.h>
+#include "OETemplateStreams.h"
+#include "OESettingsDlg.h"
+
+#include "OEGeneralPage.h"
+#include "OEFilePage.h"
+#include "OEBackupPage.h"
+#include "OETemplatesPage.h"
+#include "OEDocument.h"
+#include "OEDocumentDlg.h"
+#include <OESQLSettingsPage.h>
 #include "Query/QueryPanelWnd.h"
 
 
@@ -69,21 +69,19 @@ bool            COEDocument::m_enableOpenUnexisting = false;
 IMPLEMENT_DYNCREATE(COEDocument, CDocumentExt)
 
 BEGIN_MESSAGE_MAP(COEDocument, CDocument)
-	//{{AFX_MSG_MAP(COEDocument)
-	ON_COMMAND(ID_EDIT_PRINT_PAGE_SETUP, OnEditPrintPageSetup)
-	ON_COMMAND(ID_EDIT_FILE_SETTINGS, OnEditFileSettings)
-	//}}AFX_MSG_MAP
-  ON_COMMAND(ID_FILE_RELOAD, OnFileReload)
-  ON_UPDATE_COMMAND_UI(ID_FILE_RELOAD, OnUpdate_FileReload)
-  ON_UPDATE_COMMAND_UI(ID_FILE_SYNC_LOCATION, OnUpdate_FileReload)
-  ON_UPDATE_COMMAND_UI(ID_INDICATOR_FILE_TYPE,  OnUpdate_FileType)
-  ON_UPDATE_COMMAND_UI(ID_INDICATOR_FILE_LINES, OnUpdate_FileLines)
-
+  ON_COMMAND(ID_FILE_OPEN,              OnFileOpen)
+  ON_COMMAND(ID_FILE_RELOAD,            OnFileReload)
+  ON_COMMAND(ID_EDIT_PRINT_PAGE_SETUP,  OnEditPrintPageSetup)
+	ON_COMMAND(ID_EDIT_FILE_SETTINGS,     OnEditFileSettings)
   ON_COMMAND(ID_EDIT_VIEW_LINE_NUMBERS, OnEditViewLineNumbers)
+  ON_COMMAND(ID_EDIT_VIEW_WHITE_SPACE,  OnEditViewWhiteSpace)
+
+  ON_UPDATE_COMMAND_UI(ID_FILE_RELOAD,            OnUpdate_FileReload)
+  ON_UPDATE_COMMAND_UI(ID_FILE_SYNC_LOCATION,     OnUpdate_FileReload)
+  ON_UPDATE_COMMAND_UI(ID_INDICATOR_FILE_TYPE,    OnUpdate_FileType)
+  ON_UPDATE_COMMAND_UI(ID_INDICATOR_FILE_LINES,   OnUpdate_FileLines)
   ON_UPDATE_COMMAND_UI(ID_EDIT_VIEW_LINE_NUMBERS, OnUpdate_EditViewLineNumbers)
-	ON_COMMAND(ID_EDIT_VIEW_WHITE_SPACE, OnEditViewWhiteSpace)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_VIEW_WHITE_SPACE, OnUpdate_EditViewWhiteSpace)
-	ON_COMMAND(ID_FILE_OPEN, OnFileOpen)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_VIEW_WHITE_SPACE,  OnUpdate_EditViewWhiteSpace)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -145,105 +143,121 @@ void COEDocument::SetPathName (LPCTSTR lpszPathName, BOOL bAddToMRU)
 {
 	CDocument::SetPathName(lpszPathName, bAddToMRU);
 
-    std::string extension;
-    const char* ext = strrchr(lpszPathName, '.');
+  std::string extension;
+  const char* ext = strrchr(lpszPathName, '.');
     
-    if (ext) 
-        extension = ++ext;
-
-    if (!m_extensionInitialized || extension != m_extension)
+  if(ext)
+  {
+    extension = ++ext;
+  }
+  if (!m_extensionInitialized || extension != m_extension)
+  {
+    m_extension = extension;
+    if (!m_extensionInitialized
+      || AfxMessageBox("Filename extension changed. Auto-setup for this extension?", MB_YESNO | MB_ICONQUESTION) == IDYES)
     {
-        m_extension = extension;
-        if (!m_extensionInitialized
-        || AfxMessageBox("Filename extension changed. Auto-setup for this extension?", MB_YESNO|MB_ICONQUESTION) == IDYES)
-            m_settings.SetClassSetting(&m_settingsManager.FindByExt(m_extension.c_str(), true));
-        m_extensionInitialized = true;
+      m_settings.SetClassSetting(&m_settingsManager.FindByExt(m_extension.c_str(), true));
     }
+    m_extensionInitialized = true;
+  }
 }
 
-
-void COEDocument::SetTitle (LPCTSTR lpszTitle)
+void
+COEDocument::SetTitle()
 {
-    m_orgTitle = lpszTitle;
-    CDocument::SetTitle((m_orgModified ? m_orgTitle + " *" : m_orgTitle).c_str());
+  CString title = (m_orgModified ? m_orgTitle + " *" : m_orgTitle).c_str();
+  theApp.SetTitle(title);
 }
 
-
-void COEDocument::OnIdle ()
+void 
+COEDocument::SetTitle (LPCTSTR lpszTitle)
 {
-    if (m_orgModified != m_storage.IsModified())
-    {
-        m_orgModified = m_storage.IsModified();
-        CDocument::SetTitle((m_orgModified ? m_orgTitle + " *" : m_orgTitle).c_str());
-    }
+  m_orgTitle = lpszTitle;
+  CString title = (m_orgModified ? m_orgTitle + " *" : m_orgTitle).c_str();
+  CDocument::SetTitle(title);
+  theApp.SetTitle(title);
 }
 
-BOOL COEDocument::OnIdle (LONG)
+void 
+COEDocument::OnIdle ()
 {
-    return m_storage.OnIdle() ? TRUE : FALSE;
+  if (m_orgModified != m_storage.IsModified())
+  {
+    m_orgModified = m_storage.IsModified();
+    CString title = (m_orgModified ? m_orgTitle + " *" : m_orgTitle).c_str();
+    CDocument::SetTitle(title);
+    theApp.SetTitle(title);
+  }
 }
 
-BOOL COEDocument::DoFileSave ()
+BOOL 
+COEDocument::OnIdle (LONG)
 {
-    DWORD dwAttrib = m_strPathName.IsEmpty() ? INVALID_FILE_ATTRIBUTES : GetFileAttributes(m_strPathName);
+  return m_storage.OnIdle() ? TRUE : FALSE;
+}
+
+BOOL 
+COEDocument::DoFileSave ()
+{
+  DWORD dwAttrib = m_strPathName.IsEmpty() ? INVALID_FILE_ATTRIBUTES : GetFileAttributes(m_strPathName);
     
-    if (dwAttrib != INVALID_FILE_ATTRIBUTES 
-    && dwAttrib & FILE_ATTRIBUTE_READONLY)
+  if (dwAttrib != INVALID_FILE_ATTRIBUTES && dwAttrib & FILE_ATTRIBUTE_READONLY)
+  {
+    if (m_settings.GetFileOverwriteReadonly())
     {
-        if (m_settings.GetFileOverwriteReadonly())
-        {
-            SetFileAttributes(m_strPathName, dwAttrib & (~FILE_ATTRIBUTE_READONLY));
-        }
-        else
-        {
-            switch (WideMessageBox(AfxGetMainWnd()->GetSafeHwnd()
-                   ,GetPathName() 
-                    + "\n\nThis file cannot be saved because it is write-protected.\t"
-                    "\nYou can either save the file in a different location [Yes],"
-                    "\nor Program can attempt to remove write-protection"
-                    "\nand overwrite the file in its current location [No].",
-                    "Save of Read-Only File", MB_YESNOCANCEL|MB_ICONEXCLAMATION)
-                )
-            {
-            case IDCANCEL:  // cancel saving
-                return FALSE;
-            case IDNO:      // remove write-protection here
-                SetFileAttributes(m_strPathName, dwAttrib & (~FILE_ATTRIBUTE_READONLY));
-            case IDYES:     // try "Save As"
-                ;
-            }
-        }
+      SetFileAttributes(m_strPathName, dwAttrib & (~FILE_ATTRIBUTE_READONLY));
     }
-
-    if (CDocument::DoFileSave())
+    else
     {
-        if (!m_settings.GetUndoAfterSaving())
-            m_storage.ClearUndo();
-
-        return TRUE;
+      switch (StyleMessageBox(AfxGetMainWnd()
+              ,GetPathName() 
+              + "\n\nThis file cannot be saved because it is write-protected.\t"
+                "\nYou can either save the file in a different location [Yes],"
+                "\nor Program can attempt to remove write-protection"
+                "\nand overwrite the file in its current location [No].",
+                "Save of Read-Only File", MB_YESNOCANCEL|MB_ICONEXCLAMATION)
+          )
+      {
+        case IDCANCEL:  // cancel saving
+                        return FALSE;
+        case IDNO:      // remove write-protection here
+                        SetFileAttributes(m_strPathName, dwAttrib & (~FILE_ATTRIBUTE_READONLY));
+        case IDYES:     // try "Save As"
+                        break;
+      }
     }
+  }
 
-    return FALSE;
+  if (CDocument::DoFileSave())
+  {
+    if (!m_settings.GetUndoAfterSaving())
+    {
+      m_storage.ClearUndo();
+    }
+    return TRUE;
+  }
+  return FALSE;
 }
 
-BOOL COEDocument::DoSave (LPCTSTR lpszPathName, BOOL bReplace)
+BOOL 
+COEDocument::DoSave (LPCTSTR lpszPathName, BOOL bReplace)
 {
-    try
-    {
-        if (!lpszPathName) m_newOrSaveAs = true;
-        BOOL retVal = doSave(lpszPathName, bReplace);
-        m_newOrSaveAs = false;
-        return retVal;
-    }
-    catch (...)
-    {
-        m_newOrSaveAs = false;
-        throw;
-    }
+  try
+  {
+    if (!lpszPathName) m_newOrSaveAs = true;
+    BOOL retVal = doSave(lpszPathName, bReplace);
+    m_newOrSaveAs = false;
+    return retVal;
+  }
+  catch (...)
+  {
+    m_newOrSaveAs = false;
+    throw;
+  }
 }
 
-
-void COEDocument::loadFile (const char* path, bool reload, bool external)
+void 
+COEDocument::loadFile (const char* path, bool reload, bool external)
 {
     CWaitCursor wait;
     LPVOID vmdata = 0;
@@ -360,74 +374,74 @@ BOOL COEDocument::OnOpenDocument (LPCTSTR lpszPathName)
 
 BOOL COEDocument::OnSaveDocument (LPCTSTR lpszPathName)
 {
-    bool storage_invalidated = false;
+  bool storage_invalidated = false;
 	char tmpname[_MAX_PATH];
 
-    try 
-    {
-        backupFile(lpszPathName);       // create backup file
-        m_storage.TruncateSpaces();     // truncate spaces before size allocation
-        unsigned long length = m_storage.GetTextLength(); 
+  try 
+  {
+      backupFile(lpszPathName);       // create backup file
+      m_storage.TruncateSpaces();     // truncate spaces before size allocation
+      unsigned long length = m_storage.GetTextLength(); 
         
-        // create mm file and copy data
-        MemoryMappedFile outfile;
+      // create mm file and copy data
+      MemoryMappedFile outfile;
 
-        // if we using mm file then we have to use an intermediate file for file saving
-        if (m_mmfile.IsOpen())
-        {
-	        char *name, path[_MAX_PATH];
-	        // get the directory for the intermediate file
-          CHECK_FILE_OPERATION(::GetFullPathName(lpszPathName, sizeof(path), path, &name));
-	        *name = 0; // cut file name
-	        // get a temporary name for the intermediate file
-          CHECK_FILE_OPERATION(::GetTempFileName(path, "ODBC~", 0, tmpname));
+      // if we using mm file then we have to use an intermediate file for file saving
+      if (m_mmfile.IsOpen())
+      {
+	      char *name, path[_MAX_PATH];
+	      // get the directory for the intermediate file
+        CHECK_FILE_OPERATION(::GetFullPathName(lpszPathName, sizeof(path), path, &name));
+	      *name = 0; // cut file name
+	      // get a temporary name for the intermediate file
+        CHECK_FILE_OPERATION(::GetTempFileName(path, "ODBC~", 0, tmpname));
+        // open output mm file
+        outfile.Open(tmpname, emmoCreateAlways|emmoWrite|emmoShareRead, length);
+      }
+      else
+      {
+          // suspend file watching
+          CFileWatchClient::StopWatching();
           // open output mm file
-          outfile.Open(tmpname, emmoCreateAlways|emmoWrite|emmoShareRead, length);
-        }
-        else
-        {
-            // suspend file watching
-            CFileWatchClient::StopWatching();
-            // open output mm file
-            outfile.Open(lpszPathName, emmoCreateAlways|emmoWrite|emmoShareRead, length);
-        }
+          outfile.Open(lpszPathName, emmoCreateAlways|emmoWrite|emmoShareRead, length);
+      }
 
-        // copy text to output mm file
-        m_storage.GetText((char*)outfile.GetData(), length);
-        outfile.Close();
+      // copy text to output mm file
+      m_storage.GetText((char*)outfile.GetData(), length);
+      outfile.Close();
 
-        if (m_mmfile.IsOpen())
-        {
-            storage_invalidated = true;
-            // suspend file watching
-            CFileWatchClient::StopWatching();
-            m_mmfile.Close();
-            // delete the original file we have to ignore failure for SaveAs operation
-            ::DeleteFile(lpszPathName);
-            // rename tmp file to the original
-            CHECK_FILE_OPERATION(!::rename(tmpname, lpszPathName));
-        }
+      if (m_mmfile.IsOpen())
+      {
+          storage_invalidated = true;
+          // suspend file watching
+          CFileWatchClient::StopWatching();
+          m_mmfile.Close();
+          // delete the original file we have to ignore failure for SaveAs operation
+          ::DeleteFile(lpszPathName);
+          // rename tmp file to the original
+          CHECK_FILE_OPERATION(!::rename(tmpname, lpszPathName));
+      }
 
-        // open a new copy and reload a file
-        loadFile(lpszPathName, true/*reload*/);
+      // open a new copy and reload a file
+      loadFile(lpszPathName, true/*reload*/);
         
-        // resume file watching
-        CFileWatchClient::StartWatching(lpszPathName);
-    }
-    catch (const std::exception& x)   
-    { 
-        if (storage_invalidated) m_storage.Clear();
-        AfxMessageBox((std::string("Cannot save file.\n") + x.what()).c_str(), MB_OK|MB_ICONSTOP);
-        return FALSE;
-    }
-    catch (...) 
-    { 
-        if (storage_invalidated) m_storage.Clear();
-        AfxMessageBox("Cannot save file. Unknown error.\n", MB_OK|MB_ICONSTOP);
-        return FALSE;
-    }
+      // resume file watching
+      CFileWatchClient::StartWatching(lpszPathName);
+  }
+  catch (const std::exception& x)   
+  { 
+      if (storage_invalidated) m_storage.Clear();
+      AfxMessageBox((std::string("Cannot save file.\n") + x.what()).c_str(), MB_OK|MB_ICONSTOP);
+      return FALSE;
+  }
+  catch (...) 
+  { 
+      if (storage_invalidated) m_storage.Clear();
+      AfxMessageBox("Cannot save file. Unknown error.\n", MB_OK|MB_ICONSTOP);
+      return FALSE;
+  }
 
-    return TRUE;
+  return TRUE;
 }
 
 BOOL COEDocument::doSave (LPCTSTR lpszPathName, BOOL bReplace)
@@ -557,7 +571,7 @@ void COEDocument::backupFile (LPCTSTR lpszPathName)
       }
 
         if (m_lastBackupPath != backupPath              // only for the first attemption
-        && stricmp(GetPathName(), backupPath.c_str()))  // avoiding copy the file into itself
+        && _stricmp(GetPathName(), backupPath.c_str()))  // avoiding copy the file into itself
         {
             _CHECK_AND_THROW_(
                 CopyFile(lpszPathName, backupPath.c_str(), FALSE) != 0,
@@ -655,10 +669,10 @@ void COEDocument::SaveSettingsManager ()
     {
         // old settings backup
         _CHECK_AND_THROW_(
-                CopyFile((path + "\\data\\templates.dat").c_str(), 
-                    (path + "\\data\\templates.dat.old").c_str(), FALSE) != 0
+                   CopyFile((path + "\\data\\templates.dat").c_str(), 
+                            (path + "\\data\\templates.dat.old").c_str(), FALSE) != 0
                 && CopyFile((path + "\\data\\settings.dat").c_str(), 
-                    (path + "\\data\\settings.dat.old").c_str(), FALSE) != 0,
+                            (path + "\\data\\settings.dat.old").c_str(), FALSE) != 0,
                 "Settings backup file creation error!"
             );
         g_isBackupDone = true;
@@ -674,141 +688,32 @@ void COEDocument::SaveSettingsManager ()
         ) << m_settingsManager;
 }
 
-
 void COEDocument::ShowSettingsDialog()
 {
-    SettingsManager mgr(m_settingsManager);
+  SettingsManager mgr(m_settingsManager);
+  COESettingsDlg dlg(mgr,theApp.m_pMainWnd);
 
-    static UINT gStartPage = 0;
-    Common::CPropertySheetMem sheet("Settings", gStartPage);
-    sheet.m_psh.dwFlags |= PSH_NOAPPLYNOW;
-    sheet.m_psh.dwFlags &= ~PSH_HASHELP;
-
-    COEGeneralPage     gp(mgr);
-    COEFilePage        fp(mgr);
-    COEBackupPage      ap(mgr);
-    COEEditingPage     ep(mgr);
-    COEBlockPage       bp(mgr);
-    COEClassPage       cp(mgr);
-    COETemplatesPage   tp(mgr);
-    COESQLSettingsPage sp(mgr);
-
-    std::vector<VisualAttributesSet*> vasets;
-    for (int i = 0, ilimit = mgr.GetClassCount() ; i < ilimit; i++)
-    {
-        ClassSettings& settings = mgr.GetClassByPos(i);
-        VisualAttributesSet& vaset = settings.GetVisualAttributesSet();
-        vaset.SetName(settings.GetName());
-        vasets.push_back(&vaset);
-    }
-
-    CVisualAttributesPage vp(vasets);
-    
-    gp.m_psp.dwFlags &= ~PSP_HASHELP;
-    fp.m_psp.dwFlags &= ~PSP_HASHELP;
-    ap.m_psp.dwFlags &= ~PSP_HASHELP;
-    ep.m_psp.dwFlags &= ~PSP_HASHELP;
-    bp.m_psp.dwFlags &= ~PSP_HASHELP;
-    cp.m_psp.dwFlags &= ~PSP_HASHELP;
-    tp.m_psp.dwFlags &= ~PSP_HASHELP;
-    vp.m_psp.dwFlags &= ~PSP_HASHELP;
-    sp.m_psp.dwFlags &= ~PSP_HASHELP;
-
-    sheet.AddPage(&gp);
-    sheet.AddPage(&fp);
-    sheet.AddPage(&ap);
-    sheet.AddPage(&ep);
-    sheet.AddPage(&bp);
-    sheet.AddPage(&cp);
-    sheet.AddPage(&tp);
-    sheet.AddPage(&vp);
-    sheet.AddPage(&sp);
-
-    if (sheet.DoModal() == IDOK)
-    {
-        m_settingsManager = mgr;
-        SaveSettingsManager();
-    }
-
+  if (dlg.DoModal() == IDOK)
+  {
+      m_settingsManager = mgr;
+      SaveSettingsManager();
+  }
 }
 
-    static void filetime_to_string (FILETIME& filetime, CString& str)
-    {
-        SYSTEMTIME systemTime;
-        const int buffLen = 40;
-        char* buff = str.GetBuffer(buffLen);
-
-        FileTimeToLocalFileTime(&filetime, &filetime);
-        FileTimeToSystemTime(&filetime, &systemTime);
-
-        int dateLen = GetDateFormat(LOCALE_USER_DEFAULT, DATE_SHORTDATE, &systemTime, NULL, buff, buffLen);
-        buff[dateLen - 1] = ' ';
-        int timeLen = GetTimeFormat(LOCALE_USER_DEFAULT, TIME_NOSECONDS, &systemTime, NULL, buff + dateLen, buffLen - dateLen);
-
-        str.ReleaseBuffer(dateLen + timeLen);
-    }
-
-
-void COEDocument::OnEditFileSettings()
+void 
+COEDocument::OnEditFileSettings()
 {
-    COEFileInfoDlg infoPage;
+  InstanceSettings settings(m_settings);
 
-    unsigned usage, allocated, undo;
-    m_storage.GetMemoryUsage(usage, allocated, undo);
-
-    infoPage.m_Lines.Format("%d lines", m_storage.GetLineCount());
-    infoPage.m_MemoryUsage.Format("%d bytes", usage);
-    infoPage.m_MemoryAllocated.Format("%d bytes", allocated);
-    infoPage.m_UndoMemoryUsage.Format("%d bytes", undo);
-    infoPage.m_Path = GetPathName();
-
-    if (!infoPage.m_Path.IsEmpty())
-    {
-        HANDLE hFile = CreateFile(
-            infoPage.m_Path,        // file name
-            0,                      // access mode
-            FILE_SHARE_READ,        // share mode
-            NULL,                   // SD
-            OPEN_EXISTING,          // how to create
-            FILE_ATTRIBUTE_NORMAL,  // file attributes
-            NULL                    // handle to template file
-        );
-
-        if (hFile != INVALID_HANDLE_VALUE)
-        {
-            BY_HANDLE_FILE_INFORMATION fileInformation;
-
-            if (GetFileInformationByHandle(hFile, &fileInformation))
-            {
-                if (!fileInformation.nFileSizeHigh)
-                    infoPage.m_DriveUsage.Format("%u bytes", fileInformation.nFileSizeLow);
-
-                filetime_to_string (fileInformation.ftCreationTime,  infoPage.m_Created);
-                filetime_to_string (fileInformation.ftLastWriteTime, infoPage.m_LastModified);
-            }
-
-            CloseHandle(hFile);
-        }
-    }
-
-    InstanceSettings settings(m_settings);
-    COEPropPage propPage(m_settingsManager, settings);
-
-    static UINT gStartPage = 0;
-    POSITION pos = GetFirstViewPosition();
-    Common::CPropertySheetMem sheet("Settings & Information", gStartPage, GetNextView(pos));
-    sheet.m_psh.dwFlags |= PSH_NOAPPLYNOW;
-
-    sheet.AddPage(&propPage);
-    sheet.AddPage(&infoPage);
-
-    if (sheet.DoModal() == IDOK)
-    {
-        m_settings = settings;
-    }
+  COEDocumentDlg dlg(this,settings,theApp.m_pMainWnd);
+  if(dlg.DoModal() == IDOK)
+  {
+    m_settings = settings;
+  }
 }
 
-void COEDocument::OnWatchedFileChanged ()
+void 
+COEDocument::OnWatchedFileChanged ()
 {
     try
     {
@@ -893,7 +798,7 @@ void COEDocument::OnUpdate_FileType (CCmdUI* pCmdUI)
 void COEDocument::OnUpdate_FileLines (CCmdUI* pCmdUI)
 {
     char buff[80];
-    sprintf(buff, " Lines: %d ", m_storage.GetLineCount());
+    sprintf_s(buff,80," Lines: %d ", m_storage.GetLineCount());
     pCmdUI->SetText(buff);
     pCmdUI->Enable(TRUE);
 }

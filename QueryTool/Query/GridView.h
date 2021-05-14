@@ -9,8 +9,8 @@
 #pragma once
 #endif // _MSC_VER >= 1000
 
-#include "../GridControl/GridCtrl.h"
-#include "OpenEditor\OEDocument.h"
+#include "MGridCtrl.h"
+#include "OEDocument.h"
 
 #define TYPE_QUERY    0
 #define TYPE_STATS    1
@@ -47,7 +47,7 @@ public:
 // Attributes
 public:
 	COEDocument* GetDocument();
-	CGridCtrl* m_pGridCtrl;
+	MCGridCtrl*  m_pGridCtrl;
   void    RegisterEditor(CWnd *editor,int p_type = 0);
   void    InitGridEmpty(int p_type = 0,bool nofirst = false);
   void    InsertColumn(LPCTSTR p_heading,UINT p_format,int p_column);

@@ -26,14 +26,14 @@
     26.05.2003 bug fix, Find/Replace dialog: "Transform backslash expressions" has beed added to handle \t\b\ddd...
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include <algorithm>
 #include <COMMON/AppGlobal.h>
 #include <COMMON/AppUtilities.h>
 #include <COMMON/ExceptionHelper.h>
 #include <COMMON/StrHelpers.h>
-#include "OpenEditor/OEFindReplaceDlg.h"
-#include "OpenEditor/OEView.h"
+#include "OEFindReplaceDlg.h"
+#include "OEView.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -49,100 +49,157 @@ using namespace OpenEditor;
 CPoint CFindReplaceDlg::m_ptTopLeft(-1,-1);
 
 CFindReplaceDlg::CFindReplaceDlg(BOOL replace, COEditorView* pView)
-: CDialog(!replace ? IDD_OE_EDIT_FIND : IDD_OE_EDIT_REPLACE, NULL)
+                :StyleDialog(!replace ? IDD_OE_EDIT_FIND : IDD_OE_EDIT_REPLACE, NULL)
 {
-    m_pView          = pView;
-    m_ReplaceMode    = replace;
-    m_Modified       = TRUE;
-	//{{AFX_DATA_INIT(CFindReplaceDlg)
-	//}}AFX_DATA_INIT
+  m_pView          = pView;
+  m_ReplaceMode    = replace;
+  m_Modified       = TRUE;
 
-    if (pView)
-    {
-        // 26.05.2003 bug fix, Find/Replace dialog: "Transform backslash expressions" has beed added to handle \t\b\ddd...
-        m_BackslashExpressions = AfxGetApp()->GetProfileInt("Editor", "BackslashExpressions", FALSE);
+  if (pView)
+  {
+    // 26.05.2003 bug fix, Find/Replace dialog: "Transform backslash expressions" has beed added to handle \t\b\ddd...
+    m_BackslashExpressions = AfxGetApp()->GetProfileInt("Editor", "BackslashExpressions", FALSE);
 
-        string buff;
-        toPrintableStr(m_pView->GetSearchText(), buff);
-        m_SearchText = buff.c_str();
+    string buff;
+    toPrintableStr(m_pView->GetSearchText(), buff);
+    m_SearchText = buff.c_str();
 
-        /*
-        bool backward, wholeWords, matchCase, regExpr, searchAll;
-        pView->GetSearchOption(backward, wholeWords, matchCase, regExpr, searchAll);
+    /*
+    bool backward, wholeWords, matchCase, regExpr, searchAll;
+    pView->GetSearchOption(backward, wholeWords, matchCase, regExpr, searchAll);
 
-        m_MatchCase      = matchCase;
-        m_MatchWholeWord = wholeWords;
-        m_AllWindows     = searchAll;
-        m_RegExp         = regExpr;
-        m_Direction      = backward ? 0 : 1;
-        */
-        m_MatchCase      = AfxGetApp()->GetProfileInt("Editor", "SearchMatchCase",      FALSE);
-        m_MatchWholeWord = AfxGetApp()->GetProfileInt("Editor", "SearchMatchWholeWord", FALSE);
-        m_AllWindows     = AfxGetApp()->GetProfileInt("Editor", "SearchAllWindows",     FALSE);
-        m_RegExp         = AfxGetApp()->GetProfileInt("Editor", "SearchRegExp",         FALSE);
-        // 26.05.2003 bug fix, Find/Replace dialog: a replace mode depends on a search direction
-        m_Direction      = m_ReplaceMode ? 1 : AfxGetApp()->GetProfileInt("Editor", "SearchDirection", 1);
+    m_MatchCase      = matchCase;
+    m_MatchWholeWord = wholeWords;
+    m_AllWindows     = searchAll;
+    m_RegExp         = regExpr;
+    m_Direction      = backward ? 0 : 1;
+    */
+    m_MatchCase      = AfxGetApp()->GetProfileInt("Editor", "SearchMatchCase",      FALSE);
+    m_MatchWholeWord = AfxGetApp()->GetProfileInt("Editor", "SearchMatchWholeWord", FALSE);
+    m_AllWindows     = AfxGetApp()->GetProfileInt("Editor", "SearchAllWindows",     FALSE);
+    m_RegExp         = AfxGetApp()->GetProfileInt("Editor", "SearchRegExp",         FALSE);
+    // 26.05.2003 bug fix, Find/Replace dialog: a replace mode depends on a search direction
+    m_Direction      = m_ReplaceMode ? 1 : AfxGetApp()->GetProfileInt("Editor", "SearchDirection", 1);
         
-        m_WhereReplace   = 1;
-    }
-    else
-        _ASSERTE(0);
+    m_WhereReplace   = 1;
+  }
+  else
+  {
+    _ASSERTE(0);
+  }
 }
 
 
 void CFindReplaceDlg::DoDataExchange(CDataExchange* pDX)
 {
-	CDialog::DoDataExchange(pDX);
-	//{{AFX_DATA_MAP(CFindReplaceDlg)
-	//}}AFX_DATA_MAP
-	DDX_CBString(pDX, IDC_EF_SEARCH_TEXT, m_SearchText);
-	DDX_Control(pDX, IDC_EF_SEARCH_TEXT, m_wndSearchText);
+	StyleDialog::DoDataExchange(pDX);
 
-  if (m_ReplaceMode) 
+
+   DDX_CBString(pDX, IDC_EF_SEARCH_TEXT, m_wndSearchText,m_SearchText);
+  if(m_ReplaceMode)
   {
-	  DDX_CBString(pDX, IDC_EF_REPLACE_TEXT, m_ReplaceText);
-  	DDX_Control (pDX, IDC_EF_REPLACE_TEXT, m_wndReplaceText);
-	  DDX_Radio   (pDX, IDC_EF_REPLACE_IN_SELECTION, m_WhereReplace);
+	  DDX_CBString(pDX, IDC_EF_REPLACE_TEXT,         m_wndReplaceText,m_ReplaceText);
+    DDX_Control (pDX, IDC_EF_REPLACE_IN_SELECTION, m_checkOne);
+    DDX_Control (pDX, IDC_EF_REPLACE_IN_WHOLE_FILE,m_checkTwo);
+    DDX_Radio   (pDX, IDC_EF_REPLACE_IN_SELECTION, m_WhereReplace);
   }
   else
   {
-	  DDX_Radio(pDX, IDC_EF_UP, m_Direction);
+    DDX_Control(pDX,IDC_EF_UP,  m_checkOne);
+    DDX_Control(pDX,IDC_EF_DOWN,m_checkTwo);
+	  DDX_Radio  (pDX,IDC_EF_UP,  m_Direction);
   }
 
-  DDX_Check(pDX, IDC_EF_MATCH_CASE, m_MatchCase);
-	DDX_Check(pDX, IDC_EF_MATCH_WHOLE_WORD, m_MatchWholeWord);
-	DDX_Check(pDX, IDC_EF_ALL_WINDOWS, m_AllWindows);
-	DDX_Check(pDX, IDC_EF_REGEXP, m_RegExp);
-  DDX_Check(pDX, IDC_EF_TRANSFORM_BACKSLASH_EXPR, m_BackslashExpressions);
+  DDX_Control(pDX,IDC_EF_MATCH_CASE,              m_checkMatchCase);
+  DDX_Control(pDX,IDC_EF_MATCH_WHOLE_WORD,        m_checkMatchWholeWord);
+  DDX_Control(pDX,IDC_EF_ALL_WINDOWS,             m_checkAllWindows);
+  DDX_Control(pDX,IDC_EF_REGEXP,                  m_checkAllRegExp);
+  DDX_Control(pDX,IDC_EF_TRANSFORM_BACKSLASH_EXPR,m_checkAllBackSlash);
+
+  DDX_Check  (pDX,IDC_EF_MATCH_CASE,              m_MatchCase);
+	DDX_Check  (pDX,IDC_EF_MATCH_WHOLE_WORD,        m_MatchWholeWord);
+	DDX_Check  (pDX,IDC_EF_ALL_WINDOWS,             m_AllWindows);
+	DDX_Check  (pDX,IDC_EF_REGEXP,                  m_RegExp);
+  DDX_Check  (pDX,IDC_EF_TRANSFORM_BACKSLASH_EXPR,m_BackslashExpressions);
 }
 
-
-BEGIN_MESSAGE_MAP(CFindReplaceDlg, CDialog)
-	//{{AFX_MSG_MAP(CFindReplaceDlg)
-	ON_BN_CLICKED(IDC_EF_FIND_NEXT, OnFindNext)
-	ON_BN_CLICKED(IDC_EF_REGEXP, OnChangeSettings)
-	ON_BN_CLICKED(IDC_EF_ALL_WINDOWS, OnAllWindows)
-	ON_CBN_EDITCHANGE(IDC_EF_SEARCH_TEXT, OnSearchText)
-	ON_CBN_SELCHANGE(IDC_EF_SEARCH_TEXT, OnSearchText)
-	ON_CBN_EDITCHANGE(IDC_EF_REPLACE_TEXT, OnChangeSettings)
-	ON_CBN_SELCHANGE(IDC_EF_REPLACE_TEXT, OnChangeSettings)
-	ON_BN_CLICKED(IDC_EF_REPLACE, OnReplace)
-	ON_BN_CLICKED(IDC_EF_REPLACE_ALL, OnReplaceAll)
-	ON_BN_CLICKED(IDC_EF_MATCH_CASE, OnChangeSettings)
-	ON_BN_CLICKED(IDC_EF_MATCH_WHOLE_WORD, OnChangeSettings)
-	ON_BN_CLICKED(IDC_EF_UP, OnChangeSettings)
-	ON_BN_CLICKED(IDC_EF_DOWN, OnChangeSettings)
-    ON_BN_CLICKED(IDC_EF_REPLACE_IN_SELECTION, OnReplaceWhere)
+BEGIN_MESSAGE_MAP(CFindReplaceDlg, StyleDialog)
+	ON_BN_CLICKED(IDC_EF_FIND_NEXT,             OnFindNext)
+	ON_BN_CLICKED(IDC_EF_REGEXP,                OnChangeSettings)
+	ON_BN_CLICKED(IDC_EF_ALL_WINDOWS,           OnAllWindows)
+	//ON_CBN_EDITCHANGE(IDC_EF_SEARCH_TEXT,       OnSearchText)
+	ON_CBN_KILLFOCUS(IDC_EF_SEARCH_TEXT,        OnSearchText)
+	ON_CBN_SELCHANGE(IDC_EF_SEARCH_TEXT,        OnSearchText)
+	// ON_CBN_EDITCHANGE(IDC_EF_REPLACE_TEXT,      OnChangeSettings)
+	ON_CBN_KILLFOCUS(IDC_EF_REPLACE_TEXT,       OnChangeSettings)
+	ON_CBN_SELCHANGE(IDC_EF_REPLACE_TEXT,       OnChangeSettings)
+	ON_BN_CLICKED(IDC_EF_REPLACE,               OnReplace)
+	ON_BN_CLICKED(IDC_EF_REPLACE_ALL,           OnReplaceAll)
+	ON_BN_CLICKED(IDC_EF_MATCH_CASE,            OnChangeSettings)
+	ON_BN_CLICKED(IDC_EF_MATCH_WHOLE_WORD,      OnChangeSettings)
+	ON_BN_CLICKED(IDC_EF_UP,                    OnChangeSettings)
+	ON_BN_CLICKED(IDC_EF_DOWN,                  OnChangeSettings)
+  ON_BN_CLICKED(IDC_EF_REPLACE_IN_SELECTION,  OnReplaceWhere)
 	ON_BN_CLICKED(IDC_EF_REPLACE_IN_WHOLE_FILE, OnReplaceWhere)
-	ON_BN_CLICKED(IDC_EF_COUNT, OnCount)
-	ON_BN_CLICKED(IDC_EF_MARK_ALL, OnMarkAll)
-    //}}AFX_MSG_MAP
-    ON_BN_CLICKED(IDC_EF_REGEXP_FIND, OnBnClicked_RegexpFind)
-    ON_BN_CLICKED(IDC_EF_REGEXP_REPLACE, OnBnClicked_RegexpReplace)
-    ON_COMMAND_RANGE(ID_REGEXP_FIND_TAB, ID_REGEXP_FIND_QUOTED, OnInsertRegexpFind)
-    ON_COMMAND_RANGE(ID_REGEXP_REPLACE_WHAT_FIND, ID_REGEXP_REPLACE_TAGEXP_9, OnInsertRegexpReplace)
+	ON_BN_CLICKED(IDC_EF_COUNT,                 OnCount)
+	ON_BN_CLICKED(IDC_EF_MARK_ALL,              OnMarkAll)
+  ON_BN_CLICKED(IDC_EF_REGEXP_FIND,           OnBnClicked_RegexpFind)
+  ON_BN_CLICKED(IDC_EF_REGEXP_REPLACE,        OnBnClicked_RegexpReplace)
+  ON_COMMAND_RANGE(ID_REGEXP_FIND_TAB, ID_REGEXP_FIND_QUOTED, OnInsertRegexpFind)
+  ON_COMMAND_RANGE(ID_REGEXP_REPLACE_WHAT_FIND, ID_REGEXP_REPLACE_TAGEXP_9, OnInsertRegexpReplace)
 END_MESSAGE_MAP()
 
+BOOL 
+CFindReplaceDlg::OnInitDialog () 
+{
+  BOOL enableWhereReplace = (!m_pView->IsSelectionEmpty() 
+                          &&  m_pView->GetBlockMode() != ebtColumn
+                          && !m_AllWindows) ? TRUE : FALSE;
+
+  Square blk;
+  m_pView->GetSelection(blk);
+  m_WhereReplace = (enableWhereReplace && blk.start.line != blk.end.line) ? 0 : 1;
+    
+  StyleDialog::OnInitDialog();
+  SetWindowText(m_ReplaceMode ? "Replace text" : "Find text");
+
+  Common::AppRestoreHistory(m_wndSearchText, "Editor", "SearchText", 10);
+
+  if(!m_SearchText.IsEmpty()) 
+  {
+    // 14/08/2002 bug fix, Find/Replace dialog - garbage in combo box history
+    m_wndSearchText.SetWindowText(m_SearchText);
+  }
+
+  if(m_ReplaceMode)
+  {
+    Common::AppRestoreHistory(m_wndReplaceText, "Editor", "ReplaceText", 10);
+    GetDlgItem(IDC_EF_REPLACE_IN_SELECTION)->EnableWindow(enableWhereReplace);
+  }
+
+  SetupButtons();
+    
+  if (m_ptTopLeft.x != -1 && m_ptTopLeft.y != -1)
+  {
+    CRect rc;
+    GetWindowRect(&rc);
+#if _MFC_VER > 0x0600
+    rc.MoveToXY(m_ptTopLeft);
+#else
+	  rc.bottom = rc.Height() + m_ptTopLeft.y; rc.top  = m_ptTopLeft.y;
+	  rc.right  = rc.Width()  + m_ptTopLeft.x; rc.left = m_ptTopLeft.x;
+#endif
+    MoveWindow(rc);
+  }
+  AdjustPosition();
+
+  ::EnableWindow(::GetDlgItem(m_hWnd, IDC_EF_REGEXP_FIND),    m_RegExp);
+  ::EnableWindow(::GetDlgItem(m_hWnd, IDC_EF_REGEXP_REPLACE), m_RegExp);
+
+  return TRUE;
+}
+
+/////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////
 // CFindReplaceDlg message handlers
 
@@ -399,114 +456,56 @@ void CFindReplaceDlg::SearchBatch (OpenEditor::ESearchBatch mode)
         }
 
         char buff[100];
-        itoa(counter, buff, 10);
+        _itoa_s(counter, buff,100, 10);
 
         switch (mode)
         {
         case esbReplace:
-            Common::SetStatusText(strcat(buff, " occurrence(s) have been replaced!"));
+            strcat_s(buff, 100, " occurrence(s) have been replaced!");
+            Common::SetStatusText(buff);
             break;
         case esbMark:
-            Common::SetStatusText(strcat(buff, " occurrence(s) have been marked!"));
+            strcat_s(buff, 100, " occurrence(s) have been marked!");
+            Common::SetStatusText(buff);
             break;
         case esbCount:
-            Common::SetStatusText(strcat(buff, " occurrence(s) have been found!"));
-            WideMessageBox(GetSafeHwnd(),buff, "Find",MB_OK);
+            strcat_s(buff, 100, " occurrence(s) have been found!");
+            Common::SetStatusText(buff);
+            StyleMessageBox(this,buff, "Find",MB_OK);
             break;
         }
     }
     _OE_DEFAULT_HANDLER_;
 }
 
-BOOL CFindReplaceDlg::OnInitDialog () 
+void 
+CFindReplaceDlg::OnChangeSettings () 
 {
-    BOOL enableWhereReplace =
-        (!m_pView->IsSelectionEmpty() 
-         && m_pView->GetBlockMode() != ebtColumn
-         && !m_AllWindows) ? TRUE : FALSE;
-
-    Square blk;
-    m_pView->GetSelection(blk);
-    m_WhereReplace = (enableWhereReplace 
-        && blk.start.line != blk.end.line) ? 0 : 1;
-    
-    CDialog::OnInitDialog();
-
-    Common::AppRestoreHistory(m_wndSearchText, "Editor", "SearchText", 10);
-
-    if (!m_SearchText.IsEmpty()) 
-    {
-        // 14/08/2002 bug fix, Find/Replace dialog - garbage in combo box history
-        m_wndSearchText.SetWindowText(m_SearchText);
-    }
-
-    if (m_ReplaceMode)
-    {
-        Common::AppRestoreHistory(m_wndReplaceText, "Editor", "ReplaceText", 10);
-        
-        GetDlgItem(IDC_EF_REPLACE_IN_SELECTION)->EnableWindow(enableWhereReplace);
-    }
-
-    SetupButtons();
-    
-    if (m_ptTopLeft.x != -1 && m_ptTopLeft.y != -1)
-    {
-        CRect rc;
-        GetWindowRect(&rc);
-#if _MFC_VER > 0x0600
-        rc.MoveToXY(m_ptTopLeft);
-#else
-	rc.bottom = rc.Height() + m_ptTopLeft.y; rc.top  = m_ptTopLeft.y;
-	rc.right  = rc.Width()  + m_ptTopLeft.x; rc.left = m_ptTopLeft.x;
-#endif
-        MoveWindow(rc);
-    }
-    AdjustPosition();
-
-    if (!m_edtSearchText.SubclassComboBoxEdit(m_wndSearchText.m_hWnd))
-        // hide button for Win95
-        ::SetWindowPos(::GetDlgItem(m_hWnd, IDC_EF_REGEXP_FIND), 0, 0, 0, 0, 0, SWP_HIDEWINDOW);
-
-    if (m_wndReplaceText.m_hWnd)
-    {
-        if (!m_edtReplaceText.SubclassComboBoxEdit(m_wndReplaceText.m_hWnd))
-            // hide button for Win95
-            ::SetWindowPos(::GetDlgItem(m_hWnd, IDC_EF_REGEXP_REPLACE), 0, 0, 0, 0, 0, SWP_HIDEWINDOW);
-    }
-
-    ::EnableWindow(::GetDlgItem(m_hWnd, IDC_EF_REGEXP_FIND), m_RegExp);
-    ::EnableWindow(::GetDlgItem(m_hWnd, IDC_EF_REGEXP_REPLACE), m_RegExp);
-
-    return TRUE;
-}
-
-void CFindReplaceDlg::OnChangeSettings () 
-{
-    UpdateData();
-    m_Modified = TRUE;
-    ::EnableWindow(::GetDlgItem(m_hWnd, IDC_EF_REGEXP_FIND), m_RegExp);
-    ::EnableWindow(::GetDlgItem(m_hWnd, IDC_EF_REGEXP_REPLACE), m_RegExp);
+  UpdateData();
+  m_Modified = TRUE;
+  ::EnableWindow(::GetDlgItem(m_hWnd, IDC_EF_REGEXP_FIND), m_RegExp);
+  ::EnableWindow(::GetDlgItem(m_hWnd, IDC_EF_REGEXP_REPLACE), m_RegExp);
 }
 
 void CFindReplaceDlg::OnAllWindows ()
 {
-    OnChangeSettings();
+  OnChangeSettings();
     
-    if (m_ReplaceMode) 
-    {
-        GetDlgItem(IDC_EF_REPLACE_IN_SELECTION)
-            ->EnableWindow(!m_pView->IsSelectionEmpty() 
-                           && m_pView->GetBlockMode() != ebtColumn
-                           && !m_AllWindows);
+  if (m_ReplaceMode) 
+  {
+      GetDlgItem(IDC_EF_REPLACE_IN_SELECTION)
+          ->EnableWindow(!m_pView->IsSelectionEmpty() 
+                          && m_pView->GetBlockMode() != ebtColumn
+                          && !m_AllWindows);
 
-        if (m_AllWindows && m_WhereReplace == 0)
-        {
-            m_WhereReplace = 1;
-            UpdateData(FALSE);
-        }
-    }
+      if (m_AllWindows && m_WhereReplace == 0)
+      {
+          m_WhereReplace = 1;
+          UpdateData(FALSE);
+      }
+  }
 
-    SetupButtons();
+  SetupButtons();
 }
 
 void CFindReplaceDlg::OnReplaceWhere ()
@@ -622,7 +621,7 @@ void CFindReplaceDlg::OnInsertRegexpFind (UINT nID)
 
     if (((nID - ID_REGEXP_FIND_TAB) < (sizeof(expr)/sizeof(expr[0]))))
     {
-        m_edtSearchText.InsertAtCurPos(expr[nID - ID_REGEXP_FIND_TAB].text, expr[nID - ID_REGEXP_FIND_TAB].offset);
+        m_wndSearchText.InsertAtCurPos(expr[nID - ID_REGEXP_FIND_TAB].text, expr[nID - ID_REGEXP_FIND_TAB].offset);
         OnChangeSettings();
         SetupButtons();
     }
@@ -640,7 +639,7 @@ void CFindReplaceDlg::OnInsertRegexpReplace (UINT nID)
 
     if (((nID - ID_REGEXP_REPLACE_WHAT_FIND) < (sizeof(expr)/sizeof(expr[0]))))
     {
-        m_edtReplaceText.InsertAtCurPos(expr[nID - ID_REGEXP_REPLACE_WHAT_FIND], -1);
+        m_wndReplaceText.InsertAtCurPos(expr[nID - ID_REGEXP_REPLACE_WHAT_FIND], -1);
         OnChangeSettings();
         SetupButtons();
     }
@@ -653,7 +652,7 @@ void CFindReplaceDlg::OnCancel()
     GetWindowRect(&rc);
     m_ptTopLeft = rc.TopLeft();
 
-    CDialog::OnCancel();
+    StyleDialog::OnCancel();
 }
 
 void CFindReplaceDlg::OnOK()
@@ -662,5 +661,5 @@ void CFindReplaceDlg::OnOK()
     GetWindowRect(&rc);
     m_ptTopLeft = rc.TopLeft();
 
-    CDialog::OnOK();
+    StyleDialog::OnOK();
 }

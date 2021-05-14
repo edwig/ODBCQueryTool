@@ -10,25 +10,25 @@
 // Gewijzigd door:    $Author: Bsamwel $
 // Versienummer:      $Revision: 7 $
 //
-#include "StdAfx.h"
+#include "pch.h"
 #include "FileSelectDialog.h"
 #include <afx.h>
 #include <dlgs.h>
 
 FileSelectDialog::FileSelectDialog(bool    p_open        // true = open, false = SaveAs
-                              ,CString p_titel       // Titel van de dialoog
-                              ,CString p_defext      // Default extension
-                              ,CString p_bestand     // Default first file
-                              ,int     p_vlaggen     // Standaard vlaggen
-                              ,CString p_filter)     // Filter voor extensies
-                              :m_open(p_open)
+                                  ,CString p_titel       // Titel van de dialoog
+                                  ,CString p_defext      // Default extension
+                                  ,CString p_bestand     // Default first file
+                                  ,int     p_vlaggen     // Standaard vlaggen
+                                  ,CString p_filter)     // Filter voor extensies
+                                  :m_open(p_open)
 {
   // Oorspronkelijke CWD (Current Working Directory) registreren
   GetCurrentDirectory(MAX_PATH, m_origineleDir);
-  strncpy(m_filter, p_filter.GetString(), 1024);
-  strncpy(m_bestand,p_bestand.GetString(),MAX_PATH);
-  strncpy(m_defext, p_defext.GetString(), 100);
-  strncpy(m_titel,  p_titel.GetString(),  100);
+  strncpy_s(m_filter, 1024,     p_filter.GetString(), 1024);
+  strncpy_s(m_bestand,MAX_PATH, p_bestand.GetString(),MAX_PATH);
+  strncpy_s(m_defext, 100,      p_defext.GetString(), 100);
+  strncpy_s(m_titel,  100,      p_titel.GetString(),  100);
   FilterString(m_filter);
 
   // Vul de filename structuur
@@ -78,7 +78,7 @@ FileSelectDialog::DoModal()
   }
   catch(...)
   {
-    WideMessageBox(NULL,"Cannot create a file dialog","Error",MB_OK | MB_TASKMODAL);
+    StyleMessageBox(nullptr,"Cannot create a file dialog","Error",MB_OK | MB_TASKMODAL);
   }
   return IDCANCEL;
 }

@@ -23,10 +23,10 @@
     26.05.2003 bug fix, no file name on "Save As" or "Save" for a new file
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include "COMMON/DocManagerExt.h"
-#include "OpenEditor/OESaveModifiedDlg.h"
-#include "OpenEditor/OEDocument.h"
+#include "OESaveModifiedDlg.h"
+#include "OEDocument.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE

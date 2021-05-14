@@ -16,16 +16,16 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include "NativeSQLDlg.h"
 
 // CNativeSQLDlg dialog
-IMPLEMENT_DYNAMIC(CNativeSQLDlg, CDialogEx)
+IMPLEMENT_DYNAMIC(CNativeSQLDlg, StyleDialog)
 
 CNativeSQLDlg::CNativeSQLDlg(CWnd*   p_parent
                             ,CString p_native
                             ,CString p_title)
-	            :CDialogEx(CNativeSQLDlg::IDD, p_parent)
+	            :StyleDialog(CNativeSQLDlg::IDD, p_parent)
               ,m_native(p_native)
               ,m_title(p_title)
 {
@@ -69,24 +69,41 @@ CNativeSQLDlg::SetMonoFont()
 
 void CNativeSQLDlg::DoDataExchange(CDataExchange* pDX)
 {
-  SetMonoFont();
-  CDialogEx::DoDataExchange(pDX);
-  DDX_Text(pDX, IDC_EDIT_NATIVE_SQL, m_native);
+  StyleDialog::DoDataExchange(pDX);
+  DDX_Control(pDX,IDC_EDIT_NATIVE_SQL,m_editNative,m_native);
+  DDX_Control(pDX,IDOK,m_buttonOK);
 }
-
-//BEGIN_MESSAGE_MAP(CNativeSQLDlg, CDialogEx)
-	//ON_STN_CLICKED(IDC_OEA_LOGO, OnStnClickedOeaLogo)
-//END_MESSAGE_MAP()
-
 
 BOOL 
 CNativeSQLDlg::OnInitDialog()
 {
-  CDialogEx::OnInitDialog();
+  StyleDialog::OnInitDialog();
+  SetWindowText("Native SQL");
 
+  SetMonoFont();
   if(!m_title.IsEmpty())
   {
     SetWindowText(m_title);
   }
+  ShowMinMaxButton(false,true);
+  SetCanResize();
+
   return TRUE;
+}
+
+void
+CNativeSQLDlg::SetupDynamicLayout()
+{
+  StyleDialog::SetupDynamicLayout();
+
+  CMFCDynamicLayout& manager = *GetDynamicLayout();
+#ifdef _DEBUG
+  manager.AssertValid();
+#endif
+
+  CWnd* edit = (CWnd*) m_editNative.GetSkin();
+  manager.AddItem(edit->GetSafeHwnd(),manager.MoveNone(), manager.SizeHorizontalAndVertical(100, 100));
+  manager.AddItem(m_buttonOK,         manager.MoveHorizontalAndVertical(100, 100), manager.SizeNone());
+
+  manager.Adjust();
 }

@@ -16,7 +16,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include "Codeer.h"
 
 unsigned long CCodeer::m_polynomen[20] =
@@ -170,7 +170,7 @@ CString CCodeer::DeCodeerStringHex(CString p_str,int p_stap /* = 10*/)
 	{
 		for(int n=i;n<len;n+=p_stap)
 		{
-			sscanf(bufl,"%2x",&code);
+			sscanf_s(bufl,"%2x",&code);
 			bufs[n]=DeCodeerChar((char)code);
 			bufl+=2;
 		}

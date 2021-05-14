@@ -16,15 +16,15 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include "AboutDlg.h"
 #include "Version.h"
 
 // CAboutDlg dialog
 
-IMPLEMENT_DYNAMIC(CAboutDlg, CDialog)
+IMPLEMENT_DYNAMIC(CAboutDlg, StyleDialog)
 CAboutDlg::CAboutDlg(CWnd* pParent /*=NULL*/)
-          :CDialog(CAboutDlg::IDD, pParent)
+          :StyleDialog(CAboutDlg::IDD, pParent)
 {
   m_license = "ODBC Query Tool " ODBCQUERYTOOL_VERSION " Build: " ODBCQUERYTOOL_BUILD
               "\r\n" ODBCQUERYTOOL_COPYRIGHT
@@ -55,15 +55,23 @@ CAboutDlg::~CAboutDlg()
 
 void CAboutDlg::DoDataExchange(CDataExchange* pDX)
 {
-    CDialog::DoDataExchange(pDX);
-    DDX_Text(pDX, IDC_OEA_LICENSE, m_license);
+  StyleDialog::DoDataExchange(pDX);
+  DDX_Control(pDX,IDC_OEA_LICENSE,m_editLicense,m_license);
+  DDX_Control(pDX,IDOK,           m_buttonOK);
 }
 
-
-BEGIN_MESSAGE_MAP(CAboutDlg, CDialog)
+BEGIN_MESSAGE_MAP(CAboutDlg, StyleDialog)
 	ON_STN_CLICKED(IDC_OEA_LOGO, OnStnClickedOeaLogo)
 END_MESSAGE_MAP()
 
+BOOL
+CAboutDlg::OnInitDialog()
+{
+  StyleDialog::OnInitDialog();
+  SetWindowText("About Open ODBC QueryTool");
+
+  return TRUE;
+}
 
 // CAboutDlg message handlers
 

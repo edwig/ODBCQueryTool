@@ -22,10 +22,10 @@
     13.01.2003 bug fix, losing modification status if undo stack overflows
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include "COMMON/StrHelpers.h"
-#include "OpenEditor/OEUndo.h"
-#include "OpenEditor/OEStorage.h"
+#include "OEUndo.h"
+#include "OEStorage.h"
 
 
 #ifdef _DEBUG

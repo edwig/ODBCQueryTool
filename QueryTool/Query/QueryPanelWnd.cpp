@@ -16,13 +16,12 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#include "stdafx.h"
+#include "pch.h"
 //#include <Shlwapi.h>
 #include <string>
 #include <COMMON/ExceptionHelper.h>
-#include <Frame/WinException.h>
+#include <WinException.h>
 #include <Query/QueryPanelWnd.h>
-#include <COMMON/WorkbookMDIFrame.h>
 #include "COMMON/GUICommandDictionary.h"
 
 ///////////////////////////////////////////////////////////////////////////////

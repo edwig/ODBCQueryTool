@@ -17,10 +17,10 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#include "stdafx.h"
-#include "OpenEditor/OEView.h"
-#include "OpenEditor/OEHighlighter.h"
-#include "OpenEditorApp.h"
+#include "pch.h"
+#include "OEView.h"
+#include "OEHighlighter.h"
+#include "QueryTool.h"
 
 #undef String
 #include "SQLDatabase.h"
@@ -29,6 +29,7 @@
 #include "SQLInfoDB.h"
 #include "Query\NativeSQLDlg.h"
 #include "Query\VariablesDlg.h"
+#include "Common\AppGlobal.h"
 #include <sysinfoapi.h>
 #include <sql.h>
 #include <time.h>
@@ -410,19 +411,19 @@ COEditorView::GetODBCCommand(int& curLine
         firstline = curLine;
       }
       minLen = min(len,maxTokenlength);
-      strncpy(token,str,minLen);
+      strncpy_s(token,maxTokenlength,str,minLen);
       token[minLen] = 0;
       // Status search
-      if(stricmp(token,"create") == 0)
+      if(_stricmp(token,"create") == 0)
       {
         createSeen = true;
       }
-      if(createSeen && stricmp(token,"procedure") == 0)
+      if(createSeen && _stricmp(token,"procedure") == 0)
       {
         procedureSeen = true;
         endToken1     = endToken2;
       }
-      if(createSeen && stricmp(token,"function") == 0)
+      if(createSeen && _stricmp(token,"function") == 0)
       {
         functionSeen = true;
         endToken1    = endToken2;
@@ -453,8 +454,8 @@ COEditorView::GetODBCCommand(int& curLine
       // OneTable select for update option
       if(fromSeen && tableSeen)
       {
-        if(stricmp(token,"where") && stricmp(token,"group") &&
-           stricmp(token,"order") && stricmp(token,"having"))
+        if(_stricmp(token,"where") && _stricmp(token,"group") &&
+           _stricmp(token,"order") && _stricmp(token,"having"))
         {
           m_tableOne = "";
         }
@@ -468,7 +469,7 @@ COEditorView::GetODBCCommand(int& curLine
           m_tableOne = token;
         }
       }
-      if(stricmp(token,"from") == 0)
+      if(_stricmp(token,"from") == 0)
       {
         fromSeen = true;
       }
@@ -667,7 +668,7 @@ COEditorView::ExecuteQuery(int      p_line
                           ,bool     p_batch   /* = false */
                           ,FILE*    p_script  /* = NULL  */)
 {
-  COpenEditorApp *app       = dynamic_cast<COpenEditorApp *> (AfxGetApp());
+  QueryToolApp *app         = dynamic_cast<QueryToolApp *> (AfxGetApp());
   SQLDatabase&   database   = app->GetDatabase();
   bool     selectQuery      = false;
   bool     preMatureStopped = false;
@@ -1064,7 +1065,7 @@ COEditorView::CanEdit()
 {
   if(!m_findPrimary)
   {
-    COpenEditorApp *app = dynamic_cast<COpenEditorApp *> (AfxGetApp());
+    QueryToolApp *app = dynamic_cast<QueryToolApp *> (AfxGetApp());
     SQLDatabase& database  = app->GetDatabase();
     MPrimaryMap primaries;
 
@@ -1167,7 +1168,7 @@ COEditorView::UpdateTable(int row,int col,CString text)
     // Cannot do this
     return false;
   }
-  COpenEditorApp *app   = dynamic_cast<COpenEditorApp *> (AfxGetApp());
+  QueryToolApp *app     = dynamic_cast<QueryToolApp *> (AfxGetApp());
   SQLDatabase& database = app->GetDatabase();
 
   // Get column
@@ -1318,22 +1319,25 @@ COEditorView::ScriptCommandFile(int p_line,CString file)
     {
       fclose(m_scriptOutput);
     }
-    m_scriptOutput = fopen(file.GetString(),mode.GetString());
+    m_scriptOutput = nullptr;
+    fopen_s(&m_scriptOutput,file.GetString(), mode.GetString());
     if(m_scriptOutput)
     {
       time_t time;
       _tzset();
       _time64(&time);
-      struct tm* now = localtime(&time);
+      struct tm now;
+      struct tm* ptnow = &now;
+      localtime_s(ptnow,&time);
       fprintf(m_scriptOutput
              ,"ODBC Script output: %4.4d-%2.2d-%2.2d %2.2d:%2.2d:%2.2d\n"
               "=======================================\n"
-             ,now->tm_year + 1900
-             ,now->tm_mon  + 1
-             ,now->tm_mday
-             ,now->tm_hour
-             ,now->tm_min
-             ,now->tm_sec);
+             ,now.tm_year + 1900
+             ,now.tm_mon  + 1
+             ,now.tm_mday
+             ,now.tm_hour
+             ,now.tm_min
+             ,now.tm_sec);
              
     }
     result = (m_scriptOutput != NULL);
@@ -1758,7 +1762,9 @@ COEditorView::MilisecondsToMinute()
   time_t time;
   _tzset();
   _time64(&time);
-  struct tm* now = localtime(&time);
+  struct tm now;
+  struct tm* ptnow = &now;
+  localtime_s(ptnow,&time);
 
-  return (60 - now->tm_sec) * 1000;
+  return (60 - now.tm_sec) * 1000;
 }

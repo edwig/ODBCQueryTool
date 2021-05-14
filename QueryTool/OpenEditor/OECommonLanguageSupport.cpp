@@ -20,15 +20,15 @@
     07.03.2003 improvement, match searcher mor C++, Jave and ... skips strings, charater and comments
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include <stack>
 #include <algorithm>
 #include <COMMON/Fastmap.h>
 #include "COMMON/StrHelpers.h"
 #include <COMMON/ExceptionHelper.h>
-#include "OpenEditor/OECommonLanguageSupport.h"
-#include "OpenEditor/OELanguage.h"
-#include "OpenEditor/OEStorage.h"
+#include "OECommonLanguageSupport.h"
+#include "OELanguage.h"
+#include "OEStorage.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

@@ -21,11 +21,11 @@
     05.03.2003 bug fix, lower/upper/... operaration causes an exception on blank space
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include <algorithm>
 #include <strstream>
 #include <COMMON/ExceptionHelper.h>
-#include "OpenEditor/OEContext.h"
+#include "OEContext.h"
 
 
 #ifdef _DEBUG

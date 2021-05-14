@@ -20,7 +20,7 @@
     31.03.2003 bug fix, "Month" is not recognized as a valid token for date conversion
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include <string>
 #include <vector>
 #include "COMMON\StrHelpers.h"
@@ -62,7 +62,7 @@ namespace Common
                 {
                     char buff[20];
                     to += "\\";
-                    itoa(*from, buff, 10);
+                    _itoa_s(*from,buff,20, 10);
                     for (int j(0), len(3 - (int)strlen(buff)); j < len; j++)
                         to += '0';
                     to += buff;
@@ -189,7 +189,7 @@ namespace Common
                     const string& str = (*it);
 
                     if ((m_casesensitive && !strncmp(chunk_end, str.c_str(), str.size()))
-                    || (!m_casesensitive && !strnicmp(chunk_end, str.c_str(), str.size())))
+                    || (!m_casesensitive && !_strnicmp(chunk_end, str.c_str(), str.size())))
                     {
                         hit = true;
                         break;

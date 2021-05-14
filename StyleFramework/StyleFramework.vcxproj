@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{9DDAC601-CBD3-4583-AE16-308EBD39AAAD}</ProjectGuid>
+    <RootNamespace>StyleLibrary</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>StyleFramework</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <UseOfMfc>Static</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <UseOfMfc>Static</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <UseOfMfc>Static</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v142</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+    <UseOfMfc>Static</UseOfMfc>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <TargetName>$(ProjectName)_x86R</TargetName>
+    <OutDir>$(SolutionDir)Lib\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <TargetName>$(ProjectName)_x86D</TargetName>
+    <OutDir>$(SolutionDir)Lib\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>$(ProjectName)_x64D</TargetName>
+    <OutDir>$(SolutionDir)Lib\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>$(ProjectName)_x64R</TargetName>
+    <OutDir>$(SolutionDir)Lib\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>false</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(SolutionDir)StyleFramework\Grid</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Lib>
+      <TargetMachine>MachineX86</TargetMachine>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(SolutionDir)StyleFramework\Grid</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PreprocessorDefinitions>WSCALE;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Lib>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>false</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(SolutionDir)StyleFramework\Grid</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Lib>
+      <TargetMachine>MachineX86</TargetMachine>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <ConformanceMode>false</ConformanceMode>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <AdditionalIncludeDirectories>$(SolutionDir)StyleFramework\Grid</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WSCALE;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Lib>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="CWSExpander.h" />
+    <ClInclude Include="GrayWindow.h" />
+    <ClInclude Include="Grid\CellRange.h" />
+    <ClInclude Include="Grid\GridCell.h" />
+    <ClInclude Include="Grid\GridCellBase.h" />
+    <ClInclude Include="Grid\GridCellCheck.h" />
+    <ClInclude Include="Grid\GridCellCombo.h" />
+    <ClInclude Include="Grid\GridCellDateTime.h" />
+    <ClInclude Include="Grid\GridCellNumeric.h" />
+    <ClInclude Include="Grid\GridCellURL.h" />
+    <ClInclude Include="Grid\GridCtrl.h" />
+    <ClInclude Include="Grid\GridView.h" />
+    <ClInclude Include="Grid\InPlaceEdit.h" />
+    <ClInclude Include="Grid\MemDC.h" />
+    <ClInclude Include="Grid\TitleTip.h" />
+    <ClInclude Include="LinePrinter.h" />
+    <ClInclude Include="RegistryManager.h" />
+    <ClInclude Include="StyleCalendar.h" />
+    <ClInclude Include="StyleComboBox.h" />
+    <ClInclude Include="StyleDialog.h" />
+    <ClInclude Include="StyleDIB.h" />
+    <ClInclude Include="StyleFormView.h" />
+    <ClInclude Include="StyleFrameWnd.h" />
+    <ClInclude Include="StyleFrameWork.h" />
+    <ClInclude Include="StyleGridCtrl.h" />
+    <ClInclude Include="StyleHyperlink.h" />
+    <ClInclude Include="StyleListBox.h" />
+    <ClInclude Include="StyleListCtrl.h" />
+    <ClInclude Include="resource.h" />
+    <ClInclude Include="SkinScrollWnd.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="StyleProgressCtrl.h" />
+    <ClInclude Include="StyleSpinButtonCtrl.h" />
+    <ClInclude Include="StyleStatic.h" />
+    <ClInclude Include="StyleTexts.h" />
+    <ClInclude Include="StyleToast.h" />
+    <ClInclude Include="StyleTreeCtrl.h" />
+    <ClInclude Include="StyleUtilities.h" />
+    <ClInclude Include="StyleButton.h" />
+    <ClInclude Include="StyleCheckbox.h" />
+    <ClInclude Include="StyleColors.h" />
+    <ClInclude Include="StyleDialogCA.h" />
+    <ClInclude Include="StyleFonts.h" />
+    <ClInclude Include="StyleFrameWndEx.h" />
+    <ClInclude Include="StyleMacros.h" />
+    <ClInclude Include="StyleMDIFrameWnd.h" />
+    <ClInclude Include="StyleMessageBox.h" />
+    <ClInclude Include="SkinScrollbar.h" />
+    <ClInclude Include="StyleTabCtrl.h" />
+    <ClInclude Include="StyleEdit.h" />
+    <ClInclude Include="targetver.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="GrayWindow.cpp" />
+    <ClCompile Include="Grid\GridCell.cpp" />
+    <ClCompile Include="Grid\GridCellBase.cpp" />
+    <ClCompile Include="Grid\GridCellCheck.cpp" />
+    <ClCompile Include="Grid\GridCellCombo.cpp" />
+    <ClCompile Include="Grid\GridCellDateTime.cpp" />
+    <ClCompile Include="Grid\GridCellNumeric.cpp" />
+    <ClCompile Include="Grid\GridCellURL.cpp" />
+    <ClCompile Include="Grid\GridCtrl.cpp" />
+    <ClCompile Include="Grid\GridView.cpp" />
+    <ClCompile Include="Grid\InPlaceEdit.cpp" />
+    <ClCompile Include="Grid\TitleTip.cpp" />
+    <ClCompile Include="LinePrinter.cpp" />
+    <ClCompile Include="RegistryManager.cpp" />
+    <ClCompile Include="StyleCalendar.cpp" />
+    <ClCompile Include="StyleComboBox.cpp" />
+    <ClCompile Include="StyleDialog.cpp" />
+    <ClCompile Include="StyleDIB.cpp" />
+    <ClCompile Include="StyleFormView.cpp" />
+    <ClCompile Include="StyleFrameWnd.cpp" />
+    <ClCompile Include="StyleGridCtrl.cpp" />
+    <ClCompile Include="StyleHyperlink.cpp" />
+    <ClCompile Include="StyleListBox.cpp" />
+    <ClCompile Include="StyleListCtrl.cpp" />
+    <ClCompile Include="SkinScrollWnd.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="StyleProgressCtrl.cpp" />
+    <ClCompile Include="StyleSpinButtonCtrl.cpp" />
+    <ClCompile Include="StyleStatic.cpp" />
+    <ClCompile Include="StyleTexts.cpp" />
+    <ClCompile Include="StyleToast.cpp" />
+    <ClCompile Include="StyleTreeCtrl.cpp" />
+    <ClCompile Include="StyleUtilities.cpp" />
+    <ClCompile Include="StyleButton.cpp" />
+    <ClCompile Include="StyleCheckBox.cpp" />
+    <ClCompile Include="StyleColors.cpp" />
+    <ClCompile Include="StyleDialogCA.cpp" />
+    <ClCompile Include="StyleFonts.cpp" />
+    <ClCompile Include="StyleFrameWndEx.cpp" />
+    <ClCompile Include="StyleMDIFrameWnd.cpp" />
+    <ClCompile Include="StyleMessageBox.cpp" />
+    <ClCompile Include="SkinScrollbar.cpp" />
+    <ClCompile Include="StyleTabCtrl.cpp" />
+    <ClCompile Include="StyleEdit.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="StyleFramework.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="res\StyleFramework.rc2" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="Icons\12_help.ico" />
+    <Image Include="IconS\73_map-openen.ico" />
+    <Image Include="Icons\30_Save.ico" />
+    <Image Include="Icons\60_OK.ico" />
+    <Image Include="Icons\61_Cancel.ico" />
+    <Image Include="Icons\63_RemoveObject.ico" />
+    <Image Include="Icons\80_Calender.ico" />
+    <Image Include="res\MyFrame.ico" />
+    <Image Include="res\ScrollBar1.bmp" />
+    <Image Include="res\ScrollBar2.bmp" />
+    <Image Include="res\ScrollBar3.bmp" />
+    <Image Include="res\ScrollBar4.bmp" />
+    <Image Include="res\ScrollBar5.bmp" />
+    <Image Include="res\ScrollBar6.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="WorkToDo.txt" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

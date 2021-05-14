@@ -21,30 +21,30 @@
     10.07.2002 bug fix, double/triple click on spaces does not select line
     08.09.2002 bug fix, the searched text has been found but may be still invisible
     08.09.2002 improvement, new copy commands
-    28.09.2002 improvement, splitter panes/views synhronization
-    28.09.2002 bug fix, scrolling on mouse weel support is twice faster then defined
+    28.09.2002 improvement, splitter panes/views synchronization
+    28.09.2002 bug fix, scrolling on mouse wheel support is twice faster then defined
     19.11.2002 improvement, smart vertical scrolling for goto and bookmark jumps
-    08.01.2003 improvement, dropdown list control for autocomplete/templates
+    08.01.2003 improvement, dropdown list control for auto complete/templates
     16.03.2003 improvement, triple click for line selection has been discontinued
     16.03.2003 bug fix, mouse selection fails sometimes on left button click with pressed <shift>
     17.03.2003 bug fix, cursor position become wrong after document type was changed
     22.03.2003 bug fix, mouse click on gutter does not select line (since 16.03.2003)
-    23.03.2003 improvement, added a new mouse word selectiton on left butten click with pressed ctrl
+    23.03.2003 improvement, added a new mouse word selection on left button click with pressed ctrl
     24.03.2003 improvement, MouseSelectionDelimiters has been added (hidden) which influences on double click selection behavior
     31.03.2003 bug fix, editor context menu position is wrong on Shift+F10
-    29.06.2003 improvement, status line indicator for character under curstor 
+    29.06.2003 improvement, status line indicator for character under cursor 
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include <fstream>
 #include <COMMON/AppGlobal.h>
 #include <COMMON/ExceptionHelper.h>
 #include "COMMON/GUICommandDictionary.h"
-#include "OpenEditor/OEDocument.h"
-#include "OpenEditor/OEView.h"
-#include "OpenEditor/OEFindReplaceDlg.h"
-#include "OpenEditor/OEGoToDialog.h"
-#include "OpenEditor/OEHighlighter.h" // for a destructor
+#include "OEDocument.h"
+#include "OEView.h"
+#include "OEFindReplaceDlg.h"
+#include "OEGoToDialog.h"
+#include "OEHighlighter.h" // for a destructor
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -92,57 +92,60 @@ BEGIN_MESSAGE_MAP(COEditorView, CView)
 	ON_WM_LBUTTONUP()
 	ON_WM_LBUTTONDBLCLK()
 	ON_WM_TIMER()
-	ON_COMMAND          (ID_EDIT_COLUMN_SEL, OnEditToggleColumnarSelection)
-	ON_COMMAND          (ID_EDIT_STREAM_SEL, OnEditToggleStreamSelection)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_COLUMN_SEL, OnUpdate_SelectionType)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_STREAM_SEL, OnUpdate_SelectionType)
-	ON_WM_CHAR()
-	ON_COMMAND          (ID_EDIT_COPY,  OnEditCopy)
-	ON_COMMAND          (ID_EDIT_CUT,   OnEditCut)
-	ON_COMMAND          (ID_EDIT_PASTE, OnEditPaste)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_COPY,  OnUpdate_EditCopyAndCut)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_PASTE, OnUpdate_EditPaste)
-	ON_COMMAND          (ID_TEST,       OnTest)
-	ON_COMMAND          (ID_EDIT_UNDO,  OnEditUndo)
-	ON_COMMAND          (ID_EDIT_REDO,  OnEditRedo)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_UNDO,  OnUpdate_EditUndo)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_REDO,  OnUpdate_EditRedo)
-	ON_COMMAND          (ID_EDIT_SELECT_ALL, OnEditSelectAll)
-	ON_COMMAND          (ID_EDIT_DELETE_LINE, OnEditDeleteLine)
+  ON_WM_CONTEXTMENU()
+  ON_WM_INITMENUPOPUP()
+  ON_WM_CHAR()
+  ON_WM_MOUSEWHEEL()
+  ON_WM_SETTINGCHANGE()
+  ON_COMMAND          (ID_EDIT_COLUMN_SEL,  OnEditToggleColumnarSelection)
+	ON_COMMAND          (ID_EDIT_STREAM_SEL,  OnEditToggleStreamSelection)
+  ON_COMMAND          (ID_EDIT_TOGGLES_SEL, OnToggleStreamSelection)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_COLUMN_SEL,  OnUpdate_SelectionType)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_STREAM_SEL,  OnUpdate_SelectionType)
+	ON_COMMAND          (ID_EDIT_COPY,        OnEditCopy)
+	ON_COMMAND          (ID_EDIT_CUT,         OnEditCut)
+	ON_COMMAND          (ID_EDIT_PASTE,       OnEditPaste)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_COPY,        OnUpdate_EditCopyAndCut)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_PASTE,       OnUpdate_EditPaste)
+	ON_COMMAND          (ID_TEST,                     OnTest)
+	ON_COMMAND          (ID_EDIT_UNDO,                OnEditUndo)
+	ON_COMMAND          (ID_EDIT_REDO,                OnEditRedo)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_UNDO,                OnUpdate_EditUndo)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_REDO,                OnUpdate_EditRedo)
+	ON_COMMAND          (ID_EDIT_SELECT_ALL,          OnEditSelectAll)
+	ON_COMMAND          (ID_EDIT_DELETE_LINE,         OnEditDeleteLine)
 	ON_COMMAND          (ID_EDIT_DELETE_WORD_TO_LEFT, OnEditDeleteWordToLeft)
-	ON_COMMAND(ID_EDIT_DELETE_WORD_TO_RIGHT, OnEditDeleteWordToRight)
-	ON_COMMAND(ID_EDIT_FIND, OnEditFind)
-	ON_COMMAND(ID_EDIT_REPLACE, OnEditReplace)
-	ON_COMMAND(ID_EDIT_FIND_NEXT, OnEditFindNext)
-	ON_COMMAND(ID_EDIT_FIND_PREVIOUS, OnEditFindPrevious)
-	ON_COMMAND(ID_EDIT_BKM_TOGGLE, OnEditBookmarkToggle)
-	ON_COMMAND(ID_EDIT_BKM_NEXT,   OnEditBookmarkNext)
-	ON_COMMAND(ID_EDIT_BKM_PREV,   OnEditBookmarkPrev)
-	ON_COMMAND(ID_EDIT_BKM_REMOVE_ALL, OnEditBookmarkRemoveAll)
-	ON_WM_CONTEXTMENU()
-	ON_WM_INITMENUPOPUP()
-	ON_UPDATE_COMMAND_UI(ID_EDIT_FIND_NEXT, OnUpdate_EditFindNext)
-	ON_COMMAND(ID_EDIT_LOWER, OnEditLower)
-	ON_COMMAND(ID_EDIT_UPPER, OnEditUpper)
-  ON_COMMAND(ID_EDIT_CAPITALIZE, OnEditCapitalize)
-  ON_COMMAND(ID_EDIT_INVERT_CASE, OnEditInvertCase)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_TABIFY, OnUpdate_SelectionOperation)
-  ON_UPDATE_COMMAND_UI(ID_EDIT_TABIFY_LEADING, OnUpdate_SelectionOperation)
-	ON_COMMAND(ID_EDIT_TABIFY, OnBlockTabify)
-  ON_COMMAND(ID_EDIT_TABIFY_LEADING, OnBlockTabifyLeading)
-	ON_COMMAND(ID_EDIT_UNTABIFY, OnBlockUntabify)
-	ON_COMMAND(ID_EDIT_INDENT,   OnEditIndent)
-	ON_COMMAND(ID_EDIT_UNDENT,   OnEditUndent)
-	ON_COMMAND(ID_EDIT_FIND_MATCH, OnEditFindMatch)
-	ON_COMMAND(ID_EDIT_FIND_MATCH_N_SELECT, OnEditFindMatchAndSelect)
-	ON_COMMAND(ID_EDIT_COMMENT,   OnEditComment)
-	ON_COMMAND(ID_EDIT_UNCOMMENT, OnEditUncomment)
-	ON_COMMAND(ID_EDIT_GOTO,      OnEditGoto)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_CUT, OnUpdate_EditCopyAndCut)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_FIND_PREVIOUS, OnUpdate_EditFindNext)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_UNTABIFY,      OnUpdate_SelectionOperation)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_UNDENT,        OnUpdate_SelectionOperation)
-	ON_UPDATE_COMMAND_UI(ID_EDIT_INDENT,        OnUpdate_SelectionOperation)
+	ON_COMMAND          (ID_EDIT_DELETE_WORD_TO_RIGHT,OnEditDeleteWordToRight)
+	ON_COMMAND          (ID_EDIT_FIND,                OnEditFind)
+	ON_COMMAND          (ID_EDIT_REPLACE,             OnEditReplace)
+	ON_COMMAND          (ID_EDIT_FIND_NEXT,           OnEditFindNext)
+	ON_COMMAND          (ID_EDIT_FIND_PREVIOUS,       OnEditFindPrevious)
+	ON_COMMAND          (ID_EDIT_BKM_TOGGLE,          OnEditBookmarkToggle)
+	ON_COMMAND          (ID_EDIT_BKM_NEXT,            OnEditBookmarkNext)
+	ON_COMMAND          (ID_EDIT_BKM_PREV,            OnEditBookmarkPrev)
+	ON_COMMAND          (ID_EDIT_BKM_REMOVE_ALL,      OnEditBookmarkRemoveAll)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_FIND_NEXT,           OnUpdate_EditFindNext)
+	ON_COMMAND          (ID_EDIT_LOWER,               OnEditLower)
+	ON_COMMAND          (ID_EDIT_UPPER,               OnEditUpper)
+  ON_COMMAND          (ID_EDIT_CAPITALIZE,          OnEditCapitalize)
+  ON_COMMAND          (ID_EDIT_INVERT_CASE,         OnEditInvertCase)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_TABIFY,              OnUpdate_SelectionOperation)
+  ON_UPDATE_COMMAND_UI(ID_EDIT_TABIFY_LEADING,      OnUpdate_SelectionOperation)
+	ON_COMMAND          (ID_EDIT_TABIFY,              OnBlockTabify)
+  ON_COMMAND          (ID_EDIT_TABIFY_LEADING,      OnBlockTabifyLeading)
+	ON_COMMAND          (ID_EDIT_UNTABIFY,            OnBlockUntabify)
+	ON_COMMAND          (ID_EDIT_INDENT,              OnEditIndent)
+	ON_COMMAND          (ID_EDIT_UNDENT,              OnEditUndent)
+	ON_COMMAND          (ID_EDIT_FIND_MATCH,          OnEditFindMatch)
+	ON_COMMAND          (ID_EDIT_FIND_MATCH_N_SELECT, OnEditFindMatchAndSelect)
+	ON_COMMAND          (ID_EDIT_COMMENT,             OnEditComment)
+	ON_COMMAND          (ID_EDIT_UNCOMMENT,           OnEditUncomment)
+	ON_COMMAND          (ID_EDIT_GOTO,                OnEditGoto)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_CUT,             OnUpdate_EditCopyAndCut)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_FIND_PREVIOUS,   OnUpdate_EditFindNext)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_UNTABIFY,        OnUpdate_SelectionOperation)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_UNDENT,          OnUpdate_SelectionOperation)
+	ON_UPDATE_COMMAND_UI(ID_EDIT_INDENT,          OnUpdate_SelectionOperation)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_POS,        OnUpdate_Pos)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_SCROLL_POS, OnUpdate_ScrollPos)
 	ON_UPDATE_COMMAND_UI(ID_INDICATOR_OVR,        OnUpdate_Mode)
@@ -152,14 +155,14 @@ BEGIN_MESSAGE_MAP(COEditorView, CView)
   ON_COMMAND_RANGE(ID_EDIT_BKM_SET_0, ID_EDIT_BKM_SET_9, OnSetRandomBookmark)
   ON_COMMAND_RANGE(ID_EDIT_BKM_GET_0, ID_EDIT_BKM_GET_9, OnGetRandomBookmark)
   /*
-  it is commented because it does not work dynamically and commands are not accesible
+  it is commented because it does not work dynamically and commands are not accessible
   ON_UPDATE_COMMAND_UI_RANGE(ID_EDIT_BKM_GET_0, ID_EDIT_BKM_GET_9, OnUpdate_GetRandomBookmark)
   */
   ON_UPDATE_COMMAND_UI_RANGE(ID_EDIT_BKM_NEXT, ID_EDIT_BKM_REMOVE_ALL, OnUpdate_BookmarkGroup)
 	// Standard printing commands
 	ON_COMMAND(ID_FILE_PRINT,          CView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_DIRECT,   CView::OnFilePrint)
-	ON_COMMAND(ID_FILE_PRINT_PREVIEW,  CView::OnFilePrintPreview)
+	ON_COMMAND(ID_FILE_PRINT_PREVIEW,  OnFilePrintPreview)
   ON_COMMAND(ID_EDIT_SCROLL_UP,      OnEditScrollUp    )
   ON_COMMAND(ID_EDIT_SCROLL_DOWN,    OnEditScrollDown  )
   ON_COMMAND(ID_EDIT_SCROLL_CENTER,  OnEditScrollCenter)
@@ -178,9 +181,7 @@ BEGIN_MESSAGE_MAP(COEditorView, CView)
   ON_COMMAND          (ID_EDIT_SELECT_WORD,       OnEditSelectWord)
   ON_COMMAND          (ID_EDIT_SELECT_LINE,       OnEditSelectLine)
   ON_COMMAND          (ID_EDIT_DELETE,            OnEditDelete)
-  ON_WM_MOUSEWHEEL()
-  ON_WM_SETTINGCHANGE()
-  ON_COMMAND(ID_EDIT_NORMALIZE_TEXT, OnEditNormalizeText)
+  ON_COMMAND          (ID_EDIT_NORMALIZE_TEXT,    OnEditNormalizeText)
   // QUERY TOOL
   ON_COMMAND          (ID_SCRIPT_EXECUTE,    OnScriptExecute)
   ON_UPDATE_COMMAND_UI(ID_SCRIPT_EXECUTE,    OnUpdateCommandScriptExecute)
@@ -197,7 +198,7 @@ BEGIN_MESSAGE_MAP(COEditorView, CView)
   ON_UPDATE_COMMAND_UI(ID_SCRIPT_NEXTERROR,  OnUpdateCommandScriptNextError)
   ON_COMMAND          (ID_SCRIPT_PREVERROR,  OnScriptPrevError)
   ON_UPDATE_COMMAND_UI(ID_SCRIPT_PREVERROR,  OnUpdateCommandScriptPrevError)
-  END_MESSAGE_MAP()
+END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // COEditorView construction/destruction
@@ -226,7 +227,7 @@ COEditorView::COEditorView ()
 
 COEditorView::~COEditorView ()
 {
-  m_query.Close();
+  m_query.Close(false);
   while(m_historyMap.size())
   {
     m_historyMap.pop_back();
@@ -1017,7 +1018,7 @@ void COEditorView::OnUpdate_Pos (CCmdUI* pCmdUI)
 {
     char buff[80];
     Position pos = GetPosition();
-    sprintf(buff, " Ln: %d, Col: %d", pos.line + 1, pos.column + 1);
+    sprintf_s(buff,80," Ln: %d, Col: %d", pos.line + 1, pos.column + 1);
     pCmdUI->SetText(buff);
     pCmdUI->Enable(TRUE);
 }
@@ -1025,7 +1026,7 @@ void COEditorView::OnUpdate_Pos (CCmdUI* pCmdUI)
 void COEditorView::OnUpdate_ScrollPos (CCmdUI* pCmdUI)
 {
     char buff[80];
-    sprintf(buff, " Top: %d, Left: %d", m_Rulers[1].m_Topmost + 1, m_Rulers[0].m_Topmost + 1);
+    sprintf_s(buff,80, " Top: %d, Left: %d", m_Rulers[1].m_Topmost + 1, m_Rulers[0].m_Topmost + 1);
     pCmdUI->SetText(buff);
     pCmdUI->Enable(TRUE);
 }
@@ -1036,7 +1037,7 @@ void COEditorView::OnUpdate_BlockType (CCmdUI* pCmdUI)
     pCmdUI->Enable(TRUE);
 }
 
-// 29.06.2003 improvement, status line indicator for character under curstor 
+// 29.06.2003 improvement, status line indicator for character under cursor 
 void COEditorView::OnUpdate_CurChar (CCmdUI* pCmdUI)
 {
     Position pos = GetPosition();
@@ -1057,9 +1058,11 @@ void COEditorView::OnUpdate_CurChar (CCmdUI* pCmdUI)
             m_curCharCache.message += '\'';
             m_curCharCache.message += str[inx];
             m_curCharCache.message += "'=0x";
-            m_curCharCache.message += itoa(str[inx], buff, 16);
+            _itoa_s(str[inx], buff, 80, 16);
+            m_curCharCache.message += buff;
             m_curCharCache.message += "=";
-            m_curCharCache.message += itoa(str[inx], buff, 10);
+            _itoa_s(str[inx], buff, 80, 10);
+            m_curCharCache.message += buff;
         }
     }
 
@@ -1077,14 +1080,24 @@ void COEditorView::OnEditToggleStreamSelection()
     SetBlockMode(ebtStream);
 }
 
+void COEditorView::OnToggleStreamSelection()
+{
+  EBlockMode blkMode = GetBlockMode();
+  switch(blkMode)
+  {
+    case ebtStream: SetBlockMode(ebtColumn); break;
+    case ebtColumn: SetBlockMode(ebtStream); break;
+  }
+}
+
 void COEditorView::OnUpdate_SelectionType(CCmdUI* pCmdUI)
 {
     BOOL enable = FALSE;
     EBlockMode blkMode = GetBlockMode();
     switch (pCmdUI->m_nID)
     {
-    case ID_EDIT_COLUMN_SEL: enable = blkMode == ebtColumn; break;
-    case ID_EDIT_STREAM_SEL: enable = blkMode == ebtStream; break;
+      case ID_EDIT_COLUMN_SEL: enable = blkMode == ebtColumn; break;
+      case ID_EDIT_STREAM_SEL: enable = blkMode == ebtStream; break;
     }
     pCmdUI->SetRadio(enable);
 }
@@ -1244,7 +1257,8 @@ void COEditorView::OnEditDeleteWordToRight()
   DeleteWordToRight();
 }
 
-void COEditorView::OnEditFind()
+void 
+COEditorView::OnEditFind()
 {
   string buff;
   Square sqr;
@@ -1252,18 +1266,20 @@ void COEditorView::OnEditFind()
   GetBlockOrWordUnderCursor(buff, sqr, true/*onlyOneLine*/);
   SetSearchText(buff.c_str());
 
-  CFindReplaceDlg(FALSE, this).DoModal();
+  CFindReplaceDlg(FALSE, this).DoModal(false);
 }
 
-void COEditorView::OnEditReplace()
+void 
+COEditorView::OnEditReplace()
 {
-    string buff;
-    Square sqr;
+  string buff;
+  Square sqr;
 
-    if (GetBlockOrWordUnderCursor(buff, sqr, true/*onlyOneLine*/))
-        SetSearchText(buff.c_str());
-
-    CFindReplaceDlg(TRUE, this).DoModal();
+  if (GetBlockOrWordUnderCursor(buff, sqr, true/*onlyOneLine*/))
+  {
+    SetSearchText(buff.c_str());
+  }
+  CFindReplaceDlg(TRUE, this).DoModal(false);
 }
 
 void COEditorView::OnEditFindNext()
@@ -1275,6 +1291,7 @@ void COEditorView::OnEditFindNext()
 void COEditorView::OnEditFindPrevious()
 {
   COEditorView* pView = this;
+  GoToLeft();
 	RepeatSearch(esdUp, pView);
 }
 
@@ -1724,39 +1741,36 @@ bool COEditorView::UncommentText (const OpenEditor::EditContext& context, std::s
     return true;
 }
 
-void COEditorView::OnEditGoto()
+void 
+COEditorView::OnEditGoto()
 {
-    COEGoToDialog dlg(this);
+  Position pos = GetPosition();
 
-    Position pos = GetPosition();
+  static int whereFrom = 0;
+  int whereTo = (whereFrom == 0) ? pos.line + 1 : 0;
+  CString infoString;
+  infoString.Format("There are %u lines in the file.\r\nThe current line is %u."
+                    ,GetLineCount(), pos.line + 1);
 
-    static int whereFrom = 0;
-
-    dlg.m_WhereFrom = whereFrom;
-    dlg.m_WhereTo = (dlg.m_WhereFrom == 0) ? pos.line + 1 : 0;
-    dlg.m_InfoString.Format(
-        "There are %u lines in the file. The current line is %u.",
-        GetLineCount(), pos.line + 1);
-
-    if (dlg.DoModal() == IDOK)
+  COEGoToDialog dlg(this,whereFrom,whereTo,infoString);
+ 
+  if (dlg.DoModal() == IDOK)
+  {
+    switch (dlg.m_WhereFrom)
     {
-        switch (dlg.m_WhereFrom)
-        {
-        case 0: // from top of the file
-            pos.line = dlg.m_WhereTo - 1;
-            break;
-        case 1: // from bottom of the file
-            pos.line = GetLineCount() - dlg.m_WhereTo;
-            break;
-        case 2: // from current position
-            pos.line += dlg.m_WhereTo;
-            break;
-        }
-
-        MoveToAndCenter(pos);
-
-        whereFrom = dlg.m_WhereFrom;
+      case 0: // from top of the file
+              pos.line = dlg.m_WhereTo - 1;
+              break;
+      case 1: // from bottom of the file
+              pos.line = GetLineCount() - dlg.m_WhereTo;
+              break;
+      case 2: // from current position
+              pos.line += dlg.m_WhereTo;
+              break;
     }
+    MoveToAndCenter(pos);
+    whereFrom = dlg.m_WhereFrom;
+  }
 }
 
 void COEditorView::OnEditScrollUp ()
@@ -1962,12 +1976,15 @@ void COEditorView::OnSettingChange (UINT, LPCTSTR)
 
 void COEditorView::OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView)
 {
-    if (!bActivate)
+    if(!bActivate)
     {
         if (m_autocompleteList.IsActive()) 
             m_autocompleteList.HideControl();
     }
-
+    else
+    {
+      GetDocument()->SetTitle();
+    }
     CView::OnActivateView(bActivate, pActivateView, pDeactiveView);
 }
 

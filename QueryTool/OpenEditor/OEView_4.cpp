@@ -20,9 +20,9 @@
     12.07.2002 bug fix, drag & drop fails in the same window (stream, drop below original pos)
 */
 
-#include "stdafx.h"
-#include "OpenEditor/OEDocument.h"
-#include "OpenEditor/OEView.h"
+#include "pch.h"
+#include "OEDocument.h"
+#include "OEView.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW

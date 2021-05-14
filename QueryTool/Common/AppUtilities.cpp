@@ -18,7 +18,7 @@
 
 // 14/08/2002 bug fix, empty string cannot be saved in in combo box history
 
-#include "stdafx.h"
+#include "pch.h"
 #include "COMMON\AppUtilities.h"
 
 

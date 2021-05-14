@@ -16,19 +16,19 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include <COMMON/ExceptionHelper.h>
 #include <Common/DirSelectDlg.h>
-#include "OpenEditor/OEFindFiles.h"
+#include "OEFindFiles.h"
 #include <Common/regexp.h>
 
 const bool Controls2Data = true;   // UpdateData
 const bool Data2Controls = false;
 
 
-COEFindFiles::COEFindFiles (SettingsManager& manager)
-	: CDialog(COEFindFiles::IDD)
-    , m_manager(manager)
+COEFindFiles::COEFindFiles (SettingsManager& manager,CWnd* p_parent)
+	           :StyleDialog(COEFindFiles::IDD,p_parent)
+             ,m_manager(manager)
 {
   const OpenEditor::GlobalSettings& settings = m_manager.GetGlobalSettings();
   m_whole_word = settings.GetFileWholeWord() ? true : false;
@@ -48,23 +48,63 @@ COEFindFiles::~COEFindFiles()
 
 void COEFindFiles::DoDataExchange(CDataExchange* pDX)
 {
-  CDialog::DoDataExchange(pDX);
+  StyleDialog::DoDataExchange(pDX);
 
-  DDX_Check(pDX, IDC_WHOLE_WORD,  m_whole_word); 
-  DDX_Check(pDX, IDC_MATCH_CASE,  m_match_case);
+  DDX_Control(pDX,IDC_FIND_FINDWHAT, m_editWhatToFind,  m_whattofind);
+  DDX_Control(pDX,IDC_FILE_TYPES,    m_editFileTypes,   m_filetypes);
+  DDX_Control(pDX,IDC_FILE_DIRECTORY,m_editDirectories, m_directories);
+
+  DDX_Control(pDX,IDC_WHOLE_WORD,         m_checkWholeWord);
+  DDX_Control(pDX,IDC_MATCH_CASE,         m_checkMatchCase);
+  DDX_Control(pDX,IDC_REGULAR_EXPRESSIONS,m_checkUseRegex);
+  DDX_Control(pDX,IDC_SUBFOLDERS,         m_checkSubfolders);
+  DDX_Control(pDX,IDC_SAVEBEFORE,         m_checkSaveBefore);
+  DDX_Control(pDX,IDC_COLLAPSELIST,       m_checkCollapse);
+
+  DDX_Control(pDX, IDC_BROWSEDIR, m_buttonBrowse);
+  DDX_Control(pDX, IDOK,          m_buttonBrowse);
+  DDX_Control(pDX, IDCANCEL,      m_buttonCancel);
+
+  DDX_Check(pDX, IDC_WHOLE_WORD,          m_whole_word); 
+  DDX_Check(pDX, IDC_MATCH_CASE,          m_match_case);
   DDX_Check(pDX, IDC_REGULAR_EXPRESSIONS, m_use_regex);
-  DDX_Check(pDX, IDC_SUBFOLDERS,  m_subfolders);
-  DDX_Check(pDX, IDC_SAVEBEFORE,  m_savebefore);
-  DDX_Check(pDX, IDC_COLLAPSELIST,m_collapse);
+  DDX_Check(pDX, IDC_SUBFOLDERS,          m_subfolders);
+  DDX_Check(pDX, IDC_SAVEBEFORE,          m_savebefore);
+  DDX_Check(pDX, IDC_COLLAPSELIST,        m_collapse);
 
-  DDX_CBString(pDX,IDC_FIND_FINDWHAT, m_whattofind);
-  DDX_CBString(pDX,IDC_FILE_TYPES,    m_filetypes);
-  DDX_CBString(pDX,IDC_FILE_DIRECTORY,m_directories);
 }
 
-BEGIN_MESSAGE_MAP(COEFindFiles, CDialog)
+BEGIN_MESSAGE_MAP(COEFindFiles, StyleDialog)
   ON_BN_CLICKED(IDC_BROWSEDIR,OnBrowseDirectories)
 END_MESSAGE_MAP()
+
+BOOL
+COEFindFiles::OnInitDialog()
+{
+  StyleDialog::OnInitDialog();
+  SetWindowText("Find in Files");
+
+  SetCanResize();
+  return TRUE;
+}
+
+void
+COEFindFiles::SetupDynamicLayout()
+{
+  StyleDialog::SetupDynamicLayout();
+
+  CMFCDynamicLayout& manager = *GetDynamicLayout();
+#ifdef _DEBUG
+  manager.AssertValid();
+#endif
+
+  manager.AddItem(IDC_FIND_FINDWHAT, manager.MoveNone(), manager.SizeHorizontal(100));
+  manager.AddItem(IDC_FILE_TYPES,    manager.MoveNone(), manager.SizeHorizontal(100));
+  manager.AddItem(IDC_FILE_DIRECTORY,manager.MoveNone(), manager.SizeHorizontal(100));
+  manager.AddItem(IDC_BROWSEDIR,     manager.MoveHorizontal(100), manager.SizeNone());
+  manager.AddItem(IDOK,              manager.MoveHorizontal(100), manager.SizeNone());
+  manager.AddItem(IDCANCEL,          manager.MoveHorizontal(100), manager.SizeNone());
+}
 
 void COEFindFiles::OnUpdateData()
 {
@@ -74,7 +114,7 @@ void COEFindFiles::OnUpdateData()
 void COEFindFiles::OnOK()
 {
   OnApply();
-  CDialog::OnOK();
+  StyleDialog::OnOK();
 }
 
 BOOL COEFindFiles::OnApply()
@@ -113,13 +153,13 @@ COEFindFiles::OnBrowseDirectories()
 }
 
 bool
-COEFindFiles::GoFind(CGridCtrl* grid)
+COEFindFiles::GoFind(StyleGridCtrl* grid)
 {
   if(m_savebefore)
   {
     if(! AfxGetApp()->SaveAllModified())
     {
-      // Saving not successfull. Stop the find action
+      // Saving not successful. Stop the find action
       return false;
     }
   }
@@ -136,7 +176,7 @@ COEFindFiles::GoFind(CGridCtrl* grid)
 }
 
 int
-COEFindFiles::GoFindInFolder(CString p_folder,CGridCtrl* grid)
+COEFindFiles::GoFindInFolder(CString p_folder,StyleGridCtrl* grid)
 {
   struct _finddata_t fileinfo;
   intptr_t fileHandle;
@@ -186,16 +226,18 @@ COEFindFiles::GoFindInFolder(CString p_folder,CGridCtrl* grid)
 }
 
 void
-COEFindFiles::GoFindInFile(CString fileName,CGridCtrl* grid)
+COEFindFiles::GoFindInFile(CString fileName,StyleGridCtrl* grid)
 {
   // m_whole_word, m_match_case, m_use_regex, m_collapse
-  FILE*   file  = fopen(fileName,"rt");
+  FILE*   file  = nullptr;
   bool    res   = false;
   int     len   = 0;
   CString findThis   = m_whattofind;
   long    lineNumber = 0;
   RegExp  rex;
   char    buffer[MAX_BUFSIZE+1];
+
+  fopen_s(&file,fileName, "rt");
 
   if(!m_match_case)
   {
@@ -259,10 +301,10 @@ COEFindFiles::GoFindInFile(CString fileName,CGridCtrl* grid)
 }
 
 void
-COEFindFiles::AppendRow(CGridCtrl* grid,CString& fileName,int lineNumber,char* buffer)
+COEFindFiles::AppendRow(StyleGridCtrl* grid,CString& fileName,int lineNumber,char* buffer)
 {
   char buf[20];
-  itoa(lineNumber,buf,10);
+  _itoa_s(lineNumber,buf,20,10);
 
   GV_ITEM item;
   item.mask = GVIF_TEXT | GVIF_FORMAT;

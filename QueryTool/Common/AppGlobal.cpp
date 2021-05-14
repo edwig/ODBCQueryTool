@@ -16,7 +16,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include "COMMON\AppGlobal.h"
 
 
@@ -29,28 +29,34 @@ static char THIS_FILE[] = __FILE__;
 namespace Common
 {
 
-static HWND hWndStatus;
+static HWND hWndStatus = nullptr;
 
-HWND SetStatusHwnd (HWND hWnd)
+// Record status window, return last recording
+HWND 
+SetStatusHwnd (HWND hWnd)
 {
-    HWND _hWnd = hWndStatus;
-    hWndStatus = hWnd;
-    return _hWnd;
+  HWND _hWnd = hWndStatus;
+  hWndStatus = hWnd;
+  return _hWnd;
 }
 
-void SetStatusText (const char* text, BOOL update)
+// Set a new status text
+void 
+SetStatusText(const char* text, BOOL update)
 {
-    if (hWndStatus)
+  if(hWndStatus)
+  {
+    CWnd* wnd = CWnd::FromHandle(hWndStatus);
+    if(wnd && wnd->IsKindOf(RUNTIME_CLASS(CMFCStatusBar)))
     {
-        CWnd* wnd = CWnd::FromHandle(hWndStatus);
-        if (wnd && wnd->IsKindOf(RUNTIME_CLASS(CStatusBar)))
-        {
-            ((CStatusBar*)wnd)->SetWindowText(text);
-            if (update)
-                ((CStatusBar*)wnd)->UpdateWindow();
-        }
+      CMFCStatusBar* status = reinterpret_cast<CMFCStatusBar*>(wnd);
+      wnd->SetWindowText(text);
+      if(update)
+      {
+        wnd->UpdateWindow();
+      }
     }
+  }
 }
-
 
 }//namespace Common

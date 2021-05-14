@@ -6,7 +6,7 @@ declare
               loop-- defer
               end loop;
           end;
-      begin -- defer 
+      begin -- defer
       end;
   begin -- defer
   end;
@@ -17,7 +17,7 @@ begin
           end loop;
       end loop;
   end loop;
-  
+
   begin
     declare
     begin
@@ -66,7 +66,7 @@ begin
         */
     exception
     end;
-    
+
     if then
     end if;
 

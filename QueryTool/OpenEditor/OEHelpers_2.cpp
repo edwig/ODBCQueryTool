@@ -20,9 +20,9 @@
   10.03.2003 bug fix, start-line comment (promt & remark) should be separeted by delimiter from text
 */
 
-#include "stdafx.h"
-#include "OpenEditor/OEHelpers.h"
-#include "OpenEditor/OEStorage.h"
+#include "pch.h"
+#include "OEHelpers.h"
+#include "OEStorage.h"
 
 
 #ifdef _DEBUG
@@ -275,6 +275,8 @@ void MultilineQuotesScanner::buildMap (int to_line)
     m_nQuotesValidLimit = to_line;
 }
 
+#pragma warning (disable: 4996)
+
 void MultilineQuotesScanner::buildOpeningFastMap () const
 {
     m_OpeningFastMap.erase();
@@ -346,7 +348,7 @@ bool MultilineQuotesScanner::is_equal (const char* str, int len, int offset, con
         if (m_bCaseSensitive)
             retVal = !strncmp(str + offset, shape.c_str(), shape.size()) ? true : false;
         else
-            retVal = !strnicmp(str + offset, shape.c_str(), shape.size()) ? true : false;
+            retVal = !_strnicmp(str + offset, shape.c_str(), shape.size()) ? true : false;
 
         // check begin of fragment
         if (retVal && !m_delimiters[*shape.begin()]

@@ -1,0 +1,850 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="OpenEditor">
+      <UniqueIdentifier>{fbd88bad-2d35-4d43-8ba2-098beb8c107f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="OpenEditor\Header Files">
+      <UniqueIdentifier>{2d1b8d2e-0f53-4e36-b4bd-653917bda557}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GridControl">
+      <UniqueIdentifier>{d08acd87-5caf-4996-8dd6-fc43f7c2f12d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GridControl\Header Files">
+      <UniqueIdentifier>{c77ecb01-69dd-4857-b337-e1d14845a726}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Query">
+      <UniqueIdentifier>{1f15fdd1-5a1b-43a1-ae09-6b41f747b952}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Query\Header Files">
+      <UniqueIdentifier>{623b80e9-28e4-4f93-b571-1b7401c13a88}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common">
+      <UniqueIdentifier>{1189d1ac-4740-42b1-b03b-25eeae8327bb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common\Header Files">
+      <UniqueIdentifier>{bdff534a-9f1c-42ac-9372-b6e43912a1d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Installation">
+      <UniqueIdentifier>{20ef3b23-5700-40ab-a96b-fa1b86e91af7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Installation\Keymap Files">
+      <UniqueIdentifier>{1f0f6510-bca3-4a2d-a813-0297e8f9175c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Installation\Data Files">
+      <UniqueIdentifier>{434fdb97-2d18-4687-80bd-8d6c8978fc67}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="QueryTool.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="framework.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MainFrm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ChildFrm.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="QueryToolDoc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="QueryToolView.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ViewTree.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OutputWnd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OEAutocompleteCtrl.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OEBackupPage.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OEBlockPage.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OEClassPage.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OECommonLanguageSupport.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OEContext.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OEDocument.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OEEditingPage.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OEFileInfoDlg.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OEFilePage.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OEFindFiles.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OEFindReplaceDlg.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OEGeneralPage.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OEGoToDialog.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OEHelpers.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OEHighlighter.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OELanguage.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OELanguageManager.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OELanguageStreams.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OELanguageSupport.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OEMatchSearcher.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OEPlsSqlParser.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OEPlsSqlSupport.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OEPlsSqlSyntax.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OEPrintPageSetup.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OEPropPage.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OESaveModifiedDlg.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OESettings.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OESettingsStreams.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OESQLSettingsPage.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OEStorage.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OEStreams.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OESyntaxParser.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OETemplates.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OETemplatesDlg.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OETemplatesPage.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OETemplateStreams.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OEUndo.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OEView.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OEViewPaintAccessories.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FileWatch.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MultConnectionsDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ConnectionDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GridControl\MGridCellBase.h">
+      <Filter>GridControl\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GridControl\MCellRange.h">
+      <Filter>GridControl\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GridControl\MGridCell.h">
+      <Filter>GridControl\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GridControl\MGridCtrl.h">
+      <Filter>GridControl\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GridControl\MGridDropTarget.h">
+      <Filter>GridControl\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GridControl\MInPlaceEdit.h">
+      <Filter>GridControl\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GridControl\MMemDC.h">
+      <Filter>GridControl\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GridControl\MTitleTip.h">
+      <Filter>GridControl\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Query\codeer.h">
+      <Filter>Query\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Query\GridView.h">
+      <Filter>Query\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Query\NativeSQLDlg.h">
+      <Filter>Query\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Query\QueryBar.h">
+      <Filter>Query\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Query\QueryPanelWnd.h">
+      <Filter>Query\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Query\RebindDlg.h">
+      <Filter>Query\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Query\VariablesDlg.h">
+      <Filter>Query\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WinException.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Query\DirTreeCtrl.h">
+      <Filter>Query\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Query\InfoTree.h">
+      <Filter>Query\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Query\ObjectTree.h">
+      <Filter>Query\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ConnectionBar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SortStringArray.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\FileSelectDialog.h">
+      <Filter>Common\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\AppGlobal.h">
+      <Filter>Common\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\AppUtilities.h">
+      <Filter>Common\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\arg_shared.h">
+      <Filter>Common\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\ExceptionHelper.h">
+      <Filter>Common\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\DirSelectDlg.h">
+      <Filter>Common\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\StrHelpers.h">
+      <Filter>Common\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\QuickArray.h">
+      <Filter>Common\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\FixedString.h">
+      <Filter>Common\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\VisualAttributesPage.h">
+      <Filter>Common\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\VisualAttributes.h">
+      <Filter>Common\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\MemoryMappedFile.h">
+      <Filter>Common\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\PropertySheetMem.h">
+      <Filter>Common\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\regexp.h">
+      <Filter>Common\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\DocManagerExt.h">
+      <Filter>Common\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Common\GUICommandDictionary.h">
+      <Filter>Common\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AboutDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Version.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OESettingsDlg.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="OpenEditor\Include\OEDocumentDlg.h">
+      <Filter>OpenEditor\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Query\ObjectView.h">
+      <Filter>Query\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Query\InfoView.h">
+      <Filter>Query\Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Query\DirTreeView.h">
+      <Filter>Query\Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="QueryTool.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MainFrm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ChildFrm.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="QueryToolDoc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="QueryToolView.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ViewTree.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OutputWnd.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEAutocompleteCtrl.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEBackupPage.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEBlockPage.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEClassPage.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OECommonLanguageSupport.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEContext_1.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEContext_2.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEContext_3.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEContext_4.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEContext_5.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEDocument.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEEditingPage.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEFileInfoDlg.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEFilePage.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEFindFiles.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEFindReplaceDlg.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEGeneralPage.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEGoToDialog.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEHelpers_1.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEHelpers_2.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEHelpers_3.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEHighlighter.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEHighlighter_1.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEHighlighter_2.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OELanguage.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OELanguageManager.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OELanguageStreams.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEMatchSearcher.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEPlsSqlParser.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEPlsSqlSupport.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEPlsSqlSyntax.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEPrintPageSetup.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEPropPage.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OESaveModifiedDlg.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OESettings.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OESettingsStreams.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OESQLSettingsPage.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEStorage.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEStreams.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OESyntaxParser.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OETemplates.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OETemplatesDlg.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OETemplatesPage.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OETemplateStreams.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEUndo.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEView_1.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEView_2.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEView_3.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEView_4.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEView_5.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEView_6.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEView_7.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEViewPaintAccessories.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="FileWatch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ConnectionDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MultConnectionsDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GridControl\MGridCell.cpp">
+      <Filter>GridControl</Filter>
+    </ClCompile>
+    <ClCompile Include="GridControl\MGridCellBase.cpp">
+      <Filter>GridControl</Filter>
+    </ClCompile>
+    <ClCompile Include="GridControl\MGridCtrl.cpp">
+      <Filter>GridControl</Filter>
+    </ClCompile>
+    <ClCompile Include="GridControl\MGridDropTarget.cpp">
+      <Filter>GridControl</Filter>
+    </ClCompile>
+    <ClCompile Include="GridControl\MInPlaceEdit.cpp">
+      <Filter>GridControl</Filter>
+    </ClCompile>
+    <ClCompile Include="GridControl\MTitleTip.cpp">
+      <Filter>GridControl</Filter>
+    </ClCompile>
+    <ClCompile Include="Query\Codeer.cpp">
+      <Filter>Query</Filter>
+    </ClCompile>
+    <ClCompile Include="Query\GridView.cpp">
+      <Filter>Query</Filter>
+    </ClCompile>
+    <ClCompile Include="Query\NativeSQLDlg.cpp">
+      <Filter>Query</Filter>
+    </ClCompile>
+    <ClCompile Include="Query\QueryBar.cpp">
+      <Filter>Query</Filter>
+    </ClCompile>
+    <ClCompile Include="Query\QueryPanelWnd.cpp">
+      <Filter>Query</Filter>
+    </ClCompile>
+    <ClCompile Include="Query\RebindDlg.cpp">
+      <Filter>Query</Filter>
+    </ClCompile>
+    <ClCompile Include="Query\VariablesDlg.cpp">
+      <Filter>Query</Filter>
+    </ClCompile>
+    <ClCompile Include="WinException.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Query\DirTreeCtrl.cpp">
+      <Filter>Query</Filter>
+    </ClCompile>
+    <ClCompile Include="Query\InfoTree.cpp">
+      <Filter>Query</Filter>
+    </ClCompile>
+    <ClCompile Include="Query\ObjectTree.cpp">
+      <Filter>Query</Filter>
+    </ClCompile>
+    <ClCompile Include="ConnectionBar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SortStringArray.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\FileSelectDialog.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\AppGlobal.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\AppUtilities.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\arg_shared.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\ExceptionHelper.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\DirSelectDlg.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\StrHelpers.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\QuickArray.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\FixedString.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\VisualAttributesPage.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\VisualAttributes.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\MemoryMappedFile.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\PropertySheetMem.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\regexp.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\DocManagerExt.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="Common\GUICommandDictionary.cpp">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="AboutDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OEDocumentDlg.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenEditor\OESettingsDlg.cpp">
+      <Filter>OpenEditor</Filter>
+    </ClCompile>
+    <ClCompile Include="Query\ObjectView.cpp">
+      <Filter>Query</Filter>
+    </ClCompile>
+    <ClCompile Include="Query\InfoView.cpp">
+      <Filter>Query</Filter>
+    </ClCompile>
+    <ClCompile Include="Query\DirTreeView.cpp">
+      <Filter>Query</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="QueryTool.reg" />
+    <None Include="res\QueryTool.rc2">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\Data\context.keymap">
+      <Filter>Installation\Keymap Files</Filter>
+    </None>
+    <None Include="..\Data\custom.keymap">
+      <Filter>Installation\Keymap Files</Filter>
+    </None>
+    <None Include="..\Data\default.keymap">
+      <Filter>Installation\Keymap Files</Filter>
+    </None>
+    <None Include="..\Data\editplus2.keymap">
+      <Filter>Installation\Keymap Files</Filter>
+    </None>
+    <None Include="..\Data\settings.dat.old">
+      <Filter>Installation\Keymap Files</Filter>
+    </None>
+    <None Include="..\Data\templates.dat.old">
+      <Filter>Installation\Keymap Files</Filter>
+    </None>
+    <None Include="..\Data\textpad.keymap">
+      <Filter>Installation\Keymap Files</Filter>
+    </None>
+    <None Include="..\Data\ultraedit.keymap">
+      <Filter>Installation\Keymap Files</Filter>
+    </None>
+    <None Include="..\Data\languages.dat">
+      <Filter>Installation\Data Files</Filter>
+    </None>
+    <None Include="..\Data\templates.dat">
+      <Filter>Installation\Data Files</Filter>
+    </None>
+    <None Include="..\Data\settings.dat">
+      <Filter>Installation\Data Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="QueryTool.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\file_view.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\file_view_hc.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\class_view.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\class_view_hc.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\fileview.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\fileview_hc.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\classview.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\classview_hc.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\explorer.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\explorer_hc.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\sort.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\sort_hc.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\menuimages.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\menuimages_hc.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\output_wnd.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\output_wnd_hc.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\userimages.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\QueryToolDoc.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\QueryTool.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Toolbar.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\Toolbar256.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\QUERY.ICO">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Icons\12_help.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Icons\60_OK.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Icons\61_Cancel.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Icons\63_RemoveObject.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Icons\30_Save.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Icons\80_Calender.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Icons\73_map-openen.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\OpenQueryDoc.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\error.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\icon1.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ico00001.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ico00002.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ScrollBar1.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ScrollBar2.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ScrollBar3.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ScrollBar4.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ScrollBar5.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ScrollBar6.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\explorer_state_list.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\database.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\connectb.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\querybar.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\querysta.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\rdbms_objects.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\OpenEditor.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+  </ItemGroup>
+</Project>

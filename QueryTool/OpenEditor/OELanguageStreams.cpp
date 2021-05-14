@@ -16,12 +16,12 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include <algorithm>
 #include <locale>
 #include <COMMON/StrHelpers.h>
 #include <COMMON/ExceptionHelper.h>
-#include <OpenEditor/OELanguageStreams.h>
+#include <OELanguageStreams.h>
 //#include "COMMON/AppUtilities.h" //temporary here
 
 #ifdef _DEBUG
@@ -100,7 +100,8 @@ void LanguagesCollectionWriter::write (const LanguageKeywordMapPtr& keywordMap, 
             if (groupIndex == it->second.groupIndex)
             {
                 char buff[80];
-                m_out.write(itoa(i++, buff, 10), it->second.keyword);
+                _itoa_s(i++, buff, 80, 10);
+                m_out.write(buff,it->second.keyword);
             }
     }
 }
@@ -196,7 +197,8 @@ void LanguagesCollectionReader::read (LanguageKeywordMapPtr& keywordMap, vector<
         {
             char buff[40];
             LanguageKeyword keyword;
-            m_in.read(itoa(j, buff, 10), keyword.keyword);
+            _itoa_s(j, buff, 40, 10);
+            m_in.read(buff, keyword.keyword);
             keyword.groupIndex = groupIndex;
             string key = keyword.keyword;
 

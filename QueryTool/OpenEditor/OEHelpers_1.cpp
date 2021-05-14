@@ -20,9 +20,9 @@
     13/05/2002 bug fix, undo operation completes with garbage on empty lines or following by them
 */
 
-#include "stdafx.h"
+#include "pch.h"
 #include "COMMON/StrHelpers.h"
-#include "OpenEditor/OEHelpers.h"
+#include "OEHelpers.h"
 
 
 #ifdef _DEBUG
