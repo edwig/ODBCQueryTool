@@ -58,17 +58,17 @@ void MultConnectionsDlg::DoDataExchange(CDataExchange* pDX)
 {
 	StyleDialog::DoDataExchange(pDX);
 
-  DDX_Control(pDX,IDC_CON_LIST,       m_list);
-  DDX_Control(pDX,IDC_CON_USER,       m_boxUserEdit,    m_UserEdit);
-  DDX_Control(pDX,IDC_CON_PASSWORD,   m_boxUserPassword,m_UserPassword);
-  DDX_Control(pDX,IDC_CON_DATASOURCES,m_comboDataSource);
-  DDX_Control(pDX,IDC_CON_SAFTY,      m_comboSafty);
-  DDX_Control(pDX,IDC_CON_TEST,       m_buttonTest);
-  DDX_Control(pDX,IDC_CON_DELETE,     m_buttonDelete);
-  DDX_Control(pDX,IDC_CON_DETAILS,    m_buttonDetails);
-  DDX_Control(pDX,IDC_CON_HELP,       m_buttonHelp);
-  DDX_Control(pDX,IDOK,               m_buttonOK);
-  DDX_Control(pDX,IDCANCEL,           m_buttonCancel);
+  DDX_Control (pDX,IDC_CON_LIST,       m_list);
+  DDX_Control (pDX,IDC_CON_USER,       m_boxUserEdit,    m_UserEdit);
+  DDX_Control (pDX,IDC_CON_PASSWORD,   m_boxUserPassword,m_UserPassword);
+  DDX_CBString(pDX,IDC_CON_DATASOURCES,m_comboDataSource,m_DataSource);
+  DDX_Control (pDX,IDC_CON_SAFTY,      m_comboSafty);
+  DDX_Control (pDX,IDC_CON_TEST,       m_buttonTest);
+  DDX_Control (pDX,IDC_CON_DELETE,     m_buttonDelete);
+  DDX_Control (pDX,IDC_CON_DETAILS,    m_buttonDetails);
+  DDX_Control (pDX,IDC_CON_HELP,       m_buttonHelp);
+  DDX_Control (pDX,IDOK,               m_buttonOK);
+  DDX_Control (pDX,IDCANCEL,           m_buttonCancel);
 
   CString data;
   if(pDX->m_bSaveAndValidate == (BOOL)Controls2Data)
@@ -139,8 +139,6 @@ MultConnectionsDlg::OnInitDialog()
                   ,iter->GetTimesUsed()
                   ,iter->GetLastUsage());
   }
-  m_list.AutoSizeColumns(GVS_BOTH);
-  m_list.ExpandLastColumn();
   // Set the boxes with the maxvalue
   m_UserEdit     = mUser;
   m_UserPassword = mPassword;
@@ -316,27 +314,27 @@ MultConnectionsDlg::InitGridEmpty(int p_type,bool nofirst /* = false */)
 
   item.strText = "Datasource";
   m_list.SetItem(&item);
-  m_list.SetColumnWidth(0,250);
+  m_list.SetColumnWidth(0,120);
 
   item.col     = 1;
   item.strText = "User";
   m_list.SetItem(&item);
-  m_list.SetColumnWidth(0,300);
-
-  item.col     = 3;
-  item.strText = "Last time";
-  m_list.SetItem(&item);
-  m_list.SetColumnWidth(0,200);
+  m_list.SetColumnWidth(1,120);
 
   item.col     = 2;
   item.strText = "Total";
   item.nFormat |= DT_SORT_NUMERIC;
   m_list.SetItem(&item);
-  m_list.SetColumnWidth(0,180);
+  m_list.SetColumnWidth(2,80);
+
+  item.col     = 3;
+  item.strText = "Last time";
+  m_list.SetItem(&item);
+  m_list.SetColumnWidth(3,180);
 
   // Sync with the outside world
-	m_list.AutoSize();
-  m_list.AutoSizeColumns(GVS_BOTH);
+ 	//m_list.AutoSize(GVS_HEADER);
+  //m_list.AutoSizeColumns(GVS_HEADER);
   m_list.ExpandLastColumn();
 }
 
