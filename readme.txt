@@ -22,6 +22,10 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes version 3.0.1
+--------------------------
+- Fixed a bug in the login dialog when defining a new connection.
+
 Releasenotes version 3.0.0
 --------------------------
 - Completely rewritten interface in the latest modern MFC style.
