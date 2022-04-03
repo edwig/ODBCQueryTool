@@ -2,7 +2,7 @@
 //
 // File: SQLVariant.cpp
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -48,8 +48,8 @@ namespace SQLComponents
 // Translation list of SQL datatype constants and names
 typedef struct _types
 {
-  char* name;
-  int   type;
+  const char* name;
+  int         type;
 }
 DataTypes;
 
@@ -157,8 +157,8 @@ SQLVariant::SQLVariant(const char* p_data)
   SetData(SQL_C_CHAR,p_data);
 }
 
-// XTOR SQL_C_CHAR FROM MFC CString
-SQLVariant::SQLVariant(CString& p_data)
+// XTOR SQL_C_CHAR FROM MFC XString
+SQLVariant::SQLVariant(XString& p_data)
 {
   Init();
   SetData(SQL_C_CHAR,(const char*)p_data);
@@ -571,6 +571,21 @@ SQLVariant::IsNumericType()
 }
 
 bool
+SQLVariant::IsDecimalType()
+{
+  if(m_datatype == SQL_C_NUMERIC)
+  {
+    return true;
+  }
+  if(m_sqlDatatype == SQL_NUMERIC || m_sqlDatatype == SQL_DECIMAL)
+  {
+    return true;
+  }
+  return false;
+}
+
+
+bool
 SQLVariant::IsIntervalType()
 {
   switch(m_datatype)
@@ -727,7 +742,7 @@ SQLVariant::FindDatatype(char* p_type)
   return 0;
 }
 
-char* 
+const char* 
 SQLVariant::FindDatatype(int p_type)
 {
   DataTypes* types = allTypes;
@@ -757,7 +772,7 @@ SQLVariant::FindParamtype(char* p_type)
   return 0;
 }
 
-char*
+const char*
 SQLVariant::FindParamtype(int p_type)
 {
   DataTypes* param = allParams;
@@ -789,7 +804,7 @@ SQLVariant::FindSQLDatatype(char* p_type)
   return 0;
 }
 
-char* 
+const char* 
 SQLVariant::FindSQLDatatype(int p_type)
 {
   DataTypes* types = allOther;
@@ -860,7 +875,7 @@ SQLVariant::SetFromBinaryStreamData(int   p_type
 //////////////////////////////////////////////////////////////////////////
 
 void
-SQLVariant::GetAsString(CString& result)
+SQLVariant::GetAsString(XString& result)
 {
   if(m_indicator == SQL_NULL_DATA)
   {
@@ -942,7 +957,7 @@ SQLVariant::GetAsString(CString& result)
                                           if(m_data.m_dataTIMESTAMP.fraction)
                                           {
                                             // Fractions are in NANO-Second resolution
-                                            CString frac;
+                                            XString frac;
                                             frac.Format("%0.6f",(double)m_data.m_dataTIMESTAMP.fraction / 1000000000.0);
                                             result += frac.Mid(1);
                                           }
@@ -1139,7 +1154,7 @@ SQLVariant::GetAsChar()
   }
   // Should be: ThrowErrorDatatype(SQL_C_CHAR);
   // Sometimes we come her unexpectedly in various programs
-  CString waarde;
+  XString waarde;
   GetAsString(waarde);
   strncpy_s(g_waarde,waarde.GetString(),2 * sizeof(SQL_NUMERIC_STRUCT));
   return g_waarde;
@@ -1996,10 +2011,10 @@ SQLVariant::GetAsTimestamp()
 
 // European timestamp has the day-month-year order
 // instead of the standard 'year-month-day' order of a timestamp
-CString
+XString
 SQLVariant::GetAsEuropeanTimestamp()
 {
-  CString result;
+  XString result;
   if(m_datatype == SQL_C_TIMESTAMP ||
      m_datatype == SQL_C_TYPE_TIMESTAMP)
   {
@@ -2013,7 +2028,7 @@ SQLVariant::GetAsEuropeanTimestamp()
     if(m_data.m_dataTIMESTAMP.fraction)
     {
       // Nano-second resulution
-      CString frac;
+      XString frac;
       frac.Format("%0.6f",(double)m_data.m_dataTIMESTAMP.fraction / 1000000000.0);
       result += frac.Mid(1);
     }
@@ -2202,10 +2217,10 @@ SQLVariant::GetAsBCD()
 
 // Get the data as an string for a SQL expression or condition
 // So quotes and ODBC escapes matter
-CString
+XString
 SQLVariant::GetAsSQLString()
 {
-  CString value;
+  XString value;
   GetAsString(value);
 
   switch(m_datatype)
@@ -2830,16 +2845,16 @@ SQLVariant::StringToBinary(const char* p_data)
 
 //////////////////////////////////////////////////////////////////////////
 //
-// GENERAL ERRORS - THROWING A CString
+// GENERAL ERRORS - THROWING A XString
 //
 //////////////////////////////////////////////////////////////////////////
 
 void*
 SQLVariant::ThrowErrorDatatype(int p_getas)
 {
-  CString error;
-  char* type  = SQLVariant::FindDatatype(m_datatype);
-  char* getas = SQLVariant::FindDatatype(p_getas);
+  XString error;
+  const char* type  = SQLVariant::FindDatatype(m_datatype);
+  const char* getas = SQLVariant::FindDatatype(p_getas);
   error.Format("Cannot get a %s as a %s datatype.",type,getas);
   throw StdException(error);
 }

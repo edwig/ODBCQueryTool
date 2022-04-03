@@ -87,28 +87,28 @@ private:
 
 typedef unsigned long                 ulong;
 typedef std::map<ulong,BasicXmlCell*> XmlCells;
-typedef std::vector<CString>          Names;
+typedef std::vector<XString>          Names;
 
 class BasicXmlWorksheet
 {
 public:
-  BasicXmlWorksheet(BasicXmlExcel* p_workbook,CString p_sheetname);
+  BasicXmlWorksheet(BasicXmlExcel* p_workbook,XString p_sheetname);
  ~BasicXmlWorksheet();
 
   // OPERATIONS
   void          Load(XMLMessage& p_msg,XMLElement* p_root);
 
   // GETTERS
-  CString       GetSheetName();
+  XString       GetSheetName();
   int           GetMaxRows();
   int           GetMaxCols();
   BasicXmlCell* GetCell     (int p_row,int p_col);
-  CString       GetCellValue(int p_row,int p_col);
+  XString       GetCellValue(int p_row,int p_col);
 private:
-  int           CalculateColumnNumber(CString p_column,CString p_row);
+  int           CalculateColumnNumber(XString p_column,XString p_row);
 
   BasicXmlExcel*  m_workbook;
-  CString         m_sheetname;
+  XString         m_sheetname;
   int             m_maxRow;
   int             m_maxCol;
   // Storage of the sheet
@@ -120,7 +120,7 @@ typedef std::vector<BasicXmlWorksheet*> WorkSheets;
 class BasicXmlExcel
 {
 public:
-  BasicXmlExcel(CString p_filename);
+  BasicXmlExcel(XString p_filename);
  ~BasicXmlExcel();
 
   // OPERATIONS
@@ -128,15 +128,15 @@ public:
 
   // SETTERS
   void SetError(ZRESULT p_result);
-  void SetError(CString p_error);
+  void SetError(XString p_error);
 
   // GETTERS
   bool                GetSheetNames(Names& p_names);
   BasicXmlWorksheet*  GetWorksheet(int p_index);
-  BasicXmlWorksheet*  GetWorksheet(CString p_name);
-  CString             GetSharedString(int p_string);
-  CString             GetStyleCode(int id);
-  CString             GetError();
+  BasicXmlWorksheet*  GetWorksheet(XString p_name);
+  XString             GetSharedString(int p_string);
+  XString             GetStyleCode(int id);
+  XString             GetError();
   
 private:
   // Read in the worksheetnames
@@ -145,16 +145,16 @@ private:
   bool       LoadStyles();
   bool       LoadWorksheets();
 
-  CString    m_filename;      // Filename
+  XString    m_filename;      // Filename
   HZIP       m_zip;           // ZIP handle for unzipping
   Names      m_sheetnames;
   Names      m_sharedStrings;
-  std::map <int,CString> m_styles;
+  std::map <int,XString> m_styles;
   WorkSheets m_worksheets;
   // status
   bool       m_namesRead;
   bool       m_sheetRead;
-  CString    m_error;
+  XString    m_error;
 };
 
 // End of namespace

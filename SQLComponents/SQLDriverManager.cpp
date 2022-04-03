@@ -2,7 +2,7 @@
 //
 // File: SQLDriverManager.cpp
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -53,7 +53,7 @@ SQLDriverManager::~SQLDriverManager()
   CloseEnvironmentHandle();
 }
 
-CString   
+XString   
 SQLDriverManager::GetDriverManagerPath()
 {
   if(m_driverManagerPath.IsEmpty())
@@ -140,8 +140,8 @@ SQLDriverManager::GetDataSources(DataSources& p_list,int p_type /*= SQL_FETCH_FI
 // Get the name of a special ODBC driver
 // e.g. the Excel-ODBC driver and searches for a sub-capability
 // e.g. the first ".xls" or ".xlsx" capable driver
-CString
-SQLDriverManager::GetSpecialDriver(CString p_base,CString p_extension)
+XString
+SQLDriverManager::GetSpecialDriver(XString p_base,XString p_extension)
 {
   SQLCHAR     driverDescription[MAX_DRIVER_DESCRIPTION + 1];
   SQLSMALLINT dLength = 0;
@@ -167,7 +167,7 @@ SQLDriverManager::GetSpecialDriver(CString p_base,CString p_extension)
     // See if it's e.g. an Excel driver and if it supports
     // the right extension (e.g. "xls" or "xlsx")
     // Most of the time there are multiple Excel drivers on the system
-    CString description(driverDescription);
+    XString description(driverDescription);
 
     if(description.Find(p_base)      >= 0 || 
        description.Find(p_extension) >= 0  )
@@ -181,7 +181,7 @@ SQLDriverManager::GetSpecialDriver(CString p_base,CString p_extension)
                        ,attribDescription,MAX_DRIVER_DESCRIPTION,&aLength);
   }
   // Nothing found
-  return CString("");
+  return XString("");
 }
 
 // Show the MS-Windows ODBC management dialog window
@@ -200,7 +200,7 @@ SQLDriverManager::ODBCManagerDialog(HWND p_parent)
 
 // Return error information from the driver manager
 int
-SQLDriverManager::GetDriverManagerError(CString& p_error,CString* p_sqlstate /*= nullptr*/)
+SQLDriverManager::GetDriverManagerError(XString& p_error,XString* p_sqlstate /*= nullptr*/)
 {
   if(m_error == 0)
   {
@@ -299,7 +299,7 @@ SQLDriverManager::GetEnvironmentError()
   SQLSMALLINT recNummer = 0;
 
   // Get all error records
-  CString errors;
+  XString errors;
   while (m_environment)
   {
     // Getting the diagnostic info record
@@ -336,7 +336,7 @@ SQLDriverManager::GetEnvironmentError()
     // Error at getting errors
     if(!(res == SQL_SUCCESS || res == SQL_SUCCESS_WITH_INFO))
     {
-      CString err;
+      XString err;
       err.Format("Error %d found while reading the SQL error status.", res);
       errors += err;
       break;
@@ -347,10 +347,10 @@ SQLDriverManager::GetEnvironmentError()
       szErrorMsg[cbErrorMsg] = 0;
     }
     // Take SQLState and native error into account
-    CString error;
+    XString error;
     error.Format("[%s][%d]", szSqlState, fNativeError);
     // Add state and error message
-    errors += error + CString(szErrorMsg);
+    errors += error + XString(szErrorMsg);
   }
   // ready
   m_errorString = errors;

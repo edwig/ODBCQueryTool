@@ -2,7 +2,7 @@
 //
 // File: SQLStatement.cpp
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -61,7 +61,7 @@ SQLStatement::~SQLStatement()
 bool
 SQLStatement::CheckRecords(int p_records)
 {
-  CString fout;
+  XString fout;
   if(m_minNumber > 0 && p_records < m_minNumber)
   {
     fout.Format("SQL %d has only %d record(s) (too few) minimum = %d",m_number,p_records,m_minNumber);
@@ -76,7 +76,7 @@ SQLStatement::CheckRecords(int p_records)
 }
 
 void
-SQLStatement::AddToStatement(CString& p_statement)
+SQLStatement::AddToStatement(XString& p_statement)
 {
   m_statement += p_statement;
 }

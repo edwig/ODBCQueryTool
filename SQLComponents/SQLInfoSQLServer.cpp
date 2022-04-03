@@ -2,7 +2,7 @@
 //
 // File: SQLInfoSQLServer.cpp
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -63,7 +63,7 @@ SQLInfoSQLServer::GetRDBMSDatabaseType() const
 }
 
 // The name of the database vendor
-CString
+XString
 SQLInfoSQLServer::GetRDBMSVendorName() const
 {
   // The name of the database vendor
@@ -71,10 +71,10 @@ SQLInfoSQLServer::GetRDBMSVendorName() const
 }
 
 // Get the physical database name
-CString
+XString
 SQLInfoSQLServer::GetRDBMSPhysicalDatabaseName() const
 {
-  CString query = "SELECT name\n"
+  XString query = "SELECT name\n"
                   "  FROM master.dbo.sysdatabases\n"
                   " WHERE dbid = db_id()";
   SQLQuery qry(m_database);
@@ -83,7 +83,7 @@ SQLInfoSQLServer::GetRDBMSPhysicalDatabaseName() const
   {
     return qry.GetColumn(1)->GetAsChar();
   }
-  return CString("");
+  return XString("");
 }
 
 // System catalog is stored in uppercase in the database?
@@ -177,77 +177,77 @@ SQLInfoSQLServer::GetRDBMSNumericPrecisionScale(SQLULEN& /*p_precision*/, SQLSMA
 // KEYWORDS
 
 // Keyword for the current date and time
-CString
+XString
 SQLInfoSQLServer::GetKEYWORDCurrentTimestamp() const
 {
   return "GETDATE()";
 }
 
 // String for the current date
-CString
+XString
 SQLInfoSQLServer::GetKEYWORDCurrentDate() const
 {
   return "GETDATE()";
 }
 
 // Get the concatenation operator
-CString
+XString
 SQLInfoSQLServer::GetKEYWORDConcatanationOperator() const
 {
   return "+";
 }
 
 // Get quote character for strings
-CString
+XString
 SQLInfoSQLServer::GetKEYWORDQuoteCharacter() const
 {
   return "\'";
 }
 
 // Get quote character around reserved words as an identifier
-CString
+XString
 SQLInfoSQLServer::GetKEYWORDReservedWordQuote() const
 {
   return "\"";
 }
 
 // Get default NULL for parameter list input
-CString
+XString
 SQLInfoSQLServer::GetKEYWORDParameterDefaultNULL() const
 {
   return "= NULL";
 }
 
 // Parameter is for INPUT and OUTPUT in parameter list
-CString
+XString
 SQLInfoSQLServer::GetKEYWORDParameterINOUT() const
 {
   return "OUTPUT";
 }
 
 // Parameter is for OUTPUT only in parameter list
-CString
+XString
 SQLInfoSQLServer::GetKEYWORDParameterOUT() const
 {
   return "OUTPUT";
 }
 
 // Get datatype of the IDENTITY primary key in a Network database
-CString
+XString
 SQLInfoSQLServer::GetKEYWORDNetworkPrimaryKeyType() const
 {
   return "INTEGER IDENTITY(1,1)";
 }
 
 // Get datatype for timestamp (year to second)
-CString
+XString
 SQLInfoSQLServer::GetKEYWORDTypeTimestamp() const
 {
   return "DATETIME";
 }
 
 // Prefix for a parameter in a stored procedure
-CString
+XString
 SQLInfoSQLServer::GetKEYWORDParameterPrefix() const
 {
   return "@";
@@ -255,38 +255,38 @@ SQLInfoSQLServer::GetKEYWORDParameterPrefix() const
 
 // Get select part to add new record identity to a table
 // Can be special column like 'OID' or a sequence select
-CString
-SQLInfoSQLServer::GetKEYWORDIdentityString(CString& p_tablename,CString /*p_postfix*/ /*= "_seq"*/) const
+XString
+SQLInfoSQLServer::GetKEYWORDIdentityString(XString& p_tablename,XString /*p_postfix*/ /*= "_seq"*/) const
 {
   return "IDENT_CURRENT('" + p_tablename + "') + " + "IDENT_INCR('" + p_tablename + "')";
 }
 
 // Gets the UPPER function
-CString
-SQLInfoSQLServer::GetKEYWORDUpper(CString& p_expression) const
+XString
+SQLInfoSQLServer::GetKEYWORDUpper(XString& p_expression) const
 {
   return "UPPER(" + p_expression + ")";
 }
 
 // Gets the construction for 1 minute ago
-CString
+XString
 SQLInfoSQLServer::GetKEYWORDInterval1MinuteAgo() const
 {
   return "dateadd(minute,-1,current_timestamp)";
 }
 
 // Gets the Not-NULL-Value statement of the database
-CString
-SQLInfoSQLServer::GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) const
+XString
+SQLInfoSQLServer::GetKEYWORDStatementNVL(XString& p_test,XString& p_isnull) const
 {
-  return CString("NVL(") + p_test + "," + p_isnull + ")";
+  return XString("NVL(") + p_test + "," + p_isnull + ")";
 }
 
 // Gets the RDBMS definition of the datatype
-CString
+XString
 SQLInfoSQLServer::GetKEYWORDDataType(MetaColumn* p_column)
 {
-  CString type;
+  XString type;
   switch(p_column->m_datatype)
   {
     case SQL_CHAR:                      // fall through
@@ -361,82 +361,82 @@ SQLInfoSQLServer::GetKEYWORDDataType(MetaColumn* p_column)
 }
 
 // Gets the USER (current-user) keyword function
-CString
+XString
 SQLInfoSQLServer::GetKEYWORDCurrentUser() const
 {
   return "CURRENT_USER";
 }
 
 // Connects to a default schema in the database/instance
-CString
-SQLInfoSQLServer::GetSQLDefaultSchema(CString p_schema) const
+XString
+SQLInfoSQLServer::GetSQLDefaultSchema(XString p_schema) const
 {
   return "EXECUTE AS " + p_schema;
 }
 
 // Gets the construction for inline generating a key within an INSERT statement
-CString
-SQLInfoSQLServer::GetSQLNewSerial(CString /*p_table*/, CString /*p_sequence*/) const
+XString
+SQLInfoSQLServer::GetSQLNewSerial(XString /*p_table*/, XString /*p_sequence*/) const
 {
   // Insert a zero in an IDENTITY column
   return "0";
 }
 
 // Gets the construction / select for generating a new serial identity
-CString
-SQLInfoSQLServer::GetSQLGenerateSerial(CString p_table) const
+XString
+SQLInfoSQLServer::GetSQLGenerateSerial(XString p_table) const
 {
   // Is generated by the IDENTITY system
   return "";
 }
 
 // Gets the construction / select for the resulting effective generated serial
-CString
-SQLInfoSQLServer::GetSQLEffectiveSerial(CString p_identity) const
+XString
+SQLInfoSQLServer::GetSQLEffectiveSerial(XString p_identity) const
 {
   return "SELECT @@IDENTITY";
 }
 
 // Gets the sub transaction commands
-CString
-SQLInfoSQLServer::GetSQLStartSubTransaction(CString p_savepointName) const
+XString
+SQLInfoSQLServer::GetSQLStartSubTransaction(XString p_savepointName) const
 {
-  return CString("BEGIN TRANSACTION ") + p_savepointName;
+  return XString("BEGIN TRANSACTION ") + p_savepointName;
 }
 
-CString
-SQLInfoSQLServer::GetSQLCommitSubTransaction(CString p_savepointName) const
+XString
+SQLInfoSQLServer::GetSQLCommitSubTransaction(XString p_savepointName) const
 {
-  return CString("ROLLBACK TRANSACTION ") + p_savepointName;
+  return XString("ROLLBACK TRANSACTION ") + p_savepointName;
 }
 
-CString
-SQLInfoSQLServer::GetSQLRollbackSubTransaction(CString p_savepointName) const
+XString
+SQLInfoSQLServer::GetSQLRollbackSubTransaction(XString p_savepointName) const
 {
-  return CString("ROLLBACK TRANSACTION ") + p_savepointName;
+  return XString("ROLLBACK TRANSACTION ") + p_savepointName;
 }
 
 // FROM-Part for a query to select only 1 (one) record / or empty!
-CString
+XString
 SQLInfoSQLServer::GetSQLFromDualClause() const
 {
   return "";
 }
 
 // Get SQL to lock  a table 
-CString
-SQLInfoSQLServer::GetSQLLockTable(CString p_schema, CString p_tablename, bool p_exclusive) const
+XString
+SQLInfoSQLServer::GetSQLLockTable(XString p_schema, XString p_tablename, bool p_exclusive) const
 {
-  CString query = "SELECT * FROM " + p_schema + "." + p_tablename + " WITH ";
+  XString query = "SELECT * FROM " + p_schema + "." + p_tablename + " WITH ";
   query += p_exclusive ? "(TABLOCKX)" : "(TABLOCK)";
   return query;
 }
 
 // Get query to optimize the table statistics
-CString
-SQLInfoSQLServer::GetSQLOptimizeTable(CString p_schema, CString p_tablename) const
+XString
+SQLInfoSQLServer::GetSQLOptimizeTable(XString p_schema, XString p_tablename) const
 {
-  CString query("UPDATE STATISTICS ");
+  XString query("UPDATE STATISTICS ");
   if (!p_schema.IsEmpty())
   {
     query += p_schema;
@@ -448,8 +448,8 @@ SQLInfoSQLServer::GetSQLOptimizeTable(CString p_schema, CString p_tablename) con
 }
 
 // Transform query to select top <n> rows
-CString
-SQLInfoSQLServer::GetSQLTopNRows(CString p_sql,int p_top,int p_skip /*= 0*/) const
+XString
+SQLInfoSQLServer::GetSQLTopNRows(XString p_sql,int p_top,int p_skip /*= 0*/) const
 {
   if(p_top > 0 && p_sql.Find("SELECT ") == 0)
   {
@@ -459,7 +459,7 @@ SQLInfoSQLServer::GetSQLTopNRows(CString p_sql,int p_top,int p_skip /*= 0*/) con
     }
     else
     {
-      CString selectFirst;
+      XString selectFirst;
       selectFirst.Format("SELECT TOP %d ",p_top);
       p_sql.Replace("SELECT ",selectFirst);
     }
@@ -474,54 +474,54 @@ SQLInfoSQLServer::GetSQLTopNRows(CString p_sql,int p_top,int p_skip /*= 0*/) con
 //////////////////////////////////////////////////////////////////////////
 
 // Makes a SQL string from a given string, with all the right quotes
-CString
-SQLInfoSQLServer::GetSQLString(const CString& p_string) const
+XString
+SQLInfoSQLServer::GetSQLString(const XString& p_string) const
 {
-  CString s = p_string;
+  XString s = p_string;
   s.Replace("'","''");
-  CString kwoot = GetKEYWORDQuoteCharacter();
+  XString kwoot = GetKEYWORDQuoteCharacter();
   return  kwoot + s + kwoot;
 }
 
 // Get date string in engine format
-CString
+XString
 SQLInfoSQLServer::GetSQLDateString(int p_year,int p_month,int p_day) const
 {
-  CString retval;
+  XString retval;
   retval.Format("{d '%04d-%02d-%02d' }",p_year,p_month,p_day);
   return retval;
 }
 
 // Get time string in database engine format
-CString
+XString
 SQLInfoSQLServer::GetSQLTimeString(int p_hour,int p_minute,int p_second) const
 {
-  CString retval;
+  XString retval;
   retval.Format("{t '%02d:%02d:%02d' }",p_hour,p_minute,p_second);
   return retval;
 }
 
 // Get date-time string in database engine format
-CString
+XString
 SQLInfoSQLServer::GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
 {
-  CString retval;
+  XString retval;
   retval.Format("{ts '%04d-%02d-%02d %02d:%02d:%02d' }",p_year,p_month,p_day,p_hour,p_minute,p_second);
   return retval;
 }
 
 // Get date-time bound parameter string in database format
-CString
+XString
 SQLInfoSQLServer::GetSQLDateTimeBoundString() const
 {
   return "{ts ?}";
 }
 
 // Stripped data for the parameter binding
-CString
+XString
 SQLInfoSQLServer::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
 {
-  CString retval;
+  XString retval;
   retval.Format("%04d-%02d-%02d %02d:%02d:%02d",p_year,p_month,p_day,p_hour,p_minute,p_second);
   return retval;
 }
@@ -552,7 +552,7 @@ SQLInfoSQLServer::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,
 
 // Meta info about meta types
 // Standard ODBC functions are good enough
-CString
+XString
 SQLInfoSQLServer::GetCATALOGMetaTypes(int p_type) const
 {
   UNREFERENCED_PARAMETER(p_type);
@@ -560,12 +560,12 @@ SQLInfoSQLServer::GetCATALOGMetaTypes(int p_type) const
 }
 
 // Get SQL to check if a table already exists in the database
-CString
-SQLInfoSQLServer::GetCATALOGTableExists(CString& p_schema,CString& p_tablename) const
+XString
+SQLInfoSQLServer::GetCATALOGTableExists(XString& p_schema,XString& p_tablename) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
-  CString query = "SELECT count(*)\n"
+  XString query = "SELECT count(*)\n"
                   "  FROM dbo.sysobjects tab\n"
                   "      ,dbo.sysschemas sch\n"
                   " WHERE sch.name = ?\n"
@@ -574,13 +574,13 @@ SQLInfoSQLServer::GetCATALOGTableExists(CString& p_schema,CString& p_tablename) 
   return query;
 }
 
-CString
-SQLInfoSQLServer::GetCATALOGTablesList(CString& p_schema,CString& p_pattern) const
+XString
+SQLInfoSQLServer::GetCATALOGTablesList(XString& p_schema,XString& p_pattern) const
 {
   p_schema.MakeLower();
   p_pattern.MakeLower();
 
-  CString query = "SELECT db_name()  AS table_catalog\n"
+  XString query = "SELECT db_name()  AS table_catalog\n"
                   "      ,usr.name   AS schema_name\n"
                   "      ,obj.name   AS table_name\n"
                   "      ,'TABLE'    AS object_type\n"
@@ -606,25 +606,25 @@ SQLInfoSQLServer::GetCATALOGTablesList(CString& p_schema,CString& p_pattern) con
   return query;
 }
 
-CString
-SQLInfoSQLServer::GetCATALOGTableAttributes(CString& /*p_schema*/,CString& /*p_tablename*/) const
+XString
+SQLInfoSQLServer::GetCATALOGTableAttributes(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
   return "";
 }
 
-CString
-SQLInfoSQLServer::GetCATALOGTableSynonyms(CString& /*p_schema*/,CString& /*p_tablename*/) const
+XString
+SQLInfoSQLServer::GetCATALOGTableSynonyms(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
   return "";
 }
 
-CString
-SQLInfoSQLServer::GetCATALOGTableCatalog(CString& p_schema,CString& p_tablename) const
+XString
+SQLInfoSQLServer::GetCATALOGTableCatalog(XString& p_schema,XString& p_tablename) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
 
-  CString query = "SELECT db_name()      AS table_catalog\n"
+  XString query = "SELECT db_name()      AS table_catalog\n"
                   "      ,usr.name       AS schema_name\n"
                   "      ,obj.name       AS table_name\n"
                   "      ,'SYSTEM TABLE' AS object_type\n"
@@ -650,10 +650,10 @@ SQLInfoSQLServer::GetCATALOGTableCatalog(CString& p_schema,CString& p_tablename)
   return query;
 }
 
-CString
+XString
 SQLInfoSQLServer::GetCATALOGTableCreate(MetaTable& p_table,MetaColumn& /*p_column*/) const
 {
-  CString sql = "CREATE ";
+  XString sql = "CREATE ";
   if (p_table.m_temporary)
   {
     sql += "TEMPORARY ";
@@ -668,24 +668,24 @@ SQLInfoSQLServer::GetCATALOGTableCreate(MetaTable& p_table,MetaColumn& /*p_colum
   return sql;
 }
 
-CString
+XString
 SQLInfoSQLServer::GetCATALOGTableCreatePostfix(MetaTable& /*p_table*/,MetaColumn& /*p_column*/) const
 {
   return "";
 }
 
-CString
-SQLInfoSQLServer::GetCATALOGTableRename(CString p_schema,CString p_tablename,CString p_newname) const
+XString
+SQLInfoSQLServer::GetCATALOGTableRename(XString p_schema,XString p_tablename,XString p_newname) const
 {
   // Beware: No 'TABLE' in the statement
-  CString sql("RENAME " + p_schema + "." + p_tablename + " TO " + p_newname);
+  XString sql("RENAME " + p_schema + "." + p_tablename + " TO " + p_newname);
   return sql;
 }
 
-CString
-SQLInfoSQLServer::GetCATALOGTableDrop(CString p_schema,CString p_tablename,bool p_ifExist /*= false*/,bool /*p_restrict = false*/,bool /*p_cascade = false*/) const
+XString
+SQLInfoSQLServer::GetCATALOGTableDrop(XString p_schema,XString p_tablename,bool p_ifExist /*= false*/,bool /*p_restrict = false*/,bool /*p_cascade = false*/) const
 {
-  CString sql("DROP TABLE "); 
+  XString sql("DROP TABLE "); 
   if (p_ifExist)
   {
     sql += "IF EXISTS ";
@@ -701,22 +701,22 @@ SQLInfoSQLServer::GetCATALOGTableDrop(CString p_schema,CString p_tablename,bool 
 //////////////////////////////////////////////////////////////////////////
 // ALL TEMPORARY TABLE FUNCTIONS
 
-CString 
-SQLInfoSQLServer::GetCATALOGTemptableCreate(CString p_schema,CString p_tablename,CString p_select) const
+XString 
+SQLInfoSQLServer::GetCATALOGTemptableCreate(XString p_schema,XString p_tablename,XString p_select) const
 {
   return "CREATE TABLE #" + p_schema + "." + p_tablename + "\nAS " + p_select;
 }
 
-CString 
-SQLInfoSQLServer::GetCATALOGTemptableIntoTemp(CString p_schema,CString p_tablename,CString p_select) const
+XString 
+SQLInfoSQLServer::GetCATALOGTemptableIntoTemp(XString p_schema,XString p_tablename,XString p_select) const
 {
   return "INSERT INTO #" + p_schema + "." + p_tablename + "\n" + p_select;
 }
 
-CString 
-SQLInfoSQLServer::GetCATALOGTemptableDrop(CString p_schema,CString p_tablename) const
+XString 
+SQLInfoSQLServer::GetCATALOGTemptableDrop(XString p_schema,XString p_tablename) const
 {
-  CString tablename = p_schema + "." + p_tablename;
+  XString tablename = p_schema + "." + p_tablename;
   return "DELETE FROM #"    + tablename + ";\n"
          "<@>\n"
          "TRUNCATE TABLE #" + tablename + ";\n"
@@ -727,13 +727,13 @@ SQLInfoSQLServer::GetCATALOGTemptableDrop(CString p_schema,CString p_tablename) 
 //////////////////////////////////////////////////////////////////////////
 // ALL COLUMN FUNCTIONS
 
-CString 
-SQLInfoSQLServer::GetCATALOGColumnExists(CString p_schema,CString p_tablename,CString p_columnname) const
+XString 
+SQLInfoSQLServer::GetCATALOGColumnExists(XString p_schema,XString p_tablename,XString p_columnname) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
   p_columnname.MakeLower();
-  CString query = "SELECT count(*)\n"
+  XString query = "SELECT count(*)\n"
                  "  FROM sys.sysobjects tab\n"
                  "      ,sys.schemas    sch\n"
                  "     , dbo.syscolumns att\n"
@@ -745,24 +745,24 @@ SQLInfoSQLServer::GetCATALOGColumnExists(CString p_schema,CString p_tablename,CS
   return query;
 }
 
-CString 
-SQLInfoSQLServer::GetCATALOGColumnList(CString& /*p_schema*/,CString& /*p_tablename*/) const
+XString 
+SQLInfoSQLServer::GetCATALOGColumnList(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
   // Standard ODBC driver suffices
   return "";
 }
 
-CString 
-SQLInfoSQLServer::GetCATALOGColumnAttributes(CString& /*p_schema*/,CString& /*p_tablename*/,CString& /*p_columnname*/) const
+XString 
+SQLInfoSQLServer::GetCATALOGColumnAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_columnname*/) const
 {
   // Standard ODBC driver suffices
   return "";
 }
 
-CString 
+XString 
 SQLInfoSQLServer::GetCATALOGColumnCreate(MetaColumn& p_column) const
 {
-  CString sql = "ALTER TABLE  " + p_column.m_schema + "." + p_column.m_table  + "\n"
+  XString sql = "ALTER TABLE  " + p_column.m_schema + "." + p_column.m_table  + "\n"
                 "  ADD COLUMN " + p_column.m_column + " " + p_column.m_typename;
   p_column.GetPrecisionAndScale(sql);
   p_column.GetNullable(sql);
@@ -773,10 +773,10 @@ SQLInfoSQLServer::GetCATALOGColumnCreate(MetaColumn& p_column) const
   return sql;
 }
 
-CString 
+XString 
 SQLInfoSQLServer::GetCATALOGColumnAlter(MetaColumn& p_column) const
 {
-  CString sql = "ALTER TABLE  " + p_column.m_schema + "." + p_column.m_table  + "\n"
+  XString sql = "ALTER TABLE  " + p_column.m_schema + "." + p_column.m_table  + "\n"
                 "ALTER COLUMN " + p_column.m_column + " " + p_column.m_typename;
   p_column.GetPrecisionAndScale(sql);
   p_column.GetNullable(sql);
@@ -784,10 +784,10 @@ SQLInfoSQLServer::GetCATALOGColumnAlter(MetaColumn& p_column) const
   return sql;
 }
 
-CString 
-SQLInfoSQLServer::GetCATALOGColumnRename(CString p_schema,CString p_tablename,CString p_columnname,CString p_newname,CString p_datatype) const
+XString 
+SQLInfoSQLServer::GetCATALOGColumnRename(XString p_schema,XString p_tablename,XString p_columnname,XString p_newname,XString p_datatype) const
 {
-  CString sqlCode;
+  XString sqlCode;
   sqlCode  = "ALTER TABLE " + p_schema + "." + p_tablename + "\n"
              "        ADD " + p_newname + " " + p_datatype + ";\n";
   sqlCode += "UPDATE " + p_schema + "." + p_tablename + "\n"
@@ -797,10 +797,10 @@ SQLInfoSQLServer::GetCATALOGColumnRename(CString p_schema,CString p_tablename,CS
   return sqlCode;
 }
 
-CString 
-SQLInfoSQLServer::GetCATALOGColumnDrop(CString p_schema,CString p_tablename,CString p_columnname) const
+XString 
+SQLInfoSQLServer::GetCATALOGColumnDrop(XString p_schema,XString p_tablename,XString p_columnname) const
 {
-  CString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+  XString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
               " DROP COLUMN " + p_columnname);
   return sql;
 }
@@ -809,18 +809,18 @@ SQLInfoSQLServer::GetCATALOGColumnDrop(CString p_schema,CString p_tablename,CStr
 // ALL INDICES FUNCTIONS
 
 // All index functions
-CString
-SQLInfoSQLServer::GetCATALOGIndexExists(CString p_schema,CString p_tablename,CString p_indexname) const
+XString
+SQLInfoSQLServer::GetCATALOGIndexExists(XString p_schema,XString p_tablename,XString p_indexname) const
 {
   return "";
 }
 
-CString
-SQLInfoSQLServer::GetCATALOGIndexList(CString& p_schema,CString& p_tablename) const
+XString
+SQLInfoSQLServer::GetCATALOGIndexList(XString& p_schema,XString& p_tablename) const
 {
   p_schema.Empty(); // Do not use
   p_tablename.MakeLower();
-  CString query = "SELECT idx.name\n"
+  XString query = "SELECT idx.name\n"
                   "      ,col.name\n"
                   "      ,ixk.keyno\n"
                   "      ,indexproperty(obj.Id, idx.name, 'IsUnique')\n"
@@ -843,8 +843,8 @@ SQLInfoSQLServer::GetCATALOGIndexList(CString& p_schema,CString& p_tablename) co
   return query;
 }
 
-CString
-SQLInfoSQLServer::GetCATALOGIndexAttributes(CString& /*p_schema*/,CString& /*p_tablename*/,CString& /*p_indexname*/) const
+XString
+SQLInfoSQLServer::GetCATALOGIndexAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_indexname*/) const
 {
   return "";
 }
@@ -852,10 +852,10 @@ SQLInfoSQLServer::GetCATALOGIndexAttributes(CString& /*p_schema*/,CString& /*p_t
 // Get SQL to create an index for a table
 // CREATE [UNIQUE] INDEX indexname ON [<schema>.]tablename(column [ASC|DESC] [,...]);
 // Beware: no schema name for indexname. Automatically in the table schema
-CString
+XString
 SQLInfoSQLServer::GetCATALOGIndexCreate(MIndicesMap& p_indices) const
 {
-  CString query;
+  XString query;
   for(auto& index : p_indices)
   {
     if(index.m_position == 1)
@@ -890,15 +890,15 @@ SQLInfoSQLServer::GetCATALOGIndexCreate(MIndicesMap& p_indices) const
   return query;
 }
 
-CString
-SQLInfoSQLServer::GetCATALOGIndexDrop(CString p_schema,CString /*p_tablename*/,CString p_indexname) const
+XString
+SQLInfoSQLServer::GetCATALOGIndexDrop(XString p_schema,XString /*p_tablename*/,XString p_indexname) const
 {
-  CString sql = "DROP INDEX " + p_schema + "." + p_indexname;
+  XString sql = "DROP INDEX " + p_schema + "." + p_indexname;
   return sql;
 }
 
 // Get extra filter expression for an index column
-CString
+XString
 SQLInfoSQLServer::GetCATALOGIndexFilter(MetaIndex& /*p_index*/) const
 {
   return "";
@@ -907,13 +907,13 @@ SQLInfoSQLServer::GetCATALOGIndexFilter(MetaIndex& /*p_index*/) const
 //////////////////////////////////////////////////////////////////////////
 // ALL PRIMARY KEY FUNCTIONS
 
-CString
-SQLInfoSQLServer::GetCATALOGPrimaryExists(CString p_schema,CString p_tablename) const
+XString
+SQLInfoSQLServer::GetCATALOGPrimaryExists(XString p_schema,XString p_tablename) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
 
-  CString query = "SELECT COUNT(*)\n"
+  XString query = "SELECT COUNT(*)\n"
                   "  FROM dbo.sysobjects tab\n"
                   "      ,dbo.sysobjects con\n"
                   "      ,dbo.sysusers   use\n"
@@ -926,17 +926,17 @@ SQLInfoSQLServer::GetCATALOGPrimaryExists(CString p_schema,CString p_tablename) 
   return query;
 }
 
-CString
-SQLInfoSQLServer::GetCATALOGPrimaryAttributes(CString& /*p_schema*/,CString& /*p_tablename*/) const
+XString
+SQLInfoSQLServer::GetCATALOGPrimaryAttributes(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
   // TO BE IMPLEMENTED
   return "";
 }
 
-CString
+XString
 SQLInfoSQLServer::GetCATALOGPrimaryCreate(MPrimaryMap& p_primaries) const
 {
-  CString query("ALTER TABLE ");
+  XString query("ALTER TABLE ");
 
   for(auto& prim : p_primaries)
   {
@@ -961,10 +961,10 @@ SQLInfoSQLServer::GetCATALOGPrimaryCreate(MPrimaryMap& p_primaries) const
   return query;
 }
 
-CString
-SQLInfoSQLServer::GetCATALOGPrimaryDrop(CString p_schema,CString p_tablename,CString p_constraintname) const
+XString
+SQLInfoSQLServer::GetCATALOGPrimaryDrop(XString p_schema,XString p_tablename,XString p_constraintname) const
 {
-  CString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+  XString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
               " DROP CONSTRAINT " + p_constraintname);
   return sql;
 }
@@ -972,14 +972,14 @@ SQLInfoSQLServer::GetCATALOGPrimaryDrop(CString p_schema,CString p_tablename,CSt
 //////////////////////////////////////////////////////////////////////////
 // ALL FOREIGN KEY FUNCTIONS
 
-CString
-SQLInfoSQLServer::GetCATALOGForeignExists(CString p_schema,CString p_tablename,CString p_constraintname) const
+XString
+SQLInfoSQLServer::GetCATALOGForeignExists(XString p_schema,XString p_tablename,XString p_constraintname) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
   p_constraintname.MakeLower();
 
-  CString sql;
+  XString sql;
   sql.Format("SELECT COUNT(*)\n"
              "  FROM sys.foreign_keys fok\n"
              "      ,sys.schemas      sch\n"
@@ -996,24 +996,24 @@ SQLInfoSQLServer::GetCATALOGForeignExists(CString p_schema,CString p_tablename,C
   return sql;
 }
 
-CString
-SQLInfoSQLServer::GetCATALOGForeignList(CString& p_schema,CString& p_tablename,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
+XString
+SQLInfoSQLServer::GetCATALOGForeignList(XString& p_schema,XString& p_tablename,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
 {
-  CString constraint;
+  XString constraint;
   return GetCATALOGForeignAttributes(p_schema,p_tablename,constraint,p_maxColumns);
 }
 
-CString
-SQLInfoSQLServer::GetCATALOGForeignAttributes(CString& p_schema
-                                             ,CString& p_tablename
-                                             ,CString& p_constraint
+XString
+SQLInfoSQLServer::GetCATALOGForeignAttributes(XString& p_schema
+                                             ,XString& p_tablename
+                                             ,XString& p_constraint
                                              ,bool     p_referenced /*=false*/
                                              ,int    /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
   p_constraint.MakeLower();
-  CString query = "SELECT db_name()         as primary_catalog_name\n"
+  XString query = "SELECT db_name()         as primary_catalog_name\n"
                   "      ,sch.name          as primary_schema_name\n"
                   "      ,pri.name          as primary_table_name\n"
                   "      ,db_name()         as foreign_catalog_name\n"
@@ -1082,15 +1082,15 @@ SQLInfoSQLServer::GetCATALOGForeignAttributes(CString& p_schema
   return query;
 }
 
-CString
+XString
 SQLInfoSQLServer::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
 {
   // Get first record
   MetaForeign& foreign = p_foreigns.front();
 
   // Construct the correct tablename
-  CString table(foreign.m_fkTableName);
-  CString primary(foreign.m_pkTableName);
+  XString table(foreign.m_fkTableName);
+  XString primary(foreign.m_pkTableName);
   if(!foreign.m_fkSchemaName.IsEmpty())
   {
     table = foreign.m_fkSchemaName + "." + table;
@@ -1101,7 +1101,7 @@ SQLInfoSQLServer::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
   }
 
   // The base foreign key command
-  CString query = "ALTER TABLE " + table + "\n"
+  XString query = "ALTER TABLE " + table + "\n"
                   "  ADD CONSTRAINT " + foreign.m_foreignConstraint + "\n"
                   "      FOREIGN KEY (";
 
@@ -1151,7 +1151,7 @@ SQLInfoSQLServer::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
   return query;
 }
 
-CString
+XString
 SQLInfoSQLServer::GetCATALOGForeignAlter(MForeignMap& /*p_original*/, MForeignMap& /*p_requested*/) const
 {
   // MS-SQL Server cannot alter a foreign-key constraint.
@@ -1164,10 +1164,10 @@ SQLInfoSQLServer::GetCATALOGForeignAlter(MForeignMap& /*p_original*/, MForeignMa
   return "";
 }
 
-CString
-SQLInfoSQLServer::GetCATALOGForeignDrop(CString p_schema,CString p_tablename,CString p_constraintname) const
+XString
+SQLInfoSQLServer::GetCATALOGForeignDrop(XString p_schema,XString p_tablename,XString p_constraintname) const
 {
-  CString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+  XString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
               " DROP CONSTRAINT " + p_constraintname);
   return sql;
 }
@@ -1175,14 +1175,14 @@ SQLInfoSQLServer::GetCATALOGForeignDrop(CString p_schema,CString p_tablename,CSt
 //////////////////////////////////////////////////////////////////////////
 // ALL TRIGGER FUNCTIONS
 
-CString
-SQLInfoSQLServer::GetCATALOGTriggerExists(CString p_schema, CString p_tablename, CString p_triggername) const
+XString
+SQLInfoSQLServer::GetCATALOGTriggerExists(XString p_schema, XString p_tablename, XString p_triggername) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
   p_triggername.MakeLower();
 
-  CString sql;
+  XString sql;
   sql.Format("SELECT COUNT(*)\n"
              "  FROM sys.triggers trg\n"
              "      ,sys.objects  tab\n"
@@ -1198,21 +1198,21 @@ SQLInfoSQLServer::GetCATALOGTriggerExists(CString p_schema, CString p_tablename,
   return sql;
 }
 
-CString
-SQLInfoSQLServer::GetCATALOGTriggerList(CString& p_schema,CString& p_tablename) const
+XString
+SQLInfoSQLServer::GetCATALOGTriggerList(XString& p_schema,XString& p_tablename) const
 {
-  CString triggername;
+  XString triggername;
   return GetCATALOGTriggerAttributes(p_schema,p_tablename,triggername);
 }
 
-CString
-SQLInfoSQLServer::GetCATALOGTriggerAttributes(CString& p_schema,CString& p_tablename,CString& p_triggername) const
+XString
+SQLInfoSQLServer::GetCATALOGTriggerAttributes(XString& p_schema,XString& p_tablename,XString& p_triggername) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
   p_triggername.MakeLower();
 
-  CString sql("SELECT ''       AS catalog_name\n"
+  XString sql("SELECT ''       AS catalog_name\n"
               "      ,sch.name AS schema_name\n"
               "      ,tab.name AS table_name\n"
               "      ,trg.name AS trigger_name\n"
@@ -1261,19 +1261,19 @@ SQLInfoSQLServer::GetCATALOGTriggerAttributes(CString& p_schema,CString& p_table
   return sql;
 }
 
-CString
+XString
 SQLInfoSQLServer::GetCATALOGTriggerCreate(MetaTrigger& p_trigger) const
 {
   // Simply return the SYS.SQL_MODULE.definition block
-  CString sql(p_trigger.m_source);
+  XString sql(p_trigger.m_source);
   sql.TrimRight(';');
   return sql;
 }
 
-CString
-SQLInfoSQLServer::GetCATALOGTriggerDrop(CString p_schema, CString /*p_tablename*/, CString p_triggername) const
+XString
+SQLInfoSQLServer::GetCATALOGTriggerDrop(XString p_schema, XString /*p_tablename*/, XString p_triggername) const
 {
-  CString sql("DROP TRIGGER ");
+  XString sql("DROP TRIGGER ");
   if(!p_schema.IsEmpty())
   {
     sql += p_schema + ".";
@@ -1285,12 +1285,12 @@ SQLInfoSQLServer::GetCATALOGTriggerDrop(CString p_schema, CString /*p_tablename*
 //////////////////////////////////////////////////////////////////////////
 // ALL SEQUENCE FUNCTIONS
 
-CString
-SQLInfoSQLServer::GetCATALOGSequenceExists(CString p_schema, CString p_sequence) const
+XString
+SQLInfoSQLServer::GetCATALOGSequenceExists(XString p_schema, XString p_sequence) const
 {
   p_schema.MakeLower();
   p_sequence.MakeLower();
-  CString sql = "SELECT COUNT(*)\n"
+  XString sql = "SELECT COUNT(*)\n"
                 "  FROM sys.sequences seq\n"
                 "      ,sys.schemas   sch\n"
                 " WHERE sch.object_id = seq.schema_id\n"
@@ -1299,8 +1299,8 @@ SQLInfoSQLServer::GetCATALOGSequenceExists(CString p_schema, CString p_sequence)
   return sql;
 }
 
-CString
-SQLInfoSQLServer::GetCATALOGSequenceList(CString& p_schema,CString& p_pattern) const
+XString
+SQLInfoSQLServer::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern) const
 {
   p_schema.MakeLower();
   p_pattern.MakeLower();
@@ -1308,7 +1308,7 @@ SQLInfoSQLServer::GetCATALOGSequenceList(CString& p_schema,CString& p_pattern) c
   {
     p_pattern = "%" + p_pattern + "%";
   }
-  CString sql = "SELECT ''       AS catalog_name\n"
+  XString sql = "SELECT ''       AS catalog_name\n"
                 "      ,sch.name AS schema_name\n"
                 "      ,seq.name AS sequence_name\n"
                 "      ,CAST(current_value AS INTEGER) AS current_value\n"
@@ -1332,12 +1332,12 @@ SQLInfoSQLServer::GetCATALOGSequenceList(CString& p_schema,CString& p_pattern) c
   return sql;
 }
 
-CString
-SQLInfoSQLServer::GetCATALOGSequenceAttributes(CString& p_schema,CString& p_sequence) const
+XString
+SQLInfoSQLServer::GetCATALOGSequenceAttributes(XString& p_schema,XString& p_sequence) const
 {
   p_schema.MakeLower();
   p_sequence.MakeLower();
-  CString sql = "SELECT ''       AS catalog_name\n"
+  XString sql = "SELECT ''       AS catalog_name\n"
                 "      ,sch.name AS schema_name\n"
                 "      ,seq.name AS sequence_name\n"
                 "      ,CAST(current_value AS INTEGER) AS current_value\n"
@@ -1360,10 +1360,10 @@ SQLInfoSQLServer::GetCATALOGSequenceAttributes(CString& p_schema,CString& p_sequ
   return sql;
 }
 
-CString
+XString
 SQLInfoSQLServer::GetCATALOGSequenceCreate(MetaSequence& p_sequence) const
 {
-  CString sql("CREATE SEQUENCE ");
+  XString sql("CREATE SEQUENCE ");
 
   if (!p_sequence.m_schemaName.IsEmpty())
   {
@@ -1384,35 +1384,35 @@ SQLInfoSQLServer::GetCATALOGSequenceCreate(MetaSequence& p_sequence) const
   return sql;
 }
 
-CString
-SQLInfoSQLServer::GetCATALOGSequenceDrop(CString p_schema, CString p_sequence) const
+XString
+SQLInfoSQLServer::GetCATALOGSequenceDrop(XString p_schema, XString p_sequence) const
 {
-  CString sql("DROP SEQUENCE " + p_schema + "." + p_sequence);
+  XString sql("DROP SEQUENCE " + p_schema + "." + p_sequence);
   return  sql;
 }
 
 //////////////////////////////////////////////////////////////////////////
 // ALL VIEW FUNCTIONS
 
-CString 
-SQLInfoSQLServer::GetCATALOGViewExists(CString& /*p_schema*/,CString& /*p_viewname*/) const
+XString 
+SQLInfoSQLServer::GetCATALOGViewExists(XString& /*p_schema*/,XString& /*p_viewname*/) const
 {
   return "";
 }
 
-CString 
-SQLInfoSQLServer::GetCATALOGViewList(CString& p_schema,CString& p_pattern) const
+XString 
+SQLInfoSQLServer::GetCATALOGViewList(XString& p_schema,XString& p_pattern) const
 {
   return GetCATALOGViewAttributes(p_schema, p_pattern);
 }
 
-CString 
-SQLInfoSQLServer::GetCATALOGViewAttributes(CString& p_schema,CString& p_viewname) const
+XString 
+SQLInfoSQLServer::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewname) const
 {
   p_schema.MakeLower();
   p_viewname.MakeLower();
 
-  CString query = "SELECT db_name()  AS table_catalog\n"
+  XString query = "SELECT db_name()  AS table_catalog\n"
                   "      ,usr.name   AS schema_name\n"
                   "      ,obj.name   AS table_name\n"
                   "      ,'VIEW'     AS object_type\n"
@@ -1438,49 +1438,49 @@ SQLInfoSQLServer::GetCATALOGViewAttributes(CString& p_schema,CString& p_viewname
   return query;
 }
 
-CString
-SQLInfoSQLServer::GetCATALOGViewText(CString& /*p_schema*/,CString& /*p_viewname*/) const
+XString
+SQLInfoSQLServer::GetCATALOGViewText(XString& /*p_schema*/,XString& /*p_viewname*/) const
 {
   // Cannot query this, Use ODBC functions
   return "";
 }
 
-CString
-SQLInfoSQLServer::GetCATALOGViewCreate(CString p_schema,CString p_viewname,CString p_contents) const
+XString
+SQLInfoSQLServer::GetCATALOGViewCreate(XString p_schema,XString p_viewname,XString p_contents) const
 {
   return "CREATE VIEW " + p_schema + "." + p_viewname + "\n" + p_contents;
 }
 
-CString 
-SQLInfoSQLServer::GetCATALOGViewRename(CString p_schema,CString p_viewname,CString p_newname)    const
+XString 
+SQLInfoSQLServer::GetCATALOGViewRename(XString p_schema,XString p_viewname,XString p_newname)    const
 {
   return "";
 }
 
-CString 
-SQLInfoSQLServer::GetCATALOGViewDrop(CString p_schema,CString p_viewname,CString& p_precursor) const
+XString 
+SQLInfoSQLServer::GetCATALOGViewDrop(XString p_schema,XString p_viewname,XString& p_precursor) const
 {
   p_precursor.Empty();
   return "DROP VIEW " + p_schema + "." + p_viewname;
 }
 
 // All Privilege functions
-CString
-SQLInfoSQLServer::GetCATALOGTablePrivileges(CString& /*p_schema*/,CString& /*p_tablename*/) const
+XString
+SQLInfoSQLServer::GetCATALOGTablePrivileges(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
   return "";
 }
 
-CString
-SQLInfoSQLServer::GetCATALOGColumnPrivileges(CString& /*p_schema*/,CString& /*p_tablename*/,CString& /*p_columnname*/) const
+XString
+SQLInfoSQLServer::GetCATALOGColumnPrivileges(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_columnname*/) const
 {
   return "";
 }
 
-CString 
-SQLInfoSQLServer::GetCatalogGrantPrivilege(CString p_schema,CString p_objectname,CString p_privilege,CString p_grantee,bool p_grantable)
+XString 
+SQLInfoSQLServer::GetCatalogGrantPrivilege(XString p_schema,XString p_objectname,XString p_privilege,XString p_grantee,bool p_grantable)
 {
-  CString sql;
+  XString sql;
   sql.Format("GRANT %s ON %s.%s TO %s",p_privilege.GetString(),p_schema.GetString(),p_objectname.GetString(),p_grantee.GetString());
   if(p_grantable)
   {
@@ -1489,10 +1489,10 @@ SQLInfoSQLServer::GetCatalogGrantPrivilege(CString p_schema,CString p_objectname
   return sql;
 }
 
-CString 
-SQLInfoSQLServer::GetCatalogRevokePrivilege(CString p_schema,CString p_objectname,CString p_privilege,CString p_grantee)
+XString 
+SQLInfoSQLServer::GetCatalogRevokePrivilege(XString p_schema,XString p_objectname,XString p_privilege,XString p_grantee)
 {
-  CString sql;
+  XString sql;
   sql.Format("REVOKE %s ON %s.%s FROM %s",p_privilege.GetString(),p_schema.GetString(),p_objectname.GetString(),p_grantee.GetString());
   return sql;
 }
@@ -1526,8 +1526,8 @@ SQLInfoSQLServer::GetCatalogRevokePrivilege(CString p_schema,CString p_objectnam
 //
 //////////////////////////////////////////////////////////////////////////
 
-CString
-SQLInfoSQLServer::GetPSMProcedureExists(CString p_schema, CString p_procedure) const
+XString
+SQLInfoSQLServer::GetPSMProcedureExists(XString p_schema, XString p_procedure) const
 {
   p_procedure.MakeUpper();
   return "SELECT count(*)\n"
@@ -1536,46 +1536,46 @@ SQLInfoSQLServer::GetPSMProcedureExists(CString p_schema, CString p_procedure) c
          "   AND object_type        = 'FUNCTION';";
 }
 
-CString
-SQLInfoSQLServer::GetPSMProcedureList(CString& /*p_schema*/) const
+XString
+SQLInfoSQLServer::GetPSMProcedureList(XString& /*p_schema*/) const
 {
   return "";
 }
 
-CString
-SQLInfoSQLServer::GetPSMProcedureAttributes(CString& /*p_schema*/,CString& /*p_procedure*/) const
+XString
+SQLInfoSQLServer::GetPSMProcedureAttributes(XString& /*p_schema*/,XString& /*p_procedure*/) const
 {
   return "";
 }
 
-CString
-SQLInfoSQLServer::GetPSMProcedureSourcecode(CString p_schema, CString p_procedure) const
+XString
+SQLInfoSQLServer::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure) const
 {
   return "";
 }
 
-CString
+XString
 SQLInfoSQLServer::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
 {
   return "";
 }
 
-CString
-SQLInfoSQLServer::GetPSMProcedureDrop(CString p_schema, CString p_procedure) const
+XString
+SQLInfoSQLServer::GetPSMProcedureDrop(XString p_schema, XString p_procedure) const
 {
   return "";
 }
 
-CString
-SQLInfoSQLServer::GetPSMProcedureErrors(CString p_schema,CString p_procedure) const
+XString
+SQLInfoSQLServer::GetPSMProcedureErrors(XString p_schema,XString p_procedure) const
 {
   // SQL-Server does not support procedure errors
   return "";
 }
 
 // And it's parameters
-CString
-SQLInfoSQLServer::GetPSMProcedureParameters(CString& /*p_schema*/,CString& /*p_procedure*/) const
+XString
+SQLInfoSQLServer::GetPSMProcedureParameters(XString& /*p_schema*/,XString& /*p_procedure*/) const
 {
   return "";
 }
@@ -1586,17 +1586,17 @@ SQLInfoSQLServer::GetPSMProcedureParameters(CString& /*p_schema*/,CString& /*p_p
 //
 //////////////////////////////////////////////////////////////////////////
 
-CString
+XString
 SQLInfoSQLServer::GetPSMDeclaration(bool    /*p_first*/
-                                   ,CString p_variable
+                                   ,XString p_variable
                                    ,int     p_datatype
                                    ,int     p_precision /*= 0 */
                                    ,int     p_scale     /*= 0 */
-                                   ,CString p_default   /*= ""*/
-                                   ,CString p_domain    /*= ""*/
-                                   ,CString p_asColumn  /*= ""*/) const
+                                   ,XString p_default   /*= ""*/
+                                   ,XString p_domain    /*= ""*/
+                                   ,XString p_asColumn  /*= ""*/) const
 {
-  CString line;
+  XString line;
   line.Format("DECLARE @%s AS ",p_variable.GetString());
 
   if(p_datatype)
@@ -1624,12 +1624,12 @@ SQLInfoSQLServer::GetPSMDeclaration(bool    /*p_first*/
   return line;
 }
 
-CString
-SQLInfoSQLServer::GetPSMAssignment(CString p_variable,CString p_statement /*=""*/) const
+XString
+SQLInfoSQLServer::GetPSMAssignment(XString p_variable,XString p_statement /*=""*/) const
 {
   if(p_statement.Find("EXECUTE") == -1)
   {
-    CString line = "SET " + p_variable + "=";
+    XString line = "SET " + p_variable + "=";
     if(!p_statement.IsEmpty())
     {
       line += p_statement;
@@ -1646,17 +1646,17 @@ SQLInfoSQLServer::GetPSMAssignment(CString p_variable,CString p_statement /*=""*
   }
 }
 
-CString
-SQLInfoSQLServer::GetPSMIF(CString p_condition) const
+XString
+SQLInfoSQLServer::GetPSMIF(XString p_condition) const
 {
-  CString line("IF (");
+  XString line("IF (");
   line += p_condition;
   line += ") THEN\n"
           "  BEGIN\n";
   return line;
 }
 
-CString
+XString
 SQLInfoSQLServer::GetPSMIFElse() const
 {
   return "  END\n"
@@ -1664,46 +1664,46 @@ SQLInfoSQLServer::GetPSMIFElse() const
          "  BEGIN\n";
 }
 
-CString
+XString
 SQLInfoSQLServer::GetPSMIFEnd() const
 {
   return "  END;\n";
 }
 
-CString
-SQLInfoSQLServer::GetPSMWhile(CString p_condition) const
+XString
+SQLInfoSQLServer::GetPSMWhile(XString p_condition) const
 {
   return "WHILE (" + p_condition + ")\n";
 }
 
-CString
+XString
 SQLInfoSQLServer::GetPSMWhileEnd() const
 {
   return "";
 }
 
-CString
+XString
 SQLInfoSQLServer::GetPSMLOOP() const
 {
   return "WHILE true\n";
 }
 
-CString
+XString
 SQLInfoSQLServer::GetPSMLOOPEnd() const
 {
   return "";
 }
 
-CString
+XString
 SQLInfoSQLServer::GetPSMBREAK() const
 {
   return "BREAK;\n";
 }
 
-CString
-SQLInfoSQLServer::GetPSMRETURN(CString p_statement /*= ""*/) const
+XString
+SQLInfoSQLServer::GetPSMRETURN(XString p_statement /*= ""*/) const
 {
-  CString line("RETURN");
+  XString line("RETURN");
   if(!p_statement.IsEmpty())
   {
     line += " " + p_statement;
@@ -1712,10 +1712,10 @@ SQLInfoSQLServer::GetPSMRETURN(CString p_statement /*= ""*/) const
   return line;
 }
 
-CString
-SQLInfoSQLServer::GetPSMExecute(CString p_procedure,MParameterMap& p_parameters) const
+XString
+SQLInfoSQLServer::GetPSMExecute(XString p_procedure,MParameterMap& p_parameters) const
 {
-  CString line;
+  XString line;
   line.Format("EXECUTE %s ",p_procedure.GetString());
   bool cont = false;
 
@@ -1740,19 +1740,19 @@ SQLInfoSQLServer::GetPSMExecute(CString p_procedure,MParameterMap& p_parameters)
 }
 
 // The CURSOR
-CString
-SQLInfoSQLServer::GetPSMCursorDeclaration(CString p_cursorname,CString p_select) const
+XString
+SQLInfoSQLServer::GetPSMCursorDeclaration(XString p_cursorname,XString p_select) const
 {
   return "CURSOR " + p_cursorname + " IS " + p_select + ";";
 }
 
-CString
-SQLInfoSQLServer::GetPSMCursorFetch(CString p_cursorname,std::vector<CString>& p_columnnames,std::vector<CString>& p_variablenames) const
+XString
+SQLInfoSQLServer::GetPSMCursorFetch(XString p_cursorname,std::vector<XString>& p_columnnames,std::vector<XString>& p_variablenames) const
 {
-  CString query = "FETCH " + p_cursorname + " INTO ";
+  XString query = "FETCH " + p_cursorname + " INTO ";
 
-  std::vector<CString>::iterator cNames;
-  std::vector<CString>::iterator vNames;
+  std::vector<XString>::iterator cNames;
+  std::vector<XString>::iterator vNames;
   bool moreThenOne = false;
 
   for(cNames  = p_columnnames.begin(), vNames  = p_variablenames.begin();
@@ -1768,22 +1768,22 @@ SQLInfoSQLServer::GetPSMCursorFetch(CString p_cursorname,std::vector<CString>& p
 //////////////////////////////////////////////////////////////////////////
 // PSM Exceptions
 
-CString
+XString
 SQLInfoSQLServer::GetPSMExceptionCatchNoData() const
 {
   // SQL SERVER has BEGIN TRY .... END TRY -> BEGIN CATCH ... END CATCH
   return "";
 }
 
-CString
-SQLInfoSQLServer::GetPSMExceptionCatch(CString p_sqlState) const
+XString
+SQLInfoSQLServer::GetPSMExceptionCatch(XString p_sqlState) const
 {
   // SQL SERVER has BEGIN TRY .... END TRY -> BEGIN CATCH ... END CATCH
   return "";
 }
 
-CString
-SQLInfoSQLServer::GetPSMExceptionRaise(CString p_sqlState) const
+XString
+SQLInfoSQLServer::GetPSMExceptionRaise(XString p_sqlState) const
 {
   return "RAISE " + p_sqlState + ";\n";
 }
@@ -1803,10 +1803,10 @@ SQLInfoSQLServer::GetPSMExceptionRaise(CString p_sqlState) const
 //
 //////////////////////////////////////////////////////////////////////////
 
-CString
+XString
 SQLInfoSQLServer::GetSESSIONMyself() const
 {
-  CString query = "SELECT rtrim(hostprocess)\n"
+  XString query = "SELECT rtrim(hostprocess)\n"
                   "      ,user\n"
                   "      ,rtrim(hostname)\n"    
                   "      ,getdata()\n"  // moment
@@ -1819,24 +1819,24 @@ SQLInfoSQLServer::GetSESSIONMyself() const
   return query;
 }
 
-CString
-SQLInfoSQLServer::GetSESSIONExists(CString p_sessionID) const
+XString
+SQLInfoSQLServer::GetSESSIONExists(XString p_sessionID) const
 {
   return "SELECT COUNT(*)\n"
          "  FROM master.dbo.sysprocesses\n"
          " WHERE rtrim(hostprocess) = " + p_sessionID;
 }
 
-CString
+XString
 SQLInfoSQLServer::GetSESSIONList() const
 {
   return GetSESSIONAttributes("");
 }
 
-CString
-SQLInfoSQLServer::GetSESSIONAttributes(CString p_sessionID) const
+XString
+SQLInfoSQLServer::GetSESSIONAttributes(XString p_sessionID) const
 {
-  CString sql = "SELECT rtrim(hostprocess)\n"
+  XString sql = "SELECT rtrim(hostprocess)\n"
                 "      ,user\n"
                 "      ,rtrim(hostname)\n"    
                 "      ,getdata()\n"  // moment
@@ -1854,14 +1854,14 @@ SQLInfoSQLServer::GetSESSIONAttributes(CString p_sessionID) const
 //////////////////////////////////////////////////////////////////////////
 // Transactions
 
-CString
+XString
 SQLInfoSQLServer::GetSESSIONConstraintsDeferred() const
 {
   // SQL-Server cannot defer constraints
   return "";
 }
 
-CString
+XString
 SQLInfoSQLServer::GetSESSIONConstraintsImmediate() const
 {
   // SQL-Server constraints are always active
@@ -1877,14 +1877,14 @@ SQLInfoSQLServer::GetSESSIONConstraintsImmediate() const
 
 // Calling a stored function or procedure if the RDBMS does not support ODBC call escapes
 SQLVariant*
-SQLInfoSQLServer::DoSQLCall(SQLQuery* /*p_query*/,CString& /*p_schema*/,CString& /*p_procedure*/)
+SQLInfoSQLServer::DoSQLCall(SQLQuery* /*p_query*/,XString& /*p_schema*/,XString& /*p_procedure*/)
 {
   return nullptr;
 }
 
 // Calling a stored function with named parameters, returning a value
 SQLVariant*
-SQLInfoSQLServer::DoSQLCallNamedParameters(SQLQuery* /*p_query*/,CString& /*p_schema*/,CString& /*p_procedure*/)
+SQLInfoSQLServer::DoSQLCallNamedParameters(SQLQuery* /*p_query*/,XString& /*p_schema*/,XString& /*p_procedure*/)
 {
   return nullptr;
 }

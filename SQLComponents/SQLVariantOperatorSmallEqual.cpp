@@ -2,7 +2,7 @@
 //
 // File: SQLVariantOperatorSmallEQ.cpp
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -49,9 +49,23 @@ namespace SQLComponents
 bool
 static SQL_OperVarSmallEQChar(SQLVariant& p_left,SQLVariant& p_right)
 {
-  CString leftString,rightString;
+  XString leftString,rightString;
   p_left .GetAsString(leftString);
   p_right.GetAsString(rightString);
+
+  p_left .GetAsString(leftString);
+  p_right.GetAsString(rightString);
+
+  if(p_left.IsDecimalType())
+  {
+    leftString = leftString.TrimRight('0');
+    leftString = leftString.TrimRight('.');
+  }
+  if(p_right.IsDecimalType())
+  {
+    rightString = rightString.TrimRight('0');
+    rightString = rightString.TrimRight('.');
+  }
 
   return leftString.Compare(rightString) <= 0;
 }
@@ -59,7 +73,7 @@ static SQL_OperVarSmallEQChar(SQLVariant& p_left,SQLVariant& p_right)
 bool
 static SQL_OperGuidSmallEQChar(SQLVariant& p_left,SQLVariant& p_right)
 {
-  CString leftString,rightString;
+  XString leftString,rightString;
   p_left .GetAsString(leftString);
   p_right.GetAsString(rightString);
 
@@ -1098,9 +1112,9 @@ SQLVariant::operator<=(SQLVariant& p_right)
   }
   // No compare function found
   // Data types are not comparable
-  CString leftType  = FindDatatype(m_datatype);
-  CString rightType = FindDatatype(p_right.m_datatype);
-  CString error;
+  XString leftType  = FindDatatype(m_datatype);
+  XString rightType = FindDatatype(p_right.m_datatype);
+  XString error;
   error.Format("Cannot do the smaller-equal operator on (%s <= %s)",leftType.GetString(),rightType.GetString());
   throw StdException(error);
 }

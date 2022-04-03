@@ -342,6 +342,9 @@
     <ClInclude Include="Query\DirTreeView.h">
       <Filter>Query\Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DonateDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="QueryTool.cpp">
@@ -659,6 +662,9 @@
     <ClCompile Include="Query\DirTreeView.cpp">
       <Filter>Query</Filter>
     </ClCompile>
+    <ClCompile Include="DonateDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="QueryTool.reg" />
@@ -844,6 +850,9 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\OpenEditor.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\paypal-donate.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

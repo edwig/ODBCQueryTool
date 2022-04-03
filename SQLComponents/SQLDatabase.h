@@ -2,7 +2,7 @@
 //
 // File: Database.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -78,9 +78,9 @@ SchemaAction;
 // Structure to hold information about a DSN (DataSourceName)
 typedef struct _datasourceInternal
 {
-  CString m_datasource;
-  CString m_username;
-  CString m_password;
+  XString m_datasource;
+  XString m_username;
+  XString m_password;
   bool    m_system;
   bool    m_outputOMF;
   bool    m_default;
@@ -91,8 +91,8 @@ DataSourceInternal;
 typedef std::vector<DataSourceInternal> DSMap;
 typedef std::stack<SQLTransaction*>     TransactionStack;
 typedef std::map<int,int>               RebindMap;
-typedef std::map<CString,CString>       ODBCOptions;
-typedef std::map<CString,CString>       Macros;
+typedef std::map<XString,XString>       ODBCOptions;
+typedef std::map<XString,XString>       Macros;
 
 typedef void (CALLBACK* LOGPRINT)(void*,const char*);
 typedef int  (CALLBACK* LOGLEVEL)(void*);
@@ -118,12 +118,12 @@ public:
   // OPEN/CLOSE CYCLE
   
   // Open the database on basis of datasource, user and password
-  bool           Open(CString const& p_datasource
-                     ,CString const& p_username
-                     ,CString const& p_password
+  bool           Open(XString const& p_datasource
+                     ,XString const& p_username
+                     ,XString const& p_password
                      ,bool           p_readOnly = false);
   // Open the database on basis of a connect string only
-  bool           Open(CString const& p_connectString,bool p_readOnly = false);
+  bool           Open(XString const& p_connectString,bool p_readOnly = false);
 
   bool           IsOpen();       // Is the database open?
   void           Close();        // Close it for further use
@@ -140,9 +140,9 @@ public:
   // Setting the autocommit mode
   bool           SetAutoCommitMode(bool p_autoCommit);
   // Add a general ODBC option for use in the connection string
-  void           AddConnectOption(CString p_keyword,CString p_value);
+  void           AddConnectOption(XString p_keyword,XString p_value);
   // Setting the default database schema after login
-  bool           SetDefaultSchema(CString p_schema);
+  bool           SetDefaultSchema(XString p_schema);
 
   // GETTING/CONSTRUCTING the SQLInfo object
   SQLInfoDB*     GetSQLInfoDB();
@@ -150,16 +150,16 @@ public:
   // MACRO's FOR SQL TEXT
 
   // Do the Query text macro replacement
-  void           ReplaceMacros(CString& p_statement);
+  void           ReplaceMacros(XString& p_statement);
   // Add a macro replacement for SQL text
-  void           AddMacro(CString p_macro,CString p_replacement);
+  void           AddMacro(XString p_macro,XString p_replacement);
   // Remove macro
-  void           DeleteMacro(CString p_macro);
+  void           DeleteMacro(XString p_macro);
 
   // DATABASE POOL METHODS
-  void           SetDatasource(CString p_dsn);
-  void           SetConnectionName(CString p_connectionName);
-  void           SetUserName(CString p_user);
+  void           SetDatasource(XString p_dsn);
+  void           SetConnectionName(XString p_connectionName);
+  void           SetUserName(XString p_user);
   void           SetLastActionTime();
   bool           PastWaitingTime();
 
@@ -169,28 +169,28 @@ public:
   void           AddParameterRebind(int p_sqlType,int p_cppType);
 
   // GETTERS
-  CString        GetUserName();
-  CString        GetPassword();
-  CString        GetDatasource();
-  CString        GetConnectionName();
-  CString        GetDatabaseTypeName();
-  CString        GetDatabaseName();         // Real database name
+  XString        GetUserName();
+  XString        GetPassword();
+  XString        GetDatasource();
+  XString        GetConnectionName();
+  XString        GetDatabaseTypeName();
+  XString        GetDatabaseName();         // Real database name
   DatabaseType   GetDatabaseType();
-  CString        GetNamingMethod();
-  CString        GetConnect();              // Resulting connect string
-  CString        GetOriginalConnect();      // Original  connect string
+  XString        GetNamingMethod();
+  XString        GetConnect();              // Resulting connect string
+  XString        GetOriginalConnect();      // Original  connect string
   int            GetODBCVersion();          // Main version 1/2/3
-  CString        GetODBCVersionComplete();  // Complete ODBC version e.g."3.51"
+  XString        GetODBCVersionComplete();  // Complete ODBC version e.g."3.51"
   bool           GetNeedLongDataLen();
-  CString        GetDataIdent();
-  CString        GetDBIdent();
-  CString        GetDBVendorName();
-  CString        GetDBVendorVersion();
-  CString        GetDBVendorDriverName();
-  CString        GetDBVendorDriverVersion();
+  XString        GetDataIdent();
+  XString        GetDBIdent();
+  XString        GetDBVendorName();
+  XString        GetDBVendorVersion();
+  XString        GetDBVendorDriverName();
+  XString        GetDBVendorDriverVersion();
   RebindMap*     GetRebindMapParameters();
   RebindMap*     GetRebindMapColumns();
-  CString        GetSQLState();
+  XString        GetSQLState();
   bool           GetReadOnly();
   int            GetLoginTimeout();
   bool           GetAutoCommitMode();
@@ -199,23 +199,23 @@ public:
   HDBC           GetDBHandle();
   RETCODE        GetSQLHandle (HSTMT* p_statementHandle, BOOL p_exception);
   static RETCODE FreeSQLHandle(HSTMT* p_statementHandle, UWORD p_option = SQL_DROP);
-  CString        GetErrorString(SQL_HANDLE statement = 0);
+  XString        GetErrorString(SQL_HANDLE statement = 0);
   int            GetErrorNumber(SQL_HANDLE statement = 0);
-  bool           GetErrorInfo(SQLSMALLINT type, SQLHANDLE handle, int& nummer, CString& tekst);
+  bool           GetErrorInfo(SQLSMALLINT type, SQLHANDLE handle, int& nummer, XString& tekst);
   BOOL           Check(INT nRetCode);
   // ODBC Native Support
-  bool           ODBCNativeSQL(CString& p_sql);
+  bool           ODBCNativeSQL(XString& p_sql);
 
   // TRANSACTION SUPPORT
-  CString         StartTransaction   (SQLTransaction* p_transaction, bool startSubtransactie);
+  XString         StartTransaction   (SQLTransaction* p_transaction, bool startSubtransactie);
   void            CommitTransaction  (SQLTransaction* p_transaction);
   void            RollbackTransaction(SQLTransaction* p_transaction);
   SQLTransaction* GetTransaction();
 
   // Get the name of a special ODBC driver
-  CString        GetSpecialDriver(CString p_base,CString p_extensie);
+  XString        GetSpecialDriver(XString p_base,XString p_extensie);
   // Oracle results caching on/off switching
-  void           SetOracleResultCacheMode(const CString& mode);
+  void           SetOracleResultCacheMode(const XString& mode);
   // Get the available datasources in a list
   void           GetDataSources(DSMap& p_list,int p_type = SQL_FETCH_FIRST);
   // Setting the database type (once)
@@ -223,19 +223,19 @@ public:
 
   // Asking for database-dependent constructions
   // Shortcuts to a SQLInfoDB function
-  CString        GetSQLTimeString        (int p_hour,int p_minute,int p_second);
-  CString        GetStrippedSQLTimeString(int p_hour,int p_minute,int p_second);
-  CString        GetSQLDateString        (int p_day, int p_month, int p_year);
-  CString        GetCurrentTimestampQualifier();
-  CString        GetSQL_NewSerial(CString p_table,CString p_sequence);
-  CString        GetSQL_GenerateSerial(CString p_table);
-  int            GetSQL_EffectiveSerial(CString p_oid_string);
-  CString        GetTimestampAsString(const SQLTimestamp& p_timestamp);
-  CString        GetTimestampAsBoundString();
-  CString        GetSQLDateTimeStrippedString(const SQLTimestamp& p_timestamp);
-  CString        GetInterval1MinuteAgo();
-  CString        GetNVLStatement(CString p_test,CString p_isnull);
-  CString        GetUpper(CString p_veld);
+  XString        GetSQLTimeString        (int p_hour,int p_minute,int p_second);
+  XString        GetStrippedSQLTimeString(int p_hour,int p_minute,int p_second);
+  XString        GetSQLDateString        (int p_day, int p_month, int p_year);
+  XString        GetCurrentTimestampQualifier();
+  XString        GetSQL_NewSerial(XString p_table,XString p_sequence);
+  XString        GetSQL_GenerateSerial(XString p_table);
+  int            GetSQL_EffectiveSerial(XString p_oid_string);
+  XString        GetTimestampAsString(const SQLTimestamp& p_timestamp);
+  XString        GetTimestampAsBoundString();
+  XString        GetSQLDateTimeStrippedString(const SQLTimestamp& p_timestamp);
+  XString        GetInterval1MinuteAgo();
+  XString        GetNVLStatement(XString p_test,XString p_isnull);
+  XString        GetUpper(XString p_veld);
 
   // Support of logging functions 
   void           RegisterLogContext(int p_level,LOGLEVEL p_loglevel,LOGPRINT p_logprinter,void* p_logContext);
@@ -245,9 +245,9 @@ public:
   void           SetLoggingActivation(int p_loglevel);
   
   // SCHEMA HANDLING
-  void           SetSchema(CString p_schema);
+  void           SetSchema(XString p_schema);
   void           SetSchemaAction(SchemaAction p_action);
-  void           ParseSchema(CString& p_query);
+  void           ParseSchema(XString& p_query);
 
   // MULTI-THREADING LOCKING
   void           Acquire(unsigned p_timeout);   // Acquire a multi threading lock
@@ -275,15 +275,17 @@ protected:
   void           SetAttributesBeforeConnect();
   // Setting connection attributes AFTER connect
   void           SetAttributesAfterConnect(bool p_readOnly);
+  // Running the initialisations for the session
+  void           SetConnectionInitialisations();
   // Find number of quotes up to the lastpos position
-  int            FindQuotes(CString& p_statement,int p_lastpos);
+  int            FindQuotes(XString& p_statement,int p_lastpos);
   // Replace **ONE** macro in the statement text
-  void           ReplaceMacro(CString& p_statement,int p_pos,int p_length,CString p_replace);
+  void           ReplaceMacro(XString& p_statement,int p_pos,int p_length,XString p_replace);
 
   // HOW WE ARE CONNECTED TO A DATABASE
-  CString           m_datasource;  // Datasource at login
-  CString           m_username;    // System user
-  CString           m_password;    // System's password
+  XString           m_datasource;  // Datasource at login
+  XString           m_username;    // System user
+  XString           m_password;    // System's password
 
   // Info about the database
   DatabaseType      m_rdbmsType    { RDBMS_UNKNOWN };  // Which RDBMS engine
@@ -291,18 +293,18 @@ protected:
   int               m_loginTimeout { LOGIN_TIMEOUT };  // Timeout before login fails
   bool              m_mars         { true          };  // Multiple Active Record Sets
   bool              m_readOnly     { false         };  // ReadOnly connection
-  CString           m_connectionName;                    // Can differ from m_datasource !!
-  CString           m_DBName;
-  CString           m_DBVersion;
-  CString           m_DriverName;
-  CString           m_DriverVersion;
-  CString           m_databaseName;
-  CString           m_namingMethod;
-  CString           m_originalConnect;
-  CString           m_completeConnect;
+  XString           m_connectionName;                    // Can differ from m_datasource !!
+  XString           m_DBName;
+  XString           m_DBVersion;
+  XString           m_DriverName;
+  XString           m_DriverVersion;
+  XString           m_databaseName;
+  XString           m_namingMethod;
+  XString           m_originalConnect;
+  XString           m_completeConnect;
   SQLUINTEGER       m_async_possible      { 0     };
   SQLUSMALLINT      m_canDoTransactions   { 0     };
-  CString           m_odbcVersionComplete;
+  XString           m_odbcVersionComplete;
   int               m_odbcVersion         { 0     };
   int               m_driverMainVersion   { 0     };   
   bool              m_needLongDataLen     { false };
@@ -310,14 +312,14 @@ protected:
   DWORD             m_lastAction          { 0     };  // Last moment of usage (for database pool)
   RebindMap         m_rebindParameters;                 // Rebinding of parameters for SQLBindParam
   RebindMap         m_rebindColumns;                    // Rebinding of result columns for SQLBindCol
-  CString           m_sqlState;                         // Last SQLSTATE
-  CString           m_schemaName;
+  XString           m_sqlState;                         // Last SQLSTATE
+  XString           m_schemaName;
   SchemaAction      m_schemaAction { SCHEMA_NO_ACTION };
   Macros            m_macros;                      // Macro replacements for SQL
 
   // Derived identifier names for various systems
-  CString           m_dbIdent;                     // Database   identifier (6 chars name, 2 chars main-version)
-  CString           m_dataIdent;                   // Datasource identifier (10 chars at most = DS_IDENT_LEN)
+  XString           m_dbIdent;                     // Database   identifier (6 chars name, 2 chars main-version)
+  XString           m_dataIdent;                   // Datasource identifier (10 chars at most = DS_IDENT_LEN)
   // Handles
   HENV              m_henv { SQL_NULL_HANDLE };
   HDBC              m_hdbc { SQL_NULL_HANDLE };
@@ -343,38 +345,38 @@ SQLDatabase::IsOpen()
   return (m_hdbc != NULL);
 }
 
-inline CString
+inline XString
 SQLDatabase::GetOriginalConnect()
 {
   return m_originalConnect;
 }
 
-inline CString
+inline XString
 SQLDatabase::GetConnect()
 {
   // Result from DriverConnect
   return m_completeConnect;
 }
 
-inline CString
+inline XString
 SQLDatabase::GetUserName()
 {
   return m_username;
 }
 
-inline CString
+inline XString
 SQLDatabase::GetPassword()
 {
   return m_password;
 }
 
-inline CString        
+inline XString        
 SQLDatabase::GetDatasource()
 {
   return m_datasource;
 }
 
-inline CString
+inline XString
 SQLDatabase::GetConnectionName()
 {
   return m_connectionName;
@@ -386,7 +388,7 @@ SQLDatabase::GetODBCVersion()
   return m_odbcVersion;
 }
 
-inline CString
+inline XString
 SQLDatabase::GetODBCVersionComplete()
 {
   return m_odbcVersionComplete;
@@ -398,7 +400,7 @@ SQLDatabase::GetDatabaseType()
   return m_rdbmsType;
 }
 
-inline CString
+inline XString
 SQLDatabase::GetDatabaseName()
 {
   return m_databaseName;
@@ -425,7 +427,7 @@ SQLDatabase::GetDBHandle()
   return m_hdbc;
 }
 
-inline CString
+inline XString
 SQLDatabase::GetNamingMethod()
 {
   return m_namingMethod;
@@ -437,31 +439,31 @@ SQLDatabase::SetLoginTimeout(int p_timeout)
   m_loginTimeout = p_timeout;
 }
 
-inline CString        
+inline XString        
 SQLDatabase::GetDBVendorName()
 {
   return m_DBName;
 }
 
-inline CString
+inline XString
 SQLDatabase::GetDBVendorVersion()
 {
   return m_DBVersion;
 }
 
-inline CString 
+inline XString 
 SQLDatabase::GetDBVendorDriverName()
 {
   return m_DriverName;
 }
 
-inline CString        
+inline XString        
 SQLDatabase::GetDBVendorDriverVersion()
 {
   return m_DriverVersion;
 }
 
-inline CString
+inline XString
 SQLDatabase::GetDataIdent()
 {
   // return m_dBIdent;
@@ -480,7 +482,7 @@ SQLDatabase::GetRebindMapColumns()
   return &m_rebindColumns;
 }
 
-inline CString
+inline XString
 SQLDatabase::GetDBIdent()
 {
   return m_dbIdent;
@@ -492,7 +494,7 @@ SQLDatabase::SetMARS(bool p_set)
   m_mars = p_set;
 }
 
-inline CString
+inline XString
 SQLDatabase::GetSQLState()
 {
   return m_sqlState;

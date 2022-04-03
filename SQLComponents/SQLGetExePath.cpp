@@ -2,7 +2,7 @@
 //
 // File: SQLGetExePath.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -52,7 +52,7 @@ HMODULE SQLGetModuleHandle()
   return mod;
 }
 
-CString SQLGetExeFile()
+XString SQLGetExeFile()
 {
   char buffer[_MAX_PATH + 1];
 
@@ -60,13 +60,13 @@ CString SQLGetExeFile()
 
   // Retrieve the path
   GetModuleFileName(mod,buffer,_MAX_PATH);
-  return CString(buffer);
+  return XString(buffer);
 }
 
-CString SQLGetExePath()
+XString SQLGetExePath()
 {
   // Retrieve the path
-  CString applicationAndPath = SQLGetExeFile();
+  XString applicationAndPath = SQLGetExeFile();
 
   int slashPositie = applicationAndPath.ReverseFind('\\');
   if (slashPositie == 0)
@@ -92,20 +92,20 @@ SQLTerminateWithoutCleanup(int p_exitcode)
 
 // Check the renaming of the runtimer (exe, dll, or whatever)
 void
-SQLCheckExePath(CString p_runtimer)
+SQLCheckExePath(XString p_runtimer)
 {
   char drive    [_MAX_DRIVE];
   char directory[_MAX_DIR  ];
   char filename [_MAX_FNAME];
   char extension[_MAX_EXT  ];
 
-  CString program = SQLGetExeFile();
+  XString program = SQLGetExeFile();
   _splitpath_s(program.GetString(),drive,_MAX_DRIVE,directory,_MAX_DIR,filename,_MAX_FNAME,extension,_MAX_EXT);
 
-  CString runtimer = CString(filename) + CString(extension);
+  XString runtimer = XString(filename) + XString(extension);
   if(runtimer.CompareNoCase(p_runtimer))
   {
-    CString error;
+    XString error;
     error.Format("You have started the program: %s\n"
                  "But in reality it is now: %s\n"
                  "Your product cannot function properly under this difference!\n"

@@ -2,7 +2,7 @@
 //
 // File: SQLInfo.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -44,19 +44,19 @@ namespace SQLComponents
 
 typedef struct _TypeInfo
 {
-  CString     m_type_name;          // Datasource dependent type name. Use for CREATE TABLE
+  XString     m_type_name;          // Datasource dependent type name. Use for CREATE TABLE
   SQLSMALLINT m_data_type;          // Data type by ODBC as in SQL_<Datatypename>
   SQLINTEGER  m_precision;          // For numbers: precision, otherwise the column size for char/binaries
-  CString     m_literal_prefix;     // Prefix in literal string, like {ts' for timestamp
-  CString     m_literal_suffix;     // Suffix in literal string, like '}   for timestamp
-  CString     m_create_params;      // How to create parameters, like (precision,scale) for decimals
+  XString     m_literal_prefix;     // Prefix in literal string, like {ts' for timestamp
+  XString     m_literal_suffix;     // Suffix in literal string, like '}   for timestamp
+  XString     m_create_params;      // How to create parameters, like (precision,scale) for decimals
   SQLSMALLINT m_nullable;           // Nullable: SQL_NO_NULLS (0), SQL_NULLABLE (1), SQL_NULLABLE_UNKNOWN (2)
   SQLSMALLINT m_case_sensitive;     // Case sensitive (TRUE,FALSE)
   SQLSMALLINT m_searchable;         // Searchable in where clause. SQL_PRED_NONE (SQL_UNSEARCHABLE), SQL_PRED_CHAR (1), SQL_PRED_BASIC (2), SQL_SEARCHABLE (3)
   SQLSMALLINT m_unsigned;           // Unsigned (TRUE,FALSE)
   SQLSMALLINT m_money;              // Money (FIXED_PRECISION_SCALE) (TRUE,FALSE)
   SQLSMALLINT m_autoincrement;      // Auto incrementable (TRUE,FALSE,NULL for non-numeric)
-  CString     m_local_type_name;    // Local type name for display on UI's (not in DDL!)
+  XString     m_local_type_name;    // Local type name for display on UI's (not in DDL!)
   SQLSMALLINT m_minimum_scale;      // Minimum scale of datatype. E.g. in seconds of the TIMESTAMP
   SQLSMALLINT m_maximum_scale;      // Maximum scale of datatype, otherwise use column_size
   SQLSMALLINT m_sqlDatatype;        // Driver independent SQL datatype
@@ -66,8 +66,8 @@ typedef struct _TypeInfo
 }
 TypeInfo;
 
-typedef std::map<CString,TypeInfo*> DataTypeMap;
-typedef std::list<CString>          WordList;
+typedef std::map<XString,TypeInfo*> DataTypeMap;
+typedef std::list<XString>          WordList;
 
 class SQLInfo 
 {
@@ -84,36 +84,36 @@ public:
   void    GetInfo();
 
   // Add an ODBC SQL Keyword
-  bool    AddSQLWord(CString sql);
+  bool    AddSQLWord(XString sql);
   // Extra to be done on getting info 
   virtual void OnGetInfo(HDBC ,int ) {return;};
   // Is it a correct identifier (type 0=table,1=column)
-  bool    IsCorrectName(CString p_name,int p_type = 0);
+  bool    IsCorrectName(XString p_name,int p_type = 0);
   // Is reserved word
-  bool    IsReservedWord(CString p_name);
+  bool    IsReservedWord(XString p_name);
   // Can we start a transaction on the database
   bool    CanStartTransaction();
   // Returns the fact whether an API function is supported
   // by the ODBC driver, regardless of ODBC version
   bool    SupportedFunction(unsigned int api_function);
   // Return the native SQL command from an ODBC-escaped command
-  CString NativeSQL(HDBC hdbc,CString& sqlCommand);
+  XString NativeSQL(HDBC hdbc,XString& sqlCommand);
   // AT_EXEC data provider needs length beforehand
   bool    NeedLongDataLen();
   // Character name of an SQL_XXX datatype
-  CString ODBCDataType(int DataType);
+  XString ODBCDataType(int DataType);
   // Show metadata warning (for interactive mode)
   void    ShowMetaDataWarning(bool p_show);
 
   // All the version numbers from the driver
-  CString GetVersionODBCManager();
-  CString GetVersionODBCDriver();
-  CString GetVersionODBCStandard();
-  CString GetVersionRDBMS();
+  XString GetVersionODBCManager();
+  XString GetVersionODBCDriver();
+  XString GetVersionODBCStandard();
+  XString GetVersionRDBMS();
 
   // Get information about the primary key of a table
-  bool GetPrimaryKeyInfo(CString&     p_tablename
-                        ,CString&     p_primary
+  bool GetPrimaryKeyInfo(XString&     p_tablename
+                        ,XString&     p_primary
                         ,MPrimaryMap& p_keymap);
 
   // GETTING ALL THE TABLES OF A NAME PATTERN
@@ -121,25 +121,25 @@ public:
   // GETTING ALL THE INFO FOR ONE PROCEDURE
   // GETTING ALL META TYPES
 protected:
-  virtual bool MakeInfoTableTable      (MTableMap&     p_tables,    CString& p_errors,CString p_schema,CString p_tablename,CString p_type);
-  virtual bool MakeInfoTableColumns    (MColumnMap&    p_columns,   CString& p_errors,CString p_schema,CString p_tablename,CString p_columnname = "");
-  virtual bool MakeInfoTablePrimary    (MPrimaryMap&   p_primaries, CString& p_errors,CString p_schema,CString p_tablename);
-  virtual bool MakeInfoPSMProcedures   (MProcedureMap& p_procedures,CString& p_errors,CString p_schema,CString p_procedure);
-  virtual bool MakeInfoPSMParameters   (MParameterMap& p_parameters,CString& p_errors,CString p_schema,CString p_procedure);
-  virtual bool MakeInfoTableForeign    (MForeignMap&   p_foreigns,  CString& p_errors,CString p_schema,CString p_tablename,bool p_referenced = false);
-  virtual bool MakeInfoTableStatistics (MIndicesMap&   p_statistics,CString& p_errors,CString p_schema,CString p_tablename,MPrimaryMap* p_keymap,bool p_all = true);
-  virtual bool MakeInfoTablePrivileges (MPrivilegeMap& p_privileges,CString& p_errors,CString p_schema,CString p_tablename);
-  virtual bool MakeInfoColumnPrivileges(MPrivilegeMap& p_privileges,CString& p_errors,CString p_schema,CString p_tablename,CString p_columnname = "");
+  virtual bool MakeInfoTableTable      (MTableMap&     p_tables,    XString& p_errors,XString p_schema,XString p_tablename,XString p_type);
+  virtual bool MakeInfoTableColumns    (MColumnMap&    p_columns,   XString& p_errors,XString p_schema,XString p_tablename,XString p_columnname = "");
+  virtual bool MakeInfoTablePrimary    (MPrimaryMap&   p_primaries, XString& p_errors,XString p_schema,XString p_tablename);
+  virtual bool MakeInfoPSMProcedures   (MProcedureMap& p_procedures,XString& p_errors,XString p_schema,XString p_procedure);
+  virtual bool MakeInfoPSMParameters   (MParameterMap& p_parameters,XString& p_errors,XString p_schema,XString p_procedure);
+  virtual bool MakeInfoTableForeign    (MForeignMap&   p_foreigns,  XString& p_errors,XString p_schema,XString p_tablename,bool p_referenced = false);
+  virtual bool MakeInfoTableStatistics (MIndicesMap&   p_statistics,XString& p_errors,XString p_schema,XString p_tablename,MPrimaryMap* p_keymap,bool p_all = true);
+  virtual bool MakeInfoTablePrivileges (MPrivilegeMap& p_privileges,XString& p_errors,XString p_schema,XString p_tablename);
+  virtual bool MakeInfoColumnPrivileges(MPrivilegeMap& p_privileges,XString& p_errors,XString p_schema,XString p_tablename,XString p_columnname = "");
 
 public:
-  virtual bool MakeInfoTableSpecials  (MSpecialsMap&  p_specials,  CString& p_errors,CString p_schema,CString p_tablename);
-  virtual bool MakeInfoMetaTypes      (MMetaMap&      p_objects,   CString& p_errors,int p_type);
+  virtual bool MakeInfoTableSpecials  (MSpecialsMap&  p_specials,  XString& p_errors,XString p_schema,XString p_tablename);
+  virtual bool MakeInfoMetaTypes      (MMetaMap&      p_objects,   XString& p_errors,int p_type);
 
   // Meta pointer to SQLGet<META> functions
   unsigned char* GetMetaPointer(unsigned char* p_buffer,bool p_meta);
 
   // Getting datatype info
-  TypeInfo* GetTypeInfo(int p_sqlDatatype,CString p_typename = "") const;
+  TypeInfo* GetTypeInfo(int p_sqlDatatype,XString p_typename = "") const;
 
   // CONNECTION ATTRIBUTES
 
@@ -152,9 +152,9 @@ public:
   // ODBC Tracing is on or off
   bool    GetAttributeTracing();
   // The file to which we are tracing
-  CString GetAttributeTraceFile();
+  XString GetAttributeTraceFile();
   // Getting the current catalog name
-  CString GetAttributeCatalog();
+  XString GetAttributeCatalog();
   // Getting the IP packet size
   int     GetAttributePacketSize();
   // METADATA ID is supported?
@@ -162,24 +162,24 @@ public:
   // The current transaction level
   int     GetAttributeTransLevel();
   // The translation library path
-  CString GetAttributeTranslib();
+  XString GetAttributeTranslib();
   // Translation option of the translation library
   int     GetAttributeTransoption();
   // Connection by File DSN
-  CString GetAttributeFileDSN();
-  CString GetAttributeFileDSNSave();
+  XString GetAttributeFileDSN();
+  XString GetAttributeFileDSNSave();
   // Timeout for the whole connection
   int     GetAttributeConnTimeout();
 
   // Connection by File DSN
-  void    SetAttributeFileDSN    (CString p_fileDSN);
-  void    SetAttributeFileDSNSave(CString p_fileDSN);
+  void    SetAttributeFileDSN    (XString p_fileDSN);
+  void    SetAttributeFileDSNSave(XString p_fileDSN);
   // Set the using of ODBC cursors
   bool    SetAttributeOdbcCursors(int p_cursors);
   // Setting the optimal IP Packet size
   bool    SetAttributePacketSize(int p_packet);
    // Setting the ODBC Tracing file
-  bool    SetAttributeTraceFile(CString p_traceFile);
+  bool    SetAttributeTraceFile(XString p_traceFile);
   // Set tracing on or off
   bool    SetAttributeTracing(bool p_tracing);
   // Setting the automatic connection timeout (if supported)
@@ -189,7 +189,7 @@ public:
   // Setting the transaction isolation level
   bool    SetAttributeTransLevel(int p_txnlevel);
   // Setting the transaction library (with or without connection)
-  bool    SetAttributeTranslib(CString p_transLib);
+  bool    SetAttributeTranslib(XString p_transLib);
   // Setting the translation optioen (with or without connection)
   bool    SetAttributeTransoption(int p_transOption);
 
@@ -200,7 +200,7 @@ public:
   WordList&     GetODBCKeywords();
   WordList&     GetRDBMSKeywords();
   DataTypeMap&  GetDataTypeMap();
-  CString       GetDriverName();
+  XString       GetDriverName();
   // type conversions
   SQLUINTEGER   GetConversionFunctions();
   SQLINTEGER    GetConvertBigint();
@@ -228,7 +228,7 @@ public:
   SQLUINTEGER   GetSQLConformance();
   SQLUINTEGER   GetODBCConformance();
   SQLUINTEGER   GetCLIConformance();
-  CString       GetCLIYear();
+  XString       GetCLIYear();
   // Support for functions
   SQLUINTEGER   GetAggregationFunctions();
   SQLUINTEGER   GetNumericFunctions();
@@ -302,21 +302,21 @@ public:
   bool          GetAccessibleProcedures();
   bool          GetSupportsV3Functions();
   // Strings
-  CString       GetCatalogTerm();
-  CString       GetSchemaTerm();
-  CString       GetTableTerm();
-  CString       GetProcedureTerm();
-  CString       GetCatalogNameSeparator();
-  CString       GetSpecialCharacters();
-  CString       GetLikeEscapeCharacter();
-  CString       GetIdentifierQuoteCharacter();
-  CString       GetCollationSequence();
+  XString       GetCatalogTerm();
+  XString       GetSchemaTerm();
+  XString       GetTableTerm();
+  XString       GetProcedureTerm();
+  XString       GetCatalogNameSeparator();
+  XString       GetSpecialCharacters();
+  XString       GetLikeEscapeCharacter();
+  XString       GetIdentifierQuoteCharacter();
+  XString       GetCollationSequence();
   // Function arrays
   SQLUSMALLINT* GetFunctionArrayV2();
   SQLUSMALLINT* GetFunctionArrayV3();
 
   // Get the catalog.schema.table from a user string
-  void    GetObjectName(CString pattern,CString& p_catalog,CString& p_schema,CString& p_table);
+  void    GetObjectName(XString pattern,XString& p_catalog,XString& p_schema,XString& p_table);
   
 private:
   // SQLDatabase has access to attribute methods
@@ -329,7 +329,7 @@ private:
   // Close the internal statement handle
   void CloseStatement();
   // Get a string from GetInfo with extra security checks for overflow
-  CString GetInfoString(SQLUSMALLINT info);
+  XString GetInfoString(SQLUSMALLINT info);
   // Get a 32 bit integer value from GetInfo
   unsigned int GetInfoInteger(SQLUSMALLINT info);
   // Get a 16 bit integer value from GetInfo
@@ -338,20 +338,20 @@ private:
   // Getting a general INTEGER connection attribute
   int     GetAttributeInteger(LPCTSTR description,SQLINTEGER attrib);
   // Getting a general STRING connection attribute
-  CString GetAttributeString(CString description,SQLINTEGER attrib);
+  XString GetAttributeString(XString description,SQLINTEGER attrib);
   // Setting an INTEGER attribute
-  bool    SetAttributeInteger(CString description,SQLINTEGER  attrib,SQLUINTEGER value);
+  bool    SetAttributeInteger(XString description,SQLINTEGER  attrib,SQLUINTEGER value);
   // Setting a STRING attribute
-  bool    SetAttributeString(CString description,SQLINTEGER attrib,SQLCHAR* value);
+  bool    SetAttributeString(XString description,SQLINTEGER attrib,SQLCHAR* value);
 
 protected:
   // Reprint the catalog.schema.table combination
-  CString MakeObjectName(SQLCHAR* search_catalog
+  XString MakeObjectName(SQLCHAR* search_catalog
                         ,SQLCHAR* search_schema
                         ,SQLCHAR* search_table
                         ,SQLCHAR* search_type);
   void    ReadingDataTypes();
-  void    InfoMessageBox(CString p_message,UINT p_type = MB_OK);
+  void    InfoMessageBox(XString p_message,UINT p_type = MB_OK);
 
 protected:
   bool         m_initDone;             // Already read in?
@@ -365,7 +365,7 @@ protected:
   DataTypeMap  m_dataTypes;            // Datatypes reported by the RDBMS
 
   // CONFORMANCE TO THE SQL-LANGUAGE
-  CString      m_cli_year;             // Year of X/Open CLI standard
+  XString      m_cli_year;             // Year of X/Open CLI standard
   SQLUINTEGER  m_sql_conformance;      // Overall SQL  Conformance
   SQLUINTEGER  m_odbc_conformance;     // Overall ODBC Conformance
   SQLUINTEGER  m_cli_conformance;      // Overall CLI  Conformance
@@ -415,14 +415,14 @@ protected:
 
   // How an object is named. Standard is m_catalogName.m_schemaName.m_tableName
   bool         m_supportsCatalogs;      // Database supports catalogs
-  CString      m_catalogName;           // empty if catalogs ar not supported
-  CString      m_schemaName;            // Standard is 'owner'
-  CString      m_tableName;             // Standard is 'table'
-  CString      m_procedureName;         // Standard is 'procedure'
+  XString      m_catalogName;           // empty if catalogs ar not supported
+  XString      m_schemaName;            // Standard is 'owner'
+  XString      m_tableName;             // Standard is 'table'
+  XString      m_procedureName;         // Standard is 'procedure'
   SQLUSMALLINT m_catalogLocation;       // Before schema or after tablename
   SQLUINTEGER  m_catalogUsage;          // Where catalog names can be used
   SQLUINTEGER  m_schemaUsage;           // WHere schema names can be used
-  CString      m_catalogNameSeparator;  // Separator for the catalog name
+  XString      m_catalogNameSeparator;  // Separator for the catalog name
   SQLSMALLINT  m_identifierCase;        // Case-specific of names in the catalog
 
   // RDBMS Implementation specifics
@@ -438,15 +438,15 @@ protected:
   SQLSMALLINT  m_cursor_commit;
   SQLSMALLINT  m_cursor_rollback;
   SQLSMALLINT  m_activeEnvironments;    // Maximum of environments (catalogs?)
-  CString      m_specialChars;
-  CString      m_likeEscape;
+  XString      m_specialChars;
+  XString      m_likeEscape;
   SQLUINTEGER  m_datetimeLiterals;      // Supported date/time/interval literals
-  CString      m_identifierQuote;       // RDBMS identifier quote character
-  CString      m_collationSequence;     // RDBMS default collation sequence
+  XString      m_identifierQuote;       // RDBMS identifier quote character
+  XString      m_collationSequence;     // RDBMS default collation sequence
   SQLINTEGER   m_defaultTransaction;    // RDBMS default transaction level
   SQLINTEGER   m_schemaViews;           // INFORMATION_SCHEMA support
   SQLSMALLINT  m_concatBehaviour;       // NULL concat behaviour
-  CString      m_userName;              // User name in database
+  XString      m_userName;              // User name in database
   SQLSMALLINT  m_nullCollation;         // How NULL's are sorted
   SQLSMALLINT  m_nullableColumns;       // Columns can be nullable
   bool         m_integrity;             // Integrity support
@@ -454,7 +454,7 @@ protected:
   SQLINTEGER   m_packetSize;            // Optimization of the IP packet size
   SQLINTEGER   m_connTimeout;           // Connection timeout
   SQLINTEGER   m_odbcCursors;           // Using ODBC Cursors
-  CString      m_transLib;              // Translation library
+  XString      m_transLib;              // Translation library
   SQLINTEGER   m_transOption;           // Translation option
 
   // DATATYPE conversions
@@ -482,16 +482,16 @@ protected:
   SQLINTEGER   m_convertVarchar;        // Convert VARCHAR to ...
 
   // VERSION NUMBERS of the various layers
-  CString      m_manager_version;      // ODBC Driver manager version (from MS-Windows)
-  CString      m_odbc_driver_version;  // ODBC Driver version
-  CString      m_odbc_version;         // ODBC Standard version
-  CString      m_rdbms_version;        // RDBMS Version
+  XString      m_manager_version;      // ODBC Driver manager version (from MS-Windows)
+  XString      m_odbc_driver_version;  // ODBC Driver version
+  XString      m_odbc_version;         // ODBC Standard version
+  XString      m_rdbms_version;        // RDBMS Version
   // The ODBC Driver
-  CString      m_driverName;           // Name of the driver DLL
+  XString      m_driverName;           // Name of the driver DLL
   SQLUINTEGER  m_getdata_extensions;   // Driver SQLGetData extensions
   // File DSN
-  CString      m_fileDSN;
-  CString      m_fileDSNSave;
+  XString      m_fileDSN;
+  XString      m_fileDSNSave;
 
   // Work arounds
   bool         m_metadataID;
@@ -508,25 +508,25 @@ protected:
   bool         m_canFindTypes;
 };
  
-inline CString 
+inline XString 
 SQLInfo::GetVersionODBCManager()
 {
   return m_manager_version;
 }
 
-inline CString 
+inline XString 
 SQLInfo::GetVersionODBCDriver()
 {
   return m_odbc_driver_version;
 }
 
-inline CString 
+inline XString 
 SQLInfo::GetVersionODBCStandard()
 {
   return m_odbc_version;
 }
 
-inline CString 
+inline XString 
 SQLInfo::GetVersionRDBMS()
 {
   return m_rdbms_version;
@@ -545,26 +545,26 @@ SQLInfo::ShowMetaDataWarning(bool p_show)
 }
 
 // Connection by File DSN
-inline CString 
+inline XString 
 SQLInfo::GetAttributeFileDSN()
 {
   return m_fileDSN;
 }
 
-inline CString 
+inline XString 
 SQLInfo::GetAttributeFileDSNSave()
 {
   return m_fileDSNSave;
 }
 
 inline void
-SQLInfo::SetAttributeFileDSN(CString p_fileDSN)
+SQLInfo::SetAttributeFileDSN(XString p_fileDSN)
 {
   m_fileDSN = p_fileDSN;
 }
 
 inline void
-SQLInfo::SetAttributeFileDSNSave(CString p_fileDSN)
+SQLInfo::SetAttributeFileDSNSave(XString p_fileDSN)
 {
   m_fileDSNSave = p_fileDSN;
 }
@@ -587,7 +587,7 @@ SQLInfo::GetDataTypeMap()
   return m_dataTypes;
 }
 
-inline CString
+inline XString
 SQLInfo::GetDriverName()
 {
   return m_driverName;
@@ -743,7 +743,7 @@ SQLInfo::GetCLIConformance()
   return m_cli_conformance;
 }
 
-inline CString
+inline XString
 SQLInfo::GetCLIYear()
 {
   return m_cli_year;
@@ -1013,25 +1013,25 @@ SQLInfo::GetSupportsCatalogs()
   return m_supportsCatalogs;
 }
 
-inline CString       
+inline XString       
 SQLInfo::GetCatalogTerm()
 {
   return m_catalogName;
 }
 
-inline CString       
+inline XString       
 SQLInfo::GetSchemaTerm()
 {
   return m_schemaName;
 }
 
-inline CString       
+inline XString       
 SQLInfo::GetTableTerm()
 {
   return m_tableName;
 }
 
-inline CString       
+inline XString       
 SQLInfo::GetProcedureTerm()
 {
   return m_procedureName;
@@ -1049,7 +1049,7 @@ SQLInfo::GetCatalogLocation()
   return m_catalogLocation;
 }
 
-inline CString
+inline XString
 SQLInfo::GetCatalogNameSeparator()
 {
   return m_catalogNameSeparator;
@@ -1097,25 +1097,25 @@ SQLInfo::GetMaxColumnsInTable()
   return m_maxColTable;
 }
 
-inline CString       
+inline XString       
 SQLInfo::GetSpecialCharacters()
 {
   return m_specialChars;
 }
 
-inline CString       
+inline XString       
 SQLInfo::GetLikeEscapeCharacter()
 {
   return m_likeEscape;
 }
 
-inline CString       
+inline XString       
 SQLInfo::GetIdentifierQuoteCharacter()
 {
   return m_identifierQuote;
 }
 
-inline CString       
+inline XString       
 SQLInfo::GetCollationSequence()
 {
   return m_collationSequence;

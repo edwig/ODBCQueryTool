@@ -2,7 +2,7 @@
 //
 // File: SQLInfoDB.cpp
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -56,18 +56,18 @@ SQLInfoDB::~SQLInfoDB()
 // Can be 'TABLE', 'VIEW', 'ALIAS', 'SYNONYM', 'SYSTEM TABLE' etc
 bool    
 SQLInfoDB::MakeInfoTableObject(MTableMap& p_tables
-                               ,CString&  p_errors
-                               ,CString   p_schema
-                               ,CString   p_tablename)
+                               ,XString&  p_errors
+                               ,XString   p_schema
+                               ,XString   p_tablename)
 {
   // Clear the results
   p_tables.clear();
   p_errors.Empty();
 
-  CString sql1 = GetCATALOGTableAttributes(p_schema,p_tablename);
-  CString sql2 = GetCATALOGViewAttributes (p_schema,p_tablename);
-  CString sql3 = GetCATALOGTableSynonyms  (p_schema,p_tablename);
-  CString sql4 = GetCATALOGTableCatalog   (p_schema,p_tablename);
+  XString sql1 = GetCATALOGTableAttributes(p_schema,p_tablename);
+  XString sql2 = GetCATALOGViewAttributes (p_schema,p_tablename);
+  XString sql3 = GetCATALOGTableSynonyms  (p_schema,p_tablename);
+  XString sql4 = GetCATALOGTableCatalog   (p_schema,p_tablename);
 
   if(sql1.IsEmpty() || sql2.IsEmpty() || sql3.IsEmpty() || sql4.IsEmpty() || m_preferODBC)
   {
@@ -102,9 +102,9 @@ SQLInfoDB::MakeInfoTableObject(MTableMap& p_tables
 
 // Meta info about meta types: META_CATALOGS/META_SCHEMAS/META_TABLES
 bool
-SQLInfoDB::MakeInfoMetaTypes(MMetaMap& p_objects,CString& p_errors,int p_type)
+SQLInfoDB::MakeInfoMetaTypes(MMetaMap& p_objects,XString& p_errors,int p_type)
 {
-  CString sql = GetCATALOGMetaTypes(p_type);
+  XString sql = GetCATALOGMetaTypes(p_type);
   if(sql.IsEmpty() || m_preferODBC)
   {
     // Ask ODBC driver to find the required meta types
@@ -117,7 +117,7 @@ SQLInfoDB::MakeInfoMetaTypes(MMetaMap& p_objects,CString& p_errors,int p_type)
     qry.DoSQLStatement(sql);
     return ReadMetaTypesFromQuery(qry,p_objects,p_type);
   }
-  catch(CString& er)
+  catch(XString& er)
   {
     p_errors.Append(er);
   }
@@ -126,11 +126,11 @@ SQLInfoDB::MakeInfoMetaTypes(MMetaMap& p_objects,CString& p_errors,int p_type)
 
 bool
 SQLInfoDB::MakeInfoTableTable(MTableMap& p_tables
-                             ,CString&   p_errors
-                             ,CString    p_schema
-                             ,CString    p_tablename)
+                             ,XString&   p_errors
+                             ,XString    p_schema
+                             ,XString    p_tablename)
 {
-  CString sql = GetCATALOGTableAttributes(p_schema,p_tablename);
+  XString sql = GetCATALOGTableAttributes(p_schema,p_tablename);
   if(sql.IsEmpty() || m_preferODBC)
   {
     // Ask ODBC driver to find tables
@@ -157,11 +157,11 @@ SQLInfoDB::MakeInfoTableTable(MTableMap& p_tables
 
 bool    
 SQLInfoDB::MakeInfoTableView(MTableMap& p_tables
-                            ,CString&   p_errors
-                            ,CString    p_schema
-                            ,CString    p_tablename)
+                            ,XString&   p_errors
+                            ,XString    p_schema
+                            ,XString    p_tablename)
 {
-  CString sql = GetCATALOGViewAttributes(p_schema,p_tablename);
+  XString sql = GetCATALOGViewAttributes(p_schema,p_tablename);
   if(sql.IsEmpty() || m_preferODBC)
   {
     // Ask ODBC driver to find views
@@ -188,11 +188,11 @@ SQLInfoDB::MakeInfoTableView(MTableMap& p_tables
 
 bool    
 SQLInfoDB::MakeInfoTableSynonyms(MTableMap& p_tables
-                                ,CString&   p_errors
-                                ,CString    p_schema
-                                ,CString    p_tablename)
+                                ,XString&   p_errors
+                                ,XString    p_schema
+                                ,XString    p_tablename)
 {
-  CString sql = GetCATALOGTableSynonyms(p_schema,p_tablename);
+  XString sql = GetCATALOGTableSynonyms(p_schema,p_tablename);
   if(sql.IsEmpty() || m_preferODBC)
   {
     // Ask ODBC driver to find synonyms
@@ -225,11 +225,11 @@ SQLInfoDB::MakeInfoTableSynonyms(MTableMap& p_tables
 
 bool    
 SQLInfoDB::MakeInfoTableCatalog(MTableMap&  p_tables
-                               ,CString&    p_errors
-                               ,CString     p_schema
-                               ,CString     p_tablename)
+                               ,XString&    p_errors
+                               ,XString     p_schema
+                               ,XString     p_tablename)
 {
-  CString sql = GetCATALOGTableCatalog(p_schema,p_tablename);
+  XString sql = GetCATALOGTableCatalog(p_schema,p_tablename);
   if(sql.IsEmpty() || m_preferODBC)
   {
     p_schema = "%";
@@ -258,12 +258,12 @@ SQLInfoDB::MakeInfoTableCatalog(MTableMap&  p_tables
 
 bool    
 SQLInfoDB::MakeInfoTableColumns(MColumnMap& p_columns
-                               ,CString&    p_errors
-                               ,CString     p_schema
-                               ,CString     p_tablename
-                               ,CString     p_columnname /*=""*/)
+                               ,XString&    p_errors
+                               ,XString     p_schema
+                               ,XString     p_tablename
+                               ,XString     p_columnname /*=""*/)
 {
-  CString sql = GetCATALOGColumnAttributes(p_schema,p_tablename,p_columnname);
+  XString sql = GetCATALOGColumnAttributes(p_schema,p_tablename,p_columnname);
   if(sql.IsEmpty() || m_preferODBC)
   {
     return SQLInfo::MakeInfoTableColumns(p_columns,p_errors,p_schema,p_tablename,p_columnname);
@@ -281,24 +281,24 @@ SQLInfoDB::MakeInfoTableColumns(MColumnMap& p_columns
     {
       MetaColumn column;
 
-      column.m_catalog        = (CString)  qry[1];
-      column.m_schema         = (CString)  qry[2];
-      column.m_table          = (CString)  qry[3];
-      column.m_column         = (CString)  qry[4];
+      column.m_catalog        = (XString)  qry[1];
+      column.m_schema         = (XString)  qry[2];
+      column.m_table          = (XString)  qry[3];
+      column.m_column         = (XString)  qry[4];
       column.m_datatype       = (int)      qry[5];
-      column.m_typename       = (CString)  qry[6];
+      column.m_typename       = (XString)  qry[6];
       column.m_columnSize     = (unsigned) qry[7];
       column.m_bufferLength   = (INT64)    qry[8];
       column.m_decimalDigits  = (int)      qry[9];
       column.m_numRadix       = (int)      qry[10];
       column.m_nullable       = (int)      qry[11];
-      column.m_remarks        = (CString)  qry[12];
-      column.m_default        = (CString)  qry[13];
+      column.m_remarks        = (XString)  qry[12];
+      column.m_default        = (XString)  qry[13];
       column.m_datatype3      = (int)      qry[14];
       column.m_sub_datatype   = (int)      qry[15];
       column.m_octet_length   = (INT64)    qry[16];
       column.m_position       = (int)      qry[17];
-      column.m_isNullable     = (CString)  qry[18];
+      column.m_isNullable     = (XString)  qry[18];
 
       column.m_catalog    = column.m_catalog.Trim();
       column.m_table      = column.m_table.Trim();
@@ -322,11 +322,11 @@ SQLInfoDB::MakeInfoTableColumns(MColumnMap& p_columns
 
 bool    
 SQLInfoDB::MakeInfoTablePrimary(MPrimaryMap&  p_primaries
-                               ,CString&      p_errors
-                               ,CString       p_schema
-                               ,CString       p_tablename)
+                               ,XString&      p_errors
+                               ,XString       p_schema
+                               ,XString       p_tablename)
 {
-  CString sql = GetCATALOGPrimaryAttributes(p_schema,p_tablename);
+  XString sql = GetCATALOGPrimaryAttributes(p_schema,p_tablename);
   if(sql.IsEmpty() || m_preferODBC)
   {
     return SQLInfo::MakeInfoTablePrimary(p_primaries,p_errors,p_schema,p_tablename);
@@ -344,7 +344,7 @@ SQLInfoDB::MakeInfoTablePrimary(MPrimaryMap&  p_primaries
     {
       MetaPrimary prim;
 
-      prim.m_catalog        = (CString) qry[1];
+      prim.m_catalog        = (XString) qry[1];
       prim.m_catalog        = qry.GetColumn(1)->GetAsChar();
       prim.m_schema         = qry.GetColumn(2)->GetAsChar();
       prim.m_table          = qry.GetColumn(3)->GetAsChar();
@@ -366,13 +366,13 @@ SQLInfoDB::MakeInfoTablePrimary(MPrimaryMap&  p_primaries
 
 bool    
 SQLInfoDB::MakeInfoTableForeign(MForeignMap&  p_foreigns
-                               ,CString&      p_errors
-                               ,CString       p_schema
-                               ,CString       p_tablename
+                               ,XString&      p_errors
+                               ,XString       p_schema
+                               ,XString       p_tablename
                                ,bool          p_referenced /* = false */) 
 {
-  CString constraint;
-  CString sql = GetCATALOGForeignAttributes(p_schema,p_tablename,constraint,p_referenced);
+  XString constraint;
+  XString sql = GetCATALOGForeignAttributes(p_schema,p_tablename,constraint,p_referenced);
   if(sql.IsEmpty() || m_preferODBC)
   {
     return SQLInfo::MakeInfoTableForeign(p_foreigns,p_errors,p_schema,p_tablename,p_referenced);
@@ -390,19 +390,19 @@ SQLInfoDB::MakeInfoTableForeign(MForeignMap&  p_foreigns
     {
       MetaForeign foreign;
 
-      foreign.m_pkCatalogName     = (CString) query[1];
-      foreign.m_pkSchemaName      = (CString) query[2];
-      foreign.m_pkTableName       = (CString) query[3];
-      foreign.m_fkCatalogName     = (CString) query[4];
-      foreign.m_fkSchemaName      = (CString) query[5];
-      foreign.m_fkTableName       = (CString) query[6];
+      foreign.m_pkCatalogName     = (XString) query[1];
+      foreign.m_pkSchemaName      = (XString) query[2];
+      foreign.m_pkTableName       = (XString) query[3];
+      foreign.m_fkCatalogName     = (XString) query[4];
+      foreign.m_fkSchemaName      = (XString) query[5];
+      foreign.m_fkTableName       = (XString) query[6];
 
-      foreign.m_primaryConstraint = (CString) query[7];
-      foreign.m_foreignConstraint = (CString) query[8];
+      foreign.m_primaryConstraint = (XString) query[7];
+      foreign.m_foreignConstraint = (XString) query[8];
 
       foreign.m_keySequence       = (int)     query[9];
-      foreign.m_pkColumnName      = (CString) query[10];
-      foreign.m_fkColumnName      = (CString) query[11];
+      foreign.m_pkColumnName      = (XString) query[10];
+      foreign.m_fkColumnName      = (XString) query[11];
 
       foreign.m_updateRule        = (int)     query[12];
       foreign.m_deleteRule        = (int)     query[13];
@@ -426,16 +426,16 @@ SQLInfoDB::MakeInfoTableForeign(MForeignMap&  p_foreigns
 
 bool
 SQLInfoDB::MakeInfoTableStatistics(MIndicesMap& p_indices
-                                  ,CString&     p_errors
-                                  ,CString      p_schema
-                                  ,CString      p_tablename
+                                  ,XString&     p_errors
+                                  ,XString      p_schema
+                                  ,XString      p_tablename
                                   ,MPrimaryMap* p_keymap
                                   ,bool         p_all         /*=true*/)
 {
-  CString column;
-  CString sql1 = GetCATALOGIndexAttributes(p_schema,p_tablename,column);   // Indices
+  XString column;
+  XString sql1 = GetCATALOGIndexAttributes(p_schema,p_tablename,column);   // Indices
   column = "0";
-  CString sql2 = GetCATALOGIndexAttributes(p_schema,p_tablename,column);   // Table statistics
+  XString sql2 = GetCATALOGIndexAttributes(p_schema,p_tablename,column);   // Table statistics
   if(sql1.IsEmpty() || m_preferODBC)
   {
     return SQLInfo::MakeInfoTableStatistics(p_indices,p_errors,p_schema,p_tablename,p_keymap,p_all);
@@ -456,18 +456,18 @@ SQLInfoDB::MakeInfoTableStatistics(MIndicesMap& p_indices
       {
         MetaIndex index;
 
-        index.m_catalogName = (CString) query[1];
-        index.m_schemaName  = (CString) query[2];
-        index.m_tableName   = (CString) query[3];
+        index.m_catalogName = (XString) query[1];
+        index.m_schemaName  = (XString) query[2];
+        index.m_tableName   = (XString) query[3];
         index.m_nonunique   = (bool)    query[4];
-        index.m_indexName   = (CString) query[5];
+        index.m_indexName   = (XString) query[5];
         index.m_indexType   = (int)     query[6];
         index.m_position    = (int)     query[7];
-        index.m_columnName  = (CString) query[8];
-        index.m_ascending   = (CString) query[9];
+        index.m_columnName  = (XString) query[8];
+        index.m_ascending   = (XString) query[9];
         index.m_cardinality = (int)     query[10];
         index.m_pages       = (int)     query[11];
-        index.m_filter      = (CString) query[12];
+        index.m_filter      = (XString) query[12];
 
         p_indices.push_back(index);
       }
@@ -491,11 +491,11 @@ SQLInfoDB::MakeInfoTableStatistics(MIndicesMap& p_indices
 
 bool    
 SQLInfoDB::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
-                                ,CString&        p_errors
-                                ,CString         p_schema
-                                ,CString         p_procedure)
+                                ,XString&        p_errors
+                                ,XString         p_schema
+                                ,XString         p_procedure)
 {
-  CString sql;
+  XString sql;
 
   if(p_procedure.IsEmpty() || p_procedure.Compare("%") == 0)
   {
@@ -570,18 +570,18 @@ SQLInfoDB::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
   return 0;
 }
 
-CString
-SQLInfoDB::MakeInfoPSMSourcecode(CString p_schema, CString p_procedure)
+XString
+SQLInfoDB::MakeInfoPSMSourcecode(XString p_schema, XString p_procedure)
 {
-  CString sourcecode;
-  CString sql = GetPSMProcedureSourcecode(p_schema, p_procedure);
+  XString sourcecode;
+  XString sql = GetPSMProcedureSourcecode(p_schema, p_procedure);
   if(!sql.IsEmpty())
   {
     SQLQuery query(m_database);
     query.DoSQLStatement(sql);
     while (query.GetRecord())
     {
-      sourcecode += (CString)query[3];
+      sourcecode += (XString)query[3];
     }
   }
   return sourcecode;
@@ -589,11 +589,11 @@ SQLInfoDB::MakeInfoPSMSourcecode(CString p_schema, CString p_procedure)
 
 bool    
 SQLInfoDB::MakeInfoPSMParameters(MParameterMap& p_parameters
-                                ,CString&       p_errors
-                                ,CString        p_schema
-                                ,CString        p_procedure)
+                                ,XString&       p_errors
+                                ,XString        p_schema
+                                ,XString        p_procedure)
 {
-  CString sql = GetPSMProcedureParameters(p_schema,p_procedure);
+  XString sql = GetPSMProcedureParameters(p_schema,p_procedure);
   if(sql.IsEmpty() || m_preferODBC)
   {
     // No SQL, let ODBC handle the parameters
@@ -649,13 +649,13 @@ SQLInfoDB::MakeInfoPSMParameters(MParameterMap& p_parameters
 // ODBC function set. It needs a RDBMS driver, so it is not in DBInfo but in DBInfoDB
 bool
 SQLInfoDB::MakeInfoTableTriggers(MTriggerMap& p_triggers
-                                ,CString& p_errors
-                                ,CString p_schema
-                                ,CString p_tablename /*= ""*/
-                                ,CString p_trigger   /*= ""*/)
+                                ,XString& p_errors
+                                ,XString p_schema
+                                ,XString p_tablename /*= ""*/
+                                ,XString p_trigger   /*= ""*/)
 {
   // Getting the database dependent SQL string
-  CString sql;
+  XString sql;
   if(!p_tablename.IsEmpty() && p_trigger.IsEmpty())
   {
     sql = GetCATALOGTriggerList(p_schema,p_tablename);
@@ -723,10 +723,10 @@ SQLInfoDB::MakeInfoTableTriggers(MTriggerMap& p_triggers
 }
 
 bool 
-SQLInfoDB::MakeInfoTableSequences(MSequenceMap& p_sequences,CString& p_errors,CString p_schema,CString p_tablename)
+SQLInfoDB::MakeInfoTableSequences(MSequenceMap& p_sequences,XString& p_errors,XString p_schema,XString p_tablename)
 {
   // Getting the database dependent SQL string
-  CString sql = GetCATALOGSequenceList(p_schema,p_tablename);
+  XString sql = GetCATALOGSequenceList(p_schema,p_tablename);
   if(sql.IsEmpty())
   {
     // No sequences to be gotten from this RDBMS
@@ -759,7 +759,7 @@ SQLInfoDB::MakeInfoTableSequences(MSequenceMap& p_sequences,CString& p_errors,CS
       {
         // A sequence without an increment is NO sequence.
         // Try to get hold of the values through the attributes call
-        CString sql2 = GetCATALOGSequenceAttributes(p_schema,sequence.m_sequenceName);
+        XString sql2 = GetCATALOGSequenceAttributes(p_schema,sequence.m_sequenceName);
         if(!sql2.IsEmpty())
         {
           SQLQuery query2(m_database);
@@ -784,7 +784,7 @@ SQLInfoDB::MakeInfoTableSequences(MSequenceMap& p_sequences,CString& p_errors,CS
   catch(StdException& er)
   {
     ReThrowSafeException(er);
-    CString message = er.GetErrorMessage();
+    XString message = er.GetErrorMessage();
     if(message.Find("[42S02]") > 0)
     {
       // Older versions of MS-SQLServer return this SQLSTATE
@@ -799,9 +799,9 @@ SQLInfoDB::MakeInfoTableSequences(MSequenceMap& p_sequences,CString& p_errors,CS
 }
 
 bool    
-SQLInfoDB::MakeInfoTablePrivileges(MPrivilegeMap& p_privileges,CString& p_errors,CString p_schema,CString p_tablename)
+SQLInfoDB::MakeInfoTablePrivileges(MPrivilegeMap& p_privileges,XString& p_errors,XString p_schema,XString p_tablename)
 {
-  CString sql = GetCATALOGTablePrivileges(p_schema,p_tablename);   // Table privileges query
+  XString sql = GetCATALOGTablePrivileges(p_schema,p_tablename);   // Table privileges query
   if(sql.IsEmpty() || m_preferODBC)
   {
     return SQLInfo::MakeInfoTablePrivileges(p_privileges,p_errors,p_schema,p_tablename);
@@ -819,13 +819,13 @@ SQLInfoDB::MakeInfoTablePrivileges(MPrivilegeMap& p_privileges,CString& p_errors
     {
       MetaPrivilege priv;
 
-      priv.m_catalogName = (CString) query[1];
-      priv.m_schemaName  = (CString) query[2];
-      priv.m_tableName   = (CString) query[3];
-      priv.m_grantor     = (CString) query[4];
-      priv.m_grantee     = (CString) query[5];
-      priv.m_privilege   = (CString) query[6];
-      priv.m_grantable   = ((CString)query[7]).Compare("YES") == 0;
+      priv.m_catalogName = (XString) query[1];
+      priv.m_schemaName  = (XString) query[2];
+      priv.m_tableName   = (XString) query[3];
+      priv.m_grantor     = (XString) query[4];
+      priv.m_grantee     = (XString) query[5];
+      priv.m_privilege   = (XString) query[6];
+      priv.m_grantable   = ((XString)query[7]).Compare("YES") == 0;
 
       p_privileges.push_back(priv);
     }
@@ -840,9 +840,9 @@ SQLInfoDB::MakeInfoTablePrivileges(MPrivilegeMap& p_privileges,CString& p_errors
 }
 
 bool
-SQLInfoDB::MakeInfoColumnPrivileges(MPrivilegeMap& p_privileges,CString& p_errors,CString p_schema,CString p_tablename,CString p_columnname /*= ""*/)
+SQLInfoDB::MakeInfoColumnPrivileges(MPrivilegeMap& p_privileges,XString& p_errors,XString p_schema,XString p_tablename,XString p_columnname /*= ""*/)
 {
-  CString sql = GetCATALOGColumnPrivileges(p_schema,p_tablename,p_columnname);   // Column privileges query
+  XString sql = GetCATALOGColumnPrivileges(p_schema,p_tablename,p_columnname);   // Column privileges query
   if(sql.IsEmpty() || m_preferODBC)
   {
     return SQLInfo::MakeInfoColumnPrivileges(p_privileges,p_errors,p_schema,p_tablename,p_columnname);
@@ -861,14 +861,14 @@ SQLInfoDB::MakeInfoColumnPrivileges(MPrivilegeMap& p_privileges,CString& p_error
     {
       MetaPrivilege priv;
 
-      priv.m_catalogName = (CString) query[1];
-      priv.m_schemaName  = (CString) query[2];
-      priv.m_tableName   = (CString) query[3];
-      priv.m_columnName  = (CString) query[4];
-      priv.m_grantor     = (CString) query[5];
-      priv.m_grantee     = (CString) query[6];
-      priv.m_privilege   = (CString) query[7];
-      priv.m_grantable   = ((CString)query[8]).Compare("YES") == 0;
+      priv.m_catalogName = (XString) query[1];
+      priv.m_schemaName  = (XString) query[2];
+      priv.m_tableName   = (XString) query[3];
+      priv.m_columnName  = (XString) query[4];
+      priv.m_grantor     = (XString) query[5];
+      priv.m_grantee     = (XString) query[6];
+      priv.m_privilege   = (XString) query[7];
+      priv.m_grantable   = ((XString)query[8]).Compare("YES") == 0;
 
       p_privileges.push_back(priv);
     }
@@ -883,10 +883,10 @@ SQLInfoDB::MakeInfoColumnPrivileges(MPrivilegeMap& p_privileges,CString& p_error
 }
 
 bool    
-SQLInfoDB::MakeInfoViewDefinition(CString& p_defintion,CString& p_errors,CString p_schema,CString p_viewname)
+SQLInfoDB::MakeInfoViewDefinition(XString& p_defintion,XString& p_errors,XString p_schema,XString p_viewname)
 {
   bool result = false;
-  CString sql = GetCATALOGViewText(p_schema,p_viewname);
+  XString sql = GetCATALOGViewText(p_schema,p_viewname);
   if(!sql.IsEmpty())
   {
     try
@@ -922,8 +922,8 @@ SQLInfoDB::ReadMetaTypesFromQuery(SQLQuery& p_query,MMetaMap& p_objects,int p_ty
   {
     MetaObject object;
     object.m_objectType = p_type;
-    object.m_objectName = (CString) p_query[1];
-    object.m_remarks    = (CString) p_query[2];
+    object.m_objectName = (XString) p_query[1];
+    object.m_remarks    = (XString) p_query[2];
 
     p_objects.push_back(object);
   }
@@ -937,12 +937,12 @@ SQLInfoDB::ReadTablesFromQuery(SQLQuery& p_query,MTableMap& p_tables)
   {
     MetaTable table;
 
-    table.m_catalog    = (CString) p_query[1];
-    table.m_schema     = (CString) p_query[2];
-    table.m_table      = (CString) p_query[3];
-    table.m_objectType = (CString) p_query[4];
-    table.m_remarks    = (CString) p_query[5];
-    table.m_tablespace = (CString) p_query[6];
+    table.m_catalog    = (XString) p_query[1];
+    table.m_schema     = (XString) p_query[2];
+    table.m_table      = (XString) p_query[3];
+    table.m_objectType = (XString) p_query[4];
+    table.m_remarks    = (XString) p_query[5];
+    table.m_tablespace = (XString) p_query[6];
     table.m_temporary  = (bool)    p_query[7];
 
     // Some RDBMS's still have CHAR catalog fields, padded with spaces

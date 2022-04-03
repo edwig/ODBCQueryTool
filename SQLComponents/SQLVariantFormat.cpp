@@ -2,7 +2,7 @@
 //
 // File: SQLVariantFormat.cpp
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -169,7 +169,7 @@ SQLVariantFormat::IsConstantOrNumber(char p_seperator /*='.'*/)
   bool bSpace    = false;
   bool bTeken    = false;
   bool bNumber   = false;
-  CString string = m_format;
+  XString string = m_format;
 
   string.Trim();
   int pos = 0;
@@ -216,7 +216,7 @@ SQLVariantFormat::IsConstantOrNumber(char p_seperator /*='.'*/)
 }
 
 int 
-SQLVariantFormat::StrValutaNLOmzetten(CString& p_string,bool p_enkelValuta)
+SQLVariantFormat::StrValutaNLOmzetten(XString& p_string,bool p_enkelValuta)
 {
   p_string.Replace(" "   ,"");
   p_string.Replace("EUR.","");
@@ -233,7 +233,7 @@ SQLVariantFormat::StrValutaNLOmzetten(CString& p_string,bool p_enkelValuta)
 }
 
 int 
-SQLVariantFormat::StrValutaAMOmzetten(CString& p_string,bool p_enkelValuta)
+SQLVariantFormat::StrValutaAMOmzetten(XString& p_string,bool p_enkelValuta)
 {
   p_string.Replace(" " ,"");
   p_string.Replace("$.","");
@@ -249,13 +249,13 @@ SQLVariantFormat::StrValutaAMOmzetten(CString& p_string,bool p_enkelValuta)
 
 // Is string a (formatted) windows number?
 bool
-SQLVariantFormat::IsWinNumber(const CString p_string
+SQLVariantFormat::IsWinNumber(const XString p_string
                              ,char*         p_decSeperator
                              ,char*         p_thouSeperator
                              ,char*         p_valuta
-                             ,CString*      p_newNumber)
+                             ,XString*      p_newNumber)
 {
-  CString newGetal("+");
+  XString newGetal("+");
   bool bDecimal  = false;   // decimal separator found
   bool bThousend = false;   // thousand separator found
   bool bSpace    = false;   // Spaces behind the number
@@ -376,7 +376,7 @@ SQLVariantFormat::StringDoubleValue()
   }
   else
   {
-    CString waarde = m_format;
+    XString waarde = m_format;
     if(IsConstantOrNumber(','))
     {
       StrValutaNLOmzetten(waarde,false);
@@ -384,14 +384,14 @@ SQLVariantFormat::StringDoubleValue()
     }
     else
     {
-      CString newGetal;
+      XString newGetal;
       if(IsWinNumber(waarde,::g_locale_decimalSep,::g_locale_thousandSep,::g_locale_strCurrency,&newGetal))
       {
         result = atof(newGetal);
       }
       else
       {
-        CString newWaarde = waarde;
+        XString newWaarde = waarde;
         StrValutaNLOmzetten(newWaarde,true);
         if(IsWinNumber(newWaarde,::g_locale_decimalSep,::g_locale_thousandSep,::g_locale_strCurrency,&newGetal))
         {
@@ -399,13 +399,13 @@ SQLVariantFormat::StringDoubleValue()
         }
         else
         {
-          if(IsWinNumber(newWaarde,",",".",::g_locale_strCurrency,&newGetal))
+          if(IsWinNumber(newWaarde,(char*)",",(char*)".",::g_locale_strCurrency,&newGetal))
           {
             result = atof(newGetal);
           }
           else
           {
-            if(IsWinNumber(newWaarde,".",",",::g_locale_strCurrency,&newGetal))
+            if(IsWinNumber(newWaarde,(char*)".",(char*)",",::g_locale_strCurrency,&newGetal))
             {
               result = atof(newGetal);
             }
@@ -445,12 +445,12 @@ SQLVariantFormat::SetCurrentDate()
 }
 
 bool
-SQLVariantFormat::GetTimeFromStringVariant(SQLVariant* p_variant,CString p_format,TIME_STRUCT* p_time)
+SQLVariantFormat::GetTimeFromStringVariant(SQLVariant* p_variant,XString p_format,TIME_STRUCT* p_time)
 {
   ZeroMemory(p_time,sizeof(TIME_STRUCT));
-  //CString tijd("");
+  //XString tijd("");
   
-  CString tijd(p_variant ? p_variant->GetAsChar() : p_format);
+  XString tijd(p_variant ? XString(p_variant->GetAsChar()) : p_format);
 
   int pos = tijd.Find(':');
   if(pos < 0)
@@ -483,11 +483,11 @@ SQLVariantFormat::GetTimeFromStringVariant(SQLVariant* p_variant,CString p_forma
 }
 
 bool
-SQLVariantFormat::GetDateFromStringVariant(SQLVariant* p_variant,CString p_format,DATE_STRUCT* p_date)
+SQLVariantFormat::GetDateFromStringVariant(SQLVariant* p_variant,XString p_format,DATE_STRUCT* p_date)
 {
   ZeroMemory(p_date,sizeof(DATE_STRUCT));
 
-  CString datum = p_variant ? p_variant->GetAsChar() : "";
+  XString datum = p_variant ? p_variant->GetAsChar() : "";
   if(datum.IsEmpty() && !p_format.IsEmpty())
   {
     datum = p_format;
@@ -542,12 +542,12 @@ SQLVariantFormat::GetDateFromStringVariant(SQLVariant* p_variant,CString p_forma
 // "@"          -> long  windows notation
 // "d MMMM yyyy om |H:mm:ss|"  -> Most expanded form
 int
-SQLVariantFormat::FormatDate(CString p_pattern)
+SQLVariantFormat::FormatDate(XString p_pattern)
 {
   char    buffer1[NUMBER_BUFFER_SIZE + 1] = "";
   char    buffer2[NUMBER_BUFFER_SIZE + 1] = "";
-  CString dateFormat;
-  CString timeFormat;
+  XString dateFormat;
+  XString timeFormat;
   DWORD   opties = 0;
   bool    doTime = false;
 
@@ -717,10 +717,10 @@ SQLVariantFormat::FormatDate(CString p_pattern)
     buffer2[buflen] = 0;
   }
   // STEP 7: Putting date and time back together again
-  m_format = CString(buffer1);
+  m_format = XString(buffer1);
   if(doTime)
   {
-    m_format += CString(buffer2);
+    m_format += XString(buffer2);
   }
   return OK;
 }
@@ -736,7 +736,7 @@ SQLVariantFormat::FormatDate(CString p_pattern)
 //                nJ  -> n years (dutch / german)
 //                nA  -> n years (french)
 int
-SQLVariantFormat::DateCalculate(char p_operator,CString p_argument)
+SQLVariantFormat::DateCalculate(char p_operator,XString p_argument)
 {
   int  number = 0;
   int  amount = 0;
@@ -783,7 +783,7 @@ SQLVariantFormat::DateCalculate(char p_operator,CString p_argument)
     {
       // It's a variant, but a string
       // Try to convert to a date
-      CString date = m_variant->GetAsChar();
+      XString date = m_variant->GetAsChar();
       m_variant->SetData(SQL_C_DATE,date);
     }
   }
@@ -862,10 +862,10 @@ SQLVariantFormat::DateCalculate(char p_operator,CString p_argument)
 
 // Formatting of a number
 int
-SQLVariantFormat::FormatNumber(CString p_format,bool p_currency)
+SQLVariantFormat::FormatNumber(XString p_format,bool p_currency)
 {
   // Standard MS-Windows format
-  CString number;
+  XString number;
 
   // Freshly gotten for the underlying SQLVariant
   if(m_variant)
@@ -876,8 +876,8 @@ SQLVariantFormat::FormatNumber(CString p_format,bool p_currency)
     }
   }
   // Converting number variants. Also "123,4500000" to "123.45"
-  double waarde = StringDoubleValue();
-  number.Format("%f",waarde);
+  double value = StringDoubleValue();
+  number.Format("%.6f",value);
 
   if(p_format.IsEmpty())
   {
@@ -915,10 +915,10 @@ SQLVariantFormat::FormatNumber(CString p_format,bool p_currency)
   return OK;
 }
 
-CString 
+XString 
 SQLVariantFormat::FormatVariantForSQL(SQLDatabase* p_database)
 {
-  CString text;
+  XString text;
   int datatype    = m_variant->GetDataType();
   int toCdatatype = m_variant->FindDataTypeFromSQLType();
 
@@ -960,7 +960,7 @@ SQLVariantFormat::FormatVariantForSQL(SQLDatabase* p_database)
   }
   else
   {
-    CString datatypeString = m_variant->FindDatatype(datatype);
+    XString datatypeString = m_variant->FindDatatype(datatype);
     throw StdException("Cannot prepare datatype for query: " + datatypeString);
   }
   return text;
@@ -1287,14 +1287,14 @@ SQLVariantFormat::FormatNumberTemplate(char *Getal,const char *strNumFormat,int 
   FmtString[FmtPos] = '\0';
 
   // Do the rounding if necessary
-  if (	bAfronden )
+  if(bAfronden)
   {
     NUMBERFMT NumFormat;
     NumFormat.NumDigits     = iAfronden;
     NumFormat.LeadingZero   = 0;
     NumFormat.Grouping      = 0;
-    NumFormat.lpDecimalSep  = ".";
-    NumFormat.lpThousandSep = ",";
+    NumFormat.lpDecimalSep  = (LPSTR)".";
+    NumFormat.lpThousandSep = (LPSTR)",";
     NumFormat.NegativeOrder = 0;
     BufLen = GetNumberFormat(0, 0, Getal, &NumFormat, Buffer, p_buflen);
     if (BufLen <= 0)
@@ -1351,7 +1351,7 @@ SQLVariantFormat::FormatNumberTemplate(char *Getal,const char *strNumFormat,int 
   if (iGetalLeading > iLeadingDigits)
   {
     // Adding '#' to the format string
-    CString NewFormat;
+    XString NewFormat;
     Pos = 0;
     nGroup = nEersteGroup;
     for (Tel = 0 ; Tel < (iGetalLeading - iLeadingDigits) ; Tel++ )
@@ -1376,7 +1376,7 @@ SQLVariantFormat::FormatNumberTemplate(char *Getal,const char *strNumFormat,int 
   }
   else if (iGetalLeading < iLeadingDigits)
   {
-    CString NewGetal;
+    XString NewGetal;
     for (Tel = 0 ; Tel < (iLeadingDigits - iGetalLeading) ; Tel++ )
     {
       NewGetal += '0';
@@ -1465,7 +1465,7 @@ SQLVariantFormat::FormatNumberTemplate(char *Getal,const char *strNumFormat,int 
     }
   }
   Buffer[Pos] = '\0';
-  CString string = RestString;
+  XString string = RestString;
   string.Replace("@*@",Buffer);
   // The placing of the '+' or '-' sign
   char tPlus[2]  = {1 , 0};

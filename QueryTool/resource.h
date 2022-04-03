@@ -60,13 +60,17 @@
 #define IDC_ADD                         217
 #define IDC_BIND                        217
 #define IDC_BUT_FONT                    217
+#define IDC_BUTT_10                     217
 #define IDC_BUTTON3                     218
 #define IDC_BTN_RDBMS                   218
+#define IDC_BUTT_25                     218
 #define IDC_CON_DELETE                  219
+#define IDC_BUTT_ANY                    219
 #define IDC_EDIT1                       220
 #define IDC_OE_SQLPREFETCHLINES         220
 #define IDD_VARIABLES                   220
 #define IDC_VAR1                        220
+#define IDC_TEXT                        220
 #define IDC_CUR_CONNECTION              221
 #define IDC_OE_SQLTERMINATOR            221
 #define IDC_VAR2                        221
@@ -180,7 +184,8 @@
 #define ID_FPW_TABLE                    320
 #define ID_PROPERTIES                   321
 #define IDR_SYSMENU                     322
-
+#define IDD_DONATE                      323
+#define IDB_PAYPAL                      325
 #define IDC_OE_WORKBOOK_TAB             1000
 #define IDC_OESA_LIST                   1000
 #define IDC_EF_ALL_WINDOWS              1001
@@ -350,6 +355,7 @@
 #define IDC_STATIC4                     1048
 #define IDC_EDIT3                       1049
 #define IDC_TAB                         1050
+#define IDC_PAYPAL                      1051
 #define IDI_OE_BIG_SMILE                1101
 #define IDB_OE_EXPLORER_STATE_LIST      1201
 #define IDR_OPENEDITOR                  1301
@@ -566,6 +572,7 @@
 #define ID_THEMA_MODERATE               50124
 #define ID_THEMA_PUREGRAY               50125
 #define ID_THEMA_BLACKWHITE             50126
+#define ID_DONATION                     50127
 #define ID_APP_DBLKEYACCEL_FIRST        0xDF00
 #define ID_APP_DBLKEYACCEL_LAST         0xDFFF
 
@@ -573,9 +580,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        323
-#define _APS_NEXT_COMMAND_VALUE         50127
-#define _APS_NEXT_CONTROL_VALUE         1051
+#define _APS_NEXT_RESOURCE_VALUE        326
+#define _APS_NEXT_COMMAND_VALUE         50128
+#define _APS_NEXT_CONTROL_VALUE         1052
 #define _APS_NEXT_SYMED_VALUE           100
 #endif
 #endif

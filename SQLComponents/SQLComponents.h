@@ -2,7 +2,7 @@
 //
 // File: SQLComponents.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -23,7 +23,6 @@
 //
 #pragma once
 #include "SQLLanguage.h"
-#include "StdException.h"
 #include "SQLComponentsVersion.h"
 
 // Everything in this library is part of this namespace
@@ -59,6 +58,11 @@ typedef enum _databaseType
 }
 DatabaseType;
 
+// Array with session initialization statements
+#define SQLCOMP_MAX_SESS_DATABASES 10
+#define SQLCOMP_MAX_SESS_SETTINGS  10
+extern char* g_SQLSessionInitialization[SQLCOMP_MAX_SESS_DATABASES][SQLCOMP_MAX_SESS_SETTINGS];
+
 // We are running in a background server (No message boxes allowed!)
 extern bool g_SQLComponentsInServer;
 
@@ -71,6 +75,9 @@ void SQLComponentsInitialized();
 
 // SQLComponents always works in localtime (UTC +/- timezone)
 void SQLSetLocalTimezone();
+
+// Accept up to SQLCOMP_MAX_SESS_SETTINGS for a new SQLDatabase connection
+bool SQLSetSessionInitialisation(DatabaseType p_type,int p_number,const char* p_statement);
 
 // End of namespace
 }

@@ -2,7 +2,7 @@
 //
 // File: SQLStatement.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -35,13 +35,13 @@ public :
   SQLStatement(int p_number,char* p_statement,int p_minimum,int p_maximum);
  ~SQLStatement();
   bool    CheckRecords(int p_records);
-  void    AddToStatement(CString& p_statement);
+  void    AddToStatement(XString& p_statement);
 
   // SETTERS
 
   void    SetNumber(int p_number)           { m_number      = p_number;     };
-  void    SetExplanation(CString p_explain) { m_explanation = p_explain;    };
-  void    SetStatement(CString p_statement) { m_statement   = p_statement;  };
+  void    SetExplanation(XString p_explain) { m_explanation = p_explain;    };
+  void    SetStatement(XString p_statement) { m_statement   = p_statement;  };
   void    SetMinNumber(int p_number)        { m_minNumber   = p_number;     };
   void    SetMaxNumber(int p_number)        { m_maxNumber   = p_number;     };
   void    SetCustomer(bool p_customer)      { m_customer    = p_customer;   };
@@ -49,16 +49,16 @@ public :
   // GETTERS
 
   int     GetNumber()                       { return m_number;      };
-  CString GetExplanation()                  { return m_explanation; };
-  CString GetStatement()                    { return m_statement;   };
+  XString GetExplanation()                  { return m_explanation; };
+  XString GetStatement()                    { return m_statement;   };
   int     GetMinNumber()                    { return m_minNumber;   };
   int     GetMaxNumber()                    { return m_maxNumber;   };
   bool    GetCustomer()                     { return m_customer;    };
 
 private:
   int	    m_number;
-  CString	m_explanation;
-  CString	m_statement;
+  XString	m_explanation;
+  XString	m_statement;
   int	    m_minNumber;
   int	    m_maxNumber;
   bool 	  m_customer;  // Specific for a customer

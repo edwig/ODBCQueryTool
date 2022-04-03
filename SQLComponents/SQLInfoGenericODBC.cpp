@@ -2,7 +2,7 @@
 //
 // File: SQLInfoGenericODBC.cpp
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -63,7 +63,7 @@ SQLInfoGenericODBC::GetRDBMSDatabaseType() const
 }
 
 // The name of the database vendor
-CString
+XString
 SQLInfoGenericODBC::GetRDBMSVendorName() const
 {
   // The name of the database vendor
@@ -71,7 +71,7 @@ SQLInfoGenericODBC::GetRDBMSVendorName() const
 }
 
 // Get the physical database name
-CString
+XString
 SQLInfoGenericODBC::GetRDBMSPhysicalDatabaseName() const
 {
   // See to it that "SQLDatabase:GetDatabaseName" does it's work
@@ -170,42 +170,42 @@ SQLInfoGenericODBC::GetRDBMSNumericPrecisionScale(SQLULEN& /*p_precision*/, SQLS
 // KEYWORDS
 
 // Keyword for the current date and time
-CString
+XString
 SQLInfoGenericODBC::GetKEYWORDCurrentTimestamp() const
 {
   return "current_timestamp";
 }
 
 // String for the current date
-CString
+XString
 SQLInfoGenericODBC::GetKEYWORDCurrentDate() const
 {
   return "current_date";
 }
 
 // Get the concatenation operator
-CString
+XString
 SQLInfoGenericODBC::GetKEYWORDConcatanationOperator() const
 {
   return "||";
 }
 
 // Get quote character for strings
-CString
+XString
 SQLInfoGenericODBC::GetKEYWORDQuoteCharacter() const
 {
   return "\'";
 }
 
 // Get quote character around reserved words as an identifier
-CString
+XString
 SQLInfoGenericODBC::GetKEYWORDReservedWordQuote() const
 {
   return "\"";
 }
 
 // Get default NULL for parameter list input
-CString
+XString
 SQLInfoGenericODBC::GetKEYWORDParameterDefaultNULL() const
 {
   // Standard, no definition defines the NULL state
@@ -213,21 +213,21 @@ SQLInfoGenericODBC::GetKEYWORDParameterDefaultNULL() const
 }
 
 // Parameter is for INPUT and OUTPUT in parameter list
-CString
+XString
 SQLInfoGenericODBC::GetKEYWORDParameterINOUT() const
 {
   return "";
 }
 
 // Parameter is for OUTPUT only in parameter list
-CString
+XString
 SQLInfoGenericODBC::GetKEYWORDParameterOUT() const
 {
   return "";
 }
 
 // Get datatype of the IDENTITY primary key in a Network database
-CString
+XString
 SQLInfoGenericODBC::GetKEYWORDNetworkPrimaryKeyType() const
 {
   // Use SEQUENCE to fill!
@@ -235,14 +235,14 @@ SQLInfoGenericODBC::GetKEYWORDNetworkPrimaryKeyType() const
 }
 
 // Get datatype for timestamp (year to second)
-CString
+XString
 SQLInfoGenericODBC::GetKEYWORDTypeTimestamp() const
 {
   return "timestamp";
 }
 
 // Prefix for a parameter in a stored procedure
-CString
+XString
 SQLInfoGenericODBC::GetKEYWORDParameterPrefix() const
 {
   return "";
@@ -250,22 +250,22 @@ SQLInfoGenericODBC::GetKEYWORDParameterPrefix() const
 
 // Get select part to add new record identity to a table
 // Can be special column like 'OID' or a sequence select
-CString
-SQLInfoGenericODBC::GetKEYWORDIdentityString(CString& /*p_tablename*/,CString /*p_postfix*/ /*= "_seq"*/) const
+XString
+SQLInfoGenericODBC::GetKEYWORDIdentityString(XString& /*p_tablename*/,XString /*p_postfix*/ /*= "_seq"*/) const
 {
   // Undetermined: return nothing
   return "";
 }
 
 // Gets the UPPER function
-CString
-SQLInfoGenericODBC::GetKEYWORDUpper(CString& p_expression) const
+XString
+SQLInfoGenericODBC::GetKEYWORDUpper(XString& p_expression) const
 {
   return "{fn UCASE(" + p_expression + ")}";
 }
 
 // Gets the construction for 1 minute ago
-CString
+XString
 SQLInfoGenericODBC::GetKEYWORDInterval1MinuteAgo() const
 {
   // Not supported
@@ -273,52 +273,52 @@ SQLInfoGenericODBC::GetKEYWORDInterval1MinuteAgo() const
 }
 
 // Gets the Not-NULL-Value statement of the database
-CString
-SQLInfoGenericODBC::GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) const
+XString
+SQLInfoGenericODBC::GetKEYWORDStatementNVL(XString& p_test,XString& p_isnull) const
 {
   return "{fn IFNULL(" + p_test + "," + p_isnull + ")}";
 }
 
 // Gets the RDBMS definition of the datatype
-CString
+XString
 SQLInfoGenericODBC::GetKEYWORDDataType(MetaColumn* p_column)
 {
   return p_column->m_typename = SQLInfo::ODBCDataType(p_column->m_datatype);
 }
 
 // Gets the USER (current-user) keyword function
-CString
+XString
 SQLInfoGenericODBC::GetKEYWORDCurrentUser() const
 {
   return "CURRENT_USER";
 }
 
 // Connects to a default schema in the database/instance
-CString
-SQLInfoGenericODBC::GetSQLDefaultSchema(CString /*p_schema*/) const
+XString
+SQLInfoGenericODBC::GetSQLDefaultSchema(XString /*p_schema*/) const
 {
   return "";
 }
 
 // Gets the construction for inline generating a key within an INSERT statement
-CString
-SQLInfoGenericODBC::GetSQLNewSerial(CString /*p_table*/, CString /*p_sequence*/) const
+XString
+SQLInfoGenericODBC::GetSQLNewSerial(XString /*p_table*/, XString /*p_sequence*/) const
 {
   // Insert a zero in an IDENTITY column
   return "0";
 }
 
 // Gets the construction / select for generating a new serial identity
-CString
-SQLInfoGenericODBC::GetSQLGenerateSerial(CString p_table) const
+XString
+SQLInfoGenericODBC::GetSQLGenerateSerial(XString p_table) const
 {
   // NO WAY OF KNOWNING THIS / And no need to
   return "0";
 }
 
 // Gets the construction / select for the resulting effective generated serial
-CString
-SQLInfoGenericODBC::GetSQLEffectiveSerial(CString p_identity) const
+XString
+SQLInfoGenericODBC::GetSQLEffectiveSerial(XString p_identity) const
 {
   // THIS IS MOST LIKELY NOT THE CORRECT VALUE.
   // NO WAY OF DETERMINING THIS
@@ -326,29 +326,29 @@ SQLInfoGenericODBC::GetSQLEffectiveSerial(CString p_identity) const
 }
 
 // Gets the sub-transaction commands
-CString
-SQLInfoGenericODBC::GetSQLStartSubTransaction(CString p_savepointName) const
+XString
+SQLInfoGenericODBC::GetSQLStartSubTransaction(XString p_savepointName) const
 {
   // Generic ODBC does not known about sub transactions!
-  return CString("");
+  return XString("");
 }
 
-CString
-SQLInfoGenericODBC::GetSQLCommitSubTransaction(CString p_savepointName) const
+XString
+SQLInfoGenericODBC::GetSQLCommitSubTransaction(XString p_savepointName) const
 {
   // Generic ODBC does not known about sub transactions!
-  return CString("");
+  return XString("");
 }
 
-CString
-SQLInfoGenericODBC::GetSQLRollbackSubTransaction(CString p_savepointName) const
+XString
+SQLInfoGenericODBC::GetSQLRollbackSubTransaction(XString p_savepointName) const
 {
   // Generic ODBC does not known about sub transactions!
-  return CString("");
+  return XString("");
 }
 
 // FROM-Part for a query to select only 1 (one) record / or empty!
-CString
+XString
 SQLInfoGenericODBC::GetSQLFromDualClause() const
 {
   // No way of knowing this in standard ODBC
@@ -356,26 +356,26 @@ SQLInfoGenericODBC::GetSQLFromDualClause() const
 }
 
 // Get SQL to lock  a table 
-CString
-SQLInfoGenericODBC::GetSQLLockTable(CString p_schema, CString p_tablename, bool p_exclusive) const
+XString
+SQLInfoGenericODBC::GetSQLLockTable(XString p_schema, XString p_tablename, bool p_exclusive) const
 {
   // Standard ISO SQL Syntax
-  CString query = "LOCK TABLE " + p_schema + "." + p_tablename + " IN ";
+  XString query = "LOCK TABLE " + p_schema + "." + p_tablename + " IN ";
   query += p_exclusive ? "EXCLUSIVE" : "SHARE";
   query += " MODE";
   return query;
 }
 
 // Get query to optimize the table statistics
-CString
-SQLInfoGenericODBC::GetSQLOptimizeTable(CString p_schema, CString p_tablename) const
+XString
+SQLInfoGenericODBC::GetSQLOptimizeTable(XString p_schema, XString p_tablename) const
 {
   return "";
 }
 
 // Transform query to select top <n> rows
-CString
-SQLInfoGenericODBC::GetSQLTopNRows(CString p_sql,int /*p_top*/,int /*p_skip = 0*/) const
+XString
+SQLInfoGenericODBC::GetSQLTopNRows(XString p_sql,int /*p_top*/,int /*p_skip = 0*/) const
 {
   // Does nothing
   return p_sql;
@@ -388,38 +388,38 @@ SQLInfoGenericODBC::GetSQLTopNRows(CString p_sql,int /*p_top*/,int /*p_skip = 0*
 //////////////////////////////////////////////////////////////////////////
 
 // Makes a SQL string from a given string, with all the right quotes
-CString
-SQLInfoGenericODBC::GetSQLString(const CString& p_string) const
+XString
+SQLInfoGenericODBC::GetSQLString(const XString& p_string) const
 {
-  CString s = p_string;
+  XString s = p_string;
   s.Replace("'","''");
-  CString kwoot = GetKEYWORDQuoteCharacter();
+  XString kwoot = GetKEYWORDQuoteCharacter();
   return  kwoot + s + kwoot;
 }
 
 // Get date string in engine format
-CString
+XString
 SQLInfoGenericODBC::GetSQLDateString(int p_year,int p_month,int p_day) const
 {
-  CString dateString;
+  XString dateString;
   dateString.Format("{d '%04d-%02d-%02d'}",p_year,p_month,p_day);
   return dateString;
 }
 
 // Get time string in database engine format
-CString
+XString
 SQLInfoGenericODBC::GetSQLTimeString(int p_hour,int p_minute,int p_second) const
 {
-  CString retval;
+  XString retval;
   retval.Format("{t '%02d:%02d:%02d'}",p_hour,p_minute,p_second);
   return retval;
 }
 
 // Get date-time string in database engine format
-CString
+XString
 SQLInfoGenericODBC::GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
 {
-  CString string;
+  XString string;
   string.Format("{ts '%04d-%02d-%02d %02d:%02d:%02d'}"
                 ,p_year,p_month,p_day // ODBC Ordering !!
                 ,p_hour,p_minute,p_second);
@@ -427,17 +427,17 @@ SQLInfoGenericODBC::GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_
 }
 
 // Get date-time bound parameter string in database format
-CString
+XString
 SQLInfoGenericODBC::GetSQLDateTimeBoundString() const
 {
   return "{ts ?}";
 }
 
 // Stripped data for the parameter binding
-CString
+XString
 SQLInfoGenericODBC::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
 {
-  CString string;
+  XString string;
   string.Format("%04d-%02d-%02d %02d:%02d:%02d"
                 ,p_year,p_month,p_day // ODBC Ordering !!
                 ,p_hour,p_minute,p_second);
@@ -471,7 +471,7 @@ SQLInfoGenericODBC::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_da
 
 // Meta info about meta types
 // Standard ODBC functions are good enough
-CString
+XString
 SQLInfoGenericODBC::GetCATALOGMetaTypes(int p_type) const
 {
   UNREFERENCED_PARAMETER(p_type);
@@ -480,45 +480,45 @@ SQLInfoGenericODBC::GetCATALOGMetaTypes(int p_type) const
 
 // ALL FUNCTIONS FOR TABLE(s)
 
-CString
-SQLInfoGenericODBC::GetCATALOGTableExists(CString& /*p_schema*/,CString& /*p_tablename*/) const
+XString
+SQLInfoGenericODBC::GetCATALOGTableExists(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
   // Cannot do this, let ODBC handle this
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetCATALOGTablesList(CString& /*p_schema*/,CString& /*p_pattern*/) const
+XString
+SQLInfoGenericODBC::GetCATALOGTablesList(XString& /*p_schema*/,XString& /*p_pattern*/) const
 {
   // Cannot do this, let ODBC handle this
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetCATALOGTableAttributes(CString& /*p_schema*/,CString& /*p_tablename*/) const
+XString
+SQLInfoGenericODBC::GetCATALOGTableAttributes(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
   // Cannot do this, let ODBC handle this
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetCATALOGTableSynonyms(CString& /*p_schema*/,CString& /*p_tablename*/) const
+XString
+SQLInfoGenericODBC::GetCATALOGTableSynonyms(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
   // Cannot do this, let ODBC handle this
-  return false;
+  return XString();
 }
 
-CString
-SQLInfoGenericODBC::GetCATALOGTableCatalog(CString& /*p_schema*/,CString& /*p_tablename*/) const
+XString
+SQLInfoGenericODBC::GetCATALOGTableCatalog(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
   // Cannot do this, let ODBC handle this
-  return false;
+  return XString();
 }
 
-CString
+XString
 SQLInfoGenericODBC::GetCATALOGTableCreate(MetaTable& p_table,MetaColumn& /*p_column*/) const
 {
-  CString sql = "CREATE ";
+  XString sql = "CREATE ";
   if (p_table.m_temporary)
   {
     sql += "TEMPORARY ";
@@ -527,23 +527,23 @@ SQLInfoGenericODBC::GetCATALOGTableCreate(MetaTable& p_table,MetaColumn& /*p_col
   return sql;
 }
 
-CString
+XString
 SQLInfoGenericODBC::GetCATALOGTableCreatePostfix(MetaTable& /*p_table*/,MetaColumn& /*p_column*/) const
 {
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetCATALOGTableRename(CString p_schema,CString p_tablename,CString p_newname) const
+XString
+SQLInfoGenericODBC::GetCATALOGTableRename(XString p_schema,XString p_tablename,XString p_newname) const
 {
-  CString sql("RENAME TABLE" + p_schema + "." + p_tablename + " TO " + p_newname);
+  XString sql("RENAME TABLE" + p_schema + "." + p_tablename + " TO " + p_newname);
   return sql;
 }
 
-CString
-SQLInfoGenericODBC::GetCATALOGTableDrop(CString p_schema,CString p_tablename,bool /*p_ifExist = false*/,bool /*p_restrict = false*/,bool /*p_cascade = false*/) const
+XString
+SQLInfoGenericODBC::GetCATALOGTableDrop(XString p_schema,XString p_tablename,bool /*p_ifExist = false*/,bool /*p_restrict = false*/,bool /*p_cascade = false*/) const
 {
-  CString sql = "DROP TABLE ";
+  XString sql = "DROP TABLE ";
   if(!p_schema.IsEmpty())
   {
     sql += p_schema;
@@ -556,21 +556,21 @@ SQLInfoGenericODBC::GetCATALOGTableDrop(CString p_schema,CString p_tablename,boo
 //////////////////////////////////////////////////////////////////////////
 // ALL TEMPORARY TABLE FUNCTIONS
 
-CString 
-SQLInfoGenericODBC::GetCATALOGTemptableCreate(CString p_schema,CString p_tablename,CString p_select) const
+XString 
+SQLInfoGenericODBC::GetCATALOGTemptableCreate(XString p_schema,XString p_tablename,XString p_select) const
 {
   // BEWARE: THIS IS A GUESS. NO REAL DEFINITION IN ODBC
   return "CREATE TEMPORARY TABLE " + p_schema + "." + p_tablename + "\nAS " + p_select;
 }
 
-CString 
-SQLInfoGenericODBC::GetCATALOGTemptableIntoTemp(CString p_schema,CString p_tablename,CString p_select) const
+XString 
+SQLInfoGenericODBC::GetCATALOGTemptableIntoTemp(XString p_schema,XString p_tablename,XString p_select) const
 {
   return "INSERT INTO " + p_schema + "." + p_tablename + "\n" + p_select + ";\n";
 }
 
-CString 
-SQLInfoGenericODBC::GetCATALOGTemptableDrop(CString p_schema,CString p_tablename) const
+XString 
+SQLInfoGenericODBC::GetCATALOGTemptableDrop(XString p_schema,XString p_tablename) const
 {
   return "DROP TABLE " + p_schema + "." + p_tablename;
 }
@@ -578,32 +578,32 @@ SQLInfoGenericODBC::GetCATALOGTemptableDrop(CString p_schema,CString p_tablename
 //////////////////////////////////////////////////////////////////////////
 // ALL COLUMN FUNCTIONS
 
-CString 
-SQLInfoGenericODBC::GetCATALOGColumnExists(CString p_schema,CString p_tablename,CString p_columnname) const
+XString 
+SQLInfoGenericODBC::GetCATALOGColumnExists(XString p_schema,XString p_tablename,XString p_columnname) const
 {
   // Cannot now that, use ODBC!
   return "";
 }
 
-CString 
-SQLInfoGenericODBC::GetCATALOGColumnList(CString& /*p_schema*/,CString& /*p_tablename*/) const
+XString 
+SQLInfoGenericODBC::GetCATALOGColumnList(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
   // Cannot now that, use ODBC!
   return "";
 }
 
-CString 
-SQLInfoGenericODBC::GetCATALOGColumnAttributes(CString& /*p_schema*/,CString& /*p_tablename*/,CString& /*p_columnname*/) const
+XString 
+SQLInfoGenericODBC::GetCATALOGColumnAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_columnname*/) const
 {
   // Cannot now that, use ODBC!
   return "";
 }
 
-CString 
+XString 
 SQLInfoGenericODBC::GetCATALOGColumnCreate(MetaColumn& p_column) const
 {
   // General ISO 9075E syntax
-  CString sql = "ALTER TABLE  " + p_column.m_schema + "." + p_column.m_table  + "\n"
+  XString sql = "ALTER TABLE  " + p_column.m_schema + "." + p_column.m_table  + "\n"
                 "  ADD COLUMN " + p_column.m_column + " " + p_column.m_typename;
   p_column.GetPrecisionAndScale(sql);
   p_column.GetNullable(sql);
@@ -614,11 +614,11 @@ SQLInfoGenericODBC::GetCATALOGColumnCreate(MetaColumn& p_column) const
   return sql;
 }
 
-CString 
+XString 
 SQLInfoGenericODBC::GetCATALOGColumnAlter(MetaColumn& p_column) const
 {
   // General ISO 9075E syntax
-  CString sql = "ALTER TABLE  " + p_column.m_schema + "." + p_column.m_table  + "\n"
+  XString sql = "ALTER TABLE  " + p_column.m_schema + "." + p_column.m_table  + "\n"
                 "ALTER COLUMN " + p_column.m_column + " " + p_column.m_typename;
   p_column.GetPrecisionAndScale(sql);
   p_column.GetNullable(sql);
@@ -629,20 +629,20 @@ SQLInfoGenericODBC::GetCATALOGColumnAlter(MetaColumn& p_column) const
   return sql;
 }
 
-CString 
-SQLInfoGenericODBC::GetCATALOGColumnRename(CString p_schema,CString p_tablename,CString p_columnname,CString p_newname,CString /*p_datatype*/) const
+XString 
+SQLInfoGenericODBC::GetCATALOGColumnRename(XString p_schema,XString p_tablename,XString p_columnname,XString p_newname,XString /*p_datatype*/) const
 {
   // General ISO 9075E syntax
-  CString sql("ALTER  TABLE  " + p_schema + "." + p_tablename + "\n"
+  XString sql("ALTER  TABLE  " + p_schema + "." + p_tablename + "\n"
               "RENAME " + p_columnname + " TO " + p_newname + "\n");
   return sql;
 }
 
-CString 
-SQLInfoGenericODBC::GetCATALOGColumnDrop(CString p_schema,CString p_tablename,CString p_columnname) const
+XString 
+SQLInfoGenericODBC::GetCATALOGColumnDrop(XString p_schema,XString p_tablename,XString p_columnname) const
 {
   // General ISO 9075E syntax
-  CString sql("ALTER TABLE  " + p_schema + "." + p_tablename + "\n"
+  XString sql("ALTER TABLE  " + p_schema + "." + p_tablename + "\n"
               "DROP  COLUMN " + p_columnname);
   return sql;
 }
@@ -651,36 +651,36 @@ SQLInfoGenericODBC::GetCATALOGColumnDrop(CString p_schema,CString p_tablename,CS
 // ALL INDICES FUNCTIONS
 
 // All index functions
-CString
-SQLInfoGenericODBC::GetCATALOGIndexExists(CString p_schema,CString p_tablename,CString p_indexname) const
+XString
+SQLInfoGenericODBC::GetCATALOGIndexExists(XString p_schema,XString p_tablename,XString p_indexname) const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLStatistics instead (see SQLInfo class)
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetCATALOGIndexList(CString& /*p_schema*/,CString& /*p_tablename*/)   const
+XString
+SQLInfoGenericODBC::GetCATALOGIndexList(XString& /*p_schema*/,XString& /*p_tablename*/)   const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLStatistics instead (see SQLInfo class)
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetCATALOGIndexAttributes(CString& /*p_schema*/,CString& /*p_tablename*/,CString& /*p_indexname*/)  const
+XString
+SQLInfoGenericODBC::GetCATALOGIndexAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_indexname*/)  const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLStatistics instead (see SQLInfo class)
   return "";
 }
 
-CString
+XString
 SQLInfoGenericODBC::GetCATALOGIndexCreate(MIndicesMap& p_indices) const
 {
   // Get SQL to create an index for a table
   // CREATE [UNIQUE] INDEX [<schema>.]indexname ON [<schema>.]tablename(column [ASC|DESC] [,...]);
-  CString query;
+  XString query;
   for(auto& index : p_indices)
   {
     if(index.m_position == 1)
@@ -719,15 +719,15 @@ SQLInfoGenericODBC::GetCATALOGIndexCreate(MIndicesMap& p_indices) const
   return query;
 }
 
-CString
-SQLInfoGenericODBC::GetCATALOGIndexDrop(CString p_schema,CString /*p_tablename*/,CString p_indexname) const
+XString
+SQLInfoGenericODBC::GetCATALOGIndexDrop(XString p_schema,XString /*p_tablename*/,XString p_indexname) const
 {
-  CString sql = "DROP INDEX " + p_schema + "." + p_indexname;
+  XString sql = "DROP INDEX " + p_schema + "." + p_indexname;
   return sql;
 }
 
 // Get extra filter expression for an index column
-CString
+XString
 SQLInfoGenericODBC::GetCATALOGIndexFilter(MetaIndex& /*p_index*/) const
 {
   return "";
@@ -736,25 +736,25 @@ SQLInfoGenericODBC::GetCATALOGIndexFilter(MetaIndex& /*p_index*/) const
 //////////////////////////////////////////////////////////////////////////
 // ALL PRIMARY KEY FUNCTIONS
 
-CString
-SQLInfoGenericODBC::GetCATALOGPrimaryExists(CString /*p_schema*/,CString /*p_tablename*/) const
+XString
+SQLInfoGenericODBC::GetCATALOGPrimaryExists(XString /*p_schema*/,XString /*p_tablename*/) const
 {
   // Cannot do this, Use ODBC functions!
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetCATALOGPrimaryAttributes(CString& /*p_schema*/,CString& /*p_tablename*/) const
+XString
+SQLInfoGenericODBC::GetCATALOGPrimaryAttributes(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
   // Cannot do this, Use ODBC functions!
   return "";
 }
 
-CString
+XString
 SQLInfoGenericODBC::GetCATALOGPrimaryCreate(MPrimaryMap& p_primaries) const
 {
   // General ISO Primary key constraint
-  CString query("ALTER TABLE ");
+  XString query("ALTER TABLE ");
 
   for(auto& prim : p_primaries)
   {
@@ -779,10 +779,10 @@ SQLInfoGenericODBC::GetCATALOGPrimaryCreate(MPrimaryMap& p_primaries) const
   return query;
 }
 
-CString
-SQLInfoGenericODBC::GetCATALOGPrimaryDrop(CString p_schema,CString p_tablename,CString p_constraintname) const
+XString
+SQLInfoGenericODBC::GetCATALOGPrimaryDrop(XString p_schema,XString p_tablename,XString p_constraintname) const
 {
-  CString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+  XString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
               " DROP CONSTRAINT " + p_constraintname);
   return sql;
 }
@@ -790,39 +790,39 @@ SQLInfoGenericODBC::GetCATALOGPrimaryDrop(CString p_schema,CString p_tablename,C
 //////////////////////////////////////////////////////////////////////////
 // ALL FOREIGN KEY FUNCTIONS
 
-CString
-SQLInfoGenericODBC::GetCATALOGForeignExists(CString p_schema,CString p_tablename,CString p_constraintname) const
+XString
+SQLInfoGenericODBC::GetCATALOGForeignExists(XString p_schema,XString p_tablename,XString p_constraintname) const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLForeignKeys instead (see SQLInfo class)
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetCATALOGForeignList(CString& /*p_schema*/,CString& /*p_tablename*/,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
+XString
+SQLInfoGenericODBC::GetCATALOGForeignList(XString& /*p_schema*/,XString& /*p_tablename*/,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLForeignKeys instead (see SQLInfo class)
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetCATALOGForeignAttributes(CString& /*p_schema*/,CString& /*p_tablename*/,CString& /*p_constraintname*/,bool /*p_referenced = false*/,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
+XString
+SQLInfoGenericODBC::GetCATALOGForeignAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_constraintname*/,bool /*p_referenced = false*/,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLForeignKeys instead (see SQLInfo class)
   return "";
 }
 
-CString
+XString
 SQLInfoGenericODBC::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
 {
   // Get first record
   MetaForeign& foreign = p_foreigns.front();
 
   // Construct the correct tablename
-  CString table(foreign.m_fkTableName);
-  CString primary(foreign.m_pkTableName);
+  XString table(foreign.m_fkTableName);
+  XString primary(foreign.m_pkTableName);
   if(!foreign.m_fkSchemaName.IsEmpty())
   {
     table = foreign.m_fkSchemaName + "." + table;
@@ -833,7 +833,7 @@ SQLInfoGenericODBC::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
   }
 
   // The base foreign key command
-  CString query = "ALTER TABLE " + table + "\n"
+  XString query = "ALTER TABLE " + table + "\n"
                   "  ADD CONSTRAINT " + foreign.m_foreignConstraint + "\n"
                   "      FOREIGN KEY (";
 
@@ -898,7 +898,7 @@ SQLInfoGenericODBC::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
   return query;
 }
 
-CString
+XString
 SQLInfoGenericODBC::GetCATALOGForeignAlter(MForeignMap& p_original,MForeignMap& p_requested) const
 {
   // Make sure we have both
@@ -911,14 +911,14 @@ SQLInfoGenericODBC::GetCATALOGForeignAlter(MForeignMap& p_original,MForeignMap& 
   MetaForeign& requested = p_requested.front();
 
   // Construct the correct tablename
-  CString table(original.m_fkTableName);
+  XString table(original.m_fkTableName);
   if(!original.m_fkSchemaName.IsEmpty())
   {
     table = original.m_fkSchemaName + "." + table;
   }
 
   // The base foreign key command
-  CString query = "ALTER TABLE " + table + "\n"
+  XString query = "ALTER TABLE " + table + "\n"
                   "ALTER CONSTRAINT " + original.m_foreignConstraint + "\n";
 
   // Add all relevant options
@@ -968,10 +968,10 @@ SQLInfoGenericODBC::GetCATALOGForeignAlter(MForeignMap& p_original,MForeignMap& 
   return query;
 }
 
-CString
-SQLInfoGenericODBC::GetCATALOGForeignDrop(CString p_schema,CString p_tablename,CString p_constraintname) const
+XString
+SQLInfoGenericODBC::GetCATALOGForeignDrop(XString p_schema,XString p_tablename,XString p_constraintname) const
 {
-  CString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+  XString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
               " DROP CONSTRAINT " + p_constraintname);
   return sql;
 }
@@ -979,36 +979,36 @@ SQLInfoGenericODBC::GetCATALOGForeignDrop(CString p_schema,CString p_tablename,C
 //////////////////////////////////////////////////////////////////////////
 // ALL TRIGGER FUNCTIONS
 
-CString
-SQLInfoGenericODBC::GetCATALOGTriggerExists(CString p_schema, CString p_tablename, CString p_triggername) const
+XString
+SQLInfoGenericODBC::GetCATALOGTriggerExists(XString p_schema, XString p_tablename, XString p_triggername) const
 {
   // Not standard enough
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetCATALOGTriggerList(CString& /*p_schema*/,CString& /*p_tablename*/) const
+XString
+SQLInfoGenericODBC::GetCATALOGTriggerList(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
   // Not standard enough
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetCATALOGTriggerAttributes(CString& /*p_schema*/,CString& /*p_tablename*/,CString& /*p_triggername*/) const
+XString
+SQLInfoGenericODBC::GetCATALOGTriggerAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_triggername*/) const
 {
   // Not standard enough
   return "";
 }
 
-CString
+XString
 SQLInfoGenericODBC::GetCATALOGTriggerCreate(MetaTrigger& /*p_trigger*/) const
 {
   // Not standard enough
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetCATALOGTriggerDrop(CString p_schema, CString p_tablename, CString p_triggername) const
+XString
+SQLInfoGenericODBC::GetCATALOGTriggerDrop(XString p_schema, XString p_tablename, XString p_triggername) const
 {
   // Not standard enough
   return "";
@@ -1017,32 +1017,32 @@ SQLInfoGenericODBC::GetCATALOGTriggerDrop(CString p_schema, CString p_tablename,
 //////////////////////////////////////////////////////////////////////////
 // ALL SEQUENCE FUNCTIONS
 
-CString
-SQLInfoGenericODBC::GetCATALOGSequenceExists(CString p_schema, CString p_sequence) const
+XString
+SQLInfoGenericODBC::GetCATALOGSequenceExists(XString p_schema, XString p_sequence) const
 {
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetCATALOGSequenceList(CString& /*p_schema*/,CString& /*p_pattern*/) const
+XString
+SQLInfoGenericODBC::GetCATALOGSequenceList(XString& /*p_schema*/,XString& /*p_pattern*/) const
 {
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetCATALOGSequenceAttributes(CString& /*p_schema*/,CString& /*p_sequence*/) const
+XString
+SQLInfoGenericODBC::GetCATALOGSequenceAttributes(XString& /*p_schema*/,XString& /*p_sequence*/) const
 {
   return "";
 }
 
-CString
+XString
 SQLInfoGenericODBC::GetCATALOGSequenceCreate(MetaSequence& /*p_sequence*/) const
 {
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetCATALOGSequenceDrop(CString p_schema, CString p_sequence) const
+XString
+SQLInfoGenericODBC::GetCATALOGSequenceDrop(XString p_schema, XString p_sequence) const
 {
   return "";
 }
@@ -1050,67 +1050,67 @@ SQLInfoGenericODBC::GetCATALOGSequenceDrop(CString p_schema, CString p_sequence)
 //////////////////////////////////////////////////////////////////////////
 // ALL VIEW FUNCTIONS
 
-CString 
-SQLInfoGenericODBC::GetCATALOGViewExists(CString& /*p_schema*/,CString& /*p_viewname*/) const
+XString 
+SQLInfoGenericODBC::GetCATALOGViewExists(XString& /*p_schema*/,XString& /*p_viewname*/) const
 {
   return "";
 }
 
-CString 
-SQLInfoGenericODBC::GetCATALOGViewList(CString& /*p_schema*/,CString& /*p_pattern*/) const
+XString 
+SQLInfoGenericODBC::GetCATALOGViewList(XString& /*p_schema*/,XString& /*p_pattern*/) const
 {
   return "";
 }
 
-CString 
-SQLInfoGenericODBC::GetCATALOGViewAttributes(CString& /*p_schema*/,CString& /*p_viewname*/) const
+XString 
+SQLInfoGenericODBC::GetCATALOGViewAttributes(XString& /*p_schema*/,XString& /*p_viewname*/) const
 {
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetCATALOGViewText(CString& /*p_schema*/,CString& /*p_viewname*/) const
+XString
+SQLInfoGenericODBC::GetCATALOGViewText(XString& /*p_schema*/,XString& /*p_viewname*/) const
 {
   // Cannot query this, Use ODBC functions
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetCATALOGViewCreate(CString p_schema,CString p_viewname,CString p_contents) const
+XString
+SQLInfoGenericODBC::GetCATALOGViewCreate(XString p_schema,XString p_viewname,XString p_contents) const
 {
   return "CREATE VIEW " + p_schema + "." + p_viewname + "\n" + p_contents;
 }
 
-CString 
-SQLInfoGenericODBC::GetCATALOGViewRename(CString p_schema,CString p_viewname,CString p_newname)    const
+XString 
+SQLInfoGenericODBC::GetCATALOGViewRename(XString p_schema,XString p_viewname,XString p_newname)    const
 {
   return "";
 }
 
-CString 
-SQLInfoGenericODBC::GetCATALOGViewDrop(CString p_schema,CString p_viewname,CString& p_precursor) const
+XString 
+SQLInfoGenericODBC::GetCATALOGViewDrop(XString p_schema,XString p_viewname,XString& p_precursor) const
 {
   p_precursor.Empty();
   return "DROP VIEW " + p_schema + "." + p_viewname;
 }
 
 // All Privilege functions
-CString
-SQLInfoGenericODBC::GetCATALOGTablePrivileges(CString& /*p_schema*/,CString& /*p_tablename*/) const
+XString
+SQLInfoGenericODBC::GetCATALOGTablePrivileges(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
   return "";
 }
 
-CString 
-SQLInfoGenericODBC::GetCATALOGColumnPrivileges(CString& /*p_schema*/,CString& /*p_tablename*/,CString& /*p_columnname*/) const
+XString 
+SQLInfoGenericODBC::GetCATALOGColumnPrivileges(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_columnname*/) const
 {
   return "";
 }
 
-CString 
-SQLInfoGenericODBC::GetCatalogGrantPrivilege(CString p_schema,CString p_objectname,CString p_privilege,CString p_grantee,bool p_grantable)
+XString 
+SQLInfoGenericODBC::GetCatalogGrantPrivilege(XString p_schema,XString p_objectname,XString p_privilege,XString p_grantee,bool p_grantable)
 {
-  CString sql;
+  XString sql;
   sql.Format("GRANT %s ON %s.%s TO %s",p_privilege.GetString(),p_schema.GetString(),p_objectname.GetString(),p_grantee.GetString());
   if(p_grantable)
   {
@@ -1119,10 +1119,10 @@ SQLInfoGenericODBC::GetCatalogGrantPrivilege(CString p_schema,CString p_objectna
   return sql;
 }
 
-CString 
-SQLInfoGenericODBC::GetCatalogRevokePrivilege(CString p_schema,CString p_objectname,CString p_privilege,CString p_grantee)
+XString 
+SQLInfoGenericODBC::GetCatalogRevokePrivilege(XString p_schema,XString p_objectname,XString p_privilege,XString p_grantee)
 {
-  CString sql;
+  XString sql;
   sql.Format("REVOKE %s ON %s.%s FROM %s",p_privilege.GetString(),p_schema.GetString(),p_objectname.GetString(),p_grantee.GetString());
   return sql;
 }
@@ -1156,52 +1156,52 @@ SQLInfoGenericODBC::GetCatalogRevokePrivilege(CString p_schema,CString p_objectn
 //
 //////////////////////////////////////////////////////////////////////////
 
-CString
-SQLInfoGenericODBC::GetPSMProcedureExists(CString p_schema, CString p_procedure) const
+XString
+SQLInfoGenericODBC::GetPSMProcedureExists(XString p_schema, XString p_procedure) const
 {
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetPSMProcedureList(CString& /*p_schema*/) const
+XString
+SQLInfoGenericODBC::GetPSMProcedureList(XString& /*p_schema*/) const
 {
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetPSMProcedureAttributes(CString& /*p_schema*/,CString& /*p_procedure*/) const
+XString
+SQLInfoGenericODBC::GetPSMProcedureAttributes(XString& /*p_schema*/,XString& /*p_procedure*/) const
 {
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetPSMProcedureSourcecode(CString p_schema, CString p_procedure) const
+XString
+SQLInfoGenericODBC::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure) const
 {
   return "";
 }
 
-CString
+XString
 SQLInfoGenericODBC::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
 {
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetPSMProcedureDrop(CString p_schema, CString p_procedure) const
+XString
+SQLInfoGenericODBC::GetPSMProcedureDrop(XString p_schema, XString p_procedure) const
 {
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetPSMProcedureErrors(CString p_schema,CString p_procedure) const
+XString
+SQLInfoGenericODBC::GetPSMProcedureErrors(XString p_schema,XString p_procedure) const
 {
   // ISO SQL does not support procedure errors
   return "";
 }
 
 // And it's parameters
-CString
-SQLInfoGenericODBC::GetPSMProcedureParameters(CString& /*p_schema*/,CString& /*p_procedure*/) const
+XString
+SQLInfoGenericODBC::GetPSMProcedureParameters(XString& /*p_schema*/,XString& /*p_procedure*/) const
 {
   return "";
 }
@@ -1212,23 +1212,23 @@ SQLInfoGenericODBC::GetPSMProcedureParameters(CString& /*p_schema*/,CString& /*p
 //
 //////////////////////////////////////////////////////////////////////////
 
-CString
+XString
 SQLInfoGenericODBC::GetPSMDeclaration(bool    /*p_first*/
-                                     ,CString /*p_variable*/
+                                     ,XString /*p_variable*/
                                      ,int     /*p_datatype*/
                                      ,int     /*p_precision*/ /*= 0 */
                                      ,int     /*p_scale*/     /*= 0 */
-                                     ,CString /*p_default*/   /*= ""*/
-                                     ,CString /*p_domain*/    /*= ""*/
-                                     ,CString /*p_asColumn*/  /*= ""*/) const
+                                     ,XString /*p_default*/   /*= ""*/
+                                     ,XString /*p_domain*/    /*= ""*/
+                                     ,XString /*p_asColumn*/  /*= ""*/) const
 {
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetPSMAssignment(CString p_variable,CString p_statement /*=""*/) const
+XString
+SQLInfoGenericODBC::GetPSMAssignment(XString p_variable,XString p_statement /*=""*/) const
 {
-  CString line(p_variable);
+  XString line(p_variable);
   line += " [?=] ";
   if(!p_statement.IsEmpty())
   {
@@ -1238,78 +1238,78 @@ SQLInfoGenericODBC::GetPSMAssignment(CString p_variable,CString p_statement /*="
   return line;
 }
 
-CString
-SQLInfoGenericODBC::GetPSMIF(CString p_condition) const
+XString
+SQLInfoGenericODBC::GetPSMIF(XString p_condition) const
 {
-  CString line("IF (");
+  XString line("IF (");
   line += p_condition;
   line += ") THEN\n";
   return "";
 }
 
-CString
+XString
 SQLInfoGenericODBC::GetPSMIFElse() const
 {
   return "  ELSE\n";
 }
 
-CString
+XString
 SQLInfoGenericODBC::GetPSMIFEnd() const
 {
   return "END IF;\n";
 }
 
-CString
-SQLInfoGenericODBC::GetPSMWhile(CString p_condition) const
+XString
+SQLInfoGenericODBC::GetPSMWhile(XString p_condition) const
 {
   return "WHILE (" + p_condition + ") LOOP\n";
 }
 
-CString
+XString
 SQLInfoGenericODBC::GetPSMWhileEnd() const
 {
   return "END LOOP;\n";
 }
 
-CString
+XString
 SQLInfoGenericODBC::GetPSMLOOP() const
 {
   return "";
 }
 
-CString
+XString
 SQLInfoGenericODBC::GetPSMLOOPEnd() const
 {
   return "";
 }
 
-CString
+XString
 SQLInfoGenericODBC::GetPSMBREAK() const
 {
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetPSMRETURN(CString p_statement /*= ""*/) const
+XString
+SQLInfoGenericODBC::GetPSMRETURN(XString p_statement /*= ""*/) const
 {
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetPSMExecute(CString /*p_procedure*/,MParameterMap& /*p_parameters*/) const
+XString
+SQLInfoGenericODBC::GetPSMExecute(XString /*p_procedure*/,MParameterMap& /*p_parameters*/) const
 {
   return "";
 }
 
 // The CURSOR
-CString
-SQLInfoGenericODBC::GetPSMCursorDeclaration(CString /*p_cursorname*/,CString /*p_select*/) const
+XString
+SQLInfoGenericODBC::GetPSMCursorDeclaration(XString /*p_cursorname*/,XString /*p_select*/) const
 {
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetPSMCursorFetch(CString /*p_cursorname*/,std::vector<CString>& /*p_columnnames*/,std::vector<CString>& /*p_variablenames*/) const
+XString
+SQLInfoGenericODBC::GetPSMCursorFetch(XString /*p_cursorname*/,std::vector<XString>& /*p_columnnames*/,std::vector<XString>& /*p_variablenames*/) const
 {
   return "";
 }
@@ -1317,20 +1317,20 @@ SQLInfoGenericODBC::GetPSMCursorFetch(CString /*p_cursorname*/,std::vector<CStri
 //////////////////////////////////////////////////////////////////////////
 // PSM Exceptions
 
-CString
+XString
 SQLInfoGenericODBC::GetPSMExceptionCatchNoData() const
 {
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetPSMExceptionCatch(CString p_sqlState) const
+XString
+SQLInfoGenericODBC::GetPSMExceptionCatch(XString p_sqlState) const
 {
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetPSMExceptionRaise(CString p_sqlState) const
+XString
+SQLInfoGenericODBC::GetPSMExceptionRaise(XString p_sqlState) const
 {
   return "";
 }
@@ -1349,29 +1349,29 @@ SQLInfoGenericODBC::GetPSMExceptionRaise(CString p_sqlState) const
 //
 //////////////////////////////////////////////////////////////////////////
 
-CString
+XString
 SQLInfoGenericODBC::GetSESSIONMyself() const
 {
   // Generic ISO ODBC has no info about other sessions
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetSESSIONExists(CString p_sessionID) const
+XString
+SQLInfoGenericODBC::GetSESSIONExists(XString p_sessionID) const
 {
   // Generic ISO ODBC has no info about other sessions
   return "";
 }
 
-CString
+XString
 SQLInfoGenericODBC::GetSESSIONList() const
 {
   // Generic ISO ODBC has no info about other sessions
   return "";
 }
 
-CString
-SQLInfoGenericODBC::GetSESSIONAttributes(CString p_sessionID) const
+XString
+SQLInfoGenericODBC::GetSESSIONAttributes(XString p_sessionID) const
 {
   // Generic ISO ODBC has no info about other sessions
   return "";
@@ -1380,14 +1380,14 @@ SQLInfoGenericODBC::GetSESSIONAttributes(CString p_sessionID) const
 //////////////////////////////////////////////////////////////////////////
 // Transactions
 
-CString
+XString
 SQLInfoGenericODBC::GetSESSIONConstraintsDeferred() const
 {
   // ISO SQL does not know how to defer constraints
   return "";
 }
 
-CString
+XString
 SQLInfoGenericODBC::GetSESSIONConstraintsImmediate() const
 {
   // ISO SQL constraints are always active
@@ -1403,14 +1403,14 @@ SQLInfoGenericODBC::GetSESSIONConstraintsImmediate() const
 
 // Calling a stored function or procedure if the RDBMS does not support ODBC call escapes
 SQLVariant*
-SQLInfoGenericODBC::DoSQLCall(SQLQuery* /*p_query*/,CString& /*p_schema*/,CString& /*p_procedure*/)
+SQLInfoGenericODBC::DoSQLCall(SQLQuery* /*p_query*/,XString& /*p_schema*/,XString& /*p_procedure*/)
 {
   return nullptr;
 }
 
 // Calling a stored function with named parameters, returning a value
 SQLVariant* 
-SQLInfoGenericODBC::DoSQLCallNamedParameters(SQLQuery* /*p_query*/,CString& /*p_schema*/,CString& /*p_procedure*/)
+SQLInfoGenericODBC::DoSQLCallNamedParameters(SQLQuery* /*p_query*/,XString& /*p_schema*/,XString& /*p_procedure*/)
 {
   return nullptr;
 }

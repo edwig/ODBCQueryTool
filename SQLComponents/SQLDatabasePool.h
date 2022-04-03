@@ -2,7 +2,7 @@
 //
 // File: SQLDatabasePool.cpp
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -41,7 +41,7 @@ namespace SQLComponents
 
 // Lists and maps
 typedef std::deque<SQLDatabase*>     DbsList;
-typedef std::map<CString,DbsList*>   DbsPool;
+typedef std::map<XString,DbsList*>   DbsPool;
 
 
 class SQLDatabasePool
@@ -51,9 +51,9 @@ public:
  ~SQLDatabasePool();
 
   // Get or make a database for this connection
-  SQLDatabase*    GetDatabase(const CString& p_connectionName);
+  SQLDatabase*    GetDatabase(const XString& p_connectionName);
   // Get the connection by name
-  SQLConnection*  GetConnection(const CString& p_connectionName);
+  SQLConnection*  GetConnection(const XString& p_connectionName);
   // Return current number of connections
   unsigned        GetConnections();
   // Return current number of maximum databases
@@ -61,7 +61,7 @@ public:
   // Get the number of free databases
   unsigned        GetFreeDatabases();
   // List with current connections (meant for logging purposes only)
-  void            GetListOfConnections(CString& p_list);
+  void            GetListOfConnections(XString& p_list);
 
     // Return a database connection to the pool
   void            GiveUp(SQLDatabase* p_database);
@@ -72,7 +72,7 @@ public:
   // Set current max databases allowed
   void            SetMaxDatabases(unsigned p_maximum);
   // Read all database definitions from 'database.xml'
-  bool            ReadConnections(CString p_filename = "");
+  bool            ReadConnections(XString p_filename = "");
 
   // Add a column rebind for this database session: No bounds checking!
   void            AddColumnRebind(int p_sqlType, int p_cppType);
@@ -89,13 +89,13 @@ public:
 
 private:
   // Get OR make a logged in database connection
-  SQLDatabase* GetDatabaseInternally(DbsPool& p_pool,CString& p_connectionName);
+  SQLDatabase* GetDatabaseInternally(DbsPool& p_pool,XString& p_connectionName);
   // Create a new database object
-  SQLDatabase* MakeDatabase(CString p_connectionName);
+  SQLDatabase* MakeDatabase(XString p_connectionName);
   // Open the connection to the RDBMS server
-  void         OpenDatabase(SQLDatabase* p_dbs,CString& p_connectionName);
+  void         OpenDatabase(SQLDatabase* p_dbs,XString& p_connectionName);
   // Return a connection to the pool
-  void         GiveUpInternally(SQLDatabase* p_database, CString& p_connectionName);
+  void         GiveUpInternally(SQLDatabase* p_database, XString& p_connectionName);
   // Cleanup in a list of databases
   void         CleanupInternally(bool p_aggressive);
   // Close all databases in the list an clean up the list

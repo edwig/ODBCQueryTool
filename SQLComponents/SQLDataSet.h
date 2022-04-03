@@ -2,7 +2,7 @@
 //
 // File: SQLDataSet.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -58,7 +58,7 @@ extern const char* dataset_names[LN_NUMLANG][NUM_DATASET_NAMES];
 // Parameter for the query
 typedef struct _sql_parameter
 {
-  CString    m_name;
+  XString    m_name;
   SQLVariant m_value;
 }
 SQLParameter;
@@ -81,16 +81,16 @@ class SQLQuery;
 typedef std::vector<SQLRecord*>     RecordSet;
 typedef std::vector<SQLVariant*>    VariantSet;
 typedef std::vector<SQLParameter>   ParameterSet;
-typedef std::vector<CString>        NamenMap;
+typedef std::vector<XString>        NamenMap;
 typedef std::vector<int>            TypenMap;
-typedef std::map<CString,int>       ObjectMap;
-typedef std::list<CString>          WordList;
+typedef std::map<XString,int>       ObjectMap;
+typedef std::list<XString>          WordList;
 
 class SQLDataSet
 {
 public:
   SQLDataSet();
-  SQLDataSet(CString p_name,SQLDatabase* p_database = NULL);
+  SQLDataSet(XString p_name,SQLDatabase* p_database = NULL);
   virtual ~SQLDataSet();
 
   // Perform query: Do SetQuery first
@@ -117,7 +117,7 @@ public:
   // Insert new record (Manually)
   SQLRecord*   InsertRecord();
   // Insert new field in new record (manually)
-  int          InsertField(CString p_name,SQLVariant* p_value);
+  int          InsertField(XString p_name,SQLVariant* p_value);
   // Calculate aggregate functions
   int          Aggregate(int p_num,AggregateInfo& p_info);
   // Cancel the mutations of this mutation ID
@@ -144,31 +144,31 @@ public:
   // Set database connection
   virtual void SetDatabase(SQLDatabase* p_database);
   // Set SELECT one or more columns to select
-  virtual void SetSelection(CString p_selection);
+  virtual void SetSelection(XString p_selection);
   // Set FROM  primary table (for updates)
-  virtual void SetPrimaryTable(CString p_schema, CString p_tableName, CString p_alias = "");
+  virtual void SetPrimaryTable(XString p_schema, XString p_tableName, XString p_alias = "");
   // Set WHERE condition by hand
-  virtual void SetWhereCondition(CString p_condition);
+  virtual void SetWhereCondition(XString p_condition);
   // Set WHERE filters for a query
   virtual void SetFilters(SQLFilterSet* p_filters);
   // Set GROUP BY 
-  virtual void SetGroupBy(CString p_groupby);
-  virtual void AddGroupby(CString p_property);
+  virtual void SetGroupBy(XString p_groupby);
+  virtual void AddGroupby(XString p_property);
   // Set ORDER BY
-  virtual void SetOrderBy(CString p_orderby);
+  virtual void SetOrderBy(XString p_orderby);
   // Set HAVING
   virtual void SetHavings(SQLFilterSet* p_havings);
   // Set SQL-QUERY:  a new full query (Supersedes SetSelection, -Where, -groupby, -orderby and -having)
-  virtual void SetQuery(CString& p_query);
+  virtual void SetQuery(XString& p_query);
   // Set primary key column name (for updates)
-  virtual void SetPrimaryKeyColumn(CString p_name);
+  virtual void SetPrimaryKeyColumn(XString p_name);
   virtual void SetPrimaryKeyColumn(WordList& p_list);
 
   // Setting the sequence/generator name to something different than "<tablename>_seq"
-  void         SetSequenceName(CString p_sequence);
+  void         SetSequenceName(XString p_sequence);
   // Set parameter for a query
   void         SetParameter(SQLParameter p_parameter);
-  void         SetParameter(CString p_naam,SQLVariant p_waarde);
+  void         SetParameter(XString p_naam,SQLVariant p_waarde);
   // Set maximum number of milliseconds alloted to the Open query
   void         SetQueryTime(int p_milliseconds);
   // Set top <n> records selection
@@ -180,12 +180,12 @@ public:
   // Set a field value in the current record
   bool         SetField(int p_num,      SQLVariant* p_value,int p_mutationID = 0);
   // Set a field value in the current record
-  bool         SetField(CString& p_name,SQLVariant* p_value,int p_mutationID = 0);
+  bool         SetField(XString& p_name,SQLVariant* p_value,int p_mutationID = 0);
 
   // GETTERS
 
   // Get the name of the dataset
-  CString      GetName();
+  XString      GetName();
   // Getting the database used
   SQLDatabase* GetDatabase();
   // Get the number of records
@@ -199,45 +199,45 @@ public:
   // Gets the status of records of the dataset
   int          GetStatus();
   // Get a field name
-  CString      GetFieldName(int p_num);
+  XString      GetFieldName(int p_num);
   // Get datatype of a field
   int          GetFieldType(int p_num);
   // Get a field number
-  int          GetFieldNumber(CString p_name);
+  int          GetFieldNumber(XString p_name);
   // Get a field from the current record
   SQLVariant*  GetCurrentField(int p_num);
   // Getting info about the primary key
-  CString      GetPrimarySchema();
-  CString      GetPrimaryTableName();
+  XString      GetPrimarySchema();
+  XString      GetPrimaryTableName();
   // Getting the sequence name
-  CString      GetSequenceName();
+  XString      GetSequenceName();
   // Getting the query settings
-  CString      GetSelection();
-  CString      GetWhereCondition();
-  CString      GetGroupBy();
-  CString      GetOrderBy();
+  XString      GetSelection();
+  XString      GetWhereCondition();
+  XString      GetGroupBy();
+  XString      GetOrderBy();
   SQLFilterSet* GetHavings();
   // Options
   bool         GetBindPrimary();
 
   // XML Saving and loading
-  bool         XMLSave(CString p_filename,CString p_name,XMLEncoding p_encoding = XMLEncoding::ENC_UTF8);
-  bool         XMLLoad(CString p_filename);
+  bool         XMLSave(XString p_filename,XString p_name,StringEncoding p_encoding = StringEncoding::ENC_UTF8);
+  bool         XMLLoad(XString p_filename);
   void         XMLSave(XMLMessage* p_msg,XMLElement* p_dataset);
   void         XMLLoad(XMLMessage* p_msg,XMLElement* p_dataset);
 
 protected:
   // Set parameters in the query
-  virtual CString ParseQuery();
+  virtual XString ParseQuery();
   // Construct the selection SQL for opening the dataset
-  virtual CString GetSelectionSQL(SQLQuery& p_qry);
+  virtual XString GetSelectionSQL(SQLQuery& p_qry);
   // Parse the selection
-  virtual CString ParseSelection(SQLQuery& p_query);
+  virtual XString ParseSelection(SQLQuery& p_query);
   // Parse the filters
-  virtual CString ParseFilters(SQLQuery& p_query,CString p_sql);
+  virtual XString ParseFilters(SQLQuery& p_query,XString p_sql);
 
   // Get the variant of a parameter
-  SQLVariant*  GetParameter(CString& p_name);
+  SQLVariant*  GetParameter(XString& p_name);
   // Get all the columns of the record
   void         ReadNames(SQLQuery& qr);
   // Get all the datatypes of the columns
@@ -253,8 +253,8 @@ protected:
   // Read in a record from a SQLQuery
   bool         ReadRecordFromQuery(SQLQuery& p_query,bool p_modifiable,bool p_append = false);
   // Make a primary key record
-  CString      MakePrimaryKey(SQLRecord*  p_record);
-  CString      MakePrimaryKey(VariantSet& p_primary);
+  XString      MakePrimaryKey(SQLRecord*  p_record);
+  XString      MakePrimaryKey(VariantSet& p_primary);
   // Forget about a record
   bool         ForgetRecord(SQLRecord* p_record,bool p_force);
   void         ForgetPrimaryObject(SQLRecord* p_record);
@@ -269,27 +269,27 @@ protected:
   void         Inserts(int p_mutationID);
   void         Reduce (int p_mutationID);
 
-  CString      GetSQLDelete  (SQLQuery* p_query,SQLRecord* p_record);
-  CString      GetSQLUpdate  (SQLQuery* p_query,SQLRecord* p_record);
-  CString      GetSQLInsert  (SQLQuery* p_query,SQLRecord* p_record,CString& p_serial);
-  CString      GetWhereClause(SQLQuery* p_query,SQLRecord* p_record,int& p_parameter);
+  XString      GetSQLDelete  (SQLQuery* p_query,SQLRecord* p_record);
+  XString      GetSQLUpdate  (SQLQuery* p_query,SQLRecord* p_record);
+  XString      GetSQLInsert  (SQLQuery* p_query,SQLRecord* p_record,XString& p_serial);
+  XString      GetWhereClause(SQLQuery* p_query,SQLRecord* p_record,int& p_parameter);
 
   // Base class data of the dataset
 
-  CString      m_name;
+  XString      m_name;
   SQLDatabase* m_database;
   bool         m_open { false };
   // The query to run
-  CString      m_query;
-  CString      m_selection;
-  CString      m_whereCondition;
-  CString      m_orderby;
-  CString      m_groupby;
+  XString      m_query;
+  XString      m_selection;
+  XString      m_whereCondition;
+  XString      m_orderby;
+  XString      m_groupby;
   // Parts of the query
-  CString      m_primarySchema;
-  CString      m_primaryTableName;
-  CString      m_primaryAlias;
-  CString      m_sequenceName;
+  XString      m_primarySchema;
+  XString      m_primaryTableName;
+  XString      m_primaryAlias;
+  XString      m_sequenceName;
   ParameterSet m_parameters;
   NamenMap     m_primaryKey;
   WordList     m_updateColumns;
@@ -330,7 +330,7 @@ SQLDataSet::IsOpen()
 }
 
 inline void
-SQLDataSet::SetPrimaryTable(CString p_schema,CString p_tableName,CString p_alias /*= ""*/)
+SQLDataSet::SetPrimaryTable(XString p_schema,XString p_tableName,XString p_alias /*= ""*/)
 {
   m_primarySchema    = p_schema;
   m_primaryTableName = p_tableName;
@@ -338,7 +338,7 @@ SQLDataSet::SetPrimaryTable(CString p_schema,CString p_tableName,CString p_alias
 }
 
 inline void
-SQLDataSet::SetSequenceName(CString p_sequence)
+SQLDataSet::SetSequenceName(XString p_sequence)
 {
   m_sequenceName = p_sequence;
 }
@@ -367,26 +367,26 @@ SQLDataSet::GetStatus()
   return m_status;
 }
 
-inline CString    
+inline XString    
 SQLDataSet::GetName()
 {
   return m_name;
 }
 
-inline CString
+inline XString
 SQLDataSet::GetPrimarySchema()
 {
   return m_primarySchema;
 }
 
-inline CString
+inline XString
 SQLDataSet::GetPrimaryTableName()
 {
   return m_primaryTableName;
 }
 
 inline void
-SQLDataSet::SetPrimaryKeyColumn(CString p_name)
+SQLDataSet::SetPrimaryKeyColumn(XString p_name)
 {
   m_primaryKey.push_back(p_name);
 }
@@ -403,25 +403,25 @@ SQLDataSet::SetUpdateColumns(WordList p_list)
   m_updateColumns = p_list;
 }
 
-inline CString
+inline XString
 SQLDataSet::GetSelection()
 {
   return m_selection;
 }
 
-inline CString
+inline XString
 SQLDataSet::GetWhereCondition()
 {
   return m_whereCondition;
 }
 
-inline CString
+inline XString
 SQLDataSet::GetGroupBy()
 {
   return m_groupby;
 }
 
-inline CString
+inline XString
 SQLDataSet::GetOrderBy()
 {
   return m_orderby;

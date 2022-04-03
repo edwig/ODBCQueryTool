@@ -2,7 +2,7 @@
 //
 // File: SQLVariantOperatorDiv.cpp
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -58,7 +58,7 @@ static SQL_OperUShortDivChar(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperSLongDivChar(SQLVariant& p_left,SQLVariant& p_right)
 {
-  long result = p_left.GetAsSLong();
+  int result = p_left.GetAsSLong();
   result /= p_right.GetAsSLong();
   return SQLVariant(result);
 }
@@ -1483,7 +1483,7 @@ SQLVariant
 static SQL_OperCharDivNum(SQLVariant& p_left,SQLVariant& p_right)
 {
   double num = p_left.GetAsDouble() / p_right.GetAsBCD().AsDouble();
-  CString str;
+  XString str;
   str.Format("%lf",num);
   SQLVariant var(str);
   return var;
@@ -1660,9 +1660,9 @@ SQLVariant::operator/(SQLVariant& p_right)
   }
   // No compare function found
   // Data types are not comparable
-  CString leftType  = FindDatatype(m_datatype);
-  CString rightType = FindDatatype(p_right.m_datatype);
-  CString error;
+  XString leftType  = FindDatatype(m_datatype);
+  XString rightType = FindDatatype(p_right.m_datatype);
+  XString error;
   error.Format("Cannot do the division operator on (%s / %s)",leftType.GetString(),rightType.GetString());
   throw StdException(error);
 }
@@ -1696,9 +1696,9 @@ SQLVariant::operator/=(SQLVariant& p_right)
   }
   // No compare function found
   // Data types are not comparable
-  CString leftType  = FindDatatype(m_datatype);
-  CString rightType = FindDatatype(p_right.m_datatype);
-  CString error;
+  XString leftType  = FindDatatype(m_datatype);
+  XString rightType = FindDatatype(p_right.m_datatype);
+  XString error;
   error.Format("Cannot do the /= operator on (%s + %s)",leftType.GetString(),rightType.GetString());
   throw StdException(error);
 }

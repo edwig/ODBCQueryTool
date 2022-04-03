@@ -1,6 +1,23 @@
-// MainFrm.cpp : implementation of the CMainFrame class
+////////////////////////////////////////////////////////////////////////
 //
-
+// File: MainFrame.cpp
+//
+// Permission is hereby granted, free of charge, to any person obtaining a copy of 
+// this software and associated documentation files (the "Software"), 
+// to deal in the Software without restriction, including without limitation the rights 
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, 
+// and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+// 
+// The above copyright notice and this permission notice shall be included in all copies 
+// or substantial portions of the Software.
+// 
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+// INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
+// IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+// WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
+// WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//
 #include "pch.h"
 #include "framework.h"
 #include "QueryTool.h"
@@ -13,6 +30,7 @@
 #include "Common\AppGlobal.h"
 #include "OEFindFiles.h"
 #include "ChildFrm.h"
+#include "DonateDlg.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -50,6 +68,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, StyleMDIFrameWnd)
   ON_COMMAND(ID_HELP_FEATURE,                 OnSupportFeature)
   ON_COMMAND(ID_HELP_SFNET,                   OnWebSourceforge)
   ON_COMMAND(ID_HELP_GITHUB,                  OnWebGithub)
+	ON_COMMAND(ID_DONATION,                     OnDonation)
   ON_COMMAND(ID_FILE_SYNC_LOCATION,           OnViewFilePanelSync)
   ON_COMMAND(ID_THEMA_LIME,                   OnStyleLime)
   ON_COMMAND(ID_THEMA_SKYBLUE,                OnStyleSkyblue)
@@ -365,14 +384,14 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   lstBasicCommands.AddTail(ID_HELP_FEATURE);
   lstBasicCommands.AddTail(ID_HELP_SFNET);
   lstBasicCommands.AddTail(ID_HELP_GITHUB);
+  lstBasicCommands.AddTail(ID_DONATION);
   lstBasicCommands.AddTail(ID_APP_ABOUT);
-
 
 	CMFCToolBar::SetBasicCommands(lstBasicCommands);
 
 	// Switch the order of document name and application name on the window title bar. This
 	// improves the usability of the taskbar because the document name is visible with the thumbnail.
-	ModifyStyle(0, FWS_PREFIXTITLE);
+	ModifyStyle(0,FWS_PREFIXTITLE);
 
 	return 0;
 }
@@ -938,4 +957,9 @@ CMainFrame::OnUpdateViewFilePanelSync(CCmdUI* pCmdUI)
   pCmdUI->Enable(!m_wndDirView.IsVisible() ? TRUE : FALSE);
 }
 
-
+void
+CMainFrame::OnDonation()
+{
+	DonateDlg dlg(this);
+	dlg.DoModal();
+}

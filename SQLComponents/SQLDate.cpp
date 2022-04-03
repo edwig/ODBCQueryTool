@@ -2,7 +2,7 @@
 //
 // File: SQLDate.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -73,7 +73,7 @@ SQLDate::SQLDate(DateValue p_value)
 }
 
 // SQLDate made from a string
-SQLDate::SQLDate(const CString& p_string)
+SQLDate::SQLDate(const XString& p_string)
 {
   SetDate(p_string);
 }
@@ -135,7 +135,7 @@ SQLDate::SetDate(long p_year, long p_month, long p_day)
 // Set the date value from a string in the date instance
 // String must have the format 'yyyy-mm-dd'
 bool 
-SQLDate::SetDate(const CString& string)
+SQLDate::SetDate(const XString& string)
 {
   return CalculateDate(string);
 }
@@ -251,10 +251,10 @@ SQLDate::DaysInMonth() const
 }
 
 // Return as general European string
-CString 
+XString 
 SQLDate::AsString() const
 {
-  CString buffer;
+  XString buffer;
   if(IsNull() == false)
   {
     buffer.Format("%02ld-%02ld-%04ld", Day(), Month(), Year());
@@ -262,10 +262,10 @@ SQLDate::AsString() const
   return buffer;
 }
 
-CString
+XString
 SQLDate::AsXMLString() const
 {
-  CString buffer;
+  XString buffer;
   if (IsNull() == false)
   {
     buffer.Format("%04d-%02d-%02d",Year(),Month(),Day());
@@ -274,7 +274,7 @@ SQLDate::AsXMLString() const
 }
 
 
-CString     
+XString     
 SQLDate::AsSQLString(SQLDatabase* p_database)
 {
   if(IsNull())
@@ -284,10 +284,10 @@ SQLDate::AsSQLString(SQLDatabase* p_database)
   return p_database->GetSQLDateString(Day(),Month(),Year()); 
 }
 
-CString
+XString
 SQLDate::AsStrippedSQLString(SQLDatabase* /*p_database*/)
 {
-  CString string;
+  XString string;
   string.Format("%04d-%02d-%02d",Year(),Month(),Day());
   return string;
 }
@@ -315,7 +315,7 @@ SQLDate::Today()
 }
 
 // Returns the name of the day of the week
-CString
+XString
 SQLDate::WeekDayName(Language p_lang /*=LN_DEFAULT*/) const 
 { 
   if(Valid())
@@ -336,7 +336,7 @@ SQLDate::WeekDayName(Language p_lang /*=LN_DEFAULT*/) const
 }
 
 // Returns the name of the month
-CString
+XString
 SQLDate::MonthName(Language p_lang /*=LN_DEFAULT*/) const 
 { 
   if(Valid())
@@ -358,10 +358,10 @@ SQLDate::MonthName(Language p_lang /*=LN_DEFAULT*/) const
 
 // Full date name in writing
 // <weekdayname> <daynumber> <monthname> <year>
-CString
+XString
 SQLDate::FullDate(Language p_lang /*=LN_DEFAULT*/) const
 {
-  CString fullName;
+  XString fullName;
 
   if(Valid())
   {
@@ -408,7 +408,7 @@ SQLDate::WeekNumber()  const
 // Static function
 // Check that a numeric string has only digits
 /*static*/ bool
-SQLDate::IsNumericString(const CString& p_string)
+SQLDate::IsNumericString(const XString& p_string)
 {
   for(int ind = 0; ind < p_string.GetLength(); ++ind)
   {
@@ -423,9 +423,9 @@ SQLDate::IsNumericString(const CString& p_string)
 // Bepaal datum is veranderd in het zetten
 // van de datum van het huidige object i.p.v. een datum teruggeven
 bool
-SQLDate::CalculateDate(const CString& p_datum)
+SQLDate::CalculateDate(const XString& p_datum)
 {
-  CString datum(p_datum);
+  XString datum(p_datum);
   bool    success = false;
 
   // Remove spaces at both ends
@@ -444,9 +444,9 @@ SQLDate::CalculateDate(const CString& p_datum)
   // with numbers: go straight to the date-parser
   if(isalpha(datum.GetAt(0)))
   {
-    CString     sign;
-    CString     extraTime;
-    CString     currentDate;
+    XString     sign;
+    XString     extraTime;
+    XString     currentDate;
     DateStorage temp;
     int         interval = 0;
 
@@ -554,7 +554,7 @@ SQLDate::CalculateDate(const CString& p_datum)
 
 // Short date for some interfaces
 bool
-SQLDate::ShortDate(const CString& p_date,int& p_year,int& p_month,int& p_day)
+SQLDate::ShortDate(const XString& p_date,int& p_year,int& p_month,int& p_day)
 {
   bool success = false;
   // What we expect to see
@@ -603,8 +603,8 @@ SQLDate::ShortDate(const CString& p_date,int& p_year,int& p_month,int& p_day)
 
 // Get the virtual date as in (+/- <number> <YEAR(S)/MONTH(S)/DAY(S)/WEEK(S)>)
 bool 
-SQLDate::GetVirtualDate(CString       p_sign,
-                        CString       p_extraTime,
+SQLDate::GetVirtualDate(XString       p_sign,
+                        XString       p_extraTime,
                         long          p_interval,
                         DateStorage&  p_temp)
 {       
@@ -651,9 +651,9 @@ SQLDate::GetVirtualDate(CString       p_sign,
 }
 
 bool
-SQLDate::ParseDate(const CString& p_datum,int* p_jaar,int* p_maand,int* p_dag)
+SQLDate::ParseDate(const XString& p_datum,int* p_jaar,int* p_maand,int* p_dag)
 {
-  CString datum(p_datum);
+  XString datum(p_datum);
 
   // Minimum European of American format
   datum.Replace('-',' ');
@@ -785,10 +785,10 @@ SQLDate::YearsBetween(const SQLDate& p_date) const
 // p_extraTime   -> DAYS
 // p_interval    -> 2
 void 
-SQLDate::SplitStrDate(const CString& p_strDate,
-                            CString& p_currentDate,
-                            CString& p_sign,
-                            CString& p_extraTime,
+SQLDate::SplitStrDate(const XString& p_strDate,
+                            XString& p_currentDate,
+                            XString& p_sign,
+                            XString& p_extraTime,
                             int&     p_interval)
 {
   bool blnFound     = false;
@@ -796,13 +796,13 @@ SQLDate::SplitStrDate(const CString& p_strDate,
   p_sign			      = "";
   p_extraTime		    = "";
   p_interval		    = 0;
-  CString strIntrval;
+  XString strIntrval;
 
   int intLength = p_strDate.GetLength();
 
   for (int index = 0; index < intLength; index++)
   {
-    CString temp(p_strDate.GetAt(index),1);
+    XString temp(p_strDate.GetAt(index),1);
     if (temp.Compare(" ") != 0)
     {
       if ((p_strDate.GetAt(index) >= '0') && (p_strDate.GetAt(index) <= '9'))
@@ -833,7 +833,7 @@ SQLDate::SplitStrDate(const CString& p_strDate,
 
 // XML Datum support
 bool
-SQLDate::ParseXMLDate(const CString& p_string,SQLTimestamp& p_moment)
+SQLDate::ParseXMLDate(const XString& p_string,SQLTimestamp& p_moment)
 {
   int ja[4] = {0,0,0,0};
   int ma[2] = {0,0};
@@ -991,7 +991,7 @@ SQLDate::ParseXMLDate(const CString& p_string,SQLTimestamp& p_moment)
 
 // Named date with short or long monthnames
 bool
-SQLDate::NamedDate(const CString& p_date,int& p_year,int& p_month,int& p_day)
+SQLDate::NamedDate(const XString& p_date,int& p_year,int& p_month,int& p_day)
 {
   bool result = false;
   bool alpha  = false;
@@ -1043,7 +1043,7 @@ SQLDate::NamedDate(const CString& p_date,int& p_year,int& p_month,int& p_day)
       if(spacepos > 0)
       {
         // More to come after the month
-        CString after = p_date.Mid(spacepos);
+        XString after = p_date.Mid(spacepos);
         after.TrimLeft();
         
         // 'after' part contains 1 or 2 numbers

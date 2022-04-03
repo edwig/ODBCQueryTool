@@ -2,7 +2,7 @@
 //
 // File: DDLCreateTable.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -31,7 +31,7 @@
 namespace SQLComponents
 {
 
-using DDLS = std::deque<CString>;
+using DDLS = std::deque<XString>;
 
 class DDLCreateTable
 {
@@ -40,10 +40,10 @@ public:
 
   // Request DDL for "table" or "schema.table" 
   // Where "table" can be of type: "TABLE" / "VIEW"
-  CString GetTableDDL(CString p_tableName);
-  bool    SaveDDL(CString p_filename);
-  DDLS    GetTableStatements(CString p_tablename);
-  DDLS    GetTableStatements(CString p_tableName
+  XString GetTableDDL(XString p_tableName);
+  bool    SaveDDL(XString p_filename);
+  DDLS    GetTableStatements(XString p_tablename);
+  DDLS    GetTableStatements(XString p_tableName
                             ,bool p_columns
                             ,bool p_options
                             ,bool p_indices
@@ -52,7 +52,7 @@ public:
                             ,bool p_triggers
                             ,bool p_sequences
                             ,bool p_access);
-  DDLS    GetViewStatements(CString p_viewname);
+  DDLS    GetViewStatements(XString p_viewname);
 
   // Internal delivery of all table information
   void    SetTableInfoTable    (MTableMap&     p_info);
@@ -66,9 +66,9 @@ public:
 
   // Setting of special members
   void    SetInfoDB(SQLInfoDB* p_info);
-  void    SetTablesSchema(CString p_schema);
-  void    SetTableTablespace(CString p_tablespace);
-  void    SetIndexTablespace(CString p_tablespace);
+  void    SetTablesSchema(XString p_schema);
+  void    SetTableTablespace(XString p_tablespace);
+  void    SetIndexTablespace(XString p_tablespace);
 
 private:
   // Primary formatting of 'create table' DDL
@@ -85,21 +85,21 @@ private:
 
   // Service routines
 
-  bool    FindSchemaName(CString p_tableName);
-  void    StashTheLine(CString p_line);
-  CString ReplaceLengthPrecScale(CString p_template,int p_length,int p_precision,int p_scale);
-  CString FormatColumnName(CString p_column,int p_length);
+  bool    FindSchemaName(XString p_tableName);
+  void    StashTheLine(XString p_line);
+  XString ReplaceLengthPrecScale(XString p_template,int p_length,int p_precision,int p_scale);
+  XString FormatColumnName(XString p_column,int p_length);
   int     CalculateColumnLength(MColumnMap& p_columns);
   void    FindIndexFilter(MetaIndex& p_index);
-  bool    IsStrictODBCPrivilege(CString p_privilege);
+  bool    IsStrictODBCPrivilege(XString p_privilege);
 
   // Private data for the DDL creation
   SQLInfoDB* m_info;
-  CString    m_schema;
-  CString    m_tableName;
-  CString    m_indexTablespace;
+  XString    m_schema;
+  XString    m_tableName;
+  XString    m_indexTablespace;
   DDLS       m_statements;
-  CString    m_createDDL;
+  XString    m_createDDL;
 
   // Info gotten
   bool m_didTable      { false };

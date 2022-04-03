@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -28,8 +28,6 @@
 #include "stdafx.h"
 #include "SQLComponents.h"
 #include "SQLDataSetXLS.h"
-
-#define WIN32_LEAN_AND_MEAN
 #include <shellapi.h>
 
 #ifdef _DEBUG
@@ -42,7 +40,7 @@ namespace SQLComponents
 {
 
 // Open spreadsheet for reading and writing
-SQLDataSetXLS::SQLDataSetXLS(CString p_file, CString p_sheetOrSeperator, bool p_backup) 
+SQLDataSetXLS::SQLDataSetXLS(XString p_file, XString p_sheetOrSeperator, bool p_backup) 
               :m_file(p_file)
               ,m_workbook(NULL)
               ,m_xmlWorkbook(NULL)
@@ -56,9 +54,9 @@ SQLDataSetXLS::SQLDataSetXLS(CString p_file, CString p_sheetOrSeperator, bool p_
   m_delimLeft  = "\"";
   m_delimRight = "\"";
   // Detect whether file is an Excel spreadsheet or a text delimited file
-  CString extensie;
-  CString tempString1 = m_file.Right(4);
-  CString tempString2 = m_file.Right(5);
+  XString extensie;
+  XString tempString1 = m_file.Right(4);
+  XString tempString2 = m_file.Right(5);
   tempString1.MakeLower();
   tempString2.MakeLower();
 
@@ -103,7 +101,7 @@ SQLDataSetXLS::~SQLDataSetXLS()
 
 // Read in a XLS and optionally make a backup
 bool
-SQLDataSetXLS::ReadXLS(CString p_sheet)
+SQLDataSetXLS::ReadXLS(XString p_sheet)
 {
   if (m_excel) 
   {
@@ -113,7 +111,7 @@ SQLDataSetXLS::ReadXLS(CString p_sheet)
     {
       if((m_backup) && (m_append))
       {
-        CString tempSheetName = m_sheetName;
+        XString tempSheetName = m_sheetName;
         m_sheetName = "XLSBackup";
         m_append = false;
         if (!Commit())
@@ -144,7 +142,7 @@ SQLDataSetXLS::ReadXLS(CString p_sheet)
     {
       if((m_backup) && (m_append))
       {
-        CString tempString = m_file;
+        XString tempString = m_file;
         m_file = m_file + ".bak";
         if(!Commit())
         {
@@ -190,7 +188,7 @@ SQLDataSetXLS::Commit()
       if(fopen_s(&file,m_file,"w") == 0)
       {
         // Write the header of the file
-        CString text;
+        XString text;
         for(unsigned ind = 0;ind < m_names.size();++ind)
         {
           if(ind) text += m_separator;
@@ -206,7 +204,7 @@ SQLDataSetXLS::Commit()
           for(int ind = 0;ind < GetNumberOfFields(); ++ind)
           {
             if(ind) text += m_separator;
-            text += CString("\"") + CString(record->GetField(ind)->GetAsChar()) + "\"";
+            text += XString("\"") + XString(record->GetField(ind)->GetAsChar()) + "\"";
           }
           WriteString(file,text,true);
         }
@@ -300,7 +298,7 @@ SQLDataSetXLS::AddRow(WordList& p_rowValues, long /*p_row*/, bool /*p_replace*/)
 // Default is read the next cell in next row. 
 // Set Auto to false if want to force column to be used as header name
 bool 
-SQLDataSetXLS::ReadCell (CString &p_cellValue, CString p_column, long p_row, bool p_name /*=true*/)
+SQLDataSetXLS::ReadCell (XString &p_cellValue, XString p_column, long p_row, bool p_name /*=true*/)
 {
   int columnIndex = CalculateColumnNumber(p_column,p_name);
   if(columnIndex == 0)
@@ -318,7 +316,7 @@ SQLDataSetXLS::ReadCell (CString &p_cellValue, CString p_column, long p_row, boo
 // Read a cell from spreadsheet using column number. 
 // Default is read the next cell in next row.
 bool 
-SQLDataSetXLS::ReadCell(CString &p_cellValue, short p_column, long p_row)
+SQLDataSetXLS::ReadCell(XString &p_cellValue, short p_column, long p_row)
 {
   if (p_column == 0)
   {
@@ -385,7 +383,7 @@ SQLDataSetXLS::DeleteSheet()
 
 // Clear entire Excel spreadsheet content. The sheet itself is not deleted
 bool 
-SQLDataSetXLS::DeleteSheet(CString p_sheetName)
+SQLDataSetXLS::DeleteSheet(XString p_sheetName)
 {
   if(m_excel) // If file is an Excel spreadsheet
   {
@@ -402,7 +400,7 @@ SQLDataSetXLS::DeleteSheet(CString p_sheetName)
 // Replace a cell into Excel spreadsheet using header row or column alphabet. 
 // Set name to true if want to force column to be used as header name
 bool 
-SQLDataSetXLS::SetCell(CString p_cellValue, CString p_column, long p_row, bool p_name /*=true*/)
+SQLDataSetXLS::SetCell(XString p_cellValue, XString p_column, long p_row, bool p_name /*=true*/)
 {
   int columnIndex = CalculateColumnNumber(p_column, p_name);
   if(columnIndex == 0)
@@ -418,7 +416,7 @@ SQLDataSetXLS::SetCell(CString p_cellValue, CString p_column, long p_row, bool p
 
 // Set a cell value into spreadsheet using column number, row number
 bool 
-SQLDataSetXLS::SetCell(CString p_cellValue, short p_column, long p_row)
+SQLDataSetXLS::SetCell(XString p_cellValue, short p_column, long p_row)
 {
   if (p_column == 0)
   {
@@ -473,7 +471,7 @@ SQLDataSetXLS::GetListOfWorksheets(WordList* p_sheets)
     {
       char name[MAX_PATH];
       m_workbook->GetSheetName(ind,name);
-      CString sheetname(name);
+      XString sheetname(name);
       p_sheets->push_back(sheetname);
     }
     if(m_workbook->GetError())
@@ -537,7 +535,7 @@ SQLDataSetXLS::Open()
       // Read the header row with the cell names
       for(int col = 0; col < cols; ++col)
       {
-        CString value(sheet->CellValue(0,col,buffer,100));
+        XString value(sheet->CellValue(0,col,buffer,100));
         m_names.push_back(value);
         m_types.push_back(SQL_C_CHAR);
       }
@@ -593,7 +591,7 @@ SQLDataSetXLS::Open()
     // Read the header row with the cell names
     for(int col = 1; col <= cols; ++col)
     {
-      CString value(sheet->GetCellValue(1,col));
+      XString value(sheet->GetCellValue(1,col));
       m_names.push_back(value);
       m_types.push_back(SQL_C_CHAR);
     }
@@ -604,7 +602,7 @@ SQLDataSetXLS::Open()
       SQLRecord* record = InsertRecord();
       for(int col = 1; col <= cols; ++col)
       {
-        CString value = sheet->GetCellValue(row,col);
+        XString value = sheet->GetCellValue(row,col);
         SQLVariant var(value.GetString());
         record->AddField(&var,true); // It's for an insertion
       }
@@ -620,7 +618,7 @@ SQLDataSetXLS::Open()
       fopen_s(&file,m_file,"r");
       if(file)
       {
-        CString tempString;
+        XString tempString;
         Close();
         int  rows    = 0;
         bool result  = true;
@@ -675,7 +673,7 @@ SQLDataSetXLS::Close()
 // A  -> 1
 // IV -> 255
 int 
-SQLDataSetXLS::CalculateColumnNumber(CString p_column, bool p_name /*=true*/)
+SQLDataSetXLS::CalculateColumnNumber(XString p_column, bool p_name /*=true*/)
 {
   if(p_name)
   {
@@ -715,10 +713,10 @@ SQLDataSetXLS::CalculateColumnNumber(CString p_column, bool p_name /*=true*/)
 
 // Read a row from spreadsheet. 
 bool 
-SQLDataSetXLS::SplitRow(CString& p_input,WordList& p_rowValues)
+SQLDataSetXLS::SplitRow(XString& p_input,WordList& p_rowValues)
 {
-  CString temp;
-  CString tempString(p_input);
+  XString temp;
+  XString tempString(p_input);
   // Read the desired row
   p_rowValues.clear();
 
@@ -753,7 +751,7 @@ SQLDataSetXLS::SplitRow(CString& p_input,WordList& p_rowValues)
     int pos = tempString.Find(m_separator);
     while(pos > 0)
     {
-      CString deel = tempString.Left(pos);
+      XString deel = tempString.Left(pos);
       tempString = tempString.Mid(pos + 1);
       p_rowValues.push_back(deel.Trim());
       pos = tempString.Find(m_separator);
@@ -779,7 +777,7 @@ SQLDataSetXLS::SplitRow(CString& p_input,WordList& p_rowValues)
       return false;
     }
     // Partially string between delimiters
-    CString deel = tempString.Mid(pos + 1,pos_rechts - pos -1);
+    XString deel = tempString.Mid(pos + 1,pos_rechts - pos -1);
     tempString   = tempString.Mid(pos_rechts + 1);
     p_rowValues.push_back(deel);
 
@@ -806,7 +804,7 @@ SQLDataSetXLS::SplitRow(CString& p_input,WordList& p_rowValues)
 
 // Trim whitespace in between delimiters
 void
-SQLDataSetXLS::TrimRow(CString& p_row)
+SQLDataSetXLS::TrimRow(XString& p_row)
 {
   bool inString = false;
   int  index    = 0;
@@ -851,7 +849,7 @@ SQLDataSetXLS::TrimRow(CString& p_row)
 
 // Read an ASCII string from a file
 bool  
-SQLDataSetXLS::ReadString(FILE* p_file,CString& p_string)
+SQLDataSetXLS::ReadString(FILE* p_file,XString& p_string)
 {
   int ch = 0;
   bool reading = true;
@@ -891,7 +889,7 @@ SQLDataSetXLS::ReadString(FILE* p_file,CString& p_string)
 
 // Write an ASCII string to a file
 bool  
-SQLDataSetXLS::WriteString(FILE* p_file,CString& p_string,bool p_appendCRLF /*=false*/)
+SQLDataSetXLS::WriteString(FILE* p_file,XString& p_string,bool p_appendCRLF /*=false*/)
 {
   fputs(p_string.GetString(),p_file);
   if(p_appendCRLF)
@@ -902,7 +900,7 @@ SQLDataSetXLS::WriteString(FILE* p_file,CString& p_string,bool p_appendCRLF /*=f
 }
 
 // Get last error message
-CString 
+XString 
 SQLDataSetXLS::GetLastError()
 {
   int pos = m_lastError.Find('\n');

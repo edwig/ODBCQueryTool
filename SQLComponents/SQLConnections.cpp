@@ -2,7 +2,7 @@
 //
 // File: SQLConnections.cpp
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -48,7 +48,7 @@ SQLConnections::Reset()
 }
 
 SQLConnection*
-SQLConnections::GetConnection(CString p_name)
+SQLConnections::GetConnection(XString p_name)
 {
   p_name.MakeLower();
   ConnMap::iterator it = m_connections.find(p_name);
@@ -76,15 +76,15 @@ SQLConnections::GetConnection(unsigned p_number)
   return nullptr;
 }
 
-CString
-SQLConnections::GetConnectionString(CString p_name)
+XString
+SQLConnections::GetConnectionString(XString p_name)
 {
   SQLConnection* conn = GetConnection(p_name);
   if(conn == nullptr)
   {
     return "";
   }
-  CString connect;
+  XString connect;
   connect.Format("DSN=%s;UID=%s;PWD=%s;"
                  ,conn->m_datasource.GetString()
                  ,conn->m_username.GetString()
@@ -97,11 +97,11 @@ SQLConnections::GetConnectionString(CString p_name)
 }
 
 bool
-SQLConnections::AddConnection(CString p_name
-                             ,CString p_datasource
-                             ,CString p_username
-                             ,CString p_password
-                             ,CString p_options)
+SQLConnections::AddConnection(XString p_name
+                             ,XString p_datasource
+                             ,XString p_username
+                             ,XString p_password
+                             ,XString p_options)
 {
   // See if it is a double registration
   SQLConnection* fnd = GetConnection(p_name);
@@ -125,7 +125,7 @@ SQLConnections::AddConnection(CString p_name
 }
 
 bool
-SQLConnections::DelConnection(CString p_name)
+SQLConnections::DelConnection(XString p_name)
 {
   p_name.MakeLower();
   ConnMap::iterator it = m_connections.find(p_name);
@@ -138,7 +138,7 @@ SQLConnections::DelConnection(CString p_name)
 }
 
 bool
-SQLConnections::LoadConnectionsFile(CString p_filename /*=""*/)
+SQLConnections::LoadConnectionsFile(XString p_filename /*=""*/,bool p_reset /*=false*/)
 {
   if(p_filename.IsEmpty())
   {
@@ -155,6 +155,14 @@ SQLConnections::LoadConnectionsFile(CString p_filename /*=""*/)
   {
     return false;
   }
+
+  // Optionally completely reset the databases
+  if(p_reset)
+  {
+    m_connections.clear();
+  }
+
+  // Read all connections
   XMLElement* conn = msg.FindElement("Connect");
   while(conn)
   {
@@ -165,8 +173,13 @@ SQLConnections::LoadConnectionsFile(CString p_filename /*=""*/)
     connect.m_options    = msg.GetElement(conn,"Options");
     connect.m_password   = PasswordDecoding(msg.GetElement(conn,"Password"));
 
-    CString name(connect.m_name);
+    XString name(connect.m_name);
     name.MakeLower();
+    ConnMap::iterator it = m_connections.find(name);
+    if(it != m_connections.end())
+    {
+      m_connections.erase(it);
+    }
     m_connections.insert(std::make_pair(name,connect));
 
     // Get next connection
@@ -176,7 +189,7 @@ SQLConnections::LoadConnectionsFile(CString p_filename /*=""*/)
 }
 
 bool
-SQLConnections::SaveConnectionsFile(CString p_filename /*=""*/)
+SQLConnections::SaveConnectionsFile(XString p_filename /*=""*/)
 {
   if(p_filename.IsEmpty())
   {
@@ -208,10 +221,10 @@ SQLConnections::SaveConnectionsFile(CString p_filename /*=""*/)
 //
 //////////////////////////////////////////////////////////////////////////
 
-CString
-SQLConnections::PasswordScramble(CString p_password)
+XString
+SQLConnections::PasswordScramble(XString p_password)
 {
-  CString scramble;
+  XString scramble;
 
   // XOR scrambling if ASCII
   for(int index = 0;index < p_password.GetLength(); ++index)
@@ -226,7 +239,7 @@ SQLConnections::PasswordScramble(CString p_password)
   }
 
   // Code to hexadecimal
-  CString coded;
+  XString coded;
   for(int index = 0;index < scramble.GetLength(); ++index)
   {
     coded.AppendFormat("%2.2X",(int)scramble.GetAt(index));
@@ -236,10 +249,10 @@ SQLConnections::PasswordScramble(CString p_password)
   return coded;
 }
 
-CString
-SQLConnections::PasswordDecoding(CString p_scramble)
+XString
+SQLConnections::PasswordDecoding(XString p_scramble)
 {
-  CString coded;
+  XString coded;
   int number = 0;
 
   // Hexadecimal to coded
@@ -261,7 +274,7 @@ SQLConnections::PasswordDecoding(CString p_scramble)
   }
 
   // Coded back to ASCII
-  CString password;
+  XString password;
   for(int index = 0;index < coded.GetLength(); ++index)
   {
     int ch = coded.GetAt(index);

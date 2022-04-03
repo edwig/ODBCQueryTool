@@ -2,7 +2,7 @@
 //
 // File: SQLVariantOperatorSub.cpp
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -56,7 +56,7 @@ static SQL_OperUShortSubChar(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperSLongSubChar(SQLVariant& p_left,SQLVariant& p_right)
 {
-  long result = p_left.GetAsSLong() - p_right.GetAsSLong();
+  int result = p_left.GetAsSLong() - p_right.GetAsSLong();
   return SQLVariant(result);
 }
 SQLVariant 
@@ -162,7 +162,7 @@ static SQL_OperUShortSubSShort(SQLVariant& p_left,SQLVariant& p_right)
 
 SQLVariant static SQL_OperSLongSubSShort(SQLVariant& p_left,SQLVariant& p_right)
 {
-  long result = p_left.GetAsSLong();
+  int result = p_left.GetAsSLong();
   result -= p_right.GetAsSLong();
   return SQLVariant(result);
 }
@@ -271,7 +271,7 @@ static SQL_OperUShortSubUShort(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperSLongSubUShort(SQLVariant& p_left,SQLVariant& p_right)
 {
-  long result = p_left.GetAsSLong();
+  int result = p_left.GetAsSLong();
   result -= p_right.GetAsSLong();
   return SQLVariant(result);
 }
@@ -356,7 +356,7 @@ static SQL_OperNumSubUShort(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperCharSubSLong(SQLVariant& p_left,SQLVariant& p_right)
 {
-  long result = p_left.GetAsSLong();
+  int result = p_left.GetAsSLong();
   result -= p_right.GetAsSLong();
   return SQLVariant(result);
 }
@@ -380,7 +380,7 @@ static SQL_OperUShortSubSLong(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperSLongSubSLong(SQLVariant& p_left,SQLVariant& p_right)
 {
-  long result = p_left.GetAsSLong();
+  int result = p_left.GetAsSLong();
   result -= p_right.GetAsSLong();
   return SQLVariant(result);
 }
@@ -598,7 +598,7 @@ static SQL_OperUShortSubFloat(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperSLongSubFloat(SQLVariant& p_left,SQLVariant& p_right)
 {
-  long result = p_left.GetAsSLong();
+  int result = p_left.GetAsSLong();
   result -= p_right.GetAsSLong();
   return SQLVariant(result);
 }
@@ -707,7 +707,7 @@ static SQL_OperUShortSubDouble(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperSLongSubDouble(SQLVariant& p_left,SQLVariant& p_right)
 {
-  long result = p_left.GetAsSLong();
+  int result = p_left.GetAsSLong();
   result -= p_right.GetAsSLong();
   return SQLVariant(result);
 }
@@ -825,7 +825,7 @@ static SQL_OperUShortSubBit(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperSLongSubBit(SQLVariant& p_left,SQLVariant& p_right)
 {
-  long result = p_left.GetAsSLong();
+  int result = p_left.GetAsSLong();
   if(p_right.GetAsBit())
   {
     --result;
@@ -958,7 +958,7 @@ static SQL_OperUShortSubSTiny(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperSLongSubSTiny(SQLVariant& p_left,SQLVariant& p_right)
 {
-  long result = p_left.GetAsSLong();
+  int result = p_left.GetAsSLong();
   result -= p_right.GetAsSLong();
   return SQLVariant(result);
 }
@@ -1067,7 +1067,7 @@ static SQL_OperUShortSubUTiny(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperSLongSubUTiny(SQLVariant& p_left,SQLVariant& p_right)
 {
-  long result = p_left.GetAsSLong();
+  int result = p_left.GetAsSLong();
   result -= p_right.GetAsSLong();
   return SQLVariant(result);
 }
@@ -1176,7 +1176,7 @@ static SQL_OperUShortSubSBig(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperSLongSubSBig(SQLVariant& p_left,SQLVariant& p_right)
 {
-  long result = p_left.GetAsSLong();
+  int result = p_left.GetAsSLong();
   result -= p_right.GetAsSLong();
   return SQLVariant(result);
 }
@@ -1285,7 +1285,7 @@ static SQL_OperUShortSubUBig(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperSLongSubUBig(SQLVariant& p_left,SQLVariant& p_right)
 {
-  long result = p_left.GetAsSLong();
+  int result = p_left.GetAsSLong();
   result -= p_right.GetAsSLong();
   return SQLVariant(result);
 }
@@ -1371,7 +1371,7 @@ SQLVariant
 static SQL_OperCharSubNum(SQLVariant& p_left,SQLVariant& p_right)
 {
   bcd num = bcd(p_left.GetAsChar()) - p_right.GetAsBCD();
-  CString str;
+  XString str;
   str = num.AsString();
   SQLVariant var(str);
   return var;
@@ -1396,7 +1396,7 @@ static SQL_OperUShortSubNum(SQLVariant& p_left,SQLVariant& p_right)
 SQLVariant 
 static SQL_OperSLongSubNum(SQLVariant& p_left,SQLVariant& p_right)
 {
-  long num = p_left.GetAsSLong() - p_right.GetAsBCD().AsLong();
+  int num = p_left.GetAsSLong() - p_right.GetAsBCD().AsLong();
   SQLVariant var(num);
   return var;
 }
@@ -1605,9 +1605,9 @@ SQLVariant::operator-(SQLVariant& p_right)
   }
   // No compare function found
   // Data types are not comparable
-  CString leftType  = FindDatatype(m_datatype);
-  CString rightType = FindDatatype(p_right.m_datatype);
-  CString error;
+  XString leftType  = FindDatatype(m_datatype);
+  XString rightType = FindDatatype(p_right.m_datatype);
+  XString error;
   error.Format("Cannot do the subtract operator on (%s - %s)",leftType.GetString(),rightType.GetString());
   throw StdException(error);
 }
@@ -1641,9 +1641,9 @@ SQLVariant::operator-=(SQLVariant& p_right)
   }
   // No compare function found
   // Data types are not comparable
-  CString leftType  = FindDatatype(m_datatype);
-  CString rightType = FindDatatype(p_right.m_datatype);
-  CString error;
+  XString leftType  = FindDatatype(m_datatype);
+  XString rightType = FindDatatype(p_right.m_datatype);
+  XString error;
   error.Format("Cannot do the -= operator on (%s + %s)",leftType.GetString(),rightType.GetString());
   throw StdException(error);
 }

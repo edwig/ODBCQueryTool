@@ -2,7 +2,7 @@
 //
 // File: SQLError.cpp
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -359,7 +359,7 @@ SQLError::~SQLError()
 }
 
 SQLState*
-SQLError::GetSQLState(CString p_sqlState)
+SQLError::GetSQLState(XString p_sqlState)
 {
   int size = sizeof(sql_states) / sizeof(SQLState);
   
@@ -373,10 +373,10 @@ SQLError::GetSQLState(CString p_sqlState)
   return NULL;
 }
 
-CString   
-SQLError::GetSQLStateFormatted(CString p_sqlState)
+XString   
+SQLError::GetSQLStateFormatted(XString p_sqlState)
 {
-  CString error;
+  XString error;
   SQLState* state = GetSQLState(p_sqlState);
   if(state == NULL)
   {

@@ -2,7 +2,7 @@
 //
 // File: SQLFilter.cpp
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -63,7 +63,7 @@ SQLFilter::SQLFilter()
 
 // XTOR: Creates a new filter
 //       Used for filters without an operand, or more than one
-SQLFilter::SQLFilter(CString p_field,SQLOperator p_operator)
+SQLFilter::SQLFilter(XString p_field,SQLOperator p_operator)
           :m_field(p_field)
           ,m_operator(p_operator)
 {
@@ -71,7 +71,7 @@ SQLFilter::SQLFilter(CString p_field,SQLOperator p_operator)
 
 // XTOR: Creates a new filter
 //       Used for standard filters with one or more operands
-SQLFilter::SQLFilter(CString p_field,SQLOperator p_operator,SQLVariant* p_value)
+SQLFilter::SQLFilter(XString p_field,SQLOperator p_operator,SQLVariant* p_value)
           :m_field(p_field)
           ,m_operator(p_operator)
 {
@@ -82,7 +82,7 @@ SQLFilter::SQLFilter(CString p_field,SQLOperator p_operator,SQLVariant* p_value)
 }
 
 // XTOR from a single integer
-SQLFilter::SQLFilter(CString p_field,SQLOperator p_operator,int p_value)
+SQLFilter::SQLFilter(XString p_field,SQLOperator p_operator,int p_value)
           :m_field(p_field)
           ,m_operator(p_operator)
 {
@@ -90,8 +90,8 @@ SQLFilter::SQLFilter(CString p_field,SQLOperator p_operator,int p_value)
   m_values.push_back(val);
 }
 
-// XTOR from a single CString
-SQLFilter::SQLFilter(CString p_field,SQLOperator p_operator,CString p_value)
+// XTOR from a single XString
+SQLFilter::SQLFilter(XString p_field,SQLOperator p_operator,XString p_value)
           :m_field(p_field)
           ,m_operator(p_operator)
 {
@@ -132,7 +132,7 @@ SQLFilter::~SQLFilter()
 
 // Adding a comparison field (if not yet set)
 bool
-SQLFilter::SetField(CString p_field)
+SQLFilter::SetField(XString p_field)
 {
   if(m_field.IsEmpty() && m_subfilters == nullptr)
   {
@@ -146,7 +146,7 @@ SQLFilter::SetField(CString p_field)
 bool
 SQLFilter::SetOperator(SQLOperator p_oper)
 {
-  if(m_operator == FN_NOP)
+  if(m_operator == OP_NOP)
   {
     m_operator = p_oper;
     return true;
@@ -215,10 +215,10 @@ SQLFilter::GetValue(int p_number)
 }
 
 // Getting the SQL Condition
-CString
+XString
 SQLFilter::GetSQLFilter(SQLQuery& p_query)
 {
-  CString sql;
+  XString sql;
 
   // Add an extra parenthesis level
   if(m_openParenthesis)
@@ -241,7 +241,7 @@ SQLFilter::GetSQLFilter(SQLQuery& p_query)
   if(m_operator == OP_Equal && m_values.size() == 1)
   {
     SQLVariant* var = m_values.front();
-    CString value;
+    XString value;
     var->GetAsString(value);
     if(var->IsNULL() || value.CompareNoCase("null") == 0)
     {
@@ -376,7 +376,7 @@ SQLFilter::CheckTwoValues()
 
 // Constructing the default operand
 void
-SQLFilter::ConstructOperand(CString& p_sql,SQLQuery& p_query)
+SQLFilter::ConstructOperand(XString& p_sql,SQLQuery& p_query)
 {
   if(m_expression.IsEmpty())
   {
@@ -410,7 +410,7 @@ SQLFilter::ConstructOperand(CString& p_sql,SQLQuery& p_query)
 
 // Constructing the LIKE clause
 void
-SQLFilter::ConstructLike(CString& p_sql)
+SQLFilter::ConstructLike(XString& p_sql)
 {
   // Check that we have a value
   CheckValue();
@@ -421,7 +421,7 @@ SQLFilter::ConstructLike(CString& p_sql)
     throw StdException("Cannot use LIKE on a non-string data type!");
   }
   // Get string without leading/trailing quote
-  CString value;
+  XString value;
   m_values[0]->GetAsString(value);
   // Add as a LIKE string
   p_sql += value;
@@ -432,7 +432,7 @@ SQLFilter::ConstructLike(CString& p_sql)
 
 // Constructing the IN clause
 void
-SQLFilter::ConstructIN(CString& p_sql,SQLQuery& p_query)
+SQLFilter::ConstructIN(XString& p_sql,SQLQuery& p_query)
 {
   // Getting a series of values, comma separated
   for(auto& var : m_values)
@@ -446,7 +446,7 @@ SQLFilter::ConstructIN(CString& p_sql,SQLQuery& p_query)
 
 // Constructing the BETWEEN clause
 void
-SQLFilter::ConstructBetween(CString& p_sql,SQLQuery& p_query)
+SQLFilter::ConstructBetween(XString& p_sql,SQLQuery& p_query)
 {
   // CHeck that we have EXACTLY two values
   CheckTwoValues();
@@ -457,11 +457,11 @@ SQLFilter::ConstructBetween(CString& p_sql,SQLQuery& p_query)
 }
 
 // Constructing a FUNCTION(field)
-CString
+XString
 SQLFilter::ConstructFunctionSQL(SQLQuery& p_query)
 {
-  CString sql;
-  CString comma;
+  XString sql;
+  XString comma;
   int parameters = 0;
   bool trim  = false;
   bool extra = false;
@@ -608,10 +608,10 @@ SQLFilter::ConstructFunctionSQL(SQLQuery& p_query)
 }
 
 // Constructing the extraction part in the EXTRACT function
-CString
+XString
 SQLFilter::ConstructExtractPart()
 {
-  CString part;
+  XString part;
   switch(m_extract.m_extract)
   {
     case TS_EXT_YEAR:   part = "YEAR";    break;
@@ -621,16 +621,16 @@ SQLFilter::ConstructExtractPart()
     case TS_EXT_MINUTE: part = "MINUTE";  break;
     case TS_EXT_SECOND: part = "SECOND";  break;
     case TS_EXT_NONE:   // Fall through
-    default:            throw CString("Unknown or unset timestamp part for EXTRACT function");
+    default:            throw XString("Unknown or unset timestamp part for EXTRACT function");
   }
   return part;
 }
 
 // Constructing the calculation part in the TIMESTAMPADD/TIMESTAMPDIFF functions
-CString
+XString
 SQLFilter::ConstructTimestampCalcPart()
 {
-  CString part;
+  XString part;
   switch(m_extract.m_calcpart)
   {
     case SQL_TSI_FRAC_SECOND: part = "SQL_TSI_FRAC_SECOND"; break;
@@ -643,7 +643,7 @@ SQLFilter::ConstructTimestampCalcPart()
     case SQL_TSI_QUARTER:     part = "SQL_TSI_QUARTER";     break;
     case SQL_TSI_YEAR:        part = "SQL_TSI_YEAR";        break;
     case SQL_TSI_NONE:        // Fall through
-    default:                  throw CString("Unknown or unset calculation part for TIMESTAMPADD/TIMESTAMPDIFF function");
+    default:                  throw XString("Unknown or unset calculation part for TIMESTAMPADD/TIMESTAMPDIFF function");
   }
   return part;
 }
@@ -700,11 +700,11 @@ bool
 SQLFilter::MatchLikeBegin(SQLVariant* p_field)
 {
   CheckValue();
-  CString match;
+  XString match;
   m_values.front()->GetAsString(match);
   int length = match.GetLength();
 
-  CString field;
+  XString field;
   p_field->GetAsString(field);
   return field.Left(length).Compare(match) == 0;
 }
@@ -713,10 +713,10 @@ bool
 SQLFilter::MatchLikeMiddle(SQLVariant* p_field)
 {
   CheckValue();
-  CString match;
+  XString match;
   m_values.front()->GetAsString(match);
 
-  CString field;
+  XString field;
   p_field->GetAsString(field);
   return field.Find(match) >= 0;
 }
@@ -771,7 +771,7 @@ SQLFilter::MatchBetween(SQLVariant* p_field)
 
 // Translate a string from the message to an operator
 SQLOperator 
-StringToSQLOperator(CString p_oper)
+StringToSQLOperator(XString p_oper)
 {
   OperatorName* filter = operatornames;
 
@@ -787,7 +787,7 @@ StringToSQLOperator(CString p_oper)
 }
 
 // Translate an operator to a string
-CString
+XString
 SQLOperatorToString(SQLOperator p_oper)
 {
   OperatorName* filter = operatornames;
@@ -810,10 +810,10 @@ SQLOperatorToString(SQLOperator p_oper)
 //
 //////////////////////////////////////////////////////////////////////////
 
-CString 
+XString 
 SQLFilterSet::ParseFiltersToCondition(SQLQuery& p_query)
 {
-  CString query;
+  XString query;
   bool first = true;
   bool orDone = false;
 

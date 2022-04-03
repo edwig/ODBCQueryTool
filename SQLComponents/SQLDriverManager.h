@@ -2,7 +2,7 @@
 //
 // File: SQLDriverManager.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -45,10 +45,10 @@ namespace SQLComponents
 // Structure to hold information about a DSN (DataSourceName)
 typedef struct _datasource
 {
-  CString m_datasource;     // DSN Name
-  CString m_description;    // Description seen in MS-Windows
-  CString m_username;       // Default user name to use
-  CString m_password;       // Password to use
+  XString m_datasource;     // DSN Name
+  XString m_description;    // Description seen in MS-Windows
+  XString m_username;       // Default user name to use
+  XString m_password;       // Password to use
   bool    m_system;         // DSN is a system-wide datasource name
   bool    m_default;        // DSN is to be used by default in our system
   bool    m_changed;        // DSN is changed. Write back to ...
@@ -66,15 +66,15 @@ public:
  ~SQLDriverManager();
 
   // Place where the SQL Driver manager resides in MS-Windows
-  CString   GetDriverManagerPath();
+  XString   GetDriverManagerPath();
   // Getting all the data sources in one list
   bool      GetDataSources(DataSources& p_list,int p_type = SQL_FETCH_FIRST);
   // Get a driver with special capabilities
-  CString   GetSpecialDriver(CString p_base,CString p_extension);
+  XString   GetSpecialDriver(XString p_base,XString p_extension);
   // Show the MS-Windows ODBC management dialog window
   bool      ODBCManagerDialog(HWND p_parent);
   // Return error information from the driver manager
-  int       GetDriverManagerError(CString& p_error,CString* p_sqlstate = nullptr);
+  int       GetDriverManagerError(XString& p_error,XString* p_sqlstate = nullptr);
 
 private:
   // Private methods
@@ -86,12 +86,12 @@ private:
 
   // Data
   HENV      m_environment;
-  CString   m_driverManagerPath;
+  XString   m_driverManagerPath;
 
   // Error information
   DWORD     m_error;
-  CString   m_errorString;
-  CString   m_sqlState;
+  XString   m_errorString;
+  XString   m_sqlState;
 };
 
 }

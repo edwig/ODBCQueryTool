@@ -26,6 +26,9 @@ rmdir /q/s SQLComponents\x64
 rmdir /q/s StyleFramework\Debug
 rmdir /q/s StyleFramework\Release
 rmdir /q/s StyleFramework\x64
+rmdir /q/s BaseLibrary\Debug
+rmdir /q/s BaseLibrary\Release
+rmdir /q/s BaseLibrary\x64
 rmdir /q/s lib
 rmdir /q/s ".vs"
 

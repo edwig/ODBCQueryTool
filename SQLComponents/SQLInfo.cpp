@@ -2,7 +2,7 @@
 //
 // File: SQLInfo.cpp
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -240,14 +240,14 @@ SQLInfo::Init()
 }
 
 void
-SQLInfo::InfoMessageBox(CString p_message,UINT p_type /*= MB_OK*/)
+SQLInfo::InfoMessageBox(XString p_message,UINT p_type /*= MB_OK*/)
 {
   SQLMessage(NULL,p_message,"ODBC Driver info",p_type);
 }
 
 // Add an ODBC SQL Keyword
 bool
-SQLInfo::AddSQLWord(CString sql)
+SQLInfo::AddSQLWord(XString sql)
 {
   for(WordList::iterator it = m_ODBCKeywords.begin(); it != m_ODBCKeywords.end(); ++it)
   {
@@ -282,12 +282,12 @@ SQLInfo::SupportedODBCFunctions()
 }
 
 // Get a string from GetInfo with extra security checks for overflow
-CString
+XString
 SQLInfo::GetInfoString(SQLUSMALLINT info)
 {
   SQLSMALLINT len  = 0;
   bool    overflow = false;
-  CString answer;
+  XString answer;
   char buffer[5120];
 
   if(::SQLGetInfo(m_hdbc,info,buffer,5120,&len) == SQL_SUCCESS)
@@ -394,7 +394,7 @@ SQLInfo::GetInfo()
   {
     woord[0] = '\0';
     pw = woord;
-    for(pb = SQL_ODBC_KEYWORDS;*pb != '\0';pb++)
+    for(pb = (char*) SQL_ODBC_KEYWORDS;*pb != '\0';pb++)
     {
       if (*pb == ',')
       {
@@ -597,7 +597,7 @@ SQLInfo::ReadingDataTypes()
           break;
         }
         int num = 1;
-        CString key;
+        XString key;
         TypeInfo* ti = new TypeInfo();
         dataLen =0;
 
@@ -735,7 +735,7 @@ SQLInfo::ReadingDataTypes()
 
 // Getting datatype info
 TypeInfo* 
-SQLInfo::GetTypeInfo(int p_sqlDatatype,CString p_typename /*=""*/) const
+SQLInfo::GetTypeInfo(int p_sqlDatatype,XString p_typename /*=""*/) const
 {
   TypeInfo* result = nullptr;
 
@@ -810,10 +810,10 @@ SQLInfo::GetAttributeInteger(LPCTSTR description,SQLINTEGER attrib)
                               ,&cbMax);
   if(!m_database->Check(nRetCode))
   {
-    CString error;
+    XString error;
     error.Format("Cannot get connection attribute \"%s\": ",description);
     error += m_database->GetErrorString(NULL);
-    CString state = m_database->GetSQLState();
+    XString state = m_database->GetSQLState();
     if(state.CompareNoCase("S1C00") == 0 || // Driver not capable
        state.CompareNoCase("S1092") == 0 || // Option-id not supported on your database
        state.CompareNoCase("HYC00") == 0 )  // Optional feature not implemented
@@ -835,8 +835,8 @@ SQLInfo::GetAttributeInteger(LPCTSTR description,SQLINTEGER attrib)
 }
 
 // Getting a general STRING connection attribute
-CString
-SQLInfo::GetAttributeString(CString description,SQLINTEGER attrib)
+XString
+SQLInfo::GetAttributeString(XString description,SQLINTEGER attrib)
 {
   SQLCHAR    value[MAX_BUFFER + 1];
   SQLINTEGER cbMax = 0;
@@ -848,7 +848,7 @@ SQLInfo::GetAttributeString(CString description,SQLINTEGER attrib)
                                 ,&cbMax);
   if(!m_database->Check(nRetCode))
   {
-    CString error;
+    XString error;
     error.Format("Cannot get connection attribute \"%s\": ",description.GetString());
     error += m_database->GetErrorString(NULL);
     InfoMessageBox(error);
@@ -856,12 +856,12 @@ SQLInfo::GetAttributeString(CString description,SQLINTEGER attrib)
   }
   value[cbMax] = 0;
   ATLTRACE("Database connection attribute \"%s\" was: %s\n",description.GetString(),value);
-  return CString(value);
+  return XString(value);
 }
 
 // Setting an INTEGER attribute
 bool 
-SQLInfo::SetAttributeInteger(CString     description
+SQLInfo::SetAttributeInteger(XString     description
                             ,SQLINTEGER  attrib
                             ,SQLUINTEGER value)
 {
@@ -872,7 +872,7 @@ SQLInfo::SetAttributeInteger(CString     description
                               ,SQL_IS_UINTEGER);
   if(!m_database->Check(nRetCode))
   {
-    CString error;
+    XString error;
     error.Format("Cannot set connection attribute \"%s\": ",description.GetString());
     error += m_database->GetErrorString(NULL);
     InfoMessageBox(error);
@@ -884,7 +884,7 @@ SQLInfo::SetAttributeInteger(CString     description
 
 // Setting a STRING attribute
 bool 
-SQLInfo::SetAttributeString(CString    description
+SQLInfo::SetAttributeString(XString    description
                            ,SQLINTEGER attrib
                            ,SQLCHAR*   value)
 {
@@ -895,7 +895,7 @@ SQLInfo::SetAttributeString(CString    description
                                 ,SQL_NTS);
   if(!m_database->Check(nRetCode))
   {
-    CString error;
+    XString error;
     error.Format("Cannot set connection attribute \"%s\": ",description.GetString());
     error += m_database->GetErrorString(NULL);
     InfoMessageBox(error);
@@ -937,17 +937,17 @@ SQLInfo::GetAttributeTracing()
 }
 
 // The file to which we are tracing
-CString       
+XString       
 SQLInfo::GetAttributeTraceFile()
 {
   return GetAttributeString("tracefile",SQL_ATTR_TRACEFILE);
 }
 
 // Getting the current catalog name
-CString       
+XString       
 SQLInfo::GetAttributeCatalog()
 {
-  CString catalog = GetAttributeString("current-catalog",SQL_ATTR_CURRENT_CATALOG);
+  XString catalog = GetAttributeString("current-catalog",SQL_ATTR_CURRENT_CATALOG);
   if(catalog.IsEmpty())
   {
     // Does not supports catalogs. Use database name
@@ -989,7 +989,7 @@ SQLInfo::GetAttributeConnTimeout()
 }
 
 // The translation library path
-CString
+XString
 SQLInfo::GetAttributeTranslib()
 {
   m_transLib = GetAttributeString("translation-library",SQL_ATTR_TRANSLATE_LIB);
@@ -1022,7 +1022,7 @@ SQLInfo::SetAttributePacketSize(int p_packet)
 
 // Setting the ODBC Tracing file
 bool 
-SQLInfo::SetAttributeTraceFile(CString p_traceFile)
+SQLInfo::SetAttributeTraceFile(XString p_traceFile)
 {
   SQLCHAR traceFile[512 + 1];
   SQLINTEGER cbMax = p_traceFile.GetLength();
@@ -1065,7 +1065,7 @@ SQLInfo::SetAttributeTransLevel(int p_txnlevel)
 
 // Setting the transaction library (with or without connection)
 bool
-SQLInfo::SetAttributeTranslib(CString p_transLib)
+SQLInfo::SetAttributeTranslib(XString p_transLib)
 {
   m_transLib = p_transLib;
   if(m_hdbc)
@@ -1095,7 +1095,7 @@ SQLInfo::SetAttributeTransoption(int p_transOption)
 
 // Is it a correct identifier (type 0=table,1=column)
 bool 
-SQLInfo::IsCorrectName(CString p_name,int p_type)
+SQLInfo::IsCorrectName(XString p_name,int p_type)
 {
   if(p_name.IsEmpty())
   {
@@ -1133,7 +1133,7 @@ SQLInfo::IsCorrectName(CString p_name,int p_type)
 
 // Is reserved word
 bool
-SQLInfo::IsReservedWord(CString p_name)
+SQLInfo::IsReservedWord(XString p_name)
 {
   // Cannot be in the ODBC keywords list
   for(auto& word : m_ODBCKeywords)
@@ -1169,8 +1169,8 @@ SQLInfo::CanStartTransaction()
 
 // Get information about the primary key of a table
 bool 
-SQLInfo::GetPrimaryKeyInfo(CString&    p_tablename
-                          ,CString&    p_primary
+SQLInfo::GetPrimaryKeyInfo(XString&    p_tablename
+                          ,XString&    p_primary
                           ,MPrimaryMap& p_primaries)
 {
   // Make sure we have the info
@@ -1181,7 +1181,7 @@ SQLInfo::GetPrimaryKeyInfo(CString&    p_tablename
   p_primaries.clear();
 
   MTableMap tables;
-  CString   errors;
+  XString   errors;
 
   MakeInfoTablePrimary(p_primaries,errors,"",p_tablename);
   if(!p_primaries.size())
@@ -1206,7 +1206,7 @@ SQLInfo::GetStatement(bool p_metadataID /*= true*/)
   m_retCode = m_database->GetSQLHandle(&m_hstmt,FALSE);
   if (!SQL_SUCCEEDED(m_retCode))
   {
-    CString errorText = "Error in ODBC statement: ";
+    XString errorText = "Error in ODBC statement: ";
     errorText += m_database->GetErrorString(m_hstmt);
     throw StdException(errorText);
   }
@@ -1242,10 +1242,10 @@ SQLInfo::CloseStatement()
 
 // Get the catalog.schema.table from a user string
 void
-SQLInfo::GetObjectName(CString  p_pattern
-                      ,CString& p_catalog
-                      ,CString& p_schema
-                      ,CString& p_table)
+SQLInfo::GetObjectName(XString  p_pattern
+                      ,XString& p_catalog
+                      ,XString& p_schema
+                      ,XString& p_table)
 {
   p_catalog.Empty();
   p_schema.Empty();
@@ -1263,7 +1263,7 @@ SQLInfo::GetObjectName(CString  p_pattern
   else
   {
     p_table = p_pattern.Right(p_pattern.GetLength()-pos-1).GetString();
-    CString qualifier = p_pattern.Left(pos);
+    XString qualifier = p_pattern.Left(pos);
     pos = qualifier.ReverseFind('.');
     if(pos < 0)
     {
@@ -1295,50 +1295,50 @@ SQLInfo::GetObjectName(CString  p_pattern
 // in system settings of the RDBMS.
 // so can be: "X: schema.table@catalog"
 // Or ANSI:   "X: catalog:schema.table"
-CString
+XString
 SQLInfo::MakeObjectName(SQLCHAR* search_catalog
                        ,SQLCHAR* search_schema
                        ,SQLCHAR* search_table
                        ,SQLCHAR* search_type)
 {
-  CString objectName;
+  XString objectName;
 
   if(strlen((char*)search_schema))
   {
-    objectName += CString(search_schema);
+    objectName += XString(search_schema);
     objectName += ".";
   }
   if(strlen((char*)search_table))
   {
-    objectName += CString(search_table);
+    objectName += XString(search_table);
   }
   if(search_catalog && strlen((char*)search_catalog))
   {
-    CString separator = m_catalogNameSeparator;
+    XString separator = m_catalogNameSeparator;
     if(separator.IsEmpty())
     {
       separator = ":"; // ANSI separator
     }
     if(m_catalogLocation == SQL_CL_END)
     {
-      objectName += separator + CString(search_catalog);
+      objectName += separator + XString(search_catalog);
     }
     else // m_catalogLocation == SQL_CL_START
     {
-      objectName = CString(search_catalog) + separator + objectName;
+      objectName = XString(search_catalog) + separator + objectName;
     }
   }
   if(search_type && strlen((char*)search_type))
   {
-    objectName = CString(search_type) + ": " + objectName;
+    objectName = XString(search_type) + ": " + objectName;
   }
   return objectName;
 }
 
-CString
+XString
 SQLInfo::ODBCDataType(int DataType)
 {
-  CString type;
+  XString type;
 
   switch(DataType)
   {
@@ -1392,10 +1392,10 @@ SQLInfo::ODBCDataType(int DataType)
 // GETTING ALL THE INFO FOR ONE TABLE
 bool
 SQLInfo::MakeInfoTableTable(MTableMap& p_tables
-                           ,CString&   p_errors
-                           ,CString    p_schema
-                           ,CString    p_tablename
-                           ,CString    p_type)
+                           ,XString&   p_errors
+                           ,XString    p_schema
+                           ,XString    p_tablename
+                           ,XString    p_type)
 {
   SQLCHAR      szCatalogName [SQL_MAX_BUFFER];
   SQLLEN       cbCatalogName = 0;
@@ -1538,10 +1538,10 @@ SQLInfo::MakeInfoTableTable(MTableMap& p_tables
 
 bool
 SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns
-                             ,CString&    p_errors
-                             ,CString     p_schema
-                             ,CString     p_tablename
-                             ,CString     p_columnname /*=""*/)
+                             ,XString&    p_errors
+                             ,XString     p_schema
+                             ,XString     p_tablename
+                             ,XString     p_columnname /*=""*/)
 {
   SQLCHAR      szCatalogName [SQL_MAX_BUFFER+1];
   SQLLEN       cbCatalogName = 0;
@@ -1645,7 +1645,7 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns
        }
        if(m_retCode == SQL_SUCCESS || m_retCode == SQL_SUCCESS_WITH_INFO)
        {
-         CString type;
+         XString type;
          MetaColumn theColumn;
 
          // Fill in the structure
@@ -1712,7 +1712,7 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns
 }
 
 bool
-SQLInfo::MakeInfoTablePrimary(MPrimaryMap& p_primaries,CString& p_errors,CString p_schema,CString p_tablename)
+SQLInfo::MakeInfoTablePrimary(MPrimaryMap& p_primaries,XString& p_errors,XString p_schema,XString p_tablename)
 {
   SQLCHAR      szCatalogName [SQL_MAX_BUFFER];
   SQLLEN       cbCatalogName = 0;
@@ -1765,7 +1765,7 @@ SQLInfo::MakeInfoTablePrimary(MPrimaryMap& p_primaries,CString& p_errors,CString
        m_retCode = SqlFetch(m_hstmt);
        if(m_retCode == SQL_ERROR || m_retCode == SQL_SUCCESS_WITH_INFO)
        {
-         CString err = m_database->GetErrorString(m_hstmt);
+         XString err = m_database->GetErrorString(m_hstmt);
          InfoMessageBox(err,MB_OK);
          if(m_retCode == SQL_ERROR)
          {
@@ -1805,9 +1805,9 @@ SQLInfo::MakeInfoTablePrimary(MPrimaryMap& p_primaries,CString& p_errors,CString
 
 bool 
 SQLInfo::MakeInfoTableForeign(MForeignMap& p_foreigns
-                             ,CString&     p_errors
-                             ,CString      p_schema
-                             ,CString      p_tablename
+                             ,XString&     p_errors
+                             ,XString      p_schema
+                             ,XString      p_tablename
                              ,bool         p_referenced /* = false */)
 {
   SQLCHAR      szPKCatalogName [SQL_MAX_BUFFER];
@@ -1909,7 +1909,7 @@ SQLInfo::MakeInfoTableForeign(MForeignMap& p_foreigns
        m_retCode = SqlFetch(m_hstmt);
        if(m_retCode == SQL_ERROR || m_retCode == SQL_SUCCESS_WITH_INFO)
        {
-         CString err = m_database->GetErrorString(m_hstmt);
+         XString err = m_database->GetErrorString(m_hstmt);
          InfoMessageBox(err,MB_OK);
          if(m_retCode == SQL_ERROR)
          {
@@ -1961,9 +1961,9 @@ SQLInfo::MakeInfoTableForeign(MForeignMap& p_foreigns
 
 bool 
 SQLInfo::MakeInfoTableStatistics(MIndicesMap& p_statistics
-                                ,CString&     p_errors
-                                ,CString      p_schema
-                                ,CString      p_tablename
+                                ,XString&     p_errors
+                                ,XString      p_schema
+                                ,XString      p_tablename
                                 ,MPrimaryMap*    p_keymap
                                 ,bool            p_all /*=true*/)
 {
@@ -2039,7 +2039,7 @@ SQLInfo::MakeInfoTableStatistics(MIndicesMap& p_statistics
       m_retCode = SqlFetch(m_hstmt);
       if(m_retCode == SQL_ERROR || m_retCode == SQL_SUCCESS_WITH_INFO)
       {
-        CString err = m_database->GetErrorString(m_hstmt);
+        XString err = m_database->GetErrorString(m_hstmt);
         InfoMessageBox(err,MB_OK);
         if(m_retCode == SQL_ERROR)
         {
@@ -2073,7 +2073,7 @@ SQLInfo::MakeInfoTableStatistics(MIndicesMap& p_statistics
           primary.m_catalog         = szCatalogName;
           primary.m_schema          = szSchemaName;
           primary.m_table           = szTableName;
-          primary.m_columnName      = CString(szColumnName);
+          primary.m_columnName      = XString(szColumnName);
           primary.m_columnPosition  = OrdinalPos;
           primary.m_constraintName  = szIndexName;
           p_keymap->push_back(primary);
@@ -2098,9 +2098,9 @@ SQLInfo::MakeInfoTableStatistics(MIndicesMap& p_statistics
 
 bool 
 SQLInfo::MakeInfoTableSpecials(MSpecialsMap& p_specials
-                              ,CString&      p_errors
-                              ,CString       p_schema
-                              ,CString       p_tablename)
+                              ,XString&      p_errors
+                              ,XString       p_schema
+                              ,XString       p_tablename)
   {
   SQLCHAR      szCatalogName [SQL_MAX_BUFFER];
   SQLCHAR      szSchemaName  [SQL_MAX_BUFFER];
@@ -2165,7 +2165,7 @@ SQLInfo::MakeInfoTableSpecials(MSpecialsMap& p_specials
        m_retCode = SqlFetch(m_hstmt);
        if(m_retCode == SQL_ERROR || m_retCode == SQL_SUCCESS_WITH_INFO)
        {
-         CString err = m_database->GetErrorString(m_hstmt);
+         XString err = m_database->GetErrorString(m_hstmt);
          InfoMessageBox(err,MB_OK);
          if(m_retCode == SQL_ERROR)
          {
@@ -2208,9 +2208,9 @@ SQLInfo::MakeInfoTableSpecials(MSpecialsMap& p_specials
 
 bool 
 SQLInfo::MakeInfoTablePrivileges(MPrivilegeMap& p_privileges
-                                ,CString&       p_errors
-                                ,CString        p_schema
-                                ,CString        p_tablename)
+                                ,XString&       p_errors
+                                ,XString        p_schema
+                                ,XString        p_tablename)
 {
   SQLCHAR      szCatalogName [SQL_MAX_BUFFER];
   SQLLEN       cbCatalogName = 0;
@@ -2267,7 +2267,7 @@ SQLInfo::MakeInfoTablePrivileges(MPrivilegeMap& p_privileges
        m_retCode = SqlFetch(m_hstmt);
        if(m_retCode == SQL_ERROR || m_retCode == SQL_SUCCESS_WITH_INFO)
        {
-         CString err = m_database->GetErrorString(m_hstmt);
+         XString err = m_database->GetErrorString(m_hstmt);
          InfoMessageBox(err,MB_OK);
          if(m_retCode == SQL_ERROR)
          {
@@ -2315,10 +2315,10 @@ SQLInfo::MakeInfoTablePrivileges(MPrivilegeMap& p_privileges
 
 bool 
 SQLInfo::MakeInfoColumnPrivileges(MPrivilegeMap&  p_privileges
-                                 ,CString&        p_errors
-                                 ,CString         p_schema
-                                 ,CString         p_tablename
-                                 ,CString         p_columnname /*= ""*/)
+                                 ,XString&        p_errors
+                                 ,XString         p_schema
+                                 ,XString         p_tablename
+                                 ,XString         p_columnname /*= ""*/)
 {
   SQLCHAR      szCatalogName [SQL_MAX_BUFFER];
   SQLLEN       cbCatalogName = 0;
@@ -2382,7 +2382,7 @@ SQLInfo::MakeInfoColumnPrivileges(MPrivilegeMap&  p_privileges
        m_retCode = SqlFetch(m_hstmt);
        if(m_retCode == SQL_ERROR || m_retCode == SQL_SUCCESS_WITH_INFO)
        {
-         CString err = m_database->GetErrorString(m_hstmt);
+         XString err = m_database->GetErrorString(m_hstmt);
          InfoMessageBox(err,MB_OK);
          if(m_retCode == SQL_ERROR)
          {
@@ -2431,9 +2431,9 @@ SQLInfo::MakeInfoColumnPrivileges(MPrivilegeMap&  p_privileges
 
 bool
 SQLInfo::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
-                              ,CString&        p_errors
-                              ,CString         p_schema
-                              ,CString         p_procedure)
+                              ,XString&        p_errors
+                              ,XString         p_schema
+                              ,XString         p_procedure)
 {
   SQLCHAR      szCatalogName     [SQL_MAX_BUFFER];
   SQLLEN       cbCatalogName     = 0;
@@ -2515,7 +2515,7 @@ SQLInfo::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
       }
       if(m_retCode == SQL_ERROR || m_retCode == SQL_SUCCESS_WITH_INFO)
       {
-        CString err = m_database->GetErrorString(m_hstmt);
+        XString err = m_database->GetErrorString(m_hstmt);
         InfoMessageBox(err,MB_OK);
         if(m_retCode == SQL_ERROR)
         {
@@ -2558,9 +2558,9 @@ SQLInfo::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
 
 bool
 SQLInfo::MakeInfoPSMParameters(MParameterMap& p_parameters
-                              ,CString&       p_errors
-                              ,CString        p_schema
-                              ,CString        p_procedure)
+                              ,XString&       p_errors
+                              ,XString        p_schema
+                              ,XString        p_procedure)
 {
   SQLCHAR      szCatalogName     [SQL_MAX_BUFFER];
   SQLLEN       cbCatalogName     = 0;
@@ -2654,7 +2654,7 @@ SQLInfo::MakeInfoPSMParameters(MParameterMap& p_parameters
       m_retCode = SqlFetch(m_hstmt);
       if(m_retCode == SQL_ERROR || m_retCode == SQL_SUCCESS_WITH_INFO)
       {
-        CString err = m_database->GetErrorString(m_hstmt);
+        XString err = m_database->GetErrorString(m_hstmt);
         InfoMessageBox(err,MB_OK);
         if(m_retCode == SQL_ERROR)
         {
@@ -2707,8 +2707,8 @@ SQLInfo::MakeInfoPSMParameters(MParameterMap& p_parameters
 }
 
 // Return the native SQL command from an ODBC-escaped command
-CString 
-SQLInfo::NativeSQL(HDBC hdbc,CString& sqlCommand)
+XString 
+SQLInfo::NativeSQL(HDBC hdbc,XString& sqlCommand)
 {
   // Check whether we can do this
   if(!SupportedFunction(SQL_API_SQLNATIVESQL))
@@ -2741,12 +2741,12 @@ SQLInfo::NativeSQL(HDBC hdbc,CString& sqlCommand)
     if(retLen >= 0 && retLen < 30000)
     {
       buffer[retLen] = 0;
-      return CString((char *)buffer);
+      return XString((char *)buffer);
     }
     else
     {
       // Overflow error
-      CString error = "Buffer overflow (30.000 chars) on SQLNativeSQL";
+      XString error = "Buffer overflow (30.000 chars) on SQLNativeSQL";
       InfoMessageBox(error,MB_OK|MB_ICONERROR);
       return error;
     }
@@ -2754,7 +2754,7 @@ SQLInfo::NativeSQL(HDBC hdbc,CString& sqlCommand)
   else
   {
     // SQLNativeSQL returned an error
-    CString errorText = "Error while retrieving SQLNativeSQL:\n";
+    XString errorText = "Error while retrieving SQLNativeSQL:\n";
     errorText += m_database->GetErrorString(NULL);
     InfoMessageBox(errorText,MB_OK|MB_ICONERROR);
     return errorText;
@@ -2776,9 +2776,9 @@ SQLInfo::GetMetaPointer(unsigned char* p_buffer,bool p_meta)
 
 // GETTING ALL META TYPES
 bool
-SQLInfo::MakeInfoMetaTypes(MMetaMap& p_objects,CString& p_errors,int p_type)
+SQLInfo::MakeInfoMetaTypes(MMetaMap& p_objects,XString& p_errors,int p_type)
 {
-  CString      sitem;
+  XString      sitem;
   SQLCHAR      szCatalogName [SQL_MAX_BUFFER];
   SQLLEN       cbCatalogName = 0;
   SQLCHAR      szSchemaName  [SQL_MAX_BUFFER];
@@ -2793,7 +2793,7 @@ SQLInfo::MakeInfoMetaTypes(MMetaMap& p_objects,CString& p_errors,int p_type)
   unsigned char search_table  [META_SEARCH_LEN] = "";
   unsigned char search_type   [META_SEARCH_LEN] = "";
   // For duplicates
-  std::map<CString,CString> found;
+  std::map<XString,XString> found;
   char* nameFound = NULL;
 
   // Check whether we can do this
@@ -2860,7 +2860,7 @@ SQLInfo::MakeInfoMetaTypes(MMetaMap& p_objects,CString& p_errors,int p_type)
         }
         if(nameFound)
         {
-          CString val;
+          XString val;
           if(found.find(nameFound) == found.end())
           {
             found.insert(std::make_pair(nameFound,nameFound));

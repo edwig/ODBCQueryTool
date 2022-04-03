@@ -2,7 +2,7 @@
 //
 // File: SQLTime.cpp
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -50,7 +50,7 @@ SQLTime::SQLTime()
 }
 
 // Constructor from a string
-SQLTime::SQLTime(CString p_time)
+SQLTime::SQLTime(XString p_time)
 {
   ParseTime(p_time);
 }
@@ -152,7 +152,7 @@ SQLTime::SetTime()
   else
   {
     // Tell it to the outside world
-    CString error;
+    XString error;
     error.Format("Incorrect time %02d:%02d:%02d",m_theTime.m_hour,m_theTime.m_minute,m_theTime.m_second);
     // Reset the time to NULL
     SetNull();
@@ -172,10 +172,10 @@ SQLTime::SetNull()
 }
 
 // The time as a string
-CString
+XString
 SQLTime::AsString() const
 {
-  CString buffer;
+  XString buffer;
   if(IsNull() == false)
   {
     buffer.Format("%02d:%02d:%02d", Hour(), Minute(), Second());
@@ -184,7 +184,7 @@ SQLTime::AsString() const
 }
 
 // Time as a string for storage in a database
-CString
+XString
 SQLTime::AsSQLString(SQLDatabase* p_database) const
 {
   if(IsNull())
@@ -195,7 +195,7 @@ SQLTime::AsSQLString(SQLDatabase* p_database) const
 }
 
 // Time as a stripped SQL string for usage in SQL statements
-CString
+XString
 SQLTime::AsStrippedSQLString(SQLDatabase* p_database) const
 {
   if(IsNull())
@@ -223,7 +223,7 @@ SQLTime::AsNumber() const
 
 // Get the value from a string of format: uu:mm(:ss)
 void
-SQLTime::SetTime(const CString& string)
+SQLTime::SetTime(const XString& string)
 {
   ParseTime(string);
 }
@@ -303,10 +303,10 @@ SQLTime::Normalise()
 // Parse time from a string
 // hh:mm(:ss) / CURRENT / NOW / etc
 void
-SQLTime::ParseTime(const CString& p_string)
+SQLTime::ParseTime(const XString& p_string)
 {
   // Copy and trim the string
-  CString string(p_string);
+  XString string(p_string);
   string.Trim();
 
   if(string.IsEmpty())
@@ -380,7 +380,7 @@ SQLTime::ParseTime(const CString& p_string)
 // Scan for short time notation
 // Support of short time formats (HH, HHMM of HHMMSS)
 bool
-SQLTime::ShortTime(const CString& p_string,int& p_hour,int& p_min,int& p_sec)
+SQLTime::ShortTime(const XString& p_string,int& p_hour,int& p_min,int& p_sec)
 {
   bool success = false;
   // Expectation pattern
@@ -416,7 +416,7 @@ SQLTime::ShortTime(const CString& p_string,int& p_hour,int& p_min,int& p_sec)
 
 // XML Time support
 bool
-SQLTime::ParseXMLTime(const CString& p_string)
+SQLTime::ParseXMLTime(const XString& p_string)
 {
   unsigned int uu[2] = {0,0};
   unsigned int mi[2] = {0,0};

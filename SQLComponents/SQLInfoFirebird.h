@@ -2,7 +2,7 @@
 //
 // File: SQLInfoFirebird.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -45,10 +45,10 @@ public:
   DatabaseType GetRDBMSDatabaseType() const;
 
   // The name of the database vendor
-  CString GetRDBMSVendorName() const;
+  XString GetRDBMSVendorName() const;
 
   // Get the physical database name
-  CString GetRDBMSPhysicalDatabaseName() const;
+  XString GetRDBMSPhysicalDatabaseName() const;
 
   // System catalog is stored in uppercase in the database?
   bool    GetRDBMSIsCatalogUpper() const;
@@ -89,108 +89,108 @@ public:
   // KEYWORDS
 
   // Keyword for the current date and time
-  CString GetKEYWORDCurrentTimestamp() const;
+  XString GetKEYWORDCurrentTimestamp() const;
 
   // String for the current date
-  CString GetKEYWORDCurrentDate() const;
+  XString GetKEYWORDCurrentDate() const;
 
   // Get the concatenation operator
-  CString GetKEYWORDConcatanationOperator() const;
+  XString GetKEYWORDConcatanationOperator() const;
 
   // Get quote character for strings
-  CString GetKEYWORDQuoteCharacter() const;
+  XString GetKEYWORDQuoteCharacter() const;
 
   // Get quote character around reserved words as an identifier
-  CString GetKEYWORDReservedWordQuote() const;
+  XString GetKEYWORDReservedWordQuote() const;
 
   // Get default NULL for parameter list input
-  CString GetKEYWORDParameterDefaultNULL() const;
+  XString GetKEYWORDParameterDefaultNULL() const;
 
   // Parameter is for INPUT and OUTPUT in parameter list
-  CString GetKEYWORDParameterINOUT() const;
+  XString GetKEYWORDParameterINOUT() const;
 
   // Parameter is for OUTPUT only in parameter list
-  CString GetKEYWORDParameterOUT() const;
+  XString GetKEYWORDParameterOUT() const;
 
   // Get datatype of the IDENTITY primary key in a Network database
-  CString GetKEYWORDNetworkPrimaryKeyType() const;
+  XString GetKEYWORDNetworkPrimaryKeyType() const;
 
   // Get datatype for timestamp (year to second)
-  CString GetKEYWORDTypeTimestamp() const;
+  XString GetKEYWORDTypeTimestamp() const;
 
   // Prefix for a parameter in a stored procedure
-  CString GetKEYWORDParameterPrefix() const;
+  XString GetKEYWORDParameterPrefix() const;
 
   // Get select part to add new record identity to a table
   // Can be special column like 'OID' or a sequence select
-  CString GetKEYWORDIdentityString(CString& p_tablename,CString p_postfix = "_seq") const;
+  XString GetKEYWORDIdentityString(XString& p_tablename,XString p_postfix = "_seq") const;
 
   // Gets the UPPER function
-  CString GetKEYWORDUpper(CString& p_expression) const;
+  XString GetKEYWORDUpper(XString& p_expression) const;
 
   // Gets the construction for 1 minute ago
-  CString GetKEYWORDInterval1MinuteAgo() const;
+  XString GetKEYWORDInterval1MinuteAgo() const;
 
   // Gets the Not-NULL-Value statement of the database
-  CString GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) const;
+  XString GetKEYWORDStatementNVL(XString& p_test,XString& p_isnull) const;
 
   // Gets the RDBMS definition of the datatype
-  CString GetKEYWORDDataType(MetaColumn* p_column);
+  XString GetKEYWORDDataType(MetaColumn* p_column);
 
   // Gets the USER (current-user) keyword function
-  CString GetKEYWORDCurrentUser() const;
+  XString GetKEYWORDCurrentUser() const;
 
   // SQL
 
   // Connects to a default schema in the database/instance
-  CString GetSQLDefaultSchema(CString p_schema) const;
+  XString GetSQLDefaultSchema(XString p_schema) const;
 
   // Gets the construction for inline generating a key within an INSERT statement
-  CString GetSQLNewSerial(CString p_table, CString p_sequence) const;
+  XString GetSQLNewSerial(XString p_table, XString p_sequence) const;
 
   // Gets the construction / select for generating a new serial identity
-  CString GetSQLGenerateSerial(CString p_table) const;
+  XString GetSQLGenerateSerial(XString p_table) const;
 
   // Gets the construction / select for the resulting effective generated serial
-  CString GetSQLEffectiveSerial(CString p_identity) const;
+  XString GetSQLEffectiveSerial(XString p_identity) const;
 
   // Gets the subtransaction commands
-  CString GetSQLStartSubTransaction   (CString p_savepointName) const;
-  CString GetSQLCommitSubTransaction  (CString p_savepointName) const;
-  CString GetSQLRollbackSubTransaction(CString p_savepointName) const;
+  XString GetSQLStartSubTransaction   (XString p_savepointName) const;
+  XString GetSQLCommitSubTransaction  (XString p_savepointName) const;
+  XString GetSQLRollbackSubTransaction(XString p_savepointName) const;
 
   // FROM-Part for a query to select only 1 (one) record / or empty!
-  CString GetSQLFromDualClause() const;
+  XString GetSQLFromDualClause() const;
 
   // Get SQL to lock  a table 
-  CString GetSQLLockTable(CString p_schema, CString p_tablename, bool p_exclusive) const;
+  XString GetSQLLockTable(XString p_schema, XString p_tablename, bool p_exclusive) const;
 
   // Get query to optimize the table statistics
-  CString GetSQLOptimizeTable(CString p_schema, CString p_tablename) const;
+  XString GetSQLOptimizeTable(XString p_schema, XString p_tablename) const;
 
   // Transform query to select top <n> rows
-  CString GetSQLTopNRows(CString p_sql,int p_top,int p_skip = 0) const;
+  XString GetSQLTopNRows(XString p_sql,int p_top,int p_skip = 0) const;
 
   //////////////////////////////////////////////////////////////////////////
   // SQL STRINGS
 
   // Makes a SQL string from a given string, with all the right quotes
-  CString GetSQLString(const CString& p_string) const;
+  XString GetSQLString(const XString& p_string) const;
 
   // Get date string in engine format
-  CString GetSQLDateString(int p_year,int p_month,int p_day) const;
+  XString GetSQLDateString(int p_year,int p_month,int p_day) const;
 
   // Get time string in database engine format
-  CString GetSQLTimeString(int p_hour,int p_minute,int p_second) const;
+  XString GetSQLTimeString(int p_hour,int p_minute,int p_second) const;
 
   // Get date-time string in database engine format
-  CString GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const;
+  XString GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const;
 
   // Get date-time bound parameter string in database format
-  CString GetSQLDateTimeBoundString() const;
+  XString GetSQLDateTimeBoundString() const;
 
   // Stripped data for the parameter binding
-  CString GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const;
+  XString GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const;
 
   //////////////////////////////////////////////////////////////////////////
   //
@@ -218,73 +218,73 @@ public:
   //////////////////////////////////////////////////////////////////////////
 
   // Meta info about meta types
-  CString GetCATALOGMetaTypes(int p_type) const;
+  XString GetCATALOGMetaTypes(int p_type) const;
   // All table functions
-  CString GetCATALOGTableExists       (CString& p_schema,CString& p_tablename)  const;
-  CString GetCATALOGTablesList        (CString& p_schema,CString& p_pattern)    const;
-  CString GetCATALOGTableAttributes   (CString& p_schema,CString& p_tablename)  const;
-  CString GetCATALOGTableSynonyms     (CString& p_schema,CString& p_tablename)  const;
-  CString GetCATALOGTableCatalog      (CString& p_schema,CString& p_tablename)  const;
-  CString GetCATALOGTableCreate       (MetaTable& p_table,MetaColumn& p_column) const;
-  CString GetCATALOGTableCreatePostfix(MetaTable& p_table,MetaColumn& p_column) const;
-  CString GetCATALOGTableRename       (CString  p_schema,CString  p_tablename,CString p_newname) const;
-  CString GetCATALOGTableDrop         (CString  p_schema,CString  p_tablename,bool p_ifExist = false,bool p_restrict = false,bool p_cascade = false) const;
+  XString GetCATALOGTableExists       (XString& p_schema,XString& p_tablename)  const;
+  XString GetCATALOGTablesList        (XString& p_schema,XString& p_pattern)    const;
+  XString GetCATALOGTableAttributes   (XString& p_schema,XString& p_tablename)  const;
+  XString GetCATALOGTableSynonyms     (XString& p_schema,XString& p_tablename)  const;
+  XString GetCATALOGTableCatalog      (XString& p_schema,XString& p_tablename)  const;
+  XString GetCATALOGTableCreate       (MetaTable& p_table,MetaColumn& p_column) const;
+  XString GetCATALOGTableCreatePostfix(MetaTable& p_table,MetaColumn& p_column) const;
+  XString GetCATALOGTableRename       (XString  p_schema,XString  p_tablename,XString p_newname) const;
+  XString GetCATALOGTableDrop         (XString  p_schema,XString  p_tablename,bool p_ifExist = false,bool p_restrict = false,bool p_cascade = false) const;
   // All Temporary table functions
-  CString GetCATALOGTemptableCreate   (CString p_schema,CString p_tablename,CString p_select) const;
-  CString GetCATALOGTemptableIntoTemp (CString p_schema,CString p_tablename,CString p_select) const;
-  CString GetCATALOGTemptableDrop     (CString p_schema,CString p_tablename) const;
+  XString GetCATALOGTemptableCreate   (XString p_schema,XString p_tablename,XString p_select) const;
+  XString GetCATALOGTemptableIntoTemp (XString p_schema,XString p_tablename,XString p_select) const;
+  XString GetCATALOGTemptableDrop     (XString p_schema,XString p_tablename) const;
   // All column functions
-  CString GetCATALOGColumnExists    (CString  p_schema,CString  p_tablename,CString  p_columnname) const;
-  CString GetCATALOGColumnList      (CString& p_schema,CString& p_tablename) const;
-  CString GetCATALOGColumnAttributes(CString& p_schema,CString& p_tablename,CString& p_columnname) const;
-  CString GetCATALOGColumnCreate    (MetaColumn& p_column) const;
-  CString GetCATALOGColumnAlter     (MetaColumn& p_column) const;
-  CString GetCATALOGColumnRename    (CString  p_schema,CString  p_tablename,CString  p_columnname,CString p_newname,CString p_datatype) const;
-  CString GetCATALOGColumnDrop      (CString  p_schema,CString  p_tablename,CString  p_columnname) const;
+  XString GetCATALOGColumnExists    (XString  p_schema,XString  p_tablename,XString  p_columnname) const;
+  XString GetCATALOGColumnList      (XString& p_schema,XString& p_tablename) const;
+  XString GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablename,XString& p_columnname) const;
+  XString GetCATALOGColumnCreate    (MetaColumn& p_column) const;
+  XString GetCATALOGColumnAlter     (MetaColumn& p_column) const;
+  XString GetCATALOGColumnRename    (XString  p_schema,XString  p_tablename,XString  p_columnname,XString p_newname,XString p_datatype) const;
+  XString GetCATALOGColumnDrop      (XString  p_schema,XString  p_tablename,XString  p_columnname) const;
   // All index functions
-  CString GetCATALOGIndexExists     (CString  p_schema,CString  p_tablename,CString  p_indexname) const;
-  CString GetCATALOGIndexList       (CString& p_schema,CString& p_tablename) const;
-  CString GetCATALOGIndexAttributes (CString& p_schema,CString& p_tablename,CString& p_indexname) const;
-  CString GetCATALOGIndexCreate     (MIndicesMap& p_index) const;
-  CString GetCATALOGIndexDrop       (CString  p_schema,CString  p_tablename,CString  p_indexname) const;
-  CString GetCATALOGIndexFilter     (MetaIndex& p_index) const;
+  XString GetCATALOGIndexExists     (XString  p_schema,XString  p_tablename,XString  p_indexname) const;
+  XString GetCATALOGIndexList       (XString& p_schema,XString& p_tablename) const;
+  XString GetCATALOGIndexAttributes (XString& p_schema,XString& p_tablename,XString& p_indexname) const;
+  XString GetCATALOGIndexCreate     (MIndicesMap& p_index) const;
+  XString GetCATALOGIndexDrop       (XString  p_schema,XString  p_tablename,XString  p_indexname) const;
+  XString GetCATALOGIndexFilter     (MetaIndex& p_index) const;
   // All primary key functions
-  CString GetCATALOGPrimaryExists    (CString  p_schema,CString  p_tablename) const;
-  CString GetCATALOGPrimaryAttributes(CString& p_schema,CString& p_tablename) const;
-  CString GetCATALOGPrimaryCreate    (MPrimaryMap& p_primaries) const;
-  CString GetCATALOGPrimaryDrop      (CString  p_schema,CString  p_tablename,CString p_constraintname) const;
+  XString GetCATALOGPrimaryExists    (XString  p_schema,XString  p_tablename) const;
+  XString GetCATALOGPrimaryAttributes(XString& p_schema,XString& p_tablename) const;
+  XString GetCATALOGPrimaryCreate    (MPrimaryMap& p_primaries) const;
+  XString GetCATALOGPrimaryDrop      (XString  p_schema,XString  p_tablename,XString p_constraintname) const;
   // All foreign key functions
-  CString GetCATALOGForeignExists    (CString  p_schema,CString  p_tablename,CString  p_constraintname) const;
-  CString GetCATALOGForeignList      (CString& p_schema,CString& p_tablename,int p_maxColumns = SQLINFO_MAX_COLUMNS) const;
-  CString GetCATALOGForeignAttributes(CString& p_schema,CString& p_tablename,CString& p_constraintname,bool p_referenced = false,int p_maxColumns = SQLINFO_MAX_COLUMNS) const;
-  CString GetCATALOGForeignCreate    (MForeignMap& p_foreigns) const;
-  CString GetCATALOGForeignAlter     (MForeignMap& p_original,MForeignMap& p_requested) const;
-  CString GetCATALOGForeignDrop      (CString  p_schema,CString  p_tablename,CString  p_constraintname) const;
+  XString GetCATALOGForeignExists    (XString  p_schema,XString  p_tablename,XString  p_constraintname) const;
+  XString GetCATALOGForeignList      (XString& p_schema,XString& p_tablename,int p_maxColumns = SQLINFO_MAX_COLUMNS) const;
+  XString GetCATALOGForeignAttributes(XString& p_schema,XString& p_tablename,XString& p_constraintname,bool p_referenced = false,int p_maxColumns = SQLINFO_MAX_COLUMNS) const;
+  XString GetCATALOGForeignCreate    (MForeignMap& p_foreigns) const;
+  XString GetCATALOGForeignAlter     (MForeignMap& p_original,MForeignMap& p_requested) const;
+  XString GetCATALOGForeignDrop      (XString  p_schema,XString  p_tablename,XString  p_constraintname) const;
   // All trigger functions
-  CString GetCATALOGTriggerExists    (CString  p_schema,CString  p_tablename,CString  p_triggername) const;
-  CString GetCATALOGTriggerList      (CString& p_schema,CString& p_tablename) const;
-  CString GetCATALOGTriggerAttributes(CString& p_schema,CString& p_tablename,CString& p_triggername) const;
-  CString GetCATALOGTriggerCreate    (MetaTrigger& p_trigger) const;
-  CString GetCATALOGTriggerDrop      (CString  p_schema,CString  p_tablename,CString  p_triggername) const;
+  XString GetCATALOGTriggerExists    (XString  p_schema,XString  p_tablename,XString  p_triggername) const;
+  XString GetCATALOGTriggerList      (XString& p_schema,XString& p_tablename) const;
+  XString GetCATALOGTriggerAttributes(XString& p_schema,XString& p_tablename,XString& p_triggername) const;
+  XString GetCATALOGTriggerCreate    (MetaTrigger& p_trigger) const;
+  XString GetCATALOGTriggerDrop      (XString  p_schema,XString  p_tablename,XString  p_triggername) const;
   // All sequence functions
-  CString GetCATALOGSequenceExists    (CString  p_schema,CString  p_sequence) const;
-  CString GetCATALOGSequenceList      (CString& p_schema,CString& p_pattern)  const;
-  CString GetCATALOGSequenceAttributes(CString& p_schema,CString& p_sequence) const;
-  CString GetCATALOGSequenceCreate    (MetaSequence& p_sequence) const;
-  CString GetCATALOGSequenceDrop      (CString  p_schema,CString  p_sequence) const;
+  XString GetCATALOGSequenceExists    (XString  p_schema,XString  p_sequence) const;
+  XString GetCATALOGSequenceList      (XString& p_schema,XString& p_pattern)  const;
+  XString GetCATALOGSequenceAttributes(XString& p_schema,XString& p_sequence) const;
+  XString GetCATALOGSequenceCreate    (MetaSequence& p_sequence) const;
+  XString GetCATALOGSequenceDrop      (XString  p_schema,XString  p_sequence) const;
   // All view functions
-  CString GetCATALOGViewExists       (CString& p_schema,CString& p_viewname) const;
-  CString GetCATALOGViewList         (CString& p_schema,CString& p_pattern)  const;
-  CString GetCATALOGViewAttributes   (CString& p_schema,CString& p_viewname) const;
-  CString GetCATALOGViewText         (CString& p_schema,CString& p_viewname) const;
-  CString GetCATALOGViewCreate       (CString  p_schema,CString  p_viewname,CString p_contents)   const;
-  CString GetCATALOGViewRename       (CString  p_schema,CString  p_viewname,CString p_newname)    const;
-  CString GetCATALOGViewDrop         (CString  p_schema,CString  p_viewname,CString& p_precursor) const;
+  XString GetCATALOGViewExists       (XString& p_schema,XString& p_viewname) const;
+  XString GetCATALOGViewList         (XString& p_schema,XString& p_pattern)  const;
+  XString GetCATALOGViewAttributes   (XString& p_schema,XString& p_viewname) const;
+  XString GetCATALOGViewText         (XString& p_schema,XString& p_viewname) const;
+  XString GetCATALOGViewCreate       (XString  p_schema,XString  p_viewname,XString p_contents)   const;
+  XString GetCATALOGViewRename       (XString  p_schema,XString  p_viewname,XString p_newname)    const;
+  XString GetCATALOGViewDrop         (XString  p_schema,XString  p_viewname,XString& p_precursor) const;
   // All Privilege functions
-  CString GetCATALOGTablePrivileges  (CString& p_schema,CString& p_tablename) const;
-  CString GetCATALOGColumnPrivileges (CString& p_schema,CString& p_tablename,CString& p_columnname) const;
-  CString GetCatalogGrantPrivilege   (CString  p_schema,CString  p_objectname,CString p_privilege,CString p_grantee,bool p_grantable);
-  CString GetCatalogRevokePrivilege  (CString  p_schema,CString  p_objectname,CString p_privilege,CString p_grantee);
+  XString GetCATALOGTablePrivileges  (XString& p_schema,XString& p_tablename) const;
+  XString GetCATALOGColumnPrivileges (XString& p_schema,XString& p_tablename,XString& p_columnname) const;
+  XString GetCatalogGrantPrivilege   (XString  p_schema,XString  p_objectname,XString p_privilege,XString p_grantee,bool p_grantable);
+  XString GetCatalogRevokePrivilege  (XString  p_schema,XString  p_objectname,XString p_privilege,XString p_grantee);
 
   //////////////////////////////////////////////////////////////////////////
   //
@@ -316,39 +316,39 @@ public:
   //////////////////////////////////////////////////////////////////////////
 
   // All procedure functions
-  CString GetPSMProcedureExists    (CString  p_schema,CString  p_procedure) const;
-  CString GetPSMProcedureList      (CString& p_schema) const;
-  CString GetPSMProcedureAttributes(CString& p_schema,CString& p_procedure) const;
-  CString GetPSMProcedureSourcecode(CString  p_schema,CString  p_procedure) const;
-  CString GetPSMProcedureCreate    (MetaProcedure& p_procedure) const;
-  CString GetPSMProcedureDrop      (CString  p_schema,CString  p_procedure) const;
-  CString GetPSMProcedureErrors    (CString  p_schema,CString  p_procedure) const;
+  XString GetPSMProcedureExists    (XString  p_schema,XString  p_procedure) const;
+  XString GetPSMProcedureList      (XString& p_schema) const;
+  XString GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure) const;
+  XString GetPSMProcedureSourcecode(XString  p_schema,XString  p_procedure) const;
+  XString GetPSMProcedureCreate    (MetaProcedure& p_procedure) const;
+  XString GetPSMProcedureDrop      (XString  p_schema,XString  p_procedure) const;
+  XString GetPSMProcedureErrors    (XString  p_schema,XString  p_procedure) const;
   // And it's parameters
-  CString GetPSMProcedureParameters(CString& p_schema,CString& p_procedure) const;
+  XString GetPSMProcedureParameters(XString& p_schema,XString& p_procedure) const;
 
   // All Language elements
-  CString GetPSMDeclaration(bool p_first,CString p_variable,int p_datatype,int p_precision = 0,int p_scale = 0,
-                            CString p_default = "",CString p_domain = "",CString p_asColumn = "") const;
-  CString GetPSMAssignment (CString p_variable,CString p_statement = "") const;
-  CString GetPSMIF         (CString p_condition) const;
-  CString GetPSMIFElse     () const;
-  CString GetPSMIFEnd      () const;
-  CString GetPSMWhile      (CString p_condition) const;
-  CString GetPSMWhileEnd   () const;
-  CString GetPSMLOOP       () const;
-  CString GetPSMLOOPEnd    () const;
-  CString GetPSMBREAK      () const;
-  CString GetPSMRETURN     (CString p_statement = "") const;
-  CString GetPSMExecute    (CString p_procedure,MParameterMap& p_parameters) const;
+  XString GetPSMDeclaration(bool p_first,XString p_variable,int p_datatype,int p_precision = 0,int p_scale = 0,
+                            XString p_default = "",XString p_domain = "",XString p_asColumn = "") const;
+  XString GetPSMAssignment (XString p_variable,XString p_statement = "") const;
+  XString GetPSMIF         (XString p_condition) const;
+  XString GetPSMIFElse     () const;
+  XString GetPSMIFEnd      () const;
+  XString GetPSMWhile      (XString p_condition) const;
+  XString GetPSMWhileEnd   () const;
+  XString GetPSMLOOP       () const;
+  XString GetPSMLOOPEnd    () const;
+  XString GetPSMBREAK      () const;
+  XString GetPSMRETURN     (XString p_statement = "") const;
+  XString GetPSMExecute    (XString p_procedure,MParameterMap& p_parameters) const;
 
   // The CURSOR
-  CString GetPSMCursorDeclaration(CString p_cursorname,CString p_select) const;
-  CString GetPSMCursorFetch      (CString p_cursorname,std::vector<CString>& p_columnnames,std::vector<CString>& p_variablenames) const;
+  XString GetPSMCursorDeclaration(XString p_cursorname,XString p_select) const;
+  XString GetPSMCursorFetch      (XString p_cursorname,std::vector<XString>& p_columnnames,std::vector<XString>& p_variablenames) const;
 
   // PSM Exceptions
-  CString GetPSMExceptionCatchNoData() const;
-  CString GetPSMExceptionCatch(CString p_sqlState) const;
-  CString GetPSMExceptionRaise(CString p_sqlState) const;
+  XString GetPSMExceptionCatchNoData() const;
+  XString GetPSMExceptionCatch(XString p_sqlState) const;
+  XString GetPSMExceptionRaise(XString p_sqlState) const;
 
   //////////////////////////////////////////////////////////////////////////
   //
@@ -364,13 +364,13 @@ public:
   //
   //////////////////////////////////////////////////////////////////////////
 
-  CString GetSESSIONMyself() const;
-  CString GetSESSIONExists(CString p_sessionID) const;
-  CString GetSESSIONList() const;
-  CString GetSESSIONAttributes(CString p_sessionID) const;
+  XString GetSESSIONMyself() const;
+  XString GetSESSIONExists(XString p_sessionID) const;
+  XString GetSESSIONList() const;
+  XString GetSESSIONAttributes(XString p_sessionID) const;
   // Transactions
-  CString GetSESSIONConstraintsDeferred()  const;
-  CString GetSESSIONConstraintsImmediate() const;
+  XString GetSESSIONConstraintsDeferred()  const;
+  XString GetSESSIONConstraintsImmediate() const;
 
 
   //////////////////////////////////////////////////////////////////////////
@@ -381,17 +381,17 @@ public:
   //////////////////////////////////////////////////////////////////////////
 
   // Calling a stored function or procedure if the RDBMS does not support ODBC call escapes
-  SQLVariant* DoSQLCall(SQLQuery* p_query,CString& p_schema,CString& p_procedure);
+  SQLVariant* DoSQLCall(SQLQuery* p_query,XString& p_schema,XString& p_procedure);
   // Calling a stored function with named parameters, returning a value
-  SQLVariant* DoSQLCallNamedParameters(SQLQuery* p_query,CString& p_schema,CString& p_procedure);
+  SQLVariant* DoSQLCallNamedParameters(SQLQuery* p_query,XString& p_schema,XString& p_procedure);
 
 private:
   // IMPLEMENTATION OF the DoSQLCall interface
   int     GetCountReturnParameters(SQLQuery* p_query);
-  bool    DoSQLCallFunction (SQLQuery* p_query,CString& p_function);
-  bool    DoSQLCallProcedure(SQLQuery* p_query,CString& p_procedure);
-  CString ConstructSQLForFunctionCall (SQLQuery* p_query,SQLQuery* p_thecall,CString& p_function);
-  CString ConstructSQLForProcedureCall(SQLQuery* p_query,SQLQuery* p_thecall,CString& p_procedure);
+  bool    DoSQLCallFunction (SQLQuery* p_query,XString& p_function);
+  bool    DoSQLCallProcedure(SQLQuery* p_query,XString& p_procedure);
+  XString ConstructSQLForFunctionCall (SQLQuery* p_query,SQLQuery* p_thecall,XString& p_function);
+  XString ConstructSQLForProcedureCall(SQLQuery* p_query,SQLQuery* p_thecall,XString& p_procedure);
 };
 
 // End of namespace

@@ -2,7 +2,7 @@
 //
 // File: SQLTime.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -54,7 +54,7 @@ class SQLTime
 {
 public:   
   SQLTime();
-  SQLTime(CString p_time);
+  SQLTime(XString p_time);
   SQLTime(const SQLTime& p_time);
   SQLTime(const int p_hours,const int p_minutes,const int p_seconds);
   SQLTime(__int64 p_seconds);
@@ -62,9 +62,9 @@ public:
   SQLTime(SQL_TIME_STRUCT* p_timestruct);
  ~SQLTime();
 
-  CString AsString() const;
-  CString AsSQLString(SQLDatabase* p_database) const;
-  CString AsStrippedSQLString(SQLDatabase* p_database) const;
+  XString AsString() const;
+  XString AsSQLString(SQLDatabase* p_database) const;
+  XString AsStrippedSQLString(SQLDatabase* p_database) const;
   void    AsTimeStruct(SQL_TIME_STRUCT* p_timestruct) const;
   long    AsNumber() const;
 
@@ -104,12 +104,12 @@ public:
   // Set a new time
   void    SetTime(int p_hour,int p_minute,int p_second);
   // To set the time from an internal string
-  void    SetTime(const CString& p_string);
+  void    SetTime(const XString& p_string);
   // Reset to NULL
   void    SetNull();
 
   // Time entered from an user interface
-  void    ParseTime(const CString& str);
+  void    ParseTime(const XString& str);
 
   // Current system time
   static SQLTime SystemTime();
@@ -120,9 +120,9 @@ private:
   // Normalise seconds back to hour/minute/second
   void Normalise();
   // Scan for short time notation
-  bool ShortTime(const CString& p_string,int& p_hour,int& p_min,int& p_sec);
+  bool ShortTime(const XString& p_string,int& p_hour,int& p_min,int& p_sec);
   // XML Time support
-  bool ParseXMLTime(const CString& p_string);
+  bool ParseXMLTime(const XString& p_string);
 
   // STORAGE OF THE TIME
 

@@ -2,7 +2,7 @@
 //
 // File: SQLVariantFormat.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -51,42 +51,42 @@ public:
   // Set current date and time
   void        SetCurrentDate();
   // Format the date
-  int         FormatDate(CString p_pattern);
+  int         FormatDate(XString p_pattern);
   // Is a constant or a numeric / IsConstanteOfNummer
   bool        IsConstantOrNumber(char p_seperator = '.');
   // Converting european values to system values
-  int         StrValutaNLOmzetten(CString& p_string,bool p_enkelValuta);
+  int         StrValutaNLOmzetten(XString& p_string,bool p_enkelValuta);
   // Converting american $ values to dutch values
-  int         StrValutaAMOmzetten(CString& p_string,bool p_enkelValuta);
+  int         StrValutaAMOmzetten(XString& p_string,bool p_enkelValuta);
   // Value of a string as a double
   double      StringDoubleValue();
   // Format according to user interface
-  int         FormatNumber(CString p_format,bool p_currency);
+  int         FormatNumber(XString p_format,bool p_currency);
   // Do math on dates
-  int         DateCalculate(char p_operator,CString p_argument);
+  int         DateCalculate(char p_operator,XString p_argument);
 
-  CString     FormatVariantForSQL(SQLDatabase* p_database);
+  XString     FormatVariantForSQL(SQLDatabase* p_database);
   void        SetVariant(SQLVariant* p_variant);
-  void        SetFormat(CString p_format);
+  void        SetFormat(XString p_format);
   void        SetUserStatus(int p_status);
   SQLVariant* GetVariant();
   int         GetUserStatus();
-  CString&    GetFormat();
+  XString&    GetFormat();
 private:
   // Internal formatting of a number by a template
   int         FormatNumberTemplate(char *Getal,const char *strNumFormat,int p_buflen);
   // Scan naar '23-09-2012' of naar '2012-09-23' // let op "09/23/2012"  wordt niet ondersteund
-  bool        GetDateFromStringVariant(SQLVariant* p_variant,CString p_format,DATE_STRUCT* p_date);
-  bool        GetTimeFromStringVariant(SQLVariant* p_variant,CString p_format,TIME_STRUCT* p_date);
+  bool        GetDateFromStringVariant(SQLVariant* p_variant,XString p_format,DATE_STRUCT* p_date);
+  bool        GetTimeFromStringVariant(SQLVariant* p_variant,XString p_format,TIME_STRUCT* p_date);
 
   // Is string a (formatted) windows number?
-  bool        IsWinNumber(const CString p_string,char* p_decSeperator,char* p_thouSeperator,char* p_valuta,CString* p_newNumber = NULL);
+  bool        IsWinNumber(const XString p_string,char* p_decSeperator,char* p_thouSeperator,char* p_valuta,XString* p_newNumber = NULL);
 
 
   SQLVariant* m_variant;
   bool        m_owner;
   int         m_userStatus;
-  CString     m_format;
+  XString     m_format;
 };
 
 inline void
@@ -123,12 +123,12 @@ SQLVariantFormat::GetUserStatus()
 }
 
 inline void
-SQLVariantFormat::SetFormat(CString p_format)
+SQLVariantFormat::SetFormat(XString p_format)
 {
   m_format = p_format;
 }
 
-inline CString&
+inline XString&
 SQLVariantFormat::GetFormat()
 {
   return m_format;

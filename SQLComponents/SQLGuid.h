@@ -2,7 +2,7 @@
 //
 // File: SQLGuid.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -35,17 +35,17 @@ public:
   SQLGuid();
   SQLGuid(const SQLGuid& p_guid);
   SQLGuid(const SQLGUID* p_guid);
-  SQLGuid(const CString  p_string);
+  SQLGuid(const XString  p_string);
 
   bool     New();
   // Set from external values
-  bool     Set(const CString  p_string);
+  bool     Set(const XString  p_string);
   bool     Set(const SQLGUID* p_guid);
 
   // Get the internals
   bool     IsValid();
   SQLGUID* AsGUID();
-  CString  AsString();
+  XString  AsString();
 
   // Operators
   bool     operator ==(const SQLGuid& p_other);

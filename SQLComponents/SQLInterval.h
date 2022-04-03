@@ -2,7 +2,7 @@
 //
 // File: SQLInterval.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -53,7 +53,7 @@ public:
   SQLInterval(SQL_INTERVAL_STRUCT* p_interval);
 
   // Interval constructed from a string
-  SQLInterval(SQLINTERVAL p_type,const CString p_string);
+  SQLInterval(SQLINTERVAL p_type,const XString p_string);
 
   // Interval constructed from a database DECIMAL (Oracle etc)
   SQLInterval(SQLINTERVAL p_type,double p_databaseDouble);
@@ -68,7 +68,7 @@ public:
   SQLInterval(SQLINTERVAL p_type,int p_days, int p_hours,int p_minutes,int p_seconds,int p_fraction = 0);
 
   // Interval constructed from a XML duration string
-  SQLInterval(CString p_duration);
+  SQLInterval(XString p_duration);
 
   // Destructor
  ~SQLInterval();
@@ -76,7 +76,7 @@ public:
   // SETTERS
 
   // Setting an interval from a string
-  bool    SetInterval(SQLINTERVAL p_type,const CString p_string);
+  bool    SetInterval(SQLINTERVAL p_type,const XString p_string);
   // Setting an interval from an internal value
   bool    SetInterval(SQLINTERVAL p_type,InterValue p_nanoseconds);
   // Setting an interval from an ODBC structure
@@ -92,7 +92,7 @@ public:
   // Try to set the interval type, depends on the internal values
   bool    SetIntervalType(SQLINTERVAL p_type);
   // Set from an XML duration string
-  void    SetInterval(CString p_duration);
+  void    SetInterval(XString p_duration);
 
   // GETTERS
 
@@ -103,13 +103,13 @@ public:
   int     GetMinutes() const;
   int     GetSeconds() const;
   int     GetFractionPart() const;
-  CString GetTypeAsString() const;
+  XString GetTypeAsString() const;
 
   double  AsDatabaseDouble() const;
-  CString AsString(bool p_withFraction = false) const;
-  CString AsXMLString(bool p_withFraction = false) const;
-  CString AsXMLDuration() const;
-  CString AsSQLString(SQLDatabase* p_database,bool p_withFraction = false) const;
+  XString AsString(bool p_withFraction = false) const;
+  XString AsXMLString(bool p_withFraction = false) const;
+  XString AsXMLDuration() const;
+  XString AsSQLString(SQLDatabase* p_database,bool p_withFraction = false) const;
   void    AsIntervalStruct(SQL_INTERVAL_STRUCT* p_struct) const;
 
   // CALCULATIONS
@@ -167,11 +167,11 @@ public:
 
 private:
   // Parsing from a (database) string
-  bool ParseInterval(SQLINTERVAL p_type,const CString& p_string);
+  bool ParseInterval(SQLINTERVAL p_type,const XString& p_string);
   // Parsing from a XML duration string
-  bool ParseInterval(CString p_duration);
+  bool ParseInterval(XString p_duration);
   // Parsing/scanning one value of a XML duration string
-  bool ScanDurationValue(CString& p_duraction,int& p_value,int& p_fraction,char& p_marker,bool& p_didTime);
+  bool ScanDurationValue(XString& p_duraction,int& p_value,int& p_fraction,char& p_marker,bool& p_didTime);
 
   // Recalculate the total interval value
   void RecalculateValue();

@@ -121,7 +121,7 @@ BasicXmlCell::GetCellType()
 //////////////////////////////////////////////////////////////////////////
 
 // XTOR for the sheet
-BasicXmlWorksheet::BasicXmlWorksheet(BasicXmlExcel* p_workbook,CString p_sheetname)
+BasicXmlWorksheet::BasicXmlWorksheet(BasicXmlExcel* p_workbook,XString p_sheetname)
                   :m_workbook(p_workbook)
                   ,m_sheetname(p_sheetname)
                   ,m_maxCol(0)
@@ -142,7 +142,7 @@ BasicXmlWorksheet::~BasicXmlWorksheet()
   m_cells.clear();
 }
 
-CString
+XString
 BasicXmlWorksheet::GetSheetName()
 {
   return m_sheetname;
@@ -189,7 +189,7 @@ BasicXmlWorksheet::Load(XMLMessage& p_msg,XMLElement* p_root)
   while(row)
   {
     // Get the row number and preserve
-    CString rowName = p_msg.GetAttribute(row,"r");
+    XString rowName = p_msg.GetAttribute(row,"r");
     int   rowNumber = p_msg.GetAttributeInteger(row,"r");
     if(rowNumber > m_maxRow)
     {
@@ -201,7 +201,7 @@ BasicXmlWorksheet::Load(XMLMessage& p_msg,XMLElement* p_root)
     while(col)
     {
       // Getting the column name/number and preserve
-      CString colName = p_msg.GetAttribute(col,"r");
+      XString colName = p_msg.GetAttribute(col,"r");
       int colNumber = CalculateColumnNumber(colName,rowName);
       if(colNumber > m_maxCol)
       {
@@ -209,7 +209,7 @@ BasicXmlWorksheet::Load(XMLMessage& p_msg,XMLElement* p_root)
       }
       // Find datatype
       bool isString = false;
-      CString dataType = p_msg.GetAttribute(col,"t");
+      XString dataType = p_msg.GetAttribute(col,"t");
       if(dataType && dataType.GetAt(0) == 's')
       {
         isString = true;
@@ -218,7 +218,7 @@ BasicXmlWorksheet::Load(XMLMessage& p_msg,XMLElement* p_root)
       XMLElement* val = p_msg.FindElement(col,"v");
       if(val)
       {
-        CString value = val->GetValue();
+        XString value = val->GetValue();
         BasicXmlCell* cell = NULL;
         if(isString)
         {
@@ -243,7 +243,7 @@ BasicXmlWorksheet::Load(XMLMessage& p_msg,XMLElement* p_root)
             if(dataType && !dataType.IsEmpty())
             {
               //Als de s waarde voorkomt in de style array met datumopmaak dan is het een datum :)              
-              CString formatCode =  m_workbook->GetStyleCode(_ttoi(dataType));
+              XString formatCode =  m_workbook->GetStyleCode(_ttoi(dataType));
               if (formatCode.Compare("M/D/YY") == 0 ||
                 formatCode.Compare("[$-F800]dddd\\,\\ mmmm\\ dd\\,\\ yyyy") == 0 ||
                 formatCode.Compare("yyyy/mm/dd;@") == 0 ||
@@ -291,7 +291,7 @@ BasicXmlWorksheet::Load(XMLMessage& p_msg,XMLElement* p_root)
 // A  -> 1
 // IV -> 255
 int
-BasicXmlWorksheet::CalculateColumnNumber(CString p_column,CString p_row)
+BasicXmlWorksheet::CalculateColumnNumber(XString p_column,XString p_row)
 {
   int firstLetter, secondLetter;
 
@@ -312,16 +312,16 @@ BasicXmlWorksheet::CalculateColumnNumber(CString p_column,CString p_row)
     // 65 is A in ascii
     return ((firstLetter - 65 + 1)*26 + (secondLetter - 65 + 1)); 
   }
-  CString error;
+  XString error;
   error.Format("Invalid column alphabet name: %s",p_column.GetString());
   m_workbook->SetError(error);
   return 0;	
 }
 
-CString  
+XString  
 BasicXmlWorksheet::GetCellValue(int p_row,int p_col)
 {
-  CString value;
+  XString value;
   int     intValue;
   double  dblValue;
 
@@ -369,7 +369,7 @@ BasicXmlWorksheet::GetCellValue(int p_row,int p_col)
 //
 //////////////////////////////////////////////////////////////////////////
 
-BasicXmlExcel::BasicXmlExcel(CString p_filename)
+BasicXmlExcel::BasicXmlExcel(XString p_filename)
               :m_filename(p_filename)
 {
   m_namesRead = false;
@@ -404,7 +404,7 @@ BasicXmlExcel::~BasicXmlExcel()
   m_sharedStrings.clear();
 }
 
-CString
+XString
 BasicXmlExcel::GetError()
 {
   return m_error;
@@ -420,7 +420,7 @@ BasicXmlExcel::GetSheetNames(Names& p_names)
   p_names.clear();
   for(unsigned ind = 0;ind < m_sheetnames.size();++ind)
   {
-    CString& name = m_sheetnames[ind];
+    XString& name = m_sheetnames[ind];
     p_names.push_back(name);
   }
   return true;
@@ -437,7 +437,7 @@ BasicXmlExcel::GetWorksheet(int p_index)
 }
 
 BasicXmlWorksheet*
-BasicXmlExcel::GetWorksheet(CString p_name)
+BasicXmlExcel::GetWorksheet(XString p_name)
 {
   for(unsigned ind = 0;ind < m_worksheets.size();++ind)
   {
@@ -496,7 +496,7 @@ BasicXmlExcel::ReadSheetNames()
       }
       // delimit the buffer
       buffer[ze.unc_size] = 0;
-      CString sheetInfo(buffer);
+      XString sheetInfo(buffer);
 
       XMLMessage doc;
       doc.ParseMessage(sheetInfo);
@@ -517,7 +517,7 @@ BasicXmlExcel::ReadSheetNames()
       XMLElement* sheet  = doc.GetElementFirstChild(sheets);
       while(sheet)
       {
-        CString sheetname = doc.GetAttribute(sheet,"name");
+        XString sheetname = doc.GetAttribute(sheet,"name");
         m_sheetnames.push_back(sheetname);
         // Get next sheet
         sheet = doc.GetElementSibling(sheet);
@@ -541,14 +541,14 @@ BasicXmlExcel::SetError(ZRESULT p_result)
   else
   {
     m_error += " : ";
-    m_error += CString(buffer);
+    m_error += XString(buffer);
   }
   m_error.Remove('\r');
   m_error.Replace('\n',' ');
 }
 
 void
-BasicXmlExcel::SetError(CString p_error)
+BasicXmlExcel::SetError(XString p_error)
 {
   if(m_error.IsEmpty())
   {
@@ -588,7 +588,7 @@ BasicXmlExcel::LoadStrings()
   ZIPENTRY ze;
   ZRESULT  res     = ZR_OK;
   int      entries = 0;
-  CString  sstName = "xl/sharedStrings.xml";
+  XString  sstName = "xl/sharedStrings.xml";
 
   // get the number of entries
   res = GetZipItem(m_zip,-1,&ze);
@@ -626,7 +626,7 @@ BasicXmlExcel::LoadStrings()
       }
       // delimit the buffer
       buffer[ze.unc_size] = 0;
-      CString stringInfo(buffer);
+      XString stringInfo(buffer);
 
       XMLMessage doc;
       doc.ParseMessage(stringInfo);
@@ -642,7 +642,7 @@ BasicXmlExcel::LoadStrings()
       while(si)
       {
         XMLElement* tt = doc.GetElementFirstChild(si);
-        CString text = tt->GetValue();
+        XString text = tt->GetValue();
         m_sharedStrings.push_back(text);
         // next string
         si = doc.GetElementSibling(si);
@@ -670,7 +670,7 @@ BasicXmlExcel::LoadStyles()
   ZIPENTRY ze;
   ZRESULT  res     = ZR_OK;
   int      entries = 0;
-  CString  sstName = "xl/styles.xml";
+  XString  sstName = "xl/styles.xml";
 
   // get the number of entries
   res = GetZipItem(m_zip,-1,&ze);
@@ -707,7 +707,7 @@ BasicXmlExcel::LoadStyles()
       }
       // delimit the buffer
       buffer[ze.unc_size] = 0;
-      CString styleInfo(buffer);
+      XString styleInfo(buffer);
 
       XMLMessage doc;
       doc.ParseMessage(styleInfo);
@@ -718,7 +718,7 @@ BasicXmlExcel::LoadStyles()
         free(buffer);
         return false;
       }
-      std::vector<CString> styleFormats;
+      std::vector<XString> styleFormats;
       // Reading the styles
       //In het element cellxfs staan voor elke 's' attribuut waarde van een cell een formaat id
       //hiermee kan in de volgende stap dan weer de formatcode opgezocht worden
@@ -813,7 +813,7 @@ BasicXmlExcel::LoadWorksheets()
   // Loop through all worksheets
   for(unsigned sheetnum = 0; sheetnum < m_sheetnames.size(); ++sheetnum)
   {
-    CString sheetName;
+    XString sheetName;
     sheetName.Format("xl/worksheets/sheet%u.xml",sheetnum + 1);
 
     // Loop through all entries
@@ -841,7 +841,7 @@ BasicXmlExcel::LoadWorksheets()
         }
         // delimit the buffer
         buffer[ze.unc_size] = 0;
-        CString sheetInfo(buffer);
+        XString sheetInfo(buffer);
 
         XMLMessage doc;
         doc.ParseMessage(sheetInfo);
@@ -871,10 +871,10 @@ BasicXmlExcel::LoadWorksheets()
   return m_worksheets.size() > 0;
 }
 
-CString
+XString
 BasicXmlExcel::GetSharedString(int p_string)
 {
-  CString value;
+  XString value;
   if(p_string >= 0 && p_string < (int)m_sharedStrings.size())
   {
     value = m_sharedStrings[p_string];
@@ -882,7 +882,7 @@ BasicXmlExcel::GetSharedString(int p_string)
   return value;
 }
 
-CString
+XString
 BasicXmlExcel::GetStyleCode(int id)
 {
   return m_styles.find(id)->second;

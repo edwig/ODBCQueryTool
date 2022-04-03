@@ -2,7 +2,7 @@
 //
 // File: SQLDataSet.cpp
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -92,7 +92,7 @@ SQLDataSet::SQLDataSet()
 {
 }
 
-SQLDataSet::SQLDataSet(CString p_name,SQLDatabase* p_database /*=NULL*/)
+SQLDataSet::SQLDataSet(XString p_name,SQLDatabase* p_database /*=NULL*/)
            :m_name(p_name)
            ,m_database(p_database)
 {
@@ -283,7 +283,7 @@ SQLDataSet::SetParameter(SQLParameter p_parameter)
 }
 
 void 
-SQLDataSet::SetParameter(CString p_naam,SQLVariant p_waarde)
+SQLDataSet::SetParameter(XString p_naam,SQLVariant p_waarde)
 {
   // See if the parameter is already there
   for(unsigned int ind = 0;ind < m_parameters.size();++ind)
@@ -332,7 +332,7 @@ SQLDataSet::SetPrimaryKeyColumn(WordList& p_list)
 }
 
 SQLVariant*  
-SQLDataSet::GetParameter(CString& p_name)
+SQLDataSet::GetParameter(XString& p_name)
 {
   for(unsigned int ind = 0;ind < m_parameters.size(); ++ind)
   {
@@ -345,7 +345,7 @@ SQLDataSet::GetParameter(CString& p_name)
 }
 
 // Getting the sequence name
-CString
+XString
 SQLDataSet::GetSequenceName()
 {
   // Special sequence name set
@@ -363,7 +363,7 @@ SQLDataSet::GetSequenceName()
 }
 
 void
-SQLDataSet::SetQuery(CString& p_query)
+SQLDataSet::SetQuery(XString& p_query)
 {
   // Setting the total query supersedes these
   m_selection.Empty();
@@ -378,35 +378,35 @@ SQLDataSet::SetQuery(CString& p_query)
 }
 
 void
-SQLDataSet::SetSelection(CString p_selection)
+SQLDataSet::SetSelection(XString p_selection)
 {
   m_query.Empty();
   m_selection = p_selection;
 }
 
 void
-SQLDataSet::SetWhereCondition(CString p_condition)
+SQLDataSet::SetWhereCondition(XString p_condition)
 {
   m_query.Empty();
   m_whereCondition = p_condition;
 }
 
 void
-SQLDataSet::SetGroupBy(CString p_groupby)
+SQLDataSet::SetGroupBy(XString p_groupby)
 {
   m_query.Empty();
   m_groupby = p_groupby;
 }
 
 void
-SQLDataSet::SetOrderBy(CString p_orderby)
+SQLDataSet::SetOrderBy(XString p_orderby)
 {
   m_query.Empty();
   m_orderby = p_orderby;
 }
 
 void
-SQLDataSet::AddGroupby(CString p_property)
+SQLDataSet::AddGroupby(XString p_property)
 {
   if(!m_groupby.IsEmpty())
   {
@@ -443,12 +443,12 @@ SQLDataSet::SetQueryTime(int p_milliseconds)
 //  WHERE t.id   =    $parameter2
 //    AND t.name LIKE $parameter3
 // ;
-CString
+XString
 SQLDataSet::ParseQuery()
 {
   bool inQuote = false;
   bool inAphos = false;
-  CString query;
+  XString query;
   int  pos = 0;
 
   while(pos < m_query.GetLength())
@@ -464,7 +464,7 @@ SQLDataSet::ParseQuery()
     }
     if(c == '$' && !inAphos && !inQuote)
     {
-      CString parNaam;
+      XString parNaam;
       do 
       {
         c = m_query.GetAt(++pos);
@@ -490,12 +490,12 @@ SQLDataSet::ParseQuery()
 }
 
 // Parse the selection
-CString
+XString
 SQLDataSet::ParseSelection(SQLQuery& p_query)
 {
-  CString sql("SELECT ");
+  XString sql("SELECT ");
   
-  sql += m_selection.IsEmpty() ? "*" : m_selection;
+  sql += m_selection.IsEmpty() ? XString("*") : m_selection;
   sql += "\n  FROM ";
 
   if(!m_primarySchema.IsEmpty())
@@ -531,10 +531,10 @@ SQLDataSet::ParseSelection(SQLQuery& p_query)
 }
 
 // Parse the filters (m_filters must be non-null)
-CString
-SQLDataSet::ParseFilters(SQLQuery& p_query,CString p_sql)
+XString
+SQLDataSet::ParseFilters(SQLQuery& p_query,XString p_sql)
 {
-  CString query(p_sql);
+  XString query(p_sql);
   query.MakeUpper();
   query.Replace("\t"," ");
   bool whereFound = m_query.Find("WHERE ") > 0;
@@ -550,10 +550,10 @@ SQLDataSet::ParseFilters(SQLQuery& p_query,CString p_sql)
 
 // Construct the selection SQL for opening the dataset
 // Getting the total query in effect
-CString
+XString
 SQLDataSet::GetSelectionSQL(SQLQuery& p_qry)
 {
-  CString sql(m_query);
+  XString sql(m_query);
 
   // If parameters, parse them
   if(!m_query.IsEmpty())
@@ -611,7 +611,7 @@ SQLDataSet::Open(bool p_stopIfNoColumns /*=false*/)
 {
   bool    result = false;
   ULONG64 begin  = 0;
-  CString query;
+  XString query;
 
   if(m_query.IsEmpty() && m_selection.IsEmpty())
   {
@@ -722,7 +722,7 @@ SQLDataSet::Append()
     SQLTransaction trans(m_database,m_name);
 
     // Get the select query
-    CString query = GetSelectionSQL(qry);
+    XString query = GetSelectionSQL(qry);
 
     // Apply top <N> records selection
     if(m_topRecords)
@@ -790,7 +790,7 @@ SQLDataSet::ReadRecordFromQuery(SQLQuery& p_query,bool p_modifiable,bool p_appen
   }
 
   // Construct the primary key (possibly from more than 1 field)
-  CString key = MakePrimaryKey(record);
+  XString key = MakePrimaryKey(record);
 
   if(key.IsEmpty())
   {
@@ -822,11 +822,11 @@ SQLDataSet::ReadRecordFromQuery(SQLQuery& p_query,bool p_modifiable,bool p_appen
 }
 
 // Make a primary key record
-CString
+XString
 SQLDataSet::MakePrimaryKey(SQLRecord* p_record)
 {
-  CString key;
-  CString value;
+  XString key;
+  XString value;
 
   for(auto& field : m_primaryKey)
   {
@@ -842,11 +842,11 @@ SQLDataSet::MakePrimaryKey(SQLRecord* p_record)
   return key;
 }
 
-CString
+XString
 SQLDataSet::MakePrimaryKey(VariantSet& p_primary)
 {
-  CString key;
-  CString value;
+  XString key;
+  XString value;
 
   for(auto& val : p_primary)
   {
@@ -862,7 +862,7 @@ SQLDataSet::MakePrimaryKey(VariantSet& p_primary)
 void
 SQLDataSet::ReadNames(SQLQuery& qr)
 {
-  CString naam;
+  XString naam;
   int num = qr.GetNumberOfColumns();
   for(int ind = 1; ind <= num; ++ind)
   {
@@ -888,7 +888,7 @@ SQLDataSet::ReadTypes(SQLQuery& qr)
 void
 SQLDataSet::CheckNames(SQLQuery& p_query)
 {
-  CString name;
+  XString name;
   int num = p_query.GetNumberOfColumns();
   for(int ind = 1; ind <= num; ++ind)
   {
@@ -930,7 +930,7 @@ SQLDataSet::GetRecord(int p_recnum)
 int
 SQLDataSet::FindObjectRecNum(int p_primary)
 {
-  CString key;
+  XString key;
   key.Format("%d\0x1E",p_primary);
   ObjectMap::iterator it = m_objects.find(key);
   if(it != m_objects.end())
@@ -944,7 +944,7 @@ SQLDataSet::FindObjectRecNum(int p_primary)
 SQLRecord*
 SQLDataSet::FindObjectRecord(int p_primary)
 {
-  CString key;
+  XString key;
   key.Format("%d\0x1E",p_primary);
   ObjectMap::iterator it = m_objects.find(key);
   if(it != m_objects.end())
@@ -969,7 +969,7 @@ SQLDataSet::FindObjectRecNum(VariantSet& p_primary)
     return -1;
   }
 
-  CString key = MakePrimaryKey(p_primary);
+  XString key = MakePrimaryKey(p_primary);
 
   ObjectMap::iterator it = m_objects.find(key);
   if(it != m_objects.end())
@@ -994,7 +994,7 @@ SQLDataSet::FindObjectRecord(VariantSet& p_primary)
     return nullptr;
   }
 
-  CString key = MakePrimaryKey(p_primary);
+  XString key = MakePrimaryKey(p_primary);
 
   ObjectMap::iterator it = m_objects.find(key);
   if(it != m_objects.end())
@@ -1078,7 +1078,7 @@ SQLDataSet::FindRecordSet(SQLFilterSet& p_filters)
 
 
 // Get a fieldname
-CString    
+XString    
 SQLDataSet::GetFieldName(int p_num)
 {
   if(p_num >= 0 && (unsigned)p_num < m_names.size())
@@ -1100,7 +1100,7 @@ SQLDataSet::GetFieldType(int p_num)
 
 // Get a field number
 int
-SQLDataSet::GetFieldNumber(CString p_name)
+SQLDataSet::GetFieldNumber(XString p_name)
 {
   for(unsigned int ind = 0; ind < m_names.size(); ++ind)
   {
@@ -1142,7 +1142,7 @@ SQLDataSet::InsertRecord()
 
 // Insert new field in new record
 int
-SQLDataSet::InsertField(CString p_name,SQLVariant* p_value)
+SQLDataSet::InsertField(XString p_name,SQLVariant* p_value)
 {
   if(m_current >= 0 && m_current < (int)m_records.size())
   {
@@ -1158,7 +1158,7 @@ SQLDataSet::InsertField(CString p_name,SQLVariant* p_value)
 
 // Set a field value in the current record
 bool
-SQLDataSet::SetField(CString& p_name,SQLVariant* p_value,int p_mutationID /*=0*/)
+SQLDataSet::SetField(XString& p_name,SQLVariant* p_value,int p_mutationID /*=0*/)
 {
   int num = GetFieldNumber(p_name);
   if(num >= 0)
@@ -1174,7 +1174,11 @@ SQLDataSet::SetField(int p_num,SQLVariant* p_value,int p_mutationID /*=0*/)
 {
   if(m_current >= 0)
   {
-    return m_records[m_current]->SetField(p_num,p_value,p_mutationID);
+    if(m_records[m_current]->SetField(p_num,p_value,p_mutationID))
+    {
+      m_status |= SQL_Updates;
+      return true;
+    }
   }
   return false;
 }
@@ -1297,7 +1301,7 @@ SQLDataSet::Synchronize(int p_mutationID /*=0*/,bool p_throw /*=false*/)
   {
     ReThrowSafeException(er);
     // Automatic rollback will be done now
-    CString error = "Database synchronization stopped: " + er.GetErrorMessage();
+    XString error = "Database synchronization stopped: " + er.GetErrorMessage();
     if(p_throw)
     {
       throw StdException(error);
@@ -1319,7 +1323,7 @@ SQLDataSet::GetPrimaryKeyInfo()
   {
     SQLInfoDB* info = m_database->GetSQLInfoDB();
     MPrimaryMap primaries;
-    CString     constraintName;
+    XString     constraintName;
     if(info->GetPrimaryKeyInfo(m_primaryTableName,constraintName,primaries) == false)
     {
       // No primary key given, and cannot get it from the ODBC driver
@@ -1371,7 +1375,7 @@ SQLDataSet::Deletes(int p_mutationID)
   // Loop through all the records
   while(it != m_records.end())
   {
-    CString sql;
+    XString sql;
     SQLRecord* record = *it;
     if(record->GetStatus() & SQL_Record_Deleted)
     {
@@ -1431,7 +1435,7 @@ SQLDataSet::Updates(int p_mutationID)
     if(record->GetStatus() & SQL_Record_Updated)
     {
       ++total;
-      CString sql;
+      XString sql;
       MutType type = record->MixedMutations(p_mutationID);
       switch(type)
       {
@@ -1467,8 +1471,8 @@ SQLDataSet::Inserts(int p_mutationID)
     if(record->GetStatus() & SQL_Record_Insert)
     {
       ++total;
-      CString sql;
-      CString serial;
+      XString sql;
+      XString serial;
       MutType type = record->MixedMutations(p_mutationID);
       switch(type)
       {
@@ -1535,23 +1539,23 @@ SQLDataSet::AllMixedMutations(MutationIDS& p_list,int p_mutationID)
   return total;
 }
 
-CString
+XString
 SQLDataSet::GetSQLDelete(SQLQuery* p_query,SQLRecord* p_record)
 {
   // New set of parameters
   p_query->ResetParameters();
 
-  CString sql("DELETE FROM " + m_primaryTableName + "\n");
+  XString sql("DELETE FROM " + m_primaryTableName + "\n");
   int parameter = 1;
   sql += GetWhereClause(p_query,p_record,parameter);
   return sql;
 }
 
-CString
+XString
 SQLDataSet::GetSQLUpdate(SQLQuery* p_query,SQLRecord* p_record)
 {
   int parameter = 1;
-  CString sql("UPDATE " + m_primaryTableName + "\n");
+  XString sql("UPDATE " + m_primaryTableName + "\n");
   WordList::iterator it;
 
   // New set of parameters
@@ -1602,14 +1606,14 @@ SQLDataSet::GetSQLUpdate(SQLQuery* p_query,SQLRecord* p_record)
   return sql;
 }
 
-CString
-SQLDataSet::GetSQLInsert(SQLQuery* p_query,SQLRecord* p_record,CString& p_serial)
+XString
+SQLDataSet::GetSQLInsert(SQLQuery* p_query,SQLRecord* p_record,XString& p_serial)
 {
   int parameter = 1;
-  CString sql("INSERT INTO " + m_primaryTableName);
+  XString sql("INSERT INTO " + m_primaryTableName);
 
-  CString fields("(");
-  CString params("(");
+  XString fields("(");
+  XString params("(");
 
   // New set of parameters
   p_query->ResetParameters();
@@ -1648,10 +1652,10 @@ SQLDataSet::GetSQLInsert(SQLQuery* p_query,SQLRecord* p_record,CString& p_serial
   return sql;
 }
 
-CString
+XString
 SQLDataSet::GetWhereClause(SQLQuery* p_query,SQLRecord* p_record,int& p_parameter)
 {
-  CString sql(" WHERE ");
+  XString sql(" WHERE ");
 
   bool more = false;
   for(unsigned ind = 0;ind < m_primaryKey.size();++ind)
@@ -1684,7 +1688,7 @@ SQLDataSet::GetWhereClause(SQLQuery* p_query,SQLRecord* p_record,int& p_paramete
 //////////////////////////////////////////////////////////////////////////
 
 bool
-SQLDataSet::XMLSave(CString p_filename,CString p_name,XMLEncoding p_encoding /*= XMLEncoding::ENC_UTF8*/)
+SQLDataSet::XMLSave(XString p_filename,XString p_name,StringEncoding p_encoding /*= StringEncoding::ENC_UTF8*/)
 {
   XMLMessage msg;
   msg.SetRootNodeName(p_name);
@@ -1694,7 +1698,7 @@ SQLDataSet::XMLSave(CString p_filename,CString p_name,XMLEncoding p_encoding /*=
 }
 
 bool
-SQLDataSet::XMLLoad(CString p_filename)
+SQLDataSet::XMLLoad(XString p_filename)
 {
   XMLMessage msg;
   if(msg.LoadFile(p_filename))
@@ -1714,7 +1718,7 @@ SQLDataSet::XMLSave(XMLMessage* p_msg,XMLElement* p_dataset)
 {
                           p_msg->AddElement(p_dataset,dataset_names[g_defaultLanguage][DATASET_NAME],XDT_String,m_name);
   XMLElement* structure = p_msg->AddElement(p_dataset,dataset_names[g_defaultLanguage][DATASET_STRUCTURE],XDT_String,"");
-  CString nameField = dataset_names[g_defaultLanguage][DATASET_FIELD];
+  XString nameField = dataset_names[g_defaultLanguage][DATASET_FIELD];
 
   // Add record structure
   SQLRecord* record = GetRecord(0);
@@ -1722,7 +1726,7 @@ SQLDataSet::XMLSave(XMLMessage* p_msg,XMLElement* p_dataset)
   {
     for(unsigned int ind = 0;ind < m_names.size(); ++ind)
     {
-      CString fieldname = GetFieldName(ind);
+      XString fieldname = GetFieldName(ind);
       SQLVariant* var   = record->GetField(ind);
       int type = var->GetDataType();
 
@@ -1754,7 +1758,7 @@ SQLDataSet::XMLLoad(XMLMessage* p_msg,XMLElement* p_dataset)
   while(field)
   {
     // Remember the name of the field
-    CString name = field->GetValue();
+    XString name = field->GetValue();
     m_names.push_back(name);
     // Datatype of the field
     int type = p_msg->GetAttributeInteger(field,dataset_names[g_defaultLanguage][DATASET_TYPE]);
@@ -1816,7 +1820,7 @@ SQLDataSet::ForgetRecord(SQLRecord* p_record,bool p_force)
 void
 SQLDataSet::ForgetPrimaryObject(SQLRecord* p_record)
 {
-  CString key = MakePrimaryKey(p_record);
+  XString key = MakePrimaryKey(p_record);
 
   if(!key.IsEmpty())
   {

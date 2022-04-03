@@ -22,6 +22,17 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes version 3.0.3
+--------------------------
+- Fixed a bug when setting the font for the results grid
+- Updated to SQLComponents version 2.0.0 and BaseLibrary
+- Dropped support for 32-Bits version. Only 64-Bits version now released
+
+Releasenotes version 3.0.2
+--------------------------
+- Various small fixes and Open source license in all files
+- Added a PayPal donation button.
+
 Releasenotes version 3.0.1
 --------------------------
 - Fixed a bug in the login dialog when defining a new connection.

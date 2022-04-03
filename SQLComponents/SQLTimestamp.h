@@ -2,7 +2,7 @@
 //
 // File: SQLTimestamp.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -75,7 +75,7 @@ class SQLTimestamp
 {  
 public:
   SQLTimestamp();
-  SQLTimestamp(const CString& p_string);
+  SQLTimestamp(const XString& p_string);
   SQLTimestamp(const SQLTimestamp& p_timestamp);
   SQLTimestamp(const SQLDate& p_date, const SQLTime& p_time);
   SQLTimestamp(int p_year,int p_month,int p_day,int p_hour,int p_min,int p_sec,int p_fraction = 0);
@@ -83,9 +83,9 @@ public:
   SQLTimestamp(StampValue p_value,int p_fraction = 0);
  ~SQLTimestamp();
  
-  void Init(const CString& string);
+  void Init(const XString& string);
 
-  void SetTimestamp(const CString& p_string);
+  void SetTimestamp(const XString& p_string);
   void SetTimestamp(int p_year,int p_month,int p_day,
                     int p_hour,int p_min,  int p_sec,
                     int p_fraction = 0);
@@ -125,8 +125,8 @@ public:
   int     Second()  const;      // Second in the minute (0-59)
   int     Fraction()const;      // Fraction of a second in nanoseconds (0 - 999.999.999)
   int     WeekDay() const;      // 1=Sunday, 2=Thursday, ... 7=Saturday
-  CString WeekDayName(Language p_lang = LN_DEFAULT) const;  // Name of the day of the week
-  CString MonthName  (Language p_lang = LN_DEFAULT) const;  // Name of the month of the year
+  XString WeekDayName(Language p_lang = LN_DEFAULT) const;  // Name of the day of the week
+  XString MonthName  (Language p_lang = LN_DEFAULT) const;  // Name of the month of the year
   int     DaysInMonth() const;
 
   int     YearsBetween    (const SQLTimestamp& p_timestamp) const; 
@@ -144,12 +144,12 @@ public:
   SQLTimestamp AddSeconds (__int64 p_number) const;
   SQLTimestamp AddFraction(int p_fraction) const;
 
-  CString  AsString      (int p_precision = 0) const;
-  CString  AsReadString  (int p_precision = 0) const;
-  CString  AsXMLString   (int p_precision = 0) const;
-  CString  AsXMLStringUTC(int p_precision = 0) const;
+  XString  AsString      (int p_precision = 0) const;
+  XString  AsReadString  (int p_precision = 0) const;
+  XString  AsXMLString   (int p_precision = 0) const;
+  XString  AsXMLStringUTC(int p_precision = 0) const;
 
-  CString  AsSQLString(SQLDatabase* p_database) const;
+  XString  AsSQLString(SQLDatabase* p_database) const;
   SQLDate  AsSQLDate() const;
   SQLTime  AsSQLTime() const;
   void     AsTimeStampStruct(TIMESTAMP_STRUCT* p_struct) const;
@@ -166,10 +166,10 @@ public:
 
   //////////////////////////////////////////////////////
   // Static use by SQLDate and SQLTimestamp
-  static void SplitStrDate(const CString& strDate,
-                           CString&       CurrentDate,
-                           CString&       Sign,
-                           CString&       ExtraTime,
+  static void SplitStrDate(const XString& strDate,
+                           XString&       CurrentDate,
+                           XString&       Sign,
+                           XString&       ExtraTime,
                            int&           interval);
 
 private:
@@ -177,9 +177,9 @@ private:
   // Private methods
   //
   // Parse string to timestamp
-  void    ParseMoment(const CString& p_string);
+  void    ParseMoment(const XString& p_string);
   // Named timestamp with short or long month names
-  bool    ParseNamedDate(const CString& p_string);
+  bool    ParseNamedDate(const XString& p_string);
   // Calculate value from a StampStorage
   void    RecalculateValue();
   // Calculate StampStorage from a value
@@ -189,14 +189,15 @@ private:
   // Calculates the number of days in a month
   int     DaysInMonth(int p_year,int p_month) const;
   // Calculates a timestamp from an interface string with extra operands
-  static bool GetVirtualMoment(CString Sign
-                              ,CString ExtraTime
-                              ,int    interval
-                              ,StampStorage& temp);
+  bool    GetVirtualMoment(XString        p_sign
+                          ,XString        p_extraTime
+                          ,int            p_interval
+                          ,StampStorage&  p_temp
+                          ,bool           p_doTimes = true);
   // Validate the timestamp for valid values for a database
   void    Validate();
   // Print the fraction to a string
-  CString PrintFraction(int p_precision) const;
+  XString PrintFraction(int p_precision) const;
 
   ///////////////////////////////////////////////////////////////////////////////////////////
   //

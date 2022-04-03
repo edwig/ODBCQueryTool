@@ -2,7 +2,7 @@
 //
 // File: SQLInterval.cpp
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -47,7 +47,7 @@ SQLInterval::SQLInterval()
 }
 
 // XTOR from a string
-SQLInterval::SQLInterval(SQLINTERVAL p_type,const CString p_string)
+SQLInterval::SQLInterval(SQLINTERVAL p_type,const XString p_string)
 {
   ParseInterval(p_type,p_string);
 }
@@ -92,7 +92,7 @@ SQLInterval::SQLInterval(SQLINTERVAL p_type,int p_days,int p_hours,int p_minutes
 }
 
 // XTOR for a XML duration string
-SQLInterval::SQLInterval(CString p_duration)
+SQLInterval::SQLInterval(XString p_duration)
 {
   SetInterval(p_duration);
 }
@@ -109,7 +109,7 @@ SQLInterval::~SQLInterval()
 //////////////////////////////////////////////////////////////////////////
 
 bool
-SQLInterval::SetInterval(SQLINTERVAL p_type,const CString p_string)
+SQLInterval::SetInterval(SQLINTERVAL p_type,const XString p_string)
 {
   ParseInterval(p_type,p_string);
   return Valid();
@@ -213,7 +213,7 @@ SQLInterval::SetInterval(SQLINTERVAL p_type,int p_days,int p_hours,int p_minutes
 }
 
 void
-SQLInterval::SetInterval(CString p_duration)
+SQLInterval::SetInterval(XString p_duration)
 {
   ParseInterval(p_duration);
 }
@@ -478,7 +478,7 @@ SQLInterval::GetFractionPart() const
   return 0;
 }
 
-CString 
+XString 
 SQLInterval::GetTypeAsString() const
 {
   switch(m_interval.interval_type)
@@ -528,10 +528,10 @@ SQLInterval::AsDatabaseDouble() const
   return value;
 }
 
-CString 
+XString 
 SQLInterval::AsString(bool p_withFraction /*= false*/) const
 {
-  CString string;
+  XString string;
 
   // Check for NULL value
   if(IsNull())
@@ -607,18 +607,18 @@ SQLInterval::AsString(bool p_withFraction /*= false*/) const
 }
 
 // Currently implemented as a string
-CString 
+XString 
 SQLInterval::AsXMLString(bool p_withFraction /*=false*/) const
 {
   return AsString(p_withFraction);
 }
 
 // Currently implemented as a string with quotes
-CString 
+XString 
 SQLInterval::AsSQLString(SQLDatabase* /*p_database*/,bool p_withFraction /*= false*/) const
 {
-  CString string = AsString(p_withFraction);
-  return CString("\'") + string + "\'";
+  XString string = AsString(p_withFraction);
+  return XString("\'") + string + "\'";
 }
 
 void    
@@ -627,10 +627,10 @@ SQLInterval::AsIntervalStruct(SQL_INTERVAL_STRUCT* p_struct) const
   memcpy(p_struct,&m_interval,sizeof(SQL_INTERVAL_STRUCT));
 }
 
-CString 
+XString 
 SQLInterval::AsXMLDuration() const
 {
-  CString duration;
+  XString duration;
   // Check if NULL
   if(IsNull())
   {
@@ -921,9 +921,9 @@ SQLInterval::Valid()
 
 // Parsing from a string
 bool
-SQLInterval::ParseInterval(SQLINTERVAL p_type,const CString& p_string)
+SQLInterval::ParseInterval(SQLINTERVAL p_type,const XString& p_string)
 {
-  CString string(p_string);
+  XString string(p_string);
   bool retval   = true;
   bool negative = false;
   int  scannum  = 0;
@@ -1076,7 +1076,7 @@ SQLInterval::ParseInterval(SQLINTERVAL p_type,const CString& p_string)
 // Parse an interval from a XML duration string
 // a la: http://www.w3.org/TR/2012/REC-xmlschema11-2-20120405/datatypes.html#duration
 bool
-SQLInterval::ParseInterval(CString p_duration)
+SQLInterval::ParseInterval(XString p_duration)
 {
   bool negative    = false;
   bool didTime     = false;
@@ -1166,7 +1166,7 @@ SQLInterval::ParseInterval(CString p_duration)
   {
     // Beware: XML duration has combinations that are NOT compatible
     // with the SQL definition of an interval, like Month-to-Day
-    CString error;
+    XString error;
     error.Format("XML duration period not compatible with SQL (%c to %c)",firstMarker,lastMarker);
     throw StdException(error);
   }
@@ -1184,7 +1184,7 @@ SQLInterval::ParseInterval(CString p_duration)
 }
 
 bool
-SQLInterval::ScanDurationValue(CString& p_duration
+SQLInterval::ScanDurationValue(XString& p_duration
                               ,int&     p_value
                               ,int&     p_fraction
                               ,char&    p_marker

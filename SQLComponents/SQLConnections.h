@@ -2,7 +2,7 @@
 //
 // File: SQLConnections.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -31,15 +31,15 @@ namespace SQLComponents
 
 typedef struct _connection
 {
-  CString m_name;
-  CString m_datasource;
-  CString m_username;
-  CString m_password;
-  CString m_options;
+  XString m_name;
+  XString m_datasource;
+  XString m_username;
+  XString m_password;
+  XString m_options;
 }
 SQLConnection;
 
-using ConnMap = std::map<CString,SQLConnection>;
+using ConnMap = std::map<XString,SQLConnection>;
 
 class SQLConnections
 {
@@ -47,22 +47,22 @@ public:
   SQLConnections();
 
   // File interface
-  bool        LoadConnectionsFile(CString p_filename = "");
-  bool        SaveConnectionsFile(CString p_filename = "");
+  bool        LoadConnectionsFile(XString p_filename = "",bool p_reset = false);
+  bool        SaveConnectionsFile(XString p_filename = "");
 
   // GETTERS
-  SQLConnection*  GetConnection(CString p_name);
+  SQLConnection*  GetConnection(XString p_name);
   SQLConnection*  GetConnection(unsigned p_number);
-  CString         GetConnectionString(CString p_name);
+  XString         GetConnectionString(XString p_name);
 
   // SETTERS
   void        Reset();
-  bool        AddConnection(CString p_name,CString p_datasource,CString p_username,CString p_password,CString p_options);
-  bool        DelConnection(CString p_name);
+  bool        AddConnection(XString p_name,XString p_datasource,XString p_username,XString p_password,XString p_options);
+  bool        DelConnection(XString p_name);
 
 private:
-  CString     PasswordScramble(CString p_password);
-  CString     PasswordDecoding(CString p_scramble);
+  XString     PasswordScramble(XString p_password);
+  XString     PasswordDecoding(XString p_scramble);
 
   // All saved connections from "database.xml"
   ConnMap     m_connections;

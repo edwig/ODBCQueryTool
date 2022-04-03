@@ -2,7 +2,7 @@
 //
 // File: SQLGetExePath.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -28,9 +28,9 @@
 namespace SQLComponents
 {
 
-CString SQLGetExePath();
-CString SQLGetExeFile();
+XString SQLGetExePath();
+XString SQLGetExeFile();
 HMODULE SQLGetModuleHandle();
-void    SQLCheckExePath(CString p_runtimer);
+void    SQLCheckExePath(XString p_runtimer);
 
 }

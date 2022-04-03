@@ -2,7 +2,7 @@
 //
 // File: SQLQuery.cpp
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -112,7 +112,7 @@ SQLQuery::Init(HDBC p_connection)
 void
 SQLQuery::Close(bool p_throw /*= true*/)
 {
-  CString error;
+  XString error;
 
   // Statement reset
   if (m_hstmt)
@@ -343,7 +343,7 @@ SQLQuery::ReportQuerySpeed(LARGE_INTEGER p_start)
   double secondsDBL = ((double)(einde.QuadPart - p_start.QuadPart)) / (double)freq.QuadPart;
   seconds = (long) secondsDBL; // rounding
 
-  CString message;
+  XString message;
   if(seconds > m_speedThreshold)
   {
     message.Format("[999] Query too long: %.6f seconds\n",secondsDBL);
@@ -425,7 +425,7 @@ SQLQuery::SetParameter(int p_num,const char* p_param,SQLParamType p_type /*=SQL_
 }
 
 void 
-SQLQuery::SetParameter(int p_num,CString& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameter(int p_num,XString& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
 {
   SQLVariant* var = new SQLVariant(p_param);
   InternalSetParameter(p_num,var,p_type);
@@ -497,7 +497,7 @@ SQLQuery::SetParameter(const char* p_param,SQLParamType p_type /*=SQL_PARAM_INPU
 }
 
 void
-SQLQuery::SetParameter(CString& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameter(XString& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
 {
   int size = (int)m_parameters.size() + 1;
   SQLVariant* var = new SQLVariant(p_param);
@@ -538,7 +538,7 @@ SQLQuery::SetParameter(const bcd& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT
 
 // Named parameters for DoSQLCall()
 void 
-SQLQuery::SetParameterName(int p_param,CString p_name)
+SQLQuery::SetParameterName(int p_param,XString p_name)
 {
   SQLVariant* var = GetParameter(p_param);
   var->SetColumnNumber(p_param);
@@ -567,28 +567,28 @@ SQLQuery::SetParameters(VarMap* p_map)
 //////////////////////////////////////////////////////////////////////////
 
 void 
-SQLQuery::DoSQLStatement(const CString& p_statement,int p_param1)
+SQLQuery::DoSQLStatement(const XString& p_statement,int p_param1)
 {
   SetParameter(1,p_param1);
   DoSQLStatement(p_statement);
 }
 
 void 
-SQLQuery::DoSQLStatement(const CString& p_statement,const char* p_param1)
+SQLQuery::DoSQLStatement(const XString& p_statement,const char* p_param1)
 {
   SetParameter(1,p_param1);
   DoSQLStatement(p_statement);
 }
 
 void
-SQLQuery::DoSQLStatement(const CString& p_statement,const bcd&  p_param1)
+SQLQuery::DoSQLStatement(const XString& p_statement,const bcd&  p_param1)
 {
   SetParameter(1,p_param1);
   DoSQLStatement(p_statement);
 }
 
 void
-SQLQuery::DoSQLStatement(const CString& p_statement)
+SQLQuery::DoSQLStatement(const XString& p_statement)
 {
   bool logging = false;
 
@@ -618,7 +618,7 @@ SQLQuery::DoSQLStatement(const CString& p_statement)
 
   // In special cases queries can go wrong through ORACLE ODBC if they contain newlines
   // So we need to remove trailing white and red space
-  CString statement(p_statement);
+  XString statement(p_statement);
   statement.TrimRight("\n\r\t\f ");
 
   // Do the Query text macro replacement
@@ -662,7 +662,7 @@ SQLQuery::DoSQLStatement(const CString& p_statement)
     }
     else
     {
-      CString fout;
+      XString fout;
       fout.Format("Error [%d] in getting the number of columns from a query: ",m_retCode);
       GetLastError(fout);
       throw StdException(m_lastError);
@@ -690,7 +690,7 @@ SQLQuery::DoSQLStatement(const CString& p_statement)
 
 // Variant with a catch to it
 void 
-SQLQuery::TryDoSQLStatement(const CString& p_statement)
+SQLQuery::TryDoSQLStatement(const XString& p_statement)
 {
   try
   {
@@ -704,7 +704,7 @@ SQLQuery::TryDoSQLStatement(const CString& p_statement)
 }
 
 SQLVariant* 
-SQLQuery::DoSQLStatementScalar(const CString& p_statement)
+SQLQuery::DoSQLStatementScalar(const XString& p_statement)
 {
   DoSQLStatement(p_statement);
   if(GetRecord())
@@ -715,49 +715,49 @@ SQLQuery::DoSQLStatementScalar(const CString& p_statement)
 }
 
 SQLVariant* 
-SQLQuery::DoSQLStatementScalar(const CString& p_statement,const int p_param1)
+SQLQuery::DoSQLStatementScalar(const XString& p_statement,const int p_param1)
 {
   SetParameter(1,p_param1);
   return DoSQLStatementScalar(p_statement);
 }
 
 SQLVariant* 
-SQLQuery::DoSQLStatementScalar(const CString& p_statement,const char* p_param1)
+SQLQuery::DoSQLStatementScalar(const XString& p_statement,const char* p_param1)
 {
   SetParameter(1,p_param1);
   return DoSQLStatementScalar(p_statement);
 }
 
 SQLVariant* 
-SQLQuery::DoSQLStatementScalar(const CString& p_statement,const bcd&  p_param1)
+SQLQuery::DoSQLStatementScalar(const XString& p_statement,const bcd&  p_param1)
 {
   SetParameter(1,p_param1);
   return DoSQLStatementScalar(p_statement);
 }
 
 int
-SQLQuery::DoSQLStatementNonQuery(const CString& p_statement,const int p_param1)
+SQLQuery::DoSQLStatementNonQuery(const XString& p_statement,const int p_param1)
 {
   SetParameter(1,p_param1);
   return DoSQLStatementNonQuery(p_statement);
 }
 
 int
-SQLQuery::DoSQLStatementNonQuery(const CString& p_statement,const char* p_param1)
+SQLQuery::DoSQLStatementNonQuery(const XString& p_statement,const char* p_param1)
 {
   SetParameter(1,p_param1);
   return DoSQLStatementNonQuery(p_statement);
 }
 
 int
-SQLQuery::DoSQLStatementNonQuery(const CString& p_statement,const bcd&  p_param1)
+SQLQuery::DoSQLStatementNonQuery(const XString& p_statement,const bcd&  p_param1)
 {
   SetParameter(1,p_param1);
   return DoSQLStatementNonQuery(p_statement);
 }
 
 int
-SQLQuery::DoSQLStatementNonQuery(const CString& p_statement)
+SQLQuery::DoSQLStatementNonQuery(const XString& p_statement)
 {
   if(p_statement.Left(6).CompareNoCase("select") == 0)
   {
@@ -772,9 +772,9 @@ SQLQuery::DoSQLStatementNonQuery(const CString& p_statement)
 // Only the LAST statement can be a SELECT statement!
 // AND all parameters across all statements must be EXACTLY the same!
 void        
-SQLQuery::DoSQLStatementBatch(CString p_statements)
+SQLQuery::DoSQLStatementBatch(XString p_statements)
 {
-  CString statement;
+  XString statement;
   int pos = p_statements.Find(SQL_STATEMENT_SEPARATOR);
 
   while((pos >= 0) || !p_statements.IsEmpty())
@@ -808,7 +808,7 @@ SQLQuery::DoSQLStatementBatch(CString p_statements)
 }
 
 void 
-SQLQuery::DoSQLPrepare(const CString& p_statement)
+SQLQuery::DoSQLPrepare(const XString& p_statement)
 {
   if(p_statement.IsEmpty())
   {
@@ -821,7 +821,7 @@ SQLQuery::DoSQLPrepare(const CString& p_statement)
 
   // In special cases queries can go wrong through and ORACLE ODBC if they contain newlines
   // Hence all newlines are replaces by spaces, if the query does NOT contain any comments
-  CString statement(p_statement);
+  XString statement(p_statement);
   if(statement.Find("--") < 0)
   {
     statement.Replace("\n"," ");
@@ -911,7 +911,7 @@ SQLQuery::DoSQLExecute(bool p_rebind /*=false*/)
     }
     else
     {
-      CString fout;
+      XString fout;
       fout.Format("Error [%d] in determining the number of columns in the query: ",m_retCode);
       GetLastError(fout);
       throw StdException(m_lastError);
@@ -1087,7 +1087,7 @@ SQLQuery::LogParameter(int p_column,SQLVariant* p_parameter)
   {
     m_database->LogPrint("Parameters as passed on to the database:\n");
   }
-  CString text,value;
+  XString text,value;
   p_parameter->GetAsString(value);
   text.Format("Parameter %d: %s\n",p_column,value.GetString());
   m_database->LogPrint(text);
@@ -1126,14 +1126,14 @@ SQLQuery::BindColumns()
                               ,&nullable);        // NULL values OK?
     if(!SQL_SUCCEEDED(m_retCode))
     {
-      CString fout;
+      XString fout;
       fout.Format("Error [%d] at the determining of the attributes of column [%d] : ",m_retCode,icol);
       GetLastError(fout);
       throw StdException(m_lastError);
     }
 
     int type = SQLType2CType(dataType);
-    CString name(colName);
+    XString name(colName);
     if(type == SQL_C_CHAR || type == SQL_C_BINARY)
     {
       if(precision == 0)
@@ -1187,7 +1187,7 @@ SQLQuery::BindColumns()
       numeric->scale     = (SQLSCHAR) scale;
     }
 
-    CString columnName(colName);
+    XString columnName(colName);
     columnName.MakeLower();
     m_numMap .insert(std::make_pair(icol,var));
     m_nameMap.insert(std::make_pair(columnName,var));
@@ -1287,7 +1287,7 @@ SQLQuery::BindColumnNumeric(SQLSMALLINT p_column,SQLVariant* p_var,int p_type)
       }
     }
   }
-  CString error;
+  XString error;
   error.Format("Cannot bind NUMERIC attributes PRECISION/SCALE for column: %d",p_column);
   throw StdException(error);
 }
@@ -1635,7 +1635,7 @@ SQLQuery::IsEmpty(int col)
 
 // Get an error string from the handle
 void
-SQLQuery::GetLastError(CString p_prefix /*=""*/)
+SQLQuery::GetLastError(XString p_prefix /*=""*/)
 {
   m_lastError.Empty();
   if (!m_hstmt)
@@ -1655,7 +1655,7 @@ SQLQuery::GetLastError(CString p_prefix /*=""*/)
   m_lastError += p_prefix;
 
   // Append last return value
-  CString prefix;
+  XString prefix;
   prefix.Format("ODBC-call returned [%d] : ",m_retCode);
   m_lastError += prefix;
 
@@ -1685,7 +1685,7 @@ SQLQuery::GetLastError(CString p_prefix /*=""*/)
     {
       break;
     }
-    CString error;
+    XString error;
     error.Format("[%d][%s] %s",nativeError,SqlState,ErrorMsg);
     if(!m_lastError.IsEmpty())
     {
@@ -1699,7 +1699,7 @@ SQLQuery::GetLastError(CString p_prefix /*=""*/)
 int  
 SQLQuery::GetColumnNumber(const char* p_columnName) 
 {
-  CString colName(p_columnName);
+  XString colName(p_columnName);
   ColNameMap::iterator it = m_nameMap.find(colName);
   if(it != m_nameMap.end())
   {
@@ -1710,7 +1710,7 @@ SQLQuery::GetColumnNumber(const char* p_columnName)
 
 // ColumnNumber -> column name
 bool 
-SQLQuery::GetColumnName(int p_column,CString& p_name) 
+SQLQuery::GetColumnName(int p_column,XString& p_name) 
 {
   for(auto& column : m_nameMap)
   { 
@@ -1839,8 +1839,8 @@ SQLQuery::GetColumnDisplaySize(int p_column)
 
 void
 SQLQuery::DescribeColumn(int           p_col
-                        ,CString&      p_columnName
-                        ,CString&      p_colLabel
+                        ,XString&      p_columnName
+                        ,XString&      p_colLabel
                         ,SQLSMALLINT&  p_sqlType
                         ,SQLUINTEGER&  p_colSize
                         ,SQLSMALLINT&  p_colScale
@@ -1922,15 +1922,7 @@ SQLQuery::DescribeColumn(int           p_col
 
 // Short forms for 1 (one) input parameter and 1 output parameter
 SQLVariant*
-SQLQuery::DoSQLCall(CString p_schema,CString p_procedure,const int p_param1)
-{
-  SQLVariant* var = new SQLVariant((long)p_param1);
-  InternalSetParameter(1,var,P_SQL_PARAM_INPUT);
-  return DoSQLCall(p_schema,p_procedure,true);
-}
-
-SQLVariant*
-SQLQuery::DoSQLCall(CString p_schema,CString p_procedure,const char* p_param1)
+SQLQuery::DoSQLCall(XString p_schema,XString p_procedure,const int p_param1)
 {
   SQLVariant* var = new SQLVariant(p_param1);
   InternalSetParameter(1,var,P_SQL_PARAM_INPUT);
@@ -1938,7 +1930,15 @@ SQLQuery::DoSQLCall(CString p_schema,CString p_procedure,const char* p_param1)
 }
 
 SQLVariant*
-SQLQuery::DoSQLCall(CString p_schema,CString p_procedure,const bcd& p_param1)
+SQLQuery::DoSQLCall(XString p_schema,XString p_procedure,const char* p_param1)
+{
+  SQLVariant* var = new SQLVariant(p_param1);
+  InternalSetParameter(1,var,P_SQL_PARAM_INPUT);
+  return DoSQLCall(p_schema,p_procedure,true);
+}
+
+SQLVariant*
+SQLQuery::DoSQLCall(XString p_schema,XString p_procedure,const bcd& p_param1)
 {
   SQLVariant* var = new SQLVariant(&p_param1);
   InternalSetParameter(1,var,P_SQL_PARAM_INPUT);
@@ -1947,7 +1947,7 @@ SQLQuery::DoSQLCall(CString p_schema,CString p_procedure,const bcd& p_param1)
 
 // Call procedure, do your own parameter plumbing  
 SQLVariant*
-SQLQuery::DoSQLCall(CString p_schema,CString p_procedure,bool p_hasReturn /*=false*/)
+SQLQuery::DoSQLCall(XString p_schema,XString p_procedure,bool p_hasReturn /*=false*/)
 {
   // Check we have a database object and not a isolated HDBC
   if(m_database == nullptr)
@@ -1959,7 +1959,7 @@ SQLQuery::DoSQLCall(CString p_schema,CString p_procedure,bool p_hasReturn /*=fal
   // OTHERWISE, YOU HAVE TO PROVIDE IT YOURSELF!
   if(p_hasReturn && m_parameters.find(0) == m_parameters.end() && m_nameMap.empty())
   {
-    SQLVariant* var = new SQLVariant((long)0L);
+    SQLVariant* var = new SQLVariant((int)0);
     InternalSetParameter(0,var,P_SQL_PARAM_OUTPUT);
   }
 
@@ -1981,10 +1981,10 @@ SQLQuery::DoSQLCall(CString p_schema,CString p_procedure,bool p_hasReturn /*=fal
 
 // Direct call through ODBC escape language
 SQLVariant*
-SQLQuery::DoSQLCallODBCEscape(CString& p_schema,CString& p_procedure,bool p_hasReturn)
+SQLQuery::DoSQLCallODBCEscape(XString& p_schema,XString& p_procedure,bool p_hasReturn)
 {
   // Start with generating the SQL
-  CString sql = ConstructSQLForCall(p_schema,p_procedure,p_hasReturn);
+  XString sql = ConstructSQLForCall(p_schema,p_procedure,p_hasReturn);
 
   // Do the call and fetch return values
   DoSQLStatement(sql);
@@ -2010,11 +2010,11 @@ SQLQuery::DoSQLCallODBCEscape(CString& p_schema,CString& p_procedure,bool p_hasR
 // form 3: With input parameters  { CALL function(?,?) }
 // form 4: With return parameter  { ? = CALL function(?,?) }
 // form 5: Only return parameter  { ? = CALL function }
-CString
-SQLQuery::ConstructSQLForCall(CString& p_schema,CString& p_procedure,bool p_hasReturn)
+XString
+SQLQuery::ConstructSQLForCall(XString& p_schema,XString& p_procedure,bool p_hasReturn)
 {
   // Start with ODBC-escape character
-  CString sql("{");
+  XString sql("{");
 
   // Add placeholder for return parameter
   if(p_hasReturn)

@@ -2,7 +2,7 @@
 //
 // File: SQLError.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -30,9 +30,9 @@ namespace SQLComponents
 
 typedef struct _sql_state
 {
-  CString m_code;         // Standard SQLSTATE code (5 chars)
-  CString m_error;        // Short error text
-  CString m_explanation;  // Longer explanation of what went wrong
+  XString m_code;         // Standard SQLSTATE code (5 chars)
+  XString m_error;        // Short error text
+  XString m_explanation;  // Longer explanation of what went wrong
 }
 SQLState;
 
@@ -45,8 +45,8 @@ public:
   SQLError();
  ~SQLError();
  
-  SQLState* GetSQLState(CString p_sqlState);
-  CString   GetSQLStateFormatted(CString p_sqlState);
+  SQLState* GetSQLState(XString p_sqlState);
+  XString   GetSQLStateFormatted(XString p_sqlState);
   SQLState* GetLastSQLState();
 private:
   SQLState* m_lastState;  

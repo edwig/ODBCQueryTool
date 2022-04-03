@@ -2,7 +2,7 @@
 //
 // File: SQLDate.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -64,7 +64,7 @@ public:
   SQLDate(const SQLDate& p_date);
 
   // Date made from a string
-  SQLDate(const CString& p_string);
+  SQLDate(const XString& p_string);
 
   // Date made from a timestamp
   SQLDate(const SQLTimestamp& p_timestamp);
@@ -80,19 +80,19 @@ public:
 
   ~SQLDate();
 
-  bool        SetDate(const CString& p_string); 
+  bool        SetDate(const XString& p_string); 
   bool        SetDate(long p_year,long p_month,long p_day);
   void        SetNull();
 
   // Get in different formats
-  CString     AsString() const;
-  CString     AsXMLString() const;
+  XString     AsString() const;
+  XString     AsXMLString() const;
   DateValue   AsNumber() const;
   DateValue   AsMJD()    const;
   DateValue   AsJulianDate()     const;
   DateValue   AsTimeSinchEpoch() const;
-  CString     AsSQLString(SQLDatabase* p_database);
-  CString     AsStrippedSQLString(SQLDatabase* p_database);
+  XString     AsSQLString(SQLDatabase* p_database);
+  XString     AsStrippedSQLString(SQLDatabase* p_database);
   void        AsDateStruct(DATE_STRUCT* p_date);
 
   // Internal status of a date
@@ -106,9 +106,9 @@ public:
   long        WeekDay()       const;
   int         WeekNumber()    const;
   long        DaysInMonth()   const;
-  CString     WeekDayName(Language p_lang = LN_DEFAULT) const;
-  CString     MonthName  (Language p_lang = LN_DEFAULT) const;
-  CString     FullDate   (Language p_lang = LN_DEFAULT) const;
+  XString     WeekDayName(Language p_lang = LN_DEFAULT) const;
+  XString     MonthName  (Language p_lang = LN_DEFAULT) const;
+  XString     FullDate   (Language p_lang = LN_DEFAULT) const;
  
   // Perform operations on a date
   SQLDate     AddDays       (const long p_numberOfDays)   const;
@@ -138,19 +138,19 @@ public:
   // Asking for the current date
   static SQLDate Today();
   // Ook voor gebruik vanuit de interface (static aanroepen)
-  bool CalculateDate(const CString& p_date);
+  bool CalculateDate(const XString& p_date);
   // Haal een extra virtuele datum op (+/- <getal> <JAAR/MAAND/DAG/WEEK>)
-  bool GetVirtualDate(CString       p_sign,
-                      CString       p_extraTime,
+  bool GetVirtualDate(XString       p_sign,
+                      XString       p_extraTime,
                       long          p_interval,
                       DateStorage&  p_temp);
-  static void SplitStrDate(const  CString& p_strDate,
-                                  CString& p_currentDate,
-                                  CString& p_sign,
-                                  CString& p_extraTime,
+  static void SplitStrDate(const  XString& p_strDate,
+                                  XString& p_currentDate,
+                                  XString& p_sign,
+                                  XString& p_extraTime,
                                   int&     p_interval);
   // Check that a numeric string has only digits
-  static bool IsNumericString(const CString& p_string);
+  static bool IsNumericString(const XString& p_string);
 
 private:
   // Correction factor is MJD (2,400,000.5) + 0.5 (17 nov 1858 instead of 16 nov 12:00 hours)
@@ -161,14 +161,14 @@ private:
   // Calculate MJD back to a date
   void MJDtoDate();
   // Short date for some interfaces
-  bool ShortDate(const CString& p_date,int& p_year,int& p_month,int& p_day);
+  bool ShortDate(const XString& p_date,int& p_year,int& p_month,int& p_day);
   // Named date with short or long monthnames
   static
-  bool NamedDate(const CString& p_date,int& p_year,int& p_month,int& p_day);
+  bool NamedDate(const XString& p_date,int& p_year,int& p_month,int& p_day);
   // Pure date string "dd-mm-[yy]yy"
-  bool ParseDate(const CString& p_date,int* p_year,int* p_month,int* p_day);
+  bool ParseDate(const XString& p_date,int* p_year,int* p_month,int* p_day);
   // XML Datum support
-  static bool ParseXMLDate(const CString& p_string,SQLTimestamp& p_moment);
+  static bool ParseXMLDate(const XString& p_string,SQLTimestamp& p_moment);
   // For the parsing of XML
   friend SQLTimestamp;
 

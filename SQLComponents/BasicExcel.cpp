@@ -7325,10 +7325,15 @@ ostream& operator<<(ostream& os, const BasicExcelCell& cell)
       break;
 
     case BasicExcelCell::WSTRING:
-      os << cell.GetWString();
+      {
+        size_t len = wcslen(cell.GetWString());
+        char* buffer = new char[len];
+        wcstombs(buffer,cell.GetWString(),len);
+        os << buffer;
+        delete[] buffer;
+      }
       break;
   }
-
   return os;
 }
 

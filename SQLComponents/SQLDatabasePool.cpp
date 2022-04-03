@@ -2,7 +2,7 @@
 //
 // File: SQLDatabasePool.cpp
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -79,13 +79,13 @@ SQLDatabasePool::~SQLDatabasePool()
 
 // Get or make a database for this connection
 SQLDatabase*
-SQLDatabasePool::GetDatabase(const CString& p_connectionName)
+SQLDatabasePool::GetDatabase(const XString& p_connectionName)
 {
   // Lock the pool
   AutoCritSec lock(&m_lock);
 
   // Make lower case before we search
-  CString name(p_connectionName);
+  XString name(p_connectionName);
   name.MakeLower();
 
   // Check whether we are already open
@@ -115,7 +115,7 @@ SQLDatabasePool::GiveUp(SQLDatabase* p_database)
   }
 
   // Grab our connection name
-  CString name = p_database->GetConnectionName();
+  XString name = p_database->GetConnectionName();
   name.MakeLower();
 
   GiveUpInternally(p_database,name);
@@ -149,7 +149,7 @@ SQLDatabasePool::CloseAll()
 
 // Read all database definitions from 'database.xml'
 bool
-SQLDatabasePool::ReadConnections(CString p_filename /*=""*/)
+SQLDatabasePool::ReadConnections(XString p_filename /*=""*/)
 {
   // Lock the pool
   AutoCritSec lock(&m_lock);
@@ -182,7 +182,7 @@ SQLDatabasePool::Cleanup(bool p_aggressive /*=false*/)
   // Max databases almost reached and cleanup aggressively
   if(p_aggressive)
   {
-    CString text;
+    XString text;
     text.Format("Maximum number of databases reached and aggressive cleanup requested.\n"
                 "Max databases is currently: %d", m_maxDatabases);
     LogPrint(text);
@@ -201,7 +201,7 @@ SQLDatabasePool::GetConnections()
 }
 
 SQLConnection* 
-SQLDatabasePool::GetConnection(const CString& p_connectionName)
+SQLDatabasePool::GetConnection(const XString& p_connectionName)
 {
   return m_connections.GetConnection(p_connectionName);
 }
@@ -236,11 +236,11 @@ SQLDatabasePool::GetFreeDatabases()
 
 // List with current connections (meant for logging purposes only)
 void
-SQLDatabasePool::GetListOfConnections(CString& p_list)
+SQLDatabasePool::GetListOfConnections(XString& p_list)
 {
   // Lock the pool
   AutoCritSec lock(&m_lock);
-  CString text;
+  XString text;
 
   // Clean the list up front
   p_list.Empty();
@@ -291,7 +291,7 @@ SQLDatabasePool::AddParameterRebind(int p_sqlType,int p_cppType)
 
 // Get OR make a logged in database connection
 SQLDatabase*
-SQLDatabasePool::GetDatabaseInternally(DbsPool& p_pool,CString& p_connectionName)
+SQLDatabasePool::GetDatabaseInternally(DbsPool& p_pool,XString& p_connectionName)
 {
   DbsPool::iterator it;
   unsigned retry = CONN_RETRIES;
@@ -322,7 +322,7 @@ SQLDatabasePool::GetDatabaseInternally(DbsPool& p_pool,CString& p_connectionName
       }
       if(--retry == 0)
       {
-        CString error;
+        XString error;
         error.Format("The maximum number of open databases has been reached [%d]",m_maxDatabases);
         LogPrint(error);
         throw StdException(error);
@@ -363,7 +363,7 @@ SQLDatabasePool::GetDatabaseInternally(DbsPool& p_pool,CString& p_connectionName
   // AutoDBS must have a real database object
   if(dbs == nullptr)
   {
-    CString error("INTERN: No database found in the list with free databases");
+    XString error("INTERN: No database found in the list with free databases");
     LogPrint(error);
     throw StdException(error);
   }
@@ -380,7 +380,7 @@ SQLDatabasePool::GetDatabaseInternally(DbsPool& p_pool,CString& p_connectionName
 
 // Return a connection to the pool
 void
-SQLDatabasePool::GiveUpInternally(SQLDatabase* p_database,CString& p_connectionName)
+SQLDatabasePool::GiveUpInternally(SQLDatabase* p_database,XString& p_connectionName)
 {
   // Last time we had an action on this database
   p_database->SetLastActionTime();
@@ -418,11 +418,11 @@ SQLDatabasePool::CleanupInternally(bool p_aggressive)
       // Can the database be cleaned out?
       if(db->PastWaitingTime() || p_aggressive)
       {
-        CString name = db->GetConnectionName();
+        XString name = db->GetConnectionName();
 
         // Close the database en remove it from the list of free databases
         db->Close();
-        CString text;
+        XString text;
         text.Format("Closed database connection for [%s/%s]",name.GetString(),db->GetUserName().GetString());
         LogPrint(text);
         list->pop_front();
@@ -478,7 +478,7 @@ SQLDatabasePool::CleanupInternally(bool p_aggressive)
 
 // Create a new database object
 SQLDatabase*
-SQLDatabasePool::MakeDatabase(CString p_connectionName)
+SQLDatabasePool::MakeDatabase(XString p_connectionName)
 {
   // Create the database
   SQLDatabase* dbs = new SQLDatabase();
@@ -525,7 +525,7 @@ SQLDatabasePool::MakeDatabase(CString p_connectionName)
 
 // Open the connection to the RDBMS server
 void
-SQLDatabasePool::OpenDatabase(SQLDatabase* p_dbs,CString& p_connectionName)
+SQLDatabasePool::OpenDatabase(SQLDatabase* p_dbs,XString& p_connectionName)
 {
   // Find the database connection definition
   SQLConnection* conn = m_connections.GetConnection(p_connectionName);
@@ -540,7 +540,7 @@ SQLDatabasePool::OpenDatabase(SQLDatabase* p_dbs,CString& p_connectionName)
   if(conn)
   {
     // Try to open the database right away
-    CString connString = m_connections.GetConnectionString(p_connectionName);
+    XString connString = m_connections.GetConnectionString(p_connectionName);
     p_dbs->Open(connString);
     p_dbs->SetDatasource(conn->m_datasource);
     p_dbs->SetUserName(conn->m_username);
@@ -550,7 +550,7 @@ SQLDatabasePool::OpenDatabase(SQLDatabase* p_dbs,CString& p_connectionName)
     AddRebindsToDatabase(p_dbs);
     
     // Tell it the logfile
-    CString text;
+    XString text;
     text.Format("Database created and opened: [%s:%s]"
                ,conn->m_datasource.GetString()
                ,conn->m_username.GetString());
@@ -561,7 +561,7 @@ SQLDatabasePool::OpenDatabase(SQLDatabase* p_dbs,CString& p_connectionName)
   }
   else
   {
-    CString error;
+    XString error;
     error.Format("Database [%s] selected, but no connection found in 'database.xml'",p_connectionName.GetString());
     LogPrint(error);
     throw StdException(error);
@@ -581,7 +581,7 @@ SQLDatabasePool::CloseAllInternally()
     for(auto& database : *dblist)
     {
       // Report the closing
-      CString text;
+      XString text;
       text.Format("Database [%s] connection closed. User: %s"
                  ,database->GetConnectionName().GetString()
                  ,database->GetUserName().GetString());

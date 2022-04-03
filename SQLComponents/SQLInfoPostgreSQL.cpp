@@ -2,7 +2,7 @@
 //
 // File: SQLInfoPostgreSQL.cpp
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -63,7 +63,7 @@ SQLInfoPostgreSQL::GetRDBMSDatabaseType() const
 }
 
 // The name of the database vendor
-CString
+XString
 SQLInfoPostgreSQL::GetRDBMSVendorName() const
 {
   // The name of the database vendor
@@ -71,11 +71,11 @@ SQLInfoPostgreSQL::GetRDBMSVendorName() const
 }
 
 // Get the physical database name
-CString
+XString
 SQLInfoPostgreSQL::GetRDBMSPhysicalDatabaseName() const
 {
   SQLQuery sql(m_database);
-  CString query = "SELECT current_database()";
+  XString query = "SELECT current_database()";
   sql.DoSQLStatement(query);
   if(sql.GetRecord())
   {
@@ -177,42 +177,42 @@ SQLInfoPostgreSQL::GetRDBMSNumericPrecisionScale(SQLULEN& /*p_precision*/, SQLSM
 // KEYWORDS
 
 // Keyword for the current date and time
-CString
+XString
 SQLInfoPostgreSQL::GetKEYWORDCurrentTimestamp() const
 {
   return "current_timestamp(0)";
 }
 
 // String for the current date
-CString
+XString
 SQLInfoPostgreSQL::GetKEYWORDCurrentDate() const
 {
   return "current_date";
 }
 
 // Get the concatenation operator
-CString
+XString
 SQLInfoPostgreSQL::GetKEYWORDConcatanationOperator() const
 {
   return "||";
 }
 
 // Get quote character for strings
-CString
+XString
 SQLInfoPostgreSQL::GetKEYWORDQuoteCharacter() const
 {
   return "\'";
 }
 
 // Get quote character around reserved words as an identifier
-CString
+XString
 SQLInfoPostgreSQL::GetKEYWORDReservedWordQuote() const
 {
   return "\'";
 }
 
 // Get default NULL for parameter list input
-CString
+XString
 SQLInfoPostgreSQL::GetKEYWORDParameterDefaultNULL() const
 {
   // Standard, no definition defines the NULL state
@@ -220,21 +220,21 @@ SQLInfoPostgreSQL::GetKEYWORDParameterDefaultNULL() const
 }
 
 // Parameter is for INPUT and OUTPUT in parameter list
-CString
+XString
 SQLInfoPostgreSQL::GetKEYWORDParameterINOUT() const
 {
   return "";
 }
 
 // Parameter is for OUTPUT only in parameter list
-CString
+XString
 SQLInfoPostgreSQL::GetKEYWORDParameterOUT() const
 {
   return "";
 }
 
 // Get datatype of the IDENTITY primary key in a Network database
-CString
+XString
 SQLInfoPostgreSQL::GetKEYWORDNetworkPrimaryKeyType() const
 {
   // Use SEQUENCE to fill!
@@ -242,14 +242,14 @@ SQLInfoPostgreSQL::GetKEYWORDNetworkPrimaryKeyType() const
 }
 
 // Get datatype for timestamp (year to second)
-CString
+XString
 SQLInfoPostgreSQL::GetKEYWORDTypeTimestamp() const
 {
   return "TIMESTAMP";
 }
 
 // Prefix for a parameter in a stored procedure
-CString
+XString
 SQLInfoPostgreSQL::GetKEYWORDParameterPrefix() const
 {
   return "";
@@ -257,21 +257,21 @@ SQLInfoPostgreSQL::GetKEYWORDParameterPrefix() const
 
 // Get select part to add new record identity to a table
 // Can be special column like 'OID' or a sequence select
-CString
-SQLInfoPostgreSQL::GetKEYWORDIdentityString(CString& p_tablename,CString p_postfix /*= "_seq"*/) const
+XString
+SQLInfoPostgreSQL::GetKEYWORDIdentityString(XString& p_tablename,XString p_postfix /*= "_seq"*/) const
 {
   return "nextval('" + p_tablename + p_postfix + "')";
 }
 
 // Gets the UPPER function
-CString
-SQLInfoPostgreSQL::GetKEYWORDUpper(CString& p_expression) const
+XString
+SQLInfoPostgreSQL::GetKEYWORDUpper(XString& p_expression) const
 {
   return "UPPER(" + p_expression + ")";
 }
 
 // Gets the construction for 1 minute ago
-CString
+XString
 SQLInfoPostgreSQL::GetKEYWORDInterval1MinuteAgo() const
 {
   // Not supported by PostgreSQL
@@ -279,38 +279,38 @@ SQLInfoPostgreSQL::GetKEYWORDInterval1MinuteAgo() const
 }
 
 // Gets the Not-NULL-Value statement of the database
-CString
-SQLInfoPostgreSQL::GetKEYWORDStatementNVL(CString& p_test,CString& p_isnull) const
+XString
+SQLInfoPostgreSQL::GetKEYWORDStatementNVL(XString& p_test,XString& p_isnull) const
 {
   return "{fn IFNULL(" + p_test + "," + p_isnull + ")}";
 }
 
 // Gets the RDBMS definition of the datatype
-CString
+XString
 SQLInfoPostgreSQL::GetKEYWORDDataType(MetaColumn* p_column)
 {
   return p_column->m_typename;
 }
 
 // Gets the USER (current-user) keyword function
-CString
+XString
 SQLInfoPostgreSQL::GetKEYWORDCurrentUser() const
 {
   return "CURRENT_USER";
 }
 
 // Connects to a default schema in the database/instance
-CString
-SQLInfoPostgreSQL::GetSQLDefaultSchema(CString p_schema) const
+XString
+SQLInfoPostgreSQL::GetSQLDefaultSchema(XString p_schema) const
 {
   return "SET SEARCH_PATH TO " + p_schema;
 }
 
 // Gets the construction for inline generating a key within an INSERT statement
-CString
-SQLInfoPostgreSQL::GetSQLNewSerial(CString p_table, CString p_sequence) const
+XString
+SQLInfoPostgreSQL::GetSQLNewSerial(XString p_table, XString p_sequence) const
 {
-  CString sequence(p_sequence);
+  XString sequence(p_sequence);
   if (sequence.IsEmpty() && !p_table.IsEmpty())
   {
     sequence = p_table + "_seq";
@@ -321,42 +321,42 @@ SQLInfoPostgreSQL::GetSQLNewSerial(CString p_table, CString p_sequence) const
 }
 
 // Gets the construction / select for generating a new serial identity
-CString
-SQLInfoPostgreSQL::GetSQLGenerateSerial(CString p_table) const
+XString
+SQLInfoPostgreSQL::GetSQLGenerateSerial(XString p_table) const
 {
   return "SELECT " + p_table + "_seq.nextval FROM DUAL";
 }
 
 // Gets the construction / select for the resulting effective generated serial
-CString
-SQLInfoPostgreSQL::GetSQLEffectiveSerial(CString p_identity) const
+XString
+SQLInfoPostgreSQL::GetSQLEffectiveSerial(XString p_identity) const
 {
   // Already the correct value
   return p_identity;
 }
 
 // Gets the sub transaction commands
-CString
-SQLInfoPostgreSQL::GetSQLStartSubTransaction(CString p_savepointName) const
+XString
+SQLInfoPostgreSQL::GetSQLStartSubTransaction(XString p_savepointName) const
 {
-  return CString("SAVEPOINT ") + p_savepointName;
+  return XString("SAVEPOINT ") + p_savepointName;
 }
 
-CString
-SQLInfoPostgreSQL::GetSQLCommitSubTransaction(CString p_savepointName) const
+XString
+SQLInfoPostgreSQL::GetSQLCommitSubTransaction(XString p_savepointName) const
 {
   // No commit for a sub transaction
-  return CString("");
+  return XString("");
 }
 
-CString
-SQLInfoPostgreSQL::GetSQLRollbackSubTransaction(CString p_savepointName) const
+XString
+SQLInfoPostgreSQL::GetSQLRollbackSubTransaction(XString p_savepointName) const
 {
-  return CString("ROLLBACK TO SAVEPOINT ") + p_savepointName;
+  return XString("ROLLBACK TO SAVEPOINT ") + p_savepointName;
 }
 
 // FROM-Part for a query to select only 1 (one) record / or empty!
-CString
+XString
 SQLInfoPostgreSQL::GetSQLFromDualClause() const
 {
   // PostgreSQL knows the bare SELECT
@@ -364,26 +364,26 @@ SQLInfoPostgreSQL::GetSQLFromDualClause() const
 }
 
 // Get SQL to lock  a table 
-CString
-SQLInfoPostgreSQL::GetSQLLockTable(CString p_schema, CString p_tablename, bool p_exclusive) const
+XString
+SQLInfoPostgreSQL::GetSQLLockTable(XString p_schema, XString p_tablename, bool p_exclusive) const
 {
-  CString query = "LOCK TABLE " + p_schema + "." + p_tablename + " IN ";
+  XString query = "LOCK TABLE " + p_schema + "." + p_tablename + " IN ";
   query += p_exclusive ? "EXCLUSIVE" : "SHARE";
   query += " MODE";
   return query;
 }
 
 // Get query to optimize the table statistics
-CString
-SQLInfoPostgreSQL::GetSQLOptimizeTable(CString p_schema, CString p_tablename) const
+XString
+SQLInfoPostgreSQL::GetSQLOptimizeTable(XString p_schema, XString p_tablename) const
 {
-  CString optim = "VACUUM ANALYZE " + p_schema + "." + p_tablename;
+  XString optim = "VACUUM ANALYZE " + p_schema + "." + p_tablename;
   return optim;
 }
 
 // Transform query to select top <n> rows
-CString
-SQLInfoPostgreSQL::GetSQLTopNRows(CString p_sql,int p_top,int p_skip /*= 0*/) const
+XString
+SQLInfoPostgreSQL::GetSQLTopNRows(XString p_sql,int p_top,int p_skip /*= 0*/) const
 {
   if(p_top > 0)
   {
@@ -402,52 +402,52 @@ SQLInfoPostgreSQL::GetSQLTopNRows(CString p_sql,int p_top,int p_skip /*= 0*/) co
 //
 //////////////////////////////////////////////////////////////////////////
 
-CString
-SQLInfoPostgreSQL::GetSQLString(const CString& p_string) const
+XString
+SQLInfoPostgreSQL::GetSQLString(const XString& p_string) const
 {
-  CString s = p_string;
+  XString s = p_string;
   s.Replace("'","''");
-  CString kwoot = GetKEYWORDQuoteCharacter();
+  XString kwoot = GetKEYWORDQuoteCharacter();
   return  kwoot + s + kwoot;
 }
 
-CString
+XString
 SQLInfoPostgreSQL::GetSQLDateString(int p_year,int p_month,int p_day) const
 {
-  CString dateString;
+  XString dateString;
   dateString.Format("TO_DATE('%04d-%02d-%02d','YYYY-MM-DD')",p_year,p_month,p_day);
   return dateString;
 }
 
-CString
+XString
 SQLInfoPostgreSQL::GetSQLTimeString(int p_hour,int p_minute,int p_second) const
 {
-  CString timeString;
+  XString timeString;
   timeString.Format("'%02d:%02d:%02d'",p_hour,p_minute,p_second);
   return timeString;
 }
 
-CString
+XString
 SQLInfoPostgreSQL::GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
 {
-  CString retval;
+  XString retval;
   retval.Format("to_timestamp('%04d-%02d-%02d %02d:%02d:%02d','YYYY-MM-DD HH24:MI:SS')::timestamp"
                 ,p_year,p_month,p_day,p_hour,p_minute,p_second);
   return retval;
 }
 
 // Get date-time bound parameter string in database format
-CString
+XString
 SQLInfoPostgreSQL::GetSQLDateTimeBoundString() const
 {
   return "to_timestamp(?,'YYYY-MM-DD HH24:MI:SS')::timestamp";
 }
 
 // Stripped data for the parameter binding
-CString
+XString
 SQLInfoPostgreSQL::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
 {
-  CString retval;
+  XString retval;
   retval.Format("%04d-%02d-%02d %02d:%02d:%02d"
                 ,p_year,p_month,p_day,p_hour,p_minute,p_second);
   return retval;
@@ -479,7 +479,7 @@ SQLInfoPostgreSQL::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day
 
 // Meta info about meta types
 // Standard ODBC functions are good enough
-CString
+XString
 SQLInfoPostgreSQL::GetCATALOGMetaTypes(int p_type) const
 {
   UNREFERENCED_PARAMETER(p_type);
@@ -487,12 +487,12 @@ SQLInfoPostgreSQL::GetCATALOGMetaTypes(int p_type) const
 }
 
 // Get SQL to check if a table already exists in the database
-CString
-SQLInfoPostgreSQL::GetCATALOGTableExists(CString& p_schema,CString& p_tablename) const
+XString
+SQLInfoPostgreSQL::GetCATALOGTableExists(XString& p_schema,XString& p_tablename) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
-  CString query = "SELECT count(*)\n"
+  XString query = "SELECT count(*)\n"
                   "  FROM pg_class cl\n"
                   "      ,pg_namespace ns\n"
                   " WHERE cl.relnamespace = ns.oid\n"
@@ -501,18 +501,18 @@ SQLInfoPostgreSQL::GetCATALOGTableExists(CString& p_schema,CString& p_tablename)
   return query;
 }
 
-CString
-SQLInfoPostgreSQL::GetCATALOGTablesList(CString& p_schema,CString& p_pattern) const
+XString
+SQLInfoPostgreSQL::GetCATALOGTablesList(XString& p_schema,XString& p_pattern) const
 {
   return GetCATALOGTableAttributes(p_schema,p_pattern);
 }
 
-CString
-SQLInfoPostgreSQL::GetCATALOGTableAttributes(CString& p_schema,CString& p_tablename) const
+XString
+SQLInfoPostgreSQL::GetCATALOGTableAttributes(XString& p_schema,XString& p_tablename) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
-  CString query = "SELECT current_catalog as table_catalog\n"
+  XString query = "SELECT current_catalog as table_catalog\n"
                   "      ,sch.nspname     as table_schema\n"
                   "      ,tab.relname     as table_name\n"
                   "      ,'TABLE'         as object_type\n"
@@ -544,19 +544,19 @@ SQLInfoPostgreSQL::GetCATALOGTableAttributes(CString& p_schema,CString& p_tablen
   return query;
 }
 
-CString
-SQLInfoPostgreSQL::GetCATALOGTableSynonyms(CString& /*p_schema*/,CString& /*p_tablename*/) const
+XString
+SQLInfoPostgreSQL::GetCATALOGTableSynonyms(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
   // PostgreSQL cannot do this
-  return false;
+  return XString();
 }
 
-CString
-SQLInfoPostgreSQL::GetCATALOGTableCatalog(CString& p_schema,CString& p_tablename) const
+XString
+SQLInfoPostgreSQL::GetCATALOGTableCatalog(XString& p_schema,XString& p_tablename) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
-  CString query = "SELECT current_catalog as table_catalog\n"
+  XString query = "SELECT current_catalog as table_catalog\n"
                   "      ,sch.nspname     as table_schema\n"
                   "      ,tab.relname     as table_name\n"
                   "      ,'TABLE'         as object_type\n"
@@ -589,10 +589,10 @@ SQLInfoPostgreSQL::GetCATALOGTableCatalog(CString& p_schema,CString& p_tablename
   return query;
 }
 
-CString
+XString
 SQLInfoPostgreSQL::GetCATALOGTableCreate(MetaTable& p_table,MetaColumn& /*p_column*/) const
 {
-  CString sql = "CREATE ";
+  XString sql = "CREATE ";
   if (p_table.m_temporary)
   {
     sql += "TEMPORARY ";
@@ -607,24 +607,24 @@ SQLInfoPostgreSQL::GetCATALOGTableCreate(MetaTable& p_table,MetaColumn& /*p_colu
   return sql;
 }
 
-CString
+XString
 SQLInfoPostgreSQL::GetCATALOGTableCreatePostfix(MetaTable& /*p_table*/,MetaColumn& /*p_column*/) const
 {
   return "";
 }
 
-CString
-SQLInfoPostgreSQL::GetCATALOGTableRename(CString p_schema,CString p_tablename,CString p_newname) const
+XString
+SQLInfoPostgreSQL::GetCATALOGTableRename(XString p_schema,XString p_tablename,XString p_newname) const
 {
   // Beware: No 'TABLE' in the statement
-  CString sql("RENAME " + p_schema + "." + p_tablename + " TO " + p_newname);
+  XString sql("RENAME " + p_schema + "." + p_tablename + " TO " + p_newname);
   return sql;
 }
 
-CString
-SQLInfoPostgreSQL::GetCATALOGTableDrop(CString p_schema,CString p_tablename,bool p_ifExist /*= false*/,bool p_restrict /*= false*/,bool p_cascade /*= false*/) const
+XString
+SQLInfoPostgreSQL::GetCATALOGTableDrop(XString p_schema,XString p_tablename,bool p_ifExist /*= false*/,bool p_restrict /*= false*/,bool p_cascade /*= false*/) const
 {
-  CString sql("DROP TABLE ");
+  XString sql("DROP TABLE ");
   if (p_ifExist)
   {
     sql += "IF EXISTS ";
@@ -648,22 +648,22 @@ SQLInfoPostgreSQL::GetCATALOGTableDrop(CString p_schema,CString p_tablename,bool
 //////////////////////////////////////////////////////////////////////////
 // ALL TEMPORARY TABLE FUNCTIONS
 
-CString 
-SQLInfoPostgreSQL::GetCATALOGTemptableCreate(CString p_schema,CString p_tablename,CString p_select) const
+XString 
+SQLInfoPostgreSQL::GetCATALOGTemptableCreate(XString p_schema,XString p_tablename,XString p_select) const
 {
   return "CREATE GLOBAL TEMPORARY TABLE " + p_schema + "." + p_tablename + " WITHOUT OIDS\nAS " + p_select;
 }
 
-CString 
-SQLInfoPostgreSQL::GetCATALOGTemptableIntoTemp(CString p_schema,CString p_tablename,CString p_select) const
+XString 
+SQLInfoPostgreSQL::GetCATALOGTemptableIntoTemp(XString p_schema,XString p_tablename,XString p_select) const
 {
   return "INSERT INTO " + p_schema + "." + p_tablename + "\n" + p_select;
 }
 
-CString 
-SQLInfoPostgreSQL::GetCATALOGTemptableDrop(CString p_schema,CString p_tablename) const
+XString 
+SQLInfoPostgreSQL::GetCATALOGTemptableDrop(XString p_schema,XString p_tablename) const
 {
-  CString tablename = p_schema + "." + p_tablename;
+  XString tablename = p_schema + "." + p_tablename;
   return "DELETE FROM "    + tablename + ";\n"
          "<@>\n"
          "TRUNCATE TABLE " + tablename + ";\n"
@@ -674,13 +674,13 @@ SQLInfoPostgreSQL::GetCATALOGTemptableDrop(CString p_schema,CString p_tablename)
 //////////////////////////////////////////////////////////////////////////
 // ALL COLUMN FUNCTIONS
 
-CString 
-SQLInfoPostgreSQL::GetCATALOGColumnExists(CString p_schema,CString p_tablename,CString p_columnname) const
+XString 
+SQLInfoPostgreSQL::GetCATALOGColumnExists(XString p_schema,XString p_tablename,XString p_columnname) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
   p_columnname.MakeLower();
-  CString query = "SELECT count(*)\n"
+  XString query = "SELECT count(*)\n"
                  "  FROM pg_class      tab\n"
                  "      ,pg_namespaces sch\n"
                  "      ,pg_attribute  att\n"
@@ -692,14 +692,14 @@ SQLInfoPostgreSQL::GetCATALOGColumnExists(CString p_schema,CString p_tablename,C
   return query;
 }
 
-CString 
-SQLInfoPostgreSQL::GetCATALOGColumnList(CString& /*p_schema*/,CString& /*p_tablename*/) const
+XString 
+SQLInfoPostgreSQL::GetCATALOGColumnList(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
   return "";
 //   p_schema.MakeLower();
 //   p_tablename.MakeLower();
 // 
-//   CString query =  "SELECT att.attname\n"
+//   XString query =  "SELECT att.attname\n"
 //                    "      ,att.attnum\n"
 //                    "      ,typname\n"
 //                    "      ,typlen\n"
@@ -774,17 +774,17 @@ SQLInfoPostgreSQL::GetCATALOGColumnList(CString& /*p_schema*/,CString& /*p_table
 //   return query;
 }
 
-CString 
-SQLInfoPostgreSQL::GetCATALOGColumnAttributes(CString& /*p_schema*/,CString& /*p_tablename*/,CString& /*p_columnname*/) const
+XString 
+SQLInfoPostgreSQL::GetCATALOGColumnAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_columnname*/) const
 {
   // Standard ODBC driver suffices
   return "";
 }
 
-CString 
+XString 
 SQLInfoPostgreSQL::GetCATALOGColumnCreate(MetaColumn& p_column) const
 {
-  CString sql = "ALTER TABLE "  + p_column.m_schema + "." + p_column.m_table  + "\n"
+  XString sql = "ALTER TABLE "  + p_column.m_schema + "." + p_column.m_table  + "\n"
                 "  ADD COLUMN " + p_column.m_column + " " + p_column.m_typename;
   if(p_column.m_columnSize)
   {
@@ -810,10 +810,10 @@ SQLInfoPostgreSQL::GetCATALOGColumnCreate(MetaColumn& p_column) const
   return sql;
 }
 
-CString 
+XString 
 SQLInfoPostgreSQL::GetCATALOGColumnAlter(MetaColumn& p_column) const
 {
-  CString sql("ALTER TABLE  " + p_column.m_schema + "." + p_column.m_table + "\n"
+  XString sql("ALTER TABLE  " + p_column.m_schema + "." + p_column.m_table + "\n"
               "ALTER COLUMN " + p_column.m_column + " SET DATA TYPE " + p_column.m_typename);
   p_column.GetPrecisionAndScale(sql);
 
@@ -822,10 +822,10 @@ SQLInfoPostgreSQL::GetCATALOGColumnAlter(MetaColumn& p_column) const
   return sql;
 }
 
-CString 
-SQLInfoPostgreSQL::GetCATALOGColumnRename(CString p_schema,CString p_tablename,CString p_columnname,CString p_newname,CString p_datatype) const
+XString 
+SQLInfoPostgreSQL::GetCATALOGColumnRename(XString p_schema,XString p_tablename,XString p_columnname,XString p_newname,XString p_datatype) const
 {
-  CString sqlCode = "ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+  XString sqlCode = "ALTER TABLE " + p_schema + "." + p_tablename + "\n"
                     "  ADD " + p_newname + " " + p_datatype + ";\n";
   sqlCode        += "UPDATE " + p_schema + "." + p_tablename + "\n"
                     "   SET " + p_newname + " = " + p_columnname + ";\n";
@@ -834,10 +834,10 @@ SQLInfoPostgreSQL::GetCATALOGColumnRename(CString p_schema,CString p_tablename,C
   return sqlCode;
 }
 
-CString
-SQLInfoPostgreSQL::GetCATALOGColumnDrop(CString p_schema,CString p_tablename,CString p_columnname) const
+XString
+SQLInfoPostgreSQL::GetCATALOGColumnDrop(XString p_schema,XString p_tablename,XString p_columnname) const
 {
-  CString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+  XString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
               " DROP COLUMN " + p_columnname);
   return sql;
 }
@@ -846,19 +846,19 @@ SQLInfoPostgreSQL::GetCATALOGColumnDrop(CString p_schema,CString p_tablename,CSt
 // ALL INDICES FUNCTIONS
 
 // All index functions
-CString
-SQLInfoPostgreSQL::GetCATALOGIndexExists(CString p_schema,CString p_tablename,CString p_indexname) const
+XString
+SQLInfoPostgreSQL::GetCATALOGIndexExists(XString p_schema,XString p_tablename,XString p_indexname) const
 {
   return "";
 }
 
-CString
-SQLInfoPostgreSQL::GetCATALOGIndexList(CString& p_schema,CString& p_tablename) const
+XString
+SQLInfoPostgreSQL::GetCATALOGIndexList(XString& p_schema,XString& p_tablename) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
 
-  CString query =  "SELECT cli.relname\n"
+  XString query =  "SELECT cli.relname\n"
                    "      ,att.attname\n"
                    "      ,att.attnum\n"
                    "      ,idx.indisunique\n"
@@ -881,18 +881,18 @@ SQLInfoPostgreSQL::GetCATALOGIndexList(CString& p_schema,CString& p_tablename) c
   return query;
 }
 
-CString
-SQLInfoPostgreSQL::GetCATALOGIndexAttributes(CString& /*p_schema*/,CString& /*p_tablename*/,CString& /*p_indexname*/) const
+XString
+SQLInfoPostgreSQL::GetCATALOGIndexAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_indexname*/) const
 {
   return "";
 }
 
-CString
+XString
 SQLInfoPostgreSQL::GetCATALOGIndexCreate(MIndicesMap& p_indices) const
 {
   // Get SQL to create an index for a table
   // CREATE [UNIQUE] INDEX [<schema>.]indexname ON [<schema>.]tablename(column [ASC|DESC] [,...]);
-  CString query;
+  XString query;
   for(auto& index : p_indices)
   {
     if(index.m_position == 1)
@@ -931,15 +931,15 @@ SQLInfoPostgreSQL::GetCATALOGIndexCreate(MIndicesMap& p_indices) const
   return query;
 }
 
-CString
-SQLInfoPostgreSQL::GetCATALOGIndexDrop(CString p_schema,CString /*p_tablename*/,CString p_indexname) const
+XString
+SQLInfoPostgreSQL::GetCATALOGIndexDrop(XString p_schema,XString /*p_tablename*/,XString p_indexname) const
 {
-  CString sql = "DROP INDEX " + p_schema + "." + p_indexname;
+  XString sql = "DROP INDEX " + p_schema + "." + p_indexname;
   return sql;
 }
 
 // Get extra filter expression for an index column
-CString
+XString
 SQLInfoPostgreSQL::GetCATALOGIndexFilter(MetaIndex& /*p_index*/) const
 {
   return "";
@@ -948,13 +948,13 @@ SQLInfoPostgreSQL::GetCATALOGIndexFilter(MetaIndex& /*p_index*/) const
 //////////////////////////////////////////////////////////////////////////
 // ALL PRIMARY KEY FUNCTIONS
 
-CString
-SQLInfoPostgreSQL::GetCATALOGPrimaryExists(CString p_schema,CString p_tablename) const
+XString
+SQLInfoPostgreSQL::GetCATALOGPrimaryExists(XString p_schema,XString p_tablename) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
 
-  CString query = "SELECT COUNT(*)\n"
+  XString query = "SELECT COUNT(*)\n"
                   "  FROM pg_class      tab\n"
                   "      ,pg_constraint con\n"
                   "      ,pg_namespaces sch\n"
@@ -966,13 +966,13 @@ SQLInfoPostgreSQL::GetCATALOGPrimaryExists(CString p_schema,CString p_tablename)
   return query;
 }
 
-CString
-SQLInfoPostgreSQL::GetCATALOGPrimaryAttributes(CString& /*p_schema*/,CString& /*p_tablename*/) const
+XString
+SQLInfoPostgreSQL::GetCATALOGPrimaryAttributes(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
 //   p_schema.MakeLower();
 //   p_tablename.MakeLower();
 // 
-//   CString query = "SELECT con.conname       as constraint_name\n"
+//   XString query = "SELECT con.conname       as constraint_name\n"
 //                   "      ,con.conname       as index_name\n"
 //                   "      ,con.condeferrable as deferrable\n"
 //                   "      ,con.deferred      as initially_deferred\n"
@@ -988,10 +988,10 @@ SQLInfoPostgreSQL::GetCATALOGPrimaryAttributes(CString& /*p_schema*/,CString& /*
   return "";
 }
 
-CString
+XString
 SQLInfoPostgreSQL::GetCATALOGPrimaryCreate(MPrimaryMap& p_primaries) const
 {
-  CString query("ALTER TABLE ");
+  XString query("ALTER TABLE ");
 
   for(auto& prim : p_primaries)
   {
@@ -1016,10 +1016,10 @@ SQLInfoPostgreSQL::GetCATALOGPrimaryCreate(MPrimaryMap& p_primaries) const
   return query;
 }
 
-CString
-SQLInfoPostgreSQL::GetCATALOGPrimaryDrop(CString p_schema,CString p_tablename,CString p_constraintname) const
+XString
+SQLInfoPostgreSQL::GetCATALOGPrimaryDrop(XString p_schema,XString p_tablename,XString p_constraintname) const
 {
-  CString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+  XString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
               " DROP CONSTRAINT " + p_constraintname);
   return sql;
 }
@@ -1027,14 +1027,14 @@ SQLInfoPostgreSQL::GetCATALOGPrimaryDrop(CString p_schema,CString p_tablename,CS
 //////////////////////////////////////////////////////////////////////////
 // ALL FOREIGN KEY FUNCTIONS
 
-CString
-SQLInfoPostgreSQL::GetCATALOGForeignExists(CString p_schema,CString p_tablename,CString p_constraintname) const
+XString
+SQLInfoPostgreSQL::GetCATALOGForeignExists(XString p_schema,XString p_tablename,XString p_constraintname) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
   p_constraintname.MakeLower();
 
-  CString sql;
+  XString sql;
   sql.Format("SELECT COUNT(*)\n"
              "  FROM pg_constraint con\n"
              "      ,pg_class      cla\n"
@@ -1051,25 +1051,25 @@ SQLInfoPostgreSQL::GetCATALOGForeignExists(CString p_schema,CString p_tablename,
   return sql;
 }
 
-CString
-SQLInfoPostgreSQL::GetCATALOGForeignList(CString& p_schema,CString& p_tablename,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
+XString
+SQLInfoPostgreSQL::GetCATALOGForeignList(XString& p_schema,XString& p_tablename,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
 {
-  CString constraint;
+  XString constraint;
   return GetCATALOGForeignAttributes(p_schema,p_tablename,constraint,p_maxColumns);
 }
 
-CString
-SQLInfoPostgreSQL::GetCATALOGForeignAttributes(CString& p_schema,CString& p_tablename,CString& p_constraint,bool p_referenced /*=false*/,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
+XString
+SQLInfoPostgreSQL::GetCATALOGForeignAttributes(XString& p_schema,XString& p_tablename,XString& p_constraint,bool p_referenced /*=false*/,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
   p_constraint.MakeLower();
 
-  CString query;
+  XString query;
 
   for(int ind = 1; ind <= p_maxColumns; ++ind)
   {
-    CString part;
+    XString part;
     part.Format("SELECT current_database() as primary_catalog_name\n"
                 "      ,psc.nspname        as primary_schema_name\n"
                 "      ,pri.relname        as primary_table_name\n"
@@ -1174,15 +1174,15 @@ SQLInfoPostgreSQL::GetCATALOGForeignAttributes(CString& p_schema,CString& p_tabl
   return query;
 }
 
-CString
+XString
 SQLInfoPostgreSQL::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
 {
   // Get first record
   MetaForeign& foreign = p_foreigns.front();
 
   // Construct the correct tablename
-  CString table(foreign.m_fkTableName);
-  CString primary(foreign.m_pkTableName);
+  XString table(foreign.m_fkTableName);
+  XString primary(foreign.m_pkTableName);
   if(!foreign.m_fkSchemaName.IsEmpty())
   {
     table = foreign.m_fkSchemaName + "." + table;
@@ -1193,7 +1193,7 @@ SQLInfoPostgreSQL::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
   }
 
   // The base foreign key command
-  CString query = "ALTER TABLE " + table + "\n"
+  XString query = "ALTER TABLE " + table + "\n"
                   "  ADD CONSTRAINT " + foreign.m_foreignConstraint + "\n"
                   "      FOREIGN KEY (";
 
@@ -1257,7 +1257,7 @@ SQLInfoPostgreSQL::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
   return query;
 }
 
-CString
+XString
 SQLInfoPostgreSQL::GetCATALOGForeignAlter(MForeignMap& p_original,MForeignMap& p_requested) const
 {
   // Make sure we have both
@@ -1270,14 +1270,14 @@ SQLInfoPostgreSQL::GetCATALOGForeignAlter(MForeignMap& p_original,MForeignMap& p
   MetaForeign& requested = p_requested.front();
 
   // Construct the correct tablename
-  CString table(original.m_fkTableName);
+  XString table(original.m_fkTableName);
   if(!original.m_fkSchemaName.IsEmpty())
   {
     table = original.m_fkSchemaName + "." + table;
   }
 
   // The base foreign key command
-  CString query = "ALTER TABLE " + table + "\n"
+  XString query = "ALTER TABLE " + table + "\n"
                   "ALTER CONSTRAINT " + original.m_foreignConstraint + "\n";
 
   // Add all relevant options
@@ -1300,10 +1300,10 @@ SQLInfoPostgreSQL::GetCATALOGForeignAlter(MForeignMap& p_original,MForeignMap& p
   return query;
 }
 
-CString
-SQLInfoPostgreSQL::GetCATALOGForeignDrop(CString p_schema,CString p_tablename,CString p_constraintname) const
+XString
+SQLInfoPostgreSQL::GetCATALOGForeignDrop(XString p_schema,XString p_tablename,XString p_constraintname) const
 {
-  CString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
+  XString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
               " DROP CONSTRAINT " + p_constraintname);
   return sql;
 }
@@ -1311,13 +1311,13 @@ SQLInfoPostgreSQL::GetCATALOGForeignDrop(CString p_schema,CString p_tablename,CS
 //////////////////////////////////////////////////////////////////////////
 // ALL TRIGGER FUNCTIONS
 
-CString
-SQLInfoPostgreSQL::GetCATALOGTriggerExists(CString p_schema, CString p_tablename, CString p_triggername) const
+XString
+SQLInfoPostgreSQL::GetCATALOGTriggerExists(XString p_schema, XString p_tablename, XString p_triggername) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
   p_triggername.MakeLower();
-  CString sql = "SELECT COUNT(*)\n"
+  XString sql = "SELECT COUNT(*)\n"
                 "  FROM information_schema.triggers\n"
                 " WHERE event_object_schema = '" + p_schema + "'\n"
                 "   AND event_object_table  = '" + p_tablename + "'\n"
@@ -1325,20 +1325,20 @@ SQLInfoPostgreSQL::GetCATALOGTriggerExists(CString p_schema, CString p_tablename
   return sql;
 }
 
-CString
-SQLInfoPostgreSQL::GetCATALOGTriggerList(CString& p_schema,CString& p_tablename) const
+XString
+SQLInfoPostgreSQL::GetCATALOGTriggerList(XString& p_schema,XString& p_tablename) const
 {
-  CString triggername;
+  XString triggername;
   return GetCATALOGTriggerAttributes(p_schema,p_tablename,triggername);
 }
 
-CString
-SQLInfoPostgreSQL::GetCATALOGTriggerAttributes(CString& p_schema,CString& p_tablename,CString& p_triggername) const
+XString
+SQLInfoPostgreSQL::GetCATALOGTriggerAttributes(XString& p_schema,XString& p_tablename,XString& p_triggername) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
   p_triggername.MakeLower();
-  CString sql;
+  XString sql;
   sql = "SELECT event_object_catalog\n"
         "      ,event_object_schema\n"
         "      ,event_object_table\n"
@@ -1385,14 +1385,14 @@ SQLInfoPostgreSQL::GetCATALOGTriggerAttributes(CString& p_schema,CString& p_tabl
   return sql;
 }
 
-CString
+XString
 SQLInfoPostgreSQL::GetCATALOGTriggerCreate(MetaTrigger& /*p_trigger*/) const
 {
   return "";
 }
 
-CString
-SQLInfoPostgreSQL::GetCATALOGTriggerDrop(CString p_schema, CString p_tablename, CString p_triggername) const
+XString
+SQLInfoPostgreSQL::GetCATALOGTriggerDrop(XString p_schema, XString p_tablename, XString p_triggername) const
 {
   return "";
 }
@@ -1400,21 +1400,21 @@ SQLInfoPostgreSQL::GetCATALOGTriggerDrop(CString p_schema, CString p_tablename, 
 //////////////////////////////////////////////////////////////////////////
 // ALL SEQUENCE FUNCTIONS
 
-CString
-SQLInfoPostgreSQL::GetCATALOGSequenceExists(CString p_schema, CString p_sequence) const
+XString
+SQLInfoPostgreSQL::GetCATALOGSequenceExists(XString p_schema, XString p_sequence) const
 {
   p_schema.MakeLower();
   p_sequence.MakeLower();
 
-  CString sql("SELECT COUNT(*)\n"
+  XString sql("SELECT COUNT(*)\n"
               "  FROM information_schema.sequences\n"
               " WHERE sequence_schema = '" + p_schema   + "'\n"
               "   AND sequence_name   = '" + p_sequence + "'");
   return sql;
 }
 
-CString
-SQLInfoPostgreSQL::GetCATALOGSequenceList(CString& p_schema,CString& p_pattern) const
+XString
+SQLInfoPostgreSQL::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern) const
 {
   p_schema.MakeLower();
   p_pattern.MakeLower();
@@ -1423,7 +1423,7 @@ SQLInfoPostgreSQL::GetCATALOGSequenceList(CString& p_schema,CString& p_pattern) 
     p_pattern = "%" + p_pattern + "%";
   }
 
-  CString sql = "SELECT ''              AS catalog_name\n"
+  XString sql = "SELECT ''              AS catalog_name\n"
                 "      ,sequence_schema AS schema_name\n"
                 "      ,sequence_name\n"
                 "      ,start_value     AS current_value\n"
@@ -1448,13 +1448,13 @@ SQLInfoPostgreSQL::GetCATALOGSequenceList(CString& p_schema,CString& p_pattern) 
   return sql;
 }
 
-CString
-SQLInfoPostgreSQL::GetCATALOGSequenceAttributes(CString& p_schema,CString& p_sequence) const
+XString
+SQLInfoPostgreSQL::GetCATALOGSequenceAttributes(XString& p_schema,XString& p_sequence) const
 {
   p_schema.MakeLower();
   p_sequence.MakeLower();
 
-  CString sql = "SELECT ''              AS catalog_name\n"
+  XString sql = "SELECT ''              AS catalog_name\n"
                 "      ,sequence_schema AS schema_name\n"
                 "      ,sequence_name\n"
                 "      ,start_value     AS current_value\n"
@@ -1479,10 +1479,10 @@ SQLInfoPostgreSQL::GetCATALOGSequenceAttributes(CString& p_schema,CString& p_seq
   return sql;
 }
 
-CString
+XString
 SQLInfoPostgreSQL::GetCATALOGSequenceCreate(MetaSequence& p_sequence) const
 {
-  CString sql("CREATE SEQUENCE ");
+  XString sql("CREATE SEQUENCE ");
 
   if (!p_sequence.m_schemaName.IsEmpty())
   {
@@ -1498,39 +1498,39 @@ SQLInfoPostgreSQL::GetCATALOGSequenceCreate(MetaSequence& p_sequence) const
   return sql;
 }
 
-CString
-SQLInfoPostgreSQL::GetCATALOGSequenceDrop(CString p_schema, CString p_sequence) const
+XString
+SQLInfoPostgreSQL::GetCATALOGSequenceDrop(XString p_schema, XString p_sequence) const
 {
-  CString sql("DROP SEQUENCE " + p_schema + "." + p_sequence);
+  XString sql("DROP SEQUENCE " + p_schema + "." + p_sequence);
   return  sql;
 }
 
 //////////////////////////////////////////////////////////////////////////
 // ALL VIEW FUNCTIONS
 
-CString 
-SQLInfoPostgreSQL::GetCATALOGViewExists(CString& p_schema,CString& p_viewname) const
+XString 
+SQLInfoPostgreSQL::GetCATALOGViewExists(XString& p_schema,XString& p_viewname) const
 {
   p_schema.Empty();  // do not bind as parameter
   p_viewname.MakeLower();
-  CString sql("SELECT COUNT(*)\n"
+  XString sql("SELECT COUNT(*)\n"
               "  FROM pg_views\n" 
               " WHERE view_name = ?");
   return sql;
 }
 
-CString 
-SQLInfoPostgreSQL::GetCATALOGViewList(CString& p_schema,CString& p_pattern) const
+XString 
+SQLInfoPostgreSQL::GetCATALOGViewList(XString& p_schema,XString& p_pattern) const
 {
   return GetCATALOGViewAttributes(p_schema,p_pattern);
 }
 
-CString 
-SQLInfoPostgreSQL::GetCATALOGViewAttributes(CString& p_schema,CString& p_viewname) const
+XString 
+SQLInfoPostgreSQL::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewname) const
 {
   p_schema.MakeLower();
   p_viewname.MakeLower();
-  CString query = "SELECT current_catalog as table_catalog\n"
+  XString query = "SELECT current_catalog as table_catalog\n"
                   "      ,sch.nspname     as table_schema\n"
                   "      ,tab.relname     as table_name\n"
                   "      ,'TABLE'         as object_type\n"
@@ -1561,49 +1561,49 @@ SQLInfoPostgreSQL::GetCATALOGViewAttributes(CString& p_schema,CString& p_viewnam
   return query;
 }
 
-CString
-SQLInfoPostgreSQL::GetCATALOGViewText(CString& /*p_schema*/,CString& /*p_viewname*/) const
+XString
+SQLInfoPostgreSQL::GetCATALOGViewText(XString& /*p_schema*/,XString& /*p_viewname*/) const
 {
   // Cannot query this, Use ODBC functions
   return "";
 }
 
-CString
-SQLInfoPostgreSQL::GetCATALOGViewCreate(CString p_schema,CString p_viewname,CString p_contents) const
+XString
+SQLInfoPostgreSQL::GetCATALOGViewCreate(XString p_schema,XString p_viewname,XString p_contents) const
 {
   return "CREATE OR REPLACE VIEW " + p_schema + "." + p_viewname + "\n" + p_contents;
 }
 
-CString 
-SQLInfoPostgreSQL::GetCATALOGViewRename(CString p_schema,CString p_viewname,CString p_newname)    const
+XString 
+SQLInfoPostgreSQL::GetCATALOGViewRename(XString p_schema,XString p_viewname,XString p_newname)    const
 {
   return "";
 }
 
-CString 
-SQLInfoPostgreSQL::GetCATALOGViewDrop(CString p_schema,CString p_viewname,CString& p_precursor) const
+XString 
+SQLInfoPostgreSQL::GetCATALOGViewDrop(XString p_schema,XString p_viewname,XString& p_precursor) const
 {
   p_precursor.Empty();
   return "DROP VIEW " + p_schema + "." + p_viewname;
 }
 
 // All Privilege functions
-CString
-SQLInfoPostgreSQL::GetCATALOGTablePrivileges(CString& /*p_schema*/,CString& /*p_tablename*/) const
+XString
+SQLInfoPostgreSQL::GetCATALOGTablePrivileges(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
   return "";
 }
 
-CString 
-SQLInfoPostgreSQL::GetCATALOGColumnPrivileges(CString& /*p_schema*/,CString& /*p_tablename*/,CString& /*p_columnname*/) const
+XString 
+SQLInfoPostgreSQL::GetCATALOGColumnPrivileges(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_columnname*/) const
 {
   return "";
 }
 
-CString 
-SQLInfoPostgreSQL::GetCatalogGrantPrivilege(CString p_schema,CString p_objectname,CString p_privilege,CString p_grantee,bool p_grantable)
+XString 
+SQLInfoPostgreSQL::GetCatalogGrantPrivilege(XString p_schema,XString p_objectname,XString p_privilege,XString p_grantee,bool p_grantable)
 {
-  CString sql;
+  XString sql;
   sql.Format("GRANT %s ON %s.%s TO %s",p_privilege.GetString(),p_schema.GetString(),p_objectname.GetString(),p_grantee.GetString());
   if(p_grantable)
   {
@@ -1612,10 +1612,10 @@ SQLInfoPostgreSQL::GetCatalogGrantPrivilege(CString p_schema,CString p_objectnam
   return sql;
 }
 
-CString 
-SQLInfoPostgreSQL::GetCatalogRevokePrivilege(CString p_schema,CString p_objectname,CString p_privilege,CString p_grantee)
+XString 
+SQLInfoPostgreSQL::GetCatalogRevokePrivilege(XString p_schema,XString p_objectname,XString p_privilege,XString p_grantee)
 {
-  CString sql;
+  XString sql;
   sql.Format("REVOKE %s ON %s.%s FROM %s",p_privilege.GetString(),p_schema.GetString(),p_objectname.GetString(),p_grantee.GetString());
   return sql;
 }
@@ -1649,8 +1649,8 @@ SQLInfoPostgreSQL::GetCatalogRevokePrivilege(CString p_schema,CString p_objectna
 //
 //////////////////////////////////////////////////////////////////////////
 
-CString
-SQLInfoPostgreSQL::GetPSMProcedureExists(CString p_schema, CString p_procedure) const
+XString
+SQLInfoPostgreSQL::GetPSMProcedureExists(XString p_schema, XString p_procedure) const
 {
   p_schema.MakeLower();
   p_procedure.MakeLower();
@@ -1659,19 +1659,19 @@ SQLInfoPostgreSQL::GetPSMProcedureExists(CString p_schema, CString p_procedure) 
          " WHERE proname = '" + p_procedure + "'\n;";
 }
 
-CString
-SQLInfoPostgreSQL::GetPSMProcedureList(CString& /*p_schema*/) const
+XString
+SQLInfoPostgreSQL::GetPSMProcedureList(XString& /*p_schema*/) const
 {
   return "";
 }
 
-CString
-SQLInfoPostgreSQL::GetPSMProcedureAttributes(CString& /*p_schema*/,CString& /*p_procedure*/) const
+XString
+SQLInfoPostgreSQL::GetPSMProcedureAttributes(XString& /*p_schema*/,XString& /*p_procedure*/) const
 {
 //   p_schema.MakeLower();
 //   p_procedure.MakeLower();
 // 
-//   CString sql = "SELECT TEXT from ALL_SOURCE "
+//   XString sql = "SELECT TEXT from ALL_SOURCE "
 //                 "WHERE type = 'FUNCTION' "
 //                 "AND name  = '" + p_procedure + "'\n"
 //                 "AND owner = '" + p_schema    + "'";
@@ -1679,37 +1679,37 @@ SQLInfoPostgreSQL::GetPSMProcedureAttributes(CString& /*p_schema*/,CString& /*p_
   return "";
 }
 
-CString
-SQLInfoPostgreSQL::GetPSMProcedureSourcecode(CString p_schema, CString p_procedure) const
+XString
+SQLInfoPostgreSQL::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure) const
 {
   return "";
 }
 
-CString
+XString
 SQLInfoPostgreSQL::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
 {
   return "";
 }
 
-CString
-SQLInfoPostgreSQL::GetPSMProcedureDrop(CString p_schema, CString p_procedure) const
+XString
+SQLInfoPostgreSQL::GetPSMProcedureDrop(XString p_schema, XString p_procedure) const
 {
   return "";
 }
 
-CString
-SQLInfoPostgreSQL::GetPSMProcedureErrors(CString p_schema,CString p_procedure) const
+XString
+SQLInfoPostgreSQL::GetPSMProcedureErrors(XString p_schema,XString p_procedure) const
 {
   return "";
 }
 
 // And it's parameters
-CString
-SQLInfoPostgreSQL::GetPSMProcedureParameters(CString& p_schema,CString& p_procedure) const
+XString
+SQLInfoPostgreSQL::GetPSMProcedureParameters(XString& p_schema,XString& p_procedure) const
 {
   p_schema.MakeLower();
   p_procedure.MakeLower();
-  CString sql;
+  XString sql;
 
   sql = "SELECT par.specific_catalog\n"
         "      ,par.specific_schema\n"
@@ -1758,17 +1758,17 @@ SQLInfoPostgreSQL::GetPSMProcedureParameters(CString& p_schema,CString& p_proced
 //
 //////////////////////////////////////////////////////////////////////////
 
-CString
+XString
 SQLInfoPostgreSQL::GetPSMDeclaration(bool    /*p_first*/
-                                    ,CString p_variable
+                                    ,XString p_variable
                                     ,int     p_datatype
                                     ,int     p_precision /*= 0 */
                                     ,int     p_scale     /*= 0 */
-                                    ,CString p_default   /*= ""*/
-                                    ,CString p_domain    /*= ""*/
-                                    ,CString p_asColumn  /*= ""*/) const
+                                    ,XString p_default   /*= ""*/
+                                    ,XString p_domain    /*= ""*/
+                                    ,XString p_asColumn  /*= ""*/) const
 {
-  CString line;
+  XString line;
   line.Format("%s ",p_variable.GetString());
 
   if(p_datatype)
@@ -1800,10 +1800,10 @@ SQLInfoPostgreSQL::GetPSMDeclaration(bool    /*p_first*/
   return line;
 }
 
-CString
-SQLInfoPostgreSQL::GetPSMAssignment(CString p_variable,CString p_statement /*=""*/) const
+XString
+SQLInfoPostgreSQL::GetPSMAssignment(XString p_variable,XString p_statement /*=""*/) const
 {
-  CString line(p_variable);
+  XString line(p_variable);
   line += " := ";
   if(!p_statement.IsEmpty())
   {
@@ -1813,61 +1813,61 @@ SQLInfoPostgreSQL::GetPSMAssignment(CString p_variable,CString p_statement /*=""
   return line;
 }
 
-CString
-SQLInfoPostgreSQL::GetPSMIF(CString p_condition) const
+XString
+SQLInfoPostgreSQL::GetPSMIF(XString p_condition) const
 {
-  CString line("IF (");
+  XString line("IF (");
   line += p_condition;
   line += ") THEN\n";
   return line;
 }
 
-CString
+XString
 SQLInfoPostgreSQL::GetPSMIFElse() const
 {
   return "ELSE\n";
 }
 
-CString
+XString
 SQLInfoPostgreSQL::GetPSMIFEnd() const
 {
   return "END IF;\n";
 }
 
-CString
-SQLInfoPostgreSQL::GetPSMWhile(CString p_condition) const
+XString
+SQLInfoPostgreSQL::GetPSMWhile(XString p_condition) const
 {
   return "WHILE (" + p_condition + ") LOOP\n";
 }
 
-CString
+XString
 SQLInfoPostgreSQL::GetPSMWhileEnd() const
 {
   return "END LOOP;\n";
 }
 
-CString
+XString
 SQLInfoPostgreSQL::GetPSMLOOP() const
 {
   return "LOOP\n";
 }
 
-CString
+XString
 SQLInfoPostgreSQL::GetPSMLOOPEnd() const
 {
   return "END LOOP;\n";
 }
 
-CString
+XString
 SQLInfoPostgreSQL::GetPSMBREAK() const
 {
   return "EXIT;\n";
 }
 
-CString
-SQLInfoPostgreSQL::GetPSMRETURN(CString p_statement /*= ""*/) const
+XString
+SQLInfoPostgreSQL::GetPSMRETURN(XString p_statement /*= ""*/) const
 {
-  CString line("RETURN");
+  XString line("RETURN");
   if(!p_statement.IsEmpty())
   {
     line += " " + p_statement;
@@ -1876,10 +1876,10 @@ SQLInfoPostgreSQL::GetPSMRETURN(CString p_statement /*= ""*/) const
   return line;
 }
 
-CString
-SQLInfoPostgreSQL::GetPSMExecute(CString p_procedure,MParameterMap& p_parameters) const
+XString
+SQLInfoPostgreSQL::GetPSMExecute(XString p_procedure,MParameterMap& p_parameters) const
 {
-  CString line;
+  XString line;
   line.Format("SELECT %s(",p_procedure.GetString());
   bool doMore = false;
 
@@ -1895,17 +1895,17 @@ SQLInfoPostgreSQL::GetPSMExecute(CString p_procedure,MParameterMap& p_parameters
 }
 
 // The CURSOR
-CString
-SQLInfoPostgreSQL::GetPSMCursorDeclaration(CString p_cursorname,CString p_select) const
+XString
+SQLInfoPostgreSQL::GetPSMCursorDeclaration(XString p_cursorname,XString p_select) const
 {
   return "DECLARE " + p_cursorname + " CURSOR FOR " + p_select + ";";
 }
 
-CString
-SQLInfoPostgreSQL::GetPSMCursorFetch(CString p_cursorname,std::vector<CString>& /*p_columnnames*/,std::vector<CString>& p_variablenames) const
+XString
+SQLInfoPostgreSQL::GetPSMCursorFetch(XString p_cursorname,std::vector<XString>& /*p_columnnames*/,std::vector<XString>& p_variablenames) const
 {
   bool moreThenOne = false;
-  CString query = "OPEN  " + p_cursorname + ";\n"
+  XString query = "OPEN  " + p_cursorname + ";\n"
                   "FETCH " + p_cursorname + " INTO ";
 
   for(auto& var : p_variablenames)
@@ -1921,22 +1921,22 @@ SQLInfoPostgreSQL::GetPSMCursorFetch(CString p_cursorname,std::vector<CString>& 
 //////////////////////////////////////////////////////////////////////////
 // PSM Exceptions
 
-CString
+XString
 SQLInfoPostgreSQL::GetPSMExceptionCatchNoData() const
 {
   return "EXCEPTION WHEN 100 THEN\n";
   // Followed by block and 'END;'
 }
 
-CString
-SQLInfoPostgreSQL::GetPSMExceptionCatch(CString p_sqlState) const
+XString
+SQLInfoPostgreSQL::GetPSMExceptionCatch(XString p_sqlState) const
 {
   return "EXCEPTION WHEN " + p_sqlState + " THEN\n";
   // Followed by block and 'END;'
 }
 
-CString
-SQLInfoPostgreSQL::GetPSMExceptionRaise(CString p_sqlState) const
+XString
+SQLInfoPostgreSQL::GetPSMExceptionRaise(XString p_sqlState) const
 {
   return "RAISE EXCEPTION SQLSTATE " + p_sqlState + ";\n";
 }
@@ -1955,10 +1955,10 @@ SQLInfoPostgreSQL::GetPSMExceptionRaise(CString p_sqlState) const
 //
 //////////////////////////////////////////////////////////////////////////
 
-CString
+XString
 SQLInfoPostgreSQL::GetSESSIONMyself() const
 {
-  CString query = "SELECT procpid\n"
+  XString query = "SELECT procpid\n"
                   "      ,user\n"
                   "      ,datname\n"
                   "      ,current_timestamp\n"  // moment
@@ -1970,25 +1970,25 @@ SQLInfoPostgreSQL::GetSESSIONMyself() const
   return query;
 }
 
-CString
-SQLInfoPostgreSQL::GetSESSIONExists(CString p_sessionID) const
+XString
+SQLInfoPostgreSQL::GetSESSIONExists(XString p_sessionID) const
 {
-  CString sql = "SELECT COUNT(*)\n"
+  XString sql = "SELECT COUNT(*)\n"
                 "  FROM pg_stat_activity\n"
                 " WHERE procpid = " + p_sessionID;
   return sql;
 }
 
-CString
+XString
 SQLInfoPostgreSQL::GetSESSIONList() const
 {
   return GetSESSIONAttributes("");
 }
 
-CString
-SQLInfoPostgreSQL::GetSESSIONAttributes(CString p_sessionID) const
+XString
+SQLInfoPostgreSQL::GetSESSIONAttributes(XString p_sessionID) const
 {
-  CString sql = "SELECT procpid\n"
+  XString sql = "SELECT procpid\n"
                 "      ,user\n"
                 "      ,datname\n"
                 "      ,current_timestamp\n"  // moment
@@ -2006,13 +2006,13 @@ SQLInfoPostgreSQL::GetSESSIONAttributes(CString p_sessionID) const
 //////////////////////////////////////////////////////////////////////////
 // Transactions
 
-CString
+XString
 SQLInfoPostgreSQL::GetSESSIONConstraintsDeferred() const
 {
   return "set transaction deferrable";
 }
 
-CString
+XString
 SQLInfoPostgreSQL::GetSESSIONConstraintsImmediate() const
 {
   return "set transaction not deferrable";
@@ -2027,14 +2027,14 @@ SQLInfoPostgreSQL::GetSESSIONConstraintsImmediate() const
 
 // Calling a stored function or procedure if the RDBMS does not support ODBC call escapes
 SQLVariant*
-SQLInfoPostgreSQL::DoSQLCall(SQLQuery* p_query,CString& p_schema,CString& p_procedure)
+SQLInfoPostgreSQL::DoSQLCall(SQLQuery* p_query,XString& p_schema,XString& p_procedure)
 {
   // PostgreSQL does not support the return parameter of the "{[?=]CALL procedure(?,?)}" sequence
   // instead you have to do a "SELECT procedure(?,?)" 
   // The result set is the set of output parameters
   // DOES ONLY SUPPORT A SINGLE ROW RESULT SET!!
   SQLQuery query(m_database);
-  CString sql   = ConstructSQLForProcedureCall(p_query,&query,p_schema,p_procedure);
+  XString sql   = ConstructSQLForProcedureCall(p_query,&query,p_schema,p_procedure);
   int numReturn = GetCountReturnParameters(p_query);
 
   query.DoSQLStatement(sql);
@@ -2093,7 +2093,7 @@ SQLInfoPostgreSQL::DoSQLCall(SQLQuery* p_query,CString& p_schema,CString& p_proc
 
 // Calling a stored function with named parameters, returning a value
 SQLVariant*
-SQLInfoPostgreSQL::DoSQLCallNamedParameters(SQLQuery* /*p_query*/,CString& /*p_schema*/,CString& /*p_procedure*/)
+SQLInfoPostgreSQL::DoSQLCallNamedParameters(SQLQuery* /*p_query*/,XString& /*p_schema*/,XString& /*p_procedure*/)
 {
   return nullptr;
 }
@@ -2126,14 +2126,14 @@ SQLInfoPostgreSQL::GetCountReturnParameters(SQLQuery* p_query)
 }
 
 // Construct the "SELECT * FROM procedure(?,?)" (input parameters ONLY!)
-CString
+XString
 SQLInfoPostgreSQL::ConstructSQLForProcedureCall(SQLQuery* p_query
                                                ,SQLQuery* p_thecall
-                                               ,CString&  p_schema
-                                               ,CString&  p_procedure)
+                                               ,XString&  p_schema
+                                               ,XString&  p_procedure)
 {
   // Start with select form
-  CString sql = "SELECT ";
+  XString sql = "SELECT ";
   if(!p_schema.IsEmpty())
   {
     sql += p_schema;

@@ -2,7 +2,7 @@
 //
 // File: SQLGuid.cpp
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -59,7 +59,7 @@ SQLGuid::SQLGuid(const SQLGUID* p_guid)
 }
 
 // XTOR from string
-SQLGuid::SQLGuid(const CString p_string)
+SQLGuid::SQLGuid(const XString p_string)
 {
   Set(p_string);
 }
@@ -74,7 +74,7 @@ SQLGuid::New()
 
 // Set from an internal string
 bool
-SQLGuid::Set(const CString p_string)
+SQLGuid::Set(const XString p_string)
 {
   m_initialized = false;
   if(UuidFromString((unsigned char*)p_string.GetString(),&m_guid) == RPC_S_OK)
@@ -99,19 +99,19 @@ SQLGuid::IsValid()
   return m_initialized;
 }
 
-// Get as a CString
-CString 
+// Get as a XString
+XString 
 SQLGuid::AsString()
 {
-  CString guid;
+  XString guid;
   if(m_initialized)
   {
     RPC_CSTR guidString = nullptr;
     // Convert the GUID to a string
     if(UuidToString(&m_guid,&guidString) == RPC_S_OK)
     {
-      // And convert to a CString
-      guid = CString(guidString);
+      // And convert to a XString
+      guid = XString(guidString);
       RpcStringFree(&guidString);
     }
   }

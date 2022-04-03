@@ -2,7 +2,7 @@
 //
 // File: SQLMessage.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -41,7 +41,7 @@ namespace SQLComponents
 
 // Message in the foreground or to the WMI Event log
 INT_PTR
-SQLMessage(HWND p_wnd,CString p_message,CString p_title,int p_buttons)
+SQLMessage(HWND p_wnd,XString p_message,XString p_title,int p_buttons)
 {
   if(g_SQLComponentsInServer)
   {

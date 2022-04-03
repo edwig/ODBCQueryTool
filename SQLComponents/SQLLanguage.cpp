@@ -2,7 +2,7 @@
 //
 // File: SQLLanguage.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -40,7 +40,7 @@ namespace SQLComponents
 Language g_defaultLanguage = LN_ENGLISH;
 
 // All the days of the week 
-char* g_weekdays[LN_NUMLANG][DAYS_IN_WEEK] = 
+const char* g_weekdays[LN_NUMLANG][DAYS_IN_WEEK] = 
 {
    { "zondag",  "maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag" }
   ,{ "sunday",  "monday",  "tuesday", "wednesday","thursday",  "friday",  "saturday" }
@@ -49,7 +49,7 @@ char* g_weekdays[LN_NUMLANG][DAYS_IN_WEEK] =
 };
 
 // All the months in the year
-char* g_monthnames[LN_NUMLANG][MONTHS_IN_YEAR] =
+const char* g_monthnames[LN_NUMLANG][MONTHS_IN_YEAR] =
 {
    { "januari", "februari", "maart", "april", "mei", "juni", "juli",   "augustus","september","oktober", "november", "december" }
   ,{ "january", "february", "march", "april", "may", "june", "july",   "august",  "september","october", "november", "december" }
@@ -57,7 +57,7 @@ char* g_monthnames[LN_NUMLANG][MONTHS_IN_YEAR] =
   ,{ "janvier", "février",  "mars",  "avril", "mai", "juin", "juillet","août",    "septembre","octobre", "novembre", "décembre" }
 };
 
-char* g_shortMonths[LN_NUMLANG][MONTHS_IN_YEAR] = 
+const char* g_shortMonths[LN_NUMLANG][MONTHS_IN_YEAR] = 
 {
   { "jan", "feb", "maa", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec" }
  ,{ "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec" }
@@ -66,7 +66,7 @@ char* g_shortMonths[LN_NUMLANG][MONTHS_IN_YEAR] =
 };
 
 // Operational names for dates/moments
-char* g_dateNames[LN_NUMLANG][DN_LASTNAME] =
+const char* g_dateNames[LN_NUMLANG][DN_LASTNAME] =
 {
    {  "VANDAAG"         // DN_TODAY
      ,"HUIDIGMOMENT"    // DN_CURRENT
@@ -78,8 +78,10 @@ char* g_dateNames[LN_NUMLANG][DN_LASTNAME] =
      ,"HJ"              // DN_CY
      ,"LVJ"             // DN_LOY
      ,"SEC"             // DN_SEC
+     ,"SECONDE"         // DN_SECOND
      ,"SECONDEN"        // DN_SECONDS
      ,"MIN"             // DN_MIN
+     ,"MINUTE"          // DN_MINUTE
      ,"MINUTEN"         // DN_MINUTES
      ,"UUR"             // DN_HOUR
      ,"UREN"            // DN_HOURS
@@ -103,8 +105,10 @@ char* g_dateNames[LN_NUMLANG][DN_LASTNAME] =
      ,"CY"
      ,"LOY"
      ,"SEC"             // DN_SEC
+     ,"SECOND"          // DN_SECOND
      ,"SECONDS"         // DN_SECONDS
      ,"MIN"             // DN_MIN
+     ,"MINUTE"          // DN_MINUTE
      ,"MINUTES"         // DN_MINUTES
      ,"HOUR"            // DN_HOUR
      ,"HOURS"           // DN_HOURS
@@ -128,8 +132,10 @@ char* g_dateNames[LN_NUMLANG][DN_LASTNAME] =
      ,"LJ"              // DN_CY      Laufenden Jahr
      ,"LDJ"             // DN_LOY     Letzten des Jahren
      ,"SEK"             // DN_SEC
+     ,"SEKUNDE"         // DN_SECOND
      ,"SEKUNDEN"        // DN_SECONDS
      ,"MIN"             // DN_MIN
+     ,"MINUTE"          // DN_MINUTE
      ,"MINUTEN"         // DN_MINUTES
      ,"STUNDE"          // DN_HOUR
      ,"STUNDEN"         // DN_HOURS
@@ -153,8 +159,10 @@ char* g_dateNames[LN_NUMLANG][DN_LASTNAME] =
      ,"AC"              // DN_CY        Année en Cours
      ,"DJA"             // DN_LOY       Dernier jour de l'année
      ,"SEC"             // DN_SEC
+     ,"SECONDE"         // DN_SECOND
      ,"SECONDES"        // DN_SECONDS
      ,"MIN"             // DN_MIN
+     ,"MINUTE"          // DN_MINUTE
      ,"MINUTES"         // DN_MINUTES
      ,"HEURE"           // DN_HOUR
      ,"HEURES"          // DN_HOURS
@@ -172,7 +180,7 @@ char* g_dateNames[LN_NUMLANG][DN_LASTNAME] =
 // Number of days at the beginning of the month
 // 365 days at the end of the year
 //
-int g_daysInTheMonth[14] =
+const int g_daysInTheMonth[14] =
 {
    0    // January
   ,31   // February

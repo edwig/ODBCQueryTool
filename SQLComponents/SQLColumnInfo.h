@@ -2,7 +2,7 @@
 //
 // File: SQLColumnInfo.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -32,13 +32,13 @@ namespace SQLComponents
   public:
     ColumnInfo();
 
-    CString v_columnName;
+    XString v_columnName;
     int     v_dataType;
-    CString v_typeName;
+    XString v_typeName;
     int     v_precision;
     int     v_length;
     int     v_scale;
     int     v_nullable;
-    CString v_remarks;
+    XString v_remarks;
   };
 }

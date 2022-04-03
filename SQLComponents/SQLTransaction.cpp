@@ -2,7 +2,7 @@
 //
 // File: SQLTransaction.cpp
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -76,7 +76,7 @@ SQLTransaction::~SQLTransaction()
   }
   catch(StdException& error)
   {
-    CString message;
+    XString message;
     message.Format("Error in rollback of transaction [%s] : %s\n",m_name.GetString(),error.GetErrorMessage().GetString());
     if(m_database)
     {
@@ -93,12 +93,12 @@ SQLTransaction::~SQLTransaction()
 }
 
 void 
-SQLTransaction::Start(CString p_name, bool p_startSubtransaction)
+SQLTransaction::Start(XString p_name, bool p_startSubtransaction)
 {
   // On transaction per instance
   if(m_active)
   {
-    CString message;
+    XString message;
     message.Format("Error in start-transaction [%s] : Already started a transaction",m_name.GetString());
     throw StdException(message);
   }
@@ -127,7 +127,7 @@ SQLTransaction::Commit()
   // Error if there is no active transaction
   if(!m_active)
   {
-    CString message;
+    XString message;
     message.Format("Error in commit of [%s] : transaction object is not opened",m_name.GetString());
     throw StdException(message);
   }
@@ -219,7 +219,7 @@ SQLTransaction::SetTransactionDeferred()
   {
     return false;
   }
-  CString sql = m_database->GetSQLInfoDB()->GetSESSIONConstraintsDeferred();
+  XString sql = m_database->GetSQLInfoDB()->GetSESSIONConstraintsDeferred();
   if(!sql.IsEmpty())
   {
     SQLQuery query(m_database);
@@ -238,7 +238,7 @@ SQLTransaction::SetTransactionImmediate()
   {
     return false;
   }
-  CString sql = m_database->GetSQLInfoDB()->GetSESSIONConstraintsImmediate();
+  XString sql = m_database->GetSQLInfoDB()->GetSESSIONConstraintsImmediate();
   if(!sql.IsEmpty())
   {
     // If this goes wrong, it throws. Commit would never work!

@@ -7,15 +7,6 @@
     <ClCompile Include="BasicXmlExcel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="bcd.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ConvertWideString.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DefuseBOM.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ExcelFormat.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -139,17 +130,8 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="XMLMessage.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="XMLParser.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SQLVariantOperatorDiv.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="unzip.cpp">
-      <Filter>ZIP</Filter>
     </ClCompile>
     <ClCompile Include="DDLCreateTable.cpp">
       <Filter>Source Files</Filter>
@@ -161,9 +143,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SQLGuid.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="StdException.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SQLConnections.cpp">
@@ -178,24 +157,6 @@
     <ClCompile Include="SQLDriverManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="XMLRestriction.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="XMLTemporal.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Namespace.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FileBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="XMLDataType.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CrackURL.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SQLMessage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -208,15 +169,6 @@
       <Filter>Headers Files</Filter>
     </ClInclude>
     <ClInclude Include="BasicXmlExcel.h">
-      <Filter>Headers Files</Filter>
-    </ClInclude>
-    <ClInclude Include="bcd.h">
-      <Filter>Headers Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ConvertWideString.h">
-      <Filter>Headers Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DefuseBOM.h">
       <Filter>Headers Files</Filter>
     </ClInclude>
     <ClInclude Include="ExcelFormat.h">
@@ -303,9 +255,6 @@
     <ClInclude Include="SQLTime.h">
       <Filter>Headers Files</Filter>
     </ClInclude>
-    <ClInclude Include="targetver.h">
-      <Filter>Headers Files</Filter>
-    </ClInclude>
     <ClInclude Include="SQLTimestamp.h">
       <Filter>Headers Files</Filter>
     </ClInclude>
@@ -327,21 +276,6 @@
     <ClInclude Include="SQLWrappers.h">
       <Filter>Headers Files</Filter>
     </ClInclude>
-    <ClInclude Include="stdafx.h">
-      <Filter>Headers Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XMLDataType.h">
-      <Filter>Headers Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XMLMessage.h">
-      <Filter>Headers Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XMLParser.h">
-      <Filter>Headers Files</Filter>
-    </ClInclude>
-    <ClInclude Include="unzip.h">
-      <Filter>ZIP</Filter>
-    </ClInclude>
     <ClInclude Include="SQLMetaInfo.h">
       <Filter>Headers Files</Filter>
     </ClInclude>
@@ -352,9 +286,6 @@
       <Filter>Headers Files</Filter>
     </ClInclude>
     <ClInclude Include="SQLGuid.h">
-      <Filter>Headers Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StdException.h">
       <Filter>Headers Files</Filter>
     </ClInclude>
     <ClInclude Include="SQLConnections.h">
@@ -378,24 +309,7 @@
     <ClInclude Include="SQLGetExePath.h">
       <Filter>Headers Files</Filter>
     </ClInclude>
-    <ClInclude Include="SQLComponents.h" />
     <ClInclude Include="SQLDriverManager.h">
-      <Filter>Headers Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SQLComponentsVersion.h" />
-    <ClInclude Include="XMLRestriction.h">
-      <Filter>Headers Files</Filter>
-    </ClInclude>
-    <ClInclude Include="XMLTemporal.h">
-      <Filter>Headers Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Namespace.h">
-      <Filter>Headers Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FileBuffer.h">
-      <Filter>Headers Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CrackURL.h">
       <Filter>Headers Files</Filter>
     </ClInclude>
     <ClInclude Include="SQLMessage.h">
@@ -403,6 +317,21 @@
     </ClInclude>
     <ClInclude Include="SQLInfoMariaDB.h">
       <Filter>Headers Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Configuration</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Configuration</Filter>
+    </ClInclude>
+    <ClInclude Include="framework.h">
+      <Filter>Configuration</Filter>
+    </ClInclude>
+    <ClInclude Include="SQLComponents.h">
+      <Filter>Configuration</Filter>
+    </ClInclude>
+    <ClInclude Include="SQLComponentsVersion.h">
+      <Filter>Configuration</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -412,8 +341,8 @@
     <Filter Include="Source Files">
       <UniqueIdentifier>{96aed13b-8f63-4469-8c73-5eb097027163}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ZIP">
-      <UniqueIdentifier>{6b530e1c-fb4e-44fa-9b49-bec007aed306}</UniqueIdentifier>
+    <Filter Include="Configuration">
+      <UniqueIdentifier>{d5823931-6f9d-4a03-aeb7-743cc224603a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

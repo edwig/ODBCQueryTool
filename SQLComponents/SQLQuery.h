@@ -2,7 +2,7 @@
 //
 // File: SQLQuery.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -55,7 +55,7 @@ class SQLDate;
 class SQLDatabase;
 
 typedef std::map<int,    SQLVariant*> ColNumMap;
-typedef std::map<CString,SQLVariant*> ColNameMap;
+typedef std::map<XString,SQLVariant*> ColNameMap;
 typedef std::map<int,    SQLVariant*> VarMap;
 typedef std::map<int,    unsigned>    MaxSizeMap;
 
@@ -96,7 +96,7 @@ public:
   void SetParameter  (int p_num,int           p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
   void SetParameterUL(int p_num,unsigned int  p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
   void SetParameter  (int p_num,const char*   p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
-  void SetParameter  (int p_num,CString&      p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
+  void SetParameter  (int p_num,XString&      p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
   void SetParameter  (int p_num,SQLDate&      p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
   void SetParameter  (int p_num,SQLTime&      p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
   void SetParameter  (int p_num,SQLTimestamp& p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
@@ -106,38 +106,38 @@ public:
   void SetParameter  (int           p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
   void SetParameterUL(unsigned int  p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
   void SetParameter  (const char*   p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
-  void SetParameter  (CString&      p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
+  void SetParameter  (XString&      p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
   void SetParameter  (SQLDate&      p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
   void SetParameter  (SQLTime&      p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
   void SetParameter  (SQLTimestamp& p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
   void SetParameter  (const bcd&    p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
 
   // Named parameters for DoSQLCall()
-  void SetParameterName(int p_num,CString p_name);
+  void SetParameterName(int p_num,XString p_name);
   // Set bounded parameters for execute (all in one go)
   void SetParameters(VarMap* p_map);
 
   // SINGLE STATEMENT
 
   // Do a SQL statement
-  void        DoSQLStatement        (const CString& p_statement);
-  SQLVariant* DoSQLStatementScalar  (const CString& p_statement);
-  int         DoSQLStatementNonQuery(const CString& p_statement);
+  void        DoSQLStatement        (const XString& p_statement);
+  SQLVariant* DoSQLStatementScalar  (const XString& p_statement);
+  int         DoSQLStatementNonQuery(const XString& p_statement);
   // Overrides with one parameter
-  void        DoSQLStatement(const CString& p_statement,const int   p_param1);
-  void        DoSQLStatement(const CString& p_statement,const char* p_param1);
-  void        DoSQLStatement(const CString& p_statement,const bcd&  p_param1);
+  void        DoSQLStatement(const XString& p_statement,const int   p_param1);
+  void        DoSQLStatement(const XString& p_statement,const char* p_param1);
+  void        DoSQLStatement(const XString& p_statement,const bcd&  p_param1);
   // Variants of the DoSQLStatement
-  SQLVariant* DoSQLStatementScalar  (const CString& p_statement,const int   p_param1);
-  SQLVariant* DoSQLStatementScalar  (const CString& p_statement,const char* p_param1);
-  SQLVariant* DoSQLStatementScalar  (const CString& p_statement,const bcd&  p_param1);
-  int         DoSQLStatementNonQuery(const CString& p_statement,const int   p_param1);
-  int         DoSQLStatementNonQuery(const CString& p_statement,const char* p_param1);
-  int         DoSQLStatementNonQuery(const CString& p_statement,const bcd&  p_param1);
+  SQLVariant* DoSQLStatementScalar  (const XString& p_statement,const int   p_param1);
+  SQLVariant* DoSQLStatementScalar  (const XString& p_statement,const char* p_param1);
+  SQLVariant* DoSQLStatementScalar  (const XString& p_statement,const bcd&  p_param1);
+  int         DoSQLStatementNonQuery(const XString& p_statement,const int   p_param1);
+  int         DoSQLStatementNonQuery(const XString& p_statement,const char* p_param1);
+  int         DoSQLStatementNonQuery(const XString& p_statement,const bcd&  p_param1);
   // Variant with a catch to it
-  void        TryDoSQLStatement(const CString& p_statement);
+  void        TryDoSQLStatement(const XString& p_statement);
   // Batching multiple SQL statements
-  void        DoSQLStatementBatch(CString p_statements);
+  void        DoSQLStatementBatch(XString p_statements);
 
   // POST PROCESSING of the query result
   // Truncate the char fields in the gotten buffer
@@ -146,17 +146,17 @@ public:
   void        TruncateTimestamps(int p_decimals = 0);
 
   // Call FUNCTION / PROCEDURE
-  SQLVariant* DoSQLCall(CString p_schema,CString p_procedure,bool p_hasReturn = false);
+  SQLVariant* DoSQLCall(XString p_schema,XString p_procedure,bool p_hasReturn = false);
   // Overrides with one input parameter and an int return parameter
-  SQLVariant* DoSQLCall(CString p_schema,CString p_procedure,const int   p_param1);
-  SQLVariant* DoSQLCall(CString p_schema,CString p_procedure,const char* p_param1);
-  SQLVariant* DoSQLCall(CString p_schema,CString p_procedure,const bcd&  p_param1);
+  SQLVariant* DoSQLCall(XString p_schema,XString p_procedure,const int   p_param1);
+  SQLVariant* DoSQLCall(XString p_schema,XString p_procedure,const char* p_param1);
+  SQLVariant* DoSQLCall(XString p_schema,XString p_procedure,const bcd&  p_param1);
   // Getting the result parameters values
   SQLVariant* GetParameter(int p_num);
 
   // BOUND STATEMENT
   // Divide a SQL statement in Prepare/Execute/Fetch
-  void        DoSQLPrepare(const CString& p_statement);
+  void        DoSQLPrepare(const XString& p_statement);
   void        DoSQLExecute(bool p_rebind = false);
   // Get bounded columns from query
   ColNumMap*  GetBoundedColumns();
@@ -175,7 +175,7 @@ public:
   // Get a pointer to a variable of the column
   SQLVariant* GetColumn(int icol);
   // Get the name of the SQL cursor for the statement
-  CString     GetCursorName();
+  XString     GetCursorName();
   // Get the variant data type of the columns
   int         GetColumnType(int icol);
   // Get number of columns in the result set
@@ -185,7 +185,7 @@ public:
   // ColumnName -> column number
   int         GetColumnNumber(const char* p_columnName);
   // ColumnNumber -> column name
-  bool        GetColumnName(int p_column,CString& p_name);
+  bool        GetColumnName(int p_column,XString& p_name);
   // Get length of the column
   int         GetColumnLength(int p_column);
   // Get Display size of the column
@@ -198,7 +198,7 @@ public:
   // Get true if no error found so far
   bool        IsOk() const;
   // Get the error string
-  CString     GetError();
+  XString     GetError();
   // See if column is NULL value
   bool        IsNull(int col);
   // See if column is EMPTY value
@@ -208,8 +208,8 @@ public:
 
   // LEGACY SUPPORT ODBC 1.x AND 2.x
   void DescribeColumn(int           p_col
-                     ,CString&      p_columnName
-                     ,CString&      p_colLabel
+                     ,XString&      p_columnName
+                     ,XString&      p_colLabel
                      ,SQLSMALLINT&  p_sqlType
                      ,SQLUINTEGER&  p_colSize
                      ,SQLSMALLINT&  p_colScale
@@ -236,13 +236,13 @@ private:
   // Get max column length
   int   GetMaxColumnLength();
   // Get the internal error string
-  void  GetLastError(CString p_prefix = "");
+  void  GetLastError(XString p_prefix = "");
   // Report timing to logfile
   void  ReportQuerySpeed(LARGE_INTEGER p_start);
   // Construct the SQL for a function/procedure call
-  CString     ConstructSQLForCall(CString& p_schema,CString& p_procedure,bool p_hasReturn);
+  XString     ConstructSQLForCall(XString& p_schema,XString& p_procedure,bool p_hasReturn);
   // Direct call through ODBC escape language
-  SQLVariant* DoSQLCallODBCEscape(CString& p_schema,CString& p_procedure,bool p_hasReturn);
+  SQLVariant* DoSQLCallODBCEscape(XString& p_schema,XString& p_procedure,bool p_hasReturn);
   // Log parameter during the binding process
   void  LogParameter(int p_column,SQLVariant* p_parameter);
   // Do the rebind replacement for a parameter
@@ -256,7 +256,7 @@ private:
   HDBC          m_connection;        // In CTOR connection handle.
   HSTMT         m_hstmt;             // Statement handle
   RETCODE       m_retCode;           // last SQL (error)code
-  CString       m_lastError;         // last error string
+  XString       m_lastError;         // last error string
   unsigned      m_maxColumnLength;   // Max length
   bool          m_hasLongColumns;    // Use SQLGetData for long columns
   int           m_bufferSize;        // Alternate Buffer size
@@ -264,7 +264,7 @@ private:
   double        m_speedThreshold;    // After this amount of seconds, it's taken too long
   int           m_concurrency;       // Concurrency level of the cursor
 
-  CString       m_cursorName;        // Name of the SQL Cursor
+  XString       m_cursorName;        // Name of the SQL Cursor
   short         m_numColumns;        // Number of result columns in result set
   SQLLEN        m_rows;              // Number of rows processed in INSERT/UPDATE/DELETE
   long          m_fetchIndex;        // Number of rows fetched
@@ -292,7 +292,7 @@ SQLQuery::SetRebindMap(RebindMap* p_map)
   m_rebindColumns = p_map;
 }
 
-inline CString
+inline XString
 SQLQuery::GetCursorName()
 {
   return m_cursorName;
@@ -316,7 +316,7 @@ SQLQuery::GetNumberOfColumns() const
   return (int)m_numMap.size();
 }
 
-inline CString
+inline XString
 SQLQuery::GetError()
 {
   return m_lastError;

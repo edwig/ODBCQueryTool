@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -42,12 +42,12 @@ class SQLDataSetXLS : public SQLDataSet
 {
 public:
   // Open spreadsheet for reading and writing
-  SQLDataSetXLS(CString File, CString SheetOrSeparator, bool Backup = true); 
+  SQLDataSetXLS(XString File, XString SheetOrSeparator, bool Backup = true); 
   // Perform cleanup
  ~SQLDataSetXLS(); 
 
  // Read in a XLS and optionally make a backup
-  bool ReadXLS(CString p_sheet);
+  bool ReadXLS(XString p_sheet);
   // Begin transaction
   void BeginTransaction(); 
   // Save changes to spreadsheet
@@ -62,29 +62,29 @@ public:
   // Insert or replace a row into spreadsheet. Default is add new row. 
   bool AddRow(WordList &RowValues, long row = 0, bool replace = false); 
   // Read a cell from Excel spreadsheet using header row or column alphabet. 
-  bool ReadCell (CString &CellValue, CString column, long row, bool p_name = true); 
+  bool ReadCell (XString &CellValue, XString column, long row, bool p_name = true); 
   // Read a cell from spreadsheet using column number. Default is read the next cell in next row.
-  bool ReadCell (CString &CellValue, short column, long row); 
+  bool ReadCell (XString &CellValue, short column, long row); 
   // Replace a cell into Excel spreadsheet using header row or column alphabet. 
   // Set name to true if want to force column to be used as header name
-  bool SetCell(CString CellValue, CString column, long row, bool p_name = true); 
+  bool SetCell(XString CellValue, XString column, long row, bool p_name = true); 
   // Set a cell value into spreadsheet using column number, row number
-  bool SetCell(CString CellValue, short column, long row); 
+  bool SetCell(XString CellValue, short column, long row); 
   // Clear text delimited file content
   bool DeleteSheet(); 
   // Clear entire Excel spreadsheet content. The sheet itself is not deleted
-  bool DeleteSheet(CString p_sheetName); 
+  bool DeleteSheet(XString p_sheetName); 
 
   // SETTERS
-  void    SetDelimiterLeft (CString p_delim);
-  void    SetDelimiterRight(CString p_delim);
+  void    SetDelimiterLeft (XString p_delim);
+  void    SetDelimiterRight(XString p_delim);
 
   // GETTERS
 
   // Get a list of all worksheets in the XLS (xls only!)
   bool    GetListOfWorksheets(WordList* p_sheets);
   // Get last error message
-  CString GetLastError();
+  XString GetLastError();
   // Get status of backup. True if backup is successful, 
   // False if spreadsheet is not backup
   bool    GetBackupStatus();
@@ -100,15 +100,15 @@ private:
   // Close and forget the spreadsheet
   virtual void Close() override;
   // Convert Excel column in alphabet into column number
-  int   CalculateColumnNumber(CString column, bool p_name = true); 
+  int   CalculateColumnNumber(XString column, bool p_name = true); 
   // Read a row from spreadsheet. Default is read the next row
-  bool  SplitRow(CString& p_input,WordList &RowValues); 
+  bool  SplitRow(XString& p_input,WordList &RowValues); 
   // Trim whitespace in between delimiters
-  void  TrimRow(CString& p_row);
+  void  TrimRow(XString& p_row);
   // Read an ASCII string from a file
-  bool  ReadString(FILE* p_file,CString& p_string);
+  bool  ReadString(FILE* p_file,XString& p_string);
   // Write an ASCII string to a file
-  bool  WriteString(FILE* p_file,CString& p_string,bool p_appendCRLF = false);
+  bool  WriteString(FILE* p_file,XString& p_string,bool p_appendCRLF = false);
 
   BasicExcel*     m_workbook;    // Excel workbook instance
   BasicXmlExcel*  m_xmlWorkbook; // New OOXML Workbook
@@ -118,23 +118,23 @@ private:
   bool    m_xmlExcel;        // Internal flag to denote new OOXML Excel spreadsheet
   bool    m_transaction;     // Internal flag to denote status of Transaction
 
-  CString m_file;            // Spreadsheet file / CSV Filename
-  CString m_sheetName;       // Sheet name of Excel spreadsheet
-  CString m_separator;       // Separator in text delimited spreadsheet
-  CString m_delimLeft;       // Delimiter for text on the left  side, default = "
-  CString m_delimRight;      // Delimiter for text on the right side, default = "
-  CString m_lastError;       // Last error message
+  XString m_file;            // Spreadsheet file / CSV Filename
+  XString m_sheetName;       // Sheet name of Excel spreadsheet
+  XString m_separator;       // Separator in text delimited spreadsheet
+  XString m_delimLeft;       // Delimiter for text on the left  side, default = "
+  XString m_delimRight;      // Delimiter for text on the right side, default = "
+  XString m_lastError;       // Last error message
 
 };
 
 inline void
-SQLDataSetXLS::SetDelimiterLeft(CString p_delim)
+SQLDataSetXLS::SetDelimiterLeft(XString p_delim)
 {
   m_delimLeft = p_delim;
 }
 
 inline void    
-SQLDataSetXLS::SetDelimiterRight(CString p_delim)
+SQLDataSetXLS::SetDelimiterRight(XString p_delim)
 {
   m_delimRight = p_delim;
 }

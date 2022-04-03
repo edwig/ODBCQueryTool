@@ -2,7 +2,7 @@
 //
 // File: SQLAssociation.cpp
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -85,8 +85,8 @@ SQLAssociation::FreeAssocs()
 // Create assocation mapping
 // and optionally the value to follow
 void 
-SQLAssociation::SetAssociation(CString     p_primaryColumn
-                              ,CString     p_foreignColumn
+SQLAssociation::SetAssociation(XString     p_primaryColumn
+                              ,XString     p_foreignColumn
                               ,SQLVariant* p_value /*= NULL*/)
 {
   PrimaryForeign* pf = new PrimaryForeign();
@@ -107,13 +107,13 @@ SQLAssociation::SetAssociation(int p_num,SQLVariant* p_value)
   }
 }
 
-CString 
+XString 
 SQLAssociation::GetAssocationName(int p_column)
 {
   if(p_column >= 0 && p_column < (int)m_assocs.size())
   {
     // Returns "master.id->detail.id_master"
-    CString name;
+    XString name;
     name = m_master->GetName() + "." +
            m_assocs[p_column]->m_primary + "->" + 
            m_detail->GetName() + "." + 
@@ -166,7 +166,7 @@ SQLAssociation::FollowToMaster()
   // Check if we can do the update
   if(!BasicChecks())
   {
-    return false;
+    return nullptr;
   }
 
   // Create filterset and add to the master
@@ -195,7 +195,7 @@ SQLAssociation::FollowToDetails()
   // Check if we can do the update
   if(!BasicChecks())
   {
-    return false;
+    return nullptr;
   }
 
   // Create filterset and add to the detail

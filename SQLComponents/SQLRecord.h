@@ -2,7 +2,7 @@
 //
 // File: SQLRecord.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -54,7 +54,7 @@ public:
   // Get the status of the record
   int         GetStatus();
   SQLVariant* GetField(int p_num);
-  SQLVariant* GetField(CString p_name);
+  SQLVariant* GetField(XString p_name);
   int         GetGenerator();
   // Setting a generator column
   void        SetGenerator(int p_generator);
@@ -62,7 +62,7 @@ public:
   int         AddField(SQLVariant* p_field,bool p_insert = false);
   // Setting different value without changing status
   bool        SetField   (int     p_num, SQLVariant* p_field,int p_mutationID = 0);
-  bool        SetField   (CString p_name,SQLVariant* p_field,int p_mutationID = 0);
+  bool        SetField   (XString p_name,SQLVariant* p_field,int p_mutationID = 0);
   // Setting different value AND changing record/set status
   void        ModifyField(int         p_num, SQLVariant* p_field,int p_mutationID = 0);
   void        ModifyField(const char* p_name,SQLVariant* p_field,int p_mutationID = 0);
@@ -85,14 +85,33 @@ public:
   void        ModifyField(const char* p_name,SQLTimestamp&      p_field,int p_mutationID = 0);
   void        ModifyField(const char* p_name,SQLInterval&       p_field,int p_mutationID = 0);
   void        ModifyField(const char* p_name,SQLGuid&           p_field,int p_mutationID = 0);
-  void        ModifyField(const char* p_name,CString&           p_field,int p_mutationID = 0);
+  void        ModifyField(const char* p_name,XString&           p_field,int p_mutationID = 0);
   void        ModifyField(const char* p_name,bcd&               p_field,int p_mutationID = 0);
+
+  bool              GetFieldBool           (const char* p_name);
+  char              GetFieldChar           (const char* p_name);
+  unsigned char     GetFieldUnsignedChar   (const char* p_name);
+  short             GetFieldShort          (const char* p_name);
+  unsigned short    GetFieldUnsignedShort  (const char* p_name);
+  int               GetFieldInteger        (const char* p_name);
+  unsigned int      GetFieldUnsignedInteger(const char* p_name);
+  float             GetFieldFloat          (const char* p_name);
+  double            GetFieldDouble         (const char* p_name);
+  __int64           GetFieldInteger64      (const char* p_name);
+  unsigned __int64  GetFieldUnsignedInt64  (const char* p_name);
+  SQLDate           GetFieldSQLDate        (const char* p_name);
+  SQLTime           GetFieldSQLTime        (const char* p_name);
+  SQLTimestamp      GetFieldSQLTimestamp   (const char* p_name);
+  SQLInterval       GetFieldSQLInterval    (const char* p_name);
+  SQLGuid           GetFieldSQLGuid        (const char* p_name);
+  XString           GetFieldXString        (const char* p_name);
+  bcd               GetFieldBcd            (const char* p_name);
 
   // See if the record has been changed
   bool        IsModified();
   // See if a field is modified
   bool        IsModified(int p_num);
-  bool        IsModified(CString p_name);
+  bool        IsModified(XString p_name);
   // Set the status of the record to 'Inserted'
   void        Inserted();
   // Set the status of the record to 'Deleted'

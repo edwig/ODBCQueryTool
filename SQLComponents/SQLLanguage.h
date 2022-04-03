@@ -2,7 +2,7 @@
 //
 // File: SQLLanguage.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -67,8 +67,10 @@ typedef enum _dateNames
   ,DN_CY             // CY      HJ       Current  Year     Laufendes Jahr      Anee en cours
   ,DN_LOY            // LOY     LVJ      Last  Of Year     Letzte des Jahres   Dernier Jour de l'annee
   ,DN_SEC
+  ,DN_SECOND
   ,DN_SECONDS
   ,DN_MIN
+  ,DN_MINUTE
   ,DN_MINUTES
   ,DN_HOUR
   ,DN_HOURS
@@ -89,15 +91,15 @@ DateNames;
 // Default language
 extern Language g_defaultLanguage;
 // Names of the week
-extern char*    g_weekdays[LN_NUMLANG][DAYS_IN_WEEK]; 
+const extern char*    g_weekdays[LN_NUMLANG][DAYS_IN_WEEK]; 
 // Number of days at the beginning of the month + 2 months in the next year
-extern int      g_daysInTheMonth[MONTHS_IN_YEAR + 2];
+const extern int      g_daysInTheMonth[MONTHS_IN_YEAR + 2];
 // Names of the months
-extern char*    g_monthnames[LN_NUMLANG][MONTHS_IN_YEAR];
+const extern char*    g_monthnames[LN_NUMLANG][MONTHS_IN_YEAR];
 // Short (3 char) variants of the month names
-extern char*    g_shortMonths[LN_NUMLANG][MONTHS_IN_YEAR]; 
+const extern char*    g_shortMonths[LN_NUMLANG][MONTHS_IN_YEAR]; 
 // Several key names 
-extern char*    g_dateNames[LN_NUMLANG][DN_LASTNAME];
+const extern char*    g_dateNames[LN_NUMLANG][DN_LASTNAME];
 
 // Setting the default language
 Language SetDefaultSQLLanguage(Language p_lang);

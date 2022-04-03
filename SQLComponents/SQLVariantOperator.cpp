@@ -2,7 +2,7 @@
 //
 // File: SQLVariantOperator.cpp
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -131,11 +131,19 @@ SQLVariant::operator=(const char* p_data)
 }
 
 SQLVariant& 
-SQLVariant::operator=(CString& p_data)
+SQLVariant::operator=(XString& p_data)
 {
   SetData(SQL_C_CHAR,p_data.GetString());
   return *this;
 }
+
+SQLVariant& 
+SQLVariant::operator=(XString p_data)
+{
+  SetData(SQL_C_CHAR, p_data.GetString());
+  return *this;
+}
+
 
 SQLVariant& 
 SQLVariant::operator=(short p_data)
@@ -570,9 +578,9 @@ SQLVariant::operator SQLGuid()
   return GetAsSQLGuid();
 }
 
-SQLVariant::operator CString()
+SQLVariant::operator XString()
 {
-  return CString(GetAsChar());
+  return XString(GetAsChar());
 }
 
 SQLVariant::operator bcd()
@@ -589,9 +597,9 @@ SQLVariant::operator bcd()
 void
 SQLVariant::ThrowErrorOperator(SQLVarOperator p_operator)
 {
-  CString error;
-  char* type = FindDatatype(m_datatype);
-  char* oper = nullptr;
+  XString error;
+  const char* type = FindDatatype(m_datatype);
+  const char* oper = nullptr;
   switch (p_operator)
   {
     case SVO_PreIncrement:    oper = "pre-increment";  break;

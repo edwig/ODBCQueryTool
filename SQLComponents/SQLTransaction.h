@@ -2,7 +2,7 @@
 //
 // File: SQLTransaction.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -50,7 +50,7 @@ public:
   // independently. Whenever a subtransaction is off, the transaction will be linked to 
   // earlier transactions, and thus influence the complete behaviour,
   // until the last commit/rollback of the main transaction
-  void    Start(CString p_name,bool p_startSubtransaction = false);
+  void    Start(XString p_name,bool p_startSubtransaction = false);
   // Commit the transaction
   void    Commit();
   // Rollback the transaction
@@ -65,9 +65,9 @@ public:
   // GETTERS
 
   // Getting the name of the transaction
-  CString GetName() const;
+  XString GetName() const;
   // Name of the savepoint in the database
-  CString GetSavePoint() const;
+  XString GetSavePoint() const;
   // Database for which the transaction is active
   SQLDatabase* GetDatabase() const;
   // Is the transaction (still) active
@@ -77,13 +77,13 @@ private:
   // To do after a rollback. Only SQLDatabase may call this method
   friend class SQLDatabase;
   void    AfterRollback();
-  void    SetSavepoint(CString p_savepoint);
+  void    SetSavepoint(XString p_savepoint);
 
 private:
   SQLDatabase*  m_database;
   HDBC          m_hdbc;
-  CString       m_name;
-  CString       m_savepoint;
+  XString       m_name;
+  XString       m_savepoint;
   bool          m_active;
   // Lock database for multi-access from other threads
   // For as long as the current transaction takes
@@ -102,20 +102,20 @@ SQLTransaction::GetDatabase() const
   return m_database;
 }
 
-inline CString 
+inline XString 
 SQLTransaction::GetSavePoint() const
 {
   return m_savepoint;
 }
 
-inline CString
+inline XString
 SQLTransaction::GetName() const
 {
   return m_name;
 }
 
 inline void
-SQLTransaction::SetSavepoint(CString p_savepoint)
+SQLTransaction::SetSavepoint(XString p_savepoint)
 {
   m_savepoint = p_savepoint;
 }

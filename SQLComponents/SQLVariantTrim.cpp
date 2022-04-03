@@ -2,7 +2,7 @@
 //
 // File: SQLVariantTrim.cpp
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -40,15 +40,15 @@ namespace SQLComponents
 
 //////////////////////////////////////////////////////////////////////////
 //
-// GENERAL ERRORS - THROWING A CString
+// GENERAL ERRORS - THROWING A XString
 //
 //////////////////////////////////////////////////////////////////////////
 
 void SQL_ThrowErrorTruncate(int p_from,int p_to)
 {
-  CString error;
-  char* from = SQLVariant::FindDatatype(p_from);
-  char* to   = SQLVariant::FindDatatype(p_to);
+  XString error;
+  const char* from = SQLVariant::FindDatatype(p_from);
+  const char* to   = SQLVariant::FindDatatype(p_to);
   error.Format("Cannot truncate %s to %s",from,to);
   throw StdException(error);
 }

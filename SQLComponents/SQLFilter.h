@@ -2,7 +2,7 @@
 //
 // File: SQLFilter.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -42,8 +42,8 @@ class SQLFilterSet;
 typedef std::vector<SQLVariant*> VariantSet;
 
 // Translate a string from the message to an operator
-SQLOperator StringToSQLOperator(CString p_oper);
-CString     SQLOperatorToString(SQLOperator p_oper);
+SQLOperator StringToSQLOperator(XString p_oper);
+XString     SQLOperatorToString(SQLOperator p_oper);
 
 // THE FILTER CLASS
 
@@ -52,10 +52,10 @@ class SQLFilter
 public:
   // Construct a filter
   SQLFilter();
-  SQLFilter(CString p_field,SQLOperator p_operator);
-  SQLFilter(CString p_field,SQLOperator p_operator,SQLVariant* p_value);
-  SQLFilter(CString p_field,SQLOperator p_operator,int         p_value);
-  SQLFilter(CString p_field,SQLOperator p_operator,CString     p_value);
+  SQLFilter(XString p_field,SQLOperator p_operator);
+  SQLFilter(XString p_field,SQLOperator p_operator,SQLVariant* p_value);
+  SQLFilter(XString p_field,SQLOperator p_operator,int         p_value);
+  SQLFilter(XString p_field,SQLOperator p_operator,XString     p_value);
   SQLFilter(SQLOperator p_operator);
   SQLFilter(SQLFilter* p_other);
   SQLFilter(SQLFilter& p_other);
@@ -64,13 +64,13 @@ public:
   // BUILDING THE FILTER
 
   // Adding a comparison field (if not yet set)
-  bool        SetField(CString p_field);
+  bool        SetField(XString p_field);
   // Adding an operator (if not yet set)
   bool        SetOperator(SQLOperator p_oper);
   // Adding extra values for the IN or BETWEEN operators
   void        AddValue(SQLVariant* p_value);
   // Adding an expression as replacement for concrete values
-  void        AddExpression(CString p_expression);
+  void        AddExpression(XString p_expression);
   // Negate the filter
   void        Negate();
   // Setting a parenthesis level
@@ -82,26 +82,26 @@ public:
   void        SetExtractPart  (SQLExtractPart       p_part);
   void        SetTimestampPart(SQLTimestampCalcPart p_part);
   // Set extra optional field
-  void        SetField2(CString p_field);
+  void        SetField2(XString p_field);
 
   // OPERATIONS
 
   // Getting the SQL Condition filter
-  CString     GetSQLFilter(SQLQuery& p_query);
+  XString     GetSQLFilter(SQLQuery& p_query);
   // Match a record to the filter internally
   bool        MatchRecord(SQLRecord* p_record);
 
   // GETTERS
 
   // Getting the elements of the filter
-  CString     GetField();
+  XString     GetField();
   SQLOperator GetOperator();
   SQLVariant* GetValue();
   SQLVariant* GetValue(int p_number);
-  CString     GetExpression();
+  XString     GetExpression();
   SQLFunction GetFunction();
   bool        GetNegate();
-  CString     GetField2();
+  XString     GetField2();
   SQLExtractPart        GetExtractPart();
   SQLTimestampCalcPart  GetTimestampPart();
 
@@ -117,19 +117,19 @@ private:
   void        CheckValue();
   void        CheckTwoValues();
   // Constructing the default operand
-  void        ConstructOperand(CString& p_sql,SQLQuery& p_query);
+  void        ConstructOperand(XString& p_sql,SQLQuery& p_query);
   // Constructing the LIKE clause
-  void        ConstructLike(CString& p_sql);
+  void        ConstructLike(XString& p_sql);
   // Constructing the IN clause
-  void        ConstructIN(CString& p_sql,SQLQuery& p_query);
+  void        ConstructIN(XString& p_sql,SQLQuery& p_query);
   // Constructing the BETWEEN clause
-  void        ConstructBetween(CString& p_sql,SQLQuery& p_query);
+  void        ConstructBetween(XString& p_sql,SQLQuery& p_query);
   // Constructing a FUNCTION(field)
-  CString     ConstructFunctionSQL(SQLQuery& p_query);
+  XString     ConstructFunctionSQL(SQLQuery& p_query);
   // Constructing the extraction part in the EXTRACT function
-  CString     ConstructExtractPart();
+  XString     ConstructExtractPart();
   // Constructing the calculation part in the TIMESTAMPADD/TIMESTAMPDIFF functions
-  CString     ConstructTimestampCalcPart();
+  XString     ConstructTimestampCalcPart();
 
   // Internal matching
   bool        MatchEqual       (SQLVariant* p_field);
@@ -146,10 +146,10 @@ private:
   bool        MatchBetween     (SQLVariant* p_field);
 
   // Data for the filter
-  CString     m_field;                         // Name of the field to act upon
+  XString     m_field;                         // Name of the field to act upon
   SQLOperator m_operator;                      // Operator of the condition
   VariantSet  m_values;                        // Multiple values for IN and BETWEEN
-  CString     m_expression;                    // Free expression (no values!)
+  XString     m_expression;                    // Free expression (no values!)
   SQLFunction m_function         { FN_NOP };   // Extra function for the field operator
   bool        m_negate           { false  };   // Negate the whole condition
   bool        m_openParenthesis  { false  };   // Start with an opening parenthesis
@@ -159,11 +159,11 @@ private:
                 SQLTimestampCalcPart  m_calcpart;
               }
               m_extract;
-  CString     m_field2;                        // Optional extra field as in "m_field <oper> m_fileld2"
+  XString     m_field2;                        // Optional extra field as in "m_field <oper> m_fileld2"
   SQLFilterSet* m_subfilters     { nullptr };
 };
 
-inline CString
+inline XString
 SQLFilter::GetField()
 {
   return m_field;
@@ -189,7 +189,7 @@ SQLFilter::AddValue(SQLVariant* p_value)
 }
 
 inline void
-SQLFilter::AddExpression(CString p_expression)
+SQLFilter::AddExpression(XString p_expression)
 {
   m_expression = p_expression;
 }
@@ -200,7 +200,7 @@ SQLFilter::Negate()
   m_negate = !m_negate;
 }
 
-inline CString
+inline XString
 SQLFilter::GetExpression()
 {
   return m_expression;
@@ -261,12 +261,12 @@ SQLFilter::GetTimestampPart()
 }
 
 inline void
-SQLFilter::SetField2(CString p_field2)
+SQLFilter::SetField2(XString p_field2)
 {
   m_field2 = p_field2;
 }
 
-inline CString
+inline XString
 SQLFilter::GetField2()
 {
   return m_field2;
@@ -314,7 +314,7 @@ public:
     return (int)m_filters.size();
   }
 
-  CString ParseFiltersToCondition(SQLQuery& p_query);
+  XString ParseFiltersToCondition(SQLQuery& p_query);
 
 private:
   std::vector<SQLFilter*> m_filters;

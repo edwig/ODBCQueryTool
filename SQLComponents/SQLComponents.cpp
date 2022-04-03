@@ -2,7 +2,7 @@
 //
 // File: SQLComponents.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -29,8 +29,9 @@
 
 namespace SQLComponents
 {
-  bool g_SQLComponentsInitialized = false;
-  bool g_SQLComponentsInServer    = false;
+  bool  g_SQLComponentsInitialized = false;
+  bool  g_SQLComponentsInServer    = false;
+  char* g_SQLSessionInitialization [SQLCOMP_MAX_SESS_DATABASES][SQLCOMP_MAX_SESS_SETTINGS] = { 0 };
 
   // Initialization of the SQLComponents library
   void InitSQLComponents(Language p_language,bool p_inServer /*= false*/)
@@ -71,5 +72,20 @@ namespace SQLComponents
     {
       throw StdException("Call InitSQLComponents() before you use the 'SQLComponents' library.");
     }
+  }
+
+  // Accept up to SQLCOMP_MAX_SESS_SETTINGS for a new SQLDatabase connection
+  bool SQLSetSessionInitialisation(DatabaseType p_type,int p_number,const char* p_statement)
+  {
+    int type = (int)p_type;
+    if(type >= 0 && type < SQLCOMP_MAX_SESS_DATABASES)
+    {
+      if(p_number >= 0 && p_number < SQLCOMP_MAX_SESS_SETTINGS)
+      {
+        g_SQLSessionInitialization[type][p_number] = const_cast<char*>(p_statement);
+        return true;
+      }
+    }
+    return false;
   }
 }

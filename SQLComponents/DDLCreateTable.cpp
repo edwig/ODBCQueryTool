@@ -2,7 +2,7 @@
 //
 // File: DDLCreateTable.cpp
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -40,12 +40,12 @@ DDLCreateTable::DDLCreateTable(SQLInfoDB* p_info)
 {
 }
 
-CString 
-DDLCreateTable::GetTableDDL(CString p_tableName)
+XString 
+DDLCreateTable::GetTableDDL(XString p_tableName)
 {
   GetTableStatements(p_tableName);
 
-  CString ddl;
+  XString ddl;
   for(auto& statement : m_statements)
   {
     ddl += statement;
@@ -55,7 +55,7 @@ DDLCreateTable::GetTableDDL(CString p_tableName)
 }
 
 DDLS
-DDLCreateTable::GetTableStatements(CString p_tableName)
+DDLCreateTable::GetTableStatements(XString p_tableName)
 {
   // Split schema name and table name
   FindSchemaName(p_tableName);
@@ -74,7 +74,7 @@ DDLCreateTable::GetTableStatements(CString p_tableName)
 }
 
 DDLS
-DDLCreateTable::GetTableStatements(CString p_tableName
+DDLCreateTable::GetTableStatements(XString p_tableName
                                   ,bool p_columns
                                   ,bool p_options
                                   ,bool p_indices
@@ -101,7 +101,7 @@ DDLCreateTable::GetTableStatements(CString p_tableName
 }
 
 DDLS    
-DDLCreateTable::GetViewStatements(CString p_viewname)
+DDLCreateTable::GetViewStatements(XString p_viewname)
 {
   // Split schema name and view name
   FindSchemaName(p_viewname);
@@ -113,7 +113,7 @@ DDLCreateTable::GetViewStatements(CString p_viewname)
 }
 
 bool
-DDLCreateTable::SaveDDL(CString p_filename)
+DDLCreateTable::SaveDDL(XString p_filename)
 {
   FILE* file = nullptr;
   fopen_s(&file,p_filename,"w");
@@ -201,7 +201,7 @@ DDLCreateTable::SetInfoDB(SQLInfoDB* p_info)
 
 // Change the schema of the table
 void
-DDLCreateTable::SetTablesSchema(CString p_schema)
+DDLCreateTable::SetTablesSchema(XString p_schema)
 {
   for(auto& table : m_tables)
   {
@@ -239,7 +239,7 @@ DDLCreateTable::SetTablesSchema(CString p_schema)
 }
 
 void
-DDLCreateTable::SetTableTablespace(CString p_tablespace)
+DDLCreateTable::SetTableTablespace(XString p_tablespace)
 {
   for (auto& table : m_tables)
   {
@@ -248,7 +248,7 @@ DDLCreateTable::SetTableTablespace(CString p_tablespace)
 }
 
 void
-DDLCreateTable::SetIndexTablespace(CString p_tablespace)
+DDLCreateTable::SetIndexTablespace(XString p_tablespace)
 {
   m_indexTablespace = p_tablespace;
 }
@@ -259,8 +259,8 @@ void
 DDLCreateTable::GetTableInfo()
 {
   // Get primary table info
-  CString errors;
-  CString ddl;
+  XString errors;
+  XString ddl;
 
   if(!m_didTable)
   {
@@ -268,7 +268,7 @@ DDLCreateTable::GetTableInfo()
     m_tables.clear();
     if(!m_info->MakeInfoTableTable(m_tables,errors,m_schema,m_tableName) || m_tables.empty())
     {
-      throw StdException(CString("Cannot find table: ") + m_tableName + " : " + errors);
+      throw StdException(XString("Cannot find table: ") + m_tableName + " : " + errors);
     }
     m_didTable = !m_tables.empty();
   }
@@ -300,7 +300,7 @@ DDLCreateTable::GetTableInfo()
 void   
 DDLCreateTable::GetColumnInfo()
 {
-  CString errors;
+  XString errors;
   bool    first = true;
 
   if(!m_didColumns)
@@ -309,7 +309,7 @@ DDLCreateTable::GetColumnInfo()
     m_columns.clear();
     if(!m_info->MakeInfoTableColumns(m_columns,errors,m_schema,m_tableName) || m_columns.empty())
     {
-      throw StdException(CString("Cannot find columns for table: ") + m_tableName + " : " + errors);
+      throw StdException(XString("Cannot find columns for table: ") + m_tableName + " : " + errors);
     }
     m_didColumns = !m_columns.empty();
   }
@@ -322,7 +322,7 @@ DDLCreateTable::GetColumnInfo()
 
   for(auto& column : m_columns)
   {
-    CString line("   ");
+    XString line("   ");
     line += first ? " " : ",";
 
     // Column name and type
@@ -384,16 +384,16 @@ DDLCreateTable::GetOptionsInfo()
        type == RDBMS_MARIADB ||
        type == RDBMS_MYSQL)
     {
-      CString seperator;
-      CString tablespace = m_tables[0].m_tablespace;
+      XString seperator;
+      XString tablespace = m_tables[0].m_tablespace;
       if(!tablespace.IsEmpty())
       {
-        m_createDDL += CString("\nTABLESPACE ") + tablespace;
+        m_createDDL += XString("\nTABLESPACE ") + tablespace;
         seperator = ",";
       }
 
       MetaColumn column;
-      CString postfix = m_info->GetCATALOGTableCreatePostfix(m_tables[0],column);
+      XString postfix = m_info->GetCATALOGTableCreatePostfix(m_tables[0],column);
       if(!postfix.IsEmpty())
       {
         m_createDDL += seperator + "\n";
@@ -410,8 +410,8 @@ void
 DDLCreateTable::GetViewInfo()
 {
   // Get primary table info
-  CString errors;
-  CString ddl;
+  XString errors;
+  XString ddl;
 
   if(!m_didTable)
   {
@@ -419,7 +419,7 @@ DDLCreateTable::GetViewInfo()
     m_tables.clear();
     if(!m_info->MakeInfoTableView(m_tables,errors,m_schema,m_tableName) || m_tables.empty())
     {
-      throw StdException(CString("Cannot find view: ") + m_tableName + " : " + errors);
+      throw StdException(XString("Cannot find view: ") + m_tableName + " : " + errors);
     }
     m_didTable = !m_tables.empty();
   }
@@ -440,7 +440,7 @@ DDLCreateTable::GetViewInfo()
     ddl = "-- " + table.m_remarks;
   }
 
-  CString definition;
+  XString definition;
   if(m_info->MakeInfoViewDefinition(definition,errors,m_schema,m_tableName))
   {
     // Do our DDL part
@@ -453,8 +453,8 @@ DDLCreateTable::GetViewInfo()
 void
 DDLCreateTable::GetIndexInfo()
 {
-  CString errors;
-  CString line;
+  XString errors;
+  XString line;
 
   if(!m_didIndices)
   {
@@ -463,7 +463,7 @@ DDLCreateTable::GetIndexInfo()
     m_info->MakeInfoTableStatistics(m_indices,errors,m_schema,m_tableName,nullptr);
     if(!errors.IsEmpty())
     {
-      throw StdException(CString("Cannot find indices for table: ") + m_tableName + " : " + errors);
+      throw StdException(XString("Cannot find indices for table: ") + m_tableName + " : " + errors);
     }
     m_didIndices = !m_indices.empty();
   }
@@ -503,7 +503,7 @@ DDLCreateTable::GetIndexInfo()
 void
 DDLCreateTable::GetPrimaryKeyInfo()
 {
-  CString errors;
+  XString errors;
 
   if(!m_didPrimary)
   {
@@ -512,7 +512,7 @@ DDLCreateTable::GetPrimaryKeyInfo()
     m_info->MakeInfoTablePrimary(m_primaries,errors,m_schema,m_tableName);
     if(!errors.IsEmpty())
     {
-      throw StdException(CString("Cannot find the primary key for table: ") + m_tableName + " : " + errors);
+      throw StdException(XString("Cannot find the primary key for table: ") + m_tableName + " : " + errors);
     }
     m_didPrimary = !m_primaries.empty();
   }
@@ -520,7 +520,7 @@ DDLCreateTable::GetPrimaryKeyInfo()
   if(!m_primaries.empty())
   {
     // Getting the alter table statement
-    CString line = m_info->GetCATALOGPrimaryCreate(m_primaries);
+    XString line = m_info->GetCATALOGPrimaryCreate(m_primaries);
     StashTheLine(line);
   }
 }
@@ -528,8 +528,8 @@ DDLCreateTable::GetPrimaryKeyInfo()
 void
 DDLCreateTable::GetForeignKeyInfo()
 {
-  CString errors;
-  CString line;
+  XString errors;
+  XString line;
 
   if(!m_didForeigns)
   {
@@ -538,15 +538,15 @@ DDLCreateTable::GetForeignKeyInfo()
     m_info->MakeInfoTableForeign(m_foreigns,errors,m_schema,m_tableName);
     if(!errors.IsEmpty())
     {
-      throw StdException(CString("Cannot find the foreign keys for table: ") + m_tableName + " : " + errors);
+      throw StdException(XString("Cannot find the foreign keys for table: ") + m_tableName + " : " + errors);
     }
     m_didForeigns = !m_foreigns.empty();
   }
 
   // Do all foreign keys
   MForeignMap oneFKey;
-  CString lastPrimTable;
-  CString lastConstraint;
+  XString lastPrimTable;
+  XString lastConstraint;
   for(auto& foreign : m_foreigns)
   {
     // Other table OR another foreign key in the same table as the last one!
@@ -576,7 +576,7 @@ DDLCreateTable::GetForeignKeyInfo()
 void
 DDLCreateTable::GetTriggerInfo()
 {
-  CString errors;
+  XString errors;
 
   if(m_didTriggers)
   {
@@ -584,7 +584,7 @@ DDLCreateTable::GetTriggerInfo()
     m_info->MakeInfoTableTriggers(m_triggers,errors,m_schema,m_tableName);
     if(!errors.IsEmpty())
     {
-      throw StdException(CString("Cannot find the triggers for table: ") + m_tableName + " : " + errors);
+      throw StdException(XString("Cannot find the triggers for table: ") + m_tableName + " : " + errors);
     }
     m_didTriggers = !m_triggers.empty();
   }
@@ -592,7 +592,7 @@ DDLCreateTable::GetTriggerInfo()
   // Print all triggers
   for(auto& trigger : m_triggers)
   {
-    CString line = m_info->GetCATALOGTriggerCreate(trigger);
+    XString line = m_info->GetCATALOGTriggerCreate(trigger);
     StashTheLine(line);
   }
 }
@@ -600,8 +600,8 @@ DDLCreateTable::GetTriggerInfo()
 void
 DDLCreateTable::GetSequenceInfo()
 {
-  CString errors;
-  CString line;
+  XString errors;
+  XString line;
 
   if(!m_didSequence)
   {
@@ -609,7 +609,7 @@ DDLCreateTable::GetSequenceInfo()
     m_info->MakeInfoTableSequences(m_sequences,errors,m_schema,m_tableName);
     if(!errors.IsEmpty())
     {
-      throw StdException(CString("Cannot find the sequences for table: ") + m_tableName + " : " + errors);
+      throw StdException(XString("Cannot find the sequences for table: ") + m_tableName + " : " + errors);
     }
     m_didSequence = !m_sequences.empty();
   }
@@ -625,8 +625,8 @@ DDLCreateTable::GetSequenceInfo()
 void
 DDLCreateTable::GetAccessInfo(bool p_strict /*=false*/)
 {
-  CString errors;
-  CString line;
+  XString errors;
+  XString line;
 
   if(!m_didPrivileges)
   {
@@ -635,7 +635,7 @@ DDLCreateTable::GetAccessInfo(bool p_strict /*=false*/)
     m_info->MakeInfoTablePrivileges(m_access,errors,m_schema,m_tableName);
     if(!errors.IsEmpty())
     {
-      throw StdException(CString("Cannot find the privileges for table: ") + m_tableName + " : " + errors);
+      throw StdException(XString("Cannot find the privileges for table: ") + m_tableName + " : " + errors);
     }
     m_didPrivileges = !m_access.empty();
   }
@@ -663,7 +663,7 @@ DDLCreateTable::GetAccessInfo(bool p_strict /*=false*/)
 //////////////////////////////////////////////////////////////////////////
 
 bool
-DDLCreateTable::FindSchemaName(CString p_tableName)
+DDLCreateTable::FindSchemaName(XString p_tableName)
 {
   int pos = p_tableName.Find('.');
   if (pos > 0)
@@ -677,7 +677,7 @@ DDLCreateTable::FindSchemaName(CString p_tableName)
 }
 
 void
-DDLCreateTable::StashTheLine(CString p_line)
+DDLCreateTable::StashTheLine(XString p_line)
 {
   // See if we have work to do
   if(p_line.IsEmpty())
@@ -688,8 +688,8 @@ DDLCreateTable::StashTheLine(CString p_line)
   m_statements.push_back(p_line);
 }
 
-CString
-DDLCreateTable::ReplaceLengthPrecScale(CString p_template
+XString
+DDLCreateTable::ReplaceLengthPrecScale(XString p_template
                                        ,int p_length
                                        ,int p_precision
                                        ,int p_scale)
@@ -705,7 +705,7 @@ DDLCreateTable::ReplaceLengthPrecScale(CString p_template
   }
 
   // Format as strings
-  CString length,precision,scale;
+  XString length,precision,scale;
   length.Format("%d",p_length);
   precision.Format("%d",p_precision);
   scale.Format("%d",p_scale);
@@ -724,8 +724,8 @@ DDLCreateTable::ReplaceLengthPrecScale(CString p_template
   return p_template;
 }
 
-CString
-DDLCreateTable::FormatColumnName(CString p_column,int p_length)
+XString
+DDLCreateTable::FormatColumnName(XString p_column,int p_length)
 {
   // Adhere to catalog storage
   if(m_info->GetRDBMSIsCatalogUpper())
@@ -740,7 +740,7 @@ DDLCreateTable::FormatColumnName(CString p_column,int p_length)
   // Circumvent locally reserved words
   if(!m_info->IsCorrectName(p_column))
   {
-    CString quote = m_info->GetKEYWORDReservedWordQuote();
+    XString quote = m_info->GetKEYWORDReservedWordQuote();
     p_column = quote + p_column + quote;
   }
 
@@ -789,7 +789,7 @@ DDLCreateTable::FindIndexFilter(MetaIndex& p_index)
 }
 
 bool
-DDLCreateTable::IsStrictODBCPrivilege(CString p_privilege)
+DDLCreateTable::IsStrictODBCPrivilege(XString p_privilege)
 {
   if(p_privilege.CompareNoCase("SELECT")     == 0) return true;
   if(p_privilege.CompareNoCase("INSERT")     == 0) return true;

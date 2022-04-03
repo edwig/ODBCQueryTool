@@ -2,7 +2,7 @@
 //
 // File: SQLAssociation.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -34,8 +34,8 @@ namespace SQLComponents
 
 typedef struct _primaryForeign
 {
-  CString     m_primary;
-  CString     m_foreign;
+  XString     m_primary;
+  XString     m_foreign;
   SQLVariant* m_value;
 }
 PrimaryForeign;
@@ -56,13 +56,13 @@ public:
   // SETTERS
   void SetMaster      (SQLDataSet* p_master)  { m_master = p_master; };
   void SetDetail      (SQLDataSet* p_detail)  { m_detail = p_detail; };
-  void SetAssociation (CString p_primaryColumn,CString p_foreignColumn,SQLVariant* p_value = NULL);
+  void SetAssociation (XString p_primaryColumn,XString p_foreignColumn,SQLVariant* p_value = NULL);
   void SetAssociation (int p_num,SQLVariant* p_value);  // For reuse of the association
 
   // GETTERS
   SQLDataSet* GetMaster()       { return m_master; };
   SQLDataSet* GetDetail()       { return m_detail; };
-  CString     GetAssocationName (int p_column);
+  XString     GetAssocationName (int p_column);
   SQLVariant* GetAssocationValue(int p_column);
 
 private:

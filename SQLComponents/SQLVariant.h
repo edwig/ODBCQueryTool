@@ -2,7 +2,7 @@
 //
 // File: SQLVariant.h
 //
-// Copyright (c) 1998-2021 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -76,7 +76,7 @@ public:
    SQLVariant(const SQLVariant& p_var);       // From another SQLVariant reference
      // Type constructors
    SQLVariant(const char* p_data);            // SQL_C_CHAR
-   SQLVariant(CString& p_data);               // SQL_C_CHAR
+   SQLVariant(XString& p_data);               // SQL_C_CHAR
    SQLVariant(short p_short);                 // SQL_C_SHORT / SQL_C_SSHORT
    SQLVariant(unsigned short p_short);        // SQL_C_USHORT
    SQLVariant(int p_long);                    // SQL_C_LONG / SQL_C_SLONG
@@ -112,6 +112,7 @@ public:
    bool    IsNULL();
    bool    IsEmpty();
    bool    IsNumericType();
+   bool    IsDecimalType();
    bool    IsIntervalType();
    bool    IsDateTimeType();
 
@@ -158,7 +159,7 @@ public:
 
    // Access per type
    const char*          GetAsChar();
-   void                 GetAsString(CString& p_result);
+   void                 GetAsString(XString& p_result);
    void*                GetAsBinary();
    bool                 GetAsBoolean();
    short                GetAsSShort();
@@ -177,9 +178,9 @@ public:
    DATE_STRUCT*         GetAsDate();
    TIME_STRUCT*         GetAsTime();
    TIMESTAMP_STRUCT*    GetAsTimestamp();
-   CString              GetAsEuropeanTimestamp();
+   XString              GetAsEuropeanTimestamp();
    SQL_INTERVAL_STRUCT* GetAsInterval();
-   CString              GetAsSQLString();
+   XString              GetAsSQLString();
    // Access per complex type
    SQLDate              GetAsSQLDate();
    SQLTime              GetAsSQLTime();
@@ -190,18 +191,19 @@ public:
    
    // INFO about type names/values
    static  int          FindDatatype   (char* p_type);
-   static  char*        FindDatatype   (int   p_type);
+   static  const char*  FindDatatype   (int   p_type);
    static  int          FindParamtype  (char* p_type);
-   static  char*        FindParamtype  (int   p_type);
+   static  const char*  FindParamtype  (int   p_type);
    static  int          FindSQLDatatype(char* p_type);
-   static  char*        FindSQLDatatype(int   p_type);
+   static  const char*  FindSQLDatatype(int   p_type);
            int          FindDataTypeFromSQLType();
 
    // Assignment operator
    SQLVariant& operator  =(const SQLVariant& p_original);
    // Assignment operator from original data
    SQLVariant& operator  =(const char* p_data);              // SQL_C_CHAR
-   SQLVariant& operator  =(CString& p_data);                 // SQL_C_CHAR
+   SQLVariant& operator  =(XString& p_data);                 // SQL_C_CHAR
+   SQLVariant& operator  =(XString  p_data);                 // SQL_C_CHAR
    SQLVariant& operator  =(short p_data);                    // SQL_C_SHORT / SQL_C_SSHORT
    SQLVariant& operator  =(unsigned short p_data);           // SQL_C_USHORT
    SQLVariant& operator  =(int p_data);                      // SQL_C_LONG  / SQL_C_SLONG
@@ -275,7 +277,7 @@ public:
    operator SQLTimestamp();
    operator SQLInterval();
    operator SQLGuid();
-   operator CString();
+   operator XString();
    operator bcd();
 
 private:
