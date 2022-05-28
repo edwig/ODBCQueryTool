@@ -163,6 +163,9 @@
     <ClCompile Include="SQLInfoMariaDB.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SQLPrimaryKey.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BasicExcel.h">
@@ -332,6 +335,9 @@
     </ClInclude>
     <ClInclude Include="SQLComponentsVersion.h">
       <Filter>Configuration</Filter>
+    </ClInclude>
+    <ClInclude Include="SQLPrimaryKey.h">
+      <Filter>Headers Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -731,7 +731,7 @@ SQLTimestamp::ParseMoment(const XString& p_string)
       {
         // Extra time definition not recognized
         XString error;
-        error.Format("Extra timestamp not recognized: %d %s",interval,extraTime.GetString());
+        error.Format("Extra date not recognized: %d %s",interval,extraTime.GetString());
         throw StdException(error);
       }
       *this = SQLDate::Today();
@@ -801,6 +801,17 @@ SQLTimestamp::ParseMoment(const XString& p_string)
     SQLTime time(timeString); 
     SetTimestamp(date.Year(),date.Month(), date.Day(),
                  time.Hour(),time.Minute(),time.Second());
+
+    // Optional fraction part
+    int frac = timeString.Find('.');
+    if(frac >= 0)
+    {
+      CString fraction = timeString.Mid(frac + 1);
+      while(fraction.GetLength() < 9) fraction += '0';
+      if (fraction.GetLength() > 9) fraction = fraction.Left(9);
+      m_fraction = atoi(fraction);
+    }
+
     return;
   }
   // See if we have a time only
@@ -912,10 +923,10 @@ SQLTimestamp::AsXMLString(int p_precision /*=0*/) const
   return theStamp;
 }
 
-XString  
+CString  
 SQLTimestamp::AsXMLStringUTC(int p_precision /*=0*/) const
 {
-  XString theStamp;
+  CString theStamp;
   if(IsNull() == false)
   {
     SQLTimestamp stamp(*this);
@@ -928,32 +939,30 @@ SQLTimestamp::AsXMLStringUTC(int p_precision /*=0*/) const
     {
       theStamp += PrintFraction(p_precision);
     }
-    // Mark as UTC string, timezone difference
-    if(g_sql_timezone_hour == 0 && g_sql_timezone_minute == 0)
-    {
-      theStamp += "Z";  // Exact on the spot: Wintertime in London
-    }
-    else
-    {
-      theStamp += g_west_of_greenwich ? "-" : "+";
-      theStamp.AppendFormat("%2.2d:%2.2d",g_sql_timezone_hour,g_sql_timezone_minute);
-    }
+    // Add 'Z' for Zulu-time (UTC)
+    theStamp += "Z";
   }
   return theStamp;
 }
 
-XString
-SQLTimestamp::AsReadString(int p_precision /*=0*/) const
+CString
+SQLTimestamp::AsXMLStringTZ(int p_precision /*=0*/) const
 {
-  XString theStamp;
-  if(IsNull() == false)
+  CString theStamp;
+  if (IsNull() == false)
   {
-    theStamp.Format("%02d-%02d-%04d %02d:%02d:%02d"
-                   ,Day(), Month(), Year()
-                   ,Hour(),Minute(),Second());
-    if(m_fraction && p_precision)
+    theStamp.Format("%04d-%02d-%02dT%02d:%02d:%02d"
+                    ,Year(),Month(), Day()
+                    ,Hour(),Minute(),Second());
+    if (m_fraction && p_precision)
     {
       theStamp += PrintFraction(p_precision);
+    }
+    // Mark as UTC difference
+    if (g_sql_timezone_hour || g_sql_timezone_minute )
+    {
+      theStamp += g_west_of_greenwich ? "+" : "-";
+      theStamp.AppendFormat("%2.2d:%2.2d", g_sql_timezone_hour, g_sql_timezone_minute);
     }
   }
   return theStamp;

@@ -1238,6 +1238,7 @@ COEditorView::ScriptCommand(int p_line,CString &odbcCommand)
       else if(word == "select")     return ScriptCommandSelect   (p_line,tail);
       else if(word == "atexec")     return ScriptCommandAtExec   (p_line,tail);
       else if(word == "repeat")     return ScriptCommandRepeat   (p_line,tail);
+      else if(word == "exit")       return ScriptCommandExit     (p_line,tail);
 //    else if(word == "endrepeat")  return ScriptCommandEndRepeat(p_line,tail);
       else if(word.Left(8) == "variable")
       {
@@ -1676,6 +1677,19 @@ COEditorView::ScriptCommandRepeat(int p_line,CString p_tail)
     fprintf(m_scriptOutput,"-------------------   ---------------\n");
   }
   return result;
+}
+
+bool
+COEditorView::ScriptCommandExit(int p_line, CString p_tail)
+{
+  if(m_scriptOutput)
+  {
+    fprintf(m_scriptOutput,"==================\n");
+    fprintf(m_scriptOutput,"Exiting QueryTool!\n");
+    fprintf(m_scriptOutput,"Goodbye!\n");
+  }
+  AfxGetApp()->m_pMainWnd->PostMessage(WM_QUIT,0,0);
+  return true;
 }
 
 bool

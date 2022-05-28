@@ -46,14 +46,17 @@ class SQLDatabase;
 #define NANOSECONDS_PER_SEC 1000000000
 #endif
 // Modified Julian Day Shift from Epoch (Astronomically)
-// Actually it's 2,400,000.5 days (12:00 (noon) januari 1st -4713 BC)
+// Actually it's 2,400,000.5 days (12:00 (noon) January 1st -4713 BC)
 #define MJD_EPOCH 2400001
+
+// Difference between local time and UTC
+extern SQLInterval g_sql_timezone;
 
 // Storage of a timestamp is done by means of the exact number 
 // of seconds since MJD (Modified Julian Date). By doing this
 // the SQLTimestamps and SQLDates can be internally recalculated
 // as DateValue * SECONDS_PER_DAY = StampValue
-// MJD = (2,400,000.5) + 0.5 (17 nov 1858 instead of 16 nov 12:00 hours)
+// MJD = (2,400,000.5) + 0.5 (17 November 1858 instead of 16 November 12:00 hours)
 
 struct StampStorage
 {
@@ -65,10 +68,10 @@ struct StampStorage
   char  m_second;    // 0 - 59    seconds
 };
 
-// BEWARE: The epoch of the SQLDate class is 16 november 1858 12:00 hours (noon)
+// BEWARE: The epoch of the SQLDate class is 16 November 1858 12:00 hours (noon)
 //         with a DateValue of zero (0) for that date.
 // Timestamp is stored internally as a total number of seconds
-// since MJD + 0.5 = 17 nov 1858 instead of 16 nov 12:00 hours
+// since MJD + 0.5 = 17 November 1858 instead of 16 November 12:00 hours
 typedef __int64 StampValue;
 
 class SQLTimestamp
@@ -144,12 +147,11 @@ public:
   SQLTimestamp AddSeconds (__int64 p_number) const;
   SQLTimestamp AddFraction(int p_fraction) const;
 
-  XString  AsString      (int p_precision = 0) const;
-  XString  AsReadString  (int p_precision = 0) const;
-  XString  AsXMLString   (int p_precision = 0) const;
-  XString  AsXMLStringUTC(int p_precision = 0) const;
-
-  XString  AsSQLString(SQLDatabase* p_database) const;
+  XString  AsString      (int p_precision = 0) const;   // DD-MM-YYYY HH:MM:SS[.ffff]
+  XString  AsXMLString   (int p_precision = 0) const;   // YYYY-MM-DDTHH:MM:SS[.ffff]             LocalTime
+  XString  AsXMLStringTZ (int p_precision = 0) const;   // YYYY-MM-DDTHH:MM_SS[.ffff]{+/-}HH.MM   LocalTime + UTC offset
+  XString  AsXMLStringUTC(int p_precision = 0) const;   // YYYY-MM-DDTHH:MM:SS[.ffff]Z            UTC-Time  + Zulu
+  XString  AsSQLString(SQLDatabase* p_database) const;  // In current database default format
   SQLDate  AsSQLDate() const;
   SQLTime  AsSQLTime() const;
   void     AsTimeStampStruct(TIMESTAMP_STRUCT* p_struct) const;

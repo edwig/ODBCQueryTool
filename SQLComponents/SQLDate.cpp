@@ -983,13 +983,21 @@ SQLDate::ParseXMLDate(const XString& p_string,SQLTimestamp& p_moment)
       }
       // Store the fraction (if any)
       p_moment.SetFraction(fraction);
+
+      // Zero time. Add the offset from UTC (including daylight-savings-time)
+      if(sep6 == 'Z' || sep7 == 'Z')
+      {
+        extern SQLComponents::SQLInterval g_sql_timezone;
+        p_moment = p_moment + g_sql_timezone;
+      }
+
       return true;
     }
   }
   return false;
 }
 
-// Named date with short or long monthnames
+// Named date with short or long month names
 bool
 SQLDate::NamedDate(const XString& p_date,int& p_year,int& p_month,int& p_day)
 {
@@ -1050,7 +1058,7 @@ SQLDate::NamedDate(const XString& p_date,int& p_year,int& p_month,int& p_day)
         int spacepos2 = after.Find(' ');
         if(spacepos2 > 0)
         {
-          // Two parts after the monthname
+          // Two parts after the month name
           p_day  = atoi(after);
           p_year = atoi(after.Mid(spacepos2 + 1));
         }

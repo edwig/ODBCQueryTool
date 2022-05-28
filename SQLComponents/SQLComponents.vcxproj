@@ -224,6 +224,7 @@
     <ClCompile Include="SQLLanguage.cpp" />
     <ClCompile Include="SQLMessage.cpp" />
     <ClCompile Include="SQLMutation.cpp" />
+    <ClCompile Include="SQLPrimaryKey.cpp" />
     <ClCompile Include="SQLQuery.cpp" />
     <ClCompile Include="SQLRecord.cpp" />
     <ClCompile Include="SQLStatement.cpp" />
@@ -294,6 +295,7 @@
     <ClInclude Include="SQLMetaInfo.h" />
     <ClInclude Include="SQLMutation.h" />
     <ClInclude Include="SQLOperator.h" />
+    <ClInclude Include="SQLPrimaryKey.h" />
     <ClInclude Include="SQLQuery.h" />
     <ClInclude Include="SQLRecord.h" />
     <ClInclude Include="SQLStatement.h" />

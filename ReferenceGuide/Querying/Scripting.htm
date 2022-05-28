@@ -521,7 +521,15 @@
 
     <p><font face="Courier New">:repeat &lt;seconds-interval&gt; [ WHOLEMINUTES ] [TIMES &lt;n&gt;];<br>
     ....<br>
-    :endrepeat</font></p>
+    :endrepeat;</font></p>
+
+    <h2>The 'exit' command</h2>
+
+    <p>When done with your script, and you like to end the ODBCQueryTool session - unbelievable but possible - then you can use
+    the 'exit' command to return to the operating system.</p>
+
+    <p><font face="Courier New">....<br>
+    :exit;</font></p>
 
     <h2><font face="Verdana">The command line format</font></h2>
 
@@ -576,12 +584,9 @@
     <p><font face="Courier New">-- Close our transcript<br>
     :file close;<br>
     -- Now check that the transcript file<br>
-    -- has NO line with the word ERROR in it!!<br></font></p>
-
-    <p>&nbsp;</p>
-
-    <p><br>
+    -- has NO line with the word ERROR in it!!<br>
     <br>
-    &nbsp;</p>
+    -- return to the OS!<br>
+    :exit;</font></p>
 </body>
 </html>

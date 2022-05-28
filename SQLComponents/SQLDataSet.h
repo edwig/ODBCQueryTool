@@ -63,6 +63,8 @@ typedef struct _sql_parameter
 }
 SQLParameter;
 
+typedef void (*LPFN_CALLBACK)(void*);
+
 class AggregateInfo
 {
 public:
@@ -145,12 +147,16 @@ public:
   virtual void SetDatabase(SQLDatabase* p_database);
   // Set SELECT one or more columns to select
   virtual void SetSelection(XString p_selection);
+  // Set FROM selection of several tables (more than one!)
+  virtual void SetFromTables(XString p_from);
   // Set FROM  primary table (for updates)
   virtual void SetPrimaryTable(XString p_schema, XString p_tableName, XString p_alias = "");
   // Set WHERE condition by hand
   virtual void SetWhereCondition(XString p_condition);
   // Set WHERE filters for a query
   virtual void SetFilters(SQLFilterSet* p_filters);
+  // Add filter to current SQLFilterSet
+  virtual void SetFilter(SQLFilter p_filter);
   // Set GROUP BY 
   virtual void SetGroupBy(XString p_groupby);
   virtual void AddGroupby(XString p_property);
@@ -213,18 +219,19 @@ public:
   XString      GetSequenceName();
   // Getting the query settings
   XString      GetSelection();
+  XString      GetFromTables();
   XString      GetWhereCondition();
   XString      GetGroupBy();
   XString      GetOrderBy();
   SQLFilterSet* GetHavings();
-  // Options
-  bool         GetBindPrimary();
+  // Exposing the statement for a SQLCancel
+  void         SetCancelCallback(LPFN_CALLBACK p_cancelFunction);
 
   // XML Saving and loading
   bool         XMLSave(XString p_filename,XString p_name,StringEncoding p_encoding = StringEncoding::ENC_UTF8);
   bool         XMLLoad(XString p_filename);
   void         XMLSave(XMLMessage* p_msg,XMLElement* p_dataset);
-  void         XMLLoad(XMLMessage* p_msg,XMLElement* p_dataset);
+  void         XMLLoad(XMLMessage* p_msg,XMLElement* p_dataset,LONG* p_abort = nullptr);
 
 protected:
   // Set parameters in the query
@@ -282,6 +289,7 @@ protected:
   // The query to run
   XString      m_query;
   XString      m_selection;
+  XString      m_fromTables;
   XString      m_whereCondition;
   XString      m_orderby;
   XString      m_groupby;
@@ -309,6 +317,8 @@ protected:
   // Maximum query timing
   int          m_queryTime { 0 };
   ULONG64      m_frequency { 0 };
+  // For canceling the select operation
+  LPFN_CALLBACK m_cancelFunction { nullptr };
 };
 
 inline void 
@@ -410,6 +420,12 @@ SQLDataSet::GetSelection()
 }
 
 inline XString
+SQLDataSet::GetFromTables()
+{
+  return m_fromTables;
+}
+
+inline XString
 SQLDataSet::GetWhereCondition()
 {
   return m_whereCondition;
@@ -431,6 +447,12 @@ inline SQLFilterSet*
 SQLDataSet::GetHavings()
 {
   return m_havings;
+}
+
+inline void
+SQLDataSet::SetCancelCallback(LPFN_CALLBACK p_cancelFunction)
+{
+  m_cancelFunction = p_cancelFunction;
 }
 
 inline void

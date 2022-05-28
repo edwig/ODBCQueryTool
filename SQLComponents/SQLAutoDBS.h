@@ -35,15 +35,24 @@ namespace SQLComponents
 class SQLAutoDBS
 {
 public:
-  SQLAutoDBS(SQLDatabasePool& p_pool,XString p_connection)
+  SQLAutoDBS(SQLDatabasePool& p_pool,XString p_connection,SQLDatabase* p_prior = nullptr)
             :m_pool(p_pool)
   {
-    m_database = m_pool.GetDatabase(p_connection);
+    if(p_prior)
+    {
+      m_database = p_prior;
+      m_poolDbs  = false;
+    }
+    else
+    {
+      m_database = m_pool.GetDatabase(p_connection);
+      m_poolDbs  = true;
+    }
   }
 
  ~SQLAutoDBS()
   {
-    if(m_database)
+    if(m_database && m_poolDbs)
     {
       m_database->RegisterLogContext(0,nullptr,nullptr,NULL);
       m_pool.GiveUp(m_database);
@@ -57,6 +66,7 @@ public:
   SQLDatabase* operator->()  { return  m_database; };
   SQLDatabase& operator*()   { return *m_database; };
 private:
+  bool             m_poolDbs;
   SQLDatabasePool& m_pool;
   SQLDatabase*     m_database;
 };

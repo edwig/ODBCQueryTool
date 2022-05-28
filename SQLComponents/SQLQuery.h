@@ -190,6 +190,10 @@ public:
   int         GetColumnLength(int p_column);
   // Get Display size of the column
   int         GetColumnDisplaySize(int p_column);
+  // Getting the database handle (if any)
+  HDBC        GetDatabaseHandle();
+  // Getting the statement handle (if any)
+  HSTMT       GetStatementHandle();
 
   // Getting the results of the query as a SQLVariant reference
   SQLVariant& operator[](int p_index);

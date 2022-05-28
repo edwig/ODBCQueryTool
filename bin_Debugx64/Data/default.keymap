@@ -1,0 +1,143 @@
+# File: OpenEitor.keymap
+# Description: OpenEitor keymap layout.
+# Please don't edit it manually, it'll be replaced without confirmation.
+# I think to copy it to Custom.keymap and edit will be a good idea.
+
+#File
+File.New                      Ctrl+N
+File.Open                     Ctrl+O
+File.Reload                   Ctrl+Q,R
+File.Close                    Ctrl+F4
+File.CloseAll                 Alt+Shift+F4
+File.Save                     Ctrl+S
+File.SaveAs                   Ctrl+Shift+S
+File.SaveAll                  Alt+Shift+S
+File.ShowFileLocation         Ctrl+Q,O
+File.PageSetup
+File.PrintSetup
+File.PrintPreview             Ctrl+Shift+P
+File.Print                    Ctrl+P
+File.Exit                     Alt+F4
+#Edit
+Edit.Undo                     Alt+Backspace
+Edit.Undo                     Ctrl+Z
+Edit.Redo                     Ctrl+R
+Edit.Cut                      Ctrl+X
+Edit.Cut                      Shift+Delete
+Edit.Copy                     Ctrl+C
+Edit.Copy                     Ctrl+Insert
+Edit.Paste                    Ctrl+V
+Edit.Paste                    Shift+Insert
+Edit.CutAppend                Ctrl+Shift+X
+Edit.CutAppend                Ctrl+Shift+Delete
+Edit.CutBookmarkedLines       Ctrl+K,X
+Edit.CopyAppend               Ctrl+Shift+C
+Edit.CopyAppend               Ctrl+Shift+Insert
+Edit.CopyBookmarkedLines      Ctrl+K,C
+Edit.Delete                   Delete
+Edit.DeletetoEndOfWord        Ctrl+Delete
+Edit.DeleteWordBack           Ctrl+Backspace
+Edit.DeleteLine               Ctrl+Y
+Edit.DeleteBookmarkedLines    Ctrl+K,D
+Edit.SelectWord               Ctrl+W
+Edit.SelectLine               Ctrl+L
+Edit.SelectAll                Ctrl+A
+Edit.ScrollUp                 Ctrl+Up
+Edit.ScrollToCenter           Num5
+Edit.ScrollDown               Ctrl+Down
+#Search
+Edit.Find                     Ctrl+F
+Edit.Replace                  Ctrl+H
+Edit.FindNext                 F3
+Edit.FindPrevious             Shift+F3
+Edit.GoTo                     Ctrl+G
+Edit.JumpNext                 F4
+Edit.JumpPrevious             Shift+F4
+Edit.ToggleBookmark           Ctrl+F2
+Edit.NextBookmark             F2
+Edit.PreviousBookmark         Shift+F2
+Edit.RemoveallBookmarks       Ctrl+Shift+F2
+#SetRandomBookmark
+Edit.SetRandomBookmark.0      Ctrl+Shift+0
+Edit.SetRandomBookmark.1      Ctrl+Shift+1
+Edit.SetRandomBookmark.2      Ctrl+Shift+2
+Edit.SetRandomBookmark.3      Ctrl+Shift+3
+Edit.SetRandomBookmark.4      Ctrl+Shift+4
+Edit.SetRandomBookmark.5      Ctrl+Shift+5
+Edit.SetRandomBookmark.6      Ctrl+Shift+6
+Edit.SetRandomBookmark.7      Ctrl+Shift+7
+Edit.SetRandomBookmark.8      Ctrl+Shift+8
+Edit.SetRandomBookmark.9      Ctrl+Shift+9
+#GetRandomBookmark
+Edit.GetRandomBookmark.0      Ctrl+0
+Edit.GetRandomBookmark.1      Ctrl+1
+Edit.GetRandomBookmark.2      Ctrl+2
+Edit.GetRandomBookmark.3      Ctrl+3
+Edit.GetRandomBookmark.4      Ctrl+4
+Edit.GetRandomBookmark.5      Ctrl+5
+Edit.GetRandomBookmark.6      Ctrl+6
+Edit.GetRandomBookmark.7      Ctrl+7
+Edit.GetRandomBookmark.8      Ctrl+8
+Edit.GetRandomBookmark.9      Ctrl+9
+Edit.FindMatch                Ctrl+]
+Edit.FindMatchSelect          Ctrl+Shift+]
+Edit.FindInFile               Ctrl+Shift+F
+#Format
+Edit.Sort                     Ctrl+K,S
+Edit.IndentSelection          Ctrl+I
+Edit.UndentSelection          Ctrl+U
+Edit.UntabifySelection        Ctrl+K,U
+Edit.TabifySelectionAll       Ctrl+K,T
+Edit.TabifySelectionLeading   Ctrl+K,L
+Edit.NormalizeKeyword         Ctrl+K,N
+Edit.Lowercase                Ctrl+Shift+Down
+Edit.Uppercase                Ctrl+Shift+Up
+Edit.Capitalize               Ctrl+K,A
+Edit.InvertCase               Ctrl+K,I
+Edit.CommentLine              Ctrl+>
+Edit.UncommentLine            Ctrl+<
+Edit.ExpandTemplate           Ctrl+Space
+Edit.DatetimeStamp            Ctrl+T
+#Text
+Edit.StreamSelection          F8
+Edit.ColumnSelection          Ctrl+Shift+F8
+Edit.ToggleSelectionMode      Ctrl+Q,B
+Edit.VisibleSpaces            Ctrl+Q,I
+Edit.LineNumbers              Ctrl+Q,L
+Edit.FileSettings             Ctrl+Q,F
+Edit.PermanentSettings        Ctrl+Q,P
+#View
+View.Toolbar
+View.StatusBar
+View.FilePanel                Alt+0
+View.Workbook
+View.NextPane                 F6
+View.PrevPane                 Shift+F6
+#Database Session
+Session.Connect	  	          Ctrl+D,C
+Session.Disconnect            Ctrl+D,D
+Session.Begin                 Ctrl+D,B
+Session.Commit                Ctrl+D,O
+Session.Rollback              Ctrl+D,R
+Session.ODBCReport            Ctrl+Q,R
+Session.SessionStatus         Ctrl+Q,S
+#Script
+Script.NextError              F4
+Script.Execute                F5
+Script.Native				  F9
+Script.ExecuteCurrent         F10
+Script.ExecuteAndStep         F11
+Script.FindTable              F12
+Script.TableDDL               Ctrl+F12
+Script.PreviousError          Shift+F4
+Script.Variables              Ctrl+B
+#Window
+Window.NewWindow              Ctrl+Q,N
+Window.Cascade
+Window.TileHorizontally
+Window.TileVertically
+Window.ArrangeIcons
+Window.LastWindow             Ctrl+Tab
+#Help
+Help.Index                    F1
+Help.AboutOpenEditor          Ctrl+Q,A

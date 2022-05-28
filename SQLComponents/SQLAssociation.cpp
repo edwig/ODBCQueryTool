@@ -203,8 +203,7 @@ SQLAssociation::FollowToDetails()
   for(unsigned ind = 0;ind < m_assocs.size();++ind)
   {
     SQLFilter filter(m_assocs[ind]->m_foreign,OP_Equal,m_assocs[ind]->m_value);
-    filters.AddFilter(&filter);
-    m_detail->SetFilters(&filters);
+    m_detail->SetFilter(filter);
   }
 
   bool result = m_detail->IsOpen() ? m_detail->Append() : m_detail->Open();

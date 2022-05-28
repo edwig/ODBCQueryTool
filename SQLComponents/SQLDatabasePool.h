@@ -72,7 +72,7 @@ public:
   // Set current max databases allowed
   void            SetMaxDatabases(unsigned p_maximum);
   // Read all database definitions from 'database.xml'
-  bool            ReadConnections(XString p_filename = "");
+  bool            ReadConnections(XString p_filename = "",bool p_reset = false);
 
   // Add a column rebind for this database session: No bounds checking!
   void            AddColumnRebind(int p_sqlType, int p_cppType);

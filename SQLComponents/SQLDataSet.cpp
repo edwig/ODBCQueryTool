@@ -193,8 +193,12 @@ SQLDataSet::Close()
   m_name.Empty();
   m_query.Empty();
   m_selection.Empty();
+  m_fromTables.Empty();
   m_primaryTableName.Empty();
   m_primaryAlias.Empty();
+
+  // Forget the cancellation
+  m_cancelFunction = nullptr;
 
   // Reset the open status
   m_open = false;
@@ -310,6 +314,17 @@ SQLDataSet::SetFilters(SQLFilterSet* p_filters)
   m_filters = p_filters;
 }
 
+// Add filter to current set of filters
+void
+SQLDataSet::SetFilter(SQLFilter p_filter)
+{
+  if(!m_filters)
+  {
+    m_filters = new SQLFilterSet();
+  }
+  m_filters->AddFilter(p_filter);
+}
+
 // Set top <n> records selection
 void
 SQLDataSet::SetTopNRecords(int p_top,int p_skip /*=0*/)
@@ -367,6 +382,7 @@ SQLDataSet::SetQuery(XString& p_query)
 {
   // Setting the total query supersedes these
   m_selection.Empty();
+  m_fromTables.Empty();
   m_whereCondition.Empty();
   m_groupby.Empty();
   m_orderby.Empty();
@@ -382,6 +398,13 @@ SQLDataSet::SetSelection(XString p_selection)
 {
   m_query.Empty();
   m_selection = p_selection;
+}
+
+void
+SQLDataSet::SetFromTables(XString p_from)
+{
+  m_query.Empty();
+  m_fromTables = p_from;
 }
 
 void
@@ -498,17 +521,23 @@ SQLDataSet::ParseSelection(SQLQuery& p_query)
   sql += m_selection.IsEmpty() ? XString("*") : m_selection;
   sql += "\n  FROM ";
 
-  if(!m_primarySchema.IsEmpty())
+  if(!m_fromTables.IsEmpty())
   {
-    sql += m_primarySchema + ".";
+    sql += m_fromTables;
   }
-  sql += m_primaryTableName;
-  if(!m_primaryAlias.IsEmpty())
+  else
   {
-    sql += " ";
-    sql += m_primaryAlias;
+    if(!m_primarySchema.IsEmpty())
+    {
+      sql += m_primarySchema + ".";
+    }
+    sql += m_primaryTableName;
+    if(!m_primaryAlias.IsEmpty())
+    {
+      sql += " ";
+      sql += m_primaryAlias;
+    }
   }
-
   int count = 0;
   int number = 0;
   ParameterSet::iterator it;
@@ -631,6 +660,12 @@ SQLDataSet::Open(bool p_stopIfNoColumns /*=false*/)
   {
     SQLQuery qry(m_database);
     SQLTransaction trans(m_database,m_name);
+
+    // Set a trap to stop an action that will take too much time...
+    if(m_cancelFunction)
+    {
+      (*m_cancelFunction)(qry.GetStatementHandle());
+    }
 
     // Get the select query
     query = GetSelectionSQL(qry);
@@ -1746,7 +1781,7 @@ SQLDataSet::XMLSave(XMLMessage* p_msg,XMLElement* p_dataset)
 }
 
 void
-SQLDataSet::XMLLoad(XMLMessage* p_msg,XMLElement* p_dataset)
+SQLDataSet::XMLLoad(XMLMessage* p_msg,XMLElement* p_dataset,LONG* p_abort)
 {
   XMLElement* structur = p_msg->FindElement(p_dataset,dataset_names[g_defaultLanguage][DATASET_STRUCTURE],false);
   XMLElement* records  = p_msg->FindElement(p_dataset,dataset_names[g_defaultLanguage][DATASET_RECORDS],  false);
@@ -1757,6 +1792,10 @@ SQLDataSet::XMLLoad(XMLMessage* p_msg,XMLElement* p_dataset)
   XMLElement* field = p_msg->GetElementFirstChild(structur);
   while(field)
   {
+    if(p_abort != nullptr && *p_abort > 0)
+    {
+      return;
+    }
     // Remember the name of the field
     XString name = field->GetValue();
     m_names.push_back(name);
@@ -1771,6 +1810,10 @@ SQLDataSet::XMLLoad(XMLMessage* p_msg,XMLElement* p_dataset)
   XMLElement* record = p_msg->GetElementFirstChild(records);
   while(record)
   {
+    if(p_abort != nullptr && *p_abort > 0)
+    {
+      return;
+    }
     SQLRecord* rec = InsertRecord();
     rec->XMLLoad(p_msg,record);
     // Next record

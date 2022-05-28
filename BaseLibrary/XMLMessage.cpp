@@ -29,6 +29,12 @@
 #include "XMLRestriction.h"
 #include "Namespace.h"
 
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+
 // Defined in FileBuffer
 extern unsigned long g_streaming_limit; // = STREAMING_LIMIT;
 
@@ -1289,6 +1295,33 @@ XMLMessage::DeleteAttribute(XMLElement* p_element,XString p_attribName)
       p_element->GetAttributes().erase(it);
       return true;
     }
+  }
+  return false;
+}
+
+// Clean up (delete) elements if empty
+bool
+XMLMessage::CleanUpElement(XMLElement* p_element,bool p_recurse)
+{
+  // Check element for root or nullptr reference
+  if(!p_element || p_element == m_root)
+  {
+    return false;
+  }
+
+  // Possible recurse through child elements
+  if(p_recurse && !p_element->GetChildren().empty())
+  {
+    // Use index number, as size can shrink during the loop!
+    for(int num = (int)p_element->GetChildren().size() - 1;num >= 0;--num)
+    {
+      CleanUpElement(p_element->GetChildren()[num],true);
+    }
+  }
+  if(p_element->GetChildren().empty() && p_element->GetValue().IsEmpty())
+  {
+    XMLElement* parent = p_element->GetParent();
+    return DeleteElement(parent,p_element);
   }
   return false;
 }

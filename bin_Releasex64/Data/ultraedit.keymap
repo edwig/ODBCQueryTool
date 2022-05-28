@@ -1,0 +1,149 @@
+# File: UltraEdit.keymap
+# Description: UltraEdit keymap layout.
+# Please don't edit it manually, it'll be replaced without confirmation.
+# I think to copy it to Custom.keymap and edit will be a good idea.
+# Please notify me if you find any mismatch.
+
+#File
+File.New                      Ctrl+N
+File.Open                     Ctrl+O
+File.Reload
+File.Close
+File.CloseAll
+File.Save                     Ctrl+S
+File.SaveAs                   F12
+File.SaveAll
+File.ShowFileLocation
+File.PageSetup
+File.PrintSetup
+File.PrintPreview
+File.Print                    Ctrl+P
+File.Exit
+#Edit
+Edit.Undo                     Alt+Backspace
+Edit.Undo                     Ctrl+Z
+Edit.Redo                     Ctrl+Y
+Edit.Cut                      Ctrl+X
+Edit.Cut                      Shift+Delete
+Edit.Copy                     Ctrl+C
+Edit.Copy                     Ctrl+Insert
+Edit.Paste                    Ctrl+V
+Edit.Paste                    Shift+Insert
+Edit.CutAppend                Ctrl+Shift+X
+Edit.CutBookmarkedLines
+Edit.CopyAppend               Ctrl+Shift+C
+Edit.CopyAppend
+Edit.CopyBookmarkedLines
+Edit.Delete
+Edit.DeletetoEndOfWord
+Edit.DeleteWordBack
+Edit.DeleteLine               Ctrl+E
+Edit.DeleteBookmarkedLines
+Edit.SelectWord               Ctrl+J
+Edit.SelectLine
+Edit.SelectAll                Ctrl+A
+Edit.ScrollUp
+Edit.ScrollToCenter
+Edit.ScrollDown
+#Search
+Edit.Find                     Ctrl+F
+Edit.Find                     Alt+F3
+Edit.Replace                  Ctrl+R
+Edit.FindNext                 F3
+Edit.FindNext                 Shift+F3
+Edit.FindPrevious             Ctrl+F3
+Edit.GoTo                     Ctrl+G
+Edit.JumpNext
+Edit.JumpPrevious
+Edit.ToggleBookmark           Ctrl+F2
+Edit.NextBookmark             F2
+Edit.PreviousBookmark         Alt+F2
+Edit.RemoveallBookmarks
+#SetRandomBookmark
+Edit.SetRandomBookmark.0
+Edit.SetRandomBookmark.1
+Edit.SetRandomBookmark.2
+Edit.SetRandomBookmark.3
+Edit.SetRandomBookmark.4
+Edit.SetRandomBookmark.5
+Edit.SetRandomBookmark.6
+Edit.SetRandomBookmark.7
+Edit.SetRandomBookmark.8
+Edit.SetRandomBookmark.9
+#GetRandomBookmark
+Edit.GetRandomBookmark.0
+Edit.GetRandomBookmark.1
+Edit.GetRandomBookmark.2
+Edit.GetRandomBookmark.3
+Edit.GetRandomBookmark.4
+Edit.GetRandomBookmark.5
+Edit.GetRandomBookmark.6
+Edit.GetRandomBookmark.7
+Edit.GetRandomBookmark.8
+Edit.GetRandomBookmark.9
+Edit.FindMatch
+Edit.FindMatchSelect		  Ctrl+B
+Edit.FindInFile
+#Format
+Edit.Sort
+Edit.IndentSelection
+Edit.UndentSelection
+Edit.UntabifySelection
+Edit.TabifySelectionAll
+Edit.TabifySelectionLeading
+Edit.NormalizeKeyword
+Edit.Lowercase                Ctrl+F5
+Edit.Uppercase                Alt+F5
+Edit.Capitalize               F5
+Edit.InvertCase               Shift+F5
+Edit.CommentLine
+Edit.UncommentLine
+Edit.ExpandTemplate           Ctrl+Space
+Edit.DatetimeStamp            F7
+#Text
+Edit.StreamSelection
+Edit.ColumnSelection
+Edit.ToggleSelectionMode      Alt+C
+Edit.VisibleSpaces
+Edit.LineNumbers
+Edit.FileSettings
+Edit.PermanentSettings
+#View
+View.Toolbar
+View.StatusBar
+View.FilePanel                Ctrl+U
+View.Workbook
+View.NextPane
+View.PrevPane
+#Window
+Window.NewWindow
+Window.Cascade
+Window.TileHorizontally
+Window.TileVertically
+Window.ArrangeIcons
+#Database Session
+Session.Connect		          Ctrl+D,C
+Session.Disconnect            Ctrl+D,D
+Session.Begin                 Ctrl+D,B
+Session.Commit                Ctrl+D,O
+Session.Rollback              Ctrl+D,R
+Session.ODBCReport            Ctrl+Q,R
+Session.SessionStatus         Ctrl+Q,S
+#Script
+Script.Native				  F9
+Script.Execute                F5
+Script.ExecuteCurrent         F10
+Script.ExecuteAndStep		  F11
+Script.FindTable              F12
+Script.NextError			  F4
+Script.PreviousError          Shift+F4
+Script.Variables              Ctrl+B
+#Help
+Help.AboutOpenEditor
+# Not implemented yet
+#File.OpenFileUnderCursor
+#Edit.SoftWordWrap            Ctrl+W
+#Edit.Output                  Ctrl+F7
+#Edit.Folding                 Ctrl+-
+
+Help.Index                    F1
