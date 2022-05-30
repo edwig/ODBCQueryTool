@@ -169,6 +169,11 @@ than the FIRST line of the grid will alsoo be selected into the
 variable array. First field will be variable1 and so on.
 You can turn this feature off with the ":select off;" command.
 
+:exit;
+
+Exits the ODBC-QueryTool.exe program (unbelievable but possible :-)
+and returns you to the MS-Windows operating system.
+
 A complete example
 ------------------
 This example is based on an Oracle driver. It just puts a number 
@@ -241,9 +246,3 @@ COMMAND LINE FORMAT
 <connectstring> is a standard ODBC "DSN=....;UID=....;PWD=....;"
 string to connect to an ODBC datasource
  
- 
-
-
-
-
-

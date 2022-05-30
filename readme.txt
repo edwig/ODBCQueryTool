@@ -22,6 +22,10 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes version 3.0.4
+--------------------------
+- Added the ":exit;" command to the script language
+
 Releasenotes version 3.0.3
 --------------------------
 - Fixed a bug when setting the font for the results grid

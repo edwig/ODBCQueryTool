@@ -9,11 +9,6 @@
 .suo/
 
 # Project specific files
-binDebug_x64/
-binDebug_win32/
-binRelease_x64/
-binRelease_win32/
-Marlin_3.rar
  
 # User-specific files (MonoDevelop/Xamarin Studio) 
 *.userprefs 
@@ -29,6 +24,8 @@ bld/
 Bb]in/
 [Oo]bj/
 [Ll]og/
+bin_Debugx64/
+bin_Releasex64/
 
 # Visual Studio 2015 cache/options directory 
 **/.vs/
@@ -77,6 +74,7 @@ artifacts/
 *.pidb
 *.svclog
 *.scc
+*.chm
 
 # Chutzpah Test files 
 _Chutzpah*

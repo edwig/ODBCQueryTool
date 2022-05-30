@@ -95,11 +95,18 @@ QueryToolApp::QueryToolApp() noexcept
 
 	// TODO: add construction code here,
 	// Place all significant initialization in InitInstance
-  m_dblKeyAccelInx      = -1;
-  m_hMutex              = NULL;
-  m_accelTable          = NULL;
-  m_pDocManager         = new CDocManagerExt;
-  m_isClosing           = false;
+  m_dblKeyAccelInx        = -1;
+  m_hMutex                = NULL;
+  m_accelTable            = NULL;
+  m_pDocManager           = new CDocManagerExt;
+  m_isClosing             = false;
+
+#ifdef _DEBUG
+  // DISABLE window placement.
+  // Should be fixed in version MFC 17.3.x
+  // https://docs.microsoft.com/en-us/answers/questions/855042/i-am-getting-an-exception-in-mfc-loadframe-from-a.html
+  m_bLoadWindowPlacement = false;
+#endif
 }
 
 QueryToolApp::~QueryToolApp()
