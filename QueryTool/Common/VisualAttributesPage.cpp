@@ -26,6 +26,7 @@
 #include "resource.h"
 #include <COMMON/ExceptionHelper.h>
 #include "COMMON/VisualAttributesPage.h"
+#include <StyleComboBox.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -98,7 +99,7 @@ BOOL APIENTRY
 enumFontsFunc (LPLOGFONT lpLogFont, LPTEXTMETRIC /*lpTextMetric*/, INT /*nFontType*/, LPVOID lpData)
 {
   StyleComboBox* combo = (StyleComboBox*)lpData;
-  if (combo->FindStringExact(0, lpLogFont->lfFaceName) == -1)
+  if(combo->FindStringExact(-1, lpLogFont->lfFaceName) == -1)
   {
     combo->AddString(lpLogFont->lfFaceName);
   }
@@ -109,8 +110,7 @@ BOOL APIENTRY
 enumFixedFontsFunc (LPLOGFONT lpLogFont, LPTEXTMETRIC /*lpTextMetric*/, INT /*nFontType*/, LPVOID lpData)
 {
   StyleComboBox* combo = (StyleComboBox*)lpData;
-  if((3 & lpLogFont->lfPitchAndFamily) == FIXED_PITCH && 
-      combo->FindStringExact(0,lpLogFont->lfFaceName) == -1)
+  if(((FIXED_PITCH & lpLogFont->lfPitchAndFamily) == FIXED_PITCH) && combo->FindStringExact(-1,lpLogFont->lfFaceName) == -1)
   {
     combo->AddString(lpLogFont->lfFaceName);
   }
@@ -129,7 +129,7 @@ enumFontSizesFunc (LPLOGFONT /*lpLogFont*/, LPTEXTMETRIC lpTextMetric, INT nFont
     nPointSize = VisualAttribute::PixelToPoint(lpTextMetric->tmHeight - lpTextMetric->tmInternalLeading);
     _itoa_s(nPointSize,buff,64, 10);
 
-    if (cb.FindStringExact(0, buff) == -1)
+    if (cb.FindStringExact(-1, buff) == -1)
     {
       cb.AddString(buff);
     }
@@ -142,7 +142,7 @@ enumFontSizesFunc (LPLOGFONT /*lpLogFont*/, LPTEXTMETRIC lpTextMetric, INT nFont
     {
       _itoa_s(i, buff,64, 10);
 
-      if (cb.FindStringExact(0, buff) == -1)
+      if (cb.FindStringExact(-1, buff) == -1)
       {
         cb.AddString(buff);
       }

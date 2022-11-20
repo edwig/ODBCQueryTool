@@ -426,6 +426,7 @@ StyleEdit::SetWindowText(CString p_string)
       CEdit::SetWindowText(m_emptyText);
     }
   }
+  Invalidate();
   DrawFrame();
 }
 

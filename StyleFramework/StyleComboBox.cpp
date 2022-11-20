@@ -1180,14 +1180,36 @@ StyleComboBox::DeleteString(UINT nIndex)
 int
 StyleComboBox::FindString(int nStartAfter,LPCTSTR lpszString) const
 {
-  if(nStartAfter < -1) nStartAfter = -1;
-  return m_listControl->FindString(nStartAfter,lpszString);
+  if(nStartAfter < -1)
+  {
+    nStartAfter = -1;
+  }
+  int len = (int) strlen(lpszString);
+  CString text;
+  for(int ind = 0;ind < m_listControl->GetCount();++ind)
+  {
+    m_listControl->GetText(ind,text);
+    if(text.Left(len).CompareNoCase(lpszString) == 0)
+    {
+      return ind;
+    }
+  }
+  return -1;
 }
 
 int   
 StyleComboBox::FindStringExact(int nIndexStart,LPCTSTR lpszFind) const
 {
-  return m_listControl->FindStringExact(nIndexStart,lpszFind);
+  CString text;
+  for(int ind = 0;ind < m_listControl->GetCount(); ++ind)
+  {
+    m_listControl->GetText(ind,text);
+    if(text.CompareNoCase(lpszFind) == 0)
+    {
+      return ind;
+    }
+  }
+  return -1;
 }
 
 BOOL  

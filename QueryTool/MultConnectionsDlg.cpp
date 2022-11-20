@@ -24,6 +24,7 @@
 #include <direct.h>
 #include <wincrypt.h>
 #include <SQLDatabase.h>
+#include <StyleFrameWork.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -220,6 +221,10 @@ MultConnectionsDlg::OnClick_list(NMHDR* hdr, LRESULT *pResult)
       m_UserPassword = set->GetPassword();
       m_DataSource   = set->GetDatasource();
       m_Safty        = set->GetSafty();
+
+      int ind = m_comboDataSource.FindStringExact(0,m_DataSource);
+      m_comboDataSource.SetCurSel(ind);
+
       UpdateData(Data2Controls);
     }
   }
