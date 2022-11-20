@@ -19,9 +19,6 @@
 //
 #pragma once
 #include "GrayWindow.h"
-#include "StyleColors.h"
-#include "StyleFonts.h"
-#include "StyleMacros.h"
 #include <afxframewndex.h>
 
 class StyleFrameWnd : public CFrameWndEx

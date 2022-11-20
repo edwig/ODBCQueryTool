@@ -20,8 +20,9 @@
 #pragma once
 #include "SkinScrollBar.h"
 
+#define TIMER_UPDATE              100               // Update the scrollbars timer ID
+#define FRAME_FIRST_SCROLLBARS    100               // Update scrollbars after this amount of time (milliseconds)
 #define FRAME_DEFAULT_COLOR       RGB(0x7F,0x7F,0x7F)
-#define FRAME_FIRST_SCROLLBARS    100
 #define FRAME_MINIMAL_BORDER      1
 
 // Skin frame for controls

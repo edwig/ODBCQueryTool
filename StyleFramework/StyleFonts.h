@@ -24,31 +24,37 @@
 #define StyleFontName "Verdana"       // Standard font for dialogs
 #define EditFontName  "Courier New"   // Standard edit font
 
-#define SMALLFONTSIZE      MulDiv( 8, 96, StyleFonts::logpixelsy()) //  8
-#define DIALOOGFONTSIZE    MulDiv(10, 96, StyleFonts::logpixelsy()) // 10
-#define STANDAARDFONTSIZE  MulDiv(10, 96, StyleFonts::logpixelsy()) // 10
-#define ERRORFONTSIZE      MulDiv(12, 96, StyleFonts::logpixelsy()) // 12
-#define CAPTIONTEXTSIZE    MulDiv(18, 96, StyleFonts::logpixelsy()) // 18
+// By defining static values, the screen size scaling of MS-Windows 10 works correctly (again)
+#define DIALOOGFONTSIZE    10 // MulDiv(10, 96, StyleFonts::logpixelsy())
+#define STANDARDFONTSIZE   10 // MulDiv(10, 96, StyleFonts::logpixelsy())
+#define ERRORFONTSIZE      12 // MulDiv(12, 96, StyleFonts::logpixelsy())
+#define CAPTIONTEXTSIZE    18 // MulDiv(18, 96, StyleFonts::logpixelsy())
 
-#define CaptionFontString       StyleFontName + CString(";") + IntegerToString(CAPTIONTEXTSIZE)     + CString(";") + IntegerToString(FW_BOLD)
-#define DialogFontString        StyleFontName + CString(";") + IntegerToString(STANDAARDFONTSIZE)   + CString(";") + IntegerToString(FW_NORMAL)
-#define DialogFontBoldString    StyleFontName + CString(";") + IntegerToString(STANDAARDFONTSIZE)   + CString(";") + IntegerToString(FW_HEAVY)
-#define EditorFontString        EditFontName  + CString(";") + IntegerToString(STANDAARDFONTSIZE)   + CString(";") + IntegerToString(FW_NORMAL)
-#define ErrorFontString         StyleFontName + CString(";") + IntegerToString(ERRORFONTSIZE)       + CString(";") + IntegerToString(FW_BOLD) 
-#define ListFontString          StyleFontName + CString(";") + IntegerToString(SMALLFONTSIZE)       + CString(";") + IntegerToString(FW_NORMAL)
+#define CaptionFontString       StyleFontName + CString(";") + IntegerToString(CAPTIONTEXTSIZE)    + CString(";") + IntegerToString(FW_BOLD)
+#define DialogFontString        StyleFontName + CString(";") + IntegerToString(STANDARDFONTSIZE)   + CString(";") + IntegerToString(FW_NORMAL)
+#define DialogFontBoldString    StyleFontName + CString(";") + IntegerToString(STANDARDFONTSIZE)   + CString(";") + IntegerToString(FW_HEAVY)
+#define EditorFontString        EditFontName  + CString(";") + IntegerToString(STANDARDFONTSIZE)   + CString(";") + IntegerToString(FW_NORMAL)
+#define ErrorFontString         StyleFontName + CString(";") + IntegerToString(ERRORFONTSIZE)      + CString(";") + IntegerToString(FW_BOLD) 
 
 class StyleFonts
 {
 public:
   StyleFonts();
+  bool SetFactor(int p_factor);
+  int  GetFactor();
+
   static int logpixelsy();
   static LOGFONT MakeLOGFONTFromString(CString fontstring);
 
   CFont CaptionTextFont;
   CFont DialogTextFont;
   CFont DialogTextFontBold;
+  CFont EditorTextFont;
   CFont ErrorTextFont;
-  CFont ListTextFont;
+private:
+  void  ReCreateFonts();
+
+  int   m_factor = 100;
 };
 
-static StyleFonts STYLEFONTS;
+extern StyleFonts STYLEFONTS;

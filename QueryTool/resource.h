@@ -3,10 +3,10 @@
 // Used by QueryTool.rc
 //
 #define IDCANCEL2                       3
-#define IDC_BOODSCHAP                   10
 #define IDC_TOAST                       11
 #define IDC_MONTH                       12
 #define IDM_ABOUTBOX                    0x010
+#define IDC_BOODSCHAP                   20
 #define IDD_ABOUTBOX                    100
 #define IDR_MAINFRAME                   128
 #define IDR_MAINFRAME_256               129
@@ -24,8 +24,9 @@
 #define IDB_SCROLLBAR4                  141
 #define IDB_SCROLLBAR5                  142
 #define IDB_SCROLLBAR6                  143
-#define IDD_CALENDAR                    144
-#define IDI_CALENDAR                    145
+#define IDB_SCROLLBAR7                  144
+#define IDD_CALENDAR                    145
+#define IDI_CALENDAR                    146
 #define IDB_MLD_STOP                    150
 #define IDB_MLD_INFO                    151
 #define IDB_MLD_VRAAG                   152
@@ -186,6 +187,7 @@
 #define IDR_SYSMENU                     322
 #define IDD_DONATE                      323
 #define IDB_PAYPAL                      325
+#define IDB_BITMAP2                     326
 #define IDC_OE_WORKBOOK_TAB             1000
 #define IDC_OESA_LIST                   1000
 #define IDC_EF_ALL_WINDOWS              1001
@@ -580,7 +582,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        326
+#define _APS_NEXT_RESOURCE_VALUE        327
 #define _APS_NEXT_COMMAND_VALUE         50128
 #define _APS_NEXT_CONTROL_VALUE         1052
 #define _APS_NEXT_SYMED_VALUE           100

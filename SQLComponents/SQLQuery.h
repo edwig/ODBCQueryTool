@@ -190,6 +190,8 @@ public:
   int         GetColumnLength(int p_column);
   // Get Display size of the column
   int         GetColumnDisplaySize(int p_column);
+  // Getting the database (if any)
+  SQLDatabase* GetDatabase();
   // Getting the database handle (if any)
   HDBC        GetDatabaseHandle();
   // Getting the statement handle (if any)
@@ -342,6 +344,12 @@ inline SQLVariant&
 SQLQuery::operator[](int p_index)
 {
   return *GetColumn(p_index);
+}
+
+inline SQLDatabase*
+SQLQuery::GetDatabase()
+{
+  return m_database;
 }
 
 // End of namespace

@@ -28,6 +28,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+using namespace ThemeColor;
+
 IMPLEMENT_DYNAMIC(StyleComboBox,CComboBox)
 
 StyleComboBox::StyleComboBox()
@@ -119,6 +121,9 @@ END_MESSAGE_MAP()
 void 
 StyleComboBox::PreSubclassWindow()
 {
+  SetFont(&STYLEFONTS.DialogTextFont);
+  ScaleControl(this);
+
   // Getting the default combobox implementation
   COMBOBOXINFO info;
   memset(&info,0,sizeof(COMBOBOXINFO));
@@ -134,6 +139,22 @@ StyleComboBox::PreSubclassWindow()
   {
     ::DestroyWindow(info.hwndList);
   }
+
+  // Owner draw combo boxes get other dimensions, so correct these
+  if((GetStyle() & CBS_OWNERDRAWFIXED) && GetSFXSizeFactor() != 100)
+  {
+    int height = (20 * GetSFXSizeFactor()) / 100;
+
+    CRect rect;
+    ::GetWindowRect(info.hwndCombo,&rect);
+
+    CWnd* parent = GetParent();
+    if(parent)
+    {
+      parent->ScreenToClient(rect);
+    }
+    ::MoveWindow(info.hwndCombo,rect.left,rect.top,rect.Width(),height,TRUE);
+  }
 }
 
 void
@@ -147,6 +168,7 @@ StyleComboBox::InitSkin()
   // Create our own sub-controls!
   CreateEditControl();
   CreateListControl();
+
 }
 
 void
@@ -183,9 +205,11 @@ StyleComboBox::CreateEditControl()
   m_itemControl->SetBorderSize(3);
   m_itemControl->SetComboBox(this);
   m_itemControl->InitSkin();
-  m_itemControl->GetSkin()->SetMouseCapture(FALSE,TME_HOVER);
   m_itemControl->SetInitCorrectly();
   m_itemControl->SetAutoComplete();
+
+  // Trigger the NCCALCSIZE procedure
+  m_itemControl->SetWindowPos(nullptr,rect.left,rect.top,rect.Width(),rect.Height(),SWP_FRAMECHANGED);
 }
 
 void 
@@ -193,8 +217,8 @@ StyleComboBox::CreateListControl()
 {
   CRect rect(0,0,0,0);
   DWORD cbstyle = GetStyle();
-  DWORD style   = LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_POPUP | LBS_NOTIFY;
-  DWORD styleEx = WS_EX_TOOLWINDOW | WS_EX_TOPMOST;
+  DWORD style   = LBS_OWNERDRAWFIXED | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_POPUP | LBS_NOTIFY;
+  DWORD styleEx = WS_EX_TOOLWINDOW   | WS_EX_TOPMOST;
 
   if(cbstyle & CBS_OWNERDRAWVARIABLE)
   {
@@ -381,7 +405,7 @@ StyleComboBox::HideComboList()
 void 
 StyleComboBox::PostHideComboList() 
 {
-  // Provide your own override if neccessary
+  // Provide your own override if necessary
 }
 
 int
@@ -468,7 +492,6 @@ StyleComboBox::PositionDropList(int p_width,int p_height)
     skin->SetWindowPos(0,rc.left,rc.bottom - 1,p_width,p_height,SWP_NOREDRAW | SWP_NOACTIVATE);
   }
   m_listControl->ModifyStyle(0,WS_VISIBLE);
-  m_listControl->SetFocus();
   skin->SkinSetCapture();
   skin->SkinSetMouseTracking();
   skin->ShowWindow(SW_SHOW);
@@ -672,7 +695,8 @@ StyleComboBox::OnGetItemData(WPARAM wParam, LPARAM lParam)
 LRESULT 
 StyleComboBox::OnGetItemHeight(WPARAM wParam, LPARAM lParam)
 {
-  return GetItemHeight((int)wParam);
+  int height = GetItemHeight((int)wParam);
+  return (height * GetSFXSizeFactor()) / 100;
 }
 
 LRESULT 
@@ -919,7 +943,6 @@ StyleComboBox::OnDropdown()
   ShowComboList();
   PostShowComboList();
   m_buttonDown = true;
-  m_listControl->SetFocus();
 }
 
 void
@@ -1117,7 +1140,14 @@ StyleComboBox::OnSize(UINT nType, int cx, int cy)
     rect.right -= rect.Height() - 1;
 
     SkinScrollWnd* frame = m_itemControl->GetSkin();
-    frame->MoveWindow(&rect);
+    if(frame)
+    {
+      frame->MoveWindow(&rect);
+    }
+    else
+    {
+      m_itemControl->MoveWindow(&rect);
+    }
   }
 }
 
@@ -1598,14 +1628,14 @@ StyleComboBox::OnPaint()
     this->GetClientRect(&rcItem);
 
     // Find the arrow color
-    COLORREF color = ThemeColor::_Color1;
+    COLORREF color = ThemeColor::GetColor(Colors::AccentColor1);
     if(m_arrowColor)
     {
       color = m_arrowColor;
     }
     else if(!this->IsWindowEnabled())
     {
-      color = ThemeColor::_Color2;
+      color = ThemeColor::GetColor(Colors::AccentColor2);
     }
 
     // Create pen
@@ -1616,14 +1646,14 @@ StyleComboBox::OnPaint()
     // Paint the button
     int size = rcItem.Height();
     CRect but(rcItem.right-size,rcItem.top,rcItem.right,rcItem.bottom);
-    DWORD background = ClrEditBkgnd;
+    DWORD background = ThemeColor::GetColor(Colors::ColorCtrlBackground);
     if(m_buttonDown)
     {
-      background = ComboBoxDropped;
+      background = ThemeColor::GetColor(Colors::ColorComboDropped);
     }
     else if(m_itemControl->GetHoverOver())
     {
-      background = ComboBoxActive;
+      background = ThemeColor::GetColor(Colors::ColorComboActive);
     }
     dc->FillSolidRect(but, background);
     but.CenterPoint();
@@ -1759,7 +1789,7 @@ SCBTextEdit::OnChar(UINT nChar,UINT nRepCnt,UINT nFlags)
   CString text;
   CString after;
 
-  // Send CBN_EDITUPDATE: A textfield is about to be changed
+  // Send CBN_EDITUPDATE: A text field is about to be changed
   m_combo->OnEditUpdate();
 
   // Check auto completion
@@ -1799,19 +1829,19 @@ SCBTextEdit::OnChar(UINT nChar,UINT nRepCnt,UINT nFlags)
   {
     int base = m_combo->GetCurSel();
     int find = 0;
-//     if (m_origText.GetLength() > 1)
-//     {
-//       find = m_combo->FindString(0,m_origText);
-//     }
-//     else
-//     {
-//       find = m_combo->FindString(base - type, m_origText);
-//    }
-//    if(find == -1 && base > 0)
-//    {
+    if (m_origText.GetLength() > 1)
+    {
+      find = m_combo->FindString(0,m_origText);
+    }
+    else
+    {
+       find = m_combo->FindString(base - type, m_origText);
+    }
+    if(find == -1 && base > 0)
+    {
       // Search from the beginning, in case we searched past the end
       find = m_combo->FindString(-1,m_origText);
-//    }
+    }
     if(find >= 0)
     {
       CString total;
@@ -1879,6 +1909,11 @@ SCBTextEdit::OnSetFocus(CWnd* p_prev)
   CEdit::OnSetFocus(p_prev);
   CheckAutoCompletion();
   DrawFrame();
+
+  if((m_combo->GetStyle() & CBS_DROPDOWNLIST) == CBS_DROPDOWN)
+  {
+    SetSel(0,-1,TRUE);
+  }
 }
 
 void
@@ -2008,6 +2043,12 @@ SCBListBox::SCBListBox()
 SCBListBox::~SCBListBox()
 {
   DestroyWindow();
+}
+
+void
+SCBListBox::PreSubclassWindow()
+{
+  SetFont(&STYLEFONTS.DialogTextFont);
 }
 
 bool
@@ -2284,9 +2325,17 @@ SCBListBox::OnMouseMove(UINT nFlags,CPoint point)
 
     if(PtInRect(rcItem,point))
     {
+      // Current item
+      CRect rcCurrent;
+      int current = GetCurSel();
+      GetItemRect(current, &rcCurrent);
+
       // Change selection
       SetCurSel(index);
-      GetSkin()->DrawFrame();
+      // Paint optimizations:
+      // Only redraw the changed items!
+      InvalidateRect(rcCurrent);
+      InvalidateRect(rcItem);
     }
   }
 }
@@ -2485,7 +2534,7 @@ SCBListBox::PreTranslateMessage(MSG* pMsg)
       return TRUE;
     }
 
-    if (nchar <= 0x7F)
+    if (nchar <= 0x7F && !(nchar == VK_LEFT || nchar == VK_UP || nchar == VK_RIGHT || nchar == VK_DOWN))
     {
       if(m_combo->GetTypeBuffer() && GetTickCount() < (m_keyboardTime + COMBO_KEYBOARD_CACHE))
       {
@@ -2530,5 +2579,25 @@ void WINAPI DDX_CBString(CDataExchange* pDX,int nIDC,StyleComboBox& p_control,CS
   else
   {
     p_control.SetWindowText(p_text);
+  }
+}
+
+void WINAPI DDX_CBIndex(CDataExchange* pDX,int nIDC,StyleComboBox& p_control,int& p_index)
+{
+  CComboBox& parent = reinterpret_cast<CComboBox&>(p_control);
+  DDX_Control(pDX,nIDC,parent);
+  p_control.InitSkin();
+
+  if(pDX->m_bSaveAndValidate)
+  {
+    CString text;
+    p_control.GetWindowText(text);
+    p_index = atoi(text);
+  }
+  else
+  {
+    CString text;
+    text.Format("%d",p_index);
+    p_control.SetWindowText(text);
   }
 }

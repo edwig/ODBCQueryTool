@@ -308,7 +308,7 @@ SQLInfoInformix::GetKEYWORDCurrentUser() const
 
 // Connects to a default schema in the database/instance
 XString
-SQLInfoInformix::GetSQLDefaultSchema(XString /*p_schema*/) const
+SQLInfoInformix::GetSQLDefaultSchema(XString /*p_user*/,XString /*p_schema*/) const
 {
   return "";
 }

@@ -1003,7 +1003,7 @@ SQLQuery::BindParameters()
     // Ugly hack!!
     if(m_database && m_database->GetDatabaseType() == RDBMS_SQLSERVER)
     {
-      if(sqlDatatype == SQL_CHAR && columnSize > 8000)
+      if((sqlDatatype == SQL_CHAR ||sqlDatatype == SQL_VARCHAR ) && columnSize > 8000)
       {
         columnSize = 8000;
       }
@@ -1527,7 +1527,7 @@ SQLQuery::RetrieveAtExecData()
                                  ,(SQLUSMALLINT) col
                                  ,(SQLUSMALLINT) var->GetDataType()
                                  ,(SQLPOINTER)   pointer
-                                 ,(SQLINTEGER)   size + extra
+                                 ,(SQLINTEGER)  ((size_t)size + extra)
                                  ,(SQLLEN*)      var->GetIndicatorPointer());
             if(SQL_SUCCEEDED(m_retCode))
             {

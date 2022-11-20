@@ -33,13 +33,53 @@ using namespace ThemeColor;
 UINT ThemeColor::g_msg_changed = 0;
 
 // Put default theme to Loyalty
-COLORREF ThemeColor::_Color1 = Skyblue1;
-COLORREF ThemeColor::_Color2 = Skyblue2;
-COLORREF ThemeColor::_Color3 = Skyblue3;
-COLORREF ThemeColor::_Color4 = SkyblueHeader;
-Themes   ThemeColor::_theme  = ThemeColor::Themes::ThemeSkyblue;
+Themes   ThemeColor::_theme   = ThemeColor::Themes::ThemeSkyblue;
 
-char* ThemeColor::theme_names[NO_OF_THEMES] =
+const int ThemeColor::theme_colors[NO_OF_COLORS][NO_OF_THEMES] =
+{
+ /* LIME            SKYBLUE         PURPLE          MODERATE-GRAY      PURE-GRAY       BLACK-WHITE,     DARK-THEME  */
+  { Lime1,          Skyblue1,       Purple1,        ModerateGray1,     PureGray1,      BlackWhite1,     Dark1               }  // AccentColor1
+ ,{ Lime2,          Skyblue2,       Purple2,        ModerateGray2,     PureGray2,      BlackWhite2,     Dark2               }  // AccentColor2
+ ,{ Lime3,          Skyblue3,       Purple3,        ModerateGray3,     PureGray3,      BlackWhite3,     Dark3               }  // AccentColor3
+ ,{ LimeHeader,     SkyblueHeader,  PurpleHeader,   ModerateGrayHeader,PureGrayHeader, BlackWhiteHeader,DarkHeader          }  // AccentColor4
+ ,{ UsersBackground,UsersBackground,UsersBackground,UsersBackground,   UsersBackground,UsersBackground, DarkBackground      }  // ColorWindowFrame
+ ,{ Assistant0,     Assistant0,     Assistant0,     Assistant0,        Assistant0,     Assistant0,      DarkCtrlBackground  }  // ColorCtrlBackground
+ ,{ InputTextActive,InputTextActive,InputTextActive,InputTextActive,   InputTextActive,InputTextActive, ClrEditDark         }  // ColorEditText
+ ,{ Assistant0,     Assistant0,     Assistant0,     Assistant0,        Assistant0,     Assistant0,      Assistant10         }  // ColorEditBkgnd
+ ,{ ClrEditText,    ClrEditText,    ClrEditText,    ClrEditText,       ClrEditText,    ClrEditText,     ClrEditDarkHover    }  // ColorEditHover
+ ,{ ClrEditText,    ClrEditText,    ClrEditText,    ClrEditText,       ClrEditText,    ClrEditText,     ClrEditDark         }  // ColorLabelText
+ ,{ ComboBoxActive, ComboBoxActive, ComboBoxActive, ComboBoxActive,    ComboBoxActive, ComboBoxActive,  ComboBoxDActive     }  // ColorComboActive
+ ,{ ComboBoxDropped,ComboBoxDropped,ComboBoxDropped,ComboBoxDropped,   ComboBoxDropped,ComboBoxDropped, ComboBoxDDropped    }  // ColorComboDropped
+ ,{ GroupBoxLine,   GroupBoxLine,   GroupBoxLine,   GroupBoxLine,      GroupBoxLine,   GroupBoxLine,    GroupBoxLine,       }  // ColorGroupLine
+ ,{ UsersBackground,UsersBackground,UsersBackground,UsersBackground,   UsersBackground,UsersBackground, DarkCtrlBackground  }  // ColorButtonBackground
+ ,{ Lime3,          Skyblue3,       Purple3,        ModerateGray3,     PureGray3,      BlackWhite3,     DarkButtonText      }  // ColorButtonText
+ ,{ Assistant5,     Assistant5,     Assistant5,     Assistant5,        Assistant5,     Assistant5,      Assistant5          }  // ColorControlHover
+ ,{ Assistant6,     Assistant6,     Assistant6,     Assistant6,        Assistant6,     Assistant6,      Assistant6          }  // ColorControlPressed
+ ,{ Assistant7,     Assistant7,     Assistant7,     Assistant7,        Assistant7,     Assistant7,      Assistant7          }  // ColorControlFramePressed
+ ,{ Assistant8,     Assistant8,     Assistant8,     Assistant8,        Assistant8,     Assistant8,      Assistant8          }  // ColorControlFrameHover
+ ,{ Assistant9,     Assistant9,     Assistant9,     Assistant9,        Assistant9,     Assistant9,      Assistant9          }  // ColorControlTextPressed
+ ,{ Assistant9,     Assistant9,     Assistant9,     Assistant9,        Assistant9,     Assistant9,      Assistant9          }  // ColorControlTextHover
+
+ ,{ Assistant6,     Assistant6,     Assistant6,     Assistant6,        Assistant6,     Assistant6,      Assistant6          }  // ColorControlFrameDisabled
+ ,{ Assistant2,     Assistant2,     Assistant2,     Assistant2,        Assistant2,     Assistant2,      Assistant2          }  // ColorControlDisabled
+ ,{ Assistant7,     Assistant7,     Assistant7,     Assistant7,        Assistant7,     Assistant7,      Assistant7          }  // ColorControlTextDisabled
+
+ ,{ TabTextActive,  TabTextActive,  TabTextActive,  TabTextActive,     TabTextActive,  TabTextActive,   TabTextActive       }  // ColorTabTextActive
+ ,{ TabTextInactive,TabTextInactive,TabTextInactive,TabTextInactive,   TabTextInactive,TabTextInactive, TabTextInactive     }  // ColorTabTextInactive
+ ,{ Assistant5,     Assistant5,     Assistant5,     Assistant5,        Assistant5,     Assistant5,      Assistant5          }  // ColorTabFrame
+ ,{ UsersBackground,UsersBackground,UsersBackground,UsersBackground,   UsersBackground,UsersBackground, DarkBackground      }  // ColorTabBkGndActive
+ ,{ UsersBackground,UsersBackground,UsersBackground,UsersBackground,   UsersBackground,UsersBackground, DarkBackground      }  // ColorTabBkGndInactive
+ ,{ TabTextSelected,TabTextSelected,TabTextSelected,TabTextSelected,   TabTextSelected,TabTextSelected, TabTextSelected     }  // ColorTabTextSelected
+ ,{ Assistant4,     Assistant4,     Assistant4,     Assistant4,        Assistant4,     Assistant4,      Assistant4          }  // ColorTabBkGndHover
+ ,{ Assistant9,     Assistant9,     Assistant9,     Assistant9,        Assistant9,     Assistant9,      Assistant9          }  // ColorTabTextHover
+};
+
+int ThemeColor::GetColor(Colors p_color)
+{
+  return ThemeColor::theme_colors[(int)p_color][(int)ThemeColor::_theme];
+}
+
+const char* ThemeColor::theme_names[NO_OF_THEMES] =
 {
    "Lime"
   ,"Skyblue"
@@ -47,30 +87,12 @@ char* ThemeColor::theme_names[NO_OF_THEMES] =
   ,"Moderate gray"
   ,"Pure gray"
   ,"Black and White"
+  ,"Dark theme"
 };
 
 void ThemeColor::SetTheme(Themes pTheme)
 {
-  switch (pTheme)
-  {
-    case ThemeLime:         ThemeColor::SetColors(Lime1,        Lime2,        Lime3,        LimeHeader);        break;
-    case ThemeSkyblue:      ThemeColor::SetColors(Skyblue1,     Skyblue2,     Skyblue3,     SkyblueHeader);     break;
-    case ThemePurple:       ThemeColor::SetColors(Purple1,      Purple2,      Purple3,      PurpleHeader);      break;
-    case ThemeModerateGray: ThemeColor::SetColors(ModerateGray1,ModerateGray2,ModerateGray3,ModerateGrayHeader);break;
-    case ThemePureGray:     ThemeColor::SetColors(PureGray1,    PureGray2,    PureGray3,    PureGrayHeader);    break;
-    case ThemeBlackWhite:   ThemeColor::SetColors(BlackWhite1,  BlackWhite2,  BlackWhite3,  BlackWhiteHeader);  break;
-    default:                return;
-  }
   _theme = pTheme;
-}
-
-
-void ThemeColor::SetColors(COLORREF pColor1, COLORREF pColor2, COLORREF pColor3, COLORREF pColor4)
-{
-  _Color1 = pColor1;
-  _Color2 = pColor2;
-  _Color3 = pColor3;
-  _Color4 = pColor4;
 }
 
 Themes ThemeColor::GetTheme()
@@ -94,5 +116,15 @@ ThemeColor::GetScrollbarBitmap()
       g_scrollbars[index] = (HBITMAP)bmp.Detach();
     }
   }
-  return g_scrollbars[_theme];
+  return g_scrollbars[(int)ThemeColor::_theme];
+}
+
+COLORREF
+ThemeColor::HalfTone(COLORREF color,double p_factor /*=0.5*/)
+{
+  int red   =  color >> 16;
+  int green = (color & 0xFF00) >> 8;
+  int blue  = (color & 0x00FF);
+
+  return RGB(red * p_factor,green * p_factor,blue * p_factor);
 }

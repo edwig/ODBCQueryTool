@@ -32,3 +32,4 @@ void    StyleGetWorkArea  (CWnd* p_wnd,CRect& p_rect,int x = 0,int y = 0);
 void    RepositionFrameWnd(CWnd* p_wnd,bool p_isFrame = true);
 void    MinimalFrameWnd   (CWnd* p_wnd);
 
+void    ScaleControl(CWnd* p_wnd);

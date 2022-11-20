@@ -231,7 +231,7 @@ bool
 XMLMessage::LoadFile(const XString& p_fileName)
 {
   FILE* file = nullptr;
-  if(fopen_s(&file,p_fileName,"rb") == 0 && file)
+  if(fopen_s(&file,p_fileName,"r") == 0 && file)
   {
     // Find the length of a file
     fseek(file,0,SEEK_END);
@@ -245,22 +245,21 @@ XMLMessage::LoadFile(const XString& p_fileName)
       return false;
     }
 
-    // Prepare buffer
-    // XString buffers are allocated on the heap
-    // so shut up the warning about stack overflow
-    XString inhoud;
-    char* buffer = inhoud.GetBufferSetLength(length + 1);
+    // Prepare buffer allocated on the heap
+    char* buffer = new char[(size_t) length + 1];
 
     // Read the buffer
-    if(fread(buffer,1,length,file) < length)
+    size_t count = fread_s(buffer,length,1,length,file);
+    if(ferror(file) || count > length)
     {
       fclose(file);
       return false;
     }
-    buffer[length] = 0;
+    buffer[count] = 0;
 
-    // Buffer unlock
-    inhoud.ReleaseBuffer(length);
+    // Buffer to string conversion
+    XString inhoud(buffer);
+    delete[] buffer;
 
     // Close the file
     if(fclose(file))
@@ -1062,7 +1061,7 @@ XMLMessage::GetElementSibling(XMLElement* p_elem)
           // Check for last node
           if(ind < parent->GetChildren().size() - 1)
           {
-            return parent->GetChildren()[ind + 1];
+            return parent->GetChildren()[(size_t)ind + 1];
           }
         }
       }

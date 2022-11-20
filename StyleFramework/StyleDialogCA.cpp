@@ -20,17 +20,14 @@
 // For license: See the file "LICENSE.txt" in the root folder
 //
 #include "stdafx.h"
-#include "StyleDialogCA.h"
-#include "StyleColors.h"
-#include "GrayWindow.h"
-#include "StyleFonts.h"
-#include "StyleMacros.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+using namespace ThemeColor;
 
 IMPLEMENT_DYNAMIC(StyleDialogCA,CDialogEx);
 
@@ -82,13 +79,14 @@ BOOL
 StyleDialogCA::OnInitDialog()
 { 
   ModifyStyleEx(0, WS_EX_LAYERED);
-  SetLayeredWindowAttributes(ClrwindowTransparent,0,LWA_COLORKEY);
+  SetLayeredWindowAttributes(ColorWindowTransparent,0,LWA_COLORKEY);
 
   CRect window;
   GetWindowRect(window);
   SetWindowPos(nullptr, 0, 0, window.Width() + WINDOWSHADOWBORDER, window.Height() + WINDOWSHADOWBORDER, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
 
-  m_defaultBrush.CreateSolidBrush(ClrFrameBkGnd);
+  m_defaultBrush.DeleteObject();
+  m_defaultBrush.CreateSolidBrush(ThemeColor::GetColor(Colors::ColorWindowFrame));
 
   return CDialogEx::OnInitDialog();
 }
@@ -112,23 +110,23 @@ BOOL
 StyleDialogCA::OnEraseBkgnd(CDC* pDC)
 {
   // Shadow frame
-  pDC->FillSolidRect(CRect(m_windowRect.right - WINDOWSHADOWBORDER, m_windowRect.top, m_windowRect.right, m_windowRect.top + 2 * WINDOWSHADOWBORDER), ClrwindowTransparent);
-  pDC->FillSolidRect(CRect(m_windowRect.right - WINDOWSHADOWBORDER, m_windowRect.top + 2 * WINDOWSHADOWBORDER, m_windowRect.right, m_windowRect.bottom), ClrWindowFrame);
+  pDC->FillSolidRect(CRect(m_windowRect.right - WINDOWSHADOWBORDER, m_windowRect.top, m_windowRect.right, m_windowRect.top + 2 * WINDOWSHADOWBORDER), ColorWindowTransparent);
+  pDC->FillSolidRect(CRect(m_windowRect.right - WINDOWSHADOWBORDER, m_windowRect.top + 2 * WINDOWSHADOWBORDER, m_windowRect.right, m_windowRect.bottom), ColorWindowGrayFrame);
         ValidateRect(CRect(m_windowRect.right - WINDOWSHADOWBORDER, m_windowRect.top, m_windowRect.right, m_windowRect.bottom));
-  pDC->FillSolidRect(CRect(m_windowRect.left, m_windowRect.bottom - WINDOWSHADOWBORDER, m_windowRect.left * 2 * WINDOWSHADOWBORDER, m_windowRect.bottom), ClrwindowTransparent);
-  pDC->FillSolidRect(CRect(m_windowRect.left + 2 * WINDOWSHADOWBORDER, m_windowRect.bottom - WINDOWSHADOWBORDER, m_windowRect.right - WINDOWSHADOWBORDER, m_windowRect.bottom), ClrWindowFrame);
+  pDC->FillSolidRect(CRect(m_windowRect.left, m_windowRect.bottom - WINDOWSHADOWBORDER, m_windowRect.left * 2 * WINDOWSHADOWBORDER, m_windowRect.bottom), ColorWindowTransparent);
+  pDC->FillSolidRect(CRect(m_windowRect.left + 2 * WINDOWSHADOWBORDER, m_windowRect.bottom - WINDOWSHADOWBORDER, m_windowRect.right - WINDOWSHADOWBORDER, m_windowRect.bottom), ColorWindowGrayFrame);
         ValidateRect(CRect(m_windowRect.left, m_windowRect.bottom - WINDOWSHADOWBORDER, m_windowRect.right - WINDOWSHADOWBORDER, m_windowRect.bottom));
 
   if (m_caption)
   {
     // caption bar
     CRect caption(m_clientRect.left, m_clientRect.top, m_clientRect.right, m_clientRect.top + WINDOWCAPTIONHEIGHT);
-    pDC->FillSolidRect(caption, m_error ? ClrWindowFrameError : ClrWindowHeader);
+    pDC->FillSolidRect(caption, m_error ? ColorWindowFrameError : ColorWindowHeader);
     ValidateRect(caption);
 
     // title
     pDC->SelectObject(&STYLEFONTS.DialogTextFontBold);
-    pDC->SetTextColor(m_error ? ClrWindowFrameTextError : ClrWindowHeaderText);
+    pDC->SetTextColor(m_error ? ColorWindowFrameTextError : ColorWindowHeaderText);
     caption.right -= WINDOWCAPTIONHEIGHT;
     caption.DeflateRect(5, 0);
     CString titel;
@@ -144,13 +142,18 @@ StyleDialogCA::OnEraseBkgnd(CDC* pDC)
         button.DeflateRect(6, 6);
         ++button.right;
         ++button.bottom;
-        pDC->FillSolidRect(button, m_over && m_down ? ClrControlPressed : ClrControlHover);
-        CBrush brush(m_over && m_down ? ClrControlFramePressed : ClrControlFrameHover);
+        pDC->FillSolidRect(button, m_over && m_down ? ThemeColor::GetColor(Colors::ColorControlPressed) 
+                                                    : ThemeColor::GetColor(Colors::ColorControlHover));
+        CBrush brush(m_over && m_down ? ThemeColor::GetColor(Colors::ColorControlFramePressed) 
+                                      : ThemeColor::GetColor(Colors::ColorControlFrameHover));
         pDC->FrameRect(button, &brush);
       }
 
       CPen pen;
-      pen.CreatePen(PS_SOLID, 1, m_over ? m_over && m_down ? ClrControlTextPressed : ClrControlTextHover : m_error ? ClrWindowFrameTextError : ClrLabelTextNormal);
+      pen.CreatePen(PS_SOLID, 1, m_over ? m_over && m_down ? ThemeColor::GetColor(Colors::ColorControlTextPressed) 
+                                                           : ThemeColor::GetColor(Colors::ColorControlTextHover) 
+                                                 : m_error ? ColorWindowFrameTextError 
+                                                           : ThemeColor::GetColor(Colors::ColorEditText));
       HGDIOBJ orgpen = pDC->SelectObject(pen);
 
       CPoint center(m_closeRect.right - WINDOWCAPTIONHEIGHT / 2, m_closeRect.top + WINDOWCAPTIONHEIGHT / 2);
@@ -166,7 +169,7 @@ StyleDialogCA::OnEraseBkgnd(CDC* pDC)
     ValidateRect(CRect(m_clientRect.left, m_clientRect.top, m_clientRect.right, m_clientRect.top + 1));
   }
   // window frame
-  CBrush brush(m_error ? ClrWindowFrameError : ClrWindowFrame);
+  CBrush brush(m_error ? ColorWindowFrameError : ThemeColor::GetColor(Colors::AccentColor1));
   pDC->FrameRect(m_clientRect, &brush);
 
   ValidateRect(CRect(m_clientRect.left, m_clientRect.top, m_clientRect.left+1, m_clientRect.bottom));
@@ -174,7 +177,7 @@ StyleDialogCA::OnEraseBkgnd(CDC* pDC)
   ValidateRect(CRect(m_clientRect.left, m_clientRect.bottom-1, m_clientRect.right, m_clientRect.bottom));
 
   // real client area
-  pDC->FillSolidRect(m_properClientRect, ClrFrameBkGnd);
+  pDC->FillSolidRect(m_properClientRect,ThemeColor::GetColor(Colors::ColorWindowFrame));
 
   return TRUE;
 }
@@ -284,26 +287,26 @@ HBRUSH StyleDialogCA::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
   switch (nCtlColor)
   {
-    case CTLCOLOR_STATIC: if (m_error)
+    case CTLCOLOR_STATIC: if(m_error)
                           {
-                            pDC->SetTextColor(ClrWindowMessageTextError);
-                            pDC->SetBkColor(ClrWindowMessageError);
+                            pDC->SetTextColor(ThemeColor::GetColor(Colors::ColorEditText));
+                            pDC->SetBkColor  (ThemeColor::GetColor(Colors::ColorWindowFrame));
                           }
                           else
                           {
-                            pDC->SetTextColor(ClrLabelTextNormal);
-                            pDC->SetBkColor(ClrFrameBkGnd);
+                            pDC->SetTextColor(ThemeColor::GetColor(Colors::ColorEditText));
+                            pDC->SetBkColor  (ThemeColor::GetColor(Colors::ColorWindowFrame));
                           }
                           return m_defaultBrush;
-    case CTLCOLOR_BTN:    if (m_error)
+    case CTLCOLOR_BTN:    if(m_error)
                           {
-                            pDC->SetTextColor(ClrWindowMessageTextError);
-                            pDC->SetBkColor(ClrWindowMessageError);
+                            pDC->SetTextColor(ThemeColor::GetColor(Colors::ColorEditText));
+                            pDC->SetBkColor  (ThemeColor::GetColor(Colors::ColorWindowFrame));
                           }
                           else
                           {
-                            pDC->SetTextColor(ClrLabelTextNormal);
-                            pDC->SetBkColor(ClrFrameBkGnd);
+                            pDC->SetTextColor(ThemeColor::GetColor(Colors::ColorEditText));
+                            pDC->SetBkColor  (ThemeColor::GetColor(Colors::ColorWindowFrame));
                           }
                           return m_defaultBrush;
   }
@@ -327,8 +330,8 @@ StyleDialogCA::OnSize(UINT nType, int cx, int cy)
   m_clientRect.SetRect(0, 0, cx - WINDOWSHADOWBORDER, cy - WINDOWSHADOWBORDER);
   if (m_caption)
   {
-    m_closeRect.SetRect(cx - WINDOWSHADOWBORDER- WINDOWCAPTIONHEIGHT, 0, cx - WINDOWSHADOWBORDER, WINDOWCAPTIONHEIGHT);
-    m_dragRect.SetRect(0, 0, cx - WINDOWSHADOWBORDER - WINDOWCAPTIONHEIGHT, WINDOWCAPTIONHEIGHT);
+    m_closeRect.SetRect(cx - WINDOWSHADOWBORDER- WINDOWCAPTIONHEIGHT,0,cx - WINDOWSHADOWBORDER,                      WINDOWCAPTIONHEIGHT);
+    m_dragRect .SetRect(0,                                           0,cx - WINDOWSHADOWBORDER - WINDOWCAPTIONHEIGHT,WINDOWCAPTIONHEIGHT);
     m_properClientRect.SetRect(1, WINDOWCAPTIONHEIGHT, cx - WINDOWSHADOWBORDER-1, cy - WINDOWSHADOWBORDER - 1);
   }
   else
@@ -376,14 +379,14 @@ StyleDialogCA::Button(CDC* pDC, CRect rect, LRESULT type,BUTTONSTATE state, bool
   switch (state) 
   {
     case BS_NORMAL:
-    case BS_DISABLED: pDC->FillSolidRect(rect, ClrWindowHeader);
-                      pen.CreatePen(PS_SOLID,1,ClrWindowHeaderIcon);
+    case BS_DISABLED: pDC->FillSolidRect(rect, ThemeColor::GetColor(Colors::AccentColor1));
+                      pen.CreatePen(PS_SOLID,1,ThemeColor::GetColor(Colors::AccentColor2));
                       break;
-    case BS_HOVER:    pDC->FillSolidRect(rect, ClrControlHover);
-                      pen.CreatePen(PS_SOLID,1,ClrControlTextHover);
+    case BS_HOVER:    pDC->FillSolidRect(rect, ThemeColor::GetColor(Colors::ColorControlHover));
+                      pen.CreatePen(PS_SOLID,1,ThemeColor::GetColor(Colors::ColorControlTextHover));
                       break;
-    case BS_PRESSED:  pDC->FillSolidRect(rect, ClrControlPressed);
-                      pen.CreatePen(PS_SOLID,1,ClrControlTextPressed);
+    case BS_PRESSED:  pDC->FillSolidRect(rect, ThemeColor::GetColor(Colors::ColorControlPressed));
+                      pen.CreatePen(PS_SOLID,1,ThemeColor::GetColor(Colors::ColorControlTextPressed));
                       break;
     default:          assert(false);
                       return;

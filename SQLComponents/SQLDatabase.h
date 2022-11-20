@@ -81,10 +81,10 @@ typedef struct _datasourceInternal
   XString m_datasource;
   XString m_username;
   XString m_password;
-  bool    m_system;
-  bool    m_outputOMF;
-  bool    m_default;
-  bool    m_dataConnection;
+  bool    m_system         { false };
+  bool    m_outputOMF      { false };
+  bool    m_default        { false };
+  bool    m_dataConnection { false };
 }
 DataSourceInternal;
 
@@ -142,7 +142,7 @@ public:
   // Add a general ODBC option for use in the connection string
   void           AddConnectOption(XString p_keyword,XString p_value);
   // Setting the default database schema after login
-  bool           SetDefaultSchema(XString p_schema);
+  bool           SetDefaultSchema(XString p_user,XString p_schema);
 
   // GETTING/CONSTRUCTING the SQLInfo object
   SQLInfoDB*     GetSQLInfoDB();
@@ -309,7 +309,7 @@ protected:
   int               m_driverMainVersion   { 0     };   
   bool              m_needLongDataLen     { false };
   bool              m_autoCommitMode      { true  };
-  DWORD             m_lastAction          { 0     };  // Last moment of usage (for database pool)
+  ULONGLONG         m_lastAction          { 0     };  // Last moment of usage (for database pool)
   RebindMap         m_rebindParameters;                 // Rebinding of parameters for SQLBindParam
   RebindMap         m_rebindColumns;                    // Rebinding of result columns for SQLBindCol
   XString           m_sqlState;                         // Last SQLSTATE

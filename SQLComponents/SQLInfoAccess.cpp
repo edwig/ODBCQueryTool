@@ -289,7 +289,7 @@ SQLInfoAccess::GetKEYWORDCurrentUser() const
 
 // Connects to a default schema in the database/instance
 XString 
-SQLInfoAccess::GetSQLDefaultSchema(XString /*p_schema*/) const
+SQLInfoAccess::GetSQLDefaultSchema(XString /*p_user*/,XString /*p_schema*/) const
 {
   return "";
 }

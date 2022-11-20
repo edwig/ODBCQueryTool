@@ -17,7 +17,7 @@
 // For license: See the file "LICENSE.txt" in the root folder
 //
 #pragma once
-#include "StyleStatic.h"
+#include "StyleStaticToast.h"
 #include "resource.h"
 #include <vector>
 
@@ -30,7 +30,7 @@
 #define STYLE_TOAST_WARNING   2
 #define STYLE_TOAST_ERROR     3
 
-// Postion for the toast message
+// Position for the toast message
 #define STYLE_POS_TOPLEFT     0x11
 #define STYLE_POS_TOPMIDDLE   0x12
 #define STYLE_POS_TOPRIGHT    0x13
@@ -73,6 +73,7 @@ public:
   virtual void DoDataExchange(CDataExchange* pDX) override;
   virtual BOOL OnInitDialog() override;
 
+  afx_msg int     OnCreate(LPCREATESTRUCT p_create);
   afx_msg void    OnSize(UINT nType, int x, int y);
   afx_msg void    OnClicked();
   afx_msg void    OnTimer(UINT_PTR nIDEvent);
@@ -93,5 +94,5 @@ private:
   unsigned    m_timeout;
   DWORD       m_background;
   DWORD       m_foreground;
-  StyleStatic m_showText;
+  StyleStaticToast m_showText;
 };

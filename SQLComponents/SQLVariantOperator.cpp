@@ -112,8 +112,8 @@ SQLVariant::operator=(const SQLVariant& p_original)
   if(m_datatype == SQL_C_CHAR  || m_datatype == SQL_C_BINARY )
   {
     // Make a new buffer and copy it
-    m_data.m_dataBINARY = (unsigned char*) malloc(m_binaryLength + 1);
-    memcpy(m_data.m_dataBINARY,p_original.m_data.m_dataBINARY,m_binaryLength + 1);
+    m_data.m_dataBINARY = new unsigned char[(size_t)m_binaryLength + 1];
+    memcpy(m_data.m_dataBINARY,p_original.m_data.m_dataBINARY,(size_t)m_binaryLength + 1);
   }
   else
   {

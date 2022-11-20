@@ -243,7 +243,7 @@ SQLInterval::SetFromDatabaseDouble(SQLINTERVAL p_type,double p_number)
   }
   else
   {
-    m_value = static_cast<InterValue>(p_number * SECONDS_PER_DAY * NANOSECONDS_PER_SEC);
+    m_value = static_cast<InterValue>((size_t)p_number * SECONDS_PER_DAY * NANOSECONDS_PER_SEC);
   }
   Normalise();
   RecalculateInterval();
@@ -264,9 +264,18 @@ SQLInterval::SetIntervalType(SQLINTERVAL p_type)
 {
   switch(p_type)
   {
-    case SQL_IS_YEAR:           if(m_interval.intval.year_month.month  ||
-                                   m_interval.intval.day_second.day    ||
-                                   m_interval.intval.day_second.hour   ||
+    case SQL_IS_YEAR:           if(m_interval.intval.year_month.month)
+                                {
+                                  return false;
+                                }
+                                break;
+    case SQL_IS_MONTH:          if(m_interval.intval.year_month.year)
+                                {
+                                  return false;
+                                }
+                                break;
+    case SQL_IS_YEAR_TO_MONTH:  break;
+    case SQL_IS_DAY:            if(m_interval.intval.day_second.hour   ||
                                    m_interval.intval.day_second.minute ||
                                    m_interval.intval.day_second.second ||
                                    m_interval.intval.day_second.fraction)
@@ -274,9 +283,7 @@ SQLInterval::SetIntervalType(SQLINTERVAL p_type)
                                   return false;
                                 }
                                 break;
-    case SQL_IS_MONTH:          if(m_interval.intval.year_month.year   ||
-                                   m_interval.intval.day_second.day    ||
-                                   m_interval.intval.day_second.hour   ||
+    case SQL_IS_HOUR:           if(m_interval.intval.day_second.day    ||
                                    m_interval.intval.day_second.minute ||
                                    m_interval.intval.day_second.second ||
                                    m_interval.intval.day_second.fraction)
@@ -284,38 +291,7 @@ SQLInterval::SetIntervalType(SQLINTERVAL p_type)
                                   return false;
                                 }
                                 break;
-    case SQL_IS_YEAR_TO_MONTH:  if(m_interval.intval.day_second.day    ||
-                                   m_interval.intval.day_second.hour   ||
-                                   m_interval.intval.day_second.minute ||
-                                   m_interval.intval.day_second.second ||
-                                   m_interval.intval.day_second.fraction)
-                                {
-                                  return false;
-                                }
-                                break;
-    case SQL_IS_DAY:            if(m_interval.intval.year_month.year   ||
-                                   m_interval.intval.year_month.month  ||
-                                   m_interval.intval.day_second.hour   ||
-                                   m_interval.intval.day_second.minute ||
-                                   m_interval.intval.day_second.second ||
-                                   m_interval.intval.day_second.fraction)
-                                {
-                                  return false;
-                                }
-                                break;
-    case SQL_IS_HOUR:           if(m_interval.intval.year_month.year   ||
-                                   m_interval.intval.year_month.month  ||
-                                   m_interval.intval.day_second.day    ||
-                                   m_interval.intval.day_second.minute ||
-                                   m_interval.intval.day_second.second ||
-                                   m_interval.intval.day_second.fraction)
-                                {
-                                  return false;
-                                }
-                                break;
-    case SQL_IS_MINUTE:         if(m_interval.intval.year_month.year   ||
-                                   m_interval.intval.year_month.month  ||
-                                   m_interval.intval.day_second.day    ||
+    case SQL_IS_MINUTE:         if(m_interval.intval.day_second.day    ||
                                    m_interval.intval.day_second.hour   ||
                                    m_interval.intval.day_second.second ||
                                    m_interval.intval.day_second.fraction)
@@ -323,57 +299,40 @@ SQLInterval::SetIntervalType(SQLINTERVAL p_type)
                                   return false;
                                 }
                                 break;
-    case SQL_IS_SECOND:         if(m_interval.intval.year_month.year   ||
-                                   m_interval.intval.year_month.month  ||
-                                   m_interval.intval.day_second.day    ||
+    case SQL_IS_SECOND:         if(m_interval.intval.day_second.day    ||
                                    m_interval.intval.day_second.hour   ||
                                    m_interval.intval.day_second.minute )
                                 {
                                   return false;
                                 }
                                 break;
-    case SQL_IS_DAY_TO_HOUR:    if(m_interval.intval.year_month.year   ||
-                                   m_interval.intval.year_month.month  ||
-                                   m_interval.intval.day_second.minute ||
+    case SQL_IS_DAY_TO_HOUR:    if(m_interval.intval.day_second.minute ||
                                    m_interval.intval.day_second.second ||
                                    m_interval.intval.day_second.fraction)
                                 {
                                   return false;
                                 }
                                 break;
-    case SQL_IS_DAY_TO_MINUTE:  if(m_interval.intval.year_month.year   ||
-                                   m_interval.intval.year_month.month  ||
+    case SQL_IS_DAY_TO_MINUTE:  if(m_interval.intval.day_second.second ||
+                                   m_interval.intval.day_second.fraction)
+                                {
+                                  return false;
+                                }
+                                break;
+    case SQL_IS_DAY_TO_SECOND:  break;
+    case SQL_IS_HOUR_TO_MINUTE: if(m_interval.intval.day_second.day    ||
                                    m_interval.intval.day_second.second ||
                                    m_interval.intval.day_second.fraction)
                                 {
                                   return false;
                                 }
                                 break;
-    case SQL_IS_DAY_TO_SECOND:  if(m_interval.intval.year_month.year   ||
-                                   m_interval.intval.year_month.month  )
+    case SQL_IS_HOUR_TO_SECOND: if(m_interval.intval.day_second.day    )
                                 {
                                   return false;
                                 }
                                 break;
-    case SQL_IS_HOUR_TO_MINUTE: if(m_interval.intval.year_month.year   ||
-                                   m_interval.intval.year_month.month  ||
-                                   m_interval.intval.day_second.day    ||
-                                   m_interval.intval.day_second.second ||
-                                   m_interval.intval.day_second.fraction)
-                                {
-                                  return false;
-                                }
-                                break;
-    case SQL_IS_HOUR_TO_SECOND: if(m_interval.intval.year_month.year   ||
-                                   m_interval.intval.year_month.month  ||
-                                   m_interval.intval.day_second.day    )
-                                {
-                                  return false;
-                                }
-                                break;
-    case SQL_IS_MINUTE_TO_SECOND:if(m_interval.intval.year_month.year   ||
-                                    m_interval.intval.year_month.month  ||
-                                    m_interval.intval.day_second.day    ||
+    case SQL_IS_MINUTE_TO_SECOND:if(m_interval.intval.day_second.day    ||
                                     m_interval.intval.day_second.hour   )
                                 {
                                   return false;
@@ -522,8 +481,8 @@ SQLInterval::AsDatabaseDouble() const
 
   // Return a decimal day value
   double value = static_cast<double>(m_value);
-  value /= NANOSECONDS_PER_SEC;
-  value /= SECONDS_PER_DAY;
+  value /= (double) NANOSECONDS_PER_SEC;
+  value /= (double) SECONDS_PER_DAY;
 
   return value;
 }

@@ -169,7 +169,7 @@ RegistryManager::RecurseOpenKey(LPCTSTR lpszSection, REGSAM samDesired)
 		strRegistryKey = strRegistryKey.Mid(nIndex + 1);
 		HKEY hKey = 0;
 
-		m_lResult = ::RegCreateKeyEx(hParentKey == nullptr ? hKeyBase : hParentKey
+		m_lResult = ::RegCreateKeyEx(hParentKey == nullptr ? hKeyBase : (HKEY)hParentKey
                                 ,strKey
                                 ,0
                                 ,REG_NONE

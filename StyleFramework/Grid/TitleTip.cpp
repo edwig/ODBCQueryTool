@@ -120,7 +120,7 @@ BOOL CTitleTip::DestroyWindow()
 // lpszTitleText	- The text to be displayed
 // xoffset				- Number of pixel that the text is offset from
 //									left border of the cell
-void CTitleTip::Show(CRect rectTitle, LPCTSTR lpszTitleText, int xoffset /*=0*/,
+void CTitleTip::Show(CWnd* p_parent,CRect rectTitle, LPCTSTR lpszTitleText, int xoffset /*=0*/,
                      LPRECT lpHoverRect /*=NULL*/,
                      const LOGFONT* lpLogFont /*=NULL*/,
                      COLORREF crTextClr /* CLR_DEFAULT */,
@@ -128,7 +128,7 @@ void CTitleTip::Show(CRect rectTitle, LPCTSTR lpszTitleText, int xoffset /*=0*/,
 {
 	if (!IsWindow(m_hWnd))
 	{
-		Create(m_pParentWnd);
+    Create(p_parent);
 	}
 	ASSERT( ::IsWindow( GetSafeHwnd() ) );
 
@@ -141,7 +141,7 @@ void CTitleTip::Show(CRect rectTitle, LPCTSTR lpszTitleText, int xoffset /*=0*/,
 	{
 		return;
 	}
-  m_rectHover = (lpHoverRect != NULL) ? lpHoverRect : rectTitle;
+  m_rectHover = (lpHoverRect != NULL) ? (CRect)lpHoverRect : rectTitle;
   m_rectHover.right++; m_rectHover.bottom++;
 
 	m_pParentWnd->ClientToScreen( m_rectHover );

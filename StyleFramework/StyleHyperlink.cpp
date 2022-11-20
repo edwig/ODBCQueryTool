@@ -79,9 +79,12 @@ BOOL StyleHyperLink::PreTranslateMessage(MSG* pMsg)
 
 void StyleHyperLink::PreSubclassWindow() 
 {
+  ScaleControl(this);
+  SetFont(&STYLEFONTS.DialogTextFont);
+
   // We want to get mouse clicks via STN_CLICKED
   DWORD dwStyle = GetStyle();
-  ::SetWindowLong(GetSafeHwnd(), GWL_STYLE, dwStyle | SS_NOTIFY);
+  ::SetWindowLong(GetSafeHwnd(),GWL_STYLE,dwStyle | SS_NOTIFY);
     
   // Set the URL as the window text
   if (m_strURL.IsEmpty())
@@ -131,6 +134,25 @@ void StyleHyperLink::PreSubclassWindow()
   m_ToolTip.AddTool(this, m_strURL, rect, TOOLTIP_ID);
 
   CStatic::PreSubclassWindow();
+}
+
+void
+StyleHyperLink::SetTipText(LPCTSTR p_tipText)
+{
+  if(::IsWindow(GetSafeHwnd()) && ::IsWindow(m_ToolTip.GetSafeHwnd()))
+  {
+    // Update the tooltip
+    PositionWindow();
+    m_ToolTip.UpdateTipText(p_tipText,this,TOOLTIP_ID);
+  }
+  else
+  {
+    // Create the tooltip
+    CRect rect;
+    GetClientRect(rect);
+    m_ToolTip.Create(this);
+    m_ToolTip.AddTool(this,p_tipText,rect,TOOLTIP_ID);
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////

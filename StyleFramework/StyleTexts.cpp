@@ -133,7 +133,7 @@ struct _fxtext
 {
   StyleLanguage m_language;
   int           m_id;
-  char*         m_word;
+  const char*   m_word;
 }
 g_fxtext[] =
 {

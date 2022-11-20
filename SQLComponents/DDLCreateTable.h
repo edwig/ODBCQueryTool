@@ -36,7 +36,7 @@ using DDLS = std::deque<XString>;
 class DDLCreateTable
 {
 public:
-  DDLCreateTable(SQLInfoDB* p_info);
+  DDLCreateTable(SQLInfoDB* p_info,SQLInfoDB* p_target = nullptr);
 
   // Request DDL for "table" or "schema.table" 
   // Where "table" can be of type: "TABLE" / "VIEW"
@@ -95,6 +95,7 @@ private:
 
   // Private data for the DDL creation
   SQLInfoDB* m_info;
+  SQLInfoDB* m_target;
   XString    m_schema;
   XString    m_tableName;
   XString    m_indexTablespace;

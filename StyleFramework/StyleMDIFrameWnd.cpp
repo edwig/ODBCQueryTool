@@ -19,11 +19,6 @@
 //
 #include "stdafx.h"
 #include <afxole.h>
-#include "StyleMDIFrameWnd.h"
-#include "StyleFonts.h"
-#include "StyleButton.h"
-#include "StyleColors.h"
-#include "StyleMacros.h"
 #include "RegistryManager.h"
 #include "resource.h"
 #include <afxglobalutils.h>
@@ -33,6 +28,8 @@
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+using namespace ThemeColor;
 
 IMPLEMENT_DYNAMIC(StyleMDIFrameWnd,CMDIFrameWndEx)
 
@@ -184,7 +181,7 @@ void
 StyleMDIFrameWnd::LoadStyleTheme()
 {
   RegistryManager manager;
-  int th = manager.GetRegistryInteger(STYLECOLORS_KEY, STYLECOLORS_THEME, ThemeColor::Themes::ThemeSkyblue);
+  int th = manager.GetRegistryInteger(STYLECOLORS_KEY,STYLECOLORS_THEME,(int)ThemeColor::Themes::ThemeSkyblue);
   ThemeColor::Themes theme = (ThemeColor::Themes)th;
   ThemeColor::SetTheme(theme);
 
@@ -380,6 +377,10 @@ StyleMDIFrameWnd::OnNcLButtonDown(UINT nFlags, CPoint point)
     case HTMENU:  PerformMenu();
                   break;
     case HTCAPTION:
+                  if(GetStyle() & WS_MAXIMIZE)
+                  {
+                    return;
+                  }
                   SetWindowPos(&CWnd::wndTop,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE|SWP_SHOWWINDOW|SWP_NOSENDCHANGING|SWP_DRAWFRAME);
 
                   CPoint lastpoint(point);
@@ -477,11 +478,10 @@ void StyleMDIFrameWnd::OnSize(UINT nType, int cx, int cy)
     GetWindowRect(m_windowRectLocal);
     m_windowRectLocal.OffsetRect(-m_windowRectLocal.left, -m_windowRectLocal.top);
 
-
     int border = 0;
     if ((GetStyle() & WS_MAXIMIZE) != 0)
     {
-      // Bij een volledig scherm gebruikt het OS deze marge buiten beeld!!
+      // On a full screen the MS-Windows OS uses this margin outside our view
       CSize marge = afxGlobalUtils.GetSystemBorders(GetStyle());
 
       m_windowRectLocal.left   += marge.cx;
@@ -491,7 +491,7 @@ void StyleMDIFrameWnd::OnSize(UINT nType, int cx, int cy)
     }
     else
     {
-      border = MARGE;
+      border = MARGIN;
     }
 
     m_closeRect.SetRect(m_windowRectLocal.right - border -     WINCAPTIONHEIGHT, m_windowRectLocal.top, m_windowRectLocal.right - border,                        m_windowRectLocal.top + WINCAPTIONHEIGHT);
@@ -515,37 +515,37 @@ void StyleMDIFrameWnd::OnSize(UINT nType, int cx, int cy)
 void 
 StyleMDIFrameWnd::OnNcCalcSize(BOOL calcValidRects,NCCALCSIZE_PARAMS* p_params)
 {
-  int marge = MARGE;
+  int baseMargin = MARGIN;
   p_params->rgrc[0].top += WINCAPTIONHEIGHT;
 
   if(GetStyle() & WS_MAXIMIZE)
   {
-    // Bij een volledig scherm gebruikt het OS deze marge buiten beeld!!
-    CSize marge = afxGlobalUtils.GetSystemBorders(GetStyle());
+    // In full-screen mode, the MS-Windows OS uses this extra margin
+    CSize margin = afxGlobalUtils.GetSystemBorders(GetStyle());
 
-    p_params->rgrc[0].left   += marge.cx;
-    p_params->rgrc[0].top    += marge.cy;
-    p_params->rgrc[0].right  -= marge.cx;
-    p_params->rgrc[0].bottom -= marge.cy;
+    p_params->rgrc[0].left   += margin.cx;
+    p_params->rgrc[0].top    += margin.cy;
+    p_params->rgrc[0].right  -= margin.cx;
+    p_params->rgrc[0].bottom -= margin.cy;
   }
   else
   {
-    // Marge is nodig voor twee zaken:
-    // 1) Om de linker/rechter/onder muis-uitrek actie te activeren
-    // 2) Om ruimte te maken voor het kader rondom het venster
-    p_params->rgrc[0].left   += marge;
-    p_params->rgrc[0].right  -= marge;
-    p_params->rgrc[0].bottom -= marge;
+    // The baseMargin is needed for two things:
+    // 1) To activate the left/right/bottom mouse pulling action
+    // 2) To provide space for a painted border around the window
+    p_params->rgrc[0].left   += baseMargin;
+    p_params->rgrc[0].right  -= baseMargin;
+    p_params->rgrc[0].bottom -= baseMargin;
   }
   // Use same rectangle for displacement (so hide it)
   p_params->rgrc[2] = p_params->rgrc[0];
 }
 
-// Avoid flicker of the titlebar on activate
+// Avoid flicker of the title bar on activate
 BOOL
 StyleMDIFrameWnd::OnNcActivate(BOOL bActive)
 {
-  if (bActive)
+  if(bActive)
   {
     OnNcPaint();
   }
@@ -561,8 +561,8 @@ StyleMDIFrameWnd::OnNcPaint()
   if((GetStyle() & WS_MAXIMIZE) == 0)
   {
     CRect r;
-    COLORREF bkgnd = ThemeColor::_Color1; // ClrWindowFrame;
-    int width = MARGE;
+    COLORREF bkgnd = ThemeColor::GetColor(Colors::AccentColor1);
+    int width = MARGIN;
 
     r.SetRect(m_windowRectLocal.left,         m_windowRectLocal.top,           m_windowRectLocal.right,       m_windowRectLocal.top + width);
     dc.FillSolidRect(r, bkgnd);
@@ -575,13 +575,13 @@ StyleMDIFrameWnd::OnNcPaint()
   }
   
   // caption bar
-  dc.FillSolidRect(m_dragRect, ClrWindowHeader);
+  dc.FillSolidRect(m_dragRect,ThemeColor::GetColor(Colors::AccentColor1));
 
   // title
   CRect titleRect(m_captionRect);
   titleRect.left += WINCAPTIONHEIGHT / 3;
   CFont* orgfont = dc.SelectObject(&STYLEFONTS.CaptionTextFont);
-  dc.SetTextColor(ClrWindowHeaderText);
+  dc.SetTextColor(ColorWindowHeaderText);
   CString titel;
   GetWindowText(titel);
   dc.DrawText(titel,titleRect,DT_SINGLELINE|DT_LEFT|DT_VCENTER|DT_EXPANDTABS|DT_NOPREFIX);
@@ -622,38 +622,41 @@ LRESULT StyleMDIFrameWnd::OnNcHitTest(CPoint point)
 
   // BORDERS
 
-  window.OffsetRect(-window.left, -window.top);
-  if (point.x <= window.left + SIZEMARGIN)
+  if (!(GetStyle() & WS_MAXIMIZE))
   {
+    window.OffsetRect(-window.left, -window.top);
+    if (point.x <= window.left + SIZEMARGIN)
+    {
+      if (point.y >= window.bottom - SIZEMARGIN)
+      {
+        return HTBOTTOMLEFT;
+      }
+      if (point.y <= window.top + SIZEMARGIN)
+      {
+        return HTTOPLEFT;
+      }
+      return HTLEFT;
+    }
+    if (point.x >= window.right - SIZEMARGIN)
+    {
+      if (point.y >= window.bottom - SIZEMARGIN)
+      {
+        return HTBOTTOMRIGHT;
+      }
+      if (point.y <= window.top + SIZEMARGIN)
+      {
+        return HTTOPRIGHT;
+      }
+      return HTRIGHT;
+    }
     if (point.y >= window.bottom - SIZEMARGIN)
     {
-      return HTBOTTOMLEFT;
+      return HTBOTTOM;
     }
     if (point.y <= window.top + SIZEMARGIN)
     {
-      return HTTOPLEFT;
+      return HTTOP;
     }
-    return HTLEFT;
-  }
-  if (point.x >= window.right - SIZEMARGIN)
-  {
-    if (point.y >= window.bottom - SIZEMARGIN)
-    {
-      return HTBOTTOMRIGHT;
-    }
-    if (point.y <= window.top + SIZEMARGIN)
-    {
-      return HTTOPRIGHT;
-    }
-    return HTRIGHT;
-  }
-  if (point.y >= window.bottom - SIZEMARGIN)
-  {
-    return HTBOTTOM;
-  }
-  if (point.y <= window.top + SIZEMARGIN)
-  {
-    return HTTOP;
   }
   if (m_captionRect.PtInRect(point))
   {
@@ -684,13 +687,16 @@ void StyleMDIFrameWnd::ReDrawButton(LRESULT type)
 
 void StyleMDIFrameWnd::DrawButton(CDC* pDC, CRect rect, LRESULT type)
 {
-  pDC->FillSolidRect(rect, ClrWindowHeader);
+  pDC->FillSolidRect(rect,ThemeColor::GetColor(Colors::AccentColor1));
   if (m_curhit == type)
   {
-    pDC->FillSolidRect(rect, m_down ? ClrControlPressed : ClrControlHover);
+    pDC->FillSolidRect(rect, m_down ? ThemeColor::GetColor(Colors::ColorControlPressed) 
+                                    : ThemeColor::GetColor(Colors::ColorControlHover));
   }
   CPen pen;
-  pen.CreatePen(PS_SOLID, 1, m_curhit == type ? m_down ? ClrControlTextPressed : ClrControlTextHover : ClrWindowHeaderIcon);
+  pen.CreatePen(PS_SOLID, 1, m_curhit == type ? m_down ? ThemeColor::GetColor(Colors::ColorControlTextPressed) 
+                                                       : ThemeColor::GetColor(Colors::ColorControlTextHover) 
+                                                       : ColorWindowHeaderIcon);
   HGDIOBJ orgpen = pDC->SelectObject(pen);
 
   switch(type) 

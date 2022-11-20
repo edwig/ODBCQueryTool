@@ -27,18 +27,20 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+using namespace ThemeColor;
+
 IMPLEMENT_DYNAMIC(StyleTabCtrl,CTabCtrl)
 
 StyleTabCtrl::StyleTabCtrl()
 {
-  m_selColor   = ClrTabTextActive;
-  m_unselColor = ClrTabTextInactive;
+  m_selColor   = ThemeColor::GetColor(Colors::ColorTabTextActive);
+  m_unselColor = ThemeColor::GetColor(Colors::ColorTabTextInactive);
   m_font       = &STYLEFONTS.DialogTextFontBold;
   m_hover      = -1;
   m_notch      = false;
   m_offset     = 0;
 
-  m_brush.CreateSolidBrush(UsersBackground);
+  m_brush.CreateSolidBrush(ThemeColor::GetColor(Colors::ColorWindowFrame));
 }
 
 StyleTabCtrl::~StyleTabCtrl()
@@ -84,8 +86,8 @@ LPARAM
 StyleTabCtrl::OnCtlColorStatic(WPARAM wParam,LPARAM /*lParam*/)
 {
   HDC hdc = (HDC)wParam;
-  SetTextColor(hdc,InputTextActive);
-  SetBkColor(hdc,UsersBackground);
+  SetTextColor(hdc,ThemeColor::GetColor(Colors::ColorEditText));    // InputTextActive
+  SetBkColor  (hdc,ThemeColor::GetColor(Colors::ColorWindowFrame)); // UsersBackground
   return (LPARAM)(HBRUSH)m_brush;
 }
 
@@ -94,7 +96,7 @@ StyleTabCtrl::OnEraseBkgnd(CDC* pDC)
 {
   CRect rect;
   GetClientRect(&rect);
-  pDC->FillSolidRect(&rect,UsersBackground);
+  pDC->FillSolidRect(&rect,ThemeColor::GetColor(Colors::ColorWindowFrame)); // UsersBackground
   return TRUE;
 }
 
@@ -189,31 +191,32 @@ StyleTabCtrl::OnSize(UINT nType,int cx,int cy)
 {
   CTabCtrl::OnSize(nType,cx,cy);
 
-  CRect rect;
-  GetClientRect(&rect);
-
-  rect.top    += 4 + tabHeaderHeight;
-  rect.left   += 1;
-  rect.right  -= 1;
-  rect.bottom -= 1;
-
-  if (m_notch)
-  {
-    rect.top += tabHeaderNotch;
-  }
-
   for(int index = 0;index < GetItemCount();++index)
   {
-    TCITEM item;
-    memset(&item,0,sizeof(TCITEM));
-    item.mask = TCIF_PARAM;
-    GetItem(index,&item);
+    ResizeTab(index);
+  }
+}
 
-    CWnd* wnd = reinterpret_cast<CWnd*>(item.lParam);
-    if(wnd)
+void
+StyleTabCtrl::ResizeTab(int p_tab)
+{
+
+  CWnd* wnd = GetTabWindow(p_tab);
+  if (wnd)
+  {
+    CRect rect;
+    GetClientRect(&rect);
+
+    rect.top    += 4 + tabHeaderHeight;
+    rect.left   += 1;
+    rect.right  -= 1;
+    rect.bottom -= 1;
+
+    if (m_notch)
     {
-      wnd->MoveWindow(rect,true);
+      rect.top += tabHeaderNotch;
     }
+    wnd->MoveWindow(rect, true);
   }
 }
 
@@ -233,7 +236,7 @@ StyleTabCtrl::OnPaint()
     CRect rect;
 
     // Draw items    
-    // If the last item contained errors, Draw left line with "ClrWindowFrameError".
+    // If the last item contained errors, Draw left line with "ColorWindowFrameError".
     bool lastTabHasErrors = false;
     // int teller = 0;
     int count  = GetItemCount();
@@ -260,36 +263,34 @@ StyleTabCtrl::OnPaint()
 
       --rect.right;
       // Normal color and error color
-      CPen normalPen(PS_SOLID, 1, ClrTabFrame);
-      CPen errorPen (PS_SOLID, 1, ClrWindowFrameError);
+      CPen normalPen(PS_SOLID, 1, ThemeColor::GetColor(Colors::ColorTabFrame)); 
+      CPen errorPen (PS_SOLID, 1, ColorWindowFrameError);
       dc->SelectObject(GetErrorState(ind) ? errorPen : normalPen);
 
       if (dc->RectVisible(rect))
       {
         COLORREF clrbkgnd;
         COLORREF clrtext;
-        // bool close = false;
 
         if (!active)
         {
-          clrbkgnd = ClrTabBkGndInactive;
-          clrtext  = ClrTabTextInactive;
+          clrbkgnd = ThemeColor::GetColor(Colors::ColorTabBkGndInactive);
+          clrtext  = ThemeColor::GetColor(Colors::ColorTabTextInactive);
         }
         else if (ind == cursel)
         {
-          clrbkgnd = ClrTabBkGndSelected;
-          clrtext  = ClrTabTextSelected;
-          // close = it->m_closable;
+          clrbkgnd = ThemeColor::NoWhite(ThemeColor::GetColor(Colors::AccentColor1));
+          clrtext  = ThemeColor::GetColor(Colors::ColorTabTextSelected);
         }
         else if (ind == m_hover)
         {
-          clrbkgnd = ClrTabBkGndHover;
-          clrtext  = ClrTabTextHover;
+          clrbkgnd = ThemeColor::GetColor(Colors::ColorTabBkGndHover);
+          clrtext  = ThemeColor::GetColor(Colors::ColorTabTextHover);
         }
         else
         {
-          clrbkgnd = ClrTabBkGndActive;
-          clrtext  = ClrTabTextActive;
+          clrbkgnd = ThemeColor::GetColor(Colors::ColorTabBkGndActive);
+          clrtext  = ThemeColor::GetColor(Colors::ColorTabTextActive);
         }
 
         CBrush brush(clrbkgnd);
@@ -339,8 +340,8 @@ StyleTabCtrl::OnPaint()
             points[3].y += tabHeaderNotch;
             points[1].y = points[0].y - tabHeaderNotch + 1;
             points[2].y = points[3].y - tabHeaderNotch + 1;
-            CBrush blank(ClrTabBkGndActive);
-            CPen   nopen(PS_SOLID,1,ClrTabBkGndActive);
+            CBrush blank(ThemeColor::GetColor(Colors::ColorWindowFrame));             // ClrTabBkGndActive
+            CPen   nopen(PS_SOLID,1,ThemeColor::GetColor(Colors::ColorWindowFrame));  // ClrTabBkGndActive
             dc->SelectObject(blank);
             dc->SelectObject(nopen);
             dc->Polygon(points, 4);
@@ -392,7 +393,7 @@ StyleTabCtrl::OnPaint()
       }
       lastTabHasErrors = GetErrorState(ind);
     }
-    CPen normalPen(PS_SOLID, 1, ClrTabFrame);
+    CPen normalPen(PS_SOLID,1,ThemeColor::GetColor(Colors::ColorTabFrame));
 
     if (!lastTabHasErrors)
     {
@@ -420,7 +421,7 @@ void
 StyleTabCtrl::PaintError(CDC* pDC, CRect rect)
 {
   HGDIOBJ  oldfont  = pDC->SelectObject(STYLEFONTS.ErrorTextFont);
-  COLORREF oldcolor = pDC->SetTextColor(ClrWindowFrameError);
+  COLORREF oldcolor = pDC->SetTextColor(ColorWindowFrameError);
   int      oldmode  = pDC->SetBkMode(TRANSPARENT);
 
   pDC->DrawText("!", &rect, DT_RIGHT | DT_SINGLELINE);
@@ -493,6 +494,57 @@ StyleTabCtrl::SelectTab(int p_tab)
       wnd->ShowWindow(p_tab == index ? SW_SHOW : SW_HIDE);
     }
   }
+  SetCurSel(p_tab);
+}
+
+CWnd* 
+StyleTabCtrl::GetActiveWindow()
+{
+  int index = GetCurSel();
+  return GetTabWindow(index);
+}
+
+CWnd* 
+StyleTabCtrl::GetTabWindow(int p_tab)
+{
+  TCITEM item;
+  memset(&item,0,sizeof(TCITEM));
+  item.mask = TCIF_PARAM;
+  if(GetItem(p_tab,&item))
+  {
+    return reinterpret_cast<CWnd*>(item.lParam);
+  }
+  return nullptr;
+}
+
+// Replace window on the tab, returning the previous one
+CWnd* 
+StyleTabCtrl::SetTabWindow(int p_tab,CWnd* p_window)
+{
+  if(p_tab >= 0 && p_tab < GetItemCount())
+  {
+    // Keep the old window
+    CWnd* old = GetTabWindow(p_tab);
+
+    // Set the new window on the tab
+    TCITEM item;
+    memset(&item, 0, sizeof(TCITEM));
+    item.mask = TCIF_PARAM;
+    item.lParam = (LPARAM)p_window;
+    SetItem(p_tab,&item);
+
+    // RESIZE and show the window
+    ResizeTab(p_tab);
+    if(old)
+    {
+      old->ShowWindow(SW_HIDE);
+    }
+    p_window->ShowWindow(SW_SHOW);
+
+    // Previous window on this tab
+    return old;
+  }
+  return nullptr;
 }
 
 void

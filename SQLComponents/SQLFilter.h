@@ -38,6 +38,7 @@ namespace SQLComponents
 class SQLRecord;
 class SQLQuery;
 class SQLFilterSet;
+
 // Mapping typedefs
 typedef std::vector<SQLVariant*> VariantSet;
 
@@ -83,6 +84,8 @@ public:
   void        SetTimestampPart(SQLTimestampCalcPart p_part);
   // Set extra optional field
   void        SetField2(XString p_field);
+  // Set casting of the first field
+  void        SetCastAs(XString p_datatype,int p_scale = 0,int p_precision = 0);
 
   // OPERATIONS
 
@@ -110,6 +113,7 @@ public:
 
   // Resetting the filter
   void        Reset();
+  void        ResetField()                            { m_field.Empty();           }
   void        SetSubFilters(SQLFilterSet* subfilters) { m_subfilters = subfilters; }
 
 private:
@@ -124,12 +128,16 @@ private:
   void        ConstructIN(XString& p_sql,SQLQuery& p_query);
   // Constructing the BETWEEN clause
   void        ConstructBetween(XString& p_sql,SQLQuery& p_query);
+  // Constructing the EXISTS clause
+  void        ConstructExists(XString& p_sql,SQLQuery& p_query);
   // Constructing a FUNCTION(field)
   XString     ConstructFunctionSQL(SQLQuery& p_query);
   // Constructing the extraction part in the EXTRACT function
   XString     ConstructExtractPart();
   // Constructing the calculation part in the TIMESTAMPADD/TIMESTAMPDIFF functions
   XString     ConstructTimestampCalcPart();
+  // Constructing the CAST(field AS <datatype>)
+  XString     ConstructCastAs();
 
   // Internal matching
   bool        MatchEqual       (SQLVariant* p_field);
@@ -160,7 +168,12 @@ private:
               }
               m_extract;
   XString     m_field2;                        // Optional extra field as in "m_field <oper> m_fileld2"
-  SQLFilterSet* m_subfilters     { nullptr };
+  // SubFilters for functions or a (NOT) EXSITS
+  SQLFilterSet* m_subfilters  { nullptr };     // Extra filters to be appended
+  // Cast for the first field
+  XString     m_castType;                      // Cast to SQL_<TYPE> See: SQLInfo.GetTypeInfo
+  int         m_castScale     { 0 };           // Cast first  level scaling
+  int         m_castPrecision { 0 };           // Cast second level scaling
 };
 
 inline XString
@@ -312,6 +325,15 @@ public:
   int Size()
   {
     return (int)m_filters.size();
+  }
+
+  SQLFilter* GetFilter(int p_index)
+  {
+    if(p_index >= 0 && p_index < (int)m_filters.size())
+    {
+      return m_filters[p_index];
+    }
+    return nullptr;
   }
 
   XString ParseFiltersToCondition(SQLQuery& p_query);

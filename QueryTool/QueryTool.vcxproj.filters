@@ -855,5 +855,8 @@
     <Image Include="res\paypal-donate.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+    <Image Include="res\ScrollBar7.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
   </ItemGroup>
 </Project>

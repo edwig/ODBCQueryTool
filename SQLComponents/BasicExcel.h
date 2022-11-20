@@ -526,8 +526,10 @@ struct LittleEndian
 
   static void ReadString(const char* buffer, wchar_t* str, size_t pos=0, int bytes=0)
   {
-    for (int i=0; i<bytes; ++i)
-      Read(buffer, str[i], pos+i*SIZEOFWCHAR_T);
+    for(int i = 0; i < bytes; ++i)
+    {
+      Read(buffer,str[i],pos + (size_t) i * SIZEOFWCHAR_T);
+    }
   }
 
   static void Write(char* buffer, wchar_t val, size_t pos=0, int bytes=0)
@@ -543,33 +545,45 @@ struct LittleEndian
 
   static void WriteString(char* buffer, wchar_t* str, size_t pos=0, int bytes=0)
   {
-    for (int i=0; i<bytes; ++i) Write(buffer, str[i], pos+i*SIZEOFWCHAR_T);
+    for(int i = 0; i < bytes; ++i)
+    {
+      Write(buffer,str[i],pos + (size_t)i * SIZEOFWCHAR_T);
+    }
   }
 
   static void Read(const vector<char>& buffer, wchar_t& retVal, size_t pos=0, int bytes=0)
   {
     retVal = wchar_t(0);
 
-    if (bytes == 0)
+    if(bytes == 0)
+    {
       bytes = SIZEOFWCHAR_T;
-
-    for (int i=0; i<bytes; ++i) {
-      if (pos+i < (int)buffer.size()) //MF
-        retVal |= ((wchar_t)((unsigned char)buffer[pos+i])) << 8*i;
+    }
+    for (int i=0; i<bytes; ++i) 
+    {
+      if(pos + i < (int) buffer.size()) //MF
+      {
+        retVal |= ((wchar_t) ((unsigned char) buffer[pos + i])) << 8 * i;
+      }
     }
   }
 
   static void ReadString(const vector<char>& buffer, wchar_t* str, size_t pos=0, int bytes=0)
   {
-    for (int i=0; i<bytes; ++i) Read(buffer, str[i], pos+i*SIZEOFWCHAR_T);
+    for(int i = 0; i < bytes; ++i)
+    {
+      Read(buffer,str[i],pos + (size_t)i * SIZEOFWCHAR_T);
+    }
   }
 
   static void Write(vector<char>& buffer, wchar_t val, size_t pos=0, int bytes=0)
   {
-    if (bytes == 0)
+    if(bytes == 0)
+    {
       bytes = SIZEOFWCHAR_T;
-
-    for (int i=0; i<bytes; ++i) {
+    }
+    for (int i=0; i<bytes; ++i) 
+    {
       buffer[pos+i] = (unsigned char)val;
       val >>= 8;
     }
@@ -577,8 +591,10 @@ struct LittleEndian
 
   static void WriteString(vector<char>& buffer, wchar_t* str, size_t pos=0, int bytes=0)
   {
-    for (int i=0; i<bytes; ++i)
-      Write(buffer, str[i], pos+i*SIZEOFWCHAR_T);
+    for(int i = 0; i < bytes; ++i)
+    {
+      Write(buffer,str[i],pos + (size_t)i * SIZEOFWCHAR_T);
+    }
   }
 #endif
 };

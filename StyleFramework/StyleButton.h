@@ -32,15 +32,17 @@ public:
   StyleButton(CString p_type,bool pInError = false);
   virtual  ~StyleButton();
   virtual   BOOL DestroyWindow() override;
+  virtual   void PreSubclassWindow() override;
   BOOL      EnableWindow(BOOL p_enable = TRUE);
 
   // SETTERS
   void      SetStyle(CString p_style);
   void      SetImage(UINT p_bitmap);
   void      SetIconImage(UINT p_icon);
-  void      SetMandatory(bool pValue) { m_mandatory = pValue; }
-  void      SetInError(bool pValue) { m_error = pValue; }
+  void      SetMandatory(bool pValue)           { m_mandatory     = pValue;       }
+  void      SetInError(bool pValue)             { m_error         = pValue;       }
   void      SetDefaultButton(bool pDefaultknop) { m_defaultButton = pDefaultknop; }
+  void      SetBold(bool p_bold)                { m_bold          = p_bold;       }
 
   // GETTERS
   CBitmap&  GetBitmap();
@@ -85,6 +87,7 @@ protected:
   HICON   m_icon { nullptr };
   bool    m_error;
   bool    m_over;
+  bool    m_bold;
   bool    m_mandatory;
   bool    m_defaultButton;
   int     m_style { 1 };

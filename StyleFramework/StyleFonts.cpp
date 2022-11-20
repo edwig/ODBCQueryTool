@@ -26,49 +26,95 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+// The one and only STYLEFONTS object
+StyleFonts STYLEFONTS;
+
+StyleFonts::StyleFonts()
+{
+  ReCreateFonts();
+}
+
 LOGFONT
 StyleFonts::MakeLOGFONTFromString(CString fontstring)
 {
   LOGFONT lf;
   memset(&lf, 0, sizeof(lf));
 
+  // Fill with default "Verdana;12;100"
   strcpy_s(lf.lfFaceName, 32, StyleFontName);
   lf.lfWeight = FW_NORMAL;
-  lf.lfHeight = -MulDiv(12, 96, StyleFonts::logpixelsy());
+  lf.lfHeight = -MulDiv(12,96,StyleFonts::logpixelsy());
 
   std::vector<CString> fontParts;
   Split(fontstring,";",fontParts);
 
-  if (fontParts.size() == 3)
+  // Set values from the fontstring
+  if(fontParts.size() >= 1)
   {
-    strcpy_s(lf.lfFaceName, 32, fontParts[0]);
-    lf.lfHeight = -MulDiv(atoi(fontParts[1]), logpixelsy(), 72);
-    lf.lfWeight = atoi(fontParts[2]);
+    strcpy_s(lf.lfFaceName,32,fontParts[0]);
+    if(fontParts.size() >= 2)
+    {
+      lf.lfHeight = -MulDiv(atoi(fontParts[1]),logpixelsy(),80);
+      if(fontParts.size() == 3)
+      {
+        lf.lfWeight = atoi(fontParts[2]);
+      }
+    }
   }
-
   return lf;
-}
-
-StyleFonts::StyleFonts()
-{
-  LOGFONT lf = MakeLOGFONTFromString(DialogFontString);
-  DialogTextFont.CreateFontIndirect(&lf);
-
-  lf = MakeLOGFONTFromString(DialogFontBoldString);
-  DialogTextFontBold.CreateFontIndirect(&lf);
-
-  lf = MakeLOGFONTFromString(ErrorFontString);
-  ErrorTextFont.CreateFontIndirect(&lf);
-
-  lf = MakeLOGFONTFromString(CaptionFontString);
-  CaptionTextFont.CreateFontIndirect(&lf);
-
-  lf = MakeLOGFONTFromString(ListFontString);
-  ListTextFont.CreateFontIndirect(&lf);
 }
 
 int StyleFonts::logpixelsy()
 {
   CWindowDC dc(0);
   return dc.GetDeviceCaps(LOGPIXELSY);
+}
+
+bool
+StyleFonts::SetFactor(int p_factor)
+{
+  if(p_factor > 50 && p_factor <= 1000)
+  {
+    m_factor = p_factor;
+    ReCreateFonts();
+    return true;
+  }
+  return false;
+}
+
+int
+StyleFonts::GetFactor()
+{
+  return m_factor;
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// PRIVATE
+//
+//////////////////////////////////////////////////////////////////////////
+
+void
+StyleFonts::ReCreateFonts()
+{
+  DialogTextFont    .DeleteObject();
+  DialogTextFontBold.DeleteObject();
+  EditorTextFont    .DeleteObject();
+  ErrorTextFont     .DeleteObject();
+  CaptionTextFont   .DeleteObject();
+
+  LOGFONT lf = MakeLOGFONTFromString(StyleFontName + CString(";") + IntegerToString((STANDARDFONTSIZE * m_factor)/100) + CString(";") + IntegerToString(FW_NORMAL));
+  DialogTextFont.CreateFontIndirect(&lf);
+
+  lf = MakeLOGFONTFromString(StyleFontName + CString(";") + IntegerToString((STANDARDFONTSIZE* m_factor)/100) + CString(";") + IntegerToString(FW_HEAVY));
+  DialogTextFontBold.CreateFontIndirect(&lf);
+
+  lf = MakeLOGFONTFromString(StyleFontName + CString(";") + IntegerToString((ERRORFONTSIZE * m_factor)/100) + CString(";") + IntegerToString(FW_BOLD));
+  ErrorTextFont.CreateFontIndirect(&lf);
+
+  lf = MakeLOGFONTFromString(StyleFontName + CString(";") + IntegerToString((CAPTIONTEXTSIZE * m_factor)/100) + CString(";") + IntegerToString(FW_BOLD));
+  CaptionTextFont.CreateFontIndirect(&lf);
+
+  lf = MakeLOGFONTFromString(EditFontName + CString(";") + IntegerToString((STANDARDFONTSIZE * m_factor)/100) + CString(";") + IntegerToString(FW_BOLD));
+  EditorTextFont.CreateFontIndirect(&lf);
 }

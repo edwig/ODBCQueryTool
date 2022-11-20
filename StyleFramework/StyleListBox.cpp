@@ -23,12 +23,15 @@
 #include "StyleColors.h"
 #include "LinePrinter.h"
 #include "StyleTexts.h"
+#include "StyleMessageBox.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+using namespace ThemeColor;
 
 /////////////////////////////////////////////////////////////////////////////
 // StyleListBox
@@ -46,14 +49,24 @@ StyleListBox::~StyleListBox()
   OnNcDestroy();
 }
 
-BEGIN_MESSAGE_MAP(StyleListBox,CListBox)
+BEGIN_MESSAGE_MAP(StyleListBox, CListBox)
   ON_WM_PAINT()
   ON_WM_SHOWWINDOW()
+  ON_WM_DESTROY()
+  ON_WM_ERASEBKGND()
+  ON_WM_HSCROLL()
 END_MESSAGE_MAP()
 
 void 
 StyleListBox::PreSubclassWindow()
 {
+  // Check for unsupported styles in StyleFramework
+  int style = GetStyle();
+  ASSERT((style & LBS_OWNERDRAWVARIABLE) == 0);
+  ASSERT((style & LBS_MULTICOLUMN)       == 0);
+
+  ScaleControl(this);
+
   if(m_directInit)
   {
     InitSkin();
@@ -70,6 +83,9 @@ StyleListBox::InitSkin(int p_borderSize /*=1*/,int p_clientBias /*=0*/)
   if(m_skin == nullptr)
   {
     SetFont(&STYLEFONTS.DialogTextFont);
+    int height = GetItemHeight(0);
+    SetItemHeight(0,(height * GetSFXSizeFactor()) / 100);
+
     m_skin = SkinWndScroll(this,p_borderSize,p_clientBias);
   }
 }
@@ -98,9 +114,18 @@ StyleListBox::DrawFrame()
   SkinScrollWnd* skin = GetSkin();
   if(skin)
   {
-    COLORREF color = (this == GetFocus()) ? ThemeColor::_Color1 : ThemeColor::_Color2;
+    COLORREF color = (this == GetFocus()) ? ThemeColor::GetColor(Colors::AccentColor1) : ThemeColor::GetColor(Colors::AccentColor2);
     skin->DrawFrame(color);
   }
+}
+
+BOOL
+StyleListBox::OnEraseBkgnd(CDC* pDC)
+{
+  CRect client;
+  GetClientRect(client);
+  pDC->FillSolidRect(client,ThemeColor::GetColor(Colors::ColorCtrlBackground));
+  return TRUE;
 }
 
 void
@@ -109,10 +134,21 @@ StyleListBox::OnPaint()
   if(!m_inPaint)
   {
     m_inPaint = true;
-    CListBox::OnPaint();
+    PAINTSTRUCT ps;
+    CDC* cdc = BeginPaint(&ps);
+    OnEraseBkgnd(cdc);
+    Internal_Paint(cdc);
+    EndPaint(&ps);
     DrawFrame();
     m_inPaint = false;
   }
+}
+
+void
+StyleListBox::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+{
+  CListBox::OnHScroll(nSBCode,nPos,pScrollBar);
+  Invalidate();
 }
 
 // Propagate the ShowWindow command
@@ -140,35 +176,207 @@ StyleListBox::OnShowWindow(BOOL bShow, UINT nStatus)
 int 
 StyleListBox::AddString(LPCTSTR p_string)
 {
-  int result = CListBox::AddString(p_string);
-  if(result < 0)
+  return AppendString(p_string);
+}
+
+int 
+StyleListBox::InsertString(int p_index,LPCTSTR p_string,COLORREF p_foreground,COLORREF p_background)
+{
+  bool owner = (GetStyle() & LBS_OWNERDRAWFIXED) > 0;
+  int result = CListBox::InsertString(p_index,owner ? "" : p_string);
+  if (result != LB_ERR)
   {
-    return result;
+    if (GetStyle() & LBS_OWNERDRAWFIXED)
+    {
+      ListBoxColorLine* line = new ListBoxColorLine();
+      line->m_foreground = p_foreground;
+      line->m_background = p_background;
+      line->m_text       = p_string;
+
+      SetItemPointer(result,line);
+    }
+    UpdateWidth(p_string);
+    AdjustScroll();
   }
-  UpdateWidth(p_string);
-  AdjustScroll();
   return result;
 }
 
 int 
-StyleListBox::InsertString(int p_index,LPCTSTR p_string)
+StyleListBox::AppendString(LPCSTR p_string,COLORREF p_foreground,COLORREF p_background)
 {
-  int result = CListBox::InsertString(p_index,p_string);
-  if(result < 0)
+  bool owner = (GetStyle() & LBS_OWNERDRAWFIXED) > 0;
+  int result = CListBox::AddString(owner ? "" : p_string);
+  if (result != LB_ERR)
   {
-    return result;
-  }
-  UpdateWidth(p_string);
-  AdjustScroll();
+    if(GetStyle() & LBS_OWNERDRAWFIXED)
+    {
+      ListBoxColorLine* line = new ListBoxColorLine();
+      line->m_foreground = p_foreground;
+      line->m_background = p_background;
+      line->m_text       = p_string;
+
+      SetItemPointer(result,line);
+    }
+    UpdateWidth(p_string);
+    AdjustScroll();
+}
   return result;
 }
 
-void StyleListBox::ResetContent()
+void
+StyleListBox::SetItemPointer(int p_index,void* p_data)
 {
+  ListBoxColorLine* listBox = reinterpret_cast<ListBoxColorLine*>(GetItemDataPtr(p_index));
+  if(listBox && (listBox != (ListBoxColorLine*)LB_ERR) &&listBox->m_magic == LIST_MAGIC)
+  {
+    delete listBox;
+  }
+  SetItemDataPtr(p_index,p_data);
+}
+
+void 
+StyleListBox::MeasureItem(LPMEASUREITEMSTRUCT p_measureItemStruct)
+{
+  // TODO: Add your code to determine the size of specified item
+  ASSERT(p_measureItemStruct->CtlType == ODT_LISTBOX);
+
+  ListBoxColorLine* listBox = reinterpret_cast<ListBoxColorLine*>(GetItemDataPtr(p_measureItemStruct->itemID));
+  if(listBox && (listBox != (ListBoxColorLine*)LB_ERR) && listBox->m_magic == LIST_MAGIC)
+  {
+    CString strText = listBox->m_text;
+    if (strText.GetLength())
+    {
+      CRect rect;
+      GetItemRect(p_measureItemStruct->itemID, &rect);
+
+      CDC* pDC = GetDC();
+      p_measureItemStruct->itemHeight = pDC->DrawText(strText, -1, rect, DT_WORDBREAK | DT_CALCRECT);
+      ReleaseDC(pDC);
+    }
+  }
+}
+
+void 
+StyleListBox::DrawItem(LPDRAWITEMSTRUCT p_drawItemStruct)
+{
+  // TODO: Add your code to draw the specified item
+  ASSERT(p_drawItemStruct->CtlType == ODT_LISTBOX);
+
+  // Getting a DC
+  CDC dc;
+  dc.Attach(p_drawItemStruct->hDC);
+
+  // Save these value to restore them when done drawing.
+  COLORREF crOldTextColor = dc.GetTextColor();
+  COLORREF crOldBkColor   = dc.GetBkColor();
+
+  COLORREF foreground(FRAME_DEFAULT_COLOR);
+  COLORREF background(FRAME_DEFAULT_COLOR);
+  // Getting our foreground/background colors
+  ListBoxColorLine* listBox = reinterpret_cast<ListBoxColorLine*>(GetItemDataPtr(p_drawItemStruct->itemID));
+  if(!listBox || (listBox == (ListBoxColorLine*)LB_ERR) || listBox->m_magic != LIST_MAGIC)
+  {
+    return;
+  }
+  foreground = listBox->m_foreground;
+  background = listBox->m_background;
+  if(foreground == FRAME_DEFAULT_COLOR)
+  {
+    foreground = ThemeColor::GetColor(Colors::ColorEditText);
+  }
+  if(background == FRAME_DEFAULT_COLOR)
+  {
+    background = ThemeColor::GetColor(Colors::ColorCtrlBackground);
+  }
+
+  // If this item is selected, set the background color 
+  // and the text color to appropriate values. Also, erase
+  // rect by filling it with the background color.
+  if((p_drawItemStruct->itemAction | ODA_SELECT) &&
+     (p_drawItemStruct->itemState  & ODS_SELECTED))
+  {
+    int accent = ThemeColor::GetColor(Colors::AccentColor1);
+    dc.SetTextColor(background);
+    dc.SetBkColor  (accent);
+    dc.FillSolidRect(&p_drawItemStruct->rcItem,accent);
+  }
+  else
+  {
+    dc.SetTextColor(foreground);
+    dc.SetBkColor  (background);
+    dc.FillSolidRect(&p_drawItemStruct->rcItem,background);
+  }
+  if((p_drawItemStruct->itemAction | ODA_FOCUS) &&
+     (p_drawItemStruct->itemState  & ODS_FOCUS))
+  {
+    dc.DrawFocusRect(&p_drawItemStruct->rcItem);
+  }
+
+  // Draw the text.
+  p_drawItemStruct->rcItem.left   += 5;
+  p_drawItemStruct->rcItem.top    += 1;
+  p_drawItemStruct->rcItem.bottom -= 1;
+
+  dc.DrawText(listBox->m_text.GetString(),listBox->m_text.GetLength(),&p_drawItemStruct->rcItem,DT_NOCLIP | DT_NOPREFIX | DT_VCENTER);
+
+  // Reset the background color and the text color back to their
+  // original values.
+  dc.SetTextColor(crOldTextColor);
+  dc.SetBkColor  (crOldBkColor);
+
+  dc.Detach();
+}
+
+int 
+StyleListBox::CompareItem(LPCOMPAREITEMSTRUCT p_compare)
+{
+  if(p_compare->itemID1 >= 0 && p_compare->itemID1 < (UINT)GetCount() &&
+     p_compare->itemID2 >= 0 && p_compare->itemID2 < (UINT)GetCount())
+  {
+    ListBoxColorLine* listBox1 = reinterpret_cast<ListBoxColorLine*>(GetItemDataPtr(p_compare->itemID1));
+    ListBoxColorLine* listBox2 = reinterpret_cast<ListBoxColorLine*>(GetItemDataPtr(p_compare->itemID2));
+    if(listBox1->m_magic == LIST_MAGIC && listBox2->m_magic == LIST_MAGIC)
+    {
+      return listBox1->m_text.Compare(listBox2->m_text);
+    }
+  }
+  return 0;
+}
+
+void 
+StyleListBox::DeleteItem(LPDELETEITEMSTRUCT p_deleteItemStruct)
+{
+  ASSERT(p_deleteItemStruct->CtlType == ODT_LISTBOX);
+  ListBoxColorLine* line = reinterpret_cast<ListBoxColorLine*>(p_deleteItemStruct->itemData);
+  if(line && line->m_magic == LIST_MAGIC)
+  {
+    delete line;
+  }
+  CListBox::DeleteItem(p_deleteItemStruct);
+}
+
+void
+StyleListBox::ResetContent()
+{
+  if(GetStyle() & LBS_OWNERDRAWFIXED)
+  {
+    RemoveLineInfo();
+  }
+  // Empty the control
   CListBox::ResetContent();
   CListBox::SetHorizontalExtent(0);
   AdjustScroll();
   m_width = 0;
+}
+
+void
+StyleListBox::OnDestroy()
+{
+  if(GetStyle() & LBS_OWNERDRAWFIXED)
+  {
+    RemoveLineInfo();
+  }
+  CListBox::OnDestroy();
 }
 
 // Deleting a string implies recalculating the width
@@ -177,6 +385,17 @@ void StyleListBox::ResetContent()
 int 
 StyleListBox::DeleteString(int p_number)
 {
+  if(GetStyle() & LBS_OWNERDRAWFIXED)
+  {
+    // Remove color info
+    ListBoxColorLine* line = reinterpret_cast<ListBoxColorLine*>(GetItemDataPtr(p_number));
+    if(line)
+    {
+      delete line;
+    }
+  }
+
+  // Do the delete
   int result = CListBox::DeleteString(p_number);
   if(result < 0)
   {
@@ -192,7 +411,7 @@ StyleListBox::DeleteString(int p_number)
   {
     /* scan strings */
     CString s;
-    CListBox::GetText(i,s);
+    GetText(i,s);
     CSize sz = dc.GetTextExtent(s);
     sz.cx += 3 * ::GetSystemMetrics(SM_CXBORDER);
     if(sz.cx > m_width)
@@ -250,7 +469,7 @@ StyleListBox::Copy()
       result += "\r\n";
     }
     CString text;
-    CListBox::GetText(lines[index],text);
+    GetText(lines[index],text);
     RemoveLineNumber(text);
     result += text;
   }
@@ -380,7 +599,7 @@ StyleListBox::Print(CString p_documentName
     for(int index = 0; index < GetCount(); ++index)
     {
       CString line;
-      CListBox::GetText(index, line);
+      GetText(index, line);
       print.Print(line);
       print.NextLine();
     }
@@ -433,7 +652,7 @@ StyleListBox::PrintSelection(CString p_documentName
     for(int index = 0; index < count; ++index)
     {
       CString line;
-      CListBox::GetText(lines[index],line);
+      GetText(lines[index],line);
       print.Print(line);
       print.NextLine();
     }
@@ -443,6 +662,73 @@ StyleListBox::PrintSelection(CString p_documentName
   delete[] lines;
 
   return result;
+}
+
+int
+StyleListBox::GetText(int p_index,LPTSTR p_buffer) const
+{
+  ASSERT(::IsWindow(m_hWnd));
+  int length = 0;
+  if(p_index >= 0 && p_index < GetCount())
+  {
+    if(GetStyle() & LBS_OWNERDRAWFIXED)
+    {
+      ListBoxColorLine* listBox = reinterpret_cast<ListBoxColorLine*>(GetItemDataPtr(p_index));
+      if(listBox && listBox->m_magic == LIST_MAGIC)
+      {
+        length = listBox->m_text.GetLength() + 1;
+        strcpy_s(p_buffer, length, listBox->m_text.GetString());
+      }
+    }
+    else
+    {
+      return CListBox::GetText(p_index,p_buffer);
+    }
+  }
+  return length;
+}
+
+void 
+StyleListBox::GetText(int p_index,CString& p_string) const
+{
+  ASSERT(::IsWindow(m_hWnd));
+  if (p_index >= 0 && p_index < GetCount())
+  {
+    if(GetStyle() & LBS_OWNERDRAWFIXED)
+    {
+      ListBoxColorLine* listBox = reinterpret_cast<ListBoxColorLine*>(GetItemDataPtr(p_index));
+      if(listBox && listBox->m_magic == LIST_MAGIC)
+      {
+        p_string = listBox->m_text;
+      }
+    }
+    else 
+    {
+      CListBox::GetText(p_index,p_string);
+    }
+  }
+}
+
+int 
+StyleListBox::GetTextLen(int p_index) const
+{
+  ASSERT(::IsWindow(m_hWnd)); 
+  if(p_index >= 0 && p_index < GetCount())
+  {
+    if(GetStyle() & LBS_OWNERDRAWFIXED)
+    {
+      ListBoxColorLine* listBox = reinterpret_cast<ListBoxColorLine*>(GetItemDataPtr(p_index));
+      if(listBox && listBox->m_magic == LIST_MAGIC)
+      {
+        return listBox->m_text.GetLength();
+      }
+    }
+    else 
+    { 
+      return CListBox::GetTextLen(p_index);
+    }
+  }
+  return 0;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -491,7 +777,7 @@ StyleListBox::AdjustScroll()
   SkinScrollWnd* skin = GetSkin();
   if(skin)
   {
-    skin->PostMessage(WM_TIMER,1,0);
+    skin->SetTimer(TIMER_UPDATE,FRAME_FIRST_SCROLLBARS,nullptr);
   }
 }
 
@@ -510,5 +796,232 @@ StyleListBox::RemoveLineNumber(CString& p_text)
       }
     }
     p_text = p_text.Mid(pos + 2);
+  }
+}
+
+void
+StyleListBox::RemoveLineInfo()
+{
+  // Remove our text and color content
+  int nCount = GetCount();
+  for(int index = 0;index < nCount;index++)
+  {
+    ListBoxColorLine* line = reinterpret_cast<ListBoxColorLine*>(GetItemDataPtr(index));
+    if(line && line->m_magic == LIST_MAGIC)
+    {
+      delete line;
+    }
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// OWNERDRAW PAINTING CODE
+//
+//////////////////////////////////////////////////////////////////////////
+
+static const char* DebugRect(const RECT* rect)
+{
+  static char buffer[51];
+  sprintf_s(buffer,50,"top=%d,left=%d,right=%d,bottom=%d",rect->top,rect->left,rect->right,rect->bottom);
+  return buffer;
+}
+
+void
+StyleListBox::Internal_Paint(CDC* p_cdc)
+{
+  int    item_height = GetItemHeight(0);
+  int    items = GetCount();
+  int    style = GetStyle();
+  CRect  clientrect;
+  RECT   focusRect = { -1,-1,-1,-1 };
+
+  // Special case! Do not paint
+  if(style & LBS_NOREDRAW)
+  {
+    return;
+  }
+
+  // Getting the client rectangle
+  GetClientRect(&clientrect);
+  SCROLLINFO info;
+  info.cbSize = sizeof(SCROLLINFO);
+  GetScrollInfo(SB_HORZ,&info);
+  if(info.nPos > 0)
+  {
+    int shift = info.nPos + ::GetSystemMetrics(SM_CXHSCROLL);
+    SetWindowOrgEx(p_cdc->GetSafeHdc(),shift,0,nullptr);
+    clientrect.right += shift;
+  }
+  CRect itemrect(clientrect);
+
+  // Should get the brush from the parent normally
+  // hbrush = (HBRUSH)SendMessageW(GetParent()->GetSafeHwnd(),WM_CTLCOLORLISTBOX,(WPARAM)p_cdc->GetSafeHdc(),(LPARAM)GetSafeHwnd());
+  CBrush brush;
+  brush.CreateSolidBrush(ThemeColor::GetColor(Colors::ColorCtrlBackground));
+  HBRUSH oldBrush = (HBRUSH) p_cdc->SelectObject(brush);
+
+  if(!IsWindowEnabled())
+  {
+    p_cdc->SetTextColor(GetSysColor(COLOR_GRAYTEXT));
+  }
+
+  // Paint all the items, regarding the selection 
+  // Focus state will be painted after
+
+  int top_item   = GetTopIndex();
+  int focus_item = GetCaretIndex();
+  
+  HFONT oldFont = (HFONT) p_cdc->SelectObject(&STYLEFONTS.DialogTextFont);
+
+  for(int index = top_item; index < items; index++)
+  {
+    itemrect.bottom = itemrect.top + item_height;
+
+    /* keep the focus rect, to paint the focus item after */
+    if (index == focus_item)
+    {
+      focusRect = itemrect;
+    }
+    Internal_PaintItem(p_cdc,&itemrect,index,ODA_DRAWENTIRE,TRUE);
+    itemrect.top = itemrect.bottom;
+
+    if(itemrect.top >= clientrect.Height())
+    {
+      break;
+    }
+  }
+
+  /* Paint the focus item now */
+  if(focusRect.top != focusRect.bottom && focus_item >= 0)
+  {
+    Internal_PaintItem(p_cdc,&focusRect, focus_item, ODA_FOCUS, FALSE);
+  }
+
+  /* Clear the remainder of the client area */
+  p_cdc->SelectObject(brush);
+  if (itemrect.top < clientrect.Height())
+  {
+    itemrect.bottom = clientrect.bottom;
+    p_cdc->ExtTextOut(0, 0, ETO_OPAQUE | ETO_CLIPPED,&itemrect, NULL, 0, NULL);
+  }
+  if(itemrect.right < clientrect.Width())
+  {
+    itemrect.left   = itemrect.right;
+    itemrect.right  = clientrect.right;
+    itemrect.top    = 0;
+    itemrect.bottom = clientrect.bottom;
+    p_cdc->ExtTextOut(0, 0, ETO_OPAQUE | ETO_CLIPPED,&itemrect, NULL, 0, NULL);
+  }
+
+  // Reset old values in DC
+  if (oldFont)  p_cdc->SelectObject(oldFont);
+  if (oldBrush) p_cdc->SelectObject(oldBrush);
+}
+
+void 
+StyleListBox::Internal_PaintItem(CDC* p_cdc,const RECT* rect,INT index,UINT action,BOOL ignoreFocus)
+{
+  const char* item_str = NULL;
+  int nb_items = GetCount();
+  int style    = GetStyle();
+
+  ListBoxColorLine* line = reinterpret_cast<ListBoxColorLine*>(GetItemDataPtr(index));
+  if(line && (line != (ListBoxColorLine*) LB_ERR) && line->m_magic == LIST_MAGIC)
+  {
+    item_str = line->m_text.GetString();
+  }
+  else
+  {
+    TRACE("called with an out of bounds index %d (Total: %d) in owner draw, Not good.\n",index,GetCount());
+    return;
+  }
+  BOOL selected = GetSel(index);
+  BOOL focused  = GetCaretIndex() == index;
+
+  if(GetStyle() & (LBS_OWNERDRAWFIXED | LBS_OWNERDRAWVARIABLE))
+  {
+    DRAWITEMSTRUCT dis;
+    RECT r;
+
+    if (index >= nb_items)
+    {
+      if(action == ODA_FOCUS)
+      {
+        p_cdc->DrawFocusRect(rect);
+      }
+      else
+      {
+        TRACE("called with an out of bounds index %d(%d) in owner draw, Not good.\n", index, nb_items);
+      }
+      return;
+    }
+
+    GetClientRect(&r);
+
+    dis.CtlType       = ODT_LISTBOX;
+    dis.CtlID         = (UINT)GetWindowLongPtrW(GetSafeHwnd(), GWLP_ID);
+    dis.hwndItem      = GetSafeHwnd();
+    dis.itemAction    = action;
+    dis.hDC           = p_cdc->GetSafeHdc();
+    dis.itemID        = index;
+    dis.itemState     = 0;
+    if (selected)     dis.itemState |= ODS_SELECTED;
+    if (focused)      dis.itemState |= ODS_FOCUS;
+    if (!IsWindowEnabled()) dis.itemState |= ODS_DISABLED;
+    dis.itemData      = (ULONG_PTR) GetItemDataPtr(index);
+    dis.rcItem        = *rect;
+    // TRACE("[%p]: drawitem %d (%s) action=%02x state=%02x rect=%s\n",GetSafeHwnd(),index,item_str, action, dis.itemState, DebugRect(rect));
+
+    // This is the reason we are here!
+    // Standard MS-Windows sends this to the parent of the control so CMenu can have a go at it
+    // But the standard desktop does NOT reflect the MEASUREITEM/DRAWITEM messages
+    // So we send it directly to ourselves!!!!!!
+    // 
+    // SendMessage(GetParent()->GetSafeHwnd(),WM_DRAWITEM,(WPARAM)dis.CtlID,(LPARAM)&dis);
+    SendMessage(WM_DRAWITEM,(WPARAM)dis.CtlID,(LPARAM)&dis);
+  }
+  else
+  {
+    COLORREF oldText = 0, oldBk = 0;
+
+    if (action == ODA_FOCUS)
+    {
+      p_cdc->DrawFocusRect(rect);
+      return;
+    }
+    if (selected)
+    {
+      oldBk   = p_cdc->SetBkColor  (GetSysColor(COLOR_HIGHLIGHT));
+      oldText = p_cdc->SetTextColor(GetSysColor(COLOR_HIGHLIGHTTEXT));
+    }
+
+    TRACE("[%p]: painting %d (%s) action=%02x rect=%s\n",GetSafeHwnd(),index,item_str,action,DebugRect(rect));
+    if(!item_str)
+    {
+      p_cdc->ExtTextOut(rect->left + 1, rect->top, ETO_OPAQUE | ETO_CLIPPED, rect, NULL, 0, NULL);
+    }
+    else if(style & LBS_USETABSTOPS)
+    {
+      int nb_tabs = 0;
+      int* tabs = nullptr;
+
+      /* Output empty string to paint background in the full width. */
+      p_cdc->ExtTextOut   (rect->left + 1, rect->top,ETO_OPAQUE | ETO_CLIPPED, rect, NULL, 0, NULL);
+      p_cdc->TabbedTextOut(rect->left + 1, rect->top, item_str, lstrlen(item_str),nb_tabs,tabs,0);
+    }
+    else
+    {
+      p_cdc->ExtTextOut(rect->left + 1, rect->top, ETO_OPAQUE | ETO_CLIPPED, rect, item_str, (UINT)strlen(item_str), NULL);
+    }
+    if(selected)
+    {
+      p_cdc->SetBkColor(oldBk);
+      p_cdc->SetTextColor(oldText);
+    }
+    if(focused)
+    {
+      p_cdc->DrawFocusRect(rect);
+    }
   }
 }

@@ -208,7 +208,7 @@ public:
   // SQL FOR SUB-PROCESSING
 
   // Connects to a default schema in the database/instance
-  virtual XString GetSQLDefaultSchema(XString p_schema) const = 0;
+  virtual XString GetSQLDefaultSchema(XString p_user,XString p_schema) const = 0;
 
   // Gets the construction for inline generating a key within an INSERT statement
   virtual XString GetSQLNewSerial(XString p_table,XString p_sequence) const = 0;

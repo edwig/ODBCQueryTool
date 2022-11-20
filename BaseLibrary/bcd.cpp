@@ -1379,7 +1379,7 @@ bcd::Log() const
     res += between;
   }
   // Re-add powers of two (comes from  " < 1.2")
-  res *= bcd(::pow(2.0,(double)(k + 1)));
+  res *= bcd(::pow(2.0,(double)++k));
 
   // Re-apply the exponent
   if(expo != 0)
@@ -2315,7 +2315,7 @@ bcd::AsDisplayString(int p_decimals /*=2*/) const
   // Not in the bookkeeping range
   if(m_exponent > 12 || m_exponent < -2)
   {
-    return AsString();
+    return AsString(bcd::Format::Engineering,false,p_decimals);
   }
   bcd number(*this);
   number.Round(p_decimals);

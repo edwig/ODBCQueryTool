@@ -89,7 +89,8 @@ bool
 SQLGuid::Set(const SQLGUID* p_guid)
 {
   memcpy(&m_guid,p_guid,sizeof(SQLGUID));
-  return (m_initialized = true);
+  m_initialized = true;
+  return true;
 }
 
 // Is a valid initialized GUID

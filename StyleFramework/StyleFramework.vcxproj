@@ -94,10 +94,14 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <SDLCheck>true</SDLCheck>
-      <ConformanceMode>false</ConformanceMode>
+      <SDLCheck>false</SDLCheck>
+      <ConformanceMode>Default</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <AdditionalIncludeDirectories>$(SolutionDir)StyleFramework\Grid</AdditionalIncludeDirectories>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Lib>
       <TargetMachine>MachineX86</TargetMachine>
@@ -108,12 +112,14 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <AdditionalIncludeDirectories>$(SolutionDir)StyleFramework\Grid</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PreprocessorDefinitions>WSCALE;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
     </ClCompile>
     <Lib>
       <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
@@ -129,6 +135,7 @@
       <ConformanceMode>false</ConformanceMode>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <AdditionalIncludeDirectories>$(SolutionDir)StyleFramework\Grid</AdditionalIncludeDirectories>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -150,9 +157,10 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <AdditionalIncludeDirectories>$(SolutionDir)StyleFramework\Grid</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WSCALE;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -188,6 +196,7 @@
     <ClInclude Include="StyleFrameWnd.h" />
     <ClInclude Include="StyleFrameWork.h" />
     <ClInclude Include="StyleGridCtrl.h" />
+    <ClInclude Include="StyleGroupBox.h" />
     <ClInclude Include="StyleHyperlink.h" />
     <ClInclude Include="StyleListBox.h" />
     <ClInclude Include="StyleListCtrl.h" />
@@ -197,8 +206,10 @@
     <ClInclude Include="StyleProgressCtrl.h" />
     <ClInclude Include="StyleSpinButtonCtrl.h" />
     <ClInclude Include="StyleStatic.h" />
+    <ClInclude Include="StyleStaticToast.h" />
     <ClInclude Include="StyleTexts.h" />
     <ClInclude Include="StyleToast.h" />
+    <ClInclude Include="StyleToolbar.h" />
     <ClInclude Include="StyleTreeCtrl.h" />
     <ClInclude Include="StyleUtilities.h" />
     <ClInclude Include="StyleButton.h" />
@@ -214,6 +225,7 @@
     <ClInclude Include="StyleTabCtrl.h" />
     <ClInclude Include="StyleEdit.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="WinToastLib.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GrayWindow.cpp" />
@@ -236,7 +248,9 @@
     <ClCompile Include="StyleDIB.cpp" />
     <ClCompile Include="StyleFormView.cpp" />
     <ClCompile Include="StyleFrameWnd.cpp" />
+    <ClCompile Include="StyleFramework.cpp" />
     <ClCompile Include="StyleGridCtrl.cpp" />
+    <ClCompile Include="StyleGroupBox.cpp" />
     <ClCompile Include="StyleHyperlink.cpp" />
     <ClCompile Include="StyleListBox.cpp" />
     <ClCompile Include="StyleListCtrl.cpp" />
@@ -250,8 +264,10 @@
     <ClCompile Include="StyleProgressCtrl.cpp" />
     <ClCompile Include="StyleSpinButtonCtrl.cpp" />
     <ClCompile Include="StyleStatic.cpp" />
+    <ClCompile Include="StyleStaticToast.cpp" />
     <ClCompile Include="StyleTexts.cpp" />
     <ClCompile Include="StyleToast.cpp" />
+    <ClCompile Include="StyleToolbar.cpp" />
     <ClCompile Include="StyleTreeCtrl.cpp" />
     <ClCompile Include="StyleUtilities.cpp" />
     <ClCompile Include="StyleButton.cpp" />
@@ -265,6 +281,7 @@
     <ClCompile Include="SkinScrollbar.cpp" />
     <ClCompile Include="StyleTabCtrl.cpp" />
     <ClCompile Include="StyleEdit.cpp" />
+    <ClCompile Include="WinToastLib.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="StyleFramework.rc" />
@@ -287,6 +304,7 @@
     <Image Include="res\ScrollBar4.bmp" />
     <Image Include="res\ScrollBar5.bmp" />
     <Image Include="res\ScrollBar6.bmp" />
+    <Image Include="res\ScrollBar7.bmp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="WorkToDo.txt" />

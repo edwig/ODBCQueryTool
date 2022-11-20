@@ -20,15 +20,6 @@
 // For license: See the file "LICENSE.txt" in the root folder
 //
 #include "stdafx.h"
-#include "StyleDialog.h"
-#include "StyleColors.h"
-#include "GrayWindow.h"
-#include "StyleFonts.h"
-#include "StyleMacros.h"
-#include "SkinScrollWnd.h"
-#include "StyleMessageBox.h"
-#include "StyleComboBox.h"
-#include "StyleHyperlink.h"
 #include "RegistryManager.h"
 
 #ifdef _DEBUG
@@ -62,20 +53,19 @@ StyleDialog::StyleDialog(UINT  p_IDTemplate
   {
     LoadStyleTheme();
   }
-  // Needed for coloring backgrounds of the controls
-  m_defaultBrush.CreateSolidBrush(UsersBackground);
+  m_defaultBrush.DeleteObject();
+  m_defaultBrush.CreateSolidBrush(ThemeColor::GetColor(Colors::ColorWindowFrame));
 }
 
 BEGIN_MESSAGE_MAP(StyleDialog,CDialog)
+  ON_WM_CREATE()
   ON_WM_ERASEBKGND()
   ON_WM_CTLCOLOR()
-  ON_MESSAGE(WM_CTLCOLORSTATIC,OnCtlColorStatic)
   ON_WM_NCMOUSEMOVE()
   ON_WM_NCLBUTTONDOWN()
   ON_WM_NCRBUTTONUP()
   ON_WM_NCLBUTTONDBLCLK()
   ON_WM_NCMOUSELEAVE()
-  ON_WM_CTLCOLOR()
   ON_WM_SIZE()
   ON_WM_PAINT()
   ON_WM_NCCALCSIZE()
@@ -86,7 +76,9 @@ BEGIN_MESSAGE_MAP(StyleDialog,CDialog)
   ON_WM_ACTIVATEAPP()
   ON_WM_SETTINGCHANGE()
   ON_REGISTERED_MESSAGE(g_msg_changed,OnStyleChanged)
-  ON_NOTIFY_EX(TTN_NEEDTEXT,0,OnToolTipNotify)
+  ON_NOTIFY_EX(TTN_NEEDTEXT,0,        OnToolTipNotify)
+  ON_MESSAGE(WM_CTLCOLORSTATIC,       OnCtlColorStatic)
+  ON_MESSAGE(WM_CTLCOLORLISTBOX,      OnCtlColorListBox)
 END_MESSAGE_MAP()
 
 BOOL
@@ -94,7 +86,7 @@ StyleDialog::OnInitDialog()
 {
   // Needed for the shadow border
   ModifyStyleEx(0, WS_EX_LAYERED);
-  SetLayeredWindowAttributes(ClrwindowTransparent, 0, LWA_COLORKEY);
+  SetLayeredWindowAttributes(ColorWindowTransparent, 0, LWA_COLORKEY);
 
   // Make room for the shadow border
   CRect window;
@@ -116,6 +108,20 @@ StyleDialog::OnInitDialog()
   return InitFirstFocus();
 }
 
+int
+StyleDialog::OnCreate(LPCREATESTRUCT p_create)
+{
+  p_create->dwExStyle |= WS_EX_CONTROLPARENT;
+  int res = CDialog::OnCreate(p_create);
+
+  CRect rect;
+  GetWindowRect(&rect);
+  SFXResizeByFactor(rect);
+  MoveWindow(&rect);
+
+  return res;
+}
+
 void
 StyleDialog::InitStatusBar()
 {
@@ -129,7 +135,7 @@ StyleDialog::InitStatusBar()
   }
   else
   {
-    AfxMessageBox("Error: Cannot create statusbar");
+    AfxMessageBox("Error: Cannot create a dialog statusbar");
   }
 }
 
@@ -235,7 +241,6 @@ StyleDialog::DoModal(bool p_showGrayScreen)
   if(p_showGrayScreen)
   {
     AutoStyleGrayScreen grayscreen;
-    return CDialog::DoModal();
   }
   return CDialog::DoModal();
 }
@@ -322,6 +327,8 @@ StyleDialog::SetCanResize(bool p_resize)
     // Do not bother: it's already 'ON'
     return;
   }
+  GetWindowRect(m_originalSize);
+
   if(p_resize)
   {
     SetupDynamicLayout();
@@ -380,7 +387,7 @@ StyleDialog::SetTheme(ThemeColor::Themes p_theme)
 
   // Broadcast the change to all top level windows
   DWORD components = BSM_APPLICATIONS;
-  BroadcastSystemMessage(BSF_POSTMESSAGE,&components,g_msg_changed,0,p_theme);
+  BroadcastSystemMessage(BSF_POSTMESSAGE,&components,g_msg_changed,0,(int)p_theme);
 
   // Change our colors
   ThemeColor::SetTheme(p_theme);
@@ -494,13 +501,18 @@ void
 StyleDialog::LoadStyleTheme()
 {
   RegistryManager manager;
-  int th = manager.GetRegistryInteger(STYLECOLORS_KEY,STYLECOLORS_THEME,ThemeColor::Themes::ThemeSkyblue);
+  int th = manager.GetRegistryInteger(STYLECOLORS_KEY,STYLECOLORS_THEME,(int)ThemeColor::Themes::ThemeSkyblue);
   ThemeColor::Themes theme = (ThemeColor::Themes)th;
   ThemeColor::SetTheme(theme);
+
+  // Needed for coloring backgrounds of the controls
+  m_defaultBrush.DeleteObject();
+  m_defaultBrush.CreateSolidBrush(ThemeColor::GetColor(Colors::ColorWindowFrame));
 
   // Now repaint ourselves and all of our children
   if(GetSafeHwnd())
   {
+    Invalidate();
     ReDrawFrame();
     ReDrawDialog();
     RedrawWindow(NULL,NULL,RDW_INVALIDATE|RDW_FRAME|RDW_ALLCHILDREN);
@@ -570,12 +582,18 @@ StyleDialog::OnStyleBlackWhite()
   SetTheme(ThemeColor::Themes::ThemeBlackWhite);
 }
 
-BOOL 
+void
+StyleDialog::OnStyleDark()
+{
+  SetTheme(ThemeColor::Themes::ThemeDark);
+}
+
+BOOL
 StyleDialog::OnEraseBkgnd(CDC* pDC)
 {
   CRect client;
   GetClientRect(client);
-  pDC->FillSolidRect(client,UsersBackground);
+  pDC->FillSolidRect(client,ThemeColor::GetColor(Colors::ColorWindowFrame));
   return TRUE;
 }
 
@@ -583,8 +601,17 @@ LPARAM
 StyleDialog::OnCtlColorStatic(WPARAM wParam,LPARAM /*lParam*/)
 {
   HDC hdc = (HDC)wParam;
-  SetTextColor(hdc,InputTextActive);
-  SetBkColor(hdc,UsersBackground);
+  SetTextColor(hdc,ThemeColor::GetColor(Colors::ColorEditText));
+  SetBkColor  (hdc,ThemeColor::GetColor(Colors::ColorWindowFrame));
+  return (LPARAM)(HBRUSH)m_defaultBrush;
+}
+
+LPARAM
+StyleDialog::OnCtlColorListBox(WPARAM wParam, LPARAM lParam)
+{
+  HDC hdc = (HDC)wParam;
+  SetTextColor(hdc, ThemeColor::GetColor(Colors::ColorEditText));
+  SetBkColor  (hdc, ThemeColor::GetColor(Colors::ColorCtrlBackground));
   return (LPARAM)(HBRUSH)m_defaultBrush;
 }
 
@@ -749,6 +776,11 @@ StyleDialog::OnNcLButtonDown(UINT nFlags, CPoint point)
 
     case HTCAPTION:
     {
+      if(GetStyle() & WS_MAXIMIZE)
+      {
+        return;
+      }
+
       SetWindowPos(&CWnd::wndTop,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE|SWP_SHOWWINDOW|SWP_NOSENDCHANGING|SWP_DRAWFRAME);
 
       CPoint lastpoint(point);
@@ -779,7 +811,7 @@ StyleDialog::OnNcLButtonDown(UINT nFlags, CPoint point)
     case HTBOTTOMLEFT:
     case HTBOTTOMRIGHT:
     {
-      if(!m_canResize)
+      if(!m_canResize || (GetStyle() & WS_MAXIMIZE))
       {
         return;
       }
@@ -816,7 +848,12 @@ StyleDialog::OnNcLButtonDown(UINT nFlags, CPoint point)
                                 window.right  += cursor.x - lastpoint.x;
                                 break;
           }
-          SetWindowPos(nullptr,window.left,window.top,window.Width(),window.Height(),SWP_NOZORDER | SWP_DRAWFRAME);
+          if(window.Width()  >= m_originalSize.Width() &&
+             window.Height() >= m_originalSize.Height())
+          {
+
+            SetWindowPos(nullptr, window.left, window.top, window.Width(), window.Height(), SWP_NOZORDER | SWP_DRAWFRAME);
+          }
           lastpoint = cursor;
         }
       }
@@ -882,34 +919,38 @@ StyleDialog::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 {
   switch (nCtlColor)
   {
+    case CTLCOLOR_LISTBOX:// Fall through
+    case CTLCOLOR_EDIT:   pDC->SetTextColor(ThemeColor::GetColor(Colors::ColorEditText));
+                          pDC->SetBkColor  (ThemeColor::GetColor(Colors::ColorCtrlBackground));
+                          break;
     case CTLCOLOR_STATIC: if(dynamic_cast<StyleHyperLink*>(pWnd))
                           {
                             return (dynamic_cast<StyleHyperLink*>(pWnd))->CtlColor(pDC,nCtlColor);
                           }
-                          if (m_error)
+                          if(m_error)
                           {
-                            pDC->SetTextColor(ClrWindowMessageTextError);
-                            pDC->SetBkColor  (ClrWindowMessageError);
+                            pDC->SetTextColor(ColorWindowMessageTextError);
+                            pDC->SetBkColor(ThemeColor::GetColor(Colors::ColorWindowFrame));
                           }
                           else
                           {
-                            pDC->SetTextColor(ClrLabelTextNormal);
-                            pDC->SetBkColor  (ClrFrameBkGnd);
+                            pDC->SetTextColor(ThemeColor::GetColor(Colors::ColorLabelText));
+                            pDC->SetBkColor  (ThemeColor::GetColor(Colors::ColorWindowFrame));
                           }
                           break;
-    case CTLCOLOR_BTN:    if (m_error)
+    case CTLCOLOR_BTN:    if(m_error)
                           {
-                            pDC->SetTextColor(ClrWindowMessageTextError);
-                            pDC->SetBkColor  (ClrWindowMessageError);
+                            pDC->SetTextColor(ColorWindowMessageTextError);
+                            pDC->SetBkColor(ThemeColor::GetColor(Colors::ColorWindowFrame));
                           }
                           else
                           {
-                            pDC->SetTextColor(ClrLabelTextNormal);
-                            pDC->SetBkColor  (ClrFrameBkGnd);
+                            pDC->SetTextColor(ThemeColor::GetColor(Colors::ColorLabelText));
+                            pDC->SetBkColor  (ThemeColor::GetColor(Colors::ColorWindowFrame));
                           }
                           break;
   }
-  return m_defaultBrush;
+  return CDialog::OnCtlColor(pDC,pWnd,nCtlColor);
 }
 
 void 
@@ -1055,17 +1096,17 @@ StyleDialog::OnNcPaint()
     if(m_caption)
     {
       // Shadow frame    
-      dc.FillSolidRect(CRect(window.right - WINDOWSHADOWBORDER, window.top, window.right, window.top + 2 * WINDOWSHADOWBORDER), ClrwindowTransparent);
-      dc.FillSolidRect(CRect(window.right - WINDOWSHADOWBORDER, window.top + 2 * WINDOWSHADOWBORDER, window.right, window.bottom), ClrWindowFrame);
-      dc.FillSolidRect(CRect(window.left, window.bottom - WINDOWSHADOWBORDER, window.left + 2 * WINDOWSHADOWBORDER, window.bottom), ClrwindowTransparent);
-      dc.FillSolidRect(CRect(window.left + 2 * WINDOWSHADOWBORDER, window.bottom - WINDOWSHADOWBORDER, window.right - WINDOWSHADOWBORDER, window.bottom), ClrWindowFrame);
+      dc.FillSolidRect(CRect(window.right - WINDOWSHADOWBORDER,   window.top,                         window.right,                        window.top + 2 * WINDOWSHADOWBORDER), ColorWindowTransparent);
+      dc.FillSolidRect(CRect(window.right - WINDOWSHADOWBORDER,   window.top + 2 * WINDOWSHADOWBORDER,window.right,                        window.bottom), ColorWindowGrayFrame);
+      dc.FillSolidRect(CRect(window.left,                         window.bottom -  WINDOWSHADOWBORDER,window.left + 2 * WINDOWSHADOWBORDER,window.bottom), ColorWindowTransparent);
+      dc.FillSolidRect(CRect(window.left + 2 * WINDOWSHADOWBORDER,window.bottom -  WINDOWSHADOWBORDER,window.right    - WINDOWSHADOWBORDER,window.bottom), ColorWindowGrayFrame);
 
       // caption bar
       CRect caption(m_captionRect);
-      dc.FillSolidRect(caption, m_error ? ClrWindowFrameError : ClrWindowHeader);
+      dc.FillSolidRect(caption, m_error ? ColorWindowFrameError : ThemeColor::GetColor(Colors::AccentColor1));
 
       // title
-      dc.SetTextColor(m_error ? ClrWindowFrameTextError : ClrWindowHeaderText);
+      dc.SetTextColor(m_error ? ColorWindowFrameTextError : ColorWindowHeaderText);
       caption.right -= WINDOWCAPTIONHEIGHT;
       caption.right -= m_maxButton ? WINDOWCAPTIONHEIGHT : 0;
       caption.right -= m_minButton ? WINDOWCAPTIONHEIGHT : 0;
@@ -1098,7 +1139,7 @@ StyleDialog::OnNcPaint()
       }
       // window frame
       CPen pen;
-      pen.CreatePen(PS_SOLID, 1, m_error ? ClrWindowFrameError : ClrWindowFrame);
+      pen.CreatePen(PS_SOLID, 1, m_error ? ColorWindowFrameError : ColorWindowGrayFrame);
       HGDIOBJ orgpen = dc.SelectObject(pen);
       dc.MoveTo(window.right- WINDOWSHADOWBORDER-1, window.top    + WINDOWCAPTIONHEIGHT);
       dc.LineTo(window.right- WINDOWSHADOWBORDER-1, window.bottom - WINDOWSHADOWBORDER-1);
@@ -1107,17 +1148,19 @@ StyleDialog::OnNcPaint()
       dc.SelectObject(orgpen);
 
       CRect r;
+      int back = ThemeColor::GetColor(Colors::ColorWindowFrame);
+
       r.SetRect(window.left + 1, window.top + WINDOWCAPTIONHEIGHT, window.left + SIZEMARGIN, window.bottom - WINDOWSHADOWBORDER-1);
-      dc.FillSolidRect(r, ClrFrameBkGnd);
+      dc.FillSolidRect(r, back);
       r.SetRect(window.left + SIZEMARGIN, window.bottom - WINDOWSHADOWBORDER- SIZEMARGIN, window.right - WINDOWSHADOWBORDER- 1, window.bottom - WINDOWSHADOWBORDER - 1);
-      dc.FillSolidRect(r, ClrFrameBkGnd);
+      dc.FillSolidRect(r, back);
       r.SetRect(window.right - WINDOWSHADOWBORDER-SIZEMARGIN, window.top + WINDOWCAPTIONHEIGHT, window.right - WINDOWSHADOWBORDER- 1, window.bottom - WINDOWSHADOWBORDER-SIZEMARGIN);
-      dc.FillSolidRect(r, ClrFrameBkGnd);
+      dc.FillSolidRect(r, back);
     }
     else
     {
       // window frame
-      CBrush brush(m_error ? ClrWindowFrameError : ClrWindowFrame);
+      CBrush brush(m_error ? ColorWindowFrameError : ColorWindowGrayFrame);
       dc.FrameRect(window, &brush);
     }
   }
@@ -1126,7 +1169,7 @@ StyleDialog::OnNcPaint()
 LRESULT 
 StyleDialog::OnNcHitTest(CPoint point)
 {
-  if ((GetStyle() & WS_POPUP) == 0)
+  if((GetStyle() & WS_POPUP) == 0)
   {
     return CDialog::OnNcHitTest(point);
   }
@@ -1151,8 +1194,10 @@ StyleDialog::OnNcHitTest(CPoint point)
   {
     return HTMENU;
   }
-  if(m_caption)
+
+  if(!(GetStyle() & WS_MAXIMIZE))
   {
+
     window.OffsetRect(-window.left, -window.top);
     if(point.x <= window.left + SIZEMARGIN)
     {
@@ -1186,10 +1231,11 @@ StyleDialog::OnNcHitTest(CPoint point)
     {
       return HTTOP;
     }
-    if(m_captionRect.PtInRect(point))
-    {
-      return HTCAPTION;
-    }
+  }
+
+  if (m_caption && (m_captionRect.PtInRect(point)))
+  {
+    return HTCAPTION;
   }
   return HTNOWHERE;
 }
@@ -1214,13 +1260,16 @@ StyleDialog::ReDrawButton(LRESULT type)
 void 
 StyleDialog::DrawButton(CDC* pDC, CRect rect, LRESULT type)
 {
-  pDC->FillSolidRect(rect, ClrWindowHeader);
+  pDC->FillSolidRect(rect,ThemeColor::GetColor(Colors::AccentColor1));
   if (m_curhit == type)
   {
-    pDC->FillSolidRect(rect, m_down ? ClrControlPressed : ClrControlHover);
+    pDC->FillSolidRect(rect, m_down ? ThemeColor::GetColor(Colors::ColorControlPressed) 
+                                    : ThemeColor::GetColor(Colors::ColorControlHover));
   }
   CPen pen;
-  pen.CreatePen(PS_SOLID, 1, m_curhit == type ? m_down ? ClrControlTextPressed : ClrControlTextHover : ClrWindowHeaderIcon);
+  pen.CreatePen(PS_SOLID, 1, m_curhit == type ? m_down ? ThemeColor::GetColor(Colors::ColorControlTextPressed) 
+                                                       : ThemeColor::GetColor(Colors::ColorControlTextHover)
+                                                       : ColorWindowHeaderIcon);
   HGDIOBJ orgpen = pDC->SelectObject(pen);
 
   switch (type) 
@@ -1279,14 +1328,14 @@ StyleDialog::Button(CDC* pDC, CRect rect, LRESULT type,StyleDialog::BUTTONSTATE 
   switch (state) 
   {
     case BS_NORMAL:   // Fall through
-    case BS_DISABLED: pDC->FillSolidRect(rect, ClrWindowHeader);
-                      pen.CreatePen(PS_SOLID, 1, ClrWindowHeaderIcon);
+    case BS_DISABLED: pDC->FillSolidRect(rect, ColorWindowHeader);
+                      pen.CreatePen(PS_SOLID,1,ColorWindowHeaderIcon);
                       break;
-    case BS_HOVER:    pDC->FillSolidRect(rect, ClrControlHover);
-                      pen.CreatePen(PS_SOLID, 1, ClrControlTextHover);
+    case BS_HOVER:    pDC->FillSolidRect(rect, ThemeColor::GetColor(Colors::ColorControlHover));
+                      pen.CreatePen(PS_SOLID,1,ThemeColor::GetColor(Colors::ColorControlTextHover));
                       break;
-    case BS_PRESSED:  pDC->FillSolidRect(rect, ClrControlPressed);
-                      pen.CreatePen(PS_SOLID, 1, ClrControlTextPressed);
+    case BS_PRESSED:  pDC->FillSolidRect(rect, ThemeColor::GetColor(Colors::ColorControlPressed));
+                      pen.CreatePen(PS_SOLID,1,ThemeColor::GetColor(Colors::ColorControlTextPressed));
                       break;
     default:          assert(false);
                       return;

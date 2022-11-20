@@ -635,6 +635,32 @@ HTTPMessage::SetCookie(XString p_name
   m_cookies.AddCookie(monster);
 }
 
+void 
+HTTPMessage::SetCookie(XString        p_name
+                      ,XString        p_value
+                      ,XString        p_metadata
+                      ,XString        p_path
+                      ,XString        p_domain
+                      ,bool           p_secure   /*= false*/
+                      ,bool           p_httpOnly /*= false*/
+                      ,CookieSameSite p_samesite /*= CookieSameSite::NoSameSite*/
+                      ,int            p_maxAge   /*= 0*/
+                      ,SYSTEMTIME*    p_expires  /*= nullptr*/)
+{
+  Cookie monster;
+  monster.SetCookie(p_name,p_value,p_metadata,p_secure,p_httpOnly);
+
+  if(!p_path.IsEmpty())     monster.SetPath(p_path);
+  if(!p_domain.IsEmpty())   monster.SetDomain(p_domain);
+  if( p_expires)            monster.SetExpires(p_expires);
+  if(!p_maxAge)             monster.SetMaxAge(p_maxAge);
+  if(p_samesite != CookieSameSite::NoSameSite)
+  {
+    monster.SetSameSite(p_samesite);
+  }
+  m_cookies.AddCookie(monster);
+}
+
 // From "Cookie:" only.
 // Can have multiple cookies, but NO attributes
 void 
@@ -824,7 +850,15 @@ HTTPMessage::AddHeader(HTTP_HEADER_ID p_id,XString p_value)
 
   if(p_id >= 0 && p_id < maximum)
   {
-    XString name = p_id < HttpHeaderAcceptRanges ? header_fields[p_id] : header_response[p_id - HttpHeaderAcceptRanges];
+    XString name;
+    if(p_id >= 0 && p_id < HttpHeaderAcceptRanges)
+    {
+      name = header_fields[p_id];
+    }
+    else if(p_id >= HttpHeaderAcceptRanges && p_id < HttpHeaderMaximum)
+    {
+      name = header_response[p_id - HttpHeaderAcceptRanges];
+    }
     AddHeader(name,p_value);
   }
 }

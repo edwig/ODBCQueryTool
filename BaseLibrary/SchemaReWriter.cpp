@@ -47,6 +47,8 @@ const char* tokens[] =
   ,"//"
   ,"("
   ,")"
+  ,"+"
+  ,"||"
   ," "
   ,"\t"
   ,"\r"
@@ -73,6 +75,18 @@ SchemaReWriter::SchemaReWriter(XString p_schema)
 
 }
 
+void
+SchemaReWriter::SetOption(SROption p_option)
+{
+  m_options |= (int) p_option;
+}
+
+void
+SchemaReWriter::SetRewriteCode(FCodes* p_codes)
+{
+  m_codes = p_codes;
+}
+
 XString 
 SchemaReWriter::Parse(XString p_input)
 {
@@ -81,7 +95,7 @@ SchemaReWriter::Parse(XString p_input)
 
   if(m_level != 0)
   {
-    MessageBox(NULL,"Oneven aantal '(' en ')' tekens in het statement","Waarschuwing",MB_OK|MB_ICONERROR);
+    MessageBox(NULL,"Odd number of '(' and ')' tokens in the statement","Warning",MB_OK|MB_ICONERROR);
   }
   return m_output;
 }
@@ -94,7 +108,6 @@ SchemaReWriter::ParseStatement()
   ++m_level;
   while(true)
   {
-
     m_token = GetToken();
     if(m_token == Token::TK_EOS)
     {
@@ -158,7 +171,7 @@ SchemaReWriter::ParseStatement()
       m_nextTable = true;
     }
 
-    // Einde van next table
+    // End of next table
     if(m_token == Token::TK_WHERE || m_token == Token::TK_GROUP || m_token == Token::TK_ORDER || m_token == Token::TK_HAVING)
     {
       m_inFrom    = false;
@@ -200,10 +213,6 @@ SchemaReWriter::PrintToken()
                               m_output += m_tokenString;
                               m_output += '\"';
                               break;
-    case Token::TK_POINT:     m_output += '.';
-                              break;
-    case Token::TK_COMMA:     m_output += ',';
-                              break;
     case Token::TK_COMM_SQL:  m_output += "--";
                               m_output += m_tokenString;
                               m_output += '\n';
@@ -216,41 +225,30 @@ SchemaReWriter::PrintToken()
                               m_output += m_tokenString;
                               m_output += '\n';
                               break;
-    case Token::TK_PAR_OPEN:  m_output += '(';
+    case Token::TK_PAR_ADD:   m_output += (m_options & (int)SROption::SRO_ADD_TO_CONCAT) ? "||" : "+";
                               break;
-    case Token::TK_PAR_CLOSE: m_output += ')';
+    case Token::TK_PAR_CONCAT:m_output += (m_options & (int)SROption::SRO_CONCAT_TO_ADD) ? "+" : "||";
                               break;
-    case Token::TK_SPACE:     m_output += ' ';
-                              break;
-    case Token::TK_TAB:       m_output += '\t';
-                              break;
-    case Token::TK_CR:        m_output += '\r';
-                              break;
-    case Token::TK_NEWLINE:   m_output += '\n';
-                              break;
-    case Token::TK_SELECT:    m_output += "SELECT";
-                              break;
-    case Token::TK_INSERT:    m_output += "INSERT";
-                              break;
-    case Token::TK_UPDATE:    m_output += "UPDATE";
-                              break;
-    case Token::TK_DELETE:    m_output += "DELETE";
-                              break;
-    case Token::TK_FROM:      m_output += "FROM";
-                              break;
-    case Token::TK_JOIN:      m_output += "JOIN";
-                              break;
-    case Token::TK_WHERE:     m_output += "WHERE";
-                              break;
-    case Token::TK_GROUP:     m_output += "GROUP";
-                              break;
-    case Token::TK_ORDER:     m_output += "ORDER";
-                              break;
-    case Token::TK_HAVING:    m_output += "HAVING";
-                              break;
-    case Token::TK_INTO:      m_output += "INTO";
-                              break;
-    case Token::TK_UNION:     m_output += "UNION";
+    case Token::TK_POINT:     [[fallthrough]];
+    case Token::TK_COMMA:     [[fallthrough]];
+    case Token::TK_PAR_OPEN:  [[fallthrough]];
+    case Token::TK_PAR_CLOSE: [[fallthrough]];
+    case Token::TK_SPACE:     [[fallthrough]];
+    case Token::TK_TAB:       [[fallthrough]];
+    case Token::TK_CR:        [[fallthrough]];
+    case Token::TK_NEWLINE:   [[fallthrough]];
+    case Token::TK_SELECT:    [[fallthrough]];
+    case Token::TK_INSERT:    [[fallthrough]];
+    case Token::TK_UPDATE:    [[fallthrough]];
+    case Token::TK_DELETE:    [[fallthrough]];
+    case Token::TK_FROM:      [[fallthrough]];
+    case Token::TK_JOIN:      [[fallthrough]];
+    case Token::TK_WHERE:     [[fallthrough]];
+    case Token::TK_GROUP:     [[fallthrough]];
+    case Token::TK_ORDER:     [[fallthrough]];
+    case Token::TK_HAVING:    [[fallthrough]];
+    case Token::TK_INTO:      [[fallthrough]];
+    case Token::TK_UNION:     m_output += tokens[(int)m_token];
                               break;
   }
 }
@@ -272,21 +270,18 @@ SchemaReWriter::AppendSchema()
 {
   SkipSpaceAndComment();
 
-  Token   temp1 = m_token;
-  XString temp2 = m_tokenString;
-  m_token = GetToken();
+  int ch = GetChar();
 
-  if(m_token == Token::TK_POINT)
+  if(ch == '.')
   {
-    // Er was al een schema naam
-    m_output += temp2;
+    // There already was a schema name
+    m_output += m_tokenString;
+    m_token   = GetToken();
   }
   else
   {
     // Reset token
-    UnGetChar();
-    m_token = temp1;
-    m_tokenString = temp2;
+    UnGetChar(ch);
 
     if(!m_schema.IsEmpty())
     {
@@ -331,11 +326,6 @@ Token
 SchemaReWriter::GetToken()
 {
   m_tokenString.Empty();
-  if(m_input.GetLength() < m_position)
-  {
-    return Token::TK_EOS;
-  }
-
   int ch = 0;
 
   if((ch = GetChar()) != (int)Token::TK_EOS)
@@ -348,10 +338,12 @@ SchemaReWriter::GetToken()
                   return Token::TK_DQUOTE;
       case '-':   return CommentSQL();
       case '/':   return CommentCPP();
+      case '|':   return Concat();
       case '.':   return Token::TK_POINT;
       case ',':   return Token::TK_COMMA;
       case '(':   return Token::TK_PAR_OPEN;
       case ')':   return Token::TK_PAR_CLOSE;
+      case '+':   return Token::TK_PAR_ADD;
       case ' ':   return Token::TK_SPACE;
       case '\t':  return Token::TK_TAB;
       case '\r':  return Token::TK_CR;
@@ -373,7 +365,7 @@ SchemaReWriter::GetToken()
       }
       if(ch)
       {
-        UnGetChar();
+        UnGetChar(ch);
       }
       return FindToken();
     }
@@ -393,17 +385,27 @@ SchemaReWriter::FindToken()
       return (Token) ind;
     }
   }
+  // Replacement code
+  if(m_codes)
+  {
+    FCodes::iterator it = m_codes->find(m_tokenString);
+    if(it != m_codes->end())
+    {
+      m_tokenString = it->second;
+    }
+  }
   return Token::TK_PLAIN;
 }
 
 Token
 SchemaReWriter::CommentSQL()
 {
-  if(GetChar() == '-')
+  int ch = GetChar();
+  if(ch == '-')
   {
     while(true)
     {
-      int ch = GetChar();
+      ch = GetChar();
       if(ch == 0 || ch == '\n')
       {
         break;
@@ -412,7 +414,7 @@ SchemaReWriter::CommentSQL()
     }
     return Token::TK_COMM_SQL;
   }
-  UnGetChar();
+  UnGetChar(ch);
   return Token::TK_PLAIN;
 }
 
@@ -420,12 +422,11 @@ Token
 SchemaReWriter::CommentCPP()
 {
   int ch = GetChar();
-
   if(ch == '/')
   {
     while(true)
     {
-      int ch = GetChar();
+      ch = GetChar();
       if(ch == 0 || ch == '\n')
       {
         break;
@@ -439,7 +440,7 @@ SchemaReWriter::CommentCPP()
     int lastchar = 0;
     while(true)
     {
-      int ch = GetChar();
+      ch = GetChar();
       if(ch == 0 || (ch == '/' && lastchar == '*'))
       {
         break;
@@ -451,9 +452,21 @@ SchemaReWriter::CommentCPP()
   }
   else
   {
-    UnGetChar();
+    UnGetChar(ch);
     return Token::TK_PLAIN;
   }
+}
+
+Token
+SchemaReWriter::Concat()
+{
+  int ch = GetChar();
+  if(ch == '|')
+  {
+    return Token::TK_PAR_CONCAT;
+  }
+  UnGetChar(ch);
+  return Token::TK_PLAIN;
 }
 
 void
@@ -473,17 +486,23 @@ SchemaReWriter::QuoteString(int p_ending)
 }
 
 void
-SchemaReWriter::UnGetChar()
+SchemaReWriter::UnGetChar(int p_char)
 {
-  if(m_position > 0)
+  if(m_ungetch == 0)
   {
-    --m_position;
+    m_ungetch = p_char;
   }
 }
 
 int
 SchemaReWriter::GetChar()
 {
+  if(m_ungetch)
+  {
+    int ch = m_ungetch;
+    m_ungetch = 0;
+    return ch;
+  }
   if(m_position < m_input.GetLength())
   {
     return m_input.GetAt(m_position++);

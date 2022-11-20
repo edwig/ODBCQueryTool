@@ -377,7 +377,7 @@ SQLInfoOracle::GetKEYWORDCurrentUser() const
 
 // Connects to a default schema in the database/instance
 XString
-SQLInfoOracle::GetSQLDefaultSchema(XString p_schema) const
+SQLInfoOracle::GetSQLDefaultSchema(XString /*p_user*/,XString p_schema) const
 {
   return "ALTER SESSION SET CURRENT_SCHEMA = " + p_schema;
 }

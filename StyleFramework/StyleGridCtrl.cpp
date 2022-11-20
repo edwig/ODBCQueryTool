@@ -27,6 +27,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+using namespace ThemeColor;
+
 /////////////////////////////////////////////////////////////////////////////
 // StyleGridCtrl
 
@@ -42,6 +44,12 @@ BEGIN_MESSAGE_MAP(StyleGridCtrl, CGridCtrl)
   ON_WM_PAINT()
   ON_WM_SHOWWINDOW()
 END_MESSAGE_MAP()
+
+void
+StyleGridCtrl::PreSubclassWindow()
+{
+  ScaleControl(this);
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // message handlers
@@ -101,11 +109,39 @@ StyleGridCtrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 void
 StyleGridCtrl::DrawFrame()
 {
-  COLORREF color = ThemeColor::_Color1;
+  COLORREF color = ThemeColor::GetColor(Colors::AccentColor1);
   SkinScrollWnd* skin = (SkinScrollWnd*)GetWindowLongPtr(m_hWnd,GWLP_USERDATA);
   if(skin)
   {
     skin->DrawFrame(color);
+  }
+}
+
+void
+StyleGridCtrl::CheckColors()
+{
+  int textColor = ThemeColor::GetColor(Colors::ColorEditText);
+  int backColor = ThemeColor::GetColor(Colors::ColorCtrlBackground);
+  if(GetTextColor() != textColor)
+  {
+    SetTextColor(textColor);
+  }
+  if(GetTextBkColor() != backColor)
+  {
+    SetTextBkColor(backColor);
+  }
+  if(GetGridBkColor() != backColor)
+  {
+    SetGridBkColor(backColor);
+  }
+  if(GetFixedTextColor() != textColor)
+  {
+    SetFixedTextColor(textColor);
+  }
+  int halftone = ThemeColor::HalfTone(backColor,0.9);
+  if(GetFixedBkColor() != halftone)
+  {
+    SetFixedBkColor(halftone);
   }
 }
 
@@ -115,6 +151,7 @@ StyleGridCtrl::OnPaint()
   if(!m_inPaint)
   {
     m_inPaint = true;
+    CheckColors();
     CGridCtrl::OnPaint();
     DrawFrame();
     m_inPaint = false;

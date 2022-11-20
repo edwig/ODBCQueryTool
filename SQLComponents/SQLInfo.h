@@ -44,25 +44,25 @@ namespace SQLComponents
 
 typedef struct _TypeInfo
 {
-  XString     m_type_name;          // Datasource dependent type name. Use for CREATE TABLE
-  SQLSMALLINT m_data_type;          // Data type by ODBC as in SQL_<Datatypename>
-  SQLINTEGER  m_precision;          // For numbers: precision, otherwise the column size for char/binaries
-  XString     m_literal_prefix;     // Prefix in literal string, like {ts' for timestamp
-  XString     m_literal_suffix;     // Suffix in literal string, like '}   for timestamp
-  XString     m_create_params;      // How to create parameters, like (precision,scale) for decimals
-  SQLSMALLINT m_nullable;           // Nullable: SQL_NO_NULLS (0), SQL_NULLABLE (1), SQL_NULLABLE_UNKNOWN (2)
-  SQLSMALLINT m_case_sensitive;     // Case sensitive (TRUE,FALSE)
-  SQLSMALLINT m_searchable;         // Searchable in where clause. SQL_PRED_NONE (SQL_UNSEARCHABLE), SQL_PRED_CHAR (1), SQL_PRED_BASIC (2), SQL_SEARCHABLE (3)
-  SQLSMALLINT m_unsigned;           // Unsigned (TRUE,FALSE)
-  SQLSMALLINT m_money;              // Money (FIXED_PRECISION_SCALE) (TRUE,FALSE)
-  SQLSMALLINT m_autoincrement;      // Auto incrementable (TRUE,FALSE,NULL for non-numeric)
-  XString     m_local_type_name;    // Local type name for display on UI's (not in DDL!)
-  SQLSMALLINT m_minimum_scale;      // Minimum scale of datatype. E.g. in seconds of the TIMESTAMP
-  SQLSMALLINT m_maximum_scale;      // Maximum scale of datatype, otherwise use column_size
-  SQLSMALLINT m_sqlDatatype;        // Driver independent SQL datatype
-  SQLSMALLINT m_sqlSubType;         // SQL subtype for TYPE_TIMESTAMP and INTERVAL types
-  SQLINTEGER  m_radix;              // Decimal radix (2,10 or NULL)
-  SQLSMALLINT m_interval_precision; // Number of decimals in interval precision of leading type
+  XString     m_type_name;                  // Datasource dependent type name. Use for CREATE TABLE
+  SQLSMALLINT m_data_type           { 0 };  // Data type by ODBC as in SQL_<Datatypename>
+  SQLINTEGER  m_precision           { 0 };  // For numbers: precision, otherwise the column size for char/binaries
+  XString     m_literal_prefix;             // Prefix in literal string, like {ts' for timestamp
+  XString     m_literal_suffix;             // Suffix in literal string, like '}   for timestamp
+  XString     m_create_params;              // How to create parameters, like (precision,scale) for decimals
+  SQLSMALLINT m_nullable            { 0 };  // Nullable: SQL_NO_NULLS (0), SQL_NULLABLE (1), SQL_NULLABLE_UNKNOWN (2)
+  SQLSMALLINT m_case_sensitive      { 0 };  // Case sensitive (TRUE,FALSE)
+  SQLSMALLINT m_searchable          { 0 };  // Searchable in where clause. SQL_PRED_NONE (SQL_UNSEARCHABLE), SQL_PRED_CHAR (1), SQL_PRED_BASIC (2), SQL_SEARCHABLE (3)
+  SQLSMALLINT m_unsigned            { 0 };  // Unsigned (TRUE,FALSE)
+  SQLSMALLINT m_money               { 0 };  // Money (FIXED_PRECISION_SCALE) (TRUE,FALSE)
+  SQLSMALLINT m_autoincrement       { 0 };  // Auto incrementable (TRUE,FALSE,NULL for non-numeric)
+  XString     m_local_type_name;            // Local type name for display on UI's (not in DDL!)
+  SQLSMALLINT m_minimum_scale       { 0 };  // Minimum scale of datatype. E.g. in seconds of the TIMESTAMP
+  SQLSMALLINT m_maximum_scale       { 0 };  // Maximum scale of datatype, otherwise use column_size
+  SQLSMALLINT m_sqlDatatype         { 0 };  // Driver independent SQL datatype
+  SQLSMALLINT m_sqlSubType          { 0 };  // SQL subtype for TYPE_TIMESTAMP and INTERVAL types
+  SQLINTEGER  m_radix               { 0 };  // Decimal radix (2,10 or NULL)
+  SQLSMALLINT m_interval_precision  { 0 };  // Number of decimals in interval precision of leading type
 }
 TypeInfo;
 

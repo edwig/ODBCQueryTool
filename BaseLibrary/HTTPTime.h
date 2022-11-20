@@ -40,3 +40,4 @@
 bool    HTTPTimeFromSystemTime(const SYSTEMTIME* p_systemTime,XString& p_string);
 bool    HTTPTimeToSystemTime  (const XString p_string,SYSTEMTIME* p_systemtime);
 XString HTTPGetSystemTime();
+void    AddSecondsToSystemTime(SYSTEMTIME* p_timeIn,SYSTEMTIME* p_timeOut,double p_seconds);

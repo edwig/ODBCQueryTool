@@ -296,7 +296,7 @@ SQLInfoMySQL::GetKEYWORDCurrentUser() const
 
 // Connects to a default schema in the database/instance
 XString
-SQLInfoMySQL::GetSQLDefaultSchema(XString p_schema) const
+SQLInfoMySQL::GetSQLDefaultSchema(XString /*p_user*/,XString p_schema) const
 {
   return "USE " + p_schema;
 }

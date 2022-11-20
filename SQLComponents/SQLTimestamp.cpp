@@ -250,15 +250,15 @@ SQLTimestamp::RecalculateValue()
     gregorianB = 2 - gregorianA + (gregorianA / 4);
   }
   factorC = (long) (365.25  * (double)year);
-  factorD = (long) (30.6001 * (double)(month + 1));
+  factorD = (long) (30.6001 * (double)((size_t)month + 1));
   // The correction factor (Modified JD) 
-  // Falls on 16 november 1858 12:00 hours (noon), 
-  // so subtract 679006 (17 november 1858 00:00:00 hour)
-  m_value  = gregorianB + factorC + factorD + day - 679006;
+  // Falls on 16 November 1858 12:00 hours (noon), 
+  // so subtract 679006 (17 November 1858 00:00:00 hour)
+  m_value  = (INT64)gregorianB + (INT64)factorC + (INT64)factorD + (INT64)day - 679006;
   m_value *= SECONDS_PER_DAY;
-  m_value += m_timestamp.m_hour   * SECONDS_PER_HOUR   +
-             m_timestamp.m_minute * SECONDS_PER_MINUTE +
-             m_timestamp.m_second;
+  m_value += (size_t) m_timestamp.m_hour   * SECONDS_PER_HOUR   +
+             (size_t) m_timestamp.m_minute * SECONDS_PER_MINUTE +
+             (size_t) m_timestamp.m_second;
 }
 
 void
@@ -271,12 +271,12 @@ SQLTimestamp::Normalise()
   long factorE = 0;
   long factorG = 0;
 
-  // Calculate Civil Day from the Modified Juliaanse Day Nummer (MJD)
+  // Calculate Civil Day from the Modified Julian Day Number (MJD)
   // Method P.D-Smith: Practical Astronomy
   // Page 11: Paragraph 5: Converting Julian day number to the calendar date
-  // See alsoo Robin M. Green: Spherical Astronomy, page 250 and next
+  // See also Robin M. Green: Spherical Astronomy, page 250 and next
 
-  // Correction factor is MJD (2,400,000.5) + 0.5 (17 nov 1858 instead of 16 nov 12:00 hours)
+  // Correction factor is MJD (2,400,000.5) + 0.5 (17 Nov 1858 instead of 16 Nov 12:00 hours)
   double JD = (double)((m_value / SECONDS_PER_DAY) + 2400001);
   if(JD > 2299160)
   {
@@ -290,7 +290,7 @@ SQLTimestamp::Normalise()
   factorC = gregorianB + 1524;
   factorD = (long) (((double)factorC - 122.1) / 365.25);
   factorE = (long)  ((double)factorD * 365.25);
-  factorG = (long) (((double)(factorC - factorE)) / 30.6001);
+  factorG = (long) (((double)((size_t)factorC - (size_t)factorE)) / 30.6001);
   m_timestamp.m_day   = (char)   (factorC - factorE - (int)((double)factorG * 30.6001));
   m_timestamp.m_month = (char)  ((factorG > 13) ? factorG - 13 : factorG - 1);
   m_timestamp.m_year  = (short) ((m_timestamp.m_month > 2) ? factorD - 4716 : factorD - 4715);
@@ -487,7 +487,7 @@ SQLTimestamp::AddDays(int p_number) const
 {
   if(Valid() && p_number)
   {
-    return SQLTimestamp ((StampValue)(m_value + p_number * SECONDS_PER_DAY));
+    return SQLTimestamp ((StampValue)(m_value + (INT64)p_number * SECONDS_PER_DAY));
   }
   return *this;
 }
@@ -570,7 +570,7 @@ SQLTimestamp::AddHours(int p_number) const
 {
   if(Valid() && p_number)
   {
-    return SQLTimestamp ((StampValue)(m_value + p_number * SECONDS_PER_HOUR));
+    return SQLTimestamp ((StampValue)(m_value + (INT64)p_number * SECONDS_PER_HOUR));
   }
   return *this;
 }
@@ -581,7 +581,7 @@ SQLTimestamp::AddMinutes(int p_number) const
 {
   if(Valid() && p_number)
   {
-    return SQLTimestamp ((StampValue)(m_value + p_number * SECONDS_PER_MINUTE));
+    return SQLTimestamp ((StampValue)(m_value + (INT64)p_number * SECONDS_PER_MINUTE));
   }
   return *this;
 }
@@ -1028,14 +1028,14 @@ SQLTimestamp::GetVirtualMoment(XString        p_sign
                p_extraTime == g_dateNames[g_defaultLanguage][DN_SECOND] ||
                p_extraTime == g_dateNames[g_defaultLanguage][DN_SECONDS]))
       {
-        mom = mom.AddSeconds(factor * p_interval);
+        mom = mom.AddSeconds((INT64)factor * (INT64)p_interval);
       }
       else if (p_doTimes &&
               (p_extraTime == g_dateNames[g_defaultLanguage][DN_MIN]    || 
                p_extraTime == g_dateNames[g_defaultLanguage][DN_MINUTE] || 
                p_extraTime == g_dateNames[g_defaultLanguage][DN_MINUTES]))
       {
-        mom = mom.AddMinutes (factor * p_interval);
+        mom = mom.AddMinutes(factor * p_interval);
       }
       else if (p_doTimes &&
               (p_extraTime == g_dateNames[g_defaultLanguage][DN_HOUR] || 

@@ -295,7 +295,7 @@ SQLInfoGenericODBC::GetKEYWORDCurrentUser() const
 
 // Connects to a default schema in the database/instance
 XString
-SQLInfoGenericODBC::GetSQLDefaultSchema(XString /*p_schema*/) const
+SQLInfoGenericODBC::GetSQLDefaultSchema(XString /*p_user*/,XString /*p_schema*/) const
 {
   return "";
 }

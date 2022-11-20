@@ -401,7 +401,7 @@ SQLInfoFirebird::GetKEYWORDCurrentUser() const
 
 // Connects to a default schema in the database/instance
 XString
-SQLInfoFirebird::GetSQLDefaultSchema(XString /*p_schema*/) const
+SQLInfoFirebird::GetSQLDefaultSchema(XString /*p_user*/,XString /*p_schema*/) const
 {
   return "";
 }

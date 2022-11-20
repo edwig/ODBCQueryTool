@@ -183,7 +183,7 @@ SQLDate::SetMJD()
         gregorianB = 2 - gregorianA + (gregorianA / 4);
       }
       factorC = (long)(365.25  * (double) year);
-      factorD = (long)(30.6001 * (double)(month + 1));
+      factorD = (long)(30.6001 * (double)((size_t)month + 1));
       // The correction factor (Modified JD) 
       // Falls on 16 november 1858 12:00 hours (noon), 
       // so subtract 679006 (17 november 1858 00:00:00 hour)
@@ -205,13 +205,13 @@ SQLDate::MJDtoDate()
   long factorD = 0;
   long factorE = 0;
   long factorG = 0;
-  // Calculate Civil Day from the Modified Juliaanse Day Nummer (MJD)
+  // Calculate Civil Day from the Modified Julian Day Number (MJD)
   // Method P.D-Smith: Practical Astronomy
   // Page 11: Paragraph 5: Converting Julian day number to the calendar date
-  // See alsoo Robin M. Green: Spherical Astronomy, page 250 and next
+  // See also Robin M. Green: Spherical Astronomy, page 250 and next
 
-  // Correction factor is MJD (2,400,000.5) + 0.5 (17 nov 1858 instead of 16 nov 12:00 hours)
-  double JD = m_mjd + JULIAN_DAY_MODIFIED;
+  // Correction factor is MJD (2,400,000.5) + 0.5 (17 Nov 1858 instead of 16 Nov 12:00 hours)
+  double JD = (double)((size_t)m_mjd + (size_t)JULIAN_DAY_MODIFIED);
   if(JD > 2299160)
   {
     long gregorianA = 0;
@@ -225,7 +225,7 @@ SQLDate::MJDtoDate()
   factorC = gregorianB + 1524;
   factorD = (long) (((double)factorC - 122.1) / 365.25);
   factorE = (long) ((double)factorD * 365.25);
-  factorG = (long) (((double)(factorC - factorE)) / 30.6001);
+  factorG = (long) (((double)((size_t)factorC - (size_t)factorE)) / 30.6001);
   m_date.m_day   = (char)   (factorC - factorE - (int)((double)factorG * 30.6001));
   m_date.m_month = (char)  ((factorG > 13) ? factorG - 13 : factorG - 1);
   m_date.m_year  = (short) ((m_date.m_month > 2) ? factorD - 4716 : factorD - 4715);

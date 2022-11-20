@@ -306,6 +306,16 @@ SQLDataSet::SetParameter(XString p_naam,SQLVariant p_waarde)
   m_parameters.push_back(par);
 }
 
+void
+SQLDataSet::ResetFilters()
+{
+  if(m_filters)
+  {
+    delete m_filters;
+    m_filters = nullptr;
+  }
+}
+
 // Set filters for a query
 // Forgetting the previous set of filters
 void
@@ -636,7 +646,7 @@ SQLDataSet::GetSelectionSQL(SQLQuery& p_qry)
 }
 
 bool
-SQLDataSet::Open(bool p_stopIfNoColumns /*=false*/)
+SQLDataSet::Open()
 {
   bool    result = false;
   ULONG64 begin  = 0;
@@ -686,7 +696,7 @@ SQLDataSet::Open(bool p_stopIfNoColumns /*=false*/)
 
     // Do the SELECT query
     qry.DoSQLStatement(query);
-    if (p_stopIfNoColumns && qry.GetNumberOfColumns() == 0)
+    if (m_stopNoColumns && qry.GetNumberOfColumns() == 0)
     {
       return false;
     }
@@ -723,6 +733,99 @@ SQLDataSet::Open(bool p_stopIfNoColumns /*=false*/)
     m_status |= SQL_Selections;
   }
   return result;
+}
+
+bool
+SQLDataSet::Open(SQLQuery& p_query)
+{
+  ULONG64 begin = 0;
+  XString sql;
+
+  if(m_query.IsEmpty() && m_selection.IsEmpty())
+  {
+    return false;
+  }
+  if(m_open)
+  {
+    Close();
+  }
+  // Test if possibly modifiable if primary table name and key are givven
+  bool modifiable = false;
+  if(!m_isolation && !m_primaryTableName.IsEmpty() && m_primaryKey.size())
+  {
+    modifiable = true;
+  }
+  try
+  {
+    // Set a trap to stop an action that will take too much time...
+    if(m_cancelFunction)
+    {
+      (*m_cancelFunction)(p_query.GetStatementHandle());
+    }
+
+    // Get the select query
+    sql = GetSelectionSQL(p_query);
+
+    // Apply top <N> records selection
+    if(m_topRecords && !m_isolation)
+    {
+      sql = m_database->GetSQLInfoDB()->GetSQLTopNRows(sql,m_topRecords,m_skipRecords);
+    }
+
+    // Probably record the begin time
+    if(m_queryTime)
+    {
+      // Use high-performance counter to get the clock ticks in long-range resolution
+      InitCounter();
+      begin = GetCounter();
+    }
+
+    // Do the SELECT query
+    p_query.DoSQLStatement(sql);
+    if(m_stopNoColumns && p_query.GetNumberOfColumns() == 0)
+    {
+      return false;
+    }
+
+    // Read the names of the fields
+    ReadNames(p_query);
+    ReadTypes(p_query);
+
+    // Read all the records
+    long records = 0;
+    while(p_query.GetRecord())
+    {
+      ReadRecordFromQuery(p_query,modifiable);
+
+      // See if we can read a next record
+      if(begin && ((GetCounter() - begin) > (ULONG64)m_queryTime))
+      {
+        throw StdException("Querytime exceeded");
+      }
+      ++records;
+      if(m_isolation)
+      {
+        ++m_skipRecords;
+        if(records == m_topRecords)
+        {
+          break;
+        }
+      }
+    }
+    // Reached the end: we are OPEN!
+    m_open = true;
+  }
+  catch(StdException& er)
+  {
+    Close();
+    throw StdException(er.GetErrorMessage());
+  }
+  if(m_records.size())
+  {
+    m_current = 0;
+    m_status |= SQL_Selections;
+  }
+  return m_open;
 }
 
 // Append (read extra) into the dataset
@@ -805,6 +908,53 @@ SQLDataSet::Append()
   {
     m_status |= SQL_Selections;
     Next();
+  }
+  return result;
+}
+
+// Appending to an isolated set is something like reading the next page
+// Forgetting all our previous records, and read in a new set from the RDBMS
+bool
+SQLDataSet::Append(SQLQuery& p_query)
+{
+  bool result = false;
+
+  if(!m_open || !m_isolation)
+  {
+    return false;
+  }
+
+  // Clean out the previous records
+  Forget(true);
+
+  // Test if possibly modifiable if primary table name and key are givven
+  try
+  {
+    // Read all the records
+    long records = 0;
+    while(p_query.GetRecord())
+    {
+      ReadRecordFromQuery(p_query,false,false);
+
+      ++records;
+      ++m_skipRecords;
+      if(records == m_topRecords)
+      {
+        break;
+      }
+    }
+    // Reached the end: we are OPEN!
+    result = true;
+  }
+  catch(StdException& er)
+  {
+    Close();
+    throw StdException(er.GetErrorMessage());
+  }
+  if(m_records.size())
+  {
+    m_current = 0;
+    m_status |= SQL_Selections;
   }
   return result;
 }
@@ -928,7 +1078,7 @@ SQLDataSet::CheckNames(SQLQuery& p_query)
   for(int ind = 1; ind <= num; ++ind)
   {
     p_query.GetColumnName(ind,name);
-    if(m_names[ind-1].CompareNoCase(name))
+    if(m_names[(size_t)ind-1].CompareNoCase(name))
     {
       throw StdException("Append needs exactly the same query column names");
     }
@@ -943,7 +1093,7 @@ SQLDataSet::CheckTypes(SQLQuery& p_query)
   for(int ind = 1; ind <= num; ++ind)
   {
     int type = p_query.GetColumnType(ind);
-    if(m_types[ind-1] != type)
+    if(m_types[(size_t)ind-1] != type)
     {
       throw StdException("Append needs exactly the same datatypes for the query columns.");
     }
@@ -1771,6 +1921,21 @@ SQLDataSet::XMLSave(XMLMessage* p_msg,XMLElement* p_dataset)
       p_msg->SetAttribute(field,dataset_names[g_defaultLanguage][DATASET_TYPENAME],var->FindDatatype(type));
     }
   }
+  else if(m_types.size() > 0)
+  {
+    for(unsigned int ind = 0;ind < m_names.size(); ++ind)
+    {
+      XString fieldname = GetFieldName(ind);
+      int type = m_types[ind];
+      SQLVariant var;
+
+      XMLElement* field = p_msg->AddElement(structure,nameField,XDT_String,fieldname);
+      p_msg->SetAttribute(field,dataset_names[g_defaultLanguage][DATASET_ID],(int)ind);
+      p_msg->SetAttribute(field,dataset_names[g_defaultLanguage][DATASET_TYPE],type);
+      p_msg->SetAttribute(field,dataset_names[g_defaultLanguage][DATASET_TYPENAME],var.FindDatatype(type));
+    }
+  }
+
 
   // Add records of the dataset
   XMLElement* records = p_msg->AddElement(p_dataset,dataset_names[g_defaultLanguage][DATASET_RECORDS],XDT_String,"");

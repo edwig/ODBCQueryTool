@@ -42,9 +42,9 @@ class LinePrinter
 {
 public:
   // CTOR
-  LinePrinter::LinePrinter();
+  LinePrinter();
   // DTOR
-  LinePrinter::~LinePrinter() = default;
+  ~LinePrinter() = default;
   
   // Open a new printer document for printing in the printer spooler
   bool Document(CString p_printerName

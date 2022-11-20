@@ -20,10 +20,6 @@
 // For license: See the file "LICENSE.txt" in the root folder
 //
 #pragma once
-#include "GrayWindow.h"
-#include "StyleFonts.h"
-#include "StyleMacros.h"
-#include <afxcontrolbars.h>
 
 class StyleDialogCA: public CDialogEx
 {

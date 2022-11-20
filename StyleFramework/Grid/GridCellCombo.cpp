@@ -48,6 +48,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+using namespace ThemeColor;
 
 /////////////////////////////////////////////////////////////////////////////
 // CComboEdit
@@ -482,7 +483,7 @@ void CInPlaceList::DrawComboButton()
   rect.left = rect.right - rect.Height() - WS(1);
 
   // Find the frame color
-  COLORREF color = ThemeColor::_Color1;
+  COLORREF color = ThemeColor::GetColor(Colors::AccentColor1); //   ThemeColor::_Color1
 
   // Create pen
   CPen pen;
@@ -616,7 +617,7 @@ BOOL CGridCellCombo::Draw(CDC* pDC, int nRow, int nCol, CRect rect,  BOOL bErase
 void  CGridCellCombo::DrawComboButton(CDC* pDC,CRect p_rect)
 {
   // Find the frame color
-  COLORREF color = ThemeColor::_Color1;
+  COLORREF color = ThemeColor::GetColor(Colors::AccentColor1);
 
   // Create pen
   CPen pen;

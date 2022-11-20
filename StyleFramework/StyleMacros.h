@@ -25,17 +25,17 @@
 #define WS(val)             MulDiv(val, CWindowDC(0).GetDeviceCaps(LOGPIXELSY), 96)
 #endif
 
-#define MARGE               MulDiv(  1, StyleFonts::logpixelsy(), 96)
-#define PANELHEADERHEIGHT   MulDiv(  0, StyleFonts::logpixelsy(), 96)
-#define CAPTIONHEIGHT       MulDiv( 46, StyleFonts::logpixelsy(), 96)
-#define WINCAPTIONHEIGHT    MulDiv( 30, StyleFonts::logpixelsy(), 96)
-#define HALF_ICONSIZE       MulDiv( 16, StyleFonts::logpixelsy(), 96)
-#define SIZEMARGIN          MulDiv(  4, StyleFonts::logpixelsy(), 96)
-#define MENUITEMWIDTH_MIN   MulDiv( 48, StyleFonts::logpixelsy(), 96)
-#define MENUITEMWIDTH       MulDiv( 60, StyleFonts::logpixelsy(), 96)
-#define MENUITEMWIDTH_MAX   MulDiv(120, StyleFonts::logpixelsy(), 96)
-#define WINDOWSHADOWBORDER  MulDiv(  2, StyleFonts::logpixelsy(), 96)
-#define WINDOWCAPTIONHEIGHT MulDiv( 30, StyleFonts::logpixelsy(), 96)
+#define MARGIN              ((  1 * GetSFXSizeFactor()) / 100)  // MulDiv(  1, StyleFonts::logpixelsy(), 96)
+#define PANELHEADERHEIGHT   ((  0 * GetSFXSizeFactor()) / 100)  // MulDiv(  0, StyleFonts::logpixelsy(), 96)
+#define CAPTIONHEIGHT       (( 46 * GetSFXSizeFactor()) / 100)  // MulDiv( 46, StyleFonts::logpixelsy(), 96)
+#define WINCAPTIONHEIGHT    (( 30 * GetSFXSizeFactor()) / 100)  // MulDiv( 30, StyleFonts::logpixelsy(), 96)
+#define HALF_ICONSIZE       (( 16 * GetSFXSizeFactor()) / 100)  // MulDiv( 16, StyleFonts::logpixelsy(), 96)
+#define SIZEMARGIN          ((  4 * GetSFXSizeFactor()) / 100)  // MulDiv(  4, StyleFonts::logpixelsy(), 96)
+#define MENUITEMWIDTH_MIN   (( 48 * GetSFXSizeFactor()) / 100)  // MulDiv( 48, StyleFonts::logpixelsy(), 96)
+#define MENUITEMWIDTH       (( 60 * GetSFXSizeFactor()) / 100)  // MulDiv( 60, StyleFonts::logpixelsy(), 96)
+#define MENUITEMWIDTH_MAX   ((120 * GetSFXSizeFactor()) / 100)  // MulDiv(120, StyleFonts::logpixelsy(), 96)
+#define WINDOWSHADOWBORDER  ((  2 * GetSFXSizeFactor()) / 100)  // MulDiv(  2, StyleFonts::logpixelsy(), 96)
+#define WINDOWCAPTIONHEIGHT (( 30 * GetSFXSizeFactor()) / 100)  // MulDiv( 30, StyleFonts::logpixelsy(), 96)
 
 #define VK_LOGICAL_LBUTTON  GetSystemMetrics(SM_SWAPBUTTON) ? VK_RBUTTON : VK_LBUTTON
 #define VK_LOGICAL_RBUTTON  GetSystemMetrics(SM_SWAPBUTTON) ? VK_LBUTTON : VK_RBUTTON

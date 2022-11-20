@@ -17,8 +17,6 @@
 // For license: See the file "LICENSE.txt" in the root folder
 //
 #pragma once
-#include "StyleColors.h"
-#include "StyleMacros.h"
 
 /////////////////////////////////////////////////////////////////////////////
 // CSG_TextEdit window
@@ -35,6 +33,12 @@
 #define   STYLE_DEFAULT_FONTSIZE 100 // 10.punts font
 #define   STYLE_TEXTEDIT_BORDER  2   // Standard multiline text box
 #define   STYLE_SINGLELN_BORDER  5   // Single-line MFC Wizard 
+
+// For detecting the background color
+#define   NO_BACKGROUND_COLOR    0xFFFFFFFF
+
+// For the use of the CTRL-C combination
+#define   VK_COPY                0x03
 
 // Global functions to set your combobox style
 void  SetStyleFxComboBoxDots(bool p_dots = true);
@@ -53,10 +57,9 @@ public:
   virtual ~StyleEdit();
 
   virtual void PreSubclassWindow() override;
-// 
 
   // OPERATIONS
-  void InitSkin();
+  void InitSkin(bool p_force = false);
   void ResetSkin();
   BOOL EnableWindow(BOOL p_enable = TRUE);
   void DrawEditFrame();
@@ -126,6 +129,9 @@ public:
   void    GetDrawFrameColor(COLORREF& p_color,int& p_bordersize,bool& p_readonly);
 
 protected:
+  // Stop editing in non-mutable controls
+  virtual BOOL    PreTranslateMessage(MSG* pMsg) override;
+
   afx_msg void    OnMove(int x, int y);
   afx_msg void    OnSize(UINT nType, int cx, int cy);
   afx_msg void    OnShowWindow(BOOL bShow, UINT nStatus);
@@ -138,6 +144,7 @@ protected:
   afx_msg HBRUSH  CtlColor(CDC* pDC, UINT nCtlColor);
   afx_msg void    OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
   afx_msg void    OnWindowPosChanged(WINDOWPOS* lpwndpos);
+  afx_msg void    OnNcCalcSize(BOOL calcValidRects,NCCALCSIZE_PARAMS* params);
 public:
   afx_msg void    OnMouseMove (UINT   nFlags,CPoint point);
   afx_msg LRESULT OnMouseHover(WPARAM wParam,LPARAM lParam);
@@ -152,16 +159,20 @@ protected:
   BOOL                  m_focus { FALSE   };
 
 private:
+  void     ResetEditColors();
   void     ResetFont();
   void     CreateBackgroundBrush(DWORD p_color);
   void     CreateBackgroundEmptyBrush(DWORD p_color);
   void     DrawPasswordEye();
   void     DrawErrorExclamation();
+  void     StyleNcPaint(DWORD p_color,DWORD p_inner);
+  void     DrawBox(CRect& rect,DWORD p_color,int p_penstyle = PS_SOLID,DWORD p_background = NO_BACKGROUND_COLOR);
+  void     TrySelectWord();
 
-  CString  m_tooltip;     // Tooltip on the contents
-  CString  m_emptyText;   // Background text in case the field is empty: hint what to fill in
-  int      m_startChar;
-  int      m_endChar;
+  CString  m_tooltip;                     // Tooltip on the contents
+  CString  m_emptyText;                   // Background text in case the field is empty: hint what to fill in
+  int      m_startChar { 0 };             // Start of current selection
+  int      m_endChar   { 0 };             // End   of current selection
 
   // Flags
   bool     m_initCorrectly{ false };      // Correctly initialized
@@ -186,8 +197,8 @@ private:
   // Colors
   COLORREF m_colorText            { FRAME_DEFAULT_COLOR };
   COLORREF m_colorBackground      { FRAME_DEFAULT_COLOR };
-  COLORREF m_colorTextEmpty       { RGB(0x8F,0x8F,0x8F) };  // Light gray
-  COLORREF m_colorBackgroundEmpty { RGB(0xFF,0xFF,0xFF) };
+  COLORREF m_colorTextEmpty       { RGB(0xAF,0xAF,0xAF) };  // Light gray
+  COLORREF m_colorBackgroundEmpty { FRAME_DEFAULT_COLOR };
   COLORREF m_colorPasswordEye     { FRAME_DEFAULT_COLOR };
   CBrush   m_bkBrush;
   CBrush   m_bkEmptyBrush;

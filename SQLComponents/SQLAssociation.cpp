@@ -82,7 +82,7 @@ SQLAssociation::FreeAssocs()
   m_assocs.clear();
 }
 
-// Create assocation mapping
+// Create association mapping
 // and optionally the value to follow
 void 
 SQLAssociation::SetAssociation(XString     p_primaryColumn
@@ -133,7 +133,7 @@ SQLAssociation::GetAssocationValue(int p_column)
   return nullptr;
 }
 
-// Check if everything needed is givven
+// Check if everything needed is given
 // 1) From master to details (p_toDetails = true)
 // 2) From details to master (p_toDetails = false)
 bool
@@ -160,6 +160,44 @@ SQLAssociation::BasicChecks()
   return result;
 }
 
+XString
+SQLAssociation::GetSQLCondition()
+{
+  // See if we can do it
+  if(!m_master || !m_detail)
+  {
+    return "";
+  }
+  XString malias = m_master->GetPrimaryAlias();
+  XString dalias = m_detail->GetPrimaryAlias();
+  if(!malias)
+  {
+    malias = m_master->GetPrimaryTableName();
+  }
+  if(!dalias)
+  {
+    dalias = m_detail->GetPrimaryTableName();
+  }
+  // Check if both sides are set
+  if(malias.IsEmpty() || dalias.IsEmpty())
+  {
+    return "";
+  }
+  XString condition("(");
+  bool multi(false);
+  for(auto& assoc : m_assocs)
+  {
+    if(multi)
+    {
+      condition += " AND ";
+    }
+    condition += malias + "." + assoc->m_primary + " = " + dalias + "." + assoc->m_foreign;
+  }
+  condition += ")";
+  return condition;
+}
+
+
 SQLRecord*
 SQLAssociation::FollowToMaster()
 {
@@ -169,25 +207,27 @@ SQLAssociation::FollowToMaster()
     return nullptr;
   }
 
-  // Create filterset and add to the master
-  SQLFilterSet filters;
+  // Create filter-set and add to the master
+  SQLFilterSet* filters = new SQLFilterSet();
   for(unsigned ind = 0;ind < m_assocs.size();++ind)
   {
     SQLFilter filter(m_assocs[ind]->m_primary,OP_Equal,m_assocs[ind]->m_value);
-    filters.AddFilter(&filter);
-    m_master->SetFilters(&filters);
+    filters->AddFilter(&filter);
   }
+
+  m_master->ResetFilters();
+  m_master->SetFilters(filters);
 
   bool result = m_master->IsOpen() ? m_master->Append() : m_master->Open();
   if(result)
   {
     // FindBy Filter (primary = true)
-    return m_master->FindObjectFilter(filters,true);
+    return m_master->FindObjectFilter(*filters,true);
   }
   return nullptr;
 }
 
-// Find a recordset of details
+// Find a record-set of details
 // Caller must 'delete' the RecordSet
 RecordSet*
 SQLAssociation::FollowToDetails()
@@ -198,18 +238,22 @@ SQLAssociation::FollowToDetails()
     return nullptr;
   }
 
-  // Create filterset and add to the detail
-  SQLFilterSet filters;
+  // Create filter-set and add to the detail
+  SQLFilterSet* filters = new SQLFilterSet();
   for(unsigned ind = 0;ind < m_assocs.size();++ind)
   {
     SQLFilter filter(m_assocs[ind]->m_foreign,OP_Equal,m_assocs[ind]->m_value);
-    m_detail->SetFilter(filter);
+    filters->AddFilter(filter);
   }
+
+  // Begin a new filter set
+  m_detail->ResetFilters();
+  m_detail->SetFilters(filters);
 
   bool result = m_detail->IsOpen() ? m_detail->Append() : m_detail->Open();
   if(result)
   {
-    return m_detail->FindRecordSet(filters);
+    return m_detail->FindRecordSet(*filters);
   }
   return nullptr;
 }

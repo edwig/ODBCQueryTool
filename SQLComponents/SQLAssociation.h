@@ -36,7 +36,7 @@ typedef struct _primaryForeign
 {
   XString     m_primary;
   XString     m_foreign;
-  SQLVariant* m_value;
+  SQLVariant* m_value { nullptr };
 }
 PrimaryForeign;
 
@@ -64,6 +64,7 @@ public:
   SQLDataSet* GetDetail()       { return m_detail; };
   XString     GetAssocationName (int p_column);
   SQLVariant* GetAssocationValue(int p_column);
+  XString     GetSQLCondition();
 
 private:
   // Free the association columns and values

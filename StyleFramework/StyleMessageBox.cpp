@@ -17,10 +17,6 @@
 // For license: See the file "LICENSE.txt" in the root folder
 //
 #include "stdafx.h"
-#include "StyleMessageBox.h"
-#include "StyleUtilities.h"
-#include "StyleFonts.h"
-#include "StyleTexts.h"
 #include <map>
 
 #ifdef _DEBUG
@@ -30,7 +26,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 const int    OFFSET               =   8;    // Spaces between controls and texts
-const int    EXTRA_LINESPACING    =  14;    // Extra space for "Do not show again" checkbox 
+const int    EXTRA_LINESPACING    =  14;    // Extra space for "Do not show again" check box 
 const int    ID_OFFSET            =  10;    // Keep away from IDOK / IDCANCEL
 const double ButtonWidthFactor    =   8;    // With of a button in "W"-letters
 const int    FOREGROUND_TIMER     = 100;    // Timer (higher then number of labels)
@@ -45,7 +41,7 @@ INT_PTR
 StyleMessageBox(CWnd*  p_parent
                ,LPCSTR p_message
                ,LPCSTR p_title
-               ,int    p_styles         /*= MB_OK*/
+               ,long   p_styles         /*= MB_OK*/
                ,bool*  p_doNotShowAgain /*= nullptr*/)
 {
   MessageDialog dlg(p_parent,p_title,p_message,p_styles,p_doNotShowAgain);
@@ -255,7 +251,7 @@ MessageDialog::MessageDialog(CWnd*   p_parent
   {
     labels = GetStyleText(TXT_RETRY_CANCEL);      // "retry$ok cancel$can";
   }
-  SpliLabelTextAndStyles(labels);
+  SplitLabelTextAndStyles(labels);
 }
 
 MessageDialog::MessageDialog(CWnd*  p_parent
@@ -312,9 +308,13 @@ MessageDialog::MessageDialog(CWnd*  p_parent
     // (MB_ICONHAND | MB_ICONQUESTION | MB_ICONEXCLAMATION | MB_ICONASTERISK)
     if(style == MB_ICONASTERISK)     m_image = IDI_ASTERISK;
     if(style == MB_ICONEXCLAMATION)  m_image = IDI_EXCLAMATION;
-    if(style == MB_ICONHAND)         m_image = IDI_HAND;
     if(style == MB_ICONQUESTION)     m_image = IDI_QUESTION;
     if(style == MB_USERICON)         m_image = IDI_SHIELD;
+    if(style == MB_ICONHAND)
+    {
+      m_error = true;
+      m_image = IDI_HAND;
+    }
     if(m_image)
     {
       m_icon = LoadIcon(nullptr, m_image);
@@ -341,7 +341,7 @@ MessageDialog::MessageDialog(CWnd*  p_parent
     m_foreground = true;
   }
 
-  SpliLabelTextAndStyles(labels);
+  SplitLabelTextAndStyles(labels);
 }
 
 // Destructor
@@ -361,7 +361,7 @@ void MessageDialog::DoDataExchange(CDataExchange* pDX)
 {
   StyleDialogCA::DoDataExchange(pDX);
 
-  DDX_Control(pDX, IDC_BOODSCHAP, m_edit);
+  DDX_Control(pDX,IDC_BOODSCHAP,m_edit);
 }
 
 // Init buttons
@@ -400,28 +400,46 @@ MessageDialog::PreTranslateMessage(MSG* pMsg)
   {
     case WM_KEYDOWN:
     case WM_SYSKEYDOWN:
-      if (pMsg->wParam == 13 || pMsg->wParam == 32)
+      if(pMsg->wParam == VK_RETURN || pMsg->wParam == VK_SPACE)
       {
-        if (StyleButton* button = dynamic_cast<StyleButton*>(GetFocus()))
+        if(StyleButton* button = dynamic_cast<StyleButton*>(GetFocus()))
         { 
           EndDialog(button->GetDlgCtrlID());
         }
         return TRUE;
       }
+      if(pMsg->wParam == VK_LEFT)
+      {
+        if(StyleButton* button = dynamic_cast<StyleButton*>(GetFocus()))
+        {
+          GotoControl(-1);
+          return TRUE;
+        }
+      }
+      if(pMsg->wParam == VK_RIGHT)
+      {
+        if(StyleButton* button = dynamic_cast<StyleButton*>(GetFocus()))
+        {
+          GotoControl(1);
+          return TRUE;
+        }
+      }
       for (int i = 0; i < MAX_LABELS; ++i)
       {
+        int ch = tolower((int)pMsg->wParam);
+
         // Find the label that begins with this character
-        if (!m_label[i].IsEmpty() && (m_button[i]->GetStyle() & WS_DISABLED) == 0)
+        if(!m_label[i].IsEmpty() && (m_button[i]->GetStyle() & WS_DISABLED) == 0)
         {
-          if (tolower(m_label[i].GetAt(0)) == tolower((int) pMsg->wParam))
+          if(tolower(m_label[i].GetAt(0)) == ch)
           {
             EndDialog(i + ID_OFFSET);
             return TRUE;
           }
         }
       }
+      break;
   }
-
   return StyleDialogCA::PreTranslateMessage(pMsg);
 }
 
@@ -440,6 +458,64 @@ MessageDialog::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
   }
 }
 
+// Go to the Next/Previous control on the message box
+void 
+MessageDialog::GotoControl(int p_direction)
+{
+  // Are we on the text of the message dialog
+  bool onText = (&m_edit == reinterpret_cast<CEdit*>(GetFocus()));
+  int focusButton = 0;
+
+  // Count the number of buttons
+  int maxButton = 0;
+  for(int ind = 0; ind < MAX_LABELS; ++ind)
+  {
+    if(!m_label[ind].IsEmpty())
+    {
+      ++maxButton;
+    }
+    else break;
+  }
+
+  if(onText)
+  {
+    if(p_direction > 0)
+    {
+      // We are on the text and go to the first button
+      focusButton = 0;
+    }
+    else
+    {
+      focusButton = maxButton - 1;
+    }
+  }
+  else
+  {
+    for(int ind = 0; ind < maxButton; ++ind)
+    {
+      StyleButton* button = reinterpret_cast<StyleButton*>(GetFocus());
+      if(m_button[ind] == button)
+      {
+        if(button->GetStyle() & BS_DEFPUSHBUTTON)
+        {
+          button->ModifyStyle(BS_DEFPUSHBUTTON,0);
+        }
+        focusButton = ind + p_direction;
+        break;
+      }
+    }
+  }
+
+  if(focusButton < 0 || focusButton == maxButton)
+  {
+    m_edit.SetFocus();
+  }
+  else
+  {
+    m_button[focusButton]->SetFocus();
+  }
+}
+
 // Split label text in separate labels
 // ok -> ok
 // "yes no" -> "yes", "no"
@@ -447,7 +523,7 @@ MessageDialog::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 // "buttontext$ab" -> label = "buttontext" style = "ab"
 //
 void
-MessageDialog::SpliLabelTextAndStyles(CString& p_labels)
+MessageDialog::SplitLabelTextAndStyles(CString& p_labels)
 {
   // Reset everything
   for (int i = 0; i < MAX_LABELS; ++i)
@@ -748,6 +824,8 @@ MessageDialog::OnInitDialog()
 {
   StyleDialogCA::OnInitDialog();
 
+  ShowCloseButton(false);
+
   // MB_ICONERROR message?
   m_font = (m_image == IDI_SHIELD) ? &STYLEFONTS.ErrorTextFont : &STYLEFONTS.DialogTextFont;
   SetWindowText(m_title); 
@@ -930,7 +1008,6 @@ MessageDialog::OnInitDialog()
       m_button[i]->SetFont(m_font);
       // For the next button
       buttonBegin += buttonWidth + OFFSET;
-
     }
   }
   // Recalculate the window size
@@ -1013,6 +1090,12 @@ MessageDialog::OnPaint()
       dc.DrawEdge(m_line, EDGE_ETCHED, BF_TOP);
     }
   }
+}
+
+void
+MessageDialog::OnCancel()
+{
+  // Ignore the ESC key from a StyleMesageBox
 }
 
 // Override for a suppressible message

@@ -222,4 +222,19 @@ SQLPrimaryKey::AddValue(SQLVariant* p_val,bool p_replace /*=false*/)
   m_status = PKStatus::PK_Created;
 }
 
+SQLPrimaryKey& 
+SQLPrimaryKey::operator=(SQLPrimaryKey& p_other)
+{
+  m_fields = p_other.m_fields;
+  m_object = p_other.m_object;
+  m_status = p_other.m_status;
+
+  for(auto& var : p_other.m_values)
+  {
+    m_values.push_back(new SQLVariant(var));
+  }
+
+  return *this;
+}
+
 }

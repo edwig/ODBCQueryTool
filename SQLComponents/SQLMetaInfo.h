@@ -254,25 +254,25 @@ using MProcedureMap = std::vector<MetaProcedure>;
 
 typedef struct _metaParameter
 {
-  XString  m_catalog;         // 01 Catalog of the procedure of the parameter
-  XString  m_schema;          // 02 Schema  of the procedure of the parameter
-  XString  m_procedure;       // 03 Procedure or function name
-  XString  m_parameter;       // 04 Name of the parameters
-  int      m_columnType;      // 05 SQL_PARAM_INPUT (1) / SQL_PARAM_INPUT_OUTPUT (2) / SQL_PARAM_OUTPUT (4) / SQL_RETURN_VALUE (5) / SQL_RESULT_COL (3)
-  int      m_datatype;        // 06 ODBC datatype 
-  XString  m_typeName;        // 07 Type name
-  int      m_columnSize;      // 08 Column size or display size
-  int      m_bufferLength;    // 09 Database buffer length
-  int      m_decimalDigits;   // 10 Decimal digits after the comma
-  int      m_numRadix;        // 11 Decimal radix
-  int      m_nullable;        // 12 Is Nullable
-  XString  m_remarks;         // 13 From the COMMENT command
-  XString  m_default;         // 14 Default value of the parameter
-  int      m_datatype3;       // 15 ODBC 3 datatype
-  int      m_subType;         // 16 Date time subtype of ODBC 3
-  int      m_octetLength;     // 17 Octet length for Unicode
-  int      m_position;        // 18 Ordinal position of the parameter (0 = return value)
-  XString  m_isNullable;      // 19 'YES' or 'NO'
+  XString  m_catalog;               // 01 Catalog of the procedure of the parameter
+  XString  m_schema;                // 02 Schema  of the procedure of the parameter
+  XString  m_procedure;             // 03 Procedure or function name
+  XString  m_parameter;             // 04 Name of the parameters
+  int      m_columnType    { 0 };   // 05 SQL_PARAM_INPUT (1) / SQL_PARAM_INPUT_OUTPUT (2) / SQL_PARAM_OUTPUT (4) / SQL_RETURN_VALUE (5) / SQL_RESULT_COL (3)
+  int      m_datatype      { 0 };   // 06 ODBC datatype 
+  XString  m_typeName;              // 07 Type name
+  int      m_columnSize    { 0 };   // 08 Column size or display size
+  int      m_bufferLength  { 0 };   // 09 Database buffer length
+  int      m_decimalDigits { 0 };   // 10 Decimal digits after the comma
+  int      m_numRadix      { 0 };   // 11 Decimal radix
+  int      m_nullable      { 0 };   // 12 Is Nullable
+  XString  m_remarks;               // 13 From the COMMENT command
+  XString  m_default;               // 14 Default value of the parameter
+  int      m_datatype3     { 0 };   // 15 ODBC 3 datatype
+  int      m_subType       { 0 };   // 16 Date time subtype of ODBC 3
+  int      m_octetLength   { 0 };   // 17 Octet length for Unicode
+  int      m_position      { 0 };   // 18 Ordinal position of the parameter (0 = return value)
+  XString  m_isNullable;            // 19 'YES' or 'NO'
 }
 MetaParameter;
 

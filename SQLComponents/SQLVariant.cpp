@@ -301,7 +301,7 @@ SQLVariant::SQLVariant(void* p_binary,size_t p_size)
   m_datatype    = SQL_C_BINARY;
   m_sqlDatatype = SQL_BINARY;
   m_indicator   = 0;
-  m_data.m_dataBINARY = malloc(p_size + 1);
+  m_data.m_dataBINARY = new unsigned char[(size_t)p_size + 1];
   memcpy(m_data.m_dataBINARY,p_binary,p_size);
 }
 
@@ -464,12 +464,12 @@ SQLVariant::ReserveSpace(int p_type,int p_space)
   if(p_type == SQL_C_CHAR)
   {
     m_binaryLength = p_space + 1;
-    m_data.m_dataCHAR = (char*) calloc(m_binaryLength,1);
+    m_data.m_dataCHAR = new char[(size_t)m_binaryLength];
   }
   if(p_type == SQL_C_BINARY)
   {
     m_binaryLength = p_space + 1;
-    m_data.m_dataBINARY = (unsigned char*) calloc(m_binaryLength,1);
+    m_data.m_dataBINARY = new unsigned char[(size_t)m_binaryLength];
   }
   // Reserving space means, that the contents is reset to logical NULL
   // Only, leave the indicator in case of AT_EXEC_DATA so drivers will not get upset!
@@ -633,8 +633,8 @@ SQLVariant::ResetDataType(int p_type)
 {
   switch(m_datatype)
   {
-    case SQL_C_CHAR:  free(m_data.m_dataCHAR);  break;
-    case SQL_C_BINARY:free(m_data.m_dataBINARY);break;
+    case SQL_C_CHAR:  delete [] m_data.m_dataCHAR;   break;
+    case SQL_C_BINARY:delete [] m_data.m_dataBINARY; break;
     default:          break;
   }
   memset(&m_data,0,sizeof(m_data));
@@ -845,12 +845,12 @@ SQLVariant::SetFromBinaryStreamData(int   p_type
   m_sqlDatatype = p_type;
 
   // Depends on datatype
-  if(p_type == SQL_C_CHAR || p_type == SQL_C_BINARY || p_type == SQL_C_VARBOOKMARK)
+  if(p_type == SQL_C_CHAR || p_type == SQL_C_BINARY)
   {
     // Allocated buffer types
     m_binaryLength = p_length;
     m_indicator    = p_isnull ? SQL_NULL_DATA : p_length;
-    m_data.m_dataBINARY = (unsigned char*)malloc(2 + m_binaryLength);
+    m_data.m_dataBINARY = new unsigned char[(size_t)m_binaryLength + 2];
     memcpy(m_data.m_dataBINARY,p_data,(size_t)p_length);
     ((char*)m_data.m_dataBINARY)[p_length] = 0;
   }
@@ -918,7 +918,7 @@ SQLVariant::GetAsString(XString& result)
     case SQL_C_UBIGINT:                   result.Format("%I64u",m_data.m_dataUBIGINT);
                                           break;
     case SQL_C_NUMERIC:                   { bcd num(&m_data.m_dataNUMERIC);
-                                            result = num.AsString();
+                                            result = num.AsString(bcd::Format::Bookkeeping,false,0);
                                           }
                                           break;
     case SQL_C_GUID:                      result.Format("{%04X-%04X-%04X-%02X%02X-%02X%02X%02X%02X%02X%02X}"
@@ -2277,11 +2277,11 @@ SQLVariant::GetAsSQLString()
 void
 SQLVariant::SetSizeIndicator(bool p_realSize)
 {
-  int size = GetDataSize();
+  __int64 size = (__int64) GetDataSize();
   if(size > 0 && p_realSize)
   {
     // Special ODBC macro to set the data size
-    m_indicator = SQL_LEN_DATA_AT_EXEC(size);
+    m_indicator = (SQLLEN) SQL_LEN_DATA_AT_EXEC(size);
     m_useAtExec = true;
   }
   else
@@ -2402,13 +2402,13 @@ SQLVariant::SetData(int p_type,const char* p_data)
   switch(p_type)
   {
     case SQL_C_CHAR:                      m_binaryLength = (int)(dataLen);
-                                          m_data.m_dataCHAR = (char*) malloc(m_binaryLength + 1);
-                                          strcpy_s(m_data.m_dataCHAR,m_binaryLength + 1,p_data);
+                                          m_data.m_dataCHAR = new char[(size_t)m_binaryLength + 1];
+                                          strcpy_s(m_data.m_dataCHAR,  (size_t)m_binaryLength + 1,p_data);
                                           m_indicator = dataLen > 0 ? SQL_NTS : SQL_NULL_DATA;
                                           break;
     case SQL_C_BINARY:                    m_binaryLength = (int)(dataLen / 2);
                                           m_indicator    = m_binaryLength > 0 ? m_binaryLength : SQL_NULL_DATA;
-                                          m_data.m_dataBINARY = (unsigned char*) malloc(2 + m_binaryLength);
+                                          m_data.m_dataBINARY = new unsigned char[(size_t)m_binaryLength + 2];
                                           StringToBinary(p_data);
                                           break;
     case SQL_C_SHORT:                     // Fall through
@@ -2678,13 +2678,13 @@ SQLVariant::SetFromRawDataPointer(void* p_pointer,int p_size /*= 0*/)
   switch (m_datatype)
   {
     case SQL_C_CHAR:                      m_binaryLength = (int)(p_size);
-                                          m_data.m_dataCHAR = (char*)malloc(m_binaryLength + 1);
-                                          strcpy_s(m_data.m_dataCHAR,m_binaryLength + 1,(const char*)p_pointer);
+                                          m_data.m_dataCHAR = new char[(size_t)m_binaryLength + 1];
+                                          strcpy_s(m_data.m_dataCHAR,  (size_t)m_binaryLength + 1,(const char*)p_pointer);
                                           m_indicator = p_size > 0 ? SQL_NTS : SQL_NULL_DATA;
                                           break;
     case SQL_C_BINARY:                    m_binaryLength = p_size;
                                           m_indicator = m_binaryLength > 0 ? m_binaryLength : SQL_NULL_DATA;
-                                          m_data.m_dataBINARY = (unsigned char*)malloc(1 + m_binaryLength);
+                                          m_data.m_dataBINARY = new unsigned char[(size_t)m_binaryLength + 1];
                                           memcpy_s(m_data.m_dataBINARY,p_size,p_pointer,p_size);
                                           break;
     case SQL_C_SHORT:                     // Fall through

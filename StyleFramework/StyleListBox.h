@@ -20,6 +20,26 @@
 #pragma once
 #include "SkinScrollWnd.h"
 
+#define LIST_MAGIC 0xDEBAC1
+
+/////////////////////////////////////////////////////////////////////////////
+// CMulitLineListBox window
+class ListBoxColorLine
+{
+public:
+  int      m_magic;
+  CString  m_text;
+  COLORREF m_foreground;
+  COLORREF m_background;
+  
+  ListBoxColorLine()
+  {
+    m_magic      = LIST_MAGIC;
+    m_foreground = FRAME_DEFAULT_COLOR;
+    m_background = FRAME_DEFAULT_COLOR;
+  }
+};
+
 class StyleListBox : public CListBox
 {
   DECLARE_DYNAMIC(StyleListBox)
@@ -37,11 +57,15 @@ public:
   SkinScrollWnd* GetSkin();
 
   // Overrides of CListBox functions
-  int  AddString(LPCTSTR p_string) ;
-  int  InsertString(int p_index,LPCTSTR p_string);
+  int  AddString(LPCTSTR p_string);
+  int  InsertString(int p_index,LPCTSTR p_string,COLORREF p_foreground = FRAME_DEFAULT_COLOR,COLORREF p_background = FRAME_DEFAULT_COLOR);
+  int  AppendString(LPCSTR p_text,COLORREF p_foreground = FRAME_DEFAULT_COLOR,COLORREF p_background = FRAME_DEFAULT_COLOR);
   void ResetContent();
   int  DeleteString(int p_number);
   void MoveWindow(int x,int y,int nWidth,int nHeight,BOOL bRepaint = TRUE);
+  int  GetText(int nIndex,LPTSTR lpszBuffer) const;
+  void GetText(int nIndex,CString& rString) const;
+  int  GetTextLen(int nIndex) const;
 
   // Edit functions
   void SelectAll(BOOL p_select = TRUE);
@@ -55,13 +79,26 @@ public:
 
 protected:
   virtual void PreSubclassWindow() override;
+  virtual void MeasureItem(LPMEASUREITEMSTRUCT p_measureItemStruct) override;
+  virtual void DrawItem   (LPDRAWITEMSTRUCT    p_drawItemStruct)    override;
+  virtual int  CompareItem(LPCOMPAREITEMSTRUCT p_compareItemStruct) override;
+  virtual void DeleteItem (LPDELETEITEMSTRUCT  p_deleteItemStruct)  override;
 
   void    UpdateWidth(LPCTSTR p_string);
   void    AdjustScroll();
   void    RemoveLineNumber(CString& p_text);
+  void    RemoveLineInfo();
+  void    SetItemPointer(int p_index,void* p_data);
+
+  // Owner painting inside OnPaint
+  void    Internal_Paint(CDC* p_cdc);
+  void    Internal_PaintItem(CDC* p_cdc,const RECT* rect,INT index,UINT action,BOOL ignoreFocus);
 
   afx_msg void OnPaint();
   afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
+  afx_msg void OnDestroy();
+  afx_msg BOOL OnEraseBkgnd(CDC* pDC);
+  afx_msg void OnHScroll(UINT nSBCode,UINT nPos,CScrollBar* pScrollBar);
 
   SkinScrollWnd* m_skin;
   int  m_width      { 0     };

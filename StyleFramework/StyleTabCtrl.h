@@ -33,26 +33,30 @@ public:
   virtual ~StyleTabCtrl();
 
   // Insert a tab item along with a window on that tab
-  LONG InsertItem(int p_item,CWnd* p_wnd,CString p_text);
+  LONG  InsertItem(int p_item,CWnd* p_wnd,CString p_text);
   // Call Init after all tabs are inserted
-  void Init();
+  void  Init();
 
   // SETTERS
-  void SetColours(COLORREF selColour, COLORREF unselColour);
-  void SetImages(UINT p_bitmap);
-  void SetUseTabNotch(int p_notch);
-  void SetTabImage  (int p_tab, int p_image);
-  void SetErrorState(int p_item,int p_errors);
-  void SetTabActive (int p_item,bool p_active);
+  void  SetColours(COLORREF selColour, COLORREF unselColour);
+  void  SetImages(UINT p_bitmap);
+  void  SetUseTabNotch(int p_notch);
+  void  SetTabImage  (int p_tab, int p_image);
+  void  SetErrorState(int p_item,int p_errors);
+  void  SetTabActive (int p_item,bool p_active);
+  CWnd* SetTabWindow(int p_tab, CWnd* p_window);
 
-  void SelectTab(int p_tab);
 
   // GETTERS
-  int  GetErrorState (int p_item);
-  bool GetTabActive(int p_item);
+  int   GetErrorState (int p_item);
+  bool  GetTabActive(int p_item);
+  CWnd* GetActiveWindow();
+  CWnd* GetTabWindow(int p_tab);
 
-  void AdjustRect(BOOL bLarger,LPRECT lpRect);
+  void  SelectTab(int p_tab);
+  void  AdjustRect(BOOL bLarger,LPRECT lpRect);
 
+protected:
   DECLARE_MESSAGE_MAP()
 
   afx_msg void   OnTcnSelchangeTabs(NMHDR* pNMHDR, LRESULT* pResult);
@@ -66,8 +70,8 @@ public:
 protected:
   virtual void PreSubclassWindow();
           void PaintError(CDC* pDC, CRect rect);
+          void ResizeTab(int p_tab);
 
-private:
   COLORREF   m_selColor;
   COLORREF   m_unselColor;
   CFont*     m_font;

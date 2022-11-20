@@ -26,7 +26,7 @@ public:
 
 // Attributes
 public:
-	void      SetTipText(LPCTSTR tipText);
+	void      SetTipText(LPCTSTR p_tipText);
   void      SetURL(CString strURL);
   CString   GetURL() const;
   void      SetColours(COLORREF crLinkColour

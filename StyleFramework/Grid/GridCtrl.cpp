@@ -134,6 +134,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+using namespace ThemeColor;
+
 // Spit out some messages as a sanity check for programmers
 #ifdef GRIDCONTROL_NO_TITLETIPS
 #pragma message(" -- CGridCtrl: No titletips for cells with large data")
@@ -1787,7 +1789,7 @@ void CGridCtrl::OnDraw(CDC* pDC)
 
 
   CPen pen;
-  pen.CreatePen(PS_SOLID,0,ThemeColor::_Color2); //m_crGridLineColour);
+  pen.CreatePen(PS_SOLID,0,ThemeColor::GetColor(Colors::AccentColor2)); //m_crGridLineColour);
   pDC->SelectObject(&pen);
 
   // draw vertical lines (drawn at ends of cells)
@@ -2563,7 +2565,7 @@ BOOL CGridCtrl::PasteTextToGrid(CCellID cell, COleDataObject* pDataObject,
     nIndex = strLine.Find(_T("\n"));
 
     // Store the remaining chars after the newline
-    CString strNext = (nIndex < 0)? _T("")  : strLine.Mid(nIndex + 1);
+    CString strNext = (nIndex < 0) ? CString()  : strLine.Mid(nIndex + 1);
 
     // Remove all chars after the newline
     if(nIndex >= 0)
@@ -2620,7 +2622,7 @@ BOOL CGridCtrl::PasteTextToGrid(CCellID cell, COleDataObject* pDataObject,
         }
       }
 
-      strLine = (nLineIndex >= 0)? strLine.Mid(nLineIndex + 1) : _T("");
+      strLine = (nLineIndex >= 0) ? strLine.Mid(nLineIndex + 1) : CString();
       nLineIndex = strLine.FindOneOf(_T("\t,"));
       strCellText = (nLineIndex >= 0)? strLine.Left(nLineIndex) : strLine;
 
@@ -6232,13 +6234,14 @@ void CGridCtrl::OnMouseMove(UINT /*nFlags*/,CPoint point)
               && GetCellRect(idCurrentCell.row, idCurrentCell.col, CellRect) )
           {
 //						TRACE0("Showing TitleTip\n");
-            	m_TitleTip.Show(TextRect
-                              ,pCell->GetTipText()
-                              ,0
-                              ,CellRect
-                              ,pCell->GetFont()
-                              ,GetTitleTipTextClr()
-                              ,GetTitleTipBackClr());
+            	m_TitleTip.Show(this
+                             ,TextRect
+                             ,pCell->GetTipText()
+                             ,0
+                             ,CellRect
+                             ,pCell->GetFont()
+                             ,GetTitleTipTextClr()
+                             ,GetTitleTipBackClr());
           }
         }
       }
@@ -7702,7 +7705,7 @@ BOOL CGridCtrl::Save(LPCTSTR filename, TCHAR chSeparator/*=_T(',')*/)
       for (int j = 0; j < nNumColumns; j++)
       {
         File.WriteString(GetItemText(i,j));
-        File.WriteString((j==(nNumColumns-1))? _T("\n"): strSeparator);
+        File.WriteString((j==(nNumColumns-1)) ? CString("\n"): strSeparator);
       }
     }
 

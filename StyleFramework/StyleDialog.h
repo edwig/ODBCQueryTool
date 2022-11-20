@@ -17,11 +17,6 @@
 // For license: See the file "LICENSE.txt" in the root folder
 //
 #pragma once
-#include "GrayWindow.h"
-#include "StyleFonts.h"
-#include "StyleColors.h"
-#include "StyleMacros.h"
-#include "CWSExpander.h"
 #include <map>
 
 class StyleComboBox;
@@ -85,9 +80,11 @@ protected:
   void    InitStatusBar();
 
   // Message handlers
+  afx_msg int     OnCreate(LPCREATESTRUCT p_create);
   afx_msg BOOL    OnEraseBkgnd(CDC* pDC);
   afx_msg HBRUSH  OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor);
-  afx_msg LPARAM  OnCtlColorStatic(WPARAM wParam,LPARAM lParam);
+  afx_msg LPARAM  OnCtlColorStatic (WPARAM wParam,LPARAM lParam);
+  afx_msg LPARAM  OnCtlColorListBox(WPARAM wParam,LPARAM lParam);
   afx_msg void    OnNcMouseMove(UINT nFlags, CPoint point);
   afx_msg void    OnNcLButtonDown(UINT nFlags, CPoint point);
   afx_msg void    OnNcRButtonUp(UINT nFlags, CPoint point);
@@ -114,6 +111,7 @@ protected:
   afx_msg void    OnStyleModerateGray();
   afx_msg void    OnStylePureGray();
   afx_msg void    OnStyleBlackWhite();
+  afx_msg void    OnStyleDark();
   
   bool      m_error       { false   };  // Dialog is in an error state?
   bool      m_down        { false   };  // mouse pressed in m_closeRect
@@ -126,6 +124,8 @@ protected:
   CRect     m_closeRect   { 0,0,0,0 };  // Close    button rectangle
   // drag rectangle
   CRect     m_captionRect { 0,0,0,0 };
+  // Original window size
+  CRect     m_originalSize{ 0,0,0,0 };
   // caption bar 
   bool      m_caption     { true  };
   bool      m_closeButton { true  };

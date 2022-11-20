@@ -17,15 +17,14 @@
 // For license: See the file "LICENSE.txt" in the root folder
 //
 #include "stdafx.h"
-#include "StyleCheckbox.h"
-#include "StyleColors.h"
-#include "StyleMacros.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+using namespace ThemeColor;
 
 BEGIN_MESSAGE_MAP(StyleCheckbox, CButton)
   ON_WM_PAINT()
@@ -45,6 +44,12 @@ StyleCheckbox::StyleCheckbox(bool p_mutable,bool p_radio,CWnd* p_field)
 StyleCheckbox::~StyleCheckbox()
 {
   DestroyWindow();
+}
+
+void
+StyleCheckbox::PreSubclassWindow()
+{
+  ScaleControl(this);
 }
 
 void
@@ -82,37 +87,37 @@ StyleCheckbox::Draw(CWnd* p_wnd
   COLORREF filling;
   COLORREF textcolor;
 
-  if ((p_style & WS_DISABLED) != 0)
+  if((p_style & WS_DISABLED) != 0)
   {
-    filling   = ClrControlDisabledBack;
-    textcolor = ClrControlDisabledFore;
-    outline   = ThemeColor::_Color2;
+    filling   = ThemeColor::GetColor(Colors::ColorCtrlBackground);
+    textcolor = ThemeColor::GetColor(Colors::ColorEditText);
+    outline   = ThemeColor::GetColor(Colors::AccentColor2);
   }
   else
   {
-    if ((p_state & BST_PUSHED) != 0)
+    if((p_state & BST_PUSHED) != 0)
     {
-      filling   = ClrCheckboxPressed;
-      textcolor = ClrCheckboxTextPressed;
-      outline   = ThemeColor::_Color1;
+      filling   = ThemeColor::GetColor(Colors::ColorCtrlBackground);
+      textcolor = ThemeColor::GetColor(Colors::ColorEditText);
+      outline   = ThemeColor::GetColor(Colors::AccentColor1);
     }
-    else if ((p_state & BST_FOCUS) != 0)
+    else if((p_state & BST_FOCUS) != 0)
     {
-      filling   = ClrCheckboxFocus;
-      textcolor = ClrCheckboxTextFocus;
-      outline   = ThemeColor::_Color1;
+      filling   = ThemeColor::GetColor(Colors::ColorCtrlBackground);
+      textcolor = ThemeColor::NoWhite(ThemeColor::GetColor(Colors::AccentColor1));
+      outline   = ThemeColor::GetColor(Colors::AccentColor1);
     }
-    else if (p_hover)
+    else if(p_hover)
     {
-      filling   = ClrCheckboxHover;
-      textcolor = ClrCheckboxTextHover;
-      outline   = ThemeColor::_Color1;
+      filling   = ThemeColor::GetColor(Colors::ColorCtrlBackground);
+      textcolor = ThemeColor::NoWhite(ThemeColor::GetColor(Colors::AccentColor1));
+      outline   = ThemeColor::GetColor(Colors::AccentColor1);
     }
     else
     {
-      filling   = ClrCheckboxNormal;
-      textcolor = ClrCheckboxTextNormal;
-      outline   = ThemeColor::_Color2;
+      filling   = ThemeColor::GetColor(Colors::ColorCtrlBackground);
+      textcolor = ThemeColor::GetColor(Colors::ColorEditText);
+      outline   = ThemeColor::GetColor(Colors::AccentColor1);
     }
   }
 
@@ -126,7 +131,7 @@ StyleCheckbox::Draw(CWnd* p_wnd
   }
   if(p_inError)
   {
-    outline = ClrEditFrameError;
+    outline = ColorEditFrameError;
   }
 
   if ((p_style & BS_TYPEMASK) == BS_RADIOBUTTON || 
@@ -143,7 +148,7 @@ StyleCheckbox::Draw(CWnd* p_wnd
     CSize MySize(p_rect.Height() * FACTOR, p_rect.Height() * FACTOR);
     bitmap.CreateCompatibleBitmap(p_dc, MySize.cx, MySize.cy);
     dc.SelectObject(bitmap);
-    dc.FillSolidRect(0, 0, MySize.cx, MySize.cy, ClrFrameBkGnd);
+    dc.FillSolidRect(0,0,MySize.cx,MySize.cy,ThemeColor::GetColor(Colors::ColorWindowFrame));
 
     // Draw the edge
     CPen pen;
@@ -163,11 +168,11 @@ StyleCheckbox::Draw(CWnd* p_wnd
 
       r.DeflateRect(3 * FACTOR, 3 * FACTOR);
       pen.DeleteObject();
-      pen.CreatePen(PS_SOLID, 1, textcolor);
+      pen.CreatePen(PS_SOLID, 1, outline);
       dc.SelectObject(pen);
 
       br.DeleteObject();
-      br.CreateSolidBrush(textcolor);
+      br.CreateSolidBrush(outline);
       dc.SelectObject(br);
 
       dc.Ellipse(r);
@@ -201,19 +206,19 @@ StyleCheckbox::Draw(CWnd* p_wnd
     }
 
     CPen pen;
-    pen.CreatePen(PS_SOLID,2,textcolor);
+    pen.CreatePen(PS_SOLID,2,outline);
     p_dc->SelectObject(pen);
 
     if ((p_state & BST_CHECKED) != 0)
     {
-      p_dc->MoveTo(mark.CenterPoint().x - WS(4), mark.CenterPoint().y - WS(1));
-      p_dc->LineTo(mark.CenterPoint().x - WS(1), mark.CenterPoint().y + WS(3));
-      p_dc->LineTo(mark.CenterPoint().x + WS(4), mark.CenterPoint().y - WS(4));
+      p_dc->MoveTo(mark.CenterPoint().x - WS(6), mark.CenterPoint().y - WS(1));
+      p_dc->LineTo(mark.CenterPoint().x - WS(2), mark.CenterPoint().y + WS(3));
+      p_dc->LineTo(mark.CenterPoint().x + WS(5), mark.CenterPoint().y - WS(4));
     }
     else if ((p_state & BST_INDETERMINATE) != 0)
     {
       mark.DeflateRect(3, 3);
-      p_dc->FillSolidRect(mark, textcolor);
+      p_dc->FillSolidRect(mark, outline);
     }
   }
 
@@ -227,9 +232,11 @@ StyleCheckbox::Draw(CWnd* p_wnd
       CPen pen;
       pen.CreatePen(PS_SOLID,1,textcolor);
       p_dc->SelectObject(pen);
-      p_dc->SetBkColor(ClrCheckBoxDefaultBkGrnd);
+      p_dc->SetBkColor(ThemeColor::GetColor(Colors::ColorWindowFrame));
       p_dc->SelectObject(STYLEFONTS.DialogTextFont);
-      p_rect.left += WS(28);
+      p_dc->SetTextColor(textcolor);
+      int margin = (28 * GetSFXSizeFactor()) / 100;
+      p_rect.left += margin;
       p_dc->DrawText(text,&p_rect,DT_VCENTER | DT_SINGLELINE);
     }
   }
@@ -248,7 +255,7 @@ StyleCheckbox::OnPaint()
     GetClientRect(rect);
 
     // Remove underlying MFC implementation
-    dc.FillSolidRect(rect,ClrCheckBoxDefaultBkGrnd);
+    dc.FillSolidRect(rect, ThemeColor::GetColor(Colors::ColorWindowFrame));
 
     DWORD style = GetStyle();
     UINT  state = GetState();
@@ -277,7 +284,7 @@ StyleCheckbox::OnEraseBkgnd(CDC* pDC)
   {
     CRect rcChild;
     GetClientRect(rcChild);
-    pDC->FillSolidRect(0, 0, rcChild.Width(), rcChild.Height(),ClrCheckBoxDefaultBkGrnd);
+    pDC->FillSolidRect(0, 0, rcChild.Width(), rcChild.Height(),ThemeColor::GetColor(Colors::ColorWindowFrame));
   }
   
   return TRUE;

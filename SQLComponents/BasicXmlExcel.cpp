@@ -379,7 +379,7 @@ BasicXmlExcel::BasicXmlExcel(XString p_filename)
   if(m_zip == NULL)
   {
     m_error.Format("Cannot open the file: %s",m_filename.GetString());
-    m_error.AppendFormat("\nOS Error: %d",GetLastError);
+    m_error.AppendFormat("\nOS Error: %d",GetLastError());
   }
 }
 
@@ -485,6 +485,11 @@ BasicXmlExcel::ReadSheetNames()
     {
       int   bufflen = ze.unc_size + 1;
       char* buffer  = (char*) malloc(bufflen);
+      if(!buffer)
+      {
+        SetError(ZR_MEMSIZE);
+        return;
+      }
       // workbook xml contains the names of the sheets
       res = UnzipItem(m_zip,ind,buffer,bufflen);
       if(res != ZR_OK)
@@ -615,6 +620,11 @@ BasicXmlExcel::LoadStrings()
     {
       int   bufflen = ze.unc_size + 1;
       char* buffer  = (char*) malloc(bufflen);
+      if(!buffer)
+      {
+        SetError(ZR_MEMSIZE);
+        return false;
+      }
       // workbook xml contains the names of the sheets
       res = UnzipItem(m_zip,ind,buffer,bufflen);
       if(res != ZR_OK)
@@ -830,6 +840,11 @@ BasicXmlExcel::LoadWorksheets()
       {
         int   bufflen = ze.unc_size + 1;
         char* buffer  = (char*) malloc(bufflen);
+        if(!buffer)
+        {
+          SetError(ZR_MEMSIZE);
+          return false;
+        }
         // workbook xml contains the names of the sheets
         res = UnzipItem(m_zip,ind,buffer,bufflen);
         if(res != ZR_OK)

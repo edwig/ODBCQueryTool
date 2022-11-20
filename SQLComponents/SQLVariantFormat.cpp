@@ -1015,7 +1015,9 @@ SQLVariantFormat::FormatNumberTemplate(char *Getal,const char *strNumFormat,int 
   bInDecimal = FALSE;
   bNummer    = FALSE;
   bSign      = FALSE;
-  for (pFormatStart = Getal , pFormat = Getal ; *pFormat != '\0' ; *pFormat++)
+
+  pFormatStart = Getal;
+  for(pFormat = Getal;*pFormat != '\0';++pFormat)
   {
     if (!bNummer && (*pFormat == ' ' || *pFormat == '0' ))
     {
@@ -1307,7 +1309,7 @@ SQLVariantFormat::FormatNumberTemplate(char *Getal,const char *strNumFormat,int 
   // Getting the attributes of the number
   //
   bInDecimal = FALSE;
-  for (pFormat = Getal ; *pFormat != '\0' ; *pFormat++)
+  for(pFormat = Getal ; *pFormat != '\0' ;++pFormat)
   {
     if (strchr("0123456789", *pFormat) != NULL )
     {

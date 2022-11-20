@@ -18,11 +18,6 @@
 // For license: See the file "LICENSE.txt" in the root folder
 //
 #include "stdafx.h"
-#include "StyleFrameWndEx.h"
-#include "StyleFonts.h"
-#include "StyleButton.h"
-#include "StyleColors.h"
-#include "StyleMacros.h"
 #include "RegistryManager.h"
 #include "resource.h"
 #include <afxglobalutils.h>
@@ -192,7 +187,7 @@ void
 StyleFrameWndEx::LoadStyleTheme()
 {
   RegistryManager manager;
-  int th = manager.GetRegistryInteger(STYLECOLORS_KEY,STYLECOLORS_THEME,ThemeColor::Themes::ThemeSkyblue);
+  int th = manager.GetRegistryInteger(STYLECOLORS_KEY,STYLECOLORS_THEME,(int)ThemeColor::Themes::ThemeSkyblue);
   ThemeColor::Themes theme = (ThemeColor::Themes)th;
   ThemeColor::SetTheme(theme);
 
@@ -405,6 +400,10 @@ StyleFrameWndEx::OnNcLButtonDown(UINT nFlags, CPoint point)
     case HTMENU:  MenuFromPoint(point);
                   break;
     case HTCAPTION:
+                  if(GetStyle() & WS_MAXIMIZE)
+                  {
+                    return;
+                  }
                   SetWindowPos(&CWnd::wndTop,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE|SWP_SHOWWINDOW|SWP_NOSENDCHANGING|SWP_DRAWFRAME);
 
                   CPoint lastpoint(point);
@@ -519,7 +518,7 @@ void StyleFrameWndEx::OnSize(UINT nType, int cx, int cy)
     }
     else
     {
-      border = MARGE;
+      border = MARGIN;
     }
 
     m_closeRect.SetRect(m_windowRectLocal.right - border -     CAPTIONHEIGHT, m_windowRectLocal.top, m_windowRectLocal.right - border,                     m_windowRectLocal.top + CAPTIONHEIGHT);
@@ -598,7 +597,6 @@ StyleFrameWndEx::MenuFromPoint(CPoint p_point)
       CFrameWndEx* frame = (CFrameWndEx*)AfxGetMainWnd();
       popup->RecalcLayout();
       CMFCPopupMenu::ActivatePopupMenu(frame,popup);
-      // frame->OnShowPopupMenu(popup);
       return;
     }
   }
@@ -607,12 +605,12 @@ StyleFrameWndEx::MenuFromPoint(CPoint p_point)
 void 
 StyleFrameWndEx::OnNcCalcSize(BOOL calcValidRects,NCCALCSIZE_PARAMS* p_params)
 {
-  int marge = MARGE;
+  int baseMargin = MARGIN;
   p_params->rgrc[0].top += CAPTIONHEIGHT;
 
   if(GetStyle() & WS_MAXIMIZE)
   {
-    // Bij een volledig scherm gebruikt het OS deze marge buiten beeld!!
+    // In full-screen mode, the MS-Windows OS uses this extra margin
     CSize marge = afxGlobalUtils.GetSystemBorders(GetStyle());
 
     p_params->rgrc[0].left   += marge.cx;
@@ -622,12 +620,12 @@ StyleFrameWndEx::OnNcCalcSize(BOOL calcValidRects,NCCALCSIZE_PARAMS* p_params)
   }
   else
   {
-    // Marge is nodig voor twee zaken:
-    // 1) Om de linker/rechter/onder muis-uitrek actie te activeren
-    // 2) Om ruimte te maken voor het kader rondom het venster
-    p_params->rgrc[0].left   += marge;
-    p_params->rgrc[0].right  -= marge;
-    p_params->rgrc[0].bottom -= marge;
+    // The baseMargin is needed for two things:
+    // 1) To activate the left/right/bottom mouse pulling action
+    // 2) To provide space for a painted border around the window
+    p_params->rgrc[0].left   += baseMargin;
+    p_params->rgrc[0].right  -= baseMargin;
+    p_params->rgrc[0].bottom -= baseMargin;
   }
   // Use same rectangle for displacement (so hide it)
   p_params->rgrc[2] = p_params->rgrc[0];
@@ -653,8 +651,8 @@ StyleFrameWndEx::OnNcPaint()
   if((GetStyle() & WS_MAXIMIZE) == 0)
   {
     CRect r;
-    COLORREF bkgnd = ThemeColor::_Color1; // ClrWindowFrame;
-    int width = MARGE;
+    COLORREF bkgnd = ThemeColor::GetColor(Colors::AccentColor1);
+    int width = MARGIN;
 
     r.SetRect(m_windowRectLocal.left,         m_windowRectLocal.top,           m_windowRectLocal.right,       m_windowRectLocal.top + width);
     dc.FillSolidRect(r, bkgnd);
@@ -667,11 +665,11 @@ StyleFrameWndEx::OnNcPaint()
   }
   
   // CAPTION BAR
-  dc.FillSolidRect(m_dragRect, ClrWindowHeader);
+  dc.FillSolidRect(m_dragRect,ThemeColor::GetColor(Colors::AccentColor1));
 
   // TITLE
   CFont* orgfont = dc.SelectObject(&STYLEFONTS.CaptionTextFont);
-  dc.SetTextColor(ClrWindowHeaderText);
+  dc.SetTextColor(ColorWindowHeaderText);
   CString titel;
   GetWindowText(titel);
   dc.DrawText(titel, m_captionRect, DT_CENTER | DT_SINGLELINE | DT_VCENTER);
@@ -707,7 +705,8 @@ void
 StyleFrameWndEx::DrawIcon(CDC* pDC, int index)
 {
   // Fill icon rectangle
-  pDC->FillSolidRect(m_iconRects[index], index == m_selectedMenu ? ClrWindowHeader == ClrFrameBkGnd ? Assistant5 : ClrFrameBkGnd : ClrWindowHeader);
+  COLORREF frame = ThemeColor::GetColor(Colors::ColorWindowFrame);
+  pDC->FillSolidRect(m_iconRects[index], index == m_selectedMenu ? ColorWindowHeader == frame ? Assistant5 : frame : ColorWindowHeader);
 
   // Get position of the icon
   CRect rect = m_iconRects[index];
@@ -766,38 +765,41 @@ LRESULT StyleFrameWndEx::OnNcHitTest(CPoint point)
 
   // BORDERS
 
-  window.OffsetRect(-window.left, -window.top);
-  if (point.x <= window.left + SIZEMARGIN)
+  if (!(GetStyle() & WS_MAXIMIZE))
   {
+    window.OffsetRect(-window.left, -window.top);
+    if (point.x <= window.left + SIZEMARGIN)
+    {
+      if (point.y >= window.bottom - SIZEMARGIN)
+      {
+        return HTBOTTOMLEFT;
+      }
+      if (point.y <= window.top + SIZEMARGIN)
+      {
+        return HTTOPLEFT;
+      }
+      return HTLEFT;
+    }
+    if (point.x >= window.right - 2 * SIZEMARGIN)
+    {
+      if (point.y >= window.bottom - SIZEMARGIN)
+      {
+        return HTBOTTOMRIGHT;
+      }
+      if (point.y <= window.top + SIZEMARGIN)
+      {
+        return HTTOPRIGHT;
+      }
+      return HTRIGHT;
+    }
     if (point.y >= window.bottom - SIZEMARGIN)
     {
-      return HTBOTTOMLEFT;
+      return HTBOTTOM;
     }
     if (point.y <= window.top + SIZEMARGIN)
     {
-      return HTTOPLEFT;
+      return HTTOP;
     }
-    return HTLEFT;
-  }
-  if (point.x >= window.right - 2 * SIZEMARGIN)
-  {
-    if (point.y >= window.bottom - SIZEMARGIN)
-    {
-      return HTBOTTOMRIGHT;
-    }
-    if (point.y <= window.top + SIZEMARGIN)
-    {
-      return HTTOPRIGHT;
-    }
-    return HTRIGHT;
-  }
-  if (point.y >= window.bottom - SIZEMARGIN)
-  {
-    return HTBOTTOM;
-  }
-  if (point.y <= window.top + SIZEMARGIN)
-  {
-    return HTTOP;
   }
   if (m_captionRect.PtInRect(point))
   {
@@ -841,13 +843,16 @@ void StyleFrameWndEx::ReDrawButton(LRESULT type)
 
 void StyleFrameWndEx::DrawButton(CDC* pDC, CRect rect, LRESULT type)
 {
-  pDC->FillSolidRect(rect, ClrWindowHeader);
+  pDC->FillSolidRect(rect,ThemeColor::GetColor(Colors::AccentColor1));
   if (m_curhit == type)
   {
-    pDC->FillSolidRect(rect, m_down ? ClrControlPressed : ClrControlHover);
+    pDC->FillSolidRect(rect, m_down ? ThemeColor::GetColor(Colors::ColorControlPressed) 
+                                    : ThemeColor::GetColor(Colors::ColorControlHover));
   }
   CPen pen;
-  pen.CreatePen(PS_SOLID, 1, m_curhit == type ? m_down ? ClrControlTextPressed : ClrControlTextHover : ClrWindowHeaderIcon);
+  pen.CreatePen(PS_SOLID, 1, m_curhit == type ? m_down ? ThemeColor::GetColor(Colors::ColorControlTextPressed) 
+                                                       : ThemeColor::GetColor(Colors::ColorControlTextHover) 
+                                                       : ColorWindowHeaderIcon);
   HGDIOBJ orgpen = pDC->SelectObject(pen);
 
   switch (type) 

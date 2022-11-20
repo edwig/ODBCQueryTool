@@ -33,6 +33,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+using namespace ThemeColor;
+
 #define TIMER_UPDATE      100               // Update the scrollbars after this amount of milliseconds
 #define SF_LIMITERMOVE	  (WM_USER+100)     // User message to move the scrollbars, limiter and control
 
@@ -175,7 +177,7 @@ HookWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp)
       rcVert.top    = border;
       rcVert.bottom = nBottom - border + 1 - bias;
       rcHorz.left   = border;
-      rcHorz.right  = nRight  - border;
+      rcHorz.right  = nRight  - border + 1;
       rcHorz.top    = nBottom + bias;
       rcHorz.bottom = nBottom + nWid + bias;
     }
@@ -224,6 +226,15 @@ SkinWndScroll(CWnd* p_wnd,int p_bordersize /*=0*/,int p_clientBias /*=0*/)
   // Re-Apply the original owner
   p_wnd->SetOwner(owner);
 
+  if(owner != nullptr)
+  {
+    DWORD dwExStyle = owner->GetExStyle();
+    if((dwExStyle & WS_EX_CONTROLPARENT) != 0)
+    {
+      frame->ModifyStyleEx(0,WS_EX_CONTROLPARENT);
+      frame->m_wndLimit.ModifyStyleEx(0,WS_EX_CONTROLPARENT);
+    }
+  }
   return frame;
 }
 
@@ -633,14 +644,14 @@ SkinScrollWnd::OnNcPaint()
     readonly = (control->GetStyle() & ES_READONLY) > 0 || !control->IsWindowEnabled();
     if(readonly)
     {
-      color = ClrFrameBkGnd;
+      color = ThemeColor::GetColor(Colors::ColorWindowFrame);
     }
   }
 
   StyleEdit* edit = reinterpret_cast<StyleEdit*>(control);
   if(edit && edit->GetIsComboBox())
   {
-    color = readonly ? m_borderColor : Assistant0;
+    color = readonly ? m_borderColor : ThemeColor::GetColor(Colors::ColorCtrlBackground); // Assistant0
   }
 
   if(dc)
@@ -813,7 +824,7 @@ SkinScrollWnd::DrawFrame()
     return;
   }
 
-  COLORREF color = ThemeColor::_Color2;
+  COLORREF color = ThemeColor::GetColor(Colors::AccentColor2);
   if (m_wndLimit.m_hWnd)
   {
     CWnd* control = m_wndLimit.GetWindow(GW_CHILD);
@@ -834,7 +845,7 @@ SkinScrollWnd::DrawFrame()
     }
     if(control == GetFocus())
     {
-      color = ThemeColor::_Color1;
+      color = ThemeColor::GetColor(Colors::AccentColor1);
     }
   }
   DrawFrame(color);

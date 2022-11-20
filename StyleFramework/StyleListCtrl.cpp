@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////
 //
 // File: StyleListCtrl.cpp
-// Function: Styling frame for CListCtrl object
+// Function: Styling frame for CMFCListCtrl object
 //
 //   _____ _         _ _             ______                                           _    
 //  / ____| |       | (_)           |  ____|                                         | |   
@@ -27,6 +27,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+using namespace ThemeColor;
+
 /////////////////////////////////////////////////////////////////////////////
 // StyleListCtrl
 
@@ -40,7 +42,7 @@ StyleListCtrl::~StyleListCtrl()
   CWnd::OnNcDestroy();
 }
 
-BEGIN_MESSAGE_MAP(StyleListCtrl,CListCtrl)
+BEGIN_MESSAGE_MAP(StyleListCtrl,CMFCListCtrl)
   ON_WM_CREATE()
   ON_WM_PAINT()
   ON_WM_SIZE()
@@ -50,6 +52,8 @@ END_MESSAGE_MAP()
 void
 StyleListCtrl::PreSubclassWindow()
 {
+  ScaleControl(this);
+
   if(m_directInit)
   {
     InitSkin();
@@ -137,17 +141,37 @@ StyleListCtrl::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 			return 1;
 		}
 	}
-	return CListCtrl::WindowProc(message, wParam, lParam);
+	return CMFCListCtrl::WindowProc(message, wParam, lParam);
 }
 
 void
 StyleListCtrl::DrawFrame()
 {
-  COLORREF color = (this == GetFocus()) ? ThemeColor::_Color1 : ThemeColor::_Color2;
+  COLORREF color = (this == GetFocus()) ? ThemeColor::GetColor(Colors::AccentColor1) : ThemeColor::GetColor(Colors::AccentColor2);
   SkinScrollWnd* skin = (SkinScrollWnd*)GetWindowLongPtr(m_hWnd,GWLP_USERDATA);
   if(skin)
   {
     skin->DrawFrame(color);
+  }
+}
+
+void
+StyleListCtrl::CheckColors()
+{
+  int background = ThemeColor::GetColor(Colors::ColorCtrlBackground);
+  int textcolor  = ThemeColor::GetColor(Colors::ColorEditText);
+
+  if(GetBkColor() != background)
+  {
+    SetBkColor(background);
+  }
+  if(GetTextBkColor() != background)
+  {
+    SetTextBkColor(background);
+  }
+  if(GetTextColor() != textcolor)
+  {
+    SetTextColor(textcolor);
   }
 }
 
@@ -157,7 +181,8 @@ StyleListCtrl::OnPaint()
   if(!m_inPaint)
   {
     m_inPaint = true;
-    CListCtrl::OnPaint();
+    CheckColors();
+    CMFCListCtrl::OnPaint();
     DrawFrame();
     m_inPaint = false;
   }
@@ -166,7 +191,7 @@ StyleListCtrl::OnPaint()
 void 
 StyleListCtrl::OnSize(UINT nType,int cx,int cy)
 {
-  CListCtrl::OnSize(nType,cx,cy);
+  CMFCListCtrl::OnSize(nType,cx,cy);
   DrawFrame();
 }
 
@@ -182,7 +207,7 @@ StyleListCtrl::OnShowWindow(BOOL bShow, UINT nStatus)
   }
   else
   {
-    CListCtrl::OnShowWindow(bShow, nStatus);
+    CMFCListCtrl::OnShowWindow(bShow, nStatus);
   }
 }
 

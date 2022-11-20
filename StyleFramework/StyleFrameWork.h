@@ -20,6 +20,37 @@
 
 #define SFX_VERSION "1.0.1"       // Current SFX version number
 
+class StylingFramework
+{
+public:
+  StylingFramework();
+
+  // Set sizing in percentage (96 DPI = 100 %)
+  bool SetSizeFactorX(int p_factor);
+  bool SetSizeFactorY(int p_factor);
+  // Getting the sizing factor
+  int  GetSizeFactorX();
+  int  GetSizeFactorY();
+
+private:
+  // Pre-calculate the DPI scaling factor
+  void SFXCalculateDPI();
+
+  StylingFramework* m_instance { nullptr };
+  int m_factor_x { 100 };
+  int m_factor_y { 100 };
+};
+
+
+// Setting the size factor
+// To be called in your main program or InitInstance **BEFORE** you create any dialog or window
+bool SetSFXSizeFactor(int p_factorX,int p_factorY);
+int  GetSFXSizeFactor();
+
+// General resize a windows rectangle
+void SFXResizeByFactor(CRect& p_rect);
+void SFXResizeByFactor(int& p_x,int& p_y,int& p_w,int& p_h);
+
 // General headers
 #include "StyleColors.h"
 #include "StyleFonts.h"
@@ -45,13 +76,16 @@
 #include "StyleComboBox.h"        // CComboBox        -> StyleComboBox
 #include "StyleEdit.h"            // CEdit            -> StyleEdit
 #include "StyleGridCtrl.h"        // CGridCtrl        -> StyleGridCtrl
+#include "StyleGroupBox.h"        // CButton          -> StyleGroupBox
 #include "StyleHyperlink.h"       // CLinkCtrl        -> StyleHyperlink
 #include "StyleListBox.h"         // CListBox         -> StyleListBox
 #include "StyleListCtrl.h"        // CListCtrl        -> StyleListCtrl
 #include "StyleProgressCtrl.h"    // CProgressCtrl    -> StyleProgressCtrl
 #include "StyleStatic.h"          // CStatic          -> StyleStatic
+#include "StyleStaticToast.h"     // ----             -> For StyleToast
 #include "StyleSpinButtonCtrl.h"  // CSpinButtonCtrl  -> StyleSpinButtonCtrl
 #include "StyleTabCtrl.h"         // CTabCtrl         -> StyleTabCtrl
+#include "StyleToolBar.h"         // CMFCToolBar      -> StyleToolBar
 #include "StyleTreeCtrl.h"        // CTreeCtrl        -> StyleTreeCtrl
 
 // Selecting the right library to link with automatically
@@ -68,7 +102,7 @@
 #define SFX_CONFIGURATION "R"
 #endif 
 
-#ifndef SQL_COMPONENTS_NOAUTOLINK
+#ifndef STYLEFRAMEWORK_NOAUTOLINK
 #pragma comment(lib,"StyleFramework_"                        SFX_PLATFORM SFX_CONFIGURATION ".lib")
 #pragma message("Automatically linking with StyleFramework_" SFX_PLATFORM SFX_CONFIGURATION ".lib")
 #endif 

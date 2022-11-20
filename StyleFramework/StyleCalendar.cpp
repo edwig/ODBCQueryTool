@@ -27,6 +27,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+using namespace ThemeColor;
+
 StyleCalendar::StyleCalendar(CWnd* p_parent,CString p_select,int top,int left)
               :StyleDialog(IDD_CALENDAR,p_parent)
               ,m_select(p_select)
@@ -62,8 +64,8 @@ StyleCalendar::OnInitDialog()
   {
     m_control.SetFont(m_font);
   }
-  m_control.SetColor(MCSC_MONTHBK,ThemeColor::_Color1);
-  m_control.SetColor(MCSC_TEXT,   ThemeColor::_Color1);
+  m_control.SetColor(MCSC_MONTHBK,ThemeColor::GetColor(Colors::AccentColor1));
+  m_control.SetColor(MCSC_TEXT,   ThemeColor::GetColor(Colors::AccentColor1));
 
   // Find the size and position of the window
   CRect rect;

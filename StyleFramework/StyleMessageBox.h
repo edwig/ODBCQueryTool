@@ -17,10 +17,10 @@
 // For license: See the file "LICENSE.txt" in the root folder
 //
 #pragma once
-#include "resource.h"
 #include "StyleDialogCA.h"
-#include "StyleCheckbox.h"
 #include "StyleButton.h"
+#include "StyleCheckbox.h"
+#include "resource.h"
 
 // Windows message to press the "Do not show again" checkbox
 #define ID_SUPPRESS (WM_USER + 1959)
@@ -31,7 +31,7 @@
 
 // OUTSIDE WORLD INTERFACE
 
-INT_PTR StyleMessageBox(CWnd* p_parent,LPCSTR p_message,LPCSTR p_title,int    p_styles = MB_OK,bool* p_doNotShowAgain = nullptr);
+INT_PTR StyleMessageBox(CWnd* p_parent,LPCSTR p_message,LPCSTR p_title,long   p_styles = MB_OK,bool* p_doNotShowAgain = nullptr);
 INT_PTR StyleMessageBox(CWnd* p_parent,LPCSTR p_message,LPCSTR p_title,LPCSTR p_labels       , bool* p_doNotShowAgain = nullptr,bool p_foreground = false);
 
 
@@ -85,6 +85,8 @@ protected:
   afx_msg void OnPaint();
   // Clicked the 'Do not show again' checkbox
   afx_msg void OnDoNotShowAgain();
+  // Default ESC-key cancel
+  afx_msg void OnCancel();
 
 private:
   // METHODEN
@@ -103,11 +105,13 @@ private:
   // Reset the buttons
   void ResetButtons();
   // Split labels strings and styles
-  void SpliLabelTextAndStyles(CString& p_labels);
+  void SplitLabelTextAndStyles(CString& p_labels);
   // Suppress this message, always ID_OK
   void SuppressFromNowOn();
   // Flash our application and message box
   void FlashMessageBox();
+  // Go to the Next/Previous control on the message box
+  void GotoControl(int p_direction);
 
   // DATA
   CFont*        m_font;                       // Font we use for the message

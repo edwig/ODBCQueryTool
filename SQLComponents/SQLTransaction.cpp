@@ -48,6 +48,7 @@ SQLTransaction::SQLTransaction(SQLDatabase* p_database
                :m_database  (p_database)
                ,m_lock      (p_database,INFINITE)
                ,m_active    (false)
+               ,m_hdbc      (NULL)
 {
   // If asked for, start it right away
   if(p_startImmediate)

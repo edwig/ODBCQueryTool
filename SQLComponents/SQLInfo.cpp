@@ -581,7 +581,7 @@ SQLInfo::ReadingDataTypes()
   }
   SQLHSTMT handle;
   SQLLEN   dataLen;
-  char     buffer[5120];
+  char     buffer[5120] = { 0 };
 
   m_retCode = SqlAllocHandle(SQL_HANDLE_STMT,m_hdbc,&handle);
   if (m_retCode == SQL_SUCCESS )
@@ -634,16 +634,19 @@ SQLInfo::ReadingDataTypes()
           if(dataLen != 4) ti->m_precision = 0;
         }
         // LITERAL PREFIX FOR ODBC DRIVER, like {ts' for timestamp
+        buffer[0] = 0;
         if(::SQLGetData(handle,4,SQL_C_CHAR,buffer,5120,&dataLen) == SQL_SUCCESS)
         {
           if(dataLen > 0) ti->m_literal_prefix = buffer;
         }
         // LITERAL SUFFIX FOR ODBC DRIVER, like '} for timestamp
+        buffer[0] = 0;
         if(::SQLGetData(handle,5,SQL_C_CHAR,buffer,5120,&dataLen) == SQL_SUCCESS)
         {
           if(dataLen > 0) ti->m_literal_suffix = buffer;
         }
         // HOW TO CREATE PARAMETERS, like "(precision,scale)"
+        buffer[0] = 0;
         if(::SQLGetData(handle,6,SQL_C_CHAR,buffer,5120,&dataLen) == SQL_SUCCESS)
         {
           if(dataLen > 0) ti->m_create_params = buffer;
@@ -687,6 +690,7 @@ SQLInfo::ReadingDataTypes()
         }
         // Local type name for display on UI's (not in DDL!)
         ti->m_local_type_name = buffer;
+        buffer[0] = 0;
         if(::SQLGetData(handle,13,SQL_C_CHAR,buffer,5120,&dataLen) == SQL_SUCCESS)
         {
           if(dataLen > 0) ti->m_local_type_name = buffer;
@@ -1397,21 +1401,21 @@ SQLInfo::MakeInfoTableTable(MTableMap& p_tables
                            ,XString    p_tablename
                            ,XString    p_type)
 {
-  SQLCHAR      szCatalogName [SQL_MAX_BUFFER];
+  SQLCHAR      szCatalogName [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbCatalogName = 0;
-  SQLCHAR      szSchemaName  [SQL_MAX_BUFFER];
+  SQLCHAR      szSchemaName  [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbSchemaName  = 0;
-  SQLCHAR      szTableName   [SQL_MAX_BUFFER];
+  SQLCHAR      szTableName   [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbTableName   = 0;
-  SQLCHAR      szTableType   [SQL_MAX_BUFFER];
+  SQLCHAR      szTableType   [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbTableType   = 0;
-  SQLCHAR      szRemarks     [2 * SQL_MAX_BUFFER];
+  SQLCHAR      szRemarks     [2 * SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbRemarks     = 0;
   // Where to search
-  unsigned char search_catalog[SQL_MAX_BUFFER];
-  unsigned char search_schema [SQL_MAX_BUFFER];
-  unsigned char search_table  [SQL_MAX_BUFFER];
-  unsigned char search_type   [SQL_MAX_BUFFER];
+  unsigned char search_catalog[SQL_MAX_BUFFER] = { 0 };
+  unsigned char search_schema [SQL_MAX_BUFFER] = { 0 };
+  unsigned char search_table  [SQL_MAX_BUFFER] = { 0 };
+  unsigned char search_type   [SQL_MAX_BUFFER] = { 0 };
 
   // Check whether we can do this
   if(!SupportedFunction(SQL_API_SQLTABLES))
@@ -1543,21 +1547,21 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns
                              ,XString     p_tablename
                              ,XString     p_columnname /*=""*/)
 {
-  SQLCHAR      szCatalogName [SQL_MAX_BUFFER+1];
+  SQLCHAR      szCatalogName [SQL_MAX_BUFFER+1] = { 0 };
   SQLLEN       cbCatalogName = 0;
-  SQLCHAR      szSchemaName  [SQL_MAX_BUFFER+1];
+  SQLCHAR      szSchemaName  [SQL_MAX_BUFFER+1] = { 0 };
   SQLLEN       cbSchemaName  = 0;
-  SQLCHAR      szTableName   [SQL_MAX_BUFFER+1];
+  SQLCHAR      szTableName   [SQL_MAX_BUFFER+1] = { 0 };
   SQLLEN       cbTableName   = 0;
-  SQLCHAR      szColumnName  [SQL_MAX_BUFFER+1];
+  SQLCHAR      szColumnName  [SQL_MAX_BUFFER+1] = { 0 };
   SQLLEN       cbColumnName  = 0;
-  SQLCHAR      szTypeName    [SQL_MAX_BUFFER+1];
+  SQLCHAR      szTypeName    [SQL_MAX_BUFFER+1] = { 0 };
   SQLLEN       cbTypeName    = 0;
-  SQLCHAR      szRemarks     [2 * SQL_MAX_BUFFER + 1];
+  SQLCHAR      szRemarks     [2 * SQL_MAX_BUFFER + 1] = { 0 };
   SQLLEN       cbRemarks     = 0;
-  SQLCHAR      szDefault     [2 * SQL_MAX_BUFFER + 1];
+  SQLCHAR      szDefault     [2 * SQL_MAX_BUFFER + 1] = { 0 };
   SQLLEN       cbDefault     = 0;
-  SQLCHAR      szNullable    [SQL_MAX_BUFFER+1];
+  SQLCHAR      szNullable    [SQL_MAX_BUFFER+1] = { 0 };
   SQLLEN       cbIsNullable  = 0;
   SQLSMALLINT  DataType    = 0;
   SQLLEN       cbDataType    = 0;
@@ -1586,14 +1590,39 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns
     p_errors = "SQLColumns unsupported. Get a better ODBC driver!";
     return false;
   }
+
+  CloseStatement();
+  bool meta = GetStatement(false);
+
+  if(m_METADATA_ID_unsupported || !meta)
+  {
+    // Oops: Cannot search directly on table name!
+    switch(m_identifierCase)
+    {
+      case SQL_IC_UPPER:     p_schema.MakeUpper();   // E.g. Oracle/Firebird
+                             p_tablename.MakeUpper();
+                             p_columnname.MakeUpper();
+                             break;
+      case SQL_IC_LOWER:     p_schema.MakeLower();   // E.g. Informix/PostgreSQL
+                             p_tablename.MakeLower();
+                             p_columnname.MakeLower();
+                             break;
+      case SQL_IC_SENSITIVE: // Nothing to be done, Catalog is treated case-insensitive
+      case SQL_IC_MIXED:     // but is physically stored case-sensitive only
+                             // e.g. MS-SQLServer / MS-Access / mySQL
+      default:               if(m_METADATA_ID_unsupported && (m_METADATA_ID_errorseen == false))
+                             {
+                               m_METADATA_ID_errorseen = true;
+                             }
+                             break;
+    }
+  }
+
   //strcpy_s((char*)szCatalogName,SQL_MAX_IDENTIFIER,m_searchCatalogName.GetString());
   szCatalogName[0] = 0;
   strcpy_s((char*)szSchemaName,SQL_MAX_BUFFER,p_schema.GetString());
   strcpy_s((char*)szTableName, SQL_MAX_BUFFER,p_tablename.GetString());
   strcpy_s((char*)szColumnName,SQL_MAX_BUFFER,p_columnname.GetString());
-
-  CloseStatement();
-  bool meta = GetStatement(false);
 
   // - If the driver cannot search on this type of META-object the pointer MUST be NULL
   unsigned char* catalog = GetMetaPointer(szCatalogName,meta);
@@ -1714,17 +1743,17 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns
 bool
 SQLInfo::MakeInfoTablePrimary(MPrimaryMap& p_primaries,XString& p_errors,XString p_schema,XString p_tablename)
 {
-  SQLCHAR      szCatalogName [SQL_MAX_BUFFER];
+  SQLCHAR      szCatalogName [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbCatalogName = 0;
-  SQLCHAR      szSchemaName  [SQL_MAX_BUFFER];
+  SQLCHAR      szSchemaName  [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbSchemaName  = 0;
-  SQLCHAR      szTableName   [SQL_MAX_BUFFER];
+  SQLCHAR      szTableName   [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbTableName   = 0;
-  SQLCHAR      szColumnName  [SQL_MAX_BUFFER];
+  SQLCHAR      szColumnName  [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbColumnName  = 0;
   SWORD          KeySeq      = 0;
   SQLLEN       cbKeySeq      = 0;
-  SQLCHAR      szPkName      [SQL_MAX_BUFFER];
+  SQLCHAR      szPkName      [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbPkName      = 0;
 
   // Check whether we can do this
@@ -1810,21 +1839,21 @@ SQLInfo::MakeInfoTableForeign(MForeignMap& p_foreigns
                              ,XString      p_tablename
                              ,bool         p_referenced /* = false */)
 {
-  SQLCHAR      szPKCatalogName [SQL_MAX_BUFFER];
+  SQLCHAR      szPKCatalogName [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbPKCatalogName = 0;
-  SQLCHAR      szPKSchemaName  [SQL_MAX_BUFFER];
+  SQLCHAR      szPKSchemaName  [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbPKSchemaName  = 0;
-  SQLCHAR      szPKTableName   [SQL_MAX_BUFFER];
+  SQLCHAR      szPKTableName   [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbPKTableName   = 0;
-  SQLCHAR      szFKCatalogName [SQL_MAX_BUFFER];
+  SQLCHAR      szFKCatalogName [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbFKCatalogName = 0;
-  SQLCHAR      szFKSchemaName  [SQL_MAX_BUFFER];
+  SQLCHAR      szFKSchemaName  [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbFKSchemaName  = 0;
-  SQLCHAR      szFKTableName   [SQL_MAX_BUFFER];
+  SQLCHAR      szFKTableName   [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbFKTableName   = 0;
-  SQLCHAR      szPKColumnName  [SQL_MAX_BUFFER];
+  SQLCHAR      szPKColumnName  [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbPKColumnName  = 0;
-  SQLCHAR      szFKColumnName  [SQL_MAX_BUFFER];
+  SQLCHAR      szFKColumnName  [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbFKColumnName  = 0;
   SWORD          KeySeq        = 0;
   SQLLEN       cbKeySeq        = 0;
@@ -1834,9 +1863,9 @@ SQLInfo::MakeInfoTableForeign(MForeignMap& p_foreigns
   SQLLEN       cbDeleteRule    = 0;
   SWORD          Deferrab      = 0;
   SQLLEN       cbDeferrab      = 0;
-  SQLCHAR      szFKKeyName    [SQL_MAX_BUFFER];
+  SQLCHAR      szFKKeyName    [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbFKKeyName     = 0;
-  SQLCHAR      szPKKeyName    [SQL_MAX_BUFFER];
+  SQLCHAR      szPKKeyName    [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbPKKeyName     = 0;
 
   // Check whether we can do this
@@ -1983,7 +2012,7 @@ SQLInfo::MakeInfoTableStatistics(MIndicesMap& p_statistics
   SQLLEN       cbOrdinalPos  = 0;
   SQLCHAR      szColumnName  [SQL_MAX_BUFFER + 1] = "";
   SQLLEN       cbColumnName  = 0;
-  SQLCHAR        AscDesc     [10];
+  SQLCHAR        AscDesc     [10] = "";
   SQLLEN       cbAscDesc     = 0;
   SQLINTEGER     Cardinality = 0;
   SQLLEN       cbCardinality = 0;
@@ -2102,11 +2131,11 @@ SQLInfo::MakeInfoTableSpecials(MSpecialsMap& p_specials
                               ,XString       p_schema
                               ,XString       p_tablename)
   {
-  SQLCHAR      szCatalogName [SQL_MAX_BUFFER];
-  SQLCHAR      szSchemaName  [SQL_MAX_BUFFER];
-  SQLCHAR      szTableName   [SQL_MAX_BUFFER];
-  SQLCHAR      szColumnName  [SQL_MAX_BUFFER];
-  SQLCHAR      szTypeName    [SQL_MAX_BUFFER];
+  SQLCHAR      szCatalogName [SQL_MAX_BUFFER] = { 0 };
+  SQLCHAR      szSchemaName  [SQL_MAX_BUFFER] = { 0 };
+  SQLCHAR      szTableName   [SQL_MAX_BUFFER] = { 0 };
+  SQLCHAR      szColumnName  [SQL_MAX_BUFFER] = { 0 };
+  SQLCHAR      szTypeName    [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbColumnName  = 0;
   SQLLEN       cbTypeName    = 0;
   SWORD          Scope       = 0;
@@ -2212,19 +2241,19 @@ SQLInfo::MakeInfoTablePrivileges(MPrivilegeMap& p_privileges
                                 ,XString        p_schema
                                 ,XString        p_tablename)
 {
-  SQLCHAR      szCatalogName [SQL_MAX_BUFFER];
+  SQLCHAR      szCatalogName [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbCatalogName = 0;
-  SQLCHAR      szSchemaName  [SQL_MAX_BUFFER];
+  SQLCHAR      szSchemaName  [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbSchemaName  = 0;
-  SQLCHAR      szTableName   [SQL_MAX_BUFFER];
+  SQLCHAR      szTableName   [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbTableName   = 0;
-  SQLCHAR      szGrantor     [SQL_MAX_BUFFER];
+  SQLCHAR      szGrantor     [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbGrantor     = 0;
-  SQLCHAR      szGrantee     [SQL_MAX_BUFFER];
+  SQLCHAR      szGrantee     [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbGrantee     = 0;
-  SQLCHAR      szPrivilege   [SQL_MAX_BUFFER];
+  SQLCHAR      szPrivilege   [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbPrivilege   = 0;
-  SQLCHAR      szGrantable   [10];
+  SQLCHAR      szGrantable   [10] = { 0 };
   SQLLEN       cbGrantable   = 0;
 
   // Check whether we can do this
@@ -2320,21 +2349,21 @@ SQLInfo::MakeInfoColumnPrivileges(MPrivilegeMap&  p_privileges
                                  ,XString         p_tablename
                                  ,XString         p_columnname /*= ""*/)
 {
-  SQLCHAR      szCatalogName [SQL_MAX_BUFFER];
+  SQLCHAR      szCatalogName [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbCatalogName = 0;
-  SQLCHAR      szSchemaName  [SQL_MAX_BUFFER];
+  SQLCHAR      szSchemaName  [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbSchemaName  = 0;
-  SQLCHAR      szTableName   [SQL_MAX_BUFFER];
+  SQLCHAR      szTableName   [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbTableName   = 0;
-  SQLCHAR      szColumnName  [SQL_MAX_BUFFER];
+  SQLCHAR      szColumnName  [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbColumnName  = 0;
-  SQLCHAR      szGrantor     [SQL_MAX_BUFFER];
+  SQLCHAR      szGrantor     [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbGrantor     = 0;
-  SQLCHAR      szGrantee     [SQL_MAX_BUFFER];
+  SQLCHAR      szGrantee     [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbGrantee     = 0;
-  SQLCHAR      szPrivilege   [SQL_MAX_BUFFER];
+  SQLCHAR      szPrivilege   [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbPrivilege   = 0;
-  SQLCHAR      szGrantable   [10];
+  SQLCHAR      szGrantable   [10] = { 0 };
   SQLLEN       cbGrantable   = 0;
 
   // Check whether we can do this
@@ -2435,11 +2464,11 @@ SQLInfo::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
                               ,XString         p_schema
                               ,XString         p_procedure)
 {
-  SQLCHAR      szCatalogName     [SQL_MAX_BUFFER];
+  SQLCHAR      szCatalogName     [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbCatalogName     = 0;
-  SQLCHAR      szSchemaName      [SQL_MAX_BUFFER];
+  SQLCHAR      szSchemaName      [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbSchemaName      = 0;
-  SQLCHAR      szProcedureName   [SQL_MAX_BUFFER];
+  SQLCHAR      szProcedureName   [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbProcedureName   = 0;
   SQLSMALLINT    NumInputParams  = 0;  // Unreliable
   SQLLEN       cbNumInputParams  = 0;
@@ -2447,7 +2476,7 @@ SQLInfo::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
   SQLLEN       cbNumOutputParams = 0;
   SQLSMALLINT    NumResultSets   = 0;  // Unreliable
   SQLLEN       cbNumResultSets   = 0;
-  SQLCHAR      szRemarks         [2 * SQL_MAX_BUFFER];
+  SQLCHAR      szRemarks         [2 * SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbRemarks         = 0;
   SQLSMALLINT    ProcedureType   = 0;
   SQLLEN       cbProcedureType   = 0;
@@ -2562,19 +2591,19 @@ SQLInfo::MakeInfoPSMParameters(MParameterMap& p_parameters
                               ,XString        p_schema
                               ,XString        p_procedure)
 {
-  SQLCHAR      szCatalogName     [SQL_MAX_BUFFER];
+  SQLCHAR      szCatalogName     [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbCatalogName     = 0;
-  SQLCHAR      szSchemaName      [SQL_MAX_BUFFER];
+  SQLCHAR      szSchemaName      [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbSchemaName      = 0;
-  SQLCHAR      szProcedureName   [SQL_MAX_BUFFER];
+  SQLCHAR      szProcedureName   [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbProcedureName   = 0;
-  SQLCHAR      szColumnName      [SQL_MAX_BUFFER];
+  SQLCHAR      szColumnName      [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbColumnName      = 0;
   SQLSMALLINT    ColumnType      = 0;
   SQLLEN       cbColumnType      = 0;
   SQLSMALLINT    DataType        = 0;
   SQLLEN       cbDataType        = 0;
-  SQLCHAR      szTypeName        [SQL_MAX_BUFFER];
+  SQLCHAR      szTypeName        [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbTypeName        = 0;
   SQLINTEGER     ColumnSize      = 0;
   SQLINTEGER     BufferSize      = 0;
@@ -2586,13 +2615,13 @@ SQLInfo::MakeInfoPSMParameters(MParameterMap& p_parameters
   SQLLEN       cbRadix           = 0;
   SQLSMALLINT    Nullable        = 0;
   SQLLEN       cbNullable        = 0;
-  SQLCHAR      szRemarks         [2 * SQL_MAX_BUFFER];
+  SQLCHAR      szRemarks         [2 * SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbRemarks         = 0;
-  SQLCHAR      szDefaultValue    [2 * SQL_MAX_BUFFER];
+  SQLCHAR      szDefaultValue    [2 * SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbDefaultValue    = 0;
   SQLINTEGER     OrdinalPos      = 0;
   SQLLEN       cbOrdinalPos      = 0;
-  SQLCHAR      szIsNullable      [10];
+  SQLCHAR      szIsNullable      [10] = { 0 };
   SQLLEN       cbIsNullable      = 0;
   SQLSMALLINT    DataType3       = 0;
   SQLLEN       cbDataType3       = 0;
@@ -2716,9 +2745,6 @@ SQLInfo::NativeSQL(HDBC hdbc,XString& sqlCommand)
     InfoMessageBox("SQLNativeSQL unsupported. Get a better ODBC driver!",MB_OK|MB_ICONEXCLAMATION);
     return "";
   }
-  SQLINTEGER retLen = 0;
-  SQLCHAR buffer[30000];
-
   // In case we need to get the HDBC handle from the database object
   if(!hdbc && m_database)
   {
@@ -2729,36 +2755,41 @@ SQLInfo::NativeSQL(HDBC hdbc,XString& sqlCommand)
     throw StdException("NativeSQL called without an opened database!");
   }
 
+  SQLINTEGER retLen = 0;
+  SQLINTEGER buflen = sqlCommand.GetLength() * 2;
+  SQLCHAR*   buffer = new SQLCHAR[(size_t)buflen + 1];
+
   // Perform the conversion call
   m_retCode = SqlNativeSql(hdbc
                          ,(SQLCHAR *)sqlCommand.GetString()
                          ,sqlCommand.GetLength()
                          ,buffer
-                         ,(30000-1)
+                         ,buflen
                          ,&retLen);
   if(m_retCode == SQL_SUCCESS)
   {
-    if(retLen >= 0 && retLen < 30000)
+    if(retLen >= 0 && retLen <= buflen)
     {
       buffer[retLen] = 0;
-      return XString((char *)buffer);
+      XString result((char*) buffer);
+      delete[] buffer;
+      return result;
     }
     else
     {
       // Overflow error
       XString error = "Buffer overflow (30.000 chars) on SQLNativeSQL";
       InfoMessageBox(error,MB_OK|MB_ICONERROR);
+      delete[] buffer;
       return error;
     }
   }
-  else
-  {
-    // SQLNativeSQL returned an error
-    XString errorText = "Error while retrieving SQLNativeSQL:\n";
-    errorText += m_database->GetErrorString(NULL);
-    InfoMessageBox(errorText,MB_OK|MB_ICONERROR);
-    return errorText;
-  }
+  // SQLNativeSQL returned an error
+  XString errorText = "Error while retrieving SQLNativeSQL:\n";
+  errorText += m_database->GetErrorString(NULL);
+  InfoMessageBox(errorText,MB_OK|MB_ICONERROR);
+  delete[] buffer;
+  return errorText;
 }
 
 // Meta pointer to SQLGet<META> functions
@@ -2779,13 +2810,13 @@ bool
 SQLInfo::MakeInfoMetaTypes(MMetaMap& p_objects,XString& p_errors,int p_type)
 {
   XString      sitem;
-  SQLCHAR      szCatalogName [SQL_MAX_BUFFER];
+  SQLCHAR      szCatalogName [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbCatalogName = 0;
-  SQLCHAR      szSchemaName  [SQL_MAX_BUFFER];
+  SQLCHAR      szSchemaName  [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbSchemaName  = 0;
-  SQLCHAR      szTableType   [SQL_MAX_BUFFER];
+  SQLCHAR      szTableType   [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbTableType   = 0;
-  SQLCHAR      szRemarks     [SQL_MAX_BUFFER];
+  SQLCHAR      szRemarks     [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbRemarks     = 0;
   // Where to search
   unsigned char search_catalog[META_SEARCH_LEN] = "";
@@ -2878,6 +2909,7 @@ SQLInfo::MakeInfoMetaTypes(MMetaMap& p_objects,XString& p_errors,int p_type)
           case META_SCHEMAS:  m_canFindSchemas  = false; 
                               break;
           case META_TABLES:   m_canFindTypes    = false;
+                              break;
           default:            break;
         }
         break;
@@ -2899,6 +2931,7 @@ SQLInfo::MakeInfoMetaTypes(MMetaMap& p_objects,XString& p_errors,int p_type)
         case META_SCHEMAS:  m_canFindSchemas  = false; 
                             break;
         case META_TABLES:   m_canFindTypes    = false;
+                            break;
         default:            break;
       }
     }

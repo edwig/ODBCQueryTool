@@ -145,7 +145,7 @@ public:
   // SQL
 
   // Connects to a default schema in the database/instance
-  XString GetSQLDefaultSchema(XString p_schema) const;
+  XString GetSQLDefaultSchema(XString p_user,XString p_schema) const;
 
   // Gets the construction for inline generating a key within an INSERT statement
   XString GetSQLNewSerial(XString p_table, XString p_sequence) const;

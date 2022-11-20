@@ -35,8 +35,9 @@ static char THIS_FILE[] = __FILE__;
 namespace SQLComponents
 {
 
-DDLCreateTable::DDLCreateTable(SQLInfoDB* p_info)
+DDLCreateTable::DDLCreateTable(SQLInfoDB* p_info,SQLInfoDB* p_target /*=nullptr*/)
                :m_info(p_info)
+               ,m_target(p_target)
 {
 }
 
@@ -63,8 +64,8 @@ DDLCreateTable::GetTableStatements(XString p_tableName)
   GetTableInfo();
   GetColumnInfo();
   GetOptionsInfo();
-  GetIndexInfo();
   GetPrimaryKeyInfo();
+  GetIndexInfo();
   GetForeignKeyInfo();
   GetTriggerInfo();
   GetSequenceInfo();
@@ -90,8 +91,8 @@ DDLCreateTable::GetTableStatements(XString p_tableName
   GetTableInfo();
   if(p_columns)   GetColumnInfo();      else m_didColumns    = true;
   if(p_options)   GetOptionsInfo();     else m_didOptions    = true;
-  if(p_indices)   GetIndexInfo();       else m_didIndices    = true;
   if(p_primaries) GetPrimaryKeyInfo();  else m_didPrimary    = true;
+  if(p_indices)   GetIndexInfo();       else m_didIndices    = true;
   if(p_foreigns)  GetForeignKeyInfo();  else m_didForeigns   = true;
   if(p_triggers)  GetTriggerInfo();     else m_didTriggers   = true;
   if(p_sequences) GetSequenceInfo();    else m_didSequence   = true;
@@ -192,7 +193,7 @@ DDLCreateTable::SetTableInfoPrivilege(MPrivilegeMap& p_info)
 void
 DDLCreateTable::SetInfoDB(SQLInfoDB* p_info)
 {
-  if (p_info)
+  if(p_info)
   {
     m_info = p_info;
     m_statements.clear();
@@ -315,7 +316,7 @@ DDLCreateTable::GetColumnInfo()
   }
 
   // Calculate max length of a column
-  int length = CalculateColumnLength(m_columns);
+  int spacing = CalculateColumnLength(m_columns);
 
   // Add columns
   m_createDDL += "(\n";
@@ -325,10 +326,19 @@ DDLCreateTable::GetColumnInfo()
     XString line("   ");
     line += first ? " " : ",";
 
-    // Column name and type
-    line += FormatColumnName(column.m_column,length);
+    // Column name and spacing
+    line += FormatColumnName(column.m_column,spacing);
     line += " ";
-    line += column.m_typename;
+
+    // Getting the datatype
+    if(m_target)
+    {
+      line += m_target->GetKEYWORDDataType(&column);
+    }
+    else
+    {
+      line += column.m_typename;
+    }
 
     m_info->GetInfo();
     TypeInfo* type = m_info->GetTypeInfo(column.m_datatype,column.m_typename);
@@ -352,7 +362,7 @@ DDLCreateTable::GetColumnInfo()
       }
       else
       {
-      line += column.m_default;
+        line += column.m_default;
       }
     }
     // optional NOT NULL status
@@ -379,9 +389,9 @@ DDLCreateTable::GetOptionsInfo()
   if(m_didOptions == false)
   {
     DatabaseType type = m_info->GetRDBMSDatabaseType();
-    if(type == RDBMS_ORACLE ||
+    if(type == RDBMS_ORACLE     ||
        type == RDBMS_POSTGRESQL ||
-       type == RDBMS_MARIADB ||
+       type == RDBMS_MARIADB    ||
        type == RDBMS_MYSQL)
     {
       XString seperator;
@@ -483,8 +493,12 @@ DDLCreateTable::GetIndexInfo()
     {
       if(!theIndex.empty())
       {
-        line = m_info->GetCATALOGIndexCreate(theIndex);
-        StashTheLine(line);
+        // But only if it's not the already generated primary key
+        if(m_primaries.empty() || m_primaries[0].m_constraintName.CompareNoCase(theIndex[0].m_indexName))
+        {
+          line = m_info->GetCATALOGIndexCreate(theIndex);
+          StashTheLine(line);
+        }
       }
       // Create new index statement
       theIndex.clear();
@@ -495,8 +509,11 @@ DDLCreateTable::GetIndexInfo()
   }
   if(!theIndex.empty())
   {
-    line = m_info->GetCATALOGIndexCreate(theIndex);
-    StashTheLine(line);
+    if(m_primaries.empty() || m_primaries[0].m_constraintName.CompareNoCase(theIndex[0].m_indexName))
+    {
+      line = m_info->GetCATALOGIndexCreate(theIndex);
+      StashTheLine(line);
+    }
   }
 }
 
@@ -617,7 +634,11 @@ DDLCreateTable::GetSequenceInfo()
   // Print all found sequences
   for(auto& seq : m_sequences)
   {
-    line = m_info->GetCATALOGSequenceCreate(seq);
+    line = m_target ? m_target->GetCATALOGSequenceDrop(seq.m_schemaName,seq.m_sequenceName)
+                    :   m_info->GetCATALOGSequenceDrop(seq.m_schemaName,seq.m_sequenceName);
+    StashTheLine(line);
+    line = m_target ? m_target->GetCATALOGSequenceCreate(seq)
+                    :   m_info->GetCATALOGSequenceCreate(seq);
     StashTheLine(line);
   }
 }
@@ -647,7 +668,8 @@ DDLCreateTable::GetAccessInfo(bool p_strict /*=false*/)
   {
     if(!strict || IsStrictODBCPrivilege(priv.m_privilege))
     {
-      line = m_info->GetCatalogGrantPrivilege(priv.m_schemaName,priv.m_tableName,priv.m_privilege,priv.m_grantee,priv.m_grantable);
+      line = m_target ? m_target->GetCatalogGrantPrivilege(priv.m_schemaName,priv.m_tableName,priv.m_privilege,priv.m_grantee,priv.m_grantable)
+                      :   m_info->GetCatalogGrantPrivilege(priv.m_schemaName,priv.m_tableName,priv.m_privilege,priv.m_grantee,priv.m_grantable);
       if(!line.IsEmpty())
       {
         StashTheLine(line);
@@ -706,9 +728,15 @@ DDLCreateTable::ReplaceLengthPrecScale(XString p_template
 
   // Format as strings
   XString length,precision,scale;
+  if(p_length > 0)
+  {
   length.Format("%d",p_length);
+  }
+  if(p_precision > 0 || p_scale > 0)
+  {
   precision.Format("%d",p_precision);
   scale.Format("%d",p_scale);
+  }
 
   // Replace as strings
   p_template.Replace("max length",length);    // ORACLE DOES THIS!!
@@ -717,11 +745,15 @@ DDLCreateTable::ReplaceLengthPrecScale(XString p_template
   p_template.Replace("scale",     scale);
 
   // Make sure we have parenthesis
-  if(!p_template.IsEmpty() && p_template.Left(1) != "(")
+  if(!p_template.IsEmpty() && p_template.Left(1) != "(" && p_template != ",")
   {
     p_template = "(" + p_template + ")";
   }
+  if(p_template != ",")
+  {
   return p_template;
+}
+  return "";
 }
 
 XString
@@ -738,13 +770,18 @@ DDLCreateTable::FormatColumnName(XString p_column,int p_length)
   }
 
   // Circumvent locally reserved words
-  if(!m_info->IsCorrectName(p_column))
+  if(m_target->GetRDBMSDatabaseType() == DatabaseType::RDBMS_SQLSERVER)
+  {
+    p_column = "[" + p_column + "]";
+    p_length += 2;
+  }
+  else if(!m_info->IsCorrectName(p_column))
   {
     XString quote = m_info->GetKEYWORDReservedWordQuote();
     p_column = quote + p_column + quote;
   }
 
-  // Pretty-print adjust datatypes
+  // Pretty-print adjust datatype
   while (p_column.GetLength() < p_length)
   {
     p_column += " ";

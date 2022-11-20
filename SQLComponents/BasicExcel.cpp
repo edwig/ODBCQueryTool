@@ -2505,12 +2505,12 @@ ULONG Record::Read(const char* data)
   // Check if next record is a continue record
   continueIndices_.clear();
   short code;
-  LittleEndian::Read(data, code, dataSize_+4, 2);
+  LittleEndian::Read(data, code, (size_t)dataSize_+4, 2);
   while(code == CODE::CONTINUE) {
     continueIndices_.push_back(dataSize_);
 
     ULONG size;
-    LittleEndian::Read(data, size, recordSize_+2, 2);
+    LittleEndian::Read(data, size, (size_t)recordSize_+2, 2);
     data_.insert(data_.end(), data+recordSize_+4, data+recordSize_+4+size);
     dataSize_ += size;
     recordSize_ += 4 + size;
@@ -2533,7 +2533,7 @@ ULONG Record::Write(char* data)
       LittleEndian::Write(data, 8224, npos, 2);	// Write size of record.
       npos += 2;
       size -= 8224;
-      copy(data_.begin()+i*8224, data_.begin()+(i+1)*8224, data+npos);
+      copy(data_.begin() + (size_t)i*8224, data_.begin()+((size_t)i+1)*8224, data+npos);
       npos += 8224;
 
       if (size != 0) {
@@ -2545,7 +2545,7 @@ ULONG Record::Write(char* data)
 
     LittleEndian::Write(data, size, npos, 2);	// Write size of record.
     npos += 2;
-    copy(data_.begin()+i*8224, data_.begin()+i*8224+size, data+npos);
+    copy(data_.begin()+(size_t)i*8224, data_.begin()+(size_t)i*8224+size, data+npos);
     npos += size;
   } else {
     size_t maxContinue = continueIndices_.size();
@@ -2713,13 +2713,13 @@ ULONG SmallString::Read(const char* data)
 
   if (!(unicode_ & 0x01)) { //MF compressed format of UTF16LE string?
     // ANSI string
-    name_ = new char[stringSize+1];
+    name_ = new char[(size_t)stringSize+1];
     LittleEndian::ReadString(data, name_, 2, stringSize);
     name_[stringSize] = 0;
     bytesRead += stringSize;
   } else {
     // UNICODE
-    wname_ = new wchar_t[stringSize+1];
+    wname_ = new wchar_t[(size_t)stringSize+1];
     LittleEndian::ReadString(data, wname_, 2, stringSize);
     wname_[stringSize] = 0;
     bytesRead += stringSize*2;
@@ -3417,7 +3417,7 @@ ULONG Workbook::SharedStringTable::Read(const char* data)
       char unicode;
       ULONG stringSize;
       LittleEndian::Read(data_, stringSize, npos, 2);
-      LittleEndian::Read(data_, unicode, npos+2, 1);
+      LittleEndian::Read(data_, unicode, (size_t)npos+2, 1);
       int multiplier = (unicode & 1) ? 2 : 1;
 
       if (c >= maxContinue || npos+stringSize*multiplier+3 <= continueIndices_[c]) 
@@ -3619,8 +3619,8 @@ ULONG Workbook::ExtSST::Read(const char* data)
 
   for(ULONG i=0, npos=2; i<maxPortions; ++i) {
     LittleEndian::Read(data_, streamPos_[i], npos, 4);
-    LittleEndian::Read(data_, firstStringPos_[i], npos+4, 2);
-    LittleEndian::Read(data_, unused_[i], npos+6, 2);
+    LittleEndian::Read(data_, firstStringPos_[i],(size_t) npos+4, 2);
+    LittleEndian::Read(data_, unused_[i], (size_t)npos+6, 2);
     npos += 8;
   }
   return RecordSize();
@@ -3634,8 +3634,8 @@ ULONG Workbook::ExtSST::Write(char* data)
   ULONG maxPortions = (ULONG) streamPos_.size();
   for(ULONG i=0, npos=2; i<maxPortions; ++i) {
     LittleEndian::Write(data_, streamPos_[i], npos, 4);
-    LittleEndian::Write(data_, firstStringPos_[i], npos+4, 2);
-    LittleEndian::Write(data_, unused_[i], npos+6, 2);
+    LittleEndian::Write(data_, firstStringPos_[i], (size_t)npos+4, 2);
+    LittleEndian::Write(data_, unused_[i],(size_t) npos+6, 2);
     npos += 8;
   }
   return Record::Write(data);
@@ -3782,7 +3782,7 @@ ULONG Worksheet::Index::Read(const char* data)
   LittleEndian::Read(data_, firstUsedRowIndex_, 4, 4);
   LittleEndian::Read(data_, firstUnusedRowIndex_, 8, 4);
   LittleEndian::Read(data_, unused2_, 12, 4);
-  size_t nm = int(firstUnusedRowIndex_ - firstUsedRowIndex_ - 1) / 32 + 1;
+  size_t nm = (size_t)(firstUnusedRowIndex_ - firstUsedRowIndex_ - 1) / 32 + 1;
   DBCellPos_.clear();
   DBCellPos_.resize(nm);
   if (dataSize_>16)
@@ -3992,7 +3992,7 @@ ULONG Worksheet::CellTable::RowBlock::CellBlock::MulBlank::Read(const char* data
   LittleEndian::Read(data_, rowIndex_, 0, 2);
   LittleEndian::Read(data_, firstColIndex_, 2, 2);
   LittleEndian::Read(data_, lastColIndex_, dataSize_-2, 2);
-  size_t nc = lastColIndex_ - firstColIndex_ + 1;
+  size_t nc = (size_t)lastColIndex_ - (size_t)firstColIndex_ + 1;
   XFRecordIndices_.clear();
   XFRecordIndices_.resize(nc);
 
@@ -4049,7 +4049,7 @@ ULONG Worksheet::CellTable::RowBlock::CellBlock::MulRK::Read(const char* data)
   LittleEndian::Read(data_, rowIndex_, 0, 2);
   LittleEndian::Read(data_, firstColIndex_, 2, 2);
   LittleEndian::Read(data_, lastColIndex_, dataSize_-2, 2);
-  size_t nc = lastColIndex_ - firstColIndex_ + 1;
+  size_t nc = (size_t)lastColIndex_ - (size_t)firstColIndex_ + 1;
   XFRK_.clear();
   XFRK_.resize(nc);
   for(size_t i=0; i<nc; ++i)
@@ -4086,6 +4086,7 @@ Worksheet::CellTable::RowBlock::CellBlock::Number::Number() : Record(),
 {
   code_ = CODE::NUMBER;
   dataSize_ = 14; recordSize_ = 18;
+  intdouble_ = {0};
 }
 ULONG Worksheet::CellTable::RowBlock::CellBlock::Number::Read(const char* data)
 {
@@ -4457,13 +4458,13 @@ ULONG Worksheet::CellTable::RowBlock::CellBlock::Formula::String::Read(const cha
   LittleEndian::Read(data_, stringSize, 0, 2);
   LittleEndian::Read(data_, flag_, 2, 1);
 
-  wstr_ = new wchar_t[stringSize+1];
+  wstr_ = new wchar_t[(size_t)stringSize+1];
   ULONG bytesRead = 7;
 
   if (flag_ == 0) 
   {
     // compressed UTF16LE string?
-	char* str = new char[stringSize + 1];
+	char* str = new char[(size_t)stringSize + 1];
     LittleEndian::ReadString(data_, str, 3, stringSize);
     str[stringSize] = 0;
     mbstowcs(wstr_, str, stringSize);
@@ -4491,7 +4492,7 @@ ULONG Worksheet::CellTable::RowBlock::CellBlock::Formula::String::Write(char* da
   if (flag_ == 0) 
   {
 	  // compressed UTF16LE string?
-	  char* str = new char[stringSize + 1];
+	  char* str = new char[(size_t)stringSize + 1];
     wcstombs(str, wstr_, stringSize);
     LittleEndian::WriteString(data_, str, 3, stringSize);
 	  delete [] str;
@@ -6081,7 +6082,7 @@ void BasicExcel::UpdateWorksheets()
     vector<Worksheet::CellTable::RowBlock>& rRowBlocks = rawSheet.cellTable_.rowBlocks_;
     vector<SmartPtr<Worksheet::CellTable::RowBlock::CellBlock> >* pCellBlocks = nullptr;
     Worksheet::CellTable::RowBlock::CellBlock* pCell;
-    rRowBlocks.resize(maxRows/32 + ((maxRows % 32) ? 1 : 0));
+    rRowBlocks.resize((size_t)maxRows/32 + (((size_t)maxRows % 32) ? 1 : 0));
     for(int r=0, curRowBlock=0; r<maxRows; ++r) 
     {
       if (r % 32 == 0) 
@@ -6107,7 +6108,7 @@ void BasicExcel::UpdateWorksheets()
               rawSheet.dimensions_.firstUsedRowIndex_ = r;
 
               // Resize DBCellPos.
-              size_t nm = int(rawSheet.index_.firstUnusedRowIndex_ - rawSheet.index_.firstUsedRowIndex_ - 1) / 32 + 1;
+              size_t nm = (size_t)(rawSheet.index_.firstUnusedRowIndex_ - rawSheet.index_.firstUsedRowIndex_ - 1) / 32 + 1;
               rawSheet.index_.DBCellPos_.resize(nm);
             }
 
@@ -6118,7 +6119,7 @@ void BasicExcel::UpdateWorksheets()
 
             if (newRow) {
               // Prepare Row and DBCell for new row with data.
-              Worksheet::CellTable::RowBlock& rRowBlock = rRowBlocks[curRowBlock-1];
+              Worksheet::CellTable::RowBlock& rRowBlock = rRowBlocks[(size_t)curRowBlock-1];
               rRowBlock.rows_.push_back(row);
               rRowBlock.rows_.back().rowIndex_ = (USHORT) r;
               rRowBlock.rows_.back().lastCellColIndexPlusOne_ = (USHORT) maxCols;
@@ -6149,7 +6150,7 @@ void BasicExcel::UpdateWorksheets()
                   pCell->_union.mulrk_->rowIndex_      = (USHORT) r;
                   pCell->_union.mulrk_->firstColIndex_ = (USHORT) c;
                   pCell->_union.mulrk_->lastColIndex_  = (USHORT) cl - 1;
-                  pCell->_union.mulrk_->XFRK_.resize(cl-c);
+                  pCell->_union.mulrk_->XFRK_.resize((size_t)cl-c);
 
                   for(size_t i=0; c<cl; ++c, ++i) {
                     cell = sheet.Cell(r, c);
@@ -6189,7 +6190,7 @@ void BasicExcel::UpdateWorksheets()
                   pCell->_union.mulrk_->rowIndex_      = (USHORT) r;
                   pCell->_union.mulrk_->firstColIndex_ = (USHORT) c;
                   pCell->_union.mulrk_->lastColIndex_  = (USHORT) cl - 1;
-                  pCell->_union.mulrk_->XFRK_.resize(cl-c);
+                  pCell->_union.mulrk_->XFRK_.resize((size_t)cl-c);
 
                   for(size_t i=0; c<cl; ++c, ++i) {
                     cell = sheet.Cell(r, c);
@@ -6353,7 +6354,7 @@ void BasicExcel::UpdateWorksheets()
       rawSheet.dimensions_.firstUsedRowIndex_ = 0;
 
       // Resize DBCellPos.
-      size_t nm = int(rawSheet.index_.firstUnusedRowIndex_ - rawSheet.index_.firstUsedRowIndex_ - 1) / 32 + 1;
+      size_t nm = (size_t)(rawSheet.index_.firstUnusedRowIndex_ - rawSheet.index_.firstUsedRowIndex_ - 1) / 32 + 1;
       rawSheet.index_.DBCellPos_.resize(nm);
     }
 
@@ -6702,11 +6703,11 @@ static void calculate_dimension(vector<Worksheet::CellTable::RowBlock>& rRowBloc
 
         case CODE::MULRK: 
           {
-          int maxCols = rCellBlocks[j]->_union.mulrk_->lastColIndex_ - rCellBlocks[j]->_union.mulrk_->firstColIndex_ + 1;
-          col += maxCols;
-          // fall through
+            int maxCols = rCellBlocks[j]->_union.mulrk_->lastColIndex_ - rCellBlocks[j]->_union.mulrk_->firstColIndex_ + 1;
+            col += maxCols;
           }
-
+          // Fall through
+          [[fallthrough]];
         default:
         if (row > maxRow)
           maxRow = row;
@@ -6787,13 +6788,13 @@ void BasicExcelWorksheet::UpdateCells()
           break;
 
         case CODE::MULBLANK: {
-          size_t maxCols = rCellBlocks[j]->_union.mulblank_->lastColIndex_ - rCellBlocks[j]->_union.mulblank_->firstColIndex_ + 1;
+          size_t maxCols = (size_t)rCellBlocks[j]->_union.mulblank_->lastColIndex_ - (size_t)rCellBlocks[j]->_union.mulblank_->firstColIndex_ + 1;
 
           for(size_t k=0; k<maxCols; ++k,++col) {
             //MF resize on unexpected column values
             if (col >= maxCols_) {
               if (col >= (int)cells_[row].size())
-                cells_[row].resize(col+1);
+                cells_[row].resize((size_t)col+1);
             }
 
             cells_[row][col].SetXFormatIdx(rCellBlocks[j]->_union.mulblank_->XFRecordIndices_[k]);	//MF read format index
@@ -6825,12 +6826,12 @@ void BasicExcelWorksheet::UpdateCells()
           break;}
 
         case CODE::MULRK: {
-          size_t maxCols = rCellBlocks[j]->_union.mulrk_->lastColIndex_ - rCellBlocks[j]->_union.mulrk_->firstColIndex_ + 1;
+          size_t maxCols = (size_t)rCellBlocks[j]->_union.mulrk_->lastColIndex_ - (size_t)rCellBlocks[j]->_union.mulrk_->firstColIndex_ + 1;
           for(size_t k=0; k<maxCols; ++k,++col) {
             //MF resize on unexpected column values
             if (col >= maxCols_) {
               if (col >= (int)cells_[row].size())
-                cells_[row].resize(col+1);
+                cells_[row].resize((size_t)col+1);
               break; // skip invalid column values
             }
 
@@ -6990,7 +6991,7 @@ bool BasicExcelCell::Get(char* str) const
     else
     {
       int len = (int)str_.size();
-      strcpy_s(str,len + 1,&*(str_.begin()));
+      strcpy_s(str,(size_t)len + 1,&*(str_.begin()));
     }
     return true;
   } 

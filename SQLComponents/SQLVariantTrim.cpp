@@ -72,7 +72,7 @@ SQL_ULongToLong(unsigned long p_value)
 long
 SQL_FloatToLong(float p_value)
 {
-  if(p_value > LONG_MAX || p_value < LONG_MIN)
+  if(p_value > LONG_MAX || p_value < (float)LONG_MIN)
   {
     SQL_ThrowErrorTruncate(SQL_C_FLOAT,SQL_C_LONG);
   }
@@ -82,7 +82,7 @@ SQL_FloatToLong(float p_value)
 long
 SQL_DoubleToLong(double p_value)
 {
-  if(p_value > LONG_MAX || p_value < LONG_MIN)
+  if(p_value > LONG_MAX || p_value < (double)LONG_MIN)
   {
     SQL_ThrowErrorTruncate(SQL_C_DOUBLE,SQL_C_LONG);
   }
@@ -92,7 +92,7 @@ SQL_DoubleToLong(double p_value)
 long
 SQL_BIGINTToLong(SQLBIGINT p_value)
 {
-  if(p_value > LONG_MAX || p_value < LONG_MIN)
+  if(p_value > LONG_MAX || p_value < (SQLBIGINT)LONG_MIN)
   {
     SQL_ThrowErrorTruncate(SQL_C_SBIGINT,SQL_C_LONG);
   }
@@ -312,7 +312,7 @@ SQL_FloatToTinyInt(float p_value)
 char
 SQL_DoubleToTinyInt(double p_value)
 {
-  if(p_value > _I8_MAX || p_value < _I8_MIN)
+  if(p_value > _I8_MAX || p_value < (double)_I8_MIN)
   {
     SQL_ThrowErrorTruncate(SQL_C_DOUBLE,SQL_C_STINYINT);
   }

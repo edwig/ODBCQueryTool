@@ -25,7 +25,7 @@
 class CWSExpander
 {
 public:
-  CWSExpander::CWSExpander(CDC* pDC,CRect rect,bool pClipRgn = true) 
+  CWSExpander(CDC* pDC,CRect rect,bool pClipRgn = true) 
               :m_pDC(pDC)
               ,m_rect(rect)
               ,m_ClipRgn(pClipRgn)

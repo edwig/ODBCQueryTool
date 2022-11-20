@@ -19,7 +19,7 @@
 #pragma once
 #include "SkinScrollWnd.h"
 
-class StyleListCtrl : public CListCtrl
+class StyleListCtrl : public CMFCListCtrl
 {
 // Construction
 public:
@@ -38,6 +38,7 @@ protected:
 
   virtual LRESULT WindowProc(UINT message,WPARAM wParam,LPARAM lParam) override;
   virtual void    PreSubclassWindow() override;
+          void    CheckColors();
 
   afx_msg void OnPaint();
   afx_msg void OnSize(UINT nType,int cx,int cy);

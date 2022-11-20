@@ -201,7 +201,7 @@ SQLDatabase::SetUserName(XString p_user)
 void
 SQLDatabase::SetLastActionTime()
 {
-  m_lastAction = GetTickCount();
+  m_lastAction = GetTickCount64();
 }
 
 // Number of minutes not-in-action
@@ -209,7 +209,7 @@ SQLDatabase::SetLastActionTime()
 bool
 SQLDatabase::PastWaitingTime()
 {
-  return (GetTickCount() - m_lastAction) > (IDLE_MINUTES * 60 * CLOCKS_PER_SEC);
+  return (GetTickCount64() - m_lastAction) > (IDLE_MINUTES * 60 * (size_t)NANOSECONDS_PER_SEC);
 }
 
 // Add a general ODBC option for use in the connection string
@@ -620,9 +620,9 @@ SQLDatabase::GetSQLInfoDB()
 
 // Setting the default database schema after login
 bool
-SQLDatabase::SetDefaultSchema(XString p_schema)
+SQLDatabase::SetDefaultSchema(XString p_user,XString p_schema)
 {
-  XString sql = GetSQLInfoDB()->GetSQLDefaultSchema(p_schema);
+  XString sql = GetSQLInfoDB()->GetSQLDefaultSchema(p_user,p_schema);
   if(!sql.IsEmpty())
   {
     try
@@ -963,7 +963,7 @@ SQLDatabase::ODBCNativeSQL(XString& p_sql)
   // Create a buffer that's 2 times the length
   // just to be sure for native constructions
   int len = p_sql.GetLength();
-  char* buffer = new char[2 * len];
+  char* buffer = new char[(size_t)len * 2];
   SQLINTEGER lengte = 0;
   buffer[0] = 0;
 
@@ -1188,7 +1188,7 @@ SQLDatabase::StartTransaction(SQLTransaction* p_transaction, bool p_startSubtran
     if(m_transactions.size() > 0 && p_startSubtransaction)
     {
       // Get transaction name
-      transName.Format("AutoSavePoint%d", m_transactions.size());
+      transName.Format("AutoSavePoint%I64d", m_transactions.size());
 
       // Set savepoint
       XString startSubtrans = m_info->GetSQLStartSubTransaction(transName);

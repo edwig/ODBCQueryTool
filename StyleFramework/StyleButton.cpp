@@ -17,12 +17,6 @@
 // For license: See the file "LICENSE.txt" in the root folder
 //
 #include "stdafx.h"
-#include "StyleButton.h"
-#include "StyleColors.h"
-#include "StyleMessageBox.h"
-#include "StyleMacros.h"
-#include "StyleFonts.h"
-#include "StyleEdit.h"
 #include "CWSExpander.h"
 
 #ifdef _DEBUG
@@ -30,6 +24,8 @@
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+using namespace ThemeColor;
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -149,6 +145,7 @@ StyleButton::StyleButton()
             ,m_error(false)
             ,m_defaultButton(false)
             ,m_style(0)
+            ,m_bold(false)
 {
 }
 
@@ -158,6 +155,7 @@ StyleButton::StyleButton(CString p_type, bool pInError)
             ,m_mandatory(false)
             ,m_defaultButton(false)
             ,m_style(0)
+            ,m_bold(false)
 {
   TranslateStyle(p_type);
 }
@@ -165,6 +163,12 @@ StyleButton::StyleButton(CString p_type, bool pInError)
 StyleButton::~StyleButton()
 {
   DestroyWindow();
+}
+
+void 
+StyleButton::PreSubclassWindow()
+{
+  ScaleControl(this);
 }
 
 BOOL
@@ -466,75 +470,75 @@ StyleButton::Draw(CDC*    pDC
     {
       if(over)
       {
-        filling   = ClrControlPressed;
-        textcolor = ClrControlTextPressed;
-        outline   = ClrControlFramePressed;
+        filling   = ThemeColor::GetColor(Colors::ColorControlPressed);
+        textcolor = ThemeColor::GetColor(Colors::ColorControlTextPressed);
+        outline   = ThemeColor::GetColor(Colors::ColorControlFramePressed);
       }
       else
       {
-        filling   = ClrControlNormal;
-        textcolor = ClrControlTextNormal;
-        outline   = ClrControlFrameNormal;
+        filling   = ThemeColor::GetColor(Colors::ColorWindowFrame);
+        textcolor = ThemeColor::GetColor(Colors::AccentColor3);
+        outline   = ThemeColor::GetColor(Colors::ColorControlFramePressed);
       }
     }
     else if (((state & BST_FOCUS) != 0) || (style & BS_DEFPUSHBUTTON) != 0)
     {
       if (pInError)
       {
-        filling   = ClrWindowFrameError;
-        textcolor = ClrWindowFrameTextError;
-        outline   = ClrWindowFrameError;
+        filling   = ColorWindowFrameError;
+        textcolor = ColorWindowFrameTextError;
+        outline   = ColorWindowFrameError;
       }
       else
       {
         if (over || (style & BS_DEFPUSHBUTTON))
         {
-          filling   = ClrControlDefault; 
-          textcolor = ClrControlTextHover;
-          outline   = ClrControlFrameHover;
+          filling   = ThemeColor::GetColor(Colors::AccentColor1);
+          textcolor = ThemeColor::GetColor(Colors::ColorControlTextHover);
+          outline   = ThemeColor::GetColor(Colors::ColorControlFrameHover);
         }
         else
         {
-          filling   = ClrControlNormal;
-          textcolor = ClrControlTextNormal;
-          outline   = ThemeColor::_Color1; 
+          filling   = ThemeColor::GetColor(Colors::ColorCtrlBackground);
+          textcolor = ThemeColor::GetColor(Colors::AccentColor1);
+          outline   = ThemeColor::GetColor(Colors::AccentColor1); 
         }
       }
     }
     else if (over != 0)
     {
-      filling   = ClrControlHover;
-      textcolor = ClrControlTextHover;
-      outline   = ClrControlFrameHover;
+      filling   = ThemeColor::GetColor(Colors::ColorControlHover);
+      textcolor = ThemeColor::GetColor(Colors::ColorControlTextHover);
+      outline   = ThemeColor::GetColor(Colors::ColorControlFrameHover);
     }
     else if (p_default != 0)
     {
-      filling   = ClrControlHover;
-      textcolor = ClrControlTextHover;
-      outline   = ClrControlFrameHover;
+      filling   = ThemeColor::GetColor(Colors::ColorControlHover);
+      textcolor = ThemeColor::GetColor(Colors::ColorControlTextHover);
+      outline   = ThemeColor::GetColor(Colors::ColorControlFrameHover);
     }
 
     else
     {
-      filling   = ClrControlNormal;
-      textcolor = ClrControlTextNormal;
-      outline   = ClrControlFrameNormal;
+      filling   = ThemeColor::GetColor(Colors::ColorButtonBackground);
+      textcolor = ThemeColor::GetColor(Colors::ColorButtonText);
+      outline   = ThemeColor::GetColor(Colors::AccentColor1);
     }
   }
   else
   {
-    outline   = ClrControlFrameDisabled;
-    filling   = ClrControlDisabled;
-    textcolor = ClrControlTextDisabled;
+    outline   = ThemeColor::GetColor(Colors::ColorControlFrameDisabled);
+    filling   = ThemeColor::GetColor(Colors::ColorControlDisabled);
+    textcolor = ThemeColor::GetColor(Colors::ColorControlTextDisabled);
   }
 
-  if (p_mandatory)
+  if(p_mandatory)
   {
-    outline = ClrEditFrameVerplicht;
+    outline = ThemeColor::NoWhite(ThemeColor::GetColor(Colors::AccentColor1));
   }
-  if (pInError)
+  if(pInError)
   {
-    outline = ClrEditFrameError;
+    outline = ColorEditFrameError;
   }
   // Draw the edge
   CBrush br(outline);
@@ -557,7 +561,9 @@ StyleButton::Draw(CDC*    pDC
     {
       if (p_themeColor)
       {
-        CWSExpander(pDC, rect).DrawIcon(hicon, ClrFrameBkGnd,ComboBoxActive);
+        CWSExpander(pDC, rect).DrawIcon(hicon
+                                       ,ThemeColor::GetColor(Colors::ColorWindowFrame)
+                                       ,ThemeColor::GetColor(Colors::ColorComboActive));
         // Alternative without scaling
         // bmpRect.DeflateRect(1, 1);
         // br.DeleteObject();
@@ -581,7 +587,7 @@ StyleButton::Draw(CDC*    pDC
     }
     else
     {
-      CWSExpander(pDC, rect).DrawIcon(hicon, ClrFrameBkGnd, textcolor);
+      CWSExpander(pDC, rect).DrawIcon(hicon,ThemeColor::GetColor(Colors::ColorWindowFrame),textcolor);
       // Alternative without scaling
       // br.DeleteObject();
       // br.CreateSolidBrush(textcolor);
@@ -592,7 +598,7 @@ StyleButton::Draw(CDC*    pDC
   // Paint the text
   pDC->SetTextColor(textcolor);
 
-  CFont* org = pDC->SelectObject(&STYLEFONTS.DialogTextFont);
+  CFont* org = pDC->SelectObject(m_bold ? &STYLEFONTS.DialogTextFontBold : &STYLEFONTS.DialogTextFont);
   pDC->DrawText(txt, &rect, DT_CENTER|DT_VCENTER|DT_SINGLELINE);
   pDC->SelectObject(org);
 }

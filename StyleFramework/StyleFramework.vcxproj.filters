@@ -150,7 +150,7 @@
     <ClInclude Include="StyleToast.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="StyleStatic.h">
+    <ClInclude Include="StyleStaticToast.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StyleComboBox.h">
@@ -172,6 +172,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StyleHyperlink.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleToolbar.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="WinToastLib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleGroupBox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleStatic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -287,7 +299,7 @@
     <ClCompile Include="StyleToast.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="StyleStatic.cpp">
+    <ClCompile Include="StyleStaticToast.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StyleComboBox.cpp">
@@ -306,6 +318,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StyleHyperlink.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleToolbar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WinToastLib.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleGroupBox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleStatic.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleFramework.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -360,6 +387,9 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="Icons\73_map-openen.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ScrollBar7.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

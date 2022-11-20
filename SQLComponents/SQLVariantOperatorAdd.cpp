@@ -1388,7 +1388,7 @@ SQLVariant
 static SQL_OperCharAddNum(SQLVariant& p_left,SQLVariant& p_right)
 {
   bcd num = bcd(p_left.GetAsChar()) + p_right.GetAsBCD();
-  SQLVariant var(num.AsString());
+  SQLVariant var(num.AsString(bcd::Format::Bookkeeping,false,0));
   return var;
 }
 
@@ -1656,18 +1656,20 @@ SQLVariant::operator+=(SQLVariant& p_right)
   SQLConciseType left  = SQLTypeToConciseType(m_datatype);
   SQLConciseType right = SQLTypeToConciseType(p_right.m_datatype);
 
+  // Find our comparison function
   // Check whether both datatypes are valid
-  if(left == CT_LAST || right == CT_LAST)
+  if(left >= 0 && left < CT_LAST && right >= 0 && right < CT_LAST)
+  {
+    OperatorCalculate function = OperatorAdd[left][right].function;
+    if(function)
+    {
+      *this = (*function)(*this,p_right);
+      return *this;
+    }
+  }
+  else
   {
     ThrowErrorOperator(SVO_AssignAdd);
-  }
-
-  // Find our comparison function
-  OperatorCalculate function = OperatorAdd[left][right].function;
-  if(function)
-  {
-    *this = (*function)(*this,p_right);
-    return *this;
   }
   // No compare function found
   // Data types are not comparable

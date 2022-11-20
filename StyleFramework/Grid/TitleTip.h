@@ -42,7 +42,7 @@ public:
 
 // Operations
 public:
-	void Show(CRect rectTitle, LPCTSTR lpszTitleText, 
+	void Show(CWnd* p_parent,CRect rectTitle, LPCTSTR lpszTitleText, 
               int xoffset = 0, LPRECT lpHoverRect = NULL, 
               const LOGFONT* lpLogFont = NULL,
               COLORREF crTextClr = CLR_DEFAULT, COLORREF crBackClr = CLR_DEFAULT);

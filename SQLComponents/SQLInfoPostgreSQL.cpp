@@ -301,7 +301,7 @@ SQLInfoPostgreSQL::GetKEYWORDCurrentUser() const
 
 // Connects to a default schema in the database/instance
 XString
-SQLInfoPostgreSQL::GetSQLDefaultSchema(XString p_schema) const
+SQLInfoPostgreSQL::GetSQLDefaultSchema(XString /*p_user*/,XString p_schema) const
 {
   return "SET SEARCH_PATH TO " + p_schema;
 }

@@ -18,10 +18,6 @@
 // For license: See the file "LICENSE.txt" in the root folder
 //
 #pragma once
-#include "GrayWindow.h"
-#include "StyleColors.h"
-#include "StyleFonts.h"
-#include "StyleMacros.h"
 #include <afxframewndex.h>
 
 class StyleFrameWndEx : public CFrameWndEx

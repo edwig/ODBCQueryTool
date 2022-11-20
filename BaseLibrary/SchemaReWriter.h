@@ -26,6 +26,7 @@
 // THE SOFTWARE.
 //
 #pragma once
+#include <map>
 
 enum class Token
 {
@@ -40,6 +41,8 @@ enum class Token
  ,TK_COMM_CPP       // //
  ,TK_PAR_OPEN       // (
  ,TK_PAR_CLOSE      // )
+ ,TK_PAR_ADD        // +
+ ,TK_PAR_CONCAT     // ||
  ,TK_SPACE 
  ,TK_TAB
  ,TK_CR
@@ -58,17 +61,35 @@ enum class Token
  ,TK_UNION
 };
 
+enum class SROption
+{
+  SRO_NO_OPTION      = 0x0000
+ ,SRO_CONCAT_TO_ADD  = 0x0001   // ISO SQL || to MS-SQL + for two strings
+ ,SRO_ADD_TO_CONCAT  = 0x0002   // MS-SQL + to ISO SQL || for two strings
+};
+
+struct StringICompare
+{
+  bool operator()(const XString lhs,const XString rhs) const
+  {
+    return lhs.CompareNoCase(rhs) < 0;
+  }
+};
+using FCodes = std::map<XString,XString,StringICompare>;
 
 class SchemaReWriter
 {
 public:
   SchemaReWriter(XString p_schema);
-
+  // Our primary function
   XString Parse(XString p_input);
+  // Settings and results
+  void    SetOption(SROption p_option);
+  void    SetRewriteCode(FCodes* p_codes);
   int     GetReplaced() { return m_replaced; };
+  int     GetOptions()  { return m_options;  };
 private:
   void    ParseStatement();
-
   // Token parsing
   Token   GetToken();
   void    PrintToken();
@@ -79,23 +100,26 @@ private:
   void    SkipSpaceAndComment();
   Token   CommentSQL();
   Token   CommentCPP();
+  Token   Concat();
   void    QuoteString(int p_ending);
-  void    UnGetChar();
+  void    UnGetChar(int p_char);
   int     GetChar();
 
-
   // Primary data
-  XString m_schema;
-  XString m_input;
-  XString m_output;
-
+  XString   m_schema;
+  XString   m_input;
+  XString   m_output;
+  // Options for processing
+  int       m_options     { 0       };
+  FCodes*   m_codes       { nullptr };
   // Processing data
-  int     m_position { 0 };
-  Token   m_token;
-  XString m_tokenString;
-  int     m_level       { 0      };
-  Token   m_inStatement { Token::TK_EOS };
-  bool    m_inFrom      { false  };
-  bool    m_nextTable   { false  };
-  int     m_replaced    { 0      };
+  int       m_position    { 0       };
+  Token     m_token       { Token::TK_EOS };
+  XString   m_tokenString;
+  int       m_level       { 0       };
+  int       m_ungetch     { 0       };
+  Token     m_inStatement { Token::TK_EOS };
+  bool      m_inFrom      { false   };
+  bool      m_nextTable   { false   };
+  int       m_replaced    { 0       };
 };

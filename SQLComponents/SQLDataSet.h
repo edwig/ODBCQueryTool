@@ -96,9 +96,13 @@ public:
   virtual ~SQLDataSet();
 
   // Perform query: Do SetQuery first
-  virtual bool Open(bool p_stopIfNoColumns = false);
-  // Append (read extra) into the dataset
+  virtual bool Open();
+  // Perform query on dataset (transaction not in scope)
+  virtual bool Open(SQLQuery& p_query);
+  // Append (read extra) into the dataset (new query)
   virtual bool Append();
+  // Perform append on open query
+  virtual bool Append(SQLQuery& p_query);
   // Remove result set
   virtual void Close();
   // Query done and records gotten?
@@ -147,6 +151,8 @@ public:
   virtual void SetDatabase(SQLDatabase* p_database);
   // Set SELECT one or more columns to select
   virtual void SetSelection(XString p_selection);
+  // Set the isolated query status
+  virtual void SetIsolation(bool p_isolation);
   // Set FROM selection of several tables (more than one!)
   virtual void SetFromTables(XString p_from);
   // Set FROM  primary table (for updates)
@@ -154,6 +160,7 @@ public:
   // Set WHERE condition by hand
   virtual void SetWhereCondition(XString p_condition);
   // Set WHERE filters for a query
+  virtual void ResetFilters();
   virtual void SetFilters(SQLFilterSet* p_filters);
   // Add filter to current SQLFilterSet
   virtual void SetFilter(SQLFilter p_filter);
@@ -170,6 +177,8 @@ public:
   virtual void SetPrimaryKeyColumn(XString p_name);
   virtual void SetPrimaryKeyColumn(WordList& p_list);
 
+  // Open will not take action if no columns selected
+  void         SetStopIfNoColumns(bool p_stop);
   // Setting the sequence/generator name to something different than "<tablename>_seq"
   void         SetSequenceName(XString p_sequence);
   // Set parameter for a query
@@ -196,6 +205,7 @@ public:
   SQLDatabase* GetDatabase();
   // Get the number of records
   int          GetNumberOfRecords();
+  int          GetSkippedRecords();
   // Get number of fields
   int          GetNumberOfFields();
   // Get the current record (number)
@@ -215,6 +225,7 @@ public:
   // Getting info about the primary key
   XString      GetPrimarySchema();
   XString      GetPrimaryTableName();
+  XString      GetPrimaryAlias();
   // Getting the sequence name
   XString      GetSequenceName();
   // Getting the query settings
@@ -301,8 +312,10 @@ protected:
   ParameterSet m_parameters;
   NamenMap     m_primaryKey;
   WordList     m_updateColumns;
-  int          m_topRecords  { 0 };
-  int          m_skipRecords { 0 };
+  int          m_topRecords    { 0 };
+  int          m_skipRecords   { 0 };
+  bool         m_stopNoColumns { false };
+  bool         m_isolation     { false };
   // Filter sets
   SQLFilterSet* m_filters { nullptr };
   SQLFilterSet* m_havings { nullptr };
@@ -395,6 +408,12 @@ SQLDataSet::GetPrimaryTableName()
   return m_primaryTableName;
 }
 
+inline XString
+SQLDataSet::GetPrimaryAlias()
+{
+  return m_primaryAlias;
+}
+
 inline void
 SQLDataSet::SetPrimaryKeyColumn(XString p_name)
 {
@@ -453,6 +472,24 @@ inline void
 SQLDataSet::SetCancelCallback(LPFN_CALLBACK p_cancelFunction)
 {
   m_cancelFunction = p_cancelFunction;
+}
+
+inline void
+SQLDataSet::SetStopIfNoColumns(bool p_stop)
+{
+  m_stopNoColumns = p_stop;
+}
+
+inline void
+SQLDataSet::SetIsolation(bool p_isolation)
+{
+  m_isolation = p_isolation;
+}
+
+inline int
+SQLDataSet::GetSkippedRecords()
+{
+  return m_skipRecords;
 }
 
 inline void

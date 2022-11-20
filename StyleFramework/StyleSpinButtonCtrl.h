@@ -43,6 +43,8 @@ protected:
   afx_msg void OnLButtonUp  (UINT nFlags, CPoint point);
 
 private:
+  virtual void PreSubclassWindow() override;
+
   void DrawTopButton(CDC* p_dc,CRect& rect,int p_offset = 0);
   void DrawBotButton(CDC* p_dc,CRect& rect,int p_offset = 0);
 

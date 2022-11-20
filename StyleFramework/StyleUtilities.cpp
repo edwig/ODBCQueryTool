@@ -192,3 +192,31 @@ MinimalFrameWnd(CWnd* p_wnd)
     p_wnd->MoveWindow(window, FALSE);
   }
 }
+
+int GetSFXSizeFactor();
+void SFXResizeByFactor(CRect& p_rect);
+
+// Scale a control to the SFXSizeFactor
+void
+ScaleControl(CWnd* p_wnd)
+{
+  // See if we must do scaling
+  if(GetSFXSizeFactor() == 100)
+  {
+    return;
+  }
+
+  CRect rect;
+  p_wnd->GetWindowRect(rect);
+
+  CWnd* parent = p_wnd->GetParent();
+  if(parent)
+  {
+    parent->ScreenToClient(rect);
+  }
+  SFXResizeByFactor(rect);
+  // p_wnd->MoveWindow(rect);
+  SetWindowPos(p_wnd->GetSafeHwnd(),p_wnd->GetSafeHwnd()
+              ,rect.left,rect.top,rect.Width(),rect.Height()
+              ,SWP_NOZORDER|SWP_NOACTIVATE);
+}

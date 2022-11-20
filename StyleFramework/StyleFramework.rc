@@ -63,6 +63,8 @@ IDB_SCROLLBAR5          BITMAP                  "res\\ScrollBar5.bmp"
 
 IDB_SCROLLBAR6          BITMAP                  "res\\ScrollBar6.bmp"
 
+IDB_SCROLLBAR7          BITMAP                  "res\\ScrollBar7.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //

@@ -18,6 +18,9 @@
 //
 #include "stdafx.h"
 #include "StyleProgressCtrl.h"
+#include "StyleFonts.h"
+
+using namespace ThemeColor;
 
 IMPLEMENT_DYNAMIC(StyleProgressCtrl,CWnd);
 
@@ -36,12 +39,17 @@ StyleProgressCtrl::~StyleProgressCtrl()
   DestroyWindow();
 }
 
+void
+StyleProgressCtrl::PreSubclassWindow()
+{
+  ScaleControl(this);
+}
+
 // Generic creator
 BOOL 
 StyleProgressCtrl::Create(_In_ DWORD dwStyle, _In_ const RECT& rect, _In_ CWnd* pParentWnd, _In_ UINT nID)
 {
   CWnd* pWnd = this;
-  //return pWnd->Create(PROGRESS_CLASS, NULL, dwStyle, rect, pParentWnd, nID);
   return pWnd->Create("",nullptr,dwStyle,rect,pParentWnd,nID);
 }
 
@@ -158,7 +166,7 @@ StyleProgressCtrl::GetBkColor() const
 {
   if(m_background == NO_COLOR)
   {
-    return ClrFrameBkGnd;
+    return ThemeColor::GetColor(Colors::ColorCtrlBackground);
   }
   // Explicitly set user color
   return m_background;
@@ -174,11 +182,11 @@ StyleProgressCtrl::GetBarColor() const
   }
   if(m_state == PBST_PAUSED)
   {
-    return ThemeColor::_Color3; // Lighter theme color
+    return ThemeColor::GetColor(Colors::AccentColor3); // Lighter theme color
   }
   if(m_barcolor == NO_COLOR)
   {
-    return ThemeColor::_Color1; // Our theme
+    return ThemeColor::GetColor(Colors::AccentColor1); // Our theme
   }
   return m_barcolor; // Explicitly set user color
 }
@@ -201,6 +209,20 @@ int
 StyleProgressCtrl::GetState() const
 {
   return m_state;
+}
+
+// Retrieves whether we should show the progress
+bool 
+StyleProgressCtrl::GetShowPercentage() const
+{
+  return m_showperc;
+}
+
+// Sets the showing of the progress in percentage
+bool
+StyleProgressCtrl::SetShowPercentage(bool p_show)
+{
+  return m_showperc = p_show;
 }
 
 // Sets the progress bar control to marquee mode.
@@ -373,22 +395,37 @@ StyleProgressCtrl::OnDrawProgress()
   // This is our progress
   if(m_upper > m_lower)
   {
+    CRect progress(rcItem);
     if(vertical)
     {
       int newTop = (m_position * rcItem.Height()) / (m_upper - m_lower);
-      rcItem.top = rcItem.bottom - newTop;
+      progress.top = rcItem.bottom - newTop;
     }
     else
     {
       int newRight = (m_position * rcItem.Width()) / (m_upper - m_lower);
-      rcItem.right = rcItem.left + newRight;
+      progress.right = rcItem.left + newRight;
     }
-    dc->FillSolidRect(rcItem,GetBarColor());
+    dc->FillSolidRect(progress,GetBarColor());
   }
   else
   {
     // No progress possible (divide by zero would ensue)
   }
+
+  // Show the percentage on horizontal progress bars
+  if(m_showperc && !vertical)
+  {
+    CString showing;
+    int percentage = m_upper ? ((m_position * 100) / m_upper) : 0;
+    showing.Format("%d %%",percentage);
+    int mode = dc->SetBkMode(TRANSPARENT);
+    dc->SelectObject(&STYLEFONTS.DialogTextFont);
+    dc->SetTextColor(ThemeColor::GetColor(Colors::ColorEditText));
+    dc->DrawText(showing,&rcItem,DT_CENTER|DT_VCENTER|DT_SINGLELINE|DT_NOPREFIX);
+    dc->SetBkMode(mode);
+  }
+
   // Done with DC
   ReleaseDC(dc);
 }

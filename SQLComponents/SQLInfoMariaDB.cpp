@@ -412,7 +412,7 @@ SQLInfoMariaDB::GetKEYWORDCurrentUser() const
 
 // Connects to a default schema in the database/instance
 XString
-SQLInfoMariaDB::GetSQLDefaultSchema(XString p_schema) const
+SQLInfoMariaDB::GetSQLDefaultSchema(XString /*p_user*/,XString p_schema) const
 {
   return "USE " + p_schema;
 }

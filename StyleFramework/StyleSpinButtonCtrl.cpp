@@ -22,6 +22,8 @@
 #include "StyleEdit.h"
 #include "StyleTexts.h"
 
+using namespace ThemeColor;
+
 IMPLEMENT_DYNAMIC(StyleSpinButtonCtrl,CSpinButtonCtrl);
 
 BEGIN_MESSAGE_MAP(StyleSpinButtonCtrl,CSpinButtonCtrl)
@@ -36,6 +38,12 @@ StyleSpinButtonCtrl::StyleSpinButtonCtrl()
 
 StyleSpinButtonCtrl::~StyleSpinButtonCtrl()
 {
+}
+
+void
+StyleSpinButtonCtrl::PreSubclassWindow()
+{
+  ScaleControl(this);
 }
 
 // Sets the up-down control's buddy window.
@@ -103,7 +111,7 @@ StyleSpinButtonCtrl::DrawTopButton(CDC* dc,CRect& rect, int p_offset /*= 0*/)
   int middle = rect.Width() / 2;
   int half   = height / 2;
 
-  CBrush brush(m_buttonUP ? SpinButtonActive : Assistant0);
+  CBrush brush(m_buttonUP ? SpinButtonActive : ThemeColor::GetColor(Colors::ColorCtrlBackground)); // Assistant0);
   HGDIOBJ oldbrush = dc->SelectObject(brush);
   CRect back(rect.left + 2, rect.top + 3, rect.Width() - 3, height);
   dc->FillRect(&back,&brush);
@@ -135,7 +143,7 @@ StyleSpinButtonCtrl::DrawBotButton(CDC* dc,CRect& rect, int p_offset /*= 0*/)
   int middle = rect.Width() / 2;
   int half   = height / 2;
 
-  CBrush brush(m_buttonDN ? SpinButtonActive : Assistant0);
+  CBrush brush(m_buttonDN ? SpinButtonActive : ThemeColor::GetColor(Colors::ColorCtrlBackground));
   HGDIOBJ oldbrush = dc->SelectObject(brush);
   CRect back(rect.left + 2, rect.top + height + 1, rect.Width() - 3, rect.bottom - 3);
   dc->FillRect(&back, &brush);
@@ -169,10 +177,10 @@ StyleSpinButtonCtrl::OnPaint()
   GetClientRect(&rect);
   CDC* dc = GetDC();
 
-  COLORREF color = IsWindowEnabled() ? ThemeColor::_Color1 : ThemeColor::_Color2;
+  COLORREF color = IsWindowEnabled() ? ThemeColor::GetColor(Colors::AccentColor1) : ThemeColor::GetColor(Colors::AccentColor2);
   if(m_error)
   {
-    color = ClrEditFrameError;
+    color = ColorEditFrameError;
   }
 
   CPen pen;
