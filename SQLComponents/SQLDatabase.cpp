@@ -796,6 +796,23 @@ SQLDatabase::GetDatabaseTypeName()
   return "";
 }
 
+bool
+SQLDatabase::Ping()
+{
+  if(IsOpen())
+  {
+    // Send a ping query
+    XString ping = GetSQLInfoDB()->GetPing();
+    if(!ping.IsEmpty())
+    {
+      // No transaction here. We could disturb a running one!
+      SQLQuery qry(this);
+      return qry.DoSQLStatementScalar(ping) != nullptr;
+    }
+  }
+  return false;
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // Creating the ODBC handles.

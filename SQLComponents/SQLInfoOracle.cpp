@@ -482,6 +482,14 @@ SQLInfoOracle::GetSQLTopNRows(XString p_sql,int p_top,int p_skip /*= 0*/) const
   return p_sql;
 }
 
+// Query to perform a keep alive ping
+XString
+SQLInfoOracle::GetPing() const
+{
+  // Getting the time does a ping
+  return "SELECT current_timestamp FROM DUAL";
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // SQL STRINGS

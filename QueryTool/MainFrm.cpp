@@ -49,6 +49,7 @@ const UINT uiLastUserToolBarId = uiFirstUserToolBarId + iMaxUserToolbars - 1;
 
 BEGIN_MESSAGE_MAP(CMainFrame, StyleMDIFrameWnd)
   ON_WM_CREATE()
+  ON_WM_TIMER()
   ON_WM_COPYDATA()
   ON_WM_ACTIVATEAPP()
   ON_WM_SETTINGCHANGE()
@@ -60,8 +61,8 @@ BEGIN_MESSAGE_MAP(CMainFrame, StyleMDIFrameWnd)
   ON_COMMAND_RANGE          (ID_VIEW_APPLOOK_WIN_2000, ID_VIEW_APPLOOK_WINDOWS_7, &CMainFrame::OnApplicationLook)
   ON_UPDATE_COMMAND_UI_RANGE(ID_VIEW_APPLOOK_WIN_2000, ID_VIEW_APPLOOK_WINDOWS_7, &CMainFrame::OnUpdateApplicationLook)
 
-  ON_COMMAND(ID_FILE_FIND_IN_FILE,           OnFindFiles)
-  ON_COMMAND(ID_VIEW_FIND_PANEL,             OnViewFindPanel)
+  ON_COMMAND(ID_FILE_FIND_IN_FILE,            OnFindFiles)
+  ON_COMMAND(ID_VIEW_FIND_PANEL,              OnViewFindPanel)
   ON_COMMAND(ID_VIEW_CONNECTBAR,              OnConnectBar)
   ON_COMMAND(ID_VIEW_DATABASEBAR,             OnDatabaseBar)
   ON_COMMAND(ID_HELP_BUG,                     OnSupportBug)
@@ -78,16 +79,16 @@ BEGIN_MESSAGE_MAP(CMainFrame, StyleMDIFrameWnd)
   ON_COMMAND(ID_THEMA_BLACKWHITE,             OnStyleBlackWhite)
 
   ON_UPDATE_COMMAND_UI(ID_FILE_SYNC_LOCATION, OnUpdateViewFilePanelSync)
-  ON_UPDATE_COMMAND_UI(ID_ODBC_CONNECT,				OnUpdateConnect)
-  ON_UPDATE_COMMAND_UI(ID_ODBC_DISCONNECT,		OnUpdateDisconnect)
-  ON_UPDATE_COMMAND_UI(ID_ODBC_BEGIN,					OnUpdateBegin)
-  ON_UPDATE_COMMAND_UI(ID_ODBC_COMMIT,				OnUpdateCommit)
-  ON_UPDATE_COMMAND_UI(ID_ODBC_ROLLBACK,			OnUpdateRollback)
-  ON_UPDATE_COMMAND_UI(ID_SESSION_ODBCREPORT,	OnUpdateODBCReport)
-  ON_UPDATE_COMMAND_UI(ID_VIEW_CONNECTBAR,		OnUpdateConnectBarVisible)
-  ON_UPDATE_COMMAND_UI(ID_VIEW_DATABASEBAR,		OnUpdateDatabaseBarVisible)
-  ON_UPDATE_COMMAND_UI(ID_SESSIONSTATUS,			OnUpdateSessionStatus)
-  ON_UPDATE_COMMAND_UI(ID_VIEW_FIND_PANEL,		OnUpdateViewFindPanel)
+  ON_UPDATE_COMMAND_UI(ID_ODBC_CONNECT,       OnUpdateConnect)
+  ON_UPDATE_COMMAND_UI(ID_ODBC_DISCONNECT,    OnUpdateDisconnect)
+  ON_UPDATE_COMMAND_UI(ID_ODBC_BEGIN,         OnUpdateBegin)
+  ON_UPDATE_COMMAND_UI(ID_ODBC_COMMIT,        OnUpdateCommit)
+  ON_UPDATE_COMMAND_UI(ID_ODBC_ROLLBACK,      OnUpdateRollback)
+  ON_UPDATE_COMMAND_UI(ID_SESSION_ODBCREPORT, OnUpdateODBCReport)
+  ON_UPDATE_COMMAND_UI(ID_VIEW_CONNECTBAR,    OnUpdateConnectBarVisible)
+  ON_UPDATE_COMMAND_UI(ID_VIEW_DATABASEBAR,   OnUpdateDatabaseBarVisible)
+  ON_UPDATE_COMMAND_UI(ID_SESSIONSTATUS,      OnUpdateSessionStatus)
+  ON_UPDATE_COMMAND_UI(ID_VIEW_FIND_PANEL,    OnUpdateViewFindPanel)
 END_MESSAGE_MAP()
 
 static UINT indicators[] =
@@ -392,6 +393,9 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// Switch the order of document name and application name on the window title bar. This
 	// improves the usability of the taskbar because the document name is visible with the thumbnail.
 	ModifyStyle(0,FWS_PREFIXTITLE);
+
+  // Try to do a database ping every 5 minutes
+  SetTimer(1,(5 * 60 * CLOCKS_PER_SEC),NULL);
 
 	return 0;
 }
@@ -842,6 +846,16 @@ CMainFrame::OnUpdateSessionStatus(CCmdUI* pCmdUI)
 {
   QueryToolApp* app = dynamic_cast<QueryToolApp*> (AfxGetApp());
   pCmdUI->Enable(app->DatabaseIsOpen());
+}
+
+void
+CMainFrame::OnTimer(UINT_PTR nIDEvent)
+{
+  if(nIDEvent == 1)
+  {
+    QueryToolApp* app = dynamic_cast<QueryToolApp*> (AfxGetApp());
+    app->GetDatabase().Ping();
+  }
 }
 
 void

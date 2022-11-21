@@ -128,6 +128,7 @@ public:
   bool           IsOpen();       // Is the database open?
   void           Close();        // Close it for further use
   bool           CollectInfo();  // Collect database info
+  bool           Ping();         // Keep alive sent and OK
 
   // OPTIONS FOR THE OPEN/CLOSE CYCLE
 

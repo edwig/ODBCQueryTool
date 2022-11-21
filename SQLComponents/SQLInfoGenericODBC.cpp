@@ -381,6 +381,14 @@ SQLInfoGenericODBC::GetSQLTopNRows(XString p_sql,int /*p_top*/,int /*p_skip = 0*
   return p_sql;
 }
 
+// Query to perform a keep alive ping
+XString
+SQLInfoGenericODBC::GetPing() const
+{
+  // Not implemented yet
+  return "";
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // SQL STRINGS

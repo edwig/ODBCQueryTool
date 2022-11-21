@@ -236,6 +236,9 @@ public:
   // Transform query to select top <n> rows
   virtual XString GetSQLTopNRows(XString p_sql,int p_top,int p_skip = 0) const = 0;
 
+  // Query to perform a keep alive ping
+  virtual XString GetPing() const = 0;
+
   //////////////////////////////////////////////////////////////////////////
   // SQL STRINGS
 

@@ -171,6 +171,9 @@ public:
   // Transform query to select top <n> rows
   XString GetSQLTopNRows(XString p_sql,int p_top,int p_skip = 0) const;
 
+  // Query to perform a keep alive ping
+  XString GetPing() const;
+
   //////////////////////////////////////////////////////////////////////////
   // SQL STRINGS
 

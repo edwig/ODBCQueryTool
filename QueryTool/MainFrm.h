@@ -80,6 +80,7 @@ protected:
 
 
 	afx_msg int			OnCreate(LPCREATESTRUCT lpCreateStruct);
+  afx_msg void    OnTimer(UINT_PTR nIDEvent);
 	afx_msg void		OnWindowManager();
 	afx_msg void		OnViewCustomize();
 	afx_msg LRESULT OnToolbarCreateNew(WPARAM wp, LPARAM lp);

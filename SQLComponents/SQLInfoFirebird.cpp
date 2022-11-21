@@ -497,6 +497,14 @@ SQLInfoFirebird::GetSQLTopNRows(XString p_sql,int p_top,int p_skip /*= 0*/) cons
   return p_sql;
 }
 
+// Query to perform a keep alive ping
+XString
+SQLInfoFirebird::GetPing() const
+{
+  // Not implemented yet
+  return "SELECT current_timestamp FROM rdb$database";
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // SQL STRINGS

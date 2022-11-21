@@ -476,6 +476,14 @@ SQLInfoSQLServer::GetSQLTopNRows(XString p_sql,int p_top,int p_skip /*= 0*/) con
   return p_sql;
 }
 
+// Query to perform a keep alive ping
+XString
+SQLInfoSQLServer::GetPing() const
+{
+  // Getting the time does a ping
+  return "SELECT current_timestamp";
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // SQL STRINGS
