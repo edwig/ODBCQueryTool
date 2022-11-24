@@ -22,6 +22,18 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes version 3.0.5
+--------------------------
+- Fixed a bug when changing the default font in the settings when installed in "C:\Progam Files\Edo"
+  this is the default location, so a lot of users will have this settup. The crash derived from the  
+  fact that there where no update rigths on the settings files.
+  ODBCQueryTool now makes a copy of the setup files to the roaming profile of the user and afterwards
+  works from this set of setting files. This also fixes the crash.
+- Fixes for the saving of a changed text file when closing the application. A crash in the dialog 
+  that asks for the fact that the users wishes to save her/his work is solved.
+- Fixed unwanted/unneeded message in the installer that same version is already installed
+- Updates from support libraries to the latest versions (SQLComponents, StyleFramework, BaseLibrary)
+
 Releasenotes version 3.0.4
 --------------------------
 - Added the ":exit;" command to the script language
