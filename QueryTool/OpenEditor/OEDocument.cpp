@@ -44,6 +44,7 @@
 #include "OEDocumentDlg.h"
 #include <OESQLSettingsPage.h>
 #include "Query/QueryPanelWnd.h"
+#include <io.h>
 
 
 #ifdef _DEBUG
@@ -60,6 +61,7 @@ using namespace OpenEditor;
 
 #define CHECK_FILE_OPERATION(r) if(!(r)) file_exeption::check_last_error();
 
+CString         COEDocument::m_settingsDir;
 SettingsManager COEDocument::m_settingsManager;
 Searcher        COEDocument::m_searcher(true);
 bool            COEDocument::m_saveModified_silent = false;
@@ -89,35 +91,38 @@ END_MESSAGE_MAP()
 
 COEDocument::COEDocument()
 {
-    try
-    {
-        m_vmdata = NULL;
-        m_orgModified = false;
-        m_newOrSaveAs = false;
-        m_extension   = "SQL";
-        m_extensionInitialized = false;
-        m_settings.SetClassSetting(&m_settingsManager.GetDefaults());
-        m_storage.SetSettings(&m_settings);
-        m_storage.SetSearcher(&m_searcher);
-    }
-    _OE_DEFAULT_HANDLER_;
+  try
+  {
+    m_vmdata = NULL;
+    m_orgModified = false;
+    m_newOrSaveAs = false;
+    m_extension   = "SQL";
+    m_extensionInitialized = false;
+    m_settings.SetClassSetting(&m_settingsManager.GetDefaults());
+    m_storage.SetSettings(&m_settings);
+    m_storage.SetSearcher(&m_searcher);
+  }
+  _OE_DEFAULT_HANDLER_;
 }
 
 
 COEDocument::~COEDocument()
 {
-    CWaitCursor wait;
+  CWaitCursor wait;
 
-    try 
+  try 
+  {
+    if(m_vmdata)
     {
-        if (m_vmdata) VirtualFree(m_vmdata, 0, MEM_RELEASE);
-        m_storage.Clear();
-        m_mmfile.Close();
+      VirtualFree(m_vmdata,0,MEM_RELEASE);
     }
-    catch (...) { DEFAULT_HANDLER_ALL; }
+    m_storage.Clear();
+    m_mmfile.Close();
+  }
+  catch (...) { DEFAULT_HANDLER_ALL; }
 
-    // for safe delete
-    //m_storage.SetSettings(&m_settingsManager.GetDefaults());
+  // for safe delete
+  //m_storage.SetSettings(&m_settingsManager.GetDefaults());
 }
 
 
@@ -637,55 +642,97 @@ void COEDocument::SetText (const char* text, unsigned long length)
     }
 }
 
-void COEDocument::LoadSettingsManager ()
+void COEDocument::LoadSettingsManager()
 {
-    std::string path;
-    AppGetPath(path);
+  std::string path;
+  AppGetPath(path);
 
-    // Load language support
-    LanguagesCollectionReader(
-            FileInStream((path + "\\data\\languages.dat").c_str())
-        ) >> LanguagesCollection();
+  if(m_settingsDir.IsEmpty())
+  {
+    CString dir;
+    Common::FindApplicDirectory(dir);
+    m_settingsDir = dir + "\\EDO\\OpenODBCQuerytool\\";
+  }
 
-    TemplateCollectionReader(
-            FileInStream((path + "\\data\\templates.dat").c_str())
-        ) >> m_settingsManager;
+  // Try to load from the users path
+  std::string settingsdir(m_settingsDir.GetBuffer());
+  std::string languages = settingsdir + "languages.dat";
+  std::string templates = settingsdir + "templates.dat";
+  std::string settings  = settingsdir + "settings.dat";
 
-    // Load editor settings
-    SettingsManagerReader(
-            FileInStream((path + "\\data\\settings.dat").c_str())
-        ) >> m_settingsManager;
-
+  // Load language support
+  if(_access(languages.c_str(),0) == 0)
+  {
+    LanguagesCollectionReader(FileInStream(languages.c_str())) >> LanguagesCollection();
+  }
+  else
+  {
+    LanguagesCollectionReader(FileInStream((path + "\\data\\languages.dat").c_str())) >> LanguagesCollection();
+  }
+  // Load template settings
+  if(_access(templates.c_str(),0) == 0)
+  {
+    TemplateCollectionReader(FileInStream(templates.c_str())) >> m_settingsManager;
+  }
+  else
+  {
+    TemplateCollectionReader(FileInStream((path + "\\data\\templates.dat").c_str())) >> m_settingsManager;
+  }
+  // Load editor settings
+  if(_access(settings.c_str(),0) == 0)
+  {
+    SettingsManagerReader(FileInStream(settings.c_str())) >> m_settingsManager;
+  }
+  else
+  {
+    SettingsManagerReader(FileInStream((path + "\\data\\settings.dat").c_str())) >> m_settingsManager;
+  }
 }
 
-    static bool g_isBackupDone = false;
+static bool g_isBackupDone = false;
 
-void COEDocument::SaveSettingsManager ()
+void COEDocument::SaveSettingsManager()
 {
     std::string path;
     AppGetPath(path);
 
-    if (!g_isBackupDone)
+    if(m_settingsDir.IsEmpty())
     {
-        // old settings backup
-        _CHECK_AND_THROW_(
-                   CopyFile((path + "\\data\\templates.dat").c_str(), 
-                            (path + "\\data\\templates.dat.old").c_str(), FALSE) != 0
-                && CopyFile((path + "\\data\\settings.dat").c_str(), 
-                            (path + "\\data\\settings.dat.old").c_str(), FALSE) != 0,
-                "Settings backup file creation error!"
-            );
-        g_isBackupDone = true;
+      CString dir;
+      Common::FindApplicDirectory(dir);
+      m_settingsDir = dir + "\\EDO\\OpenODBCQuerytool\\";
     }
 
-    // save new seddings
-    TemplateCollectionWriter(
-            FileOutStream((path + "\\data\\templates.dat").c_str())
-        ) << m_settingsManager;
+    std::string settingsdir(m_settingsDir.GetBuffer());
+    std::string orgtemplates = path + "\\data\\templates.dat";
+    std::string orgsettings  = path + "\\data\\settings.dat";
+    std::string owntemplates = settingsdir + "templates.dat";
+    std::string ownsettings  = settingsdir + "settings.dat";
+    std::string baktemplates = owntemplates + ".bak";
+    std::string baksettings  = ownsettings  + ".bak";
 
-    SettingsManagerWriter(
-            FileOutStream((path + "\\data\\settings.dat").c_str())
-        ) << m_settingsManager;
+    if(_access(owntemplates.c_str(),0) == 0 &&
+       _access(ownsettings .c_str(),0) == 0)
+    {
+      // Own files already exist. Should we make a backup?
+      if(!g_isBackupDone)
+      {
+        // old settings backup
+        _CHECK_AND_THROW_(CopyFile(owntemplates.c_str(),baktemplates.c_str(), FALSE) != 0 && 
+                          CopyFile(ownsettings .c_str(),baksettings .c_str(), FALSE) != 0
+                         ,"Settings backup file creation error!");
+        g_isBackupDone = true;
+      }
+    }
+    else
+    {
+      // Our files do not exist. Create them
+      CopyFile(orgtemplates.c_str(),owntemplates.c_str(),FALSE);
+      CopyFile(orgsettings .c_str(),ownsettings .c_str(),FALSE);
+    }
+    // save new settings
+    TemplateCollectionWriter(FileOutStream(owntemplates.c_str())) << m_settingsManager;
+    SettingsManagerWriter   (FileOutStream(ownsettings .c_str())) << m_settingsManager;
 }
 
 void COEDocument::ShowSettingsDialog()
@@ -695,8 +742,8 @@ void COEDocument::ShowSettingsDialog()
 
   if (dlg.DoModal() == IDOK)
   {
-      m_settingsManager = mgr;
-      SaveSettingsManager();
+    m_settingsManager = mgr;
+    SaveSettingsManager();
   }
 }
 

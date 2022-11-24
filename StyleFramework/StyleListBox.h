@@ -86,6 +86,7 @@ protected:
 
   void    UpdateWidth(LPCTSTR p_string);
   void    AdjustScroll();
+  void    AdjustHorizontalExtent();
   void    RemoveLineNumber(CString& p_text);
   void    RemoveLineInfo();
   void    SetItemPointer(int p_index,void* p_data);

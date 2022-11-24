@@ -2,7 +2,6 @@
 #include "resource.h"
 #include "OESaveModifiedDlg.h"
 
-
 // CSaveModifiedDlg dialog
 
 COESaveModifiedDlg::COESaveModifiedDlg(DocSavingList& list)
@@ -40,7 +39,9 @@ BOOL COESaveModifiedDlg::OnInitDialog()
     title = item.first->GetTitle();
     m_listBox.AddString(title);
   }
+  m_listBox.Invalidate();
 
+  UpdateData(FALSE);
   return TRUE;
 }
 

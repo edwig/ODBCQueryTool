@@ -116,7 +116,6 @@ private:
   ConSetIter  FindSetting(CString user,CString datasource);
   bool        GetDatasourcesFromODBCManager();
   CString     GetLocalDirectory();
-  void        FindApplicDirectory();
   void        CreateINIDirectory();
   void        SetListFont();
   CString     Current();  

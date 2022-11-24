@@ -241,11 +241,55 @@ void AppGetPath (std::string& path)
 void AppGetFullPathName (const String& path, String& fullPath)
 {
 	char *filename;
-    int length = GetFullPathName(path.c_str(), 0, 0, &filename);
-    char *buffer = new char[length + 1];
-    GetFullPathName(path.c_str(), length + 1, buffer, &filename);
-    fullPath = buffer;
-    delete buffer;
+  int length = GetFullPathName(path.c_str(), 0, 0, &filename);
+  char *buffer = new char[length + 1];
+  GetFullPathName(path.c_str(), length + 1, buffer, &filename);
+  fullPath = buffer;
+  delete buffer;
+}
+
+void
+FindApplicDirectory(CString& p_directory)
+{
+  IMalloc*      pShellMalloc = NULL;    // A pointer to the shell's IMalloc interface
+  IShellFolder* psfParent;              // A pointer to the parent folder object's IShellFolder interface.
+  LPITEMIDLIST  pidlItem = NULL;        // The item's PIDL.
+  LPITEMIDLIST  pidlRelative = NULL;    // The item's PIDL relative to the parent folder.
+  CHAR          szPath[MAX_PATH] = "";  // The path for Favorites.
+  STRRET        str;                    // The structure for strings returned from IShellFolder.
+
+  HRESULT hres = SHGetMalloc(&pShellMalloc);
+  if(FAILED(hres))
+  {
+    return;
+  }
+  hres = SHGetSpecialFolderLocation(NULL,CSIDL_APPDATA,&pidlItem);
+  if(SUCCEEDED(hres))
+  {
+    hres = SHBindToParent(pidlItem,
+                          IID_IShellFolder,
+                          (void**) &psfParent,
+                          (LPCITEMIDLIST*) &pidlRelative);
+    if(SUCCEEDED(hres))
+    {
+      // Retrieve the path
+      memset(&str,0,sizeof(str));
+      hres = psfParent->GetDisplayNameOf(pidlRelative,SHGDN_NORMAL | SHGDN_FORPARSING,&str);
+      if(SUCCEEDED(hres))
+      {
+        StrRetToBuf(&str,pidlItem,szPath,ARRAYSIZE(szPath));
+      }
+      psfParent->Release();
+    }
+  }
+  // Clean up allocated memory
+  if(pidlItem)
+  {
+    pShellMalloc->Free(pidlItem);
+  }
+  pShellMalloc->Release();
+  // Result
+  p_directory = szPath;
 }
 
 

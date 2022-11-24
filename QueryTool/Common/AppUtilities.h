@@ -45,6 +45,7 @@ namespace Common
     BOOL AppDeleteDirectory (const char* szPath);
     void AppGetPath (String& path);
     void AppGetFullPathName (const String& path, String& fullPath);
+    void FindApplicDirectory(CString& p_directory);
 
     bool AppGetFileAttrs (
             const char* szPath, DWORD* attrs, __int64* fileSize = 0,

@@ -226,10 +226,14 @@ StyleListBox::AppendString(LPCSTR p_string,COLORREF p_foreground,COLORREF p_back
 void
 StyleListBox::SetItemPointer(int p_index,void* p_data)
 {
-  ListBoxColorLine* listBox = reinterpret_cast<ListBoxColorLine*>(GetItemDataPtr(p_index));
-  if(listBox && (listBox != (ListBoxColorLine*)LB_ERR) &&listBox->m_magic == LIST_MAGIC)
+  ListBoxColorLine* line = reinterpret_cast<ListBoxColorLine*>(GetItemDataPtr(p_index));
+  if(line && (line != (ListBoxColorLine*) LB_ERR) && line->m_magic == LIST_MAGIC)
   {
-    delete listBox;
+    try
+    {
+      delete line;
+    }
+    catch(...) {}
   }
   SetItemDataPtr(p_index,p_data);
 }
@@ -273,13 +277,13 @@ StyleListBox::DrawItem(LPDRAWITEMSTRUCT p_drawItemStruct)
   COLORREF foreground(FRAME_DEFAULT_COLOR);
   COLORREF background(FRAME_DEFAULT_COLOR);
   // Getting our foreground/background colors
-  ListBoxColorLine* listBox = reinterpret_cast<ListBoxColorLine*>(GetItemDataPtr(p_drawItemStruct->itemID));
-  if(!listBox || (listBox == (ListBoxColorLine*)LB_ERR) || listBox->m_magic != LIST_MAGIC)
+  ListBoxColorLine* line = reinterpret_cast<ListBoxColorLine*>(GetItemDataPtr(p_drawItemStruct->itemID));
+  if(!line || (line == (ListBoxColorLine*)LB_ERR) || line->m_magic != LIST_MAGIC)
   {
     return;
   }
-  foreground = listBox->m_foreground;
-  background = listBox->m_background;
+  foreground = line->m_foreground;
+  background = line->m_background;
   if(foreground == FRAME_DEFAULT_COLOR)
   {
     foreground = ThemeColor::GetColor(Colors::ColorEditText);
@@ -317,7 +321,7 @@ StyleListBox::DrawItem(LPDRAWITEMSTRUCT p_drawItemStruct)
   p_drawItemStruct->rcItem.top    += 1;
   p_drawItemStruct->rcItem.bottom -= 1;
 
-  dc.DrawText(listBox->m_text.GetString(),listBox->m_text.GetLength(),&p_drawItemStruct->rcItem,DT_NOCLIP | DT_NOPREFIX | DT_VCENTER);
+  dc.DrawText(line->m_text.GetString(),line->m_text.GetLength(),&p_drawItemStruct->rcItem,DT_NOCLIP | DT_NOPREFIX | DT_VCENTER);
 
   // Reset the background color and the text color back to their
   // original values.
@@ -348,9 +352,14 @@ StyleListBox::DeleteItem(LPDELETEITEMSTRUCT p_deleteItemStruct)
 {
   ASSERT(p_deleteItemStruct->CtlType == ODT_LISTBOX);
   ListBoxColorLine* line = reinterpret_cast<ListBoxColorLine*>(p_deleteItemStruct->itemData);
-  if(line && line->m_magic == LIST_MAGIC)
+  if(line && (line != (ListBoxColorLine*) LB_ERR) && line->m_magic == LIST_MAGIC)
   {
-    delete line;
+    try
+    {
+      delete line;
+      SetItemDataPtr(p_deleteItemStruct->itemID,nullptr);
+    }
+    catch(...){}
   }
   CListBox::DeleteItem(p_deleteItemStruct);
 }
@@ -389,9 +398,14 @@ StyleListBox::DeleteString(int p_number)
   {
     // Remove color info
     ListBoxColorLine* line = reinterpret_cast<ListBoxColorLine*>(GetItemDataPtr(p_number));
-    if(line)
+    if(line && (line != (ListBoxColorLine*) LB_ERR) && line->m_magic == LIST_MAGIC)
     {
-      delete line;
+      try
+      {
+        delete line;
+        SetItemDataPtr(p_number,nullptr);
+      }
+      catch(...){}
     }
   }
 
@@ -401,6 +415,13 @@ StyleListBox::DeleteString(int p_number)
   {
     return result;
   }
+  AdjustHorizontalExtent();
+  return result;
+}
+
+void
+StyleListBox::AdjustHorizontalExtent()
+{
   CClientDC dc(this);
 
   CFont* f = CListBox::GetFont();
@@ -422,7 +443,6 @@ StyleListBox::DeleteString(int p_number)
   }
   CListBox::SetHorizontalExtent(m_width);
   AdjustScroll();
-  return result;
 }
 
 void
@@ -807,9 +827,14 @@ StyleListBox::RemoveLineInfo()
   for(int index = 0;index < nCount;index++)
   {
     ListBoxColorLine* line = reinterpret_cast<ListBoxColorLine*>(GetItemDataPtr(index));
-    if(line && line->m_magic == LIST_MAGIC)
+    if(line && (line != (ListBoxColorLine*) LB_ERR) && line->m_magic == LIST_MAGIC)
     {
-      delete line;
+      try
+      {
+        delete line;
+        SetItemDataPtr(index,nullptr);
+      }
+      catch(...){}
     }
   }
 }

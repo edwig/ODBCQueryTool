@@ -57,6 +57,7 @@ class COEDocument : public CDocumentExt, CFileWatchClient
     LPVOID m_vmdata;
     void loadFile (const char* path, bool reload = false, bool external = false);
 
+    static CString m_settingsDir;
     static OpenEditor::SettingsManager m_settingsManager;
     static OpenEditor::Searcher m_searcher;
 
@@ -70,9 +71,9 @@ protected:
     void SetText (LPVOID, unsigned long);
     LPCVOID GetVMData () const;
 
-	COEDocument();
-	virtual ~COEDocument();
-	DECLARE_DYNCREATE(COEDocument)
+	  COEDocument();
+	  virtual ~COEDocument();
+	  DECLARE_DYNCREATE(COEDocument)
 
 public:
     void SetText (const char*, unsigned long);

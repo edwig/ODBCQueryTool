@@ -25,6 +25,7 @@
 #include <wincrypt.h>
 #include <SQLDatabase.h>
 #include <StyleFrameWork.h>
+#include <AppUtilities.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -45,7 +46,7 @@ MultConnectionsDlg::MultConnectionsDlg(CWnd* pParent /*=NULL*/)
                    ,m_nextSection(1)
                    ,m_vista(false)
 {
-  FindApplicDirectory();
+  Common::FindApplicDirectory(m_applicDirectory);
   CreateINIDirectory();
   m_ODBC_iniFile = GetLocalDirectory() + "ODBC_querytool.ini";
 }
@@ -733,83 +734,7 @@ MultConnectionsDlg::OnBnClicked_delete()
 CString
 MultConnectionsDlg::GetLocalDirectory()
 {
-  CString directory = m_applicDirectory;
-
-  if(m_vista)
-  {
-    // MS-Windows version 6 (Vista/Windows7)
-    // Might swap local APPDATA (roaming for local)
-    // 1) Strip "\\Roaming"
-    // 2) add new appdata directory += "\\Local";
-  }
-  directory += "\\EDO\\OpenODBCQuerytool\\";
-  return directory;
-}
-
-// MS-Windows Vista and above (Windows-7) should now use SHGetKnownFolderPath
-// to correctly get the systemwide special folder names.
-// And it's a lot prettier and shorter code at that too!
-// void
-// MultConnectionsDlg::FindApplicDirectory()
-// {
-//   USES_CONVERSION;
-//   PWCHAR szPath;
-// 
-//   HRESULT res = SHGetKnownFolderPath(FOLDERID_RoamingAppData 
-//                                     ,KF_FLAG_NO_ALIAS   // no %ENV% strings in result
-//                                     ,NULL               // No Impersonation
-//                                     ,&szPath);
-//   if(SUCCEEDED(res))
-//   {
-//     // This was our goal
-//     m_applicDirectory = CW2T(szPath);
-//     // Free result
-//     CoTaskMemFree(szPath);
-//   }
-// }
-
-void 
-MultConnectionsDlg::FindApplicDirectory()
-{
-  IMalloc*      pShellMalloc = NULL;    // A pointer to the shell's IMalloc interface
-  IShellFolder* psfParent;              // A pointer to the parent folder object's IShellFolder interface.
-  LPITEMIDLIST  pidlItem     = NULL;    // The item's PIDL.
-  LPITEMIDLIST  pidlRelative = NULL;    // The item's PIDL relative to the parent folder.
-  CHAR szPath[MAX_PATH] = "";           // The path for Favorites.
-  STRRET str;                           // The structure for strings returned from IShellFolder.
-
-  HRESULT hres = SHGetMalloc(&pShellMalloc);
-  if (FAILED(hres))
-  {
-    return;
-  }
-  hres = SHGetSpecialFolderLocation(NULL,CSIDL_APPDATA,&pidlItem);
-  if (SUCCEEDED(hres))
-  {
-    hres = SHBindToParent(pidlItem,
-                          IID_IShellFolder,
-                          (void**)&psfParent,
-                          (LPCITEMIDLIST*)&pidlRelative);
-    if (SUCCEEDED(hres))
-    {
-      // Retrieve the path
-      memset(&str, 0, sizeof(str));
-      hres = psfParent->GetDisplayNameOf(pidlRelative, SHGDN_NORMAL | SHGDN_FORPARSING, &str);
-      if (SUCCEEDED(hres))
-      {
-        StrRetToBuf(&str, pidlItem, szPath, ARRAYSIZE(szPath));
-      }
-      psfParent->Release();
-    }
-  }
-  // Clean up allocated memory
-  if (pidlItem)
-  {
-    pShellMalloc->Free(pidlItem);
-  }
-  pShellMalloc->Release();
-
-  m_applicDirectory = szPath;
+  return m_applicDirectory + "\\EDO\\OpenODBCQuerytool\\";
 }
 
 void
