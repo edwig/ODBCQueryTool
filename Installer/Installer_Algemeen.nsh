@@ -7,11 +7,11 @@
 ; All rights reserved
 ;
 ; Last change:       27-03-2022
-; Versionnumber:     3.0.4
+; Versionnumber:     3.0.5
 ;-------------------------------------------------------
  !define PRODUCT_NAME                         "OpenODBCQuerytool"
- !define PRODUCT_VERSION                      "3.0.4"
- !define PRODUCT_BUILDNUMBER                  "328"
+ !define PRODUCT_VERSION                      "3.0.5"
+ !define PRODUCT_BUILDNUMBER                  "330"
  !define PRODUCT_PUBLISHER                    "EDO"
  !define PRODUCT_WEB_SITE                     "https://sourceforge.net/projects/odbcquerytool"
  !define PRODUCT_DIR_REGKEY                   "Software\Microsoft\Windows\CurrentVersion\App Paths\${PRODUCT_NAME}"
@@ -194,7 +194,7 @@ Function .onInit
 
 ;Check if there is a newer version of the product
  Readregstr $currentVersion "${PRODUCT_UNINST_ROOT_KEY}" "${PRODUCT_UNINST_KEY}" "DisplayVersion"
- IntCmp $currentVersion "${PRODUCT_VERSION}.${PRODUCT_BUILDNUMBER}" versionTheSame SetupVersionNewer CurrentVersionNewer
+ StrCmp $currentVersion "${PRODUCT_VERSION}.${PRODUCT_BUILDNUMBER}" versionTheSame alreadyInstalled
 
  versionTheSame:
   Messagebox MB_YESNO "This version of ${PRODUCT_NAME} is already installed. Do you want to re-install it? " /SD IDYES IDNO doNotRepair
@@ -203,9 +203,9 @@ Function .onInit
  doNotRepair:
   abort
 
- CurrentVersionNewer:
-  Messagebox MB_YESNO "There is already a newer version of ${PRODUCT_NAME} installed on your system. \
-             Do you want to overwrite it with the current (lower) version of the product?" \
+ alreadyInstalled:
+  Messagebox MB_YESNO "There is already another version of ${PRODUCT_NAME} installed on your system. \
+             Do you want to overwrite it with the current version of the product?" \
             /SD IDNO IDYES doInstallAfterAll
 
   abort
