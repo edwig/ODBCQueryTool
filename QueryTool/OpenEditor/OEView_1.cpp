@@ -1997,4 +1997,3 @@ void COEditorView::OnEditNormalizeText()
 void COEditorView::OnTest ()
 {
 }
-

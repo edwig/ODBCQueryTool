@@ -1419,6 +1419,9 @@ ObjectTree::StatisticsToTree(MIndicesMap& p_statistics,HTREEITEM p_item)
       line.Format("Data pages: %d",stat.m_pages);
       item = InsertItem(line,next);
       SetItemImage(item,IMG_INDEX,IMG_INDEX);
+      line.Format("Index filter: %s",stat.m_filter);
+      item = InsertItem(line,next);
+      SetItemImage(item,IMG_INDEX,IMG_INDEX);
     }
     if(stat.m_indexType != SQL_TABLE_STAT)
     {

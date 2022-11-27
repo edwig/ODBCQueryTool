@@ -1348,6 +1348,25 @@ QueryToolApp::PreTranslateMessage(MSG* pMsg)
       return FALSE;
     }
   }
+  else if(pMsg->message == WM_SYSKEYDOWN && pMsg->wParam == VK_F10)
+  {
+    // Special case to bypase the F10 system key.
+    // use the ALT key alone to get to the menu!!
+    bool lctrldown = ::GetAsyncKeyState(VK_LCONTROL) & 0x8000;
+    bool rctrldown = ::GetAsyncKeyState(VK_RCONTROL) & 0x8000;
+    bool laltdown  = ::GetAsyncKeyState(VK_LMENU)    & 0x8000;
+    bool raltdown  = ::GetAsyncKeyState(VK_RMENU)    & 0x8000;
+
+    if(!lctrldown && !rctrldown && !laltdown && !raltdown)
+    {
+      m_pMainWnd->PostMessage(WM_COMMAND,ID_SCRIPT_CURRENT,0);
+      return TRUE;
+    }
+  }
+  else if(pMsg->message == WM_SYSKEYUP && pMsg->wParam == VK_F10)
+  {
+    return TRUE;
+  }
   return CWinApp::PreTranslateMessage(pMsg);
 }
 
