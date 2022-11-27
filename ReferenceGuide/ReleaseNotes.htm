@@ -9,6 +9,32 @@
 </head>
 
 <body>
+    <h3>Releasenotes 3.0.6</h3>
+
+    <p>Fixed problem with the "Table DDL" command. Table create statements are generated again.</p>
+
+    <p>Fixed the problem with the F10 key (run current SQL command line). The program is now prevented from entering the
+    'Select main menu' state, after the pressing of this key. If you wish to use the main menu from the keyboard, use a single
+    ALT key to go there.</p>
+
+    <h3>Releasenotes 3.0.5</h3>
+
+    <p>Fixed a bug when changing the default font in the settings when installed in "C:\Progam Files\Edo" this is the default
+    location, so a lot of users will have this settup. The crash derived from the&nbsp; fact that there where no update rigths
+    on the settings files. ODBCQueryTool now makes a copy of the setup files to the roaming profile of the user and afterwards
+    works from this set of setting files. This also fixes the crash.</p>
+
+    <p>Fixes for the saving of a changed text file when closing the application. A crash in the dialog that asks for the fact
+    that the users wishes to save her/his work is solved.</p>
+
+    <p>Fixed unwanted/unneeded message in the installer that same version is already installed</p>
+
+    <p>Updates from support libraries to the latest versions (SQLComponents, StyleFramework, BaseLibrary)</p>
+
+    <h3>Releasenotes 3.0.4</h3>
+
+    <p>Added the ":exit;" script command</p>
+
     <h3>Releasenotes 3.0.3</h3>
 
     <p>Fixed a bug when setting a new font on the SQL results grid. Change the font and open a new document view to see the

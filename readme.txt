@@ -22,6 +22,13 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes version 3.0.6
+--------------------------
+- Fixed problem with the "Table DDL" command. Table create statements are generated again.
+- Fixed the problem with the F10 key (run current SQL command line). The program is now prevented
+  from entering the 'Select main menu' state, after the pressing of this key.
+  If you wish to use the main menu from the keyboard, use a single ALT key to go there.
+
 Releasenotes version 3.0.5
 --------------------------
 - Fixed a bug when changing the default font in the settings when installed in "C:\Progam Files\Edo"

@@ -24,8 +24,8 @@
 #pragma once
 
 // General text version
-#define ODBCQUERYTOOL_VERSION  "3.0.5"
-#define ODBCQUERYTOOL_BUILD    "330"
+#define ODBCQUERYTOOL_VERSION  "3.0.6"
+#define ODBCQUERYTOOL_BUILD    "332"
 #define ODBCQUERYTOOL_COPYRIGHT "Copyright (c) Edwig Huisman 2004-2022"
 
 // For the resource files
