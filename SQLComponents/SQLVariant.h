@@ -109,26 +109,26 @@ public:
    void    Reset();
 
    // STATUS
-   bool    IsNULL();
-   bool    IsEmpty();
-   bool    IsNumericType();
-   bool    IsDecimalType();
-   bool    IsIntervalType();
-   bool    IsDateTimeType();
+   bool    IsNULL() const;
+   bool    IsEmpty() const;
+   bool    IsNumericType() const;
+   bool    IsDecimalType() const;
+   bool    IsIntervalType() const;
+   bool    IsDateTimeType() const;
 
    // GETTERS
-   int     GetDataType();
-   int     GetDataSize();
-   int     GetSQLDataType();
-   bool    GetAtExec();
-   int     GetBinaryPieceSize();
-   int     GetBinaryLength();
+   int     GetDataType() const;
+   int     GetDataSize() const;
+   int     GetSQLDataType() const;
+   bool    GetAtExec() const;
+   int     GetBinaryPieceSize() const;
+   int     GetBinaryLength() const;
    SQLLEN* GetIndicatorPointer();
-   int     GetColumnNumber();
-   int     GetParameterType();
-   int     GetFraction();
-   int     GetNumericPrecision();  // Only for SQL_NUMERIC
-   int     GetNumericScale();      // Only for SQL_NUMERIC
+   int     GetColumnNumber() const;
+   int     GetParameterType() const;
+   int     GetFraction() const;
+   int     GetNumericPrecision() const;  // Only for SQL_NUMERIC
+   int     GetNumericScale() const;      // Only for SQL_NUMERIC
    // SETTERS
    void    SetSQLDataType(int p_type);
    void    SetAtExec(bool p_atExec);
@@ -151,7 +151,7 @@ public:
 
    // General access
    bool                 SetData(int p_type,const char* p_data);
-   void*                GetDataPointer();
+   void*   GetDataPointer() const;
    void                 SetFromRawDataPointer(void* p_pointer,int p_size = 0);
    // BLOB Functions
    void                 AttachBinary(void* p_pointer,unsigned long p_size = 0);
@@ -189,6 +189,35 @@ public:
    SQLGuid              GetAsSQLGuid();
    bcd                  GetAsBCD();
    
+   // SET VALUE PER TYPE
+   void                 Set(const char* p_string);
+   void                 Set(XString p_string);
+   void                 Set(void* p_pointer,int p_length);
+   void                 Set(bool p_boolean);
+   void                 Set(short p_short);
+   void                 Set(unsigned short p_short);
+   void                 Set(int p_slong);
+   void                 Set(unsigned int p_ulong);
+   void                 Set(float p_float);
+   void                 Set(double p_double);
+   void                 Set(char p_stinyint);
+   void                 Set(unsigned char p_utinyint);
+   void                 Set(bcd p_bcd);
+   void                 Set(SQLBIGINT p_sbigint);
+   void                 Set(SQLUBIGINT p_ubigint);
+   void                 Set(SQL_NUMERIC_STRUCT* p_numeric);
+   void                 Set(SQLGUID* p_guid);
+   void                 Set(DATE_STRUCT* p_date);
+   void                 Set(TIME_STRUCT* p_time);
+   void                 Set(TIMESTAMP_STRUCT* p_timestamp);
+   void                 Set(SQL_INTERVAL_STRUCT* p_interval);
+   void                 Set(SQLDate* p_date);
+   void                 Set(SQLTime* p_time);
+   void                 Set(SQLTimestamp* p_timestamp);
+   void                 Set(SQLInterval* p_interval);
+   void                 Set(SQLGuid* p_guid);
+   void                 SetFromEuropeanTimestamp(XString p_stamp);
+
    // INFO about type names/values
    static  int          FindDatatype   (char* p_type);
    static  const char*  FindDatatype   (int   p_type);
@@ -349,7 +378,7 @@ private:
 };
 
 inline bool
-SQLVariant::GetAtExec()
+SQLVariant::GetAtExec() const
 {
   return m_useAtExec;
 }
@@ -361,13 +390,13 @@ SQLVariant::SetAtExec(bool p_atExec)
 }
 
 inline int
-SQLVariant::GetBinaryPieceSize()
+SQLVariant::GetBinaryPieceSize() const
 {
   return m_binaryPieceSize;
 }
 
 inline int
-SQLVariant::GetBinaryLength()
+SQLVariant::GetBinaryLength() const
 {
   return m_binaryLength;
 }
@@ -385,7 +414,7 @@ SQLVariant::GetIndicatorPointer()
 }
 
 inline int
-SQLVariant::GetColumnNumber()
+SQLVariant::GetColumnNumber() const
 {
   return m_columnNumber;
 }
@@ -397,25 +426,25 @@ SQLVariant::SetColumnNumber(int p_column)
 }
 
 inline int
-SQLVariant::GetParameterType()
+SQLVariant::GetParameterType() const
 {
   return m_paramType;
 }
 
 inline int     
-SQLVariant::GetDataType()
+SQLVariant::GetDataType() const
 {
   return m_datatype;
 }
 
 inline bool
-SQLVariant::IsNULL()
+SQLVariant::IsNULL() const
 {
   return (m_indicator == SQL_NULL_DATA);
 }
 
 inline int
-SQLVariant::GetSQLDataType()
+SQLVariant::GetSQLDataType() const
 {
   return m_sqlDatatype;
 }

@@ -140,10 +140,10 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="PrintToken.h" />
     <ClInclude Include="ProcInfo.h" />
+    <ClInclude Include="QueryReWriter.h" />
     <ClInclude Include="Redirect.h" />
     <ClInclude Include="Routing.h" />
     <ClInclude Include="RunRedirect.h" />
-    <ClInclude Include="SchemaReWriter.h" />
     <ClInclude Include="ServiceReporting.h" />
     <ClInclude Include="SOAPMessage.h" />
     <ClInclude Include="SOAPSecurity.h" />
@@ -220,9 +220,9 @@
     </ClCompile>
     <ClCompile Include="PrintToken.cpp" />
     <ClCompile Include="ProcInfo.cpp" />
+    <ClCompile Include="QueryReWriter.cpp" />
     <ClCompile Include="Redirect.cpp" />
     <ClCompile Include="RunRedirect.cpp" />
-    <ClCompile Include="SchemaReWriter.cpp" />
     <ClCompile Include="ServiceReporting.cpp" />
     <ClCompile Include="SOAPMessage.cpp" />
     <ClCompile Include="SOAPSecurity.cpp" />

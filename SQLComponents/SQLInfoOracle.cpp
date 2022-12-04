@@ -182,10 +182,39 @@ SQLInfoOracle::GetRDBMSMustCommitDDL() const
 void
 SQLInfoOracle::GetRDBMSNumericPrecisionScale(SQLULEN& p_precision, SQLSMALLINT& p_scale) const
 {
+  // ORACLE SPECIFIC CHECKS
   if(p_precision == NUMERIC_MAX_PRECISION &&
      p_scale     == NUMERIC_MIN_SCALE)
   {
     p_scale = NUMERIC_DEFAULT_SCALE;
+  }
+
+
+  // GENERAL CHECKS
+
+  // Max precision for numerics is 38
+  if(p_precision > NUMERIC_MAX_PRECISION)
+  {
+    p_precision = NUMERIC_MAX_PRECISION;
+  }
+
+  // Default scale is also the max for parameters (16)
+  if(p_scale > NUMERIC_DEFAULT_SCALE)
+  {
+    p_scale = NUMERIC_DEFAULT_SCALE;
+  }
+
+  // In case of conversion from other databases
+  if(p_precision == 0 && p_scale == 0)
+  {
+    p_precision = NUMERIC_MAX_PRECISION;
+    p_scale     = NUMERIC_DEFAULT_SCALE;
+  }
+
+  // Scale MUST be smaller than the precision
+  if(p_scale >= p_precision)
+  {
+    p_scale = (SQLSMALLINT) (p_precision - 1);
   }
 }
 
@@ -560,6 +589,13 @@ SQLInfoOracle::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int
                 ,p_year,p_month,p_day
                 ,p_hour,p_minute,p_second);
   return string;
+}
+
+// Makes an catalog identifier string (possibly quoted on both sides)
+XString
+SQLInfoOracle::GetSQLDDLIdentifier(XString p_identifier) const
+{
+  return p_identifier;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1181,7 +1217,7 @@ SQLInfoOracle::GetCATALOGIndexAttributes(XString& p_schema,XString& p_tablename,
 }
 
 XString
-SQLInfoOracle::GetCATALOGIndexCreate(MIndicesMap& p_indices) const
+SQLInfoOracle::GetCATALOGIndexCreate(MIndicesMap& p_indices,bool /*p_duplicateNulls /*= false*/) const
 {
   // Get SQL to create an index for a table
   // CREATE [UNIQUE] INDEX [<schema>.]indexname ON [<schema>.]tablename(column [ASC|DESC] [,...]);

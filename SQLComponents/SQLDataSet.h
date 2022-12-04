@@ -137,8 +137,8 @@ public:
   int          FindObjectRecNum(VariantSet& p_primary);   // If your primary is a compound key (Slower)
   SQLRecord*   FindObjectRecord(int p_primary);           // If your primary is an INTEGER     (Fast!!)
   SQLRecord*   FindObjectRecord(VariantSet& p_primary);   // If your primary is a compound key (Slower)
-  SQLRecord*   FindObjectFilter(SQLFilterSet& p_filters,bool p_primary = false);  // Fast & slow
-  RecordSet*   FindRecordSet   (SQLFilterSet& p_filters);                         // Always slow
+  SQLRecord*   FindObjectFilter(bool p_primary = false);  // Fast & slow
+  RecordSet*   FindRecordSet();                           // Always slow
   // Forget the records
   bool         Forget(bool p_force = false);
   // Forget just one record AND reset current cursor to first position
@@ -319,7 +319,7 @@ protected:
   // Filter sets
   SQLFilterSet* m_filters { nullptr };
   SQLFilterSet* m_havings { nullptr };
-
+  bool          m_ownFilters   { false   };
   // Records and objects
   int          m_status    { SQL_Empty };
   int          m_current   { -1 };

@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////////
 //
-// SourceFile: SchemaReWriter.h
+// SourceFile: QueryReWriter.h
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
@@ -32,10 +32,13 @@ enum class Token
 {
   TK_EOS    = 0     // END-OF-STRING
  ,TK_PLAIN          // Plain character string
+ ,TK_PLAIN_ODBC     // Plain token with ODBC escape
  ,TK_SQUOTE         // Single quote string
  ,TK_DQUOTE         // Double quote string
  ,TK_POINT          // .
  ,TK_COMMA          // ,
+ ,TK_MINUS          // -
+ ,TK_DIVIDE         // /
  ,TK_COMM_SQL       // --
  ,TK_COMM_C         // /*
  ,TK_COMM_CPP       // //
@@ -68,6 +71,7 @@ enum class SROption
  ,SRO_ADD_TO_CONCAT  = 0x0002   // MS-SQL + to ISO SQL || for two strings
 };
 
+// Map with case-insensitive string compare
 struct StringICompare
 {
   bool operator()(const XString lhs,const XString rhs) const
@@ -77,19 +81,21 @@ struct StringICompare
 };
 using FCodes = std::map<XString,XString,StringICompare>;
 
-class SchemaReWriter
+class QueryReWriter
 {
 public:
-  SchemaReWriter(XString p_schema);
+  QueryReWriter(XString p_schema);
   // Our primary function
   XString Parse(XString p_input);
   // Settings and results
   void    SetOption(SROption p_option);
-  void    SetRewriteCode(FCodes* p_codes);
+  void    SetSchemaSpecial(FCodes* p_specials);
+  void    SetRewriteCodes (FCodes* p_codes);
+  void    SetODBCFunctions(FCodes* p_odbcfuncs);
   int     GetReplaced() { return m_replaced; };
   int     GetOptions()  { return m_options;  };
 private:
-  void    ParseStatement();
+  void    ParseStatement(bool p_closingEscape = false);
   // Token parsing
   Token   GetToken();
   void    PrintToken();
@@ -100,7 +106,7 @@ private:
   void    SkipSpaceAndComment();
   Token   CommentSQL();
   Token   CommentCPP();
-  Token   Concat();
+  Token   StringConcatenate();
   void    QuoteString(int p_ending);
   void    UnGetChar(int p_char);
   int     GetChar();
@@ -112,6 +118,8 @@ private:
   // Options for processing
   int       m_options     { 0       };
   FCodes*   m_codes       { nullptr };
+  FCodes*   m_odbcfuncs   { nullptr };
+  FCodes*   m_specials    { nullptr };
   // Processing data
   int       m_position    { 0       };
   Token     m_token       { Token::TK_EOS };

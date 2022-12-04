@@ -564,6 +564,13 @@ SQLInfoFirebird::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,i
   return retval;
 }
 
+// Makes an catalog identifier string (possibly quoted on both sides)
+XString
+SQLInfoFirebird::GetSQLDDLIdentifier(XString p_identifier) const
+{
+  return p_identifier;
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // CATALOG
@@ -1053,7 +1060,7 @@ SQLInfoFirebird::GetCATALOGIndexAttributes(XString& p_schema,XString& p_tablenam
 }
 
 XString
-SQLInfoFirebird::GetCATALOGIndexCreate(MIndicesMap& p_indices) const
+SQLInfoFirebird::GetCATALOGIndexCreate(MIndicesMap& p_indices,bool /*p_duplicateNulls /*= false*/) const
 {
   XString query;
   for(auto& index : p_indices)

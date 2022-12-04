@@ -208,21 +208,18 @@ SQLAssociation::FollowToMaster()
   }
 
   // Create filter-set and add to the master
-  SQLFilterSet* filters = new SQLFilterSet();
+  m_master->ResetFilters();
   for(unsigned ind = 0;ind < m_assocs.size();++ind)
   {
     SQLFilter filter(m_assocs[ind]->m_primary,OP_Equal,m_assocs[ind]->m_value);
-    filters->AddFilter(&filter);
+    m_master->SetFilter(&filter);
   }
-
-  m_master->ResetFilters();
-  m_master->SetFilters(filters);
 
   bool result = m_master->IsOpen() ? m_master->Append() : m_master->Open();
   if(result)
   {
     // FindBy Filter (primary = true)
-    return m_master->FindObjectFilter(*filters,true);
+    return m_master->FindObjectFilter(true);
   }
   return nullptr;
 }
@@ -239,21 +236,17 @@ SQLAssociation::FollowToDetails()
   }
 
   // Create filter-set and add to the detail
-  SQLFilterSet* filters = new SQLFilterSet();
+  m_detail->ResetFilters();
   for(unsigned ind = 0;ind < m_assocs.size();++ind)
   {
     SQLFilter filter(m_assocs[ind]->m_foreign,OP_Equal,m_assocs[ind]->m_value);
-    filters->AddFilter(filter);
+    m_detail->SetFilter(filter);
   }
-
-  // Begin a new filter set
-  m_detail->ResetFilters();
-  m_detail->SetFilters(filters);
 
   bool result = m_detail->IsOpen() ? m_detail->Append() : m_detail->Open();
   if(result)
   {
-    return m_detail->FindRecordSet(*filters);
+    return m_detail->FindRecordSet();
   }
   return nullptr;
 }

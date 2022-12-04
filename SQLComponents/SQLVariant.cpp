@@ -527,7 +527,7 @@ SQLVariant::TruncateSpace(unsigned p_length)
 // Check if the data is 'empty'
 // CHAR -> Empty string, scalar types are 0 or 0.0
 bool
-SQLVariant::IsEmpty()
+SQLVariant::IsEmpty() const
 {
   int len = 0;
   unsigned char* data = (unsigned char*)&m_data.m_dataSHORT;
@@ -548,7 +548,7 @@ SQLVariant::IsEmpty()
 }
 
 bool
-SQLVariant::IsNumericType()
+SQLVariant::IsNumericType() const
 {
   switch(m_datatype)
   {
@@ -571,7 +571,7 @@ SQLVariant::IsNumericType()
 }
 
 bool
-SQLVariant::IsDecimalType()
+SQLVariant::IsDecimalType() const
 {
   if(m_datatype == SQL_C_NUMERIC)
   {
@@ -586,7 +586,7 @@ SQLVariant::IsDecimalType()
 
 
 bool
-SQLVariant::IsIntervalType()
+SQLVariant::IsIntervalType() const
 {
   switch(m_datatype)
   {
@@ -608,7 +608,7 @@ SQLVariant::IsIntervalType()
 }
 
 bool
-SQLVariant::IsDateTimeType()
+SQLVariant::IsDateTimeType() const
 {
   switch(m_datatype)
   {
@@ -1021,7 +1021,7 @@ SQLVariant::GetAsString(XString& result)
 }
 
 void*   
-SQLVariant::GetDataPointer()
+SQLVariant::GetDataPointer() const
 {
   void* data = NULL;
   switch(m_datatype)
@@ -1088,7 +1088,7 @@ SQLVariant::GetDataPointer()
 }
 
 int     
-SQLVariant::GetDataSize()
+SQLVariant::GetDataSize() const
 {
   switch(m_datatype)
   {
@@ -1152,8 +1152,14 @@ SQLVariant::GetAsChar()
   {
     return (char*)m_data.m_dataBINARY;
   }
+  if(m_indicator == SQL_NULL_DATA)
+  {
+    return "";
+  }
   // Should be: ThrowErrorDatatype(SQL_C_CHAR);
   // Sometimes we come her unexpectedly in various programs
+  ASSERT(FALSE);
+  // But we continue on runtime with 2 times the largest m_data member as reserved memory
   XString waarde;
   GetAsString(waarde);
   strncpy_s(g_waarde,waarde.GetString(),2 * sizeof(SQL_NUMERIC_STRUCT));
@@ -2124,7 +2130,7 @@ SQLVariant::GetAsSQLGuid()
 }
 
 int
-SQLVariant::GetFraction()
+SQLVariant::GetFraction() const
 {
   switch(m_datatype)
   {
@@ -2137,7 +2143,7 @@ SQLVariant::GetFraction()
 
 // Only for SQL_NUMERIC: The precision
 int     
-SQLVariant::GetNumericPrecision()
+SQLVariant::GetNumericPrecision() const
 {
   if(m_datatype == SQL_C_NUMERIC)
   {
@@ -2148,7 +2154,7 @@ SQLVariant::GetNumericPrecision()
 
 // Only for SQL_NUMERIC: The scale
 int
-SQLVariant::GetNumericScale()
+SQLVariant::GetNumericScale() const
 {
   if(m_datatype == SQL_C_NUMERIC)
   {
@@ -2665,7 +2671,7 @@ SQLVariant::SetFromRawDataPointer(void* p_pointer,int p_size /*= 0*/)
     free(m_data.m_dataCHAR);
     m_data.m_dataCHAR = nullptr;
 
-    if (m_datatype == SQL_C_CHAR)
+    if(m_datatype == SQL_C_CHAR && p_size == 0)
     {
       p_size = (int) strlen((char*)p_pointer);
     }
@@ -2677,7 +2683,7 @@ SQLVariant::SetFromRawDataPointer(void* p_pointer,int p_size /*= 0*/)
   // Record data of the type
   switch (m_datatype)
   {
-    case SQL_C_CHAR:                      m_binaryLength = (int)(p_size);
+    case SQL_C_CHAR:                      m_binaryLength    = p_size;
                                           m_data.m_dataCHAR = new char[(size_t)m_binaryLength + 1];
                                           strcpy_s(m_data.m_dataCHAR,  (size_t)m_binaryLength + 1,(const char*)p_pointer);
                                           m_indicator = p_size > 0 ? SQL_NTS : SQL_NULL_DATA;
@@ -2741,6 +2747,296 @@ SQLVariant::SetFromRawDataPointer(void* p_pointer,int p_size /*= 0*/)
                                           break;
     default:                              m_indicator = SQL_NULL_DATA;
   }
+}
+
+void
+SQLVariant::Set(const char* p_string)
+{
+  if(m_datatype != SQL_C_CHAR)
+  {
+    ResetDataType(SQL_C_CHAR);
+  }
+  SetFromRawDataPointer((void*)p_string,0);
+}
+
+void
+SQLVariant::Set(XString p_string)
+{
+  if(m_datatype != SQL_C_CHAR)
+  {
+    ResetDataType(SQL_C_CHAR);
+  }
+  SetFromRawDataPointer((void *)p_string.GetString(),p_string.GetLength());
+}
+
+void
+SQLVariant::Set(void* p_pointer,int p_length)
+{
+  if(m_datatype != SQL_C_BINARY)
+  {
+    ResetDataType(SQL_C_BINARY);
+  }
+  SetFromRawDataPointer(p_pointer,p_length);
+}
+
+void
+SQLVariant::Set(bool p_boolean)
+{
+  if(m_datatype != SQL_C_BIT)
+  {
+    ResetDataType(SQL_C_BIT);
+  }
+  SetFromRawDataPointer((void*)&p_boolean,0);
+}
+
+void
+SQLVariant::Set(short p_short)
+{
+  if(m_datatype != SQL_C_SSHORT)
+  {
+    ResetDataType(SQL_C_SSHORT);
+  }
+  SetFromRawDataPointer((void*)&p_short,0);
+}
+
+void
+SQLVariant::Set(unsigned short p_short)
+{
+  if(m_datatype != SQL_C_USHORT)
+  {
+    ResetDataType(SQL_C_USHORT);
+  }
+  SetFromRawDataPointer((void*)&p_short,0);
+}
+
+void
+SQLVariant::Set(int p_slong)
+{
+  if(m_datatype != SQL_C_SLONG)
+  {
+    ResetDataType(SQL_C_SLONG);
+  }
+  SetFromRawDataPointer((void*)&p_slong,0);
+}
+
+void
+SQLVariant::Set(unsigned int p_ulong)
+{
+  if(m_datatype != SQL_C_ULONG)
+  {
+    ResetDataType(SQL_C_ULONG);
+  }
+  SetFromRawDataPointer((void*)&p_ulong,0);
+}
+
+void
+SQLVariant::Set(float p_float)
+{
+  if(m_datatype != SQL_C_FLOAT)
+  {
+    ResetDataType(SQL_C_FLOAT);
+  }
+  SetFromRawDataPointer((void*)&p_float,0);
+}
+
+void
+SQLVariant::Set(double p_double)
+{
+  if(m_datatype != SQL_C_DOUBLE)
+  {
+    ResetDataType(SQL_C_DOUBLE);
+  }
+  SetFromRawDataPointer((void*)&p_double,0);
+}
+
+void
+SQLVariant::Set(char p_stinyint)
+{
+  if(m_datatype != SQL_C_STINYINT)
+  {
+    ResetDataType(SQL_C_STINYINT);
+  }
+  SetFromRawDataPointer((void*)&p_stinyint,0);
+}
+
+void
+SQLVariant::Set(unsigned char p_utinyint)
+{
+  if(m_datatype != SQL_C_UTINYINT)
+  {
+    ResetDataType(SQL_C_UTINYINT);
+  }
+  SetFromRawDataPointer((void*)&p_utinyint,0);
+}
+
+void
+SQLVariant::Set(bcd p_bcd)
+{
+  if(m_datatype != SQL_C_NUMERIC)
+  {
+    ResetDataType(SQL_C_NUMERIC);
+  }
+  SQL_NUMERIC_STRUCT numeric;
+  p_bcd.AsNumeric(&numeric);
+  SetFromRawDataPointer((void*)&numeric,0);
+}
+
+void
+SQLVariant::Set(SQLBIGINT p_sbigint)
+{
+  if(m_datatype != SQL_C_SBIGINT)
+  {
+    ResetDataType(SQL_C_SBIGINT);
+  }
+  SetFromRawDataPointer((void*)&p_sbigint,0);
+}
+
+void
+SQLVariant::Set(SQLUBIGINT p_ubigint)
+{
+  if(m_datatype != SQL_C_UBIGINT)
+  {
+    ResetDataType(SQL_C_UBIGINT);
+  }
+  SetFromRawDataPointer((void*)&p_ubigint,0);
+}
+
+void
+SQLVariant::Set(SQL_NUMERIC_STRUCT* p_numeric)
+{
+  if(m_datatype != SQL_C_NUMERIC)
+  {
+    ResetDataType(SQL_C_NUMERIC);
+  }
+  SetFromRawDataPointer((void*)p_numeric,0);
+}
+
+void
+SQLVariant::Set(SQLGUID* p_guid)
+{
+  if(m_datatype != SQL_C_GUID)
+  {
+    ResetDataType(SQL_C_GUID);
+  }
+  SetFromRawDataPointer((void*)p_guid,0);
+}
+
+void
+SQLVariant::Set(DATE_STRUCT* p_date)
+{
+  if(m_datatype != SQL_C_DATE && 
+     m_datatype != SQL_C_TYPE_DATE)
+  {
+    ResetDataType(SQL_C_DATE);
+  }
+  SetFromRawDataPointer((void*)p_date,0);
+}
+
+void
+SQLVariant::Set(TIME_STRUCT* p_time)
+{
+  if(m_datatype != SQL_C_TIME && 
+     m_datatype != SQL_C_TYPE_TIME)
+  {
+    ResetDataType(SQL_C_TIME);
+  }
+  SetFromRawDataPointer((void*)p_time,0);
+}
+
+void
+SQLVariant::Set(TIMESTAMP_STRUCT* p_timestamp)
+{
+  if(m_datatype != SQL_C_TIMESTAMP && 
+     m_datatype != SQL_C_TYPE_TIMESTAMP)
+  {
+    ResetDataType(SQL_C_TIMESTAMP);
+  }
+  SetFromRawDataPointer((void*)p_timestamp,0);
+}
+
+void
+SQLVariant::Set(SQL_INTERVAL_STRUCT* p_interval)
+{
+  if(m_datatype != p_interval->interval_type)
+  {
+    ResetDataType(p_interval->interval_type);
+  }
+  SetFromRawDataPointer((void*)p_interval,0);
+}
+
+void
+SQLVariant::Set(SQLDate* p_date)
+{
+  if(m_datatype != SQL_C_DATE && 
+     m_datatype != SQL_C_TYPE_DATE)
+  {
+    ResetDataType(SQL_C_DATE);
+  }
+  DATE_STRUCT date;
+  p_date->AsDateStruct(&date);
+  SetFromRawDataPointer((void*)&date,0);
+}
+
+void
+SQLVariant::Set(SQLTime* p_time)
+{
+  if(m_datatype != SQL_C_TIME && 
+     m_datatype != SQL_C_TYPE_TIME)
+  {
+    ResetDataType(SQL_C_TIME);
+  }
+  TIME_STRUCT time;
+  p_time->AsTimeStruct(&time);
+  SetFromRawDataPointer((void*)&time,0);
+}
+
+void
+SQLVariant::Set(SQLTimestamp* p_timestamp)
+{
+  if(m_datatype != SQL_C_TIMESTAMP && 
+     m_datatype != SQL_C_TYPE_TIMESTAMP)
+  {
+    ResetDataType(SQL_C_TIMESTAMP);
+  }
+  TIMESTAMP_STRUCT stamp;
+  p_timestamp->AsTimeStampStruct(&stamp);
+  SetFromRawDataPointer((void*) &stamp,0);
+}
+
+void
+SQLVariant::Set(SQLInterval* p_interval)
+{
+  if(m_datatype != p_interval->GetSQLDatatype())
+  {
+    ResetDataType(p_interval->GetSQLDatatype());
+  }
+  SQL_INTERVAL_STRUCT inter;
+  p_interval->AsIntervalStruct(&inter);
+  SetFromRawDataPointer((void*)&inter,0);
+}
+
+void
+SQLVariant::Set(SQLGuid* p_guid)
+{
+  if(m_datatype != SQL_C_GUID)
+  {
+    ResetDataType(SQL_C_GUID);
+  }
+  SetFromRawDataPointer((void*)p_guid->AsGUID(),0);
+}
+
+void
+SQLVariant::SetFromEuropeanTimestamp(XString p_stamp)
+{
+  SQLTimestamp european(p_stamp);
+  if(m_datatype != SQL_C_TIMESTAMP && 
+     m_datatype != SQL_C_TYPE_TIMESTAMP)
+  {
+    ResetDataType(SQL_C_TIMESTAMP);
+  }
+  TIMESTAMP_STRUCT stamp;
+  european.AsTimeStampStruct(&stamp);
+  SetFromRawDataPointer((void*) &stamp,0);
 }
 
 //////////////////////////////////////////////////////////////////////////

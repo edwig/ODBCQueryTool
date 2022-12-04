@@ -437,6 +437,13 @@ SQLInfoAccess::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int
   return retval;
 }
 
+// Makes an catalog identifier string (possibly quoted on both sides)
+XString 
+SQLInfoAccess::GetSQLDDLIdentifier(XString p_identifier) const
+{
+  return p_identifier;
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // CATALOG
@@ -663,7 +670,7 @@ SQLInfoAccess::GetCATALOGIndexAttributes(XString& /*p_schema*/,XString& /*p_tabl
 }
 
 XString
-SQLInfoAccess::GetCATALOGIndexCreate(MIndicesMap& p_indices) const
+SQLInfoAccess::GetCATALOGIndexCreate(MIndicesMap& p_indices,bool /*p_duplicateNulls /*= false*/) const
 {
   // Get SQL to create an index for a table
   // CREATE [UNIQUE] [ASC|DESC] INDEX [<schema>.]indexname ON [<schema>.]tablename(column [,...]);

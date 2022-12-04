@@ -182,6 +182,7 @@ SQLDataSet::Close()
 {
   // Forget the data
   Forget(true);
+  ResetFilters();
 
   // Forget all caches
   m_names.clear();
@@ -309,11 +310,12 @@ SQLDataSet::SetParameter(XString p_naam,SQLVariant p_waarde)
 void
 SQLDataSet::ResetFilters()
 {
-  if(m_filters)
+  if(m_filters && m_ownFilters)
   {
     delete m_filters;
-    m_filters = nullptr;
   }
+    m_filters = nullptr;
+  m_ownFilters = false;
 }
 
 // Set filters for a query
@@ -321,6 +323,7 @@ SQLDataSet::ResetFilters()
 void
 SQLDataSet::SetFilters(SQLFilterSet* p_filters)
 {
+  ResetFilters();
   m_filters = p_filters;
 }
 
@@ -331,6 +334,7 @@ SQLDataSet::SetFilter(SQLFilter p_filter)
   if(!m_filters)
   {
     m_filters = new SQLFilterSet();
+    m_ownFilters = true;
   }
   m_filters->AddFilter(p_filter);
 }
@@ -1192,14 +1196,14 @@ SQLDataSet::FindObjectRecord(VariantSet& p_primary)
 // Finding an object through a filter set
 // Finds the first object. In case of an unique record, it will be the only one
 SQLRecord*
-SQLDataSet::FindObjectFilter(SQLFilterSet& p_filters,bool p_primary /*=false*/)
+SQLDataSet::FindObjectFilter(bool p_primary /*=false*/)
 {
   SQLRecord* record = nullptr;
 
   // Optimize for network databases
-  if(p_primary && p_filters.Size() == 1)
+  if(p_primary && m_filters->Size() == 1)
   {
-    SQLFilter* filter = p_filters.GetFilters().front();
+    SQLFilter* filter = m_filters->GetFilters().front();
     SQLVariant* prim  = filter->GetValue();
     if(filter->GetOperator() == OP_Equal && prim->GetDataType() == SQL_C_SLONG )
     {
@@ -1212,7 +1216,7 @@ SQLDataSet::FindObjectFilter(SQLFilterSet& p_filters,bool p_primary /*=false*/)
   {
     record = rec;
     // Walk the chain of filters
-    for(auto& filt : p_filters.GetFilters())
+    for(auto& filt : m_filters->GetFilters())
     {
       if(! filt->MatchRecord(record))
       {
@@ -1233,7 +1237,7 @@ SQLDataSet::FindObjectFilter(SQLFilterSet& p_filters,bool p_primary /*=false*/)
 // Searches the complete recordset for all matches
 // Caller must delete the resulting set!!
 RecordSet* 
-SQLDataSet::FindRecordSet(SQLFilterSet& p_filters)
+SQLDataSet::FindRecordSet()
 {
   RecordSet* records = new RecordSet();
 
@@ -1242,7 +1246,7 @@ SQLDataSet::FindRecordSet(SQLFilterSet& p_filters)
   {
     SQLRecord* record = rec;
     // Walk the chain of filters
-    for(auto& filt : p_filters.GetFilters())
+    for(auto& filt : m_filters->GetFilters())
     {
       if(! filt->MatchRecord(record))
       {

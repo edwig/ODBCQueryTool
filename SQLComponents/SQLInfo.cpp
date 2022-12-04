@@ -2564,6 +2564,12 @@ SQLInfo::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
         proc.m_outputParameters = cbNumOutputParams > 0 ? NumOutputParams : 0;
         proc.m_resultSets       = cbNumResultSets   > 0 ? NumResultSets   : 0;
         proc.m_procedureType    = cbProcedureType   > 0 ? ProcedureType   : 0;
+        // Remove overloaded names from MS SQLServer
+        int pos = proc.m_procedureName.Find(';');
+        if(pos > 0)
+        {
+          proc.m_procedureName = proc.m_procedureName.Left(pos);
+        }
         // Keep the record
         p_procedures.push_back(proc);
 
@@ -2636,6 +2642,9 @@ SQLInfo::MakeInfoPSMParameters(MParameterMap& p_parameters
     p_errors = "SQLProcedureColumns unsupported. Get a better ODBC driver!";
     return false;
   }
+  p_procedure += ";0";
+
+
   // Init search arguments
   szCatalogName[0] = 0;
   strcpy_s((char*)szSchemaName,   SQL_MAX_BUFFER,p_schema.GetString());

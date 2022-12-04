@@ -1003,10 +1003,13 @@ SQLQuery::BindParameters()
     // Ugly hack!!
     if(m_database && m_database->GetDatabaseType() == RDBMS_SQLSERVER)
     {
-      if((sqlDatatype == SQL_CHAR ||sqlDatatype == SQL_VARCHAR ) && columnSize > 8000)
+      if(sqlDatatype == SQL_CHAR || sqlDatatype == SQL_VARCHAR)
+      {
+        if(columnSize > 8000)
       {
         columnSize = 8000;
       }
+    }
     }
 
     // Log what we bind here
@@ -1014,6 +1017,14 @@ SQLQuery::BindParameters()
     {
       LogParameter(icol,var);
     }
+
+//     TRACE("COLUMN   : %d\n", icol);
+//     TRACE("ParamType: %d\n", paramType);
+//     TRACE("Datatype : %d\n", dataType);
+//     TRACE("SQLtype  : %d\n", sqlDatatype);
+//     TRACE("Col size : %d\n", columnSize);
+//     TRACE("Scale    : %d\n", scale);
+//     TRACE("Buffersiz: %d\n", bufferSize);
 
     // Do the bindings
     m_retCode = SqlBindParameter(m_hstmt                     // Statement handle
@@ -1037,7 +1048,7 @@ SQLQuery::BindParameters()
     // But only if the sql datatype and the C++ datatype are the same (a SQLVariant from the application)
     // In case of a SQLVariant that came from the ODBC driver earlier we may NOT rebind the precision and scale
     // Oracle ODBC drivers beyond 12.x.x.x.x **WILL** crash on that
-    if(dataType == SQL_C_NUMERIC && (dataType == sqlDatatype))
+    if(dataType == SQL_C_NUMERIC) // && (dataType == sqlDatatype))
     {
       BindColumnNumeric((ushort)icol,var,SQL_PARAM_INPUT);
     }
@@ -1268,11 +1279,17 @@ SQLQuery::BindColumnNumeric(SQLSMALLINT p_column,SQLVariant* p_var,int p_type)
   m_retCode = SqlGetStmtAttr(m_hstmt,attribute,&rowdesc,SQL_IS_POINTER,nullptr);
   if(SQL_SUCCEEDED(m_retCode))
   {
-    int     precision = p_var->GetNumericPrecision();
-    int     scale     = p_var->GetNumericScale();
+    SQLULEN precision = (SQLULEN)     p_var->GetNumericPrecision();
+    SQLSMALLINT scale = (SQLSMALLINT) p_var->GetNumericScale();
+
+    if(m_database)
+    {
+      m_database->GetSQLInfoDB()->GetRDBMSNumericPrecisionScale(precision,scale);
+   }
+
     RETCODE retCode1  = SqlSetDescField(rowdesc,p_column,SQL_DESC_TYPE,     (SQLPOINTER)(DWORD_PTR)SQL_C_NUMERIC,SQL_IS_INTEGER);
-    RETCODE retCode2  = SqlSetDescField(rowdesc,p_column,SQL_DESC_PRECISION,(SQLPOINTER)(DWORD_PTR)precision,    SQL_IS_INTEGER);
-    RETCODE retCode3  = SqlSetDescField(rowdesc,p_column,SQL_DESC_SCALE,    (SQLPOINTER)(DWORD_PTR)scale,        SQL_IS_INTEGER);
+    RETCODE retCode2  = SqlSetDescField(rowdesc,p_column,SQL_DESC_PRECISION,(SQLPOINTER)(DWORD_PTR)precision,    SQL_IS_UINTEGER);
+    RETCODE retCode3  = SqlSetDescField(rowdesc,p_column,SQL_DESC_SCALE,    (SQLPOINTER)(DWORD_PTR)scale,        SQL_IS_SMALLINT);
 
     if(SQL_SUCCEEDED(retCode1) && SQL_SUCCEEDED(retCode2) && SQL_SUCCEEDED(retCode3))
     {

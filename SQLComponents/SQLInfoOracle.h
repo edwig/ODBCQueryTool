@@ -29,16 +29,16 @@
 namespace SQLComponents
 {
 
-#define NUMERIC_MAX_PRECISION      38
-#define NUMERIC_MIN_SCALE           0
-#define NUMERIC_DEFAULT_SCALE      18
-
 class SQLInfoOracle : public SQLInfoDB
 {
 public:
   SQLInfoOracle(SQLDatabase* p_database);
  ~SQLInfoOracle();
  
+  const int         NUMERIC_MAX_PRECISION = 38;
+  const int         NUMERIC_MIN_SCALE     = 0;
+  const SQLSMALLINT NUMERIC_DEFAULT_SCALE = 16;
+
   //////////////////////////////////////////////////////////////////////////
   //
   // GENERALS (Strings & Booleans) 
@@ -199,6 +199,9 @@ public:
   // Stripped data for the parameter binding
   XString GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const override;
 
+  // Makes an catalog identifier string (possibly quoted on both sides)
+  virtual XString GetSQLDDLIdentifier(XString p_identifier) const override;
+
   //////////////////////////////////////////////////////////////////////////
   //
   // CATALOG
@@ -253,7 +256,7 @@ public:
   XString GetCATALOGIndexExists     (XString  p_schema,XString  p_tablename,XString  p_indexname) const override;
   XString GetCATALOGIndexList       (XString& p_schema,XString& p_tablename) const override;
   XString GetCATALOGIndexAttributes (XString& p_schema,XString& p_tablename,XString& p_indexname) const override;
-  XString GetCATALOGIndexCreate     (MIndicesMap& p_index) const override;
+  XString GetCATALOGIndexCreate     (MIndicesMap& p_index,bool p_duplicateNulls = false) const override;
   XString GetCATALOGIndexDrop       (XString  p_schema,XString  p_tablename,XString  p_indexname) const override;
   XString GetCATALOGIndexFilter     (MetaIndex& p_index) const override;
   // All primary key functions

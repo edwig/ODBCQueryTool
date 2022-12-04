@@ -195,6 +195,9 @@ public:
   // Stripped data for the parameter binding
   XString GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const;
 
+  // Makes an catalog identifier string (possibly quoted on both sides)
+  virtual XString GetSQLDDLIdentifier(XString p_identifier) const override;
+
   //////////////////////////////////////////////////////////////////////////
   //
   // CATALOG
@@ -248,7 +251,7 @@ public:
   XString GetCATALOGIndexExists     (XString  p_schema,XString  p_tablename,XString  p_indexname) const;
   XString GetCATALOGIndexList       (XString& p_schema,XString& p_tablename) const;
   XString GetCATALOGIndexAttributes (XString& p_schema,XString& p_tablename,XString& p_indexname) const;
-  XString GetCATALOGIndexCreate     (MIndicesMap& p_index) const;
+  XString GetCATALOGIndexCreate     (MIndicesMap& p_index,bool p_duplicateNulls = false) const;
   XString GetCATALOGIndexDrop       (XString  p_schema,XString  p_tablename,XString  p_indexname) const;
   XString GetCATALOGIndexFilter     (MetaIndex& p_index) const;
   // All primary key functions

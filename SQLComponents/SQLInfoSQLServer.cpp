@@ -167,9 +167,32 @@ SQLInfoSQLServer::GetRDBMSMustCommitDDL() const
 
 // Correct maximum precision,scale for a NUMERIC datatype
 void
-SQLInfoSQLServer::GetRDBMSNumericPrecisionScale(SQLULEN& /*p_precision*/, SQLSMALLINT& /*p_scale*/) const
+SQLInfoSQLServer::GetRDBMSNumericPrecisionScale(SQLULEN& p_precision, SQLSMALLINT& p_scale) const
 {
-  // NO-OP
+  // Max precision for numerics is 38
+  if(p_precision > NUMERIC_MAX_PRECISION)
+  {
+    p_precision = NUMERIC_MAX_PRECISION;
+  }
+
+  // Default scale is also the max for parameters
+  if(p_scale > NUMERIC_DEFAULT_SCALE)
+  {
+    p_scale = NUMERIC_DEFAULT_SCALE;
+  }
+
+  // In case of conversion from other databases
+  if(p_precision == 0 && p_scale == 0)
+  {
+    p_precision = NUMERIC_MAX_PRECISION;
+    p_scale     = NUMERIC_DEFAULT_SCALE;
+  }
+
+  // Scale MUST be smaller than the precision
+  if(p_scale >= p_precision)
+  {
+    p_scale = (SQLSMALLINT) (p_precision - 1);
+  }
 }
 
 // KEYWORDS
@@ -297,22 +320,16 @@ SQLInfoSQLServer::GetKEYWORDDataType(MetaColumn* p_column)
     case SQL_WLONGVARCHAR:              type = "NVARCHAR(max)";
                                         p_column->m_columnSize = 0;
                                         break;
-    case SQL_NUMERIC:                   type = "NUMERIC";  break;
-    case SQL_DECIMAL:                   type = "NUMERIC";  
-                                        if(p_column->m_decimalDigits == 0 &&
-                                           p_column->m_columnSize    == 38)
-                                        {
-                                          p_column->m_columnSize = 0;
-                                        }
-                                        break;
+    case SQL_NUMERIC:                   [[fallthrough]];
+    case SQL_DECIMAL:                   type = "NUMERIC";  break;
     case SQL_INTEGER:                   type = "INT";      break;
     case SQL_SMALLINT:                  type = "SMALLINT"; break;
     case SQL_FLOAT:                     if(p_column->m_columnSize == 38 ||
                                            p_column->m_columnSize == 18)
                                         {
                                           type = "NUMERIC";
-                                          p_column->m_columnSize = 18;
-//                                        p_column->m_decimalDigits = 0;
+                                          p_column->m_columnSize    = 18;
+                                          p_column->m_decimalDigits = 0;
                                         }
                                         else
                                         {
@@ -541,6 +558,16 @@ SQLInfoSQLServer::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,
   XString retval;
   retval.Format("%04d-%02d-%02d %02d:%02d:%02d",p_year,p_month,p_day,p_hour,p_minute,p_second);
   return retval;
+}
+
+// Makes an catalog identifier string (possibly quoted on both sides)
+XString
+SQLInfoSQLServer::GetSQLDDLIdentifier(XString p_identifier) const
+{
+  XString ident;
+  p_identifier.MakeLower();
+  ident.Format("[%s]",p_identifier.GetString());
+  return ident;;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -878,7 +905,7 @@ SQLInfoSQLServer::GetCATALOGIndexAttributes(XString& /*p_schema*/,XString& /*p_t
 // CREATE [UNIQUE] INDEX indexname ON [<schema>.]tablename(column [ASC|DESC] [,...]);
 // Beware: no schema name for indexname. Automatically in the table schema
 XString
-SQLInfoSQLServer::GetCATALOGIndexCreate(MIndicesMap& p_indices) const
+SQLInfoSQLServer::GetCATALOGIndexCreate(MIndicesMap& p_indices,bool p_duplicateNulls /*=false*/) const
 {
   XString query;
   for(auto& index : p_indices)
@@ -897,6 +924,11 @@ SQLInfoSQLServer::GetCATALOGIndexCreate(MIndicesMap& p_indices) const
       if(index.m_nonunique == false)
       {
         query += "UNIQUE ";
+      }
+      // If duplicate nulls allowed, it must be a NON-CLUSTERED index
+      if(p_duplicateNulls)
+      {
+        query += "NONCLUSTERED ";
       }
       query.AppendFormat("INDEX [%s] ON ",idname.GetString());
 
@@ -919,6 +951,22 @@ SQLInfoSQLServer::GetCATALOGIndexCreate(MIndicesMap& p_indices) const
     }
   }
   query += ")";
+
+  // If duplicate nulls allowed, at least one of the columns must be non-null
+  if(p_duplicateNulls)
+  {
+    query += "\n WHERE ";
+    for(auto& index : p_indices)
+    {
+      if(index.m_position != 1)
+      {
+        query += " AND ";
+      }
+      XString column = index.m_columnName;
+      column.MakeLower();
+      query.AppendFormat("[%s] IS NOT NULL", column.GetString());
+    }
+  }
   return query;
 }
 
@@ -1193,7 +1241,7 @@ SQLInfoSQLServer::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
   // Add all relevant options
   switch(foreign.m_updateRule)
   {
-    case SQL_CASCADE :    query += "\n      ON UPDATE CASCADE";     break;
+    case SQL_CASCADE :    query += "\n      ON UPDATE NO ACTION";   break; // CASCADE is unreliable
     case SQL_SET_NULL:    query += "\n      ON UPDATE SET NULL";    break;
     case SQL_SET_DEFAULT: query += "\n      ON UPDATE SET DEFAULT"; break;
     case SQL_NO_ACTION:   query += "\n      ON UPDATE NO ACTION";   break;
@@ -1626,29 +1674,102 @@ SQLInfoSQLServer::GetCatalogRevokePrivilege(XString p_schema,XString p_objectnam
 XString
 SQLInfoSQLServer::GetPSMProcedureExists(XString p_schema, XString p_procedure) const
 {
-  p_procedure.MakeUpper();
-  return "SELECT count(*)\n"
-         "  FROM all_objects\n"
-         " WHERE UPPER(object_name) = '" + p_procedure + "'\n"
-         "   AND object_type        = 'FUNCTION';";
+  XString query =
+
+    "SELECT COUNT(*)\n"
+    "  FROM sys.objects o\n"
+    "       INNER JOIN sys.schemas s ON o.schema_id = s.schema_id\n"
+    " WHERE (type_desc LIKE '%PROCEDURE%' OR type_desc LIKE '%FUNCTION%')\n"
+    "   AND o.name = '" + p_procedure + "'";
+
+  if(!p_schema.IsEmpty())
+  {
+    query += "\n   AND s.name = '" + p_schema + "'";
+  }
+  return query;
 }
 
 XString
-SQLInfoSQLServer::GetPSMProcedureList(XString& /*p_schema*/) const
+SQLInfoSQLServer::GetPSMProcedureList(XString& p_schema) const
 {
-  return "";
+  XString query =
+    "SELECT db_name() as catalog_name\n"
+    "      ,s.name    as schema_name\n"
+    "      ,o.name    as procedure_name\n"
+    "  FROM sys.objects o\n"
+    "       INNER JOIN sys.schemas s ON o.schema_id = s.schema_id\n"
+    " WHERE (type_desc LIKE '%PROCEDURE%' OR type_desc LIKE '%FUNCTION%')\n";
+  if(!p_schema.IsEmpty())
+  {
+    query += "   AND o.name = ?\n";
+  }
+  query += " ORDER BY 1,2,3";
+  return query;
 }
 
 XString
-SQLInfoSQLServer::GetPSMProcedureAttributes(XString& /*p_schema*/,XString& /*p_procedure*/) const
+SQLInfoSQLServer::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure) const
 {
-  return "";
+  XString sql = 
+    "SELECT db_name() as catalog_name\n"
+    "      ,s.name    as schema_name\n"
+    "      ,o.name    as proceadure_name\n"
+    "      ,(SELECT Count(*)\n"
+    "          FROM sys.parameters p1\n"
+    "         WHERE p1.object_id = o.object_id\n"
+    "           AND p1.parameter_id > 0\n"
+    "           AND p1.is_output = 0) AS input_parameters\n"
+    "      ,(SELECT Count(*)\n"
+    "          FROM sys.parameters p2\n"
+    "         WHERE p2.object_id = o.object_id\n"
+    "           AND p2.parameter_id > 0\n"
+    "           AND p2.is_output = 1)  AS output_parameters\n"
+    "      ,0    as result_sets\n"
+    "      ,NULL AS remarks\n"
+    "      ,CASE type_desc\n"
+    "            WHEN 'SQL_STORED_PROCEDURE' THEN 1\n"
+    "            WHEN 'SQL_SCALAR_FUNCTION'  THEN 2\n"
+    "                                        ELSE 3\n"
+    "       END AS procedure_type\n"
+    "      ,m.definition AS source\n"
+    "  FROM sys.objects o\n"
+    "       INNER JOIN sys.schemas     s ON o.schema_id = s.schema_id\n"
+    "       INNER JOIN sys.sql_modules m ON m.object_id = o.object_id\n"
+    " WHERE ( type_desc LIKE '%PROCEDURE%' OR type_desc LIKE '%FUNCTION%')\n"
+    "   AND o.name LIKE 'abs%'\n";
+
+  if(!p_schema.IsEmpty())
+  {
+    sql += "   AND s.name = ?\n";
+  }
+  if(!p_procedure.IsEmpty())
+  {
+    sql += "   AND o.name ";
+    sql += p_procedure.Find('%') >= 0 ? "LIKE" : "=";
+    sql += " ?\n";
+  }
+  sql += "ORDER BY 1,2,3";
+
+  return sql;
 }
 
 XString
 SQLInfoSQLServer::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure) const
 {
-  return "";
+  XString query =
+    "SELECT s.name       as source_schema\n"
+    "      ,o.name       as source_procedure\n"
+    "      ,m.definition as source_code\n"
+    "  FROM sys.sql_modules m\n"
+    "       INNER JOIN sys.objects o  ON m.object_id = o.object_id\n"
+    "       INNER JOIN sys.schemas s  ON o.schema_id = s.schema_id\n"
+    "WHERE o.name = '" + p_procedure + "'";
+
+  if(!p_schema.IsEmpty())
+  {
+    query += "\n   AND s.name = '" + p_schema + "'";
+  }
+  return query;
 }
 
 XString
@@ -1672,9 +1793,53 @@ SQLInfoSQLServer::GetPSMProcedureErrors(XString p_schema,XString p_procedure) co
 
 // And it's parameters
 XString
-SQLInfoSQLServer::GetPSMProcedureParameters(XString& /*p_schema*/,XString& /*p_procedure*/) const
+SQLInfoSQLServer::GetPSMProcedureParameters(XString& p_schema,XString& p_procedure) const
 {
-  return "";
+  XString query = 
+    "SELECT specific_catalog AS procedure_cat\n"
+    "      ,specific_schema  AS procedure_schem\n"
+    "      ,specific_name    AS procedure_name\n"
+    "      ,coalesce(parameter_name,'RETURNS')  AS column_name\n"
+    "      ,CASE parameter_mode\n"
+    "            WHEN 'IN'    THEN 1\n"
+    "            WHEN 'INOUT' THEN 2\n"
+    "            WHEN 'OUT'   THEN 3\n"
+    "            ELSE 4\n"
+    "       END AS column_type\n"
+    "      ,CASE data_type\n"
+    "            WHEN 'numeric'   THEN 2\n"
+    "            WHEN 'varchar'   THEN 1\n"
+    "            WHEN 'datetime'  THEN 11\n"
+    "            WHEN 'datetime2' THEN 11\n"
+    "            WHEN 'int'       THEN 4\n"
+    "       END AS data_type\n"
+    "      ,data_type AS type_name\n"
+    "      ,character_maximum_length AS column_size\n"
+    "      ,CASE data_type\n"
+    "            WHEN 'numeric'   THEN 36\n"
+    "            WHEN 'varchar'   THEN character_maximum_length\n"
+    "            WHEN 'datetime'  THEN 20\n"
+    "            WHEN 'datetime2' THEN 20\n"
+    "            WHEN 'int'       THEN 8\n"
+    "       END AS buffer_length\n"
+    "      ,numeric_scale           AS decimal_digits\n"
+    "      ,numeric_precision_radix AS num_prec_radix\n"
+    "      ,3  AS nullable\n"
+    "      ,null AS remarks\n"
+    "      ,null AS column_default\n"
+    "      ,null as sql_data_type\n"
+    "      ,null AS sql_datetime_sub\n"
+    "      ,character_octet_length AS char_octet_length\n"
+    "      ,ordinal_position\n"
+    "      ,'YES' AS is_nullable \n"
+    "  FROM information_schema.parameters\n"
+    " WHERE specific_name = '" + p_procedure + "'";
+
+  if(!p_schema.IsEmpty())
+  {
+    query += "\n   AND specific_schema = '" + p_schema + "'";
+  }
+  return query;
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -461,6 +461,13 @@ SQLInfoPostgreSQL::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day
   return retval;
 }
 
+// Makes an catalog identifier string (possibly quoted on both sides)
+XString
+SQLInfoPostgreSQL::GetSQLDDLIdentifier(XString p_identifier) const
+{
+  return p_identifier;
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // CATALOG
@@ -896,7 +903,7 @@ SQLInfoPostgreSQL::GetCATALOGIndexAttributes(XString& /*p_schema*/,XString& /*p_
 }
 
 XString
-SQLInfoPostgreSQL::GetCATALOGIndexCreate(MIndicesMap& p_indices) const
+SQLInfoPostgreSQL::GetCATALOGIndexCreate(MIndicesMap& p_indices,bool /*p_duplicateNulls /*= false*/) const
 {
   // Get SQL to create an index for a table
   // CREATE [UNIQUE] INDEX [<schema>.]indexname ON [<schema>.]tablename(column [ASC|DESC] [,...]);

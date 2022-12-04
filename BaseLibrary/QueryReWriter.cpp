@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////////
 //
-// SourceFile: SchemaReWriter.cpp
+// SourceFile: QueryReWriter.cpp
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
@@ -26,7 +26,7 @@
 // THE SOFTWARE.
 //
 #include "pch.h"
-#include "SchemaReWriter.h"
+#include "QueryReWriter.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -38,10 +38,13 @@ const char* tokens[] =
 {
    ""
   ,""
+  ,""
   ,"'"
   ,"\""
   ,"."
   ,","
+  ,"-"
+  ,"/"
   ,"--"
   ,"/*"
   ,"//"
@@ -69,26 +72,38 @@ const char* tokens[] =
 
 ///////////////////////////////////////////////////////////////////////////
 
-SchemaReWriter::SchemaReWriter(XString p_schema)
+QueryReWriter::QueryReWriter(XString p_schema)
                :m_schema(p_schema)
 {
 
 }
 
 void
-SchemaReWriter::SetOption(SROption p_option)
+QueryReWriter::SetOption(SROption p_option)
 {
   m_options |= (int) p_option;
 }
 
 void
-SchemaReWriter::SetRewriteCode(FCodes* p_codes)
+QueryReWriter::SetSchemaSpecial(FCodes* p_specials)
+{
+  m_specials = p_specials;
+}
+
+void
+QueryReWriter::SetRewriteCodes(FCodes* p_codes)
 {
   m_codes = p_codes;
 }
 
+void
+QueryReWriter::SetODBCFunctions(FCodes* p_odbcfuncs)
+{
+  m_odbcfuncs = p_odbcfuncs;
+}
+
 XString 
-SchemaReWriter::Parse(XString p_input)
+QueryReWriter::Parse(XString p_input)
 {
   m_input = p_input;
   ParseStatement();
@@ -101,9 +116,10 @@ SchemaReWriter::Parse(XString p_input)
 }
 
 void
-SchemaReWriter::ParseStatement()
+QueryReWriter::ParseStatement(bool p_closingEscape /*= false*/)
 {
   bool begin = true;
+  bool odbc  = false;
 
   ++m_level;
   while(true)
@@ -133,10 +149,14 @@ SchemaReWriter::ParseStatement()
       Token oldStatement = m_inStatement;
       bool  oldFrom      = m_inFrom;
       m_inStatement = Token::TK_EOS;
-      ParseStatement();
+      ParseStatement(odbc);
       m_inStatement = oldStatement;
       m_inFrom      = oldFrom;
       continue;
+    }
+    else if(m_token == Token::TK_PLAIN_ODBC)
+    {
+      odbc = true;
     }
 
     // Append schema
@@ -192,6 +212,10 @@ SchemaReWriter::ParseStatement()
     // End of level
     if(m_token == Token::TK_PAR_CLOSE)
     {
+      if(p_closingEscape)
+      {
+        m_output += "}";
+      }
       break;
     }
   }
@@ -199,11 +223,13 @@ SchemaReWriter::ParseStatement()
 }
 
 void
-SchemaReWriter::PrintToken()
+QueryReWriter::PrintToken()
 {
   switch(m_token)
   {
     case Token::TK_PLAIN:     PrintSpecials();
+                              break;
+    case Token::TK_PLAIN_ODBC:m_output += m_tokenString;
                               break;
     case Token::TK_SQUOTE:    m_output += '\'';
                               m_output += m_tokenString;
@@ -231,6 +257,8 @@ SchemaReWriter::PrintToken()
                               break;
     case Token::TK_POINT:     [[fallthrough]];
     case Token::TK_COMMA:     [[fallthrough]];
+    case Token::TK_MINUS:     [[fallthrough]];
+    case Token::TK_DIVIDE:    [[fallthrough]];
     case Token::TK_PAR_OPEN:  [[fallthrough]];
     case Token::TK_PAR_CLOSE: [[fallthrough]];
     case Token::TK_SPACE:     [[fallthrough]];
@@ -253,20 +281,27 @@ SchemaReWriter::PrintToken()
   }
 }
 
+// Some tokens or functions require a special treatment
+// to get the schema prepended
 void
-SchemaReWriter::PrintSpecials()
+QueryReWriter::PrintSpecials()
 {
-  if(m_tokenString.CompareNoCase("brief_ew") == 0)
+  if(m_specials)
   {
-    m_output += m_schema;
+    FCodes::iterator it = m_specials->find(m_tokenString);
+    if(it != m_specials->end())
+    {
+      ++m_replaced;
+      m_output += it->second;
     m_output += '.';
+  }
   }
   m_output += m_tokenString; 
 }
 
 // THIS IS WHY WE ARE HERE IN THIS CLASS!
 void
-SchemaReWriter::AppendSchema()
+QueryReWriter::AppendSchema()
 {
   SkipSpaceAndComment();
 
@@ -276,6 +311,7 @@ SchemaReWriter::AppendSchema()
   {
     // There already was a schema name
     m_output += m_tokenString;
+    m_output += '.';
     m_token   = GetToken();
   }
   else
@@ -301,7 +337,7 @@ SchemaReWriter::AppendSchema()
 }
 
 void
-SchemaReWriter::SkipSpaceAndComment()
+QueryReWriter::SkipSpaceAndComment()
 {
   while(true)
   {
@@ -323,7 +359,7 @@ SchemaReWriter::SkipSpaceAndComment()
 
 
 Token
-SchemaReWriter::GetToken()
+QueryReWriter::GetToken()
 {
   m_tokenString.Empty();
   int ch = 0;
@@ -338,7 +374,7 @@ SchemaReWriter::GetToken()
                   return Token::TK_DQUOTE;
       case '-':   return CommentSQL();
       case '/':   return CommentCPP();
-      case '|':   return Concat();
+      case '|':   return StringConcatenate();
       case '.':   return Token::TK_POINT;
       case ',':   return Token::TK_COMMA;
       case '(':   return Token::TK_PAR_OPEN;
@@ -376,7 +412,7 @@ SchemaReWriter::GetToken()
 }
 
 Token
-SchemaReWriter::FindToken()
+QueryReWriter::FindToken()
 {
   for(int ind = 0;ind < sizeof(tokens) / sizeof(const char*); ++ind)
   {
@@ -386,7 +422,16 @@ SchemaReWriter::FindToken()
     }
   }
   // Replacement code
-  if(m_codes)
+  if(m_odbcfuncs)
+  {
+    FCodes::iterator it = m_odbcfuncs->find(m_tokenString);
+    if(it != m_odbcfuncs->end())
+    {
+      m_tokenString = "{fn " + it->second;
+      return Token::TK_PLAIN_ODBC;
+    }
+  }
+  else if(m_codes)
   {
     FCodes::iterator it = m_codes->find(m_tokenString);
     if(it != m_codes->end())
@@ -398,7 +443,7 @@ SchemaReWriter::FindToken()
 }
 
 Token
-SchemaReWriter::CommentSQL()
+QueryReWriter::CommentSQL()
 {
   int ch = GetChar();
   if(ch == '-')
@@ -415,11 +460,11 @@ SchemaReWriter::CommentSQL()
     return Token::TK_COMM_SQL;
   }
   UnGetChar(ch);
-  return Token::TK_PLAIN;
+  return Token::TK_MINUS;
 }
 
 Token
-SchemaReWriter::CommentCPP()
+QueryReWriter::CommentCPP()
 {
   int ch = GetChar();
   if(ch == '/')
@@ -453,12 +498,12 @@ SchemaReWriter::CommentCPP()
   else
   {
     UnGetChar(ch);
-    return Token::TK_PLAIN;
+    return Token::TK_DIVIDE;
   }
 }
 
 Token
-SchemaReWriter::Concat()
+QueryReWriter::StringConcatenate()
 {
   int ch = GetChar();
   if(ch == '|')
@@ -470,7 +515,7 @@ SchemaReWriter::Concat()
 }
 
 void
-SchemaReWriter::QuoteString(int p_ending)
+QueryReWriter::QuoteString(int p_ending)
 {
   int ch = 0;
 
@@ -486,7 +531,7 @@ SchemaReWriter::QuoteString(int p_ending)
 }
 
 void
-SchemaReWriter::UnGetChar(int p_char)
+QueryReWriter::UnGetChar(int p_char)
 {
   if(m_ungetch == 0)
   {
@@ -495,7 +540,7 @@ SchemaReWriter::UnGetChar(int p_char)
 }
 
 int
-SchemaReWriter::GetChar()
+QueryReWriter::GetChar()
 {
   if(m_ungetch)
   {
