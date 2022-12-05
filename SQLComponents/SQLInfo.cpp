@@ -2642,9 +2642,6 @@ SQLInfo::MakeInfoPSMParameters(MParameterMap& p_parameters
     p_errors = "SQLProcedureColumns unsupported. Get a better ODBC driver!";
     return false;
   }
-  p_procedure += ";0";
-
-
   // Init search arguments
   szCatalogName[0] = 0;
   strcpy_s((char*)szSchemaName,   SQL_MAX_BUFFER,p_schema.GetString());

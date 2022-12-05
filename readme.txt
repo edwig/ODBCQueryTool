@@ -22,6 +22,10 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes version 3.0.7
+-------------------------
+- Fixed discovery of stored-procedures, sql-text and parameters for MS SQL-Server
+
 Releasenotes version 3.0.6
 --------------------------
 - Fixed problem with the "Table DDL" command. Table create statements are generated again.
