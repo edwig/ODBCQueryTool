@@ -466,6 +466,11 @@ ObjectTree::FindTables(HTREEITEM p_theItem)
       object.AppendFormat(" (%s)",theTable.m_remarks);
     }
 
+    if(theTable.m_objectType.Find("TEMPORARY") >= 0)
+    {
+      object.AppendFormat(" (%s)",theTable.m_objectType);
+    }
+
     if(schema.IsEmpty())
     {
       // No schema found, just add the item

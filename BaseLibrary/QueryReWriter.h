@@ -32,24 +32,26 @@ enum class Token
 {
   TK_EOS    = 0     // END-OF-STRING
  ,TK_PLAIN          // Plain character string
- ,TK_PLAIN_ODBC     // Plain token with ODBC escape
+ ,TK_PLAIN_ODBC     // Plain ODBC replacement function
  ,TK_SQUOTE         // Single quote string
  ,TK_DQUOTE         // Double quote string
  ,TK_POINT          // .
  ,TK_COMMA          // ,
  ,TK_MINUS          // -
  ,TK_DIVIDE         // /
- ,TK_COMM_SQL       // --
- ,TK_COMM_C         // /*
- ,TK_COMM_CPP       // //
+ ,TK_COMM_SQL       // --    Comments SQL wise
+ ,TK_COMM_C         // /*    Comments C   wise
+ ,TK_COMM_CPP       // //    Comments C++ wise
  ,TK_PAR_OPEN       // (
  ,TK_PAR_CLOSE      // )
+ ,TK_PAR_OUTER      // (+)   Oracle outer join
  ,TK_PAR_ADD        // +
- ,TK_PAR_CONCAT     // ||
- ,TK_SPACE 
- ,TK_TAB
- ,TK_CR
- ,TK_NEWLINE
+ ,TK_PAR_CONCAT     // ||    SQL String concatenation
+ ,TK_SPACE          // ' '   Single space
+ ,TK_TAB            // '\t'  Tabulate character
+ ,TK_CR             // '\r'  Carriage return
+ ,TK_NEWLINE        // '\n'  Newline
+  // Complete SQL words
  ,TK_SELECT
  ,TK_INSERT
  ,TK_UPDATE
@@ -69,7 +71,34 @@ enum class SROption
   SRO_NO_OPTION      = 0x0000
  ,SRO_CONCAT_TO_ADD  = 0x0001   // ISO SQL || to MS-SQL + for two strings
  ,SRO_ADD_TO_CONCAT  = 0x0002   // MS-SQL + to ISO SQL || for two strings
+  ,SRO_WARN_OUTER     = 0x0004   // Warn for Oracle (+) Outer joins
+
+  ,SRO_LAST_OPTION    = 0x0007
 };
+
+enum class OdbcEsc
+{
+   None      = 0
+  ,Function  = 1   // {fn       [schema.]<function-name>  (param[,...]) }
+  ,Procedure = 2   // {[?=]call [schema.]<procedure-name>[(param[,...])]}
+  ,Date      = 3   // {d 'yyyy-mm-dd'}
+  ,Time      = 4   // {t 'hh:mm:ss'}
+  ,Timestamp = 5   // {ts 'yyyy-mm-dd hh:mm:ss[.ssss]'}
+  ,Guid      = 6   // {guid 'nnnnnnnn-nnnn-nnnn-nnnn-nnnnnnnnnnnn'}
+  ,LikeEsc   = 7   // {'\'}
+  ,Interval  = 8   // {INTERVAL [+|-]'n YEAR TO m SECOND(s)'}
+  ,OuterJoin = 9   // {oj table1 [as1] [LEFT|RIGHT|FULL] OUTER JOIN table2 [as2] ON as1.one = as2.two }
+};
+
+typedef struct _sqlwords
+{
+  XString m_word;         // Word to recognize in the SQL statement
+  Token   m_token;        // Possibly a token
+  XString m_replacement;  // Replacement word/function
+  XString m_schema;       // Possibly prefix with this schema
+  OdbcEsc m_odbcEscape;   // Possibly an ODBC escape sequence
+}
+SQLWord;
 
 // Map with case-insensitive string compare
 struct StringICompare
@@ -79,7 +108,7 @@ struct StringICompare
     return lhs.CompareNoCase(rhs) < 0;
   }
 };
-using FCodes = std::map<XString,XString,StringICompare>;
+using SQLWords = std::map<XString,SQLWord,StringICompare>;
 
 class QueryReWriter
 {
@@ -87,19 +116,24 @@ public:
   QueryReWriter(XString p_schema);
   // Our primary function
   XString Parse(XString p_input);
-  // Settings and results
-  void    SetOption(SROption p_option);
-  void    SetSchemaSpecial(FCodes* p_specials);
-  void    SetRewriteCodes (FCodes* p_codes);
-  void    SetODBCFunctions(FCodes* p_odbcfuncs);
+
+  // Settings 
+  bool    SetOption(SROption p_option);
+  bool    AddSQLWord(XString p_word,XString p_replacement,XString p_schema = "",Token p_token = Token::TK_EOS,OdbcEsc p_odbc = OdbcEsc::None);
+  bool    AddSQLWord(SQLWord& p_word);
+  bool    AddSQLWords(SQLWords& p_words);
+  bool    AddSQLWordsFromFile(XString p_filename);
+  // Getters
   int     GetReplaced() { return m_replaced; };
   int     GetOptions()  { return m_options;  };
 private:
+  void    Reset();
+  void    Initialization();
   void    ParseStatement(bool p_closingEscape = false);
   // Token parsing
   Token   GetToken();
   void    PrintToken();
-  void    PrintSpecials();
+  void    PrintOuterJoin();
   Token   FindToken();
   void    AppendSchema();
 
@@ -107,6 +141,7 @@ private:
   Token   CommentSQL();
   Token   CommentCPP();
   Token   StringConcatenate();
+  Token   Parenthesis();
   void    QuoteString(int p_ending);
   void    UnGetChar(int p_char);
   int     GetChar();
@@ -116,10 +151,8 @@ private:
   XString   m_input;
   XString   m_output;
   // Options for processing
+  SQLWords  m_words;
   int       m_options     { 0       };
-  FCodes*   m_codes       { nullptr };
-  FCodes*   m_odbcfuncs   { nullptr };
-  FCodes*   m_specials    { nullptr };
   // Processing data
   int       m_position    { 0       };
   Token     m_token       { Token::TK_EOS };

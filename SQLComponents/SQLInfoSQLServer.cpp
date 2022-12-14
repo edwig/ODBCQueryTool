@@ -651,9 +651,70 @@ SQLInfoSQLServer::GetCATALOGTablesList(XString& p_schema,XString& p_pattern) con
 }
 
 XString
-SQLInfoSQLServer::GetCATALOGTableAttributes(XString& /*p_schema*/,XString& /*p_tablename*/) const
+SQLInfoSQLServer::GetCATALOGTableAttributes(XString& p_schema,XString& p_tablename) const
 {
-  return "";
+  XString query =
+    "SELECT db_name() AS table_catalog\n"
+    "      ,s.name    AS table_schema\n"
+    "      ,o.name    AS table_name\n"
+    "      ,CASE o.type\n"
+    "            WHEN 'U'  THEN 'TABLE'\n"
+    "            WHEN 'TT' THEN 'TABLE'\n"
+    "            WHEN 'V'  THEN 'VIEW'\n"
+    "            WHEN 'SN' THEN 'SYNONYM'\n"
+    "            WHEN 'S'  THEN 'SYSTEM TABLE'\n"
+    "                      ELSE 'UNKNOWN'\n"
+    "       END AS table_type\n"
+    "      ,CAST (e.value AS VARCHAR(Max)) AS remarks\n"
+    "      ,null AS tablespace\n"
+    "      ,0    AS temporary\n"
+    "  FROM sys.objects o\n"
+    "            INNER JOIN sys.schemas s  ON o.schema_id = s.schema_id\n"
+    "       LEFT OUTER JOIN sys.extended_properties e ON\n"
+    "                     ( e.major_id  = o.object_id\n"
+    "                   AND e.minor_id  = 0\n"
+    "                   AND e.class     = 1\n"
+    "                   AND e.name      = N'MS_Description')\n"
+    " WHERE o.type IN ('U','TT','V','SN','S')\n"
+    "   AND e.name     = N'MS_Description'"
+    "   AND e.minor_id = 0\n"
+    "   AND e.class    = 1\n";
+  if(!p_schema.IsEmpty())
+  {
+    query += "   AND s.name = ?\n";
+  }
+  if(!p_tablename.IsEmpty())
+  {
+    query += "   AND o.name ";
+    query += p_tablename.Find('%') >= 0 ? "LIKE" : "=";
+    query += " ?\n";
+  }
+  query += "UNION ALL\n"
+           "SELECT db_name()\n"                             // AS table_catalog
+           "      ,'" + p_schema + "'\n"                    // AS table_schema
+           "      ,SubString(o.name,3,len(o.name) - 2)\n"   // AS table_name
+           "      ,'LOCAL TEMPORARY'\n"                     // AS table_type
+           "      ,null\n"                                  // AS remarks
+           "      ,null\n"                                  // AS tablespace
+           "      ,1\n"                                     // AS temporary
+           "  FROM tempdb.sys.objects o\n"
+           " WHERE o.type      = 'U'\n"
+           "   AND o.schema_id = 1\n"
+           "   AND o.name      LIKE '##" + p_tablename + "%'\n"
+           "UNION ALL\n"
+           "SELECT db_name()\n"                                       // AS table_catalog
+           "      ,'" + p_schema + "'\n"                              // AS table_schema
+           "      ,substring(o.name,2,charindex('___',o.name) - 2)\n" //  AS test
+           "      ,'GLOBAL TEMPORARY'\n"                              // AS table_type
+           "      ,null\n"                                            // AS remarks
+           "      ,null\n"                                            // AS tablespace
+           "      ,1\n"                                               // AS temporary
+           "  FROM tempdb.sys.objects o\n"
+           " WHERE o.type      = 'U'\n"
+           "   AND o.schema_id = 1\n"
+           "   AND o.name LIKE '#" + p_tablename + "___%'"
+           " ORDER BY 1,2,3";
+  return query;
 }
 
 XString
@@ -1710,7 +1771,7 @@ SQLInfoSQLServer::GetPSMProcedureList(XString& p_schema) const
 XString
 SQLInfoSQLServer::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure) const
 {
-  XString sql = 
+  XString sql =
     "SELECT db_name() as catalog_name\n"
     "      ,s.name    as schema_name\n"
     "      ,o.name    as proceadure_name\n"
@@ -1735,8 +1796,7 @@ SQLInfoSQLServer::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedu
     "  FROM sys.objects o\n"
     "       INNER JOIN sys.schemas     s ON o.schema_id = s.schema_id\n"
     "       INNER JOIN sys.sql_modules m ON m.object_id = o.object_id\n"
-    " WHERE ( type_desc LIKE '%PROCEDURE%' OR type_desc LIKE '%FUNCTION%')\n"
-    "   AND o.name LIKE 'abs%'\n";
+    " WHERE ( type_desc LIKE '%PROCEDURE%' OR type_desc LIKE '%FUNCTION%')\n";
 
   if(!p_schema.IsEmpty())
   {
