@@ -25,6 +25,7 @@ LATEST HISTORY
 Releasenotes version 3.0.7
 -------------------------
 - Fixed discovery of stored-procedures, sql-text and parameters for MS SQL-Server
+- Added discovery of global/local temporary tables
 
 Releasenotes version 3.0.6
 --------------------------
