@@ -621,33 +621,7 @@ SQLInfoSQLServer::GetCATALOGTableExists(XString& p_schema,XString& p_tablename) 
 XString
 SQLInfoSQLServer::GetCATALOGTablesList(XString& p_schema,XString& p_pattern) const
 {
-  p_schema.MakeLower();
-  p_pattern.MakeLower();
-
-  XString query = "SELECT db_name()  AS table_catalog\n"
-                  "      ,usr.name   AS schema_name\n"
-                  "      ,obj.name   AS table_name\n"
-                  "      ,'TABLE'    AS object_type\n"
-                  "      ,''         AS remarks\n"
-                  "      ,'master.' + usr.name + '.' + obj.name as fullname\n"
-                  "      ,db_name() as tablespace\n"
-                  "      ,0         as temporary\n"
-                  "  FROM sys.sysobjects obj\n"
-                  "      ,sys.sysusers   usr\n"
-                  " WHERE xtype   = 'U'\n"
-                  "   AND obj.uid = usr.uid\n";
-  if (!p_schema.IsEmpty())
-  {
-    query += "   AND usr.name = ?\n";
-  }
-  if (!p_pattern.IsEmpty())
-  {
-    query += "   AND tab.name ";
-    query += p_pattern.Find('%') >= 0 ? "LIKE" : "=";
-    query += " ?\n";
-  }
-  query += " ORDER BY 1,2,3";
-  return query;
+  return GetCATALOGTableAttributes(p_schema,p_pattern);
 }
 
 XString
@@ -660,25 +634,22 @@ SQLInfoSQLServer::GetCATALOGTableAttributes(XString& p_schema,XString& p_tablena
     "      ,CASE o.type\n"
     "            WHEN 'U'  THEN 'TABLE'\n"
     "            WHEN 'TT' THEN 'TABLE'\n"
-    "            WHEN 'V'  THEN 'VIEW'\n"
-    "            WHEN 'SN' THEN 'SYNONYM'\n"
     "            WHEN 'S'  THEN 'SYSTEM TABLE'\n"
     "                      ELSE 'UNKNOWN'\n"
     "       END AS table_type\n"
-    "      ,CAST (e.value AS VARCHAR(Max)) AS remarks\n"
+    "      ,CASE e.name\n"
+    "            WHEN N'MS_Description' THEN CAST (e.value AS VARCHAR(Max))\n"
+    "            ELSE ''\n"
+    "       END  AS remarks\n"
     "      ,null AS tablespace\n"
     "      ,0    AS temporary\n"
     "  FROM sys.objects o\n"
-    "            INNER JOIN sys.schemas s  ON o.schema_id = s.schema_id\n"
+    "            INNER JOIN sys.schemas s ON o.schema_id = s.schema_id\n"
     "       LEFT OUTER JOIN sys.extended_properties e ON\n"
-    "                     ( e.major_id  = o.object_id\n"
+    "                     ((e.major_id  = o.object_id OR e.major_id IS null)\n"
     "                   AND e.minor_id  = 0\n"
-    "                   AND e.class     = 1\n"
-    "                   AND e.name      = N'MS_Description')\n"
-    " WHERE o.type IN ('U','TT','V','SN','S')\n"
-    "   AND e.name     = N'MS_Description'"
-    "   AND e.minor_id = 0\n"
-    "   AND e.class    = 1\n";
+    "                   AND e.class     = 1)\n"
+    " WHERE o.type IN ('U','TT','S')\n";
   if(!p_schema.IsEmpty())
   {
     query += "   AND s.name = ?\n";
@@ -689,38 +660,73 @@ SQLInfoSQLServer::GetCATALOGTableAttributes(XString& p_schema,XString& p_tablena
     query += p_tablename.Find('%') >= 0 ? "LIKE" : "=";
     query += " ?\n";
   }
+
+  if(p_tablename.IsEmpty())
+  {
+    p_tablename = "%";
+  }
+
   query += "UNION ALL\n"
-           "SELECT db_name()\n"                             // AS table_catalog
-           "      ,'" + p_schema + "'\n"                    // AS table_schema
-           "      ,SubString(o.name,3,len(o.name) - 2)\n"   // AS table_name
-           "      ,'LOCAL TEMPORARY'\n"                     // AS table_type
-           "      ,null\n"                                  // AS remarks
-           "      ,null\n"                                  // AS tablespace
-           "      ,1\n"                                     // AS temporary
+           "SELECT db_name()\n"             // AS table_catalog
+           "      ,'dbo'\n"                 // AS table_schema
+           "      ,o.name\n"                // AS table_name
+           "      ,'LOCAL TEMPORARY'\n"     // AS table_type
+           "      ,null\n"                  // AS remarks
+           "      ,null\n"                  // AS tablespace
+           "      ,1\n"                     // AS temporary
            "  FROM tempdb.sys.objects o\n"
            " WHERE o.type      = 'U'\n"
            "   AND o.schema_id = 1\n"
-           "   AND o.name      LIKE '##" + p_tablename + "%'\n"
+           "   AND o.name      LIKE '##" + p_tablename + "'\n"
            "UNION ALL\n"
            "SELECT db_name()\n"                                       // AS table_catalog
-           "      ,'" + p_schema + "'\n"                              // AS table_schema
-           "      ,substring(o.name,2,charindex('___',o.name) - 2)\n" //  AS test
+           "      ,'dbo'\n"                                           // AS table_schema
+           "      ,substring(o.name,1,charindex('___',o.name) - 1)\n" // AS table_name
            "      ,'GLOBAL TEMPORARY'\n"                              // AS table_type
            "      ,null\n"                                            // AS remarks
            "      ,null\n"                                            // AS tablespace
            "      ,1\n"                                               // AS temporary
            "  FROM tempdb.sys.objects o\n"
            " WHERE o.type      = 'U'\n"
-           "   AND o.schema_id = 1\n"
-           "   AND o.name LIKE '#" + p_tablename + "___%'"
+           "   AND o.schema_id = 1\n"   // 1 = 'dbo'
+           "   AND o.name LIKE '#" + p_tablename + "\\_\\_\\_%' ESCAPE '\\'\n"
            " ORDER BY 1,2,3";
   return query;
 }
 
 XString
-SQLInfoSQLServer::GetCATALOGTableSynonyms(XString& /*p_schema*/,XString& /*p_tablename*/) const
+SQLInfoSQLServer::GetCATALOGTableSynonyms(XString& p_schema,XString& p_tablename) const
 {
-  return "";
+  XString query =
+    "SELECT db_name() AS table_catalog\n"
+    "      ,s.name    AS table_schema\n"
+    "      ,o.name    AS table_name\n"
+    "      ,'SYNONYM' AS table_type\n"
+    "      ,CASE e.name\n"
+    "            WHEN N'MS_Description' THEN CAST (e.value AS VARCHAR(Max))\n"
+    "            ELSE ''\n"
+    "       END  AS remarks\n"
+    "      ,null AS tablespace\n"
+    "      ,0    AS temporary\n"
+    "  FROM sys.objects o\n"
+    "            INNER JOIN sys.schemas s ON o.schema_id = s.schema_id\n"
+    "       LEFT OUTER JOIN sys.extended_properties e ON\n"
+    "                     ((e.major_id  = o.object_id OR e.major_id IS null)\n"
+    "                   AND e.minor_id  = 0\n"
+    "                   AND e.class     = 1)\n"
+    " WHERE o.type = 'SN'\n";
+  if(!p_schema.IsEmpty())
+  {
+    query += "   AND s.name = ?\n";
+  }
+  if(!p_tablename.IsEmpty())
+  {
+    query += "   AND o.name ";
+    query += p_tablename.Find('%') >= 0 ? "LIKE" : "=";
+    query += " ?\n";
+  }
+  query += " ORDER BY 1,2,3";
+  return query;
 }
 
 XString
@@ -847,29 +853,181 @@ SQLInfoSQLServer::GetCATALOGColumnExists(XString p_schema,XString p_tablename,XS
   p_tablename.MakeLower();
   p_columnname.MakeLower();
   XString query = "SELECT count(*)\n"
-                 "  FROM sys.sysobjects tab\n"
-                 "      ,sys.schemas    sch\n"
-                 "     , dbo.syscolumns att\n"
-                 " WHERE tab.name  = '" + p_tablename  + "'\n"
-                 "   AND sch.name  = '" + p_schema     + "'"
-                 "   AND att.name  = '" + p_columnname + "'\n"
-                 "   AND tab.id    = att.id\n"
-                 "   AND tab.schema_id = sch.schema_id\n";
+                  "  FROM sys.sysobjects tab\n"
+                  "      ,sys.schemas    sch\n"
+                  "     , dbo.syscolumns att\n"
+                  " WHERE tab.name  = '" + p_tablename  + "'\n"
+                  "   AND sch.name  = '" + p_schema     + "'"
+                  "   AND att.name  = '" + p_columnname + "'\n"
+                  "   AND tab.id    = att.id\n"
+                  "   AND tab.schema_id = sch.schema_id\n";
   return query;
 }
 
 XString 
-SQLInfoSQLServer::GetCATALOGColumnList(XString& /*p_schema*/,XString& /*p_tablename*/) const
+SQLInfoSQLServer::GetCATALOGColumnList(XString& p_schema,XString& p_tablename) const
 {
-  // Standard ODBC driver suffices
-  return "";
+  XString columns;
+  return GetCATALOGColumnAttributes(p_schema,p_tablename,columns);
 }
 
 XString 
-SQLInfoSQLServer::GetCATALOGColumnAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_columnname*/) const
+SQLInfoSQLServer::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablename,XString& p_columnname) const
 {
-  // Standard ODBC driver suffices
-  return "";
+  // In case of a NON-TEMPORARY table, the standard ODBC driver is better
+  if(p_tablename.Left(1).Compare("#"))
+  {
+    return "";
+  }
+  // GLOBAL AND LOCAL TEMPORARY TABLES ONLY!!!
+
+  // All temporary tables are stored under this schema!
+  p_schema = "dbo";
+  // Globals must always be searched with a like 
+  // because of the storage of the global number in the tablename
+  if(p_tablename.Left(2).Compare("##"))
+  {
+    p_tablename += "%";
+  }
+
+  XString query = "SELECT db_name() as table_catalog\n"
+                  "      ,table_schema\n"
+                  "      ,CASE substring(table_name,1,2)\n"
+                  "            WHEN '##' THEN table_name\n"
+                  "                      ELSE '#' + substring(table_name,2,charindex('___',table_name) - 2)\n"
+                  "       END AS table_name\n"
+                  "      ,column_name\n"
+                  "      ,CASE data_type\n"
+                  "            WHEN 'char'      THEN 1\n"
+                  "            WHEN 'numeric'   THEN 2\n"
+                  "            WHEN 'decimal'   THEN 3\n"
+                  "            WHEN 'int'       THEN 4\n"
+                  "            WHEN 'smallint'  THEN 5\n"
+                  "            WHEN 'float'     THEN 6\n"
+                  "            WHEN 'real'      THEN 7\n"
+                  "            WHEN 'varchar'   THEN 12\n"
+                  "            WHEN 'date'      THEN 91\n"
+                  "            WHEN 'datetime'  THEN 93\n"
+                  "            WHEN 'datetime2' THEN 93\n"
+                  "            WHEN 'time'      THEN -154\n"
+                  "            WHEN 'uniqueidentifier' THEN -11\n"
+                  "            WHEN 'ntext'     THEN -10\n"
+                  "            WHEN 'nvarchar'  THEN -9\n"
+                  "            WHEN 'nchar'     THEN -8\n"
+                  "            WHEN 'bit'       THEN -7\n"
+                  "            WHEN 'tinyint'   THEN -6\n"
+                  "            WHEN 'bigint'    THEN -5\n"
+                  "            WHEN 'varbinary' THEN -4\n"
+                  "            WHEN 'binary'    THEN -2\n"
+                  "            WHEN 'text'      THEN -1\n"
+                  "       END AS datatype\n"
+                  "      ,data_type AS type_name\n"
+                  "      ,CASE data_type\n"
+                  "            WHEN 'char'      THEN character_maximum_length\n"
+                  "            WHEN 'numeric'   THEN 18\n"
+                  "            WHEN 'decimal'   THEN 17\n"
+                  "            WHEN 'int'       THEN 10\n"
+                  "            WHEN 'smallint'  THEN 5\n"
+                  "            WHEN 'float'     THEN 53\n"
+                  "            WHEN 'real'      THEN 24\n"
+                  "            WHEN 'varchar'   THEN character_maximum_length\n"
+                  "            WHEN 'date'      THEN 10\n"
+                  "            WHEN 'datetime'  THEN 23\n"
+                  "            WHEN 'datetime2' THEN 27\n"
+                  "            WHEN 'time'      THEN 16\n"
+                  "            WHEN 'uniqueidentifier' THEN 36\n"
+                  "            WHEN 'ntext'     THEN character_maximum_length\n"
+                  "            WHEN 'nvarchar'  THEN character_maximum_length\n"
+                  "            WHEN 'nchar'     THEN character_maximum_length\n"
+                  "            WHEN 'bit'       THEN 1\n"
+                  "            WHEN 'tinyint'   THEN 3\n"
+                  "            WHEN 'bigint'    THEN 19\n"
+                  "            WHEN 'varbinary' THEN character_maximum_length\n"
+                  "            WHEN 'binary'    THEN character_octet_length\n"
+                  "            WHEN 'text'      THEN 2147483647\n"
+                  "       END AS column_size\n"
+                  "      ,CASE data_type\n"
+                  "            WHEN 'char'      THEN character_maximum_length\n"
+                  "            WHEN 'numeric'   THEN 20\n"
+                  "            WHEN 'decimal'   THEN 19\n"
+                  "            WHEN 'int'       THEN 4\n"
+                  "            WHEN 'smallint'  THEN 2\n"
+                  "            WHEN 'float'     THEN 8\n"
+                  "            WHEN 'real'      THEN 4\n"
+                  "            WHEN 'varchar'   THEN character_maximum_length\n"
+                  "            WHEN 'date'      THEN 6\n"
+                  "            WHEN 'datetime'  THEN 16\n"
+                  "            WHEN 'datetime2' THEN 16\n"
+                  "            WHEN 'time'      THEN 12\n"
+                  "            WHEN 'uniqueidentifier' THEN 16\n"
+                  "            WHEN 'ntext'     THEN character_octet_length\n"
+                  "            WHEN 'nvarchar'  THEN character_octet_length\n"
+                  "            WHEN 'nchar'     THEN character_octet_length\n"
+                  "            WHEN 'bit'       THEN 1\n"
+                  "            WHEN 'tinyint'   THEN 1\n"
+                  "            WHEN 'bigint'    THEN 8\n"
+                  "            WHEN 'varbinary' THEN character_octet_length\n"
+                  "            WHEN 'binary'    THEN character_octet_length\n"
+                  "            WHEN 'text'      THEN 2147483647\n"
+                  "       END AS buffer_length\n"
+                  "      ,numeric_scale AS decimal_digits\n"
+                  "      ,numeric_precision_radix\n"
+                  "      ,CASE is_nullable\n"
+                  "            WHEN 'NO'  THEN 0\n"
+                  "            WHEN 'YES' THEN 1\n"
+                  "                       ELSE 2\n"
+                  "       END AS nullable\n"
+                  "      ,''  AS remarks\n"
+                  "      ,column_default\n"
+                  "      ,CASE data_type\n"
+                  "            WHEN 'char'      THEN 1\n"
+                  "            WHEN 'numeric'   THEN 2\n"
+                  "            WHEN 'decimal'   THEN 3\n"
+                  "            WHEN 'int'       THEN 4\n"
+                  "            WHEN 'smallint'  THEN 5\n"
+                  "            WHEN 'float'     THEN 6\n"
+                  "            WHEN 'real'      THEN 7\n"
+                  "            WHEN 'varchar'   THEN 12\n"
+                  "            WHEN 'date'      THEN 9\n"
+                  "            WHEN 'datetime'  THEN 9\n"
+                  "            WHEN 'datetime2' THEN 93\n"
+                  "            WHEN 'time'      THEN -154\n"
+                  "            WHEN 'uniqueidentifier' THEN -11\n"
+                  "            WHEN 'ntext'     THEN -10\n"
+                  "            WHEN 'nvarchar'  THEN -9\n"
+                  "            WHEN 'nchar'     THEN -8\n"
+                  "            WHEN 'bit'       THEN -7\n"
+                  "            WHEN 'tinyint'   THEN -6\n"
+                  "            WHEN 'bigint'    THEN -5\n"
+                  "            WHEN 'varbinary' THEN -3\n"
+                  "            WHEN 'binary'    THEN -2\n"
+                  "            WHEN 'text'      THEN -1\n"
+                  "       END AS sql_datatype\n"
+                  "      ,CASE data_type\n"
+                  "            WHEN 'date'      THEN 1\n"
+                  "            WHEN 'datetime'  THEN 3\n"
+                  "                             ELSE 0\n"
+                  "       END AS datatype_sub\n"
+                  "      ,character_octet_length\n"
+                  "      ,ordinal_position\n"
+                  "      ,is_nullable\n"
+                  "  FROM tempdb.information_schema.columns\n"
+                  " WHERE table_schema = ?\n";
+  if(!p_tablename.IsEmpty())
+  {
+    query += "   AND table_name ";
+    query += p_tablename.Find('%') >= 0 ? "LIKE" : "=";
+    query += " ?\n";
+  }
+  if(!p_columnname.IsEmpty())
+  {
+    query += "   AND column_name ";
+    query += p_columnname.Find('%') >= 0 ? "LIKE" : "=";
+    query += " ?\n";
+  }
+  query += " ORDER BY 1,2,3\n";
+
+  return query;
 }
 
 XString 
@@ -957,9 +1115,87 @@ SQLInfoSQLServer::GetCATALOGIndexList(XString& p_schema,XString& p_tablename) co
 }
 
 XString
-SQLInfoSQLServer::GetCATALOGIndexAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_indexname*/) const
+SQLInfoSQLServer::GetCATALOGIndexAttributes(XString& p_schema,XString& p_tablename,XString& p_indexname) const
 {
-  return "";
+  // In case of a NON-TEMPORARY table, the standard ODBC driver is better
+  if(p_tablename.Left(1).Compare("#"))
+  {
+    return "";
+  }
+  // GLOBAL AND LOCAL TEMPORARY TABLES ONLY!!!
+  // All temporary tables are stored under this schema!
+  p_schema = "dbo";
+  // Globals must always be searched with a like 
+  // because of the storage of the global number in the tablename
+  if(p_tablename.Left(2).Compare("##"))
+  {
+    p_tablename += "%";
+  }
+  // Getting the tables statistics
+  if(p_indexname.Compare("0") == 0)
+  {
+    XString query = "SELECT db_name() AS catalog_name\n"
+                    "      ,s.name    AS schema_name\n"
+                    "      ,t.name    AS table_name\n"
+                    "      ,1         AS non_unique\n"
+                    "      ,''        AS index_name\n"
+                    "      ,0         AS type\n" // table_stats
+                    "      ,0         AS ordinal_position\n"
+                    "      ,''        AS column_name\n"
+                    "      ,''        AS asc_or_desc\n"
+                    "      ,p.rows    AS cardinality\n"
+                    "      ,Max(a.data_pages) AS pages\n"
+                    "      ,''        AS filter\n"
+                    "  FROM tempdb.sys.tables t\n"
+                    "       INNER JOIN tempdb.sys.partitions p       ON t.object_id    = p.object_id\n"
+                    "       INNER JOIN tempdb.sys.allocation_units a ON p.partition_id = a.container_id\n"
+                    "       INNER JOIN tempdb.sys.schemas s          ON t.schema_id    = s.schema_id\n"
+                    " WHERE s.name = ?\n";
+    if(!p_tablename.IsEmpty())
+    {
+      query += "   AND t.name ";
+      query += p_tablename.Find('%') >= 0 ? "LIKE" : "=";
+      query += " ?\n";
+    }
+    query += " GROUP BY s.name,t.name,p.rows\n"
+             " ORDER BY 1,2,3,4\n";
+    return query;
+  }
+  XString query = "SELECT db_name() AS catalog_name\n"
+                  "      ,s.name    AS table_schema\n"
+                  "      ,o.name    AS table_name\n"
+                  "      ,CASE i.is_unique\n"
+                  "            WHEN 1 THEN 0\n"
+                  "                   ELSE 1\n"
+                  "       END       AS non_unique\n"
+//                "      ,s.name    AS index_qualifier\n"
+                  "      ,i.name    AS index_name\n"
+                  "      ,1         AS TYPE\n"
+                  "      ,x.index_column_id AS ordinal_position\n"
+                  "      ,c.name    AS column_name\n"
+                  "      ,CASE x.is_descending_key\n"
+                  "            WHEN 0 THEN 'A'\n"
+                  "            WHEN 1 THEN 'D'\n"
+                  "                   ELSE ''\n"
+                  "       END       AS asc_or_desc\n"
+                  "      ,y.rowcnt  AS cardinality\n"
+                  "      ,y.dpages  AS pages\n"
+                  "      ,CAST(i.filter_definition AS varchar) AS filter\n"
+                  "  FROM tempdb.sys.indexes i\n"
+                  "       INNER JOIN tempdb.sys.objects       o ON  o.object_id = i.object_id\n"
+                  "       INNER JOIN tempdb.sys.index_columns x ON (x.object_id = i.object_id AND x.index_id  = i.index_id)\n"
+                  "       INNER JOIN tempdb.sys.columns       c ON (c.object_id = o.object_id AND x.column_id = c.column_id)\n"
+                  "       INNER JOIN tempdb.sys.schemas       s ON  s.schema_id = o.schema_id\n"
+                  "       INNER JOIN tempdb.sys.sysindexes    y ON (i.object_id = y.id AND i.name = y.name)\n"
+                  " WHERE s.name = ?\n";
+
+  if(!p_tablename.IsEmpty())
+  {
+    query += "   AND o.name ";
+    query += p_tablename.Find('%') >= 0 ? "LIKE" : "=";
+    query += " ?\n";
+  }
+  return query;
 }
 
 // Get SQL to create an index for a table
@@ -1071,10 +1307,47 @@ SQLInfoSQLServer::GetCATALOGPrimaryExists(XString p_schema,XString p_tablename) 
 }
 
 XString
-SQLInfoSQLServer::GetCATALOGPrimaryAttributes(XString& /*p_schema*/,XString& /*p_tablename*/) const
+SQLInfoSQLServer::GetCATALOGPrimaryAttributes(XString& p_schema,XString& p_tablename) const
 {
-  // TO BE IMPLEMENTED
-  return "";
+  // In case of a NON-TEMPORARY table, the standard ODBC driver is better
+  if(p_tablename.Left(1).Compare("#"))
+  {
+    return "";
+  }
+  // GLOBAL AND LOCAL TEMPORARY TABLES ONLY!!!
+
+  // All temporary tables are stored under this schema!
+  // From now we search in 'tempdb' under the 'dbo' schema
+  p_schema = "dbo";
+  // Globals must always be searched with a like 
+  // because of the storage of the global number in the tablename
+  if(p_tablename.Left(2).Compare("##"))
+  {
+    p_tablename += "%";
+  }
+  XString query = "SELECT db_name()     AS table_catalog\n"
+                  "      ,s.name        AS table_schema\n"
+                  "      ,o.name        AS table_name\n"
+                  "      ,c.name        AS column_name\n"
+                  "      ,x.key_ordinal AS key_sequence\n"
+                  "      ,k.name        AS pk_name\n"
+                  "  FROM tempdb.sys.key_constraints k\n"
+                  "       inner join tempdb.sys.indexes i       ON  i.object_id = k.parent_object_id\n"
+                  "       inner join tempdb.sys.objects o       ON  i.object_id = o.object_id\n"
+                  "       inner join tempdb.sys.schemas s       ON  s.schema_id = o.schema_id\n"
+                  "       inner join tempdb.sys.index_columns x ON (i.object_id = x.object_id AND i.index_id  = x.index_id)\n"
+                  "       inner join tempdb.sys.columns c       ON (c.object_id = o.object_id AND x.column_id = c.column_id)\n"
+                  " WHERE k.type           = 'PK'\n"
+                  "   AND i.is_primary_key = 1\n"
+                  "   AND s.name           = ?\n";
+
+  if(!p_tablename.IsEmpty())
+  {
+    query += "   AND o.name ";
+    query += p_tablename.Find('%') >= 0 ? "LIKE" : "=";
+    query += " ?\n";
+  }
+  return query;
 }
 
 XString
@@ -2209,6 +2482,26 @@ SQLVariant*
 SQLInfoSQLServer::DoSQLCallNamedParameters(SQLQuery* /*p_query*/,XString& /*p_schema*/,XString& /*p_procedure*/)
 {
   return nullptr;
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// PRIVATE
+//
+//////////////////////////////////////////////////////////////////////////
+
+// Adjust catalog for temporary objects
+XString 
+SQLInfoSQLServer::GetCatalogAndSchema(XString& p_schema,XString p_table)
+{
+  if(p_table.Left(1).Compare("#") == 0)
+  {
+    // Temp tables are stored in the 'dbo' schema in the 'tempdbs' database
+    p_schema = "dbo";
+    return "tempdbs.sys.";
+  }
+  // Normal object, use the sys schema
+  return "sys.";
 }
 
 // End of namespace

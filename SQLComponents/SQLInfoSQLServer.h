@@ -395,6 +395,10 @@ public:
   SQLVariant* DoSQLCall(SQLQuery* p_query,XString& p_schema,XString& p_procedure);
   // Calling a stored function with named parameters, returning a value
   SQLVariant* DoSQLCallNamedParameters(SQLQuery* p_query,XString& p_schema,XString& p_procedure);
+
+private:
+  // Adjust catalog for temporary objects
+  XString GetCatalogAndSchema(XString& p_schema,XString p_table);
 };
 
 // End of namespace

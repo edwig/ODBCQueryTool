@@ -1270,7 +1270,8 @@ SQLDatabase::CommitTransaction(SQLTransaction* p_transaction)
         }
         // Re-engage the autocommit mode. If it goes wrong we
         // will automatically reach the catch block
-        if(m_rdbmsType != RDBMS_ACCESS)
+        if(m_rdbmsType != RDBMS_ACCESS &&
+           m_rdbmsType != RDBMS_SQLSERVER)
         {
           SetConnectAttr(SQL_ATTR_AUTOCOMMIT, SQL_AUTOCOMMIT_ON, SQL_IS_UINTEGER);
         }
@@ -1371,7 +1372,8 @@ SQLDatabase::RollbackTransaction(SQLTransaction* p_transaction)
           throw StdException(0);
         }
         // Re-engage the autocommit mode, will throw in case of an error
-        if(m_rdbmsType != RDBMS_ACCESS)
+        if(m_rdbmsType != RDBMS_ACCESS &&
+           m_rdbmsType != RDBMS_SQLSERVER)
         {
           SetConnectAttr(SQL_ATTR_AUTOCOMMIT, SQL_AUTOCOMMIT_ON, SQL_IS_UINTEGER);
         }
