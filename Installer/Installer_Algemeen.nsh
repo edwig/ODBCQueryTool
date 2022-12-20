@@ -112,6 +112,8 @@
  !insertmacro MUI_PAGE_DIRECTORY
  !insertmacro MUI_PAGE_INSTFILES
 ;--------------------------------------------------------------------------------------------------------
+ !define MUI_FINISHPAGE_RUN "$INSTDIR\ODBCQueryTool.exe"
+ !define MUI_FINISHPAGE_TEXT "Launch {PRODUCT_NAME}?"
  !insertmacro MUI_PAGE_FINISH
 ;--------------------------------------------------------------------------------------------------------
 ; Uninstaller pages

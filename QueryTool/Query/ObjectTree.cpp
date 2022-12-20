@@ -20,6 +20,7 @@
 #include "QueryTool.h"
 #include "SQLInfoDB.h"
 #include "Query\NativeSQLDlg.h"
+#include <StyleToast.h>
 
 BEGIN_MESSAGE_MAP(ObjectTree,StyleTreeCtrl)
   ON_NOTIFY_REFLECT(TVN_ITEMEXPANDING, OnItemExpanding)
@@ -91,6 +92,8 @@ ObjectTree::ClearTree()
   // Stop actions on the tree
   m_busy = true;
 
+  StyleToast* toast = CreateToast(STYLE_TOAST_WARNING,STYLE_POS_MIDMIDDLE,"JUST A MOMENT!","Clearing the object tree!","",0);
+
   // De-allocating large tree's can take a lot of time in the next step
   CWaitCursor takeADeepSigh;
 
@@ -126,6 +129,8 @@ ObjectTree::ClearTree()
 
   // Free all trigger and procedure source code
   m_source.clear();
+
+  DestroyToast(toast);
 
   // Actions allowed again
   m_busy = false;
@@ -339,6 +344,13 @@ ObjectTree::OnTableDDL(HTREEITEM p_theItem)
 void
 ObjectTree::DispatchTreeAction(DWORD_PTR p_action,HTREEITEM theItem)
 {
+  StyleToast* toast{nullptr};
+
+  if(p_action != TREE_SOURCECODE)
+  {
+    toast = CreateToast(STYLE_TOAST_WARNING,STYLE_POS_MIDMIDDLE,"JUST A MOMENT!","Populating the object tree!","",0);
+  }
+
   switch(p_action)
   {
     case TREE_TABLES:       FindTables(theItem);          break;
@@ -357,12 +369,16 @@ ObjectTree::DispatchTreeAction(DWORD_PTR p_action,HTREEITEM theItem)
     case TREE_TRIGGERS:     FindTriggers(theItem);        break;
     case TREE_PROCEDURES:   FindProcedures(theItem);      break;
     case TREE_PARAMETERS:   FindParameters(theItem);      break;
-    case TREE_SOURCECODE:   FindSourcecode(theItem);  
-                            return;
-    default:                /* NOTHING */ break;
+    case TREE_SOURCECODE:   FindSourcecode(theItem);      break;
+    default:                /* NOTHING */                 break;
   }
+
   // Resetting the item, so we do this only **ONCE**
-  SetItemData(theItem, 0);
+  if(p_action != TREE_SOURCECODE)
+  {
+    SetItemData(theItem,0);
+    DestroyToast(toast);
+  }
 }
 
 CString

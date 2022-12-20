@@ -22,6 +22,11 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Relaesenotes version 3.0.8
+--------------------------
+- Various fixes for discovery of views, stored procedures in SQL-Server
+- Better filter combo box above the objects tree plus toasts
+
 Releasenotes version 3.0.7
 -------------------------
 - Fixed discovery of stored-procedures, sql-text and parameters for MS SQL-Server

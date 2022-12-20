@@ -113,6 +113,8 @@ int ObjectView::OnCreate(LPCREATESTRUCT lpCreateStruct)
   m_tableCBox.ReadjustDynamic();
   // So we can empty the combo again
   m_tableCBox.AddString("");
+  m_tableCBox.SetFocusDots(false);
+  SetStyleFxComboBoxDots(false);
 
   EnableToolTips(TRUE);
   m_tableCBox.EnableToolTips(TRUE);
