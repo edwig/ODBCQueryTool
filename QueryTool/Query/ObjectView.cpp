@@ -103,46 +103,19 @@ int ObjectView::OnCreate(LPCREATESTRUCT lpCreateStruct)
   m_wndObjectTree.InitSkin();
   m_wndObjectTree.CreateImageList();
 
-  if (!m_tableCBox.Create(WS_CHILD|WS_TABSTOP|WS_VISIBLE|CBS_DROPDOWN,CRect(0, 0, 0, GetSystemMetrics(SM_CYFULLSCREEN) / 2),this,ID_FPW_TABFILTER))
+  if(!m_tableCBox.Create(WS_CHILD|WS_TABSTOP|WS_VISIBLE|CBS_DROPDOWN,CRect(0, 0, 40, GetSystemMetrics(SM_CYFULLSCREEN) / 2),this,ID_FPW_TABFILTER))
   {
     TRACE0("Failed to create filter combo box\n");
+   
     return -1;
   }
-  m_tableCBox.SetFont(&STYLEFONTS.DialogTextFont);
-  //m_filterCBox.InitSkin();
+  m_tableCBox.InitSkin();
+  m_tableCBox.ReadjustDynamic();
+  // So we can empty the combo again
+  m_tableCBox.AddString("");
 
   EnableToolTips(TRUE);
   m_tableCBox.EnableToolTips(TRUE);
-
-
-  // Load images:
-//   m_wndToolBar.Create(this, AFX_DEFAULT_TOOLBAR_STYLE, IDR_SORT);
-//   m_wndToolBar.LoadToolBar(IDR_SORT, 0, 0, TRUE /* Is locked */);
-// 
-//   // OnChangeVisualStyle();
-// 
-//   m_wndToolBar.SetPaneStyle(m_wndToolBar.GetPaneStyle() | CBRS_TOOLTIPS | CBRS_FLYBY);
-//   m_wndToolBar.SetPaneStyle(m_wndToolBar.GetPaneStyle() & ~(CBRS_GRIPPER | CBRS_SIZE_DYNAMIC | CBRS_BORDER_TOP | CBRS_BORDER_BOTTOM | CBRS_BORDER_LEFT | CBRS_BORDER_RIGHT));
-// 
-//   m_wndToolBar.SetOwner(this);
-// 
-//   // All commands will be routed via this control , not via the parent frame:
-//   m_wndToolBar.SetRouteCommandsViaFrame(FALSE);
-// 
-//   CMenu menuSort;
-//   menuSort.LoadMenu(IDR_POPUP_SORT);
-// 
-//   m_wndToolBar.ReplaceButton(ID_SORT_MENU, CObjectViewMenuButton(menuSort.GetSubMenu(0)->GetSafeHmenu()));
-// 
-//   CObjectViewMenuButton* pButton = DYNAMIC_DOWNCAST(CObjectViewMenuButton, m_wndToolBar.GetButton(0));
-// 
-//   if (pButton != nullptr)
-//   {
-//     pButton->m_bText = FALSE;
-//     pButton->m_bImage = TRUE;
-//     pButton->SetImage(GetCmdMgr()->GetCmdImage(m_nCurrSort));
-//     pButton->SetMessageWnd(this);
-//   }
 
   // Fill in some static tree view data (dummy code, nothing magic here)
   FillObjectView();
@@ -227,11 +200,7 @@ ObjectView::AdjustLayout()
   CRect rectClient;
   GetClientRect(rectClient);
 
-  int cyTlb = 0;
-//int cyTlb = m_wndToolBar.CalcFixedLayout(FALSE, TRUE).cy;
-
-//  m_wndToolBar.SetWindowPos(nullptr, rectClient.left, rectClient.top, rectClient.Width(), cyTlb, SWP_NOACTIVATE | SWP_NOZORDER);
-  m_tableCBox.SetWindowPos(nullptr, rectClient.left, rectClient.top + cyTlb, rectClient.Width(), COMBOBOX_SIZE_HEIGHT, flags);
+  m_tableCBox.SetWindowPos(nullptr, rectClient.left, rectClient.top, rectClient.Width(), COMBOBOX_SIZE_HEIGHT, flags);
 
   CRect comboRect;
   m_tableCBox.GetWindowRect(&comboRect);
@@ -312,21 +281,12 @@ ObjectView::OnTable_SelChange()
 {
   // Get current selection
   CString table;
-  int inx = m_tableCBox.GetCurSel();
-  if (inx > CB_ERR)
+  m_tableCBox.GetWindowText(table);
+  table.Trim();
+  if (!table.IsEmpty())
   {
-    m_tableCBox.GetLBText(inx, table);
+    AddToTables(table);
   }
-  else
-  {
-    m_tableCBox.GetWindowText(table);
-    table.Trim();
-    if (!table.IsEmpty())
-    {
-      AddToTables(table);
-    }
-  }
-
   // Compare with filter, if changed
   if (m_wndObjectTree.GetFilter().CompareNoCase(table))
   {
@@ -356,6 +316,8 @@ ObjectView::OnTableTree_RClick(NMHDR* pNMHDR, LRESULT* pResult)
 {
   CPoint point;
   ::GetCursorPos(&point);
+
+  m_tableCBox.GetErrorState();
 
   HTREEITEM hCurSel = m_wndObjectTree.GetNextItem(TVI_ROOT, TVGN_CARET);
   if (hCurSel)

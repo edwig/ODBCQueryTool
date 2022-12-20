@@ -18,6 +18,9 @@
 
 #pragma once
 #include "ObjectTree.h"
+#include <StyleComboBox.h>
+#include <afxtoolbar.h>
+#include <afxdockablepane.h>
 
 class CObjectToolBar : public CMFCToolBar
 {
@@ -46,8 +49,7 @@ public:
   void FindTable(CString& table);
 
 protected:
-  //CObjectToolBar  m_wndToolBar;
-  CComboBox       m_tableCBox;
+  StyleComboBox   m_tableCBox;
   ObjectTree      m_wndObjectTree;
   CStringArray    m_tables;
 

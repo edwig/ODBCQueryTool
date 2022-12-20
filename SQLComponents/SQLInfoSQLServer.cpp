@@ -321,13 +321,32 @@ SQLInfoSQLServer::GetKEYWORDDataType(MetaColumn* p_column)
                                         p_column->m_columnSize = 0;
                                         break;
     case SQL_NUMERIC:                   [[fallthrough]];
-    case SQL_DECIMAL:                   type = "NUMERIC";  break;
+    case SQL_DECIMAL:                   if((p_column->m_columnSize    == 38   || 
+                                            p_column->m_columnSize    ==  0 ) &&
+                                            p_column->m_decimalDigits ==  0 )
+                                        {
+                                          type = "INT";
+                                          p_column->m_columnSize = 0;
+                                        }
+                                        else
+                                        {
+                                          type = "NUMERIC";
+                                        }
+                                        break;
     case SQL_INTEGER:                   type = "INT";      break;
     case SQL_SMALLINT:                  type = "SMALLINT"; break;
     case SQL_FLOAT:                     if(p_column->m_columnSize == 38 ||
                                            p_column->m_columnSize == 18)
                                         {
+                                          if(p_column->m_decimalDigits == 0)
+                                          {
+                                            type = "INT";
+                                            p_column->m_columnSize = 0;
+                                          }
+                                          else
+                                          {
                                           type = "NUMERIC";
+                                          }
                                           p_column->m_columnSize    = 18;
                                           p_column->m_decimalDigits = 0;
                                         }
@@ -753,7 +772,7 @@ SQLInfoSQLServer::GetCATALOGTableCatalog(XString& p_schema,XString& p_tablename)
   }
   if(!p_tablename.IsEmpty())
   {
-    query += "   AND tab.name ";
+    query += "   AND obj.name ";
     query += p_tablename.Find('%') >= 0 ? "LIKE" : "=";
     query += " ?\n";
   }
@@ -1890,7 +1909,7 @@ SQLInfoSQLServer::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewname
   }
   if (!p_viewname.IsEmpty())
   {
-    query += "   AND tab.name ";
+    query += "   AND obj.name ";
     query += p_viewname.Find('%') >= 0 ? "LIKE" : "=";
     query += " ?\n";
   }
@@ -2032,10 +2051,10 @@ SQLInfoSQLServer::GetPSMProcedureList(XString& p_schema) const
     "      ,o.name    as procedure_name\n"
     "  FROM sys.objects o\n"
     "       INNER JOIN sys.schemas s ON o.schema_id = s.schema_id\n"
-    " WHERE (type_desc LIKE '%PROCEDURE%' OR type_desc LIKE '%FUNCTION%')\n";
+    " WHERE type IN ('P','FN')\n";
   if(!p_schema.IsEmpty())
   {
-    query += "   AND o.name = ?\n";
+    query += "   AND s.name = ?\n";
   }
   query += " ORDER BY 1,2,3";
   return query;

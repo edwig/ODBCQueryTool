@@ -17,6 +17,7 @@
 */
 #pragma once
 #include "SQLInfo.h"
+#include <StyleTreeCtrl.h>
 #include <map>
 
 using namespace SQLComponents;

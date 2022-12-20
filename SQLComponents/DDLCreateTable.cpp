@@ -776,7 +776,7 @@ DDLCreateTable::FormatColumnName(XString p_column,int p_length)
   }
 
   // Circumvent locally reserved words
-  if(m_target->GetRDBMSDatabaseType() == DatabaseType::RDBMS_SQLSERVER)
+  if(m_target && m_target->GetRDBMSDatabaseType() == DatabaseType::RDBMS_SQLSERVER)
   {
     p_column = "[" + p_column + "]";
     p_length += 2;

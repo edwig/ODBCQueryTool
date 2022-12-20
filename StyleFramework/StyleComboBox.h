@@ -78,6 +78,7 @@ public:
   int   GetDroppedWidth() const;
   int   SetMaxDroppedWidth(UINT p_percentage);
 
+  void  ReadjustDynamic();
   BOOL  GetComboBoxInfo(PCOMBOBOXINFO pcbi) const;
   BOOL  SetMinVisibleItems(int iMinVisible);
   int   GetMinVisible() const;
