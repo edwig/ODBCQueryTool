@@ -76,14 +76,14 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)bin_$(Configuration)x86\</OutDir>
-    <TargetName>Setup_OpenODBCQuerytool_3.0.2_32-Bits.exe</TargetName>
+    <TargetName>Setup_OpenODBCQuerytool_3.1.0_32-Bits.exe</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <TargetName>Setup_OpenODBCQuerytool_3.0.8_64-Bits.exe</TargetName>
+    <TargetName>Setup_OpenODBCQuerytool_3.1.0_64-Bits.exe</TargetName>
     <OutDir>$(SolutionDir)bin_$(Configuration)$(Platform)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">

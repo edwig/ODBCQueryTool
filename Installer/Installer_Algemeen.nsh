@@ -6,12 +6,12 @@
 ; Copyright (c) 2017 ir. W.E. Huisman
 ; All rights reserved
 ;
-; Last change:       14-12-2022
-; Versionnumber:     3.0.8
+; Last change:       22-12-2022
+; Versionnumber:     3.1.0
 ;-------------------------------------------------------
  !define PRODUCT_NAME                         "OpenODBCQuerytool"
- !define PRODUCT_VERSION                      "3.0.8"
- !define PRODUCT_BUILDNUMBER                  "334"
+ !define PRODUCT_VERSION                      "3.1.0"
+ !define PRODUCT_BUILDNUMBER                  "356"
  !define PRODUCT_PUBLISHER                    "EDO"
  !define PRODUCT_WEB_SITE                     "https://sourceforge.net/projects/odbcquerytool"
  !define PRODUCT_DIR_REGKEY                   "Software\Microsoft\Windows\CurrentVersion\App Paths\${PRODUCT_NAME}"
@@ -143,6 +143,7 @@ Section "The Program" prog_always
  File "${RootDir}license.rtf"
  File "${InputDir}ODBCQueryTool.chm"
  File "${InputDir}ODBCQueryTool.exe"
+ File "${InputDir}SQLMigrate.exe"
  File "${RootDir}plan.txt"
  File "${RootDIr}QUERY.ICO"
  File "${RootDir}readme.txt"
@@ -272,6 +273,7 @@ Section Uninstall
  Delete /REBOOTOK "$INSTDIR\license.rtf"
  Delete /REBOOTOK "$INSTDIR\ODBCQueryTool.chm" 
  Delete /REBOOTOK "$INSTDIR\ODBCQueryTool.exe"
+ Delete /REBOOTOK "$INSTDIR\SQLMigrate.exe"
  Delete /REBOOTOK "$INSTDIR\plan.txt"
  Delete /REBOOTOK "$INSTDIR\QUERY.ico"
  Delete /REBOOTOK "$INSTDIR\readme.txt"
