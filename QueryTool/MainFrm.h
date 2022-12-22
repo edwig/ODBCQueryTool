@@ -92,6 +92,7 @@ protected:
 	afx_msg void		OnActivateApp(BOOL bActive, DWORD dwThreadID);
   afx_msg void    OnConnectBar();
   afx_msg void    OnDatabaseBar();
+  afx_msg void    OnSQLMigration();
   afx_msg void    OnSupportBug();
   afx_msg void    OnSupportFeature();
   afx_msg void    OnWebSourceforge();

@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////
 //
-// File: SQLTransaction.cpp
+// File: SQLMigrateApp.h
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,21 +21,33 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
+// Version number: See SQLComponents.h
+//
 #pragma once
 
-// General text version
-#define ODBCQUERYTOOL_VERSION  "3.1.0"
-#define ODBCQUERYTOOL_BUILD    "356"
-#define ODBCQUERYTOOL_COPYRIGHT "Copyright (c) Edwig Huisman 2004-2022"
+#ifndef __AFXWIN_H__
+	#error "include 'stdafx.h' before including this file for PCH"
+#endif
 
-// For the resource files
-#define QT_RES_VERSION 3
-#define QT_RES_MAJOR   1
-#define QT_RES_MINOR   0
-#define QT_RES_BUILD   356
-#define QT_RES_FILE    "3,1,0,356"
+#include "resource.h"		// main symbols
 
-// For the registry and the theme framework
-#define PRODUCT_REGISTRY "EDO\\ODBCQueryTool"
-#define PROGRAM_NAME     "ODBCQueryTool"
-#define PROFILE_VERSION  "3.1"
+
+// ExportDB:
+// See ExportDB_20.cpp for the implementation of this class
+//
+
+class SQLMigrateApp : public CWinApp
+{
+public:
+	SQLMigrateApp();
+
+// Overrides
+	public:
+	virtual BOOL InitInstance();
+
+// Implementation
+
+	DECLARE_MESSAGE_MAP()
+};
+
+extern SQLMigrateApp theApp;

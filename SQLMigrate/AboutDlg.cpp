@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////
 //
-// File: SQLTransaction.cpp
+// File: AboutDlg.cpp
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,21 +21,40 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-#pragma once
+// Version number: See SQLComponents.h
+//
+#include "stdafx.h"
+#include "AboutDlg.h"
+#include "version.h"
 
-// General text version
-#define ODBCQUERYTOOL_VERSION  "3.1.0"
-#define ODBCQUERYTOOL_BUILD    "356"
-#define ODBCQUERYTOOL_COPYRIGHT "Copyright (c) Edwig Huisman 2004-2022"
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
 
-// For the resource files
-#define QT_RES_VERSION 3
-#define QT_RES_MAJOR   1
-#define QT_RES_MINOR   0
-#define QT_RES_BUILD   356
-#define QT_RES_FILE    "3,1,0,356"
 
-// For the registry and the theme framework
-#define PRODUCT_REGISTRY "EDO\\ODBCQueryTool"
-#define PROGRAM_NAME     "ODBCQueryTool"
-#define PROFILE_VERSION  "3.1"
+AboutDlg::AboutDlg() : StyleDialog(AboutDlg::IDD)
+{
+  m_version   = SQL_MIGRATE " " SQL_COMPONENTS_VERSION;
+  m_copyright = SQL_COMPONENTS_COPYRIGHT;
+}
+
+void AboutDlg::DoDataExchange(CDataExchange* pDX)
+{
+  StyleDialog::DoDataExchange(pDX);
+  DDX_Control(pDX,IDC_VERSION,  m_editVersion,  m_version);
+  DDX_Control(pDX,IDC_COPYRIGHT,m_editCopyright,m_copyright);
+  DDX_Control(pDX,IDOK,         m_buttonOK);
+}
+
+BEGIN_MESSAGE_MAP(AboutDlg, StyleDialog)
+END_MESSAGE_MAP()
+
+BOOL
+AboutDlg::OnInitDialog()
+{
+  StyleDialog::OnInitDialog();
+  SetWindowText("About " SQL_MIGRATE);
+  return FALSE;
+}

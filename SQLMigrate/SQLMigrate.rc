@@ -1,0 +1,282 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#ifndef APSTUDIO_INVOKED
+#include "targetver.h"
+#endif
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 206, 76
+STYLE DS_SETFONT | WS_POPUP | WS_SYSMENU
+FONT 10, "Verdana", 400, 0, 0x0
+BEGIN
+    ICON            IDR_MAINFRAME,IDC_STATIC,14,14,20,20
+    DEFPUSHBUTTON   "OK",IDOK,131,39,63,14,WS_GROUP
+    EDITTEXT        IDC_VERSION,41,9,153,14,ES_AUTOHSCROLL | ES_READONLY
+    EDITTEXT        IDC_COPYRIGHT,41,24,153,14,ES_AUTOHSCROLL | ES_READONLY
+END
+
+IDD_MIGRATE_WIZARD DIALOGEX 0, 0, 541, 433
+STYLE DS_SETFONT | WS_POPUP
+EXSTYLE WS_EX_APPWINDOW
+FONT 10, "Verdana", 400, 0, 0x0
+BEGIN
+    LTEXT           "Work directory",IDC_STATIC,15,11,48,8
+    EDITTEXT        IDC_DIRECTORY,67,9,271,13,ES_AUTOHSCROLL | ES_READONLY
+    PUSHBUTTON      "",IDC_BUTT_DIR,340,8,17,14
+    GROUPBOX        "Source database",IDC_STATIC,6,26,166,70
+    LTEXT           "Source DSN",IDC_STATIC,15,38,49,9
+    COMBOBOX        IDC_SOURCE,67,36,91,138,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "User",IDC_STATIC,15,52,35,9
+    EDITTEXT        IDC_SOURCE_USER,67,51,91,12,ES_AUTOHSCROLL
+    LTEXT           "Password",IDC_STATIC,15,67,41,8
+    EDITTEXT        IDC_SOURCE_PASSWORD,67,65,91,12,ES_PASSWORD | ES_AUTOHSCROLL
+    EDITTEXT        IDC_SOURCE_TYPE,67,79,91,12,ES_AUTOHSCROLL | ES_READONLY
+    GROUPBOX        "Target database",IDC_STATIC,6,98,166,77
+    LTEXT           "Target DSN",IDC_STATIC,15,111,47,8
+    COMBOBOX        IDC_TARGET,68,109,91,110,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "User",IDC_STATIC,15,126,41,8
+    EDITTEXT        IDC_TARGET_USER,67,124,91,12,ES_AUTOHSCROLL
+    LTEXT           "Password",IDC_STATIC,15,141,41,8
+    EDITTEXT        IDC_TARGET_PASSWORD,67,139,91,12,ES_PASSWORD | ES_AUTOHSCROLL
+    EDITTEXT        IDC_TARGET_TYPE,67,154,91,12,ES_AUTOHSCROLL | ES_READONLY
+    GROUPBOX        "Schemata",IDC_STATIC,176,26,190,42
+    LTEXT           "Source schema",IDC_STATIC,184,38,53,9
+    EDITTEXT        IDC_SOURCE_SCHEMA,254,36,103,12,ES_AUTOHSCROLL
+    LTEXT           "Target schema",IDC_STATIC,184,53,61,9
+    EDITTEXT        IDC_TARGET_SCHEMA,254,50,103,12,ES_AUTOHSCROLL
+    GROUPBOX        "Files",IDC_STATIC,176,67,190,60
+    LTEXT           "Direct migration",IDC_STATIC,184,82,65,8
+    COMBOBOX        IDC_DIRECT_MIGRATION,254,79,103,57,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Drop table file",IDC_STATIC,184,97,64,8
+    EDITTEXT        IDC_DROP_FILE,254,95,103,12,ES_AUTOHSCROLL
+    LTEXT           "Create script file",IDC_STATIC,184,113,62,9
+    EDITTEXT        IDC_CREATE_FILE,254,111,103,12,ES_AUTOHSCROLL
+    GROUPBOX        "Table(s)",IDC_STATIC,175,128,190,47
+    CONTROL         "Migrate ALL tables",IDC_ALLTABLES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,254,140,91,8
+    LTEXT           "Tables to process",IDC_STATIC,184,157,64,10
+    EDITTEXT        IDC_TABLE,254,155,103,12,ES_AUTOHSCROLL
+    GROUPBOX        "Options",IDC_STATIC,370,5,165,170
+    CONTROL         "(Re)Create tables",IDC_DO_TABLES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,374,17,139,10
+    CONTROL         "Delete from tables",IDC_DO_DELETES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,374,29,155,10
+    CONTROL         "(Re)Convert data in tables",IDC_DO_DATA,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,374,41,101,10
+    CONTROL         "Trim CHAR",IDC_DO_TRUNCATE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,484,41,45,10
+    CONTROL         "Create indices",IDC_DO_INDICES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,374,65,155,10
+    CONTROL         "Create primary keys",IDC_DO_PRIMARYS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,374,77,155,10
+    CONTROL         "Create foreign keys",IDC_DO_FOREIGN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,374,89,155,10
+    CONTROL         "Create sequences",IDC_DO_SEQUENCES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,374,101,155,10
+    CONTROL         "Create triggers",IDC_DO_TRIGGERS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,374,113,66,10
+    CONTROL         "Grant rights on table",IDC_DO_ACCESS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,374,125,139,10
+    LTEXT           "Tablespace name",IDC_STATIC,374,146,65,9
+    EDITTEXT        IDC_TABLESPACE,442,144,87,12,ES_AUTOHSCROLL
+    LTEXT           "Extra condition",IDC_STATIC,374,160,65,8
+    EDITTEXT        IDC_WHERE,442,158,87,12,ES_AUTOHSCROLL
+    GROUPBOX        "Status",IDC_GRP_STATUS,6,175,529,68
+    LTEXT           "Current action",IDC_STATIC,15,188,47,8
+    EDITTEXT        IDC_STATUS,67,185,187,14,ES_AUTOHSCROLL | ES_READONLY | NOT WS_TABSTOP
+    LTEXT           "All tables",IDC_STATIC,15,206,48,9
+    CONTROL         "Progress2",IDC_PROGRESS2,"msctls_progress32",WS_BORDER,67,203,462,14
+    LTEXT           "Current table",IDC_STATIC,15,224,48,8
+    CONTROL         "Progress1",IDC_PROGRESS1,"msctls_progress32",WS_BORDER,67,221,462,14
+    CONTROL         "Also write to the logfile",IDC_TOLOGFILE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,247,91,11
+    LTEXT           "Logging per rows",IDC_STATIC,184,248,66,8
+    EDITTEXT        IDC_LOGLINES,254,245,76,14,ES_AUTOHSCROLL | WS_DISABLED
+    LTEXT           "Estimated time left",IDC_STATIC,374,248,68,8
+    EDITTEXT        IDC_ESTIMATED,442,245,87,14,ES_AUTOHSCROLL | WS_DISABLED
+    EDITTEXT        IDC_LOG,6,262,529,136,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL | NOT WS_TABSTOP
+    DEFPUSHBUTTON   "Start &migration",IDC_EXPORT,365,401,80,13
+    PUSHBUTTON      "&Close",IDC_CLOSE,455,401,80,13
+    CONTROL         "Convert views",IDC_DO_VIEWS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,374,53,101,10
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_SYSMENU MENU
+BEGIN
+    POPUP "MENU"
+    BEGIN
+        POPUP "Theme"
+        BEGIN
+            MENUITEM "Lime",                        ID_THEMA_LIME
+            MENUITEM "Skyblue",                     ID_THEMA_SKYBLUE
+            MENUITEM "Purple",                      ID_THEMA_PURPLE
+            MENUITEM "Moderate gray",               ID_THEMA_MODERATE
+            MENUITEM "Pure gray",                   ID_THEMA_PUREGRAY
+            MENUITEM "Black && White",              ID_THEMA_BLACKWHITE
+        END
+        MENUITEM "About...",                    ID_APP_ABOUT
+        MENUITEM "Exit",                        ID_APP_EXIT
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        BOTTOMMARGIN, 62
+    END
+
+    IDD_MIGRATE_WIZARD, DIALOG
+    BEGIN
+        LEFTMARGIN, 1
+        RIGHTMARGIN, 540
+        VERTGUIDE, 15
+        VERTGUIDE, 67
+        VERTGUIDE, 184
+        VERTGUIDE, 254
+        VERTGUIDE, 357
+        VERTGUIDE, 365
+        VERTGUIDE, 374
+        VERTGUIDE, 442
+        VERTGUIDE, 529
+        VERTGUIDE, 535
+        TOPMARGIN, 1
+        BOTTOMMARGIN, 432
+        HORZGUIDE, 414
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_MIGRATE_WIZARD AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_ABOUTBOX AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDS_ABOUTBOX            "&About SQLMigrate"
+END
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Dutch (Netherlands) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_NLD)
+LANGUAGE LANG_DUTCH, SUBLANG_DUTCH
+#pragma code_page(1252)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#ifndef APSTUDIO_INVOKED\r\n"
+    "#include ""targetver.h""\r\n"
+    "#endif\r\n"
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_OLE_RESOURCES\r\n"
+    "#define _AFX_NO_TRACKER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#include ""res\\SQLMigrate.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""     // Standard components\r\n"
+    "#endif\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\SQLMigrate.ico"
+
+#endif    // Dutch (Netherlands) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_OLE_RESOURCES
+#define _AFX_NO_TRACKER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#include "res\SQLMigrate.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"     // Standard components
+#endif
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

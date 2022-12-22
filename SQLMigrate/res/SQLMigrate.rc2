@@ -1,0 +1,55 @@
+//
+// SQLMigrate.rc2 - resources Microsoft Visual C++ does not edit directly
+//
+
+#ifdef APSTUDIO_INVOKED
+#error this file is not editable by Microsoft Visual C++
+#endif //APSTUDIO_INVOKED
+
+#include "version.h"
+#include "StyleFramework.rc"
+
+/////////////////////////////////////////////////////////////////////////////
+// Add manually edited resources here...
+
+/////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION    SQL_COMPONENTS_BINVERSION
+ PRODUCTVERSION SQL_COMPONENTS_BINVERSION
+ FILEFLAGSMASK 0x37L
+#ifdef _DEBUG
+ FILEFLAGS 0x21L
+#else
+ FILEFLAGS 0x20L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "041304b0"
+        BEGIN
+            VALUE "Comments",         "Generic ODBC datapump"
+            VALUE "CompanyName",      "Edwig Huisman"
+            VALUE "FileDescription",  "ODBC SQL Migration wizard"
+            VALUE "FileVersion",      SQL_COMPONENTS_VERSION
+            VALUE "InternalName",     SQL_MIGRATE
+            VALUE "LegalCopyright",   SQL_COMPONENTS_COPYRIGHT
+            VALUE "LegalTrademarks",  "SQLComponents"
+            VALUE "OriginalFilename", SQL_MIGRATE ".exe"
+            VALUE "ProductName",      "SQLComponents migration wizard"
+            VALUE "ProductVersion",   SQL_COMPONENTS_VERSION
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x413, 1200
+    END
+END

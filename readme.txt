@@ -22,6 +22,21 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes version 3.1.0
+--------------------------
+- Added toasts when (de-)populating the object tree of the QueryTool
+- Added the SQLMigrate program from the SQLComponents to the toolsset.
+  The program can be reached through the new 'Tools' submenu.
+  This program makes it possible to migrate complete database sets from one database to 
+  another, even if it is of a different vendor making. 
+  Real life situations that has been tested include conversions from the following:
+  Informix   -> Oracle
+  Informix   -> PostgreSQL
+  Informix   -> Firebird
+  Oracle     -> SQL-Server
+  Oracle     -> MySQL & MariaDB
+  SQL-Server -> Oracle
+
 Relaesenotes version 3.0.8
 --------------------------
 - Various fixes for discovery of views, stored procedures in SQL-Server

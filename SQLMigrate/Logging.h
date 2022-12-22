@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////
 //
-// File: SQLTransaction.cpp
+// File: Logging.h
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -21,21 +21,52 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
+// Version number: See SQLComponents.h
+//
 #pragma once
 
-// General text version
-#define ODBCQUERYTOOL_VERSION  "3.1.0"
-#define ODBCQUERYTOOL_BUILD    "356"
-#define ODBCQUERYTOOL_COPYRIGHT "Copyright (c) Edwig Huisman 2004-2022"
+#define FILENAME_LOGFILE    "logfile.txt"
+#define FILENAME_OUTPUT     "script.sql"
+#define FILENAME_DROPFILE   "dropscript.sql"
 
-// For the resource files
-#define QT_RES_VERSION 3
-#define QT_RES_MAJOR   1
-#define QT_RES_MINOR   0
-#define QT_RES_BUILD   356
-#define QT_RES_FILE    "3,1,0,356"
+//class applicatieDlg;
 
-// For the registry and the theme framework
-#define PRODUCT_REGISTRY "EDO\\ODBCQueryTool"
-#define PROGRAM_NAME     "ODBCQueryTool"
-#define PROFILE_VERSION  "3.1"
+typedef enum log
+{
+  nothing = 0,
+  create,
+  drop,
+}
+LogType;
+
+class Logging
+{
+public:
+  Logging();
+ ~Logging();
+  int  Open();
+  void Close();
+  void WriteLog (XString message);
+  void WriteOut (XString statement,bool p_delim = false);
+  void WriteDrop(XString statement,bool p_delim = false);
+  void SetLogStatus(LogType status);
+  void SetTables(int num);
+  void SetTableGauge(int num,int maxnum);
+  void SetTablesGauge(int num);
+  void SetStatus(XString status);
+  void SetScript(XString p_script);
+  void SetDropScript(XString p_script);
+  void SetLogfile(XString p_logfile);
+  void SetDBType(bool p_source, XString p_type);
+private:
+  int     m_tables;
+  LogType m_status;
+
+  XString m_logfile;
+  XString m_script;
+  XString m_dropscript;
+
+  FILE* m_flog;
+  FILE* m_fout;
+  FILE* m_fdrop;
+};

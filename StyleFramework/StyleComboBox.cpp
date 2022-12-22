@@ -2630,14 +2630,10 @@ void WINAPI DDX_CBIndex(CDataExchange* pDX,int nIDC,StyleComboBox& p_control,int
 
   if(pDX->m_bSaveAndValidate)
   {
-    CString text;
-    p_control.GetWindowText(text);
-    p_index = atoi(text);
+    p_index = p_control.GetCurSel();
   }
   else
   {
-    CString text;
-    text.Format("%d",p_index);
-    p_control.SetWindowText(text);
+    p_control.SetCurSel(p_index);
   }
 }

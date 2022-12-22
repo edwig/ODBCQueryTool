@@ -1,1 +1,0 @@
-ODBCQueryTool.exe /CONNECT:DSN=owoc02;UID=pronto;PWD=alles01; test.sql

@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////
 //
-// File: SQLTransaction.cpp
+// File: Version.h
 //
-// Copyright (c) 1998-2017 ir. W.E. Huisman
+// Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -22,20 +22,9 @@
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
 #pragma once
+#include "SQLComponentsVersion.h"
 
-// General text version
-#define ODBCQUERYTOOL_VERSION  "3.1.0"
-#define ODBCQUERYTOOL_BUILD    "356"
-#define ODBCQUERYTOOL_COPYRIGHT "Copyright (c) Edwig Huisman 2004-2022"
+// Change to 1 to trigger dumping to the debug pane in a _DEBUG build
+#define DEBUG_DUMPING 0
 
-// For the resource files
-#define QT_RES_VERSION 3
-#define QT_RES_MAJOR   1
-#define QT_RES_MINOR   0
-#define QT_RES_BUILD   356
-#define QT_RES_FILE    "3,1,0,356"
-
-// For the registry and the theme framework
-#define PRODUCT_REGISTRY "EDO\\ODBCQueryTool"
-#define PROGRAM_NAME     "ODBCQueryTool"
-#define PROFILE_VERSION  "3.1"
+#define SQL_MIGRATE "SQLMigrate"

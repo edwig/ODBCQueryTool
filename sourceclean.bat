@@ -23,6 +23,9 @@ rmdir /q/s ReferenceGuide\x64
 rmdir /q/s SQLComponents\Debug
 rmdir /q/s SQLComponents\Release
 rmdir /q/s SQLComponents\x64
+rmdir /q/s SQLMigrate\Debug
+rmdir /q/s SQLMigrate\Release
+rmdir /q/s SQLMigrate\x64
 rmdir /q/s StyleFramework\Debug
 rmdir /q/s StyleFramework\Release
 rmdir /q/s StyleFramework\x64

@@ -574,7 +574,7 @@
 #define ID_THEMA_PUREGRAY               50125
 #define ID_THEMA_BLACKWHITE             50126
 #define ID_DONATION                     50127
-#define D                               50128
+#define ID_TOOLS_SQLMIGRATION           50130
 #define ID_APP_DBLKEYACCEL_FIRST        0xDF00
 #define ID_APP_DBLKEYACCEL_LAST         0xDFFF
 
@@ -583,7 +583,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        327
-#define _APS_NEXT_COMMAND_VALUE         50130
+#define _APS_NEXT_COMMAND_VALUE         50131
 #define _APS_NEXT_CONTROL_VALUE         1052
 #define _APS_NEXT_SYMED_VALUE           100
 #endif

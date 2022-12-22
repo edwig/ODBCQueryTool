@@ -31,6 +31,7 @@
 #include "OEFindFiles.h"
 #include "ChildFrm.h"
 #include "DonateDlg.h"
+#include <GetExePath.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -65,6 +66,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, StyleMDIFrameWnd)
   ON_COMMAND(ID_VIEW_FIND_PANEL,              OnViewFindPanel)
   ON_COMMAND(ID_VIEW_CONNECTBAR,              OnConnectBar)
   ON_COMMAND(ID_VIEW_DATABASEBAR,             OnDatabaseBar)
+  ON_COMMAND(ID_TOOLS_SQLMIGRATION,           OnSQLMigration)
   ON_COMMAND(ID_HELP_BUG,                     OnSupportBug)
   ON_COMMAND(ID_HELP_FEATURE,                 OnSupportFeature)
   ON_COMMAND(ID_HELP_SFNET,                   OnWebSourceforge)
@@ -373,6 +375,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   lstBasicCommands.AddTail(ID_SCRIPT_FINDTABLE);
   lstBasicCommands.AddTail(ID_SCRIPT_TABLEDDL);
   lstBasicCommands.AddTail(ID_SCRIPT_VARIABLES);
+  // Tools
+  lstBasicCommands.AddTail(ID_TOOLS_SQLMIGRATION);
 
 	// Popup-menu
 	lstBasicCommands.AddTail(ID_SORTING_SORTALPHABETIC);
@@ -783,6 +787,13 @@ CMainFrame::OnWebGithub()
   ShellExecute(NULL, "open", github, NULL, NULL, SW_SHOWMAXIMIZED);
 }
 
+void
+CMainFrame::OnSQLMigration()
+{
+  CString path = GetExePath();
+  path += "SQLMigrate.exe";
+  ShellExecute(NULL,"open",path,NULL,NULL,SW_SHOWNORMAL);
+}
 
 //////////////////////////////////////////////////////////////////////////
 
