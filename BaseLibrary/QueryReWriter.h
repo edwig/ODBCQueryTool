@@ -68,9 +68,9 @@ enum class Token
 
 enum class SROption
 {
-  SRO_NO_OPTION      = 0x0000
- ,SRO_CONCAT_TO_ADD  = 0x0001   // ISO SQL || to MS-SQL + for two strings
- ,SRO_ADD_TO_CONCAT  = 0x0002   // MS-SQL + to ISO SQL || for two strings
+   SRO_NO_OPTION      = 0x0000
+  ,SRO_CONCAT_TO_ADD  = 0x0001   // ISO SQL || to MS-SQL + for two strings
+  ,SRO_ADD_TO_CONCAT  = 0x0002   // MS-SQL + to ISO SQL || for two strings
   ,SRO_WARN_OUTER     = 0x0004   // Warn for Oracle (+) Outer joins
 
   ,SRO_LAST_OPTION    = 0x0007
@@ -124,8 +124,9 @@ public:
   bool    AddSQLWords(SQLWords& p_words);
   bool    AddSQLWordsFromFile(XString p_filename);
   // Getters
-  int     GetReplaced() { return m_replaced; };
-  int     GetOptions()  { return m_options;  };
+  int     GetReplaced() { return m_replaced; }
+  int     GetOptions()  { return m_options;  }
+  CString GetSchema()   { return m_schema;   }
 private:
   void    Reset();
   void    Initialization();

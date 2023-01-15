@@ -26,6 +26,12 @@
 #pragma once
 #include "SQLInfoDB.h"
 
+// MS-SQLServer defines 
+#define SQL_SS_TIME_COLUMNSIZE 27  // Maximum column size for TIMSTAMP with max decimals
+#define SQL_SS_TIME_MAXSCALE    7  // Maximum precision for time and timestamps
+#define SQL_SS_NUMERIC_BUFFER  40  // 2 * sizeof(SQL_NUMLERIC_STRUCT)
+#define SQL_SS_MAXPRECISION    38  // SQL-Server will crash on higher resolutions
+
 namespace SQLComponents
 {
 
@@ -89,6 +95,9 @@ public:
 
   // Correct maximum precision,scale for a NUMERIC datatype
   void GetRDBMSNumericPrecisionScale(SQLULEN& p_precision, SQLSMALLINT& p_scale) const;
+
+  // Maximum for a VARCHAR to be handled without AT-EXEC data. Assume NVARCHAR is half that size!
+  int GetRDBMSMaxVarchar() const;
 
   //////////////////////////////////////////////////////////////////////////
   // KEYWORDS
@@ -169,7 +178,7 @@ public:
   XString GetSQLFromDualClause() const;
 
   // Get SQL to lock  a table 
-  XString GetSQLLockTable(XString p_schema, XString p_tablename, bool p_exclusive) const;
+  XString GetSQLLockTable(XString p_schema,XString p_tablename,bool p_exclusive,int p_waittime) const;
 
   // Get query to optimize the table statistics
   XString GetSQLOptimizeTable(XString p_schema, XString p_tablename) const;
@@ -203,6 +212,9 @@ public:
 
   // Makes an catalog identifier string (possibly quoted on both sides)
   virtual XString GetSQLDDLIdentifier(XString p_identifier) const override;
+
+  // Changes to parameters before binding to an ODBC HSTMT handle
+  void DoBindParameterFixup(SQLSMALLINT& p_sqlDatatype,SQLULEN& p_columnSize,SQLSMALLINT& p_scale,SQLLEN& p_bufferSize,SQLLEN* p_indicator) const;
 
   //////////////////////////////////////////////////////////////////////////
   //
@@ -272,6 +284,18 @@ public:
   XString GetCATALOGForeignCreate     (MForeignMap& p_foreigns) const;
   XString GetCATALOGForeignAlter      (MForeignMap& p_original,MForeignMap& p_requested) const;
   XString GetCATALOGForeignDrop       (XString  p_schema,XString  p_tablename,XString  p_constraintname) const;
+  // All default constraints
+  XString GetCATALOGDefaultExists    (XString& p_schema,XString& p_tablename,XString& p_column) const;
+  XString GetCATALOGDefaultList      (XString& p_schema,XString& p_tablename) const;
+  XString GetCATALOGDefaultAttributes(XString& p_schema,XString& p_tablename,XString& p_column) const;
+  XString GetCATALOGDefaultCreate    (XString  p_schema,XString  p_tablename,XString  p_constraint,XString p_column,XString p_code) const;
+  XString GetCATALOGDefaultDrop      (XString  p_schema,XString  p_tablename,XString  p_constraint) const;
+  // All check constraints
+  XString GetCATALOGCheckExists       (XString  p_schema,XString  p_tablename,XString  p_constraint) const;
+  XString GetCATALOGCheckList         (XString  p_schema,XString  p_tablename) const;
+  XString GetCATALOGCheckAttributes   (XString  p_schema,XString  p_tablename,XString  p_constraint) const;
+  XString GetCATALOGCheckCreate       (XString  p_schema,XString  p_tablename,XString  p_constraint,XString p_condition) const;
+  XString GetCATALOGCheckDrop         (XString  p_schema,XString  p_tablename,XString  p_constraint) const;
   // All trigger functions
   XString GetCATALOGTriggerExists     (XString  p_schema,XString  p_tablename,XString  p_triggername) const;
   XString GetCATALOGTriggerList       (XString& p_schema,XString& p_tablename) const;
@@ -289,14 +313,20 @@ public:
   XString GetCATALOGViewList          (XString& p_schema,XString& p_pattern)  const;
   XString GetCATALOGViewAttributes    (XString& p_schema,XString& p_viewname) const;
   XString GetCATALOGViewText          (XString& p_schema,XString& p_viewname) const;
-  XString GetCATALOGViewCreate        (XString  p_schema,XString  p_viewname,XString p_contents)   const;
+  XString GetCATALOGViewCreate        (XString  p_schema,XString  p_viewname,XString p_contents,bool p_ifexists = true) const;
   XString GetCATALOGViewRename        (XString  p_schema,XString  p_viewname,XString p_newname)    const;
   XString GetCATALOGViewDrop          (XString  p_schema,XString  p_viewname,XString& p_precursor) const;
   // All Privilege functions
   XString GetCATALOGTablePrivileges   (XString& p_schema,XString& p_tablename) const;
   XString GetCATALOGColumnPrivileges  (XString& p_schema,XString& p_tablename,XString& p_columnname) const;
-  XString GetCatalogGrantPrivilege    (XString  p_schema,XString  p_objectname,XString p_privilege,XString p_grantee,bool p_grantable);
-  XString GetCatalogRevokePrivilege   (XString  p_schema,XString  p_objectname,XString p_privilege,XString p_grantee);
+  XString GetCATALOGGrantPrivilege    (XString  p_schema,XString  p_objectname,XString p_privilege,XString p_grantee,bool p_grantable);
+  XString GetCATALOGSequencePrivilege (XString& p_schema,XString& p_sequence) const;
+  XString GetCATALOGRevokePrivilege   (XString  p_schema,XString  p_objectname,XString p_privilege,XString p_grantee);
+  // All Synonym functions
+  XString GetCATALOGSynonymList      (XString& p_schema,XString& p_pattern) const;
+  XString GetCATALOGSynonymAttributes(XString& p_schema,XString& p_synonym) const;
+  XString GetCATALOGSynonymCreate    (XString& p_schema,XString& p_synonym,XString p_forObject,bool p_private = true) const;
+  XString GetCATALOGSynonymDrop      (XString& p_schema,XString& p_synonym,bool p_private = true) const;
 
   //////////////////////////////////////////////////////////////////////////
   //
@@ -333,8 +363,9 @@ public:
   XString GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure) const;
   XString GetPSMProcedureSourcecode(XString  p_schema,XString  p_procedure) const;
   XString GetPSMProcedureCreate    (MetaProcedure& p_procedure) const;
-  XString GetPSMProcedureDrop      (XString  p_schema,XString  p_procedure) const;
+  XString GetPSMProcedureDrop      (XString  p_schema,XString  p_procedure,bool p_function = false) const;
   XString GetPSMProcedureErrors    (XString  p_schema,XString  p_procedure) const;
+  XString GetPSMProcedurePrivilege (XString& p_schema,XString& p_procedure) const;
   // And it's parameters
   XString GetPSMProcedureParameters(XString& p_schema,XString& p_procedure) const;
 

@@ -174,6 +174,14 @@ SQLInfoPostgreSQL::GetRDBMSNumericPrecisionScale(SQLULEN& /*p_precision*/, SQLSM
   // NO-OP
 }
 
+// Maximum for a VARCHAR to be handled without AT-EXEC data. Assume NVARCHAR is half that size!
+int
+SQLInfoPostgreSQL::GetRDBMSMaxVarchar() const
+{
+  // See: https://www.postgresql.org/docs/current/datatype-character.html
+  return 65535;
+}
+
 // KEYWORDS
 
 // Keyword for the current date and time
@@ -365,7 +373,7 @@ SQLInfoPostgreSQL::GetSQLFromDualClause() const
 
 // Get SQL to lock  a table 
 XString
-SQLInfoPostgreSQL::GetSQLLockTable(XString p_schema, XString p_tablename, bool p_exclusive) const
+SQLInfoPostgreSQL::GetSQLLockTable(XString p_schema,XString p_tablename,bool p_exclusive,int /*p_waittime*/) const
 {
   XString query = "LOCK TABLE " + p_schema + "." + p_tablename + " IN ";
   query += p_exclusive ? "EXCLUSIVE" : "SHARE";
@@ -466,6 +474,12 @@ XString
 SQLInfoPostgreSQL::GetSQLDDLIdentifier(XString p_identifier) const
 {
   return p_identifier;
+}
+
+// Changes to parameters before binding to an ODBC HSTMT handle
+void
+SQLInfoPostgreSQL::DoBindParameterFixup(SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*p_columnSize*/,SQLSMALLINT& /*p_scale*/,SQLLEN& /*p_bufferSize*/,SQLLEN* /*p_indicator*/) const
+{
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1323,6 +1337,71 @@ SQLInfoPostgreSQL::GetCATALOGForeignDrop(XString p_schema,XString p_tablename,XS
   return sql;
 }
 
+//////////////////////////
+// All default constraints
+XString
+SQLInfoPostgreSQL::GetCATALOGDefaultExists(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_column*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoPostgreSQL::GetCATALOGDefaultList(XString& /*p_schema*/,XString& /*p_tablename*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoPostgreSQL::GetCATALOGDefaultAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_column*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoPostgreSQL::GetCATALOGDefaultCreate(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_constraint*/,XString /*p_column*/,XString /*p_code*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoPostgreSQL::GetCATALOGDefaultDrop(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_constraint*/) const
+{
+  return "";
+}
+
+/////////////////////////
+// All check constraints
+
+XString
+SQLInfoPostgreSQL::GetCATALOGCheckExists(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoPostgreSQL::GetCATALOGCheckList(XString  /*p_schema*/,XString  /*p_tablename*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoPostgreSQL::GetCATALOGCheckAttributes(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoPostgreSQL::GetCATALOGCheckCreate(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/,XString /*p_condition*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoPostgreSQL::GetCATALOGCheckDrop(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/) const
+{
+  return "";
+}
+
 //////////////////////////////////////////////////////////////////////////
 // ALL TRIGGER FUNCTIONS
 
@@ -1584,7 +1663,7 @@ SQLInfoPostgreSQL::GetCATALOGViewText(XString& /*p_schema*/,XString& /*p_viewnam
 }
 
 XString
-SQLInfoPostgreSQL::GetCATALOGViewCreate(XString p_schema,XString p_viewname,XString p_contents) const
+SQLInfoPostgreSQL::GetCATALOGViewCreate(XString p_schema,XString p_viewname,XString p_contents,bool /*p_ifexists = true*/) const
 {
   return "CREATE OR REPLACE VIEW " + p_schema + "." + p_viewname + "\n" + p_contents;
 }
@@ -1615,8 +1694,14 @@ SQLInfoPostgreSQL::GetCATALOGColumnPrivileges(XString& /*p_schema*/,XString& /*p
   return "";
 }
 
+XString
+SQLInfoPostgreSQL::GetCATALOGSequencePrivilege(XString& /*p_schema*/,XString& /*p_sequence*/) const
+{
+  return "";
+}
+
 XString 
-SQLInfoPostgreSQL::GetCatalogGrantPrivilege(XString p_schema,XString p_objectname,XString p_privilege,XString p_grantee,bool p_grantable)
+SQLInfoPostgreSQL::GetCATALOGGrantPrivilege(XString p_schema,XString p_objectname,XString p_privilege,XString p_grantee,bool p_grantable)
 {
   XString sql;
   sql.Format("GRANT %s ON %s.%s TO %s",p_privilege.GetString(),p_schema.GetString(),p_objectname.GetString(),p_grantee.GetString());
@@ -1628,11 +1713,40 @@ SQLInfoPostgreSQL::GetCatalogGrantPrivilege(XString p_schema,XString p_objectnam
 }
 
 XString 
-SQLInfoPostgreSQL::GetCatalogRevokePrivilege(XString p_schema,XString p_objectname,XString p_privilege,XString p_grantee)
+SQLInfoPostgreSQL::GetCATALOGRevokePrivilege(XString p_schema,XString p_objectname,XString p_privilege,XString p_grantee)
 {
   XString sql;
   sql.Format("REVOKE %s ON %s.%s FROM %s",p_privilege.GetString(),p_schema.GetString(),p_objectname.GetString(),p_grantee.GetString());
   return sql;
+}
+
+// All Synonym functions
+XString
+SQLInfoPostgreSQL::GetCATALOGSynonymList(XString& /*p_schema*/,XString& /*p_pattern*/) const
+{
+  // Not implemented yet
+  return "";
+}
+
+XString
+SQLInfoPostgreSQL::GetCATALOGSynonymAttributes(XString& /*p_schema*/,XString& /*p_synonym*/) const
+{
+  // Not implemented yet
+  return "";
+}
+
+XString
+SQLInfoPostgreSQL::GetCATALOGSynonymCreate(XString& /*p_schema*/,XString& /*p_synonym*/,XString /*p_forObject*/,bool /*p_private = true*/) const
+{
+  // Not implemented yet
+  return "";
+}
+
+XString
+SQLInfoPostgreSQL::GetCATALOGSynonymDrop(XString& /*p_schema*/,XString& /*p_synonym*/,bool /*p_private = true*/) const
+{
+  // Not implemented yet
+  return "";
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1707,13 +1821,19 @@ SQLInfoPostgreSQL::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
 }
 
 XString
-SQLInfoPostgreSQL::GetPSMProcedureDrop(XString p_schema, XString p_procedure) const
+SQLInfoPostgreSQL::GetPSMProcedureDrop(XString p_schema, XString p_procedure,bool /*p_function /*=false*/) const
 {
   return "";
 }
 
 XString
 SQLInfoPostgreSQL::GetPSMProcedureErrors(XString p_schema,XString p_procedure) const
+{
+  return "";
+}
+
+XString
+SQLInfoPostgreSQL::GetPSMProcedurePrivilege(XString& /*p_schema*/,XString& /*p_procedure*/) const
 {
   return "";
 }

@@ -518,11 +518,21 @@ JSONPath::ProcessUnion(XString p_token)
 void
 JSONPath::ProcessFilter(XString p_token)
 {  
-  // Remove all spaces
+  // Remove all spaces if not within single quotes
   XString token{ "" };
+  int opening = -1;
   for(int i = 0; i < p_token.GetLength(); i++)
   {
-    if(!isspace(p_token.GetAt(i)))
+    if(opening >= 0 && p_token.GetAt(i) != '\'')
+    {
+      token += p_token.GetAt(i);
+    } 
+    else if(p_token.GetAt(i) == '\'')
+    {
+      token += p_token.GetAt(i);
+      opening = i;
+    }
+    else if(!isspace(p_token.GetAt(i)))
     {
       token += p_token.GetAt(i);
     }
@@ -575,36 +585,25 @@ JSONPath::GetEndOfPart(XString p_token,int& p_pos)
   int parenthesisPos = p_token.Find(')',p_pos);
   int andPos   = p_token.Find("&&",p_pos);
   int orPos    = p_token.Find("||",p_pos);
-  int spacePos = p_token.Find(" ",p_pos);
 
   int tempPos = p_token.GetLength();
   if(parenthesisPos > 0 &&
     (parenthesisPos < andPos   || andPos   < 0) &&
-    (parenthesisPos < orPos    || orPos    < 0) &&
-    (parenthesisPos < spacePos || spacePos < 0))
+    (parenthesisPos < orPos    || orPos    < 0))
   {
     tempPos = parenthesisPos;
   }
   else if(andPos > 0 &&
     (andPos < parenthesisPos || parenthesisPos < 0) &&
-    (andPos < orPos    || orPos    < 0) &&
-    (andPos < spacePos || spacePos < 0))
+    (andPos < orPos    || orPos    < 0))
   {
     tempPos = andPos;
   }
   else if(orPos > 0 &&
     (orPos < parenthesisPos || parenthesisPos < 0) &&
-    (orPos < andPos   || andPos   < 0) &&
-    (orPos < spacePos || spacePos < 0))
+    (orPos < andPos   || andPos   < 0))
   {
     tempPos = orPos;
-  }
-  else if(spacePos > 0 &&
-    (spacePos < parenthesisPos || parenthesisPos < 0) &&
-    (spacePos < andPos || andPos < 0) &&
-    (spacePos < orPos  || orPos  < 0))
-  {
-    tempPos = spacePos;
   }
 
   // return end of part encased in quotes if applicable

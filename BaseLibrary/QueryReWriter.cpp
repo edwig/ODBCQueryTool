@@ -112,7 +112,7 @@ QueryReWriter::SetOption(SROption p_option)
   if(p_option > SROption::SRO_NO_OPTION &&
      p_option < SROption::SRO_LAST_OPTION)
   {
-  m_options |= (int) p_option;
+    m_options |= (int) p_option;
     return true;
   }
   return false;
@@ -138,7 +138,7 @@ QueryReWriter::AddSQLWord(XString p_word
   if(g_allWords.find(p_word) != g_allWords.end())
   {
     return false;
-}
+  }
   g_allWords.insert(std::make_pair(p_word,word));
   return true;
 }
@@ -222,7 +222,7 @@ QueryReWriter::AddSQLWordsFromFile(XString p_filename)
         }
         // Remember this word
         if(!AddSQLWord(word))
-{
+        {
           result = false;
         }
       }
@@ -269,13 +269,13 @@ QueryReWriter::Initialization()
 {
   // Only do the initialization once
   if(!g_allWords.empty())
-{
+  {
     return;
-}
+  }
 
   // At a minimum, we need all tokens
   for(int ind = 0; ind < sizeof(all_tokens) / sizeof(const char*); ++ind)
-{
+  {
     SQLWord word;
     word.m_word = all_tokens[ind];
     word.m_token = (Token) ind;
@@ -323,10 +323,10 @@ QueryReWriter::ParseStatement(bool p_closingEscape /*= false*/)
       PrintToken();
       Token oldStatement = m_inStatement;
       bool  oldFrom      = m_inFrom;
-      m_inStatement = Token::TK_EOS;
+      m_inStatement      = Token::TK_EOS;
       ParseStatement(odbc);
-      m_inStatement = oldStatement;
-      m_inFrom      = oldFrom;
+      m_inStatement      = oldStatement;
+      m_inFrom           = oldFrom;
       continue;
     }
     else if(m_token == Token::TK_PLAIN_ODBC)
@@ -456,7 +456,9 @@ QueryReWriter::PrintToken()
     case Token::TK_INTO:      [[fallthrough]];
     case Token::TK_UNION:     m_output += all_tokens[(int)m_token];
                               break;
+    case Token::TK_EOS:       break;
     default:                  m_output += "\nINTERNAL ERROR: Unknown SQL token!\n";
+                              break;
   }
 }
 
@@ -470,7 +472,7 @@ QueryReWriter::PrintOuterJoin()
     m_output += "-- BEWARE: Oracle old style (+). Rewrite the SQL query with LEFT OUTER JOIN syntaxis!";
     m_output += "\n";
   }
-  }
+}
 
 // THIS IS WHY WE ARE HERE IN THIS CLASS!
 void
@@ -637,7 +639,7 @@ QueryReWriter::FindToken()
 
   // Return as a specific token or just a plain word
   if(tok->second.m_token != Token::TK_EOS)
-    {
+  {
     return tok->second.m_token;
   }
   return Token::TK_PLAIN;

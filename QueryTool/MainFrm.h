@@ -93,6 +93,7 @@ protected:
   afx_msg void    OnConnectBar();
   afx_msg void    OnDatabaseBar();
   afx_msg void    OnSQLMigration();
+  afx_msg void    OnSQLReWriter();
   afx_msg void    OnSupportBug();
   afx_msg void    OnSupportFeature();
   afx_msg void    OnWebSourceforge();

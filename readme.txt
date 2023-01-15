@@ -36,6 +36,9 @@ Releasenotes version 3.1.0
   Oracle     -> SQL-Server
   Oracle     -> MySQL & MariaDB
   SQL-Server -> Oracle
+- Added the QueryReWriter program. Can be configured to translate SQL Queries from
+  on RDBMS to another. Use the config tab to set your favourite setup.
+  The program can be reached through tne new 'Tools' submenu.
 
 Relaesenotes version 3.0.8
 --------------------------

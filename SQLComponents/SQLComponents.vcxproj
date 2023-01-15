@@ -294,6 +294,7 @@
     <ClInclude Include="SQLMessage.h" />
     <ClInclude Include="SQLMetaInfo.h" />
     <ClInclude Include="SQLMutation.h" />
+    <ClInclude Include="sqlncli.h" />
     <ClInclude Include="SQLOperator.h" />
     <ClInclude Include="SQLPrimaryKey.h" />
     <ClInclude Include="SQLQuery.h" />

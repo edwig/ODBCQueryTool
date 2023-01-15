@@ -339,6 +339,9 @@
     <ClInclude Include="SQLPrimaryKey.h">
       <Filter>Headers Files</Filter>
     </ClInclude>
+    <ClInclude Include="sqlncli.h">
+      <Filter>Headers Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Headers Files">

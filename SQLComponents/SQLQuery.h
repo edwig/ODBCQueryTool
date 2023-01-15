@@ -36,13 +36,8 @@ namespace SQLComponents
 {
 
 // Arbitrary max limit for a normal string to be retrieved
-// Above this limit the stream interface is used
-// Can be modified by the "SetBufferSize" method
-#define OPTIM_BUFFERSIZE (4*1024)
-
-// Some drivers give no buffer sizes for NVARCHAR back
-// So use a maximum default value
-#define MAX_CHAR_BUFFER  (32*1024 - 1)
+// For the stream interface of SQLGetData
+#define OPTIM_BUFFERSIZE (32*1024)
 
 // After this amount of seconds it's been toooooo long
 #define QUERY_TOO_LONG 2.0
@@ -90,6 +85,10 @@ public:
   void SetConcurrency(int p_concurrency);
   // Setting the maximum size of a SQLCHAR parameter
   void SetParameterMaxSize(int p_num,unsigned p_maxSize);
+  // Setting the scan for native translations (normally off)
+  void SetNoScan(bool p_noscan = false);
+  // Setting the fetching policy
+  void SetFetchPolicy(bool p_policy);
 
   // Set parameters for statement
   void SetParameter  (int p_num,SQLVariant*   p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
@@ -196,6 +195,8 @@ public:
   HDBC        GetDatabaseHandle();
   // Getting the statement handle (if any)
   HSTMT       GetStatementHandle();
+  // Getting the 'noscan' setting
+  bool        GetNoScan();
 
   // Getting the results of the query as a SQLVariant reference
   SQLVariant& operator[](int p_index);
@@ -263,12 +264,13 @@ private:
   HSTMT         m_hstmt;             // Statement handle
   RETCODE       m_retCode;           // last SQL (error)code
   XString       m_lastError;         // last error string
-  unsigned      m_maxColumnLength;   // Max length
-  bool          m_hasLongColumns;    // Use SQLGetData for long columns
+  int           m_maxColumnLength;   // Max length
+  int           m_hasLongColumns;    // Use SQLGetData for long columns
   int           m_bufferSize;        // Alternate Buffer size
   int           m_maxRows;           // Maximum rows to fetch
   double        m_speedThreshold;    // After this amount of seconds, it's taken too long
   int           m_concurrency;       // Concurrency level of the cursor
+  bool          m_noscan;            // Speed optimalization (normally off!)
 
   XString       m_cursorName;        // Name of the SQL Cursor
   short         m_numColumns;        // Number of result columns in result set
@@ -350,6 +352,28 @@ inline SQLDatabase*
 SQLQuery::GetDatabase()
 {
   return m_database;
+}
+
+inline void
+SQLQuery::SetNoScan(bool p_noscan)
+{
+  m_noscan = p_noscan;
+}
+
+inline bool
+SQLQuery::GetNoScan()
+{
+  return m_noscan;
+}
+
+inline void 
+SQLQuery::SetFetchPolicy(bool p_policy)
+{
+  m_hasLongColumns = 0;
+  if(p_policy)
+  {
+    m_hasLongColumns = 1;
+  }
 }
 
 // End of namespace

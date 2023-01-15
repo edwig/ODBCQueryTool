@@ -67,6 +67,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, StyleMDIFrameWnd)
   ON_COMMAND(ID_VIEW_CONNECTBAR,              OnConnectBar)
   ON_COMMAND(ID_VIEW_DATABASEBAR,             OnDatabaseBar)
   ON_COMMAND(ID_TOOLS_SQLMIGRATION,           OnSQLMigration)
+  ON_COMMAND(ID_TOOLS_REWRITER,               OnSQLReWriter)
   ON_COMMAND(ID_HELP_BUG,                     OnSupportBug)
   ON_COMMAND(ID_HELP_FEATURE,                 OnSupportFeature)
   ON_COMMAND(ID_HELP_SFNET,                   OnWebSourceforge)
@@ -377,7 +378,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   lstBasicCommands.AddTail(ID_SCRIPT_VARIABLES);
   // Tools
   lstBasicCommands.AddTail(ID_TOOLS_SQLMIGRATION);
-
+  lstBasicCommands.AddTail(ID_TOOLS_REWRITER);
 	// Popup-menu
 	lstBasicCommands.AddTail(ID_SORTING_SORTALPHABETIC);
 	lstBasicCommands.AddTail(ID_SORTING_SORTBYTYPE);
@@ -792,6 +793,14 @@ CMainFrame::OnSQLMigration()
 {
   CString path = GetExePath();
   path += "SQLMigrate.exe";
+  ShellExecute(NULL,"open",path,NULL,NULL,SW_SHOWNORMAL);
+}
+
+void
+CMainFrame::OnSQLReWriter()
+{
+  CString path = GetExePath();
+  path += "QueryReWriter.exe";
   ShellExecute(NULL,"open",path,NULL,NULL,SW_SHOWNORMAL);
 }
 

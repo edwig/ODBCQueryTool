@@ -317,8 +317,8 @@ protected:
   bool         m_stopNoColumns { false };
   bool         m_isolation     { false };
   // Filter sets
-  SQLFilterSet* m_filters { nullptr };
-  SQLFilterSet* m_havings { nullptr };
+  SQLFilterSet* m_filters      { nullptr };
+  SQLFilterSet* m_havings      { nullptr };
   bool          m_ownFilters   { false   };
   // Records and objects
   int          m_status    { SQL_Empty };

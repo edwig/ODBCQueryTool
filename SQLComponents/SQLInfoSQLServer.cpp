@@ -27,6 +27,7 @@
 #include "SQLComponents.h"
 #include "SQLInfoSQLServer.h"
 #include "SQLQuery.h"
+#include "sqlncli.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -193,6 +194,13 @@ SQLInfoSQLServer::GetRDBMSNumericPrecisionScale(SQLULEN& p_precision, SQLSMALLIN
   {
     p_scale = (SQLSMALLINT) (p_precision - 1);
   }
+}
+
+// Maximum for a VARCHAR to be handled without AT-EXEC data. Assume NVARCHAR is half that size!
+int
+SQLInfoSQLServer::GetRDBMSMaxVarchar() const
+{
+  return (DBMAXCHAR - 1);
 }
 
 // KEYWORDS
@@ -470,10 +478,22 @@ SQLInfoSQLServer::GetSQLFromDualClause() const
 
 // Get SQL to lock  a table 
 XString
-SQLInfoSQLServer::GetSQLLockTable(XString p_schema, XString p_tablename, bool p_exclusive) const
+SQLInfoSQLServer::GetSQLLockTable(XString p_schema, XString p_tablename, bool p_exclusive,int p_waittime) const
 {
-  XString query = "SELECT * FROM " + p_schema + "." + p_tablename + " WITH ";
+  XString query = "SELECT TOP(1) 1 FROM " + p_schema + "." + p_tablename + " WITH ";
   query += p_exclusive ? "(TABLOCKX)" : "(TABLOCK)";
+  if(p_waittime)
+  {
+    query += " WAITFOR TIMEOUT ";
+    XString wait("'00:");
+    if(p_waittime > 3600)
+    {
+      wait.Format("%2.2d:",p_waittime / 3600);
+      p_waittime %= 3600;
+    }
+    wait.AppendFormat("%2.2d:%2.2d'",p_waittime / 60,p_waittime % 60);
+    query += wait;
+  }
   return query;
 }
 
@@ -589,6 +609,55 @@ SQLInfoSQLServer::GetSQLDDLIdentifier(XString p_identifier) const
   return ident;;
 }
 
+// Changes to parameters before binding to an ODBC HSTMT handle
+void
+SQLInfoSQLServer::DoBindParameterFixup(SQLSMALLINT& p_sqlDatatype,SQLULEN& p_columnSize,SQLSMALLINT& p_scale,SQLLEN& p_bufferSize,SQLLEN* p_indicator) const
+{
+  switch(p_sqlDatatype)
+  {
+    case SQL_CHAR:            [[fallthrough]];
+    case SQL_VARCHAR:         if(p_bufferSize <= 0 || p_bufferSize >= DBMAXCHAR)
+                              {
+                                p_sqlDatatype = SQL_VARCHAR;      // Always VARCHAR
+                                p_columnSize  = SQL_SS_LENGTH_UNLIMITED;
+                                p_bufferSize  = SQL_SS_LENGTH_UNLIMITED;
+                                *p_indicator  = SQL_NTS;
+                              }
+                              break;
+    case SQL_WCHAR:           [[fallthrough]];
+    case SQL_WVARCHAR:        if(p_bufferSize <= 0 || p_bufferSize >= DBMAXCHAR)
+                              {
+                                p_sqlDatatype = SQL_WVARCHAR;     // Always NVARCHAR
+                                p_columnSize  = SQL_SS_LENGTH_UNLIMITED;
+                                p_bufferSize  = SQL_SS_LENGTH_UNLIMITED;
+                                *p_indicator  = SQL_DATA_AT_EXEC; // Cannot be NTS!!
+                              }
+                              break;
+    case SQL_BINARY:          [[fallthrough]];
+    case SQL_VARBINARY:       [[fallthrough]];
+    case SQL_LONGVARCHAR:     [[fallthrough]];
+    case SQL_LONGVARBINARY:   if(p_bufferSize <= 0 || p_bufferSize >= DBMAXCHAR)
+                              {
+                                p_sqlDatatype = SQL_VARBINARY;    // Always VARBINARY
+                                p_columnSize  = SQL_SS_LENGTH_UNLIMITED;
+                                p_bufferSize  = SQL_SS_LENGTH_UNLIMITED;
+                                *p_indicator  = SQL_DATA_AT_EXEC; // Cannot be NTS!!
+                              }
+                              break;
+    case SQL_TIME:            [[fallthrough]];
+    case SQL_TIMESTAMP:       [[fallthrough]];
+    case SQL_TYPE_TIME:       [[fallthrough]];
+    case SQL_TYPE_TIMESTAMP:  p_columnSize = SQL_SS_TIME_COLUMNSIZE;
+                              p_scale      = SQL_SS_TIME_MAXSCALE;
+                              break;
+    case SQL_NUMERIC:         [[fallthrough]];
+    case SQL_DECIMAL:         p_columnSize = SQL_SS_MAXPRECISION;    // Max precision
+                              p_bufferSize = SQL_SS_NUMERIC_BUFFER;  // 2 times the SQL_NUMERIC_STRUCT
+                              break;
+    default:                  break; // DO NOTHING for this datatype (e.g. integer, date, interval types)
+  }
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // CATALOG
@@ -663,7 +732,7 @@ SQLInfoSQLServer::GetCATALOGTableAttributes(XString& p_schema,XString& p_tablena
     "      ,null AS tablespace\n"
     "      ,0    AS temporary\n"
     "  FROM sys.objects o\n"
-    "            INNER JOIN sys.schemas s ON o.schema_id = s.schema_id\n"
+    "            INNER JOIN sys.schemas s  ON o.schema_id = s.schema_id\n"
     "       LEFT OUTER JOIN sys.extended_properties e ON\n"
     "                     ((e.major_id  = o.object_id OR e.major_id IS null)\n"
     "                   AND e.minor_id  = 0\n"
@@ -943,8 +1012,8 @@ SQLInfoSQLServer::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablen
                   "      ,data_type AS type_name\n"
                   "      ,CASE data_type\n"
                   "            WHEN 'char'      THEN character_maximum_length\n"
-                  "            WHEN 'numeric'   THEN 18\n"
-                  "            WHEN 'decimal'   THEN 17\n"
+                  "            WHEN 'numeric'   THEN 38\n"
+                  "            WHEN 'decimal'   THEN 38\n"
                   "            WHEN 'int'       THEN 10\n"
                   "            WHEN 'smallint'  THEN 5\n"
                   "            WHEN 'float'     THEN 53\n"
@@ -967,8 +1036,8 @@ SQLInfoSQLServer::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablen
                   "       END AS column_size\n"
                   "      ,CASE data_type\n"
                   "            WHEN 'char'      THEN character_maximum_length\n"
-                  "            WHEN 'numeric'   THEN 20\n"
-                  "            WHEN 'decimal'   THEN 19\n"
+                  "            WHEN 'numeric'   THEN 40\n"
+                  "            WHEN 'decimal'   THEN 40\n"
                   "            WHEN 'int'       THEN 4\n"
                   "            WHEN 'smallint'  THEN 2\n"
                   "            WHEN 'float'     THEN 8\n"
@@ -1136,6 +1205,9 @@ SQLInfoSQLServer::GetCATALOGIndexList(XString& p_schema,XString& p_tablename) co
 XString
 SQLInfoSQLServer::GetCATALOGIndexAttributes(XString& p_schema,XString& p_tablename,XString& p_indexname) const
 {
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+
   // In case of a NON-TEMPORARY table, the standard ODBC driver is better
   if(p_tablename.Left(1).Compare("#"))
   {
@@ -1640,6 +1712,195 @@ SQLInfoSQLServer::GetCATALOGForeignDrop(XString p_schema,XString p_tablename,XSt
   return sql;
 }
 
+//////////////////////////
+// All default constraints
+XString
+SQLInfoSQLServer::GetCATALOGDefaultExists(XString& p_schema,XString& p_tablename,XString& p_column) const
+{
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+  p_column.MakeLower();
+
+  XString sql =
+    "SELECT 1\n"
+    "  FROM sys.default_constraints d\n"
+    "       inner join sys.objects o ON o.object_id = d.parent_object_id\n"
+    "       inner join sys.schemas s ON s.schema_id = o.schema_id\n"
+    "       inner join sys.columns c ON o.object_id = c.object_id AND c.column_id = d.parent_column_id\n"
+    " WHERE s.name = '" + p_schema    + "'\n"
+    "   AND o.name = '" + p_tablename + "'\n"
+    "   AND c.name = '" + p_column    + "'\n";
+
+  return sql;
+}
+
+XString
+SQLInfoSQLServer::GetCATALOGDefaultList(XString& p_schema,XString& p_tablename) const
+{
+  XString all;
+  return GetCATALOGDefaultAttributes(p_schema,p_tablename,all);
+}
+
+XString
+SQLInfoSQLServer::GetCATALOGDefaultAttributes(XString& p_schema,XString& p_tablename,XString& p_column) const
+{
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+  p_column.MakeLower();
+
+  XString sql =
+    "SELECT db_name() AS constraint_catalog\n"
+    "      ,s.name    AS constraint_schema\n"
+    "      ,o.name    AS constraint_table\n"
+    "      ,d.name    AS constraint_name\n"
+    "      ,c.name    AS constraint_column\n"
+    "      ,CAST(definition AS VARCHAR(Max)) AS constraint_code\n"
+    "  FROM sys.default_constraints d\n"
+    "       inner join sys.objects o ON o.object_id = d.parent_object_id\n"
+    "       inner join sys.schemas s ON s.schema_id = o.schema_id\n"
+    "       inner join sys.columns c ON o.object_id = c.object_id AND c.column_id = d.parent_column_id\n"
+    " WHERE s.name = ?\n";
+  if(!p_tablename.IsEmpty())
+  {
+    sql += "   AND o.name ";
+    sql += p_tablename.Find('%') < 0 ? "=" : "LIKE";
+    sql += " ?\n";
+  }
+  if(!p_column.IsEmpty())
+  {
+    sql += "   AND c.name = ";
+    sql += p_column.Find('%') < 0 ? "=" : "LIKE";
+    sql += " ?\n";
+  }
+  sql += " ORDER BY 1,2,3,4";
+
+  return sql;
+}
+
+XString
+SQLInfoSQLServer::GetCATALOGDefaultCreate(XString p_schema,XString p_tablename,XString p_constraint,XString p_column,XString p_code) const
+{
+  p_schema    .MakeLower();
+  p_tablename .MakeLower();
+  p_constraint.MakeLower();
+  p_column    .MakeLower();
+
+  return "ALTER TABLE [" + p_schema + "].[" + p_tablename + "]\n"
+         "  ADD CONSTRAINT [" + p_constraint + "]\n"
+         "      DEFAULT " + p_code + " FOR [" + p_column + "]";
+}
+
+XString
+SQLInfoSQLServer::GetCATALOGDefaultDrop(XString p_schema,XString p_tablename,XString p_constraint) const
+{
+  p_schema    .MakeLower();
+  p_tablename .MakeLower();
+  p_constraint.MakeLower();
+
+  return "ALTER TABLE [" + p_schema + "].[" + p_tablename + "]\n"
+         " DROP CONSTRAINT [" + p_constraint + "]";
+}
+
+/////////////////////////
+// All check constraints
+
+XString
+SQLInfoSQLServer::GetCATALOGCheckExists(XString p_schema,XString p_tablename,XString p_constraint) const
+{
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+  p_constraint.MakeLower();
+
+  XString sql = "SELECT 1\n"
+                "  FROM sys.check_constraints c\n"
+                "       inner join sys.objects o ON o.object_id = c.parent_object_id\n"
+                "       inner join sys.schemas s ON o.schema_id = s.schema_id\n"
+                " WHERE s.name = '" + p_schema     + "'\n";
+                "   AND o.name = '" + p_tablename  + "'\n"
+                "   AND c.name = '" + p_constraint + "'";
+  return sql;
+}
+
+XString
+SQLInfoSQLServer::GetCATALOGCheckList(XString p_schema,XString  p_tablename) const
+{
+  XString constraint;
+  return GetCATALOGCheckAttributes(p_schema,p_tablename,constraint);
+}
+
+XString
+SQLInfoSQLServer::GetCATALOGCheckAttributes(XString  p_schema,XString  p_tablename,XString  p_constraint) const
+{
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+  p_constraint.MakeLower();
+
+  XString sql = "SELECT db_name() AS catalog\n"
+                "      ,s.name    AS constraint_schema\n"
+                "      ,o.name    AS constraint_table\n"
+                "      ,c.name    AS constraint_name\n"
+                "      ,CAST(c.definition as VARCHAR) AS constraint_code\n"
+                "  FROM sys.check_constraints c\n"
+                "       inner join sys.objects o ON o.object_id = c.parent_object_id\n"
+                "       inner join sys.schemas s ON o.schema_id = s.schema_id\n"
+                " WHERE s.name = ?\n";
+  if(!p_tablename.IsEmpty())
+  {
+    sql += "   AND o.name ";
+    sql += p_tablename.Find('%') >= 0 ? "LIKE" : "=";
+    sql += " ?\n";
+  }
+  if(!p_constraint.IsEmpty())
+  {
+    sql += "   AND c.name ";
+    sql += p_constraint.Find('%') >= 0 ? "LIKE" : "=";
+    sql += " ?\n";
+  }
+  sql += " ORDER  BY 1,2,3";
+  return sql;
+}
+
+XString
+SQLInfoSQLServer::GetCATALOGCheckCreate(XString p_schema,XString p_tablename,XString p_constraint,XString p_condition) const
+{
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+  p_constraint.MakeLower();
+
+  if((p_condition.Left(1) != "(") || (p_condition.Right(1) != ")"))
+  {
+    p_condition = "(" + p_condition + ")";
+  }
+
+  XString sql = "ALTER TABLE ";
+  if(!p_schema.IsEmpty())
+  {
+    sql += p_schema + ".";
+  }
+  sql += p_tablename + "\n";
+  sql += "  ADD CONSTRAINT " + p_constraint + "\n";
+  sql += "      CHECK " + p_condition;
+  return sql;
+}
+
+XString
+SQLInfoSQLServer::GetCATALOGCheckDrop(XString p_schema,XString p_tablename,XString p_constraint) const
+{
+  p_schema.MakeLower();
+  p_tablename.MakeLower();
+  p_constraint.MakeLower();
+
+  XString sql = "ALTER TABLE ";
+  if(!p_schema.IsEmpty())
+  {
+    sql += p_schema + ".";
+  }
+  sql += p_tablename + "\n";
+  sql += "  DROP CONSTRAINT " + p_constraint;
+
+  return sql;
+}
+
 //////////////////////////////////////////////////////////////////////////
 // ALL TRIGGER FUNCTIONS
 
@@ -1775,13 +2036,13 @@ SQLInfoSQLServer::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern) c
 {
   p_schema.MakeLower();
   p_pattern.MakeLower();
-  if(!p_pattern.IsEmpty() && p_pattern != "%")
+  if(!p_pattern.IsEmpty() && (p_pattern.Find('%') < 0))
   {
     p_pattern = "%" + p_pattern + "%";
   }
-  XString sql = "SELECT ''       AS catalog_name\n"
-                "      ,sch.name AS schema_name\n"
-                "      ,seq.name AS sequence_name\n"
+  XString sql = "SELECT db_name() AS catalog_name\n"
+                "      ,sch.name  AS schema_name\n"
+                "      ,seq.name  AS sequence_name\n"
                 "      ,CAST(current_value AS BIGINT) AS current_value\n"
                 "      ,CAST(minimum_value AS BIGINT) AS minimum_value\n"
                 "      ,CAST(increment     AS BIGINT) AS increment_value\n"
@@ -1811,9 +2072,9 @@ SQLInfoSQLServer::GetCATALOGSequenceAttributes(XString& p_schema,XString& p_sequ
   XString sql = "SELECT ''       AS catalog_name\n"
                 "      ,sch.name AS schema_name\n"
                 "      ,seq.name AS sequence_name\n"
-                "      ,CAST(current_value AS INTEGER) AS current_value\n"
-                "      ,CAST(minimum_value AS INTEGER) AS minimum_value\n"
-                "      ,CAST(increment     AS INTEGER) AS increment_value\n"
+                "      ,CAST(current_value AS BIGINT) AS current_value\n"
+                "      ,CAST(minimum_value AS BIGINT) AS minimum_value\n"
+                "      ,CAST(increment     AS BIGINT) AS increment_value\n"
                 "      ,cache_size AS CACHE\n"
                 "      ,is_cycling\n"
                 "      ,0 ordering\n"
@@ -1826,8 +2087,11 @@ SQLInfoSQLServer::GetCATALOGSequenceAttributes(XString& p_schema,XString& p_sequ
   }
   if(!p_sequence.IsEmpty())
   {
-    sql += "   AND seq.name = ?\n";
+    sql += "   AND seq.name ";
+    sql += p_sequence.Find('%') >= 0 ? "LIKE" : "=";
+    sql += " ?\n";
   }
+  sql += " ORDER BY 1,2,3";
   return sql;
 }
 
@@ -1918,19 +2182,34 @@ SQLInfoSQLServer::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewname
 }
 
 XString
-SQLInfoSQLServer::GetCATALOGViewText(XString& /*p_schema*/,XString& /*p_viewname*/) const
-{
-  // Cannot query this, Use ODBC functions
-  return "";
-}
-
-XString
-SQLInfoSQLServer::GetCATALOGViewCreate(XString p_schema,XString p_viewname,XString p_contents) const
+SQLInfoSQLServer::GetCATALOGViewText(XString& p_schema,XString& p_viewname) const
 {
   p_schema.MakeLower();
   p_viewname.MakeLower();
 
-  return "CREATE VIEW [" + p_schema + "].[" + p_viewname + "]\n" + p_contents;
+  CString sql = "SELECT CAST(definition AS varchar(max)) view_text\n"
+                "  FROM sys.objects     o\n"
+                "       inner join sys.sql_modules m on m.object_id = o.object_id\n"
+                "       inner join sys.schemas s     on s.schema_id = o.schema_id\n"
+                " WHERE o.type = 'V'\n"
+                "   AND s.name = '" + p_schema   + "'\n"
+                "   AND o.name = '" + p_viewname + "'";
+  return sql;
+}
+
+XString
+SQLInfoSQLServer::GetCATALOGViewCreate(XString p_schema,XString p_viewname,XString p_contents,bool p_ifexists /*= true*/) const
+{
+  p_schema.MakeLower();
+  p_viewname.MakeLower();
+
+  XString sql("CREATE ");
+  if(p_ifexists)
+  {
+    sql += "OR ALTER ";
+  }
+  sql += "VIEW [" + p_schema + "].[" + p_viewname + "]\n" + p_contents;
+  return sql;
 }
 
 XString 
@@ -1951,19 +2230,114 @@ SQLInfoSQLServer::GetCATALOGViewDrop(XString p_schema,XString p_viewname,XString
 
 // All Privilege functions
 XString
-SQLInfoSQLServer::GetCATALOGTablePrivileges(XString& /*p_schema*/,XString& /*p_tablename*/) const
+SQLInfoSQLServer::GetCATALOGTablePrivileges(XString& p_schema,XString& p_tablename) const
 {
-  return "";
+  CString sql = "SELECT db_name() AS table_catalog\n"
+                "      ,s.name    AS table_schema\n"
+                "      ,o.name    AS table_name\n"
+                "      ,g.name    AS grantor\n"
+                "      ,u.name    AS grantee\n"
+                "      ,p.permission_name AS privilege\n"
+                "      ,CASE state_desc\n"
+                "            WHEN 'GRANT' THEN 'NO'\n"
+                "            WHEN 'GRANT_WITH_GRANT_OPTION' THEN 'YES'\n"
+                "            ELSE 'NO'\n"
+                "       END AS grantable\n"
+                "  FROM sys.database_permissions p\n"
+                "       inner join sys.objects o ON o.object_id = p.major_id\n"
+                "       inner join sys.schemas s ON s.schema_id = o.schema_id\n"
+                "       inner join sys.database_principals u ON u.principal_id = p.grantee_principal_id\n"
+                "       inner join sys.database_principals g ON g.principal_id = p.grantor_principal_id\n"
+                " WHERE p.minor_id = 0\n"; // Only table privileges
+  // Add the filter
+  if(!p_schema.IsEmpty())
+  {
+    sql += "   AND s.name = '" + p_schema + "'\n";
+  }
+  if(!p_tablename.IsEmpty())
+  {
+    sql += "   AND o.name = '" + p_tablename + "'\n";
+  }
+  sql += " ORDER BY 1,2,3,4,5";
+  return sql;
 }
 
 XString
-SQLInfoSQLServer::GetCATALOGColumnPrivileges(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_columnname*/) const
+SQLInfoSQLServer::GetCATALOGColumnPrivileges(XString& p_schema,XString& p_tablename,XString& p_columnname) const
 {
-  return "";
+  CString sql = "SELECT db_name() AS table_catalog\n"
+                "      ,s.name    AS table_schema\n"
+                "      ,o.name    AS table_name\n"
+                "      ,c.name    AS column_name\n"
+                "      ,g.name    AS grantor\n"
+                "      ,u.name    AS grantee\n"
+                "      ,p.permission_name AS privilege\n"
+                "      ,CASE state_desc\n"
+                "            WHEN 'GRANT' THEN 'NO'\n"
+                "            WHEN 'GRANT_WITH_GRANT_OPTION' THEN 'YES'\n"
+                "            ELSE 'NO'\n"
+                "       END AS grantable\n"
+                "  FROM sys.database_permissions p\n"
+                "       inner join sys.objects o ON o.object_id = p.major_id\n"
+                "       inner join sys.schemas s ON s.schema_id = o.schema_id\n"
+                "       inner join sys.database_principals u ON u.principal_id = p.grantee_principal_id\n"
+                "       inner join sys.database_principals g ON g.principal_id = p.grantor_principal_id\n"
+                "       inner join sys.columns c ON c.object_id = o.object_id AND c.column_id = p.minor_id\n"
+                " WHERE p.minor_id > 0\n";
+  // Add the filter
+  if(!p_schema.IsEmpty())
+  {
+    sql += "   AND s.name = ?\n";
+  }
+  if(!p_tablename.IsEmpty())
+  {
+    sql += "   AND o.name = ?\n";
+  }
+  if(!p_columnname.IsEmpty())
+  {
+    sql += "   AND c.name = ?\n";
+  }
+  sql += " ORDER BY 1,2,3,4,5,6";
+  return sql;
+}
+
+XString
+SQLInfoSQLServer::GetCATALOGSequencePrivilege(XString& p_schema,XString& p_sequence) const
+{
+  p_schema.MakeLower();
+  p_sequence.MakeLower();
+
+  XString sql =
+    "SELECT db_name() AS sequence_catalog\n"
+    "      ,s.name    AS sequence_schema\n"
+    "      ,q.name    AS sequence_name\n"
+    "      ,pg.name   AS grantor\n"
+    "      ,pe.name   AS grantee\n"
+    "      ,CASE p.state\n"
+    "            WHEN 'G' THEN 'NO'\n"
+    "            WHEN 'W' THEN 'YES'\n"
+    "                     ELSE 'NO'\n"
+    "       END AS grant_option\n"
+    "  FROM sys.sequences q\n"
+    "       inner join sys.objects o ON o.object_id = q.object_id\n"
+    "       inner join sys.schemas s ON s.schema_id = o.schema_id\n"
+    "       inner join sys.database_permissions p ON o.object_id = p.major_id\n"
+    "       inner join sys.database_principals pg ON p.grantor_principal_id = pg.principal_id\n"
+    "       inner join sys.database_principals pe ON p.grantee_principal_id = pe.principal_id\n"
+    " WHERE q.type = 'SO'\n"
+    "   AND s.name = ?\n";
+
+  if(!p_sequence.IsEmpty())
+  {
+    sql += "   AND q.name ";
+    sql += p_sequence.Find('%') < 0 ? "=" : "LIKE";
+    sql += " ?";
+  }
+  return sql;
 }
 
 XString 
-SQLInfoSQLServer::GetCatalogGrantPrivilege(XString p_schema,XString p_objectname,XString p_privilege,XString p_grantee,bool p_grantable)
+SQLInfoSQLServer::GetCATALOGGrantPrivilege(XString p_schema,XString p_objectname,XString p_privilege,XString p_grantee,bool p_grantable)
 {
   XString sql;
 
@@ -1988,10 +2362,65 @@ SQLInfoSQLServer::GetCatalogGrantPrivilege(XString p_schema,XString p_objectname
 }
 
 XString 
-SQLInfoSQLServer::GetCatalogRevokePrivilege(XString p_schema,XString p_objectname,XString p_privilege,XString p_grantee)
+SQLInfoSQLServer::GetCATALOGRevokePrivilege(XString p_schema,XString p_objectname,XString p_privilege,XString p_grantee)
 {
   XString sql;
   sql.Format("REVOKE %s ON %s.%s FROM %s",p_privilege.GetString(),p_schema.GetString(),p_objectname.GetString(),p_grantee.GetString());
+  return sql;
+}
+
+// All Synonym functions
+XString
+SQLInfoSQLServer::GetCATALOGSynonymList(XString& p_schema,XString& p_pattern) const
+{
+  p_schema.MakeLower();
+  p_pattern.MakeLower();
+  if(p_pattern.Find('%') < 0)
+  {
+    p_pattern += "%";
+  }
+  return GetCATALOGSynonymAttributes(p_schema,p_pattern);
+}
+
+XString
+SQLInfoSQLServer::GetCATALOGSynonymAttributes(XString& p_schema,XString& p_synonym) const
+{
+  p_schema.MakeLower();
+  p_synonym.MakeLower();
+
+  XString sql = "SELECT db_name()  AS synonym_catalog\n"
+                "      ,s.name     AS synonym_schema\n"
+                "      ,y.name     AS synonym_name\n"
+                "      ,y.base_object_name AS definition\n"
+                "  FROM sys.synonyms y\n"
+                "       INNER JOIN sys.schemas s ON s.schema_id = y.schema_id\n"
+                " WHERE y.type = 'SN'\n"
+                "   AND s.name = ?\n";
+  if(!p_synonym.IsEmpty())
+  {
+    sql += "   AND y.name ";
+    sql += p_synonym.Find('%') >= 0 ? "LIKE ?\n" : "= ?\n";
+  }
+  return sql;
+}
+
+XString
+SQLInfoSQLServer::GetCATALOGSynonymCreate(XString& p_schema,XString& p_synonym,XString p_forObject,bool /*p_private = true*/) const
+{
+  p_schema.MakeLower();
+  p_synonym.MakeLower();
+
+  XString sql = "CREATE SYNONYM [" + p_schema + "].[" + p_synonym + "] FOR " + p_forObject;
+  return sql;
+}
+
+XString
+SQLInfoSQLServer::GetCATALOGSynonymDrop(XString& p_schema,XString& p_synonym,bool /*p_private = true*/) const
+{
+  p_schema.MakeLower();
+  p_synonym.MakeLower();
+
+  XString sql = "DROP SYNONYM [" + p_schema + "].[" + p_synonym + "]";
   return sql;
 }
 
@@ -2049,6 +2478,11 @@ SQLInfoSQLServer::GetPSMProcedureList(XString& p_schema) const
     "SELECT db_name() as catalog_name\n"
     "      ,s.name    as schema_name\n"
     "      ,o.name    as procedure_name\n"
+    "      ,CASE type\n"
+    "            WHEN 'P'  THEN 1\n"
+    "            WHEN 'FN' THEN 2\n"
+    "                      ELSE 3\n"
+    "       END as procedure_type\n"
     "  FROM sys.objects o\n"
     "       INNER JOIN sys.schemas s ON o.schema_id = s.schema_id\n"
     " WHERE type IN ('P','FN')\n";
@@ -2066,7 +2500,7 @@ SQLInfoSQLServer::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedu
   XString sql =
     "SELECT db_name() as catalog_name\n"
     "      ,s.name    as schema_name\n"
-    "      ,o.name    as proceadure_name\n"
+    "      ,o.name    as procedure_name\n"
     "      ,(SELECT Count(*)\n"
     "          FROM sys.parameters p1\n"
     "         WHERE p1.object_id = o.object_id\n"
@@ -2079,16 +2513,16 @@ SQLInfoSQLServer::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedu
     "           AND p2.is_output = 1)  AS output_parameters\n"
     "      ,0    as result_sets\n"
     "      ,NULL AS remarks\n"
-    "      ,CASE type_desc\n"
-    "            WHEN 'SQL_STORED_PROCEDURE' THEN 1\n"
-    "            WHEN 'SQL_SCALAR_FUNCTION'  THEN 2\n"
-    "                                        ELSE 3\n"
+    "      ,CASE type\n"
+    "            WHEN 'P'  THEN 1\n"
+    "            WHEN 'FN' THEN 2\n"
+    "                      ELSE 3\n"
     "       END AS procedure_type\n"
     "      ,m.definition AS source\n"
     "  FROM sys.objects o\n"
     "       INNER JOIN sys.schemas     s ON o.schema_id = s.schema_id\n"
     "       INNER JOIN sys.sql_modules m ON m.object_id = o.object_id\n"
-    " WHERE ( type_desc LIKE '%PROCEDURE%' OR type_desc LIKE '%FUNCTION%')\n";
+    " WHERE o.type IN ('P','FN')\n";
 
   if(!p_schema.IsEmpty())
   {
@@ -2109,9 +2543,9 @@ XString
 SQLInfoSQLServer::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure) const
 {
   XString query =
-    "SELECT s.name       as source_schema\n"
-    "      ,o.name       as source_procedure\n"
-    "      ,m.definition as source_code\n"
+    "SELECT s.name as source_schema\n"
+    "      ,o.name as source_procedure\n"
+    "      ,CAST(m.definition AS VARCHAR(max)) as source_code\n"
     "  FROM sys.sql_modules m\n"
     "       INNER JOIN sys.objects o  ON m.object_id = o.object_id\n"
     "       INNER JOIN sys.schemas s  ON o.schema_id = s.schema_id\n"
@@ -2131,9 +2565,13 @@ SQLInfoSQLServer::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
 }
 
 XString
-SQLInfoSQLServer::GetPSMProcedureDrop(XString p_schema, XString p_procedure) const
+SQLInfoSQLServer::GetPSMProcedureDrop(XString p_schema,XString p_procedure,bool p_function /*=false*/) const
 {
-  return "";
+  p_schema.MakeLower();
+  p_procedure.MakeLower();
+  XString object = p_function ? "FUNCTION" : "PROCEDURE";
+  XString sql = "DROP " + object + " IF EXISTS [" + p_schema + "].[" + p_procedure + "]";
+  return sql;
 }
 
 XString
@@ -2141,6 +2579,39 @@ SQLInfoSQLServer::GetPSMProcedureErrors(XString p_schema,XString p_procedure) co
 {
   // SQL-Server does not support procedure errors
   return "";
+}
+
+XString
+SQLInfoSQLServer::GetPSMProcedurePrivilege(XString& p_schema,XString& p_procedure) const
+{
+  CString sql = "SELECT db_name() AS table_catalog\n"
+                "      ,s.name    AS table_schema\n"
+                "      ,o.name    AS table_name\n"
+                "      ,g.name    AS grantor\n"
+                "      ,u.name    AS grantee\n"
+                "      ,p.permission_name AS privilege\n"
+                "      ,CASE state_desc\n"
+                "            WHEN 'GRANT' THEN 'NO'\n"
+                "            WHEN 'GRANT_WITH_GRANT_OPTION' THEN 'YES'\n"
+                "            ELSE 'NO'\n"
+                "       END AS grantable\n"
+                "  FROM sys.database_permissions p\n"
+                "       inner join sys.objects o ON o.object_id = p.major_id\n"
+                "       inner join sys.schemas s ON s.schema_id = o.schema_id\n"
+                "       inner join sys.database_principals u ON u.principal_id = p.grantee_principal_id\n"
+                "       inner join sys.database_principals g ON g.principal_id = p.grantor_principal_id\n"
+                " WHERE o.type IN ('P','FN')\n";
+  // Add the filter
+  if(!p_schema.IsEmpty())
+  {
+    sql += "   AND s.name = '" + p_schema + "'\n";
+  }
+  if(!p_procedure.IsEmpty())
+  {
+    sql += "   AND o.name = '" + p_procedure + "'\n";
+  }
+  sql += " ORDER BY 1,2,3,4,5";
+  return sql;
 }
 
 // And it's parameters

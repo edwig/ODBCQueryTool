@@ -164,6 +164,13 @@ SQLInfoAccess::GetRDBMSNumericPrecisionScale(SQLULEN& /*p_precision*/, SQLSMALLI
   // NO-OP
 }
 
+// Maximum for a VARCHAR to be handled without AT-EXEC data. Assume NVARCHAR is half that size!
+int
+SQLInfoAccess::GetRDBMSMaxVarchar() const
+{
+  return 8000;
+}
+
 // KEYWORDS
 
 // Keyword for the current date and time
@@ -348,7 +355,7 @@ SQLInfoAccess::GetSQLFromDualClause() const
 
 // Get SQL to lock  a table 
 XString 
-SQLInfoAccess::GetSQLLockTable(XString /*p_schema*/, XString p_tablename, bool p_exclusive) const
+SQLInfoAccess::GetSQLLockTable(XString /*p_schema*/, XString p_tablename, bool p_exclusive,int /*p_waittime*/) const
 {
   XString query = "SELECT * FROM " + p_tablename + " WITH ";
   query += p_exclusive ? "(TABLOCKX)" : "(TABLOCK)";
@@ -442,6 +449,12 @@ XString
 SQLInfoAccess::GetSQLDDLIdentifier(XString p_identifier) const
 {
   return p_identifier;
+}
+
+// Changes to parameters before binding to an ODBC HSTMT handle
+void 
+SQLInfoAccess::DoBindParameterFixup(SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*p_columnSize*/,SQLSMALLINT& /*p_scale*/,SQLLEN& /*p_bufferSize*/,SQLLEN* /*p_indicator*/) const
+{
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -883,6 +896,71 @@ SQLInfoAccess::GetCATALOGForeignDrop(XString /*p_schema*/,XString p_tablename,XS
   return sql;
 }
 
+//////////////////////////
+// All default constraints
+XString 
+SQLInfoAccess::GetCATALOGDefaultExists(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_column*/) const
+{
+  return "";
+}
+
+XString 
+SQLInfoAccess::GetCATALOGDefaultList(XString& /*p_schema*/,XString& /*p_tablename*/) const
+{
+  return "";
+}
+
+XString 
+SQLInfoAccess::GetCATALOGDefaultAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_column*/) const
+{
+  return "";
+}
+
+XString 
+SQLInfoAccess::GetCATALOGDefaultCreate(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_constraint*/,XString /*p_column*/,XString /*p_code*/) const
+{
+  return "";
+}
+
+XString 
+SQLInfoAccess::GetCATALOGDefaultDrop(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_constraint*/) const
+{
+  return "";
+}
+
+/////////////////////////
+// All check constraints
+
+XString
+SQLInfoAccess::GetCATALOGCheckExists(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/) const
+{
+  return "";
+}
+
+XString 
+SQLInfoAccess::GetCATALOGCheckList(XString  /*p_schema*/,XString  /*p_tablename*/) const
+{
+  return "";
+}
+
+XString 
+SQLInfoAccess::GetCATALOGCheckAttributes(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoAccess::GetCATALOGCheckCreate(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/,XString /*p_condition*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoAccess::GetCATALOGCheckDrop(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/) const
+{
+  return "";
+}
+
 //////////////////////////////////////////////////////////////////////////
 // ALL TRIGGER FUNCTIONS
 
@@ -991,7 +1069,7 @@ SQLInfoAccess::GetCATALOGViewText(XString& /*p_schema*/,XString& /*p_viewname*/)
 }
 
 XString
-SQLInfoAccess::GetCATALOGViewCreate(XString /*p_schema*/,XString p_viewname,XString p_contents) const
+SQLInfoAccess::GetCATALOGViewCreate(XString /*p_schema*/,XString p_viewname,XString p_contents,bool /*p_ifexists = true*/) const
 {
   return "CREATE VIEW " + p_viewname + "\n" + p_contents;
 }
@@ -1023,7 +1101,13 @@ SQLInfoAccess::GetCATALOGColumnPrivileges(XString& /*p_schema*/,XString& /*p_tab
 }
 
 XString 
-SQLInfoAccess::GetCatalogGrantPrivilege(XString /*p_schema*/,XString p_objectname,XString p_privilege,XString p_grantee,bool p_grantable)
+SQLInfoAccess::GetCATALOGSequencePrivilege(XString& /*p_schema*/,XString& /*p_sequence*/) const
+{
+  return "";
+}
+
+XString 
+SQLInfoAccess::GetCATALOGGrantPrivilege(XString /*p_schema*/,XString p_objectname,XString p_privilege,XString p_grantee,bool p_grantable)
 {
   XString sql;
   sql.Format("GRANT %s ON %s TO %s",p_privilege.GetString(),p_objectname.GetString(),p_grantee.GetString());
@@ -1035,11 +1119,40 @@ SQLInfoAccess::GetCatalogGrantPrivilege(XString /*p_schema*/,XString p_objectnam
 }
 
 XString 
-SQLInfoAccess::GetCatalogRevokePrivilege(XString p_schema,XString p_objectname,XString p_privilege,XString p_grantee)
+SQLInfoAccess::GetCATALOGRevokePrivilege(XString p_schema,XString p_objectname,XString p_privilege,XString p_grantee)
 {
   XString sql;
   sql.Format("REVOKE %s ON %s FROM %s",p_privilege.GetString(),p_objectname.GetString(),p_grantee.GetString());
   return sql;
+}
+
+// All Synonym functions
+XString 
+SQLInfoAccess::GetCATALOGSynonymList(XString& /*p_schema*/,XString& /*p_pattern*/) const
+{
+  // Not implemented yet
+  return "";
+}
+
+XString 
+SQLInfoAccess::GetCATALOGSynonymAttributes(XString& /*p_schema*/,XString& /*p_synonym*/) const
+{
+  // Not implemented yet
+  return "";
+}
+
+XString 
+SQLInfoAccess::GetCATALOGSynonymCreate(XString& /*p_schema*/,XString& /*p_synonym*/,XString /*p_forObject*/,bool /*p_private = true*/) const
+{
+  // Not implemented yet
+  return "";
+}
+
+XString 
+SQLInfoAccess::GetCATALOGSynonymDrop(XString& /*p_schema*/,XString& /*p_synonym*/,bool /*p_private = true*/) const
+{
+  // Not implemented yet
+  return "";
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1107,7 +1220,7 @@ SQLInfoAccess::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
 }
   
 XString 
-SQLInfoAccess::GetPSMProcedureDrop(XString p_schema,XString p_procedure) const
+SQLInfoAccess::GetPSMProcedureDrop(XString p_schema,XString p_procedure,bool /*p_function /*=false*/) const
 {
   // MS-Access does not support PSM
   return "";
@@ -1117,6 +1230,12 @@ XString
 SQLInfoAccess::GetPSMProcedureErrors(XString p_schema,XString p_procedure) const
 {
   // MS-Access does not support PSM
+  return "";
+}
+
+XString 
+SQLInfoAccess::GetPSMProcedurePrivilege(XString& /*p_schema*/,XString& /*p_procedure*/) const
+{
   return "";
 }
 

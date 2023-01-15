@@ -314,7 +314,7 @@ SQLDataSet::ResetFilters()
   {
     delete m_filters;
   }
-    m_filters = nullptr;
+  m_filters    = nullptr;
   m_ownFilters = false;
 }
 

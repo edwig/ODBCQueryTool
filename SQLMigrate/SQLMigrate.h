@@ -69,6 +69,9 @@ private:
   void     FixupTableColumns(DDLCreateTable& p_create);
   void     FixupTableIndices(DDLCreateTable& p_create);
 
+  int*     ResetAtExecParameters(VarMap* p_columns);
+  void     RestoreAtExecParameters(int* p_columns,VarMap* p_parameters);
+
   // Statements
   XString  MakeSelectStatement    (XString& p_tabel,XString& p_user);
   XString  MakeInsertStatement    (XString& p_tabel,XString& p_user,XString& p_doel_user);

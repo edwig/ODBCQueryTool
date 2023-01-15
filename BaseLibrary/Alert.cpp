@@ -50,7 +50,7 @@ using AlertPaths = std::map<int,XString>;
 
 long              g_alertModules = 0;
 AlertPaths*       g_alertPath    = nullptr;
-unsigned __int64 g_alertCounter = 0;
+unsigned __int64  g_alertCounter = 0;
 CRITICAL_SECTION  g_alertCritical;
 
 // Registers an alert log path for a module
@@ -69,8 +69,8 @@ int ConfigureApplicationAlerts(XString p_path)
   AutoCritSec lock(&g_alertCritical);
 
   // Check that the path always ends in a backslash
-      if(p_path.Right(1) != "\\")
-      {
+  if(p_path.Right(1) != "\\")
+  {
     p_path += '\\';
   }
 
@@ -78,7 +78,7 @@ int ConfigureApplicationAlerts(XString p_path)
   (*g_alertPath)[++g_alertModules] = p_path;
 
   return g_alertModules;
-      }
+}
 
 bool DeregisterApplicationAlerts(int p_module)
 {

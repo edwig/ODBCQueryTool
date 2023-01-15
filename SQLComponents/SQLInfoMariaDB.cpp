@@ -172,6 +172,14 @@ SQLInfoMariaDB::GetRDBMSNumericPrecisionScale(SQLULEN& /*p_precision*/, SQLSMALL
   // NO-OP
 }
 
+// Maximum for a VARCHAR to be handled without AT-EXEC data. Assume NVARCHAR is half that size!
+int
+SQLInfoMariaDB::GetRDBMSMaxVarchar() const
+{
+  // See: https://mariadb.com/kb/en/varchar/#:~:text=The%20range%20of%20M%20is,a%20maximum%20of%2021%2C844%20characters.
+  return 65532;
+}
+
 // KEYWORDS
 
 // Keyword for the current date and time
@@ -486,7 +494,7 @@ SQLInfoMariaDB::GetSQLFromDualClause() const
 
 // Get SQL to lock  a table 
 XString
-SQLInfoMariaDB::GetSQLLockTable(XString p_schema, XString p_tablename, bool p_exclusive) const
+SQLInfoMariaDB::GetSQLLockTable(XString p_schema,XString p_tablename,bool p_exclusive,int /*p_waittime*/) const
 {
   // Standard ISO SQL Syntax
   XString query = "LOCK TABLE " + p_schema + "." + p_tablename + " IN ";
@@ -596,6 +604,12 @@ XString
 SQLInfoMariaDB::GetSQLDDLIdentifier(XString p_identifier) const
 {
   return p_identifier;
+}
+
+// Changes to parameters before binding to an ODBC HSTMT handle
+void
+SQLInfoMariaDB::DoBindParameterFixup(SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*p_columnSize*/,SQLSMALLINT& /*p_scale*/,SQLLEN& /*p_bufferSize*/,SQLLEN* /*p_indicator*/) const
+{
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1285,6 +1299,71 @@ SQLInfoMariaDB::GetCATALOGForeignDrop(XString p_schema,XString p_tablename,XStri
   return sql;
 }
 
+//////////////////////////
+// All default constraints
+XString
+SQLInfoMariaDB::GetCATALOGDefaultExists(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_column*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoMariaDB::GetCATALOGDefaultList(XString& /*p_schema*/,XString& /*p_tablename*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoMariaDB::GetCATALOGDefaultAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_column*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoMariaDB::GetCATALOGDefaultCreate(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_constraint*/,XString /*p_column*/,XString /*p_code*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoMariaDB::GetCATALOGDefaultDrop(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_constraint*/) const
+{
+  return "";
+}
+
+/////////////////////////
+// All check constraints
+
+XString
+SQLInfoMariaDB::GetCATALOGCheckExists(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoMariaDB::GetCATALOGCheckList(XString  /*p_schema*/,XString  /*p_tablename*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoMariaDB::GetCATALOGCheckAttributes(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoMariaDB::GetCATALOGCheckCreate(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/,XString /*p_condition*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoMariaDB::GetCATALOGCheckDrop(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/) const
+{
+  return "";
+}
+
 //////////////////////////////////////////////////////////////////////////
 // ALL TRIGGER FUNCTIONS
 
@@ -1526,7 +1605,7 @@ SQLInfoMariaDB::GetCATALOGViewText(XString& /*p_schema*/,XString& /*p_viewname*/
 }
 
 XString
-SQLInfoMariaDB::GetCATALOGViewCreate(XString /*p_schema*/,XString p_viewname,XString p_contents) const
+SQLInfoMariaDB::GetCATALOGViewCreate(XString /*p_schema*/,XString p_viewname,XString p_contents,bool /*p_ifexists /*= true*/) const
 {
   return "CREATE VIEW " + p_viewname + "\n" + p_contents;
 }
@@ -1557,8 +1636,14 @@ SQLInfoMariaDB::GetCATALOGColumnPrivileges(XString& /*p_schema*/,XString& /*p_ta
   return "";
 }
 
+XString
+SQLInfoMariaDB::GetCATALOGSequencePrivilege(XString& /*p_schema*/,XString& /*p_sequence*/) const
+{
+  return "";
+}
+
 XString 
-SQLInfoMariaDB::GetCatalogGrantPrivilege(XString /*p_schema*/,XString p_objectname,XString p_privilege,XString p_grantee,bool p_grantable)
+SQLInfoMariaDB::GetCATALOGGrantPrivilege(XString /*p_schema*/,XString p_objectname,XString p_privilege,XString p_grantee,bool p_grantable)
 {
   XString sql;
   p_grantee.MakeLower();
@@ -1576,7 +1661,7 @@ SQLInfoMariaDB::GetCatalogGrantPrivilege(XString /*p_schema*/,XString p_objectna
 }
 
 XString 
-SQLInfoMariaDB::GetCatalogRevokePrivilege(XString /*p_schema*/,XString p_objectname,XString p_privilege,XString p_grantee)
+SQLInfoMariaDB::GetCATALOGRevokePrivilege(XString /*p_schema*/,XString p_objectname,XString p_privilege,XString p_grantee)
 {
   XString sql;
   p_grantee.MakeLower();
@@ -1587,6 +1672,35 @@ SQLInfoMariaDB::GetCatalogRevokePrivilege(XString /*p_schema*/,XString p_objectn
     sql.Format("REVOKE %s ON %s FROM %s", p_privilege.GetString(), p_objectname.GetString(), p_grantee.GetString());
   }
   return sql;
+}
+
+// All Synonym functions
+XString
+SQLInfoMariaDB::GetCATALOGSynonymList(XString& /*p_schema*/,XString& /*p_pattern*/) const
+{
+  // Not implemented yet
+  return "";
+}
+
+XString
+SQLInfoMariaDB::GetCATALOGSynonymAttributes(XString& /*p_schema*/,XString& /*p_synonym*/) const
+{
+  // Not implemented yet
+  return "";
+}
+
+XString
+SQLInfoMariaDB::GetCATALOGSynonymCreate(XString& /*p_schema*/,XString& /*p_synonym*/,XString /*p_forObject*/,bool /*p_private = true*/) const
+{
+  // Not implemented yet
+  return "";
+}
+
+XString
+SQLInfoMariaDB::GetCATALOGSynonymDrop(XString& /*p_schema*/,XString& /*p_synonym*/,bool /*p_private = true*/) const
+{
+  // Not implemented yet
+  return "";
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1714,13 +1828,19 @@ SQLInfoMariaDB::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
 }
 
 XString
-SQLInfoMariaDB::GetPSMProcedureDrop(XString /*p_schema*/, XString p_procedure) const
+SQLInfoMariaDB::GetPSMProcedureDrop(XString /*p_schema*/, XString p_procedure,bool /*p_function /*=false*/) const
 {
   return "";
 }
 
 XString
 SQLInfoMariaDB::GetPSMProcedureErrors(XString p_schema,XString p_procedure) const
+{
+  return "";
+}
+
+XString
+SQLInfoMariaDB::GetPSMProcedurePrivilege(XString& /*p_schema*/,XString& /*p_procedure*/) const
 {
   return "";
 }

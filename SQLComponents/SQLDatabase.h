@@ -47,7 +47,9 @@ namespace SQLComponents
 
 // After this much minutes, the database can no longer be
 // used from a database pool and will 'go-away'
-#define IDLE_MINUTES   5
+#define IDLE_MINUTES_DEFAULT   5    // Mostly enough
+#define IDLE_MINUTES_MIN       2    // Wait at least more than 1 minute
+#define IDLE_MINUTES_MAX      15    // Most network timeouts do not stretch past 15 minutes
 
 // Standard login timeout after which login will fail
 // Overrides the standard login timeout of the database
@@ -63,7 +65,6 @@ namespace SQLComponents
 // Microsoft has 1200 through 1249 reserved for Microsoft SQL Server Native Client driver usage.
 // Multiple Active Result Set (MARS) per connection
 // COPT_SS_MARS_ENABLED comes effectively from <sqlncli.h> from the MS-SQL Native client driver
-#define SQL_COPT_SS_MARS_ENABLED    1224  
 #define SQL_MARS_ENABLED_NO         0L
 #define SQL_MARS_ENABLED_YES        1L
 
@@ -161,6 +162,7 @@ public:
   void           SetDatasource(XString p_dsn);
   void           SetConnectionName(XString p_connectionName);
   void           SetUserName(XString p_user);
+  void           SetPoolIdleMinutes(int p_minutes);
   void           SetLastActionTime();
   bool           PastWaitingTime();
 
@@ -195,6 +197,7 @@ public:
   bool           GetReadOnly();
   int            GetLoginTimeout();
   bool           GetAutoCommitMode();
+  int            GetPoolIdleMinutes();
 
   // SUPPORT FOR SQLQuery
   HDBC           GetDBHandle();
@@ -310,6 +313,7 @@ protected:
   int               m_driverMainVersion   { 0     };   
   bool              m_needLongDataLen     { false };
   bool              m_autoCommitMode      { true  };
+  int               m_dbpoolIdleMinutes   { IDLE_MINUTES_DEFAULT };
   ULONGLONG         m_lastAction          { 0     };  // Last moment of usage (for database pool)
   RebindMap         m_rebindParameters;                 // Rebinding of parameters for SQLBindParam
   RebindMap         m_rebindColumns;                    // Rebinding of result columns for SQLBindCol
@@ -523,6 +527,12 @@ inline void
 SQLDatabase::SetLoggingActivation(int p_loglevel)
 {
   m_logActive = p_loglevel;
+}
+
+inline int
+SQLDatabase::GetPoolIdleMinutes()
+{
+  return m_dbpoolIdleMinutes;
 }
 
 // End of namespace

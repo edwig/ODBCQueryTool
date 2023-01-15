@@ -181,6 +181,13 @@ SQLInfoInformix::GetRDBMSNumericPrecisionScale(SQLULEN& /*p_precision*/, SQLSMAL
   // NO-OP
 }
 
+// Maximum for a VARCHAR to be handled without AT-EXEC data. Assume NVARCHAR is half that size!
+int
+SQLInfoInformix::GetRDBMSMaxVarchar() const
+{
+  return 255;
+}
+
 // KEYWORDS
 
 // Keyword for the current date and time
@@ -366,7 +373,7 @@ SQLInfoInformix::GetSQLFromDualClause() const
 
 // Get SQL to lock  a table 
 XString
-SQLInfoInformix::GetSQLLockTable(XString /*p_schema*/, XString p_tablename, bool p_exclusive) const
+SQLInfoInformix::GetSQLLockTable(XString /*p_schema*/, XString p_tablename,bool p_exclusive,int /*p_waittime*/) const
 {
   XString query = "LOCK TABLE " + p_tablename + " IN ";
   query += p_exclusive ? "EXCLUSIVE" : "SHARE";
@@ -486,6 +493,12 @@ XString
 SQLInfoInformix::GetSQLDDLIdentifier(XString p_identifier) const
 {
   return p_identifier;
+}
+
+// Changes to parameters before binding to an ODBC HSTMT handle
+void
+SQLInfoInformix::DoBindParameterFixup(SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*p_columnSize*/,SQLSMALLINT& /*p_scale*/,SQLLEN& /*p_bufferSize*/,SQLLEN* /*p_indicator*/) const
+{
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1164,6 +1177,71 @@ SQLInfoInformix::GetCATALOGForeignDrop(XString /*p_schema*/,XString p_tablename,
   return sql;
 }
 
+//////////////////////////
+// All default constraints
+XString
+SQLInfoInformix::GetCATALOGDefaultExists(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_column*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoInformix::GetCATALOGDefaultList(XString& /*p_schema*/,XString& /*p_tablename*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoInformix::GetCATALOGDefaultAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_column*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoInformix::GetCATALOGDefaultCreate(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_constraint*/,XString /*p_column*/,XString /*p_code*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoInformix::GetCATALOGDefaultDrop(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_constraint*/) const
+{
+  return "";
+}
+
+/////////////////////////
+// All check constraints
+
+XString
+SQLInfoInformix::GetCATALOGCheckExists(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoInformix::GetCATALOGCheckList(XString  /*p_schema*/,XString  /*p_tablename*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoInformix::GetCATALOGCheckAttributes(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoInformix::GetCATALOGCheckCreate(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/,XString /*p_condition*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoInformix::GetCATALOGCheckDrop(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/) const
+{
+  return "";
+}
+
 //////////////////////////////////////////////////////////////////////////
 // ALL TRIGGER FUNCTIONS
 
@@ -1360,7 +1438,7 @@ SQLInfoInformix::GetCATALOGViewText(XString& /*p_schema*/,XString& /*p_viewname*
 }
 
 XString
-SQLInfoInformix::GetCATALOGViewCreate(XString /*p_schema*/,XString p_viewname,XString p_contents) const
+SQLInfoInformix::GetCATALOGViewCreate(XString /*p_schema*/,XString p_viewname,XString p_contents,bool /*p_ifexists = true*/) const
 {
   return "CREATE VIEW " + p_viewname + "\n" + p_contents;
 }
@@ -1392,7 +1470,13 @@ SQLInfoInformix::GetCATALOGColumnPrivileges(XString& /*p_schema*/,XString& /*p_t
 }
 
 XString 
-SQLInfoInformix::GetCatalogGrantPrivilege(XString /*p_schema*/,XString p_objectname,XString p_privilege,XString p_grantee,bool p_grantable)
+SQLInfoInformix::GetCATALOGSequencePrivilege(XString& /*p_schema*/,XString& /*p_sequence*/) const
+{
+  return "";
+}
+
+XString 
+SQLInfoInformix::GetCATALOGGrantPrivilege(XString /*p_schema*/,XString p_objectname,XString p_privilege,XString p_grantee,bool p_grantable)
 {
   XString sql;
   sql.Format("GRANT %s ON %s TO %s",p_privilege.GetString(),p_objectname.GetString(),p_grantee.GetString());
@@ -1404,11 +1488,40 @@ SQLInfoInformix::GetCatalogGrantPrivilege(XString /*p_schema*/,XString p_objectn
 }
 
 XString
-SQLInfoInformix::GetCatalogRevokePrivilege(XString p_schema,XString p_objectname,XString p_privilege,XString p_grantee)
+SQLInfoInformix::GetCATALOGRevokePrivilege(XString p_schema,XString p_objectname,XString p_privilege,XString p_grantee)
 {
   XString sql;
   sql.Format("REVOKE %s ON %s FROM %s",p_privilege.GetString(),p_objectname.GetString(),p_grantee.GetString());
   return sql;
+}
+
+// All Synonym functions
+XString
+SQLInfoInformix::GetCATALOGSynonymList(XString& /*p_schema*/,XString& /*p_pattern*/) const
+{
+  // Not implemented yet
+  return "";
+}
+
+XString
+SQLInfoInformix::GetCATALOGSynonymAttributes(XString& /*p_schema*/,XString& /*p_synonym*/) const
+{
+  // Not implemented yet
+  return "";
+}
+
+XString
+SQLInfoInformix::GetCATALOGSynonymCreate(XString& /*p_schema*/,XString& /*p_synonym*/,XString /*p_forObject*/,bool /*p_private = true*/) const
+{
+  // Not implemented yet
+  return "";
+}
+
+XString
+SQLInfoInformix::GetCATALOGSynonymDrop(XString& /*p_schema*/,XString& /*p_synonym*/,bool /*p_private = true*/) const
+{
+  // Not implemented yet
+  return "";
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1523,7 +1636,7 @@ SQLInfoInformix::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
 }
 
 XString
-SQLInfoInformix::GetPSMProcedureDrop(XString p_schema, XString p_procedure) const
+SQLInfoInformix::GetPSMProcedureDrop(XString p_schema, XString p_procedure,bool /* p_function /*=false*/) const
 {
   return "";
 }
@@ -1532,6 +1645,12 @@ XString
 SQLInfoInformix::GetPSMProcedureErrors(XString p_schema,XString p_procedure) const
 {
   // Informix does not support procedure errors
+  return "";
+}
+
+XString
+SQLInfoInformix::GetPSMProcedurePrivilege(XString& /*p_schema*/,XString& /*p_procedure*/) const
+{
   return "";
 }
 

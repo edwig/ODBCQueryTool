@@ -135,7 +135,7 @@ public:
    void    SetBinaryPieceSize(int p_size);
    void    SetColumnNumber(int p_column);
    void    SetParameterType(SQLParamType p_type);
-   void    SetSizeIndicator(bool p_realSize);
+   void    SetSizeIndicator(bool p_realSize,bool p_binary = false);
    void    SetNumericPrecisionScale(int p_precision,int p_scale);
    void    SetFromBinaryStreamData(int p_type,int p_length,void* p_data,bool p_isnull);
    void    SetNULL();
@@ -150,12 +150,12 @@ public:
    void    TruncateTimestamp(int p_decimals = 0);
 
    // General access
-   bool                 SetData(int p_type,const char* p_data);
+   bool    SetData(int p_type,const char* p_data);
    void*   GetDataPointer() const;
-   void                 SetFromRawDataPointer(void* p_pointer,int p_size = 0);
+   void    SetFromRawDataPointer(void* p_pointer,int p_size = 0);
    // BLOB Functions
-   void                 AttachBinary(void* p_pointer,unsigned long p_size = 0);
-   void                 DetachBinary();
+   void    AttachBinary(void* p_pointer,unsigned long p_size = 0);
+   void    DetachBinary();
 
    // Access per type
    const char*          GetAsChar();
@@ -188,7 +188,7 @@ public:
    SQLInterval          GetAsSQLInterval();
    SQLGuid              GetAsSQLGuid();
    bcd                  GetAsBCD();
-   
+
    // SET VALUE PER TYPE
    void                 Set(const char* p_string);
    void                 Set(XString p_string);

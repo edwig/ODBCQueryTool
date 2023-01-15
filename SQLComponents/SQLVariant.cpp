@@ -2281,21 +2281,27 @@ SQLVariant::GetAsSQLString()
 // Some databases (Oracle) need to know the size of the data member
 // for an AT_EXEC operation beforehand in the indicator
 void
-SQLVariant::SetSizeIndicator(bool p_realSize)
+SQLVariant::SetSizeIndicator(bool p_realSize,bool p_binary)
 {
   __int64 size = (__int64) GetDataSize();
   if(size > 0 && p_realSize)
   {
+    if(p_binary)
+    {
     // Special ODBC macro to set the data size
+      // SQL_BINARY
+      // SQL_LONGVARCHAR
+      // SQL_LONGVARBINARY
+      // SQL_WLONGVARCHAR
     m_indicator = (SQLLEN) SQL_LEN_DATA_AT_EXEC(size);
-    m_useAtExec = true;
+    }
+    else
+    {
+      // Simply the AT_EXEC indicator
+      m_indicator = SQL_DATA_AT_EXEC;
+    }
   }
-  else
-  {
-    // Simply the AT_EXEC indicator
-    m_indicator = SQL_DATA_AT_EXEC;
-    m_useAtExec = true;
-  }
+  m_useAtExec = true;
 }
 
 // Truncation of a char field

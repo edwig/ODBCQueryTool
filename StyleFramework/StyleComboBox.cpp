@@ -128,7 +128,7 @@ StyleComboBox::PreSubclassWindow()
   // Getting the default combobox implementation
   COMBOBOXINFO info;
   memset(&info,0,sizeof(COMBOBOXINFO));
-  info.cbSize = sizeof(COMBOBOXINFO);
+  info.cbSize  = sizeof(COMBOBOXINFO);
   ::GetComboBoxInfo(m_hWnd,&info);
 
   // Remove the extra parts 

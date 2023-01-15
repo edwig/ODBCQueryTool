@@ -637,7 +637,9 @@ SQLMigrate::DropTables()
   }
 
   // Set status for current step
-  m_log.SetStatus("Dropping tables");
+  XString status;
+  status.Format("Dropping %d tables",(int) m_tables.size());
+  m_log.SetStatus(status);
 
   for(unsigned int ind = 0; ind < m_tables.size(); ++ind)
   {
@@ -693,7 +695,9 @@ SQLMigrate::CreateTables()
   }
 
   // Set status of current step
-  m_log.SetStatus("Creating tables");
+  XString status;
+  status.Format("Creating %d tables",(int) m_tables.size());
+  m_log.SetStatus(status);
 
   // Try to get the optimal result
   SQLInfoDB* source = m_databaseSource->GetSQLInfoDB();
@@ -955,7 +959,9 @@ SQLMigrate::CreateViews()
   m_log.WriteLog(header2);
 
   // Set status of current step
-  m_log.SetStatus("Creating views");
+  XString status;
+  status.Format("Creating %d views",(int)m_tables.size());
+  m_log.SetStatus(status);
 
   // Try to get the optimal result
   SQLInfoDB* source = m_databaseSource->GetSQLInfoDB();
@@ -975,6 +981,8 @@ SQLMigrate::CreateViews()
     }
 
     // Getting the view info (DO NOT THROW AWAY AS WITH TABLES!)
+    // But do not generate RDBMS dependent drop info
+    create.SetOptionDropIfExists(false);
     DDLS statements = create.GetViewStatements(viewName);
 
      // Set the target database
@@ -1056,7 +1064,9 @@ SQLMigrate::TruncateTables()
   }
 
   // Current status
-  m_log.SetStatus("Empty the tables");
+  XString status;
+  status.Format("Empty %d tables",(int)m_tables.size());
+  m_log.SetStatus(status);
 
   for(unsigned int ind = 0; ind < m_tables.size(); ++ind)
   {
@@ -1115,7 +1125,9 @@ SQLMigrate::FillTablesViaPump()
   m_log.WriteLog("==========================================");
 
   // Current step
-  m_log.SetStatus("Migrating contents");
+  XString status;
+  status.Format("Migrating the contents of %d tables",(int)m_tables.size());
+  m_log.SetStatus(status);
 
   // Create rebind mapping with known exceptions
   RebindMap rebinds;
@@ -1153,6 +1165,7 @@ SQLMigrate::FillTablesViaPump()
         XString insert = MakeInsertStatement(table,m_params.v_source_schema,m_params.v_target_schema);
 
         SQLTransaction trans(m_databaseTarget,"Migration");
+        int* columns(nullptr); // needed to reset at-exec
 
         // Prepare the query objects with the correct rebind mappings
         query1.SetRebindMap(&rebinds);
@@ -1165,30 +1178,46 @@ SQLMigrate::FillTablesViaPump()
         // There we go!
         query1.DoSQLExecute();
 
-        // Bind output from query1 to the input of query2
-        query2.SetParameters((VarMap*)query1.GetBoundedColumns());
-        query2.BindParameters();
-
         bool ready = false;
         while(!ready)
         {
           try
           {
+            query1.SetFetchPolicy(true);
+
             if(query1.GetRecord())
             {
               if(m_params.v_truncate)
               {
-                // Informix data field truncate
+                // INFORMIX data field truncate
                 query1.TruncateCharFields();
                 // Most databases do not support TIMSTAMP fractions
                 query1.TruncateTimestamps();
               }
-              query2.DoSQLExecute();
 
-              // Show progress
-              m_log.SetTableGauge(++rows,totrows);
+              // Prepare columns to be used as parameters
+              // at-exec data is already gotten, so no at-exec bounding needed or possible
+              columns = ResetAtExecParameters(query1.GetBoundedColumns());
+
+              // Bind output from query1 to the input of query2
+              query2.SetParameters((VarMap*) query1.GetBoundedColumns());
+
+              // GO EXECUTE!
+              // Execute the prepared statement, while re-binding the parameters
+              query2.DoSQLExecute(true);
+
+              RestoreAtExecParameters(columns,query1.GetBoundedColumns());
+              columns = nullptr;
+
+              // Increment rows and potentially show in the dialog
+              if(++rows % 10 == 0)
+              {
+                // Show progress (but not every row or we will flicker)
+                m_log.SetTableGauge(rows,totrows);
+              }
               if(rows % m_params.v_logLines == 0)
               {
+                // Show if requested in the log
                 text.Format("Table: %s Rows: %ld [%6.2f %%]",table.GetString(),rows,((double) rows / (double)totrows * 100.0));
                 m_log.WriteLog(text);
               }
@@ -1214,6 +1243,12 @@ SQLMigrate::FillTablesViaPump()
               m_log.WriteLog("");
             }
             ++m_params.v_errors;
+
+            if(columns)
+            {
+              delete[] columns;
+              columns = nullptr;
+            }
           }
         }
         query2.SetParameters(nullptr);
@@ -1253,6 +1288,45 @@ SQLMigrate::FillTablesViaPump()
     overgezet.Format("Table [%s.%s] Total processing time: %.2f seconds",m_params.v_source_user.GetString(),table.GetString(),(double)(einde - start) / CLOCKS_PER_SEC);
     m_log.WriteLog(overgezet);
   }
+}
+
+// To be able to use the columns as input parameters
+// on the next database, reset the AtExec status
+// And store it in a array of integers
+int*
+SQLMigrate::ResetAtExecParameters(VarMap* p_columns)
+{
+  int  total = (int) p_columns->size() + 1;
+  int* columns = new int[total];
+  memset(columns,0,total * sizeof(int));
+
+  for(auto& col : *p_columns)
+  {
+    SQLVariant* var = col.second;
+    if(var->GetAtExec())
+    {
+      var->SetAtExec(false);
+      *var->GetIndicatorPointer() = SQL_NTS;
+      columns[col.first] = 1;
+    }
+  }
+  return columns;
+}
+
+// Restore the use of AtExec on the columns
+// to be able to get the next record from the source database
+// Inverse of the ResetAtExecParameters call
+void
+SQLMigrate::RestoreAtExecParameters(int* p_columns,VarMap* p_parameters)
+{
+  for(auto& col : *p_parameters)
+  {
+    if(p_columns[col.first])
+    {
+      col.second->SetAtExec(true);
+    }
+  }
+  delete[] p_columns;
 }
 
 XString
@@ -1357,10 +1431,10 @@ SQLMigrate::CountTableContents(XString p_owner,XString& tabel)
     statement += m_params.v_where;
   }
 
-  query.DoSQLStatement(statement);
-  if(query.GetRecord())
+  SQLVariant* var = query.DoSQLStatementScalar(statement);
+  if(var)
   {
-    return (long) query[1];
+    return var->GetAsSLong();
   }
   return 0;
 }
@@ -1422,7 +1496,9 @@ SQLMigrate::FillTablesViaData(bool p_process)
   m_log.WriteOut("");
 
   // Current step to status line
-  m_log.SetStatus("Migrate table content");
+  XString status;
+  status.Format("Migrating the contents of %d tables",(int) m_tables.size());
+  m_log.SetStatus(status);
 
   for(unsigned int ind = 0; ind < m_tables.size(); ++ind)
   {
@@ -1656,6 +1732,7 @@ SQLMigrate::DatatypeExceptions(RebindMap& p_map)
   // ORACLE -> MS-SQLServer. 
   // Only way to convert the timestamps
   // Otherwise we get a 'timestamp field overflow' error
+  // And fractions of timestamps not convertable!!
   if(m_params.v_sourceType == DatabaseType::RDBMS_ORACLE &&
      m_params.v_targetType == DatabaseType::RDBMS_SQLSERVER)
   {
