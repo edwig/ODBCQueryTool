@@ -58,6 +58,8 @@ public:
   void    SetCanResize    (bool p_resize      = true);
   void    SetWindowText(LPCTSTR lpstString);
   BOOL    SetSysMenu(UINT p_menuResource);
+  void    SetAboutBoxAndIcon(int p_command,int p_menutitle);
+
   void    SetTheme(ThemeColor::Themes p_theme);
   void    LoadStyleTheme();
   CWnd*   GetNextDlgTabItem(CWnd* p_control, BOOL p_previous = FALSE) const;
@@ -101,6 +103,7 @@ protected:
   afx_msg LRESULT OnStyleChanged(WPARAM wParam,LPARAM lParam);
   afx_msg void    OnSettingChange(UINT uFlags,LPCTSTR lpszSection);
   afx_msg BOOL    OnToolTipNotify(UINT id,NMHDR* pNMHDR,LRESULT* pResult);
+  afx_msg HCURSOR OnQueryDragIcon();
   afx_msg void    OnPaint();
   afx_msg void    OnOK() override;
 
@@ -138,6 +141,7 @@ protected:
   UINT      m_sysmenu     { NULL  };
   // Objects
   CMenu      m_menu;
+  HICON      m_hIcon;
   CStatusBar m_statusBar;
   CBrush     m_defaultBrush;
   ToolTips   m_tooltips;

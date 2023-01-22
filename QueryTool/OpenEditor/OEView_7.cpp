@@ -675,6 +675,7 @@ COEditorView::ExecuteQuery(int      p_line
   int      panelWindow      = p_batch ? QPW_OUTPUT_VIEW : QPW_QUERY_VIEW;
   UINT     defFormat        = DT_LEFT|DT_VCENTER|DT_WORDBREAK|DT_END_ELLIPSIS|DT_NOPREFIX|DT_EXPANDTABS;
   int      prefetchLines    = GetDocument()->GetSettings().GetSQLPrefetchLines();
+  int      lengthOption     = GetDocument()->GetSettings().GetSQLLengthOption();
   VarMap&  variables        = theApp.GetVariables();
   int      numVariables     = (int)variables.size();
   int      longestColumn    = 0;
@@ -691,6 +692,7 @@ COEditorView::ExecuteQuery(int      p_line
 
   // Init the SQLQuery object
   m_query.Init(&database);
+  m_query.SetLengthOption((LOption) lengthOption);
 
   if(!database.IsOpen())
   {

@@ -146,6 +146,7 @@ public:
 protected:
   virtual void DoDataExchange(CDataExchange* pDX) override;
   virtual void SetupDynamicLayout() override;
+  virtual BOOL OnInitDialog() override;
 
   void FindProfile();
   bool StartFromCommandLine();
@@ -159,9 +160,7 @@ protected:
   void PerformMigration();
   void PostMigration();
 
-  HICON m_hIcon;
-  virtual BOOL OnInitDialog();
-  afx_msg void OnPaint();
+  afx_msg void    OnPaint();
   afx_msg HCURSOR OnQueryDragIcon();
 
   afx_msg void OnAboutBox();

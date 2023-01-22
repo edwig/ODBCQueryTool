@@ -50,7 +50,6 @@ protected:
 
 // Implementation
 protected:
-	HICON m_hIcon;
   CString       m_config;
   StyleEdit     m_editConfig;
   StyleTabCtrl  m_tabs;

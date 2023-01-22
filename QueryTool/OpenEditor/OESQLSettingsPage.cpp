@@ -32,6 +32,7 @@ COESQLSettingsPage::COESQLSettingsPage(SettingsManager& manager,CWnd* p_parent)
   m_terminator  = settings.GetSQLQueryTerminator().c_str();
   m_font        = settings.GetSQLQueryFont().c_str();
   m_odbcMetaSQL = settings.GetPreferODBCMetaSQL();
+  m_lenOption   = settings.GetSQLLengthOption();
 }
 
 COESQLSettingsPage::~COESQLSettingsPage()
@@ -48,6 +49,7 @@ COESQLSettingsPage::DoDataExchange(CDataExchange* pDX)
   DDX_Control(pDX,IDC_FONT,               m_editFont,      m_font);
   DDX_Control(pDX,IDC_BUT_FONT,           m_buttonFont);
   DDX_Control(pDX,IDC_META,               m_buttonODBC);
+  DDX_CBIndex(pDX,IDC_SQL_LEN,            m_comboSqlLen,   m_lenOption);
 }
 
 BEGIN_MESSAGE_MAP(COESQLSettingsPage,StyleDialog)
@@ -56,12 +58,24 @@ BEGIN_MESSAGE_MAP(COESQLSettingsPage,StyleDialog)
   ON_EN_CHANGE(IDC_FONT,               &COESQLSettingsPage::OnEnChangeFont)
   ON_BN_CLICKED(IDC_BUT_FONT,          &COESQLSettingsPage::OnBnClickedButFont)
   ON_BN_CLICKED(IDC_META,              &COESQLSettingsPage::OnBnClickedPreferODBC)
+  ON_CBN_SELCHANGE(IDC_SQL_LEN,        &COESQLSettingsPage::OnCbnSelchangeSqlLen)
 END_MESSAGE_MAP()
 
 BOOL
 COESQLSettingsPage::OnInitDialog()
 {
   StyleDialog::OnInitDialog();
+
+  m_comboSqlLen.AddString("Statement NTS (Null Terminated String");
+  m_comboSqlLen.AddString("Statement exact string length");
+  m_comboSqlLen.AddString("Statement string-length + 1 for NTS (Default)");
+
+  if(m_lenOption < 1 || m_lenOption > 3)
+  {
+    m_lenOption = 3;
+  }
+
+  m_comboSqlLen.SetCurSel(m_lenOption - 1);
 
   m_buttonODBC.SetCheck(m_odbcMetaSQL);
   return TRUE;
@@ -82,6 +96,7 @@ BOOL COESQLSettingsPage::OnApply()
     settings.SetSQLQueryTerminator(term);
     settings.SetSQLQueryFont(font);
     settings.SetPreferODBCMetaSQL(m_odbcMetaSQL);
+    settings.SetSQLLengthOption(m_lenOption + 1);
   }
   _OE_DEFAULT_HANDLER_;
 
@@ -195,6 +210,12 @@ COESQLSettingsPage::OnBnClickedButFont()
     m_font.Format("%s;%d",fontName,fontSize);
     UpdateData(FALSE);
   }
+}
+
+void 
+COESQLSettingsPage::OnCbnSelchangeSqlLen()
+{
+  UpdateData();
 }
 
 void

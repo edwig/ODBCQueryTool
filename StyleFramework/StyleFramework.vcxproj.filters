@@ -186,6 +186,9 @@
     <ClInclude Include="StyleStatic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="StyleTab.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GrayWindow.cpp">
@@ -333,6 +336,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StyleFramework.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleTab.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

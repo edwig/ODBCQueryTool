@@ -20,6 +20,7 @@
 // For license: See the file "LICENSE.txt" in the root folder
 //
 #pragma once
+#include <afxdialogex.h>
 
 class StyleDialogCA: public CDialogEx
 {

@@ -207,6 +207,7 @@
     <ClInclude Include="StyleSpinButtonCtrl.h" />
     <ClInclude Include="StyleStatic.h" />
     <ClInclude Include="StyleStaticToast.h" />
+    <ClInclude Include="StyleTab.h" />
     <ClInclude Include="StyleTexts.h" />
     <ClInclude Include="StyleToast.h" />
     <ClInclude Include="StyleToolbar.h" />
@@ -265,6 +266,7 @@
     <ClCompile Include="StyleSpinButtonCtrl.cpp" />
     <ClCompile Include="StyleStatic.cpp" />
     <ClCompile Include="StyleStaticToast.cpp" />
+    <ClCompile Include="StyleTab.cpp" />
     <ClCompile Include="StyleTexts.cpp" />
     <ClCompile Include="StyleToast.cpp" />
     <ClCompile Include="StyleToolbar.cpp" />

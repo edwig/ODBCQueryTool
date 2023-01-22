@@ -196,6 +196,7 @@ namespace OpenEditor
         OES_DECLARE_PROPERTY(string, FileStartDirectory);
 
         OES_DECLARE_PROPERTY(int,    SQLPrefetchLines);
+        OES_DECLARE_PROPERTY(int,    SQLLengthOption);
         OES_DECLARE_PROPERTY(string, SQLQueryTerminator);
         OES_DECLARE_PROPERTY(string, SQLQueryFont);
 
@@ -283,6 +284,7 @@ namespace OpenEditor
         OES_DECLARE_ABSTR_PROPERTY(string, FileStartDirectory);
 
         OES_DECLARE_ABSTR_PROPERTY(int,    SQLPrefetchLines);
+        OES_DECLARE_ABSTR_PROPERTY(int,    SQLLengthOption);
         OES_DECLARE_ABSTR_PROPERTY(string, SQLQueryTerminator);
         OES_DECLARE_ABSTR_PROPERTY(string, SQLQueryFont);
 
@@ -380,6 +382,7 @@ namespace OpenEditor
         OES_DECLARE_GLOBAL_PROPERTY(string, FileStartDirectory);
 
         OES_DECLARE_GLOBAL_PROPERTY(int,    SQLPrefetchLines);
+        OES_DECLARE_GLOBAL_PROPERTY(int,    SQLLengthOption);
         OES_DECLARE_GLOBAL_PROPERTY(string, SQLQueryTerminator);
         OES_DECLARE_GLOBAL_PROPERTY(string, SQLQueryFont);
 
@@ -499,6 +502,7 @@ namespace OpenEditor
         OES_AGGREGATE_PROPERTY(string, FileStartDirectory);
 
         OES_AGGREGATE_PROPERTY(int,    SQLPrefetchLines);
+        OES_AGGREGATE_PROPERTY(int,    SQLLengthOption);
         OES_AGGREGATE_PROPERTY(string, SQLQueryTerminator);
         OES_AGGREGATE_PROPERTY(string, SQLQueryFont);
 

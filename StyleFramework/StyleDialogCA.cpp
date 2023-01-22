@@ -1,7 +1,8 @@
 ////////////////////////////////////////////////////////////////////////
 //
-// File: StyleDialogCA.h
+// File:     StyleDialogCA.h
 // Function: General Dialog box for styling windows
+//           CA stands for "Client Area"
 //
 // Dialog with special styled header and behavior
 // Paints the frame INSIDE of the client area (defined in the resources)
@@ -408,16 +409,16 @@ StyleDialogCA::Button(CDC* pDC, CRect rect, LRESULT type,BUTTONSTATE state, bool
                       break;
 
     case HTMAXBUTTON:
-                      if (max)
+                      if(max)
                       {
-                        // 'voorste' window
+                        // window before
                         pDC->MoveTo(rect.CenterPoint().x - WS(6), rect.CenterPoint().y - WS(3));
                         pDC->LineTo(rect.CenterPoint().x + WS(4), rect.CenterPoint().y - WS(3));
                         pDC->LineTo(rect.CenterPoint().x + WS(4), rect.CenterPoint().y + WS(7));
                         pDC->LineTo(rect.CenterPoint().x - WS(6), rect.CenterPoint().y + WS(7));
                         pDC->LineTo(rect.CenterPoint().x - WS(6), rect.CenterPoint().y - WS(3));
 
-                        //'achterste' window
+                        // window behind
                         pDC->MoveTo(rect.CenterPoint().x - WS(3), rect.CenterPoint().y - WS(4));
                         pDC->LineTo(rect.CenterPoint().x - WS(3), rect.CenterPoint().y - WS(6));
                         pDC->LineTo(rect.CenterPoint().x + WS(7), rect.CenterPoint().y - WS(6));
@@ -426,6 +427,7 @@ StyleDialogCA::Button(CDC* pDC, CRect rect, LRESULT type,BUTTONSTATE state, bool
                       }
                       else
                       {
+                        // One window to maximize
                         pDC->MoveTo(rect.CenterPoint().x - WS(5), rect.CenterPoint().y - WS(5));
                         pDC->LineTo(rect.CenterPoint().x + WS(6), rect.CenterPoint().y - WS(5));
                         pDC->LineTo(rect.CenterPoint().x + WS(6), rect.CenterPoint().y + WS(6));

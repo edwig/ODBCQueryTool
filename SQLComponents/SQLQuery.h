@@ -54,6 +54,14 @@ typedef std::map<XString,SQLVariant*> ColNameMap;
 typedef std::map<int,    SQLVariant*> VarMap;
 typedef std::map<int,    unsigned>    MaxSizeMap;
 
+// Length option for SQLPrepare SQLExecDirect
+enum class LOption
+{
+  LO_NTS        = 1
+ ,LO_LENGTH     = 2
+ ,LO_LEN_ZERO   = 3
+};
+
 class SQLQuery
 {
 public:
@@ -89,6 +97,8 @@ public:
   void SetNoScan(bool p_noscan = false);
   // Setting the fetching policy
   void SetFetchPolicy(bool p_policy);
+  // Setting the length option
+  void SetLengthOption(LOption p_option = LOption::LO_LEN_ZERO);
 
   // Set parameters for statement
   void SetParameter  (int p_num,SQLVariant*   p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
@@ -197,6 +207,8 @@ public:
   HSTMT       GetStatementHandle();
   // Getting the 'noscan' setting
   bool        GetNoScan();
+  // LengthOption for SQLPrepare/SQLExecDirect
+  LOption     GetLengthOption();
 
   // Getting the results of the query as a SQLVariant reference
   SQLVariant& operator[](int p_index);
@@ -262,6 +274,7 @@ private:
   SQLDatabase*  m_database;          // Database
   HDBC          m_connection;        // In CTOR connection handle.
   HSTMT         m_hstmt;             // Statement handle
+  LOption       m_lengthOption;      // Statementlength at SQLPrepare/SQLExecDirect
   RETCODE       m_retCode;           // last SQL (error)code
   XString       m_lastError;         // last error string
   int           m_maxColumnLength;   // Max length
@@ -374,6 +387,18 @@ SQLQuery::SetFetchPolicy(bool p_policy)
   {
     m_hasLongColumns = 1;
   }
+}
+inline LOption
+SQLQuery::GetLengthOption()
+{
+  return m_lengthOption;
+}
+
+// Setting the length option
+inline void
+SQLQuery::SetLengthOption(LOption p_option /*= LOption::LO_LEN_ZERO*/)
+{
+  m_lengthOption = p_option;
 }
 
 // End of namespace

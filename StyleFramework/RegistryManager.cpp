@@ -1228,3 +1228,32 @@ int SetRegistryProfile(CString p_key,CString p_program,CString p_version)
   }
   return 0;
 }
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Things that use a Registry Manager
+//
+//////////////////////////////////////////////////////////////////////////
+
+// Setting a global environment variable (extends SetEnvironmentVariable)
+bool
+SetGlobalEnvironmentVariable(CString p_variable,CString p_value)
+{
+  bool success(false);
+  RegistryManager manager(HKEY_LOCAL_MACHINE);
+  CString key("HKLM\\System\\CurrentControlSet\\Control\\Session Manager\\Environment");
+
+  // Possibly remove old value
+  success = manager.DeleteRegistryKey(key,p_variable);
+  if(!p_value.IsEmpty())
+  {
+    // Try to set new value
+    success = manager.SetRegistryString(key,p_variable,p_value);
+  }
+  if(success)
+  {
+    // Broadcast the changing of the system variable
+    SendMessageTimeout(HWND_BROADCAST,WM_SETTINGCHANGE,NULL,NULL,SMTO_NORMAL,1500,NULL);
+  }
+  return success;
+}

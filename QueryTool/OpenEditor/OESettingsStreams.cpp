@@ -87,6 +87,7 @@ void SettingsManagerWriter::operator << (const SettingsManager& mgr)
     OESMS_WRITE_MEMBER(settings, FileStartDirectory);
 
     OESMS_WRITE_MEMBER(settings, SQLPrefetchLines);
+    OESMS_WRITE_MEMBER(settings, SQLLengthOption);
     OESMS_WRITE_MEMBER(settings, SQLQueryTerminator);
     OESMS_WRITE_MEMBER(settings, SQLQueryFont);
 
@@ -172,6 +173,7 @@ void SettingsManagerReader::operator >> (SettingsManager& mgr)
     OESMS_READ_MEMBER(settings, FileStartDirectory);
 
     OESMS_READ_MEMBER(settings, SQLPrefetchLines);
+    OESMS_READ_MEMBER(settings, SQLLengthOption);
     OESMS_READ_MEMBER(settings, SQLQueryTerminator);
     OESMS_READ_MEMBER(settings, SQLQueryFont);
 

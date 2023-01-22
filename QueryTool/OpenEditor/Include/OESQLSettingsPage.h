@@ -44,12 +44,14 @@ public:
   int           m_prefetch;
   CString       m_terminator;
   CString       m_font;
+  int           m_lenOption;
   bool          m_odbcMetaSQL;
 
   StyleEdit     m_editPrefetch;
   StyleEdit     m_editTerminator;
   StyleEdit     m_editFont;
   StyleButton   m_buttonFont;
+  StyleComboBox m_comboSqlLen;
   StyleCheckbox m_buttonODBC;
 
   afx_msg void OnUpdateData();
@@ -58,4 +60,5 @@ public:
   afx_msg void OnEnChangeFont();
   afx_msg void OnBnClickedButFont();
   afx_msg void OnBnClickedPreferODBC();
+  afx_msg void OnCbnSelchangeSqlLen();
 };

@@ -60,6 +60,9 @@ void SFXResizeByFactor(int& p_x,int& p_y,int& p_w,int& p_h);
 // Skinning & scrollbars
 #include "SkinScrollWnd.h"
 
+// Header                         MFC Original        Replacement functionality 
+// ------------------------------ ------------------- -------------------------
+
 // Dialogs & views
 #include "StyleDialog.h"          // CDialog          -> StyleDialog
 #include "StyleFormView.h"        // CFormView        -> StyleFormView
@@ -85,6 +88,7 @@ void SFXResizeByFactor(int& p_x,int& p_y,int& p_w,int& p_h);
 #include "StyleStaticToast.h"     // ----             -> For StyleToast
 #include "StyleSpinButtonCtrl.h"  // CSpinButtonCtrl  -> StyleSpinButtonCtrl
 #include "StyleTabCtrl.h"         // CTabCtrl         -> StyleTabCtrl
+#include "StyleTab.h"             // ----             -> StyleTab (simple StyleDialog)
 #include "StyleToolBar.h"         // CMFCToolBar      -> StyleToolBar
 #include "StyleTreeCtrl.h"        // CTreeCtrl        -> StyleTreeCtrl
 

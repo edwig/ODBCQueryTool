@@ -7,8 +7,9 @@
 #include "targetver.h"
 #include "..\framework.h"
 
-#include <afxwin.h>         // MFC core and standard components
-#include <afxext.h>         // MFC extensions
+#include <afx.h>
+#include <afxwin.h>             // MFC core and standard components
+#include <afxext.h>             // MFC extensions
 #include <afxdtctl.h>           // MFC support for Internet Explorer 4 Common Controls
 #include <afxcmn.h>             // MFC support for Windows Common Controls
 #include <afxcontrolbars.h>     // MFC support for ribbons and control bars

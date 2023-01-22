@@ -43,6 +43,10 @@ public:
   void      SetInError(bool pValue)             { m_error         = pValue;       }
   void      SetDefaultButton(bool pDefaultknop) { m_defaultButton = pDefaultknop; }
   void      SetBold(bool p_bold)                { m_bold          = p_bold;       }
+  void      SetFontSize(int p_size);
+  void      SetFontName(CString p_fontName,int p_fontSize);
+  void      SetFontStyle(bool p_bold,bool p_italic,bool p_underLine);
+  void      SetFontColor(int p_color);
 
   // GETTERS
   CBitmap&  GetBitmap();
@@ -70,6 +74,7 @@ public:
 protected:
   virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam) override;
   void    TranslateStyle(CString p_style);
+  void    ResetFont();
   void    Draw(CDC*    pDC
               ,CRect   rect
               ,bool    over
@@ -84,14 +89,20 @@ protected:
               ,bool    p_themeColor  = false
               ,bool    p_default     = false);
 
-  HICON   m_icon { nullptr };
-  bool    m_error;
-  bool    m_over;
-  bool    m_bold;
-  bool    m_mandatory;
-  bool    m_defaultButton;
-  int     m_style { 1 };
   CBitmap m_bitmap;
+  CString m_fontName;
+  HICON   m_icon          { nullptr };
+  CFont*  m_font          { nullptr };
+  bool    m_error         { false   };
+  bool    m_over          { false   };
+  bool    m_mandatory     { false   };
+  bool    m_defaultButton { false   };
+  int     m_style         { 0       };
+  int     m_fontSize      { 100     };
+  bool    m_bold          { false   };
+  bool    m_italic        { false   };
+  bool    m_underLine     { false   };
+  int     m_fontcolor     { -1      };
 };
 
 inline CBitmap& 

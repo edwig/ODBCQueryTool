@@ -36,15 +36,17 @@
 #include <iostream>
 #include <winstring.h>
 #include <string.h>
+#include <codecvt>
 #include <vector>
 #include <map>
+
+#pragma warning(disable: 4996)
 
 using namespace Microsoft::WRL;
 using namespace ABI::Windows::Data::Xml::Dom;
 using namespace ABI::Windows::Foundation;
 using namespace ABI::Windows::UI::Notifications;
 using namespace Windows::Foundation;
-
 
 namespace WinToastLib 
 {
@@ -128,24 +130,24 @@ public:
   WinToastTemplate(_In_ WinToastTemplateType type = WinToastTemplateType::ImageAndText02);
   ~WinToastTemplate();
 
-  void setFirstLine       (_In_ const std::wstring& text);
-  void setSecondLine      (_In_ const std::wstring& text);
-  void setThirdLine       (_In_ const std::wstring& text);
-  void setTextField       (_In_ const std::wstring& txt, _In_ TextField pos);
-  void setAttributionText (_In_ const std::wstring & attributionText);
-  void setImagePath       (_In_ const std::wstring& imgPath, _In_ CropHint cropHint = CropHint::Square);
-  void setHeroImagePath   (_In_ const std::wstring& imgPath, bool inlineImage);
-  void setAudioPath       (_In_ WinToastTemplate::AudioSystemFile audio);
-  void setAudioPath       (_In_ const std::wstring& audioPath);
-  void setAudioOption     (_In_ WinToastTemplate::AudioOption audioOption);
-  void setDuration        (_In_ Duration duration);
-  void setExpiration      (_In_ INT64 millisecondsFromNow);
-  void addAction          (_In_ const std::wstring& label);
+  void SetFirstLine       (_In_ const std::string& text);
+  void SetSecondLine      (_In_ const std::string& text);
+  void SetThirdLine       (_In_ const std::string& text);
+  void SetTextField       (_In_ const std::string& txt, _In_ TextField pos);
+  void SetAttributionText (_In_ const std::string & attributionText);
+  void SetImagePath       (_In_ const std::string& imgPath, _In_ CropHint cropHint = CropHint::Square);
+  void SetHeroImagePath   (_In_ const std::string& imgPath, bool inlineImage);
+  void SetAudioPath       (_In_ WinToastTemplate::AudioSystemFile audio);
+  void SetAudioPath       (_In_ const std::string& audioPath);
+  void SetAudioOption     (_In_ WinToastTemplate::AudioOption audioOption);
+  void SetDuration        (_In_ Duration duration);
+  void SetExpiration      (_In_ INT64 millisecondsFromNow);
+  void AddAction          (_In_ const std::string& label);
 
-  std::size_t         textFieldsCount() const;
-  std::size_t         actionsCount() const;
-  bool                hasImage() const;
-  bool                hasHeroImage() const;
+  std::size_t         TextFieldsCount() const;
+  std::size_t         ActionsCount() const;
+  bool                HasImage() const;
+  bool                HasHeroImage() const;
   const std::vector<std::wstring>& textFields() const;
   const std::wstring& textField(_In_ TextField pos) const;
   const std::wstring& actionLabel(_In_ std::size_t pos) const;
@@ -173,6 +175,9 @@ private:
   WinToastTemplateType      _type{WinToastTemplateType::Text01};
   Duration                  _duration{Duration::System};
   CropHint                  _cropHint{CropHint::Square};
+
+  // UTF-8 to UTF-16 converter
+  std::wstring_convert<std::codecvt_utf8_utf16<wchar_t>> m_converter;
 };
 
 class WinToast 
@@ -216,8 +221,8 @@ public:
   static const std::wstring& strerror(_In_ WinToastError error);
   virtual bool initialize(_Out_ WinToastError* error = nullptr);
   virtual bool isInitialized() const;
-  virtual bool hideToast(_In_ INT64 id);
-  virtual INT64 showToast(_In_ const WinToastTemplate& toast, _In_ IWinToastHandler* handler, _Out_ WinToastError* error = nullptr);
+  virtual bool HideToast(_In_ INT64 id);
+  virtual INT64 ShowToast(_In_ const WinToastTemplate& toast, _In_ IWinToastHandler* handler, _Out_ WinToastError* error = nullptr);
   virtual void clear();
   virtual enum ShortcutResult createShortcut();
 

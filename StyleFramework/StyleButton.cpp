@@ -140,22 +140,11 @@ BEGIN_MESSAGE_MAP(StyleButton, CButton)
 END_MESSAGE_MAP()
 
 StyleButton::StyleButton()
-            :m_over(false)
-            ,m_mandatory(false)
-            ,m_error(false)
-            ,m_defaultButton(false)
-            ,m_style(0)
-            ,m_bold(false)
 {
 }
 
 StyleButton::StyleButton(CString p_type, bool pInError)
             :m_error(pInError)
-            ,m_over(false)
-            ,m_mandatory(false)
-            ,m_defaultButton(false)
-            ,m_style(0)
-            ,m_bold(false)
 {
   TranslateStyle(p_type);
 }
@@ -228,6 +217,76 @@ void
 StyleButton::SetIconImage(UINT p_icon)
 {
   m_icon = LoadIcon(GetModuleHandle(NULL), MAKEINTRESOURCE(p_icon));
+}
+
+void 
+StyleButton::ResetFont()
+{
+  LOGFONT  lgFont;
+
+  lgFont.lfCharSet        = DEFAULT_CHARSET;
+  lgFont.lfClipPrecision  = 0;
+  lgFont.lfEscapement     = 0;
+  strcpy_s(lgFont.lfFaceName,LF_FACESIZE,m_fontName);
+  lgFont.lfHeight         = m_fontSize;
+  lgFont.lfItalic         = m_italic;
+  lgFont.lfOrientation    = 0;
+  lgFont.lfOutPrecision   = 0;
+  lgFont.lfPitchAndFamily = 2;
+  lgFont.lfQuality        = 0;
+  lgFont.lfStrikeOut      = 0;
+  lgFont.lfUnderline      = m_underLine;
+  lgFont.lfWidth          = 0;
+  lgFont.lfWeight         = m_bold ? FW_BOLD : FW_MEDIUM;
+
+  // Create new font or remove old object from it
+  if(m_font)
+  {
+    if(m_font->m_hObject)
+    {
+      m_font->DeleteObject();
+    }
+  }
+  else
+  {
+    m_font = new CFont();
+  }
+  // Create new font and set it to this control
+  m_font->CreatePointFontIndirect(&lgFont);
+  SetFont(m_font);
+}
+
+void 
+StyleButton::SetFontSize(int p_size)
+{
+  m_fontSize = p_size;
+  ResetFont();
+}
+
+void 
+StyleButton::SetFontStyle(bool p_bold,bool p_italic,bool p_underLine)
+{
+  m_bold       = p_bold;
+  m_italic     = p_italic;
+  m_underLine  = p_underLine;
+  ResetFont();
+}
+
+void 
+StyleButton::SetFontName(CString p_fontName,int p_fontSize)
+{
+  m_fontName = p_fontName;
+  m_fontSize = p_fontSize;
+  ResetFont();
+}
+
+void
+StyleButton::SetFontColor(int p_color)
+{
+  if(p_color >= 0 && p_color <= RGB(0xFF,0xFF,0xFF))
+  {
+    m_fontcolor = p_color;
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -596,9 +655,17 @@ StyleButton::Draw(CDC*    pDC
   }
   
   // Paint the text
-  pDC->SetTextColor(textcolor);
+  pDC->SetTextColor(m_fontcolor >= 0 ? m_fontcolor : textcolor);
 
-  CFont* org = pDC->SelectObject(m_bold ? &STYLEFONTS.DialogTextFontBold : &STYLEFONTS.DialogTextFont);
-  pDC->DrawText(txt, &rect, DT_CENTER|DT_VCENTER|DT_SINGLELINE);
+  CFont* org = nullptr;
+  if(m_font)
+  {
+    org = pDC->SelectObject(m_font);
+  }
+  else
+  {
+    org = pDC->SelectObject(m_bold ? &STYLEFONTS.DialogTextFontBold : &STYLEFONTS.DialogTextFont);
+  }
+  pDC->DrawText(txt,&rect,DT_CENTER|DT_VCENTER|DT_SINGLELINE);
   pDC->SelectObject(org);
 }

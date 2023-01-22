@@ -740,7 +740,7 @@ HRESULT	WinToast::createShellLinkHelper()
   return hr;
 }
 
-INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHandler* handler, _Out_ WinToastError* error)  
+INT64 WinToast::ShowToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHandler* handler, _Out_ WinToastError* error)  
 {
   setError(error, WinToastError::NoError);
   INT64 id = -1;
@@ -812,7 +812,7 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
             hr = setBindToastGenericHelper(xmlDocument.Get());
         if (SUCCEEDED(hr)) 
         {
-          for (std::size_t i = 0, fieldsCount = toast.textFieldsCount(); i < fieldsCount && SUCCEEDED(hr); i++) 
+          for (std::size_t i = 0, fieldsCount = toast.TextFieldsCount(); i < fieldsCount && SUCCEEDED(hr); i++) 
           {
               hr = setTextFieldHelper(xmlDocument.Get(), toast.textField(WinToastTemplate::TextField(i)), (UINT32)i);
           }
@@ -829,7 +829,7 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
             }
 
             std::array<WCHAR, 12> buf;
-            for (std::size_t i = 0, actionsCount = toast.actionsCount(); i < actionsCount && SUCCEEDED(hr); i++) 
+            for (std::size_t i = 0, actionsCount = toast.ActionsCount(); i < actionsCount && SUCCEEDED(hr); i++) 
             {
               _snwprintf_s(buf.data(), buf.size(), _TRUNCATE, L"%zd", i);
               hr = addActionHelper(xmlDocument.Get(), toast.actionLabel(i), buf.data());
@@ -857,8 +857,8 @@ INT64 WinToast::showToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
           {
             bool isWin10AnniversaryOrAbove = WinToast::isWin10AnniversaryOrHigher();
             bool isCircleCropHint = isWin10AnniversaryOrAbove ? toast.isCropHintCircle() : false;
-            hr = toast.hasImage() ? setImageFieldHelper(xmlDocument.Get(), toast.imagePath(), toast.isToastGeneric(), isCircleCropHint) : hr;
-            if (SUCCEEDED(hr) && isWin10AnniversaryOrAbove && toast.hasHeroImage())
+            hr = toast.HasImage() ? setImageFieldHelper(xmlDocument.Get(), toast.imagePath(), toast.isToastGeneric(), isCircleCropHint) : hr;
+            if (SUCCEEDED(hr) && isWin10AnniversaryOrAbove && toast.HasHeroImage())
                 hr = setHeroImageHelper(xmlDocument.Get(), toast.heroImagePath(), toast.isInlineHeroImage());
             if (SUCCEEDED(hr)) 
             {
@@ -925,7 +925,7 @@ ComPtr<IToastNotifier> WinToast::notifier(_In_ bool* succeded) const
 	return notifier;
 }
 
-bool WinToast::hideToast(_In_ INT64 id) 
+bool WinToast::HideToast(_In_ INT64 id) 
 {
   if (!isInitialized()) 
   {
@@ -1331,31 +1331,35 @@ WinToastTemplate::~WinToastTemplate()
   _textFields.clear();
 }
 
-void WinToastTemplate::setTextField(_In_ const std::wstring& txt, _In_ WinToastTemplate::TextField pos) 
+void WinToastTemplate::SetTextField(_In_ const std::string& txt, _In_ WinToastTemplate::TextField pos) 
 {
+  std::wstring text = m_converter.from_bytes(txt.c_str());
   const auto position = static_cast<std::size_t>(pos);
   assert(position < _textFields.size());
-  _textFields[position] = txt;
+  _textFields[position] = text;
 }
 
-void WinToastTemplate::setImagePath(_In_ const std::wstring& imgPath, _In_ CropHint cropHint) 
+void WinToastTemplate::SetImagePath(_In_ const std::string& imgPath, _In_ CropHint cropHint) 
 {
-  _imagePath = imgPath;
-  _cropHint = cropHint;
+  std::wstring path = m_converter.from_bytes(imgPath.c_str());
+  _imagePath = path;
+  _cropHint  = cropHint;
 }
 
-void WinToastTemplate::setHeroImagePath(_In_ const std::wstring& imgPath, bool inlineImage) 
+void WinToastTemplate::SetHeroImagePath(_In_ const std::string& imgPath, bool inlineImage) 
 {
-	_heroImagePath = imgPath;
+  std::wstring path = m_converter.from_bytes(imgPath.c_str());
+	_heroImagePath   = path;
   _inlineHeroImage = inlineImage;
 }
 
-void WinToastTemplate::setAudioPath(_In_ const std::wstring& audioPath) 
+void WinToastTemplate::SetAudioPath(_In_ const std::string& audioPath) 
 {
-  _audioPath = audioPath;
+  std::wstring path = m_converter.from_bytes(audioPath.c_str());
+  _audioPath = path;
 }
 
-void WinToastTemplate::setAudioPath(_In_ AudioSystemFile file) 
+void WinToastTemplate::SetAudioPath(_In_ AudioSystemFile file) 
 {
   static const std::unordered_map<AudioSystemFile, std::wstring> Files = 
   {
@@ -1391,57 +1395,59 @@ void WinToastTemplate::setAudioPath(_In_ AudioSystemFile file)
   _audioPath = iter->second;
 }
 
-void WinToastTemplate::setAudioOption(_In_ WinToastTemplate::AudioOption audioOption) 
+void WinToastTemplate::SetAudioOption(_In_ WinToastTemplate::AudioOption audioOption) 
 {
   _audioOption = audioOption;
 }
 
-void WinToastTemplate::setFirstLine(const std::wstring &text) 
+void WinToastTemplate::SetFirstLine(const std::string &text) 
 {
-  setTextField(text, WinToastTemplate::FirstLine);
+  SetTextField(text, WinToastTemplate::FirstLine);
 }
 
-void WinToastTemplate::setSecondLine(const std::wstring &text) 
+void WinToastTemplate::SetSecondLine(const std::string &text) 
 {
-  setTextField(text, WinToastTemplate::SecondLine);
+  SetTextField(text, WinToastTemplate::SecondLine);
 }
 
-void WinToastTemplate::setThirdLine(const std::wstring &text) 
+void WinToastTemplate::SetThirdLine(const std::string &text) 
 {
-  setTextField(text, WinToastTemplate::ThirdLine);
+  SetTextField(text, WinToastTemplate::ThirdLine);
 }
 
-void WinToastTemplate::setDuration(_In_ Duration duration) 
+void WinToastTemplate::SetDuration(_In_ Duration duration) 
 {
   _duration = duration;
 }
 
-void WinToastTemplate::setExpiration(_In_ INT64 millisecondsFromNow) 
+void WinToastTemplate::SetExpiration(_In_ INT64 millisecondsFromNow) 
 {
   _expiration = millisecondsFromNow;
 }
 
-void WinToastTemplate::setAttributionText(_In_ const std::wstring& attributionText) 
+void WinToastTemplate::SetAttributionText(_In_ const std::string& attributionText) 
 {
-  _attributionText = attributionText;
+  std::wstring text = m_converter.from_bytes(attributionText.c_str());
+  _attributionText = text;
 }
 
-void WinToastTemplate::addAction(_In_ const std::wstring & label) 
+void WinToastTemplate::AddAction(_In_ const std::string & label) 
 {
-	_actions.push_back(label);
+  std::wstring lbl = m_converter.from_bytes(label.c_str());
+	_actions.push_back(lbl);
 }
 
-std::size_t WinToastTemplate::textFieldsCount() const 
+std::size_t WinToastTemplate::TextFieldsCount() const 
 {
   return _textFields.size();
 }
 
-std::size_t WinToastTemplate::actionsCount() const 
+std::size_t WinToastTemplate::ActionsCount() const 
 {
   return _actions.size();
 }
 
-bool WinToastTemplate::hasImage() const 
+bool WinToastTemplate::HasImage() const 
 {
   return (_type <  WinToastTemplateType::Text01 
        || _type == WinToastTemplate::HeroImageAndImageAndText01
@@ -1450,7 +1456,7 @@ bool WinToastTemplate::hasImage() const
        || _type == WinToastTemplate::HeroImageAndImageAndText04);
 }
 
-bool WinToastTemplate::hasHeroImage() const
+bool WinToastTemplate::HasHeroImage() const
 {
   return (_type == WinToastTemplate::HeroImageAndText01
        || _type == WinToastTemplate::HeroImageAndText02

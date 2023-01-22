@@ -93,6 +93,7 @@
 #define IDC_DATATYPE                    224
 #define IDR_MENU1                       224
 #define IDR_OE_TABLES_POPUP             224
+#define IDC_SQL_LEN                     224
 #define IDC_TYPE2                       225
 #define IDC_SIZE2                       226
 #define IDC_EXEC2                       227
