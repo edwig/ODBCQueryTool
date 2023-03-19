@@ -22,6 +22,26 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes 3.2.2
+------------------
+- Fix for decimals in NUMERIC/DECIMAL datatypes. 
+- Fix for reading stored-procedures from SQL-Server
+- Precision and scale are recalculated before syncing with the database
+- Please note that the SQLMigrate tool has been removed from the SQLComponents library 
+  and now officially exists within this project.
+
+Releasenotes 3.2.1
+------------------
+- Fix for removing old and stale settings from the roaming profile directory
+
+Releasenotes 3.2.0
+------------------
+Adding in this release:
+- SQLMigrate tool to migrate between RDBMS vendors
+- QueryReWrite tool to make queries versatile for more than 1 vendor
+- Upgrades of all major libaries (BaseLibrary, SQLComponents, StyleFramework)
+- Smaller improvements (SQL_NTS option for running queries)
+
 Releasenotes version 3.1.0
 --------------------------
 - Added toasts when (de-)populating the object tree of the QueryTool

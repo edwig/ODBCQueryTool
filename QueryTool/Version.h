@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////
 //
-// File: SQLTransaction.cpp
+// File: Version.h
 //
 // Copyright (c) 1998-2017 ir. W.E. Huisman
 // All rights reserved
@@ -24,16 +24,16 @@
 #pragma once
 
 // General text version
-#define ODBCQUERYTOOL_VERSION  "3.2.0"
-#define ODBCQUERYTOOL_BUILD    "380"
+#define ODBCQUERYTOOL_VERSION  "3.2.2"
+#define ODBCQUERYTOOL_BUILD    "384"
 #define ODBCQUERYTOOL_COPYRIGHT "Copyright (c) Edwig Huisman 2004-2023"
 
 // For the resource files
 #define QT_RES_VERSION 3
 #define QT_RES_MAJOR   2
-#define QT_RES_MINOR   0
-#define QT_RES_BUILD   380
-#define QT_RES_FILE    "3,2,0,380"
+#define QT_RES_MINOR   2
+#define QT_RES_BUILD   384
+#define QT_RES_FILE    "3,2,2,384"
 
 // For the registry and the theme framework
 #define PRODUCT_REGISTRY "EDO\\ODBCQueryTool"

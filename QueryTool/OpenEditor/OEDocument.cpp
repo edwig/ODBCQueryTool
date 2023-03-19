@@ -44,6 +44,7 @@
 #include "OEDocumentDlg.h"
 #include <OESQLSettingsPage.h>
 #include "Query/QueryPanelWnd.h"
+#include <StyleMessageBox.h>
 #include <io.h>
 
 
@@ -660,30 +661,67 @@ void COEDocument::LoadSettingsManager()
   std::string templates = settingsdir + "templates.dat";
   std::string settings  = settingsdir + "settings.dat";
 
+  bool loaded(false);
+
   // Load language support
   if(_access(languages.c_str(),0) == 0)
   {
-    LanguagesCollectionReader(FileInStream(languages.c_str())) >> LanguagesCollection();
+    try
+    {
+      LanguagesCollectionReader(FileInStream(languages.c_str())) >> LanguagesCollection();
+      loaded = true;
+    }
+    catch(std::exception& /*ex*/)
+    {
+      // Incompatible settings from a previous version
+      DeleteFile(templates.c_str());
+      StyleMessageBox(NULL,CString("Incompatible languages from a previous version removed from your roaming-profile\n") + languages.c_str()
+                      ,"WARNING",MB_OK | MB_ICONWARNING);
+    }
   }
-  else
+  if(!loaded)
   {
     LanguagesCollectionReader(FileInStream((path + "\\data\\languages.dat").c_str())) >> LanguagesCollection();
   }
   // Load template settings
+  loaded = false;
   if(_access(templates.c_str(),0) == 0)
   {
-    TemplateCollectionReader(FileInStream(templates.c_str())) >> m_settingsManager;
+    try
+    {
+      TemplateCollectionReader(FileInStream(templates.c_str())) >> m_settingsManager;
+      loaded = true;
+    }
+    catch(std::exception& /*ex*/)
+    {
+      // Incompatible settings from a previous version
+      DeleteFile(templates.c_str());
+      StyleMessageBox(NULL,CString("Incompatible templates from a previous version removed from your roaming-profile\n") + templates.c_str()
+                      ,"WARNING",MB_OK | MB_ICONWARNING);
+    }
   }
-  else
+  if(!loaded)
   {
     TemplateCollectionReader(FileInStream((path + "\\data\\templates.dat").c_str())) >> m_settingsManager;
   }
   // Load editor settings
+  loaded = false;
   if(_access(settings.c_str(),0) == 0)
   {
-    SettingsManagerReader(FileInStream(settings.c_str())) >> m_settingsManager;
+    try
+    {
+      SettingsManagerReader(FileInStream(settings.c_str())) >> m_settingsManager;
+      loaded = true;
+    }
+    catch(std::exception& /*ex*/)
+    {
+      // Incompatible settings from a previous version
+      DeleteFile(settings.c_str());
+      StyleMessageBox(NULL,CString("Incompatible settings from a previous version removed from your roaming-profile\n") + settings.c_str()
+                     ,"WARNING",MB_OK|MB_ICONWARNING);
+    }
   }
-  else
+  if(!loaded)
   {
     SettingsManagerReader(FileInStream((path + "\\data\\settings.dat").c_str())) >> m_settingsManager;
   }

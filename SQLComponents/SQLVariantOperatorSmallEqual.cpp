@@ -940,7 +940,7 @@ static SQL_OperDoubleSmallEQNum(SQLVariant& p_left,SQLVariant& p_right)
 bool
 static SQL_OperBitSmallEQNum(SQLVariant& /*p_left*/,SQLVariant& p_right)
 {
-  return !p_right.GetAsBCD().IsNull();
+  return !p_right.GetAsBCD().IsZero();
 }
 
 bool

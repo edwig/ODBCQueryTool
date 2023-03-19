@@ -1444,7 +1444,7 @@ SQLVariant
 static SQL_OperBitAddNum(SQLVariant& p_left,SQLVariant& p_right)
 {
   bool num = false;
-  if(p_left.GetAsBit() || p_right.GetAsBCD().IsNull() == false)
+  if(p_left.GetAsBit() || p_right.GetAsBCD().IsZero() == false)
   {
     num = true;
   }

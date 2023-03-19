@@ -342,13 +342,12 @@ void FileInStream::read  (const string& name, bool& val)
     _ASSERTE(m_infile.good());
 }
 
-void FileInStream::validateEntryName (const string& name, const string& entryName)
+void FileInStream::validateEntryName(const string& name, const string& entryName)
 {
-    if (stricmp(m_sectionKey.Format(name).c_str(), entryName.c_str()))
-    {
-        _ASSERTE(0); 
-        throw std::exception("Unexpected entry in stream.");
-    }
+  if(stricmp(m_sectionKey.Format(name).c_str(), entryName.c_str()))
+  {
+    throw std::exception("Unexpected entry in stream.");
+  }
 }
 
 };//namespace OpenEditor

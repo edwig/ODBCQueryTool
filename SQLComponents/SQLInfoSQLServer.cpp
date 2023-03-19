@@ -2478,11 +2478,6 @@ SQLInfoSQLServer::GetPSMProcedureList(XString& p_schema) const
     "SELECT db_name() as catalog_name\n"
     "      ,s.name    as schema_name\n"
     "      ,o.name    as procedure_name\n"
-    "      ,CASE type\n"
-    "            WHEN 'P'  THEN 1\n"
-    "            WHEN 'FN' THEN 2\n"
-    "                      ELSE 3\n"
-    "       END as procedure_type\n"
     "  FROM sys.objects o\n"
     "       INNER JOIN sys.schemas s ON o.schema_id = s.schema_id\n"
     " WHERE type IN ('P','FN')\n";

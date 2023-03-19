@@ -604,7 +604,7 @@ static SQL_OperUBigSmallerBit(SQLVariant& p_left,SQLVariant& p_right)
 bool
 static SQL_OperNumSmallerBit(SQLVariant& p_left,SQLVariant& p_right)
 {
-  return p_left.GetAsBCD().IsNull() && p_right.GetAsBit() != 0;
+  return p_left.GetAsBCD().IsZero() && p_right.GetAsBit() != 0;
 }
 
 // SIGNED TINYINT
@@ -944,7 +944,7 @@ static SQL_OperDoubleSmallerNum(SQLVariant& p_left,SQLVariant& p_right)
 bool
 static SQL_OperBitSmallerNum(SQLVariant& p_left,SQLVariant& p_right)
 {
-  return p_left.GetAsBit() == 0 && !p_right.GetAsBCD().IsNull();
+  return p_left.GetAsBit() == 0 && !p_right.GetAsBCD().IsZero();
 }
 
 bool

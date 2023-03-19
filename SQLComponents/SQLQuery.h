@@ -388,6 +388,7 @@ SQLQuery::SetFetchPolicy(bool p_policy)
     m_hasLongColumns = 1;
   }
 }
+
 inline LOption
 SQLQuery::GetLengthOption()
 {

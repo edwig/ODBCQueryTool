@@ -603,7 +603,7 @@ static SQL_OperUBigGreaterBit(SQLVariant& p_left,SQLVariant& p_right)
 bool
 static SQL_OperNumGreaterBit(SQLVariant& p_left,SQLVariant& p_right)
 {
-  return !p_left.GetAsBCD().IsNull() && p_right.GetAsBit() == 0;
+  return !p_left.GetAsBCD().IsZero() && p_right.GetAsBit() == 0;
 }
 
 // SIGNED TINYINT

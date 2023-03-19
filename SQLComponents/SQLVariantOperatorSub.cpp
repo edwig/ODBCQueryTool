@@ -1429,7 +1429,7 @@ SQLVariant
 static SQL_OperBitSubNum(SQLVariant& p_left,SQLVariant& p_right)
 {
   bool num = false;
-  if(p_left.GetAsBit() && p_right.GetAsBCD().IsNull())
+  if(p_left.GetAsBit() && p_right.GetAsBCD().IsZero())
   {
     num = true;
   }
