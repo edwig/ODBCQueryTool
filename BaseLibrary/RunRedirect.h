@@ -29,7 +29,7 @@
 #include "Redirect.h"
 
 // Milliseconds wait loop
-#define WAITTIME_STATUS 25
+#define WAITTIME_STATUS 50
 
 #define WM_CONSOLE_TITLE (WM_USER + 1)
 #define WM_CONSOLE_TEXT  (WM_USER + 2)
@@ -41,6 +41,7 @@ int  CallProgram           (LPCSTR p_program,LPCSTR p_commandLine);
 int  CallProgram_For_String(LPCSTR p_program,LPCSTR p_commandLine,XString& p_result);
 int  CallProgram_For_String(LPCSTR p_program,LPCSTR p_commandLine,XString& p_result,int p_waittime);
 int  CallProgram_For_String(LPCSTR p_program,LPCSTR p_commandLine,LPCSTR p_stdInput,XString& p_result,int p_waittime);
+int  CallProgram_For_String(LPCSTR p_program,LPCSTR p_commandLine,LPCSTR p_stdInput,XString& p_result,XString& p_errors,int p_waittime);
 
 int  PosixCallProgram(XString  p_directory
                      ,XString  p_programma
@@ -71,6 +72,8 @@ public:
   virtual void OnChildTerminate() override;
   bool IsReady();
   bool IsEOF();
+  bool IsErrorEOF();
+  bool IsReadyAndEOF();
 
   HWND    m_console { NULL };
   bool    m_ready;
@@ -78,9 +81,5 @@ public:
   XString m_output;
   XString m_error;
 private:
-  void    Acquire();
-  void    Release();
   void    FlushStdIn();
-
-  CRITICAL_SECTION  m_criticalSection;
 };

@@ -22,6 +22,11 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes 3.2.3
+------------------
+- Fix for login dialog and the "production / development" switch
+- QueryRewriter no has knowledge of the 'UPDATE STATISTICS' statement
+
 Releasenotes 3.2.2
 ------------------
 - Fix for decimals in NUMERIC/DECIMAL datatypes. 

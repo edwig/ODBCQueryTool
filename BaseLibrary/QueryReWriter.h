@@ -64,6 +64,8 @@ enum class Token
  ,TK_HAVING 
  ,TK_INTO
  ,TK_UNION
+ ,TK_STATISTICS
+ ,TK_FOR
 };
 
 enum class SROption
