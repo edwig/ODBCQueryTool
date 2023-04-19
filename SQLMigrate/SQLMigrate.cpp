@@ -123,20 +123,19 @@ SQLMigrate::Migrate()
       {
         TruncateTables();
       }
-
       if(m_params.v_do_data)
       {
         switch(m_directMigration)
         {
-          case 0: // HIGH PERFORMANCE DATAPUMP 
-                  FillTablesViaPump(); 
-                  break;
-          case 1: // Fill database via SELECT/INSERT (Works always, but slower)
-                  FillTablesViaData(true);
-                  break;
-          case 2: // Fill Script files. Migrate later by running these scripts
-                  FillTablesViaData(false);
-                  break;
+          case MigrateType::DataPump:     // HIGH PERFORMANCE DATAPUMP 
+                                          FillTablesViaPump(); 
+                                          break;
+          case MigrateType::SelectInsert: // Fill database via SELECT/INSERT (Works always, but slower)
+                                          FillTablesViaData(true);
+                                          break;
+          case MigrateType::SQLScripts:   // Fill Script files. Migrate later by running these scripts
+                                          FillTablesViaData(false);
+                                          break;
         }
       }
     }
@@ -176,9 +175,18 @@ SQLMigrate::Migrate()
 void
 SQLMigrate::CheckMigrateParameters()
 {
-  XString create   = m_params.v_directory + "\\" + m_params.v_createscript;
-  XString dropping = m_params.v_directory + "\\" + m_params.v_dropscript;
-  XString logging  = m_params.v_directory + "\\" + "Logfile_" + m_params.v_target_schema + ".txt";
+  XString extra;
+  if(!m_params.v_table.IsEmpty())
+  {
+    extra = "Tables_" + m_params.v_table + "_";
+    extra.Remove('%');
+    extra.Remove('*');
+    extra.Remove('?');
+  }
+
+  XString create   = m_params.v_directory + "\\" + extra + "Create_"  + m_params.v_createscript;
+  XString dropping = m_params.v_directory + "\\" + extra + "Drop_"    + m_params.v_dropscript;
+  XString logging  = m_params.v_directory + "\\" + extra + "Logfile_" + m_params.v_target_schema + ".txt";
 
   m_log.SetScript(create);
   m_log.SetDropScript(dropping);
@@ -335,7 +343,12 @@ SQLMigrate::WriteMigrateParameters()
   else
   {
     // Ruler               "------------------- : "
-    m_log.WriteLog(XString("Direct migration    : ") + ((m_params.v_direct == 0) ? "Datapump" : "SELECT/INSERT"));
+    switch(m_params.v_direct)
+    {
+      case MigrateType::DataPump:     m_log.WriteLog("Direct migration    : DATAPUMP");       break;
+      case MigrateType::SelectInsert: m_log.WriteLog("Direct migration    : SELECT/INSERT");  break;
+      case MigrateType::SQLScripts:   m_log.WriteLog("Direct migration    : SQL-Scripts");    break;
+    }
   }
   if(!(m_params.v_allObjects == 0 && m_params.v_table == ""))
   {
@@ -589,7 +602,7 @@ SQLMigrate::CleanUpMigration()
   m_tables.clear();
 
   // Mark end in scripts (so we know we reached the end)
-  if(m_directMigration == 2)
+  if(m_directMigration == MigrateType::SQLScripts)
   {
     m_log.WriteDrop("-- End of script");
     m_log.WriteOut ("-- End of script");
@@ -630,7 +643,7 @@ SQLMigrate::DropTables()
   m_log.WriteLog(header1);
   m_log.WriteLog(header2);
 
-  if(m_directMigration == 2)
+  if(m_directMigration == MigrateType::SQLScripts)
   {
     m_log.WriteDrop(comment + header1);
     m_log.WriteDrop(comment + header2);
@@ -649,7 +662,8 @@ SQLMigrate::DropTables()
 
     // Process the statement
     m_log.WriteLog(statement);
-    if(m_directMigration < 2)
+    if(m_directMigration == MigrateType::DataPump ||
+       m_directMigration == MigrateType::SelectInsert)
     {
       try
       {
@@ -688,7 +702,7 @@ SQLMigrate::CreateTables()
   m_log.WriteLog(header1);
   m_log.WriteLog(header2);
 
-  if(m_directMigration == 2)
+  if(m_directMigration == MigrateType::SQLScripts)
   {
     m_log.WriteOut(comment + header1);
     m_log.WriteOut(comment + header2);
@@ -779,7 +793,8 @@ SQLMigrate::CreateTables()
     for(auto& statement : statements)
     {
       m_log.WriteLog(statement);
-      if(m_directMigration < 2)
+      if(m_directMigration == MigrateType::DataPump ||
+         m_directMigration == MigrateType::SelectInsert)
       {
         try
         {
@@ -1002,7 +1017,8 @@ SQLMigrate::CreateViews()
         statement.MakeLower();
       }
       m_log.WriteLog(statement);
-      if(m_directMigration < 2)
+      if(m_directMigration == MigrateType::DataPump ||
+         m_directMigration == MigrateType::SelectInsert)
       {
         try
         {
@@ -1057,7 +1073,7 @@ SQLMigrate::TruncateTables()
   m_log.WriteLog(header1);
   m_log.WriteLog(header2);
 
-  if(m_directMigration == 2)
+  if(m_directMigration == MigrateType::SQLScripts)
   {
     m_log.WriteOut(comment + header1);
     m_log.WriteOut(comment + header2);
@@ -1080,7 +1096,8 @@ SQLMigrate::TruncateTables()
     XString statement = "DELETE FROM " + table;
     // Process result
     m_log.WriteLog(statement);
-    if(m_directMigration < 2)
+    if(m_directMigration == MigrateType::DataPump ||
+       m_directMigration == MigrateType::SelectInsert)
     {
       try
       {
@@ -1487,6 +1504,11 @@ SQLMigrate::FillTablesViaData(bool p_process)
   XString comment("-- ");
   XString header1("TABLE CONTENTS MIGRATION TO INSERT SCRIPTS");
   XString header2("==========================================");
+
+  if(p_process)
+  {
+    header1 = "TABLE CONTENTS MIGRATION VIA SELECT/INSERT";
+  }
 
   m_log.WriteLog("");
   m_log.WriteLog(header1);

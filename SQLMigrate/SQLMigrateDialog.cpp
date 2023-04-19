@@ -39,7 +39,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-// Windows-shell taskbar list object for progresss
+// Windows-shell taskbar list object for progress
 const IID my_IID_ITaskbarList3 = {0xea1afb91, 0x9e28, 0x4b86, { 0x90, 0xe9, 0x9e, 0x9f, 0x8a, 0x5e, 0xef, 0xaf }};
 const IID my_CLSID_TaskbarList = {0x56fdf344, 0xfd6d, 0x11d0, { 0x95, 0x8a, 0x00, 0x60, 0x97, 0xc9, 0xa0, 0x90 }};
 static ITaskbarList3* ptbl = NULL;
@@ -67,6 +67,7 @@ SQLMigrateDialog::SQLMigrateDialog(CWnd* pParent)
   m_do_foreigns     = false;
   m_do_tables       = false;
   m_do_views        = false;
+  m_directMigration = MigrateType::DataPump;
 }
 
 SQLMigrateDialog::~SQLMigrateDialog()
@@ -98,7 +99,7 @@ SQLMigrateDialog::DoDataExchange(CDataExchange* pDX)
   DDX_Control (pDX, IDC_SOURCE_SCHEMA,   m_editSourcSchema,   m_sourceSchema);
   DDX_Control (pDX, IDC_TARGET_SCHEMA,   m_editTargetSchema,  m_targetSchema);
   // Migration
-  DDX_CBIndex (pDX, IDC_DIRECT_MIGRATION,m_comboDirectMigration,m_directMigration);
+  DDX_CBIndex (pDX, IDC_DIRECT_MIGRATION,m_comboDirectMigration,(int&)m_directMigration);
   DDX_Check   (pDX, IDC_ALLTABLES,       m_allTables);
   DDX_Check   (pDX, IDC_TOLOGFILE,       m_toLogfile);
   // Convert to file
@@ -108,7 +109,7 @@ SQLMigrateDialog::DoDataExchange(CDataExchange* pDX)
   // If only one table migration
   DDX_Control (pDX, IDC_TABLE,           m_editTable,         m_table);
   DDX_Control (pDX, IDC_TABLESPACE,      m_editTablespace,    m_tablespace);
-  DDX_Control (pDX, IDC_WHERE,          m_editWhere,         m_where);
+  DDX_Control (pDX, IDC_WHERE,           m_editWhere,         m_where);
   // Options
   DDX_Control (pDX, IDC_TOLOGFILE,       m_checkToLogfile);
   DDX_Control (pDX, IDC_ALLTABLES,       m_checkAllTables);
@@ -298,12 +299,15 @@ SQLMigrateDialog::OnAboutBox()
 void
 SQLMigrateDialog::InitTaskbar()
 {
-  CoInitialize(NULL);
-  HRESULT hr = CoCreateInstance(my_CLSID_TaskbarList,NULL,CLSCTX_ALL,my_IID_ITaskbarList3,(LPVOID*) &ptbl);
-  if(hr != S_OK)
+  HRESULT res = CoInitialize(NULL);
+  if(res == S_OK)
   {
-    // Fail silently
-    ptbl = nullptr;
+    HRESULT hr = CoCreateInstance(my_CLSID_TaskbarList,NULL,CLSCTX_ALL,my_IID_ITaskbarList3,(LPVOID*) &ptbl);
+    if(hr != S_OK)
+    {
+      // Fail silently
+      ptbl = nullptr;
+    }
   }
 }
 
@@ -364,9 +368,9 @@ SQLMigrateDialog::FindProfile()
     // absolute pathname
     LPCTSTR path = m_iniFile;
     char drive[_MAX_DRIVE];
-    char dir[_MAX_DIR];
+    char dir  [_MAX_DIR];
     char fname[_MAX_FNAME];
-    char ext[_MAX_EXT];
+    char ext  [_MAX_EXT];
     _splitpath_s(path,drive,_MAX_DRIVE,dir,_MAX_DIR,fname,_MAX_FNAME,ext,_MAX_EXT);
     workingDir = (XString) drive + (XString) dir;
     m_iniFile  = (XString) fname + (XString) ext;
@@ -409,8 +413,8 @@ SQLMigrateDialog::LoadProfile()
   // File
   GetPrivateProfileString("FILE","create",   "script.sql",    buffer,MAX_PATH,m_profile); m_createscript = buffer;
   GetPrivateProfileString("FILE","drop",     "dropscript.sql",buffer,MAX_PATH,m_profile); m_dropscript   = buffer;
-  m_directMigration = GetPrivateProfileInt("FILE", "direct",1,m_profile);
-  m_comboDirectMigration.SetCurSel(m_directMigration);
+  m_directMigration = (MigrateType) GetPrivateProfileInt("FILE", "direct",1,m_profile);
+  m_comboDirectMigration.SetCurSel((int)m_directMigration);
 
   // Tables
   GetPrivateProfileString("TABLE","table","",buffer,MAX_PATH,m_profile);  m_table = buffer;
@@ -822,12 +826,21 @@ SQLMigrateDialog::OnToLogfile()
 void
 SQLMigrateDialog::SetTableGauge(int num,int maxnum)
 {
+  static ULONGLONG clock = 0;
+
+  // Reduce flickering by repainting it only once a second
+  if(GetTickCount64() < (clock + 1000L))
+  {
+    return;
+  }
+  clock = GetTickCount64();
+
   // The MFC documentation states that the range is in the 32 bit range
   // @#! This is NOT the case. The maximum is 32768
   if(maxnum > 32000)
   {
     int max = (100 * maxnum) / 32000;
-    int pos = (max * num) / maxnum;
+    int pos = (100 * num)    / 32000;
     m_table_gauge.SetRange(0,(short)max);
     m_table_gauge.SetPos(pos);
   }
@@ -842,6 +855,8 @@ void
 SQLMigrateDialog::SetTablesGauge(int num,int maxnum)
 {
   // Show total gauge on the dialog
+  // In case this is bigger than 32768 tables we are in big trouble anyway
+  // so do not bother with calculations on the maximum
   m_tables_gauge.SetRange(0,(short)maxnum);
   m_tables_gauge.SetPos(num);
 
@@ -952,8 +967,8 @@ SQLMigrateDialog::HandleMessages()
   // Potentially we can have an endless loop here
   // so we limit the loop to a certain time frame
   MSG msg;
-  UINT ticks = GetTickCount();
-  while(GetTickCount() - ticks < 200 && (PeekMessage(&msg,NULL,WM_MOVE,WM_USER,PM_REMOVE)))
+  ULONGLONG ticks = GetTickCount64();
+  while((GetTickCount64() - ticks) < 200L && (PeekMessage(&msg,NULL,WM_MOVE,WM_USER,PM_REMOVE)))
   {
     try
     {
