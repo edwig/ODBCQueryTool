@@ -59,7 +59,7 @@ public:
   XString       m_sourceSchema;
   XString       m_targetSchema;
 
-  int           m_directMigration;
+  MigrateType   m_directMigration;
   XString       m_dropscript;
   XString       m_createscript;
 

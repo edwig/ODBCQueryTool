@@ -91,7 +91,7 @@ private:
   MigrateParameters m_params;
   Logging&          m_log;
 
-  int          m_directMigration { 0 };
+  MigrateType  m_directMigration { MigrateType::DataPump };
   int          m_totalTables     { 0 };
   clock_t      m_start           { 0 };
   SQLDatabase* m_databaseSource  { nullptr };

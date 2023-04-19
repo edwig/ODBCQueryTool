@@ -30,6 +30,13 @@
 namespace SQLComponents
 {
 
+enum class MigrateType
+{
+  DataPump        = 0
+ ,SelectInsert    = 1
+ ,SQLScripts      = 2
+};
+
 class MigrateParameters
 {
 public:
@@ -71,7 +78,7 @@ public:
   int     v_logLines        { 1000 };    // Logfile line per x lines
   XString v_where;                       // Extra where clause on the migration
   // Type of migration
-  int     v_direct          {    0 };    // direct migration into database (1) or via scripts (0)
+  MigrateType v_direct      { MigrateType::DataPump };    // direct migration into database 
   // Keep track of total
   int     v_errors          {    0 };    // Total number of errors
 };

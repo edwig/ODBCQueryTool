@@ -44,7 +44,7 @@ class Logging
 public:
   Logging();
  ~Logging();
-  int  Open();
+  int  Open(bool p_scripting);
   void Close();
   void WriteLog (XString message);
   void WriteOut (XString statement,bool p_delim = false);

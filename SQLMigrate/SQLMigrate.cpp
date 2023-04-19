@@ -184,7 +184,7 @@ SQLMigrate::CheckMigrateParameters()
   m_log.SetDropScript(dropping);
   m_log.SetLogfile(logging);
 
-  if (!m_log.Open())
+  if (!m_log.Open(m_params.v_direct == MigrateType::SQLScripts))
   {
     throw StdException("Cannot open a *.sql or *.txt file. File is read-only or no space left on file system!");
   }
@@ -205,7 +205,7 @@ SQLMigrate::CheckMigrateParameters()
   }
 
 
-  if(m_params.v_direct < 2) 
+  if(m_params.v_direct == MigrateType::DataPump || m_params.v_direct == MigrateType::SelectInsert) 
   {  
     // Check target database
     if(m_params.v_target_dsn =="")
@@ -224,7 +224,7 @@ SQLMigrate::CheckMigrateParameters()
     }
   }
 
-  if(m_params.v_direct == 2)
+  if(m_params.v_direct == MigrateType::SQLScripts)
   {
     if ( m_params.v_dropscript =="")
     {
@@ -299,7 +299,8 @@ SQLMigrate::WriteMigrateParameters()
   m_log.WriteLog(" ");
 
 
-  if(m_params.v_direct < 2)
+  if(m_params.v_direct == MigrateType::DataPump || 
+     m_params.v_direct == MigrateType::SelectInsert)
   {
     // Check target database
     if(!m_params.v_target_dsn.IsEmpty())
@@ -316,7 +317,7 @@ SQLMigrate::WriteMigrateParameters()
   }
   m_log.WriteLog("");
 
-  if(m_params.v_direct == 2)
+  if(m_params.v_direct == MigrateType::SQLScripts)
   {
     // Ruler       "-------------------- : "
     m_log.WriteLog("Direct migration     : No");

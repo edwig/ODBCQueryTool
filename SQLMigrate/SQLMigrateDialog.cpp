@@ -204,7 +204,7 @@ SQLMigrateDialog::OnInitDialog()
   // Set the defaults
   m_toLogfile           = 0;
   m_allTables           = 0;
-  m_parameters.v_direct = 0;
+  m_parameters.v_direct = MigrateType::DataPump;
 
   m_do_tables    = 1;
   m_do_data      = 1;
@@ -250,7 +250,7 @@ SQLMigrateDialog::StartFromCommandLine()
     {
       m_toLogfile = true;
       Logging log;
-      log.Open();
+      log.Open(false);
       log.WriteLog("Absolute or relative pathname to SQLMigrate.ini is NOT correct!");
       log.WriteLog("End of SQLMigrate.");
       log.Close();
@@ -759,26 +759,26 @@ SQLMigrateDialog::OnDirectMigration()
 {
   UpdateData();
 
-  if(m_directMigration == 0)
+  if(m_directMigration == MigrateType::DataPump)
   {
-    m_parameters.v_direct = 0;
+    m_parameters.v_direct = MigrateType::DataPump;
 
     m_editDropscript  .EnableWindow(FALSE);
     m_editCreatescript.EnableWindow(FALSE);
     // enable target database
     m_comboTargetDSN.EnableWindow(TRUE);
   }
-  else if(m_directMigration == 1)
+  else if(m_directMigration == MigrateType::SelectInsert)
   {
-    m_parameters.v_direct = 1;
+    m_parameters.v_direct = MigrateType::SelectInsert;
     m_editDropscript  .EnableWindow(FALSE);
     m_editCreatescript.EnableWindow(FALSE);
     // enable target database
     m_comboTargetDSN.EnableWindow(TRUE);
   } 
-  else if (m_directMigration == 2)
+  else if (m_directMigration == MigrateType::SQLScripts)
   {
-    m_parameters.v_direct = 2;
+    m_parameters.v_direct = MigrateType::SQLScripts;
     m_editDropscript  .EnableWindow(TRUE);
     m_editCreatescript.EnableWindow(TRUE);
     // disable target database

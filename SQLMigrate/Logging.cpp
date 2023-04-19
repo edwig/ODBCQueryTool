@@ -88,37 +88,45 @@ Logging::SetLogfile(XString p_logfile)
 // Try to open all log files in 'append' mode
 // If successful: close again
 int
-Logging::Open()
+Logging::Open(bool p_scripting)
 {
-  m_flog = _fsopen(m_logfile,   "a+",_SH_DENYWR);
-  m_fout = _fsopen(m_script,    "a+",_SH_DENYWR);
-  m_fdrop= _fsopen(m_dropscript,"a+",_SH_DENYWR);
-  if(m_flog == NULL || m_fout == NULL || m_fdrop == NULL)
+  // Always open standard logfile
+  m_flog = _fsopen(m_logfile,"a+",_SH_DENYWR);
+  if(m_flog == nullptr)
   {
     if(!m_flog)
     {
-      MessageBox(NULL
-                ,"No write access for file: " FILENAME_LOGFILE
-                ,"No access"
-                ,MB_OK | MB_ICONWARNING);
+      StyleMessageBox(nullptr
+                     ,"No write access for file: " FILENAME_LOGFILE
+                     ,"No access"
+                     ,MB_OK | MB_ICONWARNING);
+      return 0;
     }
-    if(!m_fout)
-    {
-      MessageBox(NULL
-                ,"No write access for file: " FILENAME_OUTPUT
-                ,"No Access"
-                ,MB_OK | MB_ICONWARNING);
-    }
-    if(!m_fdrop)
-    {
-      MessageBox(NULL
-                ,"No write access for file: " FILENAME_DROPFILE
-                ,"No Access"
-                ,MB_OK | MB_ICONWARNING);
-    }
-    return 0;
   }
-  // Close();
+  // If we do scripting: open the script files
+  if(p_scripting)
+  {
+    m_fout  = _fsopen(m_script,    "a+",_SH_DENYWR);
+    m_fdrop = _fsopen(m_dropscript,"a+",_SH_DENYWR);
+    if(m_fout == nullptr || m_fdrop == nullptr)
+    {
+      if(!m_fout)
+      {
+        StyleMessageBox(nullptr
+                       ,"No write access for file: " FILENAME_OUTPUT
+                       ,"No Access"
+                       ,MB_OK | MB_ICONWARNING);
+      }
+      if(!m_fdrop)
+      {
+        StyleMessageBox(nullptr
+                       ,"No write access for file: " FILENAME_DROPFILE
+                       ,"No Access"
+                       ,MB_OK | MB_ICONWARNING);
+      }
+      return 0;
+    }
+  }
   return 1;
 }
 
