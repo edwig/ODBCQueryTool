@@ -46,7 +46,6 @@ static ITaskbarList3* ptbl = NULL;
 
 SQLMigrateDialog::SQLMigrateDialog(CWnd* pParent)
                  :StyleDialog(SQLMigrateDialog::IDD, pParent)
-                 ,m_font(nullptr)
                  ,m_start(0L)
 {
   m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
@@ -72,10 +71,6 @@ SQLMigrateDialog::SQLMigrateDialog(CWnd* pParent)
 
 SQLMigrateDialog::~SQLMigrateDialog()
 {
-  if(m_font)
-  {
-    delete m_font;
-  }
 }
 
 void 
@@ -184,7 +179,7 @@ SQLMigrateDialog::OnInitDialog()
   SetComboBoxes();
 
   // Reset gauges
-  SetTableGauge(0,100);
+  SetTableGauge (0,100);
   SetTablesGauge(0,100);
 
   // Disable for now
@@ -192,10 +187,8 @@ SQLMigrateDialog::OnInitDialog()
   m_editWhere.EnableWindow(FALSE);
 
   // Set font of the log window
-  m_font = new CFont();
-  m_font->CreatePointFont(10,"Courier");
-  m_editLog.SetFont(m_font);
-  m_editLog.SetLimitText(0);
+  m_editLog.SetFontName("Courier new",100);
+  m_editLog.LimitText();
   m_editLog.SetMutable(false);
   // Set the buttons
   m_buttonDirectory.SetStyle("dir");
@@ -413,7 +406,7 @@ SQLMigrateDialog::LoadProfile()
   // File
   GetPrivateProfileString("FILE","create",   "script.sql",    buffer,MAX_PATH,m_profile); m_createscript = buffer;
   GetPrivateProfileString("FILE","drop",     "dropscript.sql",buffer,MAX_PATH,m_profile); m_dropscript   = buffer;
-  m_directMigration = (MigrateType) GetPrivateProfileInt("FILE", "direct",1,m_profile);
+  m_directMigration = (MigrateType) GetPrivateProfileInt("FILE", "direct",0,m_profile);
   m_comboDirectMigration.SetCurSel((int)m_directMigration);
 
   // Tables
@@ -839,10 +832,10 @@ SQLMigrateDialog::SetTableGauge(int num,int maxnum)
   // @#! This is NOT the case. The maximum is 32768
   if(maxnum > 32000)
   {
-    int max = (100 * maxnum) / 32000;
-    int pos = (100 * num)    / 32000;
+    int64 max = (100L * (int64) maxnum) / 32000L;
+    int64 pos = (100L * (int64) num)    / 32000L;
     m_table_gauge.SetRange(0,(short)max);
-    m_table_gauge.SetPos(pos);
+    m_table_gauge.SetPos((int) pos);
   }
   else
   {
@@ -903,19 +896,19 @@ SQLMigrateDialog::AddLogLine(XString msg)
   m_editLog.SetRedraw(FALSE);
 
   int cLines = m_editLog.GetLineCount();
+//   int nLastChar = (cLines ? m_editLog.LineIndex(cLines-1) : 0) + m_editLog.LineLength(cLines);
+//   cLines = m_editLog.GetLineCount();
+//   while(m_editLog.LineIndex(cLines-1) > 28000)
+//   {
+//     // If the number of lines in the edit box becomes to large (30.000 lines)
+//     // we must clear a few lines at the beginning
+//     int nFirstLine  = m_editLog.LineIndex(0);
+//     int nSecondLine = m_editLog.LineIndex(10);
+//     m_editLog.SetSel(nFirstLine, nSecondLine, TRUE /*NoScroll*/);
+//     m_editLog.ReplaceSel("");
+//     cLines = m_editLog.GetLineCount();
+//   }
   int nLastChar = (cLines ? m_editLog.LineIndex(cLines-1) : 0) + m_editLog.LineLength(cLines);
-  cLines = m_editLog.GetLineCount();
-  while(m_editLog.LineIndex(cLines-1) > 28000)
-  {
-    // If the number of lines in the edit box becomes to large (30.000 lines)
-    // we must clear a few lines at the beginning
-    int nFirstLine  = m_editLog.LineIndex(0);
-    int nSecondLine = m_editLog.LineIndex(10);
-    m_editLog.SetSel(nFirstLine, nSecondLine, TRUE /*NoScroll*/);
-    m_editLog.ReplaceSel("");
-    cLines = m_editLog.GetLineCount();
-  }
-  nLastChar = (cLines ? m_editLog.LineIndex(cLines-1) : 0) + m_editLog.LineLength(cLines);
   m_editLog.SetSel(nLastChar, nLastChar, TRUE);
 
   m_editLog.SetRedraw(TRUE);

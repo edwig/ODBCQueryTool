@@ -47,33 +47,28 @@ public:
 
   enum { IDD = IDD_MIGRATE_WIZARD};
 
-  XString       m_directory;
+  // IN PARAMETERS
   XString       m_sourceDSN;
   XString       m_sourceUser;
   XString       m_sourcePassword;
+  XString       m_sourceSchema;
+
   XString       m_sourceType;
+  
   XString       m_targetDSN;
   XString       m_targetUser;
   XString       m_targetPassword;
   XString       m_targetType;
-  XString       m_sourceSchema;
   XString       m_targetSchema;
 
-  MigrateType   m_directMigration;
+  XString       m_tablespace;
+  XString       m_table;
+
+  XString       m_directory;
   XString       m_dropscript;
   XString       m_createscript;
 
-  XString       m_tablespace;
-  XString       m_logPerRow;
-  XString       m_table;
-  XString       m_where;
-  XString       m_status;
-  XString       m_estimated;
-  XString       m_log;
-
-  BOOL          m_toLogfile;
   BOOL          m_allTables;
-
   BOOL          m_do_tables;
   BOOL          m_do_views;
   BOOL          m_do_data;
@@ -85,6 +80,15 @@ public:
   BOOL          m_do_sequences;
   BOOL          m_do_triggers;
   BOOL          m_do_access;
+
+  XString       m_where;
+  MigrateType   m_directMigration;
+
+  XString       m_logPerRow;
+  XString       m_status;
+  XString       m_estimated;
+  XString       m_log;
+  BOOL          m_toLogfile;
 
   // Controls
   StyleEdit     m_editDirectory;
@@ -179,7 +183,6 @@ protected:
   DECLARE_MESSAGE_MAP()
 
 private:
-  CFont*  m_font;
   XString m_profile;
 
   bool    m_exportRunning;

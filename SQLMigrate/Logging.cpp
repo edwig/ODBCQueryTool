@@ -168,13 +168,17 @@ Logging::WriteLog(XString message)
   SQLMigrateApp* appl   = (SQLMigrateApp*)AfxGetApp();
   SQLMigrateDialog* dlg = (SQLMigrateDialog*)(appl->m_pMainWnd);
 
+  bool tolog = true;
+
   if(dlg != nullptr)
   {
     dlg->AddLogLine(message);
     dlg->HandleMessages();
+    // User added/removed selection?
+    tolog = dlg->m_toLogfile;
   }
   // Write to logfile
-  if(dlg->m_toLogfile)
+  if(tolog)
   {
     if(m_flog == nullptr)
     {
@@ -251,8 +255,11 @@ Logging::SetTableGauge(int num,int maxnum)
 {
   SQLMigrateApp*   appl = (SQLMigrateApp *)AfxGetApp();
   SQLMigrateDialog *dlg = (SQLMigrateDialog *)(appl->m_pMainWnd);
-  dlg->SetTableGauge(num,maxnum);
-  dlg->HandleMessages();
+  if(dlg)
+  {
+    dlg->SetTableGauge(num,maxnum);
+    dlg->HandleMessages();
+  }
 }
 
 void 
@@ -260,8 +267,11 @@ Logging::SetTablesGauge(int num)
 {
   SQLMigrateApp*   appl = (SQLMigrateApp *)AfxGetApp();
   SQLMigrateDialog* dlg = (SQLMigrateDialog *)(appl->m_pMainWnd);
-  dlg->SetTablesGauge(num,m_tables);
-  dlg->HandleMessages();
+  if(dlg)
+  {
+    dlg->SetTablesGauge(num,m_tables);
+    dlg->HandleMessages();
+  }
 }
 
 void
@@ -269,7 +279,10 @@ Logging::SetStatus(XString status)
 {
   SQLMigrateApp*   appl = (SQLMigrateApp *)AfxGetApp();
   SQLMigrateDialog* dlg = (SQLMigrateDialog *)(appl->m_pMainWnd);
-  dlg->SetStatus(status);
-  WriteLog(status);
-  dlg->HandleMessages();
+  if(dlg)
+  {
+    dlg->SetStatus(status);
+    WriteLog(status);
+    dlg->HandleMessages();
+  }
 }
