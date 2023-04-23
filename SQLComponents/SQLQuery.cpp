@@ -1224,25 +1224,23 @@ SQLQuery::BindColumns()
   // TO BEGIN THE BINDING PROCES
   for(auto& column : m_numMap)
   {
-    SQLVariant* var = column.second;
+    SQLVariant*  var  = column.second;
+    SQLUSMALLINT bcol = (SQLUSMALLINT) var->GetColumnNumber();
+    SQLSMALLINT  type = (SQLSMALLINT)  var->GetDataType();
+    SQLLEN       size = var->GetDataSize();
 
-    // Bind columns who are not long-get-at-exec
-    // Even if they are behind such a column in ascending order
-    if(!var->GetAtExec())
+    // Rebind the column datatype
+    type = RebindColumn(type);
+
+    // Bind columns up to the first long column
+    if(m_hasLongColumns == 0 || bcol < m_hasLongColumns)
     {
-      SQLUSMALLINT bcol = (SQLUSMALLINT) var->GetColumnNumber();
-      SQLSMALLINT  type = (SQLSMALLINT) var->GetDataType();
-      SQLLEN       size = var->GetDataSize();
-
-      // Rebind the column datatype
-      type = RebindColumn(type);
-
       m_retCode = SQLBindCol(m_hstmt                    // statement handle
-                            ,bcol                       // Column number
-                            ,type                       // Data type
-                            ,var->GetDataPointer()      // Data pointer
-                            ,size                       // Buffer length
-                            ,var->GetIndicatorPointer() // Indicator address
+                             ,bcol                       // Column number
+                             ,type                       // Data type
+                             ,var->GetDataPointer()      // Data pointer
+                             ,size                       // Buffer length
+                             ,var->GetIndicatorPointer() // Indicator address
       );
       if(!SQL_SUCCEEDED(m_retCode))
       {
@@ -1254,6 +1252,20 @@ SQLQuery::BindColumns()
       if(type == SQL_C_NUMERIC)
       {
         BindColumnNumeric((SQLSMALLINT)bcol,var,SQL_RESULT_COL);
+      }
+    }
+    else
+    {
+      if(type == SQL_C_NUMERIC && 
+         m_database && ((m_database->GetSQLInfoDB()->GetGetDataExtensions() & SQL_GD_BOUND) == 0) && 
+         var->GetNumericScale() > 0 &&
+         !(var->GetNumericPrecision() == 38 && var->GetNumericScale() == 16))
+      {
+        // Cannot get a NUMERIC with decimals after a At-Exec column,
+        // because we cannot bind the precision and scale
+        m_lastError = "Cannot retrieve a NUMERIC after a (binary)large object.";
+        m_lastError.AppendFormat(" Column: %d",bcol);
+        throw StdException(m_lastError);
       }
     }
   }
@@ -1593,6 +1605,7 @@ SQLQuery::RetrieveAtExecData()
       // Actual data can be gotten in the standard buffer
       actualLength = var->GetDataSize();
     }
+
     // Now go get it
     m_retCode = SqlGetData(m_hstmt
                           ,(SQLUSMALLINT) col

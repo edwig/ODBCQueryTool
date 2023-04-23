@@ -2288,12 +2288,12 @@ SQLVariant::SetSizeIndicator(bool p_realSize,bool p_binary)
   {
     if(p_binary)
     {
-    // Special ODBC macro to set the data size
+      // Special ODBC macro to set the data size
       // SQL_BINARY
       // SQL_LONGVARCHAR
       // SQL_LONGVARBINARY
       // SQL_WLONGVARCHAR
-    m_indicator = (SQLLEN) SQL_LEN_DATA_AT_EXEC(size);
+      m_indicator = (SQLLEN) SQL_LEN_DATA_AT_EXEC(size);
     }
     else
     {

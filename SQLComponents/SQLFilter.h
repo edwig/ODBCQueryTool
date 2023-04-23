@@ -273,12 +273,6 @@ SQLFilter::GetTimestampPart()
   return m_extract.m_calcpart;
 }
 
-inline void
-SQLFilter::SetField2(XString p_field2)
-{
-  m_field2 = p_field2;
-}
-
 inline XString
 SQLFilter::GetField2()
 {

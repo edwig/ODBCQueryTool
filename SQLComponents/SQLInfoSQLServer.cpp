@@ -726,7 +726,7 @@ SQLInfoSQLServer::GetCATALOGTableAttributes(XString& p_schema,XString& p_tablena
     "                      ELSE 'UNKNOWN'\n"
     "       END AS table_type\n"
     "      ,CASE e.name\n"
-    "            WHEN N'MS_Description' THEN CAST (e.value AS VARCHAR(Max))\n"
+    "            WHEN N'MS_Description' THEN CAST (e.value AS VARCHAR(4000))\n"
     "            ELSE ''\n"
     "       END  AS remarks\n"
     "      ,null AS tablespace\n"

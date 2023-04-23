@@ -143,6 +143,20 @@ SQLFilter::SetField(XString p_field)
   return false;
 }
 
+void
+SQLFilter::SetField2(XString p_field2)
+{
+  int pos = p_field2.Find('@');
+  if(pos > 0)
+  {
+    m_field2 = p_field2.Mid(pos + 1);
+  }
+  else
+  {
+    m_field2 = p_field2;
+  }
+}
+
 // Adding an operator (if not yet set)
 bool
 SQLFilter::SetOperator(SQLOperator p_oper)

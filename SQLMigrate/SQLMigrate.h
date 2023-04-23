@@ -84,6 +84,8 @@ private:
 
   // Record missing records
   void     LogMissingRecord(SQLQuery& p_query,XString& p_error);
+  // Sort column on ascending size
+  MColumnMap SortColumnsBySize(MColumnMap& columns);
 
   typedef std::vector<XString> TablesMap;
 

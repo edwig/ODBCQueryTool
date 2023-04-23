@@ -808,10 +808,10 @@ SQLInfo::GetAttributeInteger(LPCTSTR description,SQLINTEGER attrib)
   SQLINTEGER cbMax = 0;
   
   SQLRETURN nRetCode = SQLGetConnectAttr(m_hdbc
-                              ,attrib
-                              ,(SQLPOINTER)&value
+                                        ,attrib
+                                        ,(SQLPOINTER)&value
                                         ,sizeof(value)
-                              ,&cbMax);
+                                        ,&cbMax);
   if(!m_database->Check(nRetCode))
   {
     XString error;

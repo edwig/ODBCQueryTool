@@ -1127,16 +1127,17 @@ InfoTree::DisplayConversion(HTREEITEM  item
 void
 InfoTree::MakeTreeODBCExtensions(HTREEITEM item)
 {
-  CString item_any   = "SQLGetData can only be called for unbound columns";
+  CString item_any   = "SQLGetData can only be called on columns AFTER the last bound column";
   CString item_order = "SQLGetData can only be called in ascending order";
-  CString item_block = "SQLGetData cannot be called for unbound columns in block cursors";
-  CString item_bound = "SQLGetData can only be called for unbound columns";
+  CString item_block = "SQLGetData can *NOT* be called for unbound columns in block cursors";
+  CString item_bound = "SQLGetData can *NOT* be called for bound columns";
+  CString item_param = "SQLGetData can *NOT* be called to retrieve output parameters";
 
   SQLUINTEGER getdata_extensions = m_info->GetGetDataExtensions();
 
   if(getdata_extensions & SQL_GD_ANY_COLUMN)
   {
-    item_any = "SQLGetData can be called for any bound/unbound column";
+    item_any = "SQLGetData can be called for ANY unbound column";
   }
   if(getdata_extensions & SQL_GD_ANY_ORDER)
   {
@@ -1150,10 +1151,15 @@ InfoTree::MakeTreeODBCExtensions(HTREEITEM item)
   {
     item_bound = "SQLGetData can be called for bound columns";
   }
+  if(getdata_extensions & SQL_GD_OUTPUT_PARAMS)
+  {
+    item_param = "SQLGetData can be called to retrieve output parameters";
+  }
   InsertItem(item_any,  item);
   InsertItem(item_order,item);
   InsertItem(item_block,item);
   InsertItem(item_bound,item);
+  InsertItem(item_param,item);
 }
 
 // All ODBC Functions to the tree

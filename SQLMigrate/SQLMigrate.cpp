@@ -843,7 +843,8 @@ SQLMigrate::OrderTableColumns(DDLCreateTable& p_create)
     return;
   }
 
-  MColumnMap columns;
+  // Order with largest columns on the end (CLOB's etc)
+  MColumnMap columns = SortColumnsBySize(p_create.m_columns);
 
   // Specials at the front in this order
   for(int index = 0; index < ((sizeof specials) / sizeof(const char*)); ++index)
@@ -1356,6 +1357,7 @@ SQLMigrate::MakeSelectStatement(XString& p_tabel,XString& p_user)
   XString    errors;
 
   m_databaseSource->GetSQLInfoDB()->MakeInfoTableColumns(columns,errors,p_user,p_tabel);
+  columns = SortColumnsBySize(columns);
   for(unsigned int regel = 0; regel < columns.size(); ++regel)
   {
     MetaColumn* info = &(columns[regel]);
@@ -1364,13 +1366,6 @@ SQLMigrate::MakeSelectStatement(XString& p_tabel,XString& p_user)
     {
       statement += ",";
     }
-    //     // DIRTY HACK!!
-    //     // NASTY CONVERSION OF INFORMIX INTERVAL columns
-    //     bool interval = _strnicmp(info->m_typename,"INTERVAL",8) == 0;
-    //     if(interval)
-    //     {
-    //       statement += XString("TRIM(") + info->m_column + "||\'\') as ";
-    //     }
     XString column = info->m_column;
     if(m_databaseSource->GetSQLInfoDB()->GetRDBMSDatabaseType() == DatabaseType::RDBMS_SQLSERVER)
     {
@@ -1413,6 +1408,7 @@ SQLMigrate::MakeInsertStatement(XString& p_tabel,XString& p_user,XString& p_doel
   statement += target->GetSQLDDLIdentifier(p_tabel) + " (";
 
   m_databaseSource->GetSQLInfoDB()->MakeInfoTableColumns(columns,errors,p_user,p_tabel);
+  columns = SortColumnsBySize(columns);
   for(unsigned int regel = 0; regel < columns.size(); ++regel)
   {
     MetaColumn* info = &(columns[regel]);
@@ -1546,6 +1542,7 @@ SQLMigrate::FillTablesViaData(bool p_process)
       MColumnMap columns;
 
       m_databaseSource->GetSQLInfoDB()->MakeInfoTableColumns(columns,errors,m_params.v_source_schema,table);
+      columns = SortColumnsBySize(columns);
 
       totalrows = CountTableContents(m_params.v_source_user,table);
       if(totalrows)
@@ -1668,6 +1665,33 @@ SQLMigrate::MakeInsertDataStatement(XString& p_table,XString& p_target_schema,SQ
   statement += ") VALUES (" + data + ")";
   return statement;
 }
+
+// Sort column on ascending size
+MColumnMap 
+SQLMigrate::SortColumnsBySize(MColumnMap& columns)
+{
+  MColumnMap sorted;
+
+  while(!columns.empty())
+  {
+    int shortest = INT_MAX;
+    MColumnMap::iterator found = columns.begin();
+    for(MColumnMap::iterator it = columns.begin();it != columns.end();++it)
+    {
+      if(it->m_columnSize < shortest)
+      {
+        shortest = it->m_columnSize;
+        found    = it;
+      }
+    }
+
+    sorted.push_back(*found);
+    columns.erase(found);
+  }
+
+  return sorted;
+}
+
 
 XString
 SQLMigrate::VariantToInsertString(SQLVariant* p_var,int p_datatype)
