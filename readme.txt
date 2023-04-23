@@ -22,6 +22,10 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes 3.2.4
+------------------
+- At-Exec data at the end of a SELECT, or no NUMERIC columns
+
 Releasenotes 3.2.3
 ------------------
 - Fix for login dialog and the "production / development" switch
