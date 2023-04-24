@@ -1229,44 +1229,31 @@ SQLQuery::BindColumns()
     SQLSMALLINT  type = (SQLSMALLINT)  var->GetDataType();
     SQLLEN       size = var->GetDataSize();
 
+    // Bind columns up to the first long column
+    if(m_hasLongColumns > 0 && bcol >= m_hasLongColumns)
+    {
+      break;
+    }
     // Rebind the column datatype
     type = RebindColumn(type);
 
-    // Bind columns up to the first long column
-    if(m_hasLongColumns == 0 || bcol < m_hasLongColumns)
+    m_retCode = SQLBindCol(m_hstmt                    // statement handle
+                          ,bcol                       // Column number
+                          ,type                       // Data type
+                          ,var->GetDataPointer()      // Data pointer
+                          ,size                       // Buffer length
+                          ,var->GetIndicatorPointer() // Indicator address
+    );
+    if(!SQL_SUCCEEDED(m_retCode))
     {
-      m_retCode = SQLBindCol(m_hstmt                    // statement handle
-                             ,bcol                       // Column number
-                             ,type                       // Data type
-                             ,var->GetDataPointer()      // Data pointer
-                             ,size                       // Buffer length
-                             ,var->GetIndicatorPointer() // Indicator address
-      );
-      if(!SQL_SUCCEEDED(m_retCode))
-      {
-        GetLastError("Cannot bind to column. Error: ");
-        m_lastError.AppendFormat(" Column number: %d",icol);
-        throw StdException(m_lastError);
-      }
-      // Now do the SQL_NUMERIC precision/scale binding
-      if(type == SQL_C_NUMERIC)
-      {
-        BindColumnNumeric((SQLSMALLINT)bcol,var,SQL_RESULT_COL);
-      }
+      GetLastError("Cannot bind to column. Error: ");
+      m_lastError.AppendFormat(" Column number: %d",icol);
+      throw StdException(m_lastError);
     }
-    else
+    // Now do the SQL_NUMERIC precision/scale binding
+    if(type == SQL_C_NUMERIC)
     {
-      if(type == SQL_C_NUMERIC && 
-         m_database && ((m_database->GetSQLInfoDB()->GetGetDataExtensions() & SQL_GD_BOUND) == 0) && 
-         var->GetNumericScale() > 0 &&
-         !(var->GetNumericPrecision() == 38 && var->GetNumericScale() == 16))
-      {
-        // Cannot get a NUMERIC with decimals after a At-Exec column,
-        // because we cannot bind the precision and scale
-        m_lastError = "Cannot retrieve a NUMERIC after a (binary)large object.";
-        m_lastError.AppendFormat(" Column: %d",bcol);
-        throw StdException(m_lastError);
-      }
+      BindColumnNumeric((SQLSMALLINT)bcol,var,SQL_RESULT_COL);
     }
   }
 }
@@ -1606,13 +1593,26 @@ SQLQuery::RetrieveAtExecData()
       actualLength = var->GetDataSize();
     }
 
-    // Now go get it
-    m_retCode = SqlGetData(m_hstmt
-                          ,(SQLUSMALLINT) col
-                          ,(SQLUSMALLINT) datatype
-                          ,(SQLPOINTER)   var->GetDataPointer()
-                          ,(SQLINTEGER)   actualLength
-                          ,(SQLLEN*)      var->GetIndicatorPointer());
+    if(datatype == SQL_C_NUMERIC)
+    {
+      // Numeric decimals cannot be set by binding
+      // so we deliberately convert it to a string to circumvent the problem
+      char number[60];
+      m_retCode = SqlGetData(m_hstmt,(SQLUSMALLINT)col,SQL_CHAR,number,60,0);
+      var->SetData(SQL_C_NUMERIC,number);
+    }
+    else
+    {
+      // Now go get all other datatypes directly
+      // streaming data need no longer be gotten in parts on modern MS-Windows OS
+      // as there is no 64K limit any more, so we get the column in one go!
+      m_retCode = SqlGetData(m_hstmt
+                            ,(SQLUSMALLINT) col
+                            ,(SQLUSMALLINT) datatype
+                            ,(SQLPOINTER)   var->GetDataPointer()
+                            ,(SQLINTEGER)   actualLength
+                            ,(SQLLEN*)      var->GetIndicatorPointer());
+    }
     if(!SQL_SUCCEEDED(m_retCode))
     {
       // SQL_ERROR / SQL_NO_DATA / SQL_STILL_EXECUTING / SQL_INVALID_HANDLE
