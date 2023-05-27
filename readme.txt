@@ -22,6 +22,20 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes 3.3.0
+------------------
+In this release the free 'odbc-connection-string' feature is implemented (at last). 
+Connections can have the combination of "datasource" / "user" / "password". 
+Or a free connection string. In the latter case, only the 'datasource' name is
+stored for the connection.
+
+Optionally you can leave out the user name and/or the password name if a datasource 
+does not require these for security reasons. An MS-Access database or the MS-Excel ODBC driver 
+are examples of these.
+
+There is a new button "Connection string" on the connection dialog, or you can use the 
+'Details' button to fill in a connection string to your liking.
+
 Releasenotes 3.2.4
 ------------------
 - At-Exec data at the end of a SELECT, or no NUMERIC columns
