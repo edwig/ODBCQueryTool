@@ -258,6 +258,7 @@ copy $(SolutionDir)\Data\*.*  $(OutDir)\Data\</Command>
     <ClInclude Include="Common\VisualAttributesPage.h" />
     <ClInclude Include="ConnectionBar.h" />
     <ClInclude Include="ConnectionDlg.h" />
+    <ClInclude Include="ConnStringDlg.h" />
     <ClInclude Include="DonateDlg.h" />
     <ClInclude Include="FileWatch.h" />
     <ClInclude Include="framework.h" />
@@ -359,6 +360,7 @@ copy $(SolutionDir)\Data\*.*  $(OutDir)\Data\</Command>
     <ClCompile Include="Common\VisualAttributesPage.cpp" />
     <ClCompile Include="ConnectionBar.cpp" />
     <ClCompile Include="ConnectionDlg.cpp" />
+    <ClCompile Include="ConnStringDlg.cpp" />
     <ClCompile Include="DonateDlg.cpp" />
     <ClCompile Include="FileWatch.cpp" />
     <ClCompile Include="GridControl\MGridCell.cpp" />

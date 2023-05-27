@@ -820,6 +820,7 @@ SQLInfo::GetAttributeInteger(LPCTSTR description,SQLINTEGER attrib)
     XString state = m_database->GetSQLState();
     if(state.CompareNoCase("S1C00") == 0 || // Driver not capable
        state.CompareNoCase("S1092") == 0 || // Option-id not supported on your database
+       state.CompareNoCase("HY092") == 0 || // Invalid attribute for this driver
        state.CompareNoCase("HYC00") == 0 )  // Optional feature not implemented
     {
       // Driver not capable to get/set this attribute

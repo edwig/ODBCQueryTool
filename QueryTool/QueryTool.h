@@ -29,6 +29,8 @@
 #include <SQLTransaction.h>
 #include <SQLQuery.h>
 
+using namespace SQLComponents;
+
 // QueryToolApp:
 // See QueryTool.cpp for the implementation of this class
 //
@@ -44,6 +46,7 @@ public:
 	virtual BOOL  InitInstance() override;
 	virtual int   ExitInstance() override;
   virtual BOOL  SaveAllModified() override;
+  virtual int   DoMessageBox(LPCTSTR lpszPrompt,UINT nType,UINT nIDPrompt) override;
 
   void          DoFileSaveAll(bool silent, bool skipNew);
   BOOL          AllowThisInstance();
@@ -62,9 +65,6 @@ public:
   CString       FindNativeSQL(CString& command);
   void          ReportCapabilities();
   void          SetTitle(CString p_document);
-
-  // General message box
-  int           DoMessageBox(LPCTSTR lpszPrompt, UINT nType, UINT nIDPrompt);
 
   // Implementation
 	UINT    m_nAppLook;
@@ -104,7 +104,6 @@ private:
   void    UpdateAccelAndMenu();
   void    RefreshODBCPanels();
   CString GetExeDirectory(void);
-  bool    ParseConnectString();
   bool    AppStarted25Times();
 
   mutable SQLDatabase     m_database;
@@ -112,12 +111,15 @@ private:
   mutable CString         m_user;
   mutable CString         m_password;
   mutable CString         m_datasource;
+  mutable CString         m_connString;
+  mutable bool            m_useConnString;
+  mutable bool            m_optionalUser;
+  mutable bool            m_optionalPassword;
   mutable bool            m_savePassword;
   mutable bool            m_safty;
   mutable bool            m_isClosing;
   mutable VarMap          m_variables;
   mutable RebindMap       m_rebinds;
-  mutable CString         m_connectString;
 
   HANDLE m_hMutex;
 };

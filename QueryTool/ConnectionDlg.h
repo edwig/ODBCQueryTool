@@ -17,7 +17,10 @@
 */
 
 #pragma once
-#include "SQLDatabase.h"
+#include <StyleFramework.h>
+#include <SQLDatabase.h>
+
+using namespace SQLComponents;
 
 // Timeout and net wait defaults
 #define DEFAULT_LOGIN_TIMEOUT 15    // seconds to before fail on connect
@@ -28,51 +31,71 @@ class ConnectionDlg : public StyleDialog
   // Construction
 public:
 	 ConnectionDlg(CWnd* pParent = NULL);   // standard constructor
-  ~ConnectionDlg();      // Standard destructor
+   virtual ~ConnectionDlg();      // Standard destructor
 
   // Dialog Data
 	enum { IDD = IDD_CONNECT };
 
-  void SetLogin(bool    moment
-               ,CString user
-               ,CString password
-               ,CString datasource
-               ,bool    safty);
-  bool    SetDataConnector(SQLDatabase* database);
-  CString GetUser()       { return m_user;       };
-  CString GetPassword()   { return m_password;   };
-  CString GetDataSource() { return m_datasource; };
-  bool    GetSafty()      { return m_safty;      };
+  void SetLogin(bool    p_moment
+               ,CString p_user
+               ,CString p_password
+               ,CString p_datasource
+               ,bool    p_safty
+               ,CString p_connString
+               ,bool    p_useConnString
+               ,bool    p_optionalUser
+               ,bool    p_optionalPassword);
+  bool    SetDataConnector(SQLDatabase* database,bool p_open = true);
+
+  CString GetUser()             { return m_user;        }
+  CString GetPassword()         { return m_password;    }
+  CString GetDataSource()       { return m_datasource;  }
+  bool    GetSafty()            { return m_safty;       }
+  CString GetConnString()       { return m_connString;  }
+  bool    GetUseConnString()    { return m_myConnect;   }
+  bool    GetOptionalUser()     { return m_optUser;     }
+  bool    GetOptionalPassword() { return m_optPassword; }
 
   // Overrides
 	// ClassWizard generated virtual function override
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-  virtual BOOL OnInitDialog();
-  virtual void OnOK();
-  virtual void OnSimple();
-  virtual void OnDead();
-  virtual void OnQuiet();
-  virtual void OnAutoIPD();
-  virtual void OnFieldUpdate();
-  virtual void OnApplyBefore();
-  virtual void OnApplyAfter();
-  virtual void OnTracing();
-  virtual void OnButtonTracefile();
-  virtual void OnButtonDSNFile();
-  virtual void OnButtonDSNSave();
-  virtual void OnButtonTranslib();
+  virtual void DoDataExchange(CDataExchange* pDX) override;
+  virtual BOOL OnInitDialog() override;
+
+  afx_msg void OnOK();
+  afx_msg void OnCancel();
+  afx_msg void OnDead();
+  afx_msg void OnQuiet();
+  afx_msg void OnAutoIPD();
+  afx_msg void OnDatasource();
+  afx_msg void OnFieldUpdate();
+  afx_msg void OnApplyBefore();
+  afx_msg void OnApplyAfter();
+  afx_msg void OnTracing();
+  afx_msg void OnButtonTracefile();
+  afx_msg void OnButtonDSNFile();
+  afx_msg void OnButtonDSNSave();
+  afx_msg void OnButtonTranslib();
+  afx_msg void OnMyConnect();
+  afx_msg void OnOptUser();
+  afx_msg void OnOptPassword();
 
   // Implementation
 protected:
 
+  // To be done after a screen update
+  void    SetControls2Data();
+  void    SetData2Controls();
   // Make a connection
-  bool Connect();
+  bool    Connect();
   // Set controls read-only read-write
-  void SetDialogControls();
-  void GetConnectionAttributes();
+  void    SetDialogControls();
+  void    GetConnectionAttributes();
   // Get the directory for DSN files from the registry
   CString GetDSNDirectory();
+  void    FillDatasource();
+  // Check the input for correctness
+  bool    CheckInput();
 
   // Generated message map functions
 	//{{AFX_MSG(MultConnectionsDlg)
@@ -86,17 +109,22 @@ private:
   CString   m_password;
   CString   m_datasource;
   bool      m_safty;
+  CString   m_connString;
   CString   m_catalog;          // Static attribute
+  bool      m_myConnect;
+  bool      m_optUser;
+  bool      m_optPassword;
 
   StyleComboBox m_comboDatasource;
   StyleEdit     m_editUser;
   StyleEdit     m_editPassword;
   StyleComboBox m_comboSafty;
-  StyleComboBox m_comboDriver;
+  StyleEdit     m_editConnString;
   StyleEdit     m_editFileDsn;
   StyleButton   m_buttonFileDsn;
   StyleEdit     m_editFileDsnSave;
   StyleButton   m_buttonFileDsnSave;
+  StyleCheckbox m_checkMyConnect;
   StyleCheckbox m_checkOptUser;
   StyleCheckbox m_checkPassword;
   StyleCheckbox m_checkTraceConn;
@@ -110,7 +138,6 @@ private:
   StyleComboBox m_comboCursor;
   StyleEdit     m_editTransOption;
   StyleComboBox m_comboIsolation;
-  StyleButton   m_buttonRDBMS;
   StyleEdit     m_editPacketSize;
   StyleCheckbox m_checkReadonly;
   StyleCheckbox m_checkDeadConnection;
@@ -127,7 +154,7 @@ private:
   // Connection status
   bool    m_readOnly;         // Read-only status
   bool    m_readOnlyApply;    // Must re-apply it
-  bool    m_connDead;         // Connection is dead (not updatable)
+  bool    m_connDead;         // Connection is dead (not Updatable)
   bool    m_tracing;          // Do tracing
   bool    m_tracingApply;     // Must reapply it
   CString m_traceFile;        // File to trace to
@@ -137,7 +164,7 @@ private:
   CString m_fileDSNSave;      // Saved DSN file after success
   bool    m_fileDSNSaveApply; // Reapply
   CString m_strLoginTimeout;
-  int     m_loginTimeout;     // Timout at login (default = 15)
+  int     m_loginTimeout;     // Timeout at login (default = 15)
   bool    m_loginTimeoutApply;// Reapply
   CString m_strConnTimeout;
   int     m_connTimeout;      // Timeout at connection level (default = 0)

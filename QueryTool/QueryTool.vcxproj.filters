@@ -345,6 +345,9 @@
     <ClInclude Include="DonateDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ConnStringDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="QueryTool.cpp">
@@ -663,6 +666,9 @@
       <Filter>Query</Filter>
     </ClCompile>
     <ClCompile Include="DonateDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ConnStringDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

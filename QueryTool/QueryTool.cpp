@@ -452,7 +452,7 @@ BOOL QueryToolApp::InitInstance()
 	  pMainFrame->UpdateWindow();
 
     pMainFrame->SetConnectionText((CString)"No connection");
-    if (m_connectString.IsEmpty())
+    if (m_connString.IsEmpty())
     {
       // Go find a connection after we start
       pMainFrame->PostMessage(WM_COMMAND,ID_ODBC_CONNECT,0);
@@ -461,12 +461,12 @@ BOOL QueryToolApp::InitInstance()
         pMainFrame->PostMessage(WM_COMMAND,ID_DONATION,0);
       }
     }
-    else if(ParseConnectString())
+    else
     {
-      bool open = OpenDatabaseConnectie();
-      UpdateDatabaseConnector();
-      if (open)
+      if(OpenDatabaseConnectie())
       {
+        UpdateDatabaseConnector();
+        RefreshODBCPanels();
         // Execute the script as soon as we can do this
         PostMessage(pMainFrame->GetSafeHwnd(),WM_COMMAND,ID_SCRIPT_EXECUTE,0);
       }
@@ -497,7 +497,7 @@ int QueryToolApp::ExitInstance()
 BOOL
 QueryToolApp::ParseODBCCommandLine()
 {
-  m_connectString = "";
+  m_connString = "";
   for (int i = 1; i < __argc; i++)
   {
     LPCSTR lpszParam = __argv[i];
@@ -506,7 +506,7 @@ QueryToolApp::ParseODBCCommandLine()
     {
       if (_strnicmp(&lpszParam[1], "CONNECT:", 8) == 0)
       {
-        m_connectString = &lpszParam[9];
+        m_connString = &lpszParam[9];
       }
     }
   }
@@ -733,7 +733,15 @@ void
 QueryToolApp::OnSessionStatus()
 {
   ConnectionDlg connect;
-  connect.SetLogin(true,m_user,m_password,m_datasource,m_safty);
+  connect.SetLogin(m_database.IsOpen()
+                  ,m_user
+                  ,m_password
+                  ,m_datasource
+                  ,m_safty
+                  ,m_connString
+                  ,m_useConnString
+                  ,m_optionalUser
+                  ,m_optionalPassword);
   connect.SetDataConnector(&m_database);
   connect.DoModal();
 }
@@ -745,9 +753,13 @@ QueryToolApp::UpdateDatabaseConnector()
   if(DatabaseIsOpen())
   {
     // OK, It's connected
-    CString conText;
-    conText.Format("%s@%s", m_user, m_datasource);
-    if (m_safty)
+    CString conText(m_user);
+    if(!m_user.IsEmpty())
+    {
+      conText += "@";
+    }
+    conText += m_datasource;
+    if(m_safty)
     {
       conText += " (safe)";
     }
@@ -775,51 +787,93 @@ QueryToolApp::OnConnect()
     return;
   }
   INT_PTR result = 0;
+
   while(result != IDCANCEL)
   {
+    MultConnectionsDlg* multConnect = new MultConnectionsDlg();
+
     // Simple connection
-    MultConnectionsDlg connection;
-    result = connection.DoModal();
+    result = multConnect->DoModal();
 
     if(result == IDOK)
     {
-      m_user          = connection.GetUser();
-      m_password      = connection.GetPassword();
-      m_datasource    = connection.GetDataSource();
-      m_safty         = connection.GetSafty();
+      m_user              = multConnect->GetUser();
+      m_password          = multConnect->GetPassword();
+      m_datasource        = multConnect->GetDataSource();
+      m_safty             = multConnect->GetSafty();
+      m_connString        = multConnect->GetConnString();
+      m_useConnString     = multConnect->GetUseConnString();
+      m_optionalUser      = multConnect->GetOptionalUser();
+      m_optionalPassword  = multConnect->GetOptionalPassword();
 
-      OpenDatabaseConnectie();
-      UpdateDatabaseConnector();
-      // Refresh the ODBC info
-      RefreshODBCPanels();
-      return;
-    }
-    if(result == IDC_CON_DETAILS)
-    {
-      ConnectionDlg connect;
-      connect.SetLogin(false  // Pre-logon
-                      ,connection.GetUser()
-                      ,connection.GetPassword()
-                      ,connection.GetDataSource()
-                      ,connection.GetSafty());
-      if(connect.SetDataConnector(&m_database))
+      if(OpenDatabaseConnectie())
       {
-        result = connect.DoModal();
-        if(result == IDOK)
-        {
-          m_user = connect.GetUser();
-          m_password = connect.GetPassword();
-          m_datasource = connect.GetDataSource();
-          m_safty = connect.GetSafty();
-          UpdateDatabaseConnector();
-          return;
-        }
+        UpdateDatabaseConnector();
+        RefreshODBCPanels();
+        delete multConnect;
+        break;
       }
       else
       {
-        AfxMessageBox("Cannot open database. Provide correct user/password details",MB_OK | MB_ICONERROR);
+        result = 0;
       }
     }
+    else if(result == IDC_CON_DETAILS)
+    {
+      ConnectionDlg* connection = new ConnectionDlg();
+
+      connection->SetLogin(false  // Pre-logon
+                          ,multConnect->GetUser()
+                          ,multConnect->GetPassword()
+                          ,multConnect->GetDataSource()
+                          ,multConnect->GetSafty()
+                          ,multConnect->GetConnString()
+                          ,multConnect->GetUseConnString()
+                          ,multConnect->GetOptionalUser()
+                          ,multConnect->GetOptionalPassword());
+      connection->SetDataConnector(&m_database,false);
+      result = connection->DoModal();
+      if(result == IDOK)
+      {
+        m_user              = connection->GetUser();
+        m_password          = connection->GetPassword();
+        m_datasource        = connection->GetDataSource();
+        m_safty             = connection->GetSafty();
+        m_connString        = connection->GetConnString();
+        m_useConnString     = connection->GetUseConnString();
+        m_optionalUser      = connection->GetOptionalUser();
+        m_optionalPassword  = connection->GetOptionalPassword();
+
+        if(OpenDatabaseConnectie())
+        {
+          UpdateDatabaseConnector();
+          RefreshODBCPanels();
+
+          // And save the successful login
+          multConnect->SaveSettings(m_datasource
+                                   ,m_user
+                                   ,m_password
+                                   ,m_safty
+                                   ,m_connString
+                                   ,m_useConnString
+                                   ,m_optionalUser
+                                   ,m_optionalPassword);
+          delete multConnect;
+          delete connection;
+          break;
+        }
+        else
+        {
+          result = 0;
+        }
+      }
+      if(!result)
+      {
+        AfxMessageBox("Cannot open database. Provide correct user/password details",MB_OK | MB_ICONERROR);
+      }
+      delete connection;
+    }
+    delete multConnect;
   }
 }
 
@@ -907,7 +961,7 @@ QueryToolApp::OnODBCCommit()
 {
   if (!m_database.IsOpen())
   {
-    AfxMessageBox("BEGIN: There is no current connection to a database", MB_OK | MB_ICONEXCLAMATION);
+    AfxMessageBox("COMMIT: There is no current connection to a database", MB_OK | MB_ICONEXCLAMATION);
     return;
   }
   if (m_transaction)
@@ -923,7 +977,7 @@ QueryToolApp::OnODBCRollback()
 {
   if (!m_database.IsOpen())
   {
-    AfxMessageBox("BEGIN: There is no current connection to a database", MB_OK | MB_ICONEXCLAMATION);
+    AfxMessageBox("ROLLBACK: There is no current connection to a database", MB_OK | MB_ICONEXCLAMATION);
     return;
   }
   if (m_transaction)
@@ -1035,82 +1089,37 @@ QueryToolApp::GetDatabase()
   return m_database;
 }
 
-bool
-QueryToolApp::ParseConnectString()
-{
-  int pos = 0;
-  CString temp;
-  m_datasource = "";
-  m_user       = "";
-  m_password   = "";
-  
-  // Datasource name
-  pos = m_connectString.Find("DSN=");
-  if(pos >= 0)
-  {
-    temp = m_connectString.Mid(pos + 4);
-    pos  = temp.Find(';');
-    if(pos > 0)
-    {
-      m_datasource = temp.Left(pos);
-    }
-    else
-    {
-      m_datasource = temp;
-    }
-  }
-  // Username
-  pos = m_connectString.Find("UID=");
-  if(pos >= 0)
-  {
-    temp = m_connectString.Mid(pos + 4);
-    pos  = temp.Find(';');
-    if(pos > 0)
-    {
-      m_user = temp.Left(pos);
-    }
-    else
-    {
-      m_user = temp;
-    }
-  }
-  // Password
-  pos = m_connectString.Find("PWD=");
-  if(pos >= 0)
-  {
-    temp = m_connectString.Mid(pos + 4);
-    pos  = temp.Find(';');
-    if(pos > 0)
-    {
-      m_password = temp.Left(pos);
-    }
-    else
-    {
-      m_password = temp;
-    }
-  }
-  if(!m_datasource.IsEmpty() && !m_user.IsEmpty() && !m_password.IsEmpty())
-  {
-    return true;
-  }
-  return false;
-}
-
 // Creating and opening a database (m_database)
 bool
 QueryToolApp::OpenDatabaseConnectie()
 {
+  // See if we have something to do
+  if(m_database.IsOpen())
+  {
+    return true;
+  }
   bool didError = false;
+  CString errorMessage;
   CString connectStr;
-  connectStr += "DSN=";
-  connectStr += m_datasource;
-  connectStr += ";UID=";
-  connectStr += m_user;
-  connectStr += ";PWD=";
-  connectStr += m_password;
-  char buffer[1024];
+
+  if(m_connString.IsEmpty())
+  {
+    // Standard ODBC connection string
+    connectStr += "DSN=";
+    connectStr += m_datasource;
+    connectStr += ";UID=";
+    connectStr += m_user;
+    connectStr += ";PWD=";
+    connectStr += m_password;
+  }
+  else
+  {
+    // User provided connect string
+    connectStr = m_connString;
+  }
   CString status;
-  status.Format("Trying to connect to: %s", m_datasource);
+  status.Format("Trying to connect to: %s", m_datasource.GetString());
+  Common::SetStatusText(status,TRUE);
 
   // Reset the connection status on the DialogBar
   CMainFrame* frame = (CMainFrame*)m_pMainWnd;
@@ -1118,46 +1127,58 @@ QueryToolApp::OpenDatabaseConnectie()
 
   try
   {
-    Common::SetStatusText(status, TRUE);
     CWaitCursor take_a_deep_sigh;
     m_database.IsOpen();
     {
       m_database.Close();
     }
-    m_database.Open(connectStr, m_safty);
+    m_database.Open(connectStr,m_safty);
   }
   catch (CString& error)
   {
-    strncpy_s(buffer,1024,error.GetString(), 1024);
+    errorMessage += error;
     didError = true;
   }
   catch (CException* e)
   {
+    char buffer[1024];
+
     e->ReportError();
     e->Delete();
     e->GetErrorMessage(buffer, 1024);
+    errorMessage += CString(buffer);
+    didError = true;
+  }
+  catch(StdException& ex)
+  {
+    errorMessage += ex.GetErrorMessage();
     didError = true;
   }
   catch (...)
   {
-    strcpy_s(buffer,1024,"No connection with the database");
+    errorMessage += "No connection with the database";
     didError = true;
   }
-  if (didError)
+  if(didError)
   {
-    CString buffer2(buffer);
-
-    if (m_password != "")
+    CString password;
+    if(m_password != "")
     {
-      m_password = "********";
+      password = "********";
     }
-    buffer2 += "\r\nDatasource = \"";
-    buffer2 += m_datasource;
-    buffer2 += "\" User = \"";
-    buffer2 += m_user;
-    buffer2 += "\" Password = \"";
-    buffer2 += m_password;
-    AfxMessageBox(buffer2);
+    errorMessage += "\r\nDatasource=\"";
+    errorMessage += m_datasource;
+    errorMessage += "\" User=\"";
+    errorMessage += m_user;
+    errorMessage += "\" Password=\"";
+    errorMessage += password;
+    errorMessage += "\"";
+    if(!m_connString.IsEmpty())
+    {
+      errorMessage += "ConnectString = ";
+      errorMessage += m_connString;
+    }
+    AfxMessageBox(errorMessage);
     Common::SetStatusText("", TRUE);
     return false;
   }

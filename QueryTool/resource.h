@@ -44,9 +44,6 @@
 #define IDI_ERRORICON                   210
 #define IDB_QUERYSTATES                 211
 #define IDR_OE_ODBC_POPUP               212
-#define IDC_LIST1                       213
-#define IDC_BUTTON2                     214
-#define IDD_FIND_FILES                  214
 #define IDC_BTN_FILEDSN                 214
 #define IDC_RESET                       214
 #define IDC_CON_TEST                    215
@@ -72,6 +69,7 @@
 #define IDD_VARIABLES                   220
 #define IDC_VAR1                        220
 #define IDC_TEXT                        220
+#define IDC_CONN_STRING                 220
 #define IDC_CUR_CONNECTION              221
 #define IDC_OE_SQLTERMINATOR            221
 #define IDC_VAR2                        221
@@ -86,6 +84,7 @@
 #define IDC_WHOLE_WORD                  223
 #define IDC_EXEC1                       223
 #define IDC_META                        223
+#define IDC_MY_CONNECT                  223
 #define IDC_COMBO1                      224
 #define IDC_FIND_FINDWHAT               224
 #define IDC_CON_DATASOURCE              224
@@ -188,6 +187,9 @@
 #define IDR_SYSMENU                     322
 #define IDD_DONATE                      323
 #define IDB_PAYPAL                      325
+#define IDC_CON_STRING                  326
+#define IDD_FIND_FILES                  327
+#define IDD_CON_STRING                  328
 #define IDC_OE_WORKBOOK_TAB             1000
 #define IDC_OESA_LIST                   1000
 #define IDC_EF_ALL_WINDOWS              1001
@@ -585,7 +587,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        327
+#define _APS_NEXT_RESOURCE_VALUE        330
 #define _APS_NEXT_COMMAND_VALUE         50133
 #define _APS_NEXT_CONTROL_VALUE         1052
 #define _APS_NEXT_SYMED_VALUE           100
