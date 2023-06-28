@@ -1411,6 +1411,11 @@ SQLInfoMySQL::GetPSMProcedureList(XString& p_schema) const
   sql = "SELECT routine_catalog\n"
         "      ,routine_schema\n"
         "      ,routine_name\n"
+        "      ,CASE routine_type\n"
+        "            WHEN 'PROCEDURE' THEN 1\n"
+        "            WHEN 'FUNCTION'  THEN 2\n"
+        "                             ELSE 3\n"
+        "       end\n"
         "  FROM information_schema.routines fun\n";
   if (!p_schema.IsEmpty())
   {

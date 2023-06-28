@@ -1208,9 +1208,9 @@ SQLMigrate::FillTablesViaPump()
             {
               if(m_params.v_truncate)
               {
-                // INFORMIX data field truncate
+                // Data field truncate
                 query1.TruncateCharFields();
-                // Most databases do not support TIMSTAMP fractions
+                // Most databases do not support TIMESTAMP fractions
                 query1.TruncateTimestamps();
               }
 
@@ -1227,6 +1227,12 @@ SQLMigrate::FillTablesViaPump()
 
               RestoreAtExecParameters(columns,query1.GetBoundedColumns());
               columns = nullptr;
+
+              if(m_params.v_truncate)
+              {
+                // Reset the char data length to the original buffer length
+                query1.TruncateCharFieldsReset();
+              }
 
               // Increment rows and potentially show in the dialog
               if(++rows % 10 == 0)
@@ -1263,6 +1269,7 @@ SQLMigrate::FillTablesViaPump()
             }
             ++m_params.v_errors;
 
+            // Any leftovers if we break out of the conversion
             if(columns)
             {
               delete[] columns;

@@ -519,6 +519,9 @@ SQLVariant::TruncateSpace(unsigned p_length)
 {
   if(m_datatype == SQL_C_CHAR && ((unsigned)m_binaryLength > p_length))
   {
+    // Save length on the heap
+    m_binaryPieceSize = m_binaryLength;
+    // Make exact buffer for streaming interface
     m_data.m_dataCHAR[m_binaryLength = p_length] = 0;
     m_indicator = p_length > 0 ? SQL_NTS : SQL_NULL_DATA;
   }
@@ -2317,26 +2320,26 @@ SQLVariant::TruncateCharacter()
   }
   // Loop over the char data, truncating from right-to-left
   // data size is in WCHAR !!
-  char*  dataPointer = m_data.m_dataCHAR;
-  SQLLEN dataLength  = m_indicator;
-  while(dataLength > 0)
-  {
-    if(dataPointer[dataLength - 1] == ' ')
-    {
-      dataPointer[--dataLength] = 0;
+  size_t dataLength = strlen(m_data.m_dataCHAR);
+  TruncateSpace((unsigned)(dataLength));
     }
-    else
+
+// Truncation of a char field
+void
+SQLVariant::TruncateCharacterReset()
     {
-      break;
-    }
+  // Only non-null char data and not streaming mode
+  if(m_datatype != SQL_C_CHAR)
+    {
+    return;
   }
-  // For non-null columns leave always a minimum of 1 space
-  if(dataLength == 0)
+  // Restore from binary piece
+  if(m_binaryPieceSize > m_binaryLength)
   {
-    dataPointer[0] = ' ';
-    dataPointer[1] = 0;
+    // Restore the heap size
+    m_binaryLength    = m_binaryPieceSize;
+    m_binaryPieceSize = 0;
   }
-  m_indicator = dataLength;
 }
 
 // Truncating the TIMESTAMP fraction

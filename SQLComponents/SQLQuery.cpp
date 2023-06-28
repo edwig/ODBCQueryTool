@@ -1040,6 +1040,8 @@ SQLQuery::BindParameters()
 //     TRACE("Col size  : %d\n", columnSize);
 //     TRACE("Scale     : %d\n", scale);
 //     TRACE("Buffersize: %d\n", bufferSize);
+//     TRACE("Indicator : %d\n", (int)*indicator);
+//     TRACE("DATA      : %s\n", var->GetAsChar());
 
     // Do the bindings
     m_retCode = SqlBindParameter(m_hstmt        // Statement handle
@@ -1211,6 +1213,7 @@ SQLQuery::BindColumns()
     columnName.MakeLower();
     m_numMap .insert(std::make_pair(icol,var));
     m_nameMap.insert(std::make_pair(columnName,var));
+
 //     TRACE("COLUMN\n");
 //     TRACE("- Number   : %d\n",icol);
 //     TRACE("- Name     : %s\n",colName);
@@ -1229,14 +1232,12 @@ SQLQuery::BindColumns()
     SQLSMALLINT  type = (SQLSMALLINT)  var->GetDataType();
     SQLLEN       size = var->GetDataSize();
 
-    // Bind columns up to the first long column
-    if(m_hasLongColumns > 0 && bcol >= m_hasLongColumns)
-    {
-      break;
-    }
     // Rebind the column datatype
     type = RebindColumn(type);
 
+    // Bind columns up to the first long column
+    if(m_hasLongColumns == 0 || bcol < m_hasLongColumns)
+    {
     m_retCode = SQLBindCol(m_hstmt                    // statement handle
                           ,bcol                       // Column number
                           ,type                       // Data type
@@ -1254,6 +1255,21 @@ SQLQuery::BindColumns()
     if(type == SQL_C_NUMERIC)
     {
       BindColumnNumeric((SQLSMALLINT)bcol,var,SQL_RESULT_COL);
+    }
+  }
+    else
+    {
+      if(type == SQL_C_NUMERIC && 
+         m_database && ((m_database->GetSQLInfoDB()->GetGetDataExtensions() & SQL_GD_BOUND) == 0) && 
+         var->GetNumericScale() > 0 &&
+         !(var->GetNumericPrecision() == 38 && var->GetNumericScale() == 16))
+      {
+        // Cannot get a NUMERIC with decimals after a At-Exec column,
+        // because we cannot bind the precision and scale
+        m_lastError = "Cannot retrieve a NUMERIC after a (binary)large object.";
+        m_lastError.AppendFormat(" Column: %d",bcol);
+        throw StdException(m_lastError);
+      }
     }
   }
 }
@@ -1461,6 +1477,22 @@ SQLQuery::TruncateCharFields()
   }
 }
 
+// Truncate the char fields in the gotten buffer
+void
+SQLQuery::TruncateCharFieldsReset()
+{
+  for(auto& column : m_numMap)
+  {
+    // Get variable
+    SQLVariant* var = column.second;
+    // We try to truncate the CHAR/VARCHAR fields
+    if(var->GetDataType() == SQL_C_CHAR)
+    {
+      var->TruncateCharacterReset();
+    }
+  }
+}
+
 // Truncate the timestamps to a number of decimals (0 - 6)
 void
 SQLQuery::TruncateTimestamps(int p_decimals /*= 0*/)
@@ -1592,27 +1624,13 @@ SQLQuery::RetrieveAtExecData()
       // Actual data can be gotten in the standard buffer
       actualLength = var->GetDataSize();
     }
-
-    if(datatype == SQL_C_NUMERIC)
-    {
-      // Numeric decimals cannot be set by binding
-      // so we deliberately convert it to a string to circumvent the problem
-      char number[60];
-      m_retCode = SqlGetData(m_hstmt,(SQLUSMALLINT)col,SQL_CHAR,number,60,0);
-      var->SetData(SQL_C_NUMERIC,number);
-    }
-    else
-    {
-      // Now go get all other datatypes directly
-      // streaming data need no longer be gotten in parts on modern MS-Windows OS
-      // as there is no 64K limit any more, so we get the column in one go!
+    // Now go get it
       m_retCode = SqlGetData(m_hstmt
                             ,(SQLUSMALLINT) col
                             ,(SQLUSMALLINT) datatype
                             ,(SQLPOINTER)   var->GetDataPointer()
                             ,(SQLINTEGER)   actualLength
                             ,(SQLLEN*)      var->GetIndicatorPointer());
-    }
     if(!SQL_SUCCEEDED(m_retCode))
     {
       // SQL_ERROR / SQL_NO_DATA / SQL_STILL_EXECUTING / SQL_INVALID_HANDLE

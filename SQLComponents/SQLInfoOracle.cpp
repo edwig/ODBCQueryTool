@@ -2233,6 +2233,11 @@ SQLInfoOracle::GetPSMProcedureList(XString& p_schema) const
   sql = "SELECT sys_context('USERENV','DB_NAME') AS procedure_catalog\n"
         "      ,owner             AS procedure_schema\n"
         "      ,object_name       AS procedure_name\n"
+        "      ,CASE object_type \n"
+        "            WHEN 'PROCEDURE' THEN 1\n"
+        "            WHEN 'FUNCTION'  THEN 2\n"
+        "                             ELSE 3\n"
+        "       END AS procedure_type\n"
         "  FROM all_procedures\n";
   if(!p_schema.IsEmpty())
   {

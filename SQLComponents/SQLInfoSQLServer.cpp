@@ -656,6 +656,7 @@ SQLInfoSQLServer::DoBindParameterFixup(SQLSMALLINT& p_sqlDatatype,SQLULEN& p_col
                               break;
     default:                  break; // DO NOTHING for this datatype (e.g. integer, date, interval types)
   }
+
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2311,7 +2312,7 @@ SQLInfoSQLServer::GetCATALOGSequencePrivilege(XString& p_schema,XString& p_seque
     "SELECT db_name() AS sequence_catalog\n"
     "      ,s.name    AS sequence_schema\n"
     "      ,q.name    AS sequence_name\n"
-    "      ,pg.name   AS grantor\n"
+    "      ,p.permission_name AS privilege\n"
     "      ,pe.name   AS grantee\n"
     "      ,CASE p.state\n"
     "            WHEN 'G' THEN 'NO'\n"
@@ -2478,6 +2479,10 @@ SQLInfoSQLServer::GetPSMProcedureList(XString& p_schema) const
     "SELECT db_name() as catalog_name\n"
     "      ,s.name    as schema_name\n"
     "      ,o.name    as procedure_name\n"
+    "      ,CASE o.type\n"
+    "            WHEN 'P' THEN 1\n"
+    "            ELSE 2\n"
+    "       END       as procedure_type\n"
     "  FROM sys.objects o\n"
     "       INNER JOIN sys.schemas s ON o.schema_id = s.schema_id\n"
     " WHERE type IN ('P','FN')\n";
