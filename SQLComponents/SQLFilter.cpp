@@ -479,6 +479,19 @@ SQLFilter::ConstructLike(XString& p_sql)
 void
 SQLFilter::ConstructIN(XString& p_sql,SQLQuery& p_query)
 {
+  // Add any subfilter values to the IN construct
+  if(m_subfilters)
+  {
+    for(int index = 0;index < m_subfilters->Size(); ++index)
+    {
+      SQLFilter* filter = m_subfilters->GetFilter(index);
+      for(auto& var : filter->m_values)
+      {
+        p_sql += "?,";
+        p_query.SetParameter(var);
+      }
+    }
+  }
   // Getting a series of values, comma separated
   for(auto& var : m_values)
   {

@@ -728,6 +728,7 @@ DDLCreateTable::ReplaceLengthPrecScale(TypeInfo*  p_type
                                       ,int p_precision
                                       ,int p_scale)
 {
+  bool max = false;
   XString params = p_type->m_create_params;
 
   // Set in lowercase for replacing
@@ -762,6 +763,7 @@ DDLCreateTable::ReplaceLengthPrecScale(TypeInfo*  p_type
   {
     // SQL-Server does this as a replacement for CLOB
     params.Replace("max length","max");
+    max = true;
   }
 
   if(p_precision > 0)
@@ -769,7 +771,7 @@ DDLCreateTable::ReplaceLengthPrecScale(TypeInfo*  p_type
     params.Replace("precision", precision);
     params.Replace("scale",     scale);
   }
-  else
+  else if(!max)
   {
     params.Empty();
   }

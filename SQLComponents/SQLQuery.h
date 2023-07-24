@@ -151,6 +151,7 @@ public:
   // POST PROCESSING of the query result
   // Truncate the char fields in the gotten buffer
   void        TruncateCharFields();
+  void        TruncateCharFieldsReset();
   // Truncate the timestamps to a number of decimals (0 - 6)
   void        TruncateTimestamps(int p_decimals = 0);
 

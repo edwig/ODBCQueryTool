@@ -147,6 +147,7 @@ public:
    void    TruncateSpace(unsigned p_length);
    // Truncation of a field
    void    TruncateCharacter();
+   void    TruncateCharacterReset();
    void    TruncateTimestamp(int p_decimals = 0);
 
    // General access

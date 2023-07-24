@@ -1949,6 +1949,7 @@ SQLInfoFirebird::GetPSMProcedureList(XString& p_schema) const
   XString sql1("SELECT '' as catalog_name\n"
                "      ,trim(rdb$owner_name) as schema_name\n"
                "      ,trim(rdb$procedure_name)\n"
+               "      ,1\n"
                "  FROM rdb$procedures pro\n");
   if(!p_schema.IsEmpty())
   {
@@ -1958,6 +1959,7 @@ SQLInfoFirebird::GetPSMProcedureList(XString& p_schema) const
   XString sql2("SELECT '' as catalog_name\n"
                "      ,trim(rdb$owner_name) as schema_name\n"
                "      ,trim(rdb$function_name)\n"
+               "      ,2\n"
                "  FROM rdb$functions fun\n");
 
   if(!p_schema.IsEmpty())

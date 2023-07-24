@@ -1260,11 +1260,9 @@ SQLDataSet::FindRecordSet()
       records->push_back(record);
     }
   }
-
   // Return complete recordset
   return records;
 }
-
 
 // Get a fieldname
 XString    
