@@ -593,6 +593,8 @@ WinFile::CreateTempFileName(XString p_pattern,XString p_extension /*= ""*/)
   return true;
 }
 
+#pragma warning (disable:4293)
+
 void* 
 WinFile::OpenAsSharedMemory(XString   p_name
                            ,bool     p_local     /*= true*/

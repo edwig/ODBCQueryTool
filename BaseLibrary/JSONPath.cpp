@@ -624,7 +624,7 @@ JSONPath::EvaluateFilter(Relation relation)
   {
     if(m_searching->GetDataType() == JsonType::JDT_array)
     {
-      for(int index = 0; index < m_searching->GetArray().size(); index++)
+      for(int index = 0; index < (int)m_searching->GetArray().size(); index++)
       {
         for(JSONpair pair : m_searching->GetArray().at(index).GetObject())
         {
