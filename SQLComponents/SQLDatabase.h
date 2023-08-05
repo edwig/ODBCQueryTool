@@ -112,7 +112,7 @@ class SQLDatabase
 {
 public:
   SQLDatabase();
-  SQLDatabase(HDBC p_hdbc);
+  explicit SQLDatabase(HDBC p_hdbc);
  ~SQLDatabase(); 
   void Reset();
 

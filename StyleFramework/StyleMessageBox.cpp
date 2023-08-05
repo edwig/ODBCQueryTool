@@ -41,10 +41,15 @@ INT_PTR
 StyleMessageBox(CWnd*  p_parent
                ,LPCSTR p_message
                ,LPCSTR p_title
-               ,long   p_styles         /*= MB_OK*/
-               ,bool*  p_doNotShowAgain /*= nullptr*/)
+               ,long   p_styles         /*= MB_OK   */
+               ,bool*  p_doNotShowAgain /*= nullptr */
+               ,bool   p_foreground     /*= false   */)
 {
   MessageDialog dlg(p_parent,p_title,p_message,p_styles,p_doNotShowAgain);
+  if(p_foreground)
+  {
+    dlg.SetForeground();
+  }
   return dlg.GetResultID(dlg.DoModal());
 }
 
@@ -52,9 +57,9 @@ INT_PTR
 StyleMessageBox(CWnd*  p_parent
                ,LPCSTR p_message
                ,LPCSTR p_title
-               ,LPCSTR p_labels         /*= "ok"*/
-               ,bool*  p_doNotShowAgain /*= nullptr*/
-               ,bool   p_foreground     /*= false*/)
+               ,LPCSTR p_labels         /*= "ok"    */
+               ,bool*  p_doNotShowAgain /*= nullptr */
+               ,bool   p_foreground     /*= false   */)
 {
   MessageDialog dlg(p_parent,p_title,p_message,p_labels,p_doNotShowAgain);
   if(p_foreground)

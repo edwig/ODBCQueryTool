@@ -86,13 +86,15 @@ CInPlaceEdit::CInPlaceEdit(CWnd* pParent, CRect& rect, DWORD dwStyle, UINT nID,
     case VK_RETURN:   SetSel((int)_tcslen(m_sInitText), -1); return;
     case VK_BACK:     SetSel((int)_tcslen(m_sInitText), -1); break;
     case VK_TAB:      // Fall through
-    case VK_DOWN:     // Fall through
-    case VK_UP:       // Fall through
-    case VK_RIGHT:    // Fall through
-    case VK_LEFT:     // Fall through
-    case VK_NEXT:     // Fall through
-    case VK_PRIOR:    // Fall through
-    case VK_HOME:     // Fall through
+
+//  // FirstChar cannot be a navigation character!
+//  case VK_DOWN:     // Fall through
+//  case VK_UP:       // Fall through
+//  case VK_RIGHT:    // Fall through
+//  case VK_LEFT:     // Fall through
+//  case VK_NEXT:     // Fall through
+//  case VK_PRIOR:    // Fall through
+//  case VK_HOME:     // Fall through
     case VK_SPACE:    // Fall through
     case VK_END:      SetSel(0,-1); return;
     default:          SetSel(0,-1);

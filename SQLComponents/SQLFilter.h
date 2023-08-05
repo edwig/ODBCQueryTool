@@ -53,13 +53,13 @@ class SQLFilter
 public:
   // Construct a filter
   SQLFilter();
-  SQLFilter(XString p_field,SQLOperator p_operator);
-  SQLFilter(XString p_field,SQLOperator p_operator,SQLVariant* p_value);
-  SQLFilter(XString p_field,SQLOperator p_operator,int         p_value);
-  SQLFilter(XString p_field,SQLOperator p_operator,XString     p_value);
-  SQLFilter(SQLOperator p_operator);
-  SQLFilter(SQLFilter* p_other);
-  SQLFilter(SQLFilter& p_other);
+  SQLFilter(const SQLFilter& p_other);
+  explicit SQLFilter(const SQLFilter* p_other);
+  explicit SQLFilter(XString p_field,SQLOperator p_operator);
+  explicit SQLFilter(XString p_field,SQLOperator p_operator,SQLVariant* p_value);
+  explicit SQLFilter(XString p_field,SQLOperator p_operator,int         p_value);
+  explicit SQLFilter(XString p_field,SQLOperator p_operator,XString     p_value);
+  explicit SQLFilter(SQLOperator p_operator);
  ~SQLFilter();
 
   // BUILDING THE FILTER
@@ -69,7 +69,7 @@ public:
   // Adding an operator (if not yet set)
   bool        SetOperator(SQLOperator p_oper);
   // Adding extra values for the IN or BETWEEN operators
-  void        AddValue(SQLVariant* p_value);
+  void        AddValue(const SQLVariant* p_value);
   // Adding an expression as replacement for concrete values
   void        AddExpression(XString p_expression);
   // Negate the filter
@@ -97,16 +97,16 @@ public:
   // GETTERS
 
   // Getting the elements of the filter
-  XString     GetField();
-  SQLOperator GetOperator();
-  SQLVariant* GetValue();
-  SQLVariant* GetValue(int p_number);
-  XString     GetExpression();
-  SQLFunction GetFunction();
-  bool        GetNegate();
-  XString     GetField2();
-  SQLExtractPart        GetExtractPart();
-  SQLTimestampCalcPart  GetTimestampPart();
+  XString     GetField() const;
+  SQLOperator GetOperator() const;
+  SQLVariant* GetValue() const;
+  SQLVariant* GetValue(int p_number) const;
+  XString     GetExpression() const;
+  SQLFunction GetFunction() const;
+  bool        GetNegate() const;
+  XString     GetField2() const;
+  SQLExtractPart        GetExtractPart() const;
+  SQLTimestampCalcPart  GetTimestampPart() const;
 
   // Filter assignment to another filter
   SQLFilter&  operator=(const SQLFilter& p_other);
@@ -140,18 +140,18 @@ private:
   XString     ConstructCastAs();
 
   // Internal matching
-  bool        MatchEqual       (SQLVariant* p_field);
-  bool        MatchNotEqual    (SQLVariant* p_field);
-  bool        MatchGreater     (SQLVariant* p_field);
-  bool        MatchGreaterEqual(SQLVariant* p_field);
-  bool        MatchSmaller     (SQLVariant* p_field);
-  bool        MatchSmallerEqual(SQLVariant* p_field);
-  bool        MatchLikeBegin   (SQLVariant* p_field);
-  bool        MatchLikeMiddle  (SQLVariant* p_field);
-  bool        MatchIsNULL      (SQLVariant* p_field);
-  bool        MatchIsNotNull   (SQLVariant* p_field);
-  bool        MatchIN          (SQLVariant* p_field);
-  bool        MatchBetween     (SQLVariant* p_field);
+  bool        MatchEqual       (const SQLVariant* p_field);
+  bool        MatchNotEqual    (const SQLVariant* p_field);
+  bool        MatchGreater     (const SQLVariant* p_field);
+  bool        MatchGreaterEqual(const SQLVariant* p_field);
+  bool        MatchSmaller     (const SQLVariant* p_field);
+  bool        MatchSmallerEqual(const SQLVariant* p_field);
+  bool        MatchLikeBegin   (const SQLVariant* p_field);
+  bool        MatchLikeMiddle  (const SQLVariant* p_field);
+  bool        MatchIsNULL      (const SQLVariant* p_field);
+  bool        MatchIsNotNull   (const SQLVariant* p_field);
+  bool        MatchIN          (const SQLVariant* p_field);
+  bool        MatchBetween     (const SQLVariant* p_field);
 
   // Data for the filter
   XString     m_field;                         // Name of the field to act upon
@@ -177,25 +177,25 @@ private:
 };
 
 inline XString
-SQLFilter::GetField()
+SQLFilter::GetField() const
 {
   return m_field;
 }
 
 inline SQLOperator
-SQLFilter::GetOperator()
+SQLFilter::GetOperator() const
 {
   return m_operator;
 }
 
 inline SQLVariant*
-SQLFilter::GetValue()
+SQLFilter::GetValue() const
 {
   return m_values.front();
 }
 
 inline void
-SQLFilter::AddValue(SQLVariant* p_value)
+SQLFilter::AddValue(const SQLVariant* p_value)
 {
   SQLVariant* value = new SQLVariant(p_value);
   m_values.push_back(value);
@@ -214,13 +214,13 @@ SQLFilter::Negate()
 }
 
 inline XString
-SQLFilter::GetExpression()
+SQLFilter::GetExpression() const
 {
   return m_expression;
 }
 
 inline bool
-SQLFilter::GetNegate()
+SQLFilter::GetNegate() const
 {
   return m_negate;
 }
@@ -244,7 +244,7 @@ SQLFilter::SetFunction(SQLFunction p_function)
 }
 
 inline SQLFunction
-SQLFilter::GetFunction()
+SQLFilter::GetFunction() const
 {
   return m_function;
 }
@@ -262,19 +262,19 @@ SQLFilter::SetTimestampPart(SQLTimestampCalcPart p_part)
 }
 
 inline SQLExtractPart
-SQLFilter::GetExtractPart()
+SQLFilter::GetExtractPart() const
 {
   return m_extract.m_extract;
 }
 
 inline SQLTimestampCalcPart
-SQLFilter::GetTimestampPart()
+SQLFilter::GetTimestampPart() const
 {
   return m_extract.m_calcpart;
 }
 
 inline XString
-SQLFilter::GetField2()
+SQLFilter::GetField2() const
 {
   return m_field2;
 }
@@ -294,13 +294,13 @@ public:
     }
   }
 
-  void AddFilter(SQLFilter* p_filter)
+  void AddFilter(const SQLFilter* p_filter)
   {
     SQLFilter* filter = new SQLFilter(p_filter);
     m_filters.push_back(filter);
   }
 
-  void AddFilter(SQLFilter& p_filter)
+  void AddFilter(const SQLFilter& p_filter)
   {
     SQLFilter* filter = new SQLFilter(p_filter);
     m_filters.push_back(filter);

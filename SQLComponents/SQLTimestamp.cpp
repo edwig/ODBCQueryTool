@@ -133,7 +133,7 @@ SQLTimestamp::SQLTimestamp(const XString& p_string)
 
 // Construct from a SQL TIMESTAMP_STRUCT
 //
-SQLTimestamp::SQLTimestamp(TIMESTAMP_STRUCT* p_stamp)
+SQLTimestamp::SQLTimestamp(const TIMESTAMP_STRUCT* p_stamp)
 {
   if(p_stamp == nullptr || (p_stamp->year == 0 && p_stamp->month == 0 && p_stamp->day == 0))
   {
@@ -241,12 +241,11 @@ SQLTimestamp::RecalculateValue()
     month += 12;
     --year;
   }
-  long gregorianA = 0;
   long gregorianB = 0;
   long factorC, factorD;
   if(year > 1582)
   {
-    gregorianA = year / 100;
+    long gregorianA = year / 100;
     gregorianB = 2 - gregorianA + (gregorianA / 4);
   }
   factorC = (long) (365.25  * (double)year);
@@ -264,7 +263,6 @@ SQLTimestamp::RecalculateValue()
 void
 SQLTimestamp::Normalise()
 {
-  long gregorianA = 0;
   long gregorianB = 0;
   long factorC = 0;
   long factorD = 0;
@@ -280,7 +278,7 @@ SQLTimestamp::Normalise()
   double JD = (double)((m_value / SECONDS_PER_DAY) + 2400001);
   if(JD > 2299160)
   {
-    gregorianA = (long) ((JD - 1867216.25) / 36524.25);
+    long gregorianA = (long) ((JD - 1867216.25) / 36524.25);
     gregorianB = (long) (JD + 1 + gregorianA - (gregorianA / 4));
   }
   else
@@ -453,7 +451,7 @@ SQLTimestamp::WeekDayName(Language p_lang /*=LN_DEFAULT*/) const
     }
     if(p_lang >= LN_DUTCH && p_lang <= LN_FRENCH)
     {
-      return g_weekdays[p_lang - 1][WeekDay()];
+      return g_weekdays[p_lang][WeekDay()];
     }
   }
   return "";
@@ -475,7 +473,7 @@ SQLTimestamp::MonthName(Language p_lang /*=LN_DEFAULT*/) const
       }
       if(p_lang >= LN_DUTCH && p_lang <= LN_FRENCH)
       {
-        return g_monthnames[p_lang - 1][monthNumber - 1];
+        return g_monthnames[p_lang][monthNumber - 1];
       }
     }
   }

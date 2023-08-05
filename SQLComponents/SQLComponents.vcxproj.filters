@@ -166,6 +166,9 @@
     <ClCompile Include="SQLPrimaryKey.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="SQLDataType.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="BasicExcel.h">
@@ -340,6 +343,12 @@
       <Filter>Headers Files</Filter>
     </ClInclude>
     <ClInclude Include="sqlncli.h">
+      <Filter>Headers Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SQLDataType.h">
+      <Filter>Headers Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SQLParameterType.h">
       <Filter>Headers Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -357,15 +357,15 @@ struct LittleEndian
     for (size_t i=0; i<bytes; ++i) Write(buffer, str[i], pos+i*sizeof(Type));	\
   }	\
 
-  READWRITE(char)
-  READWRITE(unsigned char)
-  READWRITE(short)
-  READWRITE(int)
-  READWRITE(unsigned int)
-  READWRITE(long)
-  READWRITE(unsigned long)
-  READWRITE(__int64)
-  READWRITE(unsigned __int64)
+  READWRITE(const char)
+  READWRITE(const unsigned char)
+  READWRITE(const short)
+  READWRITE(const int)
+  READWRITE(const unsigned int)
+  READWRITE(const long)
+  READWRITE(const unsigned long)
+  READWRITE(const __int64)
+  READWRITE(const unsigned __int64)
 
   #undef READWRITE
 
@@ -399,7 +399,7 @@ struct LittleEndian
     }
   }
 
-  static void WriteString(char* buffer, wchar_t* str, size_t pos=0, int bytes=0)
+  static void WriteString(char* buffer,const wchar_t* str, size_t pos=0, int bytes=0)
   {
     for (int i=0; i<bytes; ++i)
       Write(buffer, str[i], pos+i*SIZEOFWCHAR_T);
@@ -432,7 +432,7 @@ struct LittleEndian
     }
   }
 
-  static void WriteString(vector<char>& buffer, wchar_t* str, size_t pos=0, int bytes=0)
+  static void WriteString(vector<char>& buffer,const wchar_t* str, size_t pos=0, int bytes=0)
   {
     for (int i=0; i<bytes; ++i)
       Write(buffer, str[i], pos+i*SIZEOFWCHAR_T);
@@ -543,7 +543,7 @@ struct LittleEndian
     }
   }
 
-  static void WriteString(char* buffer, wchar_t* str, size_t pos=0, int bytes=0)
+  static void WriteString(char* buffer,const wchar_t* str, size_t pos=0, int bytes=0)
   {
     for(int i = 0; i < bytes; ++i)
     {
@@ -589,7 +589,7 @@ struct LittleEndian
     }
   }
 
-  static void WriteString(vector<char>& buffer, wchar_t* str, size_t pos=0, int bytes=0)
+  static void WriteString(vector<char>& buffer,const wchar_t* str, size_t pos=0, int bytes=0)
   {
     for(int i = 0; i < bytes; ++i)
     {
@@ -853,8 +853,8 @@ template<typename T> struct SmartPtr
   }
 
    // The initialized SmartPtr constructor increments the reference counter in struct RefCnt.
-  SmartPtr(T* p)
-   :	_ptr(p)
+   SmartPtr(T* p)
+   :_ptr(p)
   {
     if (p)
       ++_ptr->_ref_cnt;
@@ -862,7 +862,7 @@ template<typename T> struct SmartPtr
 
    // The copy constructor increments the reference counter.
   SmartPtr(const SmartPtr& other)
-   :	_ptr(other._ptr)
+   :_ptr(other._ptr)
   {
     if (_ptr)
       ++_ptr->_ref_cnt;
@@ -1047,8 +1047,8 @@ public:
 struct BOF : public Record
 {
   BOF();
-  virtual ULONG Read(const char* data);
-  virtual ULONG Write(char* data);
+  virtual ULONG Read(const char* data) override;
+  virtual ULONG Write(char* data) override;
   USHORT version_;
   USHORT type_;
   USHORT buildIdentifier_;
@@ -1308,8 +1308,8 @@ public:
 //MF: exception to handle unexpected YEOF records
 struct EXCEPTION_YEOF
 {
-  EXCEPTION_YEOF(ULONG bytesRead)
-   :	_bytesRead(bytesRead)
+  explicit EXCEPTION_YEOF(ULONG bytesRead)
+   :_bytesRead(bytesRead)
   {
   }
 
@@ -1740,7 +1740,7 @@ class BasicExcel
 {
 public:
   BasicExcel();
-  BasicExcel(const char* filename,bool readonly = false);
+  explicit BasicExcel(const char* filename,bool readonly = false);
  ~BasicExcel();
 
 public: // File functions.
@@ -1921,7 +1921,7 @@ private:
 
   struct Formula : public RefCount::RefCnt
   {
-    Formula(const Worksheet::CellTable::RowBlock::CellBlock::Formula& f);
+    explicit Formula(const Worksheet::CellTable::RowBlock::CellBlock::Formula& f);
 
     int           _formula_type;
     vector<char>  _formula;

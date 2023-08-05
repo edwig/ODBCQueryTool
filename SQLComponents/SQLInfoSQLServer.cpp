@@ -664,6 +664,7 @@ SQLInfoSQLServer::DoBindParameterFixup(SQLSMALLINT& p_sqlDatatype,SQLULEN& p_col
 // CATALOG
 // o GetCATALOG<Object[s]><Function>
 //   Objects
+//   - Catalog
 //   - Table
 //   - Column
 //   - Index
@@ -690,6 +691,24 @@ SQLInfoSQLServer::GetCATALOGMetaTypes(int p_type) const
 {
   UNREFERENCED_PARAMETER(p_type);
   return "";
+}
+
+XString
+SQLInfoSQLServer::GetCATALOGDefaultCharset() const
+{
+  return "iso-8859-1";
+}
+
+XString
+SQLInfoSQLServer::GetCATALOGDefaultCharsetNCV() const
+{
+  return "utf-16";
+}
+
+XString
+SQLInfoSQLServer::GetCATALOGDefaultCollation() const
+{
+  return "SELECT SERVERPROPERTY('Collation')";
 }
 
 // Get SQL to check if a table already exists in the database
@@ -1297,7 +1316,7 @@ XString
 SQLInfoSQLServer::GetCATALOGIndexCreate(MIndicesMap& p_indices,bool p_duplicateNulls /*=false*/) const
 {
   XString query;
-  for(auto& index : p_indices)
+  for(const auto& index : p_indices)
   {
     if(index.m_position == 1)
     {
@@ -1345,7 +1364,7 @@ SQLInfoSQLServer::GetCATALOGIndexCreate(MIndicesMap& p_indices,bool p_duplicateN
   if(p_duplicateNulls)
   {
     query += "\n WHERE ";
-    for(auto& index : p_indices)
+    for(const auto& index : p_indices)
     {
       if(index.m_position != 1)
       {
@@ -1447,7 +1466,7 @@ SQLInfoSQLServer::GetCATALOGPrimaryCreate(MPrimaryMap& p_primaries) const
 {
   XString query("ALTER TABLE ");
 
-  for(auto& prim : p_primaries)
+  for(const auto& prim : p_primaries)
   {
     if(prim.m_columnPosition == 1)
     {
@@ -1640,7 +1659,7 @@ SQLInfoSQLServer::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
 
   // Add the foreign key columns
   bool extra = false;
-  for(auto& key : p_foreigns)
+  for(const auto& key : p_foreigns)
   {
     if(extra) query += ",";
     XString column = key.m_fkColumnName;
@@ -1654,7 +1673,7 @@ SQLInfoSQLServer::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
 
   // Add the primary key columns
   extra = false;
-  for(auto& key : p_foreigns)
+  for(const auto& key : p_foreigns)
   {
     if(extra) query += ",";
     XString column = key.m_pkColumnName;
@@ -2687,7 +2706,7 @@ SQLInfoSQLServer::GetPSMDeclaration(bool    /*p_first*/
   if(p_datatype)
   {
     // Getting type info and name
-    TypeInfo* info = GetTypeInfo(p_datatype);
+    const TypeInfo* info = GetTypeInfo(p_datatype);
     line += info->m_type_name;
 
     if(p_precision > 0)
@@ -2804,7 +2823,7 @@ SQLInfoSQLServer::GetPSMExecute(XString p_procedure,MParameterMap& p_parameters)
   line.Format("EXECUTE %s ",p_procedure.GetString());
   bool cont = false;
 
-  for(auto& param : p_parameters)
+  for(const auto& param : p_parameters)
   {
     // Continuing
     if(cont) line += ",";
@@ -2845,6 +2864,7 @@ SQLInfoSQLServer::GetPSMCursorFetch(XString p_cursorname,std::vector<XString>& p
       ++cNames,++vNames)
   {
     query += (moreThenOne ? "," : "") + *vNames;
+    moreThenOne = true;
   }
   query += ";";
   return query;
@@ -2981,18 +3001,18 @@ SQLInfoSQLServer::DoSQLCallNamedParameters(SQLQuery* /*p_query*/,XString& /*p_sc
 //////////////////////////////////////////////////////////////////////////
 
 // Adjust catalog for temporary objects
-XString 
-SQLInfoSQLServer::GetCatalogAndSchema(XString& p_schema,XString p_table)
-{
-  if(p_table.Left(1).Compare("#") == 0)
-  {
-    // Temp tables are stored in the 'dbo' schema in the 'tempdbs' database
-    p_schema = "dbo";
-    return "tempdbs.sys.";
-  }
-  // Normal object, use the sys schema
-  return "sys.";
-}
+// XString 
+// SQLInfoSQLServer::GetCatalogAndSchema(XString& p_schema,XString p_table)
+// {
+//   if(p_table.Left(1).Compare("#") == 0)
+//   {
+//     // Temp tables are stored in the 'dbo' schema in the 'tempdbs' database
+//     p_schema = "dbo";
+//     return "tempdbs.sys.";
+//   }
+//   // Normal object, use the sys schema
+//   return "sys.";
+// }
 
 // End of namespace
 }

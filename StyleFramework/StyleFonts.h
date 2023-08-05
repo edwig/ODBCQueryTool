@@ -30,6 +30,8 @@
 #define ERRORFONTSIZE      12 // MulDiv(12, 96, StyleFonts::logpixelsy())
 #define CAPTIONTEXTSIZE    18 // MulDiv(18, 96, StyleFonts::logpixelsy())
 
+#define LISTBOX_ITEMHEIGTH 16 // For StyleListBox
+
 #define CaptionFontString       StyleFontName + CString(";") + IntegerToString(CAPTIONTEXTSIZE)    + CString(";") + IntegerToString(FW_BOLD)
 #define DialogFontString        StyleFontName + CString(";") + IntegerToString(STANDARDFONTSIZE)   + CString(";") + IntegerToString(FW_NORMAL)
 #define DialogFontBoldString    StyleFontName + CString(";") + IntegerToString(STANDARDFONTSIZE)   + CString(";") + IntegerToString(FW_HEAVY)

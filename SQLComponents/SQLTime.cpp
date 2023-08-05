@@ -69,11 +69,10 @@ SQLTime::SQLTime(const int p_hour,
 
 // Construct from another time
 //
-SQLTime::SQLTime(const SQLTime& p_time)
+SQLTime::SQLTime(const SQLTime& p_time) 
+        :m_seconds(p_time.m_seconds)
+        ,m_theTime(p_time.m_theTime)
 {
-  // Simply copy the values
-  m_seconds = p_time.m_seconds;
-  m_theTime = p_time.m_theTime;
 }
 
 // Constructor from a timestamp
@@ -103,7 +102,7 @@ SQLTime::SQLTime(__int64 p_seconden)
 
 // CTOR from a SQL_TIME_STRUCT
 //
-SQLTime::SQLTime(SQL_TIME_STRUCT* p_timestruct)
+SQLTime::SQLTime(const SQL_TIME_STRUCT* p_timestruct)
 {
   if (p_timestruct == nullptr)
   {
@@ -233,12 +232,12 @@ SQLTime
 SQLTime::SystemTime()
 {
   _tzset();
-  time_t ltime;
-  time(&ltime);
-  struct tm now ;
-  localtime_s(&now,&ltime);
+  __time64_t ltime;
+  _time64(&ltime);
+  struct tm thetime ;
+  _localtime64_s(&thetime,&ltime);
 
-  SQLTime nu(now.tm_hour,now.tm_min,now.tm_sec);
+  SQLTime nu(thetime.tm_hour,thetime.tm_min,thetime.tm_sec);
   return nu;
 }
 

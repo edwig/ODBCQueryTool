@@ -148,7 +148,7 @@ SQLAssociation::BasicChecks()
     if(m_assocs.size() > 0)
     {
       result = true;
-      for(auto& key : m_assocs)
+      for(const auto key : m_assocs)
       {
         if(!key->m_value)
         {
@@ -185,13 +185,14 @@ SQLAssociation::GetSQLCondition()
   }
   XString condition("(");
   bool multi(false);
-  for(auto& assoc : m_assocs)
+  for(const auto assoc : m_assocs)
   {
     if(multi)
     {
       condition += " AND ";
     }
     condition += malias + "." + assoc->m_primary + " = " + dalias + "." + assoc->m_foreign;
+    multi = true;
   }
   condition += ")";
   return condition;
@@ -212,7 +213,7 @@ SQLAssociation::FollowToMaster()
   for(unsigned ind = 0;ind < m_assocs.size();++ind)
   {
     SQLFilter filter(m_assocs[ind]->m_primary,OP_Equal,m_assocs[ind]->m_value);
-    m_master->SetFilter(&filter);
+    m_master->SetFilter(filter);
   }
 
   bool result = m_master->IsOpen() ? m_master->Append() : m_master->Open();

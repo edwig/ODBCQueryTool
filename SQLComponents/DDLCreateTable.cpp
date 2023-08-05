@@ -47,7 +47,7 @@ DDLCreateTable::GetTableDDL(XString p_tableName)
   GetTableStatements(p_tableName);
 
   XString ddl;
-  for(auto& statement : m_statements)
+  for(const auto& statement : m_statements)
   {
     ddl += statement;
     ddl += ";\n";
@@ -133,56 +133,56 @@ DDLCreateTable::SaveDDL(XString p_filename)
 
 // Internal delivery of all table information
 void
-DDLCreateTable::SetTableInfoTable(MTableMap& p_info)
+DDLCreateTable::SetTableInfoTable(const MTableMap& p_info)
 {
   m_tables = p_info;
   m_didTable = true;
 }
 
 void
-DDLCreateTable::SetTableInfoColumns(MColumnMap& p_info)
+DDLCreateTable::SetTableInfoColumns(const MColumnMap& p_info)
 {
   m_columns = p_info;
   m_didColumns = true;
 }
 
 void
-DDLCreateTable::SetTableInfoIndices(MIndicesMap& p_info)
+DDLCreateTable::SetTableInfoIndices(const MIndicesMap& p_info)
 {
   m_indices = p_info;
   m_didIndices = true;
 }
 
 void    
-DDLCreateTable::SetTableInfoPrimary(MPrimaryMap& p_info)
+DDLCreateTable::SetTableInfoPrimary(const MPrimaryMap& p_info)
 {
   m_primaries = p_info;
   m_didPrimary = true;
 }
 
 void
-DDLCreateTable::SetTableInfoForeign(MForeignMap& p_info)
+DDLCreateTable::SetTableInfoForeign(const MForeignMap& p_info)
 {
   m_foreigns = p_info;
   m_didForeigns = true;
 }
 
 void
-DDLCreateTable::SetTableInfoTrigger(MTriggerMap& p_info)
+DDLCreateTable::SetTableInfoTrigger(const MTriggerMap& p_info)
 {
   m_triggers = p_info;
   m_didTriggers = true;
 }
 
 void
-DDLCreateTable::SetTableInfoSequence(MSequenceMap& p_info)
+DDLCreateTable::SetTableInfoSequence(const MSequenceMap& p_info)
 {
   m_sequences = p_info;
   m_didSequence = true;
 }
 
 void
-DDLCreateTable::SetTableInfoPrivilege(MPrivilegeMap& p_info)
+DDLCreateTable::SetTableInfoPrivilege(const MPrivilegeMap& p_info)
 {
   m_access = p_info;
   m_didPrivileges = true;
@@ -676,7 +676,7 @@ DDLCreateTable::GetAccessInfo(bool p_strict /*=false*/)
   bool strict = p_strict || m_info->GetPreferODBC();
 
   // Print all privileges
-  for(auto& priv : m_access)
+  for(const auto& priv : m_access)
   {
     if(!strict || IsStrictODBCPrivilege(priv.m_privilege))
     {

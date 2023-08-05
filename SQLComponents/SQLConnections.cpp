@@ -104,7 +104,7 @@ SQLConnections::AddConnection(XString p_name
                              ,XString p_options)
 {
   // See if it is a double registration
-  SQLConnection* fnd = GetConnection(p_name);
+  const SQLConnection* fnd = GetConnection(p_name);
   if(fnd)
   {
     return false;

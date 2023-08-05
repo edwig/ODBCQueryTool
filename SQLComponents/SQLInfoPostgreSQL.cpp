@@ -487,6 +487,7 @@ SQLInfoPostgreSQL::DoBindParameterFixup(SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& 
 // CATALOG
 // o GetCATALOG<Object[s]><Function>
 //   Objects
+//   - Catalog
 //   - Table
 //   - Column
 //   - Index
@@ -513,6 +514,25 @@ SQLInfoPostgreSQL::GetCATALOGMetaTypes(int p_type) const
 {
   UNREFERENCED_PARAMETER(p_type);
   return "";
+}
+
+XString
+SQLInfoPostgreSQL::GetCATALOGDefaultCharset() const
+{
+  return "iso-8859-1";
+}
+
+XString
+SQLInfoPostgreSQL::GetCATALOGDefaultCharsetNCV() const
+{
+  // NO Support for NVARCHAR or UTF-8/UTF-16
+  return "-";
+}
+
+XString
+SQLInfoPostgreSQL::GetCATALOGDefaultCollation() const
+{
+  return "ucs_basic";
 }
 
 // Get SQL to check if a table already exists in the database
@@ -1228,7 +1248,7 @@ SQLInfoPostgreSQL::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
 
   // Add the foreign key columns
   bool extra = false;
-  for(auto& key : p_foreigns)
+  for(const auto& key : p_foreigns)
   {
     if(extra) query += ",";
     query += key.m_fkColumnName;
@@ -1240,7 +1260,7 @@ SQLInfoPostgreSQL::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
 
   // Add the primary key columns
   extra = false;
-  for(auto& key : p_foreigns)
+  for(const auto& key : p_foreigns)
   {
     if(extra) query += ",";
     query += key.m_pkColumnName;
@@ -1295,8 +1315,8 @@ SQLInfoPostgreSQL::GetCATALOGForeignAlter(MForeignMap& p_original,MForeignMap& p
     return "";
   }
 
-  MetaForeign& original  = p_original.front();
-  MetaForeign& requested = p_requested.front();
+  const MetaForeign& original  = p_original.front();
+  const MetaForeign& requested = p_requested.front();
 
   // Construct the correct tablename
   XString table(original.m_fkTableName);
@@ -1909,7 +1929,7 @@ SQLInfoPostgreSQL::GetPSMDeclaration(bool    /*p_first*/
   if(p_datatype)
   {
     // Getting type info and name
-    TypeInfo* info = GetTypeInfo(p_datatype);
+    const TypeInfo* info = GetTypeInfo(p_datatype);
     line += info->m_type_name;
 
     if(p_precision > 0)
@@ -2018,7 +2038,7 @@ SQLInfoPostgreSQL::GetPSMExecute(XString p_procedure,MParameterMap& p_parameters
   line.Format("SELECT %s(",p_procedure.GetString());
   bool doMore = false;
 
-  for(auto& param : p_parameters)
+  for(const auto& param : p_parameters)
   {
     if(doMore) line += ",";
     doMore = true;
@@ -2043,7 +2063,7 @@ SQLInfoPostgreSQL::GetPSMCursorFetch(XString p_cursorname,std::vector<XString>& 
   XString query = "OPEN  " + p_cursorname + ";\n"
                   "FETCH " + p_cursorname + " INTO ";
 
-  for(auto& var : p_variablenames)
+  for(const auto& var : p_variablenames)
   {
     if(moreThenOne) query += ",";
     moreThenOne = true;
@@ -2188,7 +2208,7 @@ SQLInfoPostgreSQL::DoSQLCall(SQLQuery* p_query,XString& p_schema,XString& p_proc
       // Finding the next OUTPUT parameter in the original query call
       do
       {
-        SQLVariant* target = p_query->GetParameter(++setIndex);
+        const SQLVariant* target = p_query->GetParameter(++setIndex);
         if(target == nullptr)
         {
           throw StdException("Wrong number of output parameters for procedure call");
@@ -2205,7 +2225,7 @@ SQLInfoPostgreSQL::DoSQLCall(SQLQuery* p_query,XString& p_schema,XString& p_proc
         const char* resPointer = result->GetAsChar();
         if(resPointer && *resPointer == '(' && numReturn)
         {
-          var = GetVarFromRecord(dataType,(char*)resPointer,recIndex++,ready);
+          var = GetVarFromRecord(dataType,const_cast<char*>(resPointer),recIndex++,ready);
           resIndex = 0;
           result = &var;
         }
@@ -2265,7 +2285,7 @@ XString
 SQLInfoPostgreSQL::ConstructSQLForProcedureCall(SQLQuery* p_query
                                                ,SQLQuery* p_thecall
                                                ,XString&  p_schema
-                                               ,XString&  p_procedure)
+                                               ,const XString& p_procedure)
 {
   // Start with select form
   XString sql = "SELECT ";

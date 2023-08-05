@@ -96,7 +96,7 @@ public:
 
 private:
   // Open a text delimited file for reading or writing
-  bool  Open(); 
+  virtual bool Open() override; 
   // Close and forget the spreadsheet
   virtual void Close() override;
   // Convert Excel column in alphabet into column number

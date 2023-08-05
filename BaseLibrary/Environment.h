@@ -1,8 +1,8 @@
 /////////////////////////////////////////////////////////////////////////////////
 //
-// SourceFile: XMLParserJSON.h
+// SourceFile: Environment.h
 //
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2015 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,26 +24,6 @@
 // THE SOFTWARE.
 //
 #pragma once
-#include "XMLParser.h"
 
-class SOAPMessage;
-class JSONMessage;
-class JSONvalue;
-
-class XMLParserJSON : public XMLParser
-{
-public:
-  XMLParserJSON();
-  explicit XMLParserJSON(XMLMessage* p_xml,const JSONMessage* p_json);
- ~XMLParserJSON() = default;
-
- void  ParseMain(XMLElement* p_element,JSONvalue& p_value);
-private:
-  void ParseMainSOAP (XMLElement* p_element,JSONvalue& p_value);
-  void ParseLevel    (XMLElement* p_element,JSONvalue& p_value,XString p_arrayName = "");
-private:
-  SOAPMessage* m_soap      { nullptr };
-  bool         m_rootFound { false   };
-};
-
-
+// Install the environment reader/changer
+void DoProcessEnvironment();

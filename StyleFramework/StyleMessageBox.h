@@ -31,7 +31,7 @@
 
 // OUTSIDE WORLD INTERFACE
 
-INT_PTR StyleMessageBox(CWnd* p_parent,LPCSTR p_message,LPCSTR p_title,long   p_styles = MB_OK,bool* p_doNotShowAgain = nullptr);
+INT_PTR StyleMessageBox(CWnd* p_parent,LPCSTR p_message,LPCSTR p_title,long   p_styles = MB_OK,bool* p_doNotShowAgain = nullptr,bool p_foreground = false);
 INT_PTR StyleMessageBox(CWnd* p_parent,LPCSTR p_message,LPCSTR p_title,LPCSTR p_labels       , bool* p_doNotShowAgain = nullptr,bool p_foreground = false);
 
 

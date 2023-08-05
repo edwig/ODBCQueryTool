@@ -18,6 +18,7 @@
 //
 #include "stdafx.h"
 #include "StyleTab.h"
+#include "RegistryManager.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -32,6 +33,7 @@ IMPLEMENT_DYNAMIC(StyleTab,CDialog);
 BEGIN_MESSAGE_MAP(StyleTab,CDialog)
   ON_WM_ERASEBKGND()
   ON_WM_CTLCOLOR()
+  ON_REGISTERED_MESSAGE(g_msg_changed,OnStyleChanged)
   ON_NOTIFY_EX(TTN_NEEDTEXT,0,  OnToolTipNotify)
   ON_MESSAGE(WM_CTLCOLORSTATIC, OnCtlColorStatic)
   ON_MESSAGE(WM_CTLCOLORLISTBOX,OnCtlColorListBox)
@@ -46,6 +48,14 @@ StyleTab::StyleTab(UINT  p_IDTemplate,CWnd* p_parentWnd)
 
 StyleTab::~StyleTab()
 {
+}
+
+BOOL
+StyleTab::OnInitDialog()
+{
+  CDialog::OnInitDialog();
+  OnStyleChanged(0,0);
+  return TRUE;
 }
 
 void
@@ -84,6 +94,28 @@ StyleTab::SetupDynamicLayout()
     manager->Create(this);
     LoadDynamicLayoutResource(m_lpszTemplateName);
   }
+}
+
+// Another program has changed our styling
+LRESULT
+StyleTab::OnStyleChanged(WPARAM,LPARAM)
+{
+  RegistryManager manager;
+  int th = manager.GetRegistryInteger(STYLECOLORS_KEY,STYLECOLORS_THEME,(int) ThemeColor::Themes::ThemeSkyblue);
+  ThemeColor::Themes theme = (ThemeColor::Themes) th;
+  ThemeColor::SetTheme(theme);
+
+  // Needed for coloring backgrounds of the controls
+  m_defaultBrush.DeleteObject();
+  m_defaultBrush.CreateSolidBrush(ThemeColor::GetColor(Colors::ColorWindowFrame));
+
+  // Now repaint ourselves and all of our children
+  if(GetSafeHwnd())
+  {
+    Invalidate();
+    RedrawWindow(NULL,NULL,RDW_INVALIDATE | RDW_FRAME | RDW_ALLCHILDREN);
+  }
+  return 0; // AOK
 }
 
 // Catch the ESC key, so the tab will always stay visible

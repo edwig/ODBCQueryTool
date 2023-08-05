@@ -203,8 +203,8 @@ int XLSFormatManager::get_xf_idx(const CellFormat& fmt)
 
   fmt.get_xf(xf);
 
-  xf.protectionType_ = 0 | (15 << 3);		// cell not locked, formula not hidden, type=Cell XF, parent style 15 (default)
-//	xf.usedAttributes_ = (unsigned char)(0x3F << 2);	// XF_USED_ATTRIB: use attributes from parent style: font (0x02), ...
+  xf.protectionType_ = (15 << 3);                   // cell not locked, formula not hidden, type=Cell XF, parent style 15 (default)
+//xf.usedAttributes_ = (unsigned char)(0x3F << 2);  // XF_USED_ATTRIB: use attributes from parent style: font (0x02), ...
 
   return xf_idx;
 }

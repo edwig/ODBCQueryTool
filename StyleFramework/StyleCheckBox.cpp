@@ -99,25 +99,25 @@ StyleCheckbox::Draw(CWnd* p_wnd
     {
       filling   = ThemeColor::GetColor(Colors::ColorCtrlBackground);
       textcolor = ThemeColor::GetColor(Colors::ColorEditText);
-      outline   = ThemeColor::GetColor(Colors::AccentColor1);
+      outline   = ThemeColor::GetColor(Colors::ColorButtonCheck);
     }
     else if((p_state & BST_FOCUS) != 0)
     {
       filling   = ThemeColor::GetColor(Colors::ColorCtrlBackground);
       textcolor = ThemeColor::NoWhite(ThemeColor::GetColor(Colors::AccentColor1));
-      outline   = ThemeColor::GetColor(Colors::AccentColor1);
+      outline   = ThemeColor::GetColor(Colors::ColorButtonCheck);
     }
     else if(p_hover)
     {
       filling   = ThemeColor::GetColor(Colors::ColorCtrlBackground);
       textcolor = ThemeColor::NoWhite(ThemeColor::GetColor(Colors::AccentColor1));
-      outline   = ThemeColor::GetColor(Colors::AccentColor1);
+      outline   = ThemeColor::GetColor(Colors::ColorButtonCheck);
     }
     else
     {
       filling   = ThemeColor::GetColor(Colors::ColorCtrlBackground);
       textcolor = ThemeColor::GetColor(Colors::ColorEditText);
-      outline   = ThemeColor::GetColor(Colors::AccentColor1);
+      outline   = ThemeColor::GetColor(Colors::ColorButtonCheck);
     }
   }
 

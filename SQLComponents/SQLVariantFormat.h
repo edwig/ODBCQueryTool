@@ -38,8 +38,8 @@ namespace SQLComponents
 class SQLVariantFormat
 {
 public:
-  SQLVariantFormat(SQLVariant* p_variant);
-  SQLVariantFormat(SQLVariant& p_variant);
+  explicit SQLVariantFormat(SQLVariant* p_variant);
+  explicit SQLVariantFormat(SQLVariant& p_variant);
   ~SQLVariantFormat();
   void        Reset();
   void        ResetValue();
@@ -54,9 +54,9 @@ public:
   int         FormatDate(XString p_pattern);
   // Is a constant or a numeric / IsConstanteOfNummer
   bool        IsConstantOrNumber(char p_seperator = '.');
-  // Converting european values to system values
+  // Converting European values to system values
   int         StrValutaNLOmzetten(XString& p_string,bool p_enkelValuta);
-  // Converting american $ values to dutch values
+  // Converting American $ values to dutch values
   int         StrValutaAMOmzetten(XString& p_string,bool p_enkelValuta);
   // Value of a string as a double
   double      StringDoubleValue();
@@ -66,7 +66,7 @@ public:
   int         DateCalculate(char p_operator,XString p_argument);
 
   XString     FormatVariantForSQL(SQLDatabase* p_database);
-  void        SetVariant(SQLVariant* p_variant);
+  void        SetVariant(const SQLVariant* p_variant);
   void        SetFormat(XString p_format);
   void        SetUserStatus(int p_status);
   SQLVariant* GetVariant();
@@ -75,9 +75,9 @@ public:
 private:
   // Internal formatting of a number by a template
   int         FormatNumberTemplate(char *Getal,const char *strNumFormat,int p_buflen);
-  // Scan naar '23-09-2012' of naar '2012-09-23' // let op "09/23/2012"  wordt niet ondersteund
-  bool        GetDateFromStringVariant(SQLVariant* p_variant,XString p_format,DATE_STRUCT* p_date);
-  bool        GetTimeFromStringVariant(SQLVariant* p_variant,XString p_format,TIME_STRUCT* p_date);
+  // Scan for '23-09-2012' or for '2012-09-23' // Beware "09/23/2012" is not supported!
+  bool        GetDateFromStringVariant(const SQLVariant* p_variant,XString p_format,DATE_STRUCT* p_date);
+  bool        GetTimeFromStringVariant(const SQLVariant* p_variant,XString p_format,TIME_STRUCT* p_date);
 
   // Is string a (formatted) windows number?
   bool        IsWinNumber(const XString p_string,char* p_decSeperator,char* p_thouSeperator,char* p_valuta,XString* p_newNumber = NULL);
@@ -90,7 +90,7 @@ private:
 };
 
 inline void
-SQLVariantFormat::SetVariant(SQLVariant* p_variant)
+SQLVariantFormat::SetVariant(const SQLVariant* p_variant)
 {
   if(m_owner && m_variant)
   {

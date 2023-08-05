@@ -1703,11 +1703,11 @@ SQLMigrate::SortColumnsBySize(MColumnMap& columns)
 XString
 SQLMigrate::VariantToInsertString(SQLVariant* p_var,int p_datatype)
 {
-  XString           result;
-  TIMESTAMP_STRUCT* stamp;
-  DATE_STRUCT*      date;
-  TIME_STRUCT*      time;
-  SQLGUID*          guid;
+        XString           result;
+  const TIMESTAMP_STRUCT* stamp;
+  const DATE_STRUCT*      date;
+  const TIME_STRUCT*      time;
+  const SQLGUID*          guid;
 
   switch(p_datatype)
   {

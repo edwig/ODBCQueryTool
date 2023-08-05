@@ -616,6 +616,7 @@ SQLInfoOracle::DoBindParameterFixup(SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*p_
 // CATALOG
 // o GetCATALOG<Object[s]><Function>
 //   Objects
+//   - Catalog
 //   - Table
 //   - Column
 //   - Index
@@ -674,6 +675,30 @@ SQLInfoOracle::GetCATALOGMetaTypes(int p_type) const
                         break;
   }
   return sql;
+}
+
+XString
+SQLInfoOracle::GetCATALOGDefaultCharset() const
+{
+  return "SELECT value\n"
+         "  FROM nls_database_parameters\n"
+         " WHERE parameter = 'NLS_CHARACTERSET'";
+}
+
+XString
+SQLInfoOracle::GetCATALOGDefaultCharsetNCV() const
+{
+  return "SELECT value\n"
+         "  FROM nls_database_parameters\n"
+         " WHERE parameter = 'NLS_NCHAR_CHARACTERSET'";
+}
+
+XString
+SQLInfoOracle::GetCATALOGDefaultCollation() const
+{
+  XString nlslang;
+  nlslang.GetEnvironmentVariable("NLS_LANG");
+  return nlslang;
 }
 
 // Get SQL to check if a table already exists in the database
@@ -1303,7 +1328,7 @@ SQLInfoOracle::GetCATALOGIndexFilter(MetaIndex& p_index) const
   try
   {
     SQLQuery qry(m_database);
-    SQLVariant* var = qry.DoSQLStatementScalar(sql);
+    const SQLVariant* var = qry.DoSQLStatementScalar(sql);
     if(var)
     {
       var->GetAsString(expression);
@@ -1537,7 +1562,7 @@ SQLInfoOracle::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
 
   // Add the foreign key columns
   bool extra = false;
-  for(auto& key : p_foreigns)
+  for(const auto& key : p_foreigns)
   {
     if(extra) query += ",";
     query += key.m_fkColumnName;
@@ -1549,7 +1574,7 @@ SQLInfoOracle::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
 
   // Add the primary key columns
   extra = false;
-  for(auto& key : p_foreigns)
+  for(const auto& key : p_foreigns)
   {
     if(extra) query += ",";
     query += key.m_pkColumnName;
@@ -1584,8 +1609,8 @@ SQLInfoOracle::GetCATALOGForeignAlter(MForeignMap& p_original, MForeignMap& p_re
     return "";
   }
 
-  MetaForeign& original = p_original.front();
-  MetaForeign& requested = p_requested.front();
+  const MetaForeign& original = p_original.front();
+  const MetaForeign& requested = p_requested.front();
 
   // Construct the correct tablename
   XString table(original.m_fkTableName);
@@ -2414,7 +2439,7 @@ SQLInfoOracle::GetPSMDeclaration(bool    p_first
   if(p_datatype)
   {
     // Getting type info and name
-    TypeInfo* info = GetTypeInfo(p_datatype);
+    const TypeInfo* info = GetTypeInfo(p_datatype);
     line += info->m_type_name;
 
     if(p_precision > 0)
@@ -2527,7 +2552,7 @@ SQLInfoOracle::GetPSMExecute(XString p_procedure,MParameterMap& p_parameters) co
   line.Format("EXECUTE %s(",p_procedure.GetString());
   bool doMore = false;
 
-  for(auto& param : p_parameters)
+  for(const auto& param : p_parameters)
   {
     if(doMore) line += ",";
     doMore = true;
@@ -2552,7 +2577,7 @@ SQLInfoOracle::GetPSMCursorFetch(XString p_cursorname,std::vector<XString>& /*p_
   XString query = "OPEN  " + p_cursorname + ";\n"
                   "FETCH " + p_cursorname + " INTO ";
 
-  for(auto& var : p_variablenames)
+  for(const auto& var : p_variablenames)
   {
     if(moreThenOne) query += ",";
     moreThenOne = true;

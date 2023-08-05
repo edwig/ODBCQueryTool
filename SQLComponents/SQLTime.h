@@ -54,12 +54,12 @@ class SQLTime
 {
 public:   
   SQLTime();
-  SQLTime(XString p_time);
   SQLTime(const SQLTime& p_time);
-  SQLTime(const int p_hours,const int p_minutes,const int p_seconds);
-  SQLTime(__int64 p_seconds);
-  SQLTime(const SQLTimestamp& p_timestamp);
-  SQLTime(SQL_TIME_STRUCT* p_timestruct);
+  explicit SQLTime(const SQLTimestamp& p_timestamp);
+  explicit SQLTime(XString p_time);
+  explicit SQLTime(const int p_hours,const int p_minutes,const int p_seconds);
+  explicit SQLTime(__int64 p_seconds);
+  explicit SQLTime(const SQL_TIME_STRUCT* p_timestruct);
  ~SQLTime();
 
   XString AsString() const;

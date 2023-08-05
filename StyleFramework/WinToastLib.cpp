@@ -807,7 +807,7 @@ INT64 WinToast::ShowToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
         {
           toast_type = ToastTemplateType(toast.type());
         }
-        HRESULT hr = notificationManager->GetTemplateContent(toast_type, &xmlDocument);
+        hr = notificationManager->GetTemplateContent(toast_type, &xmlDocument);
         if (SUCCEEDED(hr) && toast.isToastGeneric())
             hr = setBindToastGenericHelper(xmlDocument.Get());
         if (SUCCEEDED(hr)) 

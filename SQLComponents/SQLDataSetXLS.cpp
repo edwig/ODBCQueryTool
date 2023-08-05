@@ -49,10 +49,10 @@ SQLDataSetXLS::SQLDataSetXLS(XString p_file, XString p_sheetOrSeperator, bool p_
               ,m_transaction(false)
               ,m_excel(false)
               ,m_xmlExcel(false)
+               // Set defaults
+              ,m_delimLeft("\"")
+              ,m_delimRight("\"")
 {
-  // Set defaults
-  m_delimLeft  = "\"";
-  m_delimRight = "\"";
   // Detect whether file is an Excel spreadsheet or a text delimited file
   XString extensie;
   XString tempString1 = m_file.Right(4);
@@ -274,7 +274,7 @@ SQLDataSetXLS::AddRow(WordList& p_rowValues, long /*p_row*/, bool /*p_replace*/)
 
   while(cols-- && vals--)
   {
-    SQLVariant* var = new SQLVariant(*it++); 
+    const SQLVariant* var = new SQLVariant(*it++); 
     record->AddField(var);
   }
   if(vals == 0 && cols > 0)
@@ -283,7 +283,7 @@ SQLDataSetXLS::AddRow(WordList& p_rowValues, long /*p_row*/, bool /*p_replace*/)
     // Append with empty values (strings)
     while(cols--)
     {
-      SQLVariant* var = new SQLVariant("");
+      const SQLVariant* var = new SQLVariant("");
       record->AddField(var);
     }
   }
@@ -546,7 +546,7 @@ SQLDataSetXLS::Open()
         SQLRecord* record = InsertRecord();
         for(int col = 0; col < cols; ++col)
         {
-          char* value = sheet->CellValue(row,col,buffer,100);
+          const char* value = sheet->CellValue(row,col,buffer,100);
           SQLVariant* var = new SQLVariant(value);
           record->AddField(var);
           delete var;

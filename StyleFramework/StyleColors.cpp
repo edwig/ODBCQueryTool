@@ -50,7 +50,8 @@ const int ThemeColor::theme_colors[NO_OF_COLORS][NO_OF_THEMES] =
  ,{ ClrEditText,    ClrEditText,    ClrEditText,    ClrEditText,       ClrEditText,    ClrEditText,     ClrEditDark         }  // ColorLabelText
  ,{ ComboBoxActive, ComboBoxActive, ComboBoxActive, ComboBoxActive,    ComboBoxActive, ComboBoxActive,  ComboBoxDActive     }  // ColorComboActive
  ,{ ComboBoxDropped,ComboBoxDropped,ComboBoxDropped,ComboBoxDropped,   ComboBoxDropped,ComboBoxDropped, ComboBoxDDropped    }  // ColorComboDropped
- ,{ GroupBoxLine,   GroupBoxLine,   GroupBoxLine,   GroupBoxLine,      GroupBoxLine,   GroupBoxLine,    GroupBoxLine,       }  // ColorGroupLine
+ ,{ GroupBoxLine,   GroupBoxLine,   GroupBoxLine,   GroupBoxLine,      GroupBoxLine,   GroupBoxLine,    GroupBoxLineDark    }  // ColorGroupLine
+ ,{ Lime1,          Skyblue1,       Purple1,        ModerateGray1,     PureGray1,      BlackWhite1,     GroupBoxLine        }  // ColorButtonCheck
  ,{ UsersBackground,UsersBackground,UsersBackground,UsersBackground,   UsersBackground,UsersBackground, DarkCtrlBackground  }  // ColorButtonBackground
  ,{ Lime3,          Skyblue3,       Purple3,        ModerateGray3,     PureGray3,      BlackWhite3,     DarkButtonText      }  // ColorButtonText
  ,{ Assistant5,     Assistant5,     Assistant5,     Assistant5,        Assistant5,     Assistant5,      Assistant5          }  // ColorControlHover
@@ -127,4 +128,14 @@ ThemeColor::HalfTone(COLORREF color,double p_factor /*=0.5*/)
   int blue  = (color & 0x00FF);
 
   return RGB(red * p_factor,green * p_factor,blue * p_factor);
+}
+
+COLORREF 
+ThemeColor::NoWhite(COLORREF color) 
+{ 
+  if(_theme == Themes::ThemeDark)
+  {
+    return RGB(0xBF,0xBF,0xBF);
+  }
+  return color == Assistant0 ? Assistant7 : color; 
 }

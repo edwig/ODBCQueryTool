@@ -477,6 +477,7 @@ SQLInfoGenericODBC::DoBindParameterFixup(SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN&
 // CATALOG
 // o GetCATALOG<Object[s]><Function>
 //   Objects
+//   - Catalog
 //   - Table
 //   - Column
 //   - Index
@@ -504,6 +505,24 @@ SQLInfoGenericODBC::GetCATALOGMetaTypes(int p_type) const
 {
   UNREFERENCED_PARAMETER(p_type);
   return "";
+}
+
+XString
+SQLInfoGenericODBC::GetCATALOGDefaultCharset() const
+{
+  return "iso-8859-1";
+}
+
+XString
+SQLInfoGenericODBC::GetCATALOGDefaultCharsetNCV() const
+{
+  return "utf-16";
+}
+
+XString
+SQLInfoGenericODBC::GetCATALOGDefaultCollation() const
+{
+  return "-";
 }
 
 // ALL FUNCTIONS FOR TABLE(s)
@@ -867,7 +886,7 @@ SQLInfoGenericODBC::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
 
   // Add the foreign key columns
   bool extra = false;
-  for(auto& key : p_foreigns)
+  for(const auto& key : p_foreigns)
   {
     if(extra) query += ",";
     query += key.m_fkColumnName;
@@ -879,7 +898,7 @@ SQLInfoGenericODBC::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
 
   // Add the primary key columns
   extra = false;
-  for(auto& key : p_foreigns)
+  for(const auto& key : p_foreigns)
   {
     if(extra) query += ",";
     query += key.m_pkColumnName;
@@ -935,8 +954,8 @@ SQLInfoGenericODBC::GetCATALOGForeignAlter(MForeignMap& p_original,MForeignMap& 
     return "";
   }
 
-  MetaForeign& original  = p_original.front();
-  MetaForeign& requested = p_requested.front();
+  const MetaForeign& original  = p_original.front();
+  const MetaForeign& requested = p_requested.front();
 
   // Construct the correct tablename
   XString table(original.m_fkTableName);

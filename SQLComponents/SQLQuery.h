@@ -68,9 +68,9 @@ public:
   // Construct SQL query to be later connected
   SQLQuery();
   // Construct SQL query connected to a database
-  SQLQuery(SQLDatabase* p_database);
-  SQLQuery(SQLDatabase& p_database);
-  SQLQuery(HDBC p_hdbc);
+  explicit SQLQuery(SQLDatabase* p_database);
+  explicit SQLQuery(SQLDatabase& p_database);
+  explicit SQLQuery(HDBC p_hdbc);
  ~SQLQuery();
 
   void Init(SQLDatabase* p_database);
@@ -241,7 +241,7 @@ private:
   void  InternalSetParameter(int p_num,SQLVariant* p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
   // Bind application parameters
   void  TruncateInputParameters();
-  void  BindColumnNumeric(SQLSMALLINT p_column,SQLVariant* p_var,int p_type);
+  void  BindColumnNumeric(SQLSMALLINT p_column,const SQLVariant* p_var,int p_type);
 
   // Reset all column to NULL
   void  ResetColumns();
@@ -260,11 +260,11 @@ private:
   // Report timing to logfile
   void  ReportQuerySpeed(LARGE_INTEGER p_start);
   // Construct the SQL for a function/procedure call
-  XString     ConstructSQLForCall(XString& p_schema,XString& p_procedure,bool p_hasReturn);
+  XString     ConstructSQLForCall(XString& p_schema,const XString& p_procedure,bool p_hasReturn);
   // Direct call through ODBC escape language
-  SQLVariant* DoSQLCallODBCEscape(XString& p_schema,XString& p_procedure,bool p_hasReturn);
+  SQLVariant* DoSQLCallODBCEscape(XString& p_schema,const XString& p_procedure,bool p_hasReturn);
   // Log parameter during the binding process
-  void  LogParameter(int p_column,SQLVariant* p_parameter);
+  void  LogParameter(int p_column,const SQLVariant* p_parameter);
   // Do the rebind replacement for a parameter
   short RebindParameter(short p_datatype);
   // Do the rebind replacement for a column

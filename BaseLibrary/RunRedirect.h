@@ -37,11 +37,11 @@
 class RunRedirect;
 
 // All global 'CallProgram' variants
-int  CallProgram           (LPCSTR p_program,LPCSTR p_commandLine);
-int  CallProgram_For_String(LPCSTR p_program,LPCSTR p_commandLine,XString& p_result);
-int  CallProgram_For_String(LPCSTR p_program,LPCSTR p_commandLine,XString& p_result,int p_waittime);
-int  CallProgram_For_String(LPCSTR p_program,LPCSTR p_commandLine,LPCSTR p_stdInput,XString& p_result,int p_waittime);
-int  CallProgram_For_String(LPCSTR p_program,LPCSTR p_commandLine,LPCSTR p_stdInput,XString& p_result,XString& p_errors,int p_waittime);
+int  CallProgram           (LPCSTR p_program,LPCSTR p_commandLine,bool p_show = false);
+int  CallProgram_For_String(LPCSTR p_program,LPCSTR p_commandLine,XString& p_result,bool p_show = false);
+int  CallProgram_For_String(LPCSTR p_program,LPCSTR p_commandLine,XString& p_result,int p_waittime,bool p_show = false);
+int  CallProgram_For_String(LPCSTR p_program,LPCSTR p_commandLine,LPCSTR p_stdInput,XString& p_result,int p_waittime,bool p_show = false);
+int  CallProgram_For_String(LPCSTR p_program,LPCSTR p_commandLine,LPCSTR p_stdInput,XString& p_result,XString& p_errors,int p_waittime,bool p_show = false);
 
 int  PosixCallProgram(XString  p_directory
                      ,XString  p_programma
@@ -58,11 +58,11 @@ int  PosixCallProgram(XString  p_directory
 class RunRedirect : public Redirect
 {
 public:
-   RunRedirect(ULONG p_maxTime = INFINITE);
-  ~RunRedirect();
+  explicit RunRedirect(ULONG p_maxTime = INFINITE);
+ ~RunRedirect();
 
-  void RunCommand(LPCSTR p_commandLine);
-  void RunCommand(LPCSTR p_commandLine,LPCSTR p_stdInput);
+  void RunCommand(LPCSTR p_commandLine,bool p_show);
+  void RunCommand(LPCSTR p_commandLine,LPCSTR p_stdInput,bool p_show);
   void RunCommand(LPCSTR p_commandLine,HWND p_console,UINT p_showWindow,BOOL p_waitForInputIdle);
 
   // Virtual interface. Derived class must implement this!!

@@ -18,6 +18,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "pch.h"
 #include "VariablesDlg.h"
 #include "RebindDlg.h"
+#include <SQLDataType.h>
 
 #pragma warning (disable: 4800)
 // VariablesDlg dialog
@@ -121,7 +122,7 @@ VariablesDlg::OnInitDialog()
   m_variableString1 = m_variable1->GetAsChar();
   m_type1           = m_variable1->GetDataType();
   m_length1         = m_variable1->GetBinaryPieceSize();
-  CString type      = m_variable1->FindDatatype(m_type1);
+  CString type      = SQLDataType::FindDatatype(m_type1);
   int ind = m_typeCombo1.FindStringExact(0,type.GetString());
   m_typeCombo1.SetCurSel(ind);
   m_AtExec1.SetCheck(m_variable1->GetAtExec());
@@ -130,7 +131,7 @@ VariablesDlg::OnInitDialog()
   m_variableString2 = m_variable2->GetAsChar();
   m_type2           = m_variable2->GetDataType();
   m_length2         = m_variable2->GetBinaryPieceSize();
-  type              = m_variable2->FindDatatype(m_type2);
+  type              = SQLDataType::FindDatatype(m_type2);
   ind = m_typeCombo2.FindStringExact(0,type.GetString());
   m_typeCombo2.SetCurSel(ind);
   m_AtExec2.SetCheck(m_variable2->GetAtExec());
@@ -139,7 +140,7 @@ VariablesDlg::OnInitDialog()
   m_variableString3 = m_variable3->GetAsChar();
   m_type3           = m_variable3->GetDataType();
   m_length3         = m_variable3->GetBinaryPieceSize();
-  type              = m_variable3->FindDatatype(m_type3);
+  type              = SQLDataType::FindDatatype(m_type3);
   ind = m_typeCombo3.FindStringExact(0,type.GetString());
   m_typeCombo3.SetCurSel(ind);
   m_AtExec3.SetCheck(m_variable3->GetAtExec());
@@ -148,7 +149,7 @@ VariablesDlg::OnInitDialog()
   m_variableString4 = m_variable4->GetAsChar();
   m_type4           = m_variable4->GetDataType();
   m_length4         = m_variable4->GetBinaryPieceSize();
-  type              = m_variable4->FindDatatype(m_type4);
+  type              = SQLDataType::FindDatatype(m_type4);
   ind = m_typeCombo4.FindStringExact(0,type.GetString());
   m_typeCombo4.SetCurSel(ind);
   m_AtExec4.SetCheck(m_variable4->GetAtExec());
@@ -174,6 +175,12 @@ VariablesDlg::SetParam(CComboBox& box,int curval)
   box.SetCurSel(curval);
 }
 
+void
+VariablesDlg::SetParam(StyleComboBox& box,int curval)
+{
+  SetParam(reinterpret_cast<CComboBox&>(box),curval);
+}
+
 // VariablesDlg message handlers
 
 void VariablesDlg::OnEnChangeVar1()
@@ -191,7 +198,7 @@ VariablesDlg::OnCbnSelchangeType1()
   {
     CString type;
     m_typeCombo1.GetLBText(ind,type);
-    m_type1 = m_variable1->FindDatatype((char*)type.GetString());
+    m_type1 = SQLDataType::FindDatatype((char*)type.GetString());
 
     // Do the conversion
     m_variableString1 = m_variable1->GetAsChar();
@@ -236,7 +243,7 @@ VariablesDlg::OnCbnSelchangeType2()
   {
     CString type;
     m_typeCombo2.GetLBText(ind,type);
-    m_type2 = m_variable2->FindDatatype((char*)type.GetString());
+    m_type2 = SQLDataType::FindDatatype((char*)type.GetString());
 
     // Do the conversion
     m_variableString2 = m_variable2->GetAsChar();
@@ -279,7 +286,7 @@ VariablesDlg::OnCbnSelchangeType3()
   {
     CString type;
     m_typeCombo3.GetLBText(ind,type);
-    m_type3 = m_variable3->FindDatatype((char*)type.GetString());
+    m_type3 = SQLDataType::FindDatatype((char*)type.GetString());
 
     // Do the conversion
     m_variableString3 = m_variable3->GetAsChar();
@@ -324,7 +331,7 @@ VariablesDlg::OnCbnSelchangeType4()
   {
     CString type;
     m_typeCombo4.GetLBText(ind,type);
-    m_type4 = m_variable4->FindDatatype((char*)type.GetString());
+    m_type4 = SQLDataType::FindDatatype((char*)type.GetString());
 
     // Do the conversion
     m_variableString4 = m_variable4->GetAsChar();
@@ -360,7 +367,7 @@ VariablesDlg::OnCbnSelchangeInout1()
   {
     CString typeName;
     m_inoutCombo1.GetLBText(num,typeName);
-    int type = m_variable1->FindParamtype((char*)typeName.GetString());
+    int type = SQLDataType::FindParamtype((char*)typeName.GetString());
     m_variable1->SetParameterType((SQLParamType)type);
   }
 }
@@ -374,7 +381,7 @@ VariablesDlg::OnCbnSelchangeInout2()
   {
     CString typeName;
     m_inoutCombo2.GetLBText(num,typeName);
-    int type = m_variable2->FindParamtype((char*)typeName.GetString());
+    int type = SQLDataType::FindParamtype((char*)typeName.GetString());
     m_variable2->SetParameterType((SQLParamType)type);
   }
 }
@@ -388,7 +395,7 @@ VariablesDlg::OnCbnSelchangeInout3()
   {
     CString typeName;
     m_inoutCombo3.GetLBText(num,typeName);
-    int type = m_variable3->FindParamtype((char*)typeName.GetString());
+    int type = SQLDataType::FindParamtype((char*)typeName.GetString());
     m_variable3->SetParameterType((SQLParamType)type);
   }
 }
@@ -402,7 +409,7 @@ VariablesDlg::OnCbnSelchangeInout4()
   {
     CString typeName;
     m_inoutCombo4.GetLBText(num,typeName);
-    int type = m_variable4->FindParamtype((char*)typeName.GetString());
+    int type = SQLDataType::FindParamtype((char*)typeName.GetString());
     m_variable4->SetParameterType((SQLParamType)type);
   }
 }

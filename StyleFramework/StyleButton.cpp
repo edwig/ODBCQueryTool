@@ -151,6 +151,11 @@ StyleButton::StyleButton(CString p_type, bool pInError)
 
 StyleButton::~StyleButton()
 {
+  if(m_font)
+  {
+    delete m_font;
+    m_font = nullptr;
+  }
   DestroyWindow();
 }
 

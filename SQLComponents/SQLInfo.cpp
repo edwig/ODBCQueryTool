@@ -157,16 +157,8 @@ SQLInfo::Init()
   m_integrity           = false;
   m_cli_year            = "";
   m_collationSequence   = "";
-  m_catalogName         = "";
-  m_schemaName          = "";
-  m_tableName           = "";
-  m_procedureName       = "";
   m_userName            = "";
   m_catalogNameSeparator= "";
-  m_specialChars        = "";
-  m_likeEscape          = "";
-  m_identifierQuote     = "";
-  m_collationSequence   = "";
   m_manager_version     = "";
   m_odbc_driver_version = "";
   m_rdbms_version       = "";
@@ -179,7 +171,6 @@ SQLInfo::Init()
   m_schemaName       = "schema";
   m_tableName        = "table";
   m_procedureName    = "procedure";
-  m_orderByInSelect  = true;
   m_columnAliases    = true;
   m_maxCatalogName   = SQL_MAX_IDENTIFIER;
   m_maxSchemaName    = SQL_MAX_IDENTIFIER;
@@ -232,7 +223,7 @@ SQLInfo::Init()
   m_ODBCKeywords.clear();
 
   // Remove all datatypes info
-  for(auto& type : m_dataTypes)
+  for(const auto& type : m_dataTypes)
   {
     delete type.second;
   }
@@ -371,7 +362,7 @@ SQLInfo::GetInfo()
   char  buffer[5120];
   char  woord [1024];
   char* pw;
-  char* pb;
+  const char* pb;
   SQLSMALLINT len;
 
   Init();
@@ -394,7 +385,7 @@ SQLInfo::GetInfo()
   {
     woord[0] = '\0';
     pw = woord;
-    for(pb = (char*) SQL_ODBC_KEYWORDS;*pb != '\0';pb++)
+    for(pb = SQL_ODBC_KEYWORDS;*pb != '\0';pb++)
     {
       if (*pb == ',')
       {
@@ -409,7 +400,6 @@ SQLInfo::GetInfo()
     }
     *pw = '\0';
     m_ODBCKeywords.push_back(woord);
-    pw = woord;
   }
   // KEYWORDS reported by the RDBMS
   if(SQLGetInfo(m_hdbc, SQL_KEYWORDS, buffer, 5120, &len) == SQL_SUCCESS)
@@ -431,7 +421,6 @@ SQLInfo::GetInfo()
     }
     *pw = '\0';
     m_RDBMSkeywords.push_back(woord);
-    pw = woord;
   }   
   else
   {
@@ -743,7 +732,7 @@ SQLInfo::GetTypeInfo(int p_sqlDatatype,XString p_typename /*=""*/) const
 {
   TypeInfo* result = nullptr;
 
-  for(auto& type : m_dataTypes)
+  for(const auto& type : m_dataTypes)
   {
     if(type.second->m_data_type == p_sqlDatatype)
     {
@@ -769,7 +758,7 @@ SQLInfo::SupportedFunction(unsigned int api_function)
   if(m_functions_use_3)
   {
     // IF ODBC 3.x Standard
-    if(api_function < 0 || api_function > 4000)
+    if(api_function > 4000)
     {
       return false;
     }
@@ -782,7 +771,7 @@ SQLInfo::SupportedFunction(unsigned int api_function)
   else
   {
     // If ODBC 1.x / 2.x Standard
-    if(api_function < 0 || api_function > SQL_API_SQLBINDPARAMETER)
+    if(api_function > SQL_API_SQLBINDPARAMETER)
     {
       return false;
     }
@@ -1031,7 +1020,7 @@ SQLInfo::SetAttributeTraceFile(XString p_traceFile)
 {
   SQLCHAR traceFile[512 + 1];
   SQLINTEGER cbMax = p_traceFile.GetLength();
-  strncpy_s((char *)traceFile,512,p_traceFile.GetString(),cbMax);
+  strncpy_s(reinterpret_cast<char *>(traceFile),512,p_traceFile.GetString(),cbMax);
 
   return SetAttributeString("tracefile",SQL_ATTR_TRACEFILE,traceFile);
 }
@@ -1075,7 +1064,7 @@ SQLInfo::SetAttributeTranslib(XString p_transLib)
   m_transLib = p_transLib;
   if(m_hdbc)
   {
-    return SetAttributeString("translation-library",SQL_ATTR_TRANSLATE_LIB,(SQLCHAR *)p_transLib.GetString());
+    return SetAttributeString("translation-library",SQL_ATTR_TRANSLATE_LIB,reinterpret_cast<SQLCHAR*>(const_cast<char*>(p_transLib.GetString())));
   }
   return true;
 }
@@ -1185,9 +1174,7 @@ SQLInfo::GetPrimaryKeyInfo(XString&    p_tablename
   p_primary = "";
   p_primaries.clear();
 
-  MTableMap tables;
   XString   errors;
-
   MakeInfoTablePrimary(p_primaries,errors,"",p_tablename);
   if(!p_primaries.size())
   {
@@ -1308,16 +1295,16 @@ SQLInfo::MakeObjectName(SQLCHAR* search_catalog
 {
   XString objectName;
 
-  if(strlen((char*)search_schema))
+  if(strlen(reinterpret_cast<char*>(search_schema)))
   {
     objectName += XString(search_schema);
     objectName += ".";
   }
-  if(strlen((char*)search_table))
+  if(strlen(reinterpret_cast<char*>(search_table)))
   {
     objectName += XString(search_table);
   }
-  if(search_catalog && strlen((char*)search_catalog))
+  if(search_catalog && strlen(reinterpret_cast<char*>(search_catalog)))
   {
     XString separator = m_catalogNameSeparator;
     if(separator.IsEmpty())
@@ -1333,7 +1320,7 @@ SQLInfo::MakeObjectName(SQLCHAR* search_catalog
       objectName = XString(search_catalog) + separator + objectName;
     }
   }
-  if(search_type && strlen((char*)search_type))
+  if(search_type && strlen(reinterpret_cast<char*>(search_type)))
   {
     objectName = XString(search_type) + ": " + objectName;
   }
@@ -1458,9 +1445,9 @@ SQLInfo::MakeInfoTableTable(MTableMap& p_tables
 
   // Setting the search arguments
   search_catalog[0] = 0;
-  strcpy_s((char*)search_schema,SQL_MAX_BUFFER,p_schema);
-  strcpy_s((char*)search_table, SQL_MAX_BUFFER,p_tablename);
-  strcpy_s((char*)search_type,  SQL_MAX_BUFFER,p_type);
+  strcpy_s(reinterpret_cast<char*>(search_schema),SQL_MAX_BUFFER,p_schema);
+  strcpy_s(reinterpret_cast<char*>(search_table), SQL_MAX_BUFFER,p_tablename);
+  strcpy_s(reinterpret_cast<char*>(search_type),  SQL_MAX_BUFFER,p_type);
 
   // Have care: Empty strings denotes a special case
   // - Empty strings for a search catalog means tables with no catalog in an 
@@ -1516,10 +1503,10 @@ SQLInfo::MakeInfoTableTable(MTableMap& p_tables
          if(cbTableType   > 0) theTable.m_objectType  = szTableType;
 
          // Build "TYPE: catalog.schema.table" object type name
-         theTable.m_fullName = MakeObjectName((SQLCHAR*)theTable.m_catalog.GetString()
-                                                   ,(SQLCHAR*)theTable.m_schema.GetString()
-                                                   ,(SQLCHAR*)theTable.m_table.GetString()
-                                                   ,(SQLCHAR*)theTable.m_objectType.GetString());
+         theTable.m_fullName = MakeObjectName(reinterpret_cast<SQLCHAR*>(const_cast<char*>(theTable.m_catalog.GetString()))
+                                             ,reinterpret_cast<SQLCHAR*>(const_cast<char*>(theTable.m_schema.GetString()))
+                                             ,reinterpret_cast<SQLCHAR*>(const_cast<char*>(theTable.m_table.GetString()))
+                                             ,reinterpret_cast<SQLCHAR*>(const_cast<char*>(theTable.m_objectType.GetString())));
          // Remember this table as a result
          p_tables.push_back(theTable);
        }
@@ -1621,9 +1608,9 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns
 
   //strcpy_s((char*)szCatalogName,SQL_MAX_IDENTIFIER,m_searchCatalogName.GetString());
   szCatalogName[0] = 0;
-  strcpy_s((char*)szSchemaName,SQL_MAX_BUFFER,p_schema.GetString());
-  strcpy_s((char*)szTableName, SQL_MAX_BUFFER,p_tablename.GetString());
-  strcpy_s((char*)szColumnName,SQL_MAX_BUFFER,p_columnname.GetString());
+  strcpy_s(reinterpret_cast<char*>(szSchemaName),SQL_MAX_BUFFER,p_schema.GetString());
+  strcpy_s(reinterpret_cast<char*>(szTableName), SQL_MAX_BUFFER,p_tablename.GetString());
+  strcpy_s(reinterpret_cast<char*>(szColumnName),SQL_MAX_BUFFER,p_columnname.GetString());
 
   // - If the driver cannot search on this type of META-object the pointer MUST be NULL
   unsigned char* catalog = GetMetaPointer(szCatalogName,meta);
@@ -1700,7 +1687,7 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns
            type = ODBCDataType(DataType);
            if(cbTypeName > 0)
            {
-             if(type.CompareNoCase((char*)szTypeName))
+             if(type.CompareNoCase(reinterpret_cast<char*>(szTypeName)))
              {
                type = szTypeName;                                      // 6
              }
@@ -1732,8 +1719,9 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns
   }
   else
   {
+    SQLCHAR type[2] = "";
     p_errors  = "Driver not capable to find columns for: ";
-    p_errors += MakeObjectName(catalog,schema,table,(unsigned char*)"");
+    p_errors += MakeObjectName(catalog,schema,table,type);
     p_errors += ". Error in ODBC statement: ";
     p_errors += m_database->GetErrorString(m_hstmt);
   }
@@ -1764,8 +1752,8 @@ SQLInfo::MakeInfoTablePrimary(MPrimaryMap& p_primaries,XString& p_errors,XString
     return false;
   }
   szCatalogName[0] = 0;
-  strcpy_s((char*)szSchemaName, SQL_MAX_IDENTIFIER,p_schema.GetString());
-  strcpy_s((char*)szTableName,  SQL_MAX_IDENTIFIER,p_tablename.GetString());
+  strcpy_s(reinterpret_cast<char*>(szSchemaName), SQL_MAX_IDENTIFIER,p_schema.GetString());
+  strcpy_s(reinterpret_cast<char*>(szTableName),  SQL_MAX_IDENTIFIER,p_tablename.GetString());
 
   CloseStatement();
   bool meta = GetStatement(false);
@@ -1824,11 +1812,12 @@ SQLInfo::MakeInfoTablePrimary(MPrimaryMap& p_primaries,XString& p_errors,XString
   }
   else
   {
+    SQLCHAR type[2] = "";
     p_errors  = "Driver not capable to find primary key for: ";
-    p_errors += MakeObjectName(catalog,schema,table,(unsigned char*)"");
+    p_errors += MakeObjectName(catalog,schema,table,type);
     p_errors += ". Error in ODBC statement: ";
     p_errors += m_database->GetErrorString(m_hstmt);
-    }
+  }
   CloseStatement();
   return p_primaries.size() > 0;
 }
@@ -1881,8 +1870,8 @@ SQLInfo::MakeInfoTableForeign(MForeignMap& p_foreigns
   if(p_referenced)
   {
     szPKCatalogName[0] = 0;
-    strcpy_s((char*)szPKSchemaName, SQL_MAX_BUFFER,p_schema.GetString());
-    strcpy_s((char*)szPKTableName,  SQL_MAX_BUFFER,p_tablename.GetString());
+    strcpy_s(reinterpret_cast<char*>(szPKSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
+    strcpy_s(reinterpret_cast<char*>(szPKTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
     szFKCatalogName[0] = 0;
     szFKSchemaName [0] = 0;
     szFKTableName  [0] = 0;
@@ -1893,8 +1882,8 @@ SQLInfo::MakeInfoTableForeign(MForeignMap& p_foreigns
     szPKSchemaName [0] = 0;
     szPKTableName  [0] = 0;
     szFKCatalogName[0] = 0;
-    strcpy_s((char*)szFKSchemaName, SQL_MAX_BUFFER,p_schema.GetString());
-    strcpy_s((char*)szFKTableName,  SQL_MAX_BUFFER,p_tablename.GetString());
+    strcpy_s(reinterpret_cast<char*>(szFKSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
+    strcpy_s(reinterpret_cast<char*>(szFKTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
   }
   unsigned char* PKcatalog = GetMetaPointer(szPKCatalogName,meta);
   unsigned char* PKschema  = GetMetaPointer(szPKSchemaName, meta);
@@ -1980,8 +1969,12 @@ SQLInfo::MakeInfoTableForeign(MForeignMap& p_foreigns
   }
   else
   {
+    SQLCHAR empty[2] = "";
     p_errors  = "Driver not capable to find foreign keys for: ";
-    p_errors += MakeObjectName((unsigned char*)"",(unsigned char*)p_schema.GetString(),(unsigned char*)p_tablename.GetString(),(unsigned char*)"");
+    p_errors += MakeObjectName(empty
+                              ,reinterpret_cast<SQLCHAR*>(const_cast<char*>(p_schema.GetString()))
+                              ,reinterpret_cast<SQLCHAR*>(const_cast<char*>(p_tablename.GetString()))
+                              ,empty);
     p_errors += ". Error in ODBC statement: ";
     p_errors += m_database->GetErrorString(m_hstmt);
   }
@@ -2030,8 +2023,8 @@ SQLInfo::MakeInfoTableStatistics(MIndicesMap& p_statistics
     return true;
   }
   szCatalogName[0] = 0;
-  strcpy_s((char*)szSchemaName, SQL_MAX_BUFFER,p_schema.GetString());
-  strcpy_s((char*)szTableName,  SQL_MAX_BUFFER,p_tablename.GetString());
+  strcpy_s(reinterpret_cast<char*>(szSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
+  strcpy_s(reinterpret_cast<char*>(szTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
 
   CloseStatement();
   bool meta = GetStatement(false);
@@ -2117,11 +2110,12 @@ SQLInfo::MakeInfoTableStatistics(MIndicesMap& p_statistics
   }
   else
   {
+    SQLCHAR empty[2] = "";
     p_errors  = "Driver not capable to find statistics for: ";
-    p_errors += MakeObjectName(catalog,schema,table,(unsigned char*)"");
+    p_errors += MakeObjectName(catalog,schema,table,empty);
     p_errors += ". Error in ODBC statement: ";
     p_errors += m_database->GetErrorString(m_hstmt);
-    }
+  }
   CloseStatement();
   return p_statistics.size() > 0;
 }
@@ -2159,8 +2153,8 @@ SQLInfo::MakeInfoTableSpecials(MSpecialsMap& p_specials
     return false;
   }
   szCatalogName[0] = 0;
-  strcpy_s((char*)szSchemaName, SQL_MAX_BUFFER,p_schema.GetString());
-  strcpy_s((char*)szTableName,  SQL_MAX_BUFFER,p_tablename.GetString());
+  strcpy_s(reinterpret_cast<char*>(szSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
+  strcpy_s(reinterpret_cast<char*>(szTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
 
   CloseStatement();
   bool meta = GetStatement(false);
@@ -2227,8 +2221,9 @@ SQLInfo::MakeInfoTableSpecials(MSpecialsMap& p_specials
   }
   else
   {
+    SQLCHAR empty[2] = "";
     p_errors  = "Driver not capable to find specials for: ";
-    p_errors += MakeObjectName(catalog,schema,table,(unsigned char*)"");
+    p_errors += MakeObjectName(catalog,schema,table,empty);
     p_errors += ". Error in ODBC statement: ";
     p_errors += m_database->GetErrorString(m_hstmt);
   }
@@ -2264,8 +2259,8 @@ SQLInfo::MakeInfoTablePrivileges(MPrivilegeMap& p_privileges
     return false;
   }
   szCatalogName[0] = 0;
-  strcpy_s((char*)szSchemaName, SQL_MAX_BUFFER,p_schema.GetString());
-  strcpy_s((char*)szTableName,  SQL_MAX_BUFFER,p_tablename.GetString());
+  strcpy_s(reinterpret_cast<char*>(szSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
+  strcpy_s(reinterpret_cast<char*>(szTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
 
   CloseStatement();
   bool meta = GetStatement(false);
@@ -2318,7 +2313,7 @@ SQLInfo::MakeInfoTablePrivileges(MPrivilegeMap& p_privileges
          priv.m_grantable = false;
          if(cbGrantable > 0)
          {
-           if(_stricmp((char*)szGrantable,"YES") == 0)
+           if(_stricmp(reinterpret_cast<char*>(szGrantable),"YES") == 0)
            {
              priv.m_grantable = true;
            }
@@ -2334,8 +2329,9 @@ SQLInfo::MakeInfoTablePrivileges(MPrivilegeMap& p_privileges
   }
   else
   {
+    SQLCHAR empty[2] = "";
     p_errors  = "Driver not capable to find privileges for: ";
-    p_errors += MakeObjectName(catalog,schema,table,(SQLCHAR*)"");
+    p_errors += MakeObjectName(catalog,schema,table,empty);
     p_errors += ". Error in ODBC statement: ";
     p_errors += m_database->GetErrorString(m_hstmt);
   }
@@ -2374,9 +2370,9 @@ SQLInfo::MakeInfoColumnPrivileges(MPrivilegeMap&  p_privileges
     return false;
   }
   szCatalogName[0] = 0;
-  strcpy_s((char*)szSchemaName, SQL_MAX_BUFFER,p_schema.GetString());
-  strcpy_s((char*)szTableName,  SQL_MAX_BUFFER,p_tablename.GetString());
-  strcpy_s((char*)szColumnName, SQL_MAX_BUFFER,p_columnname.GetString());
+  strcpy_s(reinterpret_cast<char*>(szSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
+  strcpy_s(reinterpret_cast<char*>(szTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
+  strcpy_s(reinterpret_cast<char*>(szColumnName), SQL_MAX_BUFFER,p_columnname.GetString());
 
   CloseStatement();
   bool meta = GetStatement(false);
@@ -2434,7 +2430,7 @@ SQLInfo::MakeInfoColumnPrivileges(MPrivilegeMap&  p_privileges
          priv.m_grantable = false;
          if(cbGrantable > 0)
          {
-           if(_stricmp((char*)szGrantable,"YES") == 0)
+           if(_stricmp(reinterpret_cast<char*>(szGrantable),"YES") == 0)
            {
              priv.m_grantable = true;
            }
@@ -2481,7 +2477,6 @@ SQLInfo::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
   SQLLEN       cbRemarks         = 0;
   SQLSMALLINT    ProcedureType   = 0;
   SQLLEN       cbProcedureType   = 0;
-  bool         findAll = false;
 
   // Check whether we can do this
   if(!SupportedFunction(SQL_API_SQLPROCEDURES))
@@ -2504,12 +2499,8 @@ SQLInfo::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
   }
   // Split name in a maximum of three parts
   szCatalogName[0] = 0;
-  strcpy_s((char*)szSchemaName,   SQL_MAX_BUFFER,p_schema.GetString());
-  strcpy_s((char*)szProcedureName,SQL_MAX_BUFFER,p_procedure.GetString());
-  if(p_procedure == "%")
-  {
-    findAll = true;
-  }
+  strcpy_s(reinterpret_cast<char*>(szSchemaName),   SQL_MAX_BUFFER,p_schema.GetString());
+  strcpy_s(reinterpret_cast<char*>(szProcedureName),SQL_MAX_BUFFER,p_procedure.GetString());
 
   CloseStatement();
   bool meta = GetStatement(false);
@@ -2583,8 +2574,9 @@ SQLInfo::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
   }
   else
   {
+    SQLCHAR empty[2] = "";
     p_errors  = "Driver not capable to find procedures for: ";
-    p_errors += MakeObjectName(catalog,schema,procedure,(SQLCHAR*)"");
+    p_errors += MakeObjectName(catalog,schema,procedure,empty);
     p_errors += ". Error in ODBC statement: ";
     p_errors += m_database->GetErrorString(m_hstmt);
   }
@@ -2645,8 +2637,8 @@ SQLInfo::MakeInfoPSMParameters(MParameterMap& p_parameters
   }
   // Init search arguments
   szCatalogName[0] = 0;
-  strcpy_s((char*)szSchemaName,   SQL_MAX_BUFFER,p_schema.GetString());
-  strcpy_s((char*)szProcedureName,SQL_MAX_BUFFER,p_procedure.GetString());
+  strcpy_s(reinterpret_cast<char*>(szSchemaName),   SQL_MAX_BUFFER,p_schema.GetString());
+  strcpy_s(reinterpret_cast<char*>(szProcedureName),SQL_MAX_BUFFER,p_procedure.GetString());
   szColumnName[0] = 0;
 
   CloseStatement();
@@ -2733,8 +2725,9 @@ SQLInfo::MakeInfoPSMParameters(MParameterMap& p_parameters
   }
   else
   {
+    SQLCHAR empty[2] = "";
     p_errors  = "Driver not capable to find procedures columns for: ";
-    p_errors += MakeObjectName(catalog,schema,procedure,(SQLCHAR*)"");
+    p_errors += MakeObjectName(catalog,schema,procedure,empty);
     p_errors += ". Error in ODBC statement: ";
     p_errors += m_database->GetErrorString(m_hstmt);
   }
@@ -2768,7 +2761,7 @@ SQLInfo::NativeSQL(HDBC hdbc,XString& sqlCommand)
 
   // Perform the conversion call
   m_retCode = SqlNativeSql(hdbc
-                         ,(SQLCHAR *)sqlCommand.GetString()
+                         ,reinterpret_cast<SQLCHAR*>(const_cast<char*>(sqlCommand.GetString()))
                          ,sqlCommand.GetLength()
                          ,buffer
                          ,buflen
@@ -2778,7 +2771,7 @@ SQLInfo::NativeSQL(HDBC hdbc,XString& sqlCommand)
     if(retLen >= 0 && retLen <= buflen)
     {
       buffer[retLen] = 0;
-      XString result((char*) buffer);
+      XString result(reinterpret_cast<char*>(buffer));
       delete[] buffer;
       return result;
     }
@@ -2831,8 +2824,7 @@ SQLInfo::MakeInfoMetaTypes(MMetaMap& p_objects,XString& p_errors,int p_type)
   unsigned char search_table  [META_SEARCH_LEN] = "";
   unsigned char search_type   [META_SEARCH_LEN] = "";
   // For duplicates
-  std::map<XString,XString> found;
-  char* nameFound = NULL;
+  SQLCHAR* nameFound = NULL;
 
   // Check whether we can do this
   if(!SupportedFunction(SQL_API_SQLTABLES))
@@ -2846,9 +2838,9 @@ SQLInfo::MakeInfoMetaTypes(MMetaMap& p_objects,XString& p_errors,int p_type)
 
   switch(p_type)
   {
-    case META_CATALOGS: strcpy_s((char*)search_catalog,META_SEARCH_LEN,SQL_ALL_CATALOGS);     break;
-    case META_SCHEMAS:  strcpy_s((char*)search_schema, META_SEARCH_LEN,SQL_ALL_SCHEMAS);      break;
-    case META_TABLES:   strcpy_s((char*)search_type,   META_SEARCH_LEN,SQL_ALL_TABLE_TYPES);  break;
+    case META_CATALOGS: strcpy_s(reinterpret_cast<char*>(search_catalog),META_SEARCH_LEN,SQL_ALL_CATALOGS);     break;
+    case META_SCHEMAS:  strcpy_s(reinterpret_cast<char*>(search_schema), META_SEARCH_LEN,SQL_ALL_SCHEMAS);      break;
+    case META_TABLES:   strcpy_s(reinterpret_cast<char*>(search_type),   META_SEARCH_LEN,SQL_ALL_TABLE_TYPES);  break;
     default: return false;
   }
   unsigned char* catalog = GetMetaPointer(search_catalog,meta);
@@ -2871,6 +2863,8 @@ SQLInfo::MakeInfoMetaTypes(MMetaMap& p_objects,XString& p_errors,int p_type)
     SqlBindCol(m_hstmt, 2, SQL_C_CHAR,szSchemaName, SQL_MAX_BUFFER, &cbSchemaName);
     SqlBindCol(m_hstmt, 4, SQL_C_CHAR,szTableType,  SQL_MAX_BUFFER, &cbTableType);
     SqlBindCol(m_hstmt, 5, SQL_C_CHAR,szRemarks,    SQL_MAX_BUFFER, &cbRemarks);
+
+    std::map<XString,XString> found;
     while(true)
     {
       m_retCode = SqlFetch(m_hstmt);
@@ -2885,11 +2879,11 @@ SQLInfo::MakeInfoMetaTypes(MMetaMap& p_objects,XString& p_errors,int p_type)
         object.m_objectType = p_type;
         switch(p_type)
         {
-          case META_CATALOGS: if(cbCatalogName > 0) nameFound = (char*)szCatalogName;
+          case META_CATALOGS: if(cbCatalogName > 0) nameFound = szCatalogName;
                               break;
-          case META_SCHEMAS:  if(cbSchemaName  > 0) nameFound = (char*)szSchemaName;
+          case META_SCHEMAS:  if(cbSchemaName  > 0) nameFound = szSchemaName;
                               break;
-          case META_TABLES:   if(cbTableType   > 0) nameFound = (char*)szTableType;
+          case META_TABLES:   if(cbTableType   > 0) nameFound = szTableType;
                               break;
         }
         if(cbRemarks > 0)
@@ -2899,9 +2893,9 @@ SQLInfo::MakeInfoMetaTypes(MMetaMap& p_objects,XString& p_errors,int p_type)
         if(nameFound)
         {
           XString val;
-          if(found.find(nameFound) == found.end())
+          if(found.find(reinterpret_cast<char*>(nameFound)) == found.end())
           {
-            found.insert(std::make_pair(nameFound,nameFound));
+            found.insert(std::make_pair(reinterpret_cast<char*>(nameFound),reinterpret_cast<char*>(nameFound)));
             object.m_objectName = nameFound;
             p_objects.push_back(object);
           }

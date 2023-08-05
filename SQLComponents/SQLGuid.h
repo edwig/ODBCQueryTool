@@ -34,8 +34,8 @@ class SQLGuid
 public:
   SQLGuid();
   SQLGuid(const SQLGuid& p_guid);
-  SQLGuid(const SQLGUID* p_guid);
-  SQLGuid(const XString  p_string);
+  explicit SQLGuid(const SQLGUID* p_guid);
+  explicit SQLGuid(const XString  p_string);
 
   bool     New();
   // Set from external values
@@ -43,9 +43,9 @@ public:
   bool     Set(const SQLGUID* p_guid);
 
   // Get the internals
-  bool     IsValid();
-  SQLGUID* AsGUID();
-  XString  AsString();
+  bool           IsValid()  const;
+  const SQLGUID* AsGUID()   const;
+  XString        AsString() const;
 
   // Operators
   bool     operator ==(const SQLGuid& p_other);

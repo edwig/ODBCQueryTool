@@ -36,14 +36,14 @@ static char THIS_FILE[] = __FILE__;
 namespace SQLComponents
 {
   ColumnInfo::ColumnInfo()
+             :v_columnName("")
+             ,v_dataType  (0)
+             ,v_typeName  ("")
+             ,v_precision (0)
+             ,v_length    (0)
+             ,v_scale     (0)
+             ,v_nullable  (0)
+             ,v_remarks   ("")
   {
-    v_columnName = "";
-    v_dataType   = 0;
-    v_typeName   = "";
-    v_precision  = 0;
-    v_length     = 0;
-    v_scale      = 0;
-    v_nullable   = 0;
-    v_remarks    = "";
   }
 }

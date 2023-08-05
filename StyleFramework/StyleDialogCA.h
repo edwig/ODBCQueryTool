@@ -21,6 +21,7 @@
 //
 #pragma once
 #include <afxdialogex.h>
+#include "GrayWindow.h"
 
 class StyleDialogCA: public CDialogEx
 {

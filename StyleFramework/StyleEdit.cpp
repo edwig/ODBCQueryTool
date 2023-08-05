@@ -127,7 +127,7 @@ StyleEdit::InitSkin(bool p_force /*=false*/)
   SetFont(&STYLEFONTS.DialogTextFont);
   if(p_force || (style & ES_MULTILINE))
   {
-    SkinWndScroll(this,border?m_borderSize:0);
+    SkinWndScroll(this,border ? m_borderSize : 0);
     GetSkin()->SetScrollbarBias(0);
   }
   m_initCorrectly = true;

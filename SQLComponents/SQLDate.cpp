@@ -293,7 +293,7 @@ SQLDate::AsStrippedSQLString(SQLDatabase* /*p_database*/)
 }
 
 void
-SQLDate::AsDateStruct(DATE_STRUCT* p_date)
+SQLDate::AsDateStruct(DATE_STRUCT* p_date) const
 {
   p_date->day   = (SQLUSMALLINT) Day();
   p_date->month = (SQLUSMALLINT) Month();
@@ -305,13 +305,13 @@ inline SQLDate
 SQLDate::Today()
 {
   _tzset();
-  time_t ltime;
-  time(&ltime);
-  struct tm now;
-  localtime_s(&now,&ltime);
+  __time64_t ltime;
+  _time64(&ltime);
+  struct tm thedate;
+  _localtime64_s(&thedate,&ltime);
 
   // Return as SQLDate object
-  return SQLDate(now.tm_mday,now.tm_mon + 1,now.tm_year + 1900);
+  return SQLDate(thedate.tm_mday,thedate.tm_mon + 1,thedate.tm_year + 1900);
 }
 
 // Returns the name of the day of the week

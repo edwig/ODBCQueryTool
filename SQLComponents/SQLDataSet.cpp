@@ -26,6 +26,7 @@
 #include "stdafx.h"
 #include "SQLComponents.h"
 #include "SQLDataSet.h"
+#include "SQLDataType.h"
 #include "SQLQuery.h"
 #include "SQLVariantFormat.h"
 #include "SQLInfoDB.h"
@@ -100,7 +101,7 @@ SQLDataSet::SQLDataSet(XString p_name,SQLDatabase* p_database /*=NULL*/)
 
 SQLDataSet::~SQLDataSet()
 {
-  Close();
+  SQLDataSet::Close();
 }
 
 void
@@ -249,7 +250,7 @@ SQLDataSet::ForgetObject(int p_primary,bool p_force /*=false*/)
 
 // Forget 1 record and primary is a compound key (Slower)
 bool
-SQLDataSet::ForgetObject(VariantSet& p_primary,bool p_force /*=false*/)
+SQLDataSet::ForgetObject(const VariantSet& p_primary,bool p_force /*=false*/)
 {
   // Find the record to forget
   SQLRecord* record = FindObjectRecord(p_primary);
@@ -271,7 +272,7 @@ SQLDataSet::SetStatus(int m_add,int m_delete /*=0*/)
 }
 
 void 
-SQLDataSet::SetParameter(SQLParameter p_parameter)
+SQLDataSet::SetParameter(const SQLParameter& p_parameter)
 {
   // See if the parameter is already there
   for(unsigned int ind = 0;ind < m_parameters.size(); ++ind)
@@ -288,22 +289,22 @@ SQLDataSet::SetParameter(SQLParameter p_parameter)
 }
 
 void 
-SQLDataSet::SetParameter(XString p_naam,SQLVariant p_waarde)
+SQLDataSet::SetParameter(const XString& p_name,const SQLVariant& p_value)
 {
   // See if the parameter is already there
   for(unsigned int ind = 0;ind < m_parameters.size();++ind)
   {
-    if(m_parameters[ind].m_name == p_naam)
+    if(m_parameters[ind].m_name == p_name)
     {
       // Found it: set a new value
-      m_parameters[ind].m_value = p_waarde;
+      m_parameters[ind].m_value = p_value;
       return;
     }
   }
   // New parameter
   SQLParameter par;
-  par.m_name   = p_naam;
-  par.m_value  = p_waarde;
+  par.m_name   = p_name;
+  par.m_value  = p_value;
   m_parameters.push_back(par);
 }
 
@@ -329,7 +330,7 @@ SQLDataSet::SetFilters(SQLFilterSet* p_filters)
 
 // Add filter to current set of filters
 void
-SQLDataSet::SetFilter(SQLFilter p_filter)
+SQLDataSet::SetFilter(const SQLFilter& p_filter)
 {
   if(!m_filters)
   {
@@ -361,7 +362,7 @@ SQLDataSet::SetPrimaryKeyColumn(WordList& p_list)
 }
 
 SQLVariant*  
-SQLDataSet::GetParameter(XString& p_name)
+SQLDataSet::GetParameter(const XString& p_name)
 {
   for(unsigned int ind = 0;ind < m_parameters.size(); ++ind)
   {
@@ -652,9 +653,7 @@ SQLDataSet::GetSelectionSQL(SQLQuery& p_qry)
 bool
 SQLDataSet::Open()
 {
-  bool    result = false;
-  ULONG64 begin  = 0;
-  XString query;
+  bool result = false;
 
   if(m_query.IsEmpty() && m_selection.IsEmpty())
   {
@@ -674,6 +673,7 @@ SQLDataSet::Open()
   {
     SQLQuery qry(m_database);
     SQLTransaction trans(m_database,m_name);
+    ULONG64 begin = 0;
 
     // Set a trap to stop an action that will take too much time...
     if(m_cancelFunction)
@@ -682,7 +682,7 @@ SQLDataSet::Open()
     }
 
     // Get the select query
-    query = GetSelectionSQL(qry);
+    XString query = GetSelectionSQL(qry);
 
     // Apply top <N> records selection
     if(m_topRecords)
@@ -742,9 +742,7 @@ SQLDataSet::Open()
 bool
 SQLDataSet::Open(SQLQuery& p_query)
 {
-  ULONG64 begin = 0;
-  XString sql;
-
+  // Check that we *CAN* query
   if(m_query.IsEmpty() && m_selection.IsEmpty())
   {
     return false;
@@ -761,6 +759,8 @@ SQLDataSet::Open(SQLQuery& p_query)
   }
   try
   {
+    ULONG64 begin = 0;
+
     // Set a trap to stop an action that will take too much time...
     if(m_cancelFunction)
     {
@@ -768,7 +768,7 @@ SQLDataSet::Open(SQLQuery& p_query)
     }
 
     // Get the select query
-    sql = GetSelectionSQL(p_query);
+    XString sql = GetSelectionSQL(p_query);
 
     // Apply top <N> records selection
     if(m_topRecords && !m_isolation)
@@ -839,8 +839,7 @@ SQLDataSet::Open(SQLQuery& p_query)
 bool 
 SQLDataSet::Append()
 {
-  bool    result = false;
-  ULONG64 begin  = 0;
+  bool result = false;
 
   // See if already opened
   if(!m_open)
@@ -862,6 +861,7 @@ SQLDataSet::Append()
   {
     SQLQuery qry(m_database);
     SQLTransaction trans(m_database,m_name);
+    ULONG64 begin = 0;
 
     // Get the select query
     XString query = GetSelectionSQL(qry);
@@ -974,7 +974,7 @@ SQLDataSet::ReadRecordFromQuery(SQLQuery& p_query,bool p_modifiable,bool p_appen
   int num = p_query.GetNumberOfColumns();
   for(int ind = 1; ind <= num; ++ind)
   {
-    SQLVariant* var = p_query.GetColumn(ind);
+    const SQLVariant* var = p_query.GetColumn(ind);
     record->AddField(var);
   }
 
@@ -1012,14 +1012,14 @@ SQLDataSet::ReadRecordFromQuery(SQLQuery& p_query,bool p_modifiable,bool p_appen
 
 // Make a primary key record
 XString
-SQLDataSet::MakePrimaryKey(SQLRecord* p_record)
+SQLDataSet::MakePrimaryKey(const SQLRecord* p_record)
 {
   XString key;
   XString value;
 
-  for(auto& field : m_primaryKey)
+  for(const auto& field : m_primaryKey)
   {
-    SQLVariant* var = p_record->GetField(field);
+    const SQLVariant* var = p_record->GetField(field);
     if (var != nullptr)
     {
       var->GetAsString(value);
@@ -1032,12 +1032,12 @@ SQLDataSet::MakePrimaryKey(SQLRecord* p_record)
 }
 
 XString
-SQLDataSet::MakePrimaryKey(VariantSet& p_primary)
+SQLDataSet::MakePrimaryKey(const VariantSet& p_primary)
 {
   XString key;
   XString value;
 
-  for(auto& val : p_primary)
+  for(const auto val : p_primary)
   {
     val->GetAsString(value);
 
@@ -1064,11 +1064,10 @@ SQLDataSet::ReadNames(SQLQuery& qr)
 void
 SQLDataSet::ReadTypes(SQLQuery& qr)
 {
-  int type;
   int num = qr.GetNumberOfColumns();
   for(int ind = 1; ind <= num; ++ind)
   {
-    type = qr.GetColumnType(ind);
+    int type = qr.GetColumnType(ind);
     m_types.push_back(type);
   }
 }
@@ -1108,7 +1107,7 @@ SQLDataSet::CheckTypes(SQLQuery& p_query)
 SQLRecord*
 SQLDataSet::GetRecord(int p_recnum)
 {
-  if((unsigned)p_recnum >= 0 && (unsigned)p_recnum < m_records.size())
+  if(p_recnum >= 0 && p_recnum < (int)m_records.size())
   {
     return m_records[p_recnum];
   }
@@ -1145,7 +1144,7 @@ SQLDataSet::FindObjectRecord(int p_primary)
 
 // If your primary is a compound key or not INTEGER (Slower)
 int
-SQLDataSet::FindObjectRecNum(VariantSet& p_primary)
+SQLDataSet::FindObjectRecNum(const VariantSet& p_primary)
 {
   if(!GetPrimaryKeyInfo())
   {
@@ -1170,7 +1169,7 @@ SQLDataSet::FindObjectRecNum(VariantSet& p_primary)
 
 // If your primary is a compound key or not INTEGER (Slower)
 SQLRecord*
-SQLDataSet::FindObjectRecord(VariantSet& p_primary)
+SQLDataSet::FindObjectRecord(const VariantSet& p_primary)
 {
   if(!GetPrimaryKeyInfo())
   {
@@ -1203,8 +1202,8 @@ SQLDataSet::FindObjectFilter(bool p_primary /*=false*/)
   // Optimize for network databases
   if(p_primary && m_filters->Size() == 1)
   {
-    SQLFilter* filter = m_filters->GetFilters().front();
-    SQLVariant* prim  = filter->GetValue();
+    const SQLFilter* filter = m_filters->GetFilters().front();
+    const SQLVariant* prim  = filter->GetValue();
     if(filter->GetOperator() == OP_Equal && prim->GetDataType() == SQL_C_SLONG )
     {
       return FindObjectRecord(prim->GetAsSLong());
@@ -1329,7 +1328,7 @@ SQLDataSet::InsertRecord()
 
 // Insert new field in new record
 int
-SQLDataSet::InsertField(XString p_name,SQLVariant* p_value)
+SQLDataSet::InsertField(XString p_name,const SQLVariant* p_value)
 {
   if(m_current >= 0 && m_current < (int)m_records.size())
   {
@@ -1345,7 +1344,7 @@ SQLDataSet::InsertField(XString p_name,SQLVariant* p_value)
 
 // Set a field value in the current record
 bool
-SQLDataSet::SetField(XString& p_name,SQLVariant* p_value,int p_mutationID /*=0*/)
+SQLDataSet::SetField(const XString& p_name,const SQLVariant* p_value,int p_mutationID /*=0*/)
 {
   int num = GetFieldNumber(p_name);
   if(num >= 0)
@@ -1357,7 +1356,7 @@ SQLDataSet::SetField(XString& p_name,SQLVariant* p_value,int p_mutationID /*=0*/
 
 // Set a field value in the current record
 bool
-SQLDataSet::SetField(int p_num,SQLVariant* p_value,int p_mutationID /*=0*/)
+SQLDataSet::SetField(int p_num,const SQLVariant* p_value,int p_mutationID /*=0*/)
 {
   if(m_current >= 0)
   {
@@ -1397,7 +1396,7 @@ SQLDataSet::Aggregate(int p_num,AggregateInfo& p_info)
   unsigned int total   = (int)m_records.size();
   for(unsigned int ind = 0;ind < total; ++ind)
   {
-    SQLVariant* var = m_records[ind]->GetField(p_num);
+    const SQLVariant* var = m_records[ind]->GetField(p_num);
     if(var && var->IsNULL() == false)
     {
       double waarde = var->GetAsDouble();
@@ -1727,7 +1726,7 @@ SQLDataSet::AllMixedMutations(MutationIDS& p_list,int p_mutationID)
 }
 
 XString
-SQLDataSet::GetSQLDelete(SQLQuery* p_query,SQLRecord* p_record)
+SQLDataSet::GetSQLDelete(SQLQuery* p_query,const SQLRecord* p_record)
 {
   // New set of parameters
   p_query->ResetParameters();
@@ -1739,7 +1738,7 @@ SQLDataSet::GetSQLDelete(SQLQuery* p_query,SQLRecord* p_record)
 }
 
 XString
-SQLDataSet::GetSQLUpdate(SQLQuery* p_query,SQLRecord* p_record)
+SQLDataSet::GetSQLUpdate(SQLQuery* p_query,const SQLRecord* p_record)
 {
   int parameter = 1;
   XString sql("UPDATE " + m_primaryTableName + "\n");
@@ -1794,7 +1793,7 @@ SQLDataSet::GetSQLUpdate(SQLQuery* p_query,SQLRecord* p_record)
 }
 
 XString
-SQLDataSet::GetSQLInsert(SQLQuery* p_query,SQLRecord* p_record,XString& p_serial)
+SQLDataSet::GetSQLInsert(SQLQuery* p_query,const SQLRecord* p_record,XString& p_serial)
 {
   int parameter = 1;
   XString sql("INSERT INTO " + m_primaryTableName);
@@ -1840,7 +1839,7 @@ SQLDataSet::GetSQLInsert(SQLQuery* p_query,SQLRecord* p_record,XString& p_serial
 }
 
 XString
-SQLDataSet::GetWhereClause(SQLQuery* p_query,SQLRecord* p_record,int& p_parameter)
+SQLDataSet::GetWhereClause(SQLQuery* p_query,const SQLRecord* p_record,int& p_parameter)
 {
   XString sql(" WHERE ");
 
@@ -1908,19 +1907,19 @@ SQLDataSet::XMLSave(XMLMessage* p_msg,XMLElement* p_dataset)
   XString nameField = dataset_names[g_defaultLanguage][DATASET_FIELD];
 
   // Add record structure
-  SQLRecord* record = GetRecord(0);
+  const SQLRecord* record = GetRecord(0);
   if(record)
   {
     for(unsigned int ind = 0;ind < m_names.size(); ++ind)
     {
       XString fieldname = GetFieldName(ind);
-      SQLVariant* var   = record->GetField(ind);
+      const SQLVariant* var = record->GetField(ind);
       int type = var->GetDataType();
 
       XMLElement* field = p_msg->AddElement(structure,nameField,XDT_String,fieldname);
       p_msg->SetAttribute(field,dataset_names[g_defaultLanguage][DATASET_ID],(int)ind);
       p_msg->SetAttribute(field,dataset_names[g_defaultLanguage][DATASET_TYPE],type);
-      p_msg->SetAttribute(field,dataset_names[g_defaultLanguage][DATASET_TYPENAME],var->FindDatatype(type));
+      p_msg->SetAttribute(field,dataset_names[g_defaultLanguage][DATASET_TYPENAME],SQLDataType::FindDatatype(type));
     }
   }
   else if(m_types.size() > 0)
@@ -1934,7 +1933,7 @@ SQLDataSet::XMLSave(XMLMessage* p_msg,XMLElement* p_dataset)
       XMLElement* field = p_msg->AddElement(structure,nameField,XDT_String,fieldname);
       p_msg->SetAttribute(field,dataset_names[g_defaultLanguage][DATASET_ID],(int)ind);
       p_msg->SetAttribute(field,dataset_names[g_defaultLanguage][DATASET_TYPE],type);
-      p_msg->SetAttribute(field,dataset_names[g_defaultLanguage][DATASET_TYPENAME],var.FindDatatype(type));
+      p_msg->SetAttribute(field,dataset_names[g_defaultLanguage][DATASET_TYPENAME],SQLDataType::FindDatatype(type));
     }
   }
 
@@ -1948,7 +1947,7 @@ SQLDataSet::XMLSave(XMLMessage* p_msg,XMLElement* p_dataset)
 }
 
 void
-SQLDataSet::XMLLoad(XMLMessage* p_msg,XMLElement* p_dataset,LONG* p_abort)
+SQLDataSet::XMLLoad(XMLMessage* p_msg,XMLElement* p_dataset,const LONG* p_abort /*=nullptr*/)
 {
   XMLElement* structur = p_msg->FindElement(p_dataset,dataset_names[g_defaultLanguage][DATASET_STRUCTURE],false);
   XMLElement* records  = p_msg->FindElement(p_dataset,dataset_names[g_defaultLanguage][DATASET_RECORDS],  false);
@@ -2028,7 +2027,7 @@ SQLDataSet::ForgetRecord(SQLRecord* p_record,bool p_force)
 
 // Forget the registration of the optimized primary key
 void
-SQLDataSet::ForgetPrimaryObject(SQLRecord* p_record)
+SQLDataSet::ForgetPrimaryObject(const SQLRecord* p_record)
 {
   XString key = MakePrimaryKey(p_record);
 

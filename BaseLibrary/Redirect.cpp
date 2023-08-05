@@ -73,7 +73,6 @@ Redirect::Redirect()
   m_timeoutChild    = INFINITE;
   m_timeoutIdle     = MAXWAIT_FOR_INPUT_IDLE;
   m_terminated      = false;
-  m_bRunThread      = TRUE;
 
   InitializeCriticalSection((LPCRITICAL_SECTION)&m_critical);
 }

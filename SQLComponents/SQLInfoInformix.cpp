@@ -506,6 +506,7 @@ SQLInfoInformix::DoBindParameterFixup(SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*
 // CATALOG
 // o GetCATALOG<Object[s]><Function>
 //   Objects
+//   - Catalog
 //   - Table
 //   - Column
 //   - Index
@@ -533,6 +534,24 @@ SQLInfoInformix::GetCATALOGMetaTypes(int p_type) const
 {
   UNREFERENCED_PARAMETER(p_type);
   return "";
+}
+
+XString
+SQLInfoInformix::GetCATALOGDefaultCharset() const
+{
+  return "iso-8859-1";
+}
+
+XString
+SQLInfoInformix::GetCATALOGDefaultCharsetNCV() const
+{
+  return "UTF-16";
+}
+
+XString
+SQLInfoInformix::GetCATALOGDefaultCollation() const
+{
+  return "-";
 }
 
 // Get SQL to check if a table already exists in the database
@@ -1102,7 +1121,7 @@ SQLInfoInformix::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
 
   // Add the foreign key columns
   bool extra = false;
-  for(auto& key : p_foreigns)
+  for(const auto& key : p_foreigns)
   {
     if(extra) query += ",";
     query += key.m_fkColumnName;
@@ -1114,7 +1133,7 @@ SQLInfoInformix::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
 
   // Add the primary key columns
   extra = false;
-  for(auto& key : p_foreigns)
+  for(const auto& key : p_foreigns)
   {
     if(extra) query += ",";
     query += key.m_pkColumnName;
@@ -1147,8 +1166,8 @@ SQLInfoInformix::GetCATALOGForeignAlter(MForeignMap& p_original, MForeignMap& p_
     return "";
   }
 
-  MetaForeign& original = p_original.front();
-  MetaForeign& requested = p_requested.front();
+  const MetaForeign& original = p_original.front();
+  const MetaForeign& requested = p_requested.front();
 
   // Construct the correct tablename (NO schema)
   XString table(original.m_fkTableName);
@@ -1811,7 +1830,7 @@ SQLInfoInformix::GetPSMDeclaration(bool    /*p_first*/
   if(p_datatype)
   {
     // Getting type info and name
-    TypeInfo* info = GetTypeInfo(p_datatype);
+    const TypeInfo* info = GetTypeInfo(p_datatype);
     line += info->m_type_name;
 
     if(p_precision > 0)
@@ -1920,7 +1939,7 @@ SQLInfoInformix::GetPSMExecute(XString p_procedure,MParameterMap& p_parameters) 
   bool doReturning = false;
   bool doMore = false;
 
-  for(auto& param : p_parameters)
+  for(const auto& param : p_parameters)
   {
     // Extra ,
     if(doMore) line += ",";
@@ -1944,7 +1963,7 @@ SQLInfoInformix::GetPSMExecute(XString p_procedure,MParameterMap& p_parameters) 
   {
     line += " INTO ";
     doMore = false;
-    for(auto& param : p_parameters)
+    for(const auto& param : p_parameters)
     {
       // Extra ,
       if(doMore) line += ",";

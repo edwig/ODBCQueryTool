@@ -43,7 +43,7 @@ namespace SQLComponents
 SQLGuid::SQLGuid()
 {
   // Set the guid to zeros
-  memset((void*)&m_guid, 0, sizeof(SQLGUID));
+  memset(reinterpret_cast<void*>(&m_guid),0,sizeof(SQLGUID));
 }
 
 // XTOR from other SQLGuid
@@ -77,7 +77,7 @@ bool
 SQLGuid::Set(const XString p_string)
 {
   m_initialized = false;
-  if(UuidFromString((unsigned char*)p_string.GetString(),&m_guid) == RPC_S_OK)
+  if(UuidFromString(reinterpret_cast<unsigned char*>(const_cast<char*>(p_string.GetString())),&m_guid) == RPC_S_OK)
   {
     m_initialized = true;
   }
@@ -95,14 +95,14 @@ SQLGuid::Set(const SQLGUID* p_guid)
 
 // Is a valid initialized GUID
 bool
-SQLGuid::IsValid()
+SQLGuid::IsValid() const
 {
   return m_initialized;
 }
 
 // Get as a XString
 XString 
-SQLGuid::AsString()
+SQLGuid::AsString() const
 {
   XString guid;
   if(m_initialized)
@@ -113,14 +113,13 @@ SQLGuid::AsString()
     {
       // And convert to a XString
       guid = XString(guidString);
-      RpcStringFree(&guidString);
     }
   }
   return guid;
 }
 
-SQLGUID* 
-SQLGuid::AsGUID()
+const SQLGUID* 
+SQLGuid::AsGUID() const
 {
   return &m_guid;
 }

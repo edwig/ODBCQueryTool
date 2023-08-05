@@ -33,7 +33,7 @@ class SCBListBox;
 // Storage for Set/Get ItemData
 using ItemStore = std::map<int,DWORD_PTR>;
 
-class StyleComboBox : public CComboBox
+class StyleComboBox : public CEdit
 {
   DECLARE_DYNAMIC(StyleComboBox)
 
@@ -56,6 +56,15 @@ public:
   void  SetFocusDots(bool p_dots);
   bool  GetFocusDots();
   void  InsertAtCurPos(const char* p_text, int p_offset);
+  void    SetEmpty(bool p_empty,CString p_text = "");
+  void    SetTextColorEmpty(COLORREF p_color);
+  void    SetBackgroundColorEmpty(COLORREF p_color);
+  bool    GetIsEmpty();
+  CString GetEmptyText();
+
+  void    SetFontSize(int p_size);
+  void    SetFontStyle(bool p_bold,bool p_italic = false,bool p_underLine = false);
+  void    SetFontName(CString p_fontName,int p_fontSize = 100,BYTE p_language = DEFAULT_CHARSET);
 
   // Standard CWnd methods
   void  GetWindowText(CString& p_text);

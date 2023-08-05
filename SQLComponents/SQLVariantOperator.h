@@ -77,8 +77,8 @@ SQLConciseType;
 
 SQLConciseType SQLTypeToConciseType(int p_datatype);
 
-typedef SQLVariant (*OperatorCalculate)(SQLVariant& p_left,SQLVariant& p_right);
-typedef bool       (*OperatorCompare  )(SQLVariant& p_left,SQLVariant& p_right);
+typedef SQLVariant (*OperatorCalculate)(const SQLVariant& p_left,const SQLVariant& p_right);
+typedef bool       (*OperatorCompare  )(const SQLVariant& p_left,const SQLVariant& p_right);
 
 struct _CompareFunc
 {

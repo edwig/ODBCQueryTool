@@ -27,6 +27,7 @@
 #include "SQLComponents.h"
 #include "SQLVariant.h"
 #include "SQLVariantTrim.h"
+#include "SQLDataType.h"
 #include <float.h>
 
 #ifdef _DEBUG
@@ -47,8 +48,8 @@ namespace SQLComponents
 void SQL_ThrowErrorTruncate(int p_from,int p_to)
 {
   XString error;
-  const char* from = SQLVariant::FindDatatype(p_from);
-  const char* to   = SQLVariant::FindDatatype(p_to);
+  const char* from = SQLDataType::FindDatatype(p_from);
+  const char* to   = SQLDataType::FindDatatype(p_to);
   error.Format("Cannot truncate %s to %s",from,to);
   throw StdException(error);
 }

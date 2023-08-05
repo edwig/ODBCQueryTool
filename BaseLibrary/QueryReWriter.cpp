@@ -354,7 +354,7 @@ QueryReWriter::ParseStatement(bool p_closingEscape /*= false*/)
     }
 
     // Find next table for appending a schema
-    if(m_inStatement == Token::TK_SELECT && (m_token == Token::TK_FROM || m_token == Token::TK_JOIN ))
+    if(m_inStatement == Token::TK_SELECT && (m_token == Token::TK_FROM || m_token == Token::TK_JOIN))
     {
       m_nextTable = true;
       if(m_token == Token::TK_FROM)
@@ -761,11 +761,9 @@ QueryReWriter::Parenthesis()
 void
 QueryReWriter::QuoteString(int p_ending)
 {
-  int ch = 0;
-
   while(true)
   {
-    ch = GetChar();
+    int ch = GetChar();
     if(ch == p_ending || ch == 0)
     {
       return;

@@ -508,7 +508,7 @@ void StyleFrameWndEx::OnSize(UINT nType, int cx, int cy)
     int border = 0;
     if ((GetStyle() & WS_MAXIMIZE) != 0)
     {
-      // Bij een volledig scherm gebruikt het OS deze marge buiten beeld!!
+      // On a full screen the OS uses this margin outside of view
       CSize marge = afxGlobalUtils.GetSystemBorders(GetStyle());
 
       m_windowRectLocal.left   += marge.cx;
@@ -605,30 +605,28 @@ StyleFrameWndEx::MenuFromPoint(CPoint p_point)
 void 
 StyleFrameWndEx::OnNcCalcSize(BOOL calcValidRects,NCCALCSIZE_PARAMS* p_params)
 {
-  int baseMargin = MARGIN;
-  p_params->rgrc[0].top += CAPTIONHEIGHT;
-
   if(GetStyle() & WS_MAXIMIZE)
   {
-    // In full-screen mode, the MS-Windows OS uses this extra margin
-    CSize marge = afxGlobalUtils.GetSystemBorders(GetStyle());
-
-    p_params->rgrc[0].left   += marge.cx;
-    p_params->rgrc[0].top    += marge.cy;
-    p_params->rgrc[0].right  -= marge.cx;
-    p_params->rgrc[0].bottom -= marge.cy;
+    CRect area;
+    StyleGetWorkArea(this,area);
+    area.top += CAPTIONHEIGHT;
+    p_params->rgrc[0] = area;
   }
   else
   {
     // The baseMargin is needed for two things:
     // 1) To activate the left/right/bottom mouse pulling action
     // 2) To provide space for a painted border around the window
-    p_params->rgrc[0].left   += baseMargin;
-    p_params->rgrc[0].right  -= baseMargin;
-    p_params->rgrc[0].bottom -= baseMargin;
+    p_params->rgrc[0].top    += CAPTIONHEIGHT;
+    p_params->rgrc[0].left   += MARGIN;
+    p_params->rgrc[0].right  -= MARGIN;
+    p_params->rgrc[0].bottom -= MARGIN;
   }
   // Use same rectangle for displacement (so hide it)
-  p_params->rgrc[2] = p_params->rgrc[0];
+  if(calcValidRects)
+  {
+    p_params->rgrc[2] = p_params->rgrc[0];
+  }
 }
 
 // Avoid flicker of the titlebar on activate

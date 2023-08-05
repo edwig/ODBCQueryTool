@@ -396,15 +396,15 @@ public:
 // Operations
 ///////////////////////////////////////////////////////////////////////////////////
 public:
-    int  InsertColumn(LPCTSTR strHeading, UINT nFormat = DT_CENTER|DT_VCENTER|DT_SINGLELINE,
-                      int nColumn = -1);
+    int  InsertColumn(LPCTSTR strHeading, UINT nFormat = DT_CENTER|DT_VCENTER|DT_SINGLELINE,int nColumn = -1);
     int  InsertRow(LPCTSTR strHeading, int nRow = -1);
+    int  InsertRowAndSetFocus(LPCTSTR strHeading,int nRow = -1,int nColumn = 0);
     BOOL DeleteColumn(int nColumn);
     BOOL DeleteRow(int nRow);
     BOOL DeleteNonFixedRows();
     BOOL DeleteAllItems();
 
-	void ClearCells(CCellRange Selection);
+    void ClearCells(CCellRange Selection);
 
     BOOL AutoSizeRow(int nRow, BOOL bResetScroll = TRUE);
     BOOL AutoSizeColumn(int nCol, UINT nAutoSizeStyle = GVS_DEFAULT, BOOL bResetScroll = TRUE);
@@ -429,7 +429,7 @@ public:
     BOOL IsCellSelected(CCellID &cell) const;
 
     // SetRedraw stops/starts redraws on things like changing the # rows/columns
-    // and autosizing, but not for user-intervention such as resizes
+    // and auto-sizing, but not for user-intervention such as resizes
     void SetRedraw(BOOL bAllowDraw, BOOL bResetScrollBars = FALSE);
     BOOL RedrawCell(int nRow, int nCol, CDC* pDC = NULL);
     BOOL RedrawCell(const CCellID& cell, CDC* pDC = NULL);
@@ -485,7 +485,7 @@ public:
 public:
     CCellID GetNextItem(CCellID& cell, int nFlags) const;
 
-	BOOL SortItems(int nCol, BOOL bAscending, LPARAM data = 0);
+	  BOOL SortItems(int nCol, BOOL bAscending, LPARAM data = 0);
     BOOL SortTextItems(int nCol, BOOL bAscending, LPARAM data = 0);
     BOOL SortItems(PFNLVCOMPARE pfnCompare, int nCol, BOOL bAscending, LPARAM data = 0);
 
@@ -607,7 +607,7 @@ protected:
     // Editing
     virtual void  OnEditCell(int nRow, int nCol, CPoint point, UINT nChar);
     virtual void  OnEndEditCell(int nRow, int nCol, CString str);
-	virtual BOOL  ValidateEdit(int nRow, int nCol, LPCTSTR str);
+	  virtual BOOL  ValidateEdit(int nRow, int nCol, LPCTSTR str);
     virtual void  EndEditing();
 
     // Drawing

@@ -20,13 +20,20 @@
 #include <map>
 
 class StyleComboBox;
+class AutoBlockActivation;
 using ToolTips = std::map<HWND,const char*>;
+
+typedef struct
+{
+  UINT   MessageId;
+  WPARAM wParam;
+  LPARAM lParam;
+} 
+SMessage, *PSMessage;
 
 class StyleDialog : public CDialog
 {
   DECLARE_DYNAMIC(StyleDialog)
-
-  DECLARE_MESSAGE_MAP();
 
 public:
   enum BUTTONSTATE
@@ -55,6 +62,7 @@ public:
   void    ShowMinMaxButton(bool p_minButton   = true
                           ,bool p_maxButton   = true);
   void    ShowCloseButton (bool p_closeButton = true);
+  void    ShowGripper     (bool p_gripper     = true);
   void    SetCanResize    (bool p_resize      = true);
   void    SetWindowText(LPCTSTR lpstString);
   BOOL    SetSysMenu(UINT p_menuResource);
@@ -69,6 +77,8 @@ public:
   void    RegisterTooltip(StyleComboBox& p_wnd,const char* p_text);
 
 protected:
+  friend  AutoBlockActivation;
+
   virtual BOOL    PreTranslateMessage(MSG* p_msg) override;
   virtual INT_PTR OnToolHitTest(CPoint point,TOOLINFO* pTI) const override;
 
@@ -78,8 +88,12 @@ protected:
   void    DrawButton(CDC* pDC,CRect rect,LRESULT type);
   void    PositionButtons();
   void    Button(CDC* pDC, CRect rect, LRESULT type, BUTTONSTATE state = BS_NORMAL, bool max = true);
+  void    SendMessageToAllChildWindows(UINT MessageId,WPARAM wParam,LPARAM lParam);
   void    PerformMenu();
   void    InitStatusBar();
+  void    EraseGripper();
+
+  DECLARE_MESSAGE_MAP();
 
   // Message handlers
   afx_msg int     OnCreate(LPCREATESTRUCT p_create);
@@ -136,7 +150,9 @@ protected:
   bool      m_minButton   { false };
   bool      m_maxButton   { false };
   bool      m_canResize   { false };
+  bool      m_hasGripper  { false };
   bool      m_hasStatus   { false };
+  bool      m_canActivate { true  };
   LRESULT   m_curhit      { HTNOWHERE };
   UINT      m_sysmenu     { NULL  };
   // Objects
@@ -145,4 +161,20 @@ protected:
   CStatusBar m_statusBar;
   CBrush     m_defaultBrush;
   ToolTips   m_tooltips;
+};
+
+class AutoBlockActivation
+{
+public:
+  AutoBlockActivation(StyleDialog* p_dialog) : m_dialog(p_dialog) 
+  {
+    m_dialog->m_canActivate = false;
+  }
+ ~AutoBlockActivation()
+  {
+    m_dialog->m_canActivate = true;
+  }
+
+private:
+  StyleDialog* m_dialog;
 };

@@ -70,7 +70,7 @@ public:
   {
     if(m_toBeLocked)
     {
-      if(--m_locked == 0 && m_toBeLocked)
+      if(--m_locked == 0)
       {
         m_toBeLocked->Release();
       }

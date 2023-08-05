@@ -154,7 +154,7 @@ SQLQuery::Close(bool p_throw /*= true*/)
     }
   }
   // Clear number map
-  for(auto& column : m_numMap)
+  for(const auto& column : m_numMap)
   {
     delete column.second;
   }
@@ -188,7 +188,7 @@ void
 SQLQuery::ResetParameters()
 {
   // Clear parameter map
-  for(auto& parm : m_parameters)
+  for(const auto& parm : m_parameters)
   {
     delete parm.second;
   }
@@ -657,8 +657,9 @@ SQLQuery::DoSQLStatement(const XString& p_statement)
     case LOption::LO_LEN_ZERO:lengthStatement = statement.GetLength() + 1;
                               break;
   } 
+
   // GO DO IT RIGHT AWAY
-  m_retCode = SqlExecDirect(m_hstmt,(SQLCHAR*)statement.GetString(),lengthStatement);
+  m_retCode = SqlExecDirect(m_hstmt,reinterpret_cast<SQLCHAR*>(const_cast<char*>(statement.GetString())),lengthStatement);
 
   if(SQL_SUCCEEDED(m_retCode))
   {
@@ -881,7 +882,7 @@ SQLQuery::DoSQLPrepare(const XString& p_statement)
                               break;
   } 
   // GO DO THE PREPARE
-  m_retCode = SqlPrepare(m_hstmt,(SQLCHAR*)(LPCSTR)statement,lengthStatement);
+  m_retCode = SqlPrepare(m_hstmt,reinterpret_cast<SQLCHAR*>(const_cast<char*>(statement.GetString())),lengthStatement);
   if(SQL_SUCCEEDED(m_retCode))
   {
     m_prepareDone = true;
@@ -1107,7 +1108,7 @@ SQLQuery::RebindParameter(short p_datatype)
 
 // Log parameter during the binding process
 void
-SQLQuery::LogParameter(int p_column,SQLVariant* p_parameter)
+SQLQuery::LogParameter(int p_column,const SQLVariant* p_parameter)
 {
   if(p_column == 1)
   {
@@ -1199,7 +1200,7 @@ SQLQuery::BindColumns()
     // Record precision/scale for NUMERIC/DECIMAL types
     if(type == SQL_C_NUMERIC)
     {
-      SQL_NUMERIC_STRUCT* numeric = var->GetAsNumeric();
+      SQL_NUMERIC_STRUCT* numeric = const_cast<SQL_NUMERIC_STRUCT*>(var->GetAsNumeric());
       if (m_database)
       {
         m_database->GetSQLInfoDB()->GetRDBMSNumericPrecisionScale(precision,scale);
@@ -1238,25 +1239,25 @@ SQLQuery::BindColumns()
     // Bind columns up to the first long column
     if(m_hasLongColumns == 0 || bcol < m_hasLongColumns)
     {
-    m_retCode = SQLBindCol(m_hstmt                    // statement handle
-                          ,bcol                       // Column number
-                          ,type                       // Data type
-                          ,var->GetDataPointer()      // Data pointer
-                          ,size                       // Buffer length
-                          ,var->GetIndicatorPointer() // Indicator address
-    );
-    if(!SQL_SUCCEEDED(m_retCode))
-    {
-      GetLastError("Cannot bind to column. Error: ");
-      m_lastError.AppendFormat(" Column number: %d",icol);
-      throw StdException(m_lastError);
+      m_retCode = SQLBindCol(m_hstmt                    // statement handle
+                             ,bcol                       // Column number
+                             ,type                       // Data type
+                             ,const_cast<SQLPOINTER>(var->GetDataPointer())      // Data pointer
+                             ,size                       // Buffer length
+                             ,var->GetIndicatorPointer() // Indicator address
+      );
+      if(!SQL_SUCCEEDED(m_retCode))
+      {
+        GetLastError("Cannot bind to column. Error: ");
+        m_lastError.AppendFormat(" Column number: %d",icol);
+        throw StdException(m_lastError);
+      }
+      // Now do the SQL_NUMERIC precision/scale binding
+      if(type == SQL_C_NUMERIC)
+      {
+        BindColumnNumeric((SQLSMALLINT)bcol,var,SQL_RESULT_COL);
+      }
     }
-    // Now do the SQL_NUMERIC precision/scale binding
-    if(type == SQL_C_NUMERIC)
-    {
-      BindColumnNumeric((SQLSMALLINT)bcol,var,SQL_RESULT_COL);
-    }
-  }
     else
     {
       if(type == SQL_C_NUMERIC && 
@@ -1293,7 +1294,7 @@ SQLQuery::RebindColumn(short p_datatype)
 // Must be set in the ARD/APD of the record descriptor to work
 //
 void
-SQLQuery::BindColumnNumeric(SQLSMALLINT p_column,SQLVariant* p_var,int p_type)
+SQLQuery::BindColumnNumeric(SQLSMALLINT p_column,const SQLVariant* p_var,int p_type)
 {
   // Row descriptor for RESULT rows or PARAMeter rows
   SQLHDESC rowdesc = NULL;
@@ -1317,7 +1318,7 @@ SQLQuery::BindColumnNumeric(SQLSMALLINT p_column,SQLVariant* p_var,int p_type)
         // Tinker with the max precision in the variable
         // Some drivers will crash if we do not do this
         // e.g. SQL-Server will crash on the TDS (Tabular Data stream)
-        *(&p_var->GetAsNumeric()->precision) = (SQLCHAR) prec;
+        const_cast<SQL_NUMERIC_STRUCT*>(p_var->GetAsNumeric())->precision = (SQLCHAR) prec;
       }
     }
     RETCODE retCode1  = SqlSetDescField(rowdesc,p_column,SQL_DESC_TYPE,     (SQLPOINTER)(DWORD_PTR)SQL_C_NUMERIC,SQL_IS_INTEGER);
@@ -1329,7 +1330,7 @@ SQLQuery::BindColumnNumeric(SQLSMALLINT p_column,SQLVariant* p_var,int p_type)
       // Now trigger the reset and check of the descriptor record, by re-supplying the data pointer again.
       // Very covertly described in the ODBC documentation. But if you do not do this one last step
       // results will be very different - and faulty - depending on your RDBMS
-      SQLPOINTER pointer = p_var->GetDataPointer();
+      SQLPOINTER pointer = const_cast<SQLPOINTER>(p_var->GetDataPointer());
       m_retCode = SqlSetDescField(rowdesc,p_column,SQL_DESC_DATA_PTR,pointer,SQL_IS_POINTER);
       if(SQL_SUCCEEDED(m_retCode))
       {
@@ -1354,15 +1355,15 @@ SQLQuery::ProvideAtExecData()
   {
     // Find the parameter that needs the data
     SQLLEN parameter = NULL;
-    m_retCode = SqlParamData(m_hstmt,(SQLPOINTER*)&parameter);
+    m_retCode = SqlParamData(m_hstmt,reinterpret_cast<SQLPOINTER*>(&parameter));
 
     if(m_retCode == SQL_NEED_DATA)
     {
       VarMap::iterator it = m_parameters.find((int)parameter);
       if(it != m_parameters.end())
       {
-        SQLVariant* var  = it->second;
-        SQLPOINTER data  = var->GetDataPointer();
+        const SQLVariant* var  = it->second;
+        SQLPOINTER data  = const_cast<SQLPOINTER>(var->GetDataPointer());
         SQLINTEGER size  = var->GetDataSize();
         SQLINTEGER piece = var->GetBinaryPieceSize();
         SQLINTEGER total = 0;
@@ -1625,12 +1626,12 @@ SQLQuery::RetrieveAtExecData()
       actualLength = var->GetDataSize();
     }
     // Now go get it
-      m_retCode = SqlGetData(m_hstmt
-                            ,(SQLUSMALLINT) col
-                            ,(SQLUSMALLINT) datatype
-                            ,(SQLPOINTER)   var->GetDataPointer()
-                            ,(SQLINTEGER)   actualLength
-                            ,(SQLLEN*)      var->GetIndicatorPointer());
+    m_retCode = SqlGetData(m_hstmt
+                          ,(SQLUSMALLINT) col
+                          ,(SQLUSMALLINT) datatype
+                          ,(SQLPOINTER)   var->GetDataPointer()
+                          ,(SQLINTEGER)   actualLength
+                          ,               var->GetIndicatorPointer());
     if(!SQL_SUCCEEDED(m_retCode))
     {
       // SQL_ERROR / SQL_NO_DATA / SQL_STILL_EXECUTING / SQL_INVALID_HANDLE
@@ -1863,20 +1864,20 @@ SQLQuery::SQLType2CType(short p_sqlType)
 int
 SQLQuery::GetColumnLength(int p_column)
 {
-  UCHAR	      characters[1] = "";
   SQLSMALLINT inputSize = 1;
   SQLSMALLINT outputSize;
   SQLLEN     integerValue = 0;
 
   if(p_column <= m_numColumns)
   {
+    UCHAR	characters[1] = "";
     m_retCode = SqlColAttribute(m_hstmt
                                ,(SQLUSMALLINT) p_column
                                ,(SQLUSMALLINT) SQL_DESC_LENGTH
                                ,(SQLPOINTER)   characters
-                               ,(SQLSMALLINT)  inputSize
-                               ,(SQLSMALLINT*) &outputSize
-                               ,(SQLLEN*)      &integerValue);
+                               ,               inputSize
+                               ,               &outputSize
+                               ,               &integerValue);
     if (!SQL_SUCCEEDED(m_retCode))
     {
       GetLastError();
@@ -1889,20 +1890,20 @@ SQLQuery::GetColumnLength(int p_column)
 int
 SQLQuery::GetColumnDisplaySize(int p_column)
 {
-  UCHAR	      characters[1] = "";
   SQLSMALLINT inputSize = 1;
   SQLSMALLINT outputSize;
   SQLINTEGER  integerValue = 0;
 
   if(p_column <= m_numColumns)
   {
+    UCHAR characters[1] = "";
     m_retCode = SqlColAttribute(m_hstmt
                                ,(SQLUSMALLINT) p_column
                                ,(SQLUSMALLINT) SQL_DESC_DISPLAY_SIZE
                                ,(SQLPOINTER)   characters
                                ,(SQLSMALLINT)  inputSize
-                               ,(SQLSMALLINT*) &outputSize
-                               ,(SQLLEN*)      &integerValue);
+                               ,               &outputSize
+                               ,reinterpret_cast<SQLLEN*>(&integerValue));
     if (!SQL_SUCCEEDED(m_retCode))
     {
       GetLastError();
@@ -1927,7 +1928,7 @@ SQLQuery::DescribeColumn(int           p_col
   SQLSMALLINT	cbDescMax     = SQL_MAX_IDENTIFIER;
   SQLSMALLINT cbDescResult  = 0;
   SQLSMALLINT	sqlType       = 0;
-  SQLUINTEGER cbColDef      = 0;
+  SQLULEN     cbColDef      = 0;
   SQLSMALLINT ibScale       = 0;
   SQLSMALLINT fNullable     = 0;
   SQLLEN      fDesc         = 0;
@@ -1936,13 +1937,13 @@ SQLQuery::DescribeColumn(int           p_col
 
   m_retCode = SqlDescribeCol(m_hstmt
                             ,(SQLUSMALLINT) p_col
-                            ,(SQLCHAR*)     szColName
-                            ,(SQLSMALLINT)  cbDescMax
-                            ,(SQLSMALLINT*) &cbDescResult
-                            ,(SQLSMALLINT*) &sqlType
-                            ,(SQLULEN*)     &cbColDef
-                            ,(SQLSMALLINT*) &ibScale
-                            ,(SQLSMALLINT*) &fNullable);
+                            ,               szColName
+                            ,               cbDescMax
+                            ,               &cbDescResult
+                            ,               &sqlType
+                            ,               &cbColDef
+                            ,               &ibScale
+                            ,               &fNullable);
   if(!SQL_SUCCEEDED(m_retCode))
   {
     GetLastError();
@@ -1953,9 +1954,9 @@ SQLQuery::DescribeColumn(int           p_col
                               ,(SQLUSMALLINT) p_col
                               ,(SQLUSMALLINT) SQL_COLUMN_LABEL
                               ,(SQLPOINTER)   rgbDesc
-                              ,(SQLSMALLINT)  cbDescMax
-                              ,(SQLSMALLINT*) &cbDescResult
-                              ,(SQLLEN*)      &fDesc);
+                              ,               cbDescMax
+                              ,               &cbDescResult
+                              ,               &fDesc);
   if(!SQL_SUCCEEDED(m_retCode))
   {
     GetLastError();
@@ -1966,9 +1967,9 @@ SQLQuery::DescribeColumn(int           p_col
                               ,(SQLUSMALLINT) p_col
                               ,(SQLUSMALLINT) SQL_COLUMN_LENGTH
                               ,(SQLPOINTER)   rgbDesc
-                              ,(SQLSMALLINT)  cbDescMax
-                              ,(SQLSMALLINT*) &cbDescResult
-                              ,(SQLLEN*)      &fDesc);
+                              ,               cbDescMax
+                              ,               &cbDescResult
+                              ,               &fDesc);
   if(!SQL_SUCCEEDED(m_retCode))
   {
     GetLastError();
@@ -1980,7 +1981,7 @@ SQLQuery::DescribeColumn(int           p_col
   // Results
   p_columnName  = szColName;
   p_sqlType     = sqlType;
-  p_colSize     = cbColDef;
+  p_colSize     = (SQLUINTEGER)cbColDef;
   p_colScale    = ibScale;
   p_colNullable = fNullable;
   p_colLabel    = rgbDesc;
@@ -2058,7 +2059,7 @@ SQLQuery::DoSQLCall(XString p_schema,XString p_procedure,bool p_hasReturn /*=fal
 
 // Direct call through ODBC escape language
 SQLVariant*
-SQLQuery::DoSQLCallODBCEscape(XString& p_schema,XString& p_procedure,bool p_hasReturn)
+SQLQuery::DoSQLCallODBCEscape(XString& p_schema,const XString& p_procedure,bool p_hasReturn)
 {
   // Start with generating the SQL
   XString sql = ConstructSQLForCall(p_schema,p_procedure,p_hasReturn);
@@ -2088,7 +2089,7 @@ SQLQuery::DoSQLCallODBCEscape(XString& p_schema,XString& p_procedure,bool p_hasR
 // form 4: With return parameter  { ? = CALL function(?,?) }
 // form 5: Only return parameter  { ? = CALL function }
 XString
-SQLQuery::ConstructSQLForCall(XString& p_schema,XString& p_procedure,bool p_hasReturn)
+SQLQuery::ConstructSQLForCall(XString& p_schema,const XString& p_procedure,bool p_hasReturn)
 {
   // Start with ODBC-escape character
   XString sql("{");
@@ -2115,7 +2116,7 @@ SQLQuery::ConstructSQLForCall(XString& p_schema,XString& p_procedure,bool p_hasR
     sql += "(";
 
     // Construct parameter markers 
-    for(auto& param : m_parameters)
+    for(const auto& param : m_parameters)
     {
       if(param.first == 0) continue;
       if(param.first > 1) sql += ",";

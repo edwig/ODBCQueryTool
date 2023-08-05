@@ -40,7 +40,7 @@ namespace SQLComponents
 class AutoCritSec
 {
 public:
-  AutoCritSec(CRITICAL_SECTION* section) : m_section(section)
+  explicit AutoCritSec(CRITICAL_SECTION* section) : m_section(section)
   {
     EnterCriticalSection(m_section);
   }
@@ -611,7 +611,7 @@ SQLDatabasePool::CleanupAllInternally()
 {
   // Cleanup all lists of free databases.
   // They do **NOT** own the database objects
-  for(auto& it : m_freeDatabases)
+  for(const auto& it : m_freeDatabases)
   {
     DbsList* list = it.second;
     delete list;
@@ -675,12 +675,12 @@ void
 SQLDatabasePool::AddRebindsToDatabase(SQLDatabase* p_database)
 {
   // Add all our rebound columns
-  for(auto& rebind : m_rebindColumns)
+  for(const auto& rebind : m_rebindColumns)
   {
     p_database->AddColumnRebind(rebind.first,rebind.second);
   }
   // Add all our rebound parameters
-  for(auto& rebind : m_rebindParameters)
+  for(const auto& rebind : m_rebindParameters)
   {
     p_database->AddParameterRebind(rebind.first,rebind.second);
   }

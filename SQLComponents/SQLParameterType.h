@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////
 //
-// File: SQLStatement.cpp
+// File: SQLParameterType.h
 //
 // Copyright (c) 1998-2022 ir. W.E. Huisman
 // All rights reserved
@@ -23,63 +23,18 @@
 //
 // Version number: See SQLComponents.h
 //
-#include "stdafx.h"
+#pragma once
 #include "SQLComponents.h"
-#include "SQLStatement.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
-namespace SQLComponents
+// Type of parameter for queries and persistent-stored-modules
+typedef enum _param_type
 {
-
-SQLStatement::SQLStatement()
-              :m_number(0)
-              ,m_minNumber(0)
-              ,m_maxNumber(0)
-              ,m_customer(false)
-{
+   P_SQL_PARAM_TYPE_UNKNOWN = 0
+  ,P_SQL_PARAM_INPUT        = 1
+  ,P_SQL_PARAM_INPUT_OUTPUT = 2
+  ,P_SQL_RESULT_COL         = 3
+  ,P_SQL_PARAM_OUTPUT       = 4
+  ,P_SQL_RETURN_VALUE       = 5
 }
+SQLParamType;
 
-SQLStatement::SQLStatement(int p_number,char* p_statement,int p_minimum,int p_maximum)
-              :m_number(p_number)
-              ,m_statement(p_statement)
-              ,m_minNumber(p_minimum)
-              ,m_maxNumber(p_maximum)
-              ,m_customer(false)
-{
-}
-
-// DTOR
-SQLStatement::~SQLStatement()
-{
-}
-
-bool
-SQLStatement::CheckRecords(int p_records)
-{
-  XString fout;
-  if(m_minNumber > 0 && p_records < m_minNumber)
-  {
-    fout.Format("SQL %d has only %d record(s) (too few) minimum = %d",m_number,p_records,m_minNumber);
-		return true;
-  }
-  if(m_maxNumber > 0 && p_records > m_maxNumber)
-  {
-    fout.Format("SQL %d has %d records(s) (too much) maximum = %i",m_number,p_records,m_maxNumber);
-    return true;
-  }
-  return false;
-}
-
-void
-SQLStatement::AddToStatement(const XString& p_statement)
-{
-  m_statement += p_statement;
-}
-
-// End of namespace
-}

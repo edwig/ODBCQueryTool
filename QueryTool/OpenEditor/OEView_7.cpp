@@ -27,6 +27,7 @@
 #include "SQLQuery.h"
 #include "SQLVariant.h"
 #include "SQLInfoDB.h"
+#include <SQLDataType.h>
 #include "Query\NativeSQLDlg.h"
 #include "Query\VariablesDlg.h"
 #include "Common\AppGlobal.h"
@@ -1377,9 +1378,9 @@ COEditorView::ScriptCommandRebind(int p_line,CString rebind)
     SQLVariant var;
     word1.Trim();
     word2.Trim();
-    int from = var.FindDatatype((char*)(LPCSTR)word1);
-    int to   = var.FindDatatype((char*)(LPCSTR)word2);
-    int sql  = var.FindSQLDatatype((char*)(LPCSTR)word2);
+    int from = SQLDataType::FindDatatype((char*)(LPCSTR)word1);
+    int to   = SQLDataType::FindDatatype((char*)(LPCSTR)word2);
+    int sql  = SQLDataType::FindSQLDatatype((char*)(LPCSTR)word2);
     if(to == 0 && sql != 0)
     {
       // Use SQL_XXXX type to rebind (BINARY or CHAR) type
@@ -1524,7 +1525,7 @@ COEditorView::ScriptCommandVariable(int p_line,int p_varNum,CString p_tail)
         p_tail = p_tail.Mid(pos + 1).Trim();
 
         // Set param type
-        int paramType = var->FindParamtype((char*)(LPCSTR)word);
+        int paramType = SQLDataType::FindParamtype((char*)(LPCSTR)word);
         if(paramType > 0)
         {
           var->SetParameterType((SQLParamType)paramType);
@@ -1535,7 +1536,7 @@ COEditorView::ScriptCommandVariable(int p_line,int p_varNum,CString p_tail)
         }
       }
       // Now do the data type
-      int dataType = var->FindDatatype((char*)(LPCSTR)p_tail.GetString());
+      int dataType = SQLDataType::FindDatatype((char*)(LPCSTR)p_tail.GetString());
       if(dataType != 0)
       {
         var->SetData(dataType,"");

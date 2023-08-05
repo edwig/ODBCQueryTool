@@ -19,7 +19,8 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 #include "pch.h"
 #include "RebindDlg.h"
 #include "QueryTool.h"
-#include "SQLVariant.h"
+#include <SQLVariant.h>
+#include <SQLDataType.h>
 
 DataTypes allTypes[] = 
 {
@@ -137,7 +138,7 @@ RebindDlg::OnCbnSelchangeDatatype()
     CString type;
     m_typeCombo.GetLBText(num,type);
     SQLVariant var;
-    m_type = var.FindDatatype((char*)type.GetString());
+    m_type = SQLDataType::FindDatatype((char*)type.GetString());
   }
 }
 
@@ -150,7 +151,7 @@ RebindDlg::OnCbnSelchangeRebind()
     CString type;
     m_rebindCombo.GetLBText(num,type);
     SQLVariant var;
-    m_rebind = var.FindDatatype((char*)type.GetString());
+    m_rebind = SQLDataType::FindDatatype((char*)type.GetString());
   }
 }
 
@@ -174,8 +175,8 @@ RebindDlg::OnBnClickedAdd()
     rebinds->insert(std::make_pair(m_type,m_rebind));
 
     SQLVariant var;
-    CString typeName   = var.FindDatatype(m_type);
-    CString rebindName = var.FindDatatype(m_rebind);
+    CString typeName   = SQLDataType::FindDatatype(m_type);
+    CString rebindName = SQLDataType::FindDatatype(m_rebind);
     CString msg;
     msg.Format("Rebind datatype [%s] to [%s]",typeName,rebindName);
     AfxMessageBox(msg,MB_OK);

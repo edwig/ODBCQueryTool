@@ -60,7 +60,7 @@ SQLInterval::SQLInterval(const SQLInterval& p_interval)
 }
 
 // XTOR from an interval struct (possibly from a database)
-SQLInterval::SQLInterval(SQL_INTERVAL_STRUCT* p_interval)
+SQLInterval::SQLInterval(const SQL_INTERVAL_STRUCT* p_interval)
 {
   memcpy(&m_interval,p_interval,sizeof(SQL_INTERVAL_STRUCT));
   RecalculateValue();
@@ -120,20 +120,20 @@ SQLInterval::SetInterval(SQLINTERVAL p_type,InterValue p_nanoseconds)
 {
   // Retain type
   m_interval.interval_type = p_type;
+  // Recalculate the structure
+  m_value = p_nanoseconds;
+  RecalculateInterval();
   // Check negative
   if(p_nanoseconds < 0L)
   {
     m_value *= -1L;
     m_interval.interval_sign = SQL_TRUE;
   }
-  // Recalculate the structure
-  m_value = p_nanoseconds;
-  RecalculateInterval();
   return Valid();
 }
 
 bool    
-SQLInterval::SetInterval(SQL_INTERVAL_STRUCT& p_interval)
+SQLInterval::SetInterval(const SQL_INTERVAL_STRUCT& p_interval)
 {
   memcpy(&m_interval,&p_interval,sizeof(SQL_INTERVAL_STRUCT));
   RecalculateValue();

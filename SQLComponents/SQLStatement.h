@@ -35,7 +35,7 @@ public :
   SQLStatement(int p_number,char* p_statement,int p_minimum,int p_maximum);
  ~SQLStatement();
   bool    CheckRecords(int p_records);
-  void    AddToStatement(XString& p_statement);
+  void    AddToStatement(const XString& p_statement);
 
   // SETTERS
 

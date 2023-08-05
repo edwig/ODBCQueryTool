@@ -39,13 +39,12 @@ namespace SQLComponents
 
 SQLInfoDB::SQLInfoDB(SQLDatabase* p_database)
           :SQLInfo(p_database)
+          // Must be 'PUBLIC' for an ANSI-compliant database
+          ,m_grantedUsers("PUBLIC")
 {
   // Granted users.
   // Comma separated list of granted users
   // e.g. "meta3", "meta2", "meta1", "model" and "data"
-
-  // Must be 'PUBLIC' for an ANSI-compliant database
-  m_grantedUsers = "PUBLIC";
 }
 
 SQLInfoDB::~SQLInfoDB()
@@ -56,9 +55,9 @@ SQLInfoDB::~SQLInfoDB()
 // Can be 'TABLE', 'VIEW', 'ALIAS', 'SYNONYM', 'SYSTEM TABLE' etc
 bool    
 SQLInfoDB::MakeInfoTableObject(MTableMap& p_tables
-                               ,XString&  p_errors
-                               ,XString   p_schema
-                               ,XString   p_tablename)
+                              ,XString&  p_errors
+                              ,XString   p_schema
+                              ,XString   p_tablename)
 {
   // Clear the results
   p_tables.clear();
@@ -122,6 +121,99 @@ SQLInfoDB::MakeInfoMetaTypes(MMetaMap& p_objects,XString& p_errors,int p_type)
     p_errors.Append(er);
   }
   return 0;
+}
+
+bool
+SQLInfoDB::MakeInfoDefaultCharset(XString& p_default)
+{
+  p_default.Empty();
+  XString sql = GetCATALOGDefaultCharset();
+
+  if(sql.IsEmpty() || sql.Find(' ') < 0)
+  {
+    m_defaultCharset = sql;
+    p_default = m_defaultCharset;
+    return true;
+  }
+
+  try
+  {
+    SQLQuery qry(m_database);
+    qry.DoSQLStatement(sql);
+    if(qry.GetRecord())
+    {
+      m_defaultCharset = qry[1].GetAsChar();
+      p_default = m_defaultCharset;
+      return true;
+    }
+  }
+  catch(...)
+  {
+    m_defaultCharset.Empty();
+  }
+  return false;
+}
+
+bool
+SQLInfoDB::MakeInfoDefaultCharsetNC(XString& p_default)
+{
+  p_default.Empty();
+  XString sql = GetCATALOGDefaultCharsetNCV();
+
+  if(sql.IsEmpty() || sql.Find(' ') < 0)
+  {
+    m_defaultCharsetNCV = sql;
+    p_default = m_defaultCharsetNCV;
+    return true;
+  }
+
+  try
+  {
+    SQLQuery qry(m_database);
+    qry.DoSQLStatement(sql);
+    if(qry.GetRecord())
+    {
+      m_defaultCharsetNCV = qry[1].GetAsChar();
+      p_default = m_defaultCharsetNCV;
+      return true;
+    }
+  }
+  catch(...)
+  {
+    m_defaultCharsetNCV.Empty();
+  }
+  return false;
+}
+
+bool
+SQLInfoDB::MakeInfoDefaultCollation(XString& p_default)
+{
+  p_default.Empty();
+  XString sql = GetCATALOGDefaultCollation();
+
+  if(sql.IsEmpty() || sql.Find(' ') < 0)
+  {
+    m_defaultCollation = sql;
+    p_default = m_defaultCollation;
+    return true;
+  }
+
+  try
+  {
+    SQLQuery qry(m_database);
+    qry.DoSQLStatement(sql);
+    if(qry.GetRecord())
+    {
+      m_defaultCollation = qry[1].GetAsChar();
+      p_default = m_defaultCollation;
+      return true;
+    }
+  }
+  catch(...)
+  {
+    m_defaultCollation.Empty();
+  }
+  return false;
 }
 
 bool

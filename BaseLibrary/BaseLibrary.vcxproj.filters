@@ -279,6 +279,9 @@
     <ClInclude Include="XSDSchema.h">
       <Filter>Header Files\XML_SOAP</Filter>
     </ClInclude>
+    <ClInclude Include="Environment.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="bcd.cpp">
@@ -490,6 +493,9 @@
     </ClCompile>
     <ClCompile Include="pch.cpp">
       <Filter>Configuration</Filter>
+    </ClCompile>
+    <ClCompile Include="Environment.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

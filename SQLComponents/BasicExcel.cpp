@@ -4081,13 +4081,19 @@ ULONG Worksheet::CellTable::RowBlock::CellBlock::MulRK::RecordSize()
   return recordSize_ = dataSize + 4*(dataSize/8224 + 1);
 }
 
-Worksheet::CellTable::RowBlock::CellBlock::Number::Number() : Record(),
-  rowIndex_(0), colIndex_(0), XFRecordIndex_(0), value_(0)
+Worksheet::CellTable::RowBlock::CellBlock::Number::Number() 
+          :Record()
+          ,rowIndex_(0)
+          ,colIndex_(0)
+          ,XFRecordIndex_(0)
+          ,value_(0)
 {
-  code_ = CODE::NUMBER;
-  dataSize_ = 14; recordSize_ = 18;
-  intdouble_ = {0};
+  code_       = CODE::NUMBER;
+  dataSize_   = 14; 
+  recordSize_ = 18;
+  intdouble_  = { 0 };
 }
+
 ULONG Worksheet::CellTable::RowBlock::CellBlock::Number::Read(const char* data)
 {
   Record::Read(data);
@@ -6598,27 +6604,27 @@ BasicExcelWorksheet::CellValue(int row,int col,char* p_buffer,int p_length)
                                       break;
       case BasicExcelCell::DOUBLE:    {
                                         sprintf_s(p_buffer,p_length,"%f",cell->GetDouble());
-                                        //Kijk of het een datum formaat is, zo ja dan omzetten naar een string datum
+                                        // See if it is a date format, and if so, convert to a date in a string
                                         ExcelFormat::XLSFormatManager fmt_mgr(*excel_);
                                         ExcelFormat::CellFormat fmt(fmt_mgr, cell);
                                         std::wstring format = fmt_mgr.get_format_string(fmt);
                                         if(format.compare(L"M/D/YY")==0 ||
-                                          format.compare(L"[$-F800]dddd\\,\\ mmmm\\ dd\\,\\ yyyy")==0 ||
-                                          format.compare(L"yyyy/mm/dd;@")==0 ||
-                                          format.compare(L"d/m;@")==0 ||
-                                          format.compare(L"d/mm/yy;@")==0 ||
-                                          format.compare(L"dd/mm/yy;@")==0 ||
-                                          format.compare(L"[$-413]d/mmm;@")==0 ||
-                                          format.compare(L"[$-413]dd/mmm/yy;@")==0 ||
-                                          format.compare(L"[$-413]mmm/yy;@")==0 ||
-                                          format.compare(L"[$-413]mmmm/yy;@")==0 ||
-                                          format.compare(L"[$-413]d\\ mmmm\\ yyyy;@")==0 ||
-                                          format.compare(L"[$-413]d/mmm/yyyy;@")==0 ||
-                                          format.compare(L"[$-413]d/mmm/yy;@")==0 ||
-                                          format.compare(L"[$-413]mmmmm;@")==0 ||
-                                          format.compare(L"[$-413]mmmmm/yy;@")==0 ||
-                                          format.compare(L"m/d/yyyy;@")==0 
-                                          )
+                                           format.compare(L"[$-F800]dddd\\,\\ mmmm\\ dd\\,\\ yyyy")==0 ||
+                                           format.compare(L"yyyy/mm/dd;@")==0 ||
+                                           format.compare(L"d/m;@")==0 ||
+                                           format.compare(L"d/mm/yy;@")==0 ||
+                                           format.compare(L"dd/mm/yy;@")==0 ||
+                                           format.compare(L"[$-413]d/mmm;@")==0 ||
+                                           format.compare(L"[$-413]dd/mmm/yy;@")==0 ||
+                                           format.compare(L"[$-413]mmm/yy;@")==0 ||
+                                           format.compare(L"[$-413]mmmm/yy;@")==0 ||
+                                           format.compare(L"[$-413]d\\ mmmm\\ yyyy;@")==0 ||
+                                           format.compare(L"[$-413]d/mmm/yyyy;@")==0 ||
+                                           format.compare(L"[$-413]d/mmm/yy;@")==0 ||
+                                           format.compare(L"[$-413]mmmmm;@")==0 ||
+                                           format.compare(L"[$-413]mmmmm/yy;@")==0 ||
+                                           format.compare(L"m/d/yyyy;@")==0 
+                                           )
                                         {
                                           BSTR bstr = NULL;
                                           VarBstrFromDate(cell->GetDouble(), LANG_USER_DEFAULT, VAR_FOURDIGITYEARS, &bstr); 

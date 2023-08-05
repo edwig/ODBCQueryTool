@@ -31,8 +31,10 @@
 namespace Common
 {
 
-    void AppRestoreHistory (CComboBox& wndList, const char* szSection, const char* szEntry, int nSize);
-    void AppSaveHistory (CComboBox& wndList, const char* szSection, const char* szEntry, int nSize);
+    void AppRestoreHistory(CComboBox&     wndList,const char* szSection,const char* szEntry,int nSize);
+    void AppRestoreHistory(StyleComboBox& wndList,const char* szSection,const char* szEntry,int nSize);
+    void AppSaveHistory   (CComboBox&     wndList,const char* szSection,const char* szEntry,int nSize);
+    void AppSaveHistory   (StyleComboBox& wndList,const char* szSection,const char* szEntry,int nSize);
 
 
     typedef std::string          String;

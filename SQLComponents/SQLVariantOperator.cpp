@@ -27,6 +27,7 @@
 #include "SQLComponents.h"
 #include "SQLVariant.h"
 #include "SQLVariantOperator.h"
+#include "SQLDataType.h"
 #include "SQLDate.h"
 #include "SQLGuid.h"
 #include "bcd.h"
@@ -131,22 +132,22 @@ SQLVariant::operator=(const char* p_data)
 }
 
 SQLVariant& 
-SQLVariant::operator=(XString& p_data)
+SQLVariant::operator=(const XString& p_data)
 {
   SetData(SQL_C_CHAR,p_data.GetString());
   return *this;
 }
 
 SQLVariant& 
-SQLVariant::operator=(XString p_data)
+SQLVariant::operator=(const XString p_data)
 {
-  SetData(SQL_C_CHAR, p_data.GetString());
+  SetData(SQL_C_CHAR,p_data.GetString());
   return *this;
 }
 
 
 SQLVariant& 
-SQLVariant::operator=(short p_data)
+SQLVariant::operator=(const short p_data)
 {
   Init();
   m_datatype    = SQL_C_SSHORT;
@@ -158,7 +159,7 @@ SQLVariant::operator=(short p_data)
 }
 
 SQLVariant& 
-SQLVariant::operator=(unsigned short p_data)
+SQLVariant::operator=(const unsigned short p_data)
 {
   Init();
   m_datatype    = SQL_C_USHORT;
@@ -170,7 +171,7 @@ SQLVariant::operator=(unsigned short p_data)
 }
 
 SQLVariant& 
-SQLVariant::operator=(int p_data)
+SQLVariant::operator=(const int p_data)
 {
   Init();
   m_datatype    = SQL_C_SLONG;
@@ -182,7 +183,7 @@ SQLVariant::operator=(int p_data)
 }
 
 SQLVariant& 
-SQLVariant::operator=(unsigned int p_data)
+SQLVariant::operator=(const unsigned int p_data)
 {
   Init();
   m_datatype    = SQL_C_ULONG;
@@ -194,7 +195,7 @@ SQLVariant::operator=(unsigned int p_data)
 }
 
 SQLVariant& 
-SQLVariant::operator=(float p_data)
+SQLVariant::operator=(const float p_data)
 {
   Init();
   m_datatype    = SQL_C_FLOAT;
@@ -206,7 +207,7 @@ SQLVariant::operator=(float p_data)
 }
 
 SQLVariant& 
-SQLVariant::operator=(double p_data)
+SQLVariant::operator=(const double p_data)
 {
   Init();
   m_datatype    = SQL_C_DOUBLE;
@@ -218,7 +219,7 @@ SQLVariant::operator=(double p_data)
 }
 
 SQLVariant& 
-SQLVariant::operator=(bool p_data)
+SQLVariant::operator=(const bool p_data)
 {
   Init();
   m_datatype    = SQL_C_BIT;
@@ -230,7 +231,7 @@ SQLVariant::operator=(bool p_data)
 }
 
 SQLVariant& 
-SQLVariant::operator=(char p_data)
+SQLVariant::operator=(const char p_data)
 {
   Init();
   m_datatype    = SQL_C_STINYINT;
@@ -242,7 +243,7 @@ SQLVariant::operator=(char p_data)
 }
 
 SQLVariant& 
-SQLVariant::operator=(unsigned char p_data)
+SQLVariant::operator=(const unsigned char p_data)
 {
   Init();
   m_datatype    = SQL_C_UTINYINT;
@@ -254,7 +255,7 @@ SQLVariant::operator=(unsigned char p_data)
 }
 
 SQLVariant& 
-SQLVariant::operator=(__int64 p_data)
+SQLVariant::operator=(const __int64 p_data)
 {
   Init();
   m_datatype    = SQL_C_SBIGINT;
@@ -266,7 +267,7 @@ SQLVariant::operator=(__int64 p_data)
 }
 
 SQLVariant& 
-SQLVariant::operator=(unsigned __int64 p_data)
+SQLVariant::operator=(const unsigned __int64 p_data)
 {
   Init();
   m_datatype    = SQL_C_UBIGINT;
@@ -278,7 +279,7 @@ SQLVariant::operator=(unsigned __int64 p_data)
 }
 
 SQLVariant& 
-SQLVariant::operator=(SQL_NUMERIC_STRUCT* p_data)
+SQLVariant::operator=(const SQL_NUMERIC_STRUCT* p_data)
 {
   Init();
   m_datatype    = SQL_C_NUMERIC;
@@ -290,7 +291,7 @@ SQLVariant::operator=(SQL_NUMERIC_STRUCT* p_data)
 }
 
 SQLVariant& 
-SQLVariant::operator=(SQLGUID* p_data)
+SQLVariant::operator=(const SQLGUID* p_data)
 {
   Init();
   m_datatype    = SQL_C_GUID;
@@ -302,7 +303,7 @@ SQLVariant::operator=(SQLGUID* p_data)
 }
 
 SQLVariant& 
-SQLVariant::operator=(DATE_STRUCT* p_data)
+SQLVariant::operator=(const DATE_STRUCT* p_data)
 {
   Init();
   m_datatype    = SQL_C_DATE;
@@ -314,7 +315,7 @@ SQLVariant::operator=(DATE_STRUCT* p_data)
 }
 
 SQLVariant& 
-SQLVariant::operator=(TIME_STRUCT* p_data)
+SQLVariant::operator=(const TIME_STRUCT* p_data)
 {
   Init();
   m_datatype    = SQL_C_TIME;
@@ -326,7 +327,7 @@ SQLVariant::operator=(TIME_STRUCT* p_data)
 }
 
 SQLVariant& 
-SQLVariant::operator=(TIMESTAMP_STRUCT* p_data)
+SQLVariant::operator=(const TIMESTAMP_STRUCT* p_data)
 {
   Init();
   m_datatype    = SQL_C_TIMESTAMP;
@@ -337,7 +338,7 @@ SQLVariant::operator=(TIMESTAMP_STRUCT* p_data)
   return *this;
 }
 SQLVariant& 
-SQLVariant::operator=(SQL_INTERVAL_STRUCT* p_data)
+SQLVariant::operator=(const SQL_INTERVAL_STRUCT* p_data)
 {
   Init();
   m_datatype    = p_data->interval_type;
@@ -356,7 +357,7 @@ SQLVariant::operator=(SQL_INTERVAL_STRUCT* p_data)
 // Assignments from complex constructors
 
 SQLVariant& 
-SQLVariant::operator=(SQLDate& p_data)
+SQLVariant::operator=(const SQLDate& p_data)
 {
   Init();
   m_datatype    = SQL_C_DATE;
@@ -375,7 +376,7 @@ SQLVariant::operator=(SQLDate& p_data)
 }
 
 SQLVariant& 
-SQLVariant::operator=(SQLTime& p_data)
+SQLVariant::operator=(const SQLTime& p_data)
 {
   Init();
   m_datatype    = SQL_C_TIME;
@@ -395,7 +396,7 @@ SQLVariant::operator=(SQLTime& p_data)
 
 
 SQLVariant& 
-SQLVariant::operator=(SQLTimestamp& p_data)
+SQLVariant::operator=(const SQLTimestamp& p_data)
 {
   Init();
   m_datatype    = SQL_C_TIMESTAMP;
@@ -414,7 +415,7 @@ SQLVariant::operator=(SQLTimestamp& p_data)
 }
 
 SQLVariant& 
-SQLVariant::operator=(SQLInterval& p_data)
+SQLVariant::operator=(const SQLInterval& p_data)
 {
   Init();
   m_datatype    = p_data.GetIntervalType();
@@ -434,7 +435,7 @@ SQLVariant::operator=(SQLInterval& p_data)
 
 // SQLGuid
 SQLVariant& 
-SQLVariant::operator =(SQLGuid& p_guid)
+SQLVariant::operator =(const SQLGuid& p_guid)
 {
   Init();
   m_datatype    = SQL_C_GUID;
@@ -454,26 +455,14 @@ SQLVariant::operator =(SQLGuid& p_guid)
 
 // Binary Coded Decimal
 SQLVariant& 
-SQLVariant::operator=(bcd& p_bcd)
+SQLVariant::operator=(const bcd& p_bcd)
 {
   Init();
   m_datatype    = SQL_C_NUMERIC;
   m_sqlDatatype = SQL_NUMERIC;
   m_indicator   = 0;
 
-  int prec  = p_bcd.GetExponent() + 1;  // Exponent 0 = 1 digit before the decimal point
-  int scale = p_bcd.GetPrecision();     // Digits after the decimal point
-
-  // At least 1 digit before the decimal point
-  if(prec < 1)
-  {
-    prec = 1;
-  }
-  // precision scaling of a numeric = prec + scale
-  prec += scale;
-
   p_bcd.AsNumeric(&m_data.m_dataNUMERIC);
-
   return *this;
 }
 
@@ -598,7 +587,7 @@ void
 SQLVariant::ThrowErrorOperator(SQLVarOperator p_operator)
 {
   XString error;
-  const char* type = FindDatatype(m_datatype);
+  const char* type = SQLDataType::FindDatatype(m_datatype);
   const char* oper = nullptr;
   switch (p_operator)
   {

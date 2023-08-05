@@ -67,6 +67,9 @@ public:
 
   // Meta info about meta types: META_CATALOGS/META_SCHEMAS/META_TABLES
   virtual bool    MakeInfoMetaTypes       (MMetaMap&      p_objects,   XString& p_errors,int p_type) override;
+  virtual bool    MakeInfoDefaultCharset  (XString&       p_default);
+  virtual bool    MakeInfoDefaultCharsetNC(XString&       p_default);
+  virtual bool    MakeInfoDefaultCollation(XString&       p_default);
   // Tables
   virtual bool    MakeInfoTableObject     (MTableMap&     p_tables,    XString& p_errors,XString p_schema,XString p_tablename);  // Not known which type!
   virtual bool    MakeInfoTableTable      (MTableMap&     p_tables,    XString& p_errors,XString p_schema,XString p_tablename);  // TABLE   only
@@ -80,8 +83,8 @@ public:
   virtual bool    MakeInfoTableStatistics (MIndicesMap&   p_indices,   XString& p_errors,XString p_schema,XString p_tablename,MPrimaryMap* p_keymap,bool p_all = true) override;
   virtual bool    MakeInfoTableTriggers   (MTriggerMap&   p_triggers,  XString& p_errors,XString p_schema,XString p_tablename,XString p_trigger   = "");
   virtual bool    MakeInfoTableSequences  (MSequenceMap&  p_sequences, XString& p_errors,XString p_schema,XString p_tablename);
-  virtual bool    MakeInfoTablePrivileges (MPrivilegeMap& p_privileges,XString& p_errors,XString p_schema,XString p_tablename);
-  virtual bool    MakeInfoColumnPrivileges(MPrivilegeMap& p_privileges,XString& p_errors,XString p_schema,XString p_tablename,XString p_columnname = "");
+  virtual bool    MakeInfoTablePrivileges (MPrivilegeMap& p_privileges,XString& p_errors,XString p_schema,XString p_tablename) override;
+  virtual bool    MakeInfoColumnPrivileges(MPrivilegeMap& p_privileges,XString& p_errors,XString p_schema,XString p_tablename,XString p_columnname = "") override;
   virtual bool    MakeInfoViewDefinition  (XString&       p_defintion, XString& p_errors,XString p_schema,XString p_viewname);
 
   // Procedures
@@ -279,6 +282,7 @@ public:
   // CATALOG
   // o GetCATALOG<Object[s]><Function>
   //   Objects
+  //   - Catalog
   //   - Table
   //   - Column
   //   - Index
@@ -302,6 +306,9 @@ public:
 
   // Meta info about meta types
   virtual XString GetCATALOGMetaTypes(int p_type) const = 0;
+  virtual XString GetCATALOGDefaultCharset() const = 0;
+  virtual XString GetCATALOGDefaultCharsetNCV() const = 0;
+  virtual XString GetCATALOGDefaultCollation() const = 0;
   // All table functions
   virtual XString GetCATALOGTableExists       (XString& p_schema,XString& p_tablename) const = 0;
   virtual XString GetCATALOGTablesList        (XString& p_schema,XString& p_pattern)   const = 0;
@@ -493,7 +500,11 @@ private:
 
   // All default granted users for GRANT statements
   XString m_grantedUsers;
-  // Prefer ODBC metaqueries above hand crafted ones
+  // Catalog default charset/collation
+  XString m_defaultCharset;
+  XString m_defaultCharsetNCV;
+  XString m_defaultCollation;
+  // Prefer ODBC meta-queries above hand crafted ones
   bool    m_preferODBC { true };
 };
 

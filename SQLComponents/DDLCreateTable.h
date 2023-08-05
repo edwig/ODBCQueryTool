@@ -36,7 +36,7 @@ using DDLS = std::deque<XString>;
 class DDLCreateTable
 {
 public:
-  DDLCreateTable(SQLInfoDB* p_info,SQLInfoDB* p_target = nullptr);
+  explicit DDLCreateTable(SQLInfoDB* p_info,SQLInfoDB* p_target = nullptr);
 
   // Request DDL for "table" or "schema.table" 
   // Where "table" can be of type: "TABLE" / "VIEW"
@@ -55,14 +55,14 @@ public:
   DDLS    GetViewStatements(XString p_viewname);
 
   // Internal delivery of all table information
-  void    SetTableInfoTable    (MTableMap&     p_info);
-  void    SetTableInfoColumns  (MColumnMap&    p_info);
-  void    SetTableInfoIndices  (MIndicesMap&   p_info);
-  void    SetTableInfoPrimary  (MPrimaryMap&   p_info);
-  void    SetTableInfoForeign  (MForeignMap&   p_info);
-  void    SetTableInfoTrigger  (MTriggerMap&   p_info);
-  void    SetTableInfoSequence (MSequenceMap&  p_info);
-  void    SetTableInfoPrivilege(MPrivilegeMap& p_info);
+  void    SetTableInfoTable    (const MTableMap&     p_info);
+  void    SetTableInfoColumns  (const MColumnMap&    p_info);
+  void    SetTableInfoIndices  (const MIndicesMap&   p_info);
+  void    SetTableInfoPrimary  (const MPrimaryMap&   p_info);
+  void    SetTableInfoForeign  (const MForeignMap&   p_info);
+  void    SetTableInfoTrigger  (const MTriggerMap&   p_info);
+  void    SetTableInfoSequence (const MSequenceMap&  p_info);
+  void    SetTableInfoPrivilege(const MPrivilegeMap& p_info);
 
   // Setting of special members
   void    SetInfoDB(SQLInfoDB* p_info);

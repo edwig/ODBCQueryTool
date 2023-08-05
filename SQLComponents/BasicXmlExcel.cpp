@@ -237,12 +237,12 @@ BasicXmlWorksheet::Load(XMLMessage& p_msg,XMLElement* p_root)
           {
             // Integer number
             int intNum = atoi(value);
-            //Het is een getal, maar nog controleren of het een datum is.
-            // met het s attribuut kan de style verwijzing worden opgevraagd.
+            // It is a number, now still check if it is a date
+            // // with the attribute we can get to the style reference
             dataType = p_msg.GetAttribute(col,"s");
             if(dataType && !dataType.IsEmpty())
             {
-              //Als de s waarde voorkomt in de style array met datumopmaak dan is het een datum :)              
+              // If the value is in the style array with a date formatting, it is a date :-)
               XString formatCode =  m_workbook->GetStyleCode(_ttoi(dataType));
               if (formatCode.Compare("M/D/YY") == 0 ||
                 formatCode.Compare("[$-F800]dddd\\,\\ mmmm\\ dd\\,\\ yyyy") == 0 ||
@@ -266,7 +266,7 @@ BasicXmlWorksheet::Load(XMLMessage& p_msg,XMLElement* p_root)
               }
               else
               {
-                //Toch geen datum dus laten we maar wel een cell met integer aanmaken :)
+                // Not a date after all, so we make an integer call :-(
                 cell = new BasicXmlCell(rowNumber, colNumber, intNum, XCT_INTEGER);
               }
             }
@@ -349,7 +349,7 @@ BasicXmlWorksheet::GetCellValue(int p_row,int p_col)
                         break;
       case XCT_DATE:    if(cell->GetCellValue(intValue))
                         {
-                          // Het omzetten van een int naar een string datum
+                          // Converting an integer to a string date
                           BSTR bstr = NULL;
                           VarBstrFromDate(intValue, LANG_USER_DEFAULT, VAR_FOURDIGITYEARS, &bstr); 
                           value = bstr;
@@ -484,7 +484,7 @@ BasicXmlExcel::ReadSheetNames()
     if(_stricmp(ze.name,"xl/workbook.xml") == 0)
     {
       int   bufflen = ze.unc_size + 1;
-      char* buffer  = (char*) malloc(bufflen);
+      char* buffer  = reinterpret_cast<char*>(malloc(bufflen));
       if(!buffer)
       {
         SetError(ZR_MEMSIZE);
@@ -574,7 +574,7 @@ BasicXmlExcel::Load()
   // Ignore return value from LoadStrings
   // After Office-2013 it shared-strings are not mandatory any more
   LoadStrings();
-  //De xlsx bestanden hebben intern een styles.xml, hier staat bijvoorbeeld een datumopmaak in beschreven.
+  // The XLSX files have an internal styles.xml, where we can find e.g. a date formatting
   LoadStyles();
   return LoadWorksheets();
 }
@@ -730,8 +730,8 @@ BasicXmlExcel::LoadStyles()
       }
       std::vector<XString> styleFormats;
       // Reading the styles
-      //In het element cellxfs staan voor elke 's' attribuut waarde van een cell een formaat id
-      //hiermee kan in de volgende stap dan weer de formatcode opgezocht worden
+      // The element 'cellxfs' have the 's' attribute values for a cell's formatting ID
+      // that we can use to look up the formatting code
       XMLElement* cellformat = doc.FindElement(root,"cellXfs");
       if (cellformat)
       {
@@ -747,13 +747,13 @@ BasicXmlExcel::LoadStyles()
           }
         }
       }
-      //voor alle cellformats de bijbehorende code zoeken.
+      // Find the cell formats for the corresponding code
       for (int i = 0; i < (int)styleFormats.size(); i++)
       {
-        //Er zijn een aantal standaardwaarden die niet apart in een code worden opgenomen, voor deze zelf een formatcode aanmaken
+        // Some standard values do not have a separate code, so we make one for them
         if (styleFormats[i] == "14" || styleFormats[i] == "15"||styleFormats[i] == "16"||styleFormats[i] == "17" )
         {
-          //Een datumformaat, welke maakt niet uit voor het omzetten van de datum naar string.
+          // A date format, convert to string
           m_styles.insert(std::make_pair(i, "dd/mm/yy;@"));
         }
         else
@@ -768,14 +768,14 @@ BasicXmlExcel::LoadStyles()
             }
             else
             {
-              //Verwacht niet dat dit voor kan komen.
-              m_styles.insert(std::make_pair(i, "Geen formaat code gevonden" + styleFormats[i]));
+              // Should not happen!
+              m_styles.insert(std::make_pair(i, "No format code found: " + styleFormats[i]));
             }
           }
           else
           {
-            //Verwacht niet dat dit voor kan komen.
-            m_styles.insert(std::make_pair(i, "Geen formaat code gevonden" + styleFormats[i]));
+            // SHould not happen!
+            m_styles.insert(std::make_pair(i, "No format code found: " + styleFormats[i]));
           }
         }
       }
@@ -800,10 +800,8 @@ BasicXmlExcel::LoadWorksheets()
     return true;
   }
   // Make sure we have the sheetnames
-  if(m_sheetRead == false)
-  {
-    ReadSheetNames();
-  }
+  ReadSheetNames();
+
   // Variables
   ZIPENTRY ze;
   ZRESULT  res = ZR_OK;

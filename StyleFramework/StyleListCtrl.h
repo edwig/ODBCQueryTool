@@ -20,9 +20,30 @@
 #include "SkinScrollWnd.h"
 #include <afxlistctrl.h>
 
+//////////////////////////////////////////////////////////////////////////
+//
+// StyleHeaderCtrl
+//
+class StyleHeaderCtrl: public CMFCHeaderCtrl
+{
+  DECLARE_DYNAMIC(StyleHeaderCtrl)
+public:
+  StyleHeaderCtrl();
+  virtual ~StyleHeaderCtrl();
+
+  virtual void OnDrawItem(CDC* pDC,int iItem,CRect rect,BOOL bIsPressed,BOOL bIsHighlighted) override;
+  virtual void OnFillBackground(CDC* pDC) override;
+};
+
+//////////////////////////////////////////////////////////////////////////
+//
+// StyleListCtrl
+//
 class StyleListCtrl : public CMFCListCtrl
 {
-// Construction
+  DECLARE_DYNAMIC(StyleListCtrl)
+
+  // Construction
 public:
 	StyleListCtrl();
   virtual ~StyleListCtrl();
@@ -33,16 +54,26 @@ public:
   SkinScrollWnd* GetSkin();
   void SetDirectInit(bool p_init);
 
+  // Override if you want anything other than string comparisons!
+  // Beware: You must use the "SetItemData(item,<something>)" to trigger this function
+  virtual int OnCompareItems(LPARAM lParam1,LPARAM lParam2,int iColumn) override;
+
+  virtual CMFCHeaderCtrl& GetHeaderCtrl() override;
+  virtual COLORREF        OnGetCellTextColor(int p_row,int p_colum) override;
+  virtual COLORREF        OnGetCellBkColor  (int p_row,int p_colum) override;
+
 protected:
+  StyleHeaderCtrl m_styleHeader;
+
   bool    m_inPaint    { false };
   bool    m_directInit { true  };
 
   virtual LRESULT WindowProc(UINT message,WPARAM wParam,LPARAM lParam) override;
   virtual void    PreSubclassWindow() override;
-          void    CheckColors();
 
   afx_msg void OnPaint();
   afx_msg void OnSize(UINT nType,int cx,int cy);
+  afx_msg BOOL OnEraseBkgnd(CDC* pDC);
   afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
   DECLARE_MESSAGE_MAP()
 };

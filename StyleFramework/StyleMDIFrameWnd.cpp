@@ -515,30 +515,28 @@ void StyleMDIFrameWnd::OnSize(UINT nType, int cx, int cy)
 void 
 StyleMDIFrameWnd::OnNcCalcSize(BOOL calcValidRects,NCCALCSIZE_PARAMS* p_params)
 {
-  int baseMargin = MARGIN;
-  p_params->rgrc[0].top += WINCAPTIONHEIGHT;
-
   if(GetStyle() & WS_MAXIMIZE)
   {
-    // In full-screen mode, the MS-Windows OS uses this extra margin
-    CSize margin = afxGlobalUtils.GetSystemBorders(GetStyle());
-
-    p_params->rgrc[0].left   += margin.cx;
-    p_params->rgrc[0].top    += margin.cy;
-    p_params->rgrc[0].right  -= margin.cx;
-    p_params->rgrc[0].bottom -= margin.cy;
+    CRect area;
+    StyleGetWorkArea(this,area);
+    area.top += WINCAPTIONHEIGHT;
+    p_params->rgrc[0] = area;
   }
   else
   {
     // The baseMargin is needed for two things:
     // 1) To activate the left/right/bottom mouse pulling action
     // 2) To provide space for a painted border around the window
-    p_params->rgrc[0].left   += baseMargin;
-    p_params->rgrc[0].right  -= baseMargin;
-    p_params->rgrc[0].bottom -= baseMargin;
+    p_params->rgrc[0].top    += WINCAPTIONHEIGHT;
+    p_params->rgrc[0].left   += MARGIN;
+    p_params->rgrc[0].right  -= MARGIN;
+    p_params->rgrc[0].bottom -= MARGIN;
   }
   // Use same rectangle for displacement (so hide it)
-  p_params->rgrc[2] = p_params->rgrc[0];
+  if(calcValidRects)
+  {
+    p_params->rgrc[2] = p_params->rgrc[0];
+  }
 }
 
 // Avoid flicker of the title bar on activate

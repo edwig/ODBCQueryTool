@@ -4260,6 +4260,17 @@ int CGridCtrl::InsertRow(LPCTSTR strHeading, int nRow /* = -1 */)
   return nRow;
 }
 
+int
+CGridCtrl::InsertRowAndSetFocus(LPCTSTR strHeading,int nRow /*= -1*/,int nColumn /*= 0*/)
+{
+  int row = InsertRow(strHeading,nRow);
+  RedrawRow(row);
+  SetFocusCell(row,nColumn);
+  SetFocus();
+
+  return row;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // Cell creation stuff
 

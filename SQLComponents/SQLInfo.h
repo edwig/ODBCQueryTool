@@ -72,7 +72,7 @@ typedef std::list<XString>          WordList;
 class SQLInfo 
 {
 public:
-   SQLInfo(SQLDatabase* p_database);
+   explicit SQLInfo(SQLDatabase* p_database);
   ~SQLInfo();
 
   // Initialize all internal data structures to defaults

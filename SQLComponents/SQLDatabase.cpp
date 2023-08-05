@@ -262,10 +262,8 @@ SQLDatabase::Open(XString const& p_datasource
   }
 
   // Open the database
-  if(!Open(connect,p_readOnly))
-  {
-    return false;
-  }
+  Open(connect,p_readOnly);
+
   // Remember datasource and user
   m_datasource = p_datasource;
   m_username   = p_username;
@@ -296,7 +294,7 @@ SQLDatabase::Open(XString const& p_connectString,bool p_readOnly)
   SetAttributesBeforeConnect();
 
   // The Connect function wants a non-const ptr
-  SQLCHAR* pszConnect = (SQLCHAR*)p_connectString.GetString();
+  SQLCHAR* pszConnect = reinterpret_cast<SQLCHAR*>(const_cast<char*>(p_connectString.GetString()));
   SQLCHAR  szConnectOut[CONNECTSTRING_MAXLEN + 1];
   SQLSMALLINT total = 0;
 
@@ -529,14 +527,15 @@ SQLDatabase::DatabaseNameFromDSN()
 {
   // Fall back on the datasource name
   // Only if we have nothing else, because it can be different per machine
-  int  pos    = 0;
-  int  number = 0;
+  int  pos = 0;
 
   m_dataIdent.Empty();
-  if ((pos = m_completeConnect.Find("DSN=")) >= 0)
+  pos = m_completeConnect.Find("DSN=");
+  if(pos >= 0)
   {
     pos += 4;
     char sp = m_completeConnect.GetAt(pos);
+    int number = 0;
     while(sp && sp != ';' && number++ < DS_IDENT_LEN)
     {
       m_dataIdent += sp;
@@ -548,7 +547,7 @@ SQLDatabase::DatabaseNameFromDSN()
     // Cannot determine a database name
     return false;
   }
-  // Record database name as ident
+  // Record database name as the identifier
   m_databaseName = m_dataIdent;
   return true;
 }
@@ -904,7 +903,7 @@ SQLDatabase::GetSQLHandle(HSTMT *p_statementHandle, BOOL p_exception)
     *p_statementHandle = NULL;
     if(p_exception)
     {
-      throw ex;
+      throw;
     }
   }
   return SQL_ERROR;
@@ -1000,9 +999,9 @@ SQLDatabase::ODBCNativeSQL(XString& p_sql)
 
   // Let the driver do the translation
   SQLRETURN ret = SQLNativeSql(m_hdbc
-                              ,(UCHAR*)p_sql.GetString()
+                              ,reinterpret_cast<UCHAR*>(const_cast<char*>(p_sql.GetString()))
                               ,p_sql.GetLength() + 1
-                              ,(UCHAR*)buffer
+                              ,reinterpret_cast<UCHAR*>(buffer)
                               ,2*len
                               ,&lengte);
   // Check if succeeded
@@ -1101,6 +1100,7 @@ SQLDatabase::GetErrorInfo(SQLSMALLINT p_type, SQLHANDLE p_handle, int& p_number,
   SQLCHAR     szErrorMsg[ERROR_BUFFERSIZE + 1];
   SQLSMALLINT cbErrorMsg;
   SQLSMALLINT recNummer = 0;
+  bool        result = true;
 
   // Get all error records
   XString errors;
@@ -1143,6 +1143,7 @@ SQLDatabase::GetErrorInfo(SQLSMALLINT p_type, SQLHANDLE p_handle, int& p_number,
       XString err;
       err.Format("Error %d found while reading the SQL error status.", res);
       errors += err;
+      result = false;
       break;
     }
     // Strip error message. Should be done at least for Oracle!!
@@ -1158,7 +1159,7 @@ SQLDatabase::GetErrorInfo(SQLSMALLINT p_type, SQLHANDLE p_handle, int& p_number,
   }
   // ready
   p_text = errors;
-  return true;
+  return result;
 }
 
 BOOL
@@ -1743,7 +1744,7 @@ SQLDatabase::GetDataSources(DSMap& p_list,int p_type /*= SQL_FETCH_FIRST*/)
     do 
     {
       DataSourceInternal source;
-      source.m_datasource = (LPCSTR)server;
+      source.m_datasource = server;
       source.m_system     = (direction == SQL_FETCH_FIRST_SYSTEM);
       source.m_outputOMF  = false;
       source.m_default    = false;
@@ -1785,8 +1786,8 @@ SQLDatabase::GetSpecialDriver(XString p_base,XString p_extensie)
     // See if it's e.g. an Excel driver and if it supports
     // the right extension (xls or xlsx)
     // Most of the time there are multiple Excel drivers on the system
-    if(strstr((char*)driverDescription,p_base)     != 0 &&
-       strstr((char*)driverDescription,p_extensie) != 0 )
+    if(strstr(reinterpret_cast<char*>(driverDescription),p_base)     != 0 &&
+       strstr(reinterpret_cast<char*>(driverDescription),p_extensie) != 0 )
     {
       // Found !
       return XString(driverDescription);
@@ -1906,7 +1907,7 @@ SQLDatabase::SetSchemaAction(SchemaAction p_action)
 void           
 SQLDatabase::ReplaceMacros(XString& p_statement)
 {
-  for(auto& macro : m_macros)
+  for(const auto& macro : m_macros)
   {
     XString text = macro.first;
     XString repl = macro.second;

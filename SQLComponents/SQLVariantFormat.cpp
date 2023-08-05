@@ -26,6 +26,7 @@
 #include "stdafx.h"
 #include "SQLComponents.h"
 #include "SQLVariantFormat.h"
+#include "SQLDataType.h"
 #include "SQLFormatErrors.h"
 #include "SQLTime.h"
 #include "SQLDate.h"
@@ -107,7 +108,7 @@ SQLVariantFormat::StringInitCapital()
 {
   bool doCapital = true;
   int  length = m_format.GetLength();
-  unsigned char* buffer = (unsigned char*)m_format.GetBuffer();
+  const unsigned char* buffer = reinterpret_cast<unsigned char*>(m_format.GetBuffer());
 
   for(int ind = 0; ind < length; ++ind)
   {
@@ -124,7 +125,6 @@ SQLVariantFormat::StringInitCapital()
         if(doCapital)
         {
           m_format.SetAt(ind, (unsigned char)toupper(ch));
-          doCapital = false;
         }
         else
         {
@@ -144,7 +144,7 @@ SQLVariantFormat::StringStartCapital()
 {
   bool doCapital = true;
   int  length = m_format.GetLength();
-  unsigned char* buffer = (unsigned char*)m_format.GetBuffer();
+  const unsigned char* buffer = reinterpret_cast<unsigned char*>(m_format.GetBuffer());
 
   for(int ind = 0;ind < length; ++ind)
   {
@@ -256,14 +256,14 @@ SQLVariantFormat::IsWinNumber(const XString p_string
                              ,XString*      p_newNumber)
 {
   XString newGetal("+");
-  bool bDecimal  = false;   // decimal separator found
-  bool bThousend = false;   // thousand separator found
-  bool bSpace    = false;   // Spaces behind the number
-  bool bTeken    = false;   // Found a sign
-  bool bNaTeken  = false;   // Sign after the number
-  bool bNumber   = false;   // First digit found
-  bool bNegatief = false;   // Negative number
-  int  pString   = 0;
+  bool bDecimal   = false;   // decimal separator found
+  bool bThousend  = false;   // thousand separator found
+  bool bSpace     = false;   // Spaces behind the number
+  bool bSign      = false;   // Found a sign
+  bool bAfterSign = false;   // Sign after the number
+  bool bNumber    = false;   // First digit found
+  bool bNegative  = false;   // Negative number
+  int  pString    = 0;
 
   int DSLen = 0;
   int TSLen = 0;
@@ -291,7 +291,7 @@ SQLVariantFormat::IsWinNumber(const XString p_string
   {
     if(isdigit(p_string.GetAt(pString)))
     {
-      if(bSpace || bNaTeken)
+      if(bSpace || bAfterSign)
       {
         return false;
       }
@@ -301,13 +301,13 @@ SQLVariantFormat::IsWinNumber(const XString p_string
     else if(p_string.GetAt(pString) == '-' ||
             p_string.GetAt(pString) == '+' )
     {
-      if(bTeken)
+      if(bSign)
       {
         return false;
       }
-      bTeken    = true;
-      bNaTeken  = bNumber;
-      bNegatief = (p_string.GetAt(pString) == '-');
+      bSign    = true;
+      bAfterSign  = bNumber;
+      bNegative = (p_string.GetAt(pString) == '-');
       newGetal.SetAt(0,p_string.GetAt(pString++));
     }
     else if(DSLen > 0 && strncmp(p_string.Mid(pString),p_decSeperator,DSLen) == 0)
@@ -399,13 +399,13 @@ SQLVariantFormat::StringDoubleValue()
         }
         else
         {
-          if(IsWinNumber(newWaarde,(char*)",",(char*)".",::g_locale_strCurrency,&newGetal))
+          if(IsWinNumber(newWaarde,const_cast<char*>(","),const_cast<char*>("."),::g_locale_strCurrency,&newGetal))
           {
             result = atof(newGetal);
           }
           else
           {
-            if(IsWinNumber(newWaarde,(char*)".",(char*)",",::g_locale_strCurrency,&newGetal))
+            if(IsWinNumber(newWaarde,const_cast<char*>("."),const_cast<char*>(","),::g_locale_strCurrency,&newGetal))
             {
               result = atof(newGetal);
             }
@@ -445,7 +445,7 @@ SQLVariantFormat::SetCurrentDate()
 }
 
 bool
-SQLVariantFormat::GetTimeFromStringVariant(SQLVariant* p_variant,XString p_format,TIME_STRUCT* p_time)
+SQLVariantFormat::GetTimeFromStringVariant(const SQLVariant* p_variant,XString p_format,TIME_STRUCT* p_time)
 {
   ZeroMemory(p_time,sizeof(TIME_STRUCT));
   //XString tijd("");
@@ -483,7 +483,7 @@ SQLVariantFormat::GetTimeFromStringVariant(SQLVariant* p_variant,XString p_forma
 }
 
 bool
-SQLVariantFormat::GetDateFromStringVariant(SQLVariant* p_variant,XString p_format,DATE_STRUCT* p_date)
+SQLVariantFormat::GetDateFromStringVariant(const SQLVariant* p_variant,XString p_format,DATE_STRUCT* p_date)
 {
   ZeroMemory(p_date,sizeof(DATE_STRUCT));
 
@@ -663,13 +663,9 @@ SQLVariantFormat::FormatDate(XString p_pattern)
   if(!p_pattern.IsEmpty())
   {
     int pos1 = p_pattern.Find('|');
-    int pos2 = -1;
     if(pos1 >= 0)
     {
-      pos2 = p_pattern.Find('|',pos1 + 1);
-    }
-    if(pos1 >= 0)
-    {
+      int pos2 = p_pattern.Find('|',pos1 + 1);
       dateFormat = p_pattern.Left(pos1);
       timeFormat = p_pattern.Mid(pos1+1, pos2 - pos1 - 1);
     }
@@ -685,13 +681,13 @@ SQLVariantFormat::FormatDate(XString p_pattern)
      type == SQL_C_TYPE_DATE || type == SQL_C_TYPE_TIMESTAMP)
   {
     SYSTEMTIME str;
-    memset((void*)&str,0,sizeof(SYSTEMTIME));
-    DATE_STRUCT* date = m_variant->GetAsDate();
+    memset(reinterpret_cast<void*>(&str),0,sizeof(SYSTEMTIME));
+    const DATE_STRUCT* date = m_variant->GetAsDate();
     str.wYear  = date->year;
     str.wMonth = date->month;
     str.wDay   = date->day;
     int buflen;
-    if((buflen = GetDateFormat(0,opties,&str, ((opties != 0) ? NULL : (LPCTSTR)dateFormat) , buffer1, NUMBER_BUFFER_SIZE)) < 0)
+    if((buflen = GetDateFormat(0,opties,&str,((opties != 0) ? NULL : reinterpret_cast<LPCTSTR>(dateFormat.GetBuffer())),buffer1,NUMBER_BUFFER_SIZE)) < 0)
     {
       buflen = 0;
     }
@@ -704,13 +700,13 @@ SQLVariantFormat::FormatDate(XString p_pattern)
       && (opties != DATE_LONGDATE ))
   {
     SYSTEMTIME str;
-    memset((void*)&str,0,sizeof(SYSTEMTIME));
-    TIME_STRUCT* time = m_variant->GetAsTime();
+    memset(reinterpret_cast<void*>(&str),0,sizeof(SYSTEMTIME));
+    const TIME_STRUCT* time = m_variant->GetAsTime();
     str.wHour   = time->hour;
     str.wMinute = time->minute;
     str.wSecond = time->second;
     int buflen;
-    if((buflen = GetTimeFormat(0,0,&str,(timeFormat.GetLength() > 0 ? (LPCTSTR)timeFormat : NULL),buffer2,NUMBER_BUFFER_SIZE)) < 0)
+    if((buflen = GetTimeFormat(0,0,&str,(timeFormat.GetLength() > 0 ? reinterpret_cast<LPCTSTR>(timeFormat.GetBuffer()) : NULL),buffer2,NUMBER_BUFFER_SIZE)) < 0)
     {
       buflen = 0;
     }
@@ -739,7 +735,6 @@ int
 SQLVariantFormat::DateCalculate(char p_operator,XString p_argument)
 {
   int  number = 0;
-  int  amount = 0;
   char numberType = 'D';
 
   // STEP 1: Checking datatypes and the contents of the variant for strings
@@ -799,7 +794,7 @@ SQLVariantFormat::DateCalculate(char p_operator,XString p_argument)
 
   if(date.Valid() && (p_operator == '+' || p_operator == '-'))
   {
-    amount = sscanf_s(p_argument,"%d %c",&number,&numberType,(unsigned int)sizeof(char));
+    sscanf_s(p_argument,"%d %c",&number,&numberType,(unsigned int)sizeof(char));
     if(number != 0)
     {
       if(number < 0)
@@ -811,19 +806,19 @@ SQLVariantFormat::DateCalculate(char p_operator,XString p_argument)
       {
         number = -number;
       }
-      switch (toupper(numberType))
+      switch(toupper(numberType))
       {
         case 'D': date = date.AddDays(number);
-                  date.AsDateStruct(m_variant->GetAsDate());
+                  m_variant->Set(&date);
                   m_format = date.AsString();
                   break;
         case 'M': date = date.AddMonths(number);
-                  date.AsDateStruct(m_variant->GetAsDate());
+                  m_variant->Set(&date);
                   m_format = date.AsString();
                   break;
         case 'Y': // Fall through
         case 'J': date = date.AddYears(number);
-                  date.AsDateStruct(m_variant->GetAsDate());
+                  m_variant->Set(&date);
                   m_format = date.AsString();
                   break;
       }
@@ -960,7 +955,7 @@ SQLVariantFormat::FormatVariantForSQL(SQLDatabase* p_database)
   }
   else
   {
-    XString datatypeString = m_variant->FindDatatype(datatype);
+    XString datatypeString = SQLDataType::FindDatatype(datatype);
     throw StdException("Cannot prepare datatype for query: " + datatypeString);
   }
   return text;
@@ -972,7 +967,6 @@ SQLVariantFormat::FormatNumberTemplate(char *Getal,const char *strNumFormat,int 
 {
   char	strFormat[2 * NUMBER_BUFFER_SIZE + 1];
   char	Buffer   [2 * NUMBER_BUFFER_SIZE + 1];
-  int	  BufLen = 0;
   char	*pFormat;
   char	*pGetal;
   char	*pFormatStart;
@@ -1295,10 +1289,10 @@ SQLVariantFormat::FormatNumberTemplate(char *Getal,const char *strNumFormat,int 
     NumFormat.NumDigits     = iAfronden;
     NumFormat.LeadingZero   = 0;
     NumFormat.Grouping      = 0;
-    NumFormat.lpDecimalSep  = (LPSTR)".";
-    NumFormat.lpThousandSep = (LPSTR)",";
+    NumFormat.lpDecimalSep  = const_cast<LPSTR>(".");
+    NumFormat.lpThousandSep = const_cast<LPSTR>(",");
     NumFormat.NegativeOrder = 0;
-    BufLen = GetNumberFormat(0, 0, Getal, &NumFormat, Buffer, p_buflen);
+    int BufLen = GetNumberFormat(0, 0, Getal, &NumFormat, Buffer, p_buflen);
     if (BufLen <= 0)
     {
       return ER_FormatNumberTemplateBuflen;
@@ -1374,7 +1368,7 @@ SQLVariantFormat::FormatNumberTemplate(char *Getal,const char *strNumFormat,int 
       }
     }
     NewFormat += FmtString;
-    strcpy_s(FmtString, NUMBER_BUFFER_SIZE, (LPCSTR)NewFormat);
+    strcpy_s(FmtString, NUMBER_BUFFER_SIZE, reinterpret_cast<LPCSTR>(NewFormat.GetBuffer()));
   }
   else if (iGetalLeading < iLeadingDigits)
   {
@@ -1384,7 +1378,7 @@ SQLVariantFormat::FormatNumberTemplate(char *Getal,const char *strNumFormat,int 
       NewGetal += '0';
     }
     NewGetal += Getal;
-    strcpy_s(Getal, p_buflen,(LPCSTR)NewGetal);
+    strcpy_s(Getal, p_buflen,reinterpret_cast<LPCSTR>(NewGetal.GetBuffer()));
   }
 
   // Formatting the number

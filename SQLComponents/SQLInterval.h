@@ -49,8 +49,11 @@ public:
   // Interval constructed from another interval
   SQLInterval(const SQLInterval& p_interval);
 
+  // Interval constructed from a XML duration string
+  explicit SQLInterval(XString p_duration);
+
   // Interval constructed from an ODBC structure
-  SQLInterval(SQL_INTERVAL_STRUCT* p_interval);
+  explicit SQLInterval(const SQL_INTERVAL_STRUCT* p_interval);
 
   // Interval constructed from a string
   SQLInterval(SQLINTERVAL p_type,const XString p_string);
@@ -67,9 +70,6 @@ public:
   // Interval constructed from scalars (day-second)
   SQLInterval(SQLINTERVAL p_type,int p_days, int p_hours,int p_minutes,int p_seconds,int p_fraction = 0);
 
-  // Interval constructed from a XML duration string
-  SQLInterval(XString p_duration);
-
   // Destructor
  ~SQLInterval();
 
@@ -80,7 +80,7 @@ public:
   // Setting an interval from an internal value
   bool    SetInterval(SQLINTERVAL p_type,InterValue p_nanoseconds);
   // Setting an interval from an ODBC structure
-  bool    SetInterval(SQL_INTERVAL_STRUCT& p_interval);
+  bool    SetInterval(const SQL_INTERVAL_STRUCT& p_interval);
   // Setting from a (year,month) pair. If either negative -> interval is negative.
   void    SetInterval(SQLINTERVAL p_type,int p_years,int p_months);
   // Setting from a (day,hour,min,sec,frac) set. If either is negative -> interval is negative

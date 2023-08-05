@@ -64,13 +64,13 @@ public:
   SQLDate(const SQLDate& p_date);
 
   // Date made from a string
-  SQLDate(const XString& p_string);
+  explicit SQLDate(const XString& p_string);
 
   // Date made from a timestamp
-  SQLDate(const SQLTimestamp& p_timestamp);
+  explicit SQLDate(const SQLTimestamp& p_timestamp);
 
   // Date made from a DATE_STRUCT
-  SQLDate(const DATE_STRUCT* date);
+  explicit SQLDate(const DATE_STRUCT* date);
 
   // Date made from a MJD date value
   explicit SQLDate(DateValue waarde);
@@ -93,7 +93,7 @@ public:
   DateValue   AsTimeSinchEpoch() const;
   XString     AsSQLString(SQLDatabase* p_database);
   XString     AsStrippedSQLString(SQLDatabase* p_database);
-  void        AsDateStruct(DATE_STRUCT* p_date);
+  void        AsDateStruct(DATE_STRUCT* p_date) const;
 
   // Internal status of a date
   bool        Valid()         const;

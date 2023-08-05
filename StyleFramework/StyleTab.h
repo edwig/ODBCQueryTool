@@ -30,6 +30,7 @@ public:
 
 protected:
   virtual BOOL PreTranslateMessage(MSG* p_msg) override;
+  virtual BOOL OnInitDialog() override;
   virtual void SetupDynamicLayout();
 
   void RegisterTooltip(int p_ID,const char* p_text);
@@ -51,6 +52,7 @@ private:
   afx_msg LPARAM  OnCtlColorStatic (WPARAM wParam,LPARAM lParam);
   afx_msg LPARAM  OnCtlColorListBox(WPARAM wParam,LPARAM lParam);
   afx_msg HBRUSH  OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor);
+  afx_msg LRESULT OnStyleChanged(WPARAM,LPARAM);
   afx_msg void    OnCancel();
   afx_msg void    OnOK();
 };

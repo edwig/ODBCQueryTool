@@ -590,6 +590,7 @@ SQLInfoFirebird::DoBindParameterFixup(SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*
 // CATALOG
 // o GetCATALOG<Object[s]><Function>
 //   Objects
+//   - Catalog
 //   - Table
 //   - Column
 //   - Index
@@ -616,6 +617,27 @@ SQLInfoFirebird::GetCATALOGMetaTypes(int p_type) const
 {
   UNREFERENCED_PARAMETER(p_type);
   return "";
+}
+
+XString
+SQLInfoFirebird::GetCATALOGDefaultCharset() const
+{
+  return "SELECT rdb$character_set_name\n"
+         "  FROM rdb$database";
+}
+
+XString
+SQLInfoFirebird::GetCATALOGDefaultCharsetNCV() const
+{
+  // Firebird does *NOT* support NVARCHAR
+  return "-";
+}
+
+XString
+SQLInfoFirebird::GetCATALOGDefaultCollation() const
+{
+  return "SELECT rdb$character_set_name\n"
+         "  FROM rdb$database";
 }
 
 // Get SQL to check if a table already exists in the database
@@ -1355,7 +1377,7 @@ SQLInfoFirebird::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
 
   // Add the foreign key columns
   bool extra = false;
-  for(auto& key : p_foreigns)
+  for(const auto& key : p_foreigns)
   {
     if(extra) query += ",";
     query += key.m_fkColumnName;
@@ -1367,7 +1389,7 @@ SQLInfoFirebird::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
 
   // Add the primary key columns
   extra = false;
-  for(auto& key : p_foreigns)
+  for(const auto& key : p_foreigns)
   {
     if(extra) query += ",";
     query += key.m_pkColumnName;
@@ -2384,7 +2406,7 @@ SQLInfoFirebird::GetPSMDeclaration(bool    /*p_first*/
   if(p_datatype)
   {
     // Getting type info and name
-    TypeInfo* info = GetTypeInfo(p_datatype);
+    const TypeInfo* info = GetTypeInfo(p_datatype);
     line += info->m_type_name;
 
     if(p_precision > 0)
@@ -2549,7 +2571,7 @@ SQLInfoFirebird::GetPSMCursorFetch(XString p_cursorname,std::vector<XString>& /*
   XString query = "FETCH " + p_cursorname + " INTO ";
   bool moreThenOne = false;
 
-  for(auto& var : p_variablenames)
+  for(const auto& var : p_variablenames)
   {
     if(moreThenOne) query += ",";
     moreThenOne = true;
@@ -2709,7 +2731,7 @@ SQLInfoFirebird::DoSQLCallNamedParameters(SQLQuery* /*p_query*/,XString& /*p_sch
 // instead you have to do a "SELECT function(?,?) FROM rdb$database" 
 // and use the result of the select as the return parameter
 bool
-SQLInfoFirebird::DoSQLCallFunction(SQLQuery* p_query,XString& p_function)
+SQLInfoFirebird::DoSQLCallFunction(SQLQuery* p_query,const XString& p_function)
 {
   SQLQuery query(m_database);
   XString sql = ConstructSQLForFunctionCall(p_query,&query,p_function);
@@ -2727,7 +2749,7 @@ SQLInfoFirebird::DoSQLCallFunction(SQLQuery* p_query,XString& p_function)
 // The result set is the set of output parameters
 // DOES ONLY SUPPORT A SINGLE ROW RESULT SET!!
 bool
-SQLInfoFirebird::DoSQLCallProcedure(SQLQuery* p_query,XString& p_procedure)
+SQLInfoFirebird::DoSQLCallProcedure(SQLQuery* p_query,const XString& p_procedure)
 {
   SQLQuery query(m_database);
   XString sql = ConstructSQLForProcedureCall(p_query,&query,p_procedure);
@@ -2746,7 +2768,7 @@ SQLInfoFirebird::DoSQLCallProcedure(SQLQuery* p_query,XString& p_procedure)
       // Finding the next OUTPUT parameter in the original query call
       do
       {
-        SQLVariant* target = p_query->GetParameter(++setIndex);
+        const SQLVariant* target = p_query->GetParameter(++setIndex);
         if(target == nullptr)
         {
           throw StdException("Wrong number of output parameters for procedure call");
@@ -2787,9 +2809,9 @@ SQLInfoFirebird::GetCountReturnParameters(SQLQuery* p_query)
 
 // Construct the "SELECT function(?,?) FROM rdb$database"
 XString
-SQLInfoFirebird::ConstructSQLForFunctionCall(SQLQuery* p_query
-                                            ,SQLQuery* p_thecall
-                                            ,XString&  p_function)
+SQLInfoFirebird::ConstructSQLForFunctionCall(SQLQuery*      p_query
+                                            ,SQLQuery*      p_thecall
+                                            ,const XString& p_function)
 {
   // Start with select from function
   XString sql = "SELECT ";
@@ -2827,9 +2849,9 @@ SQLInfoFirebird::ConstructSQLForFunctionCall(SQLQuery* p_query
 
 // Construct the "SELECT * FROM procedure(?,?)" (input parameters ONLY!)
 XString
-SQLInfoFirebird::ConstructSQLForProcedureCall(SQLQuery* p_query
-                                             ,SQLQuery* p_thecall
-                                             ,XString&  p_procedure)
+SQLInfoFirebird::ConstructSQLForProcedureCall(SQLQuery*      p_query
+                                             ,SQLQuery*      p_thecall
+                                             ,const XString& p_procedure)
 {
   // Start with select form
   XString sql = "SELECT * FROM ";

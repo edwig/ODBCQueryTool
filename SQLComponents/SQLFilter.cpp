@@ -107,17 +107,17 @@ SQLFilter::SQLFilter(SQLOperator p_operator)
 }
 
 // XTOR from another filter
-SQLFilter::SQLFilter(SQLFilter* p_other)
+SQLFilter::SQLFilter(const SQLFilter* p_other)
 {
   *this = *p_other;
 }
 
 // XTOR from another filter
-SQLFilter::SQLFilter(SQLFilter& p_other)
+SQLFilter::SQLFilter(const SQLFilter& p_other)
 {
   *this = p_other;
   m_subfilters = p_other.m_subfilters;
-  p_other.m_subfilters = nullptr;
+  const_cast<SQLFilter&>(p_other).m_subfilters = nullptr;
 }
 
 // DTOR: Remove all variant values
@@ -223,7 +223,7 @@ SQLFilter::Reset()
 
 // Getting one of the values of the filter
 SQLVariant* 
-SQLFilter::GetValue(int p_number)
+SQLFilter::GetValue(int p_number) const
 {
   if(p_number >= 0 && p_number < (int)m_values.size())
   {
@@ -774,49 +774,49 @@ SQLFilter::ConstructCastAs()
 //////////////////////////////////////////////////////////////////////////
 
 bool
-SQLFilter::MatchEqual(SQLVariant* p_field)
+SQLFilter::MatchEqual(const SQLVariant* p_field)
 {
   CheckValue();
   return *p_field == *m_values.front();
 }
 
 bool
-SQLFilter::MatchNotEqual(SQLVariant* p_field)
+SQLFilter::MatchNotEqual(const SQLVariant* p_field)
 {
   CheckValue();
   return *p_field != *m_values.front();
 }
 
 bool
-SQLFilter::MatchGreater(SQLVariant* p_field)
+SQLFilter::MatchGreater(const SQLVariant* p_field)
 {
   CheckValue();
   return *p_field > *m_values.front();
 }
 
 bool
-SQLFilter::MatchGreaterEqual(SQLVariant* p_field)
+SQLFilter::MatchGreaterEqual(const SQLVariant* p_field)
 {
   CheckValue();
   return *p_field >= *m_values.front();
 }
 
 bool
-SQLFilter::MatchSmaller(SQLVariant* p_field)
+SQLFilter::MatchSmaller(const SQLVariant* p_field)
 {
   CheckValue();
   return *p_field < *m_values.front();
 }
 
 bool
-SQLFilter::MatchSmallerEqual(SQLVariant* p_field)
+SQLFilter::MatchSmallerEqual(const SQLVariant* p_field)
 {
   CheckValue();
   return *p_field <= *m_values.front();
 }
 
 bool
-SQLFilter::MatchLikeBegin(SQLVariant* p_field)
+SQLFilter::MatchLikeBegin(const SQLVariant* p_field)
 {
   CheckValue();
   XString match;
@@ -829,7 +829,7 @@ SQLFilter::MatchLikeBegin(SQLVariant* p_field)
 }
 
 bool
-SQLFilter::MatchLikeMiddle(SQLVariant* p_field)
+SQLFilter::MatchLikeMiddle(const SQLVariant* p_field)
 {
   CheckValue();
   XString match;
@@ -841,20 +841,20 @@ SQLFilter::MatchLikeMiddle(SQLVariant* p_field)
 }
 
 bool
-SQLFilter::MatchIsNULL(SQLVariant* p_field)
+SQLFilter::MatchIsNULL(const SQLVariant* p_field)
 {
   // Relies on the ODBC NULL indicator field!
   return p_field->IsNULL();
 }
 
 bool
-SQLFilter::MatchIsNotNull(SQLVariant* p_field)
+SQLFilter::MatchIsNotNull(const SQLVariant* p_field)
 {
   return !p_field->IsNULL();
 }
 
 bool
-SQLFilter::MatchIN(SQLVariant* p_field)
+SQLFilter::MatchIN(const SQLVariant* p_field)
 {
   // Simply walk the vector of values for a match
   for(auto& var : m_values)
@@ -869,7 +869,7 @@ SQLFilter::MatchIN(SQLVariant* p_field)
 }
 
 bool
-SQLFilter::MatchBetween(SQLVariant* p_field)
+SQLFilter::MatchBetween(const SQLVariant* p_field)
 {
   // Check that we have EXACTLY two values
   CheckTwoValues();

@@ -20,6 +20,7 @@
 
 #include "pch.h"
 #include "COMMON\AppUtilities.h"
+#include <StyleComboBox.h>
 
 
 #ifdef _DEBUG
@@ -51,6 +52,11 @@ void AppRestoreHistory (CComboBox& wndList, const char* szSection, const char* s
     }
 }
 
+void AppRestoreHistory(StyleComboBox& wndList,const char* szSection,const char* szEntry,int nSize)
+{
+  AppRestoreHistory(reinterpret_cast<CComboBox&>(wndList),szSection,szEntry,nSize);
+}
+
 void AppSaveHistory (CComboBox& wndList, const char* szSection, const char* szEntry, int nSize)
 {
     int i(0);
@@ -80,6 +86,11 @@ void AppSaveHistory (CComboBox& wndList, const char* szSection, const char* szEn
         strEntry.Format("%s_%d", (const char*)szEntry, i);
         AfxGetApp()->WriteProfileString(szSection, strEntry, strBuffer);
     }
+}
+
+void AppSaveHistory(StyleComboBox& wndList,const char* szSection,const char* szEntry,int nSize)
+{
+  AppSaveHistory(reinterpret_cast<CComboBox&>(wndList),szSection,szEntry,nSize);
 }
 
 void AppWalkDir (const char* szPath, const char* szFileMask,

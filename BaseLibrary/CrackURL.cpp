@@ -268,10 +268,12 @@ CrackedURL::CrackURL(XString p_url)
 
   // Find the extension for the media type
   // Media types are stored without the '.'
-  pos = m_path.ReverseFind('.');
-  if(pos >= 0)
+  int posp = m_path.ReverseFind('.');
+  int poss = m_path.ReverseFind('/');
+  
+  if(posp >= 0 && posp > poss)
   {
-    m_extension = m_path.Mid(pos + 1);
+    m_extension = m_path.Mid(posp + 1);
   }
 
   // Now a valid URL
@@ -678,6 +680,13 @@ CrackedURL::GetParameter(unsigned p_parameter) const
 bool
 CrackedURL::DelParameter(XString p_parameter)
 {
+//   auto it = std::find_if(m_parameters.begin(),m_parameters.end(),p_parameter);
+//   if(it != m_parameters.end())
+//   {
+//     m_parameters.erase(it);
+//     return true;
+//   }
+
   for(UriParams::iterator it = m_parameters.begin(); it != m_parameters.end();++it)
   {
     if(it->m_key.CompareNoCase(p_parameter) == 0)

@@ -27,6 +27,7 @@
 #include "SQLComponents.h"
 #include "SQLVariant.h"
 #include "SQLVariantOperator.h"
+#include "SQLDataType.h"
 #include "SQLDate.h"
 #include "bcd.h"
 
@@ -40,7 +41,7 @@ namespace SQLComponents
 {
 
 SQLVariant 
-static SQL_OperSShortDivChar(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSShortDivChar(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   short result = p_left.GetAsSShort();
   result /= p_right.GetAsSShort();
@@ -48,7 +49,7 @@ static SQL_OperSShortDivChar(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUShortDivChar(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUShortDivChar(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned short result = p_left.GetAsUShort();
   result /= p_right.GetAsUShort();
@@ -56,14 +57,14 @@ static SQL_OperUShortDivChar(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSLongDivChar(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSLongDivChar(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   int result = p_left.GetAsSLong();
   result /= p_right.GetAsSLong();
   return SQLVariant(result);
 }
 SQLVariant 
-static SQL_OperULongDivChar(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperULongDivChar(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned int  result = p_left.GetAsULong();
   result /= p_right.GetAsULong();
@@ -71,7 +72,7 @@ static SQL_OperULongDivChar(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperFloatDivChar(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperFloatDivChar(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   float result = p_left.GetAsFloat();
   result /= p_right.GetAsFloat();
@@ -79,7 +80,7 @@ static SQL_OperFloatDivChar(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperDoubleDivChar(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperDoubleDivChar(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   double result = p_left.GetAsDouble();
   result /= p_right.GetAsDouble();
@@ -87,7 +88,7 @@ static SQL_OperDoubleDivChar(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperBitDivChar(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperBitDivChar(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   bool result = false;
   if(p_left.GetAsBit() && p_right.GetAsBit())
@@ -98,7 +99,7 @@ static SQL_OperBitDivChar(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSTinyDivChar(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSTinyDivChar(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   char result = p_left.GetAsSTinyInt();
   result /= p_right.GetAsSTinyInt();
@@ -106,7 +107,7 @@ static SQL_OperSTinyDivChar(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUTinyDivChar(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUTinyDivChar(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned char result = p_left.GetAsUTinyInt();
   result /= p_right.GetAsUTinyInt();
@@ -114,7 +115,7 @@ static SQL_OperUTinyDivChar(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSBigDivChar(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSBigDivChar(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLBIGINT result = p_left.GetAsSBigInt();
   result /= p_right.GetAsSBigInt();
@@ -122,7 +123,7 @@ static SQL_OperSBigDivChar(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUBigDivChar(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUBigDivChar(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLUBIGINT result = p_left.GetAsUBigInt();
   result /= p_right.GetAsUBigInt();
@@ -130,7 +131,7 @@ static SQL_OperUBigDivChar(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperNumDivChar(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperNumDivChar(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   bcd num = p_left.GetAsBCD() / bcd(p_right.GetAsChar());
   SQLVariant var(&num);
@@ -140,7 +141,7 @@ static SQL_OperNumDivChar(SQLVariant& p_left,SQLVariant& p_right)
 // TYPE == SSHORT
 
 SQLVariant 
-static SQL_OperCharDivSShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperCharDivSShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   short result = p_left.GetAsSShort();
   result /= p_right.GetAsSShort();
@@ -148,7 +149,7 @@ static SQL_OperCharDivSShort(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSShortDivSShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSShortDivSShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   short result = p_left.GetAsSShort();
   result /= p_right.GetAsSShort();
@@ -156,14 +157,14 @@ static SQL_OperSShortDivSShort(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUShortDivSShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUShortDivSShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned short result = p_left.GetAsUShort();
   result /= p_right.GetAsUShort();
   return SQLVariant(result);
 }
 
-SQLVariant static SQL_OperSLongDivSShort(SQLVariant& p_left,SQLVariant& p_right)
+SQLVariant static SQL_OperSLongDivSShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   int result = p_left.GetAsSLong();
   result /= p_right.GetAsSLong();
@@ -171,7 +172,7 @@ SQLVariant static SQL_OperSLongDivSShort(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperULongDivSShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperULongDivSShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned int result = p_left.GetAsULong();
   result /= p_right.GetAsULong();
@@ -179,7 +180,7 @@ static SQL_OperULongDivSShort(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperFloatDivSShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperFloatDivSShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   float result = p_left.GetAsFloat();
   result /= p_right.GetAsFloat();
@@ -187,7 +188,7 @@ static SQL_OperFloatDivSShort(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperDoubleDivSShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperDoubleDivSShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   double result = p_left.GetAsDouble();
   result /= p_right.GetAsDouble();
@@ -195,7 +196,7 @@ static SQL_OperDoubleDivSShort(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperBitDivSShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperBitDivSShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   bool result = false;
   if(p_left.GetAsBit() && p_right.GetAsBit())
@@ -206,7 +207,7 @@ static SQL_OperBitDivSShort(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSTinyDivSShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSTinyDivSShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   char result = p_left.GetAsSTinyInt();
   result /= p_right.GetAsSTinyInt();
@@ -214,7 +215,7 @@ static SQL_OperSTinyDivSShort(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUTinyDivSShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUTinyDivSShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned char result = p_left.GetAsUTinyInt();
   result /= p_right.GetAsUTinyInt();
@@ -222,7 +223,7 @@ static SQL_OperUTinyDivSShort(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSBigDivSShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSBigDivSShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLBIGINT result = p_left.GetAsSBigInt();
   result /= p_right.GetAsSBigInt();
@@ -230,7 +231,7 @@ static SQL_OperSBigDivSShort(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUBigDivSShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUBigDivSShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLUBIGINT result = p_left.GetAsUBigInt();
   result /= p_right.GetAsUBigInt();
@@ -238,7 +239,7 @@ static SQL_OperUBigDivSShort(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperNumDivSShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperNumDivSShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   bcd num = p_left.GetAsBCD() / bcd(p_right.GetAsSShort());
   SQLVariant var(&num);
@@ -246,14 +247,14 @@ static SQL_OperNumDivSShort(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperIntYMDivSShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperIntYMDivSShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLInterval result = p_left.GetAsSQLInterval() / p_right.GetAsSLong();
   return SQLVariant(&result);
 }
 
 SQLVariant 
-static SQL_OperIntDSDivSShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperIntDSDivSShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLInterval result = p_left.GetAsSQLInterval() / p_right.GetAsSLong();
   return SQLVariant(&result);
@@ -263,7 +264,7 @@ static SQL_OperIntDSDivSShort(SQLVariant& p_left,SQLVariant& p_right)
 // TYPE == USHORT
 
 SQLVariant 
-static SQL_OperCharDivUShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperCharDivUShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned short result = p_left.GetAsUShort();
   result /= p_right.GetAsUShort();
@@ -271,7 +272,7 @@ static SQL_OperCharDivUShort(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSShortDivUShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSShortDivUShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned short result = p_left.GetAsUShort();
   result /= p_right.GetAsUShort();
@@ -279,7 +280,7 @@ static SQL_OperSShortDivUShort(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUShortDivUShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUShortDivUShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned short result = p_left.GetAsUShort();
   result /= p_right.GetAsUShort();
@@ -288,7 +289,7 @@ static SQL_OperUShortDivUShort(SQLVariant& p_left,SQLVariant& p_right)
 
 
 SQLVariant 
-static SQL_OperSLongDivUShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSLongDivUShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   int result = p_left.GetAsSLong();
   result /= p_right.GetAsSLong();
@@ -296,7 +297,7 @@ static SQL_OperSLongDivUShort(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUlongDivUShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUlongDivUShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned int result = p_left.GetAsULong();
   result /= p_right.GetAsULong();
@@ -304,7 +305,7 @@ static SQL_OperUlongDivUShort(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperFloatDivUShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperFloatDivUShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   float result = p_left.GetAsFloat();
   result /= p_right.GetAsFloat();
@@ -312,7 +313,7 @@ static SQL_OperFloatDivUShort(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperDoubleDivUShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperDoubleDivUShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   double result = p_left.GetAsDouble();
   result /= p_right.GetAsDouble();
@@ -320,7 +321,7 @@ static SQL_OperDoubleDivUShort(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperBitDivUShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperBitDivUShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   bool result = false;
   if(p_left.GetAsBit() && p_right.GetAsBit())
@@ -331,7 +332,7 @@ static SQL_OperBitDivUShort(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSTinyDivUShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSTinyDivUShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   char result = p_left.GetAsSTinyInt();
   result /= p_right.GetAsSTinyInt();
@@ -339,7 +340,7 @@ static SQL_OperSTinyDivUShort(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUTinyDivUShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUTinyDivUShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned char result = p_left.GetAsUTinyInt();
   result /= p_right.GetAsUTinyInt();
@@ -347,7 +348,7 @@ static SQL_OperUTinyDivUShort(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSBigDivUShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSBigDivUShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLBIGINT result = p_left.GetAsSBigInt();
   result /= p_right.GetAsSBigInt();
@@ -355,7 +356,7 @@ static SQL_OperSBigDivUShort(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUBigDivUShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUBigDivUShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLUBIGINT result = p_left.GetAsUBigInt();
   result /= p_right.GetAsUBigInt();
@@ -363,7 +364,7 @@ static SQL_OperUBigDivUShort(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperNumDivUShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperNumDivUShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   bcd num = p_left.GetAsBCD() / bcd((long)p_right.GetAsUShort());
   SQLVariant var(&num);
@@ -371,14 +372,14 @@ static SQL_OperNumDivUShort(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperIntYMDivUShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperIntYMDivUShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLInterval result = p_left.GetAsSQLInterval() / p_right.GetAsSLong();
   return SQLVariant(&result);
 }
 
 SQLVariant 
-static SQL_OperIntDSDivUShort(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperIntDSDivUShort(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLInterval result = p_left.GetAsSQLInterval() / p_right.GetAsSLong();
   return SQLVariant(&result);
@@ -387,7 +388,7 @@ static SQL_OperIntDSDivUShort(SQLVariant& p_left,SQLVariant& p_right)
 // TYPE == SLONG
 
 SQLVariant 
-static SQL_OperCharDivSLong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperCharDivSLong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   int result = p_left.GetAsSLong();
   result /= p_right.GetAsSLong();
@@ -395,7 +396,7 @@ static SQL_OperCharDivSLong(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSShortDivSLong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSShortDivSLong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   short result = p_left.GetAsSShort();
   result /= p_right.GetAsSShort();
@@ -403,7 +404,7 @@ static SQL_OperSShortDivSLong(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUShortDivSLong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUShortDivSLong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned short result = p_left.GetAsUShort();
   result /= p_right.GetAsUShort();
@@ -411,7 +412,7 @@ static SQL_OperUShortDivSLong(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSLongDivSLong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSLongDivSLong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   int result = p_left.GetAsSLong();
   result /= p_right.GetAsSLong();
@@ -419,7 +420,7 @@ static SQL_OperSLongDivSLong(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperULongDivSLong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperULongDivSLong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned int result = p_left.GetAsULong();
   result /= p_right.GetAsULong();
@@ -427,7 +428,7 @@ static SQL_OperULongDivSLong(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperFloatDivSLong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperFloatDivSLong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   float result = p_left.GetAsFloat();
   result /= p_right.GetAsFloat();
@@ -435,7 +436,7 @@ static SQL_OperFloatDivSLong(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperDoubleDivSLong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperDoubleDivSLong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   double result = p_left.GetAsDouble();
   result /= p_right.GetAsDouble();
@@ -443,7 +444,7 @@ static SQL_OperDoubleDivSLong(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperBitDivSLong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperBitDivSLong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   bool result = false;
   if(p_left.GetAsBit() && p_right.GetAsBit())
@@ -454,7 +455,7 @@ static SQL_OperBitDivSLong(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSTinyDivSLong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSTinyDivSLong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   char result = p_left.GetAsSTinyInt();
   result /= p_right.GetAsSTinyInt();
@@ -462,7 +463,7 @@ static SQL_OperSTinyDivSLong(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUTinyDivSLong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUTinyDivSLong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned char result = p_left.GetAsUTinyInt();
   result /= p_right.GetAsUTinyInt();
@@ -470,7 +471,7 @@ static SQL_OperUTinyDivSLong(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSBigDivSLong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSBigDivSLong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLBIGINT result = p_left.GetAsSBigInt();
   result /= p_right.GetAsSBigInt();
@@ -478,7 +479,7 @@ static SQL_OperSBigDivSLong(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUBigDivSLong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUBigDivSLong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLUBIGINT result = p_left.GetAsUBigInt();
   result /= p_right.GetAsUBigInt();
@@ -486,7 +487,7 @@ static SQL_OperUBigDivSLong(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperNumDivSLong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperNumDivSLong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   bcd num = p_left.GetAsBCD() / bcd(p_right.GetAsSLong());
   SQLVariant var(&num);
@@ -494,14 +495,14 @@ static SQL_OperNumDivSLong(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperIntYMDivSLong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperIntYMDivSLong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLInterval result = p_left.GetAsSQLInterval() / p_right.GetAsSLong();
   return SQLVariant(&result);
 }
 
 SQLVariant 
-static SQL_OperIntDSDivSLong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperIntDSDivSLong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLInterval result = p_left.GetAsSQLInterval() / p_right.GetAsSLong();
   return SQLVariant(&result);
@@ -510,7 +511,7 @@ static SQL_OperIntDSDivSLong(SQLVariant& p_left,SQLVariant& p_right)
 // TYPE == ULONG
 
 SQLVariant 
-static SQL_OperCharDivULong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperCharDivULong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned int result = p_left.GetAsULong();
   result /= p_right.GetAsULong();
@@ -518,7 +519,7 @@ static SQL_OperCharDivULong(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSShortDivULong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSShortDivULong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned short result = p_left.GetAsUShort();
   result /= p_right.GetAsUShort();
@@ -526,7 +527,7 @@ static SQL_OperSShortDivULong(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUShortDivULong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUShortDivULong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned short result = p_left.GetAsUShort();
   result /= p_right.GetAsUShort();
@@ -534,7 +535,7 @@ static SQL_OperUShortDivULong(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSLongDivULong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSLongDivULong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned short result = p_left.GetAsUShort();
   result /= p_right.GetAsUShort();
@@ -542,7 +543,7 @@ static SQL_OperSLongDivULong(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperULongDivULong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperULongDivULong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned int result = p_left.GetAsULong();
   result /= p_right.GetAsULong();
@@ -550,7 +551,7 @@ static SQL_OperULongDivULong(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperFloatDivULong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperFloatDivULong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   float result = p_left.GetAsFloat();
   result /= p_right.GetAsFloat();
@@ -558,7 +559,7 @@ static SQL_OperFloatDivULong(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperDoubleDivULong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperDoubleDivULong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   double result = p_left.GetAsDouble();
   result /= p_right.GetAsDouble();
@@ -566,7 +567,7 @@ static SQL_OperDoubleDivULong(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperBitDivULong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperBitDivULong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   bool result = false;
   if(p_left.GetAsBit() && p_right.GetAsBit())
@@ -577,7 +578,7 @@ static SQL_OperBitDivULong(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSTinyDivULong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSTinyDivULong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   char result = p_left.GetAsSTinyInt();
   result /= p_right.GetAsSTinyInt();
@@ -585,7 +586,7 @@ static SQL_OperSTinyDivULong(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUTinyDivULong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUTinyDivULong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned char result = p_left.GetAsUTinyInt();
   result /= p_right.GetAsUTinyInt();
@@ -593,7 +594,7 @@ static SQL_OperUTinyDivULong(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSBigDivULong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSBigDivULong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLBIGINT result = p_left.GetAsSBigInt();
   result /= p_right.GetAsSBigInt();
@@ -601,7 +602,7 @@ static SQL_OperSBigDivULong(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUBigDivULong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUBigDivULong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLUBIGINT result = p_left.GetAsUBigInt();
   result /= p_right.GetAsUBigInt();
@@ -609,7 +610,7 @@ static SQL_OperUBigDivULong(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperNumDivULong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperNumDivULong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   bcd num = p_left.GetAsBCD() / bcd((int64)p_right.GetAsULong());
   SQLVariant var(&num);
@@ -617,14 +618,14 @@ static SQL_OperNumDivULong(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperIntYMDivULong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperIntYMDivULong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLInterval result = p_left.GetAsSQLInterval() / p_right.GetAsSLong();
   return SQLVariant(&result);
 }
 
 SQLVariant 
-static SQL_OperIntDSDivULong(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperIntDSDivULong(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLInterval result = p_left.GetAsSQLInterval() / p_right.GetAsSLong();
   return SQLVariant(&result);
@@ -633,7 +634,7 @@ static SQL_OperIntDSDivULong(SQLVariant& p_left,SQLVariant& p_right)
 // TYPE == FLOAT
 
 SQLVariant 
-static SQL_OperCharDivFloat(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperCharDivFloat(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   float result = p_left.GetAsFloat();
   result /= p_right.GetAsFloat();
@@ -641,7 +642,7 @@ static SQL_OperCharDivFloat(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSShortDivFloat(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSShortDivFloat(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   short result = p_left.GetAsSShort();
   result /= p_right.GetAsSShort();
@@ -649,7 +650,7 @@ static SQL_OperSShortDivFloat(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUShortDivFloat(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUShortDivFloat(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned short result = p_left.GetAsUShort();
   result /= p_right.GetAsUShort();
@@ -657,7 +658,7 @@ static SQL_OperUShortDivFloat(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSLongDivFloat(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSLongDivFloat(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   int result = p_left.GetAsSLong();
   result /= p_right.GetAsSLong();
@@ -665,7 +666,7 @@ static SQL_OperSLongDivFloat(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperULongDivFloat(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperULongDivFloat(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned int result = p_left.GetAsULong();
   result /= p_right.GetAsULong();
@@ -673,7 +674,7 @@ static SQL_OperULongDivFloat(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperFloatDivFloat(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperFloatDivFloat(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   float result = p_left.GetAsFloat();
   result /= p_right.GetAsFloat();
@@ -681,7 +682,7 @@ static SQL_OperFloatDivFloat(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperDoubleDivFloat(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperDoubleDivFloat(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   double result = p_left.GetAsDouble();
   result /= p_right.GetAsDouble();
@@ -689,7 +690,7 @@ static SQL_OperDoubleDivFloat(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperBitDivFloat(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperBitDivFloat(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   bool result = false;
   if(p_left.GetAsBit() && p_right.GetAsBit())
@@ -700,7 +701,7 @@ static SQL_OperBitDivFloat(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSTinyDivFloat(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSTinyDivFloat(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   char result = p_left.GetAsSTinyInt();
   result /= p_right.GetAsSTinyInt();
@@ -708,7 +709,7 @@ static SQL_OperSTinyDivFloat(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUTinyDivFloat(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUTinyDivFloat(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned char result = p_left.GetAsUTinyInt();
   result /= p_right.GetAsUTinyInt();
@@ -716,7 +717,7 @@ static SQL_OperUTinyDivFloat(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSBigDivFloat(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSBigDivFloat(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLBIGINT result = p_left.GetAsSBigInt();
   result /= p_right.GetAsSBigInt();
@@ -724,7 +725,7 @@ static SQL_OperSBigDivFloat(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUBigDivFloat(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUBigDivFloat(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLUBIGINT result = p_left.GetAsUBigInt();
   result /= p_right.GetAsUBigInt();
@@ -732,7 +733,7 @@ static SQL_OperUBigDivFloat(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperNumDivFloat(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperNumDivFloat(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   bcd num = p_left.GetAsBCD() / bcd((double)p_right.GetAsFloat());
   SQLVariant var(&num);
@@ -740,14 +741,14 @@ static SQL_OperNumDivFloat(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperIntYMDivFloat(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperIntYMDivFloat(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLInterval result = p_left.GetAsSQLInterval() / p_right.GetAsDouble();
   return SQLVariant(&result);
 }
 
 SQLVariant 
-static SQL_OperIntDSDivFloat(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperIntDSDivFloat(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLInterval result = p_left.GetAsSQLInterval() / p_right.GetAsDouble();
   return SQLVariant(&result);
@@ -756,7 +757,7 @@ static SQL_OperIntDSDivFloat(SQLVariant& p_left,SQLVariant& p_right)
 // TYPE == DOUBLE
 
 SQLVariant 
-static SQL_OperCharDivDouble(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperCharDivDouble(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   double result = p_left.GetAsDouble();
   result /= p_right.GetAsDouble();
@@ -764,7 +765,7 @@ static SQL_OperCharDivDouble(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSShortDivDouble(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSShortDivDouble(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   short result = p_left.GetAsUShort();
   result /= p_right.GetAsSShort();
@@ -772,7 +773,7 @@ static SQL_OperSShortDivDouble(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUShortDivDouble(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUShortDivDouble(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned short result = p_left.GetAsUShort();
   result /= p_right.GetAsUShort();
@@ -780,7 +781,7 @@ static SQL_OperUShortDivDouble(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSLongDivDouble(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSLongDivDouble(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   int result = p_left.GetAsSLong();
   result /= p_right.GetAsSLong();
@@ -788,7 +789,7 @@ static SQL_OperSLongDivDouble(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperULongDivDouble(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperULongDivDouble(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned int result = p_left.GetAsULong();
   result /= p_right.GetAsULong();
@@ -796,7 +797,7 @@ static SQL_OperULongDivDouble(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperFloatDivDouble(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperFloatDivDouble(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   float result = p_left.GetAsFloat();
   result /= p_right.GetAsFloat();
@@ -804,7 +805,7 @@ static SQL_OperFloatDivDouble(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperDoubleDivDouble(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperDoubleDivDouble(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   double result = p_left.GetAsDouble();
   result /= p_right.GetAsDouble();
@@ -812,7 +813,7 @@ static SQL_OperDoubleDivDouble(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperBitDivDouble(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperBitDivDouble(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   bool result = false;
   if(p_left.GetAsBit() && p_right.GetAsBit())
@@ -823,7 +824,7 @@ static SQL_OperBitDivDouble(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSTinyDivDouble(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSTinyDivDouble(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   char result = p_left.GetAsSTinyInt();
   result /= p_right.GetAsSTinyInt();
@@ -831,7 +832,7 @@ static SQL_OperSTinyDivDouble(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUTinyDivDouble(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUTinyDivDouble(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned char result = p_left.GetAsUTinyInt();
   result /= p_right.GetAsUTinyInt();
@@ -839,7 +840,7 @@ static SQL_OperUTinyDivDouble(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSBigDivDouble(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSBigDivDouble(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLBIGINT result = p_left.GetAsSBigInt();
   result /= p_right.GetAsSBigInt();
@@ -847,7 +848,7 @@ static SQL_OperSBigDivDouble(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUBigDivDouble(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUBigDivDouble(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLUBIGINT result = p_left.GetAsUBigInt();
   result /= p_right.GetAsUBigInt();
@@ -855,7 +856,7 @@ static SQL_OperUBigDivDouble(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperNumDivDouble(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperNumDivDouble(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   bcd num = p_left.GetAsBCD() / bcd(p_right.GetAsDouble());
   SQLVariant var(&num);
@@ -863,14 +864,14 @@ static SQL_OperNumDivDouble(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant
-static SQL_OperIntYMDivDouble(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperIntYMDivDouble(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLInterval result = p_left.GetAsSQLInterval() / p_right.GetAsDouble();
   return SQLVariant(&result);
 }
 
 SQLVariant
-static SQL_OperIntDSDivDouble(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperIntDSDivDouble(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLInterval result = p_left.GetAsSQLInterval() / p_right.GetAsDouble();
   return SQLVariant(&result);
@@ -880,105 +881,105 @@ static SQL_OperIntDSDivDouble(SQLVariant& p_left,SQLVariant& p_right)
 // TYPE == BIT
 
 SQLVariant 
-static SQL_OperCharDivBit(SQLVariant& p_left,SQLVariant& /*p_right*/)
+static SQL_OperCharDivBit(const SQLVariant& p_left,const SQLVariant& /*p_right*/)
 {
   bool result = p_left.GetAsBit() != 0;
   return SQLVariant(result);
 }
 
 SQLVariant 
-static SQL_OperSShortDivBit(SQLVariant& p_left,SQLVariant& /*p_right*/)
+static SQL_OperSShortDivBit(const SQLVariant& p_left,const SQLVariant& /*p_right*/)
 {
   short result = p_left.GetAsSShort();
   return SQLVariant(result);
 }
 
 SQLVariant 
-static SQL_OperUShortDivBit(SQLVariant& p_left,SQLVariant& /*p_right*/)
+static SQL_OperUShortDivBit(const SQLVariant& p_left,const SQLVariant& /*p_right*/)
 {
   unsigned short result = p_left.GetAsUShort();
   return SQLVariant(result);
 }
 
 SQLVariant 
-static SQL_OperSLongDivBit(SQLVariant& p_left,SQLVariant& /*p_right*/)
+static SQL_OperSLongDivBit(const SQLVariant& p_left,const SQLVariant& /*p_right*/)
 {
   int result = p_left.GetAsSLong();
   return SQLVariant(result);
 }
 
 SQLVariant 
-static SQL_OperULongDivBit(SQLVariant& p_left,SQLVariant& /*p_right*/)
+static SQL_OperULongDivBit(const SQLVariant& p_left,const SQLVariant& /*p_right*/)
 {
   unsigned int result = p_left.GetAsULong();
   return SQLVariant(result);
 }
 
 SQLVariant 
-static SQL_OperFloatDivBit(SQLVariant& p_left,SQLVariant& /*p_right*/)
+static SQL_OperFloatDivBit(const SQLVariant& p_left,const SQLVariant& /*p_right*/)
 {
   float result = p_left.GetAsFloat();
   return SQLVariant(result);
 }
 
 SQLVariant 
-static SQL_OperDoubleDivBit(SQLVariant& p_left,SQLVariant& /*p_right*/)
+static SQL_OperDoubleDivBit(const SQLVariant& p_left,const SQLVariant& /*p_right*/)
 {
   double result = p_left.GetAsDouble();
   return SQLVariant(result);
 }
 
 SQLVariant 
-static SQL_OperBitDivBit(SQLVariant& p_left,SQLVariant& /*p_right*/)
+static SQL_OperBitDivBit(const SQLVariant& p_left,const SQLVariant& /*p_right*/)
 {
   bool result = p_left.GetAsBit() != 0;
   return SQLVariant(result);
 }
 
 SQLVariant 
-static SQL_OperSTinyDivBit(SQLVariant& p_left,SQLVariant& /*p_right*/)
+static SQL_OperSTinyDivBit(const SQLVariant& p_left,const SQLVariant& /*p_right*/)
 {
   char result = p_left.GetAsSTinyInt();
   return SQLVariant(result);
 }
 
 SQLVariant 
-static SQL_OperUTinyDivBit(SQLVariant& p_left,SQLVariant& /*p_right*/)
+static SQL_OperUTinyDivBit(const SQLVariant& p_left,const SQLVariant& /*p_right*/)
 {
   unsigned char result = p_left.GetAsUTinyInt();
   return SQLVariant(result);
 }
 
 SQLVariant 
-static SQL_OperSBigDivBit(SQLVariant& p_left,SQLVariant& /*p_right*/)
+static SQL_OperSBigDivBit(const SQLVariant& p_left,const SQLVariant& /*p_right*/)
 {
   SQLBIGINT result = p_left.GetAsSBigInt();
   return SQLVariant(result);
 }
 
 SQLVariant 
-static SQL_OperUBigDivBit(SQLVariant& p_left,SQLVariant& /*p_right*/)
+static SQL_OperUBigDivBit(const SQLVariant& p_left,const SQLVariant& /*p_right*/)
 {
   SQLUBIGINT result = p_left.GetAsUBigInt();
   return SQLVariant(result);
 }
 
 SQLVariant 
-static SQL_OperNumDivBit(SQLVariant& p_left,SQLVariant& /*p_right*/)
+static SQL_OperNumDivBit(const SQLVariant& p_left,const SQLVariant& /*p_right*/)
 {
   SQLVariant result(p_left);
   return result;
 }
 
 SQLVariant 
-static SQL_OperIntYMDivBit(SQLVariant& p_left,SQLVariant& /*p_right*/)
+static SQL_OperIntYMDivBit(const SQLVariant& p_left,const SQLVariant& /*p_right*/)
 {
   SQLInterval result = p_left.GetAsSQLInterval();
   return SQLVariant(&result);
 }
 
 SQLVariant 
-static SQL_OperIntDSDivBit(SQLVariant& p_left,SQLVariant& /*p_right*/)
+static SQL_OperIntDSDivBit(const SQLVariant& p_left,const SQLVariant& /*p_right*/)
 {
   SQLInterval result = p_left.GetAsSQLInterval();
   return SQLVariant(&result);
@@ -987,7 +988,7 @@ static SQL_OperIntDSDivBit(SQLVariant& p_left,SQLVariant& /*p_right*/)
 // TYPE == STINYINT
 
 SQLVariant 
-static SQL_OperCharDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperCharDivSTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   char result = p_left.GetAsSTinyInt();
   result /= p_right.GetAsSTinyInt();
@@ -995,7 +996,7 @@ static SQL_OperCharDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSShortDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSShortDivSTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   short result = p_left.GetAsSShort();
   result /= p_right.GetAsSShort();
@@ -1003,7 +1004,7 @@ static SQL_OperSShortDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUShortDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUShortDivSTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned short result = p_left.GetAsUShort();
   result /= p_right.GetAsUShort();
@@ -1011,7 +1012,7 @@ static SQL_OperUShortDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSLongDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSLongDivSTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   int result = p_left.GetAsSLong();
   result /= p_right.GetAsSLong();
@@ -1019,7 +1020,7 @@ static SQL_OperSLongDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperULongDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperULongDivSTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned int result = p_left.GetAsULong();
   result /= p_right.GetAsULong();
@@ -1027,7 +1028,7 @@ static SQL_OperULongDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperFloatDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperFloatDivSTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   float result = p_left.GetAsFloat();
   result /= p_right.GetAsFloat();
@@ -1035,7 +1036,7 @@ static SQL_OperFloatDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperDoubleDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperDoubleDivSTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   double result = p_left.GetAsDouble();
   result /= p_right.GetAsDouble();
@@ -1043,7 +1044,7 @@ static SQL_OperDoubleDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperBitDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperBitDivSTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   bool result = false;
   if(p_left.GetAsBit() && p_right.GetAsBit())
@@ -1054,7 +1055,7 @@ static SQL_OperBitDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSTinyDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSTinyDivSTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   char result = p_left.GetAsSTinyInt();
   result /= p_right.GetAsSTinyInt();
@@ -1062,7 +1063,7 @@ static SQL_OperSTinyDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUTinyDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUTinyDivSTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned char result = p_left.GetAsUTinyInt();
   result /= p_right.GetAsUTinyInt();
@@ -1070,7 +1071,7 @@ static SQL_OperUTinyDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSBigDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSBigDivSTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLBIGINT result = p_left.GetAsSBigInt();
   result /= p_right.GetAsSBigInt();
@@ -1078,7 +1079,7 @@ static SQL_OperSBigDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUBigDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUBigDivSTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLUBIGINT result = p_left.GetAsUBigInt();
   result /= p_right.GetAsUBigInt();
@@ -1086,7 +1087,7 @@ static SQL_OperUBigDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperNumDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperNumDivSTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   bcd num = p_left.GetAsBCD() / bcd(p_right.GetAsSTinyInt());
   SQLVariant var(&num);
@@ -1094,14 +1095,14 @@ static SQL_OperNumDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperIntYMDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperIntYMDivSTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLInterval result = p_left.GetAsSQLInterval() / p_right.GetAsSLong();
   return SQLVariant(&result);
 }
 
 SQLVariant 
-static SQL_OperIntDSDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperIntDSDivSTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLInterval result = p_left.GetAsSQLInterval() / p_right.GetAsSLong();
   return SQLVariant(&result);
@@ -1110,7 +1111,7 @@ static SQL_OperIntDSDivSTiny(SQLVariant& p_left,SQLVariant& p_right)
 // TYPE = UTINYINT
 
 SQLVariant 
-static SQL_OperCharDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperCharDivUTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned char result = p_left.GetAsUTinyInt();
   result /= p_right.GetAsUTinyInt();
@@ -1118,7 +1119,7 @@ static SQL_OperCharDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSShortDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSShortDivUTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   short result = p_left.GetAsSShort();
   result /= p_right.GetAsSShort();
@@ -1126,7 +1127,7 @@ static SQL_OperSShortDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUShortDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUShortDivUTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned short result = p_left.GetAsUShort();
   result /= p_right.GetAsUShort();
@@ -1134,7 +1135,7 @@ static SQL_OperUShortDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSLongDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSLongDivUTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   int result = p_left.GetAsSLong();
   result /= p_right.GetAsSLong();
@@ -1142,7 +1143,7 @@ static SQL_OperSLongDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperULongDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperULongDivUTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned int result = p_left.GetAsULong();
   result /= p_right.GetAsULong();
@@ -1150,7 +1151,7 @@ static SQL_OperULongDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperFloatDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperFloatDivUTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   float result = p_left.GetAsFloat();
   result /= p_right.GetAsFloat();
@@ -1158,7 +1159,7 @@ static SQL_OperFloatDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperDoubleDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperDoubleDivUTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   double result = p_left.GetAsDouble();
   result /= p_right.GetAsDouble();
@@ -1166,7 +1167,7 @@ static SQL_OperDoubleDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperBitDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperBitDivUTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   bool result = false;
   if(p_left.GetAsBit() && p_right.GetAsBit())
@@ -1177,7 +1178,7 @@ static SQL_OperBitDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSTinyDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSTinyDivUTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   char result = p_left.GetAsSTinyInt();
   result /= p_right.GetAsSTinyInt();
@@ -1185,7 +1186,7 @@ static SQL_OperSTinyDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUTinyDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUTinyDivUTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned char result = p_left.GetAsUTinyInt();
   result /= p_right.GetAsUTinyInt();
@@ -1193,7 +1194,7 @@ static SQL_OperUTinyDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSBigDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSBigDivUTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLBIGINT result = p_left.GetAsSBigInt();
   result /= p_right.GetAsSBigInt();
@@ -1201,7 +1202,7 @@ static SQL_OperSBigDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUBigDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUBigDivUTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLUBIGINT result = p_left.GetAsUBigInt();
   result /= p_right.GetAsUBigInt();
@@ -1209,7 +1210,7 @@ static SQL_OperUBigDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperNumDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperNumDivUTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   bcd num = p_left.GetAsBCD() / bcd((short)p_right.GetAsUTinyInt());
   SQLVariant var(&num);
@@ -1217,14 +1218,14 @@ static SQL_OperNumDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant
-static SQL_OperIntYMDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperIntYMDivUTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLInterval result = p_left.GetAsSQLInterval() / p_right.GetAsSLong();
   return SQLVariant(&result);
 }
 
 SQLVariant
-static SQL_OperIntDSDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperIntDSDivUTiny(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLInterval result = p_left.GetAsSQLInterval() / p_right.GetAsSLong();
   return SQLVariant(&result);
@@ -1234,7 +1235,7 @@ static SQL_OperIntDSDivUTiny(SQLVariant& p_left,SQLVariant& p_right)
 // TYPE == SBIGINT
 
 SQLVariant 
-static SQL_OperCharDivSBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperCharDivSBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLBIGINT result = p_left.GetAsSBigInt();
   result /= p_right.GetAsSBigInt();
@@ -1242,7 +1243,7 @@ static SQL_OperCharDivSBig(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSShortDivSBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSShortDivSBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   short result = p_left.GetAsSShort();
   result /= p_right.GetAsSShort();
@@ -1250,7 +1251,7 @@ static SQL_OperSShortDivSBig(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUShortDivSBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUShortDivSBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned short result = p_left.GetAsUShort();
   result /= p_right.GetAsUShort();
@@ -1258,7 +1259,7 @@ static SQL_OperUShortDivSBig(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSLongDivSBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSLongDivSBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   int result = p_left.GetAsSLong();
   result /= p_right.GetAsSLong();
@@ -1266,7 +1267,7 @@ static SQL_OperSLongDivSBig(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperULongDivSBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperULongDivSBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned int result = p_left.GetAsULong();
   result /= p_right.GetAsULong();
@@ -1274,7 +1275,7 @@ static SQL_OperULongDivSBig(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperFloatDivSBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperFloatDivSBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   float result = p_left.GetAsFloat();
   result /= p_right.GetAsFloat();
@@ -1282,7 +1283,7 @@ static SQL_OperFloatDivSBig(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperDoubleDivSBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperDoubleDivSBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   double result = p_left.GetAsDouble();
   result /= p_right.GetAsDouble();
@@ -1290,7 +1291,7 @@ static SQL_OperDoubleDivSBig(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperBitDivSBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperBitDivSBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   bool result = false;
   if(p_left.GetAsBit() && p_right.GetAsBit())
@@ -1301,7 +1302,7 @@ static SQL_OperBitDivSBig(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSTinyDivSBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSTinyDivSBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   char result = p_left.GetAsSTinyInt();
   result /= p_right.GetAsSTinyInt();
@@ -1309,7 +1310,7 @@ static SQL_OperSTinyDivSBig(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUTinyDivSBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUTinyDivSBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned char result = p_left.GetAsUTinyInt();
   result /= p_right.GetAsUTinyInt();
@@ -1317,7 +1318,7 @@ static SQL_OperUTinyDivSBig(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSBigDivSBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSBigDivSBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLBIGINT result = p_left.GetAsSBigInt();
   result /= p_right.GetAsSBigInt();
@@ -1325,7 +1326,7 @@ static SQL_OperSBigDivSBig(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUBigDivSBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUBigDivSBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLUBIGINT result = p_left.GetAsUBigInt();
   result /= p_right.GetAsUBigInt();
@@ -1333,7 +1334,7 @@ static SQL_OperUBigDivSBig(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperNumDivSBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperNumDivSBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   bcd num = p_left.GetAsBCD() / bcd(p_right.GetAsSBigInt());
   SQLVariant var(&num);
@@ -1341,14 +1342,14 @@ static SQL_OperNumDivSBig(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperIntYMDivSBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperIntYMDivSBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLInterval result = p_left.GetAsSQLInterval() / p_right.GetAsSLong();
   return SQLVariant(&result);
 }
 
 SQLVariant 
-static SQL_OperIntDSDivSBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperIntDSDivSBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLInterval result = p_left.GetAsSQLInterval() / p_right.GetAsSLong();
   return SQLVariant(&result);
@@ -1357,7 +1358,7 @@ static SQL_OperIntDSDivSBig(SQLVariant& p_left,SQLVariant& p_right)
 // TYPE == UBIGINT
 
 SQLVariant 
-static SQL_OperCharDivUBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperCharDivUBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLUBIGINT result = p_left.GetAsUBigInt();
   result /= p_right.GetAsUBigInt();
@@ -1365,7 +1366,7 @@ static SQL_OperCharDivUBig(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSShortDivUBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSShortDivUBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   short result = p_left.GetAsSShort();
   result /= p_right.GetAsSShort();
@@ -1373,7 +1374,7 @@ static SQL_OperSShortDivUBig(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUShortDivUBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUShortDivUBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned short result = p_left.GetAsUShort();
   result /= p_right.GetAsUShort();
@@ -1381,7 +1382,7 @@ static SQL_OperUShortDivUBig(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSLongDivUBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSLongDivUBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   int result = p_left.GetAsSLong();
   result /= p_right.GetAsSLong();
@@ -1389,7 +1390,7 @@ static SQL_OperSLongDivUBig(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperULongDivUBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperULongDivUBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned int result = p_left.GetAsULong();
   result /= p_right.GetAsULong();
@@ -1397,7 +1398,7 @@ static SQL_OperULongDivUBig(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperFloatDivUBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperFloatDivUBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   float result = p_left.GetAsFloat();
   result /= p_right.GetAsFloat();
@@ -1405,7 +1406,7 @@ static SQL_OperFloatDivUBig(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperDoubleDivUBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperDoubleDivUBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   double result = p_left.GetAsDouble();
   result /= p_right.GetAsDouble();
@@ -1413,7 +1414,7 @@ static SQL_OperDoubleDivUBig(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperBitDivUBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperBitDivUBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   bool result = false;
   if(p_left.GetAsBit() && p_right.GetAsBit())
@@ -1424,7 +1425,7 @@ static SQL_OperBitDivUBig(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSTinyDivUBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSTinyDivUBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   char result = p_left.GetAsSTinyInt();
   result /= p_right.GetAsSTinyInt();
@@ -1432,7 +1433,7 @@ static SQL_OperSTinyDivUBig(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUTinyDivUBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUTinyDivUBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned char result = p_left.GetAsUTinyInt();
   result /= p_right.GetAsUTinyInt();
@@ -1440,7 +1441,7 @@ static SQL_OperUTinyDivUBig(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSBigDivUBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSBigDivUBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLBIGINT result = p_left.GetAsSBigInt();
   result /= p_right.GetAsSBigInt();
@@ -1448,7 +1449,7 @@ static SQL_OperSBigDivUBig(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUBigDivUBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUBigDivUBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLUBIGINT result = p_left.GetAsUBigInt();
   result /= p_right.GetAsUBigInt();
@@ -1456,7 +1457,7 @@ static SQL_OperUBigDivUBig(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperNumDivUBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperNumDivUBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   bcd num = p_left.GetAsBCD() / bcd(p_right.GetAsUBigInt());
   SQLVariant var(&num);
@@ -1464,14 +1465,14 @@ static SQL_OperNumDivUBig(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant
-static SQL_OperIntYMDivUBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperIntYMDivUBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLInterval result = p_left.GetAsSQLInterval() / p_right.GetAsSLong();
   return SQLVariant(&result);
 }
 
 SQLVariant
-static SQL_OperIntDSDivUBig(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperIntDSDivUBig(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLInterval result = p_left.GetAsSQLInterval() / p_right.GetAsSLong();
   return SQLVariant(&result);
@@ -1480,7 +1481,7 @@ static SQL_OperIntDSDivUBig(SQLVariant& p_left,SQLVariant& p_right)
 // TYPE == NUMERIC
 
 SQLVariant 
-static SQL_OperCharDivNum(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperCharDivNum(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   double num = p_left.GetAsDouble() / p_right.GetAsBCD().AsDouble();
   XString str;
@@ -1490,7 +1491,7 @@ static SQL_OperCharDivNum(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSShortDivNum(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSShortDivNum(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   short num = p_left.GetAsSShort() / (short) p_right.GetAsBCD().AsLong();
   SQLVariant var(num);
@@ -1498,7 +1499,7 @@ static SQL_OperSShortDivNum(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUShortDivNum(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUShortDivNum(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned short num = p_left.GetAsUShort() / (unsigned short)p_right.GetAsBCD().AsLong();
   SQLVariant var(num);
@@ -1506,7 +1507,7 @@ static SQL_OperUShortDivNum(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSLongDivNum(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSLongDivNum(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   int num = p_left.GetAsSLong() / p_right.GetAsBCD().AsLong();
   SQLVariant var(num);
@@ -1514,7 +1515,7 @@ static SQL_OperSLongDivNum(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperULongDivNum(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperULongDivNum(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned int num = p_left.GetAsULong() / (unsigned long)p_right.GetAsBCD().AsInt64();
   SQLVariant var(num);
@@ -1522,7 +1523,7 @@ static SQL_OperULongDivNum(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperFloatDivNum(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperFloatDivNum(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   float num = p_left.GetAsFloat() / (float)p_right.GetAsBCD().AsDouble();
   SQLVariant var(num);
@@ -1530,7 +1531,7 @@ static SQL_OperFloatDivNum(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperDoubleDivNum(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperDoubleDivNum(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   double num = p_left.GetAsDouble() / p_right.GetAsBCD().AsDouble();
   SQLVariant var(num);
@@ -1538,14 +1539,14 @@ static SQL_OperDoubleDivNum(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperBitDivNum(SQLVariant& p_left,SQLVariant& /*p_right*/)
+static SQL_OperBitDivNum(const SQLVariant& p_left,const SQLVariant& /*p_right*/)
 {
   SQLVariant var(p_left.GetAsBit());
   return var;
 }
 
 SQLVariant 
-static SQL_OperSTinyDivNum(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSTinyDivNum(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   char num = p_left.GetAsSTinyInt() / (char) p_right.GetAsBCD().AsLong();
   SQLVariant var(num);
@@ -1553,7 +1554,7 @@ static SQL_OperSTinyDivNum(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUTinyDivNum(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUTinyDivNum(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   unsigned char num = p_left.GetAsUTinyInt() / (unsigned char) p_right.GetAsBCD().AsLong();
   SQLVariant var(num);
@@ -1561,7 +1562,7 @@ static SQL_OperUTinyDivNum(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperSBigDivNum(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperSBigDivNum(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   int64 num = p_left.GetAsSBigInt() / p_right.GetAsBCD().AsInt64();
   SQLVariant var(num);
@@ -1569,7 +1570,7 @@ static SQL_OperSBigDivNum(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperUBigDivNum(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperUBigDivNum(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   uint64 num = p_left.GetAsUBigInt() / p_right.GetAsBCD().AsUInt64();
   SQLVariant var(num);
@@ -1577,7 +1578,7 @@ static SQL_OperUBigDivNum(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperNumDivNum(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperNumDivNum(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   bcd num = p_left.GetAsBCD() / p_right.GetAsBCD();
   SQLVariant var(&num);
@@ -1585,14 +1586,14 @@ static SQL_OperNumDivNum(SQLVariant& p_left,SQLVariant& p_right)
 }
 
 SQLVariant 
-static SQL_OperIntYMDivNum(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperIntYMDivNum(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLInterval result = p_left.GetAsSQLInterval() / p_right.GetAsDouble();
   return SQLVariant(&result);
 }
 
 SQLVariant 
-static SQL_OperIntDSDivNum(SQLVariant& p_left,SQLVariant& p_right)
+static SQL_OperIntDSDivNum(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   SQLInterval result = p_left.GetAsSQLInterval() / p_right.GetAsDouble();
   return SQLVariant(&result);
@@ -1628,7 +1629,7 @@ static CalculateFunctionArray OperatorDiv[CT_LAST][CT_LAST] =
 
 // Division operator for SQLVariant
 SQLVariant
-SQLVariant::operator/(SQLVariant& p_right)
+SQLVariant::operator/(const SQLVariant& p_right)
 {
   // If one of both is NULL, the result is false
   if(IsNULL() || p_right.IsNULL())
@@ -1660,15 +1661,15 @@ SQLVariant::operator/(SQLVariant& p_right)
   }
   // No compare function found
   // Data types are not comparable
-  XString leftType  = FindDatatype(m_datatype);
-  XString rightType = FindDatatype(p_right.m_datatype);
+  XString leftType  = SQLDataType::FindDatatype(m_datatype);
+  XString rightType = SQLDataType::FindDatatype(p_right.m_datatype);
   XString error;
   error.Format("Cannot do the division operator on (%s / %s)",leftType.GetString(),rightType.GetString());
   throw StdException(error);
 }
 
 SQLVariant& 
-SQLVariant::operator/=(SQLVariant& p_right)
+SQLVariant::operator/=(const SQLVariant& p_right)
 {
   // If one of both is NULL, the result is false
   if(IsNULL() || p_right.IsNULL())
@@ -1698,8 +1699,8 @@ SQLVariant::operator/=(SQLVariant& p_right)
   }
   // No compare function found
   // Data types are not comparable
-  XString leftType  = FindDatatype(m_datatype);
-  XString rightType = FindDatatype(p_right.m_datatype);
+  XString leftType  = SQLDataType::FindDatatype(m_datatype);
+  XString rightType = SQLDataType::FindDatatype(p_right.m_datatype);
   XString error;
   error.Format("Cannot do the /= operator on (%s + %s)",leftType.GetString(),rightType.GetString());
   throw StdException(error);

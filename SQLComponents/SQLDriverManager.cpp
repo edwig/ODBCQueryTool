@@ -115,7 +115,7 @@ SQLDriverManager::GetDataSources(DataSources& p_list,int p_type /*= SQL_FETCH_FI
     do 
     {
       DataSource source;
-      source.m_datasource = (LPCSTR)server;
+      source.m_datasource = server;
       source.m_system     = (direction == SQL_FETCH_FIRST_SYSTEM);
       source.m_changed    = false;
       source.m_default    = false;
@@ -268,13 +268,10 @@ SQLDriverManager::GetInstallerError()
     WORD  size  = 0;
     DWORD error = 0;
     char errorMsg[MAX_PATH + 1];
-    SQLRETURN ret = SQLInstallerError((WORD)err_index,&error,(LPSTR)&errorMsg,MAX_PATH,&size);
+    SQLRETURN ret = SQLInstallerError(static_cast<WORD>(err_index),&error,reinterpret_cast<LPSTR>(&errorMsg),MAX_PATH,&size);
     if(ret == SQL_SUCCESS || ret == SQL_SUCCESS_WITH_INFO)
     {
-      if(m_error == 0 && error >= 0)
-      {
-        m_error = error;
-      }
+      m_error = error;
       if(size)
       {
         if(!m_errorString.IsEmpty())

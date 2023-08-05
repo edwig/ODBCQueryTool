@@ -19,6 +19,7 @@
 //
 #pragma once
 #include "SkinScrollWnd.h"
+#include "StyleEdit.h"
 
 #define LIST_MAGIC 0xDEBAC1
 
@@ -52,6 +53,9 @@ public:
   void InitSkin(int p_borderSize = 1,int p_clientBias = 0);
   void ResetSkin();
   void SetDirectInit(bool p_init);
+  void SetFontSize(int p_size);
+  void SetFontStyle(bool p_bold,bool p_italic = false,bool p_underLine = false);
+  void SetFontName(CString p_fontName,int p_fontSize = 100,BYTE p_language = DEFAULT_CHARSET);
 
   void DrawFrame();
   SkinScrollWnd* GetSkin();
@@ -90,6 +94,7 @@ protected:
   void    RemoveLineNumber(CString& p_text);
   void    RemoveLineInfo();
   void    SetItemPointer(int p_index,void* p_data);
+  void    ResetFont();
 
   // Owner painting inside OnPaint
   void    Internal_Paint(CDC* p_cdc);
@@ -105,4 +110,12 @@ protected:
   int  m_width      { 0     };
   bool m_inPaint    { false };
   bool m_directInit { true  };
+  // Font
+  int      m_fontSize     { STYLE_DEFAULT_FONTSIZE };   // Font size (pica's times 10)
+  bool     m_italic       { false };                    // Use italic font
+  bool     m_bold         { false };                    // Use bold font
+  bool     m_underLine    { false };                    // Use underlined font
+  CString  m_fontName     { STYLE_DEFAULT_FONT };       // Name of font to use
+  CFont*   m_font         { nullptr };                  // Pointer to font structure
+  BYTE     m_language     { DEFAULT_CHARSET };          // Default language
 };

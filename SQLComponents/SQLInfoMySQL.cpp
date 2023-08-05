@@ -490,6 +490,7 @@ SQLInfoMySQL::DoBindParameterFixup(SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*p_c
 // CATALOG
 // o GetCATALOG<Object[s]><Function>
 //   Objects
+//   - Catalog
 //   - Table
 //   - Column
 //   - Index
@@ -517,6 +518,24 @@ SQLInfoMySQL::GetCATALOGMetaTypes(int p_type) const
 {
   UNREFERENCED_PARAMETER(p_type);
   return "";
+}
+
+XString
+SQLInfoMySQL::GetCATALOGDefaultCharset() const
+{
+  return "Latin1";
+}
+
+XString
+SQLInfoMySQL::GetCATALOGDefaultCharsetNCV() const
+{
+  return "UTF-8";
+}
+
+XString
+SQLInfoMySQL::GetCATALOGDefaultCollation() const
+{
+  return "latin1_swedish_ci";
 }
 
 // Get SQL to check if a table already exists in the database
@@ -837,7 +856,7 @@ SQLInfoMySQL::GetCATALOGPrimaryCreate(MPrimaryMap& p_primaries) const
 {
   XString query("ALTER TABLE ");
 
-  for(auto& prim : p_primaries)
+  for(const auto& prim : p_primaries)
   {
     if(prim.m_columnPosition == 1)
     {
@@ -908,7 +927,7 @@ SQLInfoMySQL::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
 
   // Add the foreign key columns
   bool extra = false;
-  for(auto& key : p_foreigns)
+  for(const auto& key : p_foreigns)
   {
     if(extra) query += ",";
     query += key.m_fkColumnName;
@@ -920,7 +939,7 @@ SQLInfoMySQL::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
 
   // Add the primary key columns
   extra = false;
-  for(auto& key : p_foreigns)
+  for(const auto& key : p_foreigns)
   {
     if(extra) query += ",";
     query += key.m_pkColumnName;
@@ -969,8 +988,8 @@ SQLInfoMySQL::GetCATALOGForeignAlter(MForeignMap& p_original, MForeignMap& p_req
     return "";
   }
 
-  MetaForeign& original  = p_original.front();
-  MetaForeign& requested = p_requested.front();
+  const MetaForeign& original  = p_original.front();
+  const MetaForeign& requested = p_requested.front();
 
   // Construct the correct tablename
   XString table(original.m_fkTableName);
@@ -1584,7 +1603,7 @@ SQLInfoMySQL::GetPSMDeclaration(bool    /*p_first*/
   if(p_datatype)
   {
     // Getting type info and name
-    TypeInfo* info = GetTypeInfo(p_datatype);
+    const TypeInfo* info = GetTypeInfo(p_datatype);
     line += info->m_type_name;
 
     if(p_precision > 0)
@@ -1683,7 +1702,7 @@ SQLInfoMySQL::GetPSMExecute(XString p_procedure,MParameterMap& p_parameters) con
   line.Format("EXECUTE %s USING ",p_procedure.GetString());
   bool doMore = false;
 
-  for(auto& param : p_parameters)
+  for(const auto& param : p_parameters)
   {
     if(doMore) line += ",";
     doMore = true;
@@ -1708,7 +1727,7 @@ SQLInfoMySQL::GetPSMCursorFetch(XString p_cursorname,std::vector<XString>& /*p_c
   XString query = "FETCH " + p_cursorname + " INTO ";
   bool moreThenOne = false;
 
-  for(auto& var : p_variablenames)
+  for(const auto& var : p_variablenames)
   {
     if(moreThenOne) query += ",";
     moreThenOne = true;

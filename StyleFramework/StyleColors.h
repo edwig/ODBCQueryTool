@@ -51,9 +51,9 @@
 #define BlackWhite3       RGB(0x00, 0x00, 0x00)
 #define BlackWhiteHeader  RGB(0x44, 0x58, 0x73)
 
-#define Dark1             RGB(0xBE, 0xBE, 0xBE)
-#define Dark2             RGB(0x99, 0x99, 0x99)
-#define Dark3             RGB(0x4D, 0x4D, 0x4D)
+#define Dark1             RGB(0x3C, 0x3C, 0x3C) //  RGB(0xBE, 0xBE, 0xBE)
+#define Dark2             RGB(0x2C, 0x2C, 0x2C) // 0x99, 0x99, 0x99)
+#define Dark3             RGB(0x1D, 0x1D, 0x1D) // (0x4D, 0x4D, 0x4D)
 #define DarkHeader        RGB(0x1F, 0x1F, 0x1F)
 #define DarkButtonText    RGB(0xDD, 0xDD, 0xDD)
 
@@ -97,6 +97,7 @@
 #define DarkBackground       RGB(0x1F, 0x1F, 0x1F)
 #define DarkCtrlBackground   RGB(0x2F, 0x2F, 0x2F)
 #define GroupBoxLine         RGB(0xDC, 0xDC, 0xDC)
+#define GroupBoxLineDark     RGB(0x50, 0x50, 0x50)
 
 namespace ThemeColor 
 {
@@ -127,6 +128,7 @@ namespace ThemeColor
    ,ColorComboActive
    ,ColorComboDropped
    ,ColorGroupLine
+   ,ColorButtonCheck
    ,ColorButtonBackground
    ,ColorButtonText
    ,ColorControlHover
@@ -161,7 +163,7 @@ namespace ThemeColor
   extern Themes   GetTheme();
   extern void     SetTheme(Themes pTheme);
   extern int      GetColor(Colors p_color);
-  static COLORREF NoWhite(COLORREF color) { return color == Assistant0 ? Assistant7 : color; }
+  extern COLORREF NoWhite(COLORREF color);
   extern HBITMAP  GetScrollbarBitmap();
   extern COLORREF HalfTone(COLORREF color,double p_factor = 0.5);
 }

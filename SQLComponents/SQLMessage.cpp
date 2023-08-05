@@ -46,13 +46,14 @@ SQLMessage(HWND p_wnd,XString p_message,XString p_title,int p_buttons)
   if(g_SQLComponentsInServer)
   {
     // print to the event log
-    LPCTSTR lpszStrings[2];
     HANDLE  hEventSource = OpenEventLog(NULL,"SQLComponents ODBC");
     WORD    type  = (p_buttons & MB_ICONERROR) ? EVENTLOG_ERROR_TYPE : EVENTLOG_INFORMATION_TYPE;
     DWORD   ident = (p_buttons & MB_ICONERROR) ? SVC_ERROR           : SVC_INFO;
 
     if (hEventSource != NULL)
     {
+      LPCTSTR lpszStrings[2];
+
       lpszStrings[0] = "SQLComponents (ODBC 3.51) Version: " SQL_COMPONENTS_VERSION;
       lpszStrings[1] = p_message;
 

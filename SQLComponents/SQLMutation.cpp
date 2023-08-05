@@ -41,7 +41,7 @@ SQLMutation::SQLMutation()
 {
 }
 
-SQLMutation::SQLMutation(SQLVariant* p_base)
+SQLMutation::SQLMutation(const SQLVariant* p_base)
 {
   // Bottom of the stack
   Mutation* mut = new Mutation();
@@ -62,7 +62,7 @@ SQLMutation::~SQLMutation()
 }
 
 void
-SQLMutation::Add(SQLVariant* p_extra,int p_mutationID /*=0*/)
+SQLMutation::Add(const SQLVariant* p_extra,int p_mutationID /*=0*/)
 {
   Mutation* mut     = new Mutation();
   mut->m_mutationID = p_mutationID;
@@ -71,7 +71,7 @@ SQLMutation::Add(SQLVariant* p_extra,int p_mutationID /*=0*/)
 }
 
 bool
-SQLMutation::Mutate(SQLVariant* p_mutate,int p_mutationID /*=0*/)
+SQLMutation::Mutate(const SQLVariant* p_mutate,int p_mutationID /*=0*/)
 {
   // Rely on the operator== from SQLVariant!!
   if(*(m_stack.back()->m_value) == *p_mutate)
@@ -165,7 +165,7 @@ SQLMutation::MixedMutations(int p_mutationID)
   }
 
   MutType type = MUT_NoMutation;
-  for(auto& mutate : m_stack)
+  for(const auto mutate : m_stack)
   {
     if(mutate->m_mutationID > 0)
     {

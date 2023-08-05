@@ -45,15 +45,15 @@ class SQLPrimaryKey
 {
 public:
   SQLPrimaryKey();
-  SQLPrimaryKey(WordList p_fields);
+  explicit SQLPrimaryKey(WordList p_fields);
  ~SQLPrimaryKey();
 
   void        Reset();
 
   // SETTERS
-  void        SetFields(WordList    p_fields);
-  void        SetValues(VariantSet* p_values);
-  void        SetStatus(PKStatus    p_status);
+  void        SetFields(const WordList    p_fields);
+  void        SetValues(const VariantSet* p_values);
+  void        SetStatus(const PKStatus    p_status);
 
   // GETTERS
   PKStatus    GetStatus()  { return m_status; }
@@ -70,7 +70,7 @@ public:
   // Functions
   void        AddValue(SQLVariant* p_val,bool p_replace = false);
   // Operators
-  SQLPrimaryKey& operator=(SQLPrimaryKey& p_other);
+  SQLPrimaryKey& operator=(const SQLPrimaryKey& p_other);
 
 private:
   WordList   m_fields;        // Names of the primary key fields
