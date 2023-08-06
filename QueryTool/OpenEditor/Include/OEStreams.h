@@ -84,13 +84,13 @@ namespace OpenEditor
     public:
         virtual ~InStream () {}
 
-        virtual void read  (const string&, string&)        = 0;
-        virtual void read  (const string&, double&)        = 0;
-        virtual void read  (const string&, long&)          = 0;
-        virtual void read  (const string&, unsigned long&) = 0;
-        virtual void read  (const string&, unsigned int&)  = 0;
-        virtual void read  (const string&, int&)           = 0;
-        virtual void read  (const string&, bool&)          = 0;
+        virtual void read  (const string&, string&,bool p_skip = false)        = 0;
+        virtual void read  (const string&, double&,bool p_skip = false)        = 0;
+        virtual void read  (const string&, long&,bool p_skip = false)          = 0;
+        virtual void read  (const string&, unsigned long&,bool p_skip = false) = 0;
+        virtual void read  (const string&, unsigned int&,bool p_skip = false)  = 0;
+        virtual void read  (const string&, int&,bool p_skip = false)           = 0;
+        virtual void read  (const string&, bool&,bool p_skip = false)          = 0;
 
         void read (const string&, vector<string>&);
         void read (const string&, vector<vector<string> >&);
@@ -124,17 +124,18 @@ namespace OpenEditor
         FileInStream (const char* filename);
 
     public:
-        virtual void read  (const string&, string&);
-        virtual void read  (const string&, double&);
-        virtual void read  (const string&, long&);
-        virtual void read  (const string&, unsigned long&);
-        virtual void read  (const string&, unsigned int&);
-        virtual void read  (const string&, int&);
-        virtual void read  (const string&, bool&);
+        virtual void read  (const string&, string&,bool p_skip = false);
+        virtual void read  (const string&, double&,bool p_skip = false);
+        virtual void read  (const string&, long&,bool p_skip = false);
+        virtual void read  (const string&, unsigned long&,bool p_skip = false);
+        virtual void read  (const string&, unsigned int&,bool p_skip = false);
+        virtual void read  (const string&, int&, bool p_skip = false);
+        virtual void read  (const string&, bool&,bool p_skip = false);
 
     private:
-        void validateEntryName (const string&, const string&);
+        void validateEntryName (const string&, const string&,bool* p_skip = nullptr);
         std::ifstream m_infile;
+        std::string   m_last;
     };
 
 

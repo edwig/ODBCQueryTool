@@ -207,104 +207,145 @@ FileInStream::FileInStream (const char* filename)
     _CHECK_AND_THROW_(m_infile.good(), (string("Cannot open file \"") + filename + "\" for reading.").c_str());
 }
 
-FileOutStream::FileOutStream (const char* filename) 
-: m_outfile(filename) 
+FileOutStream::FileOutStream(const char* filename)
+  : m_outfile(filename)
 {
-    _CHECK_AND_THROW_(m_outfile.good(), (string("Cannot open file \"") + filename + "\" for writing.").c_str());
+  _CHECK_AND_THROW_(m_outfile.good(),(string("Cannot open file \"") + filename + "\" for writing.").c_str());
 }
 
-void FileOutStream::write (const string& name,  const char* _val)
+void FileOutStream::write(const string& name,const char* _val)
 {
-    string val;
-    Common::to_printable_str(_val, val);
-    m_outfile << m_sectionKey.Format(name) << '=' << val << endl;
-}
-
-
-void FileOutStream::write (const string& name,  const string& _val)
-{
-    string val;
-    Common::to_printable_str(_val.c_str(), val);
-    m_outfile << m_sectionKey.Format(name) << '=' << val << endl;
+  string val;
+  Common::to_printable_str(_val,val);
+  m_outfile << m_sectionKey.Format(name) << '=' << val << endl;
 }
 
 
-void FileInStream::read (const string& name, string& val)
+void FileOutStream::write(const string& name,const string& _val)
 {
-    string _name, _val;
-    getline(m_infile, _name, '=');
-    validateEntryName(name, _name);
-    getline(m_infile, _val);
-    _ASSERTE(m_infile.good());
-    Common::to_unprintable_str(_val.c_str(), val);
+  string val;
+  Common::to_printable_str(_val.c_str(),val);
+  m_outfile << m_sectionKey.Format(name) << '=' << val << endl;
 }
 
 
-void FileOutStream::write (const string& name,  double val)
+void FileInStream::read(const string& name,string& val,bool p_skip /*= false*/)
 {
-    m_outfile << m_sectionKey.Format(name) << '=' << val << endl;
+  string _name,_val;
+
+  if(!m_last.empty())
+  {
+    if(stricmp(name.c_str(),m_last.c_str()) != 0)
+    {
+      val.clear();
+      return;
+    }
+  }
+  else
+  {
+    getline(m_infile,_name,'=');
+    validateEntryName(name,_name,&p_skip);
+    if(p_skip)
+    {
+      m_last = _name;
+      return;
+    }
+  }
+  getline(m_infile,_val);
+  _ASSERTE(m_infile.good());
+  m_last.clear();
+  Common::to_unprintable_str(_val.c_str(),val);
 }
 
 
-void FileInStream::read  (const string& name, double& val)
+void FileOutStream::write(const string& name,double val)
 {
-    string _name;
-    getline(m_infile, _name, '=');
-    validateEntryName(name, _name);
-    m_infile >> val; m_infile.get();
-    _ASSERTE(m_infile.good());
+  m_outfile << m_sectionKey.Format(name) << '=' << val << endl;
 }
 
 
-void FileOutStream::write (const string& name, long val)
+void FileInStream::read(const string& name,double& val,bool p_skip /*= false*/)
 {
-    m_outfile << m_sectionKey.Format(name) << '=' << val << endl;
+  string _name;
+  getline(m_infile,_name,'=');
+  validateEntryName(name,_name,&p_skip);
+  if(p_skip)
+  {
+    return;
+  }
+  m_infile >> val; m_infile.get();
+  _ASSERTE(m_infile.good());
 }
 
 
-void FileInStream::read  (const string& name, long& val)
+void FileOutStream::write(const string& name,long val)
 {
-    string _name;
-    getline(m_infile, _name, '=');
-    validateEntryName(name, _name);
-    m_infile >> val; m_infile.get();
-    _ASSERTE(m_infile.good());
+  m_outfile << m_sectionKey.Format(name) << '=' << val << endl;
 }
 
 
-void FileOutStream::write (const string& name, unsigned long val)
+void FileInStream::read(const string& name,long& val,bool skip /*=false*/)
 {
-    m_outfile << m_sectionKey.Format(name) << '=' << hex << val << dec << endl;
+  string _name;
+  getline(m_infile,_name,'=');
+  validateEntryName(name,_name);
+  m_infile >> val; m_infile.get();
+  _ASSERTE(m_infile.good());
 }
 
 
-void FileInStream::read  (const string& name, unsigned long& val)
+void FileOutStream::write(const string& name,unsigned long val)
 {
-    string _name;
-    getline(m_infile, _name, '=');
-    validateEntryName(name, _name);
-    m_infile.setf( std::ifstream::hex, std::ifstream::basefield);
-    m_infile >> val;
-    m_infile.setf( std::ifstream::dec, std::ifstream::basefield);
-    m_infile.get();
-    _ASSERTE(m_infile.good());
+  m_outfile << m_sectionKey.Format(name) << '=' << hex << val << dec << endl;
 }
 
 
-void FileOutStream::write (const string& name, int val)
+void FileInStream::read(const string& name,unsigned long& val,bool skip /*=false*/)
 {
-    m_outfile << m_sectionKey.Format(name) << '=' << val << endl;
+  string _name;
+  getline(m_infile,_name,'=');
+  validateEntryName(name,_name);
+  m_infile.setf(std::ifstream::hex,std::ifstream::basefield);
+  m_infile >> val;
+  m_infile.setf(std::ifstream::dec,std::ifstream::basefield);
+  m_infile.get();
+  _ASSERTE(m_infile.good());
 }
 
 
-void FileInStream::read  (const string& name, int& val)
+void FileOutStream::write(const string& name,int val)
 {
-    _ASSERTE(m_infile.good());
-    string _name;
-    getline(m_infile, _name, '=');
-    validateEntryName(name, _name);
-    m_infile >> val; m_infile.get();
-    _ASSERTE(m_infile.good());
+  m_outfile << m_sectionKey.Format(name) << '=' << val << endl;
+}
+
+
+void FileInStream::read(const string& name,int& val,bool skip /*=false*/)
+{
+  _ASSERTE(m_infile.good());
+  string _name;
+
+  if(!m_last.empty())
+  {
+    if(stricmp(name.c_str(),m_last.c_str()) != 0)
+    {
+      val = 0;
+      return;
+    }
+  }
+  else
+  {
+    getline(m_infile,_name,'=');
+    validateEntryName(name,_name,&skip);
+    if(skip)
+    {
+      m_last = _name;
+      return;
+    }
+  }
+  m_infile >> val; 
+  m_infile.get();
+  m_last.clear();
+  _ASSERTE(m_infile.good());
 }
 
 
@@ -314,11 +355,11 @@ void FileOutStream::write (const string& name, unsigned int val)
 }
 
 
-void FileInStream::read  (const string& name, unsigned int& val)
+void FileInStream::read  (const string& name, unsigned int& val,bool /*p_skip = false*/)
 {
     string _name;
-    getline(m_infile, _name, '=');
-    validateEntryName(name, _name);
+    getline(m_infile,_name,'=');
+    validateEntryName(name,_name);
     m_infile.setf( std::ifstream::hex, std::ifstream::basefield);
     m_infile >> val;
     m_infile.setf( std::ifstream::dec, std::ifstream::basefield);
@@ -332,21 +373,47 @@ void FileOutStream::write (const string& name, bool val)
     m_outfile << m_sectionKey.Format(name) << '=' << val << endl;
 }
 
-
-void FileInStream::read  (const string& name, bool& val)
+void FileInStream::read  (const string& name, bool& val,bool p_skip /*= false*/)
 {
     string _name;
-    getline(m_infile, _name, '=');
-    validateEntryName(name, _name);
-    m_infile >> val; m_infile.get();
+
+    if(!m_last.empty())
+    {
+      if(stricmp(name.c_str(),m_last.c_str()) != 0)
+      {
+        val = false;
+        return;
+      }
+    }
+    else
+    {
+      getline(m_infile,_name,'=');
+      validateEntryName(name,_name,&p_skip);
+      if(p_skip)
+      {
+        m_last = _name;
+        return;
+      }
+    }
+    m_infile >> val; 
+    m_infile.get();
+    m_last.clear();
     _ASSERTE(m_infile.good());
 }
 
-void FileInStream::validateEntryName(const string& name, const string& entryName)
+void FileInStream::validateEntryName(const string& name, const string& entryName,bool* p_skip)
 {
   if(stricmp(m_sectionKey.Format(name).c_str(), entryName.c_str()))
   {
-    throw std::exception("Unexpected entry in stream.");
+    if(!p_skip)
+    {
+      throw std::exception("Unexpected entry in stream.");
+    }
+    return;
+  }
+  if(p_skip)
+  {
+    *p_skip = false;
   }
 }
 

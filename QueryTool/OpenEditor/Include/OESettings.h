@@ -199,6 +199,8 @@ namespace OpenEditor
         OES_DECLARE_PROPERTY(int,    SQLLengthOption);
         OES_DECLARE_PROPERTY(string, SQLQueryTerminator);
         OES_DECLARE_PROPERTY(string, SQLQueryFont);
+        OES_DECLARE_PROPERTY(int,    SQLCharsetTranslation);
+        OES_DECLARE_PROPERTY(string, SQLCharsetUsed);
 
         OES_DECLARE_PROPERTY(bool,   PreferODBCMetaSQL);
         OES_DECLARE_PROPERTY(bool,   AllowMultipleInstances);
@@ -287,6 +289,8 @@ namespace OpenEditor
         OES_DECLARE_ABSTR_PROPERTY(int,    SQLLengthOption);
         OES_DECLARE_ABSTR_PROPERTY(string, SQLQueryTerminator);
         OES_DECLARE_ABSTR_PROPERTY(string, SQLQueryFont);
+        OES_DECLARE_ABSTR_PROPERTY(int,    SQLCharsetTranslation);
+        OES_DECLARE_ABSTR_PROPERTY(string, SQLCharsetUsed);
 
         OES_DECLARE_ABSTR_PROPERTY(bool,   PreferODBCMetaSQL);
         OES_DECLARE_ABSTR_PROPERTY(bool,   AllowMultipleInstances);
@@ -385,6 +389,8 @@ namespace OpenEditor
         OES_DECLARE_GLOBAL_PROPERTY(int,    SQLLengthOption);
         OES_DECLARE_GLOBAL_PROPERTY(string, SQLQueryTerminator);
         OES_DECLARE_GLOBAL_PROPERTY(string, SQLQueryFont);
+        OES_DECLARE_GLOBAL_PROPERTY(int,    SQLCharsetTranslation);
+        OES_DECLARE_GLOBAL_PROPERTY(string, SQLCharsetUsed);
 
         OES_DECLARE_GLOBAL_PROPERTY(bool,   PreferODBCMetaSQL);
         OES_DECLARE_GLOBAL_PROPERTY(bool,   AllowMultipleInstances);
@@ -505,6 +511,9 @@ namespace OpenEditor
         OES_AGGREGATE_PROPERTY(int,    SQLLengthOption);
         OES_AGGREGATE_PROPERTY(string, SQLQueryTerminator);
         OES_AGGREGATE_PROPERTY(string, SQLQueryFont);
+        OES_AGGREGATE_PROPERTY(int,    SQLCharsetTranslation);
+        OES_AGGREGATE_PROPERTY(string, SQLCharsetUsed);
+
 
         OES_AGGREGATE_PROPERTY(bool,   PreferODBCMetaSQL);
         OES_AGGREGATE_PROPERTY(bool,   AllowMultipleInstances);

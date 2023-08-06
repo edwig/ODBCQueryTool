@@ -524,6 +524,7 @@ TryConvertWideString(const uchar* p_buffer
   // Check if we know the codepage from the charset
   if(!p_charset.IsEmpty())
   {
+    p_charset.MakeLower();
     NameCPIDMap::iterator it = cp_name_map.find(p_charset);
     if(it != cp_name_map.end())
     {
@@ -605,7 +606,9 @@ TryCreateWideString(const XString& p_string
     // Fill the code page names the first time
     InitCodePageNames();
 
-    NameCPIDMap::iterator it = cp_name_map.find(p_charset);
+    XString charset(p_charset);
+    charset.MakeLower();
+    NameCPIDMap::iterator it = cp_name_map.find(charset);
     if(it != cp_name_map.end())
     {
       codePage = it->second;
@@ -769,7 +772,7 @@ DecodeStringFromTheWire(XString p_string,XString p_charset /*="utf-8"*/)
     XString decoded;
     bool foundBom = false;
 
-    if (TryConvertWideString(buffer,length,"",decoded,foundBom))
+    if(TryConvertWideString(buffer,length,"",decoded,foundBom))
     {
       p_string = decoded;
     }

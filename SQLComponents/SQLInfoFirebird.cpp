@@ -619,10 +619,50 @@ SQLInfoFirebird::GetCATALOGMetaTypes(int p_type) const
   return "";
 }
 
+// Convert Firebird character set names to MS-Windows names
 XString
 SQLInfoFirebird::GetCATALOGDefaultCharset() const
 {
-  return "SELECT rdb$character_set_name\n"
+  return "SELECT CASE(rdb$character_set_name)\n"
+         "       WHEN 'UTF8'        THEN 'UTF-8'\n"
+         "       WHEN 'UNICODE_FSS' THEN 'UTF-8'\n"
+         "       WHEN 'ISO8859_1'   THEN 'ISO-8859-1'\n"
+         "       WHEN 'ISO8859_2'   THEN 'ISO-8859-2'\n"
+         "       WHEN 'ISO8859_3'   THEN 'ISO-8859-3'\n"
+         "       WHEN 'ISO8859_4'   THEN 'ISO-8859-4'\n"
+         "       WHEN 'ISO8859_5'   THEN 'ISO-8859-5'\n"
+         "       WHEN 'ISO8859_6'   THEN 'ISO-8859-6'\n"
+         "       WHEN 'ISO8859_7'   THEN 'ISO-8859-7'\n"
+         "       WHEN 'ISO8859_8'   THEN 'ISO-8859-8'\n"
+         "       WHEN 'ISO8859_9'   THEN 'ISO-8859-9'\n"
+         "       WHEN 'ISO8859_13'  THEN 'ISO-8859-13'\n"
+         "       WHEN 'ISO8859_15'  THEN 'ISO-8859-15'\n"
+         "       WHEN 'WIN1250'     THEN 'Windows-1250'\n"
+         "       WHEN 'WIN1251'     THEN 'Windows-1251'\n"
+         "       WHEN 'WIN1252'     THEN 'Windows-1252'\n"
+         "       WHEN 'WIN1253'     THEN 'Windows-1253'\n"
+         "       WHEN 'WIN1254'     THEN 'Windows-1254'\n"
+         "       WHEN 'WIN1255'     THEN 'Windows-1255'\n"
+         "       WHEN 'WIN1256'     THEN 'Windows-1256'\n"
+         "       WHEN 'WIN1257'     THEN 'Windows-1257'\n"
+         "       WHEN 'SJIS_0208'   THEN 'EUC-JP'\n"
+         "       WHEN 'DOS437'      THEN 'IBM437'\n"
+         "       WHEN 'DOS850'      THEN 'IBM850'\n"
+         "       WHEN 'DOS852'      THEN 'IBM852'\n"
+         "       WHEN 'DOS855'      THEN 'IBM855'\n"
+         "       WHEN 'DOS857'      THEN 'IBM857'\n"
+         "       WHEN 'DOS858'      THEN 'IBM00858'\n"
+         "       WHEN 'DOS860'      THEN 'IBM860'\n"
+         "       WHEN 'DOS861'      THEN 'IBM861'\n"
+         "       WHEN 'DOS862'      THEN 'DOS-862'\n"
+         "       WHEN 'DOS863'      THEN 'IBM863'\n"
+         "       WHEN 'DOS864'      THEN 'IBM864'\n"
+         "       WHEN 'DOS865'      THEN 'IBM865'\n"
+         "       WHEN 'DOS866'      THEN 'CP66'\n"
+         "       WHEN 'DOS869'      THEN 'IBM869'\n"
+         "       WHEN 'BIG_5'       THEN 'big5'\n"
+         "                          ELSE 'NONE'\n"
+         "       END\n"
          "  FROM rdb$database";
 }
 
@@ -636,8 +676,7 @@ SQLInfoFirebird::GetCATALOGDefaultCharsetNCV() const
 XString
 SQLInfoFirebird::GetCATALOGDefaultCollation() const
 {
-  return "SELECT rdb$character_set_name\n"
-         "  FROM rdb$database";
+  return GetCATALOGDefaultCharset();
 }
 
 // Get SQL to check if a table already exists in the database

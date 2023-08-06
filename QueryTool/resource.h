@@ -94,8 +94,11 @@
 #define IDR_OE_TABLES_POPUP             224
 #define IDC_SQL_LEN                     224
 #define IDC_TYPE2                       225
+#define IDC_CHARSET                     225
+#define IDC_TRANSLATION                 225
 #define IDC_SIZE2                       226
 #define IDC_EXEC2                       227
+#define IDC_CHARACTERSET                227
 #define IDB_STATISTICS                  228
 #define IDC_VAR3                        228
 #define IDB_HISTORY                     229
@@ -589,7 +592,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        330
 #define _APS_NEXT_COMMAND_VALUE         50133
-#define _APS_NEXT_CONTROL_VALUE         1052
+#define _APS_NEXT_CONTROL_VALUE         1053
 #define _APS_NEXT_SYMED_VALUE           100
 #endif
 #endif

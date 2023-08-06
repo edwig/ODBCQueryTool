@@ -127,8 +127,13 @@ bool
 SQLInfoDB::MakeInfoDefaultCharset(XString& p_default)
 {
   p_default.Empty();
-  XString sql = GetCATALOGDefaultCharset();
 
+  if(!m_defaultCharset.IsEmpty())
+  {
+    p_default = m_defaultCharset;
+    return true;
+  }
+  XString sql = GetCATALOGDefaultCharset();
   if(sql.IsEmpty() || sql.Find(' ') < 0)
   {
     m_defaultCharset = sql;
@@ -143,13 +148,14 @@ SQLInfoDB::MakeInfoDefaultCharset(XString& p_default)
     if(qry.GetRecord())
     {
       m_defaultCharset = qry[1].GetAsChar();
+      m_defaultCharset = m_defaultCharset.Trim();
       p_default = m_defaultCharset;
       return true;
     }
   }
   catch(...)
   {
-    m_defaultCharset.Empty();
+    m_defaultCharset = "-";
   }
   return false;
 }
@@ -158,8 +164,13 @@ bool
 SQLInfoDB::MakeInfoDefaultCharsetNC(XString& p_default)
 {
   p_default.Empty();
-  XString sql = GetCATALOGDefaultCharsetNCV();
 
+  if(!m_defaultCharsetNCV.IsEmpty())
+  {
+    p_default = m_defaultCharsetNCV;
+    return true;
+  }
+  XString sql = GetCATALOGDefaultCharsetNCV();
   if(sql.IsEmpty() || sql.Find(' ') < 0)
   {
     m_defaultCharsetNCV = sql;
@@ -189,8 +200,12 @@ bool
 SQLInfoDB::MakeInfoDefaultCollation(XString& p_default)
 {
   p_default.Empty();
+  if(!m_defaultCollation.IsEmpty())
+  {
+    p_default = m_defaultCollation;
+    return true;
+  }
   XString sql = GetCATALOGDefaultCollation();
-
   if(sql.IsEmpty() || sql.Find(' ') < 0)
   {
     m_defaultCollation = sql;

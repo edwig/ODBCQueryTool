@@ -20,6 +20,8 @@
 #include "pch.h"
 #include "OEView.h"
 #include "OEHighlighter.h"
+#include "OESettings.h"
+#include "OEDocument.h"
 #include "QueryTool.h"
 
 #undef String
@@ -28,6 +30,7 @@
 #include "SQLVariant.h"
 #include "SQLInfoDB.h"
 #include <SQLDataType.h>
+#include <ConvertWideString.h>
 #include "Query\NativeSQLDlg.h"
 #include "Query\VariablesDlg.h"
 #include "Common\AppGlobal.h"
@@ -795,7 +798,7 @@ COEditorView::ExecuteQuery(int      p_line
           ScriptSelect(p_line,longestColumn,row);
           if(row >= prefetchLines)
           {
-            // Reset prefetched lines
+            // Reset pre-fetched lines
             m_gridView->SetPrefetchLines(row);
             m_linesFetched   = row;
             preMatureStopped = true;
@@ -880,6 +883,16 @@ COEditorView::GetLineFromQuery(int row)
 {
   UINT format = DT_SINGLELINE|DT_VCENTER|DT_WORDBREAK|DT_END_ELLIPSIS|DT_NOPREFIX|DT_EXPANDTABS;
   CString rowNumber;
+  int charsetTranslation = 0;
+  CString charset;
+  // Getting charset translation
+  COEDocument* doc = GetDocument();
+  if(doc)
+  {
+    charsetTranslation = doc->GetSettings().GetSQLCharsetTranslation();
+    charset = doc->GetSettings().GetSQLCharsetUsed().c_str();
+  }
+
   rowNumber.Format("%d",row);
   m_gridView->InsertRow((LPCSTR) rowNumber,-1);
 
@@ -900,6 +913,17 @@ COEditorView::GetLineFromQuery(int row)
       text = (char*)buffer;
       m_gridView->InsertItem(row,k,text,DT_LEFT);
       free(buffer);
+    }
+    if(type == SQL_C_CHAR)
+    {
+      var->GetAsString(text);
+      if(charsetTranslation)
+      {
+        TranslateText(text,charsetTranslation,charset);
+      }
+      format &= ~(DT_LEFT | DT_RIGHT);
+      format |= (type == SQL_CHAR || type == SQL_VARCHAR) ? DT_LEFT : DT_RIGHT;
+      m_gridView->InsertItem(row,k,text,format,var->GetDataType());
     }
     else
     {
@@ -939,6 +963,29 @@ COEditorView::ReadRestOfQuery()
   }
   // Reset to 0, so grid will not attempt a second time
   m_linesFetched = 0;
+}
+
+void
+COEditorView::TranslateText(CString& p_text,int p_translation,CString p_charset)
+{
+  CString source;
+
+  if(p_translation == 1)
+  {
+    if(!theApp.GetDatabase().GetSQLInfoDB()->MakeInfoDefaultCharset(source))
+    {
+      return;
+    }
+  }
+  else if(p_translation == 2)
+  {
+    source = p_charset;
+  }
+  if(source.IsEmpty() || source == "-" || p_translation < 0 || p_translation > 2)
+  {
+    return;
+  }
+  p_text = DecodeStringFromTheWire(p_text,source);
 }
 
 // Write a line with info to the statistics view

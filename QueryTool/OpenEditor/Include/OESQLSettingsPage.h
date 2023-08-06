@@ -38,6 +38,9 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
   virtual BOOL OnApply();
+          void InitCombos();
+          void ReadSQLSettings();
+          void SaveSQLSettings();
 
   SettingsManager& m_manager;
 
@@ -46,12 +49,16 @@ public:
   CString       m_font;
   int           m_lenOption;
   bool          m_odbcMetaSQL;
+  int           m_charsetTranslation;
+  CString       m_charset;
 
   StyleEdit     m_editPrefetch;
   StyleEdit     m_editTerminator;
   StyleEdit     m_editFont;
   StyleButton   m_buttonFont;
   StyleComboBox m_comboSqlLen;
+  StyleComboBox m_comboTranslation;
+  StyleComboBox m_comboCharset;
   StyleCheckbox m_buttonODBC;
 
   afx_msg void OnUpdateData();
@@ -61,4 +68,6 @@ public:
   afx_msg void OnBnClickedButFont();
   afx_msg void OnBnClickedPreferODBC();
   afx_msg void OnCbnSelchangeSqlLen();
+  afx_msg void OnCbnSelchangeCharset();
+  afx_msg void OnCbnSelchangeTranslation();
 };

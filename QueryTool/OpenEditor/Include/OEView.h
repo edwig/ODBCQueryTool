@@ -436,6 +436,7 @@ public:
   void ReadRestOfQuery();
   int  LinesFetchedSoFar();
   bool IsDigits(char* token);
+  void TranslateText(CString& p_text,int p_translation,CString p_charset);
 
   // Write a line with info to the statistics view
   void    WriteStatisticsLine(CString p_step
