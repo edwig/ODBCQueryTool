@@ -101,7 +101,7 @@
       <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)BaseLibrary\;$(SolutionDir)QueryTool;$(SolutionDir)QueryTool\OpenEditor\Include;$(SolutionDir)SQLComponents;$(SolutionDir)QueryTool\Common;$(SolutionDir)QueryTool\GridControl;$(SolutionDir)QueryTool\Query;$(SolutionDir)StyleFramework;$(SolutionDir)StyleFramework\Grid;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)BaseLibrary\;$(SolutionDir)QueryTool;$(SolutionDir)QueryTool\OpenEditor\Include;$(SolutionDir)SQLComponents;$(SolutionDir)QueryTool\Common;$(SolutionDir)QueryTool\GridControl;$(SolutionDir)QueryTool\Query;$(SolutionDir)StyleFramework;$(SolutionDir)StyleFramework\Grid;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>Async</ExceptionHandling>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>
@@ -135,7 +135,7 @@ copy $(SolutionDir)\Data\*.*  $(OutDir)\Data\</Command>
       <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(SolutionDir)BaseLibrary\;$(SolutionDir)QueryTool;$(SolutionDir)QueryTool\OpenEditor\Include;$(SolutionDir)SQLComponents;$(SolutionDir)QueryTool\Common;$(SolutionDir)QueryTool\GridControl;$(SolutionDir)QueryTool\Query;$(SolutionDir)StyleFramework;$(SolutionDir)StyleFramework\Grid;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)BaseLibrary\;$(SolutionDir)QueryTool;$(SolutionDir)QueryTool\OpenEditor\Include;$(SolutionDir)SQLComponents;$(SolutionDir)QueryTool\Common;$(SolutionDir)QueryTool\GridControl;$(SolutionDir)QueryTool\Query;$(SolutionDir)StyleFramework;$(SolutionDir)StyleFramework\Grid;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>Async</ExceptionHandling>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>

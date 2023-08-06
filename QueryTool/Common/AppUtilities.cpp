@@ -54,43 +54,98 @@ void AppRestoreHistory (CComboBox& wndList, const char* szSection, const char* s
 
 void AppRestoreHistory(StyleComboBox& wndList,const char* szSection,const char* szEntry,int nSize)
 {
-  AppRestoreHistory(reinterpret_cast<CComboBox&>(wndList),szSection,szEntry,nSize);
+  wndList.ResetContent();
+
+  for(int i(0); i < nSize; i++)
+  {
+    CString strEntry,strBuffer;
+    strEntry.Format("%s_%d",(const char*) szEntry,i);
+    strBuffer = AfxGetApp()->GetProfileString(szSection,strEntry);
+
+    if(!i)
+      wndList.SetWindowText(strBuffer);
+
+    if(!strBuffer.IsEmpty())
+      wndList.AddString(strBuffer);
+    else
+      if(i) break; // only the first string can be null
+  }
 }
 
 void AppSaveHistory (CComboBox& wndList, const char* szSection, const char* szEntry, int nSize)
 {
-    int i(0);
-    CString strText, strEntry;
-    wndList.GetWindowText(strText);
+  int i(0);
+  CString strText,strEntry;
+  wndList.GetWindowText(strText);
 
-    strEntry.Format("%s_%d", (const char*)szEntry, i);
-    AfxGetApp()->WriteProfileString(szSection, strEntry, strText);
-    i++;
+  strEntry.Format("%s_%d",(const char*) szEntry,i);
+  AfxGetApp()->WriteProfileString(szSection,strEntry,strText);
+  i++;
 
-    int nCount = wndList.GetCount();
-    for (int j(0); i < nSize && j < nCount; i++, j++)
+  int nCount = wndList.GetCount();
+  for(int j(0); i < nSize && j < nCount; i++,j++)
+  {
+    CString strBuffer;
+
+    while(j < nCount)
     {
-        CString strBuffer;
+      wndList.GetLBText(j,strBuffer);
 
-        while (j < nCount)
-        {
-            wndList.GetLBText(j, strBuffer);
-
-            if (strBuffer == strText) j++;
-            else break;
-        }
-
-        if (strBuffer.IsEmpty()
-        || strBuffer == strText) break;
-
-        strEntry.Format("%s_%d", (const char*)szEntry, i);
-        AfxGetApp()->WriteProfileString(szSection, strEntry, strBuffer);
+      if(strBuffer == strText)
+      {
+        j++;
+      }
+      else
+      {
+        break;
+      }
     }
+
+    if(strBuffer.IsEmpty() || strBuffer == strText)
+    {
+      break;
+    }
+    strEntry.Format("%s_%d",(const char*) szEntry,i);
+    AfxGetApp()->WriteProfileString(szSection,strEntry,strBuffer);
+  }
 }
 
 void AppSaveHistory(StyleComboBox& wndList,const char* szSection,const char* szEntry,int nSize)
 {
-  AppSaveHistory(reinterpret_cast<CComboBox&>(wndList),szSection,szEntry,nSize);
+  int i(0);
+  CString strText,strEntry;
+  wndList.GetWindowText(strText);
+
+  strEntry.Format("%s_%d",(const char*) szEntry,i);
+  AfxGetApp()->WriteProfileString(szSection,strEntry,strText);
+  i++;
+
+  int nCount = wndList.GetCount();
+  for(int j(0); i < nSize && j < nCount; i++,j++)
+  {
+    CString strBuffer;
+
+    while(j < nCount)
+    {
+      wndList.GetLBText(j,strBuffer);
+
+      if(strBuffer == strText)
+      {
+        j++;
+      }
+      else
+      {
+        break;
+      }
+    }
+
+    if(strBuffer.IsEmpty() || strBuffer == strText)
+    {
+      break;
+    }
+    strEntry.Format("%s_%d",(const char*) szEntry,i);
+    AfxGetApp()->WriteProfileString(szSection,strEntry,strBuffer);
+  }
 }
 
 void AppWalkDir (const char* szPath, const char* szFileMask,

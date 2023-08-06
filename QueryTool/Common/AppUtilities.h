@@ -16,26 +16,17 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
-#ifndef __AppUtilities_h__
-#define __AppUtilities_h__
-
 #pragma warning ( disable : 4786 )
 #include <list>
 #include <string>
 
-
 namespace Common
 {
-
     void AppRestoreHistory(CComboBox&     wndList,const char* szSection,const char* szEntry,int nSize);
     void AppRestoreHistory(StyleComboBox& wndList,const char* szSection,const char* szEntry,int nSize);
     void AppSaveHistory   (CComboBox&     wndList,const char* szSection,const char* szEntry,int nSize);
     void AppSaveHistory   (StyleComboBox& wndList,const char* szSection,const char* szEntry,int nSize);
-
 
     typedef std::string          String;
     typedef std::list<String>    StringList;
@@ -45,16 +36,15 @@ namespace Common
                      StringList& listFiles, BOOL bSortFiles = TRUE, StringList* pListSubdir = 0);
     BOOL AppDeleteFiles (const char* szPath, const char* szFileMask, BOOL bAndSubdir);
     BOOL AppDeleteDirectory (const char* szPath);
-    void AppGetPath (String& path);
+    void AppGetPath (std::string& path);
     void AppGetFullPathName (const String& path, String& fullPath);
     void FindApplicDirectory(CString& p_directory);
 
-    bool AppGetFileAttrs (
-            const char* szPath, DWORD* attrs, __int64* fileSize = 0,
-            __int64* creationTime = 0, __int64* lastWriteTime = 0
-        );
+    bool AppGetFileAttrs (const char* szPath
+                         ,DWORD*      attrs
+                         ,__int64*    fileSize      = 0
+                         ,__int64*    creationTime  = 0
+                         ,__int64*    lastWriteTime = 0);
 
-}//namespace Common
-
-#endif//__AppUtilities_h__
-
+}
+//namespace Common
