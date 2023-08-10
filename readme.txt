@@ -22,6 +22,26 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes 3.3.1
+------------------
+It is now possible to override the character set from the database by using one of two methods:
+
+1) Reading the default character set from a system table (e.g. Firebird); 
+2) Choosing a character set directly from a list. 
+
+You can find this setting by navigating to the 'Text' menu, and then 'Permanent settings' and 
+then to the 'SQL' tab. There you will find the field 'Charset handling'. When choosing the third 
+option ('Use charset translation') the combobox for 'character set' will become active and you 
+can choose a character set.
+
+Most notabely you can use this setting for RDBMS types that are not directly supported such as 
+for instance a 'SAP-Hana' database. Or for database types where the ODBC driver does not correctly 
+hands over the character buffer in UTF-16 form to the MS-Windows operating system. 
+Such as the Firebird ODBC driver 2.x
+
+NOTE:Do NOT forget to reset this general setting when connecting to a different database that does 
+not adhere correctly to the ODBC standard! As it will bite you as it did me!! :-(
+
 Releasenotes 3.3.0
 ------------------
 In this release the free 'odbc-connection-string' feature is implemented (at last). 
