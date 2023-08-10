@@ -636,7 +636,7 @@ WinFile::OpenAsSharedMemory(XString   p_name
 
     // File is now opened: try to create a file mapping
     DWORD sizeLow  = p_size & 0x0FFFFFFF;
-    DWORD sizeHigh = p_size >> 32;
+    DWORD sizeHigh = p_size >> 31 >> 1;
     if(m_file)
     {
       DWORD protect = PAGE_READWRITE;

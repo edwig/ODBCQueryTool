@@ -622,7 +622,7 @@ JSONPath::EvaluateFilter(Relation relation)
   {
     if(m_searching->GetDataType() == JsonType::JDT_array)
     {
-      for(int index = 0; index < m_searching->GetArray().size(); index++)
+      for(int index = 0; index < (int) m_searching->GetArray().size(); index++)
       {
         bool contains(false);
         for(JSONpair pair : m_searching->GetArray().at(index).GetObject())
@@ -753,7 +753,7 @@ JSONPath::ParseLevel(XString& p_parsing)
           // Negative index, take it from the end
           index = (int)(m_searching->GetArray().size()) + index;
         }
-        if(0 <= index && index < m_searching->GetArray().size())
+        if(0 <= index && index < (int)m_searching->GetArray().size())
         {
           m_searching = &m_searching->GetArray()[index];
           PresetStatus();

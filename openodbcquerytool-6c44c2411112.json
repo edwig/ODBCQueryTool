@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "openodbcquerytool",
+  "private_key_id": "6c44c2411112883e3a39ca51f5333f3e172c693d",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCv+h0SgqcVPfxk\nEE8dB/YMO28pNIk4DTRYp0Zh1c9Q0Gg2SLAzLAA3R7dgjsZXGFTI6reQ70PDETTX\nlynEBbZIomlbg56U9dCOhTG0ooqcS6IitvnPJMVmIgO5vRWX0WJxPrZ+hDb6W6Uv\nMSE4y4iVyu2oLBec6FUvmj6lvcUbiRMtf9tjtB5i8h/nGP7yXnUg/MSH0X6JUSRL\nLFcaC5XvDZLYaUUxC9Dn8LGFDAAajwOvVuFi1LtHhAah4koDLmBLEcWuxuXN/RDa\nZ4I+MFTIwAKoAt9+xhqoTuaq6EIP0htQF4Y1mgoPdL9BUSYxFhz0wvGRpBObpQi9\n9Wch18X1AgMBAAECggEAB7eWMsub/Ch9uv2kGofQ2HR6yXnOUrDxjLm5Mm0n7ElX\naJoDcBsL32C7v/ZC6GrevPjeF/MGK7XDdXjhkgEWH1VP/X1mJO4quTVKGrvODFCc\nyZzwk47vQS1YsHqESeYaxRCU/DNcHdqLAejLpiv2z2rYxTk5x93Abpf7C1WpIS3t\nEOi3UGx5J5W6SREqOEO8V2iZpJX+rKou0qcCgKKkrR4DrPV2wGJuOV178ppZR7+I\nx4tDfjgEDRi8bTeUrF0lnHjMmNvXenz0TkjVfBUa63hWpECBzW1iMUo9aNfVI+z4\nkiIoRuFCZXyzUDzmJCXPII3lAwq+po/7XrLa+7XSgQKBgQDd+nvJlV008R0V2HsS\n1Cc5SCDbYFxnTXTJTnzsh7NN15hWDi5FiPPq8RLcHNMcLl2di+AaMMMH2k04Ihth\nXUR1vXRM3t/uzIE0Bv3nVDtDFmbSWgCdGkoihw/lU5/b1O9fo9eGE/HHqSUvDcC9\nNaHerUOFXmC/7y8M9e06xV78EQKBgQDK8rk6JPBV7qLQFoEgMDZ3mmxLvjQh3S/z\n8Uxw1qboFzfiNCCojigOPoIl7DRE07bJF+Flnbb/wN+7+c7vbDWhuWc4LK2/wBCL\n1fu1MsSF+gfDwmp4u9mIA6KHNmSMYBvf6rclRa9FijL894JNdD5UKMPe2EAlxeE8\nNe4Dg8VfpQKBgBCdE7C1riEtPpkI98Uj/b+Kx3LD1oagxHHgnvbw/RmBXlRqgUoR\nAvh9jITO33oHelg1RNOQ/LfUvdzKqLPz0BDj2hV6xNXRloX3U/+BTWIrBg0OUWdw\ntUW6SBVI2fkRCc1lrNbLHVhtL2xDIj7HCdNpslkEBEe5NhNJQLUaWo6RAoGAcXNW\nkGZt49vPMDwkWvYYvKuatozRX8ziLaBKdxnHnB6+ork5OICfa7cN0l1EquUfXTL4\nUXHlBvuvFsoDIFyBbrLSPNjdGEAp/8HTP+vtaGfpR0m7c1qvtBU0GhoSA1cGvhnb\n3/4giONEtZ03Pk0pOqq/NCf3VCZWTu5m65gSEfECgYBXhQrLj1S7DSggsRI/UN0+\nE2CqHZOr9/0ZZKl3P8BLgSg+X+hOaoGtQAa8KU4fRpUWyiwDm6OfFpoH8fUgbww9\nCx1eD+9K0j5EwQ/W2QUsQ8WsY/yHUbvFBLscZUf4M3B5yGlq+e4nyW2pSq6RO6gQ\n4BprWrFpTTlLhvInIP7TfQ==\n-----END PRIVATE KEY-----\n",
+  "client_email": "testodbcquerytool@openodbcquerytool.iam.gserviceaccount.com",
+  "client_id": "116239358506885467059",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/testodbcquerytool%40openodbcquerytool.iam.gserviceaccount.com"
+}
