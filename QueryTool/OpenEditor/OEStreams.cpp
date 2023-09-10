@@ -52,10 +52,10 @@ Stream::Section::Section (Stream& stream, const char* section)
     m_length = m_stream.m_sectionKey.append(section);
 }
 
-Stream::Section::Section (Stream& stream, const string& section)
+Stream::Section::Section (Stream& stream, const CString& section)
 : m_stream(stream)
 {
-    m_length = m_stream.m_sectionKey.append(section.c_str());
+    m_length = m_stream.m_sectionKey.append(section.GetString());
 }
 
 Stream::Section::~Section ()
@@ -68,26 +68,26 @@ Stream::StreamKey::StreamKey ()
     m_length = 0;
 }
 
-string& Stream::StreamKey::Format (const char* property)
+CString& Stream::StreamKey::Format (const char* property)
 {
-    m_key.resize(m_length);
-    if (m_length) m_key += '.';
-    m_key += property;
-    return m_key;
+  m_key.Truncate(m_length);
+  if (m_length) m_key += '.';
+  m_key += property;
+  return m_key;
 }
 
-string& Stream::StreamKey::Format (const string& property)
+CString& Stream::StreamKey::Format (const CString& property)
 {
-    return Format(property.c_str());
+    return Format(property.GetString());
 }
 
 int Stream::StreamKey::append (const char* section)
 {
-    m_key.resize(m_length);
+    m_key.Truncate(m_length);
     int length = m_length;
     if (m_length) m_key += '.';
     m_key += section;
-    m_length = (int)m_key.size();
+    m_length = (int)m_key.GetLength();
     return length;
 }
 
@@ -95,43 +95,43 @@ void Stream::StreamKey::cut (int len)
 {
     _ASSERTE(len >= 0);
     m_length = len;
-    m_key.resize(m_length);
+    m_key.Truncate(m_length);
 }
 
 
 /////////////////////////////////////////////////////////////////////////////
 // 	InStream & OutStream
 
-void OutStream::write (const string& section, const vector<string>& _vector)
+void OutStream::write (const CString& section, const vector<CString>& _vector)
 {
     Section sect(*this, section);
 
-    write("Count", (int)_vector.size());
+    write(_T("Count"), (int)_vector.size());
 
     char buff[40];
-    std::vector<string>::const_iterator it = _vector.begin();
+    std::vector<CString>::const_iterator it = _vector.begin();
     for (int i(0); it != _vector.end(); it++, i++)
         write(itoa(i, buff, 10), *it);
 }
 
-void OutStream::write (const string& section, const vector<vector<string> >& vec_of_vec)
+void OutStream::write (const CString& section, const vector<vector<CString> >& vec_of_vec)
 {
     Section sect(*this, section);
 
-    write("Count", (int)vec_of_vec.size());
+    write(_T("Count"), (int)vec_of_vec.size());
 
     char buff[40];
-    std::vector<vector<string> >::const_iterator it = vec_of_vec.begin();
+    std::vector<vector<CString> >::const_iterator it = vec_of_vec.begin();
     for (int i(0); it != vec_of_vec.end(); it++, i++)
         write(itoa(i, buff, 10), *it);
 }
 
-void InStream::read (const string& section, vector<string>& _vector)
+void InStream::read (const CString& section, vector<CString>& _vector)
 {
     Section sect(*this, section);
 
     int count;
-    read("count", count);
+    read(_T("count"), count);
     _vector.resize(count);
 
     char buff[80];
@@ -139,12 +139,12 @@ void InStream::read (const string& section, vector<string>& _vector)
         read(itoa(i, buff, 10), _vector.at(i));
 }
 
-void InStream::read (const string& section, vector<vector<string> >& vec_of_vec)
+void InStream::read (const CString& section, vector<vector<CString> >& vec_of_vec)
 {
     Section sect(*this, section);
 
     int count;
-    read("count", count);
+    read(_T("count"), count);
     vec_of_vec.resize(count);
 
     char buff[80];
@@ -152,48 +152,48 @@ void InStream::read (const string& section, vector<vector<string> >& vec_of_vec)
         read(itoa(i, buff, 10), vec_of_vec.at(i));
 }
 
-void OutStream::write (const string& section, const set<string>& _set)
+void OutStream::write (const CString& section, const set<CString>& _set)
 {
     Section sect(*this, section);
 
-    write("Count", (int)_set.size());
+    write(_T("Count"), (int)_set.size());
     
     char buff[80];
-    std::set<string>::const_iterator it = _set.begin();
+    std::set<CString>::const_iterator it = _set.begin();
     for (int i(0); it != _set.end(); it++, i++)
         write(itoa(i, buff, 10), *it);
 }
 
-void InStream::read (const string& section, set<string>& _set)
+void InStream::read (const CString& section, set<CString>& _set)
 {
     Section sect(*this, section);
 
     int count;
-    read("Count", count);
+    read(_T("Count"), count);
 
     char buff[80];
     for (int i(0); i < count; i++)
     {
-        string value;
+        CString value;
         read(itoa(i, buff, 10), value);
         _set.insert(value);
     }
 }
 
-void OutStream::write (const string& section, const pair<string, string>& _pair)
+void OutStream::write (const CString& section, const pair<CString, CString>& _pair)
 {
     Section sect(*this, section);
 
-    write("0", _pair.first);
-    write("1", _pair.second);
+    write(_T("0"), _pair.first);
+    write(_T("1"), _pair.second);
 }
 
-void InStream::read (const string& section, pair<string, string>& _pair)
+void InStream::read (const CString& section, pair<CString, CString>& _pair)
 {
     Section sect(*this, section);
 
-    read("0", _pair.first);
-    read("1", _pair.second);
+    read(_T("0"), _pair.first);
+    read(_T("1"), _pair.second);
 }
 
 
@@ -204,46 +204,48 @@ void InStream::read (const string& section, pair<string, string>& _pair)
 FileInStream::FileInStream (const char* filename) 
 : m_infile(filename) 
 {
-    _CHECK_AND_THROW_(m_infile.good(), (string("Cannot open file \"") + filename + "\" for reading.").c_str());
+    _CHECK_AND_THROW_(m_infile.good(), (CString(_T("Cannot open file \"")) + filename + _T("\" for reading.")));
 }
 
 FileOutStream::FileOutStream(const char* filename)
   : m_outfile(filename)
 {
-  _CHECK_AND_THROW_(m_outfile.good(),(string("Cannot open file \"") + filename + "\" for writing.").c_str());
+  _CHECK_AND_THROW_(m_outfile.good(),(CString(_T("Cannot open file \"")) + filename + _T("\" for writing.")));
 }
 
-void FileOutStream::write(const string& name,const char* _val)
+void FileOutStream::write(const CString& name,const char* _val)
 {
-  string val;
+  CString val;
   Common::to_printable_str(_val,val);
   m_outfile << m_sectionKey.Format(name) << '=' << val << endl;
 }
 
 
-void FileOutStream::write(const string& name,const string& _val)
+void FileOutStream::write(const CString& name,const CString& _val)
 {
-  string val;
-  Common::to_printable_str(_val.c_str(),val);
+  CString val;
+  Common::to_printable_str(_val,val);
   m_outfile << m_sectionKey.Format(name) << '=' << val << endl;
 }
 
 
-void FileInStream::read(const string& name,string& val,bool p_skip /*= false*/)
+void FileInStream::read(const CString& name,CString& val,bool p_skip /*= false*/)
 {
-  string _name,_val;
+  CString _name;
+  std::string inval;
 
-  if(!m_last.empty())
+  if(!m_last.IsEmpty())
   {
-    if(stricmp(name.c_str(),m_last.c_str()) != 0)
+    if(stricmp(name.GetString(),m_last.GetString()) != 0)
     {
-      val.clear();
+      val.Empty();
       return;
     }
   }
   else
   {
-    getline(m_infile,_name,'=');
+    getline(m_infile,inval,'=');
+    _name = inval.c_str();
     validateEntryName(name,_name,&p_skip);
     if(p_skip)
     {
@@ -251,23 +253,25 @@ void FileInStream::read(const string& name,string& val,bool p_skip /*= false*/)
       return;
     }
   }
-  getline(m_infile,_val);
+  getline(m_infile,inval);
   _ASSERTE(m_infile.good());
-  m_last.clear();
-  Common::to_unprintable_str(_val.c_str(),val);
+  m_last.Empty();
+  Common::to_unprintable_str(inval.c_str(),val);
 }
 
 
-void FileOutStream::write(const string& name,double val)
+void FileOutStream::write(const CString& name,double val)
 {
   m_outfile << m_sectionKey.Format(name) << '=' << val << endl;
 }
 
 
-void FileInStream::read(const string& name,double& val,bool p_skip /*= false*/)
+void FileInStream::read(const CString& name,double& val,bool p_skip /*= false*/)
 {
-  string _name;
-  getline(m_infile,_name,'=');
+  CString _name;
+  std::string inval;
+  getline(m_infile,inval,'=');
+  _name = inval.c_str();
   validateEntryName(name,_name,&p_skip);
   if(p_skip)
   {
@@ -278,32 +282,36 @@ void FileInStream::read(const string& name,double& val,bool p_skip /*= false*/)
 }
 
 
-void FileOutStream::write(const string& name,long val)
+void FileOutStream::write(const CString& name,long val)
 {
   m_outfile << m_sectionKey.Format(name) << '=' << val << endl;
 }
 
 
-void FileInStream::read(const string& name,long& val,bool skip /*=false*/)
+void FileInStream::read(const CString& name,long& val,bool skip /*=false*/)
 {
-  string _name;
-  getline(m_infile,_name,'=');
+  std::string inval;
+  getline(m_infile,inval,'=');
+  CString _name(inval.c_str());
   validateEntryName(name,_name);
-  m_infile >> val; m_infile.get();
+  m_infile >> val; 
+  m_infile.get();
   _ASSERTE(m_infile.good());
 }
 
 
-void FileOutStream::write(const string& name,unsigned long val)
+void FileOutStream::write(const CString& name,unsigned long val)
 {
   m_outfile << m_sectionKey.Format(name) << '=' << hex << val << dec << endl;
 }
 
 
-void FileInStream::read(const string& name,unsigned long& val,bool skip /*=false*/)
+void FileInStream::read(const CString& name,unsigned long& val,bool skip /*=false*/)
 {
-  string _name;
-  getline(m_infile,_name,'=');
+  std::string inval;
+  getline(m_infile,inval,'=');
+  CString _name(inval.c_str());
+
   validateEntryName(name,_name);
   m_infile.setf(std::ifstream::hex,std::ifstream::basefield);
   m_infile >> val;
@@ -313,20 +321,19 @@ void FileInStream::read(const string& name,unsigned long& val,bool skip /*=false
 }
 
 
-void FileOutStream::write(const string& name,int val)
+void FileOutStream::write(const CString& name,int val)
 {
   m_outfile << m_sectionKey.Format(name) << '=' << val << endl;
 }
 
 
-void FileInStream::read(const string& name,int& val,bool skip /*=false*/)
+void FileInStream::read(const CString& name,int& val,bool skip /*=false*/)
 {
   _ASSERTE(m_infile.good());
-  string _name;
 
-  if(!m_last.empty())
+  if(!m_last.IsEmpty())
   {
-    if(stricmp(name.c_str(),m_last.c_str()) != 0)
+    if(name.CompareNoCase(m_last) != 0)
     {
       val = 0;
       return;
@@ -334,7 +341,9 @@ void FileInStream::read(const string& name,int& val,bool skip /*=false*/)
   }
   else
   {
-    getline(m_infile,_name,'=');
+    std::string inval;
+    getline(m_infile,inval,'=');
+    CString _name(inval.c_str());
     validateEntryName(name,_name,&skip);
     if(skip)
     {
@@ -344,70 +353,72 @@ void FileInStream::read(const string& name,int& val,bool skip /*=false*/)
   }
   m_infile >> val; 
   m_infile.get();
-  m_last.clear();
+  m_last.Empty();
   _ASSERTE(m_infile.good());
 }
 
 
-void FileOutStream::write (const string& name, unsigned int val)
+void FileOutStream::write (const CString& name, unsigned int val)
 {
     m_outfile << m_sectionKey.Format(name) << '=' << hex << val << dec << endl;
 }
 
 
-void FileInStream::read  (const string& name, unsigned int& val,bool /*p_skip = false*/)
+void FileInStream::read  (const CString& name, unsigned int& val,bool /*p_skip = false*/)
 {
-    string _name;
-    getline(m_infile,_name,'=');
-    validateEntryName(name,_name);
-    m_infile.setf( std::ifstream::hex, std::ifstream::basefield);
-    m_infile >> val;
-    m_infile.setf( std::ifstream::dec, std::ifstream::basefield);
-    m_infile.get();
-    _ASSERTE(m_infile.good());
+  std::string inval;
+  getline(m_infile,inval,'=');
+  CString _name(inval.c_str());
+
+  validateEntryName(name,_name);
+  m_infile.setf( std::ifstream::hex, std::ifstream::basefield);
+  m_infile >> val;
+  m_infile.setf( std::ifstream::dec, std::ifstream::basefield);
+  m_infile.get();
+  _ASSERTE(m_infile.good());
 }
 
 
-void FileOutStream::write (const string& name, bool val)
+void FileOutStream::write (const CString& name, bool val)
 {
     m_outfile << m_sectionKey.Format(name) << '=' << val << endl;
 }
 
-void FileInStream::read  (const string& name, bool& val,bool p_skip /*= false*/)
+void FileInStream::read  (const CString& name, bool& val,bool p_skip /*= false*/)
 {
-    string _name;
-
-    if(!m_last.empty())
+  if(!m_last.IsEmpty())
+  {
+    if(name.CompareNoCase(m_last) != 0)
     {
-      if(stricmp(name.c_str(),m_last.c_str()) != 0)
-      {
-        val = false;
-        return;
-      }
+      val = false;
+      return;
     }
-    else
+  }
+  else
+  {
+    std::string inval;
+    getline(m_infile,inval,'=');
+    CString _name(inval.c_str());
+    validateEntryName(name,_name,&p_skip);
+    if(p_skip)
     {
-      getline(m_infile,_name,'=');
-      validateEntryName(name,_name,&p_skip);
-      if(p_skip)
-      {
-        m_last = _name;
-        return;
-      }
+      m_last = _name;
+      return;
     }
-    m_infile >> val; 
-    m_infile.get();
-    m_last.clear();
-    _ASSERTE(m_infile.good());
+  }
+  m_infile >> val; 
+  m_infile.get();
+  m_last.Empty();
+  _ASSERTE(m_infile.good());
 }
 
-void FileInStream::validateEntryName(const string& name, const string& entryName,bool* p_skip)
+void FileInStream::validateEntryName(const CString& name, const CString& entryName,bool* p_skip)
 {
-  if(stricmp(m_sectionKey.Format(name).c_str(), entryName.c_str()))
+  if(stricmp(m_sectionKey.Format(name).GetString(), entryName.GetString()))
   {
     if(!p_skip)
     {
-      throw std::exception("Unexpected entry in stream.");
+      throw std::exception(_T("Unexpected entry in stream."));
     }
     return;
   }

@@ -31,7 +31,6 @@
 
 namespace Common
 {
-    using std::string;
     using std::map;
     using std::istream;
     using std::vector;

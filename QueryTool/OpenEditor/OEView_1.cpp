@@ -935,7 +935,7 @@ void COEditorView::OnLButtonDblClk (UINT /*nFlags*/, CPoint point)
     Position pos = MouseToPos(point);
 
     // 24.03.2003 improvement, MouseSelectionDelimiters has been added (hidden) which influences on double click selection behavior
-    const char* delims = !GetMouseSelectionDelimiters().empty() ? GetMouseSelectionDelimiters().c_str() : 0;
+    const char* delims = !GetMouseSelectionDelimiters().IsEmpty() ? GetMouseSelectionDelimiters().GetString() : 0;
 
     if (WordOrSpaceFromPoint(pos, selection, delims))
     {
@@ -1066,7 +1066,7 @@ void COEditorView::OnUpdate_CurChar (CCmdUI* pCmdUI)
         }
     }
 
-    pCmdUI->SetText(m_curCharCache.message.c_str());
+    pCmdUI->SetText(m_curCharCache.message.GetString());
     pCmdUI->Enable(TRUE);
 }
 
@@ -1102,7 +1102,7 @@ void COEditorView::OnUpdate_SelectionType(CCmdUI* pCmdUI)
     pCmdUI->SetRadio(enable);
 }
 
-void COEditorView::DoEditCopy (const string& buff, bool append)
+void COEditorView::DoEditCopy (const CString& buff, bool append)
 {
     if (::OpenClipboard(NULL))
     {
@@ -1110,20 +1110,20 @@ void COEditorView::DoEditCopy (const string& buff, bool append)
 
         if (!append) ::EmptyClipboard();
 
-        if (buff.size())
+        if (buff.GetLength())
         {
             HGLOBAL hDataSrc = ::GetClipboardData(CF_TEXT);
             const char* src = hDataSrc ? (const char*)::GlobalLock(hDataSrc) : NULL;
             size_t length = src ? strlen(src) : 0; 
             
-            HGLOBAL hDataDest = ::GlobalAlloc(GMEM_MOVEABLE|GMEM_DDESHARE, length + buff.size() + 1);
+            HGLOBAL hDataDest = ::GlobalAlloc(GMEM_MOVEABLE|GMEM_DDESHARE, length + buff.GetLength() + 1);
             if (hDataDest)
             {
                 char* dest = (char*)::GlobalLock(hDataDest);
                 if (dest) 
                 {
                     if (src) memcpy(dest, src, length);
-                    memcpy(dest + length, buff.c_str(), buff.size() + 1);
+                    memcpy(dest + length, buff.GetString(), buff.GetLength() + 1);
                 }
                 if (hDataSrc) ::GlobalUnlock(hDataSrc);
                 ::GlobalUnlock(hDataDest);
@@ -1144,7 +1144,7 @@ void COEditorView::OnEditCopy()
     {
         CWaitCursor wait;
 
-        string buff;
+        CString buff;
         GetBlock(buff);
         DoEditCopy(buff);
     }
@@ -1191,7 +1191,7 @@ void COEditorView::OnEditPaste()
                 }
 				InsertBlock(src);
 			}
-      ::GlobalUnlock(hData); // handle passible exceptions from block above!!!
+      ::GlobalUnlock(hData); // handle possible exceptions from block above!!!
 		}
     ::CloseClipboard();
 	}
@@ -1260,11 +1260,11 @@ void COEditorView::OnEditDeleteWordToRight()
 void 
 COEditorView::OnEditFind()
 {
-  string buff;
+  CString buff;
   Square sqr;
 
   GetBlockOrWordUnderCursor(buff, sqr, true/*onlyOneLine*/);
-  SetSearchText(buff.c_str());
+  SetSearchText(buff);
 
   CFindReplaceDlg(FALSE, this).DoModal(false);
 }
@@ -1272,12 +1272,12 @@ COEditorView::OnEditFind()
 void 
 COEditorView::OnEditReplace()
 {
-  string buff;
+  CString buff;
   Square sqr;
 
   if (GetBlockOrWordUnderCursor(buff, sqr, true/*onlyOneLine*/))
   {
-    SetSearchText(buff.c_str());
+    SetSearchText(buff);
   }
   CFindReplaceDlg(TRUE, this).DoModal(false);
 }
@@ -1673,10 +1673,9 @@ void COEditorView::DoCommentText (bool comment)
     {
         LanguagePtr lang = LanguagesCollection::Find(GetSettings().GetLanguage());
         
-        if (lang->GetEndLineComment().empty())
+        if (lang->GetEndLineComment().IsEmpty())
         {
-            AfxMessageBox((std::string("Line comment string has not been defined for language \"") 
-                + lang->GetName() + "\".").c_str());
+            AfxMessageBox(CString("Line comment string has not been defined for language \"") + lang->GetName() + "\".");
             return;
         }
 
@@ -1698,46 +1697,45 @@ void COEditorView::DoCommentText (bool comment)
     }
     catch (const std::logic_error& x) // language not found
     {
-        AfxMessageBox((std::string("Cannot comment/uncomment the selection.\n") + x.what()).c_str());
+        AfxMessageBox(CString("Cannot comment/uncomment the selection.\n") + x.what());
         return;
     }
 }
 
-bool COEditorView::CommentText (const OpenEditor::EditContext& context, std::string& str)
+bool COEditorView::CommentText (const OpenEditor::EditContext& context, CString& str)
 {
-    std::string lineComment =
-        LanguagesCollection::Find(context.GetSettings().GetLanguage())
-            ->GetEndLineComment();
+    CString lineComment = LanguagesCollection::Find(context.GetSettings().GetLanguage())->GetEndLineComment();
 
     // skip spaces and tabs
     int i;
     int len;
-    for (i = 0, len = (int)str.size(); isspace(str[i]) && i < len; i++)
+    for (i = 0, len = str.GetLength(); isspace(str[i]) && i < len; i++)
         ;
 
     // comment line
-    if (!str.empty() && i < len)
-        str = lineComment + str;
-
+    if(!str.IsEmpty() && i < len)
+    {
+      str = lineComment + str;
+    }
     return true;
 }
 
-bool COEditorView::UncommentText (const OpenEditor::EditContext& context, std::string& str)
+bool COEditorView::UncommentText (const OpenEditor::EditContext& context, CString& str)
 {
-    std::string lineComment =
-        LanguagesCollection::Find(context.GetSettings().GetLanguage())
-            ->GetEndLineComment();
+    CString lineComment = LanguagesCollection::Find(context.GetSettings().GetLanguage())->GetEndLineComment();
 
     // skip spaces and tabs
     int i,len;
-    for (i = 0, len = (int)str.size(); isspace(str[i]) && i < len; i++)
+    for (i = 0, len = (int)str.GetLength(); isspace(str[i]) && i < len; i++)
         ;
 
 
-    if (!str.empty() && i < len 
-    && !strncmp(str.c_str() + i, lineComment.c_str(), lineComment.length()))
-        str.erase(i, lineComment.length());
-
+    if(!str.IsEmpty() && i < len
+       && !strncmp(str.GetString() + i,lineComment.GetString(),lineComment.GetLength()))
+    {
+      str = str.Left(i - 1) + str.Mid(i + lineComment.GetLength());
+      // str.erase(i,lineComment.GetLength());
+    }
     return true;
 }
 
@@ -1851,7 +1849,7 @@ void COEditorView::MoveToAndCenter (Position pos)
         OnEditScrollCenter();
 }
 
-void COEditorView::GetBlock (string& str, const Square* sqr) const
+void COEditorView::GetBlock (CString& str, const Square* sqr) const
 {
     CWaitCursor wait;
 
@@ -1901,7 +1899,7 @@ void COEditorView::OnEditCopyAndAppend ()
     {
         CWaitCursor wait;
 
-        string buff;
+        CString buff;
         GetBlock(buff);
         DoEditCopy(buff, true);
     }
@@ -1917,7 +1915,7 @@ void COEditorView::OnEditCopyBookmarked ()
 {
     CWaitCursor wait;
 
-    string buff;
+    CString buff;
     CopyBookmarkedLines(buff);
     DoEditCopy(buff);
 }

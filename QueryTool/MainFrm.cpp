@@ -465,9 +465,9 @@ BOOL CMainFrame::CreateDockingWindows()
   CString drivePath = AfxGetApp()->GetProfileString("FileManager", "CurrentDrive");
   if (drivePath.IsEmpty())
   {
-    std::string path;
+    CString path;
     Common::AppGetPath(path);
-    PathBuildRoot(drivePath.GetBuffer(MAX_PATH), PathGetDriveNumber(path.c_str()));
+    PathBuildRoot(drivePath.GetBuffer(MAX_PATH), PathGetDriveNumber(path));
     drivePath.ReleaseBuffer();
   }
   m_wndDirView.SetCurDrivePath(drivePath);
@@ -881,26 +881,26 @@ CMainFrame::OnTimer(UINT_PTR nIDEvent)
 void
 CMainFrame::LoadSettingsManager()
 {
-  std::string path;
+  CString path;
   Common::AppGetPath(path);
 
   // Load editor settings
-  OpenEditor::SettingsManagerReader(OpenEditor::FileInStream((path + "\\data\\settings.dat").c_str())) >> m_settingsManager;
+  OpenEditor::SettingsManagerReader(OpenEditor::FileInStream((path + "\\data\\settings.dat").GetString())) >> m_settingsManager;
 }
 
 void
 CMainFrame::SaveSettingsManager()
 {
-  std::string path;
+  CString path;
   Common::AppGetPath(path);
 
   // old settings backup
-  _CHECK_AND_THROW_(CopyFile((path + "\\data\\settings.dat").c_str(),
-										(path + "\\data\\settings.dat.old").c_str(), FALSE) != 0,
+  _CHECK_AND_THROW_(CopyFile((path + "\\data\\settings.dat"),
+										(path + "\\data\\settings.dat.old"), FALSE) != 0,
 										"File search: settings error!"
   );
 
-  OpenEditor::SettingsManagerWriter(OpenEditor::FileOutStream((path + "\\data\\settings.dat").c_str())) << m_settingsManager;
+  OpenEditor::SettingsManagerWriter(OpenEditor::FileOutStream((path + "\\data\\settings.dat"))) << m_settingsManager;
 }
 
 void

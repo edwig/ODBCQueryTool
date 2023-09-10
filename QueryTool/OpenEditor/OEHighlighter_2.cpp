@@ -36,17 +36,17 @@ void XmlHighlighter::Init (const VisualAttributesSet& set_)
 {
     m_xmlSeqOf = eXmlPlain;
 
-    // owerride required hardcoded categories
-    m_textLabel        = "Text";
-    m_numberLabel      = "Text";
-    m_characterLabel   = "Values";
-    m_stringLabel      = "Values";
+    // override required hard coded categories
+    m_textLabel        = _T("Text");
+    m_numberLabel      = _T("Text");
+    m_characterLabel   = _T("Values");
+    m_stringLabel      = _T("Values");
 
     CommonHighlighter::Init(set_);
 
-    // required hardcoded categories
-    m_elementsAttr = set_.FindByName("Elements");
-    m_attrsAttr    = set_.FindByName("Attributes");
+    // required hard coded categories
+    m_elementsAttr = set_.FindByName(_T("Elements"));
+    m_attrsAttr    = set_.FindByName(_T("Attributes"));
 }
 
 void XmlHighlighter::NextLine (const char* currentLine, int currentLineLength)
@@ -66,13 +66,14 @@ void XmlHighlighter::NextWord (const char* str, int len)
         m_current = m_savedAttr;
     }
 
-    //  m_xmlAmpSeq: the current highliting has to be restored after ';' 
+    //  m_xmlAmpSeq: the current highlighting has to be restored after ';' 
     if (m_xmlAmpSeq == eXmlAmpOpen)
     {
-        if (*str == ';')
-            m_xmlAmpSeq = eXmlAmpClose;
-
-        return;
+      if(*str == ';')
+      {
+        m_xmlAmpSeq = eXmlAmpClose;
+      }
+      return;
     }
 
     //  m_xmlAmpSeq: "&abc;" owerrides the current highliting except comments
@@ -105,7 +106,7 @@ void XmlHighlighter::NextWord (const char* str, int len)
         {
         case '<': 
             if (str + 4 <= m_currentLine + m_currentLineLength
-            && !strncmp(str, "<!--", 4))
+            && !strncmp(str, _T("<!--"), 4))
                 m_xmlSeqOf = eXmlComment;
             else
                 m_xmlSeqOf = eXmlOpen;  
@@ -152,7 +153,7 @@ void XmlHighlighter::NextWord (const char* str, int len)
 void XmlHighlighter::InitStorageScanner (MultilineQuotesScanner& scanner) const
 {
     CommonHighlighter::InitStorageScanner(scanner);
-    scanner.SetParsingQuotes(pair<string,string>("<",">"));
+    scanner.SetParsingQuotes(pair<CString,CString>(CString(_T("<")),CString(_T(">"))));
 }
 
 void XmlHighlighter::SetMultilineQuotesState (int state, int quoteId, bool parsing)

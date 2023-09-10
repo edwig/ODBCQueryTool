@@ -97,7 +97,7 @@ COEDocument::COEDocument()
     m_vmdata = NULL;
     m_orgModified = false;
     m_newOrSaveAs = false;
-    m_extension   = "SQL";
+    m_extension   = _T("SQL");
     m_extensionInitialized = false;
     m_settings.SetClassSetting(&m_settingsManager.GetDefaults());
     m_storage.SetSettings(&m_settings);
@@ -143,13 +143,13 @@ BOOL COEDocument::OnNewDocument()
 
 
 /////////////////////////////////////////////////////////////////////////////
-// COEDocument othes methods
+// COEDocument other methods
 
 void COEDocument::SetPathName (LPCTSTR lpszPathName, BOOL bAddToMRU)
 {
 	CDocument::SetPathName(lpszPathName, bAddToMRU);
 
-  std::string extension;
+  CString extension;
   const char* ext = strrchr(lpszPathName, '.');
     
   if(ext)
@@ -160,9 +160,9 @@ void COEDocument::SetPathName (LPCTSTR lpszPathName, BOOL bAddToMRU)
   {
     m_extension = extension;
     if (!m_extensionInitialized
-      || AfxMessageBox("Filename extension changed. Auto-setup for this extension?", MB_YESNO | MB_ICONQUESTION) == IDYES)
+      || AfxMessageBox(_T("Filename extension changed. Auto-setup for this extension?"), MB_YESNO | MB_ICONQUESTION) == IDYES)
     {
-      m_settings.SetClassSetting(&m_settingsManager.FindByExt(m_extension.c_str(), true));
+      m_settings.SetClassSetting(&m_settingsManager.FindByExt(m_extension.GetString(), true));
     }
     m_extensionInitialized = true;
   }
@@ -171,7 +171,7 @@ void COEDocument::SetPathName (LPCTSTR lpszPathName, BOOL bAddToMRU)
 void
 COEDocument::SetTitle()
 {
-  CString title = (m_orgModified ? m_orgTitle + " *" : m_orgTitle).c_str();
+  CString title = (m_orgModified ? m_orgTitle + _T(" *") : m_orgTitle);
   theApp.SetTitle(title);
 }
 
@@ -179,7 +179,7 @@ void
 COEDocument::SetTitle (LPCTSTR lpszTitle)
 {
   m_orgTitle = lpszTitle;
-  CString title = (m_orgModified ? m_orgTitle + " *" : m_orgTitle).c_str();
+  CString title = (m_orgModified ? m_orgTitle + _T(" *") : m_orgTitle);
   CDocument::SetTitle(title);
   theApp.SetTitle(title);
 }
@@ -190,7 +190,7 @@ COEDocument::OnIdle ()
   if (m_orgModified != m_storage.IsModified())
   {
     m_orgModified = m_storage.IsModified();
-    CString title = (m_orgModified ? m_orgTitle + " *" : m_orgTitle).c_str();
+    CString title = (m_orgModified ? m_orgTitle + _T(" *") : m_orgTitle);
     CDocument::SetTitle(title);
     theApp.SetTitle(title);
   }
@@ -217,11 +217,11 @@ COEDocument::DoFileSave ()
     {
       switch (StyleMessageBox(AfxGetMainWnd()
               ,GetPathName() 
-              + "\n\nThis file cannot be saved because it is write-protected.\t"
-                "\nYou can either save the file in a different location [Yes],"
-                "\nor Program can attempt to remove write-protection"
-                "\nand overwrite the file in its current location [No].",
-                "Save of Read-Only File", MB_YESNOCANCEL|MB_ICONEXCLAMATION)
+              + _T("\n\nThis file cannot be saved because it is write-protected.\t")
+                _T("\nYou can either save the file in a different location [Yes],")
+                _T("\nor Program can attempt to remove write-protection")
+                _T("\nand overwrite the file in its current location [No]."),
+                _T("Save of Read-Only File"), MB_YESNOCANCEL|MB_ICONEXCLAMATION)
           )
       {
         case IDCANCEL:  // cancel saving
@@ -320,7 +320,7 @@ COEDocument::loadFile (const char* path, bool reload, bool external)
     { 
         try { if (vmdata) VirtualFree(m_vmdata, 0, MEM_RELEASE);} catch (...) {}
         try { m_mmfile.Close(); } catch (...) {}
-        throw std::exception((std::string(locking ? "Cannot open file and lock it.\n" : "Cannot open file.\n") + x.what()).c_str());
+        throw StdException(CString(locking ? _T("Cannot open file and lock it.\n") : _T("Cannot open file.\n")) + x.what());
     }
     catch (...) 
     { 
@@ -353,7 +353,7 @@ BOOL COEDocument::OnOpenDocument (LPCTSTR lpszPathName)
     catch (file_exeption& f)
     {
       CString message;
-      message.Format("Cannot open document file '%s'\n%s",lpszPathName,f.what());
+      message.Format(_T("Cannot open document file '%s'\n%s"),lpszPathName,f.what());
       AfxMessageBox(message,MB_OK|MB_ICONERROR);
       return FALSE;
     }
@@ -400,7 +400,7 @@ BOOL COEDocument::OnSaveDocument (LPCTSTR lpszPathName)
         CHECK_FILE_OPERATION(::GetFullPathName(lpszPathName, sizeof(path), path, &name));
 	      *name = 0; // cut file name
 	      // get a temporary name for the intermediate file
-        CHECK_FILE_OPERATION(::GetTempFileName(path, "ODBC~", 0, tmpname));
+        CHECK_FILE_OPERATION(::GetTempFileName(path, _T("ODBC~"), 0, tmpname));
         // open output mm file
         outfile.Open(tmpname, emmoCreateAlways|emmoWrite|emmoShareRead, length);
       }
@@ -437,13 +437,14 @@ BOOL COEDocument::OnSaveDocument (LPCTSTR lpszPathName)
   catch (const std::exception& x)   
   { 
       if (storage_invalidated) m_storage.Clear();
-      AfxMessageBox((std::string("Cannot save file.\n") + x.what()).c_str(), MB_OK|MB_ICONSTOP);
+
+      AfxMessageBox(CString(_T("Cannot save file.\n")) + x.what(), MB_OK|MB_ICONSTOP);
       return FALSE;
   }
   catch (...) 
   { 
       if (storage_invalidated) m_storage.Clear();
-      AfxMessageBox("Cannot save file. Unknown error.\n", MB_OK|MB_ICONSTOP);
+      AfxMessageBox(_T("Cannot save file. Unknown error.\n"), MB_OK|MB_ICONSTOP);
       return FALSE;
   }
 
@@ -462,8 +463,8 @@ BOOL COEDocument::doSave (LPCTSTR lpszPathName, BOOL bReplace)
 	
   if (newName.IsEmpty())
 	{
-    // 06.18.2003 bug fix, SaveFile dialog occurs for sql files which are loaded from db 
-    //            if "save files when switching takss" is activated.
+    // 06.18.2003 bug fix, SaveFile dialog occurs for SQL files which are loaded from db 
+    //            if "save files when switching tasks" is activated.
 		//newName = m_strPathName;
     GetNewPathName(newName);
 
@@ -479,13 +480,8 @@ BOOL COEDocument::doSave (LPCTSTR lpszPathName, BOOL bReplace)
       }
 			// append the default suffix if there is one
 			int iStart = 0;
-      CString strExt = m_settings.GetExtensions().c_str();
-#if _MFC_VER > 0x0600
+      CString strExt = m_settings.GetExtensions().GetString();
 			newName += '.' + strExt.Tokenize(_T(" ;,"), iStart);
-#else
-      int iEnd = strExt.FindOneOf(_T(" ;,"));
-			newName += '.' + ((iEnd != -1) ? strExt.Left(iEnd) : strExt);
-#endif
 		}
 		if (!AfxGetApp()->DoPromptFileName(newName
                                       ,bReplace ? AFX_IDS_SAVEFILE : AFX_IDS_SAVEFILECOPY
@@ -533,13 +529,13 @@ void COEDocument::backupFile (LPCTSTR lpszPathName)
 
     if (lpszPathName && length)
     {
-      std::string backupPath;
+      CString backupPath;
 
       switch (backupMode)
       {
         case ebmCurrentDirectory:
           {
-              std::string path, name, ext;
+              CString path, name, ext;
               
               CString buff(lpszPathName);
               ::PathRemoveFileSpec(buff.LockBuffer()); buff.UnlockBuffer();
@@ -553,22 +549,23 @@ void COEDocument::backupFile (LPCTSTR lpszPathName)
               name = buff;
 
               Common::Substitutor substr;
-              substr.AddPair("<NAME>", name);
-              substr.AddPair("<EXT>",  ext);
-              substr << m_settings.GetFileBackupName().c_str();
+              substr.AddPair(_T("<NAME>"), name);
+              substr.AddPair(_T("<EXT>"),  ext);
+              substr << m_settings.GetFileBackupName().GetString();
 
               backupPath = path + '\\' + substr.GetResult();
           }
           break; // 09.03.2003 bug fix, backup file problem if a destination is the current folder
         case ebmBackupDirectory:
           {
-            std::string path, name;
+            CString path, name;
             
             path = m_settings.GetFileBackupDirectory();
 
-            if (path.rbegin() != path.rend() && *path.rbegin() != '\\')
-                path += '\\';
-
+            if(path.Right(1) != '\\')
+            {
+              path += '\\';
+            }
             name = ::PathFindFileName(lpszPathName);
 
             backupPath = path + name;
@@ -576,13 +573,10 @@ void COEDocument::backupFile (LPCTSTR lpszPathName)
           break;
       }
 
-        if (m_lastBackupPath != backupPath              // only for the first attemption
-        && _stricmp(GetPathName(), backupPath.c_str()))  // avoiding copy the file into itself
-        {
-            _CHECK_AND_THROW_(
-                CopyFile(lpszPathName, backupPath.c_str(), FALSE) != 0,
-                "Cannot create backup file!"
-                );
+      if (m_lastBackupPath != backupPath              // only for the first attemption
+      && _stricmp(GetPathName(), backupPath.GetString()))  // avoiding copy the file into itself
+      {
+        _CHECK_AND_THROW_(CopyFile(lpszPathName, backupPath.GetString(), FALSE) != 0,_T("Cannot create backup file!"));
         m_lastBackupPath = backupPath;
       }
     }
@@ -645,85 +639,85 @@ void COEDocument::SetText (const char* text, unsigned long length)
 
 void COEDocument::LoadSettingsManager()
 {
-  std::string path;
+  CString path;
   AppGetPath(path);
 
   if(m_settingsDir.IsEmpty())
   {
     CString dir;
     Common::FindApplicDirectory(dir);
-    m_settingsDir = dir + "\\EDO\\OpenODBCQuerytool\\";
+    m_settingsDir = dir + _T("\\EDO\\OpenODBCQuerytool\\");
   }
 
   // Try to load from the users path
-  std::string settingsdir(m_settingsDir.GetBuffer());
-  std::string languages = settingsdir + "languages.dat";
-  std::string templates = settingsdir + "templates.dat";
-  std::string settings  = settingsdir + "settings.dat";
+  CString settingsdir(m_settingsDir);
+  CString languages = settingsdir + _T("languages.dat");
+  CString templates = settingsdir + _T("templates.dat");
+  CString settings  = settingsdir + _T("settings.dat");
 
   bool loaded(false);
 
   // Load language support
-  if(_access(languages.c_str(),0) == 0)
+  if(_access(languages.GetString(),0) == 0)
   {
     try
     {
-      LanguagesCollectionReader(FileInStream(languages.c_str())) >> LanguagesCollection();
+      LanguagesCollectionReader(FileInStream(languages.GetString())) >> LanguagesCollection();
       loaded = true;
     }
     catch(std::exception& /*ex*/)
     {
       // Incompatible settings from a previous version
-      DeleteFile(templates.c_str());
-      StyleMessageBox(NULL,CString("Incompatible languages from a previous version removed from your roaming-profile\n") + languages.c_str()
+      DeleteFile(templates.GetString());
+      StyleMessageBox(NULL,CString(_T("Incompatible languages from a previous version removed from your roaming-profile\n")) + languages
                       ,"WARNING",MB_OK | MB_ICONWARNING);
     }
   }
   if(!loaded)
   {
-    LanguagesCollectionReader(FileInStream((path + "\\data\\languages.dat").c_str())) >> LanguagesCollection();
+    LanguagesCollectionReader(FileInStream((path + _T("\\data\\languages.dat")).GetString())) >> LanguagesCollection();
   }
   // Load template settings
   loaded = false;
-  if(_access(templates.c_str(),0) == 0)
+  if(_access(templates.GetString(),0) == 0)
   {
     try
     {
-      TemplateCollectionReader(FileInStream(templates.c_str())) >> m_settingsManager;
+      TemplateCollectionReader(FileInStream(templates.GetString())) >> m_settingsManager;
       loaded = true;
     }
     catch(std::exception& /*ex*/)
     {
       // Incompatible settings from a previous version
-      DeleteFile(templates.c_str());
-      StyleMessageBox(NULL,CString("Incompatible templates from a previous version removed from your roaming-profile\n") + templates.c_str()
+      DeleteFile(templates.GetString());
+      StyleMessageBox(NULL,CString(_T("Incompatible templates from a previous version removed from your roaming-profile\n")) + templates
                       ,"WARNING",MB_OK | MB_ICONWARNING);
     }
   }
   if(!loaded)
   {
-    TemplateCollectionReader(FileInStream((path + "\\data\\templates.dat").c_str())) >> m_settingsManager;
+    TemplateCollectionReader(FileInStream((path + _T("\\data\\templates.dat")).GetString())) >> m_settingsManager;
   }
   // Load editor settings
   loaded = false;
-  if(_access(settings.c_str(),0) == 0)
+  if(_access(settings.GetString(),0) == 0)
   {
     try
     {
-      SettingsManagerReader(FileInStream(settings.c_str())) >> m_settingsManager;
+      SettingsManagerReader(FileInStream(settings.GetString())) >> m_settingsManager;
       loaded = true;
     }
     catch(std::exception& /*ex*/)
     {
       // Incompatible settings from a previous version
-      DeleteFile(settings.c_str());
-      StyleMessageBox(NULL,CString("Incompatible settings from a previous version removed from your roaming-profile\n") + settings.c_str()
+      DeleteFile(settings.GetString());
+      StyleMessageBox(NULL,CString(_T("Incompatible settings from a previous version removed from your roaming-profile\n")) + settings
                      ,"WARNING",MB_OK|MB_ICONWARNING);
     }
   }
   if(!loaded)
   {
-    SettingsManagerReader(FileInStream((path + "\\data\\settings.dat").c_str())) >> m_settingsManager;
+    SettingsManagerReader(FileInStream((path + _T("\\data\\settings.dat")).GetString())) >> m_settingsManager;
   }
 }
 
@@ -731,33 +725,33 @@ static bool g_isBackupDone = false;
 
 void COEDocument::SaveSettingsManager()
 {
-    std::string path;
+    CString path;
     AppGetPath(path);
 
     if(m_settingsDir.IsEmpty())
     {
       CString dir;
       Common::FindApplicDirectory(dir);
-      m_settingsDir = dir + "\\EDO\\OpenODBCQuerytool\\";
+      m_settingsDir = dir + _T("\\EDO\\OpenODBCQuerytool\\");
     }
 
-    std::string settingsdir(m_settingsDir.GetBuffer());
-    std::string orgtemplates = path + "\\data\\templates.dat";
-    std::string orgsettings  = path + "\\data\\settings.dat";
-    std::string owntemplates = settingsdir + "templates.dat";
-    std::string ownsettings  = settingsdir + "settings.dat";
-    std::string baktemplates = owntemplates + ".bak";
-    std::string baksettings  = ownsettings  + ".bak";
+    CString settingsdir(m_settingsDir.GetBuffer());
+    CString orgtemplates = path + _T("\\data\\templates.dat");
+    CString orgsettings  = path + _T("\\data\\settings.dat");
+    CString owntemplates = settingsdir + _T("templates.dat");
+    CString ownsettings  = settingsdir + _T("settings.dat");
+    CString baktemplates = owntemplates + _T(".bak");
+    CString baksettings  = ownsettings  + _T(".bak");
 
-    if(_access(owntemplates.c_str(),0) == 0 &&
-       _access(ownsettings .c_str(),0) == 0)
+    if(_access(owntemplates.GetString(),0) == 0 &&
+       _access(ownsettings .GetString(),0) == 0)
     {
       // Own files already exist. Should we make a backup?
       if(!g_isBackupDone)
       {
         // old settings backup
-        _CHECK_AND_THROW_(CopyFile(owntemplates.c_str(),baktemplates.c_str(), FALSE) != 0 && 
-                          CopyFile(ownsettings .c_str(),baksettings .c_str(), FALSE) != 0
+        _CHECK_AND_THROW_(CopyFile(owntemplates.GetString(),baktemplates.GetString(), FALSE) != 0 && 
+                          CopyFile(ownsettings .GetString(),baksettings .GetString(), FALSE) != 0
                          ,"Settings backup file creation error!");
         g_isBackupDone = true;
       }
@@ -765,12 +759,12 @@ void COEDocument::SaveSettingsManager()
     else
     {
       // Our files do not exist. Create them
-      CopyFile(orgtemplates.c_str(),owntemplates.c_str(),FALSE);
-      CopyFile(orgsettings .c_str(),ownsettings .c_str(),FALSE);
+      CopyFile(orgtemplates.GetString(),owntemplates.GetString(),FALSE);
+      CopyFile(orgsettings .GetString(),ownsettings .GetString(),FALSE);
     }
     // save new settings
-    TemplateCollectionWriter(FileOutStream(owntemplates.c_str())) << m_settingsManager;
-    SettingsManagerWriter   (FileOutStream(ownsettings .c_str())) << m_settingsManager;
+    TemplateCollectionWriter(FileOutStream(owntemplates.GetString())) << m_settingsManager;
+    SettingsManagerWriter   (FileOutStream(ownsettings .GetString())) << m_settingsManager;
 }
 
 void COEDocument::ShowSettingsDialog()
@@ -806,9 +800,9 @@ COEDocument::OnWatchedFileChanged ()
         if (m_settings.GetFileDetectChanges())
         {
             CString prompt = GetPathName();
-            prompt += "\n\nThis file has been modified outside of the editor."
-                      "\nDo you want to reload it";
-            prompt += !IsModified() ? "?" : " and lose the changes made in the editor?";
+            prompt += _T("\n\nThis file has been modified outside of the editor.")
+                         _T("\nDo you want to reload it");
+            prompt += !IsModified() ? _T("?") : _T(" and lose the changes made in the editor?");
 
             if ((m_settings.GetFileReloadChanges() && !IsModified())
             || AfxMessageBox(prompt, 
@@ -829,10 +823,10 @@ COEDocument::OnWatchedFileChanged ()
                         }
                     }
                 }
-                Common::SetStatusText(CString("Reloading file \"") + GetPathName() + "\" ...");
+                Common::SetStatusText(CString(_T("Reloading file \"")) + GetPathName() + _T("\" ..."));
                 CFileWatchClient::UpdateWatchInfo();
                 loadFile(GetPathName(), true/*reload*/, true/*external*/);
-                Common::SetStatusText(CString("File \"") + GetPathName() + "\" reloaded.");
+                Common::SetStatusText(CString(_T("File \"")) + GetPathName() + _T("\" reloaded."));
 
                 if (viewsToScroll.size())
                 {
@@ -854,15 +848,15 @@ void COEDocument::OnFileReload ()
     {
         if (!GetPathName().IsEmpty())
         {
-            CString prompt = "Do you want to reload \n\n" + GetPathName() 
-                    + "\n\nand lose the changes made in the editor?";
+            CString prompt = _T("Do you want to reload \n\n") + GetPathName() 
+                           + _T("\n\nand lose the changes made in the editor?");
 
             if (!IsModified() || AfxMessageBox(prompt, MB_YESNO|MB_ICONEXCLAMATION) == IDYES)
             {
                 
-                Common::SetStatusText(CString("Reloading file \"") + GetPathName() + "\" ...");
+                Common::SetStatusText(CString(_T("Reloading file \"")) + GetPathName() + _T("\" ..."));
                 loadFile(GetPathName(), true/*reload*/, true/*external*/);
-                Common::SetStatusText(CString("File \"") + GetPathName() + "\" reloaded.");
+                Common::SetStatusText(CString(_T("File \"")) + GetPathName() + _T("\" reloaded."));
             }
         }
     }
@@ -883,7 +877,7 @@ void COEDocument::OnUpdate_FileType (CCmdUI* pCmdUI)
 void COEDocument::OnUpdate_FileLines (CCmdUI* pCmdUI)
 {
     char buff[80];
-    sprintf_s(buff,80," Lines: %d ", m_storage.GetLineCount());
+    sprintf_s(buff,80,_T(" Lines: %d "), m_storage.GetLineCount());
     pCmdUI->SetText(buff);
     pCmdUI->Enable(TRUE);
 }
@@ -918,23 +912,5 @@ void COEDocument::OnFileOpen ()
     }
     CDocManagerExt::SetFileOpenPath(path);
     AfxGetApp()->OnCmdMsg(ID_FILE_OPEN, 0, 0, 0);
-    CDocManagerExt::SetFileOpenPath("");
+    CDocManagerExt::SetFileOpenPath(_T(""));
 }
-
-/*
-void COEDocument::OnChangedViewList()
-{
-   POSITION pos = GetFirstViewPosition();
-   while (pos != NULL)
-   {
-      CView* pView = GetNextView(pos);
-      CQueryPanelWnd* panel;
-      panel = dynamic_cast<CQueryPanelWnd* > (pView);
-      if(panel)
-      {
-        RemoveView(pView);
-        break;
-      }
-   }     
-}
-*/

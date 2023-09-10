@@ -89,7 +89,7 @@ BOOL COEFilePage::OnApply()
     OpenEditor::GlobalSettings& settings = m_manager.GetGlobalSettings();
     settings.SetFileLocking              (m_Locking               ? true : false, false /*notify*/);
     settings.SetFileMemMapForBig         (m_MemMapForBig          ? true : false, false /*notify*/);
-    settings.SetFileMemMapThreshold      (m_MemMapThreshold, false /*notify*/);
+    settings.SetFileMemMapThreshold      (m_MemMapThreshold                     , false /*notify*/);
     settings.SetFileSaveOnSwith          (m_SaveOnSwitch          ? true : false, false /*notify*/);
     settings.SetFileDetectChanges        (m_DetectFileChanges     ? true : false, false /*notify*/);
     settings.SetFileReloadChanges        (m_ReloadChangedFiles    ? true : false, false /*notify*/);

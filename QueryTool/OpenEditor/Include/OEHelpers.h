@@ -34,7 +34,6 @@
 
 namespace OpenEditor
 {
-    using std::string;
     using std::vector;
     using std::pair;
     using std::map;
@@ -272,11 +271,11 @@ typedef Common::QuickArray<String> StringArray;
         void SetCaseSensitive (bool);
 
         void ClearSettings ();
-        void SetParsingQuotes    (const pair<string, string>&);
-        int  AddStartLineQuotes  (const string&);
-        int  AddSingleLineQuotes (const string&);
-        int  AddMultilineQuotes  (const pair<string, string>&);
-        void AddEscapeChar       (const string&);
+        void SetParsingQuotes    (const pair<CString, CString>&);
+        int  AddStartLineQuotes  (const CString&);
+        int  AddSingleLineQuotes (const CString&);
+        int  AddMultilineQuotes  (const pair<CString, CString>&);
+        void AddEscapeChar       (const CString&);
         void SetDelimitersMap    (const DelimitersMap&);
         const DelimitersMap& GetDelimitersMap () const;
 
@@ -287,16 +286,16 @@ typedef Common::QuickArray<String> StringArray;
     private:
         void buildMap (int to_line);
         void buildOpeningFastMap () const;
-        bool is_equal (const char* str, int length, int offset, const string& shape) const;
+        bool is_equal (const char* str, int length, int offset, const CString& shape) const;
 
         Storage& m_Storage;
         DelimitersMap m_delimiters;
 
         bool m_bCaseSensitive;
-        vector<string> m_StartLineQuotes;  // actual from line start to end
-        vector<string> m_SingleLineQuotes; // actual any line position to end
-        vector<pair<string, string> > m_MultilineQuotes; // opening & closing quotes pair
-        string m_escapeChar;
+        vector<CString> m_StartLineQuotes;  // actual from line start to end
+        vector<CString> m_SingleLineQuotes; // actual any line position to end
+        vector<pair<CString, CString> > m_MultilineQuotes; // opening & closing quotes pair
+        CString m_escapeChar;
 
         enum eQuoteType
         {
@@ -321,7 +320,7 @@ typedef Common::QuickArray<String> StringArray;
         int m_nQuotesValidLimit;
 
         bool m_bParsingAlways;
-        pair<string, string> m_ParsingQuotes; // <> for XML
+        pair<CString, CString> m_ParsingQuotes; // <> for XML
     };
 
     enum ESearchBatch { esbCount, esbMark, esbReplace };

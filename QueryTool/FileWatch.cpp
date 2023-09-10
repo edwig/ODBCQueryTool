@@ -23,25 +23,25 @@ static char THIS_FILE[]=__FILE__;
 #endif
 
 static
-bool getFileAttrs (const std::string& fileName, __int64 &lastWriteTime, __int64 &fileSize)
+bool getFileAttrs (const CString& fileName, __int64 &lastWriteTime, __int64 &fileSize)
 {
   DWORD attrs;
   __int64 creationTime;
-	return Common::AppGetFileAttrs(fileName.c_str(), &attrs, &fileSize, &creationTime, &lastWriteTime);
+	return Common::AppGetFileAttrs(fileName.GetString(), &attrs, &fileSize, &creationTime, &lastWriteTime);
 }
 
 static
-std::string getFileFolder (const std::string& lpszFileName)
+CString getFileFolder (const CString& lpszFileName)
 {
 	TCHAR szDrive[_MAX_DRIVE], szDir[_MAX_DIR];
-	_tsplitpath_s(lpszFileName.c_str(), szDrive,_MAX_DRIVE,szDir,_MAX_DIR,NULL,0,NULL,0);
-	return std::string(szDrive) + szDir;
+	_tsplitpath_s(lpszFileName, szDrive,_MAX_DRIVE,szDir,_MAX_DIR,NULL,0,NULL,0);
+	return CString(szDrive) + szDir;
 }
 
 static
-bool isFolder (const std::string& lpszFileName)
+bool isFolder (const CString& lpszFileName)
 {
-	return !lpszFileName.empty() && *(lpszFileName.rbegin()) == '\\';
+	return !lpszFileName.IsEmpty() && lpszFileName.Right(1) == "\\";
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -90,9 +90,9 @@ void CFileWatchClient::UpdateWatchInfo ()
 /////////////////////////////////////////////////////////////////////////////
 // CFileWatch
 
-set<CFileWatchClient*>   CFileWatch::m_clients;
-map<std::string, HANDLE> CFileWatch::m_folders;
-CCriticalSection	CFileWatch::m_csDataLock;
+set<CFileWatchClient*> CFileWatch::m_clients;
+map<CString, HANDLE>   CFileWatch::m_folders;
+CCriticalSection	     CFileWatch::m_csDataLock;
 CEvent				CFileWatch::m_EventUpdate;
 CEvent				CFileWatch::m_EventCheck;
 bool				  CFileWatch::m_bStopWatch = false;
@@ -174,29 +174,29 @@ void CFileWatch::AddFileToWatch (CFileWatchClient& client)
 	m_csDataLock.Lock();
   _ASSERTE(m_clients.find(&client) != m_clients.end());
 	__int64 ftLastWriteTime = 0, nFileSize = 0;
-  std::string sFolder = getFileFolder(client.m_fileName);
+  CString sFolder = getFileFolder(client.m_fileName);
 
 	if (isFolder(client.m_fileName) || getFileAttrs(client.m_fileName, ftLastWriteTime, nFileSize))
 	{
     client.m_suspendWatch = false;
-		TRACE("FileWatch: Add File = %s\n", client.m_fileName.c_str());
+		TRACE("FileWatch: Add File = %s\n", client.m_fileName.GetString());
 		TRACE("FileWatch: time=%I64d, size=%I64d\n", ftLastWriteTime, nFileSize);
   		client.m_lastWriteTime = ftLastWriteTime;
         client.m_nFileSize = nFileSize;
 		// new directory to watch?
-        std::map<std::string, HANDLE>::const_iterator it = m_folders.find(sFolder);
+        std::map<CString, HANDLE>::const_iterator it = m_folders.find(sFolder);
 		if (it == m_folders.end())
 		{
 			m_EventUpdate.SetEvent();
 
 
-      string folder = sFolder;
-      if (isFolder(folder) && folder.length() && *folder.rbegin() == '\\') 
+      CString folder = sFolder;
+      if (isFolder(folder) && folder.GetLength() && folder.Right(1) == "\\")
       {
-        folder.resize(folder.length()-1);
+        folder.Truncate(folder.GetLength()-1);
       }
 			HANDLE hChangeNotification = 
-        FindFirstChangeNotification(folder.c_str(), FALSE, 
+        FindFirstChangeNotification(folder.GetString(), FALSE, 
                     FILE_NOTIFY_CHANGE_FILE_NAME
                     |FILE_NOTIFY_CHANGE_LAST_WRITE
                     |FILE_NOTIFY_CHANGE_SIZE
@@ -218,7 +218,7 @@ void CFileWatch::RemoveFileToWatch (CFileWatchClient& client)
 {
 	m_csDataLock.Lock();
   _ASSERTE(m_clients.find(&client) != m_clients.end());
-	std::string sFolder = getFileFolder(client.m_fileName);
+	CString sFolder = getFileFolder(client.m_fileName);
 
   int counter = 0;
   std::set<CFileWatchClient*>::const_iterator it = m_clients.begin();
@@ -236,7 +236,7 @@ void CFileWatch::RemoveFileToWatch (CFileWatchClient& client)
     m_folders.erase(sFolder);
   }
   client.m_suspendWatch = true;
-  TRACE("FileWatch: Suspend watch, File = %s\n", client.m_fileName.c_str());
+  TRACE("FileWatch: Suspend watch, File = %s\n", client.m_fileName.GetString());
 
 	m_csDataLock.Unlock();
   if (m_folders.empty())
@@ -271,7 +271,7 @@ UINT CFileWatch::Watch (LPVOID)
 			// refresh list
 			arHandle.SetSize(2);
 
-      std::map<std::string, HANDLE>::const_iterator it = m_folders.begin();
+      std::map<CString, HANDLE>::const_iterator it = m_folders.begin();
       for(; it != m_folders.end(); it++)
   		arHandle.Add(it->second);
 		}
@@ -282,19 +282,19 @@ UINT CFileWatch::Watch (LPVOID)
 			  TRACE("FileWatch: Check on Activation\n");
 			  m_EventCheck.ResetEvent();
       }
-      std::map<std::string, HANDLE>::const_iterator folderIt = m_folders.begin();
+      std::map<CString, HANDLE>::const_iterator folderIt = m_folders.begin();
       for(; folderIt != m_folders.end(); folderIt++)
       {
         if (nObject == 1 || folderIt->second == arHandle[nObject])
         {
-      	  TRACE("FileWatch: Notification Directory = %s\n", folderIt->first.c_str());
+      	  TRACE("FileWatch: Notification Directory = %s\n", folderIt->first.GetString());
 
           std::set<CFileWatchClient*>::const_iterator clientIt = m_clients.begin();
           for(; clientIt != m_clients.end(); clientIt++)
           {
             if (getFileFolder((*clientIt)->m_fileName) == folderIt->first)
             {
-					    TRACE("FileWatch: Folder File = %s\n", (*clientIt)->m_fileName.c_str());
+					    TRACE("FileWatch: Folder File = %s\n", (*clientIt)->m_fileName.GetString());
 					    __int64 ftLastWriteTime = 0, nFileSize = 0;
 					    if (isFolder((*clientIt)->m_fileName) 
                     || (!((*clientIt)->m_suspendWatch)
@@ -302,7 +302,7 @@ UINT CFileWatch::Watch (LPVOID)
                     && ((*clientIt)->m_lastWriteTime != ftLastWriteTime 
                         || ((*clientIt)->m_nFileSize!= nFileSize))))
 					    {
-						    TRACE("FileWatch: *Changed File = %s\n", (*clientIt)->m_fileName.c_str());
+						    TRACE("FileWatch: *Changed File = %s\n", (*clientIt)->m_fileName.GetString());
                 TRACE("FileWatch: oldval time=%I64d, size=%I64d\n", (*clientIt)->m_lastWriteTime, (*clientIt)->m_nFileSize);
                 TRACE("FileWatch: newval time=%I64d, size=%I64d\n", ftLastWriteTime, nFileSize);
                 (*clientIt)->m_modified = true;
@@ -320,7 +320,7 @@ UINT CFileWatch::Watch (LPVOID)
 		m_csDataLock.Unlock();
 	}
 	
-  std::map<std::string, HANDLE>::const_iterator folderIt = m_folders.begin();
+  std::map<CString, HANDLE>::const_iterator folderIt = m_folders.begin();
   for(; folderIt != m_folders.end(); folderIt++)
 	FindCloseChangeNotification(folderIt->second);
 	m_folders.clear();

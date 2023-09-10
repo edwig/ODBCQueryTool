@@ -98,19 +98,19 @@ COEPropPage::OnInitDialog()
   int count = m_manager.GetClassCount();
   for (int i(0); i < count; i++)
   {
-      const std::string& name = m_manager.GetClassByPos(i).GetName();
+      const CString& name = m_manager.GetClassByPos(i).GetName();
 
-      m_comboLanguage.AddString(name.c_str());
+      m_comboLanguage.AddString(name);
       if (name == m_settings.GetName())
       {
         m_comboLanguage.SetCurSel(i);
       }
   }
 
-  m_comboFileType.AddString("Default");
-  m_comboFileType.AddString("Windows (LF/CR)");
-  m_comboFileType.AddString("Unix (LF)");
-  m_comboFileType.AddString("Mac OS (CR/LF)");
+  m_comboFileType.AddString(_T("Default"));
+  m_comboFileType.AddString(_T("Windows (LF/CR)"));
+  m_comboFileType.AddString(_T("Unix (LF)"));
+  m_comboFileType.AddString(_T("Mac OS (CR/LF)"));
 
   // Set spin controls and buddies.
   m_spinTabSize   .SetRange(0, 32);

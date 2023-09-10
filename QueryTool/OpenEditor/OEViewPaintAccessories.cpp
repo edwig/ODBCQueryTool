@@ -31,12 +31,12 @@ static char THIS_FILE[] = __FILE__;
     using namespace Common;
     using namespace OpenEditor;
 
-    typedef map<string, COEViewPaintAccessoriesPtr> COEViewPaintAccessoriesMap;
+    typedef map<CString, COEViewPaintAccessoriesPtr> COEViewPaintAccessoriesMap;
     
     static COEViewPaintAccessoriesMap g_PaintAccessoriesMap;
 
 
-COEViewPaintAccessoriesPtr COEViewPaintAccessories::GetPaintAccessories (const std::string& category)
+COEViewPaintAccessoriesPtr COEViewPaintAccessories::GetPaintAccessories (const CString& category)
 {
     COEViewPaintAccessoriesMap::iterator it = g_PaintAccessoriesMap.find(category);
     
@@ -115,7 +115,7 @@ void COEViewPaintAccessories::OnSettingsChanged (CWnd* pwnd, const VisualAttribu
     logfont.lfClipPrecision  = CLIP_DEFAULT_PRECIS;
     logfont.lfQuality        = DEFAULT_QUALITY;
     logfont.lfPitchAndFamily = FIXED_PITCH;
-    strncpy_s(logfont.lfFaceName, textAttr.m_FontName.c_str(), LF_FACESIZE-1);
+    strncpy_s(logfont.lfFaceName, textAttr.m_FontName.GetString(), LF_FACESIZE-1);
 
 
     for (int i = 0; i < 8; i++)

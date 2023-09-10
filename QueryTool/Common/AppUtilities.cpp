@@ -155,16 +155,16 @@ void AppWalkDir (const char* szPath, const char* szFileMask,
     WIN32_FIND_DATA wfdFile;
     memset(&wfdFile, 0, sizeof wfdFile);
 
-    String strBuffer;
-    String strPath(szPath);
-    if (strPath.length() > 0 && strPath[strPath.length()-1] != '\\')
+    CString strBuffer;
+    CString strPath(szPath);
+    if (strPath.GetLength() > 0 && strPath[strPath.GetLength()-1] != '\\')
         strPath += "\\";
 
     StringList listLocal;
 
     strBuffer = strPath;
     strBuffer += szFileMask;
-    hFile = FindFirstFile(strBuffer.c_str(), &wfdFile);
+    hFile = FindFirstFile(strBuffer.GetString(), &wfdFile);
 
     if(hFile != INVALID_HANDLE_VALUE)
     {
@@ -186,7 +186,7 @@ void AppWalkDir (const char* szPath, const char* szFileMask,
     for(it = listLocal.begin(); it != listLocal.end(); it++)
     {
         strBuffer = strPath;
-        strBuffer.append(*it);
+        strBuffer.Append(*it);
         listFiles.push_back(strBuffer);
     }
 
@@ -195,7 +195,7 @@ void AppWalkDir (const char* szPath, const char* szFileMask,
     strBuffer += "*.*";
 
     listLocal.clear();
-    hFile = FindFirstFile(strBuffer.c_str(), &wfdFile);
+    hFile = FindFirstFile(strBuffer.GetString(), &wfdFile);
 
     if(hFile != INVALID_HANDLE_VALUE)
     {
@@ -218,9 +218,9 @@ void AppWalkDir (const char* szPath, const char* szFileMask,
     for(it = listLocal.begin(); it != listLocal.end(); it++)
     {
         strBuffer = strPath;
-        strBuffer.append(*it);
+        strBuffer.Append(*it);
 
-        AppWalkDir(strBuffer.c_str(), szFileMask, listFiles, bSortFiles, pListSubdir);
+        AppWalkDir(strBuffer.GetString(), szFileMask, listFiles, bSortFiles, pListSubdir);
 
         if (pListSubdir)
             pListSubdir->push_back(strBuffer);
@@ -238,12 +238,12 @@ BOOL AppDeleteFiles (const char* szPath, const char* szFileMask, BOOL bAndSubdir
 
     StringListIt it;
     for(it = listFiles.begin(); it != listFiles.end(); it++)
-        if (DeleteFile((*it).c_str()) == FALSE)
+        if (DeleteFile((*it).GetString()) == FALSE)
             bRetVal = FALSE;
 
     if (bAndSubdir)
         for(it = listSubdir.begin(); it != listSubdir.end(); it++)
-            if (RemoveDirectory((*it).c_str()) == FALSE)
+            if (RemoveDirectory((*it).GetString()) == FALSE)
                 bRetVal = FALSE;
 
     return bRetVal;
@@ -294,22 +294,25 @@ bool AppGetFileAttrs (
 	return false;
 }
 
-void AppGetPath (std::string& path)
+void AppGetPath (CString& path)
 {
     char szBuff[_MAX_PATH + 1];
     VERIFY(::GetModuleFileName(AfxGetApp()->m_hInstance, szBuff, _MAX_PATH));
     szBuff[_MAX_PATH] = 0;
     path = szBuff;
-    String::size_type pathLen = path.find_last_of('\\');
-    path.resize((pathLen != String::npos) ? pathLen : 0);
+    int pathLen = path.ReverseFind('\\');
+    if(pathLen >= 0)
+    {
+      path.Truncate(pathLen);
+    }
 }
 
 void AppGetFullPathName (const String& path, String& fullPath)
 {
 	char *filename;
-  int length = GetFullPathName(path.c_str(), 0, 0, &filename);
+  int length = GetFullPathName(path.GetString(), 0, 0, &filename);
   char *buffer = new char[length + 1];
-  GetFullPathName(path.c_str(), length + 1, buffer, &filename);
+  GetFullPathName(path.GetString(), length + 1, buffer, &filename);
   fullPath = buffer;
   delete buffer;
 }

@@ -35,10 +35,10 @@ COETemplatesDlg::COETemplatesDlg(CWnd* pParent
                 ,m_textAttr(textAttr)
                 ,m_cursorPosMarker('^')
 {
-  m_name         = m_entry.name.c_str();
-  m_keyword      = m_entry.keyword.c_str();
+  m_name         = m_entry.name;
+  m_keyword      = m_entry.keyword;
   m_minKeyLength = m_entry.minLength;
-  m_text         = m_entry.text.c_str();
+  m_text         = m_entry.text;
 
   const char* ptr, *buff;
   buff = ptr = m_text.LockBuffer();
@@ -95,7 +95,7 @@ COETemplatesDlg::OnInitDialog()
   logfont.lfQuality        = DEFAULT_QUALITY;
   logfont.lfPitchAndFamily = FIXED_PITCH;
     
-  strncpy_s(logfont.lfFaceName, m_textAttr.m_FontName.c_str(), LF_FACESIZE-1);
+  strncpy_s(logfont.lfFaceName, m_textAttr.m_FontName.GetString(), LF_FACESIZE-1);
 
 
   CClientDC dc(&m_editText);

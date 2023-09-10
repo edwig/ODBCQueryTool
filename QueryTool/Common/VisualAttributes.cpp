@@ -75,7 +75,7 @@ VisualAttribute::VisualAttribute (
 
 void VisualAttribute::Clear ()
 {
-    m_FontName.erase();
+    m_FontName.Empty();
     m_FontSize = 0;
     m_FontBold = m_FontItalic = m_FontUnderline = false;
     m_Foreground = m_Background = (UINT)-1;
@@ -129,7 +129,7 @@ CFont* VisualAttribute::NewFont () const
           m_FontUnderline ? 1 : 0,
           0, ANSI_CHARSET,//DEFAULT_CHARSET,
           OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH,
-          m_FontName.c_str()
+          m_FontName.GetString()
         );
 
     return font;
@@ -183,7 +183,7 @@ const VisualAttribute& VisualAttributesSet::FindByName (const char* name) const
                 return *it;
     }
 
-    throw std::out_of_range(std::string("Visual attribute \"") + name + "\" not found in set \"" + m_name + "\".");
+    throw std::out_of_range(CString("Visual attribute \"") + name + CString("\" not found in set \"") + m_name + CString("\"."));
 }
 
 }//namespace Common

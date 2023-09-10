@@ -35,7 +35,7 @@
 class COEDocument : public CDocumentExt, CFileWatchClient
 {
     // for a modified sign '*' in a title bar
-    std::string m_orgTitle, m_extension;
+    CString m_orgTitle, m_extension;
     bool m_orgModified, m_extensionInitialized;
     static bool m_saveModified_silent;
     static bool m_saveModified_skipNew;
@@ -43,7 +43,7 @@ class COEDocument : public CDocumentExt, CFileWatchClient
 
     // for backup processing only
     bool m_newOrSaveAs;
-    std::string m_lastBackupPath;
+    CString m_lastBackupPath;
     void backupFile (LPCTSTR lpszPathName);
 
     // settings container

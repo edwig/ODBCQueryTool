@@ -43,7 +43,7 @@ BOOL
 COEDocumentDlg::OnInitDialog()
 {
   StyleDialog::OnInitDialog();
-  SetWindowText("Document info");
+  SetWindowText(_T("Document info"));
   ShowMinMaxButton(false,true);
 
   InitTabs();
@@ -75,8 +75,8 @@ COEDocumentDlg::InitTabs()
   m_page1->Create(IDD_OE_FILE_SETTINGS, &m_tabs);
   m_page2->Create(IDD_OE_FILE_INFO,     &m_tabs);
 
-  m_tabs.InsertItem(0,m_page1,"Properties");
-  m_tabs.InsertItem(1,m_page2,"File");
+  m_tabs.InsertItem(0,m_page1,_T("Properties"));
+  m_tabs.InsertItem(1,m_page2,_T("File"));
 
   m_tabs.Init();
 }

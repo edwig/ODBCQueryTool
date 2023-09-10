@@ -35,8 +35,8 @@ COEGeneralPage::COEGeneralPage (SettingsManager& manager,CWnd* p_parent)
     m_WorkDirFollowsDoc       = settings.GetWorkDirFollowsDocument() ? TRUE : FALSE;
     m_SaveCursPosAndBookmarks = settings.GetSaveCurPosAndBookmarks() ? TRUE : FALSE;
     m_SaveMainWindowPosition  = settings.GetSaveMainWinPosition()    ? TRUE : FALSE;
-    m_keymapLayout            = settings.GetKeymapLayout().c_str();
-    m_locale                  = settings.GetLocale().c_str();
+    m_keymapLayout            = settings.GetKeymapLayout();
+    m_locale                  = settings.GetLocale();
 }
 
 COEGeneralPage::~COEGeneralPage()

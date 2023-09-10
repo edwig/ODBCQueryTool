@@ -57,12 +57,12 @@ namespace OpenEditor
 
     struct MatchToken 
     {
-        string keyword;
+        CString keyword;
         int orientation;
         set<int> lexemes;
 
         MatchToken () { orientation = 0; }
-        MatchToken (const string& str, int ornt) : keyword(str), orientation(ornt) {}
+        MatchToken (const CString& str, int ornt) : keyword(str), orientation(ornt) {}
     };
 
     struct MatchTokenPos : MatchToken
@@ -89,7 +89,7 @@ namespace OpenEditor
         bool backward;
         bool casesensitive;
         Fastmap<bool> fastmap;
-        map<string, MatchToken> fullmap;
+        map<CString, MatchToken> fullmap;
         stack<MatchEntry> matchStack;
         vector<MatchTokenPos> tokens;
 
@@ -101,15 +101,15 @@ namespace OpenEditor
         backward = false;
         casesensitive = lang->IsCaseSensitive();
 
-        const vector<vector<string> >& braces = lang->GetMatchBraces();
+        const vector<vector<CString> >& braces = lang->GetMatchBraces();
 
         for (unsigned i = 0; i < braces.size(); i++)
         {
-            const vector<string>& braceSet = braces[i];
+            const vector<CString>& braceSet = braces[i];
 
             for (unsigned j = 0; j < braceSet.size(); j++)
             {
-                string brace;
+                CString brace;
                 
                 if (casesensitive)
                 {
@@ -118,20 +118,17 @@ namespace OpenEditor
                 }
                 else
                 {
-                    to_upper_str(braceSet[j].c_str(), brace);
-                    fastmap[toupper(brace[0])] = true;
-                    fastmap[tolower(brace[0])] = true;
+                  brace = braceSet[j];
+                  brace.MakeUpper();
+                  fastmap[toupper(brace[0])] = true;
+                  fastmap[tolower(brace[0])] = true;
                 }
 
-                std::map<string, MatchToken>::iterator it = fullmap.find(brace);
+                std::map<CString, MatchToken>::iterator it = fullmap.find(brace);
                 if (it == fullmap.end())
                 {
                     int orientation = (j == 0) ? 1 : ((j == braceSet.size()-1) ? -1 : 0);
-                    fullmap.insert(
-                        std::map<string, MatchToken>::value_type(
-                                brace, MatchToken(brace, orientation) 
-                            )
-                        );
+                    fullmap.insert(std::map<CString, MatchToken>::value_type(brace,MatchToken(brace, orientation)));
                     it = fullmap.find(brace);
                 }
                 it->second.lexemes.insert(i);
@@ -146,24 +143,25 @@ void CommonLanguageSupport::setupMatch (Context& cxt)
     ClearSettings ();
     SetCaseSensitive(langPtr->IsCaseSensitive());
 
-    std::set<string>::const_iterator it = langPtr->GetStartLineComment().begin();
-    for (; it != langPtr->GetStartLineComment().end(); it++)
-        AddStartLineQuotes(it->c_str());
+    std::set<CString>::const_iterator it = langPtr->GetStartLineComment().begin();
+    for(; it != langPtr->GetStartLineComment().end(); it++)
+    {
+      AddStartLineQuotes(*it);
+    }
+    if (!langPtr->GetEndLineComment().IsEmpty())    AddSingleLineQuotes(langPtr->GetEndLineComment());
+    if (!langPtr->GetCommentPair().first.IsEmpty()) AddMultilineQuotes (langPtr->GetCommentPair());
+    if (!langPtr->GetStringPair().first.IsEmpty())  AddMultilineQuotes (langPtr->GetStringPair() );
+    if (!langPtr->GetCharPair()  .first.IsEmpty())  AddMultilineQuotes (langPtr->GetCharPair()   );
+    if (!langPtr->GetEscapeChar().IsEmpty())        AddEscapeChar      (langPtr->GetEscapeChar() );
 
-    if (!langPtr->GetEndLineComment().empty())    AddSingleLineQuotes(langPtr->GetEndLineComment());
-    if (!langPtr->GetCommentPair().first.empty()) AddMultilineQuotes (langPtr->GetCommentPair());
-    if (!langPtr->GetStringPair().first.empty())  AddMultilineQuotes (langPtr->GetStringPair() );
-    if (!langPtr->GetCharPair()  .first.empty())  AddMultilineQuotes (langPtr->GetCharPair()   );
-    if (!langPtr->GetEscapeChar().empty())        AddEscapeChar      (langPtr->GetEscapeChar() );
-
-    SetDelimitersMap(langPtr->GetDelimiters().c_str());
+    SetDelimitersMap(langPtr->GetDelimiters().GetString());
 
     cxt.init(langPtr);
 }
 
 bool CommonLanguageSupport::FindMatch (int _line, int _offset, Match& match)
 {
-    _CHECK_AND_THROW_(m_pStorage, "CommonLanguageSupport has not been initialized!");
+    _CHECK_AND_THROW_(m_pStorage, _T("CommonLanguageSupport has not been initialized!"));
 
     Context cxt;
     setupMatch(cxt);
@@ -185,7 +183,7 @@ bool CommonLanguageSupport::FindMatch (int _line, int _offset, Match& match)
         for (; it != cxt.tokens.end(); ++it)
         {
             if (it->position <= _offset 
-            && _offset < it->position + static_cast<int>(it->keyword.length()))
+            && _offset < it->position + static_cast<int>(it->keyword.GetLength()))
             {
                 _offset = it->position;
                 cxt.matchStack.pop(); // empty stack - search for the current lexeme
@@ -194,7 +192,7 @@ bool CommonLanguageSupport::FindMatch (int _line, int _offset, Match& match)
                 match.backward  = cxt.backward;
                 match.partial   = false;
                 match.offset[0] = it->position;
-                match.length[0] = (int)it->keyword.length();
+                match.length[0] = (int)it->keyword.GetLength();
                 break;
             }
         }
@@ -247,7 +245,7 @@ bool CommonLanguageSupport::FindMatch (int _line, int _offset, Match& match)
                     {
                         match.found = true;
                         match.line  [1] = line;
-                        match.length[1] = (int)it->keyword.length();
+                        match.length[1] = (int)it->keyword.GetLength();
                         match.offset[1] = it->position;
                         break;
                     }
@@ -282,12 +280,13 @@ void CommonLanguageSupport::readTokens (int line, Context& cxt)
         
         if (len > 0 && cxt.fastmap[*str])
         {
-            string brace(str, len);
+            CString brace(str, len);
             
-            if (!cxt.casesensitive)
-                to_upper_str(brace.c_str(), brace);
-
-            map<string, MatchToken>::const_iterator it = cxt.fullmap.find(brace);
+            if(!cxt.casesensitive)
+            {
+              brace.MakeUpper();
+            }
+            map<CString, MatchToken>::const_iterator it = cxt.fullmap.find(brace);
             
             if (it != cxt.fullmap.end())
             {
@@ -297,14 +296,18 @@ void CommonLanguageSupport::readTokens (int line, Context& cxt)
                 Scan(line, state, quoteId, parsing);
                 ScanLine(lineStr, pos, state, quoteId, parsing, &parsingLength);
                 // if it's code then change balance
-                if (!state && pos <= parsingLength)
-                    cxt.tokens.push_back(MatchTokenPos(it->second, pos));
+                if(!state && pos <= parsingLength)
+                {
+                  cxt.tokens.push_back(MatchTokenPos(it->second,pos));
+                }
             }
         }
         tokenizer.Next();
     }
-    if (cxt.backward)
-        reverse(cxt.tokens.begin(), cxt.tokens.end());
+    if(cxt.backward)
+    {
+      reverse(cxt.tokens.begin(),cxt.tokens.end());
+    }
 }
 
 };

@@ -321,7 +321,7 @@ void SettingsManagerReader::read  (VisualAttributesSet& set_)
 {
     Stream::Section sect(m_in, "VA");
 
-    string setName;
+    CString setName;
     m_in.read("Name", setName);
     set_.SetName(setName);
 

@@ -337,11 +337,11 @@ COEditorView::GetODBCCommand(int& curLine
 
   // Try a selected buffer first. This has priority over the
   // parsing of free text in the rest of the buffer
-  string buff;
+  CString buff;
   GetBlock(buff);
-  if(strlen(buff.c_str()))
+  if(!buff.IsEmpty())
   {
-    odbcCommand = buff.c_str();
+    odbcCommand = buff;
     return  curLine;
   }
   // No selected buffer. Try from current position to parse SQL text
@@ -366,7 +366,7 @@ COEditorView::GetODBCCommand(int& curLine
   char instring      = '\0';
 
   CString endToken1  = ";";
-  CString endToken2  = GetDocument()->GetSettings().GetSQLQueryTerminator().c_str();
+  CString endToken2  = GetDocument()->GetSettings().GetSQLQueryTerminator();
 
   // Check endToken
   if(!endToken2.GetLength())
@@ -890,7 +890,7 @@ COEditorView::GetLineFromQuery(int row)
   if(doc)
   {
     charsetTranslation = doc->GetSettings().GetSQLCharsetTranslation();
-    charset = doc->GetSettings().GetSQLCharsetUsed().c_str();
+    charset = doc->GetSettings().GetSQLCharsetUsed();
   }
 
   rowNumber.Format("%d",row);

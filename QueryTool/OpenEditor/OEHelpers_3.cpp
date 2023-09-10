@@ -322,7 +322,7 @@ void Searcher::compileExpression () const
 
     if (!comp_ok)
     {
-      CString text = "Regular expression error: " + pattern;
+      CString text = _T("Regular expression error: ") + pattern;
       _CHECK_AND_THROW_(0, text);
     }
   }
@@ -337,10 +337,10 @@ bool Searcher::isSelectionMatched (const Storage* pstorage, int line, int start,
     if (start != end)
     {
         int len;
-        const char* str;
+        const char* str = nullptr;
         pstorage->GetLine(line, str, len);
 
-        if (!str) str = ""; // workaround for rx bug
+        if (!str) str = _T(""); // workaround for rx bug
 
 //        m_cxt->match[0].rm_so = start;
 //        m_cxt->match[0].rm_eo = end;
@@ -384,7 +384,7 @@ bool Searcher::Find (const Storage*& pStorage, int& line, int& _start, int& _end
     }
     //else
     // if we find nothing in other windows then we try again for the current from top
-    // 16.12.2002 bug fix, Search all windows does not find occurance above the current
+    // 16.12.2002 bug fix, Search all windows does not find occurence above the current
         storages.push_back(pStorage);
 
     int llimit = _end;
@@ -403,9 +403,9 @@ bool Searcher::Find (const Storage*& pStorage, int& line, int& _start, int& _end
             int nlines = (*it)->GetLineCount();
             const DelimitersMap& delim = (*it)->GetDelimiters();
 
-            // lines serching, double loop,
-            //      in the first serching below current line
-            //      in the second serching from top to current line
+            // lines saerching, double loop,
+            //      in the first saerching below current line
+            //      in the second saerching from top to current line
             int first_line = 0;
             for (int loop(0); loop < ((!thruEof || m_bSearchAll) ? 1 : 2); loop++)
             {
@@ -473,8 +473,7 @@ bool Searcher::Find (const Storage*& pStorage, int& line, int& _start, int& _end
 // 1st & 2d parameters are in, 3d,4th,5th are out
 bool Searcher::Replace (Storage* pStorage, const char* text, int line, int start, int& end)
 {
-    _CHECK_AND_THROW_(strpbrk(text, "\n\r") == NULL,
-                      "Replace error: replace string with <Carriage return> not supporded!");
+    _CHECK_AND_THROW_(strpbrk(text, "\n\r") == NULL,_T("Replace error: replace string with <Carriage return> not supporded!"));
 
     if (line < pStorage->GetLineCount())
     {
@@ -484,7 +483,7 @@ bool Searcher::Replace (Storage* pStorage, const char* text, int line, int start
 
         int _start, _end;
         // check the current selection
-// !!! it's possible to supress double checking !!!
+        // !!! it's possible to suppress double checking !!!
         if (isMatched(str, start, len, pStorage->GetDelimiters(), _start, _end)
         && _start == start && _end == end)
         {
@@ -507,7 +506,7 @@ bool Searcher::Replace (Storage* pStorage, const char* text, int line, int start
                         && m_cxt->match[group].rm_so != -1 && m_cxt->match[group].rm_eo != -1)
                         {
                             _CHECK_AND_THROW_(m_cxt->match[group].rm_so < len && m_cxt->match[group].rm_eo <= len,
-                                              "Replace error: regular expresion match group failured!");
+                                              "Replace error: regular expression match group failure!");
                             buff.append(str + m_cxt->match[group].rm_so, m_cxt->match[group].rm_eo - m_cxt->match[group].rm_so);
                         }*/
                     }
@@ -562,8 +561,8 @@ int  Searcher::DoBatch (Storage* _storage, const char* text, ESearchBatch mode, 
             // 16.03.2003 bug fix, infinite cycle is possible on "Count" or "Mark all" in search all windows mode
             if (storage2                    // it's not first time
             && storage1 == _storage         // it's a start storage
-            && firstOccurenceLine == line   // it's the first occurance
-            && firstOccurencePos == start)  // it's the first occurance
+            && firstOccurenceLine == line   // it's the first occurence
+            && firstOccurencePos == start)  // it's the first occurence
             {
                 break;
             }
@@ -617,8 +616,8 @@ int  Searcher::DoBatch (Storage* _storage, const char* text, ESearchBatch mode, 
             counter++;
 
             _CHECK_AND_THROW_(counter < 100000, 
-                "Infinite cycle or the number of occurences is too much (> 100000)! "
-                "You can try to repeat it again.");
+                              _T("Infinite cycle or the number of occurences is too much (> 100000)! ")
+                              _T("You can try to repeat it again."));
         }
     }
     catch (...)

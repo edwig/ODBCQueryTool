@@ -422,7 +422,7 @@ void COEditorView::OnPaint ()
 void COEditorView::OnSettingsChanged ()
 {
     const Settings& settings = GetSettings();
-    string language = settings.GetLanguage();
+    CString language = settings.GetLanguage();
     const VisualAttributesSet& set = settings.GetVisualAttributesSet();
 
     m_paintAccessories = COEViewPaintAccessories::GetPaintAccessories(language);

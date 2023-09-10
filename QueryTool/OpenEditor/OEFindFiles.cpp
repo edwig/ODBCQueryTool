@@ -37,9 +37,9 @@ COEFindFiles::COEFindFiles (SettingsManager& manager,CWnd* p_parent)
   m_subfolders = settings.GetFileSubfolders()? true : false;
   m_savebefore = settings.GetFileSaveBefore()? true : false;
   m_collapse   = settings.GetFileCollapse()  ? true : false;
-  m_whattofind = settings.GetFileWhatToFind().c_str();
-  m_filetypes  = settings.GetFileFileTypes().c_str();
-  m_directories= settings.GetFileStartDirectory().c_str();
+  m_whattofind = settings.GetFileWhatToFind();
+  m_filetypes  = settings.GetFileFileTypes();
+  m_directories= settings.GetFileStartDirectory();
 }
 
 COEFindFiles::~COEFindFiles()
@@ -82,7 +82,7 @@ BOOL
 COEFindFiles::OnInitDialog()
 {
   StyleDialog::OnInitDialog();
-  SetWindowText("Find in Files");
+  SetWindowText(_T("Find in Files"));
 
   SetCanResize();
   return TRUE;
@@ -129,7 +129,7 @@ BOOL COEFindFiles::OnApply()
       settings.SetFileSubfolders(m_subfolders ? true : false, false /*notify*/);
       settings.SetFileSaveBefore(m_savebefore ? true : false, false /*notify*/);
       settings.SetFileCollapse  (m_collapse   ? true : false, false /*notify*/);
-      std::string str;
+      CString str;
       str = m_whattofind;  settings.SetFileWhatToFind(str,false);
       str = m_filetypes;   settings.SetFileFileTypes (str, false);
       str = m_directories; settings.SetFileStartDirectory(str,false);
@@ -144,7 +144,7 @@ void
 COEFindFiles::OnBrowseDirectories()
 {
   UpdateData();
-  Common::CDirSelectDlg dir("Directory to start searching",this,m_directories);
+  Common::CDirSelectDlg dir(_T("Directory to start searching"),this,m_directories);
   if(dir.DoModal() == IDOK)
   {
     m_directories = dir.GetPath();
@@ -166,10 +166,10 @@ COEFindFiles::GoFind(StyleGridCtrl* grid)
   m_directories.TrimRight('\\');
   int num = GoFindInFolder(m_directories,grid);
 
-  CString all = "All files";
+  CString all = _T("All files");
   int found = grid->GetRowCount() - 1;
-  AppendRow(grid,all,num,  "Files searched");
-  AppendRow(grid,all,found,"Matches found");
+  AppendRow(grid,all,num,  _T("Files searched"));
+  AppendRow(grid,all,found,_T("Matches found"));
   grid->AutoSize();
   grid->ExpandLastColumn();
   return (num != 0);
@@ -184,7 +184,7 @@ COEFindFiles::GoFindInFolder(CString p_folder,StyleGridCtrl* grid)
   int    aantal = 0;
 
   // Step 1: Find the files by pattern types
-  patroon = p_folder + "\\" + m_filetypes;
+  patroon = p_folder + _T("\\") + m_filetypes;
   fileHandle = _findfirst(patroon,&fileinfo);
   if(fileHandle != -1)
   {
@@ -195,7 +195,7 @@ COEFindFiles::GoFindInFolder(CString p_folder,StyleGridCtrl* grid)
       {
         // Search in this file
         ++aantal;
-        GoFindInFile(p_folder + "\\" + fileinfo.name,grid);
+        GoFindInFile(p_folder + _T("\\") + fileinfo.name,grid);
       }
     }
     while(_findnext(fileHandle,&fileinfo) == 0);
@@ -204,7 +204,7 @@ COEFindFiles::GoFindInFolder(CString p_folder,StyleGridCtrl* grid)
   // Step 2: Find the directories
   if(m_subfolders)
   {
-    patroon = p_folder + "\\*.*";
+    patroon = p_folder + _T("\\*.*");
     fileHandle = _findfirst(patroon,&fileinfo);
     if(fileHandle != -1)
     {
@@ -214,7 +214,7 @@ COEFindFiles::GoFindInFolder(CString p_folder,StyleGridCtrl* grid)
         {
           if(fileinfo.name[0] != '.')
           {
-            aantal += GoFindInFolder(p_folder + "\\" + fileinfo.name,grid);
+            aantal += GoFindInFolder(p_folder + _T("\\") + fileinfo.name,grid);
           }
         }
       }
@@ -237,7 +237,7 @@ COEFindFiles::GoFindInFile(CString fileName,StyleGridCtrl* grid)
   RegExp  rex;
   char    buffer[MAX_BUFSIZE+1];
 
-  fopen_s(&file,fileName, "rt");
+  fopen_s(&file,fileName, _T("rt"));
 
   if(!m_match_case)
   {
@@ -247,7 +247,7 @@ COEFindFiles::GoFindInFile(CString fileName,StyleGridCtrl* grid)
   {
     if(!rex.SetExp(m_whattofind))
     {
-      CString message = "Error in regular expression: " + m_whattofind;
+      CString message = _T("Error in regular expression: ") + m_whattofind;
       AfxMessageBox(message,MB_OK);
       return;
     }

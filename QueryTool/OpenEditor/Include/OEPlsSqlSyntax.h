@@ -23,7 +23,6 @@
 #ifndef __OEPlsSqlSyntax_h__
 #define __OEPlsSqlSyntax_h__
 
-#include <string>
 #include <vector>
 #include "Common/Fastmap.h"
 #include "OEHelpers.h"
@@ -32,7 +31,6 @@
 
 namespace OpenEditor
 { 
-    using std::string;
     using std::vector;
 
     class EditContext;

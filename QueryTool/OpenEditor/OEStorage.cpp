@@ -277,7 +277,7 @@ void Storage::OnSettingsChanged ()
     m_UndoStack.SetCountLimit(GetSettings().GetUndoLimit());
     m_UndoStack.SetMemLimit(GetSettings().GetUndoMemLimit());
 
-    m_delimitersMap.Set(GetSettings().GetDelimiters().c_str());
+    m_delimitersMap.Set(GetSettings().GetDelimiters().GetString());
 
     vector<EditContextBase*>::iterator
         it(m_refContextList.begin()), end(m_refContextList.end());

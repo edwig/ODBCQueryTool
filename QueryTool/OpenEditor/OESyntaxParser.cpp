@@ -88,13 +88,15 @@ namespace OpenEditor
 		return "Unknown Token";
 	}
 */      
-	static class TokenDescsMap : public map<string, int> 
+	static class TokenDescsMap : public map<CString, int> 
 	{ 
 	public:
 		TokenDescsMap ()
 		{
-			for (int i(0); i < sizeof(g_tokenDescs)/sizeof(g_tokenDescs[0]); i++)
-				insert(std::map<string, int>::value_type(g_tokenDescs[i].keyword, g_tokenDescs[i].token));
+      for(int i(0); i < sizeof(g_tokenDescs) / sizeof(g_tokenDescs[0]); i++)
+      {
+        insert(std::map<CString,int>::value_type(g_tokenDescs[i].keyword,g_tokenDescs[i].token));
+      }
 		}
 	} 
 	g_tokenDescsMap;
@@ -109,12 +111,9 @@ LexicalAnalyser::LexicalAnalyser (SyntaxAnalyser& analyzer)
   m_sequenceOf = eNone;
 
   m_fastmap.erase();
-
-  for (std::map<string, int>::const_iterator it = g_tokenDescsMap.begin();
-      it != g_tokenDescsMap.end();
-      it++)
+  for(auto& desc : g_tokenDescsMap)
   {
-		m_fastmap[it->first[0]] = true;
+		m_fastmap[desc.first[0]] = true;
   }
 }
 
@@ -141,7 +140,7 @@ bool LexicalAnalyser::PutLine (int line, const char* str, int length)
     token.offset = offset;
 		token.length = 0;
 
-    string buffer;
+    CString buffer;
 
     if (m_sequenceOf == eNone)
     {
@@ -159,16 +158,16 @@ bool LexicalAnalyser::PutLine (int line, const char* str, int length)
                 buffer += str[offset++];
             else
                 for (; offset < length && !m_Delimiters[str[offset]]; offset++)
-                    buffer += toupper(str[offset]);
+                    buffer += (TCHAR)toupper(str[offset]);
 
-			token.length = (int)buffer.length();
+			token.length = buffer.GetLength();
         }
         else
         {
             switch (m_sequenceOf)
             {
             case eEndLineComment:
-                m_stringOf.append(str + offset, length - offset);
+                m_stringOf.Append(str + offset, length - offset);
                 offset = length;
                 m_sequenceOf = eNone;
 				token = m_sequenceToken;
@@ -221,14 +220,14 @@ bool LexicalAnalyser::PutLine (int line, const char* str, int length)
             if (m_sequenceOf == eNone)
             {
                 buffer = m_stringOf;
-                m_stringOf.erase();
+                m_stringOf.Empty();
             }
         }
 
 
-        if (token == etUNKNOWN && !buffer.empty() && m_fastmap[buffer.at(0)])
+        if (token == etUNKNOWN && !buffer.IsEmpty() && m_fastmap[buffer.GetAt(0)])
         {
-            std::map<string, int>::const_iterator it = g_tokenDescsMap.find(buffer);
+            std::map<CString, int>::const_iterator it = g_tokenDescsMap.find(buffer);
 
             if (it != g_tokenDescsMap.end())
             {
@@ -253,7 +252,7 @@ bool LexicalAnalyser::PutLine (int line, const char* str, int length)
                 case etMINUS:
                     if (str[offset] == '-')
                     {
-                        m_sequenceOf = eEndLineComment; // skip line remainer
+                        m_sequenceOf = eEndLineComment; // skip line remainder
 						m_sequenceToken = etCOMMENT;
 						m_sequenceToken.line = token.line;
 						m_sequenceToken.offset = token.offset;

@@ -29,17 +29,18 @@ static char THIS_FILE[] = __FILE__;
 
 namespace OpenEditor
 {
-HighlighterBasePtr LanguageManager::CreateHighlighter (const string& lang)
+HighlighterBasePtr LanguageManager::CreateHighlighter (const CString& lang)
 {
     return HighlighterFactory::CreateHighlighter(lang);
 }
 
-LanguageSupportPtr LanguageManager::CreateLanguageSupport (const string& lang, Storage* pstorage)
+LanguageSupportPtr LanguageManager::CreateLanguageSupport (const CString& lang, Storage* pstorage)
 {
-    if (lang == "SQL")
-        return new PlSqlSupport(pstorage);
-
-    return new CommonLanguageSupport(pstorage);
+  if(lang == _T("SQL"))
+  {
+    return new PlSqlSupport(pstorage);
+  }
+  return new CommonLanguageSupport(pstorage);
 }
 
 };//namespace OpenEditor

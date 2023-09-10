@@ -102,7 +102,7 @@ class COEditorView : public CView, protected OpenEditor::EditContext
     struct CurCharCache
     {
         OpenEditor::Position pos;
-        std::string message;
+        CString message;
 
         CurCharCache () { pos.line = pos.column = -1; }
         void Reset ()   { pos.line = pos.column = -1; }
@@ -179,7 +179,7 @@ public:
     void MoveToBottom ();
     void MoveToAndCenter (OpenEditor::Position);
 
-    virtual void GetBlock    (std::string&, const OpenEditor::Square* = 0) const;
+    virtual void GetBlock    (CString&, const OpenEditor::Square* = 0) const;
     virtual void InsertBlock (const char*, bool hideSelection, bool putSelInUndo = true);
     virtual void DeleteBlock (bool putSelInUndo = true);
 
@@ -231,7 +231,7 @@ protected:
     void OnChangedLinesStatus (int, int);
 
 public:
-    static void DoEditCopy (const std::string&, bool append = false);
+    static void DoEditCopy (const CString&, bool append = false);
 
 protected:
 
@@ -263,8 +263,8 @@ protected:
 
     // comment/uncomment helper functions
     void  DoCommentText (bool comment); // uncomment on false
-    static bool CommentText (const OpenEditor::EditContext&, std::string&);
-    static bool UncommentText (const OpenEditor::EditContext&, std::string&);
+    static bool CommentText (const OpenEditor::EditContext&, CString&);
+    static bool UncommentText (const OpenEditor::EditContext&, CString&);
 
     // printing helper
     void GetMargins (CRect& rc) const;
@@ -276,14 +276,14 @@ protected:
     struct NormalizeOnCharCxt 
     {
         bool matched;
-        std::string keyword; 
+        CString keyword; 
         OpenEditor::Square sqr; 
     };
     bool PreNormalizeOnChar (NormalizeOnCharCxt&, char ch);
     void NormalizeOnChar    (NormalizeOnCharCxt&);
     // it's not comment and string position
     bool IsNormalizeablePos (OpenEditor::Position pos) const;
-    static bool NormalizeText (const OpenEditor::EditContext&, std::string&);
+    static bool NormalizeText (const OpenEditor::EditContext&, CString&);
 
 protected: // create from serialization only
 	COEditorView();

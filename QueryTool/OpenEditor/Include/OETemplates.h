@@ -31,7 +31,6 @@
 
 namespace OpenEditor
 {
-    using std::string;
     using std::vector;
     using std::map;
     using arg::counted_ptr;
@@ -46,17 +45,17 @@ namespace OpenEditor
 
         struct Entry
         {
-            string name;
-            string keyword;
-            string text;
+            CString name;
+            CString keyword;
+            CString text;
             int    minLength;
             int    curLine, curPos;
 
             Entry () { minLength = curLine = curPos = 0; }
         };
 
-        bool ExpandKeyword (int index, string& text, Position& pos);
-        bool ExpandKeyword (const string& keyword, string& text, Position& pos);
+        bool ExpandKeyword (int index, CString& text, Position& pos);
+        bool ExpandKeyword (const CString& keyword, CString& text, Position& pos);
         
         typedef std::vector<Entry>::const_iterator ConstIterator;
         ConstIterator Begin () const;
@@ -90,17 +89,17 @@ namespace OpenEditor
         TemplateCollection (const TemplateCollection&);
         TemplateCollection& operator = (const TemplateCollection&);
 
-        TemplatePtr Add (const string& lang);
-        const TemplatePtr Find (const string& lang) const;
+        TemplatePtr Add (const CString& lang);
+        const TemplatePtr Find (const CString& lang) const;
 
-        typedef std::map<std::string, TemplatePtr>::const_iterator ConstIterator;
+        typedef std::map<CString, TemplatePtr>::const_iterator ConstIterator;
         ConstIterator Begin () const;
         ConstIterator End () const;
         int GetCount () const;
         void Clear ();
 
     private:
-        map<string, TemplatePtr> m_templates;
+        map<CString, TemplatePtr> m_templates;
     };
 
     

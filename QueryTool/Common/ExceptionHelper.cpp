@@ -123,7 +123,7 @@ namespace Common
 #ifdef _AFX
         AfxMessageBox(x.what(), MB_OK|MB_ICONSTOP);
 #else
-        cerr << std::string("Unexpected error (") + x.what() + ")!") << endl;
+        cerr << CString("Unexpected error (") << x.what() << ")!" << endl;
 #endif//_AFX
     }
 

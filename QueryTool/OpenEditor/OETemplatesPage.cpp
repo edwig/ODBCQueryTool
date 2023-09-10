@@ -111,7 +111,7 @@ COETemplatesPage::OnInitDialog()
 
     for(; it != end; it++)
     {
-      m_comboTemplate.AddString(it->first.c_str());
+      m_comboTemplate.AddString(it->first);
     }
     m_comboTemplate.SetCurSel(0);
     OnCbnSelchange_Category();
@@ -149,8 +149,8 @@ void COETemplatesPage::OnLvnGetdispinfo_TemplList(NMHDR *pNMHDR, LRESULT *pResul
 
     switch (pDispInfo->item.iSubItem)
     {
-      case 0: pDispInfo->item.pszText = (LPSTR)(LPCSTR)entry.name.c_str();    break;
-      case 1: pDispInfo->item.pszText = (LPSTR)(LPCSTR)entry.keyword.c_str(); break;
+      case 0: pDispInfo->item.pszText = (LPSTR)(LPCSTR)entry.name;    break;
+      case 1: pDispInfo->item.pszText = (LPSTR)(LPCSTR)entry.keyword; break;
       case 2: _itoa_s(entry.minLength, buffer, 40, 10);
               pDispInfo->item.pszText = (LPSTR)(LPCSTR)buffer; break;
     }
@@ -248,7 +248,7 @@ COETemplatesPage::OnCbnSelchange_Category()
     m_templateList.DeleteAllItems();
     if(!m_templateName.IsEmpty())
     {
-      m_currTemplate = m_manager.GetTemplateCollection().Find(string(m_templateName));
+      m_currTemplate = m_manager.GetTemplateCollection().Find(m_templateName);
 
       LV_ITEM lvitem;
       memset(&lvitem, 0, sizeof lvitem);

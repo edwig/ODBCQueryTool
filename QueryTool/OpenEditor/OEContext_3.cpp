@@ -43,18 +43,18 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define _CHECK_ALL_PTR_ _CHECK_AND_THROW_(m_pStorage, "Editor has not been initialized properly!")
+#define _CHECK_ALL_PTR_ _CHECK_AND_THROW_(m_pStorage, _T("Editor has not been initialized properly!"))
 
 namespace OpenEditor
 {
     using namespace std;
 
 
-    void space4insertion (string& buff, int from, int to, bool use_tab, int tab_spacing)
+    void space4insertion (CString& buff, int from, int to, bool use_tab, int tab_spacing)
     {
         _ASSERTE(to - from >= 0);
 
-        buff.erase();
+        buff.Empty();
 
         int cur_tabs = from / tab_spacing;
         int new_tabs = to / tab_spacing;
@@ -63,11 +63,14 @@ namespace OpenEditor
         {
             int spaces   = to - new_tabs * tab_spacing;
             int tabs     = new_tabs - cur_tabs;
-            buff.append(tabs, '\t');
-            buff.append(spaces, ' ');
+            buff.Append(_T("\t"),tabs);
+            buff.Append(_T(" "),spaces);
+
         }
         else
-            buff.append(to - from, ' ');
+        {
+          buff.Append(_T(" "),(to - from));
+        }
     }
 
 
@@ -91,9 +94,9 @@ void EditContext::expandVirtualSpace (int line, int column)
     int length = GetLineLength(line);
     if (column > length)
     {
-        string buff;
+        CString buff;
         space4insertion(buff, length, column, !GetTabExpand(), GetTabSpacing());
-        InsertLinePart(line, length, buff.c_str(), (int)buff.length());
+        InsertLinePart(line, length, buff.GetString(), (int)buff.GetLength());
     }
 }
 
@@ -140,9 +143,9 @@ void EditContext::DoIndent (bool moveOnly)
     if (!moveOnly && (!GetCursorBeyondEOL()
     || (pos.line < GetLineCount() && pos.column < GetLineLength(pos.line))))
     {
-        string buff;
+        CString buff;
         space4insertion(buff, pos.column, newColumn, !GetTabExpand(), GetTabSpacing());
-        InsertLinePart(pos.line, pos.column, buff.c_str(),(int) buff.length());
+        InsertLinePart(pos.line, pos.column, buff.GetString(),(int) buff.GetLength());
     }
     pos.column = newColumn;
 
@@ -184,7 +187,7 @@ void EditContext::DoCarriageReturn ()
                 const char* str = 0;
                 Position pos = GetPosition();
 
-                // 16.03.2003 bug fix, autoindent always uses a previos line as base even the line is empty
+                // 16.03.2003 bug fix, auto indent always uses a previous line as base even the line is empty
                 for (int baseLine = pos.line - 1; baseLine >= 0 && len == 0; baseLine--)
                     GetLine(baseLine, str, len);
 
@@ -195,9 +198,9 @@ void EditContext::DoCarriageReturn ()
 
                 if (!(GetCursorBeyondEOL() && GetLineLength(pos.line) == 0))
                 {
-                    string buff;
+                    CString buff;
                     space4insertion(buff, 0, pos.column, !GetTabExpand(), GetTabSpacing());
-                    InsertLinePart(pos.line, 0, buff.c_str(),(int) buff.length());
+                    InsertLinePart(pos.line, 0, buff.GetString(),(int) buff.GetLength());
                 }
 
                 MoveTo(pos, true);
@@ -552,7 +555,7 @@ void EditContext::SelectByCursor (Position pos)
         InvalidateLines(old_end_line, m_blkPos.end.line);
 }
 
-void EditContext::GetBlock (string& str, const Square* sqr) const
+void EditContext::GetBlock (CString& str, const Square* sqr) const
 {
     _CHECK_ALL_PTR_
 
@@ -584,7 +587,7 @@ void EditContext::GetBlock (string& str, const Square* sqr) const
                     else
                         break;
 
-                str.reserve(reserve);
+                str.Preallocate(reserve);
 
                 if (pos.start.line == pos.end.line)
                 {
@@ -599,19 +602,19 @@ void EditContext::GetBlock (string& str, const Square* sqr) const
                         if (i < nLines)
                         {
                             GetLine(i, pszLine, niLength);
-                            str.append(pszLine, niLength);
+                            str.Append(pszLine, niLength);
                         }
                     }
                     str += "\r\n";
                     line2buff(pos.end.line, 0, pos.end.column, str);
                 }
-                TRACE("Copy Block reserved = %d, actual length = %d\n",  reserve, str.length());
+                TRACE("Copy Block reserved = %d, actual length = %d\n",  reserve, str.GetLength());
 
-                if ((pos.end.line < nLines
-                  && pos.end.column > GetLineLength(pos.end.line))
-                || (pos.end.line >= nLines
-                  && pos.end.column > 0))
-                        str += "\r\n";
+                if ((pos.end.line < nLines && pos.end.column > GetLineLength(pos.end.line))
+                 || (pos.end.line >= nLines && pos.end.column > 0))
+                {
+                  str += "\r\n";
+                }
             }
             break;
         case ebtColumn:
@@ -619,15 +622,16 @@ void EditContext::GetBlock (string& str, const Square* sqr) const
                 if ((pos.end.column - pos.start.column) < 0)
                     swap(pos.end.column, pos.start.column);
 
-                str.reserve((pos.end.line - pos.start.line)
-                           *(pos.end.column - pos.start.column));
+                str.Preallocate((pos.end.line - pos.start.line)
+                               *(pos.end.column - pos.start.column));
 
                 for (int i(pos.start.line); i <= pos.end.line; i++)
                 {
-                    if (i > pos.start.line)
-                        str += "\r\n";
-
-                    line2buff(i, pos.start.column, pos.end.column, str, true);
+                  if(i > pos.start.line)
+                  {
+                    str += "\r\n";
+                  }
+                  line2buff(i, pos.start.column, pos.end.column, str, true);
                 }
             }
             break;
@@ -644,7 +648,7 @@ void EditContext::InsertBlock (const char* str, bool hideSelection, bool putSelI
 {
     _CHECK_ALL_PTR_
 
-    string buff;
+    CString buff;
     istrstream io(str);
     bool with_CR;
     Position orgPos = m_curPos;
@@ -665,7 +669,7 @@ void EditContext::InsertBlock (const char* str, bool hideSelection, bool putSelI
                 if (with_CR) 
                     SplitLine(m_curPos.line, m_curPos.column); // multiline selection
 
-                InsertLinePart(m_curPos.line, m_curPos.column, buff.c_str(), (int)buff.length());
+                InsertLinePart(m_curPos.line, m_curPos.column, buff.GetString(), (int)buff.GetLength());
 
                 if (with_CR) // multiline selection
                 {
@@ -675,11 +679,11 @@ void EditContext::InsertBlock (const char* str, bool hideSelection, bool putSelI
                     while (getLine(io, buff, with_CR))
                     {
                         if (with_CR)
-                            lines.append().assign(buff.c_str(), buff.length(), true);
+                            lines.append().assign(buff.GetString(), buff.GetLength(), true);
                         else
                         {
-                            InsertLinePart(m_curPos.line+1, 0, buff.c_str(), (int)buff.length());
-                            m_curPos.column = inx2pos(buff.c_str(), (int)buff.size(),(int) buff.size());
+                            InsertLinePart(m_curPos.line+1, 0, buff.GetString(), (int)buff.GetLength());
+                            m_curPos.column = inx2pos(buff.GetString(), (int)buff.GetLength(),(int) buff.GetLength());
                         }
                     }
 
@@ -690,8 +694,9 @@ void EditContext::InsertBlock (const char* str, bool hideSelection, bool putSelI
                     m_curPos.line += (int)lines.size() + 1;
                 }
                 else
-                    m_curPos.column = inx2pos(m_curPos.line, pos2inx(m_curPos.line, m_curPos.column) +(int) buff.size());
-
+                {
+                  m_curPos.column = inx2pos(m_curPos.line,pos2inx(m_curPos.line,m_curPos.column) + (int) buff.GetLength());
+                }
                 MoveTo(m_curPos);
             }
         }
@@ -705,9 +710,9 @@ void EditContext::InsertBlock (const char* str, bool hideSelection, bool putSelI
 
             while (getLine(io, buff, with_CR))
             {
-                InsertLinePart(line, m_curPos.column, buff.c_str(),(int) buff.length());
+                InsertLinePart(line, m_curPos.column, buff.GetString(),(int) buff.GetLength());
                 line++;
-                lastLineLen = (int)buff.size();
+                lastLineLen = (int)buff.GetLength();
             }
             orgPos.line  += line - m_curPos.line - 1;
             orgPos.column = inx2pos(orgPos.line, pos2inx(orgPos.line, m_curPos.column + lastLineLen));
@@ -796,19 +801,30 @@ void EditContext::DeleteBlock (bool putSelInUndo)
                 Storage::NotificationDisabler disabler(m_pStorage);
 
                 bool deleteSpace = GetColBlockDeleteSpaceAfterMove();
-                string space;
+                CString space;
 
-                if (!deleteSpace)
-                    space.resize(sel.end.column > sel.start.column
-                                 ? sel.end.column - sel.start.column
-                                 : sel.start.column - sel.end.column, ' ');
-
+                if(!deleteSpace)
+                {
+                  if(sel.end.column > sel.start.column)
+                  {
+                    space.Truncate(sel.end.column - sel.start.column);
+                  }
+                  else
+                  {
+                    space.Append(" ",sel.start.column - sel.end.column);
+                  }
+//                   space.resize(sel.end.column > sel.start.column
+//                                ? sel.end.column - sel.start.column
+//                                : sel.start.column - sel.end.column,' ');
+                }
                 for (int i(sel.start.line); i <= sel.end.line && i < nLines; i++)
                 {
                     DeleteLinePart(i, sel.start.column, sel.end.column);
 
-                    if (!deleteSpace)
-                        InsertLinePart(i, sel.start.column, space.c_str(), (int)space.length());
+                    if(!deleteSpace)
+                    {
+                      InsertLinePart(i,sel.start.column,space.GetString(),(int) space.GetLength());
+                    }
                 }
 
                 disabler.Enable();
@@ -844,7 +860,7 @@ void EditContext::IndentBlock ()
 
     Square sel;
     GetSelection(sel);
-    sel.normalize(); // 14/08/2002 bug fix, indent/undent block does not work if selection is not normalized
+    sel.normalize(); // 14/08/2002 bug fix, indent/unintended block does not work if selection is not normalized
 
     if (!sel.is_empty())
     {
@@ -857,15 +873,17 @@ void EditContext::IndentBlock ()
 
         ConvertSelectionToLines();
 
-        string buff;
+        CString buff;
         space4insertion(buff, 0, indentSize, !GetTabExpand(), GetTabSpacing());
 
         Storage::NotificationDisabler disabler(m_pStorage);
 
         for (int i = sel.start.line; i < sel.end.line && i < nLines; i++)
         {
-            if (m_pStorage->GetLineLength(i))
-                InsertLinePart(i, 0, buff.c_str(),(int) buff.length());
+          if(m_pStorage->GetLineLength(i))
+          {
+            InsertLinePart(i,0,buff.GetString(),(int) buff.GetLength());
+          }
         }
         disabler.Enable();
         PushInUndoStack(m_curPos);
@@ -878,7 +896,7 @@ void EditContext::UndentBlock ()
 
     Square sel;
     GetSelection(sel);
-    sel.normalize(); // 14/08/2002 bug fix, indent/undent block does not work if selection is not normalized
+    sel.normalize(); // 14/08/2002 bug fix, indent/unindented block does not work if selection is not normalized
 
     if (!sel.is_empty())
     {
@@ -891,9 +909,9 @@ void EditContext::UndentBlock ()
 
         ConvertSelectionToLines();
 
-        string buff;
-        bool   tabExpand  = GetTabExpand(); 
-        int    tabSpacing = GetTabSpacing();
+        CString buff;
+        bool    tabExpand  = GetTabExpand(); 
+        int     tabSpacing = GetTabSpacing();
         Storage::NotificationDisabler disabler(m_pStorage);
 
         for (int i = sel.start.line; i < sel.end.line && i < nLines; i++)
@@ -915,7 +933,7 @@ void EditContext::UndentBlock ()
                 if (pos > indentSize)
                 {
                     space4insertion(buff, 0, pos - indentSize, !tabExpand, tabSpacing);
-                    InsertLinePart(i, 0, buff.c_str(), (int)buff.length());
+                    InsertLinePart(i, 0, buff.GetString(), buff.GetLength());
                 }
             }
         }
@@ -924,7 +942,7 @@ void EditContext::UndentBlock ()
     }
 }
 
-void EditContext::CopyBookmarkedLines (string& buff) const
+void EditContext::CopyBookmarkedLines (CString& buff) const
 {
     _CHECK_ALL_PTR_
 
@@ -939,14 +957,14 @@ void EditContext::CopyBookmarkedLines (string& buff) const
     
     if (reserve)
     {
-        buff.reserve(reserve);
+        buff.Preallocate(reserve);
         it = lines.begin();
         for (; it != lines.end(); it++)
         {
             int len;
             const char* str;
             GetLine(*it, str, len);
-            buff.append(str, len);
+            buff.Append(str, len);
             buff += "\r\n";
         }
     }
@@ -981,13 +999,13 @@ bool EditContext::ExpandTemplate (int index)
     _CHECK_ALL_PTR_
 
     Square sqr;
-    string buff;
+    CString buff;
     if (index != -1 || GetBlockOrWordUnderCursor(buff, sqr, false))
     {
         const TemplatePtr tmpl = GetSettings().GetTemplate(); 
         
         Position pos;
-        string text;
+        CString text;
 
         bool expand = false;
         
@@ -1012,22 +1030,28 @@ bool EditContext::ExpandTemplate (int index)
             DeleteBlock(false);
 
             bool with_CR;
-            std::istrstream io(text.c_str());
-            std::string line, result, indent(sqr.start.column, ' ');
-            indent.insert(indent.begin(), '\n');
+            std::istrstream io(text.GetString());
+            CString line;
+            CString result;
+            CString indent('\n');
+            indent.Append(" ",sqr.start.column);
 
             if (getLine(io, line, with_CR))
                 result += line;
 
             while (getLine(io, line, with_CR))
             {
-                if (!line.empty())
-                    result += indent + line;
-                else if (with_CR)
-                    result += '\n';
+              if(!line.IsEmpty())
+              {
+                result += indent + line;
+              }
+              else if(with_CR)
+              {
+                result += '\n';
+              }
             }
 
-            InsertBlock(result.c_str(), false, false);
+            InsertBlock(result.GetString(), false, false);
 
             if (!GetTabExpand()) 
                 ScanAndReplaceText(TabifyLeadingSpaces, false);
@@ -1126,7 +1150,7 @@ void EditContext::FindMatch (bool select)
             if (match.broken) 
                 MessageBeep((UINT)-1);
 
-            Common::SetStatusText(!match.broken ? "Match found." : "Match brocken.");
+            Common::SetStatusText(!match.broken ? "Match found." : "Match broken.");
         }
         else
             Common::SetStatusText("Match not found.");

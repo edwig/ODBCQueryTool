@@ -112,17 +112,17 @@ void COEditorView::DrawCursor (CPoint point, bool erase)
             {
                 CWaitCursor wait;
 
-                string text;
+                CString text;
                 m_pView->GetBlock(text);
 
-                HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE|GMEM_DDESHARE, text.size() + 1);
+                HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE|GMEM_DDESHARE, text.GetLength() + 1);
 
                 if (hGlobal)
                 {
                     char* buff = (char*)GlobalLock(hGlobal);
                     if (buff)
                     {
-                        memcpy(buff, text.c_str(), text.size() + 1);
+                        memcpy(buff, text.GetString(), text.GetLength() + 1);
                         GlobalUnlock(hGlobal);
                         *phGlobal = hGlobal;
                         return TRUE;

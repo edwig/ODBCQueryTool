@@ -28,6 +28,7 @@
 #include <StyleFrameWork.h>
 #include <AppUtilities.h>
 #include <time.h>
+#include <stdlib.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -382,7 +383,7 @@ MultConnectionsDlg::SetListFont()
   // Get QueryFont
   const OpenEditor::SettingsManager& manager  = COEDocument::GetSettingsManager();
   const OpenEditor::GlobalSettings&  settings = manager.GetGlobalSettings();
-  CString queryFont = settings.GetSQLQueryFont().c_str();
+  CString queryFont = settings.GetSQLQueryFont();
 
   // Split current font registry in name and size
   CString fontName;

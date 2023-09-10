@@ -36,11 +36,11 @@ namespace OpenEditor
 {
     using namespace std;
 
-    const char* DelimitersMap::m_cszDefDelimiters = " \t\'\\()[]{}+-*/.,!?;:=><%|@&^";
+    LPCTSTR DelimitersMap::m_cszDefDelimiters = _T(" \t\'\\()[]{}+-*/.,!?;:=><%|@&^");
 
-    const unsigned char LineTokenizer::cbSpaceChar     =  32;
-    const unsigned char LineTokenizer::cbVirtSpaceChar = 183;
-    const unsigned char LineTokenizer::cbTabChar       = 187;
+    const _TUCHAR LineTokenizer::cbSpaceChar     =  32;
+    const _TUCHAR LineTokenizer::cbVirtSpaceChar = 183;
+    const _TUCHAR LineTokenizer::cbTabChar       = 187;
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -62,7 +62,7 @@ void DelimitersMap::Set (const char* str)
     for (; str && *str; str++)
         operator[](*str) = true;
 
-    // they'r required
+    // they're required
     operator[](' ') = true;
     operator[]('\t') = true;
     operator[]('\n') = true;

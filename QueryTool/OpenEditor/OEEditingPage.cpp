@@ -41,7 +41,7 @@ COEEditingPage::COEEditingPage(SettingsManager& manager,CWnd* p_parent)
 {
   const GlobalSettings& settings = m_manager.GetGlobalSettings();
 
-  m_DefFileExtension = settings.GetDefFileExtension().c_str();
+  m_DefFileExtension = settings.GetDefFileExtension();
   m_UndoMemLimit     = settings.GetUndoMemLimit() / 1024;
   m_MaxUndoCount     = settings.GetUndoLimit();
   m_UndoAfterSaving  = settings.GetUndoAfterSaving() ? TRUE : FALSE;

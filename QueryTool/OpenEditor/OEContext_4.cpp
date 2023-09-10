@@ -191,7 +191,7 @@ bool EditContext::adjustCursorPosition ()
     return false;
 }
 
-void EditContext::line2buff (int line, int start, int end, string& buff, bool fill) const
+void EditContext::line2buff (int line, int start, int end, CString& buff, bool fill) const
 {
     int appended = 0;
 
@@ -206,21 +206,25 @@ void EditContext::line2buff (int line, int start, int end, string& buff, bool fi
             int _start = pos2inx(str, len, start, false);
             int _end   = pos2inx(str, len, end, false);
             appended = _end - _start;
-            buff.append(str + _start, _end - _start);
+            buff.Append(str + _start, _end - _start);
         }
     }
 
-    if (fill)
-        for (int i(appended); i < (end - start); i++)
-            buff += ' ';
+    if(fill)
+    {
+      for(int i(appended); i < (end - start); i++)
+      {
+        buff += ' ';
+      }
+    }
 }
 
-bool EditContext::getLine (std::istrstream& io, string& buff, bool& with_CR)
+bool EditContext::getLine (std::istrstream& io, CString& buff, bool& with_CR)
 {
     char chr;
     bool ret_val = false;
     
-    buff.erase();
+    buff.Empty();
     with_CR = false;
 
     while (io.get(chr))

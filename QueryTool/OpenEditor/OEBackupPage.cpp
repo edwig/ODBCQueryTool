@@ -28,8 +28,8 @@ COEBackupPage::COEBackupPage (SettingsManager& manager,CWnd* p_parent)
 {
   const OpenEditor::GlobalSettings& settings = m_manager.GetGlobalSettings();
 
-  m_BackupName         = settings.GetFileBackupName().c_str();
-  m_BackupDirectory    = settings.GetFileBackupDirectory().c_str();
+  m_BackupName         = settings.GetFileBackupName();
+  m_BackupDirectory    = settings.GetFileBackupDirectory();
 
   switch (settings.GetFileBackup())
   {
@@ -91,10 +91,10 @@ COEBackupPage::OnApply()
         
     settings.SetFileBackupName((LPCSTR)m_BackupName, false /*notify*/);
     settings.SetFileBackupDirectory((LPCSTR)m_BackupDirectory, false /*notify*/);
-    settings.SetFileBackup(m_Backup 
-        ? (!m_BackupMethod ? OpenEditor::ebmCurrentDirectory : OpenEditor::ebmBackupDirectory) 
-        : OpenEditor::ebmNone,
-        false /*notify*/);
+    settings.SetFileBackup(m_Backup
+                          ? (!m_BackupMethod ? OpenEditor::ebmCurrentDirectory : OpenEditor::ebmBackupDirectory) 
+                          : OpenEditor::ebmNone,
+                          false /*notify*/);
   }
   _OE_DEFAULT_HANDLER_;
 
@@ -110,7 +110,7 @@ COEBackupPage::OnUpdateData()
 void 
 COEBackupPage::OnBnClicked_FileBackupDirChange()
 {
-  Common::CDirSelectDlg dirDlg("Choose the folder for saving backups:", this, m_BackupDirectory);
+  Common::CDirSelectDlg dirDlg(_T("Choose the folder for saving backups:"), this, m_BackupDirectory);
 
   if (dirDlg.DoModal() == IDOK) 
 	{

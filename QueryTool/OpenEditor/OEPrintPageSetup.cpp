@@ -27,7 +27,7 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 #define OEPP_GET_PROPERTY(N)         m_##N = settings.GetPrint##N();
-#define OEPP_GET_STR_PROPERTY(N)     m_##N = settings.GetPrint##N().c_str();
+#define OEPP_GET_STR_PROPERTY(N)     m_##N = settings.GetPrint##N();
 #define OEPP_SET_PROPERTY(N)         settings.SetPrint##N(m_##N);
 #define OEPP_SET_STR_PROPERTY(N)     settings.SetPrint##N((const char*)m_##N);
 
@@ -94,7 +94,7 @@ BOOL
 COEPrintPageSetup::OnInitDialog()
 {
   StyleDialog::OnInitDialog();
-  SetWindowText("Print page setup");
+  SetWindowText(_T("Print page setup"));
   return InitFirstFocus();
 }
 

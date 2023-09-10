@@ -34,11 +34,9 @@ static char THIS_FILE[]=__FILE__;
 
 namespace Common 
 {
-    using std::string;
-    
-    void to_printable_str (const char* from, string& _to)
+    void to_printable_str (const char* from, CString& _to)
     {
-        string to;
+        CString to;
 
         for (; from && *from; from++)
         {
@@ -72,9 +70,9 @@ namespace Common
         _to = to;
     }
 
-    void to_unprintable_str (const char* from, string& _to, bool skipEscDgt)
+    void to_unprintable_str (const char* from, CString& _to, bool skipEscDgt)
     {
-        string to;
+        CString to;
 
         for (; *from; from++)
         {
@@ -119,18 +117,12 @@ namespace Common
         _to = to;
     }
 
-    void trim_symmetric (string& str, const char* skip)
+    void trim_symmetric (CString& str, const char* skip)
     {
-        if (!str.empty()) {
-            std::string::size_type beg = str.find_first_not_of(skip);
-            std::string::size_type end = str.find_last_not_of(skip);
-
-            if (beg != std::string::npos || end != std::string::npos) {
-                if (string::npos == beg) beg = 0;
-                if (string::npos == end) end = str.size();
-                str = str.substr(beg, end - beg + 1);
-            }
-        }
+      if(!str.IsEmpty())
+      {
+        str = str.Trim(skip);
+      }
     }
 
     /////////////////////////////////////////////////////////////////////////

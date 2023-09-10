@@ -84,10 +84,10 @@ COEFileInfoDlg::OnInitDialog()
   OpenEditor::Storage& storage = m_document->GetStorage();
   storage.GetMemoryUsage(usage, allocated, undo);
 
-  m_Lines.Format("%d lines", storage.GetLineCount());
-  m_MemoryUsage.Format("%d bytes", usage);
-  m_MemoryAllocated.Format("%d bytes", allocated);
-  m_UndoMemoryUsage.Format("%d bytes", undo);
+  m_Lines.Format(_T("%d lines"), storage.GetLineCount());
+  m_MemoryUsage.Format(_T("%d bytes"), usage);
+  m_MemoryAllocated.Format(_T("%d bytes"), allocated);
+  m_UndoMemoryUsage.Format(_T("%d bytes"), undo);
   m_Path = m_document->GetPathName();
 
   if (!m_Path.IsEmpty())
@@ -109,7 +109,7 @@ COEFileInfoDlg::OnInitDialog()
       {
         if (!fileInformation.nFileSizeHigh)
         {
-          m_DriveUsage.Format("%u bytes", fileInformation.nFileSizeLow);
+          m_DriveUsage.Format(_T("%u bytes"), fileInformation.nFileSizeLow);
         }
         filetime_to_string(fileInformation.ftCreationTime, m_Created);
         filetime_to_string(fileInformation.ftLastWriteTime,m_LastModified);
