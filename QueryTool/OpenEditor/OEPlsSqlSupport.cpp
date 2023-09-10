@@ -45,7 +45,7 @@ PlSqlSupport::PlSqlSupport (Storage* pstorage)
 
 bool PlSqlSupport::FindMatch (int line, int offset, Match& match)
 {
-  _CHECK_AND_THROW_(m_pStorage, "SQL Support has not been initialized!")
+  _CHECK_AND_THROW_(m_pStorage, _T("SQL Support has not been initialized!"))
 
   processText(INT_MAX);
 
@@ -97,7 +97,7 @@ bool PlSqlSupport::processText (int batchLimit)
         m_done = true;
         m_parser.PutEOF(m_currLine);
     }
-    TRACE("SQL Support::processText: curr line = %d, lines = %d\n", m_currLine, nlines);
+    TRACE(_T("SQL Support::processText: curr line = %d, lines = %d\n"), m_currLine, nlines);
   }
   return  !m_done;
 }

@@ -44,11 +44,11 @@ const int MIN_HEIGHT = 100;
 const int KEY_WIDTH  = 60;
 const int NAME_WIDTH = 110;
 
-const char* cszSection   = "AutocompleteCtrl";
-const char* cszWidth     = "Width";
-const char* cszHeight    = "Height";
-const char* cszKeyWidth  = "KeyWidth";
-const char* cszNameWidth = "NameWidth";
+LPCTSTR cszSection   = _T("AutocompleteCtrl");
+LPCTSTR cszWidth     = _T("Width");
+LPCTSTR cszHeight    = _T("Height");
+LPCTSTR cszKeyWidth  = _T("KeyWidth");
+LPCTSTR cszNameWidth = _T("NameWidth");
 
 using namespace OpenEditor;
 
@@ -58,10 +58,10 @@ using namespace OpenEditor;
 
 COEAutocompleteCtrl::COEAutocompleteCtrl()
 {
-    m_hwndEditor = 0;
-    m_hidden = true;
+  m_hwndEditor = 0;
+  m_hidden = true;
     
-    //InitMultipleMonitorStubs();
+  //InitMultipleMonitorStubs();
 }
 
 COEAutocompleteCtrl::~COEAutocompleteCtrl()
@@ -87,12 +87,13 @@ void COEAutocompleteCtrl::ShowControl (COEditorView* pEditor)
     const TemplatePtr tmpl = pEditor->GetSettings().GetTemplate();
     if (!tmpl->GetCount())
     {
-        AfxMessageBox(
-            (std::string("Template \"") + pEditor->GetSettings().GetName() + "\" is empty."
-                "\n\nYou should populate it before using."
-                "\n\nOn \"Text\" menu, click \"Permanent Settings\" item\t\nand choose \"Templates\" tab.").c_str(), 
-            MB_ICONEXCLAMATION);
-        return;
+      CString message;
+      message.Format(_T("Template [%s] is empty!")
+                     _T("\n\nYou should populate it before using.")
+                     _T("\n\nOn \"Text\" menu, click \"Permanent Settings\" item\t\nand choose \"Templates\" tab.")
+                    ,pEditor->GetSettings().GetName());
+      AfxMessageBox(message,MB_ICONEXCLAMATION);
+      return;
     }
     Populate(tmpl);
 
@@ -112,7 +113,7 @@ void COEAutocompleteCtrl::ShowControl (COEditorView* pEditor)
     CRect rc, desktopRc, ctrlRc;
     GetWindowRect(rc);
 
-//     // 16.03.2003 bug fix, autocomplete template list does not show properly on the second monitor
+//     // 16.03.2003 bug fix, auto complete template list does not show properly on the second monitor
 //     if (g_pfnMonitorFromWindow)
 //     {
 //         HMONITOR hmonitor = g_pfnMonitorFromWindow(*pEditor, MONITOR_DEFAULTTONEAREST);
@@ -132,10 +133,10 @@ void COEAutocompleteCtrl::ShowControl (COEditorView* pEditor)
 
     // vert position adjustment
     if (pt.y + rc.Height() > desktopRc.bottom           // it does not fit downward
-    && pt.y - rowHeight > desktopRc.Height() - pt.y)    // && pt is below the center
+     && pt.y - rowHeight > desktopRc.Height() - pt.y)    // && pt is below the center
         pt.y -= rowHeight + rc.Height();
     
-    // horz position adjustment
+    // horizontal position adjustment
     if (pt.x + rc.Width() > desktopRc.right)
         pt.x = desktopRc.right - rc.Width();
    
@@ -157,7 +158,7 @@ void COEAutocompleteCtrl::CheckMatch (bool init)
     if (pEditor && pEditor->IsKindOf(RUNTIME_CLASS(COEditorView)))
     {
         bool resetSelecetion = false;
-        std::string substring;
+        CString substring;
         Square selection;
 
         if (pEditor->GetBlockOrWordUnderCursor(substring, selection, false))
@@ -166,18 +167,20 @@ void COEAutocompleteCtrl::CheckMatch (bool init)
             if (selection.start.line != selection.end.line) 
                 resetSelecetion = true;
 
-            // selection must not contain delemiters
-            for (std::string::const_iterator it = substring.begin(); it != substring.end(); ++it)
-                if (pEditor->GetDelimiters()[*it]) 
-                {
-                    resetSelecetion = true;
-                    break;
-                }
+            // selection must not contain delimiters
+            for(int i = 0;i < substring.GetLength(); ++i)
+            {
+              if(pEditor->GetDelimiters()[substring.GetAt(i)])
+              {
+                resetSelecetion = true;
+                break;
+              }
+            }
         }
         else
             resetSelecetion = true;
 
-        // 16.03.2003 bug fix, autocomplete template list cannot be activated on word delemiters ( \t"',! ...)
+        // 16.03.2003 bug fix, auto complete template list cannot be activated on word delimiters ( \t"',! ...)
         if (resetSelecetion)
         {
             selection.start = 
@@ -186,7 +189,7 @@ void COEAutocompleteCtrl::CheckMatch (bool init)
 
         LVFINDINFO info;
         info.flags = LVFI_PARTIAL|LVFI_STRING;
-        info.psz   = substring.c_str(); 
+        info.psz   = substring.GetString(); 
         int index  = FindItem(&info);
         if (index != -1)
         {
@@ -203,7 +206,7 @@ void COEAutocompleteCtrl::CheckMatch (bool init)
             }
             EnsureVisible(index, FALSE);
  
-            UINT state = (substring.length() && !_strnicmp(substring.c_str(), GetItemText(index, 0), substring.length())) 
+            UINT state = (substring.GetLength() && !_strnicmp(substring.GetString(), GetItemText(index, 0), substring.GetLength())) 
                  ? LVIS_FOCUSED|LVIS_SELECTED : LVIS_FOCUSED;
             
             SetItemState(index, state, state);
@@ -262,7 +265,7 @@ BOOL COEAutocompleteCtrl::Create ()
     BOOL retVal = CWnd::CreateEx(
         WS_EX_PALETTEWINDOW|WS_EX_WINDOWEDGE,
         WC_LISTVIEW, 
-        "OEAutocompleteCtrl",
+        _T("OEAutocompleteCtrl"),
         WS_POPUP|WS_THICKFRAME
         |LVS_REPORT|LVS_SINGLESEL|LVS_SORTASCENDING|LVS_NOSORTHEADER, 
 		0, 0, 
@@ -275,7 +278,7 @@ BOOL COEAutocompleteCtrl::Create ()
     {
         lvcolumn.mask = LVCF_FMT | LVCF_SUBITEM | LVCF_TEXT | LVCF_WIDTH;
         lvcolumn.fmt = LVCFMT_LEFT;
-        lvcolumn.pszText = !i ? "Key" : "Name";
+        lvcolumn.pszText = !i ? _T("Key") : _T("Name");
         lvcolumn.iSubItem = i;
         if (!i) lvcolumn.cx = AfxGetApp()->GetProfileInt(cszSection, cszKeyWidth,  KEY_WIDTH);
         else    lvcolumn.cx = AfxGetApp()->GetProfileInt(cszSection, cszNameWidth, NAME_WIDTH);
@@ -302,9 +305,9 @@ void COEAutocompleteCtrl::Populate (const TemplatePtr tmpl)
         item.lParam = (LPARAM)i;
         item.iSubItem = 0;
         item.mask = LVIF_TEXT|LVIF_PARAM;
-        item.pszText = (LPSTR)it->keyword.c_str(); 
+        item.pszText = (LPSTR)it->keyword.GetString(); 
         item.iItem = InsertItem(&item);
-        SetItemText(item.iItem, 1, (LPSTR)it->name.c_str());
+        SetItemText(item.iItem, 1, (LPSTR)it->name.GetString());
     }
 
     if (i > 0)

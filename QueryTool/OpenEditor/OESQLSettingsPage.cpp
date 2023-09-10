@@ -256,12 +256,12 @@ COESQLSettingsPage::ReadSQLSettings()
     const OpenEditor::GlobalSettings& settings = m_manager.GetGlobalSettings();
 
     m_prefetch           = settings.GetSQLPrefetchLines();
-    m_terminator         = settings.GetSQLQueryTerminator().c_str();
-    m_font               = settings.GetSQLQueryFont().c_str();
+    m_terminator         = settings.GetSQLQueryTerminator();
+    m_font               = settings.GetSQLQueryFont();
     m_odbcMetaSQL        = settings.GetPreferODBCMetaSQL();
     m_lenOption          = settings.GetSQLLengthOption();
     m_charsetTranslation = settings.GetSQLCharsetTranslation();
-    m_charset            = settings.GetSQLCharsetUsed().c_str();
+    m_charset            = settings.GetSQLCharsetUsed();
   }
   _OE_DEFAULT_HANDLER_;
 }
@@ -273,8 +273,8 @@ COESQLSettingsPage::SaveSQLSettings()
   {
     OpenEditor::GlobalSettings& settings = m_manager.GetGlobalSettings();
 
-    std::string term = m_terminator;
-    std::string font = m_font;
+    CString term = m_terminator;
+    CString font = m_font;
 
     settings.SetSQLPrefetchLines(m_prefetch);
     settings.SetSQLQueryTerminator(term);
@@ -282,7 +282,7 @@ COESQLSettingsPage::SaveSQLSettings()
     settings.SetPreferODBCMetaSQL(m_odbcMetaSQL);
     settings.SetSQLLengthOption(m_lenOption + 1);
     settings.SetSQLCharsetTranslation(m_charsetTranslation);
-    settings.SetSQLCharsetUsed(std::string(m_charset.GetString()));
+    settings.SetSQLCharsetUsed(m_charset.GetString());
   }
   _OE_DEFAULT_HANDLER_;
 }

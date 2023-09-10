@@ -269,60 +269,51 @@ void SettingsManager::DestroyClass (const char* name)
 
 
 inline
-bool is_ext_supported (const string& _list, const char* _ext)
+bool is_ext_supported (const CString& _list, const char* _ext)
 {
-    if (_ext && *_ext)
+  if (_ext && *_ext)
+  {
+    CString list = " " + _list + " ";
+    list.MakeUpper();
+
+    CString ext = " " + CString(_ext) + " ";
+    ext.MakeUpper();
+
+    if(list.Find(ext) >= 0)
     {
-        string::iterator it ;
-        string list = string(' ' + _list + ' ');
-        for ( it = list.begin(); it != list.end(); it++)
-            *it = toupper(*it);
-
-        string ext = string(1, ' ') + _ext + ' '; // bug fix, file extension is not recognized properly if it's shorter then 3 chars
-        for (it = ext.begin(); it != ext.end(); it++)
-            *it = toupper(*it);
-
-        return strstr(list.c_str(), ext.c_str()) ? true : false;
+      return true;
     }
-
-    return false;
+  }
+  return false;
 }
 
-const ClassSettings& SettingsManager::FindByExt (const char* ext, bool _default) const
+const ClassSettings& SettingsManager::FindByExt(const char* ext, bool _default) const
 {
-    ClassSettingsVector::const_iterator
-        it(m_classSettingsVector.begin()),
-        end(m_classSettingsVector.end());
-
-    for (; it != end; it++)
+  for(auto& classet : m_classSettingsVector)
+  {
+    if(is_ext_supported((*classet).GetExtensions(),ext))
     {
-      if (is_ext_supported((**it).GetExtensions(), ext))
-      {
-          return **it;
-      }
+      return *classet;
     }
-    if (!_default)
-    {
-      throw std::out_of_range(string("class for extension ") + ext + " not found");
-    }
-    return *m_classSettingsVector.at(0);
+  }
+  if(!_default)
+  {
+    throw StdException(XString("Class for extension [") + ext + " not found!");
+  }
+  return *m_classSettingsVector.at(0);
 }
 
 
 const ClassSettings& SettingsManager::FindByName (const char* name) const
 {
-    ClassSettingsVector::const_iterator
-        it(m_classSettingsVector.begin()),
-        end(m_classSettingsVector.end());
-
-    for (; it != end; it++)
+  for(auto& classet : m_classSettingsVector)
+  {
+    if((*classet).GetName().Compare(name) == 0)
     {
-      if ((**it).GetName() == name)
-      {
-          return **it;
-      }
+      return *classet;
     }
-    throw std::out_of_range(string("class with name ") + name + " not found");
+  }
+  throw StdException(XString("Class with name [") + name + "] not found!");
 }
 
 };//namespace OpenEditor

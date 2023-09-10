@@ -29,7 +29,6 @@
 
 namespace OpenEditor
 {
-    using std::string;
     using Common::Fastmap;
 
     enum EToken
@@ -120,7 +119,7 @@ namespace OpenEditor
 
         enum ESequenceOf { eNone, eQuotedString, eDblQuotedString, eEndLineComment, eComment };
         ESequenceOf m_sequenceOf;
-        string m_stringOf;
+        CString m_stringOf;
         Token m_sequenceToken;
 
         static DelimitersMap m_Delimiters;

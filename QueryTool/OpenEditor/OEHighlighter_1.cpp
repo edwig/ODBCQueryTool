@@ -41,7 +41,7 @@ void CPlusPlusHighlighter::Init (const VisualAttributesSet& set_)
 {
     CommonHighlighter::Init(set_);
     // required hardcoded categories
-    m_preprocessorAttrs = set_.FindByName("Preprocessor");
+    m_preprocessorAttrs = set_.FindByName(_T("Preprocessor"));
 }
 
 void CPlusPlusHighlighter::NextLine (const char* currentLine, int currentLineLength)
@@ -53,8 +53,8 @@ void CPlusPlusHighlighter::NextLine (const char* currentLine, int currentLineLen
 
 void CPlusPlusHighlighter::NextWord (const char* str, int len)
 {
-    if (m_isStartLine && len == (sizeof("#include") - 1)
-    && !strncmp(str, "#include", len))
+    if (m_isStartLine && len == (sizeof(_T("#include")) - 1)
+    && !strncmp(str, _T("#include"), len))
         m_includeDirective = true;
 
     if (m_openBrace)
@@ -84,22 +84,24 @@ void CPlusPlusHighlighter::NextWord (const char* str, int len)
 void PlSqlHighlighter::Init (const VisualAttributesSet& set_)
 {
     CommonHighlighter::Init(set_);
-    // required hardcoded categories
-    m_bindVarAttrs = set_.FindByName("Bind Variable");
-    m_substitutionAttrs = set_.FindByName("Substitution");
-    m_fileNameAttrs = set_.FindByName("File name (@ & @@)");
+    // required hard coded categories
+    m_bindVarAttrs      = set_.FindByName(_T("Bind Variable"));
+    m_substitutionAttrs = set_.FindByName(_T("Substitution"));
+    m_fileNameAttrs     = set_.FindByName(_T("File name (@ & @@)"));
 }
 
 void PlSqlHighlighter::NextLine (const char* currentLine, int currentLineLength)
 {
-    if (m_openBrace)
+  if (m_openBrace)
+  {
+    m_openBrace = 0;
+    if(m_seqOf == eString)
     {
-        m_openBrace = 0;
-        if (m_seqOf == eString)
-            m_current = m_stringAttr;
+      m_current = m_stringAttr;
     }
+  }
 
-    CommonHighlighter::NextLine(currentLine, currentLineLength);
+  CommonHighlighter::NextLine(currentLine, currentLineLength);
 }
 
 void PlSqlHighlighter::NextWord (const char* str, int len)
@@ -165,9 +167,9 @@ void PlSqlHighlighter::NextWord (const char* str, int len)
 void SqrHighlighter::Init (const VisualAttributesSet& set_)
 {
     CommonHighlighter::Init(set_);
-    // required hardcoded categories
-    m_variablesAttrs = set_.FindByName("Variables");
-    m_preprocessorAttrs = set_.FindByName("Preprocessor");
+    // required hard coded categories
+    m_variablesAttrs    = set_.FindByName(_T("Variables"));
+    m_preprocessorAttrs = set_.FindByName(_T("Preprocessor"));
 }
 
 void SqrHighlighter::NextWord (const char* str, int len)
@@ -179,7 +181,7 @@ void SqrHighlighter::NextWord (const char* str, int len)
         switch (*str)
         {
         case '#':
-            if (!_strnicmp(str, "#debug", sizeof("#debug")-1))
+            if (!_strnicmp(str, _T("#debug"), sizeof(_T("#debug"))-1))
             {
                 m_current = m_preprocessorAttrs;
                 break;
@@ -198,13 +200,13 @@ void SqrHighlighter::NextWord (const char* str, int len)
 
 void ShellHighlighter::Init (const VisualAttributesSet& set_)
 {
-    // owerride required hardcoded categories
+    // override required hard coded categories
     m_characterLabel = m_stringLabel;
 
     CommonHighlighter::Init(set_);
 
-    // required hardcoded categories
-    m_substAttrs = set_.FindByName("Substitution");
+    // required hard coded categories
+    m_substAttrs = set_.FindByName(_T("Substitution"));
 }
 
 void ShellHighlighter::NextLine (const char* currentLine, int currentLineLength)
@@ -246,34 +248,34 @@ void ShellHighlighter::NextWord (const char* str, int len)
 
 void PerlHighlighter::Init (const VisualAttributesSet& set_)
 {
-    // owerride required hardcoded categories
+    // override required hard coded categories
     m_characterLabel = m_stringLabel;
 
     CommonHighlighter::Init(set_);
 
-    // required hardcoded categories
-    m_vartAttrs = set_.FindByName("Variables");
+    // required hard coded categories
+    m_vartAttrs = set_.FindByName(_T("Variables"));
 }
 
 void PerlHighlighter::NextWord (const char* str, int len)
 {
-    if (len > 0)
+  if (len > 0)
+  {
+    switch (str[0])
     {
-        switch (str[0])
-        {
-        case '%':   //Hash
-        case '&':   //Anonymous subroutine
-        case '*':   //Typeglob 
-            if (!(len > 1 && isalpha(str[1]))) break;
+      case '%':   //Hash
+      case '&':   //Anonymous subroutine
+      case '*':   //Type glob 
+                  if (!(len > 1 && isalpha(str[1]))) break;
 
-        case '$':   //Scalar
-        case '@':   //List
-            m_current = m_vartAttrs;
-            return;
-        }
+      case '$':   //Scalar
+      case '@':   //List
+                  m_current = m_vartAttrs;
+                  return;
     }
+  }
 
-    CommonHighlighter::NextWord(str, len);
+  CommonHighlighter::NextWord(str, len);
 }
 
 };

@@ -91,12 +91,12 @@ void TemplateCollectionReader::operator >> (SettingsManager& mgr)
 
     mgr.m_templateCollection.Clear();
 
-    Stream::Section sect1(m_in, "Lng");
+    Stream::Section sect1(m_in, _T("Lng"));
     for (int i = 0; i < langCount; i++)
     {
         Stream::Section sect2(m_in, i);
 
-        string language;
+        CString language;
         m_in.read("Name", language);
         TemplatePtr templ = mgr.m_templateCollection.Add(language);
         
@@ -107,7 +107,7 @@ void TemplateCollectionReader::operator >> (SettingsManager& mgr)
         int templCount = 0;
         m_in.read("Count", templCount);
 
-        Stream::Section sect3(m_in, "Tmpl");
+        Stream::Section sect3(m_in, _T("Tmpl"));
         for (int j = 0; j < templCount; j++)
         {
             Stream::Section sect4(m_in, j);

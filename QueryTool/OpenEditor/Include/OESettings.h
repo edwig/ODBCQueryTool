@@ -16,12 +16,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
-#ifndef __OESettings_h__
-#define __OESettings_h__
 
 /*
     28.06.02 new properties have been added
@@ -30,7 +25,6 @@
     29.06.2003 improvement, "Restrict cursor" has been replaced with "Cursor beyond EOL" and "Cursor beyond EOF"
 */
 
-#include <string>
 #include <vector>
 #include <map>
 #include <common/arg_shared.h>
@@ -79,7 +73,6 @@
 
 namespace OpenEditor
 {
-    using std::string;
     using std::vector;
     using std::map;
     using arg::counted_ptr;
@@ -144,15 +137,15 @@ namespace OpenEditor
         static int GetSysPrintMeasuremnt ();
 
         OES_DECLARE_PROPERTY(bool,   PrintBlackAndWhite);
-        OES_DECLARE_PROPERTY(string, PrintHeader);
-        OES_DECLARE_PROPERTY(string, PrintFooter);
+        OES_DECLARE_PROPERTY(CString, PrintHeader);
+        OES_DECLARE_PROPERTY(CString, PrintFooter);
         OES_DECLARE_PROPERTY(int,    PrintMarginMeasurement);
         OES_DECLARE_PROPERTY(double, PrintLeftMargin);
         OES_DECLARE_PROPERTY(double, PrintRightMargin);
         OES_DECLARE_PROPERTY(double, PrintTopMargin);
         OES_DECLARE_PROPERTY(double, PrintBottomMargin);
 
-        OES_DECLARE_PROPERTY(string, DefFileExtension);
+        OES_DECLARE_PROPERTY(CString, DefFileExtension);
         OES_DECLARE_PROPERTY(int,  UndoLimit);
         OES_DECLARE_PROPERTY(int,  UndoMemLimit);
         OES_DECLARE_PROPERTY(bool, UndoAfterSaving);
@@ -171,7 +164,7 @@ namespace OpenEditor
         OES_DECLARE_PROPERTY(bool, BlockTabIndent);
         OES_DECLARE_PROPERTY(bool, ColBlockDeleteSpaceAfterMove);
         OES_DECLARE_PROPERTY(bool, ColBlockCursorToStartAfterPaste);
-        OES_DECLARE_PROPERTY(string, MouseSelectionDelimiters);
+        OES_DECLARE_PROPERTY(CString, MouseSelectionDelimiters);
 
         OES_DECLARE_PROPERTY(bool,   FileLocking);
         OES_DECLARE_PROPERTY(bool,   FileMemMapForBig);
@@ -182,8 +175,8 @@ namespace OpenEditor
         OES_DECLARE_PROPERTY(bool,   FileAutoscrollAfterReload);
         OES_DECLARE_PROPERTY(bool,   FileOverwriteReadonly);
         OES_DECLARE_PROPERTY(int,    FileBackup);
-        OES_DECLARE_PROPERTY(string, FileBackupName);
-        OES_DECLARE_PROPERTY(string, FileBackupDirectory);
+        OES_DECLARE_PROPERTY(CString,FileBackupName);
+        OES_DECLARE_PROPERTY(CString,FileBackupDirectory);
 
         OES_DECLARE_PROPERTY(bool,   FileWholeWord);
         OES_DECLARE_PROPERTY(bool,   FileMatchCase);
@@ -191,16 +184,16 @@ namespace OpenEditor
         OES_DECLARE_PROPERTY(bool,   FileSubfolders);
         OES_DECLARE_PROPERTY(bool,   FileSaveBefore);
         OES_DECLARE_PROPERTY(bool,   FileCollapse);
-        OES_DECLARE_PROPERTY(string, FileWhatToFind);
-        OES_DECLARE_PROPERTY(string, FileFileTypes);
-        OES_DECLARE_PROPERTY(string, FileStartDirectory);
+        OES_DECLARE_PROPERTY(CString, FileWhatToFind);
+        OES_DECLARE_PROPERTY(CString, FileFileTypes);
+        OES_DECLARE_PROPERTY(CString, FileStartDirectory);
 
         OES_DECLARE_PROPERTY(int,    SQLPrefetchLines);
         OES_DECLARE_PROPERTY(int,    SQLLengthOption);
-        OES_DECLARE_PROPERTY(string, SQLQueryTerminator);
-        OES_DECLARE_PROPERTY(string, SQLQueryFont);
+        OES_DECLARE_PROPERTY(CString, SQLQueryTerminator);
+        OES_DECLARE_PROPERTY(CString, SQLQueryFont);
         OES_DECLARE_PROPERTY(int,    SQLCharsetTranslation);
-        OES_DECLARE_PROPERTY(string, SQLCharsetUsed);
+        OES_DECLARE_PROPERTY(CString, SQLCharsetUsed);
 
         OES_DECLARE_PROPERTY(bool,   PreferODBCMetaSQL);
         OES_DECLARE_PROPERTY(bool,   AllowMultipleInstances);
@@ -209,8 +202,8 @@ namespace OpenEditor
         OES_DECLARE_PROPERTY(bool,   WorkDirFollowsDocument);
         OES_DECLARE_PROPERTY(bool,   SaveCurPosAndBookmarks);
         OES_DECLARE_PROPERTY(bool,   SaveMainWinPosition);
-        OES_DECLARE_PROPERTY(string, Locale);
-        OES_DECLARE_PROPERTY(string, KeymapLayout);
+        OES_DECLARE_PROPERTY(CString, Locale);
+        OES_DECLARE_PROPERTY(CString, KeymapLayout);
     };
 
 
@@ -219,11 +212,11 @@ namespace OpenEditor
     //
     class Settings : public BaseSettings
     {
-        OES_DECLARE_ABSTR_PROPERTY(string, Name);
-        OES_DECLARE_ABSTR_PROPERTY(string, Extensions);
-        OES_DECLARE_ABSTR_PROPERTY(string, Language);
+        OES_DECLARE_ABSTR_PROPERTY(CString,Name);
+        OES_DECLARE_ABSTR_PROPERTY(CString,Extensions);
+        OES_DECLARE_ABSTR_PROPERTY(CString, Language);
 
-        OES_DECLARE_ABSTR_PROPERTY(string, Delimiters);
+        OES_DECLARE_ABSTR_PROPERTY(CString, Delimiters);
         OES_DECLARE_ABSTR_PROPERTY(int,    TabSpacing);
         OES_DECLARE_ABSTR_PROPERTY(int,    IndentSpacing);
         OES_DECLARE_ABSTR_PROPERTY(int,    IndentType);
@@ -234,15 +227,15 @@ namespace OpenEditor
         OES_DECLARE_ABSTR_PROPERTY(VisualAttributesSet, VisualAttributesSet);
 
         OES_DECLARE_ABSTR_PROPERTY(bool,   PrintBlackAndWhite);
-        OES_DECLARE_ABSTR_PROPERTY(string, PrintHeader);
-        OES_DECLARE_ABSTR_PROPERTY(string, PrintFooter);
+        OES_DECLARE_ABSTR_PROPERTY(CString, PrintHeader);
+        OES_DECLARE_ABSTR_PROPERTY(CString, PrintFooter);
         OES_DECLARE_ABSTR_PROPERTY(int,    PrintMarginMeasurement);
         OES_DECLARE_ABSTR_PROPERTY(double, PrintLeftMargin);
         OES_DECLARE_ABSTR_PROPERTY(double, PrintRightMargin);
         OES_DECLARE_ABSTR_PROPERTY(double, PrintTopMargin);
         OES_DECLARE_ABSTR_PROPERTY(double, PrintBottomMargin);
 
-        OES_DECLARE_ABSTR_PROPERTY(string, DefFileExtension);
+        OES_DECLARE_ABSTR_PROPERTY(CString, DefFileExtension);
         OES_DECLARE_ABSTR_PROPERTY(int,    UndoLimit);
         OES_DECLARE_ABSTR_PROPERTY(int,    UndoMemLimit);
         OES_DECLARE_ABSTR_PROPERTY(bool,   UndoAfterSaving);
@@ -261,7 +254,7 @@ namespace OpenEditor
         OES_DECLARE_ABSTR_PROPERTY(bool,   BlockTabIndent);
         OES_DECLARE_ABSTR_PROPERTY(bool,   ColBlockDeleteSpaceAfterMove);
         OES_DECLARE_ABSTR_PROPERTY(bool,   ColBlockCursorToStartAfterPaste);
-        OES_DECLARE_ABSTR_PROPERTY(string, MouseSelectionDelimiters);
+        OES_DECLARE_ABSTR_PROPERTY(CString, MouseSelectionDelimiters);
 
         OES_DECLARE_ABSTR_PROPERTY(bool,   FileLocking);
         OES_DECLARE_ABSTR_PROPERTY(bool,   FileMemMapForBig);
@@ -272,8 +265,8 @@ namespace OpenEditor
         OES_DECLARE_ABSTR_PROPERTY(bool,   FileAutoscrollAfterReload);
         OES_DECLARE_ABSTR_PROPERTY(bool,   FileOverwriteReadonly);
         OES_DECLARE_ABSTR_PROPERTY(int,    FileBackup);
-        OES_DECLARE_ABSTR_PROPERTY(string, FileBackupName);
-        OES_DECLARE_ABSTR_PROPERTY(string, FileBackupDirectory);
+        OES_DECLARE_ABSTR_PROPERTY(CString,FileBackupName);
+        OES_DECLARE_ABSTR_PROPERTY(CString,FileBackupDirectory);
 
         OES_DECLARE_ABSTR_PROPERTY(bool,   FileWholeWord);
         OES_DECLARE_ABSTR_PROPERTY(bool,   FileMatchCase);
@@ -281,16 +274,16 @@ namespace OpenEditor
         OES_DECLARE_ABSTR_PROPERTY(bool,   FileSubfolders);
         OES_DECLARE_ABSTR_PROPERTY(bool,   FileSaveBefore);
         OES_DECLARE_ABSTR_PROPERTY(bool,   FileCollapse);
-        OES_DECLARE_ABSTR_PROPERTY(string, FileWhatToFind);
-        OES_DECLARE_ABSTR_PROPERTY(string, FileFileTypes);
-        OES_DECLARE_ABSTR_PROPERTY(string, FileStartDirectory);
+        OES_DECLARE_ABSTR_PROPERTY(CString, FileWhatToFind);
+        OES_DECLARE_ABSTR_PROPERTY(CString, FileFileTypes);
+        OES_DECLARE_ABSTR_PROPERTY(CString, FileStartDirectory);
 
         OES_DECLARE_ABSTR_PROPERTY(int,    SQLPrefetchLines);
         OES_DECLARE_ABSTR_PROPERTY(int,    SQLLengthOption);
-        OES_DECLARE_ABSTR_PROPERTY(string, SQLQueryTerminator);
-        OES_DECLARE_ABSTR_PROPERTY(string, SQLQueryFont);
+        OES_DECLARE_ABSTR_PROPERTY(CString, SQLQueryTerminator);
+        OES_DECLARE_ABSTR_PROPERTY(CString, SQLQueryFont);
         OES_DECLARE_ABSTR_PROPERTY(int,    SQLCharsetTranslation);
-        OES_DECLARE_ABSTR_PROPERTY(string, SQLCharsetUsed);
+        OES_DECLARE_ABSTR_PROPERTY(CString, SQLCharsetUsed);
 
         OES_DECLARE_ABSTR_PROPERTY(bool,   PreferODBCMetaSQL);
         OES_DECLARE_ABSTR_PROPERTY(bool,   AllowMultipleInstances);
@@ -299,8 +292,8 @@ namespace OpenEditor
         OES_DECLARE_ABSTR_PROPERTY(bool,   WorkDirFollowsDocument);
         OES_DECLARE_ABSTR_PROPERTY(bool,   SaveCurPosAndBookmarks);
         OES_DECLARE_ABSTR_PROPERTY(bool,   SaveMainWinPosition);
-        OES_DECLARE_ABSTR_PROPERTY(string, Locale);
-        OES_DECLARE_ABSTR_PROPERTY(string, KeymapLayout);
+        OES_DECLARE_ABSTR_PROPERTY(CString, Locale);
+        OES_DECLARE_ABSTR_PROPERTY(CString, KeymapLayout);
 
         // class/language template support
         virtual const TemplatePtr GetTemplate () const = 0;
@@ -315,11 +308,11 @@ namespace OpenEditor
         friend class SettingsManagerWriter;
     public:
         // class properties
-        OES_DECLARE_PROPERTY(string, Name);
-        OES_DECLARE_PROPERTY(string, Extensions);
-        OES_DECLARE_PROPERTY(string, Language);
+        OES_DECLARE_PROPERTY(CString,Name);
+        OES_DECLARE_PROPERTY(CString,Extensions);
+        OES_DECLARE_PROPERTY(CString, Language);
 
-        OES_DECLARE_PROPERTY(string, Delimiters);
+        OES_DECLARE_PROPERTY(CString, Delimiters);
         OES_DECLARE_PROPERTY(int,    TabSpacing);
         OES_DECLARE_PROPERTY(int,    IndentSpacing);
         OES_DECLARE_PROPERTY(int,    IndentType);
@@ -338,15 +331,15 @@ namespace OpenEditor
 
         // global properties
         OES_DECLARE_GLOBAL_PROPERTY(bool,   PrintBlackAndWhite);
-        OES_DECLARE_GLOBAL_PROPERTY(string, PrintHeader);
-        OES_DECLARE_GLOBAL_PROPERTY(string, PrintFooter);
+        OES_DECLARE_GLOBAL_PROPERTY(CString, PrintHeader);
+        OES_DECLARE_GLOBAL_PROPERTY(CString, PrintFooter);
         OES_DECLARE_GLOBAL_PROPERTY(int,    PrintMarginMeasurement);
         OES_DECLARE_GLOBAL_PROPERTY(double, PrintLeftMargin);
         OES_DECLARE_GLOBAL_PROPERTY(double, PrintRightMargin);
         OES_DECLARE_GLOBAL_PROPERTY(double, PrintTopMargin);
         OES_DECLARE_GLOBAL_PROPERTY(double, PrintBottomMargin);
 
-        OES_DECLARE_GLOBAL_PROPERTY(string, DefFileExtension);
+        OES_DECLARE_GLOBAL_PROPERTY(CString, DefFileExtension);
         OES_DECLARE_GLOBAL_PROPERTY(int,    UndoLimit);
         OES_DECLARE_GLOBAL_PROPERTY(int,    UndoMemLimit);
         OES_DECLARE_GLOBAL_PROPERTY(bool,   UndoAfterSaving);
@@ -361,7 +354,7 @@ namespace OpenEditor
         OES_DECLARE_GLOBAL_PROPERTY(bool,   BlockTabIndent);
         OES_DECLARE_GLOBAL_PROPERTY(bool,   ColBlockDeleteSpaceAfterMove);
         OES_DECLARE_GLOBAL_PROPERTY(bool,   ColBlockCursorToStartAfterPaste);
-        OES_DECLARE_GLOBAL_PROPERTY(string, MouseSelectionDelimiters);
+        OES_DECLARE_GLOBAL_PROPERTY(CString, MouseSelectionDelimiters);
 
         OES_DECLARE_GLOBAL_PROPERTY(bool,   FileLocking);
         OES_DECLARE_GLOBAL_PROPERTY(bool,   FileMemMapForBig);
@@ -372,8 +365,8 @@ namespace OpenEditor
         OES_DECLARE_GLOBAL_PROPERTY(bool,   FileAutoscrollAfterReload);
         OES_DECLARE_GLOBAL_PROPERTY(bool,   FileOverwriteReadonly);
         OES_DECLARE_GLOBAL_PROPERTY(int,    FileBackup);
-        OES_DECLARE_GLOBAL_PROPERTY(string, FileBackupName);
-        OES_DECLARE_GLOBAL_PROPERTY(string, FileBackupDirectory);
+        OES_DECLARE_GLOBAL_PROPERTY(CString,FileBackupName);
+        OES_DECLARE_GLOBAL_PROPERTY(CString,FileBackupDirectory);
 
         OES_DECLARE_GLOBAL_PROPERTY(bool,   FileWholeWord);
         OES_DECLARE_GLOBAL_PROPERTY(bool,   FileMatchCase);
@@ -381,16 +374,16 @@ namespace OpenEditor
         OES_DECLARE_GLOBAL_PROPERTY(bool,   FileSubfolders);
         OES_DECLARE_GLOBAL_PROPERTY(bool,   FileSaveBefore);
         OES_DECLARE_GLOBAL_PROPERTY(bool,   FileCollapse);
-        OES_DECLARE_GLOBAL_PROPERTY(string, FileWhatToFind);
-        OES_DECLARE_GLOBAL_PROPERTY(string, FileFileTypes);
-        OES_DECLARE_GLOBAL_PROPERTY(string, FileStartDirectory);
+        OES_DECLARE_GLOBAL_PROPERTY(CString, FileWhatToFind);
+        OES_DECLARE_GLOBAL_PROPERTY(CString, FileFileTypes);
+        OES_DECLARE_GLOBAL_PROPERTY(CString, FileStartDirectory);
 
         OES_DECLARE_GLOBAL_PROPERTY(int,    SQLPrefetchLines);
         OES_DECLARE_GLOBAL_PROPERTY(int,    SQLLengthOption);
-        OES_DECLARE_GLOBAL_PROPERTY(string, SQLQueryTerminator);
-        OES_DECLARE_GLOBAL_PROPERTY(string, SQLQueryFont);
+        OES_DECLARE_GLOBAL_PROPERTY(CString, SQLQueryTerminator);
+        OES_DECLARE_GLOBAL_PROPERTY(CString, SQLQueryFont);
         OES_DECLARE_GLOBAL_PROPERTY(int,    SQLCharsetTranslation);
-        OES_DECLARE_GLOBAL_PROPERTY(string, SQLCharsetUsed);
+        OES_DECLARE_GLOBAL_PROPERTY(CString, SQLCharsetUsed);
 
         OES_DECLARE_GLOBAL_PROPERTY(bool,   PreferODBCMetaSQL);
         OES_DECLARE_GLOBAL_PROPERTY(bool,   AllowMultipleInstances);
@@ -399,8 +392,8 @@ namespace OpenEditor
         OES_DECLARE_GLOBAL_PROPERTY(bool,   WorkDirFollowsDocument);
         OES_DECLARE_GLOBAL_PROPERTY(bool,   SaveCurPosAndBookmarks);
         OES_DECLARE_GLOBAL_PROPERTY(bool,   SaveMainWinPosition);
-        OES_DECLARE_GLOBAL_PROPERTY(string, Locale);
-        OES_DECLARE_GLOBAL_PROPERTY(string, KeymapLayout);
+        OES_DECLARE_GLOBAL_PROPERTY(CString, Locale);
+        OES_DECLARE_GLOBAL_PROPERTY(CString, KeymapLayout);
 
 
         // class/language template support
@@ -438,11 +431,11 @@ namespace OpenEditor
         friend class SettingsManagerWriter;
     public:
         // class properties
-        OES_AGGREGATE_PROPERTY(string, Name);
-        OES_AGGREGATE_PROPERTY(string, Extensions);
-        OES_AGGREGATE_PROPERTY(string, Language);
+        OES_AGGREGATE_PROPERTY(CString,Name);
+        OES_AGGREGATE_PROPERTY(CString,Extensions);
+        OES_AGGREGATE_PROPERTY(CString, Language);
 
-        OES_AGGREGATE_PROPERTY(string, Delimiters);
+        OES_AGGREGATE_PROPERTY(CString, Delimiters);
 
         // overridden class properties
         OES_OVERRIDE_PROPERTY(int,     TabSpacing);
@@ -460,15 +453,15 @@ namespace OpenEditor
 
         // global properties
         OES_AGGREGATE_PROPERTY(bool,   PrintBlackAndWhite);
-        OES_AGGREGATE_PROPERTY(string, PrintHeader);
-        OES_AGGREGATE_PROPERTY(string, PrintFooter);
+        OES_AGGREGATE_PROPERTY(CString, PrintHeader);
+        OES_AGGREGATE_PROPERTY(CString, PrintFooter);
         OES_AGGREGATE_PROPERTY(int,    PrintMarginMeasurement);
         OES_AGGREGATE_PROPERTY(double, PrintLeftMargin);
         OES_AGGREGATE_PROPERTY(double, PrintRightMargin);
         OES_AGGREGATE_PROPERTY(double, PrintTopMargin);
         OES_AGGREGATE_PROPERTY(double, PrintBottomMargin);
 
-        OES_AGGREGATE_PROPERTY(string, DefFileExtension);
+        OES_AGGREGATE_PROPERTY(CString, DefFileExtension);
         OES_AGGREGATE_PROPERTY(int,    UndoLimit);
         OES_AGGREGATE_PROPERTY(int,    UndoMemLimit);
         OES_AGGREGATE_PROPERTY(bool,   UndoAfterSaving);
@@ -483,7 +476,7 @@ namespace OpenEditor
         OES_AGGREGATE_PROPERTY(bool,   BlockTabIndent);
         OES_AGGREGATE_PROPERTY(bool,   ColBlockDeleteSpaceAfterMove);
         OES_AGGREGATE_PROPERTY(bool,   ColBlockCursorToStartAfterPaste);
-        OES_AGGREGATE_PROPERTY(string, MouseSelectionDelimiters);
+        OES_AGGREGATE_PROPERTY(CString, MouseSelectionDelimiters);
 
         OES_AGGREGATE_PROPERTY(bool,   FileLocking);
         OES_AGGREGATE_PROPERTY(bool,   FileMemMapForBig);
@@ -494,8 +487,8 @@ namespace OpenEditor
         OES_AGGREGATE_PROPERTY(bool,   FileAutoscrollAfterReload);
         OES_AGGREGATE_PROPERTY(bool,   FileOverwriteReadonly);
         OES_AGGREGATE_PROPERTY(int,    FileBackup);
-        OES_AGGREGATE_PROPERTY(string, FileBackupName);
-        OES_AGGREGATE_PROPERTY(string, FileBackupDirectory);
+        OES_AGGREGATE_PROPERTY(CString,FileBackupName);
+        OES_AGGREGATE_PROPERTY(CString,FileBackupDirectory);
 
         OES_AGGREGATE_PROPERTY(bool,   FileWholeWord);
         OES_AGGREGATE_PROPERTY(bool,   FileMatchCase);
@@ -503,16 +496,16 @@ namespace OpenEditor
         OES_AGGREGATE_PROPERTY(bool,   FileSubfolders);
         OES_AGGREGATE_PROPERTY(bool,   FileSaveBefore);
         OES_AGGREGATE_PROPERTY(bool,   FileCollapse);
-        OES_AGGREGATE_PROPERTY(string, FileWhatToFind);
-        OES_AGGREGATE_PROPERTY(string, FileFileTypes);
-        OES_AGGREGATE_PROPERTY(string, FileStartDirectory);
+        OES_AGGREGATE_PROPERTY(CString, FileWhatToFind);
+        OES_AGGREGATE_PROPERTY(CString, FileFileTypes);
+        OES_AGGREGATE_PROPERTY(CString, FileStartDirectory);
 
         OES_AGGREGATE_PROPERTY(int,    SQLPrefetchLines);
         OES_AGGREGATE_PROPERTY(int,    SQLLengthOption);
-        OES_AGGREGATE_PROPERTY(string, SQLQueryTerminator);
-        OES_AGGREGATE_PROPERTY(string, SQLQueryFont);
+        OES_AGGREGATE_PROPERTY(CString, SQLQueryTerminator);
+        OES_AGGREGATE_PROPERTY(CString, SQLQueryFont);
         OES_AGGREGATE_PROPERTY(int,    SQLCharsetTranslation);
-        OES_AGGREGATE_PROPERTY(string, SQLCharsetUsed);
+        OES_AGGREGATE_PROPERTY(CString, SQLCharsetUsed);
 
 
         OES_AGGREGATE_PROPERTY(bool,   PreferODBCMetaSQL);
@@ -522,8 +515,8 @@ namespace OpenEditor
         OES_AGGREGATE_PROPERTY(bool,   WorkDirFollowsDocument);
         OES_AGGREGATE_PROPERTY(bool,   SaveCurPosAndBookmarks);
         OES_AGGREGATE_PROPERTY(bool,   SaveMainWinPosition);
-        OES_AGGREGATE_PROPERTY(string, Locale);
-        OES_AGGREGATE_PROPERTY(string, KeymapLayout);
+        OES_AGGREGATE_PROPERTY(CString, Locale);
+        OES_AGGREGATE_PROPERTY(CString, KeymapLayout);
 
         // class/language template support
         const TemplatePtr GetTemplate () const;
@@ -685,7 +678,7 @@ namespace OpenEditor
     inline
     const ClassSettings& SettingsManager::GetDefaults () const
     {
-        return FindByExt(GetGlobalSettings().GetDefFileExtension().c_str(), true);
+        return FindByExt(GetGlobalSettings().GetDefFileExtension().GetString(), true);
     }
 
     inline
@@ -708,5 +701,3 @@ namespace OpenEditor
 
 };//namespace OpenEditor
 
-
-#endif//__OESettings_h__

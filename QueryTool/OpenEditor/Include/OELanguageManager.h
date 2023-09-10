@@ -30,14 +30,13 @@
 
 namespace OpenEditor
 {
-    using std::string;
     using std::set;
 
     class LanguageManager
     {
     public:
-        static HighlighterBasePtr CreateHighlighter (const string& lang);
-        static LanguageSupportPtr CreateLanguageSupport (const string& lang, Storage* pstorage);
+        static HighlighterBasePtr CreateHighlighter    (const CString& lang);
+        static LanguageSupportPtr CreateLanguageSupport(const CString& lang, Storage* pstorage);
     };
 
 };//namespace OpenEditor

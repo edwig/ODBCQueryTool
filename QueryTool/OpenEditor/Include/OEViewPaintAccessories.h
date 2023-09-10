@@ -50,7 +50,7 @@ struct COEViewPaintAccessories
     COLORREF m_RndBmkForeground;
     COLORREF m_EOFForeground;
 
-    static COEViewPaintAccessoriesPtr GetPaintAccessories (const std::string&);
+    static COEViewPaintAccessoriesPtr GetPaintAccessories (const CString&);
 
     COEViewPaintAccessories ();
 

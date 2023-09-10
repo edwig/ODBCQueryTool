@@ -35,7 +35,7 @@ class COEAutocompleteCtrl : public CListCtrl
     
     bool m_hidden;
     HWND m_hwndEditor;
-    OpenEditor::Square m_selection;
+    OpenEditor::Square m_selection{0};
 
 public:
 	COEAutocompleteCtrl();

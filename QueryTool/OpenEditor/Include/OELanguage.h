@@ -36,7 +36,6 @@ namespace OpenEditor
     using std::map;
     using std::set;
     using std::vector;
-    using std::string;
     using arg::counted_ptr;
 
     class Storage;
@@ -45,47 +44,47 @@ namespace OpenEditor
     struct LanguageKeyword 
     { 
         LanguageKeyword () {}
-        LanguageKeyword (string _keyword, int _groupIndex) : keyword(_keyword), groupIndex(_groupIndex) {}
-        string keyword; 
+        LanguageKeyword (CString _keyword, int _groupIndex) : keyword(_keyword), groupIndex(_groupIndex) {}
+        CString keyword; 
         int groupIndex; 
     };
 
-	typedef map<string, LanguageKeyword> LanguageKeywordMap;
-	typedef LanguageKeywordMap::iterator LanguageKeywordMapIterator;
-	typedef LanguageKeywordMap::const_iterator LanguageKeywordMapConstIterator;
-    typedef counted_ptr<LanguageKeywordMap> LanguageKeywordMapPtr;
+	typedef map<CString, LanguageKeyword>       LanguageKeywordMap;
+	typedef LanguageKeywordMap::iterator        LanguageKeywordMapIterator;
+	typedef LanguageKeywordMap::const_iterator  LanguageKeywordMapConstIterator;
+  typedef counted_ptr<LanguageKeywordMap>     LanguageKeywordMapPtr;
 
     class Language
     {
     public:
         Language () : m_LanguageKeywordMap(new LanguageKeywordMap) {}
 
-        const string& GetName () const;
+        const CString& GetName () const;
         bool  IsCaseSensitive () const;
-        const vector<string>& GetKeywordGroups () const;
-        const string& GetPreprocessor () const;
-        const pair<string, string>& GetCommentPair () const;
-        const string& GetEndLineComment () const;
-        const set<string>& GetStartLineComment () const;
-        const string& GetEscapeChar () const;
-        const pair<string, string>& GetStringPair () const;
-        const pair<string, string>& GetCharPair () const;
+        const vector<CString>& GetKeywordGroups () const;
+        const CString& GetPreprocessor () const;
+        const pair<CString, CString>& GetCommentPair () const;
+        const CString& GetEndLineComment () const;
+        const set<CString>& GetStartLineComment () const;
+        const CString& GetEscapeChar () const;
+        const pair<CString, CString>& GetStringPair () const;
+        const pair<CString, CString>& GetCharPair () const;
         const LanguageKeywordMapPtr GetLanguageKeywordMap () const;
-        const string& GetDelimiters () const;
-        const vector<vector<string> >& GetMatchBraces () const;
+        const CString& GetDelimiters () const;
+        const vector<vector<CString> >& GetMatchBraces () const;
 
 //    private:
-        string                  m_name;
-        bool                    m_caseSensiteve;
-        vector<string>          m_keywordGroups;
-        pair<string, string>    m_commentPair;
-        string                  m_endLineComment;
-        set<string>             m_startLineComment;
-        string                  m_escapeChar;
-        pair<string, string>    m_stringPair;
-        pair<string, string>    m_charPair;
-        string                  m_delimiters;
-        vector<vector<string> > m_matchBraces;
+        CString                   m_name;
+        bool                     m_caseSensiteve;
+        vector<CString>          m_keywordGroups;
+        pair<CString, CString>   m_commentPair;
+        CString                  m_endLineComment;
+        set<CString>             m_startLineComment;
+        CString                  m_escapeChar;
+        pair<CString, CString>   m_stringPair;
+        pair<CString, CString>   m_charPair;
+        CString                  m_delimiters;
+        vector<vector<CString> > m_matchBraces;
 
         /*
             charEsc, stringEsc, hyphenChar     
@@ -97,12 +96,12 @@ namespace OpenEditor
         friend class LanguagesCollectionWriter;
     };
 
-        typedef counted_ptr<Language> LanguagePtr;
+    typedef counted_ptr<Language> LanguagePtr;
     
     class LanguagesCollection
     {
     public:
-        static const LanguagePtr Find (const string&);
+        static const LanguagePtr Find (const CString&);
    private:
         static vector<LanguagePtr> m_Languages;
         friend class LanguagesCollectionReader;
@@ -110,40 +109,40 @@ namespace OpenEditor
     };
 
     inline
-    const string& Language::GetName () const
+    const CString& Language::GetName () const
         { return m_name; }
     inline
     bool  Language::IsCaseSensitive () const
         { return m_caseSensiteve; }
     inline
-    const vector<string>& Language::GetKeywordGroups () const
+    const vector<CString>& Language::GetKeywordGroups () const
         { return m_keywordGroups; }
     inline
-    const pair<string, string>& Language::GetCommentPair () const
+    const pair<CString, CString>& Language::GetCommentPair () const
         { return m_commentPair; }
     inline
-    const string& Language::GetEndLineComment () const
+    const CString& Language::GetEndLineComment () const
         { return m_endLineComment; }
     inline
-    const set<string>& Language::GetStartLineComment () const
+    const set<CString>& Language::GetStartLineComment () const
         { return m_startLineComment; }
     inline
-    const string& Language::GetEscapeChar () const
+    const CString& Language::GetEscapeChar () const
         { return m_escapeChar; }
     inline
-    const pair<string, string>& Language::GetStringPair () const
+    const pair<CString, CString>& Language::GetStringPair () const
         { return m_stringPair; }
     inline
-    const pair<string, string>& Language::GetCharPair () const
+    const pair<CString, CString>& Language::GetCharPair () const
         { return m_charPair; }
     inline
     const LanguageKeywordMapPtr Language::GetLanguageKeywordMap () const
         { return m_LanguageKeywordMap; }
     inline
-    const string& Language::GetDelimiters () const
+    const CString& Language::GetDelimiters () const
         { return m_delimiters; }
     inline
-    const vector<vector<string> >& Language::GetMatchBraces () const
+    const vector<vector<CString> >& Language::GetMatchBraces () const
         { return m_matchBraces; }
 
 };//namespace OpenEditor

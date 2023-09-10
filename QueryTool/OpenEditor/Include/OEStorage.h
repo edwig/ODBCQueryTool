@@ -30,7 +30,6 @@
 #include <map>
 #include <deque>
 #include <vector>
-#include <string>
 #include <istream>
 #include <ostream>
 #include <stdexcept>
@@ -47,7 +46,6 @@ namespace OpenEditor
     using std::map;
     using std::deque;
     using std::vector;
-    using std::string;
     using std::istream;
     using std::ostream;
     using arg::counted_ptr;

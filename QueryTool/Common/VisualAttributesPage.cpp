@@ -465,11 +465,11 @@ CVisualAttributesPage::ShowFont (const VisualAttribute& attr)
   {
     ::EnumFonts(CWindowDC(this), NULL, (FONTENUMPROC)enumFontsFunc, (LPARAM)&m_comboFontName);
   }
-  int index = m_comboFontName.FindStringExact(0, attr.m_FontName.c_str());
+  int index = m_comboFontName.FindStringExact(0, attr.m_FontName.GetString());
   m_comboFontName.SetCurSel((index !=  CB_ERR) ? index : -1);
 
   m_comboFontSize.ResetContent();
-  EnumFonts(CWindowDC(this), attr.m_FontName.c_str(), (FONTENUMPROC)enumFontSizesFunc, (LPARAM)&m_comboFontSize);
+  EnumFonts(CWindowDC(this), attr.m_FontName.GetString(), (FONTENUMPROC)enumFontSizesFunc, (LPARAM)&m_comboFontSize);
 
   char buff[64];
   _itoa_s(attr.m_FontSize, buff,64, 10);

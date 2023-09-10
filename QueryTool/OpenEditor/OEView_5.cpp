@@ -45,20 +45,20 @@ using namespace OpenEditor;
 
         void SetShape (const char*);
         void SetSubstVariables (int pages, const char* file);
-        void GetHeaderPart (string& dest, EPart part, int page, int width);
+        void GetHeaderPart (CString& dest, EPart part, int page, int width);
         bool IsEmpty () const;
 
     private:
-        void substitute (const string& shape, string& dest, bool& comleted);
+        void substitute (const CString& shape, CString& dest, bool& comleted);
 
-        typedef std::map<char,string>::value_type MapValueType;
-        typedef std::map<char,string>::const_iterator ConstIterator;
+        typedef std::map<char,CString>::value_type MapValueType;
+        typedef std::map<char,CString>::const_iterator ConstIterator;
 
-        map<char,string> m_substMap;
+        map<char,CString> m_substMap;
 
         struct Part
         {
-            string   text;
+            CString   text;
             bool comleted;
 
             Part () { comleted = false; }
@@ -205,7 +205,7 @@ void COEditorView::OnBeginPrinting (CDC* pDC, CPrintInfo* pInfo)
   logfont.lfClipPrecision  = CLIP_DEFAULT_PRECIS;
   logfont.lfQuality        = DEFAULT_QUALITY;
   logfont.lfPitchAndFamily = FIXED_PITCH;
-  strncpy_s(logfont.lfFaceName, textAttr.m_FontName.c_str(), LF_FACESIZE-1);
+  strncpy_s(logfont.lfFaceName, textAttr.m_FontName.GetString(), LF_FACESIZE-1);
 
   for (int i = 0; i < 8; i++)
   {
@@ -261,8 +261,8 @@ void COEditorView::OnBeginPrinting (CDC* pDC, CPrintInfo* pInfo)
   pc.m_Rulers[1].m_Count      = pc.m_Rulers[1].m_ClientSize / pc.m_Rulers[1].m_CharSize;
 
   // set header & footer text
-  pc.m_header.SetShape(GetPrintHeader().c_str());
-  pc.m_footer.SetShape(GetPrintFooter().c_str());
+  pc.m_header.SetShape(GetPrintHeader().GetString());
+  pc.m_footer.SetShape(GetPrintFooter().GetString());
 
   // change page size because of header & footer
   if (!pc.m_header.IsEmpty())
@@ -534,20 +534,20 @@ COEditorView::PrintHeader (CDC* pDC, CPrintInfo* pInfo)
 
   if (pc.m_hasHeader)
   {
-    string text;
+    CString text;
     UINT align = pDC->GetTextAlign();
 
     pc.m_header.GetHeaderPart(text, PrintHeader::epLeft, pInfo->m_nCurPage, pc.m_Rulers[1].m_Count);
     pDC->SetTextAlign(TA_LEFT);
-    pDC->TextOut(pc.m_Rulers[0](0), pc.m_Rulers[1](-2), text.c_str(), (int)text.size());
+    pDC->TextOut(pc.m_Rulers[0](0), pc.m_Rulers[1](-2), text.GetString(), (int)text.GetLength());
 
     pc.m_header.GetHeaderPart(text, PrintHeader::epCenter, pInfo->m_nCurPage, pc.m_Rulers[1].m_Count);
     pDC->SetTextAlign(TA_CENTER);
-    pDC->TextOut(pc.m_Rulers[0](pc.m_Rulers[0].m_Count/2), pc.m_Rulers[1](-2), text.c_str(), (int)text.size());
+    pDC->TextOut(pc.m_Rulers[0](pc.m_Rulers[0].m_Count/2), pc.m_Rulers[1](-2), text.GetString(), (int)text.GetLength());
 
     pc.m_header.GetHeaderPart(text, PrintHeader::epRight, pInfo->m_nCurPage, pc.m_Rulers[1].m_Count);
     pDC->SetTextAlign(TA_RIGHT);
-    pDC->TextOut(pc.m_Rulers[0](pc.m_Rulers[0].m_Count), pc.m_Rulers[1](-2), text.c_str(), (int)text.size());
+    pDC->TextOut(pc.m_Rulers[0](pc.m_Rulers[0].m_Count), pc.m_Rulers[1](-2), text.GetString(), (int)text.GetLength());
 
     pDC->SetTextAlign(align);
   }
@@ -560,20 +560,20 @@ COEditorView::PrintFooter (CDC* pDC, CPrintInfo* pInfo)
 
   if (pc.m_hasFooter)
   {
-    string text;
+    CString text;
     UINT align = pDC->GetTextAlign();
 
     pc.m_footer.GetHeaderPart(text, PrintHeader::epLeft, pInfo->m_nCurPage, pc.m_Rulers[1].m_Count);
     pDC->SetTextAlign(TA_LEFT);
-    pDC->TextOut(pc.m_Rulers[0](0), pc.m_Rulers[1](pc.m_Rulers[1].m_Count+1), text.c_str(), (int)text.size());
+    pDC->TextOut(pc.m_Rulers[0](0), pc.m_Rulers[1](pc.m_Rulers[1].m_Count+1), text.GetString(), text.GetLength());
 
     pc.m_footer.GetHeaderPart(text, PrintHeader::epCenter, pInfo->m_nCurPage, pc.m_Rulers[1].m_Count);
     pDC->SetTextAlign(TA_CENTER);
-    pDC->TextOut(pc.m_Rulers[0](pc.m_Rulers[0].m_Count/2), pc.m_Rulers[1](pc.m_Rulers[1].m_Count+1), text.c_str(), (int)text.size());
+    pDC->TextOut(pc.m_Rulers[0](pc.m_Rulers[0].m_Count/2), pc.m_Rulers[1](pc.m_Rulers[1].m_Count+1), text.GetString(), text.GetLength());
 
     pc.m_footer.GetHeaderPart(text, PrintHeader::epRight, pInfo->m_nCurPage, pc.m_Rulers[1].m_Count);
     pDC->SetTextAlign(TA_RIGHT);
-    pDC->TextOut(pc.m_Rulers[0](pc.m_Rulers[0].m_Count), pc.m_Rulers[1](pc.m_Rulers[1].m_Count+1), text.c_str(), (int)text.size());
+    pDC->TextOut(pc.m_Rulers[0](pc.m_Rulers[0].m_Count), pc.m_Rulers[1](pc.m_Rulers[1].m_Count+1), text.GetString(), text.GetLength());
 
     pDC->SetTextAlign(align);
   }
@@ -653,7 +653,7 @@ PrintHeader::IsEmpty () const
 
   for (int i(0); i < 3; i++)
   {
-    if (m_part[i].text.size() > 0)
+    if (m_part[i].text.GetLength() > 0)
     {
       retVal = false;
     }
@@ -661,19 +661,19 @@ PrintHeader::IsEmpty () const
   return retVal;
 }
 
-void PrintHeader::GetHeaderPart (string& dest, EPart part, int page, int width)
+void PrintHeader::GetHeaderPart (CString& dest, EPart part, int page, int width)
 {
     // count existing parts
     int divisor = 0;
 
     for (int i(0); i < 3; i++)
-        if (m_part[i].text.size() > 0)
+        if (m_part[i].text.GetLength() > 0)
             divisor++;
 
     //  arrange sizes of existing header parts (left, center or right)
     if (divisor > 0)
     {
-        unsigned int partWidth = width / divisor;
+        int partWidth = width / divisor;
 
         if (partWidth > 0)
         {
@@ -688,10 +688,10 @@ void PrintHeader::GetHeaderPart (string& dest, EPart part, int page, int width)
             else
                 dest = m_part[part].text;
 
-            if (dest.size() > partWidth)
+            if (dest.GetLength() > partWidth)
             {
-                dest.resize(partWidth - 3);
-                dest.resize(partWidth, '.');
+                dest.Truncate(partWidth - 3);
+                dest += "...";
 
                 if (m_part[part].comleted)
                     m_part[part].text = dest;
@@ -700,12 +700,12 @@ void PrintHeader::GetHeaderPart (string& dest, EPart part, int page, int width)
     }
 }
 
-void PrintHeader::substitute (const string& shape, string& dest, bool& comleted)
+void PrintHeader::substitute (const CString& shape, CString& dest, bool& comleted)
 {
-    string _dest;
+    CString _dest;
     bool _comleted = true;
 
-    for (const char* ptr = shape.c_str(); *ptr; ptr++)
+    for (const char* ptr = shape.GetString(); *ptr; ptr++)
     {
         if (*ptr == '&')
         {

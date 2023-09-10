@@ -36,7 +36,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define _CHECK_ALL_PTR_ _CHECK_AND_THROW_(m_pStorage, "Editor has not been initialized properly!")
+#define _CHECK_ALL_PTR_ _CHECK_AND_THROW_(m_pStorage, _T("Editor has not been initialized properly!"))
 
 namespace OpenEditor
 {
@@ -110,8 +110,7 @@ bool EditContext::GoToDown (bool force)
 
         if (!force && !GetCursorBeyondEOL())
         {
-            m_curPos.column
-                = min(m_orgHrzPos, GetLineLength(m_curPos.line));
+            m_curPos.column = min(m_orgHrzPos, GetLineLength(m_curPos.line));
         }
         m_curPos.column = adjustPosByTab(m_curPos.line, m_curPos.column);
 
@@ -651,7 +650,7 @@ bool EditContext::WordOrSpaceFromPoint (Position pos, Square& sqr, const char* d
     return false;
 }
 
-bool EditContext::GetBlockOrWordUnderCursor (string& buff, Square& sqr, bool onlyOneLine, const char* delims)
+bool EditContext::GetBlockOrWordUnderCursor (CString& buff, Square& sqr, bool onlyOneLine, const char* delims)
 {
     _CHECK_ALL_PTR_;
 
@@ -673,7 +672,7 @@ bool EditContext::GetBlockOrWordUnderCursor (string& buff, Square& sqr, bool onl
     if (!sqr.is_empty())
     {
         GetBlock(buff, &sqr);
-        return buff.size() ? true : false;
+        return buff.GetLength() ? true : false;
     }
 
     return false;

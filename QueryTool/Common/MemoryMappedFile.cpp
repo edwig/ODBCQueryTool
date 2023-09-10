@@ -161,13 +161,13 @@ void file_exeption::check_last_error () /* throw file_exeption */
             NULL 
         );
         
-        std::string buff(sysmsg);
+        CString buff(sysmsg);
 
         LocalFree((LPVOID)sysmsg);
 
-        TRACE(buff.c_str());
+        TRACE(buff.GetString());
 
-        throw file_exeption(buff.c_str());
+        throw file_exeption(buff.GetString());
     }
 }
 

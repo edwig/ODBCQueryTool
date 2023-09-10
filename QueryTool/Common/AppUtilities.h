@@ -28,7 +28,7 @@ namespace Common
     void AppSaveHistory   (CComboBox&     wndList,const char* szSection,const char* szEntry,int nSize);
     void AppSaveHistory   (StyleComboBox& wndList,const char* szSection,const char* szEntry,int nSize);
 
-    typedef std::string          String;
+    typedef CString              String;
     typedef std::list<String>    StringList;
     typedef StringList::iterator StringListIt;
 
@@ -36,7 +36,7 @@ namespace Common
                      StringList& listFiles, BOOL bSortFiles = TRUE, StringList* pListSubdir = 0);
     BOOL AppDeleteFiles (const char* szPath, const char* szFileMask, BOOL bAndSubdir);
     BOOL AppDeleteDirectory (const char* szPath);
-    void AppGetPath (std::string& path);
+    void AppGetPath (CString& path);
     void AppGetFullPathName (const String& path, String& fullPath);
     void FindApplicDirectory(CString& p_directory);
 

@@ -63,7 +63,7 @@ BOOL
 COEGoToDialog::OnInitDialog()
 {
   StyleDialog::OnInitDialog();
-  SetWindowText("Goto line");
+  SetWindowText(_T("Goto line"));
 
   return InitFirstFocus();
 }

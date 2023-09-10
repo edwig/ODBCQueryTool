@@ -32,7 +32,6 @@
 
 namespace OpenEditor
 {
-    using std::string;
     using std::map;
     using std::stack;
     using Common::Fastmap;
@@ -128,7 +127,7 @@ namespace OpenEditor
     {
     public:
         virtual ~SyntaxAnalyser () {};
-        virtual bool PutToken (const TokenInfo&, const string&) = 0;
+        virtual bool PutToken (const TokenInfo&, const CString&) = 0;
     };
 
 
@@ -142,14 +141,14 @@ namespace OpenEditor
 
     private:
         Fastmap<bool> m_fastmap;
-        map<string, int> m_tokens;
+        map<CString, int> m_tokens;
 
         SyntaxAnalyser* m_analyzer;
         EPLSToken m_lastToken;
 
         enum ESequenceOf { eNone, eQuotedString, eDblQuotedString, eEndLineComment, eComment };
         ESequenceOf m_sequenceOf;
-        string m_stringOf;
+        CString m_stringOf;
 
         static DelimitersMap m_Delimiters;
     };
@@ -159,7 +158,7 @@ namespace OpenEditor
     {
     public:
         StartTokenFinder ();
-        virtual bool PutToken (const TokenInfo&, const string&);
+        virtual bool PutToken (const TokenInfo&, const CString&);
         bool FoundOut (LexemeInfo&, bool& backward) const;
 
     private:
@@ -174,13 +173,13 @@ namespace OpenEditor
     {
     public:
         MatchAnalyser (const LexemeInfo& lexemeInfo, bool backward);
-        virtual bool PutToken (const TokenInfo&, const string&);
+        virtual bool PutToken (const TokenInfo&, const CString&);
 
         bool FoundOut (LexemeInfo&) const;
 
     private:
-        bool putToken (const TokenInfo&, const string&);
-        bool putTokenBackward (const TokenInfo&, const string&);
+        bool putToken (const TokenInfo&, const CString&);
+        bool putTokenBackward (const TokenInfo&, const CString&);
 
         bool m_backward, m_firstApproach;
         stack<LexemeInfo> m_stack;

@@ -134,14 +134,14 @@ COEClassPage::OnInitDialog()
   int count = m_manager.GetClassCount();
   for (int i(0); i < count; i++)
   {
-    m_comboClass.AddString(m_manager.GetClassByPos(i).GetName().c_str());
+    m_comboClass.AddString(m_manager.GetClassByPos(i).GetName());
   }
     
   // Fill file types
   m_comboFileType.ResetContent();
-  m_comboFileType.AddString("Windows (LF/CR)");
-  m_comboFileType.AddString("Unix (LF)");
-  m_comboFileType.AddString("Mac OS (CR/LF)");
+  m_comboFileType.AddString(_T("Windows (LF/CR)"));
+  m_comboFileType.AddString(_T("Unix (LF)"));
+  m_comboFileType.AddString(_T("Mac OS (CR/LF)"));
 	
   m_comboClass.SetCurSel(0);
   OnSelChangeLanguage();
@@ -162,14 +162,14 @@ void COEClassPage::OnSelChangeLanguage()
   ClassSettings& settings = m_manager.GetClassByPos(category);
   m_comboClass.GetLBText(category,m_class);
 
-  std::string delim;
-  Common::to_printable_str(settings.GetDelimiters().c_str(), delim);
-  m_delimiters = delim.c_str();
+  CString delim;
+  Common::to_printable_str(settings.GetDelimiters(), delim);
+  m_delimiters = delim;
 
   int ind = m_comboFileType.SetCurSel(settings.GetFileCreateAs());
   m_comboFileType.GetLBText(ind, m_fileType);
 
-  m_fileExtensions  = settings.GetExtensions().c_str();
+  m_fileExtensions  = settings.GetExtensions();
   m_tabSize         = settings.GetTabSpacing();
   m_indentSize      = settings.GetIndentSpacing();
   m_insertSpaces    = settings.GetTabExpand();
@@ -192,11 +192,11 @@ COEClassPage::OnChangeData()
 
     ClassSettings& settings = m_manager.GetClassByPos(m_comboClass.GetCurSel());
 
-    settings.SetExtensions((std::string)m_fileExtensions, false);
+    settings.SetExtensions(m_fileExtensions, false);
 
-    std::string delim;
+    CString delim;
     Common::to_unprintable_str (m_delimiters,delim);
-	  settings.SetDelimiters(delim, false);
+	  settings.SetDelimiters    (delim, false);
     settings.SetFileCreateAs  (m_comboFileType.GetCurSel(), false);
     settings.SetIndentSpacing (m_indentSize,    false);
     settings.SetTabSpacing    (m_tabSize,       false);

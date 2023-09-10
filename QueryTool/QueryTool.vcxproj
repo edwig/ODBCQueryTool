@@ -135,7 +135,7 @@ copy $(SolutionDir)\Data\*.*  $(OutDir)\Data\</Command>
       <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)BaseLibrary\;$(SolutionDir)QueryTool;$(SolutionDir)QueryTool\OpenEditor\Include;$(SolutionDir)SQLComponents;$(SolutionDir)QueryTool\Common;$(SolutionDir)QueryTool\GridControl;$(SolutionDir)QueryTool\Query;$(SolutionDir)StyleFramework;$(SolutionDir)StyleFramework\Grid;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir);$(SolutionDir)BaseLibrary\;$(SolutionDir)QueryTool;$(SolutionDir)\QueryTool\OpenEditor\;$(SolutionDir)QueryTool\OpenEditor\Include;$(SolutionDir)QueryTool\Common;$(SolutionDir)QueryTool\GridControl;$(SolutionDir)QueryTool\Query;$(SolutionDir)SQLComponents;$(SolutionDir)StyleFramework;$(SolutionDir)StyleFramework\Grid;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>Async</ExceptionHandling>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
     </ClCompile>

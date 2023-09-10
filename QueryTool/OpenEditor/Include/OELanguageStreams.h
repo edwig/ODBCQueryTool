@@ -43,7 +43,7 @@ namespace OpenEditor
 
     protected:
         void read (Language&);
-        void read (LanguageKeywordMapPtr&, vector<string>&, bool caseSensiteve);
+        void read (LanguageKeywordMapPtr&, vector<CString>&, bool caseSensiteve);
 
         InStream& m_in;
         int       m_version;
@@ -60,7 +60,7 @@ namespace OpenEditor
 
     protected:
         void write (const Language&);
-        void write (const LanguageKeywordMapPtr&, const vector<string>&);
+        void write (const LanguageKeywordMapPtr&, const vector<CString>&);
 
         OutStream& m_out;
     };

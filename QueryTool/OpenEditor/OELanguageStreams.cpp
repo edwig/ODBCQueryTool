@@ -38,7 +38,7 @@ namespace OpenEditor
     using namespace Common;
 
 /////////////////////////////////////////////////////////////////////////////
-// LanguagesCollection Reader/Writter
+// LanguagesCollection Reader/Writer
 const int TheLanguagesCollectionVersion = 1001;
 
 void LanguagesCollectionWriter::operator << (const LanguagesCollection&)
@@ -50,7 +50,7 @@ void LanguagesCollectionWriter::operator << (const LanguagesCollection&)
         colIt = LanguagesCollection::m_Languages.begin(),
         colEnd = LanguagesCollection::m_Languages.end();
 
-    Stream::Section sect(m_out, "lng");
+    Stream::Section sect(m_out, _T("lng"));
     for (int i = 0; colIt != colEnd; colIt++, i++)
     {
         Stream::Section sect2(m_out, i);
@@ -74,14 +74,14 @@ void LanguagesCollectionWriter::write (const Language& lang)
     write(lang.m_LanguageKeywordMap, lang.m_keywordGroups);
 }
 
-void LanguagesCollectionWriter::write (const LanguageKeywordMapPtr& keywordMap, const vector<string>& groups)
+void LanguagesCollectionWriter::write (const LanguageKeywordMapPtr& keywordMap, const vector<CString>& groups)
 {
     
-    m_out.write("keywordGroups", (int)groups.size());
+    m_out.write(_T("keywordGroups"), (int)groups.size());
 
-    Stream::Section sect1(m_out, "grp");
+    Stream::Section sect1(m_out, _T("grp"));
 
-    std::vector<string>::const_iterator groupIt = groups.begin();
+    std::vector<CString>::const_iterator groupIt = groups.begin();
     for (int groupIndex(0); groupIt != groups.end(); groupIt++, groupIndex++)
     {
         int groupCounter = 0;
@@ -91,10 +91,10 @@ void LanguagesCollectionWriter::write (const LanguageKeywordMapPtr& keywordMap, 
                 groupCounter++;
         
         Stream::Section sect2(m_out, groupIndex);
-        m_out.write("name", *groupIt);
-        m_out.write("keywords", groupCounter);
+        m_out.write(_T("name"), *groupIt);
+        m_out.write(_T("keywords"), groupCounter);
         
-        Stream::Section sect3(m_out, "kwd");
+        Stream::Section sect3(m_out, _T("kwd"));
         it = keywordMap->begin();
         for (int i(0); it != endIt; it++)
             if (groupIndex == it->second.groupIndex)
@@ -109,17 +109,17 @@ void LanguagesCollectionWriter::write (const LanguageKeywordMapPtr& keywordMap, 
 void LanguagesCollectionReader::operator >> (LanguagesCollection&)
 {
     m_version = 0;
-    m_in.read("version", m_version);
+    m_in.read(_T("version"), m_version);
 
     _CHECK_AND_THROW_(m_version >= 1000 && m_version <= TheLanguagesCollectionVersion, 
-        "Invalid language stream version!");
+                      _T("Invalid language stream version!"));
 
     int languges = 0;
-    m_in.read("languages", languges);
+    m_in.read(_T("languages"), languges);
 
     LanguagesCollection::m_Languages.clear();
 
-    Stream::Section sect(m_in, "lng");
+    Stream::Section sect(m_in, _T("lng"));
     for (int i = 0; i < languges; i++)
     {
         Stream::Section sect2(m_in, i);
@@ -132,7 +132,7 @@ void LanguagesCollectionReader::operator >> (LanguagesCollection&)
 void LanguagesCollectionReader::read (Language& lang)
 {
     OESMS_READ_MEMBER(lang, name);
-    TRACE1("Loading Language=%s\n", lang.m_name.c_str());
+    TRACE1(_T("Loading Language=%s\n"), lang.m_name.GetString());
 
     OESMS_READ_MEMBER(lang, delimiters);
     OESMS_READ_MEMBER(lang, caseSensiteve);
@@ -149,17 +149,20 @@ void LanguagesCollectionReader::read (Language& lang)
     }
     else
     {
-        struct {
+        struct 
+        {
             const char* open, *close;
-        } g_braces [] = {
-            {   "{", "}"    },
-            {   "(", ")"    },
-            {   "[", "]"    },
+        } 
+        g_braces [] = 
+        {
+            {   _T("{"), _T("}")    },
+            {   _T("("), _T(")")    },
+            {   _T("["), _T("]")    },
         };
 
         for (int i = 0; i < sizeof g_braces/sizeof g_braces[0]; i++)
         {
-            vector<string> pair;
+            vector<CString> pair;
             pair.push_back(g_braces[i].open); 
             pair.push_back(g_braces[i].close);
             lang.m_matchBraces.push_back(pair);
@@ -169,29 +172,29 @@ void LanguagesCollectionReader::read (Language& lang)
     read(lang.m_LanguageKeywordMap, lang.m_keywordGroups, lang.m_caseSensiteve);
 }
 
-void LanguagesCollectionReader::read (LanguageKeywordMapPtr& keywordMap, vector<string>& groups, bool caseSensiteve)
+void LanguagesCollectionReader::read (LanguageKeywordMapPtr& keywordMap, vector<CString>& groups, bool caseSensiteve)
 {
     keywordMap->clear();
     groups.clear();
 
     int count;
-    m_in.read("keywordGroups", count);
+    m_in.read(_T("keywordGroups"), count);
 
-    Stream::Section sect1(m_in, "grp");
+    Stream::Section sect1(m_in, _T("grp"));
 
     for (int i(0); i < count; i++)
     {
         Stream::Section sect2(m_in, i);
         
-        string name;
-        m_in.read("name", name);
+        CString name;
+        m_in.read(_T("name"), name);
         groups.push_back(name);
         int groupIndex = (int)groups.size() - 1;
 
         int keywords;
-        m_in.read("keywords", keywords);
+        m_in.read(_T("keywords"), keywords);
 
-        Stream::Section sect3(m_in, "kwd");
+        Stream::Section sect3(m_in, _T("kwd"));
 
         for (int j(0); j < keywords; j++)
         {
@@ -200,18 +203,23 @@ void LanguagesCollectionReader::read (LanguageKeywordMapPtr& keywordMap, vector<
             _itoa_s(j, buff, 40, 10);
             m_in.read(buff, keyword.keyword);
             keyword.groupIndex = groupIndex;
-            string key = keyword.keyword;
+            CString key = keyword.keyword;
 
             trim_symmetric(key);
 
-            if (!caseSensiteve)
-                for (string::iterator it = key.begin(); it != key.end(); it++)
-                    *it = toupper(*it);
+            if(!caseSensiteve)
+            {
+              key.MakeUpper();
+            }
 
-            if (keywordMap->find(key) == keywordMap->end())
-                keywordMap->insert(pair<string, LanguageKeyword>(key, keyword));
+            if(keywordMap->find(key) == keywordMap->end())
+            {
+              keywordMap->insert(pair<CString,LanguageKeyword>(key,keyword));
+            }
             else
-                TRACE1("\tWARNING: skip duplicated keyword \"%s\"\n", key.c_str());
+            {
+              TRACE1(_T("\tWARNING: skip duplicated keyword \"%s\"\n"),key.GetString());
+            }
         }
     }
 }

@@ -1091,28 +1091,30 @@ void PlsSqlAnalyzer::PutToken (const Token& token)
 
 void SyntaxNode::DbgPrintNode ()
 {
-	std::string indent;
-	indent.append(GetLevel(), '>');
+	CString indent;
+	indent.Append(_T(">"),GetLevel());
 
 	if (GetTokens().size())
-		TRACE("%4d%s%s\n", GetTokens().begin()->line + 1,  indent.c_str(), GetDebugString());
+		TRACE("%4d%s%s\n", GetTokens().begin()->line + 1,  indent.GetString(), GetDebugString());
 	else
-		TRACE("%4d%s%s\n", -1, indent.c_str(), GetDebugString());
+		TRACE("%4d%s%s\n", -1, indent.GetString(), GetDebugString());
 
 	if (SyntaxNode* node = GetChild())
         node->DbgPrintNode();
 
 	//@EH
 	//indent.clear();
-	indent.append(GetLevel(), '<');
+	indent.Append(_T("<") ,GetLevel());
 
 	if (m_tokens.size())
-		TRACE("%4d%s%s\n", GetTokens().rbegin()->line + 1,  indent.c_str(), GetDebugString());
+		TRACE("%4d%s%s\n", GetTokens().rbegin()->line + 1,  indent.GetString(), GetDebugString());
 	else
-		TRACE("%4d%s%s\n", -1, indent.c_str(), GetDebugString());
+		TRACE("%4d%s%s\n", -1, indent.GetString(), GetDebugString());
 
-	if (SyntaxNode* node = GetSibling())
-        node->DbgPrintNode();
+  if(SyntaxNode* node = GetSibling())
+  {
+    node->DbgPrintNode();
+  }
 }
 
 };

@@ -23,7 +23,7 @@
 #ifndef __OEStreams_h__
 #define __OEStreams_h__
 
-#include <string>
+#include <CString>
 #include <vector>
 #include <set>
 #include <fstream>
@@ -31,7 +31,6 @@
 
 namespace OpenEditor
 {
-    using std::string;
     using std::vector;
     using std::set;
     using std::pair;
@@ -52,7 +51,7 @@ namespace OpenEditor
         public:
             Section (Stream&, int);
             Section (Stream&, const char* section);
-            Section (Stream&, const string& section);
+            Section (Stream&, const CString& section);
             ~Section ();
         private:
             Stream& m_stream;
@@ -64,15 +63,15 @@ namespace OpenEditor
         {
         public:
             StreamKey ();
-            string& Format (const char* property);
-            string& Format (const string& property);
+            CString& Format (const char* property);
+            CString& Format (const CString& property);
             
         private:
             friend class Section;
             int  append (const char* section); // it's invoked from Section only
             void cut    (int shift);           // it's invoked from ~Section only
             int m_length;
-            string m_key;
+            CString m_key;
         };
         
         friend Section;
@@ -84,37 +83,37 @@ namespace OpenEditor
     public:
         virtual ~InStream () {}
 
-        virtual void read  (const string&, string&,bool p_skip = false)        = 0;
-        virtual void read  (const string&, double&,bool p_skip = false)        = 0;
-        virtual void read  (const string&, long&,bool p_skip = false)          = 0;
-        virtual void read  (const string&, unsigned long&,bool p_skip = false) = 0;
-        virtual void read  (const string&, unsigned int&,bool p_skip = false)  = 0;
-        virtual void read  (const string&, int&,bool p_skip = false)           = 0;
-        virtual void read  (const string&, bool&,bool p_skip = false)          = 0;
+        virtual void read  (const CString&, CString&,bool p_skip = false)        = 0;
+        virtual void read  (const CString&, double&,bool p_skip = false)        = 0;
+        virtual void read  (const CString&, long&,bool p_skip = false)          = 0;
+        virtual void read  (const CString&, unsigned long&,bool p_skip = false) = 0;
+        virtual void read  (const CString&, unsigned int&,bool p_skip = false)  = 0;
+        virtual void read  (const CString&, int&,bool p_skip = false)           = 0;
+        virtual void read  (const CString&, bool&,bool p_skip = false)          = 0;
 
-        void read (const string&, vector<string>&);
-        void read (const string&, vector<vector<string> >&);
-        void read (const string&, set<string>&);
-        void read (const string&, pair<string, string>&);
+        void read (const CString&, vector<CString>&);
+        void read (const CString&, vector<vector<CString> >&);
+        void read (const CString&, set<CString>&);
+        void read (const CString&, pair<CString, CString>&);
     };
 
 
     class OutStream : public Stream
     {
     public:
-        virtual void write (const string&, const char*)    = 0;
-        virtual void write (const string&, const string&)  = 0;
-        virtual void write (const string&, double)         = 0;
-        virtual void write (const string&, long)           = 0;
-        virtual void write (const string&, unsigned long)  = 0;
-        virtual void write (const string&, int)            = 0;
-        virtual void write (const string&, unsigned int)   = 0;
-        virtual void write (const string&, bool)           = 0;
+        virtual void write (const CString&, const char*)    = 0;
+        virtual void write (const CString&, const CString&)  = 0;
+        virtual void write (const CString&, double)         = 0;
+        virtual void write (const CString&, long)           = 0;
+        virtual void write (const CString&, unsigned long)  = 0;
+        virtual void write (const CString&, int)            = 0;
+        virtual void write (const CString&, unsigned int)   = 0;
+        virtual void write (const CString&, bool)           = 0;
 
-        void write (const string&, const vector<string>&);
-        void write (const string&, const vector<vector<string> >&);
-        void write (const string&, const set<string>&);
-        void write (const string&, const pair<string, string>&);
+        void write (const CString&, const vector<CString>&);
+        void write (const CString&, const vector<vector<CString> >&);
+        void write (const CString&, const set<CString>&);
+        void write (const CString&, const pair<CString, CString>&);
     };
 
 
@@ -124,18 +123,18 @@ namespace OpenEditor
         FileInStream (const char* filename);
 
     public:
-        virtual void read  (const string&, string&,bool p_skip = false);
-        virtual void read  (const string&, double&,bool p_skip = false);
-        virtual void read  (const string&, long&,bool p_skip = false);
-        virtual void read  (const string&, unsigned long&,bool p_skip = false);
-        virtual void read  (const string&, unsigned int&,bool p_skip = false);
-        virtual void read  (const string&, int&, bool p_skip = false);
-        virtual void read  (const string&, bool&,bool p_skip = false);
+        virtual void read  (const CString&, CString&,bool p_skip = false);
+        virtual void read  (const CString&, double&,bool p_skip = false);
+        virtual void read  (const CString&, long&,bool p_skip = false);
+        virtual void read  (const CString&, unsigned long&,bool p_skip = false);
+        virtual void read  (const CString&, unsigned int&,bool p_skip = false);
+        virtual void read  (const CString&, int&, bool p_skip = false);
+        virtual void read  (const CString&, bool&,bool p_skip = false);
 
     private:
-        void validateEntryName (const string&, const string&,bool* p_skip = nullptr);
+        void validateEntryName (const CString&, const CString&,bool* p_skip = nullptr);
         std::ifstream m_infile;
-        std::string   m_last;
+        CString       m_last;
     };
 
 
@@ -145,14 +144,14 @@ namespace OpenEditor
         FileOutStream (const char* filename);
 
     public:
-        virtual void write (const string&, const char*);
-        virtual void write (const string&, const string&);
-        virtual void write (const string&, double);
-        virtual void write (const string&, long);
-        virtual void write (const string&, unsigned long);
-        virtual void write (const string&, int);
-        virtual void write (const string&, unsigned int);
-        virtual void write (const string&, bool);
+        virtual void write (const CString&, const char*);
+        virtual void write (const CString&, const CString&);
+        virtual void write (const CString&, double);
+        virtual void write (const CString&, long);
+        virtual void write (const CString&, unsigned long);
+        virtual void write (const CString&, int);
+        virtual void write (const CString&, unsigned int);
+        virtual void write (const CString&, bool);
 
     private:
         std::ofstream m_outfile;

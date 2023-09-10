@@ -1,4 +1,4 @@
-/* 
+/*
     Copyright (C) 2002 Aleksey Kochetov
 
     This program is free software; you can redistribute it and/or modify
@@ -13,7 +13,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 */
 
 /*
@@ -30,36 +30,43 @@
 
 #ifdef _DEBUG
 #undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
+static char THIS_FILE[] = __FILE__;
 #define new DEBUG_NEW
 #endif
 
-    using namespace OpenEditor;
+using namespace OpenEditor;
 
-static 
-void convert_extensions (const string& extensions, string& ofn_extensions)
+static
+void convert_extensions(const CString& extensions,CString& ofn_extensions)
 {
-    string buffer;
-    string::const_iterator it = extensions.begin();
-    for (; it != extensions.end(); it++)
+  CString buffer;
+
+  for(int ind = 0;ind < extensions.GetLength();++ind)
+  {
+    TCHAR ch = extensions.GetAt(ind);
+    if(isspace(ch) || ch == ',' && !buffer.IsEmpty())
     {
-        if (isspace(*it) || *it == ',' && !buffer.empty())
-        {
-            if (!ofn_extensions.empty()) 
-                ofn_extensions += ';';
-            ofn_extensions += "*." + buffer;
-            buffer.erase();
-        }
-        else
-            buffer += *it;
+      if(!ofn_extensions.IsEmpty())
+      {
+        ofn_extensions += ';';
+      }
+      ofn_extensions += "*." + buffer;
+      buffer.Empty();
     }
-    if (!buffer.empty())
+    else
     {
-        if (!ofn_extensions.empty()) 
-            ofn_extensions += ';';
-        ofn_extensions += "*." + buffer;
-        buffer.erase();
+      buffer += ch;
     }
+  }
+  if(!buffer.IsEmpty())
+  {
+    if(!ofn_extensions.IsEmpty())
+    {
+      ofn_extensions += ';';
+    }
+    ofn_extensions += "*." + buffer;
+    buffer.Empty();
+  }
 }
 
 static 
@@ -86,23 +93,23 @@ void make_filter (CString& filter, OPENFILENAME& ofn)
     for (int i(0), count(settingMgrl.GetClassCount()); i < count; i++)
     {
         const ClassSettings& classSettings = settingMgrl.GetClassByPos(i);
-        const string& extensions = classSettings.GetExtensions();
-        const string& name = classSettings.GetName();
+        const CString& extensions = classSettings.GetExtensions();
+        const CString& name = classSettings.GetName();
 
-        string ofn_extensions;
+        CString ofn_extensions;
         convert_extensions(extensions, ofn_extensions);
 
-        filter += name.c_str();
+        filter += name;
         filter += " Files (";
-        filter += ofn_extensions.c_str();
+        filter += ofn_extensions;
         filter += ')';
         filter += '\0';
-        filter += ofn_extensions.c_str();
+        filter += ofn_extensions;
         filter += '\0';
 
 	    ofn.nMaxCustFilter++;
     }
-    
+  
 }
 
 IMPLEMENT_DYNAMIC(CDocumentExt, CDocument)
@@ -144,7 +151,7 @@ BOOL CDocManagerExt::DoPromptFileName(CString& fileName, UINT nIDSTitle, DWORD l
 	dlgFile.m_ofn.lpstrTitle = title;
     dlgFile.m_ofn.nFilterIndex = m_nFilterIndex;
 
-// 31.03.2003 bug fix, the programm fails on attempt to open multiple file selection in Open dialog
+// 31.03.2003 bug fix, the program fails on attempt to open multiple file selection in Open dialog
 #if _MAX_PATH*256 < 64*1024-1
 #define PATH_BUFFER _MAX_PATH*256
 #else
@@ -154,7 +161,7 @@ BOOL CDocManagerExt::DoPromptFileName(CString& fileName, UINT nIDSTitle, DWORD l
 	dlgFile.m_ofn.lpstrFile = fileName.GetBuffer(dlgFile.m_ofn.nMaxFile);
     //dlgFile.m_ofn.lpstrFile[0] = 0; // 26.05.2003 bug fix, no file name on "Save As" or "Save" for a new file
 	
-    // overwrite initial dir
+    // overwrite initial directory
     dlgFile.m_ofn.lpstrInitialDir = m_fileOpenPath.IsEmpty() ? NULL : (LPCSTR)m_fileOpenPath;
 
     INT_PTR nResult = dlgFile.DoModal();
@@ -177,7 +184,7 @@ void CDocManagerExt::OnFileOpen ()
 	
     if (!DoPromptFileName(newName, AFX_IDS_OPENFILE, 
             OFN_HIDEREADONLY | OFN_FILEMUSTEXIST, TRUE, NULL))
-		return; // open cancelled
+		return; // open canceled
 
     const char* pszBuffer = newName.LockBuffer();
     const char* pszName = strchr(pszBuffer, 0);

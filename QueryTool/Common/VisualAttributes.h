@@ -30,7 +30,6 @@
 
 namespace Common
 {
-    using std::string;
     using std::vector;
     using std::set;
 
@@ -80,10 +79,10 @@ struct VisualAttribute
     static int PointToPixel (int points);
 
 public:
-    string m_Name;
-    string m_FontName;
-    int    m_FontSize;
-    bool   m_FontBold, m_FontItalic, m_FontUnderline;
+    CString  m_Name;
+    CString  m_FontName;
+    int      m_FontSize;
+    bool     m_FontBold, m_FontItalic, m_FontUnderline;
     COLORREF m_Foreground, m_Background;
     unsigned m_Mask;
 };
@@ -104,7 +103,7 @@ public:
     const char* GetName () const;
     const char* GetName (int index) const;
     void SetName (const char* name);
-    void SetName (const string& name);
+    void SetName (const CString& name);
 
     int  GetCount () const;
     int  Add (const VisualAttribute&);
@@ -116,7 +115,7 @@ public:
     const VisualAttribute& FindByName (const char* name) const;
 
 protected:
-    string m_name;
+    CString m_name;
     vector<VisualAttribute> m_attrs;
 };
 
@@ -128,13 +127,13 @@ protected:
 inline
 const char* VisualAttributesSet::GetName () const
 {
-    return m_name.c_str();
+    return m_name.GetString();
 }
 
 inline
 const char* VisualAttributesSet::GetName (int index) const
 {
-    return m_attrs.at(index).m_Name.c_str();
+    return m_attrs.at(index).m_Name.GetString();
 }
 
 inline
@@ -144,7 +143,7 @@ void VisualAttributesSet::SetName (const char* name)
 }
 
 inline
-void VisualAttributesSet::SetName (const string& name)
+void VisualAttributesSet::SetName (const CString& name)
 {
     m_name = name;
 }

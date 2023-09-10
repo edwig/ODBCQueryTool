@@ -16,7 +16,6 @@
 
 using std::map;
 using std::set;
-using std::string;
 
 /////////////////////////////////////////////////////////////////////////////
 // CFileWatch
@@ -37,7 +36,7 @@ private:
   friend class CFileWatch;
   virtual void OnWatchedFileChanged () = 0;
     
-  std::string	m_fileName;
+  CString	m_fileName;
 	__int64	m_lastWriteTime, m_nFileSize;
   bool m_modified;
   bool m_suspendWatch;
@@ -63,7 +62,7 @@ private:
 	static void RemoveFileToWatch (CFileWatchClient&);
 
   static set<CFileWatchClient*> m_clients;
-  static map<std::string, HANDLE> m_folders;
+  static map<CString, HANDLE> m_folders;
 
 	static CCriticalSection	m_csDataLock;
 	static CEvent			m_EventUpdate;

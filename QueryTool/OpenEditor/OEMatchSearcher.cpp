@@ -34,59 +34,57 @@ namespace OpenEditor
 {
     const char* GetLexemeName (EPLSLexeme lexeme)
     {
-        switch (lexeme)
-        {
-        case elUNKNOWN:    return "UNKNOWN";
-        case elBLOCK:      return "BLOCK";
-        case elSELECTION:  return "SELECTION";
-        case elITERATION:  return "ITERATION";
-        case elEXPRESSION: return "EXPRESSION";
-        }
+      switch (lexeme)
+      {
+        case elUNKNOWN:    return _T("UNKNOWN");
+        case elBLOCK:      return _T("BLOCK");
+        case elSELECTION:  return _T("SELECTION");
+        case elITERATION:  return _T("ITERATION");
+        case elEXPRESSION: return _T("EXPRESSION");
+      }
 
-        return "Not found";
+      return "Not found";
     }
 
-DelimitersMap LexicalAnalyser::m_Delimiters(" \t\'\\()[]{}+-*/.,!?;:=><%|@&^");
+DelimitersMap LexicalAnalyser::m_Delimiters(_T(" \t\'\\()[]{}+-*/.,!?;:=><%|@&^"));
 
 LexicalAnalyser::LexicalAnalyser ()
 {
-    m_analyzer  = 0;
-    m_lastToken = etUNKNOWN;
-    m_sequenceOf = eNone;
+  m_analyzer  = 0;
+  m_lastToken = etUNKNOWN;
+  m_sequenceOf = eNone;
 
-    m_tokens.insert(std::map<string,int>::value_type("DECLARE",    etDECLARE));
-    m_tokens.insert(std::map<string,int>::value_type("FUNCTION",   etFUNCTION));
-    m_tokens.insert(std::map<string,int>::value_type("PROCEDURE",  etPROCEDURE));
-    m_tokens.insert(std::map<string,int>::value_type("BEGIN",      etBEGIN));
-    m_tokens.insert(std::map<string,int>::value_type("EXCEPTION",  etEXCEPTION));
-    m_tokens.insert(std::map<string,int>::value_type("END",        etEND));
-    m_tokens.insert(std::map<string,int>::value_type("IF",         etIF));
-    m_tokens.insert(std::map<string,int>::value_type("THEN",       etTHEN));
-    m_tokens.insert(std::map<string,int>::value_type("ELSE",       etELSE));
-    m_tokens.insert(std::map<string,int>::value_type("ELSIF",      etELSIF));
-    //m_tokens.insert(std::map<string,int>::value_type("FOR",        etFOR));
-    //m_tokens.insert(std::map<string,int>::value_type("WHILE",      etWHILE));
-    m_tokens.insert(std::map<string,int>::value_type("LOOP",       etLOOP));
-    m_tokens.insert(std::map<string,int>::value_type("EXIT",       etEXIT));
-    m_tokens.insert(std::map<string,int>::value_type(";",          etSEMICOLON));
-    m_tokens.insert(std::map<string,int>::value_type("'",          etQUOTE));
-    m_tokens.insert(std::map<string,int>::value_type("\"",         etDOUBLE_QUOTE));
-    m_tokens.insert(std::map<string,int>::value_type("(",          etLEFT_BRACKET));
-    m_tokens.insert(std::map<string,int>::value_type(")",          etRIGHT_BRACKET));
-    m_tokens.insert(std::map<string,int>::value_type("[",          etLEFT_ROUND_BRACKET));
-    m_tokens.insert(std::map<string,int>::value_type("]",          etRIGHT_ROUND_BRACKET));
-    m_tokens.insert(std::map<string,int>::value_type("-",          etMINUS));
-    m_tokens.insert(std::map<string,int>::value_type("/",          etSLASH));
-    m_tokens.insert(std::map<string,int>::value_type("*",          etSTAR));
+  m_tokens.insert(std::map<CString,int>::value_type(_T("DECLARE"),    etDECLARE));
+  m_tokens.insert(std::map<CString,int>::value_type(_T("FUNCTION"),   etFUNCTION));
+  m_tokens.insert(std::map<CString,int>::value_type(_T("PROCEDURE"),  etPROCEDURE));
+  m_tokens.insert(std::map<CString,int>::value_type(_T("BEGIN"),      etBEGIN));
+  m_tokens.insert(std::map<CString,int>::value_type(_T("EXCEPTION"),  etEXCEPTION));
+  m_tokens.insert(std::map<CString,int>::value_type(_T("END"),        etEND));
+  m_tokens.insert(std::map<CString,int>::value_type(_T("IF"),         etIF));
+  m_tokens.insert(std::map<CString,int>::value_type(_T("THEN"),       etTHEN));
+  m_tokens.insert(std::map<CString,int>::value_type(_T("ELSE"),       etELSE));
+  m_tokens.insert(std::map<CString,int>::value_type(_T("ELSIF"),      etELSIF));
+  //m_tokens.insert(std::map<CString,int>::value_type(_T("FOR"),        etFOR));
+  //m_tokens.insert(std::map<CString,int>::value_type(_T("WHILE"),      etWHILE));
+  m_tokens.insert(std::map<CString,int>::value_type(_T("LOOP"),       etLOOP));
+  m_tokens.insert(std::map<CString,int>::value_type(_T("EXIT"),       etEXIT));
+  m_tokens.insert(std::map<CString,int>::value_type(_T(";"),          etSEMICOLON));
+  m_tokens.insert(std::map<CString,int>::value_type(_T("'"),          etQUOTE));
+  m_tokens.insert(std::map<CString,int>::value_type(_T("\""),         etDOUBLE_QUOTE));
+  m_tokens.insert(std::map<CString,int>::value_type(_T("("),          etLEFT_BRACKET));
+  m_tokens.insert(std::map<CString,int>::value_type(_T(")"),          etRIGHT_BRACKET));
+  m_tokens.insert(std::map<CString,int>::value_type(_T("["),          etLEFT_ROUND_BRACKET));
+  m_tokens.insert(std::map<CString,int>::value_type(_T("]"),          etRIGHT_ROUND_BRACKET));
+  m_tokens.insert(std::map<CString,int>::value_type(_T("-"),          etMINUS));
+  m_tokens.insert(std::map<CString,int>::value_type(_T("/"),          etSLASH));
+  m_tokens.insert(std::map<CString,int>::value_type(_T("*"),          etSTAR));
 
-    m_fastmap.erase();
+  m_fastmap.erase();
 
-    for (std::map<string,int>::const_iterator it = m_tokens.begin();
-        it != m_tokens.end();
-        it++)
-    {
-            m_fastmap[it->first[0]] = true;
-    }
+  for(auto& tok : m_tokens)
+  {
+      m_fastmap[tok.first[0]] = true;
+  }
 }
 
 void LexicalAnalyser::Join (SyntaxAnalyser* analyser)
@@ -100,19 +98,18 @@ bool LexicalAnalyser::PutLine (const char* str, int line, int offset, int length
 {
     _ASSERTE(m_analyzer);
 
-    string reversed;
+    CString reversed;
 
     if (!str) // EOF
     {
-        _CHECK_AND_THROW_(!(m_sequenceOf && m_sequenceOf != eEndLineComment),
-                          "Unexpected end of file!");
+        _CHECK_AND_THROW_(!(m_sequenceOf && m_sequenceOf != eEndLineComment),_T("Unexpected end of file!"));
 
         TokenInfo tokenInfo;
         tokenInfo.m_token  = etEOF;
         tokenInfo.m_line   = line;
         tokenInfo.m_offset = offset;
         tokenInfo.m_length = 0;
-        m_analyzer->PutToken(tokenInfo, string());
+        m_analyzer->PutToken(tokenInfo, CString());
 
         return false;
     }
@@ -140,37 +137,39 @@ bool LexicalAnalyser::PutLine (const char* str, int line, int offset, int length
                 char buf[2];
                 buf[0] = str[offset];
                 buf[1] = 0;
-                string c(buf);
-                reversed.insert(0, c);
+                CString c(buf);
+                reversed = c + reversed;
             }
             // check EOL
             if (!(offset < length))
                 break;
 
-            // read string token
+            // read CString token
             if (m_Delimiters[str[offset]])
             {
               char buf[2];
               buf[0] = str[offset++];
               buf[1] = 0;
-              string c(buf);
-              reversed.insert(0, c);
+              CString c(buf);
+              reversed = c + reversed;
             }
             else
             {
-                string buffer;
-                for (; offset < length && !m_Delimiters[str[offset]]; offset++)
-                    buffer += toupper(str[offset]);
-                reversed.insert(0, buffer);
+                CString buffer;
+                for(; offset < length && !m_Delimiters[str[offset]]; offset++)
+                {
+                  buffer += (char) toupper(str[offset]);
+                }
+                reversed = buffer + reversed;
             }
         }
-        str = reversed.c_str();
+        str = reversed.GetString();
         offset = 0;
     }
 
     while (1)
     {
-        string buffer;
+        CString buffer;
         EPLSToken token = etUNKNOWN;
 
         if (m_sequenceOf == eNone)
@@ -183,19 +182,19 @@ bool LexicalAnalyser::PutLine (const char* str, int line, int offset, int length
             if (!(offset < length))
                 break;
 
-            // read string token
+            // read CString token
             if (m_Delimiters[str[offset]])
                 buffer += str[offset++];
             else
                 for (; offset < length && !m_Delimiters[str[offset]]; offset++)
-                    buffer += toupper(str[offset]);
+                    buffer += (char)toupper(str[offset]);
         }
         else
         {
             switch (m_sequenceOf)
             {
             case eEndLineComment:
-                m_stringOf.append(str + offset, length - offset);
+                m_stringOf.Append(str + offset, length - offset);
                 offset = length;
                 m_sequenceOf = eNone;
                 token = etCOMMENT;
@@ -248,7 +247,7 @@ bool LexicalAnalyser::PutLine (const char* str, int line, int offset, int length
             if (m_sequenceOf == eNone)
             {
                 buffer = m_stringOf;
-                m_stringOf.erase();
+                m_stringOf.Empty();
             }
 
             // check EOL
@@ -257,9 +256,9 @@ bool LexicalAnalyser::PutLine (const char* str, int line, int offset, int length
         }
 
 
-        if (token == etUNKNOWN && !buffer.empty() && m_fastmap[buffer.at(0)])
+        if (token == etUNKNOWN && !buffer.IsEmpty() && m_fastmap[buffer.GetAt(0)])
         {
-            std::map<string, int>::const_iterator it = m_tokens.find(buffer);
+            std::map<CString, int>::const_iterator it = m_tokens.find(buffer);
 
             if (it != m_tokens.end())
             {
@@ -268,10 +267,10 @@ bool LexicalAnalyser::PutLine (const char* str, int line, int offset, int length
                 switch (token)
                 {
                 case etQUOTE:
-                    m_sequenceOf = eQuotedString; // start string accumulation
+                    m_sequenceOf = eQuotedString; // start CString accumulation
                     break;
                 case etDOUBLE_QUOTE:
-                    m_sequenceOf = eDblQuotedString; // start string accumulation
+                    m_sequenceOf = eDblQuotedString; // start CString accumulation
                     break;
                 case etMINUS:
                     //if (m_lastToken == etMINUS)
@@ -300,10 +299,10 @@ bool LexicalAnalyser::PutLine (const char* str, int line, int offset, int length
             TokenInfo tokenInfo;
             tokenInfo.m_token  = token;
             tokenInfo.m_line   = line;
-            tokenInfo.m_length = (int)buffer.size();
+            tokenInfo.m_length = (int)buffer.GetLength();
 
             tokenInfo.m_offset = !backward
-                                ? (offset - (int)buffer.size())
+                                ? (offset - (int)buffer.GetLength())
                                 : (length - offset);
 
             if (!m_analyzer->PutToken(tokenInfo, buffer))
@@ -327,7 +326,7 @@ StartTokenFinder::StartTokenFinder ()
     m_backward = false;
 }
 
-bool StartTokenFinder::PutToken (const TokenInfo& tokenInfo, const string& /*str*/)
+bool StartTokenFinder::PutToken (const TokenInfo& tokenInfo, const CString& /*str*/)
 {
     if (m_step++ == 0)
     {
@@ -348,7 +347,7 @@ bool StartTokenFinder::PutToken (const TokenInfo& tokenInfo, const string& /*str
             break;
         //case etFOR:
         //case etWHILE:
-// exit can be in embeded bloc
+// exit can be in embedded bloc
 //case etEXIT:
 //    m_lexemeInfo.m_lexeme = elITERATION;
 //    break;
@@ -418,7 +417,7 @@ bool StartTokenFinder::PutToken (const TokenInfo& tokenInfo, const string& /*str
     return false; // stop here
 }
 
-bool MatchAnalyser::PutToken (const TokenInfo& tokenInfo, const string& str)
+bool MatchAnalyser::PutToken (const TokenInfo& tokenInfo, const CString& str)
 {
     if (!m_backward)
         return putToken(tokenInfo, str);
@@ -426,9 +425,9 @@ bool MatchAnalyser::PutToken (const TokenInfo& tokenInfo, const string& str)
         return putTokenBackward(tokenInfo, str);
 }
 
-bool MatchAnalyser::putToken (const TokenInfo& tokenInfo, const string& str)
+bool MatchAnalyser::putToken (const TokenInfo& tokenInfo, const CString& str)
 {
-    TRACE2("%sMatchAnalyser::putToken: %s\n", string().append(2 * m_stack.size(), ' ').c_str(), str.c_str());
+    TRACE1("MatchAnalyser::putToken: %s\n", str.GetString());
 
     LexemeInfo &top = m_stack.top();
     //const EPLSToken prevToken = top.LastToken();
@@ -472,7 +471,7 @@ bool MatchAnalyser::putToken (const TokenInfo& tokenInfo, const string& str)
         break;
     case etELSE:
     case etELSIF:
-        _CHECK_AND_THROW_(top.m_lexeme == elSELECTION, "Unexpected token!");
+        _CHECK_AND_THROW_(top.m_lexeme == elSELECTION, _T("Unexpected token!"));
         //ignore an order and second else
         top.AddToken(tokenInfo);
         check_for_stop = true;
@@ -483,7 +482,7 @@ bool MatchAnalyser::putToken (const TokenInfo& tokenInfo, const string& str)
     //    open(elITERATION, tokenInfo);
     //    break;
 
-// exit can be in embeded bloc
+// exit can be in embedded bloc
 //case etEXIT:
 //    _CHECK_AND_THROW_(top.m_lexeme == elITERATION, "Unexpected token!");
 //    top.AddToken(tokenInfo);
@@ -500,7 +499,7 @@ bool MatchAnalyser::putToken (const TokenInfo& tokenInfo, const string& str)
         _CHECK_AND_THROW_(top.m_lexeme == elEXPRESSION
                           && ((top.LastToken() == etLEFT_BRACKET && tokenInfo.m_token == etRIGHT_BRACKET)
                              ||(top.LastToken() == etLEFT_ROUND_BRACKET && tokenInfo.m_token == etRIGHT_ROUND_BRACKET)),
-                          "Unexpected token!");
+                          _T("Unexpected token!"));
         close(tokenInfo); // close lexeme
         check_for_stop = true;
         break;
@@ -578,28 +577,28 @@ bool MatchAnalyser::putToken (const TokenInfo& tokenInfo, const string& str)
 // BLOCK
 // end       - start
 // exception - skip
-// begin     - stop and defer befor a next recognized token
+// begin     - stop and defer before a next recognized token
 // declare   - if defer stop here else skip
 //
 // SELECTION:
 // if end    - start
 // else      - skip
-// elsif     - skip
+// else if   - skip
 // if        - stop
 //
 // ITERATION:
 // loop end  - start
 // exit      - skip
 // loop      - stop and defer
-// for|while - stop if defered
+// for|while - stop if deferred
 //
 // EXPRESSION:
 // -//-
 //
 
-bool MatchAnalyser::putTokenBackward (const TokenInfo& tokenInfo, const string& str)
+bool MatchAnalyser::putTokenBackward (const TokenInfo& tokenInfo, const CString& str)
 {
-    TRACE2("%sMatchAnalyser::putTokenBackward: %s\n", string().append(2 * m_stack.size(), ' ').c_str(), str.c_str());
+    TRACE1("MatchAnalyser::putTokenBackward: %s\n", str.GetString());
 
     LexemeInfo &top = m_stack.top();
 
@@ -632,7 +631,7 @@ bool MatchAnalyser::putTokenBackward (const TokenInfo& tokenInfo, const string& 
         case etDECLARE:
         case etPROCEDURE:
         case etFUNCTION:
-            // if deffered closing then final closing
+            // if deferred closing then final closing
             // else ignore
             if (top.m_lexeme != elBLOCK)
                 throw UnexpectedToken();
@@ -648,13 +647,13 @@ bool MatchAnalyser::putTokenBackward (const TokenInfo& tokenInfo, const string& 
             break;
         //case etFOR:
         //case etWHILE:
-        //    // if deffered closing then final closing
+        //    // if deferred closing then final closing
         //    // else ignore
         //    if (top.m_lexeme != elITERATION)
         //        throw UnexpectedToken();
         //    closeDeferred(tokenInfo); // close lexeme
         //    break;
-// exit can be in embeded bloc
+// exit can be in embedded bloc
 //case etEXIT:
 //    closeAllDeferred(top);
 //    if (top.m_lexeme != elITERATION)
@@ -732,12 +731,12 @@ bool MatchAnalyser::putTokenBackward (const TokenInfo& tokenInfo, const string& 
 /*
     it's a very primitive match algorithm
     at least it should handle comments
-    search for commets too
+    search for comments too
 */
 void GeneralMatchSearcher::Find (EditContext& editor, bool select)
 {
-    const char openBraces[] = "([{";
-    const char closeBraces[] = ")]}";
+    const char openBraces [] = _T("([{");
+    const char closeBraces[] = _T(")]}");
 
     Fastmap<char> fastmap;
     for (int i(0); i < sizeof(openBraces)-1; i++)
@@ -747,7 +746,7 @@ void GeneralMatchSearcher::Find (EditContext& editor, bool select)
     }
 
     Square sqr;
-    string buff;
+    CString buff;
     if (editor.WordFromPoint(editor.GetPosition(), sqr))
         editor.GetBlock(buff, &sqr);
     else
@@ -756,7 +755,7 @@ void GeneralMatchSearcher::Find (EditContext& editor, bool select)
     bool backward, for_any = false;
     int  balance ;
     
-    if (buff.size() == 1 && fastmap[buff[0]]) // search for match
+    if (buff.GetLength() == 1 && fastmap[buff[0]]) // search for match
     {
         char startWith = buff[0];
         char searchFor = fastmap[startWith];
@@ -845,10 +844,10 @@ void PlSqlMatchSearcher::Find (EditContext& editor, bool select)
     Square sqr;
     if (editor.WordFromPoint(editor.GetPosition(), sqr))
     {
-        string buff;
+        CString buff;
         editor.GetBlock(buff, &sqr);
 
-        TRACE("Start with: \"%s\"\n", buff.c_str());
+        TRACE("Start with: \"%s\"\n", buff.GetString());
 
         int length;
         const char* str;
@@ -956,17 +955,17 @@ void PlSqlMatchSearcher::Find (EditContext& editor, bool select)
                 }
             }
             else
-                Common::SetStatusText("Can't find a match");
+                Common::SetStatusText(_T("Can't find a match"));
         }
         else
-            Common::SetStatusText("Nothing for match searching");
+            Common::SetStatusText(_T("Nothing for match searching"));
 
     }
 }
 
 MatchSearcherBasePtr MatchSearcherFactory::CreateMatchSearcher (const char* lang)
 {
-    if (!strcmp(lang, "SQL"))
+    if (!strcmp(lang, _T("SQL")))
         return MatchSearcherBasePtr(new PlSqlMatchSearcher);
     else
         return MatchSearcherBasePtr(new GeneralMatchSearcher);

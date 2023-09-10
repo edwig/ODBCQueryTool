@@ -34,7 +34,7 @@ namespace OpenEditor
 ///////////////////////////////////////////////////////////////////////////////
 // Template
 
-bool Template::ExpandKeyword (int index, string& text, Position& pos)
+bool Template::ExpandKeyword (int index, CString& text, Position& pos)
 {
     if (index >= 0 && index < static_cast<int>(m_entries.size()))
     {
@@ -46,7 +46,7 @@ bool Template::ExpandKeyword (int index, string& text, Position& pos)
     return false;
 }
 
-bool Template::ExpandKeyword (const string& keyword, string& text, Position& pos)
+bool Template::ExpandKeyword (const CString& keyword, CString& text, Position& pos)
 {
     std::vector<Entry>::const_iterator it = m_entries.begin();
     
@@ -54,24 +54,24 @@ bool Template::ExpandKeyword (const string& keyword, string& text, Position& pos
 
     for (; it != m_entries.end(); it++)
     {
-        bool is_eql = !strncmp(it->keyword.c_str(), keyword.c_str(), keyword.size());
+        bool is_eql = !strncmp(it->keyword.GetString(), keyword.GetString(), keyword.GetLength());
 
-        if (is_eql && alternative 
-        && m_AlwaysListIfAlternative) 
-            return false;
-
-        if (!matched && is_eql 
-        &&  it->minLength <= static_cast<int>(keyword.size()))
+        if(is_eql && alternative && m_AlwaysListIfAlternative)
+        {
+          return false;
+        }
+        if (!matched && is_eql &&  it->minLength <= keyword.GetLength())
         {
             matched = true;
             text = it->text;
             pos.line = it->curLine;
             pos.column = it->curPos;
 
-            if (!m_AlwaysListIfAlternative)
-                return true;
+            if(!m_AlwaysListIfAlternative)
+            {
+              return true;
+            }
         }
-
         alternative |= is_eql;
     }
 
@@ -143,8 +143,8 @@ TemplateCollection& TemplateCollection::operator = (const TemplateCollection& ot
     {
         m_templates.clear();
 
-        std::map<string, TemplatePtr>::const_iterator
-            it = other.m_templates.begin(),
+        std::map<CString, TemplatePtr>::const_iterator
+            it  = other.m_templates.begin(),
             end = other.m_templates.end();
 
         for (it; it != end; it++)
@@ -157,25 +157,29 @@ TemplateCollection& TemplateCollection::operator = (const TemplateCollection& ot
     return *this;
 }
 
-TemplatePtr TemplateCollection::Add (const string& lang)
+TemplatePtr TemplateCollection::Add (const CString& lang)
 {
     TemplatePtr ptr(new Template);
 
-    if (m_templates.find(lang) == m_templates.end())
-        m_templates.insert(std::map<string, TemplatePtr>::value_type(lang, ptr));
+    if(m_templates.find(lang) == m_templates.end())
+    {
+      m_templates.insert(std::map<CString,TemplatePtr>::value_type(lang,ptr));
+    }
     else
-        throw std::logic_error(string("Template \"") + lang + "\" already exist.");
-
+    {
+      throw std::logic_error(CString("Template \"") + lang + "\" already exist.");
+    }
     return ptr;
 }
 
-const TemplatePtr TemplateCollection::Find (const string& lang) const
+const TemplatePtr TemplateCollection::Find (const CString& lang) const
 {
     ConstIterator it = m_templates.find(lang);
 
-    if (it == m_templates.end())
-        throw std::logic_error(string("Template \"") + lang + "\" not found.");
-
+    if(it == m_templates.end())
+    {
+      throw std::logic_error(CString("Template \"") + lang + "\" not found.");
+    }
     return it->second;
 }
 

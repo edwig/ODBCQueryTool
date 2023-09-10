@@ -37,7 +37,6 @@ namespace OpenEditor
 {
     using std::map;
     using std::vector;
-    using std::string;
     using std::istream;
     using std::ostream;
     using std::counted_ptr;
@@ -117,10 +116,10 @@ namespace OpenEditor
         void SelectByCursor (Position prevPos);
 
         bool WordFromPoint (Position, Square&, const char* delims = 0) const;
-        bool GetBlockOrWordUnderCursor (string& buff, Square& sqr, bool onlyOneLine, const char* delims = 0);
+        bool GetBlockOrWordUnderCursor (CString& buff, Square& sqr, bool onlyOneLine, const char* delims = 0);
         bool WordOrSpaceFromPoint (Position, Square&, const char* delims = 0) const;
 
-        virtual void GetBlock    (string&, const Square* = 0) const;
+        virtual void GetBlock    (CString&, const Square* = 0) const;
         virtual void InsertBlock (const char*);
         virtual void InsertBlock (const char*, bool hideSelection, bool putSelInUndo = true);
         virtual void DeleteBlock (bool putSelInUndo = true);
@@ -128,7 +127,7 @@ namespace OpenEditor
         void IndentBlock ();
         void UndentBlock ();
 
-        void CopyBookmarkedLines (string&) const;
+        void CopyBookmarkedLines (CString&) const;
         void DeleteBookmarkedLines ();
 
         bool ExpandTemplate (int = -1);
@@ -190,15 +189,15 @@ namespace OpenEditor
         void StopScan ();
 
         // Text manipulation utilities (see OpenEditor_Context_5.cpp)
-        void ScanAndReplaceText (bool (pmfnDo)(const EditContext&, string&), bool curentWord);
-        static bool LowerText (const EditContext&, string&);
-        static bool UpperText (const EditContext&, string&);
-        static bool CapitalizeText (const EditContext&, string&);
-        static bool InvertCaseText (const EditContext&, string&);
-        static bool TabifyText (const EditContext&, string&);
-        static bool TabifyLeadingSpaces (const EditContext&, string&);
-        static bool UntabifyText (const EditContext&, string&);
-        static bool UntabifyLeadingSpaces (const EditContext&, string&);
+        void ScanAndReplaceText (bool (pmfnDo)(const EditContext&, CString&), bool curentWord);
+        static bool LowerText (const EditContext&, CString&);
+        static bool UpperText (const EditContext&, CString&);
+        static bool CapitalizeText (const EditContext&, CString&);
+        static bool InvertCaseText (const EditContext&, CString&);
+        static bool TabifyText (const EditContext&, CString&);
+        static bool TabifyLeadingSpaces (const EditContext&, CString&);
+        static bool UntabifyText (const EditContext&, CString&);
+        static bool UntabifyLeadingSpaces (const EditContext&, CString&);
 
         // Settings
         const Settings& GetSettings () const;
@@ -218,10 +217,10 @@ namespace OpenEditor
         OEC_DECLARE_GET_PROPERTY(bool, BlockTabIndent                 );
         OEC_DECLARE_GET_PROPERTY(bool, ColBlockDeleteSpaceAfterMove   );
         OEC_DECLARE_GET_PROPERTY(bool, ColBlockCursorToStartAfterPaste);
-        OEC_DECLARE_GET_PROPERTY(string, MouseSelectionDelimiters     );
+        OEC_DECLARE_GET_PROPERTY(CString, MouseSelectionDelimiters     );
 
-        OEC_DECLARE_GET_PROPERTY(string, PrintHeader);
-	      OEC_DECLARE_GET_PROPERTY(string, PrintFooter);
+        OEC_DECLARE_GET_PROPERTY(CString, PrintHeader);
+	      OEC_DECLARE_GET_PROPERTY(CString, PrintFooter);
         OEC_DECLARE_GET_PROPERTY(int,    PrintMarginMeasurement);
 	      OEC_DECLARE_GET_PROPERTY(double, PrintLeftMargin);
 	      OEC_DECLARE_GET_PROPERTY(double, PrintRightMargin);
@@ -271,12 +270,12 @@ namespace OpenEditor
     private:
         int adjustPosByTab (int, int, bool = false) const;
 
-        void line2buff (int, int, int, string&, bool = false) const;
+        void line2buff (int, int, int, CString&, bool = false) const;
 
         Position wordRight (bool hurry);
         Position wordLeft (bool hurry);
 
-        static bool getLine (std::istrstream&, string&, bool&);
+        static bool getLine (std::istrstream&, CString&, bool&);
 
         Storage* m_pStorage;
 
@@ -288,8 +287,8 @@ namespace OpenEditor
         Square  m_blkPos;
         EBlockMode m_BlockMode;
 
-        static bool tabify (const EditContext&, string&, bool leading);
-        static bool untabify (const EditContext&, string&, bool leading);
+        static bool tabify  (const EditContext&, CString&, bool leading);
+        static bool untabify(const EditContext&, CString&, bool leading);
     };
 
     ///////////////////////////////////////////////////////////////////////////

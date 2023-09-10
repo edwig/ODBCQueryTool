@@ -31,7 +31,6 @@
 
 namespace OpenEditor
 {
-    using std::string;
     using std::vector;
 
     class CommonLanguageSupport : public LanguageSupport, MultilineQuotesScanner

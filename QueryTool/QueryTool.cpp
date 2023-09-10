@@ -312,10 +312,10 @@ QueryToolApp::UpdateAccelAndMenu()
 {
   InitGUICommand();
 
-  string buffer;
+  CString buffer;
   Common::AppGetPath(buffer);
   if(GUICommandDictionary::BuildAcceleratorTable(
-    (buffer + "\\data\\" + COEDocument::GetSettingsManager().GetGlobalSettings().GetKeymapLayout() + ".keymap").c_str(),
+    (buffer + "\\data\\" + COEDocument::GetSettingsManager().GetGlobalSettings().GetKeymapLayout() + ".keymap"),
     m_accelTable))
   {
     POSITION pos = m_pDocManager->GetFirstDocTemplatePosition();
@@ -353,7 +353,7 @@ BOOL QueryToolApp::InitInstance()
   {
     // Load editor settings
     COEDocument::LoadSettingsManager();
-    setlocale(LC_ALL, COEDocument::GetSettingsManager().GetGlobalSettings().GetLocale().c_str());
+    setlocale(LC_ALL, COEDocument::GetSettingsManager().GetGlobalSettings().GetLocale());
 
     if (!AllowThisInstance()) // must be after COEDocument::LoadSettingsManager();
     {
@@ -639,7 +639,7 @@ QueryToolApp::OnEditPermanetSettings()
   try
   {
     COEDocument::ShowSettingsDialog();
-    setlocale(LC_ALL, COEDocument::GetSettingsManager().GetGlobalSettings().GetLocale().c_str());
+    setlocale(LC_ALL, COEDocument::GetSettingsManager().GetGlobalSettings().GetLocale());
     UpdateAccelAndMenu();
     RefreshODBCPanels();
   }

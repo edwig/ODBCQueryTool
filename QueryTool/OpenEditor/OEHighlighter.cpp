@@ -31,13 +31,13 @@ namespace OpenEditor
 
 HighlighterBasePtr HighlighterFactory::CreateHighlighter (const char* name)
 {
-    if (!strcmp(name, "NONE"))  return HighlighterBasePtr();
-    if (!strcmp(name, "SQL"))   return HighlighterBasePtr(new PlSqlHighlighter);
-    if (!strcmp(name, "C++"))   return HighlighterBasePtr(new CPlusPlusHighlighter);
-    if (!strcmp(name, "Shell")) return HighlighterBasePtr(new ShellHighlighter);
-    if (!strcmp(name, "XML"))   return HighlighterBasePtr(new XmlHighlighter);
-    if (!strcmp(name, "SQR"))   return HighlighterBasePtr(new SqrHighlighter);
-    if (!strcmp(name, "PERL"))  return HighlighterBasePtr(new PerlHighlighter);
+    if (!strcmp(name, _T("NONE")))  return HighlighterBasePtr();
+    if (!strcmp(name, _T("SQL")))   return HighlighterBasePtr(new PlSqlHighlighter);
+    if (!strcmp(name, _T("C++")))   return HighlighterBasePtr(new CPlusPlusHighlighter);
+    if (!strcmp(name, _T("Shell"))) return HighlighterBasePtr(new ShellHighlighter);
+    if (!strcmp(name, _T("XML")))   return HighlighterBasePtr(new XmlHighlighter);
+    if (!strcmp(name, _T("SQR")))   return HighlighterBasePtr(new SqrHighlighter);
+    if (!strcmp(name, _T("PERL")))  return HighlighterBasePtr(new PerlHighlighter);
 
     return HighlighterBasePtr(new CommonHighlighter(name));
 }
@@ -65,12 +65,12 @@ CommonHighlighter::CommonHighlighter (const char* langName)
     m_seqOf = ePlainText;
     m_isStartLine = false;
 
-    m_textLabel        = "Text";
-    m_numberLabel      = "Number";
-    m_characterLabel   = "Character";
-    m_stringLabel      = "String";
-    m_commentLabel     = "Comment";
-    m_lineCommentLabel = "Line Comment";
+    m_textLabel        = _T("Text");
+    m_numberLabel      = _T("Number");
+    m_characterLabel   = _T("Character");
+    m_stringLabel      = _T("String");
+    m_commentLabel     = _T("Comment");
+    m_lineCommentLabel = _T("Line Comment");
 
     const LanguagePtr langPtr = LanguagesCollection::Find(langName);
 
@@ -84,27 +84,27 @@ CommonHighlighter::CommonHighlighter (const char* langName)
     m_stringPair         = langPtr->GetStringPair();
     m_charPair           = langPtr->GetCharPair();
 
-    m_delimiters.Set(langPtr->GetDelimiters().c_str());
+    m_delimiters.Set(langPtr->GetDelimiters().GetString());
 
     m_symbolFastMap.erase();
     m_lineCommentFastMap.erase();
 
-    if (!m_commentPair.first.empty())  m_symbolFastMap[*m_commentPair.first.begin()]   = true;
-    if (!m_commentPair.second.empty()) m_symbolFastMap[*m_commentPair.second.rbegin()] = true;
-    if (!m_stringPair.first.empty())   m_symbolFastMap[*m_stringPair.first.begin()]    = true;
-    if (!m_stringPair.second.empty())  m_symbolFastMap[*m_stringPair.second.rbegin()]  = true;
-    if (!m_charPair.first.empty())     m_symbolFastMap[*m_charPair.first.begin()]      = true;
-    if (!m_charPair.second.empty())    m_symbolFastMap[*m_charPair.second.rbegin()]    = true;
+    if (!m_commentPair.first.IsEmpty())  m_symbolFastMap[m_commentPair.first .GetAt(0)] = true;
+    if (!m_commentPair.second.IsEmpty()) m_symbolFastMap[m_commentPair.second.GetAt(0)] = true;
+    if (!m_stringPair.first.IsEmpty())   m_symbolFastMap[m_stringPair .first .GetAt(0)] = true;
+    if (!m_stringPair.second.IsEmpty())  m_symbolFastMap[m_stringPair .second.GetAt(0)] = true;
+    if (!m_charPair.first.IsEmpty())     m_symbolFastMap[m_charPair   .first .GetAt(0)] = true;
+    if (!m_charPair.second.IsEmpty())    m_symbolFastMap[m_charPair   .second.GetAt(0)] = true;
 
-    if (!m_endLineComment.empty())
+    if (!m_endLineComment.IsEmpty())
     {
-        m_symbolFastMap[*m_endLineComment.begin()] = true;
-        m_lineCommentFastMap[*m_endLineComment.begin()]= true;
+        m_symbolFastMap[m_endLineComment.GetAt(0)] = true;
+        m_lineCommentFastMap[m_endLineComment.GetAt(0)]= true;
     }
 
-    if (!m_endLineComment.empty())
+    if (!m_endLineComment.IsEmpty())
     {
-        char ch = *m_endLineComment.begin();
+        char ch = m_endLineComment.GetAt(0);
         if (m_caseSensiteve)
         {
             m_symbolFastMap[ch] = true;
@@ -119,11 +119,11 @@ CommonHighlighter::CommonHighlighter (const char* langName)
         }
     }
 
-    std::set<string>::const_iterator it = m_startLineComment.begin();
+    std::set<CString>::const_iterator it = m_startLineComment.begin();
     for (; it != m_startLineComment.end(); it++)
-        if (it->size())
+        if (it->GetLength())
         {
-            char ch = it->at(0);
+            char ch = it->GetAt(0);
             if (m_caseSensiteve)
             {
                 m_symbolFastMap[ch] = true;
@@ -149,21 +149,21 @@ void HighlighterBase::Attrib::operator = (const VisualAttribute& attr)
 
 void CommonHighlighter::Init (const VisualAttributesSet& set_)
 {
-    // required hardcoded categories
+    // required hard coded categories
     m_textAttr   = set_.FindByName(m_textLabel);
     m_numberAttr = set_.FindByName(m_numberLabel);
 
-    if (!m_charPair.first.empty())    m_characterAttr   = set_.FindByName(m_characterLabel);
-    if (!m_stringPair.first.empty())  m_stringAttr      = set_.FindByName(m_stringLabel);
-    if (!m_commentPair.first.empty()) m_commentAttr     = set_.FindByName(m_commentLabel);
-    if (!m_endLineComment.empty())    m_lineCommentAttr = set_.FindByName(m_lineCommentLabel);
+    if (!m_charPair.first.IsEmpty())    m_characterAttr   = set_.FindByName(m_characterLabel);
+    if (!m_stringPair.first.IsEmpty())  m_stringAttr      = set_.FindByName(m_stringLabel);
+    if (!m_commentPair.first.IsEmpty()) m_commentAttr     = set_.FindByName(m_commentLabel);
+    if (!m_endLineComment.IsEmpty())    m_lineCommentAttr = set_.FindByName(m_lineCommentLabel);
 
     // language depended categories
     m_keyAttrs.resize(m_keywordGroups.size());
-    std::vector<string>::const_iterator it = m_keywordGroups.begin();
+    std::vector<CString>::const_iterator it = m_keywordGroups.begin();
     for (int i(0); it != m_keywordGroups.end(); it++, i++)
     {
-        m_keyAttrs.at(i) = set_.FindByName(it->c_str());
+        m_keyAttrs.at(i) = set_.FindByName(it->GetString());
     }
 }
 
@@ -187,11 +187,11 @@ bool CommonHighlighter::closingOfSeq (const char* str, int /*len*/)
     switch (m_seqOf)
     {
     case eComment:
-        if ((str - m_commentPair.second.size() + 1) >= m_currentLine
+        if ((str - m_commentPair.second.GetLength() + 1) >= m_currentLine
             && !strncmp(
-                    m_commentPair.second.c_str(),
-                    str - m_commentPair.second.size() + 1,
-                    m_commentPair.second.size())
+                    m_commentPair.second.GetString(),
+                    str - m_commentPair.second.GetLength() + 1,
+                    m_commentPair.second.GetLength())
         )
         {
             m_seqOf = ePlainText;
@@ -200,24 +200,24 @@ bool CommonHighlighter::closingOfSeq (const char* str, int /*len*/)
         }
         break;
     case eCharacter:
-        if ((str - m_charPair.second.size() + 1) >= m_currentLine
+        if ((str - m_charPair.second.GetLength() + 1) >= m_currentLine
             && !strncmp(
-                    m_charPair.second.c_str(),
-                    str - m_charPair.second.size() + 1,
-                    m_charPair.second.size())
+                    m_charPair.second.GetString(),
+                    str - m_charPair.second.GetLength() + 1,
+                    m_charPair.second.GetLength())
             && (
-                // escape is not defined or the previos fragment is not escape or it is not double escape
-                m_escapeChar.empty()
+                // escape is not defined or the previous fragment is not escape or it is not double escape
+                m_escapeChar.IsEmpty()
                 // the current position < escape size
-                || str - m_currentLine < static_cast<int>(m_escapeChar.size())
+                || str - m_currentLine < static_cast<int>(m_escapeChar.GetLength())
                 // the previous fragment is not escape
-                || strncmp(m_escapeChar.c_str(), str - m_escapeChar.size(), m_escapeChar.size())
+                || strncmp(m_escapeChar.GetString(), str - m_escapeChar.GetLength(), m_escapeChar.GetLength())
                 // it is double escape
                 || (
                     // the current position >= 2 * escape size
-                    str - m_currentLine >= 2 * static_cast<int>(m_escapeChar.size())
+                    str - m_currentLine >= 2 * static_cast<int>(m_escapeChar.GetLength())
                     // the previous previous fragment is escape
-                    && !strncmp(m_escapeChar.c_str(), str - 2 * m_escapeChar.size(), m_escapeChar.size())
+                    && !strncmp(m_escapeChar.GetString(), str - 2 * m_escapeChar.GetLength(), m_escapeChar.GetLength())
                 )
             )
         )
@@ -228,24 +228,24 @@ bool CommonHighlighter::closingOfSeq (const char* str, int /*len*/)
         }
         break;
     case eString:
-        if ((str - m_stringPair.second.size() + 1) >= m_currentLine
+        if ((str - m_stringPair.second.GetLength() + 1) >= m_currentLine
             && !strncmp(
-                    m_stringPair.second.c_str(),
-                    str - m_stringPair.second.size() + 1,
-                    m_stringPair.second.size())
+                    m_stringPair.second.GetString(),
+                    str - m_stringPair.second.GetLength() + 1,
+                    m_stringPair.second.GetLength())
             && (
-                // escape is not defined or the previos fragment is not escape or it is not double escape
-                m_escapeChar.empty()
+                // escape is not defined or the previous fragment is not escape or it is not double escape
+                m_escapeChar.IsEmpty()
                 // the current position < escape size
-                || str - m_currentLine < static_cast<int>(m_escapeChar.size())
+                || str - m_currentLine < static_cast<int>(m_escapeChar.GetLength())
                 // the previous fragment is not escape
-                || strncmp(m_escapeChar.c_str(), str - m_escapeChar.size(), m_escapeChar.size())
+                || strncmp(m_escapeChar.GetString(), str - m_escapeChar.GetLength(), m_escapeChar.GetLength())
                 // it is double escape
                 || (
                     // the current position >= 2 * escape size
-                    str - m_currentLine >= 2 * static_cast<int>(m_escapeChar.size())
+                    str - m_currentLine >= 2 * static_cast<int>(m_escapeChar.GetLength())
                     // the previous previous fragment is escape
-                    && !strncmp(m_escapeChar.c_str(), str - 2 * m_escapeChar.size(), m_escapeChar.size())
+                    && !strncmp(m_escapeChar.GetString(), str - 2 * m_escapeChar.GetLength(), m_escapeChar.GetLength())
                 )
             )
         )
@@ -265,18 +265,18 @@ bool CommonHighlighter::openingOfSeq (const char* str, int len)
 
     if (m_lineCommentFastMap[*str])
     {
-        if (!m_endLineComment.empty()
-            && !strncmp(str, m_endLineComment.c_str(), m_endLineComment.size())
+        if (!m_endLineComment.IsEmpty()
+            && !strncmp(str, m_endLineComment.GetString(), m_endLineComment.GetLength())
         )
             comment = true;
 
         if (m_isStartLine)
         {
-            std::set<string>::const_iterator it = m_startLineComment.begin();
+            std::set<CString>::const_iterator it = m_startLineComment.begin();
             for (; it != m_startLineComment.end(); it++)
-                if (len == static_cast<int>(it->length()) // 10.03.2003 bug fix, start-line comment (promt & remark) should be separeted by delimiter from text
-                && (m_caseSensiteve && !strncmp(str, it->c_str(), it->length())
-                    || !m_caseSensiteve && !_strnicmp(str, it->c_str(), it->length()))
+                if (len == static_cast<int>(it->GetLength()) // 10.03.2003 bug fix, start-line comment (prompt & remark) should be separated by delimiter from text
+                && (m_caseSensiteve && !strncmp(str, it->GetString(), it->GetLength())
+                    || !m_caseSensiteve && !_strnicmp(str, it->GetString(), it->GetLength()))
                 )
                 {
                     comment = true;
@@ -292,27 +292,27 @@ bool CommonHighlighter::openingOfSeq (const char* str, int len)
         m_printableSpaces = true;
         return true;
     }
-    else if (!m_charPair.first.empty()
-        && (m_currentLine + m_currentLineLength) >= (str + m_charPair.first.size())
-        && !strncmp(str, m_charPair.first.c_str(), m_charPair.first.size()))
+    else if (!m_charPair.first.IsEmpty()
+        && (m_currentLine + m_currentLineLength) >= (str + m_charPair.first.GetLength())
+        && !strncmp(str, m_charPair.first.GetString(), m_charPair.first.GetLength()))
     {
         m_seqOf = eCharacter;
         m_current = m_characterAttr;
         m_printableSpaces = true;
         return true;
     }
-    else if (!m_stringPair.first.empty()
-        && (m_currentLine + m_currentLineLength) >= (str + m_stringPair.first.size())
-        && !strncmp(str, m_stringPair.first.c_str(), m_stringPair.first.size()))
+    else if (!m_stringPair.first.IsEmpty()
+        && (m_currentLine + m_currentLineLength) >= (str + m_stringPair.first.GetLength())
+        && !strncmp(str, m_stringPair.first.GetString(), m_stringPair.first.GetLength()))
     {
         m_seqOf = eString;
         m_current = m_stringAttr;
         m_printableSpaces = true;
         return true;
     }
-    else if (!m_commentPair.first.empty()
-        && (m_currentLine + m_currentLineLength) >= (str + m_commentPair.first.size())
-        && !strncmp(str, m_commentPair.first.c_str(), m_commentPair.first.size()))
+    else if (!m_commentPair.first.IsEmpty()
+        && (m_currentLine + m_currentLineLength) >= (str + m_commentPair.first.GetLength())
+        && !strncmp(str, m_commentPair.first.GetString(), m_commentPair.first.GetLength()))
     {
         m_seqOf = eComment;
         m_current = m_commentAttr;
@@ -324,76 +324,74 @@ bool CommonHighlighter::openingOfSeq (const char* str, int len)
 }
 
 // export some additional functionality
-bool CommonHighlighter::IsKeyword (const char* str, int len, string& keyword)
+bool CommonHighlighter::IsKeyword (const char* str, int len, CString& keyword)
 {
-    string key(str, len);
+  CString key(str);
+  key = key.Left(len);
 
-    if (!m_caseSensiteve)
-        for (string::iterator it = key.begin(); it != key.end(); it++)
-            *it = toupper(*it);
-
-    LanguageKeywordMapConstIterator
-        it = m_LanguageKeywordMap->find(key);
-
-	if (it != m_LanguageKeywordMap->end())
-    {
-        keyword = it->second.keyword;
-        return true;
-    }
-
-    return false;
+  if(!m_caseSensiteve)
+  {
+    key.MakeUpper();
+  }
+  LanguageKeywordMapConstIterator it = m_LanguageKeywordMap->find(key);
+	if(it != m_LanguageKeywordMap->end())
+  {
+      keyword = it->second.keyword;
+      return true;
+  }
+  return false;
 }
 
 bool CommonHighlighter::isKeyword (const char* str, int len)
 {
-    string key(str, len);
+  CString key(str);
+  key = key.Left(len);
 
-    if (!m_caseSensiteve)
-        for (string::iterator it = key.begin(); it != key.end(); it++)
-            *it = toupper(*it);
-
-    LanguageKeywordMapConstIterator
-        it = m_LanguageKeywordMap->find(key);
+  if(!m_caseSensiteve)
+  {
+    key.MakeUpper();
+  }
+  LanguageKeywordMapConstIterator it = m_LanguageKeywordMap->find(key);
 
 	if (it != m_LanguageKeywordMap->end())
-    {
-        m_seqOf = eKeyword;
-        m_current = m_keyAttrs.at(it->second.groupIndex);
-        return true;
-    }
-    else
-    {
-        m_seqOf = ePlainText;
-        m_current = m_textAttr;
-        return false;
-    }
+  {
+      m_seqOf = eKeyword;
+      m_current = m_keyAttrs.at(it->second.groupIndex);
+      return true;
+  }
+  else
+  {
+      m_seqOf = ePlainText;
+      m_current = m_textAttr;
+      return false;
+  }
 }
 
-// it's the simplest implementeation of isDigit
+// it's the simplest implementation of isDigit
 // we check only the first character
 bool CommonHighlighter::isDigit (const char* str, int /*len*/)
 {
-    if (isdigit(*str))
-    {
-        m_current = m_numberAttr;
-        return true;
-    }
-
-    return false;
+  if (isdigit(*str))
+  {
+    m_current = m_numberAttr;
+    return true;
+  }
+  return false;
 }
 
 void CommonHighlighter::NextWord (const char* str, int len)
 {
 	_ASSERTE(str && len > 0);
 
-    if (!(m_symbolFastMap[*str] && closingOfSeq(str, len))
-        && (m_seqOf & ePlainGroup)
-        && !(m_symbolFastMap[*str] && openingOfSeq(str, len))
-        && !isDigit(str, len)
-    )
-        isKeyword(str, len);
-
-    m_isStartLine = false;
+  if(!(m_symbolFastMap[*str] && closingOfSeq(str,len))
+     && (m_seqOf & ePlainGroup)
+     && !(m_symbolFastMap[*str] && openingOfSeq(str,len))
+     && !isDigit(str,len)
+     )
+  {
+    isKeyword(str,len);
+  }
+  m_isStartLine = false;
 }
 
 void CommonHighlighter::InitStorageScanner (MultilineQuotesScanner& scanner) const
@@ -401,15 +399,16 @@ void CommonHighlighter::InitStorageScanner (MultilineQuotesScanner& scanner) con
     scanner.ClearSettings ();
     scanner.SetCaseSensitive(m_caseSensiteve);
 
-    std::set<string>::const_iterator it = m_startLineComment.begin();
-    for (; it != m_startLineComment.end(); it++)
-        scanner.AddStartLineQuotes(it->c_str());
+    for(auto& str : m_startLineComment)
+    {
+      scanner.AddStartLineQuotes(str);
+    }
 
-    if (!m_endLineComment.empty())    scanner.AddSingleLineQuotes(m_endLineComment.c_str());
-    if (!m_commentPair.first.empty()) scanner.AddMultilineQuotes(m_commentPair);
-    if (!m_stringPair.first.empty())  scanner.AddMultilineQuotes(m_stringPair);
-    if (!m_charPair.first.empty())    scanner.AddMultilineQuotes(m_charPair);
-    if (!m_escapeChar.empty())        scanner.AddEscapeChar(m_escapeChar.c_str());
+    if (!m_endLineComment.IsEmpty())    scanner.AddSingleLineQuotes(m_endLineComment);
+    if (!m_commentPair.first.IsEmpty()) scanner.AddMultilineQuotes(m_commentPair);
+    if (!m_stringPair.first.IsEmpty())  scanner.AddMultilineQuotes(m_stringPair);
+    if (!m_charPair.first.IsEmpty())    scanner.AddMultilineQuotes(m_charPair);
+    if (!m_escapeChar.IsEmpty())        scanner.AddEscapeChar(m_escapeChar);
 
     scanner.SetDelimitersMap(m_delimiters);
 }
@@ -421,8 +420,8 @@ void CommonHighlighter::SetMultilineQuotesState (int state, int quoteId, bool)
 
     if (state > 0)
     {
-        if (m_commentPair.first.empty()) quoteId++;
-        if (m_stringPair.first.empty()) quoteId++;
+        if (m_commentPair.first.IsEmpty()) quoteId++;
+        if (m_stringPair.first.IsEmpty()) quoteId++;
         //if (m_charPair.first.empty())   quoteId++;
 
         switch (quoteId)

@@ -23,12 +23,11 @@
 
 namespace Common
 {
-    using std::string;
     using std::vector;
 
-    void trim_symmetric (string& str, const char* skip = " \t\n\r");
-    void to_printable_str (const char* from, string& to);
-    void to_unprintable_str (const char* from, string& to, bool skipEscDgt = false);
+    void trim_symmetric (CString& str, const char* skip = " \t\n\r");
+    void to_printable_str (const char* from, CString& to);
+    void to_unprintable_str (const char* from, CString& to, bool skipEscDgt = false);
     void date_c_to_oracle (const char* from, string& to);
     void date_oracle_to_c (const char* from, string& to);
     void to_upper_str (const char* from, string& to);

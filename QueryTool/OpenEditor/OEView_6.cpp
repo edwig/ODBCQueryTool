@@ -63,7 +63,7 @@ bool COEditorView::PreNormalizeOnChar (NormalizeOnCharCxt& cxt, char ch)
                 cxt.sqr.end.column   = pos.column;
 
                 if (phighlighter->IsKeyword(str + cxt.sqr.start.column, cxt.sqr.end.column - cxt.sqr.start.column, cxt.keyword)
-                && strncmp(cxt.keyword.c_str(), str + cxt.sqr.start.column, cxt.sqr.end.column - cxt.sqr.start.column))
+                && strncmp(cxt.keyword.GetString(), str + cxt.sqr.start.column, cxt.sqr.end.column - cxt.sqr.start.column))
                 {
                     cxt.matched = true;
                     cxt.sqr.start.column = inx2pos(str, len, cxt.sqr.start.column);
@@ -90,7 +90,7 @@ void COEditorView::NormalizeOnChar (NormalizeOnCharCxt& cxt)
         DeleteBlock(false);
 
         MoveTo(cxt.sqr.start);
-        InsertBlock(cxt.keyword.c_str(), true, false);
+        InsertBlock(cxt.keyword.GetString(), true, false);
 
         MoveTo(pos);
         PushInUndoStack(pos);
@@ -135,7 +135,7 @@ bool COEditorView::IsNormalizeablePos (Position pos) const
     return false;
 }
 
-bool COEditorView::NormalizeText (const EditContext& cxt, string& _str)
+bool COEditorView::NormalizeText (const EditContext& cxt, CString& _str)
 {
     int line, start, end;
     cxt.GetScanLine(line, start, end);
@@ -159,7 +159,7 @@ bool COEditorView::NormalizeText (const EditContext& cxt, string& _str)
         tokenizer.EnableProcessSpaces(true);
         tokenizer.StartScan(str, llen);
 
-        string buffer, keyword;
+        CString buffer, keyword;
 
         while (!tokenizer.Eol())
         {
@@ -173,13 +173,17 @@ bool COEditorView::NormalizeText (const EditContext& cxt, string& _str)
             if (((start <= pos && pos <= end) || (start <= (pos + wlen - 1) && (pos + wlen - 1) <= end))
             && phighlighter->IsPlainText() && phighlighter->IsKeyword(str, wlen, keyword))
             {
-                _ASSERTE(wlen == static_cast<int>(keyword.length()));
+                _ASSERTE(wlen == static_cast<int>(keyword.GetLength()));
 
                 int inx = cxt.PosToInx(line, pos, llen) - start;
 
-                for (int i(0); i < wlen; i++)
-                    if (inx + i >= 0 && inx + i < end - start)
-                        _str.at(inx + i) = keyword.at(i);
+                for(int i(0); i < wlen; i++)
+                {
+                  if(inx + i >= 0 && inx + i < end - start)
+                  {
+                    _str.SetAt(inx + i,keyword.GetAt(i));
+                  }
+                }
             }
 
             tokenizer.Next();

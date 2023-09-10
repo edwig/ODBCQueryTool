@@ -58,11 +58,11 @@ CFindReplaceDlg::CFindReplaceDlg(BOOL replace, COEditorView* pView)
   if (pView)
   {
     // 26.05.2003 bug fix, Find/Replace dialog: "Transform backslash expressions" has beed added to handle \t\b\ddd...
-    m_BackslashExpressions = AfxGetApp()->GetProfileInt("Editor", "BackslashExpressions", FALSE);
+    m_BackslashExpressions = AfxGetApp()->GetProfileInt(_T("Editor"), _T("BackslashExpressions"), FALSE);
 
-    string buff;
+    CString buff;
     toPrintableStr(m_pView->GetSearchText(), buff);
-    m_SearchText = buff.c_str();
+    m_SearchText = buff;
 
     /*
     bool backward, wholeWords, matchCase, regExpr, searchAll;
@@ -74,12 +74,12 @@ CFindReplaceDlg::CFindReplaceDlg(BOOL replace, COEditorView* pView)
     m_RegExp         = regExpr;
     m_Direction      = backward ? 0 : 1;
     */
-    m_MatchCase      = AfxGetApp()->GetProfileInt("Editor", "SearchMatchCase",      FALSE);
-    m_MatchWholeWord = AfxGetApp()->GetProfileInt("Editor", "SearchMatchWholeWord", FALSE);
-    m_AllWindows     = AfxGetApp()->GetProfileInt("Editor", "SearchAllWindows",     FALSE);
-    m_RegExp         = AfxGetApp()->GetProfileInt("Editor", "SearchRegExp",         FALSE);
+    m_MatchCase      = AfxGetApp()->GetProfileInt(_T("Editor"), _T("SearchMatchCase"),      FALSE);
+    m_MatchWholeWord = AfxGetApp()->GetProfileInt(_T("Editor"), _T("SearchMatchWholeWord"), FALSE);
+    m_AllWindows     = AfxGetApp()->GetProfileInt(_T("Editor"), _T("SearchAllWindows"),     FALSE);
+    m_RegExp         = AfxGetApp()->GetProfileInt(_T("Editor"), _T("SearchRegExp"),         FALSE);
     // 26.05.2003 bug fix, Find/Replace dialog: a replace mode depends on a search direction
-    m_Direction      = m_ReplaceMode ? 1 : AfxGetApp()->GetProfileInt("Editor", "SearchDirection", 1);
+    m_Direction      = m_ReplaceMode ? 1 : AfxGetApp()->GetProfileInt(_T("Editor"), _T("SearchDirection"), 1);
         
     m_WhereReplace   = 1;
   }
@@ -161,9 +161,9 @@ CFindReplaceDlg::OnInitDialog ()
   m_WhereReplace = (enableWhereReplace && blk.start.line != blk.end.line) ? 0 : 1;
     
   StyleDialog::OnInitDialog();
-  SetWindowText(m_ReplaceMode ? "Replace text" : "Find text");
+  SetWindowText(m_ReplaceMode ? _T("Replace text") : _T("Find text"));
 
-  Common::AppRestoreHistory(m_wndSearchText, "Editor", "SearchText", 10);
+  Common::AppRestoreHistory(m_wndSearchText, _T("Editor"), _T("SearchText"), 10);
 
   if(!m_SearchText.IsEmpty()) 
   {
@@ -173,7 +173,7 @@ CFindReplaceDlg::OnInitDialog ()
 
   if(m_ReplaceMode)
   {
-    Common::AppRestoreHistory(m_wndReplaceText, "Editor", "ReplaceText", 10);
+    Common::AppRestoreHistory(m_wndReplaceText, _T("Editor"), _T("ReplaceText"), 10);
     GetDlgItem(IDC_EF_REPLACE_IN_SELECTION)->EnableWindow(enableWhereReplace);
   }
 
@@ -203,20 +203,28 @@ CFindReplaceDlg::OnInitDialog ()
 /////////////////////////////////////////////////////////////////////////////
 // CFindReplaceDlg message handlers
 
-void CFindReplaceDlg::toPrintableStr (const char* from, string& _to)
+void CFindReplaceDlg::toPrintableStr (const char* from, CString& _to)
 {
-    if (m_BackslashExpressions)
-        Common::to_printable_str(from, _to);
-    else
-        _to = from;
+  if(m_BackslashExpressions)
+  {
+    Common::to_printable_str(from,_to);
+  }
+  else
+  {
+    _to = from;
+  }
 }
 
-void CFindReplaceDlg::toUnprintableStr (const char* from, string& _to, bool skipEscDgt)
+void CFindReplaceDlg::toUnprintableStr (const char* from, CString& _to, bool skipEscDgt)
 {
-    if (m_BackslashExpressions)
-        Common::to_unprintable_str(from, _to, skipEscDgt);
-    else
-        _to = from;
+  if(m_BackslashExpressions)
+  {
+    Common::to_unprintable_str(from,_to,skipEscDgt);
+  }
+  else
+  {
+    _to = from;
+  }
 }
 
 void CFindReplaceDlg::AdjustPosition ()
@@ -256,39 +264,39 @@ void CFindReplaceDlg::SaveOption ()
     if (m_Modified) 
     {
 
-        Common::AppSaveHistory(m_wndSearchText, "Editor", "SearchText", 10);
-        // 21.03.2003 bug fix, missing entry in fing what/replace with histoty
-        Common::AppRestoreHistory(m_wndSearchText, "Editor", "SearchText", 10);
+        Common::AppSaveHistory(m_wndSearchText, _T("Editor"), _T("SearchText"), 10);
+        // 21.03.2003 bug fix, missing entry in find what/replace with history
+        Common::AppRestoreHistory(m_wndSearchText, _T("Editor"), _T("SearchText"), 10);
 
         if (m_ReplaceMode)
         {
-            Common::AppSaveHistory(m_wndReplaceText, "Editor", "ReplaceText", 10);
-            // 21.03.2003 bug fix, missing entry in fing what/replace with histoty
-            Common::AppRestoreHistory(m_wndReplaceText, "Editor", "ReplaceText", 10); 
+            Common::AppSaveHistory(m_wndReplaceText, _T("Editor"), _T("ReplaceText"), 10);
+            // 21.03.2003 bug fix, missing entry in find what/replace with history
+            Common::AppRestoreHistory(m_wndReplaceText, _T("Editor"), _T("ReplaceText"), 10); 
         }
 
         if (m_pView)
         {
-            string buff;
+            CString buff;
             toUnprintableStr(m_SearchText, buff, false);
-            m_pView->SetSearchText(buff.c_str());
+            m_pView->SetSearchText(buff.GetString());
             m_pView->SetSearchOption(m_Direction == 0 ? true : false, 
                                      m_MatchWholeWord ? true : false, 
                                      m_MatchCase      ? true : false, 
                                      m_RegExp         ? true : false, 
                                      m_AllWindows     ? true : false);
 
-            AfxGetApp()->WriteProfileInt("Editor", "SearchMatchCase",      m_MatchCase     );
-            AfxGetApp()->WriteProfileInt("Editor", "SearchMatchWholeWord", m_MatchWholeWord);
-            AfxGetApp()->WriteProfileInt("Editor", "SearchAllWindows",     m_AllWindows    );
-            AfxGetApp()->WriteProfileInt("Editor", "SearchRegExp",         m_RegExp        );
+            AfxGetApp()->WriteProfileInt(_T("Editor"), _T("SearchMatchCase"),      m_MatchCase     );
+            AfxGetApp()->WriteProfileInt(_T("Editor"), _T("SearchMatchWholeWord"), m_MatchWholeWord);
+            AfxGetApp()->WriteProfileInt(_T("Editor"), _T("SearchAllWindows"),     m_AllWindows    );
+            AfxGetApp()->WriteProfileInt(_T("Editor"), _T("SearchRegExp"),         m_RegExp        );
             // 26.05.2003 bug fix, Find/Replace dialog: a replace mode depends on a search direction
-            if (!m_ReplaceMode)
-                AfxGetApp()->WriteProfileInt("Editor", "SearchDirection", m_Direction);
-
-            AfxGetApp()->WriteProfileInt("Editor", "BackslashExpressions", m_BackslashExpressions);
+            if(!m_ReplaceMode)
+            {
+              AfxGetApp()->WriteProfileInt(_T("Editor"),_T("SearchDirection"),m_Direction);
+            }
+            AfxGetApp()->WriteProfileInt(_T("Editor"), _T("BackslashExpressions"), m_BackslashExpressions);
         }
-
         m_Modified = FALSE;
     }
 }
@@ -338,10 +346,10 @@ void CFindReplaceDlg::OnReplace()
 
             if (!blk.is_empty() && blk.start.line == blk.end.line)
             {
-                string buff;
-                // 16.12.2002 bug fix, regexp replace fails on \1,...
+                CString buff;
+                // 16.12.2002 bug fix, regular expression replace fails on \1,...
                 toUnprintableStr(m_ReplaceText, buff, m_RegExp ? true : false /*skipEscDgt*/);
-                m_pView->Replace(buff.c_str(), blk.start.line, blk.start.column, blk.end.column);
+                m_pView->Replace(buff.GetString(), blk.start.line, blk.start.column, blk.end.column);
             }
         }
         
@@ -382,11 +390,11 @@ void CFindReplaceDlg::SearchBatch (OpenEditor::ESearchBatch mode)
             if (m_WhereReplace == 1 || mode == esbCount || mode == esbMark )
             {
                 if (!m_AllWindows || mode == esbCount || mode == esbMark 
-                || AfxMessageBox("All occurances will be replaced for all windows! Do You confirm?", MB_OKCANCEL|MB_ICONWARNING) == IDOK)
+                || AfxMessageBox(_T("All occurances will be replaced for all windows! Do You confirm?"), MB_OKCANCEL|MB_ICONWARNING) == IDOK)
                 {
-                    string buff;
+                    CString buff;
                     toUnprintableStr(m_ReplaceText, buff, false);
-                    counter = m_pView->SearchBatch(buff.c_str(), mode);
+                    counter = m_pView->SearchBatch(buff.GetString(), mode);
                 }
             }
             else // replace in selection
@@ -409,7 +417,7 @@ void CFindReplaceDlg::SearchBatch (OpenEditor::ESearchBatch mode)
                         switch (m_pView->GetBlockMode())
                         {
                         default:
-                            _CHECK_AND_THROW_(0, "Unsupported block type for counting or replacing!");
+                            _CHECK_AND_THROW_(0, _T("Unsupported block type for counting or replacing!"));
                         case ebtStream:
                             ;
                         }
@@ -428,10 +436,10 @@ void CFindReplaceDlg::SearchBatch (OpenEditor::ESearchBatch mode)
                             {
                                 if (mode == esbReplace)
                                 {
-                                    string buff;
-                                    // 27.05.2002 bug fix, regexp replace fails on \1,... for ReplaceAll
+                                    CString buff;
+                                    // 27.05.2002 bug fix, regular expression replace fails on \1,... for ReplaceAll
                                     toUnprintableStr(m_ReplaceText, buff, m_RegExp ? true : false /*skipEscDgt*/);
-                                    m_pView->Replace(buff.c_str(), line, start, end);
+                                    m_pView->Replace(buff.GetString(), line, start, end);
                                 }
                                 counter++;
                             }
@@ -455,23 +463,23 @@ void CFindReplaceDlg::SearchBatch (OpenEditor::ESearchBatch mode)
                 AdjustPosition();
         }
 
-        char buff[100];
-        _itoa_s(counter, buff,100, 10);
+        TCHAR buff[100];
+        _itot_s(counter, buff,100, 10);
 
         switch (mode)
         {
         case esbReplace:
-            strcat_s(buff, 100, " occurrence(s) have been replaced!");
+            _tcscat_s(buff, 100, _T(" occurrence(s) have been replaced!"));
             Common::SetStatusText(buff);
             break;
         case esbMark:
-            strcat_s(buff, 100, " occurrence(s) have been marked!");
+            _tcscat_s(buff, 100, _T(" occurrence(s) have been marked!"));
             Common::SetStatusText(buff);
             break;
         case esbCount:
-            strcat_s(buff, 100, " occurrence(s) have been found!");
+            _tcscat_s(buff, 100, _T(" occurrence(s) have been found!"));
             Common::SetStatusText(buff);
-            StyleMessageBox(this,buff, "Find",MB_OK);
+            StyleMessageBox(this,buff, _T("Find"),MB_OK);
             break;
         }
     }

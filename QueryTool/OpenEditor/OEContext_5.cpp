@@ -160,14 +160,15 @@ void EditContext::StopScan ()
 }
 
 
-void EditContext::ScanAndReplaceText (bool (*pmfnDo)(const EditContext&, string&), bool curentWord)
+void EditContext::ScanAndReplaceText (bool (*pmfnDo)(const EditContext&, CString&), bool curentWord)
 {
     Square blkPos;
 
-    // 05.03.2003 bug fix, lower/upper/... operaration causes an exception on blank space
-    if (!curentWord || !WordFromPoint(GetPosition(), blkPos))
-        GetSelection(blkPos);
-
+    // 05.03.2003 bug fix, lower/upper/... operation causes an exception on blank space
+    if(!curentWord || !WordFromPoint(GetPosition(),blkPos))
+    {
+      GetSelection(blkPos);
+    }
     blkPos.normalize();
 
     if (!blkPos.is_empty())
@@ -185,7 +186,7 @@ void EditContext::ScanAndReplaceText (bool (*pmfnDo)(const EditContext&, string&
 
         while (!Eof())
         {
-            string str;
+            CString str;
             int len = 0;
             const char* ptr = 0;
 
@@ -193,13 +194,15 @@ void EditContext::ScanAndReplaceText (bool (*pmfnDo)(const EditContext&, string&
 
             if (len > 0)
             {
-                str.assign(ptr, len);
+              char* bufpnt = str.GetBufferSetLength(len + 1);
+              strncpy_s(bufpnt,(len+1),ptr,len + 1);
+              str.ReleaseBuffer();
 
-                if (!(*pmfnDo)(*this, str))
-                    break;
+              if (!(*pmfnDo)(*this, str))
+                  break;
 
-                if (static_cast<int>(str.length()) != len || strncmp(str.c_str(), ptr, len))
-                    PutLine(str.c_str(), (int)str.length());
+              if (str.GetLength() != len || strncmp(str.GetString(), ptr, len))
+                  PutLine(str.GetString(), str.GetLength());
             }
 
             Next();
@@ -213,97 +216,96 @@ void EditContext::ScanAndReplaceText (bool (*pmfnDo)(const EditContext&, string&
         PushInUndoStack(GetBlockMode(), sel);
         PushInUndoStack(m_curPos);
     }
-    // !!! to catch exceptions and undo the curent operation !!!
+    // !!! to catch exceptions and undo the current operation !!!
 }
 
-bool EditContext::LowerText (const EditContext&, string& str)
+bool EditContext::LowerText (const EditContext&, CString& str)
 {
-    for (string::iterator it = str.begin(); it != str.end(); it++)
-        *it = tolower(*it);
-
-    return true;
+  str.MakeLower();
+  return true;
 }
 
-bool EditContext::UpperText (const EditContext&, string& str)
+bool EditContext::UpperText (const EditContext&, CString& str)
 {
-    for (string::iterator it = str.begin(); it != str.end(); it++)
-        *it = toupper(*it);
-
-    return true;
+  str.MakeUpper();
+  return true;
 }
 
-bool EditContext::CapitalizeText  (const EditContext&, string& str)
+bool EditContext::CapitalizeText  (const EditContext&, CString& str)
 {
-    for (string::iterator it = str.begin(); it != str.end(); it++)
-        if (it == str.begin() || !isalpha(*(it-1)))
-            *it = toupper(*it);
-        else
-            *it = tolower(*it);
-
-    return true;
-}
-
-bool EditContext::InvertCaseText  (const EditContext&, string& str)
-{
-    for (string::iterator it = str.begin(); it != str.end(); it++)
-        if (islower(*it))
-            *it = toupper(*it);
-        else if (isupper(*it))
-            *it = tolower(*it);
-
-    return true;
-}
-
-bool EditContext::tabify (const EditContext& edt, string& str, bool leading)
-{
-    // simplify all!
-    if (leading) UntabifyLeadingSpaces(edt, str); 
-    else         UntabifyText(edt, str);
-
-    string buff;
-
-    int tabSpacing = edt.GetTabSpacing();
-
-    unsigned i,k;
-    for (i = 0; str[i] && i < str.size(); )
+  for(int ind = 0;ind < str.GetLength(); ++ind)
+  {
+    if(ind == 0 || !isalpha(str.GetAt(ind - 1)))
     {
-        if (str[i] == ' ')
-        {
-            // If all characters are space untill next tab position
-            // then we replace them with a tab character
-            unsigned pos = (i / tabSpacing + 1) * tabSpacing;
-
-            for (k = 0; i + k < pos && str[i + k] == ' '; k++)
-                ;
-
-            if (i + k == pos)
-            {
-                buff +=  '\t';
-                i = pos;
-                continue;
-            }
-        }
-        else if (leading) // exit when it's not space
-        {
-            buff += str.c_str() + i;
-            break;
-        }
-
-        buff += str[i++];
+      str.SetAt(ind,toupper(str.GetAt(ind)));
     }
-
-    str = buff;
-
-    return true;
+  }
+  return true;
 }
 
-bool EditContext::untabify (const EditContext& edt, string& str, bool leading)
+bool EditContext::InvertCaseText  (const EditContext&, CString& str)
 {
-    string buff;
+  for(int ind = 0;ind < str.GetLength(); ++ind)
+  {
+    if(islower(str.GetAt(ind)))
+    {
+      str.SetAt(ind,toupper(str.GetAt(ind)));
+    }
+    else
+    {
+      str.SetAt(ind,tolower(str.GetAt(ind)));
+    }
+  }
+  return true;
+}
+
+bool EditContext::tabify (const EditContext& edt, CString& str, bool leading)
+{
+  // simplify all!
+  if (leading) UntabifyLeadingSpaces(edt, str); 
+  else         UntabifyText(edt, str);
+
+  CString buff;
+  int tabSpacing = edt.GetTabSpacing();
+
+  for(unsigned i = 0;i < (unsigned)str.GetLength();)
+  {
+    if (str[i] == ' ')
+    {
+      // If all characters are space until next tab position
+      // then we replace them with a tab character
+      unsigned pos = (i / tabSpacing + 1) * tabSpacing;
+
+      unsigned k = 0;
+      for (k = 0; i + k < pos && str[i + k] == ' '; k++)
+          ;
+
+      if (i + k == pos)
+      {
+        buff +=  '\t';
+        i = pos;
+        continue;
+      }
+    }
+    else if (leading) // exit when it's not space
+    {
+      buff += str.GetString() + i;
+      break;
+    }
+    buff += str[i++];
+  }
+  str = buff;
+
+  return true;
+}
+
+bool EditContext::untabify (const EditContext& edt, CString& str, bool leading)
+{
+    CString buff;
 
     int tabSpacing = edt.GetTabSpacing();
 
-    for (unsigned i(0), j(0); str[i] && i < str.size(); i++)
+    for (unsigned i(0), j(0);i < (unsigned)str.GetLength(); i++)
     {
         if (str[i] == '\t')
         {
@@ -319,7 +321,7 @@ bool EditContext::untabify (const EditContext& edt, string& str, bool leading)
         {
             if (leading)  // exit when it's not space
             {
-                buff += str.c_str() + i;
+                buff += str.GetString() + i;
                 break;
             }
             else
@@ -335,22 +337,22 @@ bool EditContext::untabify (const EditContext& edt, string& str, bool leading)
     return true;
 }
 
-bool EditContext::TabifyText (const EditContext& edt, string& str)
+bool EditContext::TabifyText (const EditContext& edt, CString& str)
 {
     return tabify(edt, str, false);
 }
 
-bool EditContext::TabifyLeadingSpaces (const EditContext& edt, string& str)
+bool EditContext::TabifyLeadingSpaces (const EditContext& edt, CString& str)
 {
     return tabify(edt, str, true);
 }
 
-bool EditContext::UntabifyText (const EditContext& edt, string& str)
+bool EditContext::UntabifyText (const EditContext& edt, CString& str)
 {
     return untabify(edt, str, false);
 }
 
-bool EditContext::UntabifyLeadingSpaces (const EditContext& edt, string& str)
+bool EditContext::UntabifyLeadingSpaces (const EditContext& edt, CString& str)
 {
     return untabify(edt, str, true);
 }

@@ -16,13 +16,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
-#ifndef __OEHighlighter_h__
-#define __OEHighlighter_h__
-
 #include <map>
 #include <string>
 #include <common/arg_shared.h>
@@ -42,7 +36,6 @@ namespace OpenEditor
     using std::map;
     using std::set;
     using std::pair;
-    using std::string;
     using std::vector;
 
     using arg::counted_ptr;
@@ -56,8 +49,10 @@ namespace OpenEditor
     struct HighlighterFactory
     {
         static HighlighterBasePtr CreateHighlighter (const char* name);
-        static HighlighterBasePtr CreateHighlighter (const string& name)
-            { return CreateHighlighter (name.c_str()); }
+        static HighlighterBasePtr CreateHighlighter (const CString& name)
+        { 
+          return CreateHighlighter (name.GetString()); 
+        }
     };
 
 
@@ -82,7 +77,7 @@ namespace OpenEditor
         enum EFontMask { efmNormal = 0x00, efmBold = 0x01, efmItalic = 0x02, efmUnderline = 0x04 };
 
         // export some additional functionality
-        virtual bool IsKeyword (const char* str, int len, string&) = 0;
+        virtual bool IsKeyword (const char* str, int len, CString&) = 0;
         virtual bool IsPlainText () = 0;
     protected:
         struct Attrib
@@ -113,7 +108,7 @@ namespace OpenEditor
         virtual void InitStorageScanner (MultilineQuotesScanner&) const;
 
         // export some additional functionality
-        virtual bool IsKeyword (const char* str, int len, string&);
+        virtual bool IsKeyword (const char* str, int len, CString&);
         virtual bool IsPlainText () { return m_seqOf & ePlainText? true : false; };
     protected:
         bool openingOfSeq (const char* str, int len);
@@ -123,13 +118,13 @@ namespace OpenEditor
 
         // language attributes
         bool                    m_caseSensiteve;
-        vector<string>          m_keywordGroups;
-        pair<string, string>    m_commentPair;
-        string                  m_endLineComment;
-        set<string>             m_startLineComment;
-        string                  m_escapeChar;
-        pair<string, string>    m_stringPair;
-        pair<string, string>    m_charPair;
+        vector<CString>          m_keywordGroups;
+        pair<CString, CString>    m_commentPair;
+        CString                  m_endLineComment;
+        set<CString>             m_startLineComment;
+        CString                  m_escapeChar;
+        pair<CString, CString>    m_stringPair;
+        pair<CString, CString>    m_charPair;
         LanguageKeywordMapPtr   m_LanguageKeywordMap;
         
         Fastmap<bool> m_symbolFastMap;
@@ -152,10 +147,10 @@ namespace OpenEditor
         ESeqOf m_seqOf;
         bool m_isStartLine;
 
-  		Attrib m_textAttr, 
-               m_commentAttr, m_lineCommentAttr,
-               m_characterAttr, m_stringAttr,
-               m_numberAttr;
+  		 Attrib m_textAttr, 
+              m_commentAttr, m_lineCommentAttr,
+              m_characterAttr, m_stringAttr,
+              m_numberAttr;
 
         vector<Attrib> m_keyAttrs;
 
@@ -295,27 +290,25 @@ namespace OpenEditor
 
     inline
     CPlusPlusHighlighter::CPlusPlusHighlighter () 
-        : CommonHighlighter("C++") {} 
+        : CommonHighlighter(_T("C++")) {} 
 
     inline
     PlSqlHighlighter::PlSqlHighlighter () 
-        : CommonHighlighter("SQL") {} 
+        : CommonHighlighter(_T("SQL")) {} 
 
     inline
     SqrHighlighter::SqrHighlighter () 
-        : CommonHighlighter("SQR") {} 
+        : CommonHighlighter(_T("SQR")) {} 
 
     inline
     ShellHighlighter::ShellHighlighter () 
-        : CommonHighlighter("Shell") {} 
+        : CommonHighlighter(_T("Shell")) {} 
 
     inline
     XmlHighlighter::XmlHighlighter () 
-        : CommonHighlighter("XML") {} 
+        : CommonHighlighter(_T("XML")) {} 
 
     inline
     PerlHighlighter::PerlHighlighter ()
-        : CommonHighlighter("PERL") {} 
+        : CommonHighlighter(_T("PERL")) {} 
 };
-
-#endif//__OEHighlighter_h__
