@@ -11,6 +11,10 @@ rmdir /q/s bin_Debugx64
 rmdir /q/s bin_Debugx86
 rmdir /q/s bin_Releasex64
 rmdir /q/s bin_Releasex86
+rmdir /q/s bin_DebugUnicodex64
+rmdir /q/s bin_ReleaseUnicodex64
+
+
 rmdir /q/s Installer\Debug
 rmdir /q/s Installer\Release
 rmdir /q/s Installer\x64
@@ -21,6 +25,7 @@ rmdir /q/s ReferenceGuide\Debug
 rmdir /q/s ReferenceGuide\Release
 rmdir /q/s ReferenceGuide\x64
 rmdir /q/s SQLComponents\Debug
+rmdir /q/s SQLComponents\DebugUnicode
 rmdir /q/s SQLComponents\Release
 rmdir /q/s SQLComponents\x64
 rmdir /q/s SQLMigrate\Debug
@@ -32,6 +37,9 @@ rmdir /q/s StyleFramework\x64
 rmdir /q/s BaseLibrary\Debug
 rmdir /q/s BaseLibrary\Release
 rmdir /q/s BaseLibrary\x64
+rmdir /q/s QueryRewriter\Debug
+rmdir /q/s QueryRewriter\Release
+rmdir /q/s QueryRewriter\x64
 rmdir /q/s lib
 rmdir /q/s ".vs"
 
