@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 // Translation list of SQL datatype constants and names
 typedef struct _types
 {
-  char*  name;
+  LPTSTR name;
   int    type;
 }
 DataTypes;

@@ -62,14 +62,14 @@ bool Contains(CString p_string,CString p_tag)
 CString IntegerToString(int p_number)
 {
   CString number;
-  number.Format("%d",p_number);
+  number.Format(_T("%d"),p_number);
   return number;
 }
 
 CString NumToString(int p_number)
 {
   CString number;
-  number.Format("%d",p_number);
+  number.Format(_T("%d"),p_number);
   return number;
 }
 
@@ -219,4 +219,73 @@ ScaleControl(CWnd* p_wnd)
   SetWindowPos(p_wnd->GetSafeHwnd(),p_wnd->GetSafeHwnd()
               ,rect.left,rect.top,rect.Width(),rect.Height()
               ,SWP_NOZORDER|SWP_NOACTIVATE);
+}
+
+CString StyleGetStringFromClipboard(HWND p_wnd /*=NULL*/)
+{
+#ifdef UNICODE
+  UINT format = CF_UNICODETEXT;
+#else
+  UINT format = CF_TEXT;
+#endif
+
+  CString string;
+  if(OpenClipboard(p_wnd))
+  {
+    HANDLE glob = GetClipboardData(format);
+    if(glob)
+    {
+      LPCTSTR text = (LPCTSTR) GlobalLock(glob);
+      string = text;
+      GlobalUnlock(glob);
+
+    }
+    CloseClipboard();
+  }
+  return string;
+}
+
+bool StylePutStringToClipboard(CString p_string,HWND p_wnd /*=NULL*/,bool p_append /*=false*/)
+{
+  bool result = false;
+#ifdef UNICODE
+  UINT format = CF_UNICODETEXT;
+#else
+  UINT format = CF_TEXT;
+#endif
+
+  if(!p_append)
+  {
+    OpenClipboard(p_wnd);
+    EmptyClipboard();
+    CloseClipboard();
+  }
+
+  if(OpenClipboard(p_wnd))
+  {
+    // Put the text in a global GMEM_MOVABLE memory handle
+    size_t size = ((size_t) p_string.GetLength() + 1) * sizeof(TCHAR);
+    HGLOBAL memory = GlobalAlloc(GHND,size);
+    if(memory)
+    {
+      void* data = GlobalLock(memory);
+      if(data)
+      {
+        _tcsncpy_s((LPTSTR) data,size,(LPCTSTR) p_string.GetString(),size);
+      }
+      else
+      {
+        GlobalFree(memory);
+        return false;
+      }
+
+      // Set the text on the clipboard
+      // and transfer ownership of the memory segment
+      SetClipboardData(format,memory);
+      GlobalUnlock(memory);
+      result = true;
+    }
+    CloseClipboard();
+  }
+  return result;
 }

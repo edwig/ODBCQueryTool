@@ -31,25 +31,25 @@
 
 // OUTSIDE WORLD INTERFACE
 
-INT_PTR StyleMessageBox(CWnd* p_parent,LPCSTR p_message,LPCSTR p_title,long   p_styles = MB_OK,bool* p_doNotShowAgain = nullptr,bool p_foreground = false);
-INT_PTR StyleMessageBox(CWnd* p_parent,LPCSTR p_message,LPCSTR p_title,LPCSTR p_labels       , bool* p_doNotShowAgain = nullptr,bool p_foreground = false);
+INT_PTR StyleMessageBox(CWnd* p_parent,LPCTSTR p_message,LPCTSTR p_title,long    p_styles = MB_OK,bool* p_doNotShowAgain = nullptr,bool p_foreground = false);
+INT_PTR StyleMessageBox(CWnd* p_parent,LPCTSTR p_message,LPCTSTR p_title,LPCTSTR p_labels       , bool* p_doNotShowAgain = nullptr,bool p_foreground = false);
 
 
 class MessageDialog : public StyleDialogCA
 {
 public:
   // Create by means of text label styles
-  MessageDialog(CWnd*   p_parent
-               ,LPCSTR  p_title
-               ,LPCSTR  p_message
-               ,LPCSTR  p_labels
-               ,bool*   p_doNotShowAgain = nullptr);
+  MessageDialog(CWnd*    p_parent
+               ,LPCTSTR  p_title
+               ,LPCTSTR  p_message
+               ,LPCTSTR  p_labels
+               ,bool*    p_doNotShowAgain = nullptr);
   // Create by means of standard MB_* styles
-  MessageDialog(CWnd*   p_parent
-               ,LPCSTR  p_title
-               ,LPCSTR  p_message
-               ,int     p_styles
-               ,bool*   p_doNotShowAgain = nullptr);
+  MessageDialog(CWnd*    p_parent
+               ,LPCTSTR  p_title
+               ,LPCTSTR  p_message
+               ,int      p_styles
+               ,bool*    p_doNotShowAgain = nullptr);
   // Destructor
   ~MessageDialog();
 

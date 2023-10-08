@@ -50,8 +50,8 @@ SQLDataSetXLS::SQLDataSetXLS(XString p_file, XString p_sheetOrSeperator, bool p_
               ,m_excel(false)
               ,m_xmlExcel(false)
                // Set defaults
-              ,m_delimLeft("\"")
-              ,m_delimRight("\"")
+              ,m_delimLeft(_T("\""))
+              ,m_delimRight(_T("\""))
 {
   // Detect whether file is an Excel spreadsheet or a text delimited file
   XString extensie;
@@ -61,14 +61,14 @@ SQLDataSetXLS::SQLDataSetXLS(XString p_file, XString p_sheetOrSeperator, bool p_
   tempString2.MakeLower();
 
   // File is an Excel spreadsheet
-  if (tempString1 == ".xls") 
+  if (tempString1 == _T(".xls")) 
   {
     m_excel     = true;
     m_sheetName = p_sheetOrSeperator;
     extensie    = tempString1;
     m_workbook  = new BasicExcel();
   }
-  if (tempString2 == ".xlsx")
+  if (tempString2 == _T(".xlsx"))
   {
     m_xmlExcel    = true;
     m_sheetName   = p_sheetOrSeperator;
@@ -112,7 +112,7 @@ SQLDataSetXLS::ReadXLS(XString p_sheet)
       if((m_backup) && (m_append))
       {
         XString tempSheetName = m_sheetName;
-        m_sheetName = "XLSBackup";
+        m_sheetName = _T("XLSBackup");
         m_append = false;
         if (!Commit())
         {
@@ -143,7 +143,7 @@ SQLDataSetXLS::ReadXLS(XString p_sheet)
       if((m_backup) && (m_append))
       {
         XString tempString = m_file;
-        m_file = m_file + ".bak";
+        m_file = m_file + _T(".bak");
         if(!Commit())
         {
           m_backup = false;
@@ -185,14 +185,14 @@ SQLDataSetXLS::Commit()
     try
     {
       FILE* file = nullptr;
-      if(fopen_s(&file,m_file,"w") == 0)
+      if(_tfopen_s(&file,m_file,_T("w")) == 0)
       {
         // Write the header of the file
         XString text;
         for(unsigned ind = 0;ind < m_names.size();++ind)
         {
           if(ind) text += m_separator;
-          text += "\"" + m_names[ind] + "\"";
+          text += _T("\"") + m_names[ind] + _T("\"");
         }
         WriteString(file,text,true);
 
@@ -204,7 +204,7 @@ SQLDataSetXLS::Commit()
           for(int ind = 0;ind < GetNumberOfFields(); ++ind)
           {
             if(ind) text += m_separator;
-            text += XString("\"") + XString(record->GetField(ind)->GetAsChar()) + "\"";
+            text += XString(_T("\"")) + XString(record->GetField(ind)->GetAsChar()) + _T("\"");
           }
           WriteString(file,text,true);
         }
@@ -222,7 +222,7 @@ SQLDataSetXLS::Commit()
     {
       m_lastError = MessageFromException(er);
     }
-    m_lastError += "Error writing file\n";
+    m_lastError += _T("Error writing file\n");
     return false;
   }
 }
@@ -237,7 +237,7 @@ SQLDataSetXLS::RollBack()
     m_transaction = false;
     return true;
   }
-  m_lastError = "Error in returning to previous state\n";
+  m_lastError = _T("Error in returning to previous state\n");
   return false;
 }
 
@@ -320,12 +320,12 @@ SQLDataSetXLS::ReadCell(XString &p_cellValue, short p_column, long p_row)
 {
   if (p_column == 0)
   {
-    m_lastError = "Column cannot be zero";
+    m_lastError = _T("Column cannot be zero");
     return false;
   }
   if(p_row == 0)
   {
-    m_lastError = "Row cannot be zero";
+    m_lastError = _T("Row cannot be zero");
     return false;
   }
   int col = p_column - 1;
@@ -333,12 +333,12 @@ SQLDataSetXLS::ReadCell(XString &p_cellValue, short p_column, long p_row)
 
   if(col >= GetNumberOfFields())
   {
-    m_lastError = "Column number too great";
+    m_lastError = _T("Column number too great");
     return false;
   }
   if(rec >= GetNumberOfRecords())
   {
-    m_lastError = "Row number too great";
+    m_lastError = _T("Row number too great");
     return false;
   }
   // Reading a header value
@@ -365,7 +365,7 @@ SQLDataSetXLS::DeleteSheet()
     }
     else
     {
-      m_lastError = "Error deleting sheet\n";
+      m_lastError = _T("Error deleting sheet\n");
       return false;
     }
   }
@@ -420,12 +420,12 @@ SQLDataSetXLS::SetCell(XString p_cellValue, short p_column, long p_row)
 {
   if (p_column == 0)
   {
-    m_lastError = "Column cannot be zero";
+    m_lastError = _T("Column cannot be zero");
     return false;
   }
   if(p_row == 0)
   {
-    m_lastError = "Row cannot be zero";
+    m_lastError = _T("Row cannot be zero");
     return false;
   }
   int col = p_column - 1;
@@ -433,12 +433,12 @@ SQLDataSetXLS::SetCell(XString p_cellValue, short p_column, long p_row)
 
   if(col >= GetNumberOfFields())
   {
-    m_lastError = "Column number too great";
+    m_lastError = _T("Column number too great");
     return false;
   }
   if(rec >= GetNumberOfRecords())
   {
-    m_lastError = "Row number too great";
+    m_lastError = _T("Row number too great");
     return false;
   }
   // setting a header value
@@ -509,7 +509,7 @@ SQLDataSetXLS::Open()
     try
     {
       // Buffer for all the cells
-      char buffer[100];
+      TCHAR buffer[10000];
 
       if(m_workbook->Load(m_file,true) ==false)
       {
@@ -520,7 +520,7 @@ SQLDataSetXLS::Open()
       BasicExcelWorksheet* sheet = m_workbook->GetWorksheet(m_sheetName);
       if(sheet == NULL)
       {
-        m_lastError.Format("Cannot find worksheet [%s] in XLS file: %s",m_sheetName.GetString(),m_file.GetString());
+        m_lastError.Format(_T("Cannot find worksheet [%s] in XLS file: %s"),m_sheetName.GetString(),m_file.GetString());
         return false;
       }
       int cols = sheet->GetTotalCols();
@@ -528,14 +528,14 @@ SQLDataSetXLS::Open()
 
       if(cols == 0 || rows <= 1)
       {
-        m_lastError.Format("Empty worksheet [%s]",m_sheetName.GetString());
+        m_lastError.Format(_T("Empty worksheet [%s]"),m_sheetName.GetString());
         return false;
       }
 
       // Read the header row with the cell names
       for(int col = 0; col < cols; ++col)
       {
-        XString value(sheet->CellValue(0,col,buffer,100));
+        XString value(sheet->CellValue(0,col,buffer,10000));
         m_names.push_back(value);
         m_types.push_back(SQL_C_CHAR);
       }
@@ -546,7 +546,7 @@ SQLDataSetXLS::Open()
         SQLRecord* record = InsertRecord();
         for(int col = 0; col < cols; ++col)
         {
-          const char* value = sheet->CellValue(row,col,buffer,100);
+          LPCTSTR value = sheet->CellValue(row,col,buffer,10000);
           SQLVariant* var = new SQLVariant(value);
           record->AddField(var);
           delete var;
@@ -556,12 +556,12 @@ SQLDataSetXLS::Open()
     catch(StdException& ex)
     {
       ReThrowSafeException(ex);
-      m_lastError = "Error reading spreadhseet: " + ex.GetErrorMessage();
+      m_lastError = _T("Error reading spreadhseet: ") + ex.GetErrorMessage();
       return false;
     }
     catch(...)
     {
-      m_lastError = "Error reading spreadsheet\n";
+      m_lastError = _T("Error reading spreadsheet\n");
       return false;
     }
     if(m_records.size())
@@ -582,7 +582,7 @@ SQLDataSetXLS::Open()
     BasicXmlWorksheet* sheet = m_xmlWorkbook->GetWorksheet(m_sheetName);
     if(sheet == NULL)
     {
-      m_lastError.Format("Cannot find worksheet [%s] in XLS file: %s",m_sheetName.GetString(),m_file.GetString());
+      m_lastError.Format(_T("Cannot find worksheet [%s] in XLS file: %s"),m_sheetName.GetString(),m_file.GetString());
       return false;
     }
     int cols = sheet->GetMaxCols();
@@ -615,7 +615,7 @@ SQLDataSetXLS::Open()
     try
     {
       FILE* file = nullptr;
-      fopen_s(&file,m_file,"r");
+      _tfopen_s(&file,m_file,_T("r"));
       if(file)
       {
         XString tempString;
@@ -657,7 +657,7 @@ SQLDataSetXLS::Open()
       ReThrowSafeException(ex);
       m_lastError = ex.GetErrorMessage();
     }
-    m_lastError += "Error in opening file\n";
+    m_lastError += _T("Error in opening file\n");
     return false;
   }
 }
@@ -685,7 +685,7 @@ SQLDataSetXLS::CalculateColumnNumber(XString p_column, bool p_name /*=true*/)
         return (i + 1);
       }
     }
-    m_lastError = "Invalid field name";
+    m_lastError = _T("Invalid field name");
     return 0;	
   }
   else
@@ -707,7 +707,7 @@ SQLDataSetXLS::CalculateColumnNumber(XString p_column, bool p_name /*=true*/)
       return ((firstLetter - 65 + 1)*26 + (secondLetter - 65 + 1)); 
     }
   }
-  m_lastError = "Invalid column alphabet";
+  m_lastError = _T("Invalid column alphabet");
   return 0;	
 }
 
@@ -726,22 +726,22 @@ SQLDataSetXLS::SplitRow(XString& p_input,WordList& p_rowValues)
   // Check to find delimiter / separator
   if(!m_separator.IsEmpty() && tempString.Find(m_separator) < 0)
   {
-    m_lastError += "Cannot find a separator in the CSV File ";
+    m_lastError += _T("Cannot find a separator in the CSV File ");
     return false;
   }
   if(!m_delimLeft.IsEmpty() && tempString.Find(m_delimLeft) < 0)
   {
-    m_lastError += "Cannot find a left delimiter for a string in the CSV file";
+    m_lastError += _T("Cannot find a left delimiter for a string in the CSV file");
     return false;
   }
   if(!m_delimRight.IsEmpty() && tempString.Find(m_delimRight) < 0)
   {
-    m_lastError += "Cannot find a right delimiter for a string in the CSV file";
+    m_lastError += _T("Cannot find a right delimiter for a string in the CSV file");
     return false;
   }
   if(m_delimLeft.IsEmpty() && m_separator.IsEmpty() && m_delimRight.IsEmpty())
   {
-    m_lastError += "A CSV file needs at least a string delimiter or a separator!";
+    m_lastError += _T("A CSV file needs at least a string delimiter or a separator!");
     return false;
   }
 
@@ -773,7 +773,7 @@ SQLDataSetXLS::SplitRow(XString& p_input,WordList& p_rowValues)
     if(pos_rechts < 0)
     {
       // Found a left delimiter, but not a right one
-      m_lastError += "CSV file: found a left delimiter, but not a right delimiter for a string";
+      m_lastError += _T("CSV file: found a left delimiter, but not a right delimiter for a string");
       return false;
     }
     // Partially string between delimiters
@@ -791,7 +791,7 @@ SQLDataSetXLS::SplitRow(XString& p_input,WordList& p_rowValues)
       }
       else
       {
-        m_lastError += "No separator found in the CSV file";
+        m_lastError += _T("No separator found in the CSV file");
         return false;
       }
     }
@@ -891,10 +891,10 @@ SQLDataSetXLS::ReadString(FILE* p_file,XString& p_string)
 bool  
 SQLDataSetXLS::WriteString(FILE* p_file,XString& p_string,bool p_appendCRLF /*=false*/)
 {
-  fputs(p_string.GetString(),p_file);
+  _fputts(p_string.GetString(),p_file);
   if(p_appendCRLF)
   {
-    fputs("\r\n",p_file);
+    _fputts(_T("\r\n"),p_file);
   }
   return true;
 }

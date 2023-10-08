@@ -39,6 +39,9 @@ public:
   explicit SQLInfoInformix(SQLDatabase* p_database);
  ~SQLInfoInformix();
 
+  // RDBMS Uses INDENTITY or SEQUENCE interface
+  void    SetUseSequences(bool p_sequences) override;
+
   //////////////////////////////////////////////////////////////////////////
   //
   // GENERALS (Strings & Booleans) 

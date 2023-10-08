@@ -52,16 +52,16 @@ DWORD g_colorArray[] =
   RGB(0,128,128),     RGB(0,192,192),     RGB(0,192,255),     RGB(0,255,255),
 };
 
-char* g_colorNames[] =
+TCHAR* g_colorNames[] =
 {
-  "White",            "Light gray",       "Dark gray",        "Black"
- ,"Very dark blue",   "Dark blue 1",      "Dark blue 2",      "Blue"
- ,"Very dark green",  "Dark green 1",     "Dark green 2",     "Green"
- ,"Brown",            "Dark red 1",       "Dark red 2",       "Red"
- ,"Very dark purple", "Dark purple 1",    "Dark purple 2",    "Purple"
- ,"Very dark yellow", "Dark yellow",      "Orange"
- ,"Very light yellow","Light yellow",     "Bright yellow"
- ,"Dark teal",        "Teal",             "Light blue",       "Cyan"
+  _T("White"),            _T("Light gray"),       _T("Dark gray"),        _T("Black")
+ ,_T("Very dark blue"),   _T("Dark blue 1"),      _T("Dark blue 2"),      _T("Blue")
+ ,_T("Very dark green"),  _T("Dark green 1"),     _T("Dark green 2"),     _T("Green")
+ ,_T("Brown"),            _T("Dark red 1"),       _T("Dark red 2"),       _T("Red")
+ ,_T("Very dark purple"), _T("Dark purple 1"),    _T("Dark purple 2"),    _T("Purple")
+ ,_T("Very dark yellow"), _T("Dark yellow"),      _T("Orange")
+ ,_T("Very light yellow"),_T("Light yellow"),     _T("Bright yellow")
+ ,_T("Dark teal"),        _T("Teal"),             _T("Light blue"),       _T("Cyan")
 };
 
 
@@ -120,14 +120,14 @@ enumFixedFontsFunc (LPLOGFONT lpLogFont, LPTEXTMETRIC /*lpTextMetric*/, INT /*nF
 BOOL APIENTRY 
 enumFontSizesFunc (LPLOGFONT /*lpLogFont*/, LPTEXTMETRIC lpTextMetric, INT nFontType, LPVOID lpData)
 {
-  char buff[64];
+  TCHAR buff[64];
   INT nPointSize;
   StyleComboBox& cb = *((StyleComboBox*)lpData);
 
   if (nFontType & RASTER_FONTTYPE)
   {
     nPointSize = VisualAttribute::PixelToPoint(lpTextMetric->tmHeight - lpTextMetric->tmInternalLeading);
-    _itoa_s(nPointSize,buff,64, 10);
+    _itot_s(nPointSize,buff,64, 10);
 
     if (cb.FindStringExact(-1, buff) == -1)
     {
@@ -135,12 +135,12 @@ enumFontSizesFunc (LPLOGFONT /*lpLogFont*/, LPTEXTMETRIC lpTextMetric, INT nFont
     }
   }
   // it looks strange and i can't remember why!!!
-  // EH: Reason: truetype fonts have all size from 8 to 25, but even size above 12
+  // EH: Reason: true-type fonts have all size from 8 to 25, but even size above 12
   else if (nFontType & TRUETYPE_FONTTYPE)
   {
     for (int i(8); i < 25; i++)
     {
-      _itoa_s(i, buff,64, 10);
+      _itot_s(i, buff,64, 10);
 
       if (cb.FindStringExact(-1, buff) == -1)
       {
@@ -227,7 +227,7 @@ CVisualAttributesPage::CreateColorString(DWORD p_color)
   DWORD red   = (p_color >> 16) & 0xFF;
 
   CString color;
-  color.Format("%2.2X-%2.2X-%2.2X",red,green,blue);
+  color.Format(_T("%2.2X-%2.2X-%2.2X"),red,green,blue);
   return color;
 }
 
@@ -263,7 +263,7 @@ CVisualAttributesPage::OnInitDialog()
     VisualAttributesSet& vaset = **it;
 
     item.item.mask    = TVIF_TEXT|TVIF_STATE;
-    item.item.pszText = const_cast<char*>(vaset.GetName());
+    item.item.pszText = const_cast<LPTSTR>(vaset.GetName());
     item.hParent      = m_treeCategories.InsertItem(&item);
 
 
@@ -271,7 +271,7 @@ CVisualAttributesPage::OnInitDialog()
     {
       m_vasetsMap[&vaset[k]] = &vaset;
       item.item.mask    = TVIF_TEXT|TVIF_STATE|TVIF_PARAM;
-      item.item.pszText = const_cast<char*>(vaset.GetName(k));
+      item.item.pszText = const_cast<LPTSTR>(vaset.GetName(k));
       item.item.lParam  = reinterpret_cast<LPARAM>(&vaset[k]);
       m_treeCategories.InsertItem(&item);
     }
@@ -471,8 +471,8 @@ CVisualAttributesPage::ShowFont (const VisualAttribute& attr)
   m_comboFontSize.ResetContent();
   EnumFonts(CWindowDC(this), attr.m_FontName.GetString(), (FONTENUMPROC)enumFontSizesFunc, (LPARAM)&m_comboFontSize);
 
-  char buff[64];
-  _itoa_s(attr.m_FontSize, buff,64, 10);
+  TCHAR buff[64];
+  _itot_s(attr.m_FontSize, buff,64, 10);
   index = m_comboFontSize.FindStringExact(0, buff);
   m_comboFontSize.SetCurSel((index != CB_ERR) ? index : -1);
 
@@ -522,7 +522,7 @@ CVisualAttributesPage::OnFontChanged()
     if (inx != CB_ERR)
     {
       m_comboFontSize.GetLBText(inx, buff);
-      curr->m_FontSize = atoi(buff);
+      curr->m_FontSize = _ttoi(buff);
     }
 
     curr->m_FontBold      = m_checkFontBold     .GetCheck() ? true : false;

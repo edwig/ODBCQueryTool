@@ -123,7 +123,7 @@ private:
   XString   CheckNMTOKENS (XString p_value);
   XString   CheckNames    (XString p_value);
   XString   CheckDuration (XString p_value,int& p_type);
-  bool      ScanDurationValue  (XString& p_duration,int& p_value,int& p_fraction,char& p_marker,bool& p_didTime);
+  bool      ScanDurationValue  (XString& p_duration,int& p_value,int& p_fraction,TCHAR& p_marker,bool& p_didTime);
   // Check max decimal/fraction digits
   XString   CheckTotalDigits   (XString p_value);
   XString   CheckFractionDigits(XString p_value);

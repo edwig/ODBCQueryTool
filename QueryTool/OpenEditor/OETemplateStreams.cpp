@@ -41,39 +41,39 @@ const int TheTemplatesVersion = 1011;
 
 void TemplateCollectionWriter::operator << (const SettingsManager& mgr)
 {
-    m_out.write("Version", TheTemplatesVersion);
-    m_out.write("Languages", mgr.m_templateCollection.GetCount());
+    m_out.write(_T("Version"), TheTemplatesVersion);
+    m_out.write(_T("Languages"), mgr.m_templateCollection.GetCount());
 
     TemplateCollection::ConstIterator 
         colIt = mgr.m_templateCollection.Begin(),
         colEnd = mgr.m_templateCollection.End();
 
-    Stream::Section sect1(m_out, "Lng");
+    Stream::Section sect1(m_out, _T("Lng"));
     for (int i = 0; colIt != colEnd; colIt++, i++)
     {
         Stream::Section sect2(m_out, i);
 
-        m_out.write("Name", colIt->first);
+        m_out.write(_T("Name"), colIt->first);
 
         Template::ConstIterator 
             templIt = colIt->second->Begin(),
             templEnd = colIt->second->End();
 
-        m_out.write("AlwaysListIfAlternative", 
+        m_out.write(_T("AlwaysListIfAlternative"), 
             colIt->second->GetAlwaysListIfAlternative());
 
-        m_out.write("Count", colIt->second->GetCount());
+        m_out.write(_T("Count"), colIt->second->GetCount());
 
-        Stream::Section sect3(m_out, "Tmpl");
+        Stream::Section sect3(m_out, _T("Tmpl"));
         for (int j = 0; templIt != templEnd; templIt++, j++)
         {
             Stream::Section sect4(m_out, j);
-            m_out.write("Name",      templIt->name);
-            m_out.write("Keyword",   templIt->keyword);
-            m_out.write("MinLength", templIt->minLength);
-            m_out.write("CurLine",   templIt->curLine);
-            m_out.write("CurPos",    templIt->curPos);
-            m_out.write("Text",      templIt->text);
+            m_out.write(_T("Name"),      templIt->name);
+            m_out.write(_T("Keyword"),   templIt->keyword);
+            m_out.write(_T("MinLength"), templIt->minLength);
+            m_out.write(_T("CurLine"),   templIt->curLine);
+            m_out.write(_T("CurPos"),    templIt->curPos);
+            m_out.write(_T("Text"),      templIt->text);
         }
     }
 }
@@ -81,13 +81,13 @@ void TemplateCollectionWriter::operator << (const SettingsManager& mgr)
 void TemplateCollectionReader::operator >> (SettingsManager& mgr)
 {
     m_version = 0;
-    m_in.read("Version", m_version);
+    m_in.read(_T("Version"), m_version);
 
     _CHECK_AND_THROW_(m_version >= 1010 && m_version <= TheTemplatesVersion, 
-        "Unsupprorted templates version!");
+                      _T("Unsupprorted templates version!"));
 
     int langCount = 0;
-    m_in.read("Languages", langCount);
+    m_in.read(_T("Languages"), langCount);
 
     mgr.m_templateCollection.Clear();
 
@@ -97,27 +97,27 @@ void TemplateCollectionReader::operator >> (SettingsManager& mgr)
         Stream::Section sect2(m_in, i);
 
         CString language;
-        m_in.read("Name", language);
+        m_in.read(_T("Name"), language);
         TemplatePtr templ = mgr.m_templateCollection.Add(language);
         
         bool ListIfAlternative = false;
-        if (m_version >= 1011) m_in.read("AlwaysListIfAlternative", ListIfAlternative);
+        if (m_version >= 1011) m_in.read(_T("AlwaysListIfAlternative"), ListIfAlternative);
         templ->SetAlwaysListIfAlternative(ListIfAlternative);
 
         int templCount = 0;
-        m_in.read("Count", templCount);
+        m_in.read(_T("Count"), templCount);
 
         Stream::Section sect3(m_in, _T("Tmpl"));
         for (int j = 0; j < templCount; j++)
         {
             Stream::Section sect4(m_in, j);
             Template::Entry entry;
-            m_in.read("Name",      entry.name);
-            m_in.read("Keyword",   entry.keyword);
-            m_in.read("MinLength", entry.minLength);
-            m_in.read("CurLine",   entry.curLine);
-            m_in.read("CurPos",    entry.curPos);
-            m_in.read("Text",      entry.text);
+            m_in.read(_T("Name"),      entry.name);
+            m_in.read(_T("Keyword"),   entry.keyword);
+            m_in.read(_T("MinLength"), entry.minLength);
+            m_in.read(_T("CurLine"),   entry.curLine);
+            m_in.read(_T("CurPos"),    entry.curPos);
+            m_in.read(_T("Text"),      entry.text);
             templ->AppendEntry(entry);
         }
 

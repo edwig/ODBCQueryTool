@@ -150,7 +150,7 @@ DWORD MCGridCell::GetFormat() const
     return m_nFormat; 
 }
 
-UINT MCGridCell::GetMargin() const           
+UINT MCGridCell::GetMargin() const
 {
     if (m_nMargin == (UINT)-1)
     {

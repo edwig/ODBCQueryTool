@@ -55,8 +55,8 @@ public:
   bool  GetErrorState();
   void  SetFocusDots(bool p_dots);
   bool  GetFocusDots();
-  void  InsertAtCurPos(const char* p_text, int p_offset);
-  void    SetEmpty(bool p_empty,CString p_text = "");
+  void  InsertAtCurPos(LPCTSTR p_text, int p_offset);
+  void    SetEmpty(bool p_empty,CString p_text = _T(""));
   void    SetTextColorEmpty(COLORREF p_color);
   void    SetBackgroundColorEmpty(COLORREF p_color);
   bool    GetIsEmpty();
@@ -96,8 +96,8 @@ public:
   BOOL  LimitText(int nMaxChars);
   BOOL  SetEditSel(int nStartChar,int nEndChar);
 
-  BOOL  SetCueBanner(LPCSTR lpszText,BOOL fDrawIfFocused = FALSE);
-  BOOL  GetCueBanner(LPSTR  lpszText,int cchText) const;
+  BOOL  SetCueBanner(LPCTSTR lpszText,BOOL fDrawIfFocused = FALSE);
+  BOOL  GetCueBanner(LPTSTR  lpszText,int cchText) const;
 
   // for list item
   DWORD_PTR GetItemData(int nIndex) const;

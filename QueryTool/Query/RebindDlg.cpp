@@ -24,58 +24,59 @@ Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 
 DataTypes allTypes[] = 
 {
-   { "<NO TYPE>",                  0                               }
-  ,{ "CHAR",                       SQL_C_CHAR                      } 
-  ,{ "SHORT",                      SQL_C_SHORT                     }
-  ,{ "SIGNED SHORT",               SQL_C_SSHORT                    }
-  ,{ "UNSIGNED SHORT",             SQL_C_USHORT                    }
-  ,{ "LONG",                       SQL_C_LONG                      }
-  ,{ "SIGNED LONG",                SQL_C_SLONG                     }
-  ,{ "UNSIGNED LONG",              SQL_C_ULONG                     }
-  ,{ "REAL",                       SQL_C_FLOAT                     }
-  ,{ "FLOAT",                      SQL_C_FLOAT                     }
-  ,{ "DOUBLE",                     SQL_C_DOUBLE                    }
-  ,{ "BIT",                        SQL_C_BIT                       }
-  ,{ "TINYINT",                    SQL_C_TINYINT                   }
-  ,{ "SIGNED TINYINT",             SQL_C_STINYINT                  }
-  ,{ "UNSIGNED TINYINT",           SQL_C_UTINYINT                  }
-  ,{ "SIGNED BIGINT",              SQL_C_SBIGINT                   }
-  ,{ "UNSIGNED BIGINT",            SQL_C_UBIGINT                   }
-  ,{ "DECIMAL",                    SQL_C_NUMERIC                   }
-  ,{ "NUMERIC",                    SQL_C_NUMERIC                   }
-  ,{ "GUID",                       SQL_C_GUID                      }
-  ,{ "BINARY",                     SQL_C_BINARY                    }
-  ,{ "DATE",                       SQL_C_DATE                      }
-  ,{ "TIME",                       SQL_C_TIME                      }
-  ,{ "TIMESTAMP",                  SQL_C_TIMESTAMP                 }
-  ,{ "TYPE DATE",                  SQL_C_TYPE_DATE                 }
-  ,{ "TYPE TIME",                  SQL_C_TYPE_TIME                 }
-  ,{ "TYPE TIMESTAMP",             SQL_C_TYPE_TIMESTAMP            }
-  ,{ "INTERVAL YEAR",              SQL_C_INTERVAL_YEAR             }
-  ,{ "INTERVAL MONTH",             SQL_C_INTERVAL_MONTH            }
-  ,{ "INTERVAL DAY",               SQL_C_INTERVAL_DAY              }
-  ,{ "INTERVAL HOUR",              SQL_C_INTERVAL_HOUR             }
-  ,{ "INTERVAL MINUTE",            SQL_C_INTERVAL_MINUTE           }
-  ,{ "INTERVAL SECOND",            SQL_C_INTERVAL_SECOND           }
-  ,{ "INTERVAL YEAR TO MONTH",     SQL_C_INTERVAL_YEAR_TO_MONTH    }
-  ,{ "INTERVAL DAY TO HOUR",       SQL_C_INTERVAL_DAY_TO_HOUR      }
-  ,{ "INTERVAL DAY TO MINUTE",     SQL_C_INTERVAL_DAY_TO_MINUTE    }
-  ,{ "INTERVAL DAY TO SECOND",     SQL_C_INTERVAL_DAY_TO_SECOND    }
-  ,{ "INTERVAL HOUR TO MINUTE",    SQL_C_INTERVAL_HOUR_TO_MINUTE   }
-  ,{ "INTERVAL HOUR TO SECOND",    SQL_C_INTERVAL_HOUR_TO_SECOND   }
-  ,{ "INTERVAL MINUTE TO SECOND",  SQL_C_INTERVAL_MINUTE_TO_SECOND }
+   { _T("<NO TYPE>"),                  0                               }
+  ,{ _T("CHAR"),                       SQL_C_CHAR                      } 
+  ,{ _T("WCHAR"),                      SQL_C_WCHAR                     } 
+  ,{ _T("SHORT"),                      SQL_C_SHORT                     }
+  ,{ _T("SIGNED SHORT"),               SQL_C_SSHORT                    }
+  ,{ _T("UNSIGNED SHORT"),             SQL_C_USHORT                    }
+  ,{ _T("LONG"),                       SQL_C_LONG                      }
+  ,{ _T("SIGNED LONG"),                SQL_C_SLONG                     }
+  ,{ _T("UNSIGNED LONG"),              SQL_C_ULONG                     }
+  ,{ _T("REAL"),                       SQL_C_FLOAT                     }
+  ,{ _T("FLOAT"),                      SQL_C_FLOAT                     }
+  ,{ _T("DOUBLE"),                     SQL_C_DOUBLE                    }
+  ,{ _T("BIT"),                        SQL_C_BIT                       }
+  ,{ _T("TINYINT"),                    SQL_C_TINYINT                   }
+  ,{ _T("SIGNED TINYINT"),             SQL_C_STINYINT                  }
+  ,{ _T("UNSIGNED TINYINT"),           SQL_C_UTINYINT                  }
+  ,{ _T("SIGNED BIGINT"),              SQL_C_SBIGINT                   }
+  ,{ _T("UNSIGNED BIGINT"),            SQL_C_UBIGINT                   }
+  ,{ _T("DECIMAL"),                    SQL_C_NUMERIC                   }
+  ,{ _T("NUMERIC"),                    SQL_C_NUMERIC                   }
+  ,{ _T("GUID"),                       SQL_C_GUID                      }
+  ,{ _T("BINARY"),                     SQL_C_BINARY                    }
+  ,{ _T("DATE"),                       SQL_C_DATE                      }
+  ,{ _T("TIME"),                       SQL_C_TIME                      }
+  ,{ _T("TIMESTAMP"),                  SQL_C_TIMESTAMP                 }
+  ,{ _T("TYPE DATE"),                  SQL_C_TYPE_DATE                 }
+  ,{ _T("TYPE TIME"),                  SQL_C_TYPE_TIME                 }
+  ,{ _T("TYPE TIMESTAMP"),             SQL_C_TYPE_TIMESTAMP            }
+  ,{ _T("INTERVAL YEAR"),              SQL_C_INTERVAL_YEAR             }
+  ,{ _T("INTERVAL MONTH"),             SQL_C_INTERVAL_MONTH            }
+  ,{ _T("INTERVAL DAY"),               SQL_C_INTERVAL_DAY              }
+  ,{ _T("INTERVAL HOUR"),              SQL_C_INTERVAL_HOUR             }
+  ,{ _T("INTERVAL MINUTE"),            SQL_C_INTERVAL_MINUTE           }
+  ,{ _T("INTERVAL SECOND"),            SQL_C_INTERVAL_SECOND           }
+  ,{ _T("INTERVAL YEAR TO MONTH"),     SQL_C_INTERVAL_YEAR_TO_MONTH    }
+  ,{ _T("INTERVAL DAY TO HOUR"),       SQL_C_INTERVAL_DAY_TO_HOUR      }
+  ,{ _T("INTERVAL DAY TO MINUTE"),     SQL_C_INTERVAL_DAY_TO_MINUTE    }
+  ,{ _T("INTERVAL DAY TO SECOND"),     SQL_C_INTERVAL_DAY_TO_SECOND    }
+  ,{ _T("INTERVAL HOUR TO MINUTE"),    SQL_C_INTERVAL_HOUR_TO_MINUTE   }
+  ,{ _T("INTERVAL HOUR TO SECOND"),    SQL_C_INTERVAL_HOUR_TO_SECOND   }
+  ,{ _T("INTERVAL MINUTE TO SECOND"),  SQL_C_INTERVAL_MINUTE_TO_SECOND }
   ,{ NULL,                         0                               }
 };
 
 // Names must appear in this order to work properly!!
 DataTypes allParams[] = 
 {
-  { "<UNKNOWN>", SQL_PARAM_TYPE_UNKNOWN }    // 0
- ,{ "INPUT",     SQL_PARAM_INPUT        }    // 1
- ,{ "INOUT",     SQL_PARAM_INPUT_OUTPUT }    // 2
- ,{ "COLUMN",    SQL_RESULT_COL         }    // 3
- ,{ "OUTPUT",    SQL_PARAM_OUTPUT       }    // 4
- ,{ "RETURN",    SQL_RETURN_VALUE       }    // 5
+  { _T("<UNKNOWN>"), SQL_PARAM_TYPE_UNKNOWN }    // 0
+ ,{ _T("INPUT"),     SQL_PARAM_INPUT        }    // 1
+ ,{ _T("INOUT"),     SQL_PARAM_INPUT_OUTPUT }    // 2
+ ,{ _T("COLUMN"),    SQL_RESULT_COL         }    // 3
+ ,{ _T("OUTPUT"),    SQL_PARAM_OUTPUT       }    // 4
+ ,{ _T("RETURN"),    SQL_RETURN_VALUE       }    // 5
  ,{ NULL,        0                      }
 };
 
@@ -115,7 +116,7 @@ BOOL
 RebindDlg::OnInitDialog()
 {
   StyleDialog::OnInitDialog();
-  SetWindowText("Rebind datatype");
+  SetWindowText(_T("Rebind datatype"));
 
   DataTypes* types = allTypes;
   while(types->name)
@@ -138,7 +139,7 @@ RebindDlg::OnCbnSelchangeDatatype()
     CString type;
     m_typeCombo.GetLBText(num,type);
     SQLVariant var;
-    m_type = SQLDataType::FindDatatype((char*)type.GetString());
+    m_type = SQLDataType::FindDatatype((TCHAR*)type.GetString());
   }
 }
 
@@ -151,18 +152,18 @@ RebindDlg::OnCbnSelchangeRebind()
     CString type;
     m_rebindCombo.GetLBText(num,type);
     SQLVariant var;
-    m_rebind = SQLDataType::FindDatatype((char*)type.GetString());
+    m_rebind = SQLDataType::FindDatatype((TCHAR*)type.GetString());
   }
 }
 
 void 
 RebindDlg::OnBnClickedReset()
 {
-  if(AfxMessageBox("Clear the rebind mappings?",MB_YESNO|MB_DEFBUTTON2) == IDYES)
+  if(AfxMessageBox(_T("Clear the rebind mappings?"),MB_YESNO|MB_DEFBUTTON2) == IDYES)
   {
     RebindMap* rebinds = theApp.GetRebinds();
     rebinds->clear();
-    AfxMessageBox("Cleared all rebindings of datatypes!",MB_OK|MB_ICONINFORMATION);
+    AfxMessageBox(_T("Cleared all rebindings of datatypes!"),MB_OK|MB_ICONINFORMATION);
   }
 }
 
@@ -178,7 +179,7 @@ RebindDlg::OnBnClickedAdd()
     CString typeName   = SQLDataType::FindDatatype(m_type);
     CString rebindName = SQLDataType::FindDatatype(m_rebind);
     CString msg;
-    msg.Format("Rebind datatype [%s] to [%s]",typeName,rebindName);
+    msg.Format(_T("Rebind datatype [%s] to [%s]"),typeName.GetString(),rebindName.GetString());
     AfxMessageBox(msg,MB_OK);
   }
 }

@@ -31,7 +31,7 @@ static void filetime_to_string (FILETIME& filetime, CString& str)
 {
   SYSTEMTIME systemTime;
   const int buffLen = 40;
-  char* buff = str.GetBuffer(buffLen);
+  LPTSTR buff = str.GetBuffer(buffLen);
 
   FileTimeToLocalFileTime(&filetime, &filetime);
   FileTimeToSystemTime(&filetime, &systemTime);

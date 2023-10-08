@@ -34,7 +34,7 @@ public:
   virtual BOOL PreTranslateMenu(MSG* p_msg);
 
   void SetMenuItemWidth(int p_width);
-  void SetMenuResource(int p_menu, UINT p_resource,CString p_tooltip = "");
+  void SetMenuResource(int p_menu, UINT p_resource,CString p_tooltip = _T(""));
   void LoadStyleTheme();
   void SetTheme(ThemeColor::Themes p_theme);
 

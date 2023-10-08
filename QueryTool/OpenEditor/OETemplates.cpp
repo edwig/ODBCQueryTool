@@ -54,7 +54,7 @@ bool Template::ExpandKeyword (const CString& keyword, CString& text, Position& p
 
     for (; it != m_entries.end(); it++)
     {
-        bool is_eql = !strncmp(it->keyword.GetString(), keyword.GetString(), keyword.GetLength());
+        bool is_eql = !_tcsncmp(it->keyword.GetString(), keyword.GetString(), keyword.GetLength());
 
         if(is_eql && alternative && m_AlwaysListIfAlternative)
         {
@@ -167,7 +167,7 @@ TemplatePtr TemplateCollection::Add (const CString& lang)
     }
     else
     {
-      throw std::logic_error(CString("Template \"") + lang + "\" already exist.");
+      throw StdException(_T("Logic error: Template \"") + lang + _T("\" already exist."));
     }
     return ptr;
 }
@@ -178,7 +178,7 @@ const TemplatePtr TemplateCollection::Find (const CString& lang) const
 
     if(it == m_templates.end())
     {
-      throw std::logic_error(CString("Template \"") + lang + "\" not found.");
+      throw StdException(_T("Logic error: Template \"") + lang + _T("\" not found."));
     }
     return it->second;
 }

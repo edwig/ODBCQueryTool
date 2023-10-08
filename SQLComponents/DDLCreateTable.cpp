@@ -50,7 +50,7 @@ DDLCreateTable::GetTableDDL(XString p_tableName)
   for(const auto& statement : m_statements)
   {
     ddl += statement;
-    ddl += ";\n";
+    ddl += _T(";\n");
   }
   return ddl;
 }
@@ -117,13 +117,13 @@ bool
 DDLCreateTable::SaveDDL(XString p_filename)
 {
   FILE* file = nullptr;
-  fopen_s(&file,p_filename,"w");
+  _tfopen_s(&file,p_filename,_T("w"));
   if(file)
   {
     for(auto& ddl : m_statements)
     {
       ddl += ";\n";
-      fputs(ddl,file);
+      _fputts(ddl,file);
     }
     fclose(file);
     return true;
@@ -281,7 +281,7 @@ DDLCreateTable::GetTableInfo()
     m_tables.clear();
     if(!m_info->MakeInfoTableTable(m_tables,errors,m_schema,m_tableName) || m_tables.empty())
     {
-      throw StdException(XString("Cannot find table: ") + m_tableName + " : " + errors);
+      throw StdException(XString(_T("Cannot find table: ")) + m_tableName + _T(" : ") + errors);
     }
     m_didTable = !m_tables.empty();
   }
@@ -299,13 +299,13 @@ DDLCreateTable::GetTableInfo()
   // Optional remarks to begin with
   if(!table.m_remarks.IsEmpty())
   {
-    ddl = "-- " + table.m_remarks;
+    ddl = _T("-- ") + table.m_remarks;
   }
 
   // Do our DDL part
   MetaColumn column;
   ddl += m_info->GetCATALOGTableCreate(table,column);
-  ddl += "\n";
+  ddl += _T("\n");
 
   m_createDDL = ddl;
 }
@@ -322,7 +322,7 @@ DDLCreateTable::GetColumnInfo()
     m_columns.clear();
     if(!m_info->MakeInfoTableColumns(m_columns,errors,m_schema,m_tableName) || m_columns.empty())
     {
-      throw StdException(XString("Cannot find columns for table: ") + m_tableName + " : " + errors);
+      throw StdException(XString(_T("Cannot find columns for table: ")) + m_tableName + _T(" : ") + errors);
     }
     m_didColumns = !m_columns.empty();
   }
@@ -331,16 +331,16 @@ DDLCreateTable::GetColumnInfo()
   int spacing = CalculateColumnLength(m_columns);
 
   // Add columns
-  m_createDDL += "(\n";
+  m_createDDL += _T("(\n");
 
   for(auto& column : m_columns)
   {
-    XString line("   ");
-    line += first ? " " : ",";
+    XString line(_T("   "));
+    line += first ? _T(" ") : _T(",");
 
     // Column name and spacing
     line += FormatColumnName(column.m_column,spacing);
-    line += " ";
+    line += _T(" ");
 
     // Getting the datatype
     if(m_target)
@@ -363,12 +363,12 @@ DDLCreateTable::GetColumnInfo()
     }
     // optional default value
     if(!column.m_default.IsEmpty() && 
-        column.m_default.CompareNoCase("null") &&
-        column.m_default.Compare("''") &&
-        column.m_default.Compare("0"))
+        column.m_default.CompareNoCase(_T("null")) &&
+        column.m_default.Compare(_T("''")) &&
+        column.m_default.Compare(_T("0")))
     {
-      line += " DEFAULT ";
-      if(column.m_default.Left(8).CompareNoCase("default ") == 0)
+      line += _T(" DEFAULT ");
+      if(column.m_default.Left(8).CompareNoCase(_T("default ")) == 0)
       {
         line += column.m_default.Mid(8);
       }
@@ -380,19 +380,19 @@ DDLCreateTable::GetColumnInfo()
     // optional NOT NULL status
     if(column.m_nullable == SQL_NO_NULLS)
     {
-      line += " NOT NULL";
+      line += _T(" NOT NULL");
     }
     // Optional remarks
     if(!column.m_remarks.IsEmpty())
     {
-      line += " -- " + column.m_remarks;
+      line += _T(" -- ") + column.m_remarks;
     }
 
     // Stash the line
-    m_createDDL += line + "\n";
+    m_createDDL += line + _T("\n");
     first = false;
   }
-  m_createDDL += ")";
+  m_createDDL += _T(")");
 }
 
 void
@@ -410,15 +410,15 @@ DDLCreateTable::GetOptionsInfo()
       XString tablespace = m_tables[0].m_tablespace;
       if(!tablespace.IsEmpty())
       {
-        m_createDDL += XString("\nTABLESPACE ") + tablespace;
-        seperator = ",";
+        m_createDDL += XString(_T("\nTABLESPACE ")) + tablespace;
+        seperator = _T(",");
       }
 
       MetaColumn column;
       XString postfix = m_info->GetCATALOGTableCreatePostfix(m_tables[0],column);
       if(!postfix.IsEmpty())
       {
-        m_createDDL += seperator + "\n";
+        m_createDDL += seperator + _T("\n");
         m_createDDL += postfix;
       }
     }
@@ -441,7 +441,7 @@ DDLCreateTable::GetViewInfo()
     m_tables.clear();
     if(!m_info->MakeInfoTableView(m_tables,errors,m_schema,m_tableName) || m_tables.empty())
     {
-      throw StdException(XString("Cannot find view: ") + m_tableName + " : " + errors);
+      throw StdException(XString(_T("Cannot find view: ")) + m_tableName + _T(" : ") + errors);
     }
     m_didTable = !m_tables.empty();
   }
@@ -459,7 +459,7 @@ DDLCreateTable::GetViewInfo()
   // Optional remarks to begin with
   if(!table.m_remarks.IsEmpty())
   {
-    ddl = "-- " + table.m_remarks;
+    ddl = _T("-- ") + table.m_remarks;
   }
 
   XString definition;
@@ -467,7 +467,7 @@ DDLCreateTable::GetViewInfo()
   {
     // Do our DDL part
     ddl += m_info->GetCATALOGViewCreate(m_schema,table.m_table,definition,m_dropIfExists);
-    ddl += "\n";
+    ddl += _T("\n");
   }
   StashTheLine(ddl);
 }
@@ -485,7 +485,7 @@ DDLCreateTable::GetIndexInfo()
     m_info->MakeInfoTableStatistics(m_indices,errors,m_schema,m_tableName,nullptr);
     if(!errors.IsEmpty())
     {
-      throw StdException(XString("Cannot find indices for table: ") + m_tableName + " : " + errors);
+      throw StdException(XString(_T("Cannot find indices for table: ")) + m_tableName + _T(" : ") + errors);
     }
     m_didIndices = !m_indices.empty();
   }
@@ -541,7 +541,7 @@ DDLCreateTable::GetPrimaryKeyInfo()
     m_info->MakeInfoTablePrimary(m_primaries,errors,m_schema,m_tableName);
     if(!errors.IsEmpty())
     {
-      throw StdException(XString("Cannot find the primary key for table: ") + m_tableName + " : " + errors);
+      throw StdException(XString(_T("Cannot find the primary key for table: ")) + m_tableName + _T(" : ") + errors);
     }
     m_didPrimary = !m_primaries.empty();
   }
@@ -567,7 +567,7 @@ DDLCreateTable::GetForeignKeyInfo()
     m_info->MakeInfoTableForeign(m_foreigns,errors,m_schema,m_tableName);
     if(!errors.IsEmpty())
     {
-      throw StdException(XString("Cannot find the foreign keys for table: ") + m_tableName + " : " + errors);
+      throw StdException(XString(_T("Cannot find the foreign keys for table: ")) + m_tableName + _T(" : ") + errors);
     }
     m_didForeigns = !m_foreigns.empty();
   }
@@ -613,7 +613,7 @@ DDLCreateTable::GetTriggerInfo()
     m_info->MakeInfoTableTriggers(m_triggers,errors,m_schema,m_tableName);
     if(!errors.IsEmpty())
     {
-      throw StdException(XString("Cannot find the triggers for table: ") + m_tableName + " : " + errors);
+      throw StdException(XString(_T("Cannot find the triggers for table: ")) + m_tableName + _T(" : ") + errors);
     }
     m_didTriggers = !m_triggers.empty();
   }
@@ -638,7 +638,7 @@ DDLCreateTable::GetSequenceInfo()
     m_info->MakeInfoTableSequences(m_sequences,errors,m_schema,m_tableName);
     if(!errors.IsEmpty())
     {
-      throw StdException(XString("Cannot find the sequences for table: ") + m_tableName + " : " + errors);
+      throw StdException(XString(_T("Cannot find the sequences for table: ")) + m_tableName + _T(" : ") + errors);
     }
     m_didSequence = !m_sequences.empty();
   }
@@ -668,7 +668,7 @@ DDLCreateTable::GetAccessInfo(bool p_strict /*=false*/)
     m_info->MakeInfoTablePrivileges(m_access,errors,m_schema,m_tableName);
     if(!errors.IsEmpty())
     {
-      throw StdException(XString("Cannot find the privileges for table: ") + m_tableName + " : " + errors);
+      throw StdException(XString(_T("Cannot find the privileges for table: ")) + m_tableName + _T(" : ") + errors);
     }
     m_didPrivileges = !m_access.empty();
   }
@@ -735,7 +735,7 @@ DDLCreateTable::ReplaceLengthPrecScale(TypeInfo*  p_type
   params.MakeLower();
 
   // Confusion in some drivers
-  if(p_length == 0 && p_precision > 0 && params.Find("length") >= 0)
+  if(p_length == 0 && p_precision > 0 && params.Find(_T("length")) >= 0)
   {
     p_length = p_precision;
     p_precision = 0;
@@ -745,46 +745,46 @@ DDLCreateTable::ReplaceLengthPrecScale(TypeInfo*  p_type
   XString length,precision,scale;
   if(p_length > 0)
   {
-   length.Format("%d",p_length);
+   length.Format(_T("%d"),p_length);
   }
   if(p_precision > 0 || p_scale > 0)
   {
-    precision.Format("%d",p_precision);
-    scale.Format("%d",p_scale);
+    precision.Format(_T("%d"),p_precision);
+    scale.Format(_T("%d"),p_scale);
   }
 
   // Replace as strings
   if(p_length > 0)
   {
-    params.Replace("max length",length);    // ORACLE DOES THIS!!
-    params.Replace("length",    length);
+    params.Replace(_T("max length"),length);    // ORACLE DOES THIS!!
+    params.Replace(_T("length"),    length);
   }
-  else if(p_type->m_type_name.CompareNoCase("varchar") == 0)
+  else if(p_type->m_type_name.CompareNoCase(_T("varchar")) == 0)
   {
     // SQL-Server does this as a replacement for CLOB
-    params.Replace("max length","max");
+    params.Replace(_T("max length"),_T("max"));
     max = true;
   }
 
   if(p_precision > 0)
   {
-    params.Replace("precision", precision);
-    params.Replace("scale",     scale);
+    params.Replace(_T("precision"), precision);
+    params.Replace(_T("scale"),     scale);
   }
   else if(!max)
   {
     params.Empty();
   }
   // Make sure we have parenthesis
-  if(!params.IsEmpty() && params.Left(1) != "(" && params != ",")
+  if(!params.IsEmpty() && params.Left(1) != _T("(") && params != _T(","))
   {
-    params = "(" + params + ")";
+    params = _T("(") + params + _T(")");
   }
-  if(params != ",")
+  if(params != _T(","))
   {
     return params;
   }
-  return "";
+  return _T("");
 }
 
 XString
@@ -803,7 +803,7 @@ DDLCreateTable::FormatColumnName(XString p_column,int p_length)
   // Circumvent locally reserved words
   if(m_target && m_target->GetRDBMSDatabaseType() == DatabaseType::RDBMS_SQLSERVER)
   {
-    p_column = "[" + p_column + "]";
+    p_column = _T("[") + p_column + _T("]");
     p_length += 2;
   }
   else if(!m_info->IsCorrectName(p_column))
@@ -815,7 +815,7 @@ DDLCreateTable::FormatColumnName(XString p_column,int p_length)
   // Pretty-print adjust datatype
   while (p_column.GetLength() < p_length)
   {
-    p_column += " ";
+    p_column += _T(" ");
   }
   return p_column;
 }
@@ -859,13 +859,13 @@ DDLCreateTable::FindIndexFilter(MetaIndex& p_index)
 bool
 DDLCreateTable::IsStrictODBCPrivilege(XString p_privilege)
 {
-  if(p_privilege.CompareNoCase("SELECT")     == 0) return true;
-  if(p_privilege.CompareNoCase("INSERT")     == 0) return true;
-  if(p_privilege.CompareNoCase("UPDATE")     == 0) return true;
-  if(p_privilege.CompareNoCase("DELETE")     == 0) return true;
-  if(p_privilege.CompareNoCase("CREATE")     == 0) return true;
-  if(p_privilege.CompareNoCase("REFERENCES") == 0) return true;
-  if(p_privilege.CompareNoCase("INDEX")      == 0) return true;
+  if(p_privilege.CompareNoCase(_T("SELECT"))     == 0) return true;
+  if(p_privilege.CompareNoCase(_T("INSERT"))     == 0) return true;
+  if(p_privilege.CompareNoCase(_T("UPDATE"))     == 0) return true;
+  if(p_privilege.CompareNoCase(_T("DELETE"))     == 0) return true;
+  if(p_privilege.CompareNoCase(_T("CREATE"))     == 0) return true;
+  if(p_privilege.CompareNoCase(_T("REFERENCES")) == 0) return true;
+  if(p_privilege.CompareNoCase(_T("INDEX"))      == 0) return true;
 
   return false;
 }

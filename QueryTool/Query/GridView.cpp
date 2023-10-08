@@ -42,24 +42,24 @@ using namespace ExcelFormat;
 const GridType initGrid[] =
 {
   // Query Grid
-  2,  { {  60, 1, "Query"   },
-        {  60, 0, "Column 1"} 
+  2,  { {  60, 1, _T("Query")   },
+        {  60, 0, _T("Column 1")} 
       },
   // Statistics
-  3,  { {  60, 1, "Step"          },
-        {  60, 1, "Seconds"       }, 
-        { 300, 0, "Completed step"} 
+  3,  { {  60, 1, _T("Step")          },
+        {  60, 1, _T("Seconds")       }, 
+        { 300, 0, _T("Completed step")} 
       },
   // Output
-  4,  { {  40, 1, "Line"          },
-        {  30, 0, "Status"        },
-        {  60, 1, "Affected rows" },
-        { 200, 0, "Result"        }
+  4,  { {  40, 1, _T("Line")          },
+        {  30, 0, _T("Status")        },
+        {  60, 1, _T("Affected rows") },
+        { 200, 0, _T("Result")        }
       },
   // History
-  3,  { {   40, 1, "Number"          },
-        {   40, 1, "Rerun"           },
-        { 1000, 0, "ODBC SQL Command"}
+  3,  { {   40, 1, _T("Number")          },
+        {   40, 1, _T("Rerun")           },
+        { 1000, 0, _T("ODBC SQL Command")}
       }
 };
 
@@ -92,7 +92,7 @@ CGridView::CGridView()
   m_type            = TYPE_QUERY;
   m_autoExpand      = true;
   m_prefetchLines   = 0;
-  m_queryTerminator = "";
+  m_queryTerminator = _T("");
 }
 
 void 
@@ -224,11 +224,11 @@ CGridView::SetInitialFont()
   if(pos)
   {
     fontName = queryFont.Left(pos);
-    fontSize = atoi(queryFont.Mid(pos+1));
+    fontSize = _ttoi(queryFont.Mid(pos+1));
   }
   if(fontName.IsEmpty())
   {
-    fontName = "Tahoma";
+    fontName = _T("Tahoma");
   }
   if(fontSize < 8 ) fontSize = 8;
   if(fontSize > 24) fontSize = 24;
@@ -639,54 +639,54 @@ CGridView::ReadRestOfQuery()
 // EXPORT TO MS-Excel
 // Using General SYLK format
 //
-static char *excel_header = 
-  "ID;PWXL;N;E\n"
-  "P;PGeneral\n"
-  "P;P0\n"
-  "P;P0.00\n"
-  "P;P#,##0\n"
-  "P;P#,##0.00\n"
-  "P;P#,##0_-;;#,##0\\-\n"
-  "P;P#,##0_-;;[Red]#,##0\\-\n"
-  "P;P#,##0.00_-;;#,##0.00\\-\n"
-  "P;P#,##0.00_-;;[Red]#,##0.00\\-\n"
-  "P;P\"$\"\\ #,##0_-;;\"$\"\\ #,##0\\-\n"
-  "P;P\"$\"\\ #,##0_-;;[Red]\"$\"\\ #,##0\\-\n"
-  "P;P\"$\"\\ #,##0.00_-;;\"$\"\\ #,##0.00\\-\n"
-  "P;P\"$\"\\ #,##0.00_-;;[Red]\"$\"\\ #,##0.00\\-\n"
-  "P;P0%\n"
-  "P;P0.00%\n"
-  "P;P0.00E+00\n"
-  "P;P##0.0E+0\n"
-  "P;P#\\ ?/?\n"
-  "P;P#\\ ??/??\n"
-  "P;Pd/m/yyyy\n"
-  "P;Pd/mmm/yy\n"
-  "P;Pd/mmm\n"
-  "P;Pmmm/yy\n"
-  "P;Ph:mm\\ AM/PM\n"
-  "P;Ph:mm:ss\\ AM/PM\n"
-  "P;Ph:mm\n"
-  "P;Ph:mm:ss\n"
-  "P;Pd/m/yyyy\\ h:mm\n"
-  "P;Pmm:ss\n"
-  "P;Pmm:ss.0\n"
-  "P;P@\n"
-  "P;P[h]:mm:ss\n"
-  "P;P_-\"$\"\\ * #,##0_-;;_-\"$\"\\ * #,##0\\-;;_-\"$\"\\ * \"-\"_-;;_-@_-\n"
-  "P;P_-* #,##0_-;;_-* #,##0\\-;;_-* \"-\"_-;;_-@_-\n"
-  "P;P_-\"$\"\\ * #,##0.00_-;;_-\"$\"\\ * #,##0.00\\-;;_-\"$\"\\ * \"-\"??_-;;_-@_-\n"
-  "P;P_-* #,##0.00_-;;_-* #,##0.00\\-;;_-* \"-\"??_-;;_-@_-\n"
-  "P;FArial;M200\n"
-  "P;FArial;M200\n"
-  "P;FArial;M200\n"
-  "P;FArial;M200\n"
-  "F;P0;DG0G8;M255\n"
-  "B;Y3;X7;D0 0 2 6\n"
-  "O;L;D;V0;K47;G100 0.001\n"
+static TCHAR *excel_header = 
+  _T("ID;PWXL;N;E\n")
+  _T("P;PGeneral\n")
+  _T("P;P0\n")
+  _T("P;P0.00\n")
+  _T("P;P#,##0\n")
+  _T("P;P#,##0.00\n")
+  _T("P;P#,##0_-;;#,##0\\-\n")
+  _T("P;P#,##0_-;;[Red]#,##0\\-\n")
+  _T("P;P#,##0.00_-;;#,##0.00\\-\n")
+  _T("P;P#,##0.00_-;;[Red]#,##0.00\\-\n")
+  _T("P;P\"$\"\\ #,##0_-;;\"$\"\\ #,##0\\-\n")
+  _T("P;P\"$\"\\ #,##0_-;;[Red]\"$\"\\ #,##0\\-\n")
+  _T("P;P\"$\"\\ #,##0.00_-;;\"$\"\\ #,##0.00\\-\n")
+  _T("P;P\"$\"\\ #,##0.00_-;;[Red]\"$\"\\ #,##0.00\\-\n")
+  _T("P;P0%\n")
+  _T("P;P0.00%\n")
+  _T("P;P0.00E+00\n")
+  _T("P;P##0.0E+0\n")
+  _T("P;P#\\ ?/?\n")
+  _T("P;P#\\ ??/??\n")
+  _T("P;Pd/m/yyyy\n")
+  _T("P;Pd/mmm/yy\n")
+  _T("P;Pd/mmm\n")
+  _T("P;Pmmm/yy\n")
+  _T("P;Ph:mm\\ AM/PM\n")
+  _T("P;Ph:mm:ss\\ AM/PM\n")
+  _T("P;Ph:mm\n")
+  _T("P;Ph:mm:ss\n")
+  _T("P;Pd/m/yyyy\\ h:mm\n")
+  _T("P;Pmm:ss\n")
+  _T("P;Pmm:ss.0\n")
+  _T("P;P@\n")
+  _T("P;P[h]:mm:ss\n")
+  _T("P;P_-\"$\"\\ * #,##0_-;;_-\"$\"\\ * #,##0\\-;;_-\"$\"\\ * \"-\"_-;;_-@_-\n")
+  _T("P;P_-* #,##0_-;;_-* #,##0\\-;;_-* \"-\"_-;;_-@_-\n")
+  _T("P;P_-\"$\"\\ * #,##0.00_-;;_-\"$\"\\ * #,##0.00\\-;;_-\"$\"\\ * \"-\"??_-;;_-@_-\n")
+  _T("P;P_-* #,##0.00_-;;_-* #,##0.00\\-;;_-* \"-\"??_-;;_-@_-\n")
+  _T("P;FArial;M200\n")
+  _T("P;FArial;M200\n")
+  _T("P;FArial;M200\n")
+  _T("P;FArial;M200\n")
+  _T("F;P0;DG0G8;M255\n")
+  _T("B;Y3;X7;D0 0 2 6\n")
+  _T("O;L;D;V0;K47;G100 0.001\n")
 ;
 
-static char* excel_footer = "E\n";
+static TCHAR* excel_footer = _T("E\n");
 
 void
 CGridView::ExportToExcel()
@@ -700,19 +700,19 @@ using namespace ExcelFormat;
 void
 CGridView::ExportToExcelXLS()
 {
-  char tempdir [MAX_FNAME_LEN + 10];
-  char filename[MAX_FNAME_LEN + 10];
-  char newname [MAX_FNAME_LEN + 10];
+  TCHAR tempdir [MAX_FNAME_LEN + 10];
+  TCHAR filename[MAX_FNAME_LEN + 10];
+  TCHAR newname [MAX_FNAME_LEN + 10];
   CWaitCursor take_a_deep_sigh;
 
   if (!GetTempPath(MAX_FNAME_LEN, tempdir))
   {
-    AfxMessageBox("Cannot find a temporary directory for 'Excel-Export'", MB_OK);
+    AfxMessageBox(_T("Cannot find a temporary directory for 'Excel-Export'"), MB_OK);
     return;
   }
-  if (!GetTempFileName(tempdir, "ODBC_Excel", 0, filename))
+  if (!GetTempFileName(tempdir, _T("ODBC_Excel"), 0, filename))
   {
-    AfxMessageBox("Cannot find a temporary file for 'Excel-Export'", MB_OK);
+    AfxMessageBox(_T("Cannot find a temporary file for 'Excel-Export'"), MB_OK);
   }
 
   BasicExcel excel;
@@ -723,11 +723,11 @@ CGridView::ExportToExcelXLS()
   bold_font._weight = FW_BOLD;
 
   CellFormat dateFormat(mngr);
-  dateFormat.set_format_string("D-M-YY");
+  dateFormat.set_format_string(_T("D-M-YY"));
   CellFormat timeFormat(mngr);
-  timeFormat.set_format_string("h:mm:ss");
+  timeFormat.set_format_string(_T("h:mm:ss"));
   CellFormat stampFormat(mngr);
-  stampFormat.set_format_string("YY-M-D h:mm:ss");
+  stampFormat.set_format_string(_T("YY-M-D h:mm:ss"));
 
   CellFormat resultOK(mngr);
   resultOK.set_color1(COLOR1_PAT_SOLID);
@@ -781,7 +781,7 @@ CGridView::ExportToExcelXLS()
           case SQL_C_SLONG:     
           case SQL_C_ULONG:   if(!text.IsEmpty())
                               {
-                                cell->SetInteger(atoi(text));
+                                cell->SetInteger(_ttoi(text));
                               }
                               break;
           case SQL_C_FLOAT:
@@ -790,7 +790,7 @@ CGridView::ExportToExcelXLS()
           case SQL_C_UBIGINT:
           case SQL_C_NUMERIC: if(!text.IsEmpty())
                               {
-                                cell->SetDouble(atof(text));
+                                cell->SetDouble(_ttof(text));
                               }
                               break;
 
@@ -854,185 +854,190 @@ CGridView::ExportToExcelXLS()
   excel.Close();
 
   // Now rename to .xls
-  strcpy_s(newname,MAX_FNAME_LEN,filename);
-  char *xls = strstr(newname, ".tmp");
+  _tcscpy_s(newname,MAX_FNAME_LEN,filename);
+  TCHAR *xls = _tcsstr(newname, _T(".tmp"));
   if (xls)
   {
-    strcpy_s(xls,5,".xls");
-    rename(filename, newname);
+    _tcscpy_s(xls,5,_T(".xls"));
+    _trename(filename, newname);
   }
   // Startup with Excel
   QueryToolApp* app = (QueryToolApp *)AfxGetApp();
-  app->RunShellCommand(tempdir, "open", newname, NULL);
+  app->RunShellCommand(tempdir, _T("open"), newname, NULL);
 }
 
 void
 CGridView::ExportToExcelSLK()
 {
-  char tempdir [MAX_FNAME_LEN + 1];
-  char filename[MAX_FNAME_LEN + 1];
-  char newname [MAX_FNAME_LEN + 1];
+  TCHAR tempdir [MAX_FNAME_LEN + 1];
+  TCHAR filename[MAX_FNAME_LEN + 1];
+  TCHAR newname [MAX_FNAME_LEN + 1];
   CWaitCursor take_a_deep_sigh;
 
   if(!GetTempPath(MAX_FNAME_LEN,tempdir))
   {
-    AfxMessageBox("Cannot find a temporary directory for 'Excel-Export'",MB_OK);
+    AfxMessageBox(_T("Cannot find a temporary directory for 'Excel-Export'"),MB_OK);
     return;
   }
-  if(!GetTempFileName(tempdir,"ODBC_Excel",0,filename))
+  if(!GetTempFileName(tempdir,_T("ODBC_Excel"),0,filename))
   {
-    AfxMessageBox("Cannot find a temporary file for 'Excel-Export'",MB_OK);
+    AfxMessageBox(_T("Cannot find a temporary file for 'Excel-Export'"),MB_OK);
   }
-  FILE* out = nullptr;
-  fopen_s(&out,filename, "wt");
-  if(out == nullptr)
+
+  WinFile file(filename);
+  if(!file.Open(winfile_write | open_trans_text,FAttributes::attrib_none,Encoding::UTF8))
   {
-    AfxMessageBox("Cannot open a temporary file for 'Excel-Export'",MB_OK);
+    AfxMessageBox(_T("Cannot open a temporary file for 'Excel-Export'"),MB_OK);
     return;
   }
   // Print the header wit formats
-  fprintf(out,excel_header);
+  CString header(excel_header);
+  file.Write(header);
 
   // Print out the rows one by one
   for(int y = 0; y < m_pGridCtrl->GetRowCount(); ++y)
   {
     for(int x = 0; x < m_pGridCtrl->GetColumnCount(); ++x)
     {
-      CString text = m_pGridCtrl->GetItemText(y,x);
-      text.Replace(";",";;");
+//    CString text = m_pGridCtrl->GetItemText(y,x);
+//    text.Replace(_T(";"),_T(";;"));
       if(x == 0)
       {
-        fprintf(out,"C;Y%d;X%d;K\"%s\"\n",y+1,x+1,m_pGridCtrl->GetItemText(y,x).GetString());
+        file.Format(_T("C;Y%d;X%d;K\"%s\"\n"),y + 1,x + 1,m_pGridCtrl->GetItemText(y,x).GetString());
       }
       else
       {
-        fprintf(out,"C;X%d;K\"%s\"\n",x+1,m_pGridCtrl->GetItemText(y,x).GetString());
+        file.Format(_T("C;X%d;K\"%s\"\n"),x + 1,m_pGridCtrl->GetItemText(y,x).GetString());
       }
     }
   }
   // Print the ending flag
-  fprintf(out,excel_footer);
+  CString footer(excel_footer);
+  file.Write(footer);
   // finally close the directory
-  fclose(out);
+  file.Close();
+
   // Now rename to .slk
-  strcpy_s(newname,MAX_FNAME_LEN,filename);
-  char *slk = strstr(newname,".tmp"); 
+  _tcscpy_s(newname,MAX_FNAME_LEN,filename);
+  TCHAR *slk = _tcsstr(newname,_T(".tmp")); 
   if(slk)
   {
-    strcpy_s(slk,5,".slk");
-    rename(filename,newname);
+    _tcscpy_s(slk,5,_T(".slk"));
+    _trename(filename,newname);
   }
   // Startup with Excel
   QueryToolApp* app = (QueryToolApp*) AfxGetApp();
-  app->RunShellCommand(tempdir,"open",newname,NULL);
+  app->RunShellCommand(tempdir,_T("open"),newname,NULL);
 }
 
-static char* html_header = 
-  "<HTML>\n"
-  "<BODY>\n"
-  "<TABLE BORDER=\"1\" CELLPADDING=\"1\" CELLSPACING=\"0\">\n";
+static TCHAR* html_header = 
+  _T("<HTML>\n")
+  _T("<BODY>\n")
+  _T("<TABLE BORDER=\"1\" CELLPADDING=\"1\" CELLSPACING=\"0\">\n");
 
-static char* html_footer = 
-  "</TABLE>\n"
-  "</BODY>\n"
-  "</HTML>\n";
+static TCHAR* html_footer = 
+  _T("</TABLE>\n")
+  _T("</BODY>\n")
+  _T("</HTML>\n");
 
 void
 CGridView::ExportToHTML()
 {
-  char tempdir [MAX_FNAME_LEN + 1];
-  char filename[MAX_FNAME_LEN + 1];
-  char newname [MAX_FNAME_LEN + 1];
+  TCHAR tempdir [MAX_FNAME_LEN + 1];
+  TCHAR filename[MAX_FNAME_LEN + 1];
+  TCHAR newname [MAX_FNAME_LEN + 1];
   CWaitCursor take_a_deep_sigh;
 
   if(!GetTempPath(MAX_FNAME_LEN,tempdir))
   {
-    AfxMessageBox("Cannot find a temporary directory for 'HTML-Export'",MB_OK);
+    AfxMessageBox(_T("Cannot find a temporary directory for 'HTML-Export'"),MB_OK);
     return;
   }
-  if(!GetTempFileName(tempdir,"ODBC_Excel",0,filename))
+  if(!GetTempFileName(tempdir,_T("ODBC_Excel"),0,filename))
   {
-    AfxMessageBox("Cannot find a temporary file for 'HTML-Export'",MB_OK);
+    AfxMessageBox(_T("Cannot find a temporary file for 'HTML-Export'"),MB_OK);
   }
-  FILE* out = nullptr;
-  fopen_s(&out,filename, "wt");
-  if(out == nullptr)
+
+  WinFile file(filename);
+  if(!file.Open(winfile_write | open_trans_text,FAttributes::attrib_none,Encoding::UTF8))
   {
-    AfxMessageBox("Cannot open a temporary file for 'HTML-Export'",MB_OK);
+    AfxMessageBox(_T("Cannot open a temporary file for 'HTML-Export'"),MB_OK);
     return;
   }
   // Print the header wit formats
-  fprintf(out,html_header);
+  CString header(html_header);
+  file.Write(header);
 
   // HEADER
-  fprintf(out,"<TR>");
+  file.Write(CString(_T("<TR>")));
   for(int x = 1; x < m_pGridCtrl->GetColumnCount(); ++x)
   {
-    fprintf(out,"<TH>%s</TH>",m_pGridCtrl->GetItemText(0,x).GetString());
+    file.Format(_T("<TH>%s</TH>"),m_pGridCtrl->GetItemText(0,x).GetString());
   }
-  fprintf(out,"</TR>\n");
+  file.Write(CString(_T("</TR>\n")));
   // BODY
   // Print out the rows one by one
   for(int y = 1; y < m_pGridCtrl->GetRowCount(); ++y)
   {
     // Print table header
-    fprintf(out,"<TR>");
+    file.Write(CString(_T("<TR>")));
     // Print table data
     for(int x = 1; x < m_pGridCtrl->GetColumnCount(); ++x)
     {
       CString text = m_pGridCtrl->GetItemText(y,x);
-      if(text.IsEmpty()) text = "&nbsp;";
+      if(text.IsEmpty()) text = _T("&nbsp;");
       if(m_pGridCtrl->GetItemFormat(y,x) & DT_RIGHT)
       {
-        fprintf(out,"<TD ALIGN=\"right\">%s</TD>",text.GetString());
+        file.Format(_T("<TD ALIGN=\"right\">%s</TD>"),text.GetString());
       }
       else
       {
-        fprintf(out,"<TD>%s</TD>",text.GetString());
+        file.Format(_T("<TD>%s</TD>"),text.GetString());
       }
     }
-    fprintf(out,"</TR>\n");
+    file.Write(CString(_T("</TR>\n")));
   }
   // Print the ending flag
-  fprintf(out,html_footer);
+  CString footer(html_footer);
+  file.Write(footer);
   // finally close the directory
-  fclose(out);
+  file.Close();
+
   // Now rename to .html
-  strcpy_s(newname,MAX_FNAME_LEN,filename);
-  char *html = strstr(newname,".tmp"); 
+  _tcscpy_s(newname,MAX_FNAME_LEN,filename);
+  TCHAR *html = _tcsstr(newname,_T(".tmp")); 
   if(html)
   {
-    strcpy_s(html,6,".html");
-    rename(filename,newname);
+    _tcscpy_s(html,6,_T(".html"));
+    _trename(filename,newname);
   }
   // Startup with HTML viewer
   QueryToolApp* app = (QueryToolApp*) AfxGetApp();
-  app->RunShellCommand(tempdir,"open",newname,NULL);
+  app->RunShellCommand(tempdir,_T("open"),newname,NULL);
 }
 
 void
 CGridView::ExportToTXT()
 {
-  char tempdir [MAX_FNAME_LEN + 1];
-  char filename[MAX_FNAME_LEN + 1];
-  char newname [MAX_FNAME_LEN + 1];
+  TCHAR tempdir [MAX_FNAME_LEN + 1];
+  TCHAR filename[MAX_FNAME_LEN + 1];
+  TCHAR newname [MAX_FNAME_LEN + 1];
   CMap<int,int,int,int> colSize;
   CWaitCursor take_a_deep_sigh;
 
   if(!GetTempPath(MAX_FNAME_LEN,tempdir))
   {
-    AfxMessageBox("Cannot find a temporary directory for 'TXT-Export'",MB_OK);
+    AfxMessageBox(_T("Cannot find a temporary directory for 'TXT-Export'"),MB_OK);
     return;
   }
-  if(!GetTempFileName(tempdir,"SQL",0,filename))
+  if(!GetTempFileName(tempdir,_T("SQL"),0,filename))
   {
-    AfxMessageBox("Cannot find a temporary file for 'TXT-Export'",MB_OK);
+    AfxMessageBox(_T("Cannot find a temporary file for 'TXT-Export'"),MB_OK);
   }
-  FILE* out = nullptr;
-  fopen_s(&out,filename, "wt");
-  if(out == NULL)
+  WinFile file(filename);
+  if(!file.Open(winfile_write | open_trans_text,FAttributes::attrib_none,Encoding::UTF8))
   {
-    AfxMessageBox("Cannot open a temporary file for 'TXT-Export'",MB_OK);
+    AfxMessageBox(_T("Cannot open a temporary file for 'TXT-Export'"),MB_OK);
     return;
   }
   // Calculate widths
@@ -1053,18 +1058,20 @@ CGridView::ExportToTXT()
   // HEADER
   for(int x = 1; x < m_pGridCtrl->GetColumnCount(); ++x)
   {
-    if(x > 1) fputc(' ',out);
+    if(x > 1)
+    {
+      file.Write(CString(_T(" ")));
+    }
     CString head = m_pGridCtrl->GetItemText(0,x);
-    fprintf(out,head);
+    file.Write(head);
     int w = colSize[x];
     int extra = w - head.GetLength();
     while(extra-- > 0)
     {
-      fputc(' ',out);
+      file.Write(CString(_T(" ")));
     }
   }
-  fputc('\n',out);
-  fputc('\n',out);
+  file.Write(CString(_T("\n\n")));
   // BODY
   // Print out the rows one by one
   for(int y = 1; y < m_pGridCtrl->GetRowCount(); ++y)
@@ -1072,32 +1079,36 @@ CGridView::ExportToTXT()
     // Print table data
     for(int x = 1; x < m_pGridCtrl->GetColumnCount(); ++x)
     {
-      if(x > 1) fputc(' ',out);
+      if(x > 1)
+      {
+        file.Write(CString(_T(" ")));
+      }
       CString text = m_pGridCtrl->GetItemText(y,x);
-      fprintf(out,text);
+      file.Write(text);
 
       int w = colSize[x];
       int extra = w - text.GetLength();
       while(extra-- > 0)
       {
-        fputc(' ',out);
+        file.Write(CString(_T(" ")));
       }
     }
-    fputc('\n',out);
+    file.Write(CString(_T("\n")));
   }
   // final close the file
-  fclose(out);
+  file.Close();
+
   // Now rename to .txt
-  strcpy_s(newname,MAX_FNAME_LEN,filename);
-  char *html = strstr(newname,".tmp"); 
+  _tcscpy_s(newname,MAX_FNAME_LEN,filename);
+  TCHAR *html = _tcsstr(newname,_T(".tmp")); 
   if(html)
   {
-    strcpy_s(html,5,".txt");
-    rename(filename,newname);
+    _tcscpy_s(html,5,_T(".txt"));
+    _trename(filename,newname);
   }
   // Startup with TXT viewer
   QueryToolApp* app = (QueryToolApp*) AfxGetApp();
-  app->RunShellCommand(tempdir,"open",newname,NULL);
+  app->RunShellCommand(tempdir,_T("open"),newname,NULL);
 
   // Cleanup
   colSize.RemoveAll();
@@ -1117,7 +1128,7 @@ CGridView::OnBeginEdit(NMHDR* pNMHDR, LRESULT* pResult)
   }
   else
   {
-    AfxMessageBox("Cannot edit this query, not one-table-query or no primary key found");
+    AfxMessageBox(_T("Cannot edit this query, not one-table-query or no primary key found"));
   }
   m_saveEdit = GetItemText(row,col);
 }
@@ -1133,7 +1144,7 @@ CGridView::OnEndInPlaceEdit(NMHDR* pNMHDR, LRESULT* pResult)
   if(!m_editorView->UpdateTable(row,col,text))
   {
     SetItemText(row,col,m_saveEdit);
-    m_saveEdit = "";
+    m_saveEdit = _T("");
   }
 }
 

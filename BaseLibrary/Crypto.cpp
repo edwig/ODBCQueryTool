@@ -30,6 +30,7 @@
 #include "Base64.h"
 #include "GetLastErrorAsString.h"
 #include "AutoCritical.h"
+#include <ConvertWideString.h>
 #include <wincrypt.h>
 #include <bcrypt.h>
 #include <schannel.h>
@@ -142,7 +143,7 @@ Crypto::Digest(XString& p_buffer,XString& p_password)
                         ,provider // PROV_* macro
                         ,CRYPT_VERIFYCONTEXT))
   {
-    m_error.Format("Error acquiring encryption context: 0x%08Xl",GetLastError());
+    m_error.Format(_T("Error acquiring encryption context: 0x%08Xl"),GetLastError());
     goto error_exit;
   }
 
@@ -153,49 +154,49 @@ Crypto::Digest(XString& p_buffer,XString& p_password)
                       0, 
                       &hHashPass)) 
   {
-    m_error.Format("Error creating password hash: 0x%08Xl",GetLastError());
+    m_error.Format(_T("Error creating password hash: 0x%08Xl"),GetLastError());
     goto error_exit;
   }
 
   // Crypt the password
   if(!CryptHashData(hHashPass,pbPassword,cbPassword,0))
   {
-    m_error.Format("Error hashing the password: 0x%08Xl",GetLastError());
+    m_error.Format(_T("Error hashing the password: 0x%08Xl"),GetLastError());
     goto error_exit;
   }
 
   // Getting the key handle of the password
   if(!CryptDeriveKey(hCryptProv,keyHash,hHashPass,0,&hKey)) //CALG_RC4
   {
-    m_error.Format("Getting derived encryption key: 0x%08Xl",GetLastError());
+    m_error.Format(_T("Getting derived encryption key: 0x%08Xl"),GetLastError());
     goto error_exit;
   }
 
   // Create a hash for the data
   if(!CryptCreateHash(hCryptProv,CALG_HMAC,hKey,0,&hHashData))
   {
-    m_error.Format("Error creating data hash: 0x%08Xl",GetLastError());
+    m_error.Format(_T("Error creating data hash: 0x%08Xl"),GetLastError());
     goto error_exit;
   }
 
   // Set info parameter
   if(!CryptSetHashParam(hHashData,HP_HMAC_INFO,reinterpret_cast<BYTE*>(&hMacInfo),0))
   {
-    m_error.Format("Error setting hash-hmac-info parameter: 0x%08Xl",GetLastError());
+    m_error.Format(_T("Error setting hash-hmac-info parameter: 0x%08Xl"),GetLastError());
     goto error_exit;
   }
 
   // Provide locked buffer to Crypt API
   if(!CryptHashData(hHashData,pbContent,cbContent,0))
   {
-    m_error.Format("Error hashing the data: 0x%08x",GetLastError());
+    m_error.Format(_T("Error hashing the data: 0x%08x"),GetLastError());
     goto error_exit;
   }
 
   // Getting the hashvalue data length
   if(!CryptGetHashParam(hHashData, HP_HASHVAL, NULL, &dwHashLen, 0)) 
   {
-    m_error.Format("Error getting hash data length: 0x%08Xl",GetLastError());
+    m_error.Format(_T("Error getting hash data length: 0x%08Xl"),GetLastError());
     goto error_exit;
   }
 
@@ -205,7 +206,7 @@ Crypto::Digest(XString& p_buffer,XString& p_password)
   // Getting the hash at last
   if(!CryptGetHashParam(hHashData, HP_HASHVAL, pbHash, &dwHashLen, 0))
   {
-    m_error.Format("Getting final hash data: 0x%08Xl",GetLastError());
+    m_error.Format(_T("Getting final hash data: 0x%08Xl"),GetLastError());
     goto error_exit;
   }
 
@@ -214,10 +215,7 @@ Crypto::Digest(XString& p_buffer,XString& p_password)
     m_digest.Empty();
 
     // Create a base64 string of the hash data
-    int b64length = (int)base64.B64_length(dwHashLen);
-    char* buffer = m_digest.GetBufferSetLength(b64length);
-    base64.Encrypt(reinterpret_cast<const unsigned char*>(pbHash),dwHashLen,reinterpret_cast<unsigned char*>(buffer));
-    m_digest.ReleaseBuffer(b64length);
+    m_digest = base64.Encrypt(pbHash);
   }
 error_exit:
   if(pbHash)
@@ -251,7 +249,7 @@ Crypto::Digest(const void* data,const size_t data_size,unsigned hashType)
 
   if(!CryptAcquireContext(&hProv,NULL,NULL,PROV_RSA_AES,CRYPT_VERIFYCONTEXT))
   {
-    return "";
+    return _T("");
   }
 
   BOOL hash_ok = FALSE;
@@ -261,20 +259,20 @@ Crypto::Digest(const void* data,const size_t data_size,unsigned hashType)
     case CALG_SHA1:   hash_ok = CryptCreateHash(hProv,CALG_SHA1,   0,0,&hHash); break;
     case CALG_MD5:    hash_ok = CryptCreateHash(hProv,CALG_MD5,    0,0,&hHash); break;
     case CALG_SHA_256:hash_ok = CryptCreateHash(hProv,CALG_SHA_256,0,0,&hHash); break;
-    default:          return "";
+    default:          return _T("");
   }
 
   if(!hash_ok)
   {
     CryptReleaseContext(hProv,0);
-    return "";
+    return _T("");
   }
 
   if(!CryptHashData(hHash,static_cast<const BYTE *>(data),(DWORD)data_size,0))
   {
     CryptDestroyHash(hHash);
     CryptReleaseContext(hProv,0);
-    return "";
+    return _T("");
   }
 
   DWORD cbHashSize = 0,dwCount = sizeof(DWORD);
@@ -282,7 +280,7 @@ Crypto::Digest(const void* data,const size_t data_size,unsigned hashType)
   {
     CryptDestroyHash(hHash);
     CryptReleaseContext(hProv,0);
-    return "";
+    return _T("");
   }
 
   std::vector<BYTE> buffer(cbHashSize);
@@ -290,14 +288,10 @@ Crypto::Digest(const void* data,const size_t data_size,unsigned hashType)
   {
     CryptDestroyHash(hHash);
     CryptReleaseContext(hProv,0);
-    return "";
+    return _T("");
   }
-
   Base64 base;
-  XString hash;
-  char* pointer = hash.GetBufferSetLength((int)base.B64_length((size_t)cbHashSize + 1));
-  base.Encrypt(reinterpret_cast<const unsigned char*>(&buffer[0]),cbHashSize,reinterpret_cast<unsigned char*>(pointer));
-  hash.ReleaseBuffer();
+  XString hash = base.Encrypt(&buffer[0]);
 
   CryptDestroyHash(hHash);
   CryptReleaseContext(hProv,0);
@@ -322,39 +316,37 @@ Crypto::Encryption(XString p_input,XString p_password)
   BOOL       bFinal     = FALSE;
   DWORD      totallen   = 0;
   BYTE*      crypting   = nullptr;
-  int        b64length  = 0;
-  char*      buffer     = nullptr;
   XString    result;
   Base64     base64;
 
   // Encrypt by way of a cryptographic provider
   if(!CryptAcquireContext(&hCryptProv,NULL,NULL,ENCRYPT_PROVIDER,CRYPT_VERIFYCONTEXT))
   {
-    m_error.Format("Error acquiring encryption context: 0x%08x",GetLastError());
+    m_error.Format(_T("Error acquiring encryption context: 0x%08x"),GetLastError());
     goto error_exit;
   }
 
   if(!CryptCreateHash(hCryptProv,ENCRYPT_PASSWORD,0,0,&hCryptHash))
   {
-    m_error.Format("Error creating encryption hash: 0x%08x",GetLastError());
+    m_error.Format(_T("Error creating encryption hash: 0x%08x"),GetLastError());
     goto error_exit;
   }
 
   if(!CryptHashData(hCryptHash,reinterpret_cast<const BYTE *>(p_password.GetString()),p_password.GetLength(),0))
   {
-    m_error.Format("Error hashing password for encryption: 0x%08x",GetLastError());
+    m_error.Format(_T("Error hashing password for encryption: 0x%08x"),GetLastError());
     goto error_exit;
   }
 
   if(!CryptDeriveKey(hCryptProv,ENCRYPT_ALGORITHM,hCryptHash,0,&hCryptKey))
   {
-    m_error.Format("Error deriving password key for encryption: 0x%08x",GetLastError());
+    m_error.Format(_T("Error deriving password key for encryption: 0x%08x"),GetLastError());
     goto error_exit;
   }
 
   if(!CryptGetKeyParam(hCryptKey,KP_BLOCKLEN,reinterpret_cast<BYTE*>(&blocklen),&cbBlocklen,0))
   {
-    m_error = "Cannot get the block length of the encryption method";
+    m_error = _T("Cannot get the block length of the encryption method");
     goto error_exit;
   }
 
@@ -362,7 +354,7 @@ Crypto::Encryption(XString p_input,XString p_password)
   dwDataLen =   p_input.GetLength();
   dwBuffLen = ((p_input.GetLength() + blocklen) / blocklen) * blocklen;
   pbData = new BYTE[dwBuffLen];
-  strcpy_s(reinterpret_cast<char*>(pbData),dwBuffLen,p_input.GetString());
+  _tcscpy_s(reinterpret_cast<PTCHAR>(pbData),dwBuffLen,p_input.GetString());
   crypting = pbData;
   
   do
@@ -398,17 +390,14 @@ Crypto::Encryption(XString p_input,XString p_password)
     }
     else
     {
-      m_error.Format("Error encrypting data: 0x%08x : %s",GetLastError(),GetLastErrorAsString().GetString());
+      m_error.Format(_T("Error encrypting data: 0x%08x : %s"),GetLastError(),GetLastErrorAsString().GetString());
       goto error_exit;
     }
   }
   while(bFinal == FALSE);
 
   // Create a base64 string of the hash data
-  b64length = (int)base64.B64_length(totallen);
-  buffer    = result.GetBufferSetLength(b64length);
-  base64.Encrypt(reinterpret_cast<const unsigned char*>(pbData),totallen,reinterpret_cast<unsigned char*>(buffer));
-  result.ReleaseBuffer(b64length);
+  result = base64.Encrypt(pbData);
 
 error_exit:
   // Freeing everything
@@ -451,6 +440,7 @@ Crypto::Decryption(XString p_input,XString p_password)
   DWORD      totallen   = 0;
   BYTE*      decrypting = nullptr;
   XString    result;
+  XString    dec;
   Base64     base64;
 
   dwDataLen = p_input.GetLength();
@@ -464,30 +454,30 @@ Crypto::Decryption(XString p_input,XString p_password)
   // Decrypt by way of a cryptographic provider
   if(!CryptAcquireContext(&hCryptProv,NULL,NULL,ENCRYPT_PROVIDER,CRYPT_VERIFYCONTEXT))
   {
-    m_error.Format("Crypto context not acquired: 0x%08x",GetLastError());
+    m_error.Format(_T("Crypto context not acquired: 0x%08x"),GetLastError());
     goto error_exit;
   }
   if(!CryptCreateHash(hCryptProv,ENCRYPT_PASSWORD,0,0,&hCryptHash)) // MD5?
   {
-    m_error.Format("Hash not created for decryption: 0x%08x",GetLastError());
+    m_error.Format(_T("Hash not created for decryption: 0x%08x"),GetLastError());
     goto error_exit;
   }
 
   if(!CryptHashData(hCryptHash,reinterpret_cast<const BYTE *>(p_password.GetString()),p_password.GetLength(),0))
   {
-    m_error.Format("Error hashing password data for decryption: 0x%08x",GetLastError());
+    m_error.Format(_T("Error hashing password data for decryption: 0x%08x"),GetLastError());
     goto error_exit;
   }
 
   if(!CryptDeriveKey(hCryptProv,ENCRYPT_ALGORITHM,hCryptHash,0,&hCryptKey))
   {
-    m_error.Format("Error creating derived key for decryption: 0x%08x",GetLastError());
+    m_error.Format(_T("Error creating derived key for decryption: 0x%08x"),GetLastError());
     goto error_exit;
   }
 
   if(!CryptGetKeyParam(hCryptKey,KP_BLOCKLEN,reinterpret_cast<BYTE*>(&blocklen),&cbBlocklen,0))
   {
-    m_error = "Cannot get the block length of the encryption method";
+    m_error = _T("Cannot get the block length of the encryption method");
     goto error_exit;
   }
 
@@ -502,7 +492,9 @@ Crypto::Decryption(XString p_input,XString p_password)
 
   bufferSize = ((dataLength + blocklen) / blocklen) * blocklen;
   pbData = new BYTE[bufferSize];
-  base64.Decrypt(reinterpret_cast<const unsigned char*>(p_input.GetString()),dwDataLen,reinterpret_cast<unsigned char*>(pbData));
+  dec = base64.Decrypt(p_input);
+  size_t declen = dec.GetLength() * sizeof(TCHAR);
+  memcpy_s(pbData,declen,(void*)dec.GetString(),declen);
   decrypting = pbData;
 
   do 
@@ -537,7 +529,7 @@ Crypto::Decryption(XString p_input,XString p_password)
     }
     else
     {
-      m_error.Format("Decrypting not done: 0x%08x : %s",GetLastError(),GetLastErrorAsString().GetString());
+      m_error.Format(_T("Decrypting not done: 0x%08x : %s"),GetLastError(),GetLastErrorAsString().GetString());
       goto error_exit;
     }
   }
@@ -595,7 +587,7 @@ Crypto::FastEncryption(XString p_input, XString password)
   }
     
   XString data;
-  char* datapointer = data.GetBufferSetLength(cbCipherText);
+  PTCHAR datapointer = data.GetBufferSetLength(cbCipherText);
   if (BCryptEncrypt(hKey,(PUCHAR)p_input.GetString(), p_input.GetLength(), NULL, NULL, NULL, reinterpret_cast<PUCHAR>(datapointer), cbCipherText, &cbCipherText, NULL) != STATUS_SUCCESS)
   {
     return result;
@@ -608,12 +600,11 @@ Crypto::FastEncryption(XString p_input, XString password)
 
   // Create a base64 string of the hash data
   Base64 base64;
-  int b64length = (int)base64.B64_length(cbCipherText);
-  char* buffer = result.GetBufferSetLength(b64length);
-  base64.Encrypt(reinterpret_cast<const unsigned char*>(data.GetString()),cbCipherText,reinterpret_cast<unsigned char*>(buffer));
-  result.ReleaseBuffer(b64length);
-
-  return result;
+#ifdef UNICODE
+  XString str = ExplodeString((uchar*)data.GetString(),(unsigned)cbCipherText);
+  data = str;
+#endif
+  return base64.Encrypt(data);
 }
 
 XString
@@ -622,7 +613,7 @@ Crypto::FastDecryption(XString p_input,XString password)
   AutoCritSec lock(&m_lock);
 
   XString result;
-  char* data = nullptr;
+  PTCHAR data = nullptr;
   DWORD dwDataLen  = p_input.GetLength();
   BCRYPT_ALG_HANDLE hAlgorithm = NULL;
   BCRYPT_KEY_HANDLE hKey = NULL;
@@ -636,17 +627,25 @@ Crypto::FastDecryption(XString p_input,XString password)
 
   // Create a data string of the base64 string
   Base64 base64;
+#ifdef UNICODE
+  uchar* buf = new uchar[dwDataLen + 1];
+  ImplodeString(p_input,buf,dwDataLen);
+#else 
+  uchar* buf = reinterpret_cast<uchar*>(const_cast<char*>(p_input.GetString()));
+#endif
   DWORD dataLength = (DWORD)base64.Ascii_length(dwDataLen);
   BYTE* pbData = new BYTE[(size_t)dataLength + 2];
-  base64.Decrypt(reinterpret_cast<const unsigned char*>(p_input.GetString()),dwDataLen,reinterpret_cast<unsigned char*>(pbData));
+  base64.Decrypt(buf,dwDataLen,pbData);
 
-
+#ifdef UNICODE
+  delete[] buf;
+#endif
   if(BCryptOpenAlgorithmProvider(&hAlgorithm, L"RC4", NULL, 0/*BCRYPT_HASH_REUSABLE_FLAG*/) != STATUS_SUCCESS)
   {
     goto error_exit;
   }
 
-  if(BCryptGenerateSymmetricKey(hAlgorithm, &hKey, NULL, NULL,(PUCHAR)password.GetString(), password.GetLength(), NULL) != STATUS_SUCCESS)
+  if(BCryptGenerateSymmetricKey(hAlgorithm, &hKey, NULL, NULL,(PUCHAR)password.GetString(), password.GetLength() * sizeof(TCHAR),NULL) != STATUS_SUCCESS)
   {
     goto error_exit;
   }
@@ -682,20 +681,20 @@ unsigned
 Crypto::SetHashMethod(XString p_method)
 {
   // Preferred by the standard: http://www.w3.org/2000/09/xmldsig#
-  if(p_method.Compare("sha1")      == 0) m_hashMethod = CALG_SHA1;
-  if(p_method.Compare("hmac-sha1") == 0) m_hashMethod = CALG_HMAC;
-  if(p_method.Compare("dsa-sha1")  == 0) m_hashMethod = CALG_DSS_SIGN; 
-  if(p_method.Compare("rsa-sha1")  == 0) m_hashMethod = CALG_RSA_SIGN; 
+  if(p_method.Compare(_T("sha1"))      == 0) m_hashMethod = CALG_SHA1;
+  if(p_method.Compare(_T("hmac-sha1")) == 0) m_hashMethod = CALG_HMAC;
+  if(p_method.Compare(_T("dsa-sha1"))  == 0) m_hashMethod = CALG_DSS_SIGN; 
+  if(p_method.Compare(_T("rsa-sha1"))  == 0) m_hashMethod = CALG_RSA_SIGN; 
 
   // Older methods (Not in the standard, but exists on the MS-Windows system)
-  if(p_method.Compare("md2") == 0) m_hashMethod = CALG_MD2;
-  if(p_method.Compare("md4") == 0) m_hashMethod = CALG_MD4;
-  if(p_method.Compare("md5") == 0) m_hashMethod = CALG_MD5;
+  if(p_method.Compare(_T("md2")) == 0) m_hashMethod = CALG_MD2;
+  if(p_method.Compare(_T("md4")) == 0) m_hashMethod = CALG_MD4;
+  if(p_method.Compare(_T("md5")) == 0) m_hashMethod = CALG_MD5;
 
   // Newer (safer?) methods. Not in the year 2000 standard
-  if(p_method.Compare("sha2-256") == 0) m_hashMethod = CALG_SHA_256;
-  if(p_method.Compare("sha2-384") == 0) m_hashMethod = CALG_SHA_384;
-  if(p_method.Compare("sha2-512") == 0) m_hashMethod = CALG_SHA_512;
+  if(p_method.Compare(_T("sha2-256")) == 0) m_hashMethod = CALG_SHA_256;
+  if(p_method.Compare(_T("sha2-384")) == 0) m_hashMethod = CALG_SHA_384;
+  if(p_method.Compare(_T("sha2-512")) == 0) m_hashMethod = CALG_SHA_512;
 
   return m_hashMethod;
 }
@@ -726,20 +725,20 @@ Crypto::GetHashMethod(unsigned p_hash)
   {
     // Standard ds-sign
     default:            [[fallthrough]];
-    case CALG_SHA1:     return "sha1";      // WERKT
-    case CALG_HMAC:     return "hmac-sha1"; // WERKT Synonym for SHA1
-    case CALG_DSS_SIGN: return "dsa-sha1";  // WERKT
-    case CALG_RSA_SIGN: return "rsa-sha1";  // WERKT
+    case CALG_SHA1:     return _T("sha1");      // WERKT
+    case CALG_HMAC:     return _T("hmac-sha1"); // WERKT Synonym for SHA1
+    case CALG_DSS_SIGN: return _T("dsa-sha1");  // WERKT
+    case CALG_RSA_SIGN: return _T("rsa-sha1");  // WERKT
     // older
-    case CALG_MD2:      return "md2";       // WERKT
-    case CALG_MD4:      return "md4";       // WERKT
-    case CALG_MD5:      return "md5";       // WERKT
+    case CALG_MD2:      return _T("md2");       // WERKT
+    case CALG_MD4:      return _T("md4");       // WERKT
+    case CALG_MD5:      return _T("md5");       // WERKT
     // Newer
-    case CALG_SHA_256:  return "sha2-256";  // WERKT 
-    case CALG_SHA_384:  return "sha2-384";  // WERKT
-    case CALG_SHA_512:  return "sha2-512";  // WERKT
+    case CALG_SHA_256:  return _T("sha2-256");  // WERKT 
+    case CALG_SHA_384:  return _T("sha2-384");  // WERKT
+    case CALG_SHA_512:  return _T("sha2-512");  // WERKT
     // No hash
-    case 0:             return "no-hash";
+    case 0:             return _T("no-hash");
   }
 }
 
@@ -749,23 +748,23 @@ Crypto::GetCipherType(unsigned p_type)
   XString cipher;
   switch(p_type)
   {
-    case CALG_3DES:       cipher = "3DES Block";   break;
-    case CALG_3DES_112:   cipher = "DES 112 Bits"; break;
-    case CALG_AES_128:    cipher = "AES 128 Bits"; break;
-    case CALG_AES_192:    cipher = "AES 192 Bits"; break;
-    case CALG_AES_256:    cipher = "AES 256 Bits"; break;
-    case CALG_AES:        cipher = "AES Block";    break;
-    case CALG_DES:        cipher = "DES Block";    break;
-    case CALG_DESX:       cipher = "DESX Block";   break;
-    case CALG_RC2:        cipher = "RC2 Block";    break;
-    case CALG_RC4:        cipher = "RC4 Block";    break;
-    case CALG_RC5:        cipher = "RC5 Block";    break;
-    case CALG_SEAL:       cipher = "SEAL";         break;
-    case CALG_SKIPJACK:   cipher = "SkipJack";     break;
-    case CALG_TEK:        cipher = "TEK";          break;
-    case CALG_CYLINK_MEK: cipher = "Cylink";       break;
-    case 0:               cipher = "No encryption";break;
-    default:              cipher = "AES";          break;
+    case CALG_3DES:       cipher = _T("3DES Block");   break;
+    case CALG_3DES_112:   cipher = _T("DES 112 Bits"); break;
+    case CALG_AES_128:    cipher = _T("AES 128 Bits"); break;
+    case CALG_AES_192:    cipher = _T("AES 192 Bits"); break;
+    case CALG_AES_256:    cipher = _T("AES 256 Bits"); break;
+    case CALG_AES:        cipher = _T("AES Block");    break;
+    case CALG_DES:        cipher = _T("DES Block");    break;
+    case CALG_DESX:       cipher = _T("DESX Block");   break;
+    case CALG_RC2:        cipher = _T("RC2 Block");    break;
+    case CALG_RC4:        cipher = _T("RC4 Block");    break;
+    case CALG_RC5:        cipher = _T("RC5 Block");    break;
+    case CALG_SEAL:       cipher = _T("SEAL");         break;
+    case CALG_SKIPJACK:   cipher = _T("SkipJack");     break;
+    case CALG_TEK:        cipher = _T("TEK");          break;
+    case CALG_CYLINK_MEK: cipher = _T("Cylink");       break;
+    case 0:               cipher = _T("No encryption");break;
+    default:              cipher = _T("AES");          break;
   }
   return cipher;
 }
@@ -797,21 +796,21 @@ Crypto::GetSSLProtocol(unsigned p_type)
 
   switch(p_type)
   {
-    case SP_PROT_TLS1_CLIENT:  protocol = "TLS 1 Client";     break;
-    case SP_PROT_TLS1_SERVER:  protocol = "TLS 1 Server";     break;
-    case SP_PROT_SSL3_CLIENT:  protocol = "SSL 3 Client";     break;
-    case SP_PROT_SSL3_SERVER:  protocol = "SSL 3 Server";     break;
-    case SP_PROT_TLS1_1_CLIENT:protocol = "TLS 1.1 Client";   break;
-    case SP_PROT_TLS1_1_SERVER:protocol = "TLS 1.1 Server";   break;
-    case SP_PROT_TLS1_2_CLIENT:protocol = "TLS 1.2 Client";   break;
-    case SP_PROT_TLS1_2_SERVER:protocol = "TLS 1.2 Server";   break;
-    case SP_PROT_PCT1_CLIENT:  protocol = "Private Communications 1 Client"; break;
-    case SP_PROT_PCT1_SERVER:  protocol = "Private Communications 1 Server"; break;
-    case SP_PROT_SSL2_CLIENT:  protocol = "SSL 2 Client";     break;
-    case SP_PROT_SSL2_SERVER:  protocol = "SSL 2 Server";     break;
-    case SP_PROT_DTLS_CLIENT:  protocol = "DTLS Client";      break;
-    case SP_PROT_DTLS_SERVER:  protocol = "DTLS Server";      break;
-    default:                   protocol = "Combined SSL/TLS"; break;
+    case SP_PROT_TLS1_CLIENT:  protocol = _T("TLS 1 Client");     break;
+    case SP_PROT_TLS1_SERVER:  protocol = _T("TLS 1 Server");     break;
+    case SP_PROT_SSL3_CLIENT:  protocol = _T("SSL 3 Client");     break;
+    case SP_PROT_SSL3_SERVER:  protocol = _T("SSL 3 Server");     break;
+    case SP_PROT_TLS1_1_CLIENT:protocol = _T("TLS 1.1 Client");   break;
+    case SP_PROT_TLS1_1_SERVER:protocol = _T("TLS 1.1 Server");   break;
+    case SP_PROT_TLS1_2_CLIENT:protocol = _T("TLS 1.2 Client");   break;
+    case SP_PROT_TLS1_2_SERVER:protocol = _T("TLS 1.2 Server");   break;
+    case SP_PROT_PCT1_CLIENT:  protocol = _T("Private Communications 1 Client"); break;
+    case SP_PROT_PCT1_SERVER:  protocol = _T("Private Communications 1 Server"); break;
+    case SP_PROT_SSL2_CLIENT:  protocol = _T("SSL 2 Client");     break;
+    case SP_PROT_SSL2_SERVER:  protocol = _T("SSL 2 Server");     break;
+    case SP_PROT_DTLS_CLIENT:  protocol = _T("DTLS Client");      break;
+    case SP_PROT_DTLS_SERVER:  protocol = _T("DTLS Server");      break;
+    default:                   protocol = _T("Combined SSL/TLS"); break;
   }
   return protocol;
 }

@@ -21,8 +21,8 @@
 
 // Font names and sizes for the controls
 
-#define StyleFontName "Verdana"       // Standard font for dialogs
-#define EditFontName  "Courier New"   // Standard edit font
+#define StyleFontName _T("Verdana")       // Standard font for dialogs
+#define EditFontName  _T("Courier New")   // Standard edit font
 
 // By defining static values, the screen size scaling of MS-Windows 10 works correctly (again)
 #define DIALOOGFONTSIZE    10 // MulDiv(10, 96, StyleFonts::logpixelsy())

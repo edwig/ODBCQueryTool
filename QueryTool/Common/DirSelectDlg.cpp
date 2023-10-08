@@ -30,61 +30,6 @@ static char THIS_FILE[] = __FILE__;
 
 namespace Common 
 {
-
-#if !(_MFC_VER >= 0x0600)
-
-DWORD CDirSelectDlg::c_dwFlags = OFN_SHOWHELP | OFN_HIDEREADONLY | OFN_ENABLESIZING | WS_SIZEBOX
-                                 OFN_OVERWRITEPROMPT | OFN_ENABLETEMPLATE;
-const char* CDirSelectDlg::c_pcszFilter = "(none)|NONE.$$$||";
-
-
-/////////////////////////////////////////////////////////////////////////////
-// CDirSelectDlg
-
-CDirSelectDlg::CDirSelectDlg(LPCTSTR lpcszCaption, CWnd* pWndParent, LPCTSTR lpcszInitialDir) :
-    CFileDialog(FALSE, NULL, NULL, c_dwFlags, c_pcszFilter, pWndParent)
-{
-    m_ofn.lpstrTitle      = lpcszCaption;
-    m_ofn.lpstrInitialDir = lpcszInitialDir;
-    m_ofn.hInstance = AfxFindResourceHandle(MAKEINTRESOURCE(IDD_DFP_DIRSELECT), RT_DIALOG);
-    m_ofn.lpTemplateName  = MAKEINTRESOURCE(IDD_DFP_DIRSELECT);
-    m_ofn.Flags &= ~OFN_EXPLORER;
-}
-
-void CDirSelectDlg::GetPath(CString& strPath) const
-{
-    CString strTemp(m_ofn.lpstrFile);
-    strPath = strTemp.Left(m_ofn.nFileOffset);
-}
-
-/*
-BEGIN_MESSAGE_MAP(CDirSelectDlg, CFileDialog)
-    //{{AFX_MSG_MAP(CDirSelectDlg)
-    //}}AFX_MSG_MAP
-END_MESSAGE_MAP()
-*/
-
-BOOL CDirSelectDlg::OnInitDialog()
-{
-    CFileDialog::OnInitDialog();
-
-    GetDlgItem(IDC_DFP_STATIC_FILE_NAME)->ShowWindow(SW_HIDE);
-    GetDlgItem(IDC_DFP_FILE_NAME)->ShowWindow(SW_HIDE);
-    GetDlgItem(IDC_DFP_FILE_LIST)->ShowWindow(SW_HIDE);
-    GetDlgItem(IDC_DFP_STATIC_TYPE)->ShowWindow(SW_HIDE);
-    GetDlgItem(IDC_DFP_TYPE_LIST)->ShowWindow(SW_HIDE);
-
-    // If the file name field is empty, or has a wildcard in it when the 
-    // user clicks OK, the dialog will not close.  Thus, we need to put
-    // some dummy text in there.
-    
-    SetDlgItemText(IDC_DFP_FILE_NAME, "none");
-    GetDlgItem(IDC_DFP_DIR_LIST)->SetFocus();
-    return FALSE;
-}
-
-#else
-
     CString CDirSelectDlg::g_initialFolder;
     int CALLBACK CDirSelectDlg::BrowseCallbackProc (HWND hwnd, UINT uMsg, LPARAM lp, LPARAM /*pData*/) 
     {
@@ -94,7 +39,7 @@ BOOL CDirSelectDlg::OnInitDialog()
         case BFFM_INITIALIZED: 
             // WParam is TRUE since you are passing a path.
             // It would be FALSE if you were passing a pidl.
-            SendMessage(hwnd, BFFM_SETSELECTION, TRUE, (LPARAM)(LPCSTR)g_initialFolder);
+            SendMessage(hwnd, BFFM_SETSELECTION, TRUE, (LPARAM)(LPCTSTR)g_initialFolder);
             break;   
         case BFFM_SELCHANGED: 
             // Set the status window to the currently selected path.
@@ -150,12 +95,9 @@ BOOL CDirSelectDlg::OnInitDialog()
         else
         {
             MessageBeep((UINT)-1);
-            StyleMessageBox(NULL,"Cannot open \"Browse For Folder\" dialog.", "ERROR", MB_OK|MB_ICONSTOP);
+            StyleMessageBox(NULL,_T("Cannot open \"Browse For Folder\" dialog."), _T("ERROR"), MB_OK|MB_ICONSTOP);
         }
 
         return retVal;
     }
-
-#endif
-
 };//namespace Common

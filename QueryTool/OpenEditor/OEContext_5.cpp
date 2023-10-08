@@ -34,7 +34,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define _CHECK_ALL_PTR_ _CHECK_AND_THROW_(m_pStorage, "Editor has not been initialized properly!")
+#define _CHECK_ALL_PTR_ _CHECK_AND_THROW_(m_pStorage, _T("Editor has not been initialized properly!"))
 
 namespace OpenEditor
 {
@@ -124,7 +124,7 @@ void EditContext::GetScanLine (int& line, int& start, int& end) const
     end   = m_nScanEndPos;
 }
 
-void EditContext::GetScanLine (const char*& ptr, int& len) const
+void EditContext::GetScanLine (LPCTSTR& ptr, int& len) const
 {
     int line, start, end;
     GetScanLine(line, start, end);
@@ -143,7 +143,7 @@ void EditContext::GetScanLine (const char*& ptr, int& len) const
     }
 }
 
-void EditContext::PutLine (const char* ptr, int len)
+void EditContext::PutLine (LPCTSTR ptr, int len)
 {
     _CHECK_ALL_PTR_
 
@@ -188,21 +188,24 @@ void EditContext::ScanAndReplaceText (bool (*pmfnDo)(const EditContext&, CString
         {
             CString str;
             int len = 0;
-            const char* ptr = 0;
+            LPCTSTR ptr = 0;
 
             GetScanLine(ptr, len);
 
             if (len > 0)
             {
-              char* bufpnt = str.GetBufferSetLength(len + 1);
-              strncpy_s(bufpnt,(len+1),ptr,len + 1);
+              LPTSTR bufpnt = str.GetBufferSetLength(len + 1);
+              _tcsncpy_s(bufpnt,(len+1),ptr,len + 1);
               str.ReleaseBuffer();
 
-              if (!(*pmfnDo)(*this, str))
-                  break;
-
-              if (str.GetLength() != len || strncmp(str.GetString(), ptr, len))
-                  PutLine(str.GetString(), str.GetLength());
+              if(!(*pmfnDo)(*this,str))
+              {
+                break;
+              }
+              if(str.GetLength() != len || _tcsncmp(str.GetString(),ptr,len))
+              {
+                PutLine(str.GetString(),str.GetLength());
+              }
             }
 
             Next();

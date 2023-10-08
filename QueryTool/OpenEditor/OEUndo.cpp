@@ -27,13 +27,11 @@
 #include "OEUndo.h"
 #include "OEStorage.h"
 
-
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
-
 
 namespace OpenEditor
 {
@@ -287,7 +285,7 @@ bool UndoStack::Redo (UndoContext& cxt)
     return false;
 }
 
-bool UndoStack::AppendOnInsert (int line, int col, const char* str, int len, const DelimitersMap& delim)
+bool UndoStack::AppendOnInsert (int line, int col, LPCTSTR str, int len, const DelimitersMap& delim)
 {
     if (len == 1
     && !IsEmpty()
@@ -337,7 +335,7 @@ bool UndoStack::IsDataModified () const
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool UndoInsert::Append (int line, int col, const char* str, int len, const DelimitersMap& delim)
+bool UndoInsert::Append (int line, int col, LPCTSTR str, int len, const DelimitersMap& delim)
 {
     if (str && len
     && m_position.line == line 

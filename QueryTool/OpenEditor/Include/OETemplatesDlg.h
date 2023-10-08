@@ -44,7 +44,7 @@ protected:
     OpenEditor::Template::Entry& m_entry;
     Common::VisualAttribute m_textAttr;
     CFont m_textFont;
-    const char m_cursorPosMarker;
+    const TCHAR m_cursorPosMarker;
 
     CString m_name;
     CString m_keyword;

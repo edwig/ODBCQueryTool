@@ -32,14 +32,14 @@ static char THIS_FILE[] = __FILE__;
 namespace Common
 {
 
-void AppRestoreHistory (CComboBox& wndList, const char* szSection, const char* szEntry, int nSize)
+void AppRestoreHistory (CComboBox& wndList, LPCTSTR szSection, LPCTSTR szEntry, int nSize)
 {
     wndList.ResetContent();
 
     for (int i(0); i < nSize; i++)
     {
         CString strEntry, strBuffer;
-        strEntry.Format("%s_%d", (const char*)szEntry, i);
+        strEntry.Format(_T("%s_%d"), (LPCTSTR)szEntry, i);
         strBuffer = AfxGetApp()->GetProfileString(szSection, strEntry);
 
         if (!i)
@@ -52,14 +52,14 @@ void AppRestoreHistory (CComboBox& wndList, const char* szSection, const char* s
     }
 }
 
-void AppRestoreHistory(StyleComboBox& wndList,const char* szSection,const char* szEntry,int nSize)
+void AppRestoreHistory(StyleComboBox& wndList,LPCTSTR szSection,LPCTSTR szEntry,int nSize)
 {
   wndList.ResetContent();
 
   for(int i(0); i < nSize; i++)
   {
     CString strEntry,strBuffer;
-    strEntry.Format("%s_%d",(const char*) szEntry,i);
+    strEntry.Format(_T("%s_%d"),(LPCTSTR) szEntry,i);
     strBuffer = AfxGetApp()->GetProfileString(szSection,strEntry);
 
     if(!i)
@@ -72,13 +72,13 @@ void AppRestoreHistory(StyleComboBox& wndList,const char* szSection,const char* 
   }
 }
 
-void AppSaveHistory (CComboBox& wndList, const char* szSection, const char* szEntry, int nSize)
+void AppSaveHistory (CComboBox& wndList, LPCTSTR szSection, LPCTSTR szEntry, int nSize)
 {
   int i(0);
   CString strText,strEntry;
   wndList.GetWindowText(strText);
 
-  strEntry.Format("%s_%d",(const char*) szEntry,i);
+  strEntry.Format(_T("%s_%d"),(LPCTSTR) szEntry,i);
   AfxGetApp()->WriteProfileString(szSection,strEntry,strText);
   i++;
 
@@ -105,18 +105,18 @@ void AppSaveHistory (CComboBox& wndList, const char* szSection, const char* szEn
     {
       break;
     }
-    strEntry.Format("%s_%d",(const char*) szEntry,i);
+    strEntry.Format(_T("%s_%d"),(LPCTSTR) szEntry,i);
     AfxGetApp()->WriteProfileString(szSection,strEntry,strBuffer);
   }
 }
 
-void AppSaveHistory(StyleComboBox& wndList,const char* szSection,const char* szEntry,int nSize)
+void AppSaveHistory(StyleComboBox& wndList,LPCTSTR szSection,LPCTSTR szEntry,int nSize)
 {
   int i(0);
   CString strText,strEntry;
   wndList.GetWindowText(strText);
 
-  strEntry.Format("%s_%d",(const char*) szEntry,i);
+  strEntry.Format(_T("%s_%d"),(LPCTSTR) szEntry,i);
   AfxGetApp()->WriteProfileString(szSection,strEntry,strText);
   i++;
 
@@ -143,13 +143,16 @@ void AppSaveHistory(StyleComboBox& wndList,const char* szSection,const char* szE
     {
       break;
     }
-    strEntry.Format("%s_%d",(const char*) szEntry,i);
+    strEntry.Format(_T("%s_%d"),(LPCTSTR) szEntry,i);
     AfxGetApp()->WriteProfileString(szSection,strEntry,strBuffer);
   }
 }
 
-void AppWalkDir (const char* szPath, const char* szFileMask,
-                 StringList& listFiles, BOOL bSortFiles, StringList* pListSubdir)
+void AppWalkDir (LPCTSTR szPath
+                ,LPCTSTR szFileMask
+                ,StringList& listFiles
+                ,BOOL    bSortFiles
+                ,StringList* pListSubdir)
 {
     HANDLE hFile = INVALID_HANDLE_VALUE;
     WIN32_FIND_DATA wfdFile;
@@ -157,9 +160,10 @@ void AppWalkDir (const char* szPath, const char* szFileMask,
 
     CString strBuffer;
     CString strPath(szPath);
-    if (strPath.GetLength() > 0 && strPath[strPath.GetLength()-1] != '\\')
-        strPath += "\\";
-
+    if(strPath.GetLength() > 0 && strPath[strPath.GetLength() - 1] != '\\')
+    {
+      strPath += _T("\\");
+    }
     StringList listLocal;
 
     strBuffer = strPath;
@@ -192,7 +196,7 @@ void AppWalkDir (const char* szPath, const char* szFileMask,
 
     memset(&wfdFile, 0, sizeof wfdFile);
     strBuffer = strPath;
-    strBuffer += "*.*";
+    strBuffer += _T("*.*");
 
     listLocal.clear();
     hFile = FindFirstFile(strBuffer.GetString(), &wfdFile);
@@ -202,8 +206,8 @@ void AppWalkDir (const char* szPath, const char* szFileMask,
         do
         {
             if(wfdFile.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY
-            && strcmp(".", wfdFile.cFileName)
-            && strcmp("..", wfdFile.cFileName))
+            && _tcscmp(_T("."),  wfdFile.cFileName)
+            && _tcscmp(_T(".."), wfdFile.cFileName))
                 listLocal.push_back(wfdFile.cFileName);
         }
         while(FindNextFile(hFile, &wfdFile));
@@ -229,7 +233,7 @@ void AppWalkDir (const char* szPath, const char* szFileMask,
     listLocal.clear();
 }
 
-BOOL AppDeleteFiles (const char* szPath, const char* szFileMask, BOOL bAndSubdir)
+BOOL AppDeleteFiles (LPCTSTR szPath, LPCTSTR szFileMask, BOOL bAndSubdir)
 {
     BOOL bRetVal = TRUE;
     StringList listFiles, listSubdir;
@@ -250,21 +254,20 @@ BOOL AppDeleteFiles (const char* szPath, const char* szFileMask, BOOL bAndSubdir
 }
 
 
-BOOL AppDeleteDirectory (const char* szPath)
+BOOL AppDeleteDirectory (LPCTSTR szPath)
 {
-    AppDeleteFiles(szPath, "*.*", TRUE);
+    AppDeleteFiles(szPath, _T("*.*"), TRUE);
     return RemoveDirectory(szPath);
 }
 
-bool AppGetFileAttrs (
-        const char* szPath, DWORD* attrs, __int64* fileSize,
-        __int64* creationTime, __int64* lastWriteTime
-    )
+bool AppGetFileAttrs (LPCTSTR  szPath
+                     ,DWORD*   attrs
+                     ,__int64* fileSize
+                     ,__int64* creationTime
+                     ,__int64* lastWriteTime)
 {
-    HANDLE hFile = ::CreateFile(
-            szPath, GENERIC_READ, FILE_SHARE_WRITE|FILE_SHARE_READ, 
-            NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL
-        );
+  HANDLE hFile = ::CreateFile(szPath, GENERIC_READ, FILE_SHARE_WRITE|FILE_SHARE_READ, 
+                              NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
 	if (hFile != INVALID_HANDLE_VALUE)
 	{
@@ -296,7 +299,7 @@ bool AppGetFileAttrs (
 
 void AppGetPath (CString& path)
 {
-    char szBuff[_MAX_PATH + 1];
+    TCHAR szBuff[_MAX_PATH + 1];
     VERIFY(::GetModuleFileName(AfxGetApp()->m_hInstance, szBuff, _MAX_PATH));
     szBuff[_MAX_PATH] = 0;
     path = szBuff;
@@ -309,12 +312,12 @@ void AppGetPath (CString& path)
 
 void AppGetFullPathName (const String& path, String& fullPath)
 {
-	char *filename;
+	LPTSTR filename;
   int length = GetFullPathName(path.GetString(), 0, 0, &filename);
-  char *buffer = new char[length + 1];
+  LPTSTR buffer = new TCHAR[length + 1];
   GetFullPathName(path.GetString(), length + 1, buffer, &filename);
   fullPath = buffer;
-  delete buffer;
+  delete [] buffer;
 }
 
 void
@@ -324,7 +327,7 @@ FindApplicDirectory(CString& p_directory)
   IShellFolder* psfParent;              // A pointer to the parent folder object's IShellFolder interface.
   LPITEMIDLIST  pidlItem = NULL;        // The item's PIDL.
   LPITEMIDLIST  pidlRelative = NULL;    // The item's PIDL relative to the parent folder.
-  CHAR          szPath[MAX_PATH] = "";  // The path for Favorites.
+  TCHAR         szPath[MAX_PATH] = _T("");  // The path for Favorites.
   STRRET        str;                    // The structure for strings returned from IShellFolder.
 
   HRESULT hres = SHGetMalloc(&pShellMalloc);

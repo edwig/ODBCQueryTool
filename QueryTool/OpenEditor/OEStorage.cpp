@@ -50,9 +50,9 @@ namespace OpenEditor
     using namespace std;
     using namespace Common;
 
-    const char Storage::m_cszDosLineDelim  [3] = "\r\n";
-    const char Storage::m_cszMacLineDelim  [3] = "\n\r";
-    const char Storage::m_cszUnixLineDelim [3] = "\n";
+    const CString Storage::m_cszDosLineDelim (_T("\r\n"));
+    const CString Storage::m_cszMacLineDelim (_T("\n\r"));
+    const CString Storage::m_cszUnixLineDelim(_T("\n"));
 
     Searcher Storage::m_defSearcher(true /*persistent*/);
 
@@ -168,7 +168,7 @@ Storage::Storage ()
     SetSearcher(&m_defSearcher);
 
     memset(m_BookmarkCountersByGroup, 0, sizeof m_BookmarkCountersByGroup);
-    memset(m_szLineDelim, 0, sizeof m_szLineDelim);
+    m_szLineDelim.Empty();
 }
 #pragma warning ( default : 4355 )
 
@@ -287,7 +287,7 @@ void Storage::OnSettingsChanged ()
 }
 
 void Storage::SetText (
-    const char* text, unsigned long length, // text pointer end length
+    LPCTSTR text, unsigned long length, // text pointer end length
     bool use_buffer,                        // use external persistent buffer
     bool refresh,                           // rescan for reallocated buffer
     bool external                           // external changes, it requires additional synchronization
@@ -304,35 +304,43 @@ void Storage::SetText (
     }
 
     // default
-    memcpy(m_szLineDelim, m_cszDosLineDelim, sizeof(m_szLineDelim));
+    m_szLineDelim = m_cszDosLineDelim;
 
     {
     // check text type (Unix (\n), Dos (\r\n), Mac (\n\r))
-    const char* ptr;
-    for (ptr = text; ptr && *ptr != '\n' && *ptr != '\r' && ptr < text + length; ptr++)
+    LPCTSTR ptr;
+    for (ptr = text; ptr && *ptr != _T('\n') && *ptr != _T('\r') && ptr < text + length; ptr++)
         ;
     if (ptr < text + length)
     {
-        if (ptr[0] == '\n')
+        if(ptr[0] == _T('\n'))
         {
-            if (ptr + 1 < text + length && ptr[1] == '\r')
-                memcpy(m_szLineDelim, m_cszMacLineDelim, sizeof(m_szLineDelim));
-            else
-                memcpy(m_szLineDelim, m_cszUnixLineDelim, sizeof(m_szLineDelim));
+          if(ptr + 1 < text + length && ptr[1] == _T('\r'))
+          {
+            m_szLineDelim = m_cszMacLineDelim;
+          }
+          else
+          {
+            m_szLineDelim = m_cszUnixLineDelim;
+          }
         }
-        else if (ptr[0] == '\r')
+        else if (ptr[0] == _T('\r'))
         {
-            if (ptr + 1 < text + length && ptr[1] == '\n')
-                memcpy(m_szLineDelim, m_cszDosLineDelim, sizeof(m_szLineDelim));
-            else
-                ; // show warning and use default
+          if(ptr + 1 < text + length && ptr[1] == _T('\n'))
+          {
+            m_szLineDelim = m_cszDosLineDelim;
+          }
+          else
+          {
+            ; // show warning and use default
+          }
         }
     }
     }
 
     String buff;
     int pos = 0;
-    const char* ptr = text;
+    LPCTSTR ptr = text;
     bool trunc = GetSettings().GetTruncateSpaces();
 
     unsigned line(0), size((int)m_Lines.size());
@@ -363,7 +371,7 @@ void Storage::SetText (
                 if (ptr[pos + 1] == m_szLineDelim[1])
                     pos++;
                 else
-                    ; // do nothing, ignore unregular eol
+                    ; // do nothing, ignore irregular EOL
             }
 
             ptr += pos + 1;
@@ -393,7 +401,7 @@ void Storage::SetText (
             m_Lines[line++].assign(buff);
         }
     }
-    // the previos line exists and has <CR>
+    // the previous line exists and has <CR>
     else if (m_Lines.size() > 1)
     {
         buff.cleanup();
@@ -424,7 +432,7 @@ void Storage::SetText (
     if (external)
         Notify_ChangedLines(0, (int)m_Lines.size() - 1);
 
-    // reset undo and scaner
+    // reset undo and scanner
     if (external || m_Lines.size() != orgLines)
         partialClear();
 
@@ -432,34 +440,36 @@ void Storage::SetText (
 }
 
 
-const char* Storage::getLineDelim () const
+LPCTSTR Storage::getLineDelim () const
 {
-    int saveAs = GetSettings().GetFileSaveAs();
+  int saveAs = GetSettings().GetFileSaveAs();
 
-    if (saveAs == effDefault)
+  if (saveAs == effDefault)
+  {
+    if(m_szLineDelim[0])
     {
-        if (m_szLineDelim[0]) return m_szLineDelim;
-
-        saveAs = GetSettings().GetFileCreateAs();
+      return m_szLineDelim;
     }
+    saveAs = GetSettings().GetFileCreateAs();
+  }
 
-    switch (saveAs)
-    {
-    case effMac:    return m_cszMacLineDelim;
-    case effUnix:   return m_cszUnixLineDelim;
-    case effDos:    return m_cszDosLineDelim;
+  switch (saveAs)
+  {
+    case effMac:    return m_cszMacLineDelim .GetString();
+    case effUnix:   return m_cszUnixLineDelim.GetString();
+    case effDos:    return m_cszDosLineDelim .GetString();
     default:        _ASSERTE(0);
-    }
+  }
 
-    return m_cszDosLineDelim;
+  return m_cszDosLineDelim;
 }
 
-const char* Storage::GetFileFormatName () const
+LPCTSTR Storage::GetFileFormatName () const
 {
-    const char* delim = getLineDelim();
-    if (delim[0] == '\r')       return " Dos ";
-    else if (delim[1] == '\r')  return " Mac ";
-    else                        return " Unix ";
+    LPCTSTR delim = getLineDelim();
+         if (delim[0] == '\r')  return _T(" Dos ");
+    else if (delim[1] == '\r')  return _T(" Mac ");
+    else                        return _T(" Unix ");
 }
 
 unsigned long Storage::GetTextLength () const
@@ -480,14 +490,14 @@ unsigned long Storage::GetTextLength () const
     return usage;
 }
 
-unsigned long Storage::GetText (char* buffer, unsigned long size) const
+unsigned long Storage::GetText (LPTSTR buffer, unsigned long size) const
 {
     // initialize a line delimiter
-    const char* ln_delim = getLineDelim();
+    LPCTSTR ln_delim = getLineDelim();
     int ln_delim_len = ln_delim[1] ? 2 : 1;
 
     // copy text
-    char* ptr = buffer;
+    LPTSTR ptr = buffer;
     bool the_first = true;
 
     for (int line(0), nlines = (int)m_Lines.size(); line < nlines; line++)
@@ -496,14 +506,14 @@ unsigned long Storage::GetText (char* buffer, unsigned long size) const
             the_first = false;
         else
         {
-            _CHECK_AND_THROW_((ptr + ln_delim_len) <= (buffer + size), "Text buffer size is not enough.");
-            memcpy(ptr, ln_delim, ln_delim_len);
+            _CHECK_AND_THROW_((ptr + ln_delim_len) <= (buffer + size), _T("Text buffer size is not enough."));
+            memcpy(ptr, ln_delim, ln_delim_len * sizeof(TCHAR));
             ptr += ln_delim_len;
         }
 
         const FixedString& str = m_Lines[line];
-        _CHECK_AND_THROW_((ptr + str.length()) <= (buffer + size), "Text buffer size is not enough.");
-        memcpy(ptr, str.data(), str.length());
+        _CHECK_AND_THROW_((ptr + str.length()) <= (buffer + size), _T("Text buffer size is not enough."));
+        memcpy(ptr, str.data(), str.length() * sizeof(TCHAR));
         ptr += str.length();
     }
 
@@ -519,12 +529,12 @@ void Storage::TruncateSpaces (bool force)
     }
 }
 
-void Storage::GetLine  (int line, const char*& ptr) const
+void Storage::GetLine  (int line, LPCTSTR& ptr) const
 {
     ptr = m_Lines.at(line).data();
 }
 
-void Storage::GetLine (int line, const char*& ptr, int& len) const
+void Storage::GetLine (int line, LPCTSTR& ptr, int& len) const
 {
   if(line >= 0 && line < (int)m_Lines.size())
   {
@@ -538,13 +548,13 @@ void Storage::GetLine (int line, const char*& ptr, int& len) const
   }
 }
 
-void Storage::Insert (char ch, int line, int pos)
+void Storage::Insert (TCHAR ch, int line, int pos)
 {
     m_actionSeq++;
 
     if (ch != '\r')
     {
-        char buff[2] = { ch, 0 };
+        TCHAR buff[2] = { ch, 0 };
         InsertLinePart(line, pos, buff, 1);
     }
     else
@@ -554,7 +564,7 @@ void Storage::Insert (char ch, int line, int pos)
     }
 }
 
-void Storage::Overwrite (char ch, int line, int pos)
+void Storage::Overwrite (TCHAR ch, int line, int pos)
 {
     _ASSERTE(ch != '\r');
 
@@ -565,9 +575,9 @@ void Storage::Overwrite (char ch, int line, int pos)
         QuoteBalanceChecker chk;
         chk.ScanBeforeUpdate(this, line);
 
-        char orgStr[2] = { m_Lines.at(line).at(pos), 0 };
+        TCHAR orgStr[2] = { m_Lines.at(line).at(pos), 0 };
         m_Lines[line].replace(pos, ch);
-        char newStr[2] = { ch, 0 };
+        TCHAR newStr[2] = { ch, 0 };
 
         PUSH_IN_UNDO_STACK(new UndoOverwrite(line, pos, orgStr, 1, newStr, 1));
 
@@ -591,7 +601,7 @@ void Storage::Delete (int line, int pos)
 }
 
 // string mustn't have '\r' or '\n'
-void Storage::InsertLine (int line, const char* str, int len)
+void Storage::InsertLine (int line, LPCTSTR str, int len)
 {
     m_actionSeq++;
 
@@ -621,7 +631,7 @@ void Storage::InsertLines (int line, const StringArray& lines)
 
 
 // string mustn't have '\r' or '\n'
-void Storage::InsertLinePart (int line, int pos, const char* str, int len)
+void Storage::InsertLinePart (int line, int pos, LPCTSTR str, int len)
 {
     m_actionSeq++;
 
@@ -639,7 +649,7 @@ void Storage::InsertLinePart (int line, int pos, const char* str, int len)
     chk.NotifyAboutChanged(this, line);
 }
 
-void Storage::ReplaceLinePart (int line, int from_pos, int to_pos, const char* str, int len)
+void Storage::ReplaceLinePart (int line, int from_pos, int to_pos, LPCTSTR str, int len)
 {
     _ASSERTE((to_pos - from_pos) >= 0);
 
@@ -835,7 +845,7 @@ void Storage::ExpandLinesTo (int line)
 
 void Storage::SetSettings (const Settings* settings)
 {
-    _CHECK_AND_THROW_(settings, "Invalid initialization!");
+    _CHECK_AND_THROW_(settings, _T("Invalid initialization!"));
 
     if (m_pSettings)
         m_pSettings->RemoveSubscriber(this);
@@ -850,7 +860,7 @@ void Storage::SetSettings (const Settings* settings)
 
 void Storage::SetSearcher (Searcher* searcher)
 {
-    _CHECK_AND_THROW_(searcher, "Invalid initialization!");
+    _CHECK_AND_THROW_(searcher, _T("Invalid initialization!"));
 
     if (m_pSearcher)
         m_pSearcher->RemoveRef(this);
@@ -863,7 +873,7 @@ void Storage::SetSearcher (Searcher* searcher)
 
 void Storage::SetBookmark (int line, EBookmarkGroup group, bool on)
 {
-    _CHECK_AND_THROW_(group < BOOKMARK_GROUPS_SIZE, "Invalid value for bookmark group!");
+    _CHECK_AND_THROW_(group < BOOKMARK_GROUPS_SIZE, _T("Invalid value for bookmark group!"));
 
     m_actionSeq++;
 
@@ -884,7 +894,7 @@ void Storage::SetBookmark (int line, EBookmarkGroup group, bool on)
 
 void Storage::RemoveAllBookmark (EBookmarkGroup group)
 {
-    _CHECK_AND_THROW_(group < BOOKMARK_GROUPS_SIZE, "Invalid value for bookmark group!");
+    _CHECK_AND_THROW_(group < BOOKMARK_GROUPS_SIZE, _T("Invalid value for bookmark group!"));
 
     m_actionSeq++;
 
@@ -909,14 +919,14 @@ void Storage::RemoveAllBookmark (EBookmarkGroup group)
 
 int Storage::GetBookmarkNumber (EBookmarkGroup group)
 {
-    _CHECK_AND_THROW_(group < BOOKMARK_GROUPS_SIZE, "Invalid value for bookmark group!");
+    _CHECK_AND_THROW_(group < BOOKMARK_GROUPS_SIZE, _T("Invalid value for bookmark group!"));
 
     return m_BookmarkCountersByGroup[group];
 }
 
 bool Storage::NextBookmark (int& _line, EBookmarkGroup group) const
 {
-    _CHECK_AND_THROW_(group < BOOKMARK_GROUPS_SIZE, "Invalid value for bookmark group!");
+    _CHECK_AND_THROW_(group < BOOKMARK_GROUPS_SIZE, _T("Invalid value for bookmark group!"));
 
     unsigned mask = 1 << group;
 
@@ -942,7 +952,7 @@ bool Storage::NextBookmark (int& _line, EBookmarkGroup group) const
 
 bool Storage::PreviousBookmark (int& _line, EBookmarkGroup group) const
 {
-    _CHECK_AND_THROW_(group < BOOKMARK_GROUPS_SIZE, "Invalid value for bookmark group!");
+    _CHECK_AND_THROW_(group < BOOKMARK_GROUPS_SIZE, _T("Invalid value for bookmark group!"));
 
     unsigned mask = 1 << group;
 
@@ -970,7 +980,7 @@ bool Storage::PreviousBookmark (int& _line, EBookmarkGroup group) const
 
 void Storage::GetBookmarkedLines (std::vector<int>& lines, EBookmarkGroup group) const
 {
-    _CHECK_AND_THROW_(group < BOOKMARK_GROUPS_SIZE, "Invalid value for bookmark group!");
+    _CHECK_AND_THROW_(group < BOOKMARK_GROUPS_SIZE, _T("Invalid value for bookmark group!"));
 
     unsigned mask = 1 << group;
 
@@ -981,14 +991,14 @@ void Storage::GetBookmarkedLines (std::vector<int>& lines, EBookmarkGroup group)
 
 void Storage::SetRandomBookmark (RandomBookmark bookmark, int line, bool on)
 {
-    _CHECK_AND_THROW_(bookmark.Valid(), "Invalid id for random bookmark!");
+    _CHECK_AND_THROW_(bookmark.Valid(), _T("Invalid id for random bookmark!"));
     SetBookmark(line, eRandomBmkGroup, on);
     m_Lines[line].tag.bookmark = bookmark.GetId();
 }
 
 bool Storage::GetRandomBookmark (RandomBookmark bookmark, int& _line) const
 {
-    _CHECK_AND_THROW_(bookmark.Valid(), "Invalid id for random bookmark!");
+    _CHECK_AND_THROW_(bookmark.Valid(), _T("Invalid id for random bookmark!"));
 
     // update cache if it's necessary
     GetRandomBookmarks();
@@ -1004,7 +1014,7 @@ bool Storage::GetRandomBookmark (RandomBookmark bookmark, int& _line) const
     return false;
 }
 
-// the vector will be valid untill actionNumber is the same
+// the vector will be valid until actionNumber is the same
 const RandomBookmarkArray& Storage::GetRandomBookmarks () const
 {
     if (m_RandomBookmarks.GetActionId() != m_actionSeq)

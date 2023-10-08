@@ -99,8 +99,8 @@ QueryDlg::SetupDynamicLayout()
 void
 QueryDlg::InitFields()
 {
-  m_editQuery .SetFontName("Courier New",120);
-  m_editResult.SetFontName("Courier New",120);
+  m_editQuery .SetFontName(_T("Courier New"),120);
+  m_editResult.SetFontName(_T("Courier New"),120);
 }
 
 // QueryDlg message handlers
@@ -122,9 +122,9 @@ QueryDlg::OnBnClickedGo()
   }
   else
   {
-    StyleMessageBox(this,"Configure a rewriting schema and actions first!"
-                         "Use the tab 'Configuration' to do so..."
-                        ,"QueryRewriter",MB_OK|MB_ICONERROR);
+    StyleMessageBox(this,_T("Configure a rewriting schema and actions first!")
+                         _T("Use the tab 'Configuration' to do so...")
+                        ,_T("QueryRewriter"),MB_OK|MB_ICONERROR);
   }
 }
 

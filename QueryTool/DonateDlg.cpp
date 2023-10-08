@@ -57,10 +57,10 @@ BOOL
 DonateDlg::OnInitDialog()
 {
   StyleDialog::OnInitDialog();
-  SetWindowText("Consider a donation");
+  SetWindowText(_T("Consider a donation"));
 
-  m_text = "Do you like this tool and would you see it continue developing?\r\n"
-           "Then please consider making a donation...";
+  m_text = _T("Do you like this tool and would you see it continue developing?\r\n")
+           _T("Then please consider making a donation...");
 
   UpdateData(FALSE);
   m_buttonAny.SetFocus();
@@ -70,19 +70,19 @@ DonateDlg::OnInitDialog()
 CString 
 DonateDlg::CreateDonationLink(int p_amount)
 {
-  CString donation("https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=edwig.huisman@hetnet.nl&item_name=Friends+of+Open+ODBCQuerytool&item_number=Supporting+open+source+development");
+  CString donation(_T("https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=edwig.huisman@hetnet.nl&item_name=Friends+of+Open+ODBCQuerytool&item_number=Supporting+open+source+development"));
   if(p_amount)
   {
-    donation.AppendFormat("&amount=%d%%2e00",p_amount);
+    donation.AppendFormat(_T("&amount=%d%%2e00"),p_amount);
   }
-  donation += "&currency_code=EUR";
+  donation += _T("&currency_code=EUR");
   return donation;
 }
 
 void
 DonateDlg::StartDonation(CString p_link)
 {
-  ::ShellExecuteA(nullptr,"open",p_link.GetString(),nullptr,nullptr,SW_SHOW);
+  ::ShellExecute(nullptr,_T("open"),p_link.GetString(),nullptr,nullptr,SW_SHOW);
   OnOK();
 }
 

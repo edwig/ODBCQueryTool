@@ -49,32 +49,37 @@ DelimitersMap::DelimitersMap ()
 {
 }
 
-DelimitersMap::DelimitersMap (const char* delimiters)
+DelimitersMap::DelimitersMap (LPCTSTR delimiters)
 {
     Set(delimiters);
 }
 
-void DelimitersMap::Set (const char* str)
+void DelimitersMap::Set (LPCTSTR str)
 {
-    string delim;
+    CString delim;
     erase();
 
-    for (; str && *str; str++)
-        operator[](*str) = true;
-
+    for(; str && *str; str++)
+    {
+      operator[](*str) = (_TUCHAR) true;
+    }
     // they're required
-    operator[](' ') = true;
+    operator[](' ')  = true;
     operator[]('\t') = true;
     operator[]('\n') = true;
     operator[]('\r') = true;
 }
 
-void DelimitersMap::Get (string& buff)
+void DelimitersMap::Get (CString& buff)
 {
-    buff.erase();
-    for (unsigned char i = 0; i < size(); i++)
-        if ((*this)[i])
-            buff += static_cast<char>(i);
+    buff.Empty();
+    for(_TUCHAR i = 0; i < size(); i++)
+    {
+      if((*this)[i])
+      {
+        buff += static_cast<TCHAR>(i);
+      }
+    }
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -103,7 +108,7 @@ LineTokenizer::LineTokenizer (bool showWhiteSpace, int tabSpacing, const Delimit
     m_Length = m_Offset = m_Position = m_Position = 0;
 }
 
-void LineTokenizer::StartScan (const char* str, int len)
+void LineTokenizer::StartScan (LPCTSTR str, int len)
 {
     m_Buffer = str;
     m_Length = len;
@@ -150,9 +155,9 @@ bool LineTokenizer::Next ()
     return !Eol();
 }
 
-void LineTokenizer::GetCurentWord (const char*& str, int& pos, int& len) const
+void LineTokenizer::GetCurentWord (LPCTSTR& str, int& pos, int& len) const
 {
-  if (!isspace(m_Buffer[m_Offset]))   // it's world
+  if (!_istspace(m_Buffer[m_Offset]))   // it's world
   {
     if (m_delimiters[m_Buffer[m_Offset]])
         len = 1;
@@ -167,7 +172,7 @@ void LineTokenizer::GetCurentWord (const char*& str, int& pos, int& len) const
   }
   else                                // it's space
   {
-    m_Whitespaces.erase();
+    m_Whitespaces.Empty();
 
     for (int offset(m_Offset), position(m_Position); offset < m_Length && isspace(m_Buffer[offset]); offset++)
     {
@@ -175,7 +180,14 @@ void LineTokenizer::GetCurentWord (const char*& str, int& pos, int& len) const
       {
         position = (position / m_TabSpacing + 1) * m_TabSpacing;
         m_Whitespaces += m_tabChar;
-        m_Whitespaces.resize(position - m_Position, m_spaceChar);
+
+        //m_Whitespaces.resize(position - m_Position, m_spaceChar);
+        m_Whitespaces = m_Whitespaces.Left(position - m_Position);
+        while((position - m_Position) > m_Whitespaces.GetLength())
+        {
+          TCHAR space[2] = { (TCHAR)m_spaceChar, 0};
+          m_Whitespaces.Append(space);
+        }
       }
       else
       {
@@ -183,15 +195,15 @@ void LineTokenizer::GetCurentWord (const char*& str, int& pos, int& len) const
         m_Whitespaces += m_virtSpaceChar;
       }
     }
-    str = m_Whitespaces.c_str();
-    len = (int)m_Whitespaces.size();
+    str = m_Whitespaces.GetString();
+    len = m_Whitespaces.GetLength();
     pos = m_Position;
   }
 }
 
-// Special tokenizer
+// Special LineTokenizer
 // eats words and strings alike
-void LineTokenizer::GetCurrentSQLToken(const char*& str, int& pos, int& len,char& instring) 
+void LineTokenizer::GetCurrentSQLToken(LPCTSTR& str, int& pos, int& len,TCHAR& instring) 
 {
   if(instring)
   {
@@ -236,7 +248,7 @@ void LineTokenizer::GetCurrentSQLToken(const char*& str, int& pos, int& len,char
       // \' is a metachar for various ODBC sources   (Microsoft)
       // '' is a metachar for various SQL  databases (Oracle, Informix)
       // "" is a metachar for various SQL  databases (Informix)
-      const char *delim = str;
+      LPCTSTR delim = str;
       instring = *delim;
       bool mayReturn = false;
       do

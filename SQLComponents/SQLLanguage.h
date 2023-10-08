@@ -89,17 +89,17 @@ DateNames;
 // STATIC DEFINITIONS OF NAME ARRAYS
 
 // Default language
-extern Language g_defaultLanguage;
+extern Language  g_defaultLanguage;
 // Names of the week
-const extern char*    g_weekdays[LN_NUMLANG][DAYS_IN_WEEK]; 
+extern LPCTSTR   g_weekdays[LN_NUMLANG][DAYS_IN_WEEK]; 
 // Number of days at the beginning of the month + 2 months in the next year
-const extern int      g_daysInTheMonth[MONTHS_IN_YEAR + 2];
+extern const int g_daysInTheMonth[MONTHS_IN_YEAR + 2];
 // Names of the months
-const extern char*    g_monthnames[LN_NUMLANG][MONTHS_IN_YEAR];
+extern LPCTSTR   g_monthnames[LN_NUMLANG][MONTHS_IN_YEAR];
 // Short (3 char) variants of the month names
-const extern char*    g_shortMonths[LN_NUMLANG][MONTHS_IN_YEAR]; 
+extern LPCTSTR   g_shortMonths[LN_NUMLANG][MONTHS_IN_YEAR]; 
 // Several key names 
-const extern char*    g_dateNames[LN_NUMLANG][DN_LASTNAME];
+extern LPCTSTR   g_dateNames[LN_NUMLANG][DN_LASTNAME];
 
 // Setting the default language
 Language SetDefaultSQLLanguage(Language p_lang);

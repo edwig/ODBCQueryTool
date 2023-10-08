@@ -36,7 +36,7 @@ static char THIS_FILE[] = __FILE__;
 
 AboutDlg::AboutDlg() : StyleDialog(AboutDlg::IDD)
 {
-  m_version   = SQL_MIGRATE " " SQL_COMPONENTS_VERSION;
+  m_version   = SQL_MIGRATE _T(" ") SQL_COMPONENTS_VERSION;
   m_copyright = SQL_COMPONENTS_COPYRIGHT;
 }
 
@@ -55,6 +55,6 @@ BOOL
 AboutDlg::OnInitDialog()
 {
   StyleDialog::OnInitDialog();
-  SetWindowText("About " SQL_MIGRATE);
+  SetWindowText(_T("About ") SQL_MIGRATE);
   return FALSE;
 }

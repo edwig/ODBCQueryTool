@@ -93,7 +93,7 @@ StyleGroupBox::Internal_Paint(CDC* p_dc)
   if (!hbr)
   {
     /* did the app forget to call DefWindowProc ? */
-    hbr = (HBRUSH)DefWindowProcW(parent->GetSafeHwnd(),WM_CTLCOLORSTATIC,(WPARAM)p_dc->GetSafeHdc(),(LPARAM)GetSafeHwnd());
+    hbr = (HBRUSH)::DefWindowProcW(parent->GetSafeHwnd(),WM_CTLCOLORSTATIC,(WPARAM)p_dc->GetSafeHdc(),(LPARAM)GetSafeHwnd());
   }
   // Getting the rectangles
   CRect labelrect;

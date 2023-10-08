@@ -101,25 +101,26 @@ public:
   void SetLengthOption(LOption p_option = LOption::LO_LEN_ZERO);
 
   // Set parameters for statement
-  void SetParameter  (int p_num,SQLVariant*   p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
-  void SetParameter  (int p_num,int           p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
-  void SetParameterUL(int p_num,unsigned int  p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
-  void SetParameter  (int p_num,const char*   p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
-  void SetParameter  (int p_num,XString&      p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
-  void SetParameter  (int p_num,SQLDate&      p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
-  void SetParameter  (int p_num,SQLTime&      p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
-  void SetParameter  (int p_num,SQLTimestamp& p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
-  void SetParameter  (int p_num,const bcd&    p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
+  SQLVariant* SetParameter  (int p_num,SQLVariant*   p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
+  SQLVariant* SetParameter  (int p_num,int           p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
+  SQLVariant* SetParameterUL(int p_num,unsigned int  p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
+  SQLVariant* SetParameter  (int p_num,SQLDate&      p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
+  SQLVariant* SetParameter  (int p_num,SQLTime&      p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
+  SQLVariant* SetParameter  (int p_num,SQLTimestamp& p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
+  SQLVariant* SetParameter  (int p_num,const bcd&    p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
 
-  void SetParameter  (SQLVariant*   p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
-  void SetParameter  (int           p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
-  void SetParameterUL(unsigned int  p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
-  void SetParameter  (const char*   p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
-  void SetParameter  (XString&      p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
-  void SetParameter  (SQLDate&      p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
-  void SetParameter  (SQLTime&      p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
-  void SetParameter  (SQLTimestamp& p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
-  void SetParameter  (const bcd&    p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
+  SQLVariant* SetParameter  (SQLVariant*   p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
+  SQLVariant* SetParameter  (int           p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
+  SQLVariant* SetParameterUL(unsigned int  p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
+  SQLVariant* SetParameter  (SQLDate&      p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
+  SQLVariant* SetParameter  (SQLTime&      p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
+  SQLVariant* SetParameter  (SQLTimestamp& p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
+  SQLVariant* SetParameter  (const bcd&    p_param,SQLParamType p_type = P_SQL_PARAM_INPUT);
+
+  SQLVariant* SetParameter(int p_num,LPCTSTR  p_param,bool p_wide = false,SQLParamType p_type = P_SQL_PARAM_INPUT);
+  SQLVariant* SetParameter(int p_num,XString& p_param,bool p_wide = false,SQLParamType p_type = P_SQL_PARAM_INPUT);
+  SQLVariant* SetParameter(          LPCTSTR  p_param,bool p_wide = false,SQLParamType p_type = P_SQL_PARAM_INPUT);
+  SQLVariant* SetParameter(          XString& p_param,bool p_wide = false,SQLParamType p_type = P_SQL_PARAM_INPUT);
 
   // Named parameters for DoSQLCall()
   void SetParameterName(int p_num,XString p_name);
@@ -134,14 +135,14 @@ public:
   int         DoSQLStatementNonQuery(const XString& p_statement);
   // Overrides with one parameter
   void        DoSQLStatement(const XString& p_statement,const int   p_param1);
-  void        DoSQLStatement(const XString& p_statement,const char* p_param1);
+  void        DoSQLStatement(const XString& p_statement,LPCTSTR     p_param1);
   void        DoSQLStatement(const XString& p_statement,const bcd&  p_param1);
   // Variants of the DoSQLStatement
   SQLVariant* DoSQLStatementScalar  (const XString& p_statement,const int   p_param1);
-  SQLVariant* DoSQLStatementScalar  (const XString& p_statement,const char* p_param1);
+  SQLVariant* DoSQLStatementScalar  (const XString& p_statement,LPCTSTR     p_param1);
   SQLVariant* DoSQLStatementScalar  (const XString& p_statement,const bcd&  p_param1);
   int         DoSQLStatementNonQuery(const XString& p_statement,const int   p_param1);
-  int         DoSQLStatementNonQuery(const XString& p_statement,const char* p_param1);
+  int         DoSQLStatementNonQuery(const XString& p_statement,LPCTSTR     p_param1);
   int         DoSQLStatementNonQuery(const XString& p_statement,const bcd&  p_param1);
   // Variant with a catch to it
   void        TryDoSQLStatement(const XString& p_statement);
@@ -159,7 +160,7 @@ public:
   SQLVariant* DoSQLCall(XString p_schema,XString p_procedure,bool p_hasReturn = false);
   // Overrides with one input parameter and an int return parameter
   SQLVariant* DoSQLCall(XString p_schema,XString p_procedure,const int   p_param1);
-  SQLVariant* DoSQLCall(XString p_schema,XString p_procedure,const char* p_param1);
+  SQLVariant* DoSQLCall(XString p_schema,XString p_procedure,LPCTSTR     p_param1);
   SQLVariant* DoSQLCall(XString p_schema,XString p_procedure,const bcd&  p_param1);
   // Getting the result parameters values
   SQLVariant* GetParameter(int p_num);
@@ -193,7 +194,7 @@ public:
   // Get number of records read so far
   int         GetNumberOfRows();
   // ColumnName -> column number
-  int         GetColumnNumber(const char* p_columnName);
+  int         GetColumnNumber(LPCTSTR p_columnName);
   // ColumnNumber -> column name
   bool        GetColumnName(int p_column,XString& p_name);
   // Get length of the column
@@ -256,7 +257,7 @@ private:
   // Get max column length
   int   GetMaxColumnLength();
   // Get the internal error string
-  void  GetLastError(XString p_prefix = "");
+  void  GetLastError(XString p_prefix = _T(""));
   // Report timing to logfile
   void  ReportQuerySpeed(LARGE_INTEGER p_start);
   // Construct the SQL for a function/procedure call

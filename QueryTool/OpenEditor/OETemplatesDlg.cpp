@@ -40,7 +40,8 @@ COETemplatesDlg::COETemplatesDlg(CWnd* pParent
   m_minKeyLength = m_entry.minLength;
   m_text         = m_entry.text;
 
-  const char* ptr, *buff;
+  LPCTSTR ptr;
+  LPCTSTR buff;
   buff = ptr = m_text.LockBuffer();
     
   for (int line = m_entry.curLine; ptr && line >= 0; ptr++)
@@ -95,7 +96,7 @@ COETemplatesDlg::OnInitDialog()
   logfont.lfQuality        = DEFAULT_QUALITY;
   logfont.lfPitchAndFamily = FIXED_PITCH;
     
-  strncpy_s(logfont.lfFaceName, m_textAttr.m_FontName.GetString(), LF_FACESIZE-1);
+  _tcsncpy_s(logfont.lfFaceName, m_textAttr.m_FontName.GetString(), LF_FACESIZE-1);
 
 
   CClientDC dc(&m_editText);
@@ -104,11 +105,11 @@ COETemplatesDlg::OnInitDialog()
 
   switch (m_mode)
   {
-    case emInsert:  SetWindowText("Insert Template");
+    case emInsert:  SetWindowText(_T("Insert Template"));
                     break;
-    case emEdit:    SetWindowText("Edit Template");
+    case emEdit:    SetWindowText(_T("Edit Template"));
                     break;
-    case emDelete:  SetWindowText("Delete Template");
+    case emDelete:  SetWindowText(_T("Delete Template"));
                     m_editName     .EnableWindow(FALSE);
                     m_editKeyword  .EnableWindow(FALSE);
                     m_editMinLength.EnableWindow(FALSE);
@@ -129,10 +130,10 @@ COETemplatesDlg::OnOk()
   m_entry.minLength = m_minKeyLength;
     
   m_entry.curPos   = m_entry.curLine = 0;
-  const char* buff = m_text.LockBuffer();
-  const char* pos  = strchr(buff, m_cursorPosMarker);
+  LPCTSTR buff = m_text.LockBuffer();
+  LPCTSTR pos  = _tcsrchr(buff, m_cursorPosMarker);
     
-  for (const char* ptr = buff; pos && ptr < pos; ptr++, m_entry.curPos++)
+  for (LPCTSTR ptr = buff; pos && ptr < pos; ptr++, m_entry.curPos++)
   {
     if (*ptr == '\r')
     {

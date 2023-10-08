@@ -60,7 +60,7 @@ static char THIS_FILE[] = __FILE__;
 using namespace Common;
 using namespace OpenEditor;
 
-#define CHECK_FILE_OPERATION(r) if(!(r)) file_exeption::check_last_error();
+#define CHECK_FILE_OPERATION(r) if(!(r)) throw StdException(_T("File_exeption::check_last_error()"));
 
 CString         COEDocument::m_settingsDir;
 SettingsManager COEDocument::m_settingsManager;
@@ -118,7 +118,7 @@ COEDocument::~COEDocument()
       VirtualFree(m_vmdata,0,MEM_RELEASE);
     }
     m_storage.Clear();
-    m_mmfile.Close();
+    // m_mmfile.Close();
   }
   catch (...) { DEFAULT_HANDLER_ALL; }
 
@@ -150,7 +150,7 @@ void COEDocument::SetPathName (LPCTSTR lpszPathName, BOOL bAddToMRU)
 	CDocument::SetPathName(lpszPathName, bAddToMRU);
 
   CString extension;
-  const char* ext = strrchr(lpszPathName, '.');
+  LPCTSTR ext = _tcsrchr(lpszPathName, _T('.'));
     
   if(ext)
   {
@@ -262,194 +262,290 @@ COEDocument::DoSave (LPCTSTR lpszPathName, BOOL bReplace)
   }
 }
 
-void 
-COEDocument::loadFile (const char* path, bool reload, bool external)
+void
+COEDocument::loadFile(LPCTSTR path,bool reload,bool external)
 {
-    CWaitCursor wait;
-    LPVOID vmdata = 0;
-    bool locking = m_settings.GetFileLocking();
-    try
+  CWaitCursor wait;
+  bool locking = m_settings.GetFileLocking();
+
+  CString total;
+  WinFile file(path);
+  if(file.Open(winfile_read | open_trans_text | (locking ? open_shared_read : open_shared_write)))
+  {
+    CString line;
+    while(file.Read(line))
     {
-        unsigned long length = 0;
-        MemoryMappedFile mmfile;
-
-        if (!locking && m_settings.GetFileMemMapForBig())
-        {
-            DWORD attrs;
-            __int64 fileSize;
-            if (Common::AppGetFileAttrs(path, &attrs, &fileSize) 
-            && fileSize > __int64(m_settings.GetFileMemMapThreshold()) * (1024 * 1024))
-            {
-                locking = true;
-            }
-        }
-
-        mmfile.Open(path, locking ? emmoRead|emmoWrite|emmoShareRead : emmoRead|emmoShareRead|emmoShareWrite, 0);
-        length = mmfile.GetDataLength();
-
-        if (locking) // it's equal to using of mm
-        {
-            MemoryMappedFile::Swap(mmfile, m_mmfile);
-            m_storage.SetText((const char*)m_mmfile.GetData(), length, true, reload, external);
-            m_storage.SetSavedUndoPos();
-        }
-        else
-        {
-            if (length > 0)
-            {
-                vmdata = VirtualAlloc(NULL, length, MEM_COMMIT, PAGE_READWRITE);
-                memcpy(vmdata, mmfile.GetData(), length);
-                m_storage.SetText((const char*)vmdata, length, true, reload, external);
-            }
-            else
-            {
-                m_storage.SetText("", length, true, reload, external);
-            }
-
-            m_storage.SetSavedUndoPos();
-            if (m_vmdata) VirtualFree(m_vmdata, 0, MEM_RELEASE);
-            m_vmdata = vmdata;
-            vmdata = 0;
-        }
+      total += line;
     }
-    catch (file_exeption)
-    {
-      throw;
-    }
-    catch (const std::exception& x)   
-    { 
-        try { if (vmdata) VirtualFree(m_vmdata, 0, MEM_RELEASE);} catch (...) {}
-        try { m_mmfile.Close(); } catch (...) {}
-        throw StdException(CString(locking ? _T("Cannot open file and lock it.\n") : _T("Cannot open file.\n")) + x.what());
-    }
-    catch (...) 
-    { 
-        try { if (vmdata) VirtualFree(m_vmdata, 0, MEM_RELEASE);} catch (...) {}
-        try { m_mmfile.Close(); } catch (...) {}
-        throw;
-    }
+    file.Close();
+
+    m_storage.SetText(total.GetString(),total.GetLength(),false,reload,external);
+    m_storage.SetSavedUndoPos();
+    return;
+  }
+  throw StdException(CString(locking ? _T("Cannot open file and lock it:\n") : _T("Cannot open file:\n")) + path);
 }
 
+// void 
+// COEDocument::loadFile (LPCTSTR path, bool reload, bool external)
+// {
+//     CWaitCursor wait;
+//     LPVOID vmdata = 0;
+//     bool locking = m_settings.GetFileLocking();
+//     try
+//     {
+//         unsigned long length = 0;
+//         MemoryMappedFile mmfile;
+// 
+//         if (!locking && m_settings.GetFileMemMapForBig())
+//         {
+//             DWORD attrs;
+//             __int64 fileSize;
+//             if (Common::AppGetFileAttrs(path, &attrs, &fileSize) 
+//             && fileSize > __int64(m_settings.GetFileMemMapThreshold()) * (1024 * 1024))
+//             {
+//                 locking = true;
+//             }
+//         }
+// 
+//         mmfile.Open(path, locking ? emmoRead|emmoWrite|emmoShareRead : emmoRead|emmoShareRead|emmoShareWrite, 0);
+//         length = mmfile.GetDataLength();
+// 
+//         if (locking) // it's equal to using of mm
+//         {
+//             MemoryMappedFile::Swap(mmfile, m_mmfile);
+//             m_storage.SetText((LPCTSTR)m_mmfile.GetData(), length, true, reload, external);
+//             m_storage.SetSavedUndoPos();
+//         }
+//         else
+//         {
+//             if (length > 0)
+//             {
+//                 vmdata = VirtualAlloc(NULL, length, MEM_COMMIT, PAGE_READWRITE);
+//                 memcpy(vmdata, mmfile.GetData(), length);
+//                 m_storage.SetText((LPCTSTR)vmdata, length, true, reload, external);
+//             }
+//             else
+//             {
+//                 m_storage.SetText(_T(""), length, true, reload, external);
+//             }
+// 
+//             m_storage.SetSavedUndoPos();
+//             if (m_vmdata) VirtualFree(m_vmdata, 0, MEM_RELEASE);
+//             m_vmdata = vmdata;
+//             vmdata = 0;
+//         }
+//     }
+//     catch (file_exeption)
+//     {
+//       throw;
+//     }
+//     catch (const std::exception& x)   
+//     { 
+//         try { if (vmdata) VirtualFree(m_vmdata, 0, MEM_RELEASE);} catch (...) {}
+//         try { m_mmfile.Close(); } catch (...) {}
+//         throw StdException(CString(locking ? _T("Cannot open file and lock it.\n") : _T("Cannot open file.\n")) + x.what());
+//     }
+//     catch (...) 
+//     { 
+//         try { if (vmdata) VirtualFree(m_vmdata, 0, MEM_RELEASE);} catch (...) {}
+//         try { m_mmfile.Close(); } catch (...) {}
+//         throw;
+//     }
+// }
 
 BOOL COEDocument::OnOpenDocument (LPCTSTR lpszPathName) 
 {
-    try 
-    {
-        _ASSERTE(!m_mmfile.IsOpen() && !m_vmdata);
-
-        DWORD dummy;
-        if (m_enableOpenUnexisting 
-        && !AppGetFileAttrs(lpszPathName, &dummy))
-        {
-            if (COEDocument::OnNewDocument())
-            {
-	            SetPathName(lpszPathName);
-                return TRUE;
-            }
-            return FALSE;
-        }
-        loadFile(lpszPathName);
-    }
-    catch (file_exeption& f)
-    {
-      CString message;
-      message.Format(_T("Cannot open document file '%s'\n%s"),lpszPathName,f.what());
-      AfxMessageBox(message,MB_OK|MB_ICONERROR);
-      return FALSE;
-    }
-    catch (const std::exception& x)   
-    { 
-        DEFAULT_HANDLER(x); 
-        return FALSE;
-    }
-    catch (StdException& x)
-    {
-      DEFAULT_HANDLER(x);
-      return false;
-    }
-    catch (...)   
-    { 
-        DEFAULT_HANDLER_ALL; 
-        return FALSE;
-    }
-
-    CFileWatchClient::StartWatching(lpszPathName);
-
-	return TRUE;
-}
-
-BOOL COEDocument::OnSaveDocument (LPCTSTR lpszPathName)
-{
-  bool storage_invalidated = false;
-	char tmpname[_MAX_PATH];
-
   try 
   {
-      backupFile(lpszPathName);       // create backup file
-      m_storage.TruncateSpaces();     // truncate spaces before size allocation
-      unsigned long length = m_storage.GetTextLength(); 
-        
-      // create mm file and copy data
-      MemoryMappedFile outfile;
-
-      // if we using mm file then we have to use an intermediate file for file saving
-      if (m_mmfile.IsOpen())
+    DWORD dummy;
+    if (m_enableOpenUnexisting && !AppGetFileAttrs(lpszPathName, &dummy))
+    {
+      if (COEDocument::OnNewDocument())
       {
-	      char *name, path[_MAX_PATH];
-	      // get the directory for the intermediate file
-        CHECK_FILE_OPERATION(::GetFullPathName(lpszPathName, sizeof(path), path, &name));
-	      *name = 0; // cut file name
-	      // get a temporary name for the intermediate file
-        CHECK_FILE_OPERATION(::GetTempFileName(path, _T("ODBC~"), 0, tmpname));
-        // open output mm file
-        outfile.Open(tmpname, emmoCreateAlways|emmoWrite|emmoShareRead, length);
+	      SetPathName(lpszPathName);
+        return TRUE;
       }
-      else
-      {
-          // suspend file watching
-          CFileWatchClient::StopWatching();
-          // open output mm file
-          outfile.Open(lpszPathName, emmoCreateAlways|emmoWrite|emmoShareRead, length);
-      }
-
-      // copy text to output mm file
-      m_storage.GetText((char*)outfile.GetData(), length);
-      outfile.Close();
-
-      if (m_mmfile.IsOpen())
-      {
-          storage_invalidated = true;
-          // suspend file watching
-          CFileWatchClient::StopWatching();
-          m_mmfile.Close();
-          // delete the original file we have to ignore failure for SaveAs operation
-          ::DeleteFile(lpszPathName);
-          // rename tmp file to the original
-          CHECK_FILE_OPERATION(!::rename(tmpname, lpszPathName));
-      }
-
-      // open a new copy and reload a file
-      loadFile(lpszPathName, true/*reload*/);
-        
-      // resume file watching
-      CFileWatchClient::StartWatching(lpszPathName);
+      return FALSE;
+    }
+    loadFile(lpszPathName);
+  }
+  catch (StdException& f)
+  {
+    CString message;
+    message.Format(_T("Cannot open document file '%s'\n%s"),lpszPathName,f.GetErrorMessage().GetString());
+    AfxMessageBox(message,MB_OK|MB_ICONERROR);
+    return FALSE;
   }
   catch (const std::exception& x)   
   { 
-      if (storage_invalidated) m_storage.Clear();
-
-      AfxMessageBox(CString(_T("Cannot save file.\n")) + x.what(), MB_OK|MB_ICONSTOP);
+      DEFAULT_HANDLER(x); 
       return FALSE;
   }
-  catch (...) 
+  catch (...)   
   { 
-      if (storage_invalidated) m_storage.Clear();
-      AfxMessageBox(_T("Cannot save file. Unknown error.\n"), MB_OK|MB_ICONSTOP);
+      DEFAULT_HANDLER_ALL; 
       return FALSE;
   }
+  CFileWatchClient::StartWatching(lpszPathName);
+	return TRUE;
+}
 
+BOOL COEDocument::OnSaveDocument(LPCTSTR lpszPathName)
+{
+  bool storage_invalidated = false;
+  TCHAR tmpname[_MAX_PATH + 1];
+
+  try
+  {
+    backupFile(lpszPathName);       // create backup file
+    m_storage.TruncateSpaces();     // truncate spaces before size allocation
+
+    // CREATE TEMPORARY FILE FOR SAVING
+    // make it in the same directory as the original file
+    LPTSTR name;
+    TCHAR  path[_MAX_PATH + 1];
+    // get the directory for the intermediate file
+    CHECK_FILE_OPERATION(::GetFullPathName(lpszPathName,_MAX_PATH,path,&name));
+    *name = 0; // cut file name
+    // get a temporary name for the intermediate file
+    CHECK_FILE_OPERATION(::GetTempFileName(path,_T("ODBC"),0,tmpname));
+
+    // WRITE THE CONTENT TO THE TEMPORARY FILE
+    WinFile file(tmpname);
+    if(file.Open(winfile_write | open_trans_text,FAttributes::attrib_none,Encoding::UTF8))
+    {
+      LPCTSTR line = nullptr;
+      int lines = m_storage.GetLineCount();
+      for(int index = 0;index < lines; ++index)
+      {
+        m_storage.GetLine(index,line);
+        CString str(line);
+        str += _T("\n");
+        if(!file.Write(str))
+        {
+          return FALSE;
+        }
+      }
+      if(!file.Close())
+      {
+        return FALSE;
+      }
+    }
+    else
+    {
+      return FALSE;
+    }
+
+    // REPLACE THE FILE WITH THE TEMPORARY ONE
+    // suspend file watching
+    CFileWatchClient::StopWatching();
+
+    // DELETE ORIGINAL FILE AND REPLACE BY TEMP FILE
+    storage_invalidated = true;
+    // delete the original file we have to ignore failure for SaveAs operation
+    ::DeleteFile(lpszPathName);
+    // rename tmp file to the original
+    CHECK_FILE_OPERATION(!::_trename(tmpname,lpszPathName));
+
+    // resume file watching
+    CFileWatchClient::StartWatching(lpszPathName);
+  }
+  catch(StdException& x)
+  {
+    if(storage_invalidated)
+    {
+      m_storage.Clear();
+    }
+    AfxMessageBox(CString(_T("Cannot save file.\n")) + x.GetErrorMessage(),MB_OK | MB_ICONSTOP);
+    return FALSE;
+  }
+  catch(...)
+  {
+    if(storage_invalidated)
+    {
+      m_storage.Clear();
+    }
+    AfxMessageBox(_T("Cannot save file. Unknown error.\n"),MB_OK | MB_ICONSTOP);
+    return FALSE;
+  }
+  SetModifiedFlag(FALSE);
   return TRUE;
 }
+
+// BOOL COEDocument::OnSaveDocument (LPCTSTR lpszPathName)
+// {
+//   bool storage_invalidated = false;
+// 	TCHAR tmpname[_MAX_PATH];
+// 
+//   try 
+//   {
+//       backupFile(lpszPathName);       // create backup file
+//       m_storage.TruncateSpaces();     // truncate spaces before size allocation
+//       unsigned long length = m_storage.GetTextLength(); 
+//         
+//       // create mm file and copy data
+//       MemoryMappedFile outfile;
+// 
+//       // if we using mm file then we have to use an intermediate file for file saving
+//       if (m_mmfile.IsOpen())
+//       {
+//         LPTSTR name;
+//         TCHAR  path[_MAX_PATH];
+// 	      // get the directory for the intermediate file
+//         CHECK_FILE_OPERATION(::GetFullPathName(lpszPathName, sizeof(path), path, &name));
+// 	      *name = 0; // cut file name
+// 	      // get a temporary name for the intermediate file
+//         CHECK_FILE_OPERATION(::GetTempFileName(path, _T("ODBC~"), 0, tmpname));
+//         // open output mm file
+//         outfile.Open(tmpname, emmoCreateAlways|emmoWrite|emmoShareRead, length);
+//       }
+//       else
+//       {
+//           // suspend file watching
+//           CFileWatchClient::StopWatching();
+//           // open output mm file
+//           outfile.Open(lpszPathName, emmoCreateAlways|emmoWrite|emmoShareRead, length);
+//       }
+// 
+//       // copy text to output mm file
+//       m_storage.GetText((LPTSTR)outfile.GetData(), length);
+//       outfile.Close();
+// 
+//       if (m_mmfile.IsOpen())
+//       {
+//           storage_invalidated = true;
+//           // suspend file watching
+//           CFileWatchClient::StopWatching();
+//           m_mmfile.Close();
+//           // delete the original file we have to ignore failure for SaveAs operation
+//           ::DeleteFile(lpszPathName);
+//           // rename tmp file to the original
+//           CHECK_FILE_OPERATION(!::_trename(tmpname, lpszPathName));
+//       }
+// 
+//       // open a new copy and reload a file
+//       loadFile(lpszPathName, true/*reload*/);
+//         
+//       // resume file watching
+//       CFileWatchClient::StartWatching(lpszPathName);
+//   }
+//   catch (const std::exception& x)   
+//   { 
+//       if (storage_invalidated) m_storage.Clear();
+// 
+//       AfxMessageBox(CString(_T("Cannot save file.\n")) + x.what(), MB_OK|MB_ICONSTOP);
+//       return FALSE;
+//   }
+//   catch (...) 
+//   { 
+//       if (storage_invalidated) m_storage.Clear();
+//       AfxMessageBox(_T("Cannot save file. Unknown error.\n"), MB_OK|MB_ICONSTOP);
+//       return FALSE;
+//   }
+// 
+//   return TRUE;
+// }
 
 BOOL COEDocument::doSave (LPCTSTR lpszPathName, BOOL bReplace)
 	// Save the document data to a file
@@ -525,7 +621,7 @@ void COEDocument::backupFile (LPCTSTR lpszPathName)
 
   if (!m_newOrSaveAs &&  backupMode != ebmNone)
   {
-    int length = (int)strlen(lpszPathName);
+    int length = (int)_tcslen(lpszPathName);
 
     if (lpszPathName && length)
     {
@@ -542,20 +638,20 @@ void COEDocument::backupFile (LPCTSTR lpszPathName)
               path = buff;
 
               buff = ::PathFindExtension(lpszPathName);
-              ext = (!buff.IsEmpty() && buff[0] == '.') ? (LPCSTR)buff + 1 : buff;
+              ext = (!buff.IsEmpty() && buff[0] == '.') ? (LPCTSTR)buff + 1 : buff;
 
               buff = ::PathFindFileName(lpszPathName);
               ::PathRemoveExtension(buff.LockBuffer()); buff.UnlockBuffer();
               name = buff;
 
               Common::Substitutor substr;
-              substr.AddPair(_T("<NAME>"), name);
-              substr.AddPair(_T("<EXT>"),  ext);
+              substr.AddPair(_T("<NAME>"), name.GetString());
+              substr.AddPair(_T("<EXT>"),  ext.GetString());
               substr << m_settings.GetFileBackupName().GetString();
 
               backupPath = path + '\\' + substr.GetResult();
           }
-          break; // 09.03.2003 bug fix, backup file problem if a destination is the current folder
+          break;
         case ebmBackupDirectory:
           {
             CString path, name;
@@ -573,8 +669,8 @@ void COEDocument::backupFile (LPCTSTR lpszPathName)
           break;
       }
 
-      if (m_lastBackupPath != backupPath              // only for the first attemption
-      && _stricmp(GetPathName(), backupPath.GetString()))  // avoiding copy the file into itself
+      if (m_lastBackupPath != backupPath                    // only for the first attempt
+      && _tcsicmp(GetPathName(), backupPath.GetString()))   // avoiding copy the file into itself
       {
         _CHECK_AND_THROW_(CopyFile(lpszPathName, backupPath.GetString(), FALSE) != 0,_T("Cannot create backup file!"));
         m_lastBackupPath = backupPath;
@@ -615,25 +711,27 @@ void COEDocument::OnEditPrintPageSetup()
 void COEDocument::SetText (LPVOID vmdata, unsigned long length)
 {
     m_storage.Clear();
-    m_mmfile.Close();
+    // m_mmfile.Close();
     if (m_vmdata) VirtualFree(m_vmdata, 0, MEM_RELEASE);
 
     m_vmdata = vmdata;
-    m_storage.SetText((const char*)m_vmdata, length, true/*use_buffer*/, false/*reload*/, false/*external*/);
+    m_storage.SetText((LPCTSTR)m_vmdata, length, true/*use_buffer*/, false/*reload*/, false/*external*/);
 }
 
-void COEDocument::SetText (const char* text, unsigned long length)
+void COEDocument::SetText (LPCTSTR text, unsigned long length)
 {
     LPVOID vmdata = VirtualAlloc(NULL, length, MEM_COMMIT, PAGE_READWRITE);
     try
     {
-        memcpy(vmdata, text, length);
-        SetText(vmdata, length);
+      memcpy(vmdata, text, length * sizeof(TCHAR));
+      SetText(vmdata, length);
     }
     catch (...)
     {
-        if (vmdata != m_vmdata)
-            VirtualFree(vmdata, 0, MEM_RELEASE);
+      if(vmdata != m_vmdata)
+      {
+        VirtualFree(vmdata,0,MEM_RELEASE);
+      }
     }
 }
 
@@ -658,7 +756,7 @@ void COEDocument::LoadSettingsManager()
   bool loaded(false);
 
   // Load language support
-  if(_access(languages.GetString(),0) == 0)
+  if(_taccess(languages.GetString(),0) == 0)
   {
     try
     {
@@ -670,7 +768,7 @@ void COEDocument::LoadSettingsManager()
       // Incompatible settings from a previous version
       DeleteFile(templates.GetString());
       StyleMessageBox(NULL,CString(_T("Incompatible languages from a previous version removed from your roaming-profile\n")) + languages
-                      ,"WARNING",MB_OK | MB_ICONWARNING);
+                      ,_T("WARNING"),MB_OK | MB_ICONWARNING);
     }
   }
   if(!loaded)
@@ -679,7 +777,7 @@ void COEDocument::LoadSettingsManager()
   }
   // Load template settings
   loaded = false;
-  if(_access(templates.GetString(),0) == 0)
+  if(_taccess(templates.GetString(),0) == 0)
   {
     try
     {
@@ -691,7 +789,7 @@ void COEDocument::LoadSettingsManager()
       // Incompatible settings from a previous version
       DeleteFile(templates.GetString());
       StyleMessageBox(NULL,CString(_T("Incompatible templates from a previous version removed from your roaming-profile\n")) + templates
-                      ,"WARNING",MB_OK | MB_ICONWARNING);
+                      ,_T("WARNING"),MB_OK | MB_ICONWARNING);
     }
   }
   if(!loaded)
@@ -700,7 +798,7 @@ void COEDocument::LoadSettingsManager()
   }
   // Load editor settings
   loaded = false;
-  if(_access(settings.GetString(),0) == 0)
+  if(_taccess(settings.GetString(),0) == 0)
   {
     try
     {
@@ -712,7 +810,7 @@ void COEDocument::LoadSettingsManager()
       // Incompatible settings from a previous version
       DeleteFile(settings.GetString());
       StyleMessageBox(NULL,CString(_T("Incompatible settings from a previous version removed from your roaming-profile\n")) + settings
-                     ,"WARNING",MB_OK|MB_ICONWARNING);
+                     ,_T("WARNING"),MB_OK|MB_ICONWARNING);
     }
   }
   if(!loaded)
@@ -743,8 +841,8 @@ void COEDocument::SaveSettingsManager()
     CString baktemplates = owntemplates + _T(".bak");
     CString baksettings  = ownsettings  + _T(".bak");
 
-    if(_access(owntemplates.GetString(),0) == 0 &&
-       _access(ownsettings .GetString(),0) == 0)
+    if(_taccess(owntemplates.GetString(),0) == 0 &&
+       _taccess(ownsettings .GetString(),0) == 0)
     {
       // Own files already exist. Should we make a backup?
       if(!g_isBackupDone)
@@ -752,7 +850,7 @@ void COEDocument::SaveSettingsManager()
         // old settings backup
         _CHECK_AND_THROW_(CopyFile(owntemplates.GetString(),baktemplates.GetString(), FALSE) != 0 && 
                           CopyFile(ownsettings .GetString(),baksettings .GetString(), FALSE) != 0
-                         ,"Settings backup file creation error!");
+                         ,_T("Settings backup file creation error!"));
         g_isBackupDone = true;
       }
     }
@@ -876,8 +974,8 @@ void COEDocument::OnUpdate_FileType (CCmdUI* pCmdUI)
 
 void COEDocument::OnUpdate_FileLines (CCmdUI* pCmdUI)
 {
-    char buff[80];
-    sprintf_s(buff,80,_T(" Lines: %d "), m_storage.GetLineCount());
+    TCHAR buff[80];
+    _stprintf_s(buff,80,_T(" Lines: %d "), m_storage.GetLineCount());
     pCmdUI->SetText(buff);
     pCmdUI->Enable(TRUE);
 }

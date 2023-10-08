@@ -22,180 +22,203 @@
 namespace Common 
 {
 
-    void FakeArray::realloc (size_t elemSize, size_t extra) 
-    {
-        size_t size = m_size + extra;
+void 
+FakeArray::realloc (size_t elemSize, size_t extra) 
+{
+  size_t size = m_size + extra;
 
-	    if (m_capacity < size)
-	    {
-            size_t capacity = 0;
-			size_t growBy = m_growBy;
+	if (m_capacity < size)
+	{
+    size_t capacity = 0;
+		size_t growBy = m_growBy;
 
-			if (!growBy)
-			{
-				// heuristically determine growth when nGrowBy == 0
-				//  (this avoids heap fragmentation in many situations)
-				growBy = m_size / 8;
-				growBy = (growBy < 4) ? 4 : ((growBy > 1024) ? 1024 : growBy);
-			}
+	if (!growBy)
+	{
+		// heuristically determine growth when nGrowBy == 0
+		//  (this avoids heap fragmentation in many situations)
+		growBy = m_size / 8;
+		growBy = (growBy < 4) ? 4 : ((growBy > 1024) ? 1024 : growBy);
+	}
 
-			if (size < (m_capacity + growBy))
-				capacity = m_capacity + growBy;  // granularity
-			else
-				capacity = size;  // no slush
-
-            char* data = new char[capacity * elemSize];
+  if(size < (m_capacity + growBy))
+  {
+    capacity = m_capacity + growBy;  // granularity
+  }
+  else
+  {
+    capacity = size;  // no slush
+  }
+    BYTE* data = new BYTE[capacity * elemSize];
 #ifdef _MFC_VER
-            if (!data) AfxThrowMemoryException();
+    if (!data) AfxThrowMemoryException();
 #else
-            if (!data) throw std::bad_alloc();
+    if (!data) throw std::bad_alloc();
 #endif
-            memset(data, 0, capacity * elemSize);
+    memset(data, 0, capacity * elemSize);
 
-            if (m_size) 
-                memcpy(data, m_data, m_size * elemSize);
-            
-            delete[] m_data;
-
-            m_data = data;
-            m_capacity = capacity;
-	    }
-    }
-
-    void FakeArray::init (size_t elemSize, size_t items) 
+    if(m_size)
     {
-        size_t growBy = m_growBy;
-        m_growBy = items;
+      memcpy(data,m_data,m_size * elemSize);
+    }
+    delete[] m_data;
+
+    m_data     = data;
+    m_capacity = capacity;
+	}
+}
+
+void 
+FakeArray::init (size_t elemSize, size_t items) 
+{
+  size_t growBy = m_growBy;
+  m_growBy = items;
+
+  if(items)
+  {
+    realloc(elemSize,items);
+  }
+  m_growBy = growBy;
+}
+
+void FakeArray::reduce(size_t /*elemSize*/, size_t items) 
+{
+  if(items < m_size)
+  {
+    m_size = items;
+  }
+}
+
+void 
+FakeArray::expand (size_t elemSize, size_t items)
+{
+  if (items > m_size)
+  {
+    realloc(elemSize, items - m_size);
+    m_size = items;
+  }
+}
+
+void FakeArray::copy (size_t elemSize, FakeArray *src) 
+{
+  _ASSERTE(0/*it has not tested yet*/);
         
-        if (items)
-            realloc(elemSize, items);
-        
-        m_growBy = growBy;
-    }
+  reduce(elemSize, 0);
 
-    void FakeArray::reduce (size_t /*elemSize*/, size_t items) 
-    {
-        if (items < m_size) 
-            m_size = items;
-    }
-    
-    void FakeArray::expand (size_t elemSize, size_t items)
-    {
-        if (items > m_size)
-        {
-            realloc(elemSize, items - m_size);
-            m_size = items;
-        }
-    }
+  if(src->m_size)
+  {
+    realloc(elemSize,src->m_size);
+  }
+  if(src->m_size)
+  {
+    memcpy(m_data,src->m_data,elemSize * src->m_size);
+  }
+  m_growBy = src->m_growBy;
+}
 
-    void FakeArray::copy (size_t elemSize, FakeArray *src) 
-    {
-        _ASSERTE(0/*it has not tested yet*/);
-        
-        reduce(elemSize, 0);
+BYTE* 
+FakeArray::insert (size_t elemSize, size_t index, size_t count) 
+{
+  _ASSERTE(!index || index-1 < m_size);
 
-        if (src->m_size)
-            realloc(elemSize, src->m_size);
+  if(!(!index || index - 1 < m_size))
+  {
+    throw std::out_of_range("invalid FakeArray<T> subscript");
+  }
 
-        if (src->m_size)
-            memcpy(m_data, src->m_data, elemSize * src->m_size);
+  realloc(elemSize, count);
+  void* ptr = (char*)m_data + (index * elemSize);
+  memmove((char*)ptr + (count * elemSize), ptr, (m_size - index) * elemSize);
+  m_size += count;
 
-        m_growBy = src->m_growBy;
-    }
+  return (BYTE*)((char*)m_data + (index * elemSize));
+}
 
-    char* FakeArray::insert (size_t elemSize, size_t index, size_t count) 
-    {
-        _ASSERTE(!index || index-1 < m_size);
+BYTE*
+FakeArray::append (size_t elemSize) 
+{
+    realloc(elemSize, 1);
+    m_size++;
+    return (BYTE*)((char*)m_data + ((m_size - 1) * elemSize));
+}
 
-        if (!(!index || index-1 < m_size))
-            throw std::out_of_range("invalid FakeArray<T> subscript");
+void 
+FakeArray::erase (size_t elemSize, size_t index, size_t count) 
+{
+  _ASSERTE(index < m_size && index + count <= m_size);
 
-        realloc(elemSize, count);
-        char* ptr = m_data + index * elemSize;
-        memmove(ptr + count * elemSize, ptr, (m_size - index) * elemSize);
-        m_size += count;
+  if(!(index < m_size && index + count <= m_size))
+  {
+    throw std::out_of_range("invalid FakeArray<T> subscript");
+  }
+  memmove((BYTE*)((char*)m_data + (elemSize * index)),
+          (BYTE*)((char*)m_data + (elemSize * (index + count))),
+          (m_size - index - count) * elemSize);
 
-        return m_data + index * elemSize;
-    }
+  m_size -= count;
+}
 
-    char* FakeArray::append (size_t elemSize) 
-    {
-        realloc(elemSize, 1);
-        m_size++;
-        return m_data + (m_size - 1) * elemSize;
-    }
+void
+FakeArray::free () 
+{
+  delete[] m_data;
+  size_t growBy = m_growBy;
+  memset(this,  0, sizeof (*this));
+  m_growBy = growBy;
+}
 
-    void FakeArray::erase (size_t elemSize, size_t index, size_t count) 
-    {
-        _ASSERTE(index < m_size && index + count <= m_size);
+void
+FakeArray::append (size_t elemSize, FakeArray *src) 
+{
+  if (src->m_size)
+  {
+    realloc(elemSize, src->m_size);
+    memcpy((BYTE*)m_data + (m_size * elemSize), src->m_data, src->m_size * elemSize);
+    m_size += src->m_size;
+  }
+}
 
-        if (!(index < m_size && index + count <= m_size))
-            throw std::out_of_range("invalid FakeArray<T> subscript");
+void
+FakeArray::swap (size_t elemSize, size_t idest, size_t isrc) 
+{
+  _ASSERTE(idest < m_size || isrc < m_size);
 
-        memmove(m_data + elemSize * index,
-                m_data + elemSize * (index + count),
-                (m_size - index - count) * elemSize);
+  if(!(idest < m_size || isrc < m_size))
+  {
+    throw StdException(_T("Out of range: invalid FakeArray<T> subscript"));
+  }
+  if (isrc != idest)
+  {
+    // LPTSTR / TCHAR?
+    BYTE* buf  = new BYTE[elemSize];
+    BYTE* src  = m_data + (elemSize * isrc);
+    BYTE* dest = m_data + (elemSize * idest);
 
-        m_size -= count;
-    }
+    memcpy(buf,  src,  elemSize);
+    memcpy(src,  dest, elemSize);
+    memcpy(dest, buf,  elemSize);
 
-    void FakeArray::free () 
-    {
-        delete[] m_data;
-        size_t growBy = m_growBy;
-        memset(this,  0, sizeof (*this));
-        m_growBy = growBy;
-    }
+    delete [] buf;
+  }
+}
 
-    void FakeArray::append (size_t elemSize, FakeArray *src) 
-    {
-        if (src->m_size)
-        {
-            realloc(elemSize, src->m_size);
-            memcpy(m_data + m_size * elemSize, src->m_data, src->m_size * elemSize);
-            m_size += src->m_size;
-        }
-    }
+void
+FakeArray::construct (size_t elemSize, size_t alloc, size_t growBy) 
+{
+  memset(this, 0, sizeof (*this));
+  //m_growBy = growBy;
+  realloc(elemSize, alloc);
+  m_growBy = growBy;
+}
 
-    void FakeArray::swap (size_t elemSize, size_t idest, size_t isrc) 
-    {
-        _ASSERTE(idest < m_size || isrc < m_size);
-
-        if (!(idest < m_size || isrc < m_size))
-            throw std::out_of_range("invalid FakeArray<T> subscript");
-
-        if (isrc != idest)
-        {
-            char* buf = new char[elemSize],
-                * src = m_data + elemSize * isrc,
-                * dest = m_data + elemSize * idest;
-
-            memcpy(buf,  src,  elemSize);
-            memcpy(src,  dest, elemSize);
-            memcpy(dest, buf,  elemSize);
-
-            delete [] buf;
-        }
-    }
-
-
-    void FakeArray::construct (size_t elemSize, size_t alloc, size_t growBy) 
-    {
-        memset(this, 0, sizeof (*this));
-        //m_growBy = growBy;
-        realloc(elemSize, alloc);
-        m_growBy = growBy;
-    }
-
-
-    void FakeArray::extract (FakeArray *array) 
-    {
-        array->free();
-        size_t growBy = array->m_growBy;
-        memcpy(array, this, sizeof (*this));
-        memset(this, 0, sizeof (*this));
-        m_growBy = array->m_growBy;
-        array->m_growBy = growBy;
-    }
+void
+FakeArray::extract (FakeArray *array) 
+{
+    array->free();
+    size_t growBy = array->m_growBy;
+    memcpy(array, this, sizeof (*this));
+    memset(this, 0, sizeof (*this));
+    m_growBy = array->m_growBy;
+    array->m_growBy = growBy;
+}
 
 }; //  namespace Common 

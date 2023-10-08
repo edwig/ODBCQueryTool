@@ -65,47 +65,49 @@ public:
   bool        SetField   (XString p_name,const SQLVariant* p_field,int p_mutationID = 0);
   // Setting different value AND changing record/set status
   void        ModifyField(int         p_num, const SQLVariant* p_field,int p_mutationID = 0);
-  void        ModifyField(const char* p_name,const SQLVariant* p_field,int p_mutationID = 0);
+  void        ModifyField(LPCTSTR p_name,const SQLVariant* p_field,int p_mutationID = 0);
 
   // Modify a field from these base datatypes (Everything in a SQLVariant)
-  void        ModifyField(const char* p_name,const bool&              p_field,int p_mutationID = 0);
-  void        ModifyField(const char* p_name,const char&              p_field,int p_mutationID = 0);
-  void        ModifyField(const char* p_name,const char*              p_field,int p_mutationID = 0);
-  void        ModifyField(const char* p_name,const unsigned char&     p_field,int p_mutationID = 0);
-  void        ModifyField(const char* p_name,const short&             p_field,int p_mutationID = 0);
-  void        ModifyField(const char* p_name,const unsigned short&    p_field,int p_mutationID = 0);
-  void        ModifyField(const char* p_name,const int&               p_field,int p_mutationID = 0);
-  void        ModifyField(const char* p_name,const unsigned int&      p_field,int p_mutationID = 0);
-  void        ModifyField(const char* p_name,const float&             p_field,int p_mutationID = 0);
-  void        ModifyField(const char* p_name,const double&            p_field,int p_mutationID = 0);
-  void        ModifyField(const char* p_name,const __int64&           p_field,int p_mutationID = 0);
-  void        ModifyField(const char* p_name,const unsigned __int64&  p_field,int p_mutationID = 0);
-  void        ModifyField(const char* p_name,const SQLDate&           p_field,int p_mutationID = 0);
-  void        ModifyField(const char* p_name,const SQLTime&           p_field,int p_mutationID = 0);
-  void        ModifyField(const char* p_name,const SQLTimestamp&      p_field,int p_mutationID = 0);
-  void        ModifyField(const char* p_name,const SQLInterval&       p_field,int p_mutationID = 0);
-  void        ModifyField(const char* p_name,const SQLGuid&           p_field,int p_mutationID = 0);
-  void        ModifyField(const char* p_name,const XString&           p_field,int p_mutationID = 0);
-  void        ModifyField(const char* p_name,const bcd&               p_field,int p_mutationID = 0);
+  void        ModifyField(LPCTSTR p_name,const bool&              p_field,int p_mutationID = 0);
+  void        ModifyField(LPCTSTR p_name,const TCHAR&             p_field,int p_mutationID = 0);
+  void        ModifyField(LPCTSTR p_name,LPCTSTR                  p_field,int p_mutationID = 0);
+#ifndef UNICODE
+  void        ModifyField(LPCTSTR p_name,const _TUCHAR&           p_field,int p_mutationID = 0);
+#endif
+  void        ModifyField(LPCTSTR p_name,const short&             p_field,int p_mutationID = 0);
+  void        ModifyField(LPCTSTR p_name,const unsigned short&    p_field,int p_mutationID = 0);
+  void        ModifyField(LPCTSTR p_name,const int&               p_field,int p_mutationID = 0);
+  void        ModifyField(LPCTSTR p_name,const unsigned int&      p_field,int p_mutationID = 0);
+  void        ModifyField(LPCTSTR p_name,const float&             p_field,int p_mutationID = 0);
+  void        ModifyField(LPCTSTR p_name,const double&            p_field,int p_mutationID = 0);
+  void        ModifyField(LPCTSTR p_name,const __int64&           p_field,int p_mutationID = 0);
+  void        ModifyField(LPCTSTR p_name,const unsigned __int64&  p_field,int p_mutationID = 0);
+  void        ModifyField(LPCTSTR p_name,const SQLDate&           p_field,int p_mutationID = 0);
+  void        ModifyField(LPCTSTR p_name,const SQLTime&           p_field,int p_mutationID = 0);
+  void        ModifyField(LPCTSTR p_name,const SQLTimestamp&      p_field,int p_mutationID = 0);
+  void        ModifyField(LPCTSTR p_name,const SQLInterval&       p_field,int p_mutationID = 0);
+  void        ModifyField(LPCTSTR p_name,const SQLGuid&           p_field,int p_mutationID = 0);
+  void        ModifyField(LPCTSTR p_name,const XString&           p_field,int p_mutationID = 0);
+  void        ModifyField(LPCTSTR p_name,const bcd&               p_field,int p_mutationID = 0);
 
-  bool              GetFieldBool           (const char* p_name);
-  char              GetFieldChar           (const char* p_name);
-  unsigned char     GetFieldUnsignedChar   (const char* p_name);
-  short             GetFieldShort          (const char* p_name);
-  unsigned short    GetFieldUnsignedShort  (const char* p_name);
-  int               GetFieldInteger        (const char* p_name);
-  unsigned int      GetFieldUnsignedInteger(const char* p_name);
-  float             GetFieldFloat          (const char* p_name);
-  double            GetFieldDouble         (const char* p_name);
-  __int64           GetFieldInteger64      (const char* p_name);
-  unsigned __int64  GetFieldUnsignedInt64  (const char* p_name);
-  SQLDate           GetFieldSQLDate        (const char* p_name);
-  SQLTime           GetFieldSQLTime        (const char* p_name);
-  SQLTimestamp      GetFieldSQLTimestamp   (const char* p_name);
-  SQLInterval       GetFieldSQLInterval    (const char* p_name);
-  SQLGuid           GetFieldSQLGuid        (const char* p_name);
-  XString           GetFieldXString        (const char* p_name);
-  bcd               GetFieldBcd            (const char* p_name);
+  bool              GetFieldBool           (LPCTSTR p_name);
+  char              GetFieldChar           (LPCTSTR p_name);
+  unsigned char     GetFieldUnsignedChar   (LPCTSTR p_name);
+  short             GetFieldShort          (LPCTSTR p_name);
+  unsigned short    GetFieldUnsignedShort  (LPCTSTR p_name);
+  int               GetFieldInteger        (LPCTSTR p_name);
+  unsigned int      GetFieldUnsignedInteger(LPCTSTR p_name);
+  float             GetFieldFloat          (LPCTSTR p_name);
+  double            GetFieldDouble         (LPCTSTR p_name);
+  __int64           GetFieldInteger64      (LPCTSTR p_name);
+  unsigned __int64  GetFieldUnsignedInt64  (LPCTSTR p_name);
+  SQLDate           GetFieldSQLDate        (LPCTSTR p_name);
+  SQLTime           GetFieldSQLTime        (LPCTSTR p_name);
+  SQLTimestamp      GetFieldSQLTimestamp   (LPCTSTR p_name);
+  SQLInterval       GetFieldSQLInterval    (LPCTSTR p_name);
+  SQLGuid           GetFieldSQLGuid        (LPCTSTR p_name);
+  XString           GetFieldXString        (LPCTSTR p_name);
+  bcd               GetFieldBcd            (LPCTSTR p_name);
 
   // See if the record has been changed
   bool        IsModified() const;
@@ -137,7 +139,7 @@ public:
 
   // Getting contents of the record as a SQLVariant pointer
   SQLVariant& operator[](int p_index);
-  SQLVariant& operator[](const char* p_name);
+  SQLVariant& operator[](LPCTSTR p_name);
 
 private:
   SQLDataSet* m_dataSet;

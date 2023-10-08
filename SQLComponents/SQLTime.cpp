@@ -152,7 +152,7 @@ SQLTime::SetTime()
   {
     // Tell it to the outside world
     XString error;
-    error.Format("Incorrect time %02d:%02d:%02d",m_theTime.m_hour,m_theTime.m_minute,m_theTime.m_second);
+    error.Format(_T("Incorrect time %02d:%02d:%02d"),m_theTime.m_hour,m_theTime.m_minute,m_theTime.m_second);
     // Reset the time to NULL
     SetNull();
     // Then throw the error
@@ -177,7 +177,7 @@ SQLTime::AsString() const
   XString buffer;
   if(IsNull() == false)
   {
-    buffer.Format("%02d:%02d:%02d", Hour(), Minute(), Second());
+    buffer.Format(_T("%02d:%02d:%02d"), Hour(), Minute(), Second());
   }
   return buffer;
 }
@@ -188,7 +188,7 @@ SQLTime::AsSQLString(SQLDatabase* p_database) const
 {
   if(IsNull())
   {
-    return "";
+    return _T("");
   }
   return p_database->GetSQLTimeString(Hour(),Minute(),Second());
 }
@@ -199,7 +199,7 @@ SQLTime::AsStrippedSQLString(SQLDatabase* p_database) const
 {
   if(IsNull())
   {
-    return "";
+    return _T("");
   }
   return p_database->GetStrippedSQLTimeString(Hour(),Minute(),Second());
 }
@@ -335,10 +335,10 @@ SQLTime::ParseTime(const XString& p_string)
   }
 
   // Support different separators 
-  string.Replace(" ",":");
-  string.Replace("-",":");
-  string.Replace(".",":");
-  string.Replace("/",":");
+  string.Replace(_T(" "),_T(":"));
+  string.Replace(_T("-"),_T(":"));
+  string.Replace(_T("."),_T(":"));
+  string.Replace(_T("/"),_T(":"));
 
   // Clear the result
   m_theTime.m_hour   = -1;
@@ -348,30 +348,30 @@ SQLTime::ParseTime(const XString& p_string)
   if(ShortTime(string,m_theTime.m_hour,m_theTime.m_minute,m_theTime.m_second) == false)
   {
     //  Parse the string
-    int n = sscanf_s(string,"%d:%d:%d"
-                    ,&m_theTime.m_hour
-                    ,&m_theTime.m_minute 
-                    ,&m_theTime.m_second);
+    int n = _stscanf_s(string,_T("%d:%d:%d")
+                      ,&m_theTime.m_hour
+                      ,&m_theTime.m_minute 
+                      ,&m_theTime.m_second);
     if(n < 2)
     {
-      throw StdException("Wrong format for conversion to time. Must be in the format: hh:mm[:ss]");
+      throw StdException(_T("Wrong format for conversion to time. Must be in the format: hh:mm[:ss]"));
     }
   }
 
   // Check for correct values
   if (m_theTime.m_hour < 0 || m_theTime.m_hour > 23)
   {
-    throw StdException("Incorrect time format: the value of the hour must be between 0 and 23 (inclusive)");
+    throw StdException(_T("Incorrect time format: the value of the hour must be between 0 and 23 (inclusive)"));
   }
 
   if (m_theTime.m_minute < 0 || m_theTime.m_minute > 59)
   {
-    throw StdException("Incorrect time format: the value of minutes must be between 0 and 59 (inclusive)");
+    throw StdException(_T("Incorrect time format: the value of minutes must be between 0 and 59 (inclusive)"));
   }
 
   if (m_theTime.m_second < 0 || m_theTime.m_second > 59)
   {
-    throw StdException("Incorrect time format: the value of the seconds must be between 0 and 59 (inclusive)");
+    throw StdException(_T("Incorrect time format: the value of the seconds must be between 0 and 59 (inclusive)"));
   }
   SetTime();
 }
@@ -393,19 +393,19 @@ SQLTime::ShortTime(const XString& p_string,int& p_hour,int& p_min,int& p_sec)
   {
     switch(len)
     {
-      case 2: p_hour  = atoi(p_string);
+      case 2: p_hour  = _ttoi(p_string);
               p_min   = 0;
               p_sec   = 0;
               success = true;
               break;
-      case 4: p_hour  = atoi(p_string.Left(2));
-              p_min   = atoi(p_string.Mid(2));
+      case 4: p_hour  = _ttoi(p_string.Left(2));
+              p_min   = _ttoi(p_string.Mid(2));
               p_sec   = 0;
               success = true;
               break;
-      case 6: p_hour  = atoi(p_string.Left(2));
-              p_min   = atoi(p_string.Mid(2,2));
-              p_sec   = atoi(p_string.Mid(4));
+      case 6: p_hour  = _ttoi(p_string.Left(2));
+              p_min   = _ttoi(p_string.Mid(2,2));
+              p_sec   = _ttoi(p_string.Mid(4));
               success = true;
               break;
     }  
@@ -426,18 +426,18 @@ SQLTime::ParseXMLTime(const XString& p_string)
 
   //  Parse the string
   // changed char to unsigned int for 64 bit implementation
-  char sep1,sep2,sep3,sep4,sep5;
-  int n = sscanf_s(p_string,"%1u%1u%c%1u%1u%c%1u%1u%c%u%c%1u%1u%c%1u%1u",
+  TCHAR sep1,sep2,sep3,sep4,sep5;
+  int n = _stscanf_s(p_string,_T("%1u%1u%c%1u%1u%c%1u%1u%c%u%c%1u%1u%c%1u%1u"),
                   &uu[0],&uu[1],
-                  &sep1,(unsigned int) sizeof(char),
+                  &sep1,(unsigned int) sizeof(TCHAR),
                   &mi[0],&mi[1],
-                  &sep2,(unsigned int) sizeof(char),
+                  &sep2,(unsigned int) sizeof(TCHAR),
                   &se[0],&se[1],
-                  &sep3,(unsigned int) sizeof(char),
+                  &sep3,(unsigned int) sizeof(TCHAR),
                   &fraction,
-                  &sep4,(unsigned int) sizeof(char),
+                  &sep4,(unsigned int) sizeof(TCHAR),
                   &UTCuu[0],&UTCuu[1],
-                  &sep5,(unsigned int) sizeof(char),
+                  &sep5,(unsigned int) sizeof(TCHAR),
                   &UTCmi[0],&UTCmi[1]);
 
   int uurBuffer = uu[0] * 10 + uu[1];
@@ -539,7 +539,7 @@ SQLTime::operator=(const SQLTime& p_time)
 {
   if(this != &p_time)
   {
-    // NULL is alsoo copied
+    // NULL is also copied
     m_seconds = p_time.m_seconds;
     m_theTime = p_time.m_theTime;
   }
@@ -611,7 +611,7 @@ SQLTime::operator+(const SQLInterval& p_interval) const
   }
   if(!p_interval.GetIsTimeType())
   {
-    throw StdException("Cannot add incompatible interval to time type");
+    throw StdException(_T("Cannot add incompatible interval to time type"));
   }
   TimeValue value = m_seconds + p_interval.GetSeconds();
   SQLTime time((__int64) value);
@@ -630,7 +630,7 @@ SQLTime::operator-(const SQLInterval& p_interval) const
   }
   if(!p_interval.GetIsTimeType())
   {
-    throw StdException("Cannot add incompatible interval to time type");
+    throw StdException(_T("Cannot add incompatible interval to time type"));
   }
   TimeValue value = m_seconds - p_interval.GetSeconds();
   SQLTime time((__int64)value);

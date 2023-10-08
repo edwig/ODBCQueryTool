@@ -582,7 +582,7 @@ FileBuffer::UnZipBuffer()
   if(GetHasBufferParts())
   {
     uchar* buffer = nullptr;
-    size_t size = 0L;
+    size_t   size = 0L;
     if(GetBufferCopy(buffer,size))
     {
       Reset();
@@ -620,7 +620,7 @@ FileBuffer::Defragment()
   if(GetHasBufferParts())
   {
     uchar* buffer = nullptr;
-    size_t size   = 0L;
+    size_t   size   = 0L;
     if(GetBufferCopy(buffer,size))
     {
       Reset();

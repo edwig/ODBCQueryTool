@@ -75,11 +75,11 @@ COEditorView::OnScriptExecute()
   m_statsView->InitGridEmpty(TYPE_STATS);
   m_outptView->InitGridEmpty(TYPE_OUTPT);
 
-  WriteStatisticsLine("Script","Start of script",true);
+  WriteStatisticsLine(_T("Script"),_T("Start of script"),true);
   while(curLine < endFileLine)
   {
     int startline = GetODBCCommand(curLine,endFileLine,odbcCommand);
-    if(odbcCommand == "")
+    if(odbcCommand == _T(""))
     {
       break;
     }
@@ -96,7 +96,7 @@ COEditorView::OnScriptExecute()
       ExecuteQuery(startline,odbcCommand,true);
     }
     // Reset the command
-    odbcCommand = "";
+    odbcCommand = _T("");
     // And step
     moveCurrentLine(curLine);
     if(curLine == orgLine)
@@ -122,10 +122,10 @@ COEditorView::OnScriptExecute()
 
   if(first)
   {
-    AfxMessageBox("No query to execute",MB_OK | MB_ICONEXCLAMATION);
+    AfxMessageBox(_T("No query to execute"),MB_OK | MB_ICONEXCLAMATION);
   }
   // Total batch time
-  WriteStatisticsLine("Script","End of script",false,ticks);
+  WriteStatisticsLine(_T("Script"),_T("End of script"),false,ticks);
 }
 
 void
@@ -152,7 +152,7 @@ COEditorView::OnScriptNative()
   CString native = theApp.FindNativeSQL(odbcCommand);
 
   // Show the Native SQL in a dialog
-  native.Replace("\n","\r\n");
+  native.Replace(_T("\n"),_T("\r\n"));
   CNativeSQLDlg dlg(this,native);
   dlg.DoModal();
 }
@@ -184,8 +184,8 @@ void
 COEditorView::OnScriptFindTable()
 {
   Square blkPos;
-  char   buffer[128];
-  const char*  line = nullptr;
+  TCHAR   buffer[128];
+  const TCHAR*  line = nullptr;
   int    len = 0;
   int    ind = 0;
   if (!WordFromPoint(GetPosition(), blkPos))
@@ -211,8 +211,8 @@ void
 COEditorView::OnScriptTableDDL()
 {
   Square blkPos;
-  char   buffer[128];
-  const char*  line = nullptr;
+  TCHAR   buffer[128];
+  const TCHAR*  line = nullptr;
   int    len = 0;
   int    ind = 0;
   if(!WordFromPoint(GetPosition(),blkPos))
@@ -347,13 +347,13 @@ COEditorView::GetODBCCommand(int& curLine
   // No selected buffer. Try from current position to parse SQL text
   int i = 0;
   int firstline = -1;
-  m_tableOne = "";
+  m_tableOne = _T("");
   m_findPrimary = false;
   HighlighterBase* phighlighter = m_bSyntaxHighlight ? m_highlighter.get() : 0;
   LineTokenizer tokenizer(false // Show spaces
                          ,GetTabSpacing()
                          ,phighlighter ? phighlighter->GetDelimiters() : GetDelimiters());
-  char token[maxTokenlength + 1];
+  TCHAR token[maxTokenlength + 1];
   CString multiLineCommand;
 
   // Status flags
@@ -363,20 +363,20 @@ COEditorView::GetODBCCommand(int& curLine
   bool multiLine     = false;
   bool fromSeen      = false;
   bool tableSeen     = false;
-  char instring      = '\0';
+  TCHAR instring      = _T('\0');
 
-  CString endToken1  = ";";
+  CString endToken1  = _T(";");
   CString endToken2  = GetDocument()->GetSettings().GetSQLQueryTerminator();
 
   // Check endToken
   if(!endToken2.GetLength())
   {
-    endToken2 = "/";
+    endToken2 = _T("/");
   }
 
   while(curLine < endFileLine)
   {
-    const char* currentLine; 
+    const TCHAR* currentLine; 
     int currentLineLength;
     bool lastSpace = false;
     GetLine(curLine, currentLine, currentLineLength);
@@ -390,7 +390,7 @@ COEditorView::GetODBCCommand(int& curLine
       }
     }
     tempLine.Trim();
-    if(tempLine.Left(2) == "--")
+    if(tempLine.Left(2) == _T("--"))
     {
       // This was a comment line
       ++curLine;
@@ -398,7 +398,7 @@ COEditorView::GetODBCCommand(int& curLine
     }
     if(multiLine)
     {
-      multiLineCommand += "\n";
+      multiLineCommand += _T("\n");
     }
     multiLineCommand += tempLine;
     // recalculation for maximum of visible line lengths
@@ -407,7 +407,7 @@ COEditorView::GetODBCCommand(int& curLine
     while (!tokenizer.Eol())
     {
       int pos, len, minLen;
-      const char* str;
+      const TCHAR* str;
 
       tokenizer.GetCurrentSQLToken(str, pos, len, instring);
       if(firstline < 0)
@@ -415,19 +415,19 @@ COEditorView::GetODBCCommand(int& curLine
         firstline = curLine;
       }
       minLen = min(len,maxTokenlength);
-      strncpy_s(token,maxTokenlength,str,minLen);
+      _tcsncpy_s(token,maxTokenlength,str,minLen);
       token[minLen] = 0;
       // Status search
-      if(_stricmp(token,"create") == 0)
+      if(_tcsicmp(token,_T("create")) == 0)
       {
         createSeen = true;
       }
-      if(createSeen && _stricmp(token,"procedure") == 0)
+      if(createSeen && _tcsicmp(token,_T("procedure")) == 0)
       {
         procedureSeen = true;
         endToken1     = endToken2;
       }
-      if(createSeen && _stricmp(token,"function") == 0)
+      if(createSeen && _tcsicmp(token,_T("function")) == 0)
       {
         functionSeen = true;
         endToken1    = endToken2;
@@ -451,17 +451,17 @@ COEditorView::GetODBCCommand(int& curLine
           odbcCommand.TrimLeft('\n');
           odbcCommand.TrimRight('\n');
         }
-        TRACE("ODBC Ended command: %s\n",odbcCommand.Left(255));
+        TRACE(_T("ODBC Ended command: %s\n"),odbcCommand.Left(255));
         // End of command found
         return firstline;
       }
       // OneTable select for update option
       if(fromSeen && tableSeen)
       {
-        if(_stricmp(token,"where") && _stricmp(token,"group") &&
-           _stricmp(token,"order") && _stricmp(token,"having"))
+        if(_tcsicmp(token,_T("where")) && _tcsicmp(token,_T("group")) &&
+           _tcsicmp(token,_T("order")) && _tcsicmp(token,_T("having")))
         {
-          m_tableOne = "";
+          m_tableOne = _T("");
         }
         fromSeen = false;
       }
@@ -473,7 +473,7 @@ COEditorView::GetODBCCommand(int& curLine
           m_tableOne = token;
         }
       }
-      if(_stricmp(token,"from") == 0)
+      if(_tcsicmp(token,_T("from")) == 0)
       {
         fromSeen = true;
       }
@@ -482,7 +482,7 @@ COEditorView::GetODBCCommand(int& curLine
       {
         if(odbcCommand.Right(1) != '.')
         {
-          odbcCommand += " ";
+          odbcCommand += _T(" ");
         }
       }
       odbcCommand += CString(token);
@@ -493,7 +493,7 @@ COEditorView::GetODBCCommand(int& curLine
       lastSpace = false;
       if(len > 1 && !IsDigits(token))
       {
-        odbcCommand += " ";
+        odbcCommand += _T(" ");
         lastSpace = true;
       }
       tokenizer.Next();
@@ -505,17 +505,17 @@ COEditorView::GetODBCCommand(int& curLine
   {
     odbcCommand = multiLineCommand;
   }
-  TRACE("ODBC Command: %s\n",odbcCommand);
+  TRACE(_T("ODBC Command: %s\n"),odbcCommand);
   return firstline;
 }
 
 bool
-COEditorView::IsDigits(char* token)
+COEditorView::IsDigits(TCHAR* token)
 {
-  const char* pnt = token;
+  const TCHAR* pnt = token;
   while(pnt && *pnt)
   {
-    if(isdigit(*pnt))
+    if(_istdigit(*pnt))
     {
       ++pnt;
     }
@@ -551,7 +551,7 @@ COEditorView::OnScriptNextError()
   if(!found)
   {
     m_currentError = 0;
-    AfxMessageBox("No next error",MB_OK);
+    AfxMessageBox(_T("No next error"),MB_OK);
     return;
   }
   m_currentError = *iter;
@@ -584,7 +584,7 @@ COEditorView::OnScriptPrevError()
   {
     int endFileLine = GetLineCount();
     m_currentError = endFileLine;
-    AfxMessageBox("No previous error",MB_OK);
+    AfxMessageBox(_T("No previous error"),MB_OK);
     return;
   }
   m_currentError = m_errorMap[iter];
@@ -670,7 +670,7 @@ bool
 COEditorView::ExecuteQuery(int      p_line
                           ,CString& p_odbcCommand
                           ,bool     p_batch   /* = false */
-                          ,FILE*    p_script  /* = NULL  */)
+                          ,WinFile* p_script  /* = NULL  */)
 {
   QueryToolApp *app         = dynamic_cast<QueryToolApp *> (AfxGetApp());
   SQLDatabase&   database   = app->GetDatabase();
@@ -700,27 +700,27 @@ COEditorView::ExecuteQuery(int      p_line
 
   if(!database.IsOpen())
   {
-    AfxMessageBox("Cannot execute ODBC query: Not connected to a database",MB_OK | MB_ICONEXCLAMATION);
+    AfxMessageBox(_T("Cannot execute ODBC query: Not connected to a database"),MB_OK | MB_ICONEXCLAMATION);
     return false;
   }
-  if(p_odbcCommand == "")
+  if(p_odbcCommand == _T(""))
   {
-    AfxMessageBox("No query to execute",MB_OK | MB_ICONEXCLAMATION);
+    AfxMessageBox(_T("No query to execute"),MB_OK | MB_ICONEXCLAMATION);
     return false;
   }
   if(p_odbcCommand.GetLength() > 5)
   {
-    if(p_odbcCommand.Left(6).CompareNoCase("SELECT") == 0)
+    if(p_odbcCommand.Left(6).CompareNoCase(_T("SELECT")) == 0)
     {
       selectQuery = true;
     }
-    partialCommand = p_odbcCommand.Left(100) + ".....";
+    partialCommand = p_odbcCommand.Left(100) + _T(".....");
   }
   if(prefetchLines <= 1)
   {
     prefetchLines = 0x7ffffff;
   }
-  WriteStatisticsLine("Query","Start: " + partialCommand,true); // Reset the timer
+  WriteStatisticsLine(_T("Query"),_T("Start: ") + partialCommand,true); // Reset the timer
   try
   {
     long row = 0;
@@ -750,15 +750,15 @@ COEditorView::ExecuteQuery(int      p_line
 
       // Prepare the query
       m_query.DoSQLPrepare(p_odbcCommand);
-      WriteStatisticsLine("0 =>","Query prepared: " + partialCommand);
+      WriteStatisticsLine(_T("0 =>"),_T("Query prepared: ") + partialCommand);
       // Go and execute
       m_query.DoSQLExecute();
     }
     else
     {
-      m_query.DoSQLStatement(p_odbcCommand); // TODO ,0,p_script);
+      m_query.DoSQLStatement(p_odbcCommand);
     }
-    WriteStatisticsLine("1 =>",(mustPrepare ? "Execute ready: " : "Query ready: ") + partialCommand);
+    WriteStatisticsLine(_T("1 =>"),(mustPrepare ? _T("Execute ready: ") : _T("Query ready: ")) + partialCommand);
     if(selectQuery)
     {
       // Init the CGridView
@@ -820,18 +820,18 @@ COEditorView::ExecuteQuery(int      p_line
     {
       row = m_query.GetNumberOfRows();
     }
-    WriteStatisticsLine("2 =>","Fetch ready: " + partialCommand);
+    WriteStatisticsLine(_T("2 =>"),_T("Fetch ready: ") + partialCommand);
     WriteOutputLine(p_line,row,partialCommand,m_query.GetError());
   }
-  catch(char *errorText)
+  catch(TCHAR *errorText)
   {
     if(!p_batch)
     {
       CString text;
-      text.Format("Error in ODBC Query: %s",errorText);
+      text.Format(_T("Error in ODBC Query: %s"),errorText);
       AfxMessageBox(text,MB_OK | MB_ICONHAND);
     }
-    WriteStatisticsLine("2 =>","Error: " + partialCommand);
+    WriteStatisticsLine(_T("2 =>"),_T("Error: ") + partialCommand);
     WriteOutputLine(p_line,m_query.GetNumberOfRows(),partialCommand,errorText);
     panelWindow = QPW_OUTPUT_VIEW;
   }
@@ -841,7 +841,7 @@ COEditorView::ExecuteQuery(int      p_line
     {
       AfxMessageBox(errorText,MB_OK | MB_ICONHAND);
     }
-    WriteStatisticsLine("2 =>","Error: " + partialCommand);
+    WriteStatisticsLine(_T("2 =>"),_T("Error: ") + partialCommand);
     WriteOutputLine(p_line,m_query.GetNumberOfRows(),partialCommand,errorText);
     panelWindow = QPW_OUTPUT_VIEW;
   }
@@ -851,7 +851,7 @@ COEditorView::ExecuteQuery(int      p_line
     {
       AfxMessageBox(ex.GetErrorMessage(),MB_OK|MB_ICONERROR);
     }
-    WriteStatisticsLine("2 =>", "Error: " + partialCommand);
+    WriteStatisticsLine(_T("2 =>"), _T("Error: ") + partialCommand);
     WriteOutputLine(p_line,m_query.GetNumberOfRows(),partialCommand,ex.GetErrorMessage());
     panelWindow = QPW_OUTPUT_VIEW;
   }
@@ -860,15 +860,15 @@ COEditorView::ExecuteQuery(int      p_line
     if(!p_batch)
     {
       CString text;
-      text.Format("Unknown error in ODBC Query: %s",p_odbcCommand.GetString());
+      text.Format(_T("Unknown error in ODBC Query: %s"),p_odbcCommand.GetString());
       AfxMessageBox(text,MB_OK | MB_ICONHAND);
     }
-    WriteStatisticsLine("2 =>","Unknown: " + partialCommand);
-    WriteOutputLine(p_line,m_query.GetNumberOfRows(),partialCommand,"ERROR");
+    WriteStatisticsLine(_T("2 =>"),_T("Unknown: ") + partialCommand);
+    WriteOutputLine(p_line,m_query.GetNumberOfRows(),partialCommand,_T("ERROR"));
     panelWindow = QPW_OUTPUT_VIEW;
   }
   // Clock is ready ticking
-  WriteStatisticsLine("3 =>","Ready: " + partialCommand);
+  WriteStatisticsLine(_T("3 =>"),_T("Ready: ") + partialCommand);
 
   // Auto change to the right panel
   if(!p_batch)
@@ -893,8 +893,8 @@ COEditorView::GetLineFromQuery(int row)
     charset = doc->GetSettings().GetSQLCharsetUsed();
   }
 
-  rowNumber.Format("%d",row);
-  m_gridView->InsertRow((LPCSTR) rowNumber,-1);
+  rowNumber.Format(_T("%d"),row);
+  m_gridView->InsertRow((LPCTSTR) rowNumber,-1);
 
   // Insert the row info
   for(int k = 1; k <= m_query.GetNumberOfColumns(); ++k)
@@ -906,11 +906,11 @@ COEditorView::GetLineFromQuery(int row)
     if(type == SQL_C_BINARY)
     {
       int len = var->GetDataSize();
-      unsigned char* buffer = (unsigned char*) calloc(2,(len * 2) + 6);
-      const char* binbuf = var->GetAsChar();
-      strncpy_s((char*)buffer,len*2+1,binbuf,len*2);
+      _TUCHAR* buffer = (_TUCHAR*) calloc(2,(len * 2) + 6);
+      const TCHAR* binbuf = var->GetAsChar();
+      _tcsncpy_s((TCHAR*)buffer,len*2+1,binbuf,len*2);
       buffer[len * 2]  = 0;
-      text = (char*)buffer;
+      text = (TCHAR*)buffer;
       m_gridView->InsertItem(row,k,text,DT_LEFT);
       free(buffer);
     }
@@ -951,13 +951,13 @@ COEditorView::ReadRestOfQuery()
   }
   catch(CString& er)
   {
-    CString error("ERROR reading query: ");
+    CString error(_T("ERROR reading query: "));
     error += er;
     AfxMessageBox(error,MB_OK|MB_ICONERROR);
   }
   catch(StdException& ex)
   {
-    CString error("ERROR reading query: ");
+    CString error(_T("ERROR reading query: "));
     error += ex.GetErrorMessage();
     AfxMessageBox(error,MB_OK|MB_ICONERROR);
   }
@@ -981,7 +981,7 @@ COEditorView::TranslateText(CString& p_text,int p_translation,CString p_charset)
   {
     source = p_charset;
   }
-  if(source.IsEmpty() || source == "-" || p_translation < 0 || p_translation > 2)
+  if(source.IsEmpty() || source == _T("-") || p_translation < 0 || p_translation > 2)
   {
     return;
   }
@@ -1008,7 +1008,7 @@ COEditorView::WriteStatisticsLine(CString p_step,CString p_line,bool p_reset /*=
   {
     interval = GetTickCount() - p_totalticks;
   }
-  totalTime.Format("%d.%03d",(interval/1000),(interval%1000));
+  totalTime.Format(_T("%d.%03d"),(interval/1000),(interval%1000));
 
   int row = m_statsView->AppendRow(p_step);
   m_statsView->InsertItem(row,1,totalTime,defFormat);
@@ -1025,8 +1025,8 @@ COEditorView::WriteOutputLine(int p_line,int p_affected,CString p_command,CStrin
   CString text;
   int     image = 0;  // OK Image
 
-  text  = p_command + " : ";
-  if(p_result != "" && p_result != "OK")
+  text  = p_command + _T(" : ");
+  if(p_result != _T("") && p_result != _T("OK"))
   {
     image = 1; // Error image
     text += p_result;
@@ -1038,10 +1038,10 @@ COEditorView::WriteOutputLine(int p_line,int p_affected,CString p_command,CStrin
   }
   else
   {
-    text += "OK";
+    text += _T("OK");
   }
-  lineNumber.Format("%d",p_line + 1);
-  rowsNumber.Format("%d",p_affected);
+  lineNumber.Format(_T("%d"),p_line + 1);
+  rowsNumber.Format(_T("%d"),p_affected);
 
   int row = m_outptView->AppendRow(lineNumber);
   m_outptView->InsertImage(row,1,image);
@@ -1077,22 +1077,22 @@ COEditorView::WriteHistoryLine(CString p_command)
     hist.reruns  = 1;
     m_historyMap.push_back(hist);
     CString num;
-    num.Format("%d",newNumber);
+    num.Format(_T("%d"),newNumber);
     row = m_histoView->AppendRow(num);
     m_histoView->InsertItem(row,0,num,defFormat);
-    num = "1"; // reruns
+    num = _T("1"); // reruns
     m_histoView->InsertItem(row,1,num,defFormat);
     m_histoView->InsertItem(row,2,p_command,defFormat);
   }
   else
   {
     CString num;
-    num.Format("%d",row);
+    num.Format(_T("%d"),row);
     for(int i=0; i < m_histoView->GetColumnCount(); ++i)
     {
       if(m_histoView->GetItemText(i,0) == num)
       {
-        num.Format("%d",reruns);
+        num.Format(_T("%d"),reruns);
         m_histoView->SetItemText(i,1,num);
         break;
       }
@@ -1104,9 +1104,9 @@ COEditorView::WriteHistoryLine(CString p_command)
   {
     return;
   }
-  if(m_scriptOutput)
+  if(m_scriptOutput && m_scriptOutput->GetIsOpen())
   {
-    fprintf(m_scriptOutput,"Query: %s\n",p_command.GetString());
+    m_scriptOutput->Format(_T("Query: %s\n"),p_command.GetString());
   }
 }
 
@@ -1148,7 +1148,7 @@ COEditorView::UpdateCondition(int row,CString column)
 {
   if(m_keyMap.empty())
   {
-    return "";
+    return _T("");
   }
   CString condition;
 
@@ -1162,17 +1162,17 @@ COEditorView::UpdateCondition(int row,CString column)
     {
       // Oeps
       CString error;
-      error.Format("Cannot update. The field \"%s\" belongs to the primary key \"%s\"!",column,m_primaryName);
+      error.Format(_T("Cannot update. The field \"%s\" belongs to the primary key \"%s\"!"),column,m_primaryName);
       AfxMessageBox(error);
-      return "";
+      return _T("");
     }
     // Append to previous condition
     if(!condition.IsEmpty())
     {
-      condition += "\n   AND ";
+      condition += _T("\n   AND ");
     }
     condition += info->m_colName;
-    condition += " = ";
+    condition += _T(" = ");
     if(!info->m_queryPos)
     {
       for(int xx=1; xx < m_gridView->GetColumnCount(); ++xx)
@@ -1189,21 +1189,21 @@ COEditorView::UpdateCondition(int row,CString column)
     if(xx == 0)
     {
       CString error;
-      error.Format("Cannot update, field \"%s\" of primary key \"%s\" is missing from your query!",info->m_colName,m_primaryName);
+      error.Format(_T("Cannot update, field \"%s\" of primary key \"%s\" is missing from your query!"),info->m_colName,m_primaryName);
       AfxMessageBox(error);
-      return "";
+      return _T("");
     }
     CString text = m_gridView->GetItemText(row,xx);
     SQLVariant* var = m_query.GetColumn(xx);
     if(var == NULL)
     {
-      return "";
+      return _T("");
     }
     SWORD type = var->GetDataType();
     if(type == SQL_C_CHAR)
     {
-      text.Replace("\'","\'\'");
-      text = CString("'") + text + "'";
+      text.Replace(_T("\'"),_T("\'\'"));
+      text = CString(_T("'")) + text + _T("'");
     }
     condition += text;
   }
@@ -1226,12 +1226,12 @@ COEditorView::UpdateTable(int row,int col,CString text)
   SQLVariant* var = m_query.GetColumn(col);
   if(var->GetDataType() == SQL_C_CHAR)
   {
-    text.Replace("\'","\'\'");
-    text = CString("'") + text + "'";
+    text.Replace(_T("\'"),_T("\'\'"));
+    text = CString(_T("'")) + text + _T("'");
   }
-  CString query = "UPDATE " + m_tableOne + "\n" + 
-                  "   SET " + column + " = " + text + "\n" +
-                  " WHERE ";
+  CString query = _T("UPDATE ") + m_tableOne + _T("\n") + 
+                  _T("   SET ") + column + _T(" = ") + text + _T("\n") +
+                  _T(" WHERE ");
   CString searchCondition = UpdateCondition(row,column);
   if(searchCondition.IsEmpty())
   {
@@ -1242,25 +1242,25 @@ COEditorView::UpdateTable(int row,int col,CString text)
   try
   {
     SQLQuery rs(&database);
-    SQLTransaction trans(&database,"update");
+    SQLTransaction trans(&database,_T("update"));
     rs.DoSQLStatement(query);
     trans.Commit();
   }
   catch(CString& er)
   {
-    CString error("Error while updating record: ");
+    CString error(_T("Error while updating record: "));
     error += er;
     AfxMessageBox(error,MB_OK|MB_ICONERROR);
     return false;
   }
   catch (StdException& ex)
   {
-    CString error("Error while updating record: ");
+    CString error(_T("Error while updating record: "));
     error += ex.GetErrorMessage();
     AfxMessageBox(error,MB_OK|MB_ICONERROR);
     return false;
   }
-  CString info = "Row updated by primary/unique key: ";
+  CString info = _T("Row updated by primary/unique key: ");
   info += m_primaryName;
   Common::SetStatusText(info);
 
@@ -1281,18 +1281,18 @@ COEditorView::ScriptCommand(int p_line,CString &odbcCommand)
       CString word = odbcCommand.Left(end);
       word.MakeLower();
       CString tail = odbcCommand.Mid(end+1);
-           if(word == "file")       return ScriptCommandFile     (p_line,tail);
-      else if(word == "print")      return ScriptCommandPrint    (p_line,tail);
-      else if(word == "rebind")     return ScriptCommandRebind   (p_line,tail);
-      else if(word == "if")         return ScriptCommandIf       (p_line,tail);
-      else if(word == "select")     return ScriptCommandSelect   (p_line,tail);
-      else if(word == "atexec")     return ScriptCommandAtExec   (p_line,tail);
-      else if(word == "repeat")     return ScriptCommandRepeat   (p_line,tail);
-      else if(word == "exit")       return ScriptCommandExit     (p_line,tail);
+           if(word == _T("file"))       return ScriptCommandFile     (p_line,tail);
+      else if(word == _T("print"))      return ScriptCommandPrint    (p_line,tail);
+      else if(word == _T("rebind"))     return ScriptCommandRebind   (p_line,tail);
+      else if(word == _T("if"))         return ScriptCommandIf       (p_line,tail);
+      else if(word == _T("select"))     return ScriptCommandSelect   (p_line,tail);
+      else if(word == _T("atexec"))     return ScriptCommandAtExec   (p_line,tail);
+      else if(word == _T("repeat"))     return ScriptCommandRepeat   (p_line,tail);
+      else if(word == _T("exit"))       return ScriptCommandExit     (p_line,tail);
 //    else if(word == "endrepeat")  return ScriptCommandEndRepeat(p_line,tail);
-      else if(word.Left(8) == "variable")
+      else if(word.Left(8) == _T("variable"))
       {
-         int varNum = atoi(word.Mid(8));
+         int varNum = _ttoi(word.Mid(8));
          return ScriptCommandVariable(p_line,varNum,tail);
       }
     }
@@ -1305,22 +1305,22 @@ bool
 COEditorView::ScriptCommandPrint(int p_line,CString print)
 {
   CString error;
-  if(m_scriptOutput)
+  if(m_scriptOutput && m_scriptOutput->GetIsOpen())
   {
     print.Trim();
     print.TrimLeft('\'');
     print.TrimRight('\'');
     if(m_scriptCompare)
     {
-      fprintf(m_scriptOutput,":COMPARE OK\n");
+      m_scriptOutput->Write(CString(_T(":COMPARE OK\n")));
     }
     else
     {
-      fprintf(m_scriptOutput,"%s\n",print.GetString());
+      m_scriptOutput->Format(_T("%s\n"),print.GetString());
       if(m_ifLast)
       {
-        error = "ERROR";
-        WriteOutputLine(p_line,0,":print " + print,error);
+        error = _T("ERROR");
+        WriteOutputLine(p_line,0,_T(":print ") + print,error);
       }
     }
   }
@@ -1335,7 +1335,8 @@ COEditorView::ScriptCommandFile(int p_line,CString file)
 {
   bool result = false;
   CString error;
-  CString mode = "w";
+  CString mode;
+  DWORD   winfilemode = winfile_write;
   int pos = file.Find(' ');
   if(pos >= 0)
   {
@@ -1345,34 +1346,36 @@ COEditorView::ScriptCommandFile(int p_line,CString file)
     file.TrimLeft('\'');
     file.TrimRight('\'');
     mode.MakeLower();
-         if(mode == "append") mode = "a";
-    else if(mode == "write")  mode = "w";
-    else if(mode == "open")   mode = "w";
-    else if(mode == "close")
+         if(mode == _T("append")) winfilemode = winfile_append;
+    else if(mode == _T("write"))  winfilemode = winfile_write;
+    else if(mode == _T("open"))   winfilemode = winfile_read;
+    else if(mode == _T("close"))
     {
-      if(m_scriptOutput)
+      if(m_scriptOutput && m_scriptOutput->GetIsOpen())
       {
-        fprintf(m_scriptOutput,"==================\n");
-        fprintf(m_scriptOutput,"ODBC Script closed\n\n\n");
-        fclose(m_scriptOutput);
-        m_scriptOutput = NULL;
+        m_scriptOutput->Write(CString(_T("==================\n")));
+        m_scriptOutput->Write(CString(_T("ODBC Script closed\n\n\n")));
+        m_scriptOutput->Close();
+        delete m_scriptOutput;
+        m_scriptOutput = nullptr;
       }
-      WriteOutputLine(p_line,0,":file " + file,error);
+      WriteOutputLine(p_line,0,_T(":file ") + file,error);
       return true;
     }
     else
     {
-      error = "Missing file mode";
-      WriteOutputLine(p_line,0,":file " + file,error);
+      error = _T("Missing file mode");
+      WriteOutputLine(p_line,0,_T(":file ") + file,error);
       return false;
     }
-    if(m_scriptOutput)
+    if(m_scriptOutput && m_scriptOutput->GetIsOpen())
     {
-      fclose(m_scriptOutput);
+      m_scriptOutput->Close();
+      delete m_scriptOutput;
     }
-    m_scriptOutput = nullptr;
-    fopen_s(&m_scriptOutput,file.GetString(), mode.GetString());
-    if(m_scriptOutput)
+    m_scriptOutput = new WinFile(file);
+    m_scriptOutput->Open(winfilemode | open_trans_text,FAttributes::attrib_none,Encoding::UTF8);
+    if(m_scriptOutput->GetIsOpen())
     {
       time_t time;
       _tzset();
@@ -1380,31 +1383,30 @@ COEditorView::ScriptCommandFile(int p_line,CString file)
       struct tm now;
       struct tm* ptnow = &now;
       localtime_s(ptnow,&time);
-      fprintf(m_scriptOutput
-             ,"ODBC Script output: %4.4d-%2.2d-%2.2d %2.2d:%2.2d:%2.2d\n"
-              "=======================================\n"
-             ,now.tm_year + 1900
-             ,now.tm_mon  + 1
-             ,now.tm_mday
-             ,now.tm_hour
-             ,now.tm_min
-             ,now.tm_sec);
-             
+      m_scriptOutput->Format(_T("ODBC Script output: %4.4d-%2.2d-%2.2d %2.2d:%2.2d:%2.2d\n")
+                             _T("=======================================\n")
+                             ,now.tm_year + 1900
+                             ,now.tm_mon  + 1
+                             ,now.tm_mday
+                             ,now.tm_hour
+                             ,now.tm_min
+                             ,now.tm_sec);
+      result = true;
     }
-    result = (m_scriptOutput != NULL);
   }
-  if(file.CompareNoCase("close") == 0)
+  if(file.CompareNoCase(_T("close")) == 0)
   {
-    if(m_scriptOutput)
+    if(m_scriptOutput && m_scriptOutput->GetIsOpen())
     {
-      fprintf(m_scriptOutput,"==================\n");
-      fprintf(m_scriptOutput,"ODBC Script closed\n");
-      fclose(m_scriptOutput);
-      m_scriptOutput = NULL;
+      m_scriptOutput->Write(CString(_T("==================\n")));
+      m_scriptOutput->Write(CString(_T("ODBC Script closed\n")));
+      m_scriptOutput->Close();
+      delete m_scriptOutput;
+      m_scriptOutput = nullptr;
     }
     result = true;
   }
-  WriteOutputLine(p_line,0,":file " + file,error);
+  WriteOutputLine(p_line,0,_T(":file ") + file,error);
   return result ;
 }
 
@@ -1425,9 +1427,9 @@ COEditorView::ScriptCommandRebind(int p_line,CString rebind)
     SQLVariant var;
     word1.Trim();
     word2.Trim();
-    int from = SQLDataType::FindDatatype((char*)(LPCSTR)word1);
-    int to   = SQLDataType::FindDatatype((char*)(LPCSTR)word2);
-    int sql  = SQLDataType::FindSQLDatatype((char*)(LPCSTR)word2);
+    int from = SQLDataType::FindDatatype((TCHAR*)(LPCTSTR)word1);
+    int to   = SQLDataType::FindDatatype((TCHAR*)(LPCTSTR)word2);
+    int sql  = SQLDataType::FindSQLDatatype((TCHAR*)(LPCTSTR)word2);
     if(to == 0 && sql != 0)
     {
       // Use SQL_XXXX type to rebind (BINARY or CHAR) type
@@ -1436,35 +1438,35 @@ COEditorView::ScriptCommandRebind(int p_line,CString rebind)
     if(from != 0 && to != 0)
     {
       map->insert(std::make_pair(from,to));
-      if(m_scriptOutput)
+      if(m_scriptOutput && m_scriptOutput->GetIsOpen())
       {
-        fprintf(m_scriptOutput,":REBIND datatype [%s] to [%s]\n",word1.GetString(),word2.GetString());
+        m_scriptOutput->Format(_T(":REBIND datatype [%s] to [%s]\n"),word1.GetString(),word2.GetString());
       }
       result = true;
     }
     else
     {
-      error = "No valid datatypes found";
+      error = _T("No valid datatypes found");
     }
   }
   else
   {
     rebind.Trim();
-    if(rebind.CompareNoCase("RESET") == 0)
+    if(rebind.CompareNoCase(_T("RESET")) == 0)
     {
       map->clear();
-      if(m_scriptOutput)
+      if(m_scriptOutput && m_scriptOutput->GetIsOpen())
       {
-        fprintf(m_scriptOutput,":REBIND reset\n");
+        m_scriptOutput->Format(_T(":REBIND reset\n"));
       }
       result = true;
     }
     else
     {
-      error = "No reset";
+      error = _T("No reset");
     }
   }
-  WriteOutputLine(p_line,0,":rebind " + rebind,error);
+  WriteOutputLine(p_line,0,_T(":rebind ") + rebind,error);
   return false;
 }
 
@@ -1478,15 +1480,15 @@ COEditorView::ScriptCommandIf(int p_line,CString command)
   command.TrimRight(';');
   CString var = command.Left(8);
   command = command.Mid(8);
-  if(var.CompareNoCase("variable") == 0)
+  if(var.CompareNoCase(_T("variable")) == 0)
   {
-    int numVar = atoi(command);
+    int numVar = _ttoi(command);
     VarMap& varMap = theApp.GetVariables();
     VarMap::iterator it = varMap.find(numVar);
     if(it != varMap.end())
     {
       SQLVariant* var = it->second;
-      int pos = command.Find("<>");
+      int pos = command.Find(_T("<>"));
       if(pos > 0)
       {
         command = command.Mid(pos + 2);
@@ -1498,14 +1500,13 @@ COEditorView::ScriptCommandIf(int p_line,CString command)
 		    var->GetAsString(value);
         m_scriptCompare = (command.Compare(value) == 0);
         m_ifLast = true;
-        if(m_scriptOutput)
+        if(m_scriptOutput && m_scriptOutput->GetIsOpen())
         {
-          fprintf(m_scriptOutput
-                 ,":IF variable%d [%s] %s [%s]\n"
-                 ,numVar
-                 ,value.GetString()
-                 ,m_scriptCompare ? "==" : "<>"
-                 ,command.GetString());
+          m_scriptOutput->Format(_T(":IF variable%d [%s] %s [%s]\n")
+                                 ,numVar
+                                 ,value.GetString()
+                                 ,m_scriptCompare ? _T("==") : _T("<>")
+                                 ,command.GetString());
         }
         result = true;
       }
@@ -1513,9 +1514,9 @@ COEditorView::ScriptCommandIf(int p_line,CString command)
   }
   else
   {
-    error = "Need variable";
+    error = _T("Need variable");
   }
-  WriteOutputLine(p_line,0,":if " + command,error);
+  WriteOutputLine(p_line,0,_T(":if ") + command,error);
   return result;
 }
 
@@ -1533,9 +1534,9 @@ COEditorView::ScriptCommandVariable(int p_line,int p_varNum,CString p_tail)
       SQLVariant* var = new SQLVariant();
       varMap.insert(std::make_pair(p_varNum,var));
       it = varMap.find(p_varNum);
-      if(m_scriptOutput)
+      if(m_scriptOutput && m_scriptOutput->GetIsOpen())
       {
-        fprintf(m_scriptOutput,":NEW variable%d\n",p_varNum);
+        m_scriptOutput->Format(_T(":NEW variable%d\n"),p_varNum);
       }
     }
   }
@@ -1555,11 +1556,11 @@ COEditorView::ScriptCommandVariable(int p_line,int p_varNum,CString p_tail)
       // Assignment
       word.TrimLeft('\'');
       word.TrimRight('\'');
-      if(m_scriptOutput)
+      if(m_scriptOutput && m_scriptOutput->GetIsOpen())
       {
-        fprintf(m_scriptOutput,":ASSIGN variable%d = [%s]\n",p_varNum,word.GetString());
+        m_scriptOutput->Format(_T(":ASSIGN variable%d = [%s]\n"),p_varNum,word.GetString());
       }
-      var->SetData(var->GetDataType(),(char*)word.GetString());
+      var->SetData(var->GetDataType(),(TCHAR*)word.GetString());
       result = true;
     }
     else
@@ -1572,24 +1573,24 @@ COEditorView::ScriptCommandVariable(int p_line,int p_varNum,CString p_tail)
         p_tail = p_tail.Mid(pos + 1).Trim();
 
         // Set param type
-        int paramType = SQLDataType::FindParamtype((char*)(LPCSTR)word);
+        int paramType = SQLDataType::FindParamtype((TCHAR*)(LPCTSTR)word);
         if(paramType > 0)
         {
           var->SetParameterType((SQLParamType)paramType);
-          if(m_scriptOutput)
+          if(m_scriptOutput && m_scriptOutput->GetIsOpen())
           {
-            fprintf(m_scriptOutput,":PARAM variable%d [%s]\n",p_varNum,word.GetString());
+            m_scriptOutput->Format(_T(":PARAM variable%d [%s]\n"),p_varNum,word.GetString());
           }
         }
       }
       // Now do the data type
-      int dataType = SQLDataType::FindDatatype((char*)(LPCSTR)p_tail.GetString());
+      int dataType = SQLDataType::FindDatatype((TCHAR*)(LPCTSTR)p_tail.GetString());
       if(dataType != 0)
       {
-        var->SetData(dataType,"");
-        if(m_scriptOutput)
+        var->SetData(dataType,_T(""));
+        if(m_scriptOutput && m_scriptOutput->GetIsOpen())
         {
-          fprintf(m_scriptOutput,":DTYPE variable%d [%s]\n",p_varNum,p_tail.GetString());
+          m_scriptOutput->Format(_T(":DTYPE variable%d [%s]\n"),p_varNum,p_tail.GetString());
         }
         result = true;
       }
@@ -1597,9 +1598,9 @@ COEditorView::ScriptCommandVariable(int p_line,int p_varNum,CString p_tail)
   }
   else
   {
-    error = "No variable found/added";
+    error = _T("No variable found/added");
   }
-  WriteOutputLine(p_line,p_varNum,":variable " + p_tail,error);
+  WriteOutputLine(p_line,p_varNum,_T(":variable ") + p_tail,error);
   return result;
 }
 
@@ -1609,15 +1610,15 @@ COEditorView::ScriptCommandSelect(int p_line,CString p_tail)
   CString result;
   p_tail.Trim();
   m_scriptSelect = false;
-  if(p_tail.CompareNoCase("on") == 0)
+  if(p_tail.CompareNoCase(_T("on")) == 0)
   {
     m_scriptSelect = true;
   }
-  if(m_scriptOutput)
+  if(m_scriptOutput && m_scriptOutput->GetIsOpen())
   {
-    fprintf(m_scriptOutput,":SELECT %s\n", m_scriptSelect ? "on" : "off");
+    m_scriptOutput->Format(_T(":SELECT %s\n"),m_scriptSelect ? _T("on") : _T("off"));
   }
-  WriteOutputLine(p_line,0,":select " + p_tail,result);
+  WriteOutputLine(p_line,0,_T(":select ") + p_tail,result);
   return true;
 }
 
@@ -1630,41 +1631,41 @@ COEditorView::ScriptCommandAtExec(int p_line,CString p_tail)
 
   p_tail.Trim();
   p_tail.MakeLower();
-  if(p_tail.Left(7).CompareNoCase("inbound") == 0)
+  if(p_tail.Left(7).CompareNoCase(_T("inbound")) == 0)
   {
-    p_tail.TrimLeft("inbound");
+    p_tail.TrimLeft(_T("inbound"));
     p_tail.TrimLeft();
 
-    m_inboundBufferSize = atoi(p_tail);
+    m_inboundBufferSize = _ttoi(p_tail);
     if(m_inboundBufferSize < 0 || m_inboundBufferSize > (4 * 1024))
     {
       m_inboundBufferSize = 0;
     }
   }
-  p_tail.TrimLeft("variable");
+  p_tail.TrimLeft(_T("variable"));
   int pos = p_tail.Find(' ');
   if(pos > 0)
   {
-    int varNum = atoi(p_tail.Left(pos));
-    int size   = atoi(p_tail.Mid(pos+1));
+    int varNum = _ttoi(p_tail.Left(pos));
+    int size   = _ttoi(p_tail.Mid(pos+1));
     VarMap::iterator it = varMap.find(varNum);
     if(it != varMap.end())
     {
       SQLVariant* var = it->second;
       var->SetAtExec(size > 0);
       var->SetBinaryPieceSize(size);
-      if(m_scriptOutput)
+      if(m_scriptOutput && m_scriptOutput->GetIsOpen())
       {
-        fprintf(m_scriptOutput,":ATEXEC variable<%d> set %s, size: %d\n",varNum,size > 0 ? "ON" : "OFF", size);
+        m_scriptOutput->Format(_T(":ATEXEC variable<%d> set %s, size: %d\n"),varNum,size > 0 ? _T("ON") : _T("OFF"),size);
       }
       result = true;
     }
   }
   else
   {
-    error = "No variable";
+    error = _T("No variable");
   }
-  WriteOutputLine(p_line,0,":atexec " + p_tail,error);
+  WriteOutputLine(p_line,0,_T(":atexec ") + p_tail,error);
   return result;
 }
 
@@ -1680,22 +1681,22 @@ COEditorView::ScriptCommandRepeat(int p_line,CString p_tail)
   if(pos >= 0)
   {
     CString word = p_tail.Left(pos);
-    m_interval = atoi(word);
+    m_interval = _ttoi(word);
 
     p_tail = p_tail.Mid(pos + 1);
     pos = p_tail.Find(' ');
     while(pos >= 0)
     {
       word = p_tail.Left(pos);
-      if(word.CompareNoCase("wholeminutes") == 0)
+      if(word.CompareNoCase(_T("wholeminutes")) == 0)
       {
         m_wholeMinutes = true;
       }
-      if(word.CompareNoCase("times") == 0)
+      if(word.CompareNoCase(_T("times")) == 0)
       {
         p_tail = p_tail.Mid(pos + 1);
         pos = p_tail.Find(' ');
-        m_repeat = atoi(p_tail);
+        m_repeat = _ttoi(p_tail);
 
         if(pos < 0)
         {
@@ -1708,23 +1709,23 @@ COEditorView::ScriptCommandRepeat(int p_line,CString p_tail)
     }
   }
   CString line;
-  line.Format(":REPEAT interval [%d]",m_interval);
+  line.Format(_T(":REPEAT interval [%d]"),m_interval);
   if(m_repeat)
   {
     CString text;
-    text.Format(" repeat-times [%d]",m_repeat);
+    text.Format(_T(" repeat-times [%d]"),m_repeat);
     line += text;
   }
   if(m_wholeMinutes)
   {
-    line += " wholeminutes start";
+    line += _T(" wholeminutes start");
   }
-  WriteOutputLine(p_line,0,line,"");
-  if(m_scriptOutput)
+  WriteOutputLine(p_line,0,line,_T(""));
+  if(m_scriptOutput && m_scriptOutput->GetIsOpen())
   {
-    fprintf(m_scriptOutput,"%s\n\n",line.GetString());
-    fprintf(m_scriptOutput,"Date                  Miliseconds\n");
-    fprintf(m_scriptOutput,"-------------------   ---------------\n");
+    m_scriptOutput->Format(_T("%s\n\n"),line.GetString());
+    m_scriptOutput->Write(CString(_T("Date                  Miliseconds\n")));
+    m_scriptOutput->Write(CString(_T("-------------------   ---------------\n")));
   }
   return result;
 }
@@ -1732,11 +1733,11 @@ COEditorView::ScriptCommandRepeat(int p_line,CString p_tail)
 bool
 COEditorView::ScriptCommandExit(int p_line, CString p_tail)
 {
-  if(m_scriptOutput)
+  if(m_scriptOutput && m_scriptOutput->GetIsOpen())
   {
-    fprintf(m_scriptOutput,"==================\n");
-    fprintf(m_scriptOutput,"Exiting QueryTool!\n");
-    fprintf(m_scriptOutput,"Goodbye!\n");
+    m_scriptOutput->Write(CString(_T("==================\n")));
+    m_scriptOutput->Write(CString(_T("Exiting QueryTool!\n")));
+    m_scriptOutput->Write(CString(_T("Goodbye!\n")));
   }
   AfxGetApp()->m_pMainWnd->PostMessage(WM_QUIT,0,0);
   return true;
@@ -1755,7 +1756,7 @@ COEditorView::ScriptCommandEndRepeat(int p_line,CString p_tail)
 int
 COEditorView::ScriptSelect(int p_line)
 {
-  if(!m_scriptOutput || !m_scriptSelect)
+  if(!m_scriptOutput || !m_scriptSelect || !m_scriptOutput->GetIsOpen())
   {
     return 0;
   }
@@ -1767,9 +1768,9 @@ COEditorView::ScriptSelect(int p_line)
     CString result;
     m_query.GetColumnName(k,name);
 
-    result.Format(":COLUMN [%d] = [%s]\n",k,name.GetString());
-    fprintf(m_scriptOutput,result.GetString());
-    WriteOutputLine(p_line,1,result,"");
+    result.Format(_T(":COLUMN [%d] = [%s]\n"),k,name.GetString());
+    m_scriptOutput->Write(result);
+    WriteOutputLine(p_line,1,result,_T(""));
 
     if(name.GetLength() > longest)
     {
@@ -1799,12 +1800,12 @@ COEditorView::ScriptSelect(int p_line,int p_longest,int p_row)
     m_query.GetColumnName(k,name);
 
     CString result;
-    result.Format(":ROW [%d:%-*s] = [%s]\n",p_row,p_longest,name.GetString(),text.GetString());
-    if(m_scriptOutput)
+    result.Format(_T(":ROW [%d:%-*s] = [%s]\n"),p_row,p_longest,name.GetString(),text.GetString());
+    if(m_scriptOutput && m_scriptOutput->GetIsOpen())
     {
-      fprintf(m_scriptOutput,result.GetString());
+      m_scriptOutput->Write(result);
     }
-    WriteOutputLine(p_line,1,result,"");
+    WriteOutputLine(p_line,1,result,_T(""));
 
     // Get the result in the variables array
     // so we can use the variables in the 'if' statement!

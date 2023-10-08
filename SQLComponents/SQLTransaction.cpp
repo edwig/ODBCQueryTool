@@ -42,11 +42,12 @@ namespace SQLComponents
 {
 
 SQLTransaction::SQLTransaction(SQLDatabase* p_database
-                              ,const char*  p_name
+                              ,LPCTSTR      p_name
                               ,bool         p_startImmediate
                               ,bool         p_isSubTransaction) 
                :m_database  (p_database)
                ,m_lock      (p_database,INFINITE)
+               ,m_name      (p_name)
                ,m_active    (false)
                ,m_hdbc      (NULL)
 {
@@ -78,7 +79,7 @@ SQLTransaction::~SQLTransaction()
   catch(StdException& error)
   {
     XString message;
-    message.Format("Error in rollback of transaction [%s] : %s\n",m_name.GetString(),error.GetErrorMessage().GetString());
+    message.Format(_T("Error in rollback of transaction [%s] : %s\n"),m_name.GetString(),error.GetErrorMessage().GetString());
     if(m_database)
     {
       m_database->LogPrint(message);
@@ -100,7 +101,7 @@ SQLTransaction::Start(XString p_name, bool p_startSubtransaction)
   if(m_active)
   {
     XString message;
-    message.Format("Error in start-transaction [%s] : Already started a transaction",m_name.GetString());
+    message.Format(_T("Error in start-transaction [%s] : Already started a transaction"),m_name.GetString());
     throw StdException(message);
   }
 
@@ -114,7 +115,7 @@ SQLTransaction::Start(XString p_name, bool p_startSubtransaction)
     SQLRETURN ret = SqlSetConnectAttr(m_hdbc,SQL_ATTR_AUTOCOMMIT,(SQLPOINTER)SQL_AUTOCOMMIT_OFF,SQL_IS_UINTEGER);
     if(!SQL_SUCCEEDED(ret))
     {
-      throw StdException("Error setting autocommit mode to 'off', starting transaction: " + m_name);
+      throw StdException(_T("Error setting autocommit mode to 'off', starting transaction: ") + m_name);
     }
   }
   // We are alive!
@@ -129,13 +130,13 @@ SQLTransaction::Commit()
   if(!m_active)
   {
     XString message;
-    message.Format("Error in commit of [%s] : transaction object is not opened",m_name.GetString());
+    message.Format(_T("Error in commit of [%s] : transaction object is not opened"),m_name.GetString());
     throw StdException(message);
   }
 
   // We are no longer started/active, so we do nothing else after destruction
   // so commit's are not tried double on the database
-  // NOTE: Savepoints must remain till after the commits for the databagse
+  // NOTE: Savepoints must remain till after the commits for the database
   m_active = false;
   
   // Do the commit, if it fails, the database will 
@@ -146,17 +147,17 @@ SQLTransaction::Commit()
   }
   else
   {
-    // Do the commit straigth away
+    // Do the commit straight away
     SQLRETURN ret = SqlEndTran(SQL_HANDLE_DBC,m_hdbc,SQL_COMMIT);
     if(!SQL_SUCCEEDED(ret))
     {
       // Throw something, so we reach the catch block
-      throw StdException("Error commiting transaction: " + m_name);
+      throw StdException(_T("Error commiting transaction: ") + m_name);
     }
     ret = SqlSetConnectAttr(m_hdbc,SQL_ATTR_AUTOCOMMIT,(SQLPOINTER)SQL_AUTOCOMMIT_ON,SQL_IS_UINTEGER);
     if(!SQL_SUCCEEDED(ret))
     {
-      // Not an error in all RDBMS'es. In MS-Access this is default behaviour
+      // Not an error in all RDBMS'es. In MS-Access this is default behavior
       // So we log the error instead of throwing it. 
       // But as we do not have the database object to log it, we TRACE it :-(
       ATLTRACE("Error setting autocommit mode to 'on', after committed transaction [%s]\n",m_name.GetString());
@@ -189,12 +190,12 @@ SQLTransaction::Rollback()
     if(!SQL_SUCCEEDED(ret))
     {
       // Throw something, so we reach the catch block
-      throw StdException("Error commiting transaction: " + m_name);
+      throw StdException(_T("Error commiting transaction: ") + m_name);
     }
     ret = SqlSetConnectAttr(m_hdbc,SQL_ATTR_AUTOCOMMIT,(SQLPOINTER)SQL_AUTOCOMMIT_ON,SQL_IS_UINTEGER);
     if(!SQL_SUCCEEDED(ret))
     {
-      // Not an error in all RDBMS'es. In MS-Access this is default behaviour
+      // Not an error in all RDBMS'es. In MS-Access this is default behavior
       // So we log the error instead of throwing it. 
       // But as we do not have the database object to log it, we TRACE it :-(
       ATLTRACE("Error setting autocommit mode to 'on', after committed transaction [%s]\n",m_name.GetString());
@@ -207,8 +208,8 @@ SQLTransaction::AfterRollback()
 {
   // After closing the transaction by a rollback
   m_active    = false;
-  m_name      = "";
-  m_savepoint = "";
+  m_name      = _T("");
+  m_savepoint = _T("");
 }
 
 // Setting a transaction in a deferred state
@@ -231,7 +232,7 @@ SQLTransaction::SetTransactionDeferred()
 }
 
 // Setting a transaction in an immediate state
-// So that the constraints (uptil now) get checked immediately
+// So that the constraints (until now) get checked immediately
 bool 
 SQLTransaction::SetTransactionImmediate()
 {

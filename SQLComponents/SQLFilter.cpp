@@ -39,21 +39,21 @@ namespace SQLComponents
 
 OperatorName operatornames[] =
 {
-   { "Equal",         OP_Equal        }
-  ,{ "LikeBegin",     OP_LikeBegin    }
-  ,{ "LikeMiddle",    OP_LikeMiddle   }
-  ,{ "LikeEnd",       OP_LikeEnd      }
-  ,{ "IN",            OP_IN           }
-  ,{ "IsNULL",        OP_IsNULL       }
-  ,{ "IsNotNULL",     OP_IsNotNULL    }
-  ,{ "Greater",       OP_Greater      }
-  ,{ "GreaterEqual",  OP_GreaterEqual }
-  ,{ "Smaller",       OP_Smaller      }
-  ,{ "GreaterEqual",  OP_GreaterEqual }
-  ,{ "NotEqual",      OP_NotEqual     }
-  ,{ "Between",       OP_Between      }
-  ,{ "Exists",        OP_Exists       }
-  ,{ "NOP",           OP_NOP          }
+   { _T("Equal"),         OP_Equal        }
+  ,{ _T("LikeBegin"),     OP_LikeBegin    }
+  ,{ _T("LikeMiddle"),    OP_LikeMiddle   }
+  ,{ _T("LikeEnd"),       OP_LikeEnd      }
+  ,{ _T("IN"),            OP_IN           }
+  ,{ _T("IsNULL"),        OP_IsNULL       }
+  ,{ _T("IsNotNULL"),     OP_IsNotNULL    }
+  ,{ _T("Greater"),       OP_Greater      }
+  ,{ _T("GreaterEqual"),  OP_GreaterEqual }
+  ,{ _T("Smaller"),       OP_Smaller      }
+  ,{ _T("GreaterEqual"),  OP_GreaterEqual }
+  ,{ _T("NotEqual"),      OP_NotEqual     }
+  ,{ _T("Between"),       OP_Between      }
+  ,{ _T("Exists"),        OP_Exists       }
+  ,{ _T("NOP"),           OP_NOP          }
 };
 
 // XTOR: Create empty
@@ -241,10 +241,10 @@ SQLFilter::GetSQLFilter(SQLQuery& p_query)
   // Add an extra parenthesis level
   if(m_openParenthesis)
   {
-    sql = "(";
+    sql = _T("(");
   }
 
-  // See if our own homebrewn expression on a filter without operators
+  // See if our own home-brewn expression on a filter without operators
   if(m_operator == OP_NOP && m_function == FN_NOP && !m_expression.IsEmpty())
   {
     sql += m_expression;
@@ -275,7 +275,7 @@ SQLFilter::GetSQLFilter(SQLQuery& p_query)
     SQLVariant* var = m_values.front();
     XString value;
     var->GetAsString(value);
-    if(var->IsNULL() || value.CompareNoCase("null") == 0)
+    if(var->IsNULL() || value.CompareNoCase(_T("null")) == 0)
     {
       m_operator = OP_IsNULL;
     }
@@ -284,20 +284,20 @@ SQLFilter::GetSQLFilter(SQLQuery& p_query)
   // Add the operator
   switch(m_operator)
   {
-    case OP_Equal:        sql += " = ";         break;
-    case OP_NotEqual:     sql += " <> ";        break;
-    case OP_Greater:      sql += " > ";         break;
-    case OP_GreaterEqual: sql += " >= ";        break;
-    case OP_Smaller:      sql += " < ";         break;
-    case OP_SmallerEqual: sql += " <= ";        break;
-    case OP_LikeBegin:    sql += " LIKE '";     break;
-    case OP_LikeMiddle:   sql += " LIKE '%";    break;
-    case OP_LikeEnd:      sql += " LIKE '%";    break;
-    case OP_IsNULL:       sql += " IS NULL";    break;
-    case OP_IsNotNULL:    sql += " IS NOT NULL";break;
-    case OP_IN:           sql += " IN (";       break;
-    case OP_Between:      sql += " BETWEEN ";   break;
-    case OP_Exists:       sql += " EXISTS ";    break;
+    case OP_Equal:        sql += _T(" = ");          break;
+    case OP_NotEqual:     sql += _T(" <> ");         break;
+    case OP_Greater:      sql += _T(" > ");          break;
+    case OP_GreaterEqual: sql += _T(" >= ");         break;
+    case OP_Smaller:      sql += _T(" < ");          break;
+    case OP_SmallerEqual: sql += _T(" <= ");         break;
+    case OP_LikeBegin:    sql += _T(" LIKE '");      break;
+    case OP_LikeMiddle:   sql += _T(" LIKE '%");     break;
+    case OP_LikeEnd:      sql += _T(" LIKE '%");     break;
+    case OP_IsNULL:       sql += _T(" IS NULL");     break;
+    case OP_IsNotNULL:    sql += _T(" IS NOT NULL"); break;
+    case OP_IN:           sql += _T(" IN (");        break;
+    case OP_Between:      sql += _T(" BETWEEN ");    break;
+    case OP_Exists:       sql += _T(" EXISTS ");     break;
     //case OP_NOP:          // Fall through
     //default:              throw StdException("SQLFilter without an operator!");
   }
@@ -332,13 +332,13 @@ SQLFilter::GetSQLFilter(SQLQuery& p_query)
   // Beware that it is OUTSIDE the parenthesis
   if(m_negate)
   {
-    sql = "NOT " + sql;
+    sql = _T("NOT ") + sql;
   }
 
   // End an extra parenthesis level
   if(m_closeParenthesis)
   {
-    sql += ")";
+    sql += _T(")");
   }
 
   return sql;
@@ -353,7 +353,7 @@ SQLFilter::MatchRecord(SQLRecord* p_record)
   // Check that we do NOT have a free expression
   if(!m_expression.IsEmpty())
   {
-    throw StdException("Cannot match a filter internally on an expression!");
+    throw StdException(_T("Cannot match a filter internally on an expression!"));
   }
 
   // Getting the left hand operand
@@ -378,7 +378,7 @@ SQLFilter::MatchRecord(SQLRecord* p_record)
     case OP_IsNotNULL:    result = MatchIsNotNull   (field); break;
     case OP_IN:           result = MatchIN          (field); break;
     case OP_Between:      result = MatchBetween     (field); break;
-    default:              throw StdException("SQLFilter with unknown operator!");
+    default:              throw StdException(_T("SQLFilter with unknown operator!"));
   }
   // Return the correct result
   return m_negate ? !result : result;
@@ -405,7 +405,7 @@ SQLFilter::CheckValue()
 {
   if(m_values.empty())
   {
-    throw StdException("No operand value for SQLFilter provided!");
+    throw StdException(_T("No operand value for SQLFilter provided!"));
   }
 }
 
@@ -415,7 +415,7 @@ SQLFilter::CheckTwoValues()
 {
   if(m_values.size() != 2)
   {
-    throw StdException("SQLFilter with BETWEEN operator and number of arguments is not two (2) values");
+    throw StdException(_T("SQLFilter with BETWEEN operator and number of arguments is not two (2) values"));
   }
 }
 
@@ -430,12 +430,12 @@ SQLFilter::ConstructOperand(XString& p_sql,SQLQuery& p_query)
       // Check that we have a value, and use it
       if(m_values.empty())
       {
-        p_sql += "IS NULL";
+        p_sql += _T("IS NULL");
       }
       else
       {
         // Use last value (earlier can be used by functions!!)
-        p_sql += "?";
+        p_sql += _T("?");
         size_t num = m_values.size() - 1;
         p_query.SetParameter(m_values[num]);
       }
@@ -461,9 +461,10 @@ SQLFilter::ConstructLike(XString& p_sql)
   CheckValue();
 
   // Check that we do the operation on a character string
-  if(m_values[0]->GetDataType() != SQL_C_CHAR)
+  if(m_values[0]->GetDataType() != SQL_C_CHAR &&
+     m_values[0]->GetDataType() != SQL_C_WCHAR)
   {
-    throw StdException("Cannot use LIKE on a non-string data type!");
+    throw StdException(_T("Cannot use LIKE on a non-string data type!"));
   }
   // Get string without leading/trailing quote
   XString value;
@@ -472,7 +473,7 @@ SQLFilter::ConstructLike(XString& p_sql)
   p_sql += value;
 
   // Eventually a closing '%'
-  p_sql += m_operator == OP_LikeEnd ? "'" : "%'";
+  p_sql += m_operator == OP_LikeEnd ? _T("'") : _T("%'");
 }
 
 // Constructing the IN clause
@@ -487,7 +488,7 @@ SQLFilter::ConstructIN(XString& p_sql,SQLQuery& p_query)
       SQLFilter* filter = m_subfilters->GetFilter(index);
       for(auto& var : filter->m_values)
       {
-        p_sql += "?,";
+        p_sql += _T("?,");
         p_query.SetParameter(var);
       }
     }
@@ -495,11 +496,11 @@ SQLFilter::ConstructIN(XString& p_sql,SQLQuery& p_query)
   // Getting a series of values, comma separated
   for(auto& var : m_values)
   {
-    p_sql += "?,";
+    p_sql += _T("?,");
     p_query.SetParameter(var);
   }
   p_sql.TrimRight(',');
-  p_sql += ")";
+  p_sql += _T(")");
 }
 
 // Constructing the BETWEEN clause
@@ -509,7 +510,7 @@ SQLFilter::ConstructBetween(XString& p_sql,SQLQuery& p_query)
   // CHeck that we have EXACTLY two values
   CheckTwoValues();
 
-  p_sql += "? AND ? ";
+  p_sql += _T("? AND ? ");
   p_query.SetParameter(m_values[0]);
   p_query.SetParameter(m_values[1]);
 }
@@ -527,88 +528,88 @@ SQLFilter::ConstructFunctionSQL(SQLQuery& p_query)
   switch(m_function)
   {
     // STRING FUNCTIONS
-    case FN_ASCII:            sql = "ASCII";            parameters = 1; break;
-    case FN_BIT_LENGTH:       sql = "BIT_LENGTH";       parameters = 1; break;
-    case FN_CHAR:             sql = "CHAR";             parameters = 1; break;
-    case FN_CHAR_LENGTH:      sql = "CHAR_LENGTH";      parameters = 1; break;
-    case FN_CHARACTER_LENGTH: sql = "CHARACTER_LENGTH"; parameters = 1; break;
-    case FN_CONCAT:           sql = "CONCAT";           parameters = 2; break;
-    case FN_DIFFERENCE:       sql = "DIFFERENCE";       parameters = 2; break;
-    case FN_INSERT:           sql = "INSERT";           parameters = 4; break;
-    case FN_LCASE:            sql = "LCASE";            parameters = 1; break;
-    case FN_LEFT:             sql = "LEFT";             parameters = 2; break;
-    case FN_LENGTH:           sql = "LENGTH";           parameters = 1; break;
-    case FN_LOCATE:           sql = "LOCATE";           parameters = 4; break;
-    case FN_LTRIM:            sql = "LTRIM";            parameters = 1; break;
-    case FN_OCTET_LENGTH:     sql = "OCTET_LENGTH";     parameters = 1; break;
-    case FN_POSITION:         sql = "POSITION";         parameters = 2; comma = " IN "; break;
-    case FN_INSTRING:         sql = "INSTR";            parameters = 2; trim = true;    break;
-    case FN_REPEAT:           sql = "REPEAT";           parameters = 2; break;
-    case FN_REPLACE:          sql = "REPLACE";          parameters = 3; break;
-    case FN_RIGHT:            sql = "RIGHT";            parameters = 2; break;
-    case FN_RTRIM:            sql = "RTRIM";            parameters = 1; break;
-    case FN_SOUNDEX:          sql = "SOUNDEX";          parameters = 1; break;
-    case FN_SPACE:            sql = "SPACE";            parameters = 1; break;
-    case FN_SUBSTRING:        sql = "SUBSTRING";        parameters = 3; break;
-    case FN_UCASE:            sql = "UCASE";            parameters = 1; break;
+    case FN_ASCII:            sql = _T("ASCII");            parameters = 1; break;
+    case FN_BIT_LENGTH:       sql = _T("BIT_LENGTH");       parameters = 1; break;
+    case FN_CHAR:             sql = _T("CHAR");             parameters = 1; break;
+    case FN_CHAR_LENGTH:      sql = _T("CHAR_LENGTH");      parameters = 1; break;
+    case FN_CHARACTER_LENGTH: sql = _T("CHARACTER_LENGTH"); parameters = 1; break;
+    case FN_CONCAT:           sql = _T("CONCAT");           parameters = 2; break;
+    case FN_DIFFERENCE:       sql = _T("DIFFERENCE");       parameters = 2; break;
+    case FN_INSERT:           sql = _T("INSERT");           parameters = 4; break;
+    case FN_LCASE:            sql = _T("LCASE");            parameters = 1; break;
+    case FN_LEFT:             sql = _T("LEFT");             parameters = 2; break;
+    case FN_LENGTH:           sql = _T("LENGTH");           parameters = 1; break;
+    case FN_LOCATE:           sql = _T("LOCATE");           parameters = 4; break;
+    case FN_LTRIM:            sql = _T("LTRIM");            parameters = 1; break;
+    case FN_OCTET_LENGTH:     sql = _T("OCTET_LENGTH");     parameters = 1; break;
+    case FN_POSITION:         sql = _T("POSITION");         parameters = 2; comma = _T(" IN "); break;
+    case FN_INSTRING:         sql = _T("INSTR");            parameters = 2; trim = true;    break;
+    case FN_REPEAT:           sql = _T("REPEAT");           parameters = 2; break;
+    case FN_REPLACE:          sql = _T("REPLACE");          parameters = 3; break;
+    case FN_RIGHT:            sql = _T("RIGHT");            parameters = 2; break;
+    case FN_RTRIM:            sql = _T("RTRIM");            parameters = 1; break;
+    case FN_SOUNDEX:          sql = _T("SOUNDEX");          parameters = 1; break;
+    case FN_SPACE:            sql = _T("SPACE");            parameters = 1; break;
+    case FN_SUBSTRING:        sql = _T("SUBSTRING");        parameters = 3; break;
+    case FN_UCASE:            sql = _T("UCASE");            parameters = 1; break;
     // NUMERIC FUNCTIONS
-    case FN_ABS:              sql = "ABS";              parameters = 1; break;
-    case FN_ACOS:             sql = "ACOS";             parameters = 1; break;
-    case FN_ASIN:             sql = "ASIN";             parameters = 1; break;
-    case FN_ATAN:             sql = "ATAN";             parameters = 1; break;
-    case FN_ATAN2:            sql = "ATAN2";            parameters = 1; break;
-    case FN_CEILING:          sql = "CEILING";          parameters = 1; break;
-    case FN_COS:              sql = "COS";              parameters = 1; break;
-    case FN_COT:              sql = "COT";              parameters = 1; break;
-    case FN_DEGREES:          sql = "DEGREES";          parameters = 1; break;
-    case FN_EXP:              sql = "EXP";              parameters = 1; break;
-    case FN_FLOOR:            sql = "FLOOR";            parameters = 1; break;
-    case FN_LOG:              sql = "LOG";              parameters = 1; break;
-    case FN_LOG10:            sql = "LOG10";            parameters = 1; break;
-    case FN_MOD:              sql = "MOD";              parameters = 2; break;
-    case FN_PI:               sql = "PI";               parameters = 0; break;
-    case FN_POWER:            sql = "POWER";            parameters = 2; break;
-    case FN_RADIANS:          sql = "RADIANS";          parameters = 1; break;
-    case FN_RAND:             sql = "RAND";             parameters = 1; break;
-    case FN_ROUND:            sql = "ROUND";            parameters = 2; break;
-    case FN_SIGN:             sql = "SIGN";             parameters = 1; break;
-    case FN_SIN:              sql = "SIN";              parameters = 1; break;
-    case FN_SQRT:             sql = "SQRT";             parameters = 1; break;
-    case FN_TAN:              sql = "TAN";              parameters = 1; break;
-    case FN_TRUNCATE:         sql = "TRUNCATE";         parameters = 2; break;
+    case FN_ABS:              sql = _T("ABS");              parameters = 1; break;
+    case FN_ACOS:             sql = _T("ACOS");             parameters = 1; break;
+    case FN_ASIN:             sql = _T("ASIN");             parameters = 1; break;
+    case FN_ATAN:             sql = _T("ATAN");             parameters = 1; break;
+    case FN_ATAN2:            sql = _T("ATAN2");            parameters = 1; break;
+    case FN_CEILING:          sql = _T("CEILING");          parameters = 1; break;
+    case FN_COS:              sql = _T("COS");              parameters = 1; break;
+    case FN_COT:              sql = _T("COT");              parameters = 1; break;
+    case FN_DEGREES:          sql = _T("DEGREES");          parameters = 1; break;
+    case FN_EXP:              sql = _T("EXP");              parameters = 1; break;
+    case FN_FLOOR:            sql = _T("FLOOR");            parameters = 1; break;
+    case FN_LOG:              sql = _T("LOG");              parameters = 1; break;
+    case FN_LOG10:            sql = _T("LOG10");            parameters = 1; break;
+    case FN_MOD:              sql = _T("MOD");              parameters = 2; break;
+    case FN_PI:               sql = _T("PI");               parameters = 0; break;
+    case FN_POWER:            sql = _T("POWER");            parameters = 2; break;
+    case FN_RADIANS:          sql = _T("RADIANS");          parameters = 1; break;
+    case FN_RAND:             sql = _T("RAND");             parameters = 1; break;
+    case FN_ROUND:            sql = _T("ROUND");            parameters = 2; break;
+    case FN_SIGN:             sql = _T("SIGN");             parameters = 1; break;
+    case FN_SIN:              sql = _T("SIN");              parameters = 1; break;
+    case FN_SQRT:             sql = _T("SQRT");             parameters = 1; break;
+    case FN_TAN:              sql = _T("TAN");              parameters = 1; break;
+    case FN_TRUNCATE:         sql = _T("TRUNCATE");         parameters = 2; break;
     // DATE/TIME FUNCTIONS
-    case FN_CURRENT_DATE:     sql = "CURRENT_DATE";     parameters = 0; break;
-    case FN_CURRENT_TIME:     sql = "CURRENT_TIME";     parameters = 0; break;
-    case FN_CURRENT_TIMESTAMP:sql = "CURRENT_TIMESTAMP";parameters = 0; break;
-    case FN_CURDATE:          sql = "CURDATE";          parameters = 0; break;
-    case FN_CURTIME:          sql = "CURTIME";          parameters = 0; break;
-    case FN_DAYNAME:          sql = "DAYNAME";          parameters = 1; break;
-    case FN_DAYOFMONTH:       sql = "DAYOFMONTH";       parameters = 1; break;
-    case FN_DAYOFWEEK:        sql = "DAYOFWEEK";        parameters = 1; break;
-    case FN_DAYOFYEAR:        sql = "DAYOFYEAR";        parameters = 1; break;
-    case FN_EXTRACT:          sql = "EXTRACT";          parameters =-1; break; // BEWARE: Negative parameters
-    case FN_HOUR:             sql = "HOUR";             parameters = 1; break;
-    case FN_MINUTE:           sql = "MINUTE";           parameters = 1; break;
-    case FN_MONTH:            sql = "MONTH";            parameters = 1; break;
-    case FN_MONTHNAME:        sql = "MONTHNAME";        parameters = 1; break;
-    case FN_NOW:              sql = "NOW";              parameters = 0; break;
-    case FN_QUARTER:          sql = "QUARTER";          parameters = 1; break;
-    case FN_SECOND:           sql = "SECOND";           parameters = 1; break;
-    case FN_TIMESTAMPADD:     sql = "TIMESTAMPADD";     parameters =-2; break; // BEWARE: Negative parameters
-    case FN_TIMESTAMPDIFF:    sql = "TIMESTAMPDIFF";    parameters =-2; break; // BEWARE: Negative parameters
-    case FN_WEEK:             sql = "WEEK";             parameters = 1; break;
-    case FN_YEAR:             sql = "YEAR";             parameters = 1; break;
+    case FN_CURRENT_DATE:     sql = _T("CURRENT_DATE");     parameters = 0; break;
+    case FN_CURRENT_TIME:     sql = _T("CURRENT_TIME");     parameters = 0; break;
+    case FN_CURRENT_TIMESTAMP:sql = _T("CURRENT_TIMESTAMP");parameters = 0; break;
+    case FN_CURDATE:          sql = _T("CURDATE");          parameters = 0; break;
+    case FN_CURTIME:          sql = _T("CURTIME");          parameters = 0; break;
+    case FN_DAYNAME:          sql = _T("DAYNAME");          parameters = 1; break;
+    case FN_DAYOFMONTH:       sql = _T("DAYOFMONTH");       parameters = 1; break;
+    case FN_DAYOFWEEK:        sql = _T("DAYOFWEEK");        parameters = 1; break;
+    case FN_DAYOFYEAR:        sql = _T("DAYOFYEAR");        parameters = 1; break;
+    case FN_EXTRACT:          sql = _T("EXTRACT");          parameters =-1; break; // BEWARE: Negative parameters
+    case FN_HOUR:             sql = _T("HOUR");             parameters = 1; break;
+    case FN_MINUTE:           sql = _T("MINUTE");           parameters = 1; break;
+    case FN_MONTH:            sql = _T("MONTH");            parameters = 1; break;
+    case FN_MONTHNAME:        sql = _T("MONTHNAME");        parameters = 1; break;
+    case FN_NOW:              sql = _T("NOW");              parameters = 0; break;
+    case FN_QUARTER:          sql = _T("QUARTER");          parameters = 1; break;
+    case FN_SECOND:           sql = _T("SECOND");           parameters = 1; break;
+    case FN_TIMESTAMPADD:     sql = _T("TIMESTAMPADD");     parameters =-2; break; // BEWARE: Negative parameters
+    case FN_TIMESTAMPDIFF:    sql = _T("TIMESTAMPDIFF");    parameters =-2; break; // BEWARE: Negative parameters
+    case FN_WEEK:             sql = _T("WEEK");             parameters = 1; break;
+    case FN_YEAR:             sql = _T("YEAR");             parameters = 1; break;
     // SYSTEM FUNCTIONS
-    case FN_DATABASE:         sql = "DATABASE";         parameters = 0; break;
-    case FN_USER:             sql = "USER";             parameters = 0; break;
-    case FN_IFNULL:           sql = "IFNULL";           parameters = 2; break;
+    case FN_DATABASE:         sql = _T("DATABASE");         parameters = 0; break;
+    case FN_USER:             sql = _T("USER");             parameters = 0; break;
+    case FN_IFNULL:           sql = _T("IFNULL");           parameters = 2; break;
     // HAVING FUNCTIONS
-    case FN_SUM:              sql = "SUM";              parameters = 1; trim = true; break;
-    case FN_COUNT:            sql = "COUNT";            parameters = 1; trim = true; break;
-    case FN_COUNTDIST:        sql = "COUNT(DISTINCT(";  parameters = 1; trim = true; extra = true; break;
-    case FN_MIN:              sql = "MIN";              parameters = 1; trim = true; break;
-    case FN_MAX:              sql = "MAX";              parameters = 1; trim = true; break;
-    case FN_AVG:              sql = "AVG";              parameters = 1; trim = true; break;
+    case FN_SUM:              sql = _T("SUM");              parameters = 1; trim = true; break;
+    case FN_COUNT:            sql = _T("COUNT");            parameters = 1; trim = true; break;
+    case FN_COUNTDIST:        sql = _T("COUNT(DISTINCT(");  parameters = 1; trim = true; extra = true; break;
+    case FN_MIN:              sql = _T("MIN");              parameters = 1; trim = true; break;
+    case FN_MAX:              sql = _T("MAX");              parameters = 1; trim = true; break;
+    case FN_AVG:              sql = _T("AVG");              parameters = 1; trim = true; break;
   }
 
   // Construct ODBC Function
@@ -618,27 +619,27 @@ SQLFilter::ConstructFunctionSQL(SQLQuery& p_query)
   }
   switch(parameters)
   {
-    case 0: m_expression = sql = "{fn " + sql + "()}";
+    case 0: m_expression = sql = _T("{fn ") + sql + _T("()}");
             sql = m_field;
             break;
-    case 1: sql = "{fn " + sql + "(" + m_field + ")}";
+    case 1: sql = _T("{fn ") + sql + _T("(") + m_field + _T(")}");
             break;
-    case 2: sql = "{fn " + sql + "(" + m_field + ",?)}";
+    case 2: sql = _T("{fn ") + sql + _T("(") + m_field + _T(",?)}");
             p_query.SetParameter(m_values[0]);
             break;
-    case 3: sql = "{fn " + sql + "(" + m_field + ",?,?)}";
+    case 3: sql = _T("{fn ") + sql + _T("(") + m_field + _T(",?,?)}");
             p_query.SetParameter(m_values[0]);
             p_query.SetParameter(m_values[1]);
             break;
-    case 4: sql = "{fn " + sql + "(" + m_field + ",?,?,?)}";
+    case 4: sql = _T("{fn ") + sql + _T("(") + m_field + _T(",?,?,?)}");
             p_query.SetParameter(m_values[0]);
             p_query.SetParameter(m_values[1]);
             p_query.SetParameter(m_values[2]);
             break;
             // SPECIAL CASES
-    case -1:sql = "{fn " + sql + "(" + ConstructExtractPart() + " FROM " + m_field + ")}";
+    case -1:sql = _T("{fn ") + sql + _T("(") + ConstructExtractPart() + _T(" FROM ") + m_field + _T(")}");
             break;
-    case -2:sql = "{fn " + sql + "(" + ConstructTimestampCalcPart() + ",?," + m_field + ")}";
+    case -2:sql = _T("{fn ") + sql + _T("(") + ConstructTimestampCalcPart() + _T(",?,") + m_field + _T(")}");
             p_query.SetParameter(m_values[0]);
             break;
   }
@@ -650,16 +651,16 @@ SQLFilter::ConstructFunctionSQL(SQLQuery& p_query)
     sql = sql.TrimRight('}');
   }
 
-  // Eventuallly an extra parenthesis closing
+  // Eventually an extra parenthesis closing
   if(extra)
   {
-    sql += ")";
+    sql += _T(")");
   }
 
   // Eventually replace the ',' with the operator
   if(!comma.IsEmpty())
   {
-    sql.Replace(",",comma);
+    sql.Replace(_T(","),comma);
   }
 
   return sql;
@@ -672,14 +673,14 @@ SQLFilter::ConstructExtractPart()
   XString part;
   switch(m_extract.m_extract)
   {
-    case TS_EXT_YEAR:   part = "YEAR";    break;
-    case TS_EXT_MONTH:  part = "MONTH";   break;
-    case TS_EXT_DAY:    part = "DAY";     break;
-    case TS_EXT_HOUR:   part = "HOUR";    break;
-    case TS_EXT_MINUTE: part = "MINUTE";  break;
-    case TS_EXT_SECOND: part = "SECOND";  break;
+    case TS_EXT_YEAR:   part = _T("YEAR");    break;
+    case TS_EXT_MONTH:  part = _T("MONTH");   break;
+    case TS_EXT_DAY:    part = _T("DAY");     break;
+    case TS_EXT_HOUR:   part = _T("HOUR");    break;
+    case TS_EXT_MINUTE: part = _T("MINUTE");  break;
+    case TS_EXT_SECOND: part = _T("SECOND");  break;
     case TS_EXT_NONE:   // Fall through
-    default:            throw XString("Unknown or unset timestamp part for EXTRACT function");
+    default:            throw XString(_T("Unknown or unset timestamp part for EXTRACT function"));
   }
   return part;
 }
@@ -691,17 +692,17 @@ SQLFilter::ConstructTimestampCalcPart()
   XString part;
   switch(m_extract.m_calcpart)
   {
-    case SQL_TSI_FRAC_SECOND: part = "SQL_TSI_FRAC_SECOND"; break;
-    case SQL_TSI_SECOND:      part = "SQL_TSI_SECOND";      break;
-    case SQL_TSI_MINUTE:      part = "SQL_TSI_MINUTE";      break;
-    case SQL_TSI_HOUR:        part = "SQL_TSI_HOUR";        break;
-    case SQL_TSI_DAY:         part = "SQL_TSI_DAY";         break;
-    case SQL_TSI_WEEK:        part = "SQL_TSI_WEEK";        break;
-    case SQL_TSI_MONTH:       part = "SQL_TSI_MONTH";       break;
-    case SQL_TSI_QUARTER:     part = "SQL_TSI_QUARTER";     break;
-    case SQL_TSI_YEAR:        part = "SQL_TSI_YEAR";        break;
+    case SQL_TSI_FRAC_SECOND: part = _T("SQL_TSI_FRAC_SECOND"); break;
+    case SQL_TSI_SECOND:      part = _T("SQL_TSI_SECOND");      break;
+    case SQL_TSI_MINUTE:      part = _T("SQL_TSI_MINUTE");      break;
+    case SQL_TSI_HOUR:        part = _T("SQL_TSI_HOUR");        break;
+    case SQL_TSI_DAY:         part = _T("SQL_TSI_DAY");         break;
+    case SQL_TSI_WEEK:        part = _T("SQL_TSI_WEEK");        break;
+    case SQL_TSI_MONTH:       part = _T("SQL_TSI_MONTH");       break;
+    case SQL_TSI_QUARTER:     part = _T("SQL_TSI_QUARTER");     break;
+    case SQL_TSI_YEAR:        part = _T("SQL_TSI_YEAR");        break;
     case SQL_TSI_NONE:        // Fall through
-    default:                  throw XString("Unknown or unset calculation part for TIMESTAMPADD/TIMESTAMPDIFF function");
+    default:                  throw XString(_T("Unknown or unset calculation part for TIMESTAMPADD/TIMESTAMPDIFF function"));
   }
   return part;
 }
@@ -715,54 +716,54 @@ SQLFilter::ConstructExists(XString& p_sql,SQLQuery& p_query)
 {
   if(!m_expression.IsEmpty())
   {
-    p_sql += "(" + m_expression;
+    p_sql += _T("(") + m_expression;
     if(m_subfilters)
     {
       p_sql += m_subfilters->ParseFiltersToCondition(p_query);
     }
-    p_sql += ")";
+    p_sql += _T(")");
     return;
   }
 
-  p_sql += "\n  (SELECT 1\n"
-             "     FROM ";
+  p_sql += _T("\n  (SELECT 1\n")
+           _T("     FROM ");
   p_sql += m_field;
   if(!m_field2.IsEmpty())
   {
-    p_sql += " ";
+    p_sql += _T(" ");
     p_sql += m_field2;
   }
 
   if(m_subfilters)
   {
-    p_sql += "\n   WHERE ";
+    p_sql += _T("\n   WHERE ");
     p_sql += m_subfilters->ParseFiltersToCondition(p_query);
   }
-  p_sql += ")";
+  p_sql += _T(")");
 }
 
 // Construct a "CAST(field AS <datatype>)"
 XString
 SQLFilter::ConstructCastAs()
 {
-  XString sql("CAST(");
+  XString sql(_T("CAST("));
 
   // Add field
   sql += m_field;
-  sql += " AS ";
+  sql += _T(" AS ");
 
   // Adding the datatype
   sql += m_castType;
   if(m_castScale > 0)
   {
-    sql.AppendFormat("(%d",m_castScale);
+    sql.AppendFormat(_T("(%d"),m_castScale);
     if(m_castPrecision > 0)
     {
-      sql.AppendFormat(",%d",m_castPrecision);
+      sql.AppendFormat(_T(",%d"),m_castPrecision);
     }
-    sql += ")";
+    sql += _T(")");
   }
-  sql += ")";
+  sql += _T(")");
 
   return sql;
 }
@@ -947,13 +948,13 @@ SQLFilterSet::ParseFiltersToCondition(SQLQuery& p_query)
     {
       if(filt->GetOperator() == SQLOperator::OP_OR)
       {
-        query += "\n    OR ";
+        query += _T("\n    OR ");
         orDone = true;
         continue;
       }
       if(!orDone)
       {
-        query += "\n   AND ";
+        query += _T("\n   AND ");
       }
       orDone = false;
     }

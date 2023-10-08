@@ -92,7 +92,7 @@ BOOL QueryReWriterApp::InitInstance()
 	// Change the registry key under which our settings are stored
 	// TODO: You should modify this string to be something appropriate
 	// such as the name of your company or organization
-	SetRegistryKey("EDO\\QueryReWriter");
+	SetRegistryKey(_T("EDO\\QueryReWriter"));
 
 	QueryReWriterDlg dlg;
 	m_pMainWnd = &dlg;

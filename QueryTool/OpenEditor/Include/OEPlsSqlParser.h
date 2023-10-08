@@ -94,7 +94,7 @@ namespace OpenEditor
         operator EToken () const { return token; }
         Token& operator = (EToken tk) { token = tk; return *this; }
 
-        static const char* GetString (EToken token);
+        static LPCTSTR GetString (EToken token);
     };
 
     class SyntaxAnalyser
@@ -110,7 +110,7 @@ namespace OpenEditor
         PlsSqlParser (SyntaxAnalyser&);
         void Clear ();
 
-        bool PutLine (int line, const char*, int length);
+        bool PutLine (int line, LPCTSTR, int length);
         void PutEOF  (int line);
 
     private:

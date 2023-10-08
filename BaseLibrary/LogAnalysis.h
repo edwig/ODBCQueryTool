@@ -93,12 +93,12 @@ public:
   // Log this line
   // Intended to be called as:
   // AnalysisLog(__FUNCTION__,LOG_INFO,true,"My info for the logfile: %s %d",StringParam,IntParam);
-  bool    AnalysisLog(const char* p_function,LogType p_type,bool p_doFormat,const char* p_format,...);
+  bool    AnalysisLog(LPCTSTR p_function,LogType p_type,bool p_doFormat,PTCHAR p_format,...);
 
   // Hexadecimal view of an object
   // Intended to be called as:
   // AnalysisHex(__FUNCTION__,"MyMessage",buffer,len);
-  bool    AnalysisHex(const char* p_function,XString p_name,void* p_buffer,unsigned long p_length,unsigned p_linelength = 16);
+  bool    AnalysisHex(LPCTSTR p_function,XString p_name,void* p_buffer,unsigned long p_length,unsigned p_linelength = 16);
 
   // Use sparringly!
   void    BareStringLog(const char* p_buffer,int p_length);

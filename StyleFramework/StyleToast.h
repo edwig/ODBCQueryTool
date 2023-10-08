@@ -47,8 +47,8 @@ void DestroyToast(StyleToast* p_toast);
 StyleToast* CreateToast(int      p_style
                        ,int      p_position
                        ,CString  p_text1
-                       ,CString  p_text2   = ""
-                       ,CString  p_text3   = ""
+                       ,CString  p_text2   = _T("")
+                       ,CString  p_text3   = _T("")
                        ,unsigned p_timeout = 3000);
 
 class Toasts
@@ -65,8 +65,8 @@ public:
   StyleToast(int      p_style
             ,int      p_position
             ,CString  p_text1
-            ,CString  p_text2   = ""
-            ,CString  p_text3   = ""
+            ,CString  p_text2   = _T("")
+            ,CString  p_text3   = _T("")
             ,unsigned p_timeout = 3000);
   virtual ~StyleToast();
 

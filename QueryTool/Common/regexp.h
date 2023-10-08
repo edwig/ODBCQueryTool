@@ -39,9 +39,9 @@ public:
   // MATCHING
   // Returns the offset of the match or -1
 	int  Match(CString& match);
-	int  Match(LPCSTR match);
+	int  Match(LPCTSTR match);
   // Match the 'pos' position in the regular expression
-	bool MatchPos(int pos,char car);
+	bool MatchPos(int pos,TCHAR car);
 
   // STATUS (after searching)
   int GetMatchPos();
@@ -49,51 +49,51 @@ public:
   int GetMatchEnd();
 private:
 	// Implementation
-	void	set_escape(char escape,char zero_one,char closure);
-	int   isfactor(char c);
-	char* strccat(char *s,char ch);
+	void    set_escape(TCHAR escape,TCHAR zero_one,TCHAR closure);
+	int     isfactor(TCHAR c);
+	LPTSTR  strccat(TCHAR *s,TCHAR ch);
 
 	// parse and compile expression
-	char* makepat(char *re,char *pat);
-	char* parse_expression(void);
-	char* parse_term(void);
-	char* parse_factor(void);
-	char  parse_escape(void);
-	int   parse_closure(char *pat,char c);
-	char* parse_cc1(void);
-	char* parse_dash(char *pat,char ch);
+	LPTSTR  makepat(LPTSTR re,LPTSTR pat);
+	LPTSTR  parse_expression(void);
+	LPTSTR  parse_term(void);
+	LPTSTR  parse_factor(void);
+	TCHAR   parse_escape(void);
+	int     parse_closure(LPTSTR pat,TCHAR c);
+	LPTSTR  parse_cc1(void);
+	LPTSTR  parse_dash(LPTSTR pat,TCHAR ch);
 
 	// match expression
-	char* str_match(char *s,char *re);
-	char* re_match(char *s,char *pat);
-	bool  re_matchpos(char car,char *pat,int pos);
-	int   match_term(int inx,char *s,char *pat,int aantalpos = 0);
-	int   match_or(int inx,char *s,char *pat);
-	char* skip_term(char *pat,int aantalpos = 0);
-	int   match_0_1(int inx,char *s,char *pat);
-	int   match_closure(int inx,char *s,char *pat,char *clopat);
-	short match_cc1(char c,char *pat);
+	LPTSTR  str_match(LPTSTR s,LPTSTR re);
+	LPTSTR  re_match(LPTSTR s,LPTSTR pat);
+	bool    re_matchpos(TCHAR car,LPTSTR pat,int pos);
+	int     match_term(int inx,LPTSTR s,LPTSTR pat,int aantalpos = 0);
+	int     match_or(int inx,LPTSTR s,LPTSTR pat);
+	LPTSTR  skip_term(LPTSTR pat,int aantalpos = 0);
+	int     match_0_1(int inx,LPTSTR s,LPTSTR pat);
+	int     match_closure(int inx,LPTSTR s,LPTSTR pat,LPTSTR clopat);
+	short   match_cc1(TCHAR c,LPTSTR pat);
 
 private:
 	CString m_regExp;	
 	CString m_regExpPat;
 
 	// Special
-	char	M_CLOSURE;       /* Closure of line		*/
-	char	M_ZERO_ONE;      /* One or more characters	*/
-	char	M_ESCAPE;        /* Escape character		*/
-	char  m_nfac_chars[7];
-	// Hulpjes
+	TCHAR M_CLOSURE;          /* Closure of line		*/
+	TCHAR M_ZERO_ONE;         /* One or more characters	*/
+	TCHAR M_ESCAPE;           /* Escape character		*/
+	TCHAR m_nfac_chars[8];
+	// Helpers
 
-	int  m_rstart;	      /* Start  of matched substring		*/
-	int  m_rlength;	      /* Length of matched substring		*/
-	bool m_use_case;      /* Case is significant			*/
-	bool m_sql;           /* vertaling als sql			*/
-                              // ?  ==> .
-                              // *  ==> .*
-	char *m_re_ptr;	      /* Global for pattern building		*/
-	char *m_s_end;	      /* Points to last char matched		*/
-	char *m_c;	          /* String continuation pointer		*/
+	int  m_rstart  { 0 };         /* Start  of matched substring  */
+	int  m_rlength { 0 };         /* Length of matched substring  */
+	bool m_use_case{ true };      /* Case is significant          */
+	bool m_sql     { true };      /* Translate as SQL             */
+                                // ?  ==> .
+                                // *  ==> .*
+  LPTSTR m_re_ptr{ nullptr };   /* Global for pattern building  */
+	LPTSTR m_s_end { nullptr };   /* Points to last char matched  */
+	LPTSTR m_c     { nullptr };   /* String continuation pointer  */
 
 };  // RegExp
 

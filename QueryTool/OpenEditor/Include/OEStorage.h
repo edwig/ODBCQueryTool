@@ -20,12 +20,7 @@
 // 23.09.2002 improvement/performance tuning, undo has been reimplemented
 // 06.12.2002 bug fix, in find dialog count and mark change "modified" status
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
-#ifndef __OEStorage_h__
-#define __OEStorage_h__
 
 #include <map>
 #include <deque>
@@ -69,40 +64,40 @@ namespace OpenEditor
 
         // Load & Save
         void SetText (
-            const char* text, unsigned long length, // text pointer end length
+            LPCTSTR text, unsigned long length, // text pointer end length
             bool use_buffer = false,                // use external persistent buffer
             bool refresh    = false,                // rescan for reallocated buffer
             bool external   = false                 // external changes, it requires additional synchronization
             );
         unsigned long GetTextLength () const;
-        unsigned long GetText (char*, unsigned long) const;
+        unsigned long GetText (LPTSTR, unsigned long) const;
         void TruncateSpaces (bool force = false);
         void SetSavedUndoPos ();
 
-        const char* GetFileFormatName () const; 
+        LPCTSTR GetFileFormatName () const; 
 
         // Line
         int  GetLineCount  () const;
         int  GetLineLength (int line) const;
         LineId GetLineId   (int line) const;
 
-        char GetChar (int line, int pos) const /*throw(std::out_of_range)*/;
-        void GetLine (int line, const char*& ptr) const;
-        void GetLine (int line, const char*& ptr, int& len) const;
-        void ScanMultilineQuotes (int to_line, int& state, int& quoteId, bool& parsing) const;
+        TCHAR GetChar (int line, int pos) const /*throw(std::out_of_range)*/;
+        void  GetLine (int line, LPCTSTR& ptr) const;
+        void  GetLine (int line, LPCTSTR& ptr, int& len) const;
+        void  ScanMultilineQuotes (int to_line, int& state, int& quoteId, bool& parsing) const;
 
         // Edit
         // get id of the last data-updating operation
         SequenceId GetActionId () const;
 
-        void Insert     (char, int, int);
-        void Overwrite  (char, int, int);
+        void Insert     (TCHAR, int, int);
+        void Overwrite  (TCHAR, int, int);
         void Delete     (int, int);
 
         // string mustn't have '\r' or '\n'
-        void InsertLine     (int, const char*, int);
-        void InsertLinePart (int, int, const char*, int);
-        void ReplaceLinePart(int, int, int, const char*, int);
+        void InsertLine     (int, LPCTSTR, int);
+        void InsertLinePart (int, int, LPCTSTR, int);
+        void ReplaceLinePart(int, int, int, LPCTSTR, int);
         void DeleteLine     (int);
         void DeleteLinePart (int, int, int);
         void SplitLine      (int, int);
@@ -136,8 +131,8 @@ namespace OpenEditor
         const Searcher& GetSearcher () const;
 
         bool IsSearchTextEmpty () const;
-        const char* GetSearchText () const;
-        void SetSearchText (const char* str);
+        LPCTSTR GetSearchText () const;
+        void SetSearchText (LPCTSTR str);
         void GetSearchOption (bool& backward, bool& wholeWords, bool& matchCase, bool& regExpr, bool& searchAll) const;
         void SetSearchOption (bool backward, bool wholeWords, bool matchCase, bool regExpr, bool searchAll);
         bool IsBackwardSearch () const;
@@ -147,8 +142,8 @@ namespace OpenEditor
         bool Find (const Storage*&, int& line, int& start, int& end, bool thruEof) const;
 
         // 1st,2d,3d are in-parameters ,4th is out
-        bool Replace (const char* text, int line, int start, int& end);
-        int  SearchBatch (const char* text, ESearchBatch mode, Square& last);
+        bool Replace (LPCTSTR text, int line, int start, int& end);
+        int  SearchBatch (LPCTSTR text, ESearchBatch mode, Square& last);
 
         MultilineQuotesScanner& GetMultilineQuotesScanner ();
 
@@ -167,7 +162,7 @@ namespace OpenEditor
         bool IsRandomBookmarked(int line, RandomBookmark& bookmarkId) const;
         void SetRandomBookmark (RandomBookmark bookmark, int line, bool on);
         bool GetRandomBookmark (RandomBookmark bookmark, int& line) const;
-        // the bookmarks will be valid untill storage content is not changed
+        // the bookmarks will be valid until storage content is not changed
         const RandomBookmarkArray& GetRandomBookmarks () const;
 
         bool FindById (LineId id, int& line) const;
@@ -215,11 +210,11 @@ namespace OpenEditor
 
         StringArray m_Lines;
 
-        char m_szLineDelim[3]; // not 0 for loaded files
-        static const char m_cszDosLineDelim  [3]; //= "\r\n";
-        static const char m_cszMacLineDelim  [3]; //= "\n\r";
-        static const char m_cszUnixLineDelim [3]; //= "\n";
-        const char* getLineDelim () const; // it returns poiter to char[3]
+        CString m_szLineDelim; // not 0 for loaded files
+        static const CString m_cszDosLineDelim;   //= "\r\n";
+        static const CString m_cszMacLineDelim;   //= "\n\r";
+        static const CString m_cszUnixLineDelim;  //= "\n";
+        LPCTSTR getLineDelim () const; // it returns pointer to CString
 
         bool m_bDisableNotifications;
         mutable MultilineQuotesScanner m_Scanner;
@@ -279,7 +274,7 @@ namespace OpenEditor
     }
 
     inline
-    char Storage::GetChar (int line, int pos) const /*throw(std::out_of_range)*/
+    TCHAR Storage::GetChar (int line, int pos) const /*throw(std::out_of_range)*/
     {
         // remove cast after FixedString update
         //if (pos > static_cast<int>(FixedString::maxlen))
@@ -390,7 +385,7 @@ namespace OpenEditor
     }
 
     inline
-    const char* Storage::GetSearchText () const
+    LPCTSTR Storage::GetSearchText () const
     {
         _ASSERTE(m_pSearcher);
         return m_pSearcher->GetText();
@@ -404,7 +399,7 @@ namespace OpenEditor
     }
 
     inline
-    void Storage::SetSearchText (const char* str)
+    void Storage::SetSearchText (LPCTSTR str)
     {
         _ASSERTE(m_pSearcher);
         m_pSearcher->SetText(str);
@@ -448,14 +443,14 @@ namespace OpenEditor
     }
 
     inline
-    bool Storage::Replace (const char* text, int line, int start, int& end)
+    bool Storage::Replace (LPCTSTR text, int line, int start, int& end)
     {
         _ASSERTE(m_pSearcher);
         return m_pSearcher->Replace(this, text, line, start, end);
     }
 
     inline
-    int Storage::SearchBatch (const char* text, ESearchBatch mode, Square& last)
+    int Storage::SearchBatch (LPCTSTR text, ESearchBatch mode, Square& last)
     {
         _ASSERTE(m_pSearcher);
         return m_pSearcher->DoBatch(this, text, mode, last);
@@ -521,4 +516,4 @@ namespace OpenEditor
     }
 };
 
-#endif//__OEStorage_h__
+

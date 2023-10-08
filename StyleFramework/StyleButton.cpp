@@ -185,13 +185,13 @@ StyleButton::TranslateStyle(CString p_style)
 {
   m_style = 0;
 
-       if(p_style.Compare("ok")   == 0) m_style = IDI_OK;
-  else if(p_style.Compare("can")  == 0) m_style = IDI_CANCEL;
-  else if(p_style.Compare("rem")  == 0) m_style = IDI_REMOVE;
-  else if(p_style.Compare("save") == 0) m_style = IDI_SAVE;
-  else if(p_style.Compare("cal")  == 0) m_style = IDI_CALENDAR;
-  else if(p_style.Compare("hlp")  == 0) m_style = IDI_HELP;
-  else if(p_style.Compare("dir")  == 0) m_style = IDI_DIRECTORY;
+       if(p_style.Compare(_T("ok"))   == 0) m_style = IDI_OK;
+  else if(p_style.Compare(_T("can"))  == 0) m_style = IDI_CANCEL;
+  else if(p_style.Compare(_T("rem"))  == 0) m_style = IDI_REMOVE;
+  else if(p_style.Compare(_T("save")) == 0) m_style = IDI_SAVE;
+  else if(p_style.Compare(_T("cal"))  == 0) m_style = IDI_CALENDAR;
+  else if(p_style.Compare(_T("hlp"))  == 0) m_style = IDI_HELP;
+  else if(p_style.Compare(_T("dir"))  == 0) m_style = IDI_DIRECTORY;
 }
 
 void
@@ -232,7 +232,7 @@ StyleButton::ResetFont()
   lgFont.lfCharSet        = DEFAULT_CHARSET;
   lgFont.lfClipPrecision  = 0;
   lgFont.lfEscapement     = 0;
-  strcpy_s(lgFont.lfFaceName,LF_FACESIZE,m_fontName);
+  _tcscpy_s(lgFont.lfFaceName,LF_FACESIZE,m_fontName);
   lgFont.lfHeight         = m_fontSize;
   lgFont.lfItalic         = m_italic;
   lgFont.lfOrientation    = 0;

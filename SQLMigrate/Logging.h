@@ -25,9 +25,9 @@
 //
 #pragma once
 
-#define FILENAME_LOGFILE    "logfile.txt"
-#define FILENAME_OUTPUT     "script.sql"
-#define FILENAME_DROPFILE   "dropscript.sql"
+#define FILENAME_LOGFILE    _T("logfile.txt")
+#define FILENAME_OUTPUT     _T("script.sql")
+#define FILENAME_DROPFILE   _T("dropscript.sql")
 
 //class applicatieDlg;
 

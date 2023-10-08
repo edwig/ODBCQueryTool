@@ -60,7 +60,7 @@ CQueryPanelWnd::~CQueryPanelWnd()
 
 void CQueryPanelWnd::ChangePanel (int nTab)
 {
-  _CHECK_AND_THROW_(nTab < QPW_NUM_OF_PANEL, "Invalid index of a query views.");
+  _CHECK_AND_THROW_(nTab < QPW_NUM_OF_PANEL, _T("Invalid index of a query views."));
 
   m_queryView.ShowWindow(nTab == QPW_QUERY_VIEW      ? SW_SHOW : SW_HIDE);
   m_statsView.ShowWindow(nTab == QPW_STATISTICS_VIEW ? SW_SHOW : SW_HIDE);
@@ -157,7 +157,7 @@ BOOL CQueryPanelWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
     memset(&logFont, 0, sizeof(logFont));
     logFont.lfHeight = -12;
     logFont.lfPitchAndFamily = VARIABLE_PITCH | FF_SWISS;
-    lstrcpy(logFont.lfFaceName, "MS Sans Serif");
+    lstrcpy(logFont.lfFaceName, _T("MS Sans Serif"));
     if (!m_queryBar.m_font.CreateFontIndirect(&logFont))
     {
       TRACE0("Cannot make the font for the querybar");
@@ -166,7 +166,7 @@ BOOL CQueryPanelWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
     m_queryBar.SetButtonInfo(1, 0, TBBS_SEPARATOR, 50);
     m_queryBar.GetItemRect(1, &rect);
     rect.DeflateRect(2,4,2,2);
-    if(!m_queryBar.m_textQuery.Create("Query",SS_CENTER,rect,&m_queryBar,0))
+    if(!m_queryBar.m_textQuery.Create(_T("Query"),SS_CENTER,rect,&m_queryBar,0))
     {
       TRACE0("Cannot create static Query text");
     }
@@ -174,7 +174,7 @@ BOOL CQueryPanelWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
     m_queryBar.SetButtonInfo(3, 0, TBBS_SEPARATOR, 50);
     m_queryBar.GetItemRect(3,&rect);
     rect.DeflateRect(2,4,2,2);
-    if(!m_queryBar.m_textOuptput.Create("Output",SS_CENTER,rect,&m_queryBar,0))
+    if(!m_queryBar.m_textOuptput.Create(_T("Output"),SS_CENTER,rect,&m_queryBar,0))
     {
       TRACE0("Cannot create static output text");
     }
@@ -182,7 +182,7 @@ BOOL CQueryPanelWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
     m_queryBar.SetButtonInfo(5, 0, TBBS_SEPARATOR, 50);
     m_queryBar.GetItemRect(5, &rect);
     rect.DeflateRect(2,4,2,2);
-    if(!m_queryBar.m_textStatistics.Create("Statistics",SS_CENTER,rect,&m_queryBar,0))
+    if(!m_queryBar.m_textStatistics.Create(_T("Statistics"),SS_CENTER,rect,&m_queryBar,0))
     {
       TRACE0("Cannot create static statistics text");
     }
@@ -190,7 +190,7 @@ BOOL CQueryPanelWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
     m_queryBar.SetButtonInfo(7, 0 , TBBS_SEPARATOR, 50);
     m_queryBar.GetItemRect(7,&rect);
     rect.DeflateRect(2,4,2,2);
-    if(!m_queryBar.m_textHistory.Create("History",SS_CENTER,rect,&m_queryBar,0))
+    if(!m_queryBar.m_textHistory.Create(_T("History"),SS_CENTER,rect,&m_queryBar,0))
     {
       TRACE0("Cannot create static history text");
     }
@@ -209,7 +209,7 @@ BOOL CQueryPanelWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
   }
  
   if (!m_queryView.Create(NULL
-                         ,"QueryView"
+                         ,_T("QueryView")
                          ,WS_CHILD|WS_TABSTOP|WS_VISIBLE
                          ,rect
                          ,this
@@ -220,7 +220,7 @@ BOOL CQueryPanelWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
     return -1;
   }
   if (!m_outptView.Create(NULL
-                         ,"OutputView"
+                         ,_T("OutputView")
                          ,WS_CHILD|WS_TABSTOP|WS_VISIBLE
                          ,rect
                          ,this
@@ -231,7 +231,7 @@ BOOL CQueryPanelWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
     return -1;
   }
   if (!m_statsView.Create(NULL
-                         ,"StatisticsView"
+                         ,_T("StatisticsView")
                          ,WS_CHILD|WS_TABSTOP|WS_VISIBLE
                          ,rect
                          ,this
@@ -243,7 +243,7 @@ BOOL CQueryPanelWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
   }
 
   if (!m_histoView.Create(NULL
-                         ,"HistoryView"
+                         ,_T("HistoryView")
                          ,WS_CHILD|WS_TABSTOP|WS_VISIBLE
                          ,rect
                          ,this

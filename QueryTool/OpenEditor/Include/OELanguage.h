@@ -74,7 +74,7 @@ namespace OpenEditor
         const vector<vector<CString> >& GetMatchBraces () const;
 
 //    private:
-        CString                   m_name;
+        CString                  m_name;
         bool                     m_caseSensiteve;
         vector<CString>          m_keywordGroups;
         pair<CString, CString>   m_commentPair;

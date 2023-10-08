@@ -43,13 +43,20 @@ SQLInfoMariaDB::SQLInfoMariaDB(SQLDatabase* p_database)
 {
   DetectOracleMode();
 
-  AddSQLWord("database");
-  AddSQLWord("databases");
+  AddSQLWord(_T("database"));
+  AddSQLWord(_T("databases"));
 }
 
 // Destructor. Does nothing
 SQLInfoMariaDB::~SQLInfoMariaDB()
 {
+}
+
+// RDBMS Uses INDENTITY or SEQUENCE interface
+void
+SQLInfoMariaDB::SetUseSequences(bool /*p_sequences*/)
+{
+  // Does nothing
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -71,7 +78,7 @@ XString
 SQLInfoMariaDB::GetRDBMSVendorName() const
 {
   // The name of the database vendor
-  return "MariaDB";
+  return _T("MariaDB");
 }
 
 // Get the physical database name
@@ -186,14 +193,14 @@ SQLInfoMariaDB::GetRDBMSMaxVarchar() const
 XString
 SQLInfoMariaDB::GetKEYWORDCurrentTimestamp() const
 {
-  return "current_timestamp";
+  return _T("current_timestamp");
 }
 
 // String for the current date
 XString
 SQLInfoMariaDB::GetKEYWORDCurrentDate() const
 {
-  return "current_date";
+  return _T("current_date");
 }
 
 // Get the concatenation operator
@@ -205,23 +212,23 @@ SQLInfoMariaDB::GetKEYWORDConcatanationOperator() const
   // Or in ORACLE mode the standard '||' operator
   if(m_oracleMode)
   {
-    return "||";
+    return _T("||");
   }
-  else return "";
+  else return _T("");
 }
 
 // Get quote character for strings
 XString
 SQLInfoMariaDB::GetKEYWORDQuoteCharacter() const
 {
-  return "\'";
+  return _T("\'");
 }
 
 // Get quote character around reserved words as an identifier
 XString
 SQLInfoMariaDB::GetKEYWORDReservedWordQuote() const
 {
-  return "`";
+  return _T("`");
 }
 
 // Get default NULL for parameter list input
@@ -231,9 +238,9 @@ SQLInfoMariaDB::GetKEYWORDParameterDefaultNULL() const
   // Standard, no definition defines the NULL state
   if (m_oracleMode)
   {
-    return "DEFAULT NULL";
+    return _T("DEFAULT NULL");
   }
-  else return "";
+  else return _T("");
 }
 
 // Parameter is for INPUT and OUTPUT in parameter list
@@ -242,9 +249,9 @@ SQLInfoMariaDB::GetKEYWORDParameterINOUT() const
 {
   if (m_oracleMode)
   {
-    return "INOUT";
+    return _T("INOUT");
   }
-  else return "";
+  else return _T("");
 }
 
 // Parameter is for OUTPUT only in parameter list
@@ -253,9 +260,9 @@ SQLInfoMariaDB::GetKEYWORDParameterOUT() const
 {
   if (m_oracleMode)
   {
-    return "OUT";
+    return _T("OUT");
   }
-  else return "";
+  else return _T("");
 }
 
 // Get datatype of the IDENTITY primary key in a Network database
@@ -263,21 +270,21 @@ XString
 SQLInfoMariaDB::GetKEYWORDNetworkPrimaryKeyType() const
 {
   // Use SEQUENCE to fill!
-  return "INTEGER";
+  return _T("INTEGER");
 }
 
 // Get datatype for timestamp (year to second)
 XString
 SQLInfoMariaDB::GetKEYWORDTypeTimestamp() const
 {
-  return "TIMESTAMP";
+  return _T("TIMESTAMP");
 }
 
 // Prefix for a parameter in a stored procedure
 XString
 SQLInfoMariaDB::GetKEYWORDParameterPrefix() const
 {
-  return "";
+  return _T("");
 }
 
 // Get select part to add new record identity to a table
@@ -285,28 +292,28 @@ SQLInfoMariaDB::GetKEYWORDParameterPrefix() const
 XString
 SQLInfoMariaDB::GetKEYWORDIdentityString(XString& p_tablename,XString p_postfix /*= "_seq"*/) const
 {
-  return p_tablename + p_postfix + ".nextval";
+  return p_tablename + p_postfix + _T(".nextval");
 }
 
 // Gets the UPPER function
 XString
 SQLInfoMariaDB::GetKEYWORDUpper(XString& p_expression) const
 {
-  return "UPPER(" + p_expression + ")";
+  return _T("UPPER(") + p_expression + _T(")");
 }
 
 // Gets the construction for 1 minute ago
 XString
 SQLInfoMariaDB::GetKEYWORDInterval1MinuteAgo() const
 {
-  return "TIMESTAMPADD(MINUTE,-1,CURRENT_TIMESTAMP)";
+  return _T("TIMESTAMPADD(MINUTE,-1,CURRENT_TIMESTAMP)");
 }
 
 // Gets the Not-NULL-Value statement of the database
 XString
 SQLInfoMariaDB::GetKEYWORDStatementNVL(XString& p_test,XString& p_isnull) const
 {
-  return "{fn IFNULL(" + p_test + "," + p_isnull + ")}";
+  return _T("{fn IFNULL(") + p_test + _T(",") + p_isnull + _T(")}");
 }
 
 // Gets the RDBMS definition of the datatype
@@ -317,37 +324,37 @@ SQLInfoMariaDB::GetKEYWORDDataType(MetaColumn* p_column)
 
   switch(p_column->m_datatype)
   {
-    case SQL_CHAR:                      type = "CHAR";          break;
-    case SQL_VARCHAR:                   type = "VARCHAR";       break;
-    case SQL_LONGVARCHAR:               type = "TEXT";          break;
-    case SQL_WCHAR:                     type = "CHAR charset ucs2";         break;   // TBF
-    case SQL_WVARCHAR:                  type = "VARCHAR charset ucs2";      break;   // TBF
-    case SQL_WLONGVARCHAR:              type = "TEXT charset ucs2";         break;   // TBF
+    case SQL_CHAR:                      type = _T("CHAR");          break;
+    case SQL_VARCHAR:                   type = _T("VARCHAR");       break;
+    case SQL_LONGVARCHAR:               type = _T("TEXT");          break;
+    case SQL_WCHAR:                     type = _T("CHAR charset ucs2");         break;   // TBF
+    case SQL_WVARCHAR:                  type = _T("VARCHAR charset ucs2");      break;   // TBF
+    case SQL_WLONGVARCHAR:              type = _T("TEXT charset ucs2");         break;   // TBF
     case SQL_NUMERIC:                   // Fall through
-    case SQL_DECIMAL:                   type = "DECIMAL";
+    case SQL_DECIMAL:                   type = _T("DECIMAL");
                                         if(p_column->m_decimalDigits == 0)
                                         {
                                           if(p_column->m_columnSize <= 2)
                                           {
-                                            type = "TINYINT";
+                                            type = _T("TINYINT");
                                             p_column->m_datatype  = SQL_TINYINT;
                                             p_column->m_datatype3 = SQL_TINYINT;
                                           }
                                           else if(p_column->m_columnSize <= 4)
                                           {
-                                            type = "SMALLINT";
+                                            type = _T("SMALLINT");
                                             p_column->m_datatype  = SQL_SMALLINT;
                                             p_column->m_datatype3 = SQL_SMALLINT;
                                           }
                                           else if(p_column->m_columnSize <= 9)
                                           {
-                                            type = "INTEGER";
+                                            type = _T("INTEGER");
                                             p_column->m_datatype  = SQL_INTEGER;
                                             p_column->m_datatype3 = SQL_INTEGER;
                                           }
                                           else if(p_column->m_columnSize <= 18)
                                           {
-                                            type = "BIGINT";
+                                            type = _T("BIGINT");
                                             p_column->m_datatype  = SQL_BIGINT;
                                             p_column->m_datatype3 = SQL_BIGINT;
                                           }
@@ -359,33 +366,33 @@ SQLInfoMariaDB::GetKEYWORDDataType(MetaColumn* p_column)
                                           }
                                         }
                                         break;
-    case SQL_INTEGER:                   type = "INTEGER";
+    case SQL_INTEGER:                   type = _T("INTEGER");
                                         p_column->m_columnSize = 10;
                                         break;
-    case SQL_SMALLINT:                  type = "SMALLINT";
+    case SQL_SMALLINT:                  type = _T("SMALLINT");
                                         p_column->m_columnSize = 5;
                                         break;
-    case SQL_FLOAT:                     type = "FLOAT";         break;
-    case SQL_REAL:                      type = "REAL";          break;
-    case SQL_DOUBLE:                    type = "DOUBLE";        break;
+    case SQL_FLOAT:                     type = _T("FLOAT");         break;
+    case SQL_REAL:                      type = _T("REAL");          break;
+    case SQL_DOUBLE:                    type = _T("DOUBLE");        break;
     //case SQL_DATE:
-    case SQL_DATETIME:                  type = "DATETIME";      break;
-    case SQL_TYPE_DATE:                 type = "DATE";          break;
-    case SQL_TIME:                      type = "TIME";          break;
-    case SQL_TYPE_TIME:                 type = "TIME";          break;
-    case SQL_TIMESTAMP:                 type = "TIMESTAMP";     break;
-    case SQL_TYPE_TIMESTAMP:            type = "TIMESTAMP";     break;
-    case SQL_BINARY:                    type = "BINARY";        break;
-    case SQL_VARBINARY:                 type = "VARBINARY";     break;
-    case SQL_LONGVARBINARY:             type = "LONGBLOB";      break;
-    case SQL_BIGINT:                    type = "BIGINT";
+    case SQL_DATETIME:                  type = _T("DATETIME");      break;
+    case SQL_TYPE_DATE:                 type = _T("DATE");          break;
+    case SQL_TIME:                      type = _T("TIME");          break;
+    case SQL_TYPE_TIME:                 type = _T("TIME");          break;
+    case SQL_TIMESTAMP:                 type = _T("TIMESTAMP");     break;
+    case SQL_TYPE_TIMESTAMP:            type = _T("TIMESTAMP");     break;
+    case SQL_BINARY:                    type = _T("BINARY");        break;
+    case SQL_VARBINARY:                 type = _T("VARBINARY");     break;
+    case SQL_LONGVARBINARY:             type = _T("LONGBLOB");      break;
+    case SQL_BIGINT:                    type = _T("BIGINT");
                                         p_column->m_columnSize = 19;
                                         break;
-    case SQL_TINYINT:                   type = "TINYINT";
+    case SQL_TINYINT:                   type = _T("TINYINT");
                                         p_column->m_columnSize = 3;
                                         break;
-    case SQL_BIT:                       type = "BIT";           break;
-    case SQL_GUID:                      type = "VARCHAR";
+    case SQL_BIT:                       type = _T("BIT");           break;
+    case SQL_GUID:                      type = _T("VARCHAR");
                                         p_column->m_columnSize    = 45;
                                         p_column->m_decimalDigits = 0;
                                         break;
@@ -401,12 +408,12 @@ SQLInfoMariaDB::GetKEYWORDDataType(MetaColumn* p_column)
     case SQL_INTERVAL_DAY_TO_SECOND:    // Fall through
     case SQL_INTERVAL_HOUR_TO_MINUTE:   // Fall through
     case SQL_INTERVAL_HOUR_TO_SECOND:   // Fall through
-    case SQL_INTERVAL_MINUTE_TO_SECOND: type = "VARCHAR";
+    case SQL_INTERVAL_MINUTE_TO_SECOND: type = _T("VARCHAR");
                                         p_column->m_columnSize    = 40;
                                         p_column->m_decimalDigits = 0;
                                         break;
     case SQL_UNKNOWN_TYPE:
-    default:                            type = "UNKNOWN ODBC DATA TYPE!";  break;
+    default:                            type = _T("UNKNOWN ODBC DATA TYPE!");  break;
   }
   return p_column->m_typename = type;
 }
@@ -415,14 +422,14 @@ SQLInfoMariaDB::GetKEYWORDDataType(MetaColumn* p_column)
 XString
 SQLInfoMariaDB::GetKEYWORDCurrentUser() const
 {
-  return "CURRENT_USER";
+  return _T("CURRENT_USER");
 }
 
 // Connects to a default schema in the database/instance
 XString
 SQLInfoMariaDB::GetSQLDefaultSchema(XString /*p_user*/,XString p_schema) const
 {
-  return "USE " + p_schema;
+  return _T("USE ") + p_schema;
 }
 
 // Gets the construction for inline generating a key within an INSERT statement
@@ -431,16 +438,16 @@ SQLInfoMariaDB::GetSQLNewSerial(XString p_table, XString p_sequence) const
 {
   if(!m_oracleMode)
   {
-    return "";
+    return _T("");
   }
 
   XString sequence(p_sequence);
   if(sequence.IsEmpty() && !p_table.IsEmpty())
   {
-    sequence = p_table + "_seq";
+    sequence = p_table + _T("_seq");
   }
   // Select next value from a generator sequence
-  return sequence + ".NEXTVAL";
+  return sequence + _T(".NEXTVAL");
 }
 
 // Gets the construction / select for generating a new serial identity
@@ -449,9 +456,9 @@ SQLInfoMariaDB::GetSQLGenerateSerial(XString p_table) const
 {
   if (m_oracleMode)
   {
-    return "SELECT " + p_table + "_seq.nextval FROM DUAL";
+    return _T("SELECT ") + p_table + _T("_seq.nextval FROM DUAL");
   }
-  else return "";
+  else return _T("");
 }
 
 // Gets the construction / select for the resulting effective generated serial
@@ -465,19 +472,19 @@ SQLInfoMariaDB::GetSQLEffectiveSerial(XString p_identity) const
 XString
 SQLInfoMariaDB::GetSQLStartSubTransaction(XString p_savepointName) const
 {
-  return XString("SAVEPOINT ") + p_savepointName;
+  return XString(_T("SAVEPOINT ")) + p_savepointName;
 }
 
 XString
 SQLInfoMariaDB::GetSQLCommitSubTransaction(XString p_savepointName) const
 {
-  return XString("RELEASE SAVEPOINT") = p_savepointName;
+  return XString(_T("RELEASE SAVEPOINT")) = p_savepointName;
 }
 
 XString
 SQLInfoMariaDB::GetSQLRollbackSubTransaction(XString p_savepointName) const
 {
-  return XString("ROLLBACK TO SAVEPOINT ") + p_savepointName;
+  return XString(_T("ROLLBACK TO SAVEPOINT ")) + p_savepointName;
 }
 
 // FROM-Part for a query to select only 1 (one) record / or empty!
@@ -486,10 +493,10 @@ SQLInfoMariaDB::GetSQLFromDualClause() const
 {
   if(m_oracleMode)
   {
-    return " FROM DUAL";
+    return _T(" FROM DUAL");
   }
   // MySQL does bare SELECT!
-  return "";
+  return _T("");
 }
 
 // Get SQL to lock  a table 
@@ -497,9 +504,9 @@ XString
 SQLInfoMariaDB::GetSQLLockTable(XString p_schema,XString p_tablename,bool p_exclusive,int /*p_waittime*/) const
 {
   // Standard ISO SQL Syntax
-  XString query = "LOCK TABLE " + p_schema + "." + p_tablename + " IN ";
-  query += p_exclusive ? "EXCLUSIVE" : "SHARE";
-  query += " MODE";
+  XString query = _T("LOCK TABLE ") + p_schema + _T(".") + p_tablename + _T(" IN ");
+  query += p_exclusive ? _T("EXCLUSIVE") : _T("SHARE");
+  query += _T(" MODE");
   return query;
 }
 
@@ -507,7 +514,7 @@ SQLInfoMariaDB::GetSQLLockTable(XString p_schema,XString p_tablename,bool p_excl
 XString
 SQLInfoMariaDB::GetSQLOptimizeTable(XString p_schema, XString p_tablename) const
 {
-  return "OPTIMIZE TABLE " + p_schema + "." + p_tablename + " NOWAIT";
+  return _T("OPTIMIZE TABLE ") + p_schema + _T(".") + p_tablename + _T(" NOWAIT");
 }
 
 // Transform query to select top <n> rows
@@ -518,10 +525,10 @@ SQLInfoMariaDB::GetSQLTopNRows(XString p_sql,int p_top,int p_skip /*= 0*/) const
   {
     // MYSQL: " LIMIT <top> [ OFFSET <skip> ]
     XString limit;
-    limit.Format("\n LIMIT %d",p_top);
+    limit.Format(_T("\n LIMIT %d"),p_top);
     if(p_skip > 0)
     {
-      limit.AppendFormat(" OFFSET %d",p_skip);
+      limit.AppendFormat(_T(" OFFSET %d"),p_skip);
     }
     p_sql += limit;
   }
@@ -533,7 +540,7 @@ XString
 SQLInfoMariaDB::GetPing() const
 {
   // Getting the time does a ping
-  return "SELECT current_timestamp";
+  return _T("SELECT current_timestamp");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -547,7 +554,7 @@ XString
 SQLInfoMariaDB::GetSQLString(const XString& p_string) const
 {
   XString s = p_string;
-  s.Replace("'","''");
+  s.Replace(_T("'"),_T("''"));
   XString kwoot = GetKEYWORDQuoteCharacter();
   return  kwoot + s + kwoot;
 }
@@ -557,7 +564,7 @@ XString
 SQLInfoMariaDB::GetSQLDateString(int p_year,int p_month,int p_day) const
 {
   XString dateString;
-  dateString.Format("{d '%04d-%02d-%02d'}",p_year,p_month,p_day);
+  dateString.Format(_T("{d '%04d-%02d-%02d'}"),p_year,p_month,p_day);
   return dateString;
 }
 
@@ -566,7 +573,7 @@ XString
 SQLInfoMariaDB::GetSQLTimeString(int p_hour,int p_minute,int p_second) const
 {
   XString retval;
-  retval.Format("{t '%02d:%02d:%02d'}",p_hour,p_minute,p_second);
+  retval.Format(_T("{t '%02d:%02d:%02d'}"),p_hour,p_minute,p_second);
   return retval;
 }
 
@@ -575,7 +582,7 @@ XString
 SQLInfoMariaDB::GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
 {
   XString string;
-  string.Format("{ts '%04d-%02d-%02d %02d:%02d:%02d'}"
+  string.Format(_T("{ts '%04d-%02d-%02d %02d:%02d:%02d'}")
                 ,p_year,p_month,p_day // ODBC Ordering !!
                 ,p_hour,p_minute,p_second);
   return string;
@@ -585,7 +592,7 @@ SQLInfoMariaDB::GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_hour
 XString
 SQLInfoMariaDB::GetSQLDateTimeBoundString() const
 {
-  return "{ts ?}";
+  return _T("{ts ?}");
 }
 
 // Stripped data for the parameter binding
@@ -593,7 +600,7 @@ XString
 SQLInfoMariaDB::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
 {
   XString string;
-  string.Format("%04d-%02d-%02d %02d:%02d:%02d"
+  string.Format(_T("%04d-%02d-%02d %02d:%02d:%02d")
                 ,p_year,p_month,p_day // ODBC Ordering !!
                 ,p_hour,p_minute,p_second);
   return string;
@@ -644,25 +651,25 @@ XString
 SQLInfoMariaDB::GetCATALOGMetaTypes(int p_type) const
 {
   UNREFERENCED_PARAMETER(p_type);
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoMariaDB::GetCATALOGDefaultCharset() const
 {
-  return "iso-8859-1";
+  return _T("iso-8859-1");
 }
 
 XString
 SQLInfoMariaDB::GetCATALOGDefaultCharsetNCV() const
 {
-  return "UTF-16";
+  return _T("UTF-16");
 }
 
 XString
 SQLInfoMariaDB::GetCATALOGDefaultCollation() const
 {
-  return "latin1_swedish_ci";
+  return _T("latin1_swedish_ci");
 }
 
 // Get SQL to check if a table already exists in the database
@@ -670,7 +677,7 @@ XString
 SQLInfoMariaDB::GetCATALOGTableExists(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
   // Still to do in MySQL
-  return "";
+  return _T("");
 }
 
 XString
@@ -683,31 +690,31 @@ XString
 SQLInfoMariaDB::GetCATALOGTableAttributes(XString& p_schema,XString& p_tablename) const
 {
   XString sql;
-  sql = "SELECT table_catalog\n"
-        "      ,table_schema\n"
-        "      ,table_name\n"
-        "      ,case table_type\n"
-        "            when 'BASE TABLE' THEN 'TABLE'\n"
-        "            else 'UNKNOWN'\n"
-        "       end as table_type\n"
-        "      ,table_comment\n"
-        "      ,table_catalog || '.' || table_schema || '.' || table_name as fullname\n"
-        "      ,engine\n"
-        "      ,0 as temporary\n" 
-        "  FROM information_schema.tables\n"  
-        " WHERE table_type = 'BASE TABLE'\n"
-        "   AND table_schema NOT IN ('mysql','sys','performance_schema')\n";
+  sql = _T("SELECT table_catalog\n")
+        _T("      ,table_schema\n")
+        _T("      ,table_name\n")
+        _T("      ,case table_type\n")
+        _T("            when 'BASE TABLE' THEN 'TABLE'\n")
+        _T("            else 'UNKNOWN'\n")
+        _T("       end as table_type\n")
+        _T("      ,table_comment\n")
+        _T("      ,table_catalog || '.' || table_schema || '.' || table_name as fullname\n")
+        _T("      ,engine\n")
+        _T("      ,0 as temporary\n") 
+        _T("  FROM information_schema.tables\n")  
+        _T(" WHERE table_type = 'BASE TABLE'\n")
+        _T("   AND table_schema NOT IN ('mysql','sys','performance_schema')\n");
   if(!p_schema.IsEmpty())
   {
-    sql += "   AND table_schema = ?\n";
+    sql += _T("   AND table_schema = ?\n");
   }
   if(!p_tablename.IsEmpty())
   {
-    sql += "   AND table_name ";
-    sql += p_tablename.Find('%') >= 0 ? "LIKE" : "=";
-    sql += " ?\n";
+    sql += _T("   AND table_name ");
+    sql += p_tablename.Find('%') >= 0 ? _T("LIKE") : _T("=");
+    sql += _T(" ?\n");
   }
-  sql += " ORDER BY 1,2,3";
+  sql += _T(" ORDER BY 1,2,3");
   return sql;
 }
 
@@ -724,40 +731,40 @@ SQLInfoMariaDB::GetCATALOGTableCatalog(XString& p_schema,XString& p_tablename) c
   p_schema.Empty(); // do not bind as a parameter
 
   XString sql;
-  sql = "SELECT table_catalog\n"
-        "      ,table_schema\n"
-        "      ,table_name\n"
-        "      ,'SYSTEM TABLE' as table_type\n"
-        "      ,table_comment\n"
-        "      ,table_catalog || '.' || table_schema || '.' || table_name as fullname\n"
-        "      ,engine\n"
-        "      ,0 as temporary\n" 
-        "  FROM information_schema.tables\n"  
-        " WHERE ( table_type = 'SYSTEM VIEW'\n"
-        "      OR table_schema IN ('mysql','sys','performance_schema'))\n";
+  sql = _T("SELECT table_catalog\n")
+        _T("      ,table_schema\n")
+        _T("      ,table_name\n")
+        _T("      ,'SYSTEM TABLE' as table_type\n")
+        _T("      ,table_comment\n")
+        _T("      ,table_catalog || '.' || table_schema || '.' || table_name as fullname\n")
+        _T("      ,engine\n")
+        _T("      ,0 as temporary\n") 
+        _T("  FROM information_schema.tables\n")  
+        _T(" WHERE ( table_type = 'SYSTEM VIEW'\n")
+        _T("      OR table_schema IN ('mysql','sys','performance_schema'))\n");
   if(!p_schema.IsEmpty())
   {
-    sql += "   AND table_schema = ?\n";
+    sql += _T("   AND table_schema = ?\n");
   }
   if(!p_tablename.IsEmpty())
   {
-    sql += "   AND table_name ";
-    sql += p_tablename.Find('%') >= 0 ? "LIKE" : "=";
-    sql += " ?\n";
+    sql += _T("   AND table_name ");
+    sql += p_tablename.Find('%') >= 0 ? _T("LIKE") : _T("=");
+    sql += _T(" ?\n");
   }
-  sql += " ORDER BY 1,2,3";
+  sql += _T(" ORDER BY 1,2,3");
   return sql;
 }
 
 XString
 SQLInfoMariaDB::GetCATALOGTableCreate(MetaTable& p_table,MetaColumn& /*p_column*/) const
 {
-  XString sql = "CREATE ";
+  XString sql = _T("CREATE ");
   if(p_table.m_temporary)
   {
-    sql += "TEMPORARY ";
+    sql += _T("TEMPORARY ");
   }
-  sql += "TABLE " + p_table.m_table;
+  sql += _T("TABLE ") + p_table.m_table;
   return sql;
 }
 
@@ -767,7 +774,7 @@ SQLInfoMariaDB::GetCATALOGTableCreatePostfix(MetaTable& p_table,MetaColumn& /*p_
   XString sql;
   if(p_table.m_temporary)
   {
-    sql += "ENGINE = MEMORY";
+    sql += _T("ENGINE = MEMORY");
   }
   return sql;
 }
@@ -775,26 +782,26 @@ SQLInfoMariaDB::GetCATALOGTableCreatePostfix(MetaTable& p_table,MetaColumn& /*p_
 XString
 SQLInfoMariaDB::GetCATALOGTableRename(XString p_schema,XString p_tablename,XString p_newname) const
 {
-  XString sql("RENAME TABLE" + p_schema + "." + p_tablename + " TO " + p_newname);
+  XString sql(_T("RENAME TABLE") + p_schema + _T(".") + p_tablename + _T(" TO ") + p_newname);
   return sql;
 }
 
 XString
 SQLInfoMariaDB::GetCATALOGTableDrop(XString p_schema,XString p_tablename,bool p_ifExist /*= false*/,bool p_restrict /*= false*/,bool p_cascade /*= false*/) const
 {
-  XString sql("DROP TABLE ");
+  XString sql(_T("DROP TABLE "));
   if (p_ifExist)
   {
-    sql += "IF EXISTS ";
+    sql += _T("IF EXISTS ");
   }
-  sql += p_schema + "." + p_tablename;
+  sql += p_schema + _T(".") + p_tablename;
   if (p_restrict)
   {
-    sql += " RESTRICT";
+    sql += _T(" RESTRICT");
   }
   else if (p_cascade)
   {
-    sql += " CASCADE";
+    sql += _T(" CASCADE");
   }
   return sql;
 }
@@ -806,19 +813,19 @@ XString
 SQLInfoMariaDB::GetCATALOGTemptableCreate(XString p_schema,XString p_tablename,XString p_select) const
 {
   // BEWARE: THIS IS A GUESS. 
-  return "CREATE TEMPORARY TABLE " + p_schema + "." + p_tablename + "\nAS " + p_select;
+  return _T("CREATE TEMPORARY TABLE ") + p_schema + _T(".") + p_tablename + _T("\nAS ") + p_select;
 }
 
 XString 
 SQLInfoMariaDB::GetCATALOGTemptableIntoTemp(XString /*p_schema*/,XString p_tablename,XString p_select) const
 {
-  return "INSERT INTO " + p_tablename + "\n" + p_select;
+  return _T("INSERT INTO ") + p_tablename + _T("\n") + p_select;
 }
 
 XString 
 SQLInfoMariaDB::GetCATALOGTemptableDrop(XString /*p_schema*/,XString p_tablename) const
 {
-  return "DROP TABLE " + p_tablename;
+  return _T("DROP TABLE ") + p_tablename;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -827,7 +834,7 @@ SQLInfoMariaDB::GetCATALOGTemptableDrop(XString /*p_schema*/,XString p_tablename
 XString 
 SQLInfoMariaDB::GetCATALOGColumnExists(XString /*p_schema*/,XString p_tablename,XString p_columnname) const
 {
-  return "";
+  return _T("");
 }
 
 XString 
@@ -844,134 +851,134 @@ SQLInfoMariaDB::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablenam
   p_tablename.MakeLower();
   p_columnname.MakeLower();
 
-  XString query = "SELECT table_catalog  AS table_cat\n"
-                  "      ,table_schema   AS table_schem\n"
-                  "      ,table_name\n"
-                  "      ,column_name\n"
-                  "      ,case data_type\n"
-                  "            when 'char'               then   1\n"
-                  "            when 'varchar'            then  12\n"
-                  "            when 'bigint'   then case locate('unsigned',column_type) > 0\n"
-                  "                                 when true then -27\n"   // UBIGINT
-                  "                                           else -25\n"   // SBIGINT
-                  "                                 end\n"
-                  "            when 'binary'             then  -2\n"
-                  "            when 'bit'                then  -7\n"
-                  "            when 'blob'               then  -4\n"  // longvarbinary
-                  "            when 'bool'               then  -7\n"  // bit
-                  "            when 'date'               then   9\n"  // date
-                  "            when 'datetime'           then  93\n"  // TYPE TIMESTAMP
-                  "            when 'decimal'            then   2\n"  // NUMERIC
-                  "            when 'double'             then   8\n"
-                  "            when 'double precision'   then   8\n"
-                  "            when 'enum'               then  12\n"  // VARCHAR
-                  "            when 'float'              then   7\n"
-                  "            when 'int'      then case locate('unsigned',column_type) > 0\n"
-                  "                                 when true then -18\n"   // ULONG
-                  "                                           else   4\n"   // SLONG
-                  "                                 end\n"
-                  "            when 'integer'  then case locate('unsigned',column_type) > 0\n"
-                  "                                 when true then -18\n"   // ULONG
-                  "                                           else   4\n"   // SLONG
-                  "                                 end\n"
-                  "            when 'long varbinary'     then  -4\n"  // BLOB
-                  "            when 'long varchar'       then  -1\n"
-                  "            when 'longblob'           then  -4\n"
-                  "            when 'longtext'           then  -1\n"
-                  "            when 'mediumblob'         then  -4\n"
-                  "            when 'mediumint' then case locate('unsigned',column_type) > 0\n"
-                  "                                  when true then -18\n"   // ULONG
-                  "                                            else   4\n"   // SLONG
-                  "                                  end\n"
-                  "            when 'mediumtext'         then  -1\n"
-                  "            when 'numeric'            then   2\n"
-                  "            when 'real'               then   7\n"
-                  "            when 'set'                then  12\n"
-                  "            when 'smallint' then case locate('unsigned',column_type) > 0\n"
-                  "                                 when true then -17\n"   // USMALLINT
-                  "                                           else   5\n"   // SMALLINT
-                  "                                 end\n"
-                  "            when 'text'               then  -1\n"
-                  "            when 'time'               then  92\n"  // TYPE TIME
-                  "            when 'timestamp'          then  93\n"
-                  "            when 'tinyblob'           then  -3\n"  // varbinary
-                  "            when 'tinyint'  then case locate('unsigned',column_type) > 0\n"
-                  "                                 when true then -16\n"   // UTINYINT
-                  "                                           else  -6\n"   // TINYINT
-                  "                                 end\n"
-                  "            when 'tinytext'           then  -1\n"
-                  "            when 'varbinary'          then  -3\n"
-                  "       end       as data_type\n"
-                  "      ,ucase(if(column_type like '%%(%%)%%',concat(substring(column_type,1,locate('(',column_type)-1),substring(column_type,1+locate(')',column_type))),column_type)) as type_name\n"
-                  "      ,case when data_type = 'bit'    then (numeric_precision+7)/8\n"
-                  "            when data_type in('tinyint','smallint','mediumint','int','bigint','decimal') then numeric_precision\n"
-                  "            when data_type = 'float'  then if(numeric_scale IS NULL,7,numeric_precision)\n"
-                  "            when data_type = 'double' then if(numeric_scale IS NULL,15,numeric_precision)\n"
-                  "            when data_type = 'date'   then 10\n"
-                  "            when data_type = 'time'   then  8\n"
-                  "            when data_type = 'year'   then  4\n"
-                  "            when data_type in('timestamp','datetime') then 19\n"
-                  "            else character_maximum_length\n"
-                  "       end  as column_size\n"
-                  "      ,case data_type\n"
-                  "            when 'bit'        then 1\n"
-                  "            when 'tinyint'    then 1\n"
-                  "            when 'smallint'   then 2\n"
-                  "            when 'int'        then 4\n"
-                  "            when 'integer'    then 4\n"
-                  "            when 'mediumint'  then 3\n"
-                  "            when 'bigint'     then 20\n"
-                  "            when 'real'       then 4\n"
-                  "            when 'float'      then 8\n"
-                  "            when 'double'     then 8\n"
-                  "            when 'date'       then 6\n"
-                  "            when 'time'       then 6\n"
-                  "            when 'timestamp'  then 16\n"
-                  "            when 'datetime'   then 16\n"
-                  "            when 'guid'       then 16\n"
-                  "            when 'year'       then 2\n"
-                  "            when 'decimal'    then (numeric_precision + 2)\n"
-                  "            else  character_octet_length\n"
-                  "       end  as buffer_length\n"
-                  "      ,Nvl(numeric_scale,datetime_precision) AS decimal_digits\n"
-                  "      ,if(character_octet_length is not null,null,10) as num_prec_radix\n"
-                  "      ,if(data_type='timestamp',1,if(is_nullable='YES',1,if(extra='auto_increment',1,0))) as nullable\n"
-                  "      ,column_comment     as remarks\n"
-                  "      ,column_default     as column_def\n"
-                  "      ,case data_type\n"
-                  "            when 'date'      then 9\n"   // DATETIME
-                  "            when 'time'      then 9\n"   // DATETIME
-                  "            when 'datetime'  then 9\n"   // DATETIME
-                  "            when 'timestamp' then 9\n"   // DATETIME
-                  "       end  as sql_data_type\n"
-                  "      ,case data_type\n"
-                  "            when 'date'      then 1\n"   // SQL_DATE
-                  "            when 'time'      then 2\n"   // SQL_TIME
-                  "            when 'datetime'  then 3\n"   // SQL_CODE_TIMESTAMP
-                  "            when 'timestamp' then 3\n"   // SQL_CODE_TIMESTAMP
-                  "       end  as sql_datetime_sub\n"
-                  "      ,character_octet_length\n"
-                  "      ,ordinal_position\n"
-                  "      ,if(data_type = 'timestamp','YES',if(is_nullable = 'YES','YES',if(extra = 'auto_increment','YES','NO'))) as is_nullable\n"
-                  "  FROM information_schema.columns\n"
-                  " WHERE table_name   = '" + p_tablename + "'\n";
+  XString query = _T("SELECT table_catalog  AS table_cat\n")
+                  _T("      ,table_schema   AS table_schem\n")
+                  _T("      ,table_name\n")
+                  _T("      ,column_name\n")
+                  _T("      ,case data_type\n")
+                  _T("            when 'char'               then   1\n")
+                  _T("            when 'varchar'            then  12\n")
+                  _T("            when 'bigint'   then case locate('unsigned',column_type) > 0\n")
+                  _T("                                 when true then -27\n")   // UBIGINT
+                  _T("                                           else -25\n")   // SBIGINT
+                  _T("                                 end\n")
+                  _T("            when 'binary'             then  -2\n")
+                  _T("            when 'bit'                then  -7\n")
+                  _T("            when 'blob'               then  -4\n")  // longvarbinary
+                  _T("            when 'bool'               then  -7\n")  // bit
+                  _T("            when 'date'               then   9\n")  // date
+                  _T("            when 'datetime'           then  93\n")  // TYPE TIMESTAMP
+                  _T("            when 'decimal'            then   2\n")  // NUMERIC
+                  _T("            when 'double'             then   8\n")
+                  _T("            when 'double precision'   then   8\n")
+                  _T("            when 'enum'               then  12\n")  // VARCHAR
+                  _T("            when 'float'              then   7\n")
+                  _T("            when 'int'      then case locate('unsigned',column_type) > 0\n")
+                  _T("                                 when true then -18\n")   // ULONG
+                  _T("                                           else   4\n")   // SLONG
+                  _T("                                 end\n")
+                  _T("            when 'integer'  then case locate('unsigned',column_type) > 0\n")
+                  _T("                                 when true then -18\n")   // ULONG
+                  _T("                                           else   4\n")   // SLONG
+                  _T("                                 end\n")
+                  _T("            when 'long varbinary'     then  -4\n")  // BLOB
+                  _T("            when 'long varchar'       then  -1\n")
+                  _T("            when 'longblob'           then  -4\n")
+                  _T("            when 'longtext'           then  -1\n")
+                  _T("            when 'mediumblob'         then  -4\n")
+                  _T("            when 'mediumint' then case locate('unsigned',column_type) > 0\n")
+                  _T("                                  when true then -18\n")   // ULONG
+                  _T("                                            else   4\n")   // SLONG
+                  _T("                                  end\n")
+                  _T("            when 'mediumtext'         then  -1\n")
+                  _T("            when 'numeric'            then   2\n")
+                  _T("            when 'real'               then   7\n")
+                  _T("            when 'set'                then  12\n")
+                  _T("            when 'smallint' then case locate('unsigned',column_type) > 0\n")
+                  _T("                                 when true then -17\n")   // USMALLINT
+                  _T("                                           else   5\n")   // SMALLINT
+                  _T("                                 end\n")
+                  _T("            when 'text'               then  -1\n")
+                  _T("            when 'time'               then  92\n")  // TYPE TIME
+                  _T("            when 'timestamp'          then  93\n")
+                  _T("            when 'tinyblob'           then  -3\n")  // varbinary
+                  _T("            when 'tinyint'  then case locate('unsigned',column_type) > 0\n")
+                  _T("                                 when true then -16\n")   // UTINYINT
+                  _T("                                           else  -6\n")   // TINYINT
+                  _T("                                 end\n")
+                  _T("            when 'tinytext'           then  -1\n")
+                  _T("            when 'varbinary'          then  -3\n")
+                  _T("       end       as data_type\n")
+                  _T("      ,ucase(if(column_type like '%%(%%)%%',concat(substring(column_type,1,locate('(',column_type)-1),substring(column_type,1+locate(')',column_type))),column_type)) as type_name\n")
+                  _T("      ,case when data_type = 'bit'    then (numeric_precision+7)/8\n")
+                  _T("            when data_type in('tinyint','smallint','mediumint','int','bigint','decimal') then numeric_precision\n")
+                  _T("            when data_type = 'float'  then if(numeric_scale IS NULL,7,numeric_precision)\n")
+                  _T("            when data_type = 'double' then if(numeric_scale IS NULL,15,numeric_precision)\n")
+                  _T("            when data_type = 'date'   then 10\n")
+                  _T("            when data_type = 'time'   then  8\n")
+                  _T("            when data_type = 'year'   then  4\n")
+                  _T("            when data_type in('timestamp','datetime') then 19\n")
+                  _T("            else character_maximum_length\n")
+                  _T("       end  as column_size\n")
+                  _T("      ,case data_type\n")
+                  _T("            when 'bit'        then 1\n")
+                  _T("            when 'tinyint'    then 1\n")
+                  _T("            when 'smallint'   then 2\n")
+                  _T("            when 'int'        then 4\n")
+                  _T("            when 'integer'    then 4\n")
+                  _T("            when 'mediumint'  then 3\n")
+                  _T("            when 'bigint'     then 20\n")
+                  _T("            when 'real'       then 4\n")
+                  _T("            when 'float'      then 8\n")
+                  _T("            when 'double'     then 8\n")
+                  _T("            when 'date'       then 6\n")
+                  _T("            when 'time'       then 6\n")
+                  _T("            when 'timestamp'  then 16\n")
+                  _T("            when 'datetime'   then 16\n")
+                  _T("            when 'guid'       then 16\n")
+                  _T("            when 'year'       then 2\n")
+                  _T("            when 'decimal'    then (numeric_precision + 2)\n")
+                  _T("            else  character_octet_length\n")
+                  _T("       end  as buffer_length\n")
+                  _T("      ,Nvl(numeric_scale,datetime_precision) AS decimal_digits\n")
+                  _T("      ,if(character_octet_length is not null,null,10) as num_prec_radix\n")
+                  _T("      ,if(data_type='timestamp',1,if(is_nullable='YES',1,if(extra='auto_increment',1,0))) as nullable\n")
+                  _T("      ,column_comment     as remarks\n")
+                  _T("      ,column_default     as column_def\n")
+                  _T("      ,case data_type\n")
+                  _T("            when 'date'      then 9\n")   // DATETIME
+                  _T("            when 'time'      then 9\n")   // DATETIME
+                  _T("            when 'datetime'  then 9\n")   // DATETIME
+                  _T("            when 'timestamp' then 9\n")   // DATETIME
+                  _T("       end  as sql_data_type\n")
+                  _T("      ,case data_type\n")
+                  _T("            when 'date'      then 1\n")   // SQL_DATE
+                  _T("            when 'time'      then 2\n")   // SQL_TIME
+                  _T("            when 'datetime'  then 3\n")   // SQL_CODE_TIMESTAMP
+                  _T("            when 'timestamp' then 3\n")   // SQL_CODE_TIMESTAMP
+                  _T("       end  as sql_datetime_sub\n")
+                  _T("      ,character_octet_length\n")
+                  _T("      ,ordinal_position\n")
+                  _T("      ,if(data_type = 'timestamp','YES',if(is_nullable = 'YES','YES',if(extra = 'auto_increment','YES','NO'))) as is_nullable\n")
+                  _T("  FROM information_schema.columns\n")
+                  _T(" WHERE table_name   = '") + p_tablename + _T("'\n");
   if(!p_schema.IsEmpty())
   {
-    query += "   AND table_schema = '" + p_schema + "'\n";
+    query += _T("   AND table_schema = '") + p_schema + _T("'\n");
   }
   if(!p_columnname.IsEmpty())
   {
-    query += "   AND column_name = '" + p_columnname + "'\n";
+    query += _T("   AND column_name = '") + p_columnname + _T("'\n");
   }
-  query += " ORDER BY ordinal_position ASC";
+  query += _T(" ORDER BY ordinal_position ASC");
   return query;
 }
 
 XString 
 SQLInfoMariaDB::GetCATALOGColumnCreate(MetaColumn& p_column) const
 {
-  XString sql = "ALTER TABLE "  + p_column.m_table  + "\n"
-                "  ADD COLUMN " + p_column.m_column + " " + p_column.m_typename;
+  XString sql = _T("ALTER TABLE ")  + p_column.m_table  + _T("\n")
+                _T("  ADD COLUMN ") + p_column.m_column + _T(" ") + p_column.m_typename;
   p_column.GetPrecisionAndScale(sql);
   p_column.GetNullable(sql);
   p_column.GetDefault(sql);
@@ -984,8 +991,8 @@ XString
 SQLInfoMariaDB::GetCATALOGColumnAlter(MetaColumn& p_column) const
 {
   // The MODIFY keyword is a-typical
-  XString sql = "ALTER  TABLE  " + p_column.m_table + "\n"
-                "MODIFY COLUMN " + p_column.m_column + " " + p_column.m_typename;
+  XString sql = _T("ALTER  TABLE  ") + p_column.m_table + _T("\n")
+                _T("MODIFY COLUMN ") + p_column.m_column + _T(" ") + p_column.m_typename;
   p_column.GetPrecisionAndScale(sql);
   p_column.GetNullable(sql);
   p_column.GetDefault(sql);
@@ -999,16 +1006,16 @@ XString
 SQLInfoMariaDB::GetCATALOGColumnRename(XString p_schema,XString p_tablename,XString p_columnname,XString p_newname,XString /*p_datatype*/) const
 {
   // General ISO syntax
-  XString sql("ALTER  TABLE  " + p_tablename + "\n"
-              "RENAME " + p_columnname + " TO " + p_newname + "\n");
+  XString sql(_T("ALTER  TABLE  ") + p_tablename + _T("\n")
+              _T("RENAME ") + p_columnname + _T(" TO ") + p_newname + _T("\n"));
   return sql;
 }
 
 XString 
 SQLInfoMariaDB::GetCATALOGColumnDrop(XString p_schema,XString p_tablename,XString p_columnname) const
 {
-  XString sql("ALTER TABLE  " + p_tablename + "\n"
-              " DROP COLUMN " + p_columnname);
+  XString sql(_T("ALTER TABLE  ") + p_tablename + _T("\n")
+              _T(" DROP COLUMN ") + p_columnname);
   return sql;
 }
 
@@ -1021,7 +1028,7 @@ SQLInfoMariaDB::GetCATALOGIndexExists(XString /*p_schema*/,XString p_tablename,X
 {
   // Cannot be implemented for generic ODBC
   // Use SQLStatistics instead (see SQLInfo class)
-  return "";
+  return _T("");
 }
 
 XString
@@ -1029,7 +1036,7 @@ SQLInfoMariaDB::GetCATALOGIndexList(XString& /*p_schema*/,XString& /*p_tablename
 {
   // Cannot be implemented for generic ODBC
   // Use SQLStatistics instead (see SQLInfo class)
-  return "";
+  return _T("");
 }
 
 XString
@@ -1037,7 +1044,7 @@ SQLInfoMariaDB::GetCATALOGIndexAttributes(XString& /*p_schema*/,XString& /*p_tab
 {
   // Cannot be implemented for generic ODBC
   // Use SQLStatistics instead (see SQLInfo class)
-  return "";
+  return _T("");
 }
 
 XString
@@ -1051,42 +1058,42 @@ SQLInfoMariaDB::GetCATALOGIndexCreate(MIndicesMap& p_indices,bool /*p_duplicateN
     if(index.m_position == 1)
     {
       // New index
-      query = "CREATE ";
+      query = _T("CREATE ");
       if(index.m_nonunique == false)
       {
-        query += "UNIQUE ";
+        query += _T("UNIQUE ");
       }
-      query += "INDEX ";
+      query += _T("INDEX ");
       query += index.m_indexName;
-      query += " ON ";
+      query += _T(" ON ");
       if(!index.m_schemaName.IsEmpty())
       {
-        query += index.m_schemaName + ".";
+        query += index.m_schemaName + _T(".");
       }
       query += index.m_tableName;
-      query += "(";
+      query += _T("(");
     }
     else
     {
-      query += ",";
+      query += _T(",");
     }
     query += index.m_columnName;
 
     // Descending column
-    if(index.m_ascending != "A")
+    if(index.m_ascending != _T("A"))
     {
-      query += " DESC";
+      query += _T(" DESC");
     }
   }
-  query += ")";
+  query += _T(")");
   return query;
 }
 
 XString
 SQLInfoMariaDB::GetCATALOGIndexDrop(XString p_schema,XString p_tablename,XString p_indexname) const
 {
-  XString sql = "ALTER TABLE " + p_schema + "." + p_tablename + "\n"
-                " DROP INDEX " + p_indexname;
+  XString sql = _T("ALTER TABLE ") + p_schema + _T(".") + p_tablename + _T("\n")
+                _T(" DROP INDEX ") + p_indexname;
   return sql;
 }
 
@@ -1094,7 +1101,7 @@ SQLInfoMariaDB::GetCATALOGIndexDrop(XString p_schema,XString p_tablename,XString
 XString
 SQLInfoMariaDB::GetCATALOGIndexFilter(MetaIndex& /*p_index*/) const
 {
-  return "";
+  return _T("");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1104,14 +1111,14 @@ XString
 SQLInfoMariaDB::GetCATALOGPrimaryExists(XString /*p_schema*/,XString p_tablename) const
 {
   // To be implemented
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoMariaDB::GetCATALOGPrimaryAttributes(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
   // To be implemented
-  return "";
+  return _T("");
 }
 
 // In MariaDB all primary keys are named "PRIMARY".
@@ -1119,23 +1126,23 @@ SQLInfoMariaDB::GetCATALOGPrimaryAttributes(XString& /*p_schema*/,XString& /*p_t
 XString
 SQLInfoMariaDB::GetCATALOGPrimaryCreate(MPrimaryMap& p_primaries) const
 {
-  XString query("ALTER TABLE ");
+  XString query(_T("ALTER TABLE "));
 
   for(const auto& prim : p_primaries)
   {
     if(prim.m_columnPosition == 1)
     {
-      query += prim.m_schema + "." + prim.m_table + "\n";
-      query += "  ADD PRIMARY KEY (";
+      query += prim.m_schema + _T(".") + prim.m_table + _T("\n");
+      query += _T("  ADD PRIMARY KEY (");
 
     }
     else
     {
-      query += ",";
+      query += _T(",");
     }
     query += prim.m_columnName;
   }
-  query += ")";
+  query += _T(")");
   return query;
 }
 
@@ -1143,8 +1150,8 @@ SQLInfoMariaDB::GetCATALOGPrimaryCreate(MPrimaryMap& p_primaries) const
 XString
 SQLInfoMariaDB::GetCATALOGPrimaryDrop(XString p_schema,XString p_tablename,XString /*p_constraintname*/) const
 {
-  XString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
-              " DROP CONSTRAINT PRIMARY");
+  XString sql(_T("ALTER TABLE ") + p_schema + _T(".") + p_tablename + _T("\n")
+              _T(" DROP CONSTRAINT PRIMARY"));
   return sql;
 }
 
@@ -1156,7 +1163,7 @@ SQLInfoMariaDB::GetCATALOGForeignExists(XString /*p_schema*/,XString p_tablename
 {
   // Cannot be implemented for generic ODBC
   // Use SQLForeignKeys instead (see SQLInfo class)
-  return "";
+  return _T("");
 }
 
 XString
@@ -1164,7 +1171,7 @@ SQLInfoMariaDB::GetCATALOGForeignList(XString& /*p_schema*/,XString& /*p_tablena
 {
   // Cannot be implemented for generic ODBC
   // Use SQLForeignKeys instead (see SQLInfo class)
-  return "";
+  return _T("");
 }
 
 XString
@@ -1172,7 +1179,7 @@ SQLInfoMariaDB::GetCATALOGForeignAttributes(XString& /*p_schema*/,XString& /*p_t
 {
   // Cannot be implemented for generic ODBC
   // Use SQLForeignKeys instead (see SQLInfo class)
-  return "";
+  return _T("");
 }
 
 XString
@@ -1186,58 +1193,58 @@ SQLInfoMariaDB::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
   XString primary(foreign.m_pkTableName);
 
   // The base foreign key command
-  XString query = "ALTER TABLE " + table + "\n"
-                  "  ADD CONSTRAINT " + foreign.m_foreignConstraint + "\n"
-                  "      FOREIGN KEY (";
+  XString query = _T("ALTER TABLE ") + table + _T("\n")
+                  _T("  ADD CONSTRAINT ") + foreign.m_foreignConstraint + _T("\n")
+                  _T("      FOREIGN KEY (");
 
   // Add the foreign key columns
   bool extra = false;
   for(const auto& key : p_foreigns)
   {
-    if(extra) query += ",";
+    if(extra) query += _T(",");
     query += key.m_fkColumnName;
     extra = true;
   }
 
   // Add references primary table
-  query += ")\n      REFERENCES " + primary + "(";
+  query += _T(")\n      REFERENCES ") + primary + _T("(");
 
   // Add the primary key columns
   extra = false;
   for(const auto& key : p_foreigns)
   {
-    if(extra) query += ",";
+    if(extra) query += _T(",");
     query += key.m_pkColumnName;
     extra = true;
   }
-  query += ")";
+  query += _T(")");
 
   // Add all relevant options
   switch(foreign.m_match)
   {
-    case SQL_MATCH_PARTIAL: query += "\n      MATCH PARTIAL"; break;
-    case SQL_MATCH_SIMPLE:  query += "\n      MATCH SIMPLE";  break;
-    case SQL_MATCH_FULL:    query += "\n      MATCH FULL";    break;
+    case SQL_MATCH_PARTIAL: query += _T("\n      MATCH PARTIAL"); break;
+    case SQL_MATCH_SIMPLE:  query += _T("\n      MATCH SIMPLE");  break;
+    case SQL_MATCH_FULL:    query += _T("\n      MATCH FULL");    break;
     default:                // In essence: MATCH FULL, but that's already the default
                             break;
   }
   switch(foreign.m_updateRule)
   {
-    case SQL_CASCADE:     query += "\n      ON UPDATE CASCADE";     break;
-    case SQL_SET_NULL:    query += "\n      ON UPDATE SET NULL";    break;
-    case SQL_SET_DEFAULT: query += "\n      ON UPDATE SET DEFAULT"; break;
-    case SQL_NO_ACTION:   query += "\n      ON UPDATE NO ACTION";   break;
-    case SQL_RESTRICT:    query += "\n      ON UPDATE NO RESTRICT"; break;
+    case SQL_CASCADE:     query += _T("\n      ON UPDATE CASCADE");     break;
+    case SQL_SET_NULL:    query += _T("\n      ON UPDATE SET NULL");    break;
+    case SQL_SET_DEFAULT: query += _T("\n      ON UPDATE SET DEFAULT"); break;
+    case SQL_NO_ACTION:   query += _T("\n      ON UPDATE NO ACTION");   break;
+    case SQL_RESTRICT:    query += _T("\n      ON UPDATE NO RESTRICT"); break;
     default:              // In essence: ON UPDATE RESTRICT, but that's already the default
                           break;
   }
   switch(foreign.m_deleteRule)
   {
-    case SQL_CASCADE:     query += "\n      ON DELETE CASCADE";     break;
-    case SQL_SET_NULL:    query += "\n      ON DELETE SET NULL";    break;
-    case SQL_SET_DEFAULT: query += "\n      ON DELETE SET DEFAULT"; break;
-    case SQL_NO_ACTION:   query += "\n      ON DELETE NO ACTION";   break;
-    case SQL_RESTRICT:    query += "\n      ON DELETE NO RESTRICT"; break;
+    case SQL_CASCADE:     query += _T("\n      ON DELETE CASCADE");     break;
+    case SQL_SET_NULL:    query += _T("\n      ON DELETE SET NULL");    break;
+    case SQL_SET_DEFAULT: query += _T("\n      ON DELETE SET DEFAULT"); break;
+    case SQL_NO_ACTION:   query += _T("\n      ON DELETE NO ACTION");   break;
+    case SQL_RESTRICT:    query += _T("\n      ON DELETE NO RESTRICT"); break;
     default:              // In essence: ON DELETE RESTRICT, but that's already the default
                           break;
   }
@@ -1250,7 +1257,7 @@ SQLInfoMariaDB::GetCATALOGForeignAlter(MForeignMap& p_original, MForeignMap& p_r
   // Make sure we have both
   if(p_original.empty() || p_requested.empty())
   {
-    return "";
+    return _T("");
   }
 
   const MetaForeign& original  = p_original.front();
@@ -1260,17 +1267,17 @@ SQLInfoMariaDB::GetCATALOGForeignAlter(MForeignMap& p_original, MForeignMap& p_r
   XString table(original.m_fkTableName);
 
   // The base foreign key command
-  XString query = "ALTER TABLE " + table + "\n"
-                  "ALTER CONSTRAINT " + original.m_foreignConstraint + "\n";
+  XString query = _T("ALTER TABLE ") + table + _T("\n")
+                  _T("ALTER CONSTRAINT ") + original.m_foreignConstraint + _T("\n");
 
   // Add all relevant options
   if(original.m_deferrable != requested.m_deferrable)
   {
     switch(requested.m_deferrable)
     {
-      case SQL_INITIALLY_DEFERRED:  query += "\n      INITIALLY DEFERRED"; break;
-      case SQL_INITIALLY_IMMEDIATE: query += "\n      DEFERRABLE";         break;
-      case SQL_NOT_DEFERRABLE:      query += "\n      NOT DEFERRABLE";     break;
+      case SQL_INITIALLY_DEFERRED:  query += _T("\n      INITIALLY DEFERRED"); break;
+      case SQL_INITIALLY_IMMEDIATE: query += _T("\n      DEFERRABLE");         break;
+      case SQL_NOT_DEFERRABLE:      query += _T("\n      NOT DEFERRABLE");     break;
       default:                      break;
     }
   }
@@ -1278,19 +1285,19 @@ SQLInfoMariaDB::GetCATALOGForeignAlter(MForeignMap& p_original, MForeignMap& p_r
   {
     switch(requested.m_match)
     {
-      case SQL_MATCH_FULL:    query += "\n      MATCH FULL";    break;
-      case SQL_MATCH_PARTIAL: query += "\n      MATCH PARTIAL"; break;
-      case SQL_MATCH_SIMPLE:  query += "\n      MATCH SIMPLE";  break;
+      case SQL_MATCH_FULL:    query += _T("\n      MATCH FULL");    break;
+      case SQL_MATCH_PARTIAL: query += _T("\n      MATCH PARTIAL"); break;
+      case SQL_MATCH_SIMPLE:  query += _T("\n      MATCH SIMPLE");  break;
     }
   }
   if(original.m_updateRule != requested.m_updateRule)
   {
     switch(requested.m_updateRule)
     {
-      case SQL_CASCADE:     query += "\n      ON UPDATE CASCADE";     break;
-      case SQL_SET_NULL:    query += "\n      ON UPDATE SET NULL";    break;
-      case SQL_SET_DEFAULT: query += "\n      ON UPDATE SET DEFAULT"; break;
-      case SQL_NO_ACTION:   query += "\n      ON UPDATE NO ACTION";   break;
+      case SQL_CASCADE:     query += _T("\n      ON UPDATE CASCADE");     break;
+      case SQL_SET_NULL:    query += _T("\n      ON UPDATE SET NULL");    break;
+      case SQL_SET_DEFAULT: query += _T("\n      ON UPDATE SET DEFAULT"); break;
+      case SQL_NO_ACTION:   query += _T("\n      ON UPDATE NO ACTION");   break;
       default:              // In essence: ON UPDATE RESTRICT, but that's already the default
       case SQL_RESTRICT:    break;
     }
@@ -1299,10 +1306,10 @@ SQLInfoMariaDB::GetCATALOGForeignAlter(MForeignMap& p_original, MForeignMap& p_r
   {
     switch(requested.m_deleteRule)
     {
-      case SQL_CASCADE:     query += "\n      ON DELETE CASCADE";     break;
-      case SQL_SET_NULL:    query += "\n      ON DELETE SET NULL";    break;
-      case SQL_SET_DEFAULT: query += "\n      ON DELETE SET DEFAULT"; break;
-      case SQL_NO_ACTION:   query += "\n      ON DELETE NO ACTION";   break;
+      case SQL_CASCADE:     query += _T("\n      ON DELETE CASCADE");     break;
+      case SQL_SET_NULL:    query += _T("\n      ON DELETE SET NULL");    break;
+      case SQL_SET_DEFAULT: query += _T("\n      ON DELETE SET DEFAULT"); break;
+      case SQL_NO_ACTION:   query += _T("\n      ON DELETE NO ACTION");   break;
       default:              // In essence: ON DELETE RESTRICT, but that's already the default
       case SQL_RESTRICT:    break;
     }
@@ -1313,8 +1320,8 @@ SQLInfoMariaDB::GetCATALOGForeignAlter(MForeignMap& p_original, MForeignMap& p_r
 XString
 SQLInfoMariaDB::GetCATALOGForeignDrop(XString p_schema,XString p_tablename,XString p_constraintname) const
 {
-  XString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
-              " DROP CONSTRAINT " + p_constraintname);
+  XString sql(_T("ALTER TABLE ") + p_schema + _T(".") + p_tablename + _T("\n")
+              _T(" DROP CONSTRAINT ") + p_constraintname);
   return sql;
 }
 
@@ -1323,31 +1330,31 @@ SQLInfoMariaDB::GetCATALOGForeignDrop(XString p_schema,XString p_tablename,XStri
 XString
 SQLInfoMariaDB::GetCATALOGDefaultExists(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_column*/) const
 {
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoMariaDB::GetCATALOGDefaultList(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoMariaDB::GetCATALOGDefaultAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_column*/) const
 {
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoMariaDB::GetCATALOGDefaultCreate(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_constraint*/,XString /*p_column*/,XString /*p_code*/) const
 {
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoMariaDB::GetCATALOGDefaultDrop(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_constraint*/) const
 {
-  return "";
+  return _T("");
 }
 
 /////////////////////////
@@ -1356,31 +1363,31 @@ SQLInfoMariaDB::GetCATALOGDefaultDrop(XString /*p_schema*/,XString /*p_tablename
 XString
 SQLInfoMariaDB::GetCATALOGCheckExists(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/) const
 {
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoMariaDB::GetCATALOGCheckList(XString  /*p_schema*/,XString  /*p_tablename*/) const
 {
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoMariaDB::GetCATALOGCheckAttributes(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/) const
 {
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoMariaDB::GetCATALOGCheckCreate(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/,XString /*p_condition*/) const
 {
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoMariaDB::GetCATALOGCheckDrop(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/) const
 {
-  return "";
+  return _T("");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1389,7 +1396,7 @@ SQLInfoMariaDB::GetCATALOGCheckDrop(XString  /*p_schema*/,XString  /*p_tablename
 XString
 SQLInfoMariaDB::GetCATALOGTriggerExists(XString /*p_schema*/, XString p_tablename, XString p_triggername) const
 {
-  return "";
+  return _T("");
 }
 
 XString
@@ -1403,60 +1410,60 @@ XString
 SQLInfoMariaDB::GetCATALOGTriggerAttributes(XString& p_schema,XString& p_tablename,XString& p_triggername) const
 {
   XString sql;
-  sql = "SELECT event_object_catalog\n"
-        "      ,event_object_schema\n"
-        "      ,event_object_table\n"
-        "      ,trigger_name\n"
-        "      ,'' AS trigger_remarks\n"
-        "      ,action_order  AS trigger_position\n"
-        "      ,CASE action_timing\n"
-        "            WHEN 'AFTER' THEN FALSE ELSE TRUE\n"
-        "       END AS trigger_before\n"
-        "      ,CASE event_manipulation\n"
-        "            WHEN 'INSERT' THEN TRUE ELSE FALSE\n"
-        "       END AS trigger_insert\n"
-        "      ,CASE event_manipulation\n"
-        "            WHEN 'UPDATE' THEN TRUE ELSE FALSE\n"
-        "       END AS trigger_update\n"
-        "      ,CASE event_manipulation\n"
-        "            WHEN 'DELETE' THEN TRUE ELSE FALSE\n"
-        "       END AS trigger_delete\n"
-        "      ,FALSE AS trigger_select\n"
-        "      ,FALSE AS trigger_session\n"
-        "      ,FALSE AS trigger_transaction\n"
-        "      ,FALSE AS trigger_rollback\n"
-        "      ,''    AS trigger_referencing\n"
-        "      ,TRUE  AS trigger_enabled\n"
-        "      ,action_statement AS trigger_source\n"
-        "  FROM information_schema.triggers\n";
+  sql = _T("SELECT event_object_catalog\n")
+        _T("      ,event_object_schema\n")
+        _T("      ,event_object_table\n")
+        _T("      ,trigger_name\n")
+        _T("      ,'' AS trigger_remarks\n")
+        _T("      ,action_order  AS trigger_position\n")
+        _T("      ,CASE action_timing\n")
+        _T("            WHEN 'AFTER' THEN FALSE ELSE TRUE\n")
+        _T("       END AS trigger_before\n")
+        _T("      ,CASE event_manipulation\n")
+        _T("            WHEN 'INSERT' THEN TRUE ELSE FALSE\n")
+        _T("       END AS trigger_insert\n")
+        _T("      ,CASE event_manipulation\n")
+        _T("            WHEN 'UPDATE' THEN TRUE ELSE FALSE\n")
+        _T("       END AS trigger_update\n")
+        _T("      ,CASE event_manipulation\n")
+        _T("            WHEN 'DELETE' THEN TRUE ELSE FALSE\n")
+        _T("       END AS trigger_delete\n")
+        _T("      ,FALSE AS trigger_select\n")
+        _T("      ,FALSE AS trigger_session\n")
+        _T("      ,FALSE AS trigger_transaction\n")
+        _T("      ,FALSE AS trigger_rollback\n")
+        _T("      ,''    AS trigger_referencing\n")
+        _T("      ,TRUE  AS trigger_enabled\n")
+        _T("      ,action_statement AS trigger_source\n")
+        _T("  FROM information_schema.triggers\n");
   if(!p_schema.IsEmpty())
   {
-    sql += " WHERE event_object_schema = ?\n";
+    sql += _T(" WHERE event_object_schema = ?\n");
   }
   if(!p_tablename.IsEmpty())
   {
-    sql += p_schema.IsEmpty() ? " WHERE " : "   AND ";
-    sql += "event_object_table = ?\n";
+    sql += p_schema.IsEmpty() ? _T(" WHERE ") : _T("   AND ");
+    sql += _T("event_object_table = ?\n");
   }
   if(!p_triggername.IsEmpty())
   {
-    sql += p_schema.IsEmpty() && p_tablename.IsEmpty() ? " WHERE " : "   AND ";
-    sql += "trigger_name = ?\n";
+    sql += p_schema.IsEmpty() && p_tablename.IsEmpty() ? _T(" WHERE ") : _T("   AND ");
+    sql += _T("trigger_name = ?\n");
   }
-  sql += " ORDER BY 1,2,3,4";
+  sql += _T(" ORDER BY 1,2,3,4");
   return sql;
 }
 
 XString
 SQLInfoMariaDB::GetCATALOGTriggerCreate(MetaTrigger& /*p_trigger*/) const
 {
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoMariaDB::GetCATALOGTriggerDrop(XString /*p_schema*/, XString p_tablename, XString p_triggername) const
 {
-  return "";
+  return _T("");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1468,12 +1475,12 @@ SQLInfoMariaDB::GetCATALOGSequenceExists(XString p_schema, XString p_sequence) c
   p_schema.Empty();
   p_sequence.MakeLower();
 
-  XString sql = "SELECT COUNT(*)\n"
-                "  FROM information_schema.tables tab\n"
-                " WHERE tab.table_type = 'SEQUENCE'\n"
-                "   AND sequence_name  = '";
+  XString sql = _T("SELECT COUNT(*)\n")
+                _T("  FROM information_schema.tables tab\n")
+                _T(" WHERE tab.table_type = 'SEQUENCE'\n")
+                _T("   AND sequence_name  = '");
   sql += p_sequence;
-  sql += "\'";
+  sql += _T("\'");
   return sql;
 }
 
@@ -1484,27 +1491,27 @@ SQLInfoMariaDB::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern) con
   p_pattern.MakeLower();
   if(p_pattern.Find('%') < 0)
   {
-    p_pattern = "%" + p_pattern + "%";
+    p_pattern = _T("%") + p_pattern + _T("%");
   }
 
-  XString sql = "SELECT tab.table_catalog as catalog_name\n"
-                "      ,tab.table_schema  as schema_name\n"
-                "      ,tab.table_name    as sequence_name\n"
-                "      ,0 AS current_value\n"
-                "      ,0 AS minimal_value\n"
-                "      ,0 AS seq_increment\n"
-                "      ,0 AS cache\n"
-                "      ,0 AS cycle\n"
-                "      ,0 AS ordering\n"
-                "  FROM information_schema.tables tab\n"
-                " WHERE tab.table_type = 'SEQUENCE'";
+  XString sql = _T("SELECT tab.table_catalog as catalog_name\n")
+                _T("      ,tab.table_schema  as schema_name\n")
+                _T("      ,tab.table_name    as sequence_name\n")
+                _T("      ,0 AS current_value\n")
+                _T("      ,0 AS minimal_value\n")
+                _T("      ,0 AS seq_increment\n")
+                _T("      ,0 AS cache\n")
+                _T("      ,0 AS cycle\n")
+                _T("      ,0 AS ordering\n")
+                _T("  FROM information_schema.tables tab\n")
+                _T(" WHERE tab.table_type = 'SEQUENCE'");
   if(!p_schema.IsEmpty())
   {
-    sql += "\n   AND table_schema = ?";
+    sql += _T("\n   AND table_schema = ?");
   }
   if(!p_pattern.IsEmpty())
   {
-    sql += "\n   AND table_name LIKE ?";
+    sql += _T("\n   AND table_name LIKE ?");
   }
   return sql;
 }
@@ -1517,29 +1524,29 @@ SQLInfoMariaDB::GetCATALOGSequenceAttributes(XString& p_schema,XString& p_sequen
   XString table;
   if(!p_schema.IsEmpty())
   {
-    table = p_schema + ".";
+    table = p_schema + _T(".");
   }
   table += p_sequence;
 
-  XString sql = "SELECT tab.table_catalog   AS catalog_name\n"
-                "      ,tab.table_schema    AS schema_name\n"
-                "      ,tab.table_name      AS sequence_name\n"
-                "      ,seq.start_value     AS current_value\n"
-                "      ,seq.minimum_value   AS minimal_value\n"
-                "      ,seq.increment       AS seq_increment\n"
-                "      ,seq.cache_size      AS cache\n"
-                "      ,seq.cycle_option    AS cycle\n"
-                "      ,0                   AS ordering\n"
-                "  FROM information_schema.tables as tab\n"
-                "      ," + table + " as seq\n"
-                " WHERE tab.table_type = 'SEQUENCE'";
+  XString sql = _T("SELECT tab.table_catalog   AS catalog_name\n")
+                _T("      ,tab.table_schema    AS schema_name\n")
+                _T("      ,tab.table_name      AS sequence_name\n")
+                _T("      ,seq.start_value     AS current_value\n")
+                _T("      ,seq.minimum_value   AS minimal_value\n")
+                _T("      ,seq.increment       AS seq_increment\n")
+                _T("      ,seq.cache_size      AS cache\n")
+                _T("      ,seq.cycle_option    AS cycle\n")
+                _T("      ,0                   AS ordering\n")
+                _T("  FROM information_schema.tables as tab\n")
+                _T("      ,") + table + _T(" as seq\n")
+                _T(" WHERE tab.table_type = 'SEQUENCE'");
   if(!p_schema.IsEmpty())
   {
-    sql += "\n   AND tab.table_schema = ?";
+    sql += _T("\n   AND tab.table_schema = ?");
   }
   if(!p_sequence.IsEmpty())
   {
-    sql += "\n   AND tab.table_name  = ?";
+    sql += _T("\n   AND tab.table_name  = ?");
   }
   return sql;
 }
@@ -1547,20 +1554,20 @@ SQLInfoMariaDB::GetCATALOGSequenceAttributes(XString& p_schema,XString& p_sequen
 XString
 SQLInfoMariaDB::GetCATALOGSequenceCreate(MetaSequence& p_sequence) const
 {
-  XString sql("CREATE OR REPLACE SEQUENCE ");
+  XString sql(_T("CREATE OR REPLACE SEQUENCE "));
 
   sql += p_sequence.m_sequenceName;
-  sql.AppendFormat("\n START WITH %-12.0f", p_sequence.m_currentValue);
-  sql.AppendFormat("\n INCREMENT BY %d",    p_sequence.m_increment);
+  sql.AppendFormat(_T("\n START WITH %-12.0f"), p_sequence.m_currentValue);
+  sql.AppendFormat(_T("\n INCREMENT BY %d"),    p_sequence.m_increment);
 
-  sql += p_sequence.m_cycle ? "\n CYCLE" : "\n NOCYCLE";
+  sql += p_sequence.m_cycle ? _T("\n CYCLE") : _T("\n NOCYCLE");
   if (p_sequence.m_cache > 0)
   {
-    sql.AppendFormat("\n CACHE %d",p_sequence.m_cache);
+    sql.AppendFormat(_T("\n CACHE %d"),p_sequence.m_cache);
   }
   else
   {
-    sql += "\n NOCACHE";
+    sql += _T("\n NOCACHE");
   }
   return sql;
 }
@@ -1568,7 +1575,7 @@ SQLInfoMariaDB::GetCATALOGSequenceCreate(MetaSequence& p_sequence) const
 XString
 SQLInfoMariaDB::GetCATALOGSequenceDrop(XString /*p_schema*/,XString p_sequence) const
 {
-  XString sql("DROP SEQUENCE " + p_sequence);
+  XString sql(_T("DROP SEQUENCE ") + p_sequence);
   return  sql;
 }
 
@@ -1578,7 +1585,7 @@ SQLInfoMariaDB::GetCATALOGSequenceDrop(XString /*p_schema*/,XString p_sequence) 
 XString 
 SQLInfoMariaDB::GetCATALOGViewExists(XString& /*p_schema*/,XString& /*p_viewname*/) const
 {
-  return "";
+  return _T("");
 }
 
 XString 
@@ -1591,28 +1598,28 @@ XString
 SQLInfoMariaDB::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewname) const
 {
   XString sql;
-  sql = "SELECT table_catalog\n"
-        "      ,table_schema\n"
-        "      ,table_name\n"
-        "      ,'VIEW' as table_type\n"
-        "      ,table_comment\n"
-        "      ,table_catalog || '.' || table_schema || '.' || table_name as fullname\n"
-        "      ,engine\n"
-        "      ,0 as temporary\n" 
-        "  FROM information_schema.tables\n"  
-        " WHERE table_type = 'VIEW'\n"
-        "   AND table_schema NOT IN ('mysql','sys','performance_schema')\n";
+  sql = _T("SELECT table_catalog\n")
+        _T("      ,table_schema\n")
+        _T("      ,table_name\n")
+        _T("      ,'VIEW' as table_type\n")
+        _T("      ,table_comment\n")
+        _T("      ,table_catalog || '.' || table_schema || '.' || table_name as fullname\n")
+        _T("      ,engine\n")
+        _T("      ,0 as temporary\n") 
+        _T("  FROM information_schema.tables\n")  
+        _T(" WHERE table_type = 'VIEW'\n")
+        _T("   AND table_schema NOT IN ('mysql','sys','performance_schema')\n");
   if(!p_schema.IsEmpty())
   {
-    sql += "   AND table_schema = ?\n";
+    sql += _T("   AND table_schema = ?\n");
   }
   if(!p_viewname.IsEmpty())
   {
-    sql += "   AND table_name ";
-    sql += p_viewname.Find('%') >= 0 ? "LIKE" : "=";
-    sql += " ?\n";
+    sql += _T("   AND table_name ");
+    sql += p_viewname.Find('%') >= 0 ? _T("LIKE") : _T("=");
+    sql += _T(" ?\n");
   }
-  sql += " ORDER BY 1,2,3";
+  sql += _T(" ORDER BY 1,2,3");
   return sql;
 }
 
@@ -1620,45 +1627,45 @@ XString
 SQLInfoMariaDB::GetCATALOGViewText(XString& /*p_schema*/,XString& /*p_viewname*/) const
 {
   // Cannot query this, Use ODBC functions
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoMariaDB::GetCATALOGViewCreate(XString /*p_schema*/,XString p_viewname,XString p_contents,bool /*p_ifexists /*= true*/) const
 {
-  return "CREATE VIEW " + p_viewname + "\n" + p_contents;
+  return _T("CREATE VIEW ") + p_viewname + _T("\n") + p_contents;
 }
 
 XString 
 SQLInfoMariaDB::GetCATALOGViewRename(XString p_schema,XString p_viewname,XString p_newname)    const
 {
-  return "";
+  return _T("");
 }
 
 XString 
 SQLInfoMariaDB::GetCATALOGViewDrop(XString /*p_schema*/,XString p_viewname,XString& p_precursor) const
 {
   p_precursor.Empty();
-  return "DROP VIEW " + p_viewname;
+  return _T("DROP VIEW ") + p_viewname;
 }
 
 // All Privilege functions
 XString
 SQLInfoMariaDB::GetCATALOGTablePrivileges(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
-  return "";
+  return _T("");
 }
 
 XString 
 SQLInfoMariaDB::GetCATALOGColumnPrivileges(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_columnname*/) const
 {
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoMariaDB::GetCATALOGSequencePrivilege(XString& /*p_schema*/,XString& /*p_sequence*/) const
 {
-  return "";
+  return _T("");
 }
 
 XString 
@@ -1668,12 +1675,12 @@ SQLInfoMariaDB::GetCATALOGGrantPrivilege(XString /*p_schema*/,XString p_objectna
   p_grantee.MakeLower();
 
   // MariaDB does not know the concept of "PUBLIC"
-  if(p_grantee.Compare("public"))
+  if(p_grantee.Compare(_T("public")))
   {
-    sql.Format("GRANT %s ON %s TO %s", p_privilege.GetString(), p_objectname.GetString(), p_grantee.GetString());
+    sql.Format(_T("GRANT %s ON %s TO %s"), p_privilege.GetString(), p_objectname.GetString(), p_grantee.GetString());
     if (p_grantable)
     {
-      sql += " WITH GRANT OPTION";
+      sql += _T(" WITH GRANT OPTION");
     }
   }
   return sql;
@@ -1686,9 +1693,9 @@ SQLInfoMariaDB::GetCATALOGRevokePrivilege(XString /*p_schema*/,XString p_objectn
   p_grantee.MakeLower();
 
   // MariaDB does not know the concept of "PUBLIC"
-  if(p_grantee.Compare("public"))
+  if(p_grantee.Compare(_T("public")))
   {
-    sql.Format("REVOKE %s ON %s FROM %s", p_privilege.GetString(), p_objectname.GetString(), p_grantee.GetString());
+    sql.Format(_T("REVOKE %s ON %s FROM %s"), p_privilege.GetString(), p_objectname.GetString(), p_grantee.GetString());
   }
   return sql;
 }
@@ -1698,28 +1705,28 @@ XString
 SQLInfoMariaDB::GetCATALOGSynonymList(XString& /*p_schema*/,XString& /*p_pattern*/) const
 {
   // Not implemented yet
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoMariaDB::GetCATALOGSynonymAttributes(XString& /*p_schema*/,XString& /*p_synonym*/) const
 {
   // Not implemented yet
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoMariaDB::GetCATALOGSynonymCreate(XString& /*p_schema*/,XString& /*p_synonym*/,XString /*p_forObject*/,bool /*p_private = true*/) const
 {
   // Not implemented yet
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoMariaDB::GetCATALOGSynonymDrop(XString& /*p_schema*/,XString& /*p_synonym*/,bool /*p_private = true*/) const
 {
   // Not implemented yet
-  return "";
+  return _T("");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1755,15 +1762,15 @@ XString
 SQLInfoMariaDB::GetPSMProcedureExists(XString p_schema, XString p_procedure) const
 {
   XString sql;
-  sql = "SELECT SELECT COUNT(*)\n"
-        "  FROM information_schema.routines\n";
+  sql = _T("SELECT SELECT COUNT(*)\n")
+        _T("  FROM information_schema.routines\n");
   if(!p_schema.IsEmpty())
   { 
-    sql += "   AND routine_schema = '" + p_schema + "'\n";
+    sql += _T("   AND routine_schema = '") + p_schema + _T("'\n");
   }
   if(!p_procedure.IsEmpty())
   {
-    sql += "   AND routine_name = '" + p_procedure + "'";
+    sql += _T("   AND routine_name = '") + p_procedure + _T("'");
   }
   return sql;
 }
@@ -1772,20 +1779,20 @@ XString
 SQLInfoMariaDB::GetPSMProcedureList(XString& p_schema) const
 {
   XString sql;
-  sql = "SELECT routine_catalog\n"
-        "      ,routine_schema\n"
-        "      ,routine_name\n"
-        "      ,CASE routine_type\n"
-        "            WHEN 'PROCEDURE' THEN 1\n"
-        "            WHEN 'FUNCTION'  THEN 2\n"
-        "                             ELSE 3\n"
-        "       end\n"
-        "  FROM information_schema.routines fun\n";
+  sql = _T("SELECT routine_catalog\n")
+        _T("      ,routine_schema\n")
+        _T("      ,routine_name\n")
+        _T("      ,CASE routine_type\n")
+        _T("            WHEN 'PROCEDURE' THEN 1\n")
+        _T("            WHEN 'FUNCTION'  THEN 2\n")
+        _T("                             ELSE 3\n")
+        _T("       end\n")
+        _T("  FROM information_schema.routines fun\n");
   if (!p_schema.IsEmpty())
   {
-    sql += " WHERE routine_schema = ?\n";
+    sql += _T(" WHERE routine_schema = ?\n");
   }
-  sql += " ORDER BY 1,2,3";
+  sql += _T(" ORDER BY 1,2,3");
 
   return sql;
 }
@@ -1794,47 +1801,47 @@ XString
 SQLInfoMariaDB::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure) const
 {
   XString sql;
-  sql = "SELECT routine_catalog\n"
-        "      ,routine_schema\n"
-        "      ,routine_name\n"
-        "      ,(SELECT COUNT(*)\n"
-        "          FROM information_schema.parameters par\n"
-        "         WHERE par.specific_name    = fun.specific_name\n"
-        "           AND par.specific_catalog = fun.routine_catalog\n"
-        "           AND par.specific_schema  = fun.routine_schema\n"
-        "           AND par.parameter_mode IN ('IN','INOUT')) as input_parameters\n"
-        "      ,(SELECT COUNT(*)\n"
-        "          FROM information_schema.parameters par\n"
-        "         WHERE par.specific_name    = fun.specific_name\n"
-        "           AND par.specific_catalog = fun.routine_catalog\n"
-        "           AND par.specific_schema  = fun.routine_schema\n"
-        "           AND par.parameter_mode IN ('OUT','INOUT')) as output_parameters\n"
-        "      ,(SELECT COUNT(*)\n"
-        "          FROM information_schema.parameters par\n"
-        "         WHERE par.specific_name    = fun.specific_name\n"
-        "           AND par.specific_catalog = fun.routine_catalog\n"
-        "           AND par.specific_schema  = fun.routine_schema\n"
-        "           AND par.data_type        = 'set') as result_sets\n"
-        "      ,'' as remarks\n"
-        "      ,CASE routine_type\n"
-        "            WHEN 'PROCEDURE' THEN 1\n"
-        "            WHEN 'FUNCTION'  THEN 2\n"
-        "                             ELSE 3\n"
-        "       end as procedure_type\n"
-        "      ,routine_definition\n"
-        "  FROM information_schema.routines fun\n";
+  sql = _T("SELECT routine_catalog\n")
+        _T("      ,routine_schema\n")
+        _T("      ,routine_name\n")
+        _T("      ,(SELECT COUNT(*)\n")
+        _T("          FROM information_schema.parameters par\n")
+        _T("         WHERE par.specific_name    = fun.specific_name\n")
+        _T("           AND par.specific_catalog = fun.routine_catalog\n")
+        _T("           AND par.specific_schema  = fun.routine_schema\n")
+        _T("           AND par.parameter_mode IN ('IN','INOUT')) as input_parameters\n")
+        _T("      ,(SELECT COUNT(*)\n")
+        _T("          FROM information_schema.parameters par\n")
+        _T("         WHERE par.specific_name    = fun.specific_name\n")
+        _T("           AND par.specific_catalog = fun.routine_catalog\n")
+        _T("           AND par.specific_schema  = fun.routine_schema\n")
+        _T("           AND par.parameter_mode IN ('OUT','INOUT')) as output_parameters\n")
+        _T("      ,(SELECT COUNT(*)\n")
+        _T("          FROM information_schema.parameters par\n")
+        _T("         WHERE par.specific_name    = fun.specific_name\n")
+        _T("           AND par.specific_catalog = fun.routine_catalog\n")
+        _T("           AND par.specific_schema  = fun.routine_schema\n")
+        _T("           AND par.data_type        = 'set') as result_sets\n")
+        _T("      ,'' as remarks\n")
+        _T("      ,CASE routine_type\n")
+        _T("            WHEN 'PROCEDURE' THEN 1\n")
+        _T("            WHEN 'FUNCTION'  THEN 2\n")
+        _T("                             ELSE 3\n")
+        _T("       end as procedure_type\n")
+        _T("      ,routine_definition\n")
+        _T("  FROM information_schema.routines fun\n");
   if(!p_schema.IsEmpty())
   { 
-    sql += " WHERE routine_schema = ?\n";
+    sql += _T(" WHERE routine_schema = ?\n");
   }
   if(!p_procedure.IsEmpty())
   {
-    sql += p_schema.IsEmpty() ? " WHERE " : "   AND ";
-    sql += "routine_name ";
-    sql += p_procedure.Find('%') >= 0 ? "LIKE" : "=";
-    sql += " ?\n";
+    sql += p_schema.IsEmpty() ? _T(" WHERE ") : _T("   AND ");
+    sql += _T("routine_name ");
+    sql += p_procedure.Find('%') >= 0 ? _T("LIKE") : _T("=");
+    sql += _T(" ?\n");
   }
-  sql += " ORDER BY 1,2,3";
+  sql += _T(" ORDER BY 1,2,3");
   return sql;
 }
 
@@ -1842,31 +1849,31 @@ XString
 SQLInfoMariaDB::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure) const
 {
   // Source-code already gotten with attributes
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoMariaDB::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
 {
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoMariaDB::GetPSMProcedureDrop(XString /*p_schema*/, XString p_procedure,bool /*p_function /*=false*/) const
 {
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoMariaDB::GetPSMProcedureErrors(XString p_schema,XString p_procedure) const
 {
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoMariaDB::GetPSMProcedurePrivilege(XString& /*p_schema*/,XString& /*p_procedure*/) const
 {
-  return "";
+  return _T("");
 }
 
 // And it's parameters
@@ -1875,53 +1882,53 @@ SQLInfoMariaDB::GetPSMProcedureParameters(XString& p_schema,XString& p_procedure
 {
   XString sql;
 
-  sql = "SELECT par.specific_catalog\n"
-        "      ,par.specific_schema\n"
-        "      ,fun.routine_name\n"
-        "      ,par.parameter_name\n"
-        "      ,case par.parameter_mode\n"
-        "            when 'IN'    then 1\n"
-        "            when 'OUT'   then 4\n"
-        "            when 'INOUT' then 2\n"
-        "       end as columntype\n"
-        "      ,case par.data_type\n"
-        "            when 'varchar'  then 1\n"
-        "            when 'int'      then 4\n"
-        "            when 'decimal'  then 2\n"
-        "            when 'tinyint'  then -6\n"
-        "            when 'bigint'   then -5\n"
-        "            when 'text'     then 1\n"
-        "            when 'longtext' then -1\n"
-        "            when 'datetime' then 11\n"
-        "                            else 1\n"
-        "       end as datatype\n"
-        "      ,par.data_type as typename\n"
-        "      ,par.character_maximum_length\n"
-        "      ,par.numeric_precision\n"
-        "      ,par.numeric_scale\n"
-        "      ,10 as numeric_precision_radix\n"
-        "      ,1 as is_nullable\n"
-        "      ,'' as remarks\n"
-        "      ,'' as parameter_default\n"
-        "      ,1 as datatype3\n"
-        "      ,par.datetime_precision as subtype\n"
-        "      ,par.character_octet_length\n"
-        "      ,par.ordinal_position\n"
-        "      ,'YES' as isNullable\n"
-        "  FROM information_schema.parameters par\n"
-        "      ,information_schema.routines fun\n"
-        " WHERE par.specific_catalog = fun.routine_catalog\n"
-        "   AND par.specific_schema  = fun.routine_schema\n"
-        "   AND par.specific_name    = fun.specific_name\n";
+  sql = _T("SELECT par.specific_catalog\n")
+        _T("      ,par.specific_schema\n")
+        _T("      ,fun.routine_name\n")
+        _T("      ,par.parameter_name\n")
+        _T("      ,case par.parameter_mode\n")
+        _T("            when 'IN'    then 1\n")
+        _T("            when 'OUT'   then 4\n")
+        _T("            when 'INOUT' then 2\n")
+        _T("       end as columntype\n")
+        _T("      ,case par.data_type\n")
+        _T("            when 'varchar'  then 1\n")
+        _T("            when 'int'      then 4\n")
+        _T("            when 'decimal'  then 2\n")
+        _T("            when 'tinyint'  then -6\n")
+        _T("            when 'bigint'   then -5\n")
+        _T("            when 'text'     then 1\n")
+        _T("            when 'longtext' then -1\n")
+        _T("            when 'datetime' then 11\n")
+        _T("                            else 1\n")
+        _T("       end as datatype\n")
+        _T("      ,par.data_type as typename\n")
+        _T("      ,par.character_maximum_length\n")
+        _T("      ,par.numeric_precision\n")
+        _T("      ,par.numeric_scale\n")
+        _T("      ,10 as numeric_precision_radix\n")
+        _T("      ,1 as is_nullable\n")
+        _T("      ,'' as remarks\n")
+        _T("      ,'' as parameter_default\n")
+        _T("      ,1 as datatype3\n")
+        _T("      ,par.datetime_precision as subtype\n")
+        _T("      ,par.character_octet_length\n")
+        _T("      ,par.ordinal_position\n")
+        _T("      ,'YES' as isNullable\n")
+        _T("  FROM information_schema.parameters par\n")
+        _T("      ,information_schema.routines fun\n")
+        _T(" WHERE par.specific_catalog = fun.routine_catalog\n")
+        _T("   AND par.specific_schema  = fun.routine_schema\n")
+        _T("   AND par.specific_name    = fun.specific_name\n");
   if(!p_schema.IsEmpty())
   {
-    sql += "   AND fun.routine_schema = ?\n";
+    sql += _T("   AND fun.routine_schema = ?\n");
   }
   if(!p_procedure.IsEmpty())
   {
-    sql += "   AND fun.routine_name    = ?\n";
+    sql += _T("   AND fun.routine_name    = ?\n");
   }
-  sql += " ORDER BY 1,2,3,18";
+  sql += _T(" ORDER BY 1,2,3,18");
 
   return sql;
 }
@@ -1943,7 +1950,7 @@ SQLInfoMariaDB::GetPSMDeclaration(bool    /*p_first*/
                                ,XString /*p_asColumn  = ""*/) const
 {
   XString line;
-  line.Format("DECLARE %s ",p_variable.GetString());
+  line.Format(_T("DECLARE %s "),p_variable.GetString());
 
   if(p_datatype)
   {
@@ -1953,20 +1960,20 @@ SQLInfoMariaDB::GetPSMDeclaration(bool    /*p_first*/
 
     if(p_precision > 0)
     {
-      line.AppendFormat("(%d",p_precision);
+      line.AppendFormat(_T("(%d"),p_precision);
       if(p_scale > 0)
       {
-        line.AppendFormat("%d",p_scale);
+        line.AppendFormat(_T("%d"),p_scale);
       }
-      line += ")";
+      line += _T(")");
     }
 
     if(!p_default.IsEmpty())
     {
-      line += " DEFAULT " + p_default;
+      line += _T(" DEFAULT ") + p_default;
     }
   }
-  line += ";\n";
+  line += _T(";\n");
   return line;
 }
 
@@ -1974,11 +1981,11 @@ XString
 SQLInfoMariaDB::GetPSMAssignment(XString p_variable,XString p_statement /*=""*/) const
 {
   XString line(p_variable);
-  line += " [?=] ";
+  line += _T(" [?=] ");
   if(!p_statement.IsEmpty())
   {
     line += p_statement;
-    line += ";";
+    line += _T(";");
   }
   return line;
 }
@@ -1986,76 +1993,76 @@ SQLInfoMariaDB::GetPSMAssignment(XString p_variable,XString p_statement /*=""*/)
 XString
 SQLInfoMariaDB::GetPSMIF(XString p_condition) const
 {
-  XString line("IF (");
+  XString line(_T("IF ("));
   line += p_condition;
-  line += ") THEN\n";
+  line += _T(") THEN\n");
   return line;
 }
 
 XString
 SQLInfoMariaDB::GetPSMIFElse() const
 {
-  return "ELSE\n";
+  return _T("ELSE\n");
 }
 
 XString
 SQLInfoMariaDB::GetPSMIFEnd() const
 {
-  return "END IF;\n";
+  return _T("END IF;\n");
 }
 
 XString
 SQLInfoMariaDB::GetPSMWhile(XString p_condition) const
 {
-  return "WHILE (" + p_condition + ") DO\n";
+  return _T("WHILE (") + p_condition + _T(") DO\n");
 }
 
 XString
 SQLInfoMariaDB::GetPSMWhileEnd() const
 {
-  return "END WHILE;\n";
+  return _T("END WHILE;\n");
 }
 
 XString
 SQLInfoMariaDB::GetPSMLOOP() const
 {
-  return "LOOP\n";
+  return _T("LOOP\n");
 }
 
 XString
 SQLInfoMariaDB::GetPSMLOOPEnd() const
 {
-  return "END LOOP;\n";
+  return _T("END LOOP;\n");
 }
 
 XString
 SQLInfoMariaDB::GetPSMBREAK() const
 {
-  return "LEAVE\n";
+  return _T("LEAVE\n");
 }
 
 XString
 SQLInfoMariaDB::GetPSMRETURN(XString p_statement /*= ""*/) const
 {
-  return "RETURN " + p_statement;
+  return _T("RETURN ") + p_statement;
 }
 
 XString
 SQLInfoMariaDB::GetPSMExecute(XString p_procedure,MParameterMap& p_parameters) const
 {
   XString line;
-  line.Format("EXECUTE %s USING ",p_procedure.GetString());
+  line.Format(_T("EXECUTE %s USING "),p_procedure.GetString());
   bool doMore = false;
 
   for(const auto& param : p_parameters)
   {
-    if(doMore) line += ",";
+    if(doMore) line += _T(",");
     doMore = true;
 
-    line += "@";
+    line += _T("@");
     line += param.m_parameter;
   }
-  line += ";\n";
+  line += _T(";\n");
   return line;
 }
 
@@ -2063,22 +2070,22 @@ SQLInfoMariaDB::GetPSMExecute(XString p_procedure,MParameterMap& p_parameters) c
 XString
 SQLInfoMariaDB::GetPSMCursorDeclaration(XString p_cursorname,XString p_select) const
 {
-  return "DECLARE " + p_cursorname + " CURSOR FOR " + p_select + ";";
+  return _T("DECLARE ") + p_cursorname + _T(" CURSOR FOR ") + p_select + _T(";");
 }
 
 XString
 SQLInfoMariaDB::GetPSMCursorFetch(XString p_cursorname,std::vector<XString>& /*p_columnnames*/,std::vector<XString>& p_variablenames) const
 {
-  XString query = "FETCH " + p_cursorname + " INTO ";
+  XString query = _T("FETCH ") + p_cursorname + _T(" INTO ");
   bool moreThenOne = false;
 
   for(const auto& var : p_variablenames)
   {
-    if(moreThenOne) query += ",";
+    if(moreThenOne) query += _T(",");
     moreThenOne = true;
     query += var;
   }
-  query += ";";
+  query += _T(";");
   return query;
 }
 
@@ -2088,21 +2095,21 @@ SQLInfoMariaDB::GetPSMCursorFetch(XString p_cursorname,std::vector<XString>& /*p
 XString
 SQLInfoMariaDB::GetPSMExceptionCatchNoData() const
 {
-  return "DECLARE EXIT HANDLER FOR SQLSTATE '02000'\n";
+  return _T("DECLARE EXIT HANDLER FOR SQLSTATE '02000'\n");
   // Must be followed by a (block)statement
 }
 
 XString
 SQLInfoMariaDB::GetPSMExceptionCatch(XString p_sqlState) const
 {
-  return "DECLARE EXIT HANDLER FOR SQLSTATE '" + p_sqlState + "'\n";
+  return _T("DECLARE EXIT HANDLER FOR SQLSTATE '") + p_sqlState + _T("'\n");
   // Must be followed by a (block)statement
 }
 
 XString
 SQLInfoMariaDB::GetPSMExceptionRaise(XString p_sqlState) const
 {
-  return "SIGNAL SQLSTATE '" + p_sqlState + "'\n";
+  return _T("SIGNAL SQLSTATE '") + p_sqlState + _T("'\n");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2122,25 +2129,25 @@ SQLInfoMariaDB::GetPSMExceptionRaise(XString p_sqlState) const
 XString
 SQLInfoMariaDB::GetSESSIONMyself() const
 {
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoMariaDB::GetSESSIONExists(XString p_sessionID) const
 {
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoMariaDB::GetSESSIONList() const
 {
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoMariaDB::GetSESSIONAttributes(XString p_sessionID) const
 {
-  return "";
+  return _T("");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2150,14 +2157,14 @@ XString
 SQLInfoMariaDB::GetSESSIONConstraintsDeferred() const
 {
   // MySQL cannot defer constraints
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoMariaDB::GetSESSIONConstraintsImmediate() const
 {
   // MySQL constraints are always active
-  return "";
+  return _T("");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2190,7 +2197,7 @@ SQLInfoMariaDB::DoSQLCallNamedParameters(SQLQuery* /*p_query*/,XString& /*p_sche
 void
 SQLInfoMariaDB::DetectOracleMode()
 {
-  XString sql = "SELECT INSTR(@@sql_mode,'ORACLE') > 0 AS IsOracle";
+  XString sql = _T("SELECT INSTR(@@sql_mode,'ORACLE') > 0 AS IsOracle");
 
   try
   {

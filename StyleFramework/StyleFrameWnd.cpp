@@ -78,7 +78,7 @@ StyleFrameWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
   int msg_changed = RegisterWindowMessage(STYLEFXCHANGED);
   ThemeColor::g_msg_changed = msg_changed;
 
-  m_grayScreen.CreateEx(0,AfxRegisterWndClass(0),"",WS_POPUP,CRect(0,0,0,0),this,0);
+  m_grayScreen.CreateEx(0,AfxRegisterWndClass(0),_T(""),WS_POPUP,CRect(0,0,0,0),this,0);
 
   return CFrameWndEx::OnCreate(lpCreateStruct);
 }

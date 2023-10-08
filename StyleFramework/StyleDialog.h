@@ -21,7 +21,7 @@
 
 class StyleComboBox;
 class AutoBlockActivation;
-using ToolTips = std::map<HWND,const char*>;
+using ToolTips = std::map<HWND,LPCTSTR>;
 
 typedef struct
 {
@@ -72,9 +72,9 @@ public:
   void    LoadStyleTheme();
   CWnd*   GetNextDlgTabItem(CWnd* p_control, BOOL p_previous = FALSE) const;
 
-  void    RegisterTooltip(int p_ID,            const char* p_text);
-  void    RegisterTooltip(CWnd& p_wnd,         const char* p_text);
-  void    RegisterTooltip(StyleComboBox& p_wnd,const char* p_text);
+  void    RegisterTooltip(int p_ID,            LPCTSTR p_text);
+  void    RegisterTooltip(CWnd& p_wnd,         LPCTSTR p_text);
+  void    RegisterTooltip(StyleComboBox& p_wnd,LPCTSTR p_text);
 
 protected:
   friend  AutoBlockActivation;

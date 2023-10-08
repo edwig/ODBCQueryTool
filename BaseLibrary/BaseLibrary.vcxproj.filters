@@ -78,7 +78,7 @@
     <ClInclude Include="CrackURL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DefuseBOM.h">
+    <ClInclude Include="Encoding.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Namespace.h">
@@ -321,9 +321,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CrackURL.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DefuseBOM.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Namespace.cpp">

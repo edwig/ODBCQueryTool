@@ -45,6 +45,7 @@
 #include "OEFindReplaceDlg.h"
 #include "OEGoToDialog.h"
 #include "OEHighlighter.h" // for a destructor
+#include <WinFile.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -62,7 +63,7 @@ using namespace OpenEditor;
 #endif
 
 
-static const char g_szClassName[] = "OpenEditorWindow";
+static const TCHAR g_szClassName[] = _T("OpenEditorWindow");
 static HCURSOR g_hCurIBeam = ::LoadCursor(NULL, IDC_IBEAM);
 static HCURSOR g_hCurArrow = ::LoadCursor(NULL, IDC_ARROW);
 BOOL COEditorView::m_isOverWriteMode = FALSE;
@@ -239,8 +240,12 @@ COEditorView::~COEditorView ()
   }
   if(m_scriptOutput)
   {
-    fclose(m_scriptOutput);
-    m_scriptOutput = NULL;
+    if(m_scriptOutput->GetIsOpen())
+    {
+      m_scriptOutput->Close();
+    }
+    delete m_scriptOutput;
+    m_scriptOutput = nullptr;
   }
 }
 
@@ -715,7 +720,7 @@ void COEditorView::OnChar (UINT nChar, UINT nRepCnt, UINT /*nFlags*/)
     if (!m_bAttached) return;
 
     NormalizeOnCharCxt cxt;
-    PreNormalizeOnChar(cxt, static_cast<char>(nChar));
+    PreNormalizeOnChar(cxt, static_cast<TCHAR>(nChar));
 
     switch (nChar)
     {
@@ -725,9 +730,9 @@ void COEditorView::OnChar (UINT nChar, UINT nRepCnt, UINT /*nFlags*/)
             else ClearSelection();
 
         if (m_isOverWriteMode)
-            Overwrite(static_cast<char>(nChar));
+            Overwrite(static_cast<TCHAR>(nChar));
         else
-            Insert(static_cast<char>(nChar));
+            Insert(static_cast<TCHAR>(nChar));
         break;
 
     case '\t':
@@ -935,7 +940,7 @@ void COEditorView::OnLButtonDblClk (UINT /*nFlags*/, CPoint point)
     Position pos = MouseToPos(point);
 
     // 24.03.2003 improvement, MouseSelectionDelimiters has been added (hidden) which influences on double click selection behavior
-    const char* delims = !GetMouseSelectionDelimiters().IsEmpty() ? GetMouseSelectionDelimiters().GetString() : 0;
+    LPCTSTR delims = !GetMouseSelectionDelimiters().IsEmpty() ? GetMouseSelectionDelimiters().GetString() : 0;
 
     if (WordOrSpaceFromPoint(pos, selection, delims))
     {
@@ -1016,24 +1021,24 @@ void COEditorView::OnUpdate_Mode (CCmdUI* pCmdUI)
 
 void COEditorView::OnUpdate_Pos (CCmdUI* pCmdUI)
 {
-    char buff[80];
+    TCHAR buff[80];
     Position pos = GetPosition();
-    sprintf_s(buff,80," Ln: %d, Col: %d", pos.line + 1, pos.column + 1);
+    _stprintf_s(buff,80,_T(" Ln: %d, Col: %d"), pos.line + 1, pos.column + 1);
     pCmdUI->SetText(buff);
     pCmdUI->Enable(TRUE);
 }
 
 void COEditorView::OnUpdate_ScrollPos (CCmdUI* pCmdUI)
 {
-    char buff[80];
-    sprintf_s(buff,80, " Top: %d, Left: %d", m_Rulers[1].m_Topmost + 1, m_Rulers[0].m_Topmost + 1);
+    TCHAR buff[80];
+    _stprintf_s(buff,80, _T(" Top: %d, Left: %d"), m_Rulers[1].m_Topmost + 1, m_Rulers[0].m_Topmost + 1);
     pCmdUI->SetText(buff);
     pCmdUI->Enable(TRUE);
 }
 
 void COEditorView::OnUpdate_BlockType (CCmdUI* pCmdUI)
 {
-    pCmdUI->SetText(GetBlockMode() == ebtColumn ? " Sel: Columnar " : " Sel: Stream ");
+    pCmdUI->SetText(GetBlockMode() == ebtColumn ? _T(" Sel: Columnar ") : _T(" Sel: Stream "));
     pCmdUI->Enable(TRUE);
 }
 
@@ -1045,23 +1050,23 @@ void COEditorView::OnUpdate_CurChar (CCmdUI* pCmdUI)
     if (m_curCharCache.pos != pos)
     {
         m_curCharCache.pos = pos;
-        m_curCharCache.message = " Chr: ";
+        m_curCharCache.message = _T(" Chr: ");
 
         if (pos.line < GetLineCount()
         && pos.column < GetLineLength(pos.line))
         {
             int len;
-            char buff[80];
-            const char* str;
+            TCHAR buff[80];
+            LPCTSTR str;
             GetLine(pos.line, str, len);
             int inx = pos2inx(str, len, pos.column);
             m_curCharCache.message += '\'';
             m_curCharCache.message += str[inx];
-            m_curCharCache.message += "'=0x";
-            _itoa_s(str[inx], buff, 80, 16);
+            m_curCharCache.message += _T("'=0x");
+            _itot_s(str[inx], buff, 80, 16);
             m_curCharCache.message += buff;
-            m_curCharCache.message += "=";
-            _itoa_s(str[inx], buff, 80, 10);
+            m_curCharCache.message += _T("=");
+            _itot_s(str[inx], buff, 80, 10);
             m_curCharCache.message += buff;
         }
     }
@@ -1104,36 +1109,8 @@ void COEditorView::OnUpdate_SelectionType(CCmdUI* pCmdUI)
 
 void COEditorView::DoEditCopy (const CString& buff, bool append)
 {
-    if (::OpenClipboard(NULL))
-    {
-        CWaitCursor wait;
-
-        if (!append) ::EmptyClipboard();
-
-        if (buff.GetLength())
-        {
-            HGLOBAL hDataSrc = ::GetClipboardData(CF_TEXT);
-            const char* src = hDataSrc ? (const char*)::GlobalLock(hDataSrc) : NULL;
-            size_t length = src ? strlen(src) : 0; 
-            
-            HGLOBAL hDataDest = ::GlobalAlloc(GMEM_MOVEABLE|GMEM_DDESHARE, length + buff.GetLength() + 1);
-            if (hDataDest)
-            {
-                char* dest = (char*)::GlobalLock(hDataDest);
-                if (dest) 
-                {
-                    if (src) memcpy(dest, src, length);
-                    memcpy(dest + length, buff.GetString(), buff.GetLength() + 1);
-                }
-                if (hDataSrc) ::GlobalUnlock(hDataSrc);
-                ::GlobalUnlock(hDataDest);
-                ::EmptyClipboard();
-                ::SetClipboardData(CF_TEXT, hDataDest);
-            }
-        }
-
-        ::CloseClipboard();
-    }
+  CWaitCursor wait;
+  StylePutStringToClipboard(buff,GetSafeHwnd(),append);
 }
 
 void COEditorView::OnEditCopy()
@@ -1163,38 +1140,31 @@ void COEditorView::OnEditCut()
 
 void COEditorView::OnEditPaste()
 {
-    if (!m_bAttached) return;
+  if (!m_bAttached) return;
 
-    if (::OpenClipboard(NULL))
-	{
-        HGLOBAL hData = ::GetClipboardData(CF_TEXT);
+  CString text = StyleGetStringFromClipboard(GetSafeHwnd());
 
-        if (hData != NULL)
-		{
-            char* src = (char*)::GlobalLock(hData);
-			if (src)
-			{
-                if (!IsSelectionEmpty())
-                {
-                    if (GetBlockMode() == ebtColumn)
-                    {
-                        Square blkPos;
-                        GetSelection(blkPos);
-                        Position curPos;
-                        curPos.line   = min(blkPos.start.line, blkPos.end.line);
-                        curPos.column = min(blkPos.start.column, blkPos.end.column);
-                        DeleteBlock();
-                        MoveTo(curPos, true);
-                    }
-                    else
-                        DeleteBlock();
-                }
-				InsertBlock(src);
-			}
-      ::GlobalUnlock(hData); // handle possible exceptions from block above!!!
-		}
-    ::CloseClipboard();
-	}
+  if(!text.IsEmpty())
+  {
+    if(!IsSelectionEmpty())
+    {
+      if(GetBlockMode() == ebtColumn)
+      {
+        Square blkPos;
+        GetSelection(blkPos);
+        Position curPos;
+        curPos.line   = min(blkPos.start.line,   blkPos.end.line);
+        curPos.column = min(blkPos.start.column, blkPos.end.column);
+        DeleteBlock();
+        MoveTo(curPos, true);
+      }
+      else
+      {
+        DeleteBlock();
+      }
+    }
+    InsertBlock(text);
+  }
 }
 
 void COEditorView::OnUpdate_EditCopyAndCut (CCmdUI* pCmdUI)
@@ -1359,11 +1329,11 @@ bool COEditorView::RepeatSearch (SearchDirection direction, COEditorView*& pView
            (direction == esdDown && (blk.end == pos || blk.end < pos) || 
             direction == esdUp   && (blk.end == pos || pos < blk.end) ))
         {
-            Common::SetStatusText("Passed the end of the file");
+            Common::SetStatusText(_T("Passed the end of the file"));
         }
         else
         {
-          Common::SetStatusText("");
+          Common::SetStatusText(_T(""));
         }
         if (direction == esdDown && backward || direction == esdUp && !backward)
         {
@@ -1372,10 +1342,10 @@ bool COEditorView::RepeatSearch (SearchDirection direction, COEditorView*& pView
         return true;
     }
 
-    string message("Cannot find the string \'");
+    CString message(_T("Cannot find the string \'"));
     message += GetSearchText();
-    message += "\'.";
-    AfxMessageBox(message.c_str());
+    message += _T("\'.");
+    AfxMessageBox(message.GetString());
 
     if (direction == esdDown && backward || direction == esdUp && !backward)
     {
@@ -1393,7 +1363,7 @@ void COEditorView::SetQueueBookmark (int line, bool on)
     catch (const std::out_of_range&)
     {
         MessageBeep((UINT)-1);
-        Common::SetStatusText("Cannot toggle a bookmark below EOF!");
+        Common::SetStatusText(_T("Cannot toggle a bookmark below EOF!"));
     }
 }
 
@@ -1407,7 +1377,7 @@ void COEditorView::OnEditBookmarkToggle ()
     catch (const std::out_of_range&)
     {
         MessageBeep((UINT)-1);
-        Common::SetStatusText("Cannot toggle a bookmark below EOF!");
+        Common::SetStatusText(_T("Cannot toggle a bookmark below EOF!"));
     }
 }
 
@@ -1440,9 +1410,9 @@ void COEditorView::OnEditBookmarkRemoveAll ()
 
 void COEditorView::OnSetRandomBookmark (UINT nBookmarkCmd)
 {
-    RandomBookmark bookmark(static_cast<unsigned char>(nBookmarkCmd - ID_EDIT_BKM_SET_0));
+    RandomBookmark bookmark(static_cast<_TUCHAR>(nBookmarkCmd - ID_EDIT_BKM_SET_0));
 
-    _CHECK_AND_THROW_(bookmark.Valid(), "Invalid id for random bookmark!");
+    _CHECK_AND_THROW_(bookmark.Valid(), _T("Invalid id for random bookmark!"));
 
     try
     {
@@ -1470,15 +1440,15 @@ void COEditorView::OnSetRandomBookmark (UINT nBookmarkCmd)
     catch (const std::out_of_range&)
     {
         MessageBeep((UINT)-1);
-        Common::SetStatusText("Cannot toggle a bookmark below EOF!");
+        Common::SetStatusText(_T("Cannot toggle a bookmark below EOF!"));
     }
 }
 
 void COEditorView::OnGetRandomBookmark (UINT nBookmarkCmd)
 {
-    RandomBookmark bookmark(static_cast<unsigned char>(nBookmarkCmd - ID_EDIT_BKM_GET_0));
+    RandomBookmark bookmark(static_cast<_TUCHAR>(nBookmarkCmd - ID_EDIT_BKM_GET_0));
 
-    _CHECK_AND_THROW_(bookmark.Valid(), "Invalid id for random bookmark!");
+    _CHECK_AND_THROW_(bookmark.Valid(), _T("Invalid id for random bookmark!"));
 
     Position pos;
     pos.column = 0;
@@ -1491,7 +1461,7 @@ void COEditorView::OnGetRandomBookmark (UINT nBookmarkCmd)
 void COEditorView::OnUpdate_GetRandomBookmark (CCmdUI* pCmdUI)
 {
     int line;
-    RandomBookmark bookmark(static_cast<unsigned char>(pCmdUI->m_nID - ID_EDIT_BKM_GET_0));
+    RandomBookmark bookmark(static_cast<_TUCHAR>(pCmdUI->m_nID - ID_EDIT_BKM_GET_0));
     pCmdUI->Enable((bookmark.Valid() && GetRandomBookmark(bookmark, line)) ? TRUE : FALSE);
 }
 
@@ -1665,7 +1635,7 @@ void COEditorView::DoCommentText (bool comment)
 
     if (selected && blkMode == ebtColumn)
     {
-        AfxMessageBox("The comment/uncomment operation currently supports only stream selection.");
+        AfxMessageBox(_T("The comment/uncomment operation currently supports only stream selection."));
         return;
     }
 
@@ -1675,7 +1645,7 @@ void COEditorView::DoCommentText (bool comment)
         
         if (lang->GetEndLineComment().IsEmpty())
         {
-            AfxMessageBox(CString("Line comment string has not been defined for language \"") + lang->GetName() + "\".");
+            AfxMessageBox(CString(_T("Line comment string has not been defined for language \"")) + lang->GetName() + _T("\"."));
             return;
         }
 
@@ -1697,7 +1667,7 @@ void COEditorView::DoCommentText (bool comment)
     }
     catch (const std::logic_error& x) // language not found
     {
-        AfxMessageBox(CString("Cannot comment/uncomment the selection.\n") + x.what());
+        AfxMessageBox(CString(_T("Cannot comment/uncomment the selection.\n")) + x.what());
         return;
     }
 }
@@ -1731,7 +1701,7 @@ bool COEditorView::UncommentText (const OpenEditor::EditContext& context, CStrin
 
 
     if(!str.IsEmpty() && i < len
-       && !strncmp(str.GetString() + i,lineComment.GetString(),lineComment.GetLength()))
+       && !_tcsncmp(str.GetString() + i,lineComment.GetString(),lineComment.GetLength()))
     {
       str = str.Left(i - 1) + str.Mid(i + lineComment.GetLength());
       // str.erase(i,lineComment.GetLength());
@@ -1747,7 +1717,7 @@ COEditorView::OnEditGoto()
   static int whereFrom = 0;
   int whereTo = (whereFrom == 0) ? pos.line + 1 : 0;
   CString infoString;
-  infoString.Format("There are %u lines in the file.\r\nThe current line is %u."
+  infoString.Format(_T("There are %u lines in the file.\r\nThe current line is %u.")
                     ,GetLineCount(), pos.line + 1);
 
   COEGoToDialog dlg(this,whereFrom,whereTo,infoString);
@@ -1856,7 +1826,7 @@ void COEditorView::GetBlock (CString& str, const Square* sqr) const
     EditContext::GetBlock(str, sqr);
 }
 
-void COEditorView::InsertBlock (const char* str, bool hideSelection, bool putSelInUndo)
+void COEditorView::InsertBlock (LPCTSTR str, bool hideSelection, bool putSelInUndo)
 {
     CWaitCursor wait;
 

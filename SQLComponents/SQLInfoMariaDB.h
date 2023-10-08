@@ -35,6 +35,9 @@ public:
   explicit SQLInfoMariaDB(SQLDatabase* p_database);
  ~SQLInfoMariaDB();
 
+  // RDBMS Uses INDENTITY or SEQUENCE interface
+  void    SetUseSequences(bool p_sequences) override;
+
   //////////////////////////////////////////////////////////////////////////
   //
   // GENERALS (Strings & Booleans) 

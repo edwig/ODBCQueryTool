@@ -55,7 +55,7 @@ BOOL
 ConnStringDlg::OnInitDialog()
 {
   StyleDialog::OnInitDialog();
-  SetWindowText("Connection string");
+  SetWindowText(_T("Connection string"));
 
   SetCanResize();
   m_editConnString.SetFocus();

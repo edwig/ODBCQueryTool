@@ -74,13 +74,13 @@ public:
   XString&    GetFormat();
 private:
   // Internal formatting of a number by a template
-  int         FormatNumberTemplate(char *Getal,const char *strNumFormat,int p_buflen);
+  int         FormatNumberTemplate(LPTSTR Getal,LPCTSTR strNumFormat,int p_buflen);
   // Scan for '23-09-2012' or for '2012-09-23' // Beware "09/23/2012" is not supported!
   bool        GetDateFromStringVariant(const SQLVariant* p_variant,XString p_format,DATE_STRUCT* p_date);
   bool        GetTimeFromStringVariant(const SQLVariant* p_variant,XString p_format,TIME_STRUCT* p_date);
 
   // Is string a (formatted) windows number?
-  bool        IsWinNumber(const XString p_string,char* p_decSeperator,char* p_thouSeperator,char* p_valuta,XString* p_newNumber = NULL);
+  bool        IsWinNumber(const XString p_string,PTCHAR p_decSeperator,PTCHAR p_thouSeperator,PTCHAR p_valuta,XString* p_newNumber = NULL);
 
 
   SQLVariant* m_variant;

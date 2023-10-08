@@ -171,7 +171,7 @@ private:
   // Parsing from a XML duration string
   bool ParseInterval(XString p_duration);
   // Parsing/scanning one value of a XML duration string
-  bool ScanDurationValue(XString& p_duraction,int& p_value,int& p_fraction,char& p_marker,bool& p_didTime);
+  bool ScanDurationValue(XString& p_duraction,int& p_value,int& p_fraction,TCHAR& p_marker,bool& p_didTime);
 
   // Recalculate the total interval value
   void RecalculateValue();

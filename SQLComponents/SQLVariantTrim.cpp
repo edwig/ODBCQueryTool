@@ -48,9 +48,9 @@ namespace SQLComponents
 void SQL_ThrowErrorTruncate(int p_from,int p_to)
 {
   XString error;
-  const char* from = SQLDataType::FindDatatype(p_from);
-  const char* to   = SQLDataType::FindDatatype(p_to);
-  error.Format("Cannot truncate %s to %s",from,to);
+  LPCTSTR from = SQLDataType::FindDatatype(p_from);
+  LPCTSTR to   = SQLDataType::FindDatatype(p_to);
+  error.Format(_T("Cannot truncate %s to %s"),from,to);
   throw StdException(error);
 }
 

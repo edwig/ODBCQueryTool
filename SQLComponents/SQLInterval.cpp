@@ -169,7 +169,7 @@ SQLInterval::SetInterval(SQLINTERVAL p_type,int p_years,int p_months)
   }
   else
   {
-    throw StdException("Cannot set day-second interval type from year-month value");
+    throw StdException(_T("Cannot set day-second interval type from year-month value"));
   }
 }
 
@@ -184,7 +184,7 @@ SQLInterval::SetInterval(SQLINTERVAL p_type,int p_days,int p_hours,int p_minutes
      p_type == SQL_IS_MONTH ||
      p_type == SQL_IS_YEAR_TO_MONTH)
   {
-    throw StdException("Cannot set year-month interval type from day-second value");
+    throw StdException(_T("Cannot set year-month interval type from day-second value"));
   }
   // Re-init the interval
   memset(&m_interval,0,sizeof(SQL_INTERVAL_STRUCT));
@@ -442,21 +442,21 @@ SQLInterval::GetTypeAsString() const
 {
   switch(m_interval.interval_type)
   {
-    case SQL_IS_YEAR:             return "year";
-    case SQL_IS_MONTH:            return "month";
-    case SQL_IS_DAY:              return "day";
-    case SQL_IS_HOUR:             return "hour";
-    case SQL_IS_MINUTE:           return "minute";
-    case SQL_IS_SECOND:           return "second";
-    case SQL_IS_YEAR_TO_MONTH:    return "year to month";
-    case SQL_IS_DAY_TO_HOUR:      return "day to hour";
-    case SQL_IS_DAY_TO_MINUTE:    return "day to minute";
-    case SQL_IS_DAY_TO_SECOND:    return "day to second";
-    case SQL_IS_HOUR_TO_MINUTE:   return "hour to minute";
-    case SQL_IS_HOUR_TO_SECOND:   return "hour to second";
-    case SQL_IS_MINUTE_TO_SECOND: return "minute to second";
+    case SQL_IS_YEAR:             return _T("year");
+    case SQL_IS_MONTH:            return _T("month");
+    case SQL_IS_DAY:              return _T("day");
+    case SQL_IS_HOUR:             return _T("hour");
+    case SQL_IS_MINUTE:           return _T("minute");
+    case SQL_IS_SECOND:           return _T("second");
+    case SQL_IS_YEAR_TO_MONTH:    return _T("year to month");
+    case SQL_IS_DAY_TO_HOUR:      return _T("day to hour");
+    case SQL_IS_DAY_TO_MINUTE:    return _T("day to minute");
+    case SQL_IS_DAY_TO_SECOND:    return _T("day to second");
+    case SQL_IS_HOUR_TO_MINUTE:   return _T("hour to minute");
+    case SQL_IS_HOUR_TO_SECOND:   return _T("hour to second");
+    case SQL_IS_MINUTE_TO_SECOND: return _T("minute to second");
   }
-  return "";
+  return _T("");
 }
 
 // Now very simple to do
@@ -501,42 +501,42 @@ SQLInterval::AsString(bool p_withFraction /*= false*/) const
   // String depends on the interval type
   switch(m_interval.interval_type)
   {
-    case SQL_IS_YEAR:             string.Format("%d",m_interval.intval.year_month.year); 
+    case SQL_IS_YEAR:             string.Format(_T("%d"),m_interval.intval.year_month.year); 
                                   break;
-    case SQL_IS_MONTH:            string.Format("%d",m_interval.intval.year_month.month);
+    case SQL_IS_MONTH:            string.Format(_T("%d"),m_interval.intval.year_month.month);
                                   break;
-    case SQL_IS_DAY:              string.Format("%d",m_interval.intval.day_second.day);
+    case SQL_IS_DAY:              string.Format(_T("%d"),m_interval.intval.day_second.day);
                                   break;
-    case SQL_IS_HOUR:             string.Format("%d",m_interval.intval.day_second.hour);
+    case SQL_IS_HOUR:             string.Format(_T("%d"),m_interval.intval.day_second.hour);
                                   break;
-    case SQL_IS_MINUTE:           string.Format("%d",m_interval.intval.day_second.minute);
+    case SQL_IS_MINUTE:           string.Format(_T("%d"),m_interval.intval.day_second.minute);
                                   break;
-    case SQL_IS_SECOND:           string.Format("%d",m_interval.intval.day_second.second);
+    case SQL_IS_SECOND:           string.Format(_T("%d"),m_interval.intval.day_second.second);
                                   break;
-    case SQL_IS_YEAR_TO_MONTH:    string.Format("%d %d",m_interval.intval.year_month.year
-                                                       ,m_interval.intval.year_month.month);
+    case SQL_IS_YEAR_TO_MONTH:    string.Format(_T("%d %d"),m_interval.intval.year_month.year
+                                                           ,m_interval.intval.year_month.month);
                                   break;
-    case SQL_IS_DAY_TO_HOUR:      string.Format("%d %d",m_interval.intval.day_second.day
-                                                       ,m_interval.intval.day_second.hour);
+    case SQL_IS_DAY_TO_HOUR:      string.Format(_T("%d %d"),m_interval.intval.day_second.day
+                                                           ,m_interval.intval.day_second.hour);
                                   break;
-    case SQL_IS_DAY_TO_MINUTE:    string.Format("%d %d:%d",m_interval.intval.day_second.day
-                                                          ,m_interval.intval.day_second.hour
-                                                          ,m_interval.intval.day_second.minute);
+    case SQL_IS_DAY_TO_MINUTE:    string.Format(_T("%d %d:%d"),m_interval.intval.day_second.day
+                                                              ,m_interval.intval.day_second.hour
+                                                              ,m_interval.intval.day_second.minute);
                                   break;
-    case SQL_IS_DAY_TO_SECOND:    string.Format("%d %d:%d:%d",m_interval.intval.day_second.day
-                                                             ,m_interval.intval.day_second.hour
-                                                             ,m_interval.intval.day_second.minute
-                                                             ,m_interval.intval.day_second.second);
+    case SQL_IS_DAY_TO_SECOND:    string.Format(_T("%d %d:%d:%d"),m_interval.intval.day_second.day
+                                                                 ,m_interval.intval.day_second.hour
+                                                                 ,m_interval.intval.day_second.minute
+                                                                 ,m_interval.intval.day_second.second);
                                   break;
-    case SQL_IS_HOUR_TO_MINUTE:   string.Format("%d:%d",m_interval.intval.day_second.hour
-                                                       ,m_interval.intval.day_second.minute);
+    case SQL_IS_HOUR_TO_MINUTE:   string.Format(_T("%d:%d"),m_interval.intval.day_second.hour
+                                                           ,m_interval.intval.day_second.minute);
                                   break;
-    case SQL_IS_HOUR_TO_SECOND:   string.Format("%d:%d:%d",m_interval.intval.day_second.hour
-                                                          ,m_interval.intval.day_second.minute
-                                                          ,m_interval.intval.day_second.second);
+    case SQL_IS_HOUR_TO_SECOND:   string.Format(_T("%d:%d:%d"),m_interval.intval.day_second.hour
+                                                              ,m_interval.intval.day_second.minute
+                                                              ,m_interval.intval.day_second.second);
                                   break;
-    case SQL_IS_MINUTE_TO_SECOND: string.Format("%d:%d",m_interval.intval.day_second.minute
-                                                       ,m_interval.intval.day_second.second);
+    case SQL_IS_MINUTE_TO_SECOND: string.Format(_T("%d:%d"),m_interval.intval.day_second.minute
+                                                           ,m_interval.intval.day_second.second);
                                   break;
     default:                      // NULL or unknown
                                   break;
@@ -550,7 +550,7 @@ SQLInterval::AsString(bool p_withFraction /*= false*/) const
        m_interval.interval_type == SQL_IS_HOUR_TO_SECOND   ||
        m_interval.interval_type == SQL_IS_DAY_TO_SECOND)
     {
-      string.AppendFormat(".%09d",m_interval.intval.day_second.fraction);
+      string.AppendFormat(_T(".%09d"),m_interval.intval.day_second.fraction);
       string.TrimRight('0');
     }
   }
@@ -560,7 +560,7 @@ SQLInterval::AsString(bool p_withFraction /*= false*/) const
       m_interval.interval_type <= SQL_IS_MINUTE_TO_SECOND) &&
       m_interval.interval_sign == SQL_TRUE)
   {
-    string = "-" + string;
+    string = _T("-") + string;
   }
   return string;
 }
@@ -577,7 +577,7 @@ XString
 SQLInterval::AsSQLString(SQLDatabase* /*p_database*/,bool p_withFraction /*= false*/) const
 {
   XString string = AsString(p_withFraction);
-  return XString("\'") + string + "\'";
+  return XString(_T("\'")) + string + _T("\'");
 }
 
 void    
@@ -597,7 +597,7 @@ SQLInterval::AsXMLDuration() const
   }
 
   // Add sign and leading 'P'eriod marker
-  duration = m_interval.interval_sign == SQL_TRUE ? "-P" : "P";
+  duration = m_interval.interval_sign == SQL_TRUE ? _T("-P") : _T("P");
 
   if (m_interval.interval_type == SQL_IS_YEAR  ||
       m_interval.interval_type == SQL_IS_MONTH ||
@@ -606,18 +606,18 @@ SQLInterval::AsXMLDuration() const
     // Add year-month-day part
     if (m_interval.intval.year_month.year)
     {
-      duration.AppendFormat("%dY", m_interval.intval.year_month.year);
+      duration.AppendFormat(_T("%dY"), m_interval.intval.year_month.year);
     }
     if (m_interval.intval.year_month.month)
     {
-      duration.AppendFormat("%dM", m_interval.intval.year_month.month);
+      duration.AppendFormat(_T("%dM"), m_interval.intval.year_month.month);
     }
   }
   else
   {
     if(m_interval.intval.day_second.day)
     {
-      duration.AppendFormat("%dD",m_interval.intval.day_second.day);
+      duration.AppendFormat(_T("%dD"),m_interval.intval.day_second.day);
     }
 
     // See if we must do the time part
@@ -626,25 +626,25 @@ SQLInterval::AsXMLDuration() const
        m_interval.intval.day_second.second ||
        m_interval.intval.day_second.fraction)
     {
-      duration += "T";
+      duration += _T("T");
 
       if(m_interval.intval.day_second.hour)
       {
-        duration.AppendFormat("%dH",m_interval.intval.day_second.hour);
+        duration.AppendFormat(_T("%dH"),m_interval.intval.day_second.hour);
       }
       if(m_interval.intval.day_second.minute)
       {
-        duration.AppendFormat("%dM",m_interval.intval.day_second.minute);
+        duration.AppendFormat(_T("%dM"),m_interval.intval.day_second.minute);
       }
       if(m_interval.intval.day_second.second)
       {
-        duration.AppendFormat("%d",m_interval.intval.day_second.second);
+        duration.AppendFormat(_T("%d"),m_interval.intval.day_second.second);
 
         if(m_interval.intval.day_second.fraction)
         {
-          duration.AppendFormat(".%09d",m_interval.intval.day_second.fraction);
+          duration.AppendFormat(_T(".%09d"),m_interval.intval.day_second.fraction);
         }
-        duration += "S";
+        duration += _T("S");
       }
     }
   }
@@ -734,7 +734,7 @@ SQLInterval::AddYears(int p_years)
   }
   else
   {
-    throw StdException("Cannot add years to a day-second interval");
+    throw StdException(_T("Cannot add years to a day-second interval"));
   }
   RecalculateValue();
 }
@@ -753,7 +753,7 @@ SQLInterval::AddMonths(int p_months)
   }
   else
   {
-    throw StdException("Cannot add months to a day-second interval");
+    throw StdException(_T("Cannot add months to a day-second interval"));
   }
   Normalise();
   RecalculateValue();
@@ -768,7 +768,7 @@ SQLInterval::AddDays(int p_days)
   }
   else
   {
-    throw StdException("Cannot add days to a year-month interval type");
+    throw StdException(_T("Cannot add days to a year-month interval type"));
   }
   RecalculateInterval();
 }
@@ -783,7 +783,7 @@ SQLInterval::AddHours(int p_hours)
   }
   else
   {
-    throw StdException("Cannot add hours to a year-month interval type");
+    throw StdException(_T("Cannot add hours to a year-month interval type"));
   }
   RecalculateInterval();
 }
@@ -797,7 +797,7 @@ SQLInterval::AddMinutes(int p_minutes)
   }
   else
   {
-    throw StdException("Cannot add minutes to a year-month interval type");
+    throw StdException(_T("Cannot add minutes to a year-month interval type"));
   }
   RecalculateInterval();
 }
@@ -811,7 +811,7 @@ SQLInterval::AddSeconds(int p_seconds)
   }
   else
   {
-    throw StdException("Cannot add seconds to a year-month interval type");
+    throw StdException(_T("Cannot add seconds to a year-month interval type"));
   }
   RecalculateInterval();
 }
@@ -825,7 +825,7 @@ SQLInterval::AddFraction(int p_fraction)
   }
   else
   {
-    throw StdException("Cannot add a fraction to a year-month interval type");
+    throw StdException(_T("Cannot add a fraction to a year-month interval type"));
   }
   RecalculateInterval();
 }
@@ -900,7 +900,7 @@ SQLInterval::ParseInterval(SQLINTERVAL p_type,const XString& p_string)
 
   // Parse the negative sign
   string.Trim();
-  if(string.Left(1) == "-")
+  if(string.Left(1) == _T("-"))
   {
     negative = true;
     string = string.Mid(1);
@@ -908,23 +908,23 @@ SQLInterval::ParseInterval(SQLINTERVAL p_type,const XString& p_string)
 
   switch(p_type)
   {
-    case SQL_IS_YEAR:             m_interval.intval.year_month.year = atoi(string);
+    case SQL_IS_YEAR:             m_interval.intval.year_month.year = _ttoi(string);
                                   break;
-    case SQL_IS_MONTH:            m_interval.intval.year_month.month = atoi(string);
+    case SQL_IS_MONTH:            m_interval.intval.year_month.month = _ttoi(string);
                                   break;
-    case SQL_IS_DAY:              m_interval.intval.day_second.day = atoi(string);
+    case SQL_IS_DAY:              m_interval.intval.day_second.day = _ttoi(string);
                                   break;
-    case SQL_IS_HOUR:             m_interval.intval.day_second.hour = atoi(string);
+    case SQL_IS_HOUR:             m_interval.intval.day_second.hour = _ttoi(string);
                                   break;
-    case SQL_IS_MINUTE:           m_interval.intval.day_second.minute = atoi(string);
+    case SQL_IS_MINUTE:           m_interval.intval.day_second.minute = _ttoi(string);
                                   break;
-    case SQL_IS_SECOND:           seconds = atof(string);
+    case SQL_IS_SECOND:           seconds = _ttof(string);
                                   // Nanosecond resolution
                                   sec = (int)floor(seconds);
                                   m_interval.intval.day_second.second   = (SQLUINTEGER)seconds;
                                   m_interval.intval.day_second.fraction = (SQLUINTEGER)(((seconds - (double)sec) * 1000000000.0) + 0.0000005);
                                   break;
-    case SQL_IS_YEAR_TO_MONTH:    scannum = sscanf_s(string,"%d %d",&year,&month);
+    case SQL_IS_YEAR_TO_MONTH:    scannum = _stscanf_s(string,_T("%d %d"),&year,&month);
                                   if(scannum == 2)
                                   {
                                     m_interval.intval.year_month.year  = year;
@@ -936,7 +936,7 @@ SQLInterval::ParseInterval(SQLINTERVAL p_type,const XString& p_string)
                                     retval = false;
                                   }
                                   break;
-    case SQL_IS_DAY_TO_HOUR:      scannum = sscanf_s(string,"%d %d",&day,&hour);
+    case SQL_IS_DAY_TO_HOUR:      scannum = _stscanf_s(string,_T("%d %d"),&day,&hour);
                                   if(scannum == 2)
                                   {
                                     m_interval.intval.day_second.day  = day;
@@ -947,7 +947,7 @@ SQLInterval::ParseInterval(SQLINTERVAL p_type,const XString& p_string)
                                     retval = false;
                                   }
                                   break;
-    case SQL_IS_DAY_TO_MINUTE:    scannum = sscanf_s(string,"%d %d:%d",&day,&hour,&minute);
+    case SQL_IS_DAY_TO_MINUTE:    scannum = _stscanf_s(string,_T("%d %d:%d"),&day,&hour,&minute);
                                   if(scannum == 3)
                                   {
                                     m_interval.intval.day_second.day    = day;
@@ -959,7 +959,7 @@ SQLInterval::ParseInterval(SQLINTERVAL p_type,const XString& p_string)
                                     retval = false;
                                   }
                                   break;
-    case SQL_IS_DAY_TO_SECOND:    scannum = sscanf_s(string,"%d %d:%d:%lf",&day,&hour,&minute,&seconds);
+    case SQL_IS_DAY_TO_SECOND:    scannum = _stscanf_s(string,_T("%d %d:%d:%lf"),&day,&hour,&minute,&seconds);
                                   if(scannum == 4)
                                   {
                                     m_interval.intval.day_second.day    = day;
@@ -975,7 +975,7 @@ SQLInterval::ParseInterval(SQLINTERVAL p_type,const XString& p_string)
                                     retval = false;
                                   }
                                   break;
-    case SQL_IS_HOUR_TO_MINUTE:   scannum = sscanf_s(string,"%d:%d",&hour,&minute);
+    case SQL_IS_HOUR_TO_MINUTE:   scannum = _stscanf_s(string,_T("%d:%d"),&hour,&minute);
                                   if(scannum == 2)
                                   {
                                     m_interval.intval.day_second.hour   = hour;
@@ -986,7 +986,7 @@ SQLInterval::ParseInterval(SQLINTERVAL p_type,const XString& p_string)
                                     retval = false;
                                   }
                                   break;
-    case SQL_IS_HOUR_TO_SECOND:   scannum = sscanf_s(string,"%d:%d:%lf",&hour,&minute,&seconds);
+    case SQL_IS_HOUR_TO_SECOND:   scannum = _stscanf_s(string,_T("%d:%d:%lf"),&hour,&minute,&seconds);
                                   if(scannum == 3)
                                   {
                                     m_interval.intval.day_second.hour   = hour;
@@ -1001,7 +1001,7 @@ SQLInterval::ParseInterval(SQLINTERVAL p_type,const XString& p_string)
                                     retval = false;
                                   }
                                   break;
-    case SQL_IS_MINUTE_TO_SECOND: scannum = sscanf_s(string,"%d:%lf",&minute,&seconds);
+    case SQL_IS_MINUTE_TO_SECOND: scannum = _stscanf_s(string,_T("%d:%lf"),&minute,&seconds);
                                   if(scannum == 2)
                                   {
                                     m_interval.intval.day_second.minute = minute;
@@ -1037,13 +1037,13 @@ SQLInterval::ParseInterval(SQLINTERVAL p_type,const XString& p_string)
 bool
 SQLInterval::ParseInterval(XString p_duration)
 {
-  bool negative    = false;
-  bool didTime     = false;
-  int  value       = 0;
-  int  fraction    = 0;
-  char marker      = 0;
-  char firstMarker = 0;
-  char lastMarker  = 0;
+  bool  negative    = false;
+  bool  didTime     = false;
+  int   value       = 0;
+  int   fraction    = 0;
+  TCHAR marker      = 0;
+  TCHAR firstMarker = 0;
+  TCHAR lastMarker  = 0;
   SQLINTERVAL type;
 
   // Set the current interval to NULL
@@ -1051,7 +1051,7 @@ SQLInterval::ParseInterval(XString p_duration)
 
   // Parse the negative sign
   p_duration.Trim();
-  if(p_duration.Left(1) == "-")
+  if(p_duration.Left(1) == _T("-"))
   {
     negative = true;
     p_duration = p_duration.Mid(1);
@@ -1075,7 +1075,7 @@ SQLInterval::ParseInterval(XString p_duration)
                 break;
       case 'H': if(!didTime)
                 {
-                  throw StdException("Illegal duriation period (hours without a 'T')");
+                  throw StdException(_T("Illegal duriation period (hours without a 'T')"));
                 }
                 m_interval.intval.day_second.hour = value;
                 break;
@@ -1091,7 +1091,7 @@ SQLInterval::ParseInterval(XString p_duration)
                 break;
       case 'S': if(!didTime)
                 {
-                  throw StdException("Illegal duration period (seconds without a 'T')");
+                  throw StdException(_T("Illegal duration period (seconds without a 'T')"));
                 }
                 m_interval.intval.day_second.second   = value;
                 m_interval.intval.day_second.fraction = fraction;
@@ -1126,7 +1126,7 @@ SQLInterval::ParseInterval(XString p_duration)
     // Beware: XML duration has combinations that are NOT compatible
     // with the SQL definition of an interval, like Month-to-Day
     XString error;
-    error.Format("XML duration period not compatible with SQL (%c to %c)",firstMarker,lastMarker);
+    error.Format(_T("XML duration period not compatible with SQL (%c to %c)"),firstMarker,lastMarker);
     throw StdException(error);
   }
 
@@ -1146,7 +1146,7 @@ bool
 SQLInterval::ScanDurationValue(XString& p_duration
                               ,int&     p_value
                               ,int&     p_fraction
-                              ,char&    p_marker
+                              ,TCHAR&   p_marker
                               ,bool&    p_didTime)
 {
   // Reset values
@@ -1555,7 +1555,7 @@ SQLInterval::operator-(const SQLInterval& p_interval) const
   }
   else
   {
-    throw StdException("Cannot subtract two ordinal different intervals");
+    throw StdException(_T("Cannot subtract two ordinal different intervals"));
   }
 }
 

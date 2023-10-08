@@ -27,19 +27,19 @@ namespace Common
     class Fastmap 
     {
     public:
-        Fastmap ();
-        Fastmap (const Fastmap&);
-        Fastmap& operator = (const Fastmap&);
-        void erase ();
-        // actuall class was created for operator [] only!
-            // Safe converion from char to unsigned char!
-            // it's impotant for the second part of ascii table
-        T  operator [] (unsigned char i) const    { return m_data[i]; }
-        T& operator [] (unsigned char i)          { return m_data[i]; }
-        unsigned char size () const               { return static_cast<unsigned char>(sizeof(m_data)/sizeof(m_data[0])); }
+      Fastmap ();
+      Fastmap (const Fastmap&);
+      Fastmap& operator = (const Fastmap&);
+      void erase ();
+      // actual class was created for operator [] only!
+          // Safe conversion from char to unsigned char!
+          // it's important for the second part of ascii table
+      T  operator [] (_TUCHAR i) const    { return m_data[i]; }
+      T& operator [] (_TUCHAR i)          { return m_data[i]; }
+      _TUCHAR size () const               { return static_cast<_TUCHAR>(sizeof(m_data)/sizeof(m_data[0])); }
 
     private:
-        T m_data[256];
+      T m_data[256];
     };
 #pragma warning (pop)
 

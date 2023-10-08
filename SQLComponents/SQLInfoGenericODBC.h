@@ -35,6 +35,9 @@ public:
   explicit SQLInfoGenericODBC(SQLDatabase* p_database);
  ~SQLInfoGenericODBC();
 
+  // RDBMS Uses INDENTITY or SEQUENCE interface
+  void    SetUseSequences(bool p_sequences) override;
+
   //////////////////////////////////////////////////////////////////////////
   //
   // GENERALS (Strings & Booleans) 

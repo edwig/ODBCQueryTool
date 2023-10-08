@@ -77,18 +77,31 @@ void SQLComponentsInitialized();
 void SQLSetLocalTimezone();
 
 // Accept up to SQLCOMP_MAX_SESS_SETTINGS for a new SQLDatabase connection
-bool SQLSetSessionInitialisation(DatabaseType p_type,int p_number,const char* p_statement);
+bool SQLSetSessionInitialisation(DatabaseType p_type,int p_number,LPCTSTR p_statement);
 
 // End of namespace
 }
 
 // Selecting the right library to link with automatically
 // So we do not need to worry about which library to use in the linker settings
+#ifdef UNICODE
+
+#if defined _M_IX86
+#define SQL_PLATFORM "Ux86"
+#else
+#define SQL_PLATFORM "Ux64"
+#endif
+
+#else // UNICODE
+
 #if defined _M_IX86
 #define SQL_PLATFORM "x86"
 #else
 #define SQL_PLATFORM "x64"
 #endif
+
+#endif // UNICODE
+
 
 #if defined _DEBUG
 #define SQL_CONFIGURATION "D"
@@ -99,4 +112,6 @@ bool SQLSetSessionInitialisation(DatabaseType p_type,int p_number,const char* p_
 #ifndef SQL_COMPONENTS_NOAUTOLINK
 #pragma comment(lib,"SQLComponents_"                        SQL_PLATFORM SQL_CONFIGURATION ".lib")
 #pragma message("Automatically linking with SQLComponents_" SQL_PLATFORM SQL_CONFIGURATION ".lib")
+#else
+#pragma message("Now building library SQLComponents_" SQL_PLATFORM SQL_CONFIGURATION ".lib")
 #endif 

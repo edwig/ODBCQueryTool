@@ -64,12 +64,12 @@ SQLStatement::CheckRecords(int p_records)
   XString fout;
   if(m_minNumber > 0 && p_records < m_minNumber)
   {
-    fout.Format("SQL %d has only %d record(s) (too few) minimum = %d",m_number,p_records,m_minNumber);
+    fout.Format(_T("SQL %d has only %d record(s) (too few) minimum = %d"),m_number,p_records,m_minNumber);
 		return true;
   }
   if(m_maxNumber > 0 && p_records > m_maxNumber)
   {
-    fout.Format("SQL %d has %d records(s) (too much) maximum = %i",m_number,p_records,m_maxNumber);
+    fout.Format(_T("SQL %d has %d records(s) (too much) maximum = %i"),m_number,p_records,m_maxNumber);
     return true;
   }
   return false;

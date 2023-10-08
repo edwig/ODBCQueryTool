@@ -165,24 +165,24 @@ BOOL
 ConnectionDlg::OnInitDialog()
 {
    StyleDialog::OnInitDialog();
-   SetWindowText("ODBC Connection");
+   SetWindowText(_T("ODBC Connection"));
 
-   m_comboSafty.AddString("None (development)");
-   m_comboSafty.AddString("Read only (production)");
+   m_comboSafty.AddString(_T("None (development)"));
+   m_comboSafty.AddString(_T("Read only (production)"));
 
-   m_comboCursor.AddString("1: Use if needed");
-   m_comboCursor.AddString("2: Use ODBC cursors");
-   m_comboCursor.AddString("3: Use RDBMS");
+   m_comboCursor.AddString(_T("1: Use if needed"));
+   m_comboCursor.AddString(_T("2: Use ODBC cursors"));
+   m_comboCursor.AddString(_T("3: Use RDBMS"));
 
-   m_comboIsolation.AddString("1: Read uncommitted");
-   m_comboIsolation.AddString("2: Read committed");
-   m_comboIsolation.AddString("3: Repeatable read");
-   m_comboIsolation.AddString("4: Serializable");
+   m_comboIsolation.AddString(_T("1: Read uncommitted"));
+   m_comboIsolation.AddString(_T("2: Read committed"));
+   m_comboIsolation.AddString(_T("3: Repeatable read"));
+   m_comboIsolation.AddString(_T("4: Serializable"));
 
    if(m_moment == 0)
    {
      m_editPassword.SetPassword(true);
-     m_editPassword.SetEmpty(true,"Password");
+     m_editPassword.SetEmpty(true,_T("Password"));
    }
 
    FillDatasource();
@@ -225,21 +225,21 @@ ConnectionDlg::SetControls2Data()
     m_totalApply    = true;
     m_transLibApply = true;
   }
-  number = atoi(m_strLoginTimeout); 
+  number = _ttoi(m_strLoginTimeout); 
   if(number >= 0 && number != m_loginTimeout)
   {
     m_totalApply        = true;
     m_loginTimeoutApply = true;
     m_loginTimeout      = number;
   }
-  number = atoi(m_strConnTimeout);
+  number = _ttoi(m_strConnTimeout);
   if(number >= 0 && number != m_connTimeout)
   {
     m_totalApply       = true;
     m_connTimeoutApply = true;
     m_connTimeout      = number;
   }
-  number = atoi(m_strTransOption);
+  number = _ttoi(m_strTransOption);
   if(number != m_transOption)
   {
     m_totalApply       = true;
@@ -269,7 +269,7 @@ ConnectionDlg::SetControls2Data()
     m_odbcCursors      = number;
   }
 
-  number = atoi(m_strPacketSize);
+  number = _ttoi(m_strPacketSize);
   if(number >= 0 && number != m_packetSize)
   {
     m_totalApply      = true;
@@ -326,16 +326,16 @@ ConnectionDlg::SetData2Controls()
   m_comboSafty.SetCurSel(m_safty ? 1 : 0);
   m_checkTraceConn.SetCheck(m_tracing);
 
-  m_strLoginTimeout.Format("%d", m_loginTimeout);
+  m_strLoginTimeout.Format(_T("%d"), m_loginTimeout);
   m_editLoginTimeout.SetWindowText(m_strLoginTimeout);
 
-  m_strConnTimeout.Format("%d",m_connTimeout);
+  m_strConnTimeout.Format(_T("%d"),m_connTimeout);
   m_editConnTimeout.SetWindowText(m_strConnTimeout);
 
-  m_strTransOption.Format("%d", m_transOption);
+  m_strTransOption.Format(_T("%d"), m_transOption);
   m_editTransOption.SetWindowText(m_strTransOption);
 
-  m_strPacketSize.Format("%d", m_packetSize);
+  m_strPacketSize.Format(_T("%d"), m_packetSize);
   m_editPacketSize.SetWindowText(m_strPacketSize);
 
   // SQL_TXN_READ_UNCOMMITTED  = 1
@@ -384,8 +384,8 @@ ConnectionDlg::FillDatasource()
   if(ODBCHandle)
   {
     short dsnLen,desLen;
-    unsigned char DataSourceBuffer[SQL_MAX_DSN_LENGTH + 1];
-    unsigned char Description[256];
+    _TUCHAR DataSourceBuffer[SQL_MAX_DSN_LENGTH + 1];
+    _TUCHAR Description[256];
     SQLRETURN res;
 
     // Initial search
@@ -399,7 +399,7 @@ ConnectionDlg::FillDatasource()
                           ,&desLen);
     while(res == SQL_SUCCESS)
     {
-      m_comboDatasource.AddString((const char*) DataSourceBuffer);
+      m_comboDatasource.AddString((const TCHAR*) DataSourceBuffer);
       // For all next datasources
       res = ::SQLDataSources(ODBCHandle
                             ,SQL_FETCH_NEXT
@@ -420,31 +420,31 @@ ConnectionDlg::Connect()
 {
   bool didError = false;
   CString status;
-  char buffer[1024];
+  TCHAR buffer[1024];
   CWaitCursor take_a_deep_sigh;
 
   CString connectStr;
 
   if(m_fileDSN.IsEmpty())
   {
-    connectStr  = "DSN=";
+    connectStr  = _T("DSN=");
     connectStr += m_datasource;
-    status.Format("Trying to connect to: %s as %s",m_datasource,m_user);
+    status.Format(_T("Trying to connect to: %s as %s"),m_datasource,m_user);
   }
   else
   {
-    connectStr  = "FILEDSN=";
+    connectStr  = _T("FILEDSN=");
     connectStr += m_fileDSN;
-    status.Format("Trying to connect with FILEDSN=%s as %s",m_fileDSN,m_user);
+    status.Format(_T("Trying to connect with FILEDSN=%s as %s"),m_fileDSN,m_user);
   }
-  connectStr += ";UID=";
+  connectStr += _T(";UID=");
   connectStr += m_user;
-  connectStr += ";PWD=";
+  connectStr += _T(";PWD=");
   connectStr += m_password;
   // Eventually a save file
   if(!m_fileDSNSave.IsEmpty())
   {
-    connectStr += ";SAVEFILE=";
+    connectStr += _T(";SAVEFILE=");
     connectStr += m_fileDSNSave;
   }
 
@@ -460,7 +460,7 @@ ConnectionDlg::Connect()
   }
   catch(CString& error)
   {
-    strncpy_s(buffer,error.GetString(),1024);
+    _tcsncpy_s(buffer,error.GetString(),1024);
     didError = true;
   }
   catch (CException* e)
@@ -472,26 +472,26 @@ ConnectionDlg::Connect()
   }
   catch (...)
   {
-    strcpy_s(buffer,1024,"No connection with the database");
+    _tcscpy_s(buffer,1024,_T("No connection with the database"));
     didError = true;
   }
   if(didError)
   {
-    char buffer2[2048];
-    strcpy_s(buffer2,2048,buffer);
+    TCHAR buffer2[2048];
+    _tcscpy_s(buffer2,2048,buffer);
 
-    if(m_password != "")
+    if(m_password != _T(""))
     {
-      m_password = "********";
+      m_password = _T("********");
     }
-    strcat_s(buffer2,2048,"\r\nDatasource = \"");
-    strcat_s(buffer2,2048,m_datasource);
-    strcat_s(buffer2,2048,"\" User = \"");
-    strcat_s(buffer2,2048,m_user);
-    strcat_s(buffer2,2048,"\" Password = \"");
-    strcat_s(buffer2,2048,m_password);
+    _tcscat_s(buffer2,2048,_T("\r\nDatasource = \""));
+    _tcscat_s(buffer2,2048,m_datasource);
+    _tcscat_s(buffer2,2048,_T("\" User = \""));
+    _tcscat_s(buffer2,2048,m_user);
+    _tcscat_s(buffer2,2048,_T("\" Password = \""));
+    _tcscat_s(buffer2,2048,m_password);
     AfxMessageBox(buffer2);
-    Common::SetStatusText("", TRUE);
+    Common::SetStatusText(_T(""), TRUE);
   }
   else
   {
@@ -613,11 +613,11 @@ void
 ConnectionDlg::OnButtonTracefile()
 {
   FileSelectDialog diag(true
-                       ,"File for ODBC trace logging"
-                       ,"log"
-                       ,"C:\\*.*"
+                       ,_T("File for ODBC trace logging")
+                       ,_T("log")
+                       ,_T("C:\\*.*")
                        ,0
-                       ,"Logfiles|*.log|Text files|*.txt|All files|*.*");
+                       ,_T("Logfiles|*.log|Text files|*.txt|All files|*.*"));
   if(diag.DoModal() == IDOK)
   {
     if(m_traceFile.CompareNoCase(diag.GetChosenFile()))
@@ -636,11 +636,11 @@ ConnectionDlg::OnButtonDSNFile()
   CString directory = GetDSNDirectory();
 
   FileSelectDialog diag(true // For open
-                       ,"DatasourceName file (DSN) for login"
-                       ,"dsn"
+                       ,_T("DatasourceName file (DSN) for login")
+                       ,_T("dsn")
                        ,directory
                        ,0
-                       ,"ODBC Datasources|*.dsn|All files|*.*");
+                       ,_T("ODBC Datasources|*.dsn|All files|*.*"));
   if(diag.DoModal() == IDOK)
   {
     if(m_fileDSN.CompareNoCase(diag.GetChosenFile()))
@@ -648,7 +648,7 @@ ConnectionDlg::OnButtonDSNFile()
       // Different DSN file chosen
       m_fileDSN      = diag.GetChosenFile();
       m_fileDSNApply = true;
-      m_datasource   = "";
+      m_datasource   = _T("");
       UpdateData(Data2Controls);
       SetDialogControls();
     }
@@ -661,11 +661,11 @@ ConnectionDlg::OnButtonDSNSave()
   CString directory = GetDSNDirectory();
 
   FileSelectDialog diag(true // For open
-                       ,"DatasourceName file (DSN) for saving successful login"
-                       ,"dsn"
+                       ,_T("DatasourceName file (DSN) for saving successful login")
+                       ,_T("dsn")
                        ,directory
                        ,0
-                       ,"ODBC Datasources|*.dsn|All files|*.*");
+                       ,_T("ODBC Datasources|*.dsn|All files|*.*"));
   if(diag.DoModal() == IDOK)
   {
     if(m_fileDSNSave.CompareNoCase(diag.GetChosenFile()))
@@ -683,11 +683,11 @@ ConnectionDlg::OnButtonTranslib()
 {
   CString directory;
   FileSelectDialog diag(true // For open
-                       ,"Translation library (*.DLL) for datasource"
-                       ,"dll"
+                       ,_T("Translation library (*.DLL) for datasource")
+                       ,_T("dll")
                        ,directory
                        ,0
-                       ,"Libraries|*.dll|All files|*.*");
+                       ,_T("Libraries|*.dll|All files|*.*"));
   if(diag.DoModal() == IDOK)
   {
     if(m_transLib.CompareNoCase(diag.GetChosenFile()))
@@ -729,7 +729,8 @@ ConnectionDlg::SetDataConnector(SQLDatabase* database,bool p_open /*=true*/)
 
   if(!m_database->IsOpen() && p_open)
   {
-    m_database->Open(m_datasource,m_user,m_password,m_safty);
+    CString options;
+    m_database->Open(m_datasource,m_user,m_password,options,m_safty);
     if(!m_database->IsOpen())
     {
       return false;
@@ -804,7 +805,7 @@ ConnectionDlg::GetConnectionAttributes()
     m_autoCommit   = m_database->GetTransaction() ? false : true;
     if(m_tracing && m_traceFile.IsEmpty())
     {
-      m_traceFile = "<Not set: search for SQL.LOG>";
+      m_traceFile = _T("<Not set: search for SQL.LOG>");
     }
   }
 }
@@ -868,7 +869,7 @@ ConnectionDlg::OnApplyAfter()
     {
       if(!m_database->GetSQLInfoDB()->SetAttributeTraceFile(m_traceFile))
       {
-        m_traceFile = "";
+        m_traceFile = _T("");
       }
     }
     m_traceFileApply = false;
@@ -877,11 +878,11 @@ ConnectionDlg::OnApplyAfter()
   {
     if(m_tracing && m_traceFile.IsEmpty())
     {
-      m_traceFile = "<Not set: search for SQL.LOG>";
+      m_traceFile = _T("<Not set: search for SQL.LOG>");
     }
     if(!m_tracing && m_traceFile.GetAt(0) == '<')
     {
-      m_traceFile = "";
+      m_traceFile = _T("");
     }
     if(!m_database->GetSQLInfoDB()->SetAttributeTracing(m_tracing))
     {
@@ -914,7 +915,7 @@ ConnectionDlg::OnApplyAfter()
   {
     if(!m_database->GetSQLInfoDB()->SetAttributeTranslib(m_transLib))
     {
-      m_transLib = "";
+      m_transLib = _T("");
     }
     m_transLibApply = false;
   }
@@ -951,7 +952,7 @@ ConnectionDlg::GetDSNDirectory()
   HKEY hKey;
   for(int i = 0; i < 2; ++i)
   {
-    if (RegOpenKeyEx(where,"Software\\ODBC\\ODBC.INI\\ODBC File DSN"
+    if (RegOpenKeyEx(where,_T("Software\\ODBC\\ODBC.INI\\ODBC File DSN")
       ,0,KEY_QUERY_VALUE,&hKey) == ERROR_SUCCESS)
     {
       TCHAR szData[128];
@@ -959,7 +960,7 @@ ConnectionDlg::GetDSNDirectory()
       DWORD dwDataBufSize = sizeof(szData);
 
       if (RegQueryValueEx(hKey
-                        ,"DefaultDSNDir"
+                        ,_T("DefaultDSNDir")
                         ,NULL
                         ,&dwKeyDataType
                         ,(LPBYTE)&szData
@@ -974,7 +975,7 @@ ConnectionDlg::GetDSNDirectory()
   }
   if(!directory.IsEmpty())
   {
-    directory += "\\*.dsn";
+    directory += _T("\\*.dsn");
   }
   return directory;
 }
@@ -986,22 +987,22 @@ ConnectionDlg::CheckInput()
 
   if(m_datasource.IsEmpty())
   {
-    errors = "You MUST supply a datasource name for the connection!";
+    errors = _T("You MUST supply a datasource name for the connection!");
   }
   if(m_myConnect && m_connString.IsEmpty())
   {
-    if(!errors.IsEmpty()) errors += "\r\n";
-    errors += "You MUST supply a connection string as you have selected so!";
+    if(!errors.IsEmpty()) errors += _T("\r\n");
+    errors += _T("You MUST supply a connection string as you have selected so!");
   }
   if(!m_optUser && m_user.IsEmpty())
   {
-    if(!errors.IsEmpty()) errors += "\r\n";
-    errors += "You MUST supply a user name as you have NOT selected to leave one out!";
+    if(!errors.IsEmpty()) errors += _T("\r\n");
+    errors += _T("You MUST supply a user name as you have NOT selected to leave one out!");
   }
   if(!m_optPassword && m_password.IsEmpty())
   {
-    if(!errors.IsEmpty()) errors += "\r\n";
-    errors += "You MUST supply a password as you have NOT selected to leave one out!";
+    if(!errors.IsEmpty()) errors += _T("\r\n");
+    errors += _T("You MUST supply a password as you have NOT selected to leave one out!");
   }
   if(!errors.IsEmpty())
   {

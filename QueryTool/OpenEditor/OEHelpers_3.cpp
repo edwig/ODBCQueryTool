@@ -108,7 +108,7 @@ void Searcher::RemoveRef (Storage* context)
   }
 }
 
-void Searcher::SetText (const char* str)
+void Searcher::SetText (LPCTSTR str)
 {
   m_strText = str;
   m_bPatternCompiled = false;
@@ -141,7 +141,7 @@ void Searcher::GetOption (bool& backward
     searchAll  = m_bSearchAll;
 }
 
-bool Searcher::isMatched (const char* str
+bool Searcher::isMatched (LPCTSTR str
                          ,int offset
                          ,int len
                          ,const DelimitersMap& delim
@@ -150,7 +150,7 @@ bool Searcher::isMatched (const char* str
 {
     if (!str) // workaround for rx bug
     {
-        str = "";
+        str = _T("");
         offset = len = 0;
     }
     if (!m_bPatternCompiled)
@@ -209,11 +209,11 @@ bool Searcher::isMatched (const char* str
     return false;
 }
 
-bool Searcher::isMatchedBackward (const char* str, int rlimit, int len, const DelimitersMap& delim, int& start, int& end) const
+bool Searcher::isMatchedBackward (LPCTSTR str, int rlimit, int len, const DelimitersMap& delim, int& start, int& end) const
 {
     if (!str) // workaround for rx bug
     {
-        str = "";
+        str = _T("");
         len = 0;
     }
 
@@ -294,14 +294,15 @@ void Searcher::compileExpression () const
 
     if (m_bRegExpr)
     {
-      pattern = m_strText.c_str();
+      pattern = m_strText.GetString();
     }
     else
     {
-      string::const_iterator it = m_strText.begin();
-      for (; it != m_strText.end(); it++)
+      for(int ind = 0;ind < m_strText.GetLength(); ++ind)
       {
-        switch (*it) // 17/05/2002 bug fix, cannot search for $,[,],^
+        TCHAR ch = m_strText.GetAt(ind);
+
+        switch (ch) // 17/05/2002 bug fix, cannot search for $,[,],^
         {
           case '.': 
           case '*': 
@@ -309,15 +310,12 @@ void Searcher::compileExpression () const
           case '[': 
           case ']':
           case '^': 
-          case '$': pattern += '\\';
+          case '$': pattern += (TCHAR)'\\';
         }
-        pattern += (*it);
+        pattern += (ch);
       }
     }
     int comp_ok = m_regex.SetExp(pattern);
-//        int error = regcomp(&m_cxt->pattern, pattern.c_str(),
-//                           (m_bRegExpr ? REG_EXTENDED : 0) | (m_bMatchCase ? 0 :REG_ICASE));
-
     m_bPatternCompiled = true;
 
     if (!comp_ok)
@@ -328,16 +326,16 @@ void Searcher::compileExpression () const
   }
 }
 
-
 bool Searcher::isSelectionMatched (const Storage* pstorage, int line, int start, int end) const
 {
-    if (!m_bPatternCompiled)
-        compileExpression();
-
+  if(!m_bPatternCompiled)
+  {
+    compileExpression();
+  }
     if (start != end)
     {
         int len;
-        const char* str = nullptr;
+        LPCTSTR str = nullptr;
         pstorage->GetLine(line, str, len);
 
         if (!str) str = _T(""); // workaround for rx bug
@@ -360,9 +358,10 @@ bool Searcher::isSelectionMatched (const Storage* pstorage, int line, int start,
 // all parameters are in-out
 bool Searcher::Find (const Storage*& pStorage, int& line, int& _start, int& _end, bool thruEof) const
 {
-    if (!m_bPatternCompiled)
-        compileExpression();
-
+  if(!m_bPatternCompiled)
+  {
+    compileExpression();
+  }
     vector<const Storage*> storages;
     vector<const Storage*>::const_iterator it;
 
@@ -384,7 +383,7 @@ bool Searcher::Find (const Storage*& pStorage, int& line, int& _start, int& _end
     }
     //else
     // if we find nothing in other windows then we try again for the current from top
-    // 16.12.2002 bug fix, Search all windows does not find occurence above the current
+    // 16.12.2002 bug fix, Search all windows does not find occurrence above the current
         storages.push_back(pStorage);
 
     int llimit = _end;
@@ -414,7 +413,7 @@ bool Searcher::Find (const Storage*& pStorage, int& line, int& _start, int& _end
                     for (int i(line); i < nlines; i++)
                     {
                         int len;
-                        const char* str;
+                        LPCTSTR str;
                         (*it)->GetLine(i, str, len);
 
                         if (isMatched(str, llimit, len, delim, _start, _end))
@@ -442,7 +441,7 @@ bool Searcher::Find (const Storage*& pStorage, int& line, int& _start, int& _end
                     for (int i(line); i >= first_line; i--)
                     {
                         int len;
-                        const char* str;
+                        LPCTSTR str;
                         (*it)->GetLine(i, str, len);
 
                         if (rlimit == -1)
@@ -471,14 +470,14 @@ bool Searcher::Find (const Storage*& pStorage, int& line, int& _start, int& _end
 
 
 // 1st & 2d parameters are in, 3d,4th,5th are out
-bool Searcher::Replace (Storage* pStorage, const char* text, int line, int start, int& end)
+bool Searcher::Replace (Storage* pStorage, LPCTSTR  text, int line, int start, int& end)
 {
-    _CHECK_AND_THROW_(strpbrk(text, "\n\r") == NULL,_T("Replace error: replace string with <Carriage return> not supporded!"));
+    _CHECK_AND_THROW_(_tcspbrk(text, _T("\n\r")) == NULL,_T("Replace error: replace string with <Carriage return> not supporded!"));
 
     if (line < pStorage->GetLineCount())
     {
         int len;
-        const char* str;
+        LPCTSTR str;
         pStorage->GetLine(line, str, len);
 
         int _start, _end;
@@ -487,20 +486,20 @@ bool Searcher::Replace (Storage* pStorage, const char* text, int line, int start
         if (isMatched(str, start, len, pStorage->GetDelimiters(), _start, _end)
         && _start == start && _end == end)
         {
-            string buff;
+            CString buff;
 
             if (m_bRegExpr)
             {
                 int len;
-                const char* str;
+                LPCTSTR str;
                 pStorage->GetLine(line, str, len);
 
-                for (const char* ptr = text; *ptr; ptr++)
+                for (LPCTSTR ptr = text; *ptr; ptr++)
                 {
                     if (*ptr == '\\' && ::isdigit(*(ptr+1)))
                     {
-                        char _group[2] = { *(++ptr), 0 }; // 28/07/2002 bug fix, RegExp replace fails on \1...
-                        int group = atoi(_group);
+                        TCHAR _group[2] = { *(++ptr), 0 }; // 28/07/2002 bug fix, RegExp replace fails on \1...
+                        int group = _ttoi(_group);
 /*
                         if (group < cnRegMatchSize
                         && m_cxt->match[group].rm_so != -1 && m_cxt->match[group].rm_eo != -1)
@@ -525,13 +524,13 @@ bool Searcher::Replace (Storage* pStorage, const char* text, int line, int start
 //          pStorage->ReplaceLinePart(line, m_cxt->match[0].rm_so, m_cxt->match[0].rm_eo, buff.c_str(), buff.length());
             if(m_bRegExpr)
             {
-              pStorage->ReplaceLinePart(line, m_regex.GetMatchPos(),m_regex.GetMatchEnd(),buff.c_str(),(int)buff.length());
+              pStorage->ReplaceLinePart(line, m_regex.GetMatchPos(),m_regex.GetMatchEnd(),buff.GetString(),(int)buff.GetLength());
             }
             else
             {
-              pStorage->ReplaceLinePart(line,start,end,buff.c_str(),(int)buff.length());
+              pStorage->ReplaceLinePart(line,start,end,buff.GetString(),(int)buff.GetLength());
             }
-            end = start + (int)buff.size();
+            end = start + buff.GetLength();
             return true;
         }
     }
@@ -539,7 +538,7 @@ bool Searcher::Replace (Storage* pStorage, const char* text, int line, int start
 }
 
 // 09.09.2002 improvement, find/replace batch performance
-int  Searcher::DoBatch (Storage* _storage, const char* text, ESearchBatch mode, Square& last)
+int  Searcher::DoBatch (Storage* _storage, LPCTSTR text, ESearchBatch mode, Square& last)
 {
    int counter = 0;
 
@@ -561,8 +560,8 @@ int  Searcher::DoBatch (Storage* _storage, const char* text, ESearchBatch mode, 
             // 16.03.2003 bug fix, infinite cycle is possible on "Count" or "Mark all" in search all windows mode
             if (storage2                    // it's not first time
             && storage1 == _storage         // it's a start storage
-            && firstOccurenceLine == line   // it's the first occurence
-            && firstOccurencePos == start)  // it's the first occurence
+            && firstOccurenceLine == line   // it's the first occurrence
+            && firstOccurencePos == start)  // it's the first occurrence
             {
                 break;
             }

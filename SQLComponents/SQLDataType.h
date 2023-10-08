@@ -25,6 +25,7 @@ public:
   INT64     GetOctetLength()    { return m_octetLength;   }
   int       GetSubType()        { return m_subType;       }
 
+  bool      GetIsString();      // CHAR, WCHAR, VARCHAR, WVARCHAR
   bool      GetIsInteger();     // 1, 8, 16, 32 or 64 bits Integer
   bool      GetIsNumeric();     // Number like (integer, approx, decimals)
   bool      GetIsDecimal();     // DECIMAL or NUMERIC
@@ -51,12 +52,12 @@ public:
   XString   TypeNameWithPrecisionScale(TypeInfo* p_type);
 
   // INFO about type names/values
-  static  int          FindDatatype   (char* p_type);
-  static  const char*  FindDatatype   (int   p_type);
-  static  int          FindParamtype  (char* p_type);
-  static  const char*  FindParamtype  (int   p_type);
-  static  int          FindSQLDatatype(char* p_type);
-  static  const char*  FindSQLDatatype(int   p_type);
+  static  int     FindDatatype   (LPTSTR p_type);
+  static  LPCTSTR FindDatatype   (int    p_type);
+  static  int     FindParamtype  (LPTSTR p_type);
+  static  LPCTSTR FindParamtype  (int    p_type);
+  static  int     FindSQLDatatype(LPTSTR p_type);
+  static  LPCTSTR FindSQLDatatype(int    p_type);
 
 private:
   XString m_typeName;

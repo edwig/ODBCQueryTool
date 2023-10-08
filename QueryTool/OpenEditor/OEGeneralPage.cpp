@@ -17,12 +17,11 @@
 */
 
 #include "pch.h"
-#include <string>
-#include <strstream>
-#include <COMMON/ExceptionHelper.h>
 #include "OEGeneralPage.h"
+#include <COMMON/ExceptionHelper.h>
+#include <StringUtilities.h>
 
-const char* COEGeneralPage::m_keymapLayoutList = "ConText;Custom;Default;EditPlus2;TextPad;UltraEdit;";
+LPCTSTR COEGeneralPage::m_keymapLayoutList = _T("ConText;Custom;Default;EditPlus2;TextPad;UltraEdit;");
 
 COEGeneralPage::COEGeneralPage (SettingsManager& manager,CWnd* p_parent)
                :StyleDialog(COEGeneralPage::IDD,p_parent)
@@ -67,11 +66,13 @@ void COEGeneralPage::DoDataExchange(CDataExchange* pDX)
     {
       if(m_comboKeymap.GetCount() == 0)
       {
-        std::istrstream in(m_keymapLayoutList);
-        std::string line;
-        while (std::getline(in, line, ';'))
+        CString in(m_keymapLayoutList);
+        std::vector<CString> list;
+        SplitString(in,list,';');
+
+        for(auto& str : list)
         {
-          m_comboKeymap.AddString(line.c_str());
+          m_comboKeymap.AddString(str);
         }
       }
     }
@@ -95,8 +96,8 @@ COEGeneralPage::OnApply()
     settings.SetWorkDirFollowsDocument(m_WorkDirFollowsDoc       ? true : false,  false /*notify*/);
     settings.SetSaveCurPosAndBookmarks(m_SaveCursPosAndBookmarks ? true : false,  false /*notify*/);
     settings.SetSaveMainWinPosition   (m_SaveMainWindowPosition  ? true : false,  false /*notify*/);
-    settings.SetKeymapLayout          ((LPCSTR)m_keymapLayout);
-    settings.SetLocale((LPCSTR)m_locale);
+    settings.SetKeymapLayout          ((LPCTSTR)m_keymapLayout);
+    settings.SetLocale((LPCTSTR)m_locale);
   }
   _OE_DEFAULT_HANDLER_;
 

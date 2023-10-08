@@ -34,7 +34,7 @@ static char THIS_FILE[] = __FILE__;
     using namespace std;
     using namespace OpenEditor;
 
-bool COEditorView::PreNormalizeOnChar (NormalizeOnCharCxt& cxt, char ch)
+bool COEditorView::PreNormalizeOnChar (NormalizeOnCharCxt& cxt,TCHAR ch)
 {
     cxt.matched = false;
 
@@ -49,7 +49,7 @@ bool COEditorView::PreNormalizeOnChar (NormalizeOnCharCxt& cxt, char ch)
         && pos.line < GetLineCount())
         {
             Position pos = GetPosition();
-            const char* str;
+            LPCTSTR str;
             int len;
             GetLine(pos.line, str, len);
             pos.column = pos2inx(str, len, pos.column);
@@ -63,7 +63,7 @@ bool COEditorView::PreNormalizeOnChar (NormalizeOnCharCxt& cxt, char ch)
                 cxt.sqr.end.column   = pos.column;
 
                 if (phighlighter->IsKeyword(str + cxt.sqr.start.column, cxt.sqr.end.column - cxt.sqr.start.column, cxt.keyword)
-                && strncmp(cxt.keyword.GetString(), str + cxt.sqr.start.column, cxt.sqr.end.column - cxt.sqr.start.column))
+                && _tcsncmp(cxt.keyword.GetString(), str + cxt.sqr.start.column, cxt.sqr.end.column - cxt.sqr.start.column))
                 {
                     cxt.matched = true;
                     cxt.sqr.start.column = inx2pos(str, len, cxt.sqr.start.column);
@@ -109,7 +109,7 @@ bool COEditorView::IsNormalizeablePos (Position pos) const
         phighlighter->SetMultilineQuotesState(status, quoteId, parsing);
 
         int len;
-        const char* str; 
+        LPCTSTR str; 
         GetLine(pos.line, str, len);
         phighlighter->NextLine(str, len);
 
@@ -120,7 +120,7 @@ bool COEditorView::IsNormalizeablePos (Position pos) const
         while (!tokenizer.Eol())
         {
             int curPos, len;
-            const char* str;
+            LPCTSTR str;
 
             tokenizer.GetCurentWord(str, curPos, len);
             phighlighter->NextWord(str, len);
@@ -151,7 +151,7 @@ bool COEditorView::NormalizeText (const EditContext& cxt, CString& _str)
         phighlighter->SetMultilineQuotesState(status, quoteId, parsing);
 
         int llen;
-        const char* str; 
+        LPCTSTR str; 
         cxt.GetLine(line, str, llen);
         phighlighter->NextLine(str, llen);
 
@@ -164,7 +164,7 @@ bool COEditorView::NormalizeText (const EditContext& cxt, CString& _str)
         while (!tokenizer.Eol())
         {
             int pos, wlen;
-            const char* str;
+            LPCTSTR str;
 
             tokenizer.GetCurentWord(str, pos, wlen);
             phighlighter->NextWord(str, wlen);

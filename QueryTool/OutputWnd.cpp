@@ -130,17 +130,17 @@ COutputWnd::InitGridEmpty(COutputList& p_list)
   item.col = 0;
   item.nFormat = DT_LEFT | DT_VCENTER | DT_SINGLELINE | DT_END_ELLIPSIS | DT_NOPREFIX;
 
-  item.strText = "File";
+  item.strText = _T("File");
   p_list.SetItem(&item);
   p_list.SetColumnWidth(0, 200);
 
   item.col = 2;
-  item.strText = "Text";
+  item.strText = _T("Text");
   p_list.SetItem(&item);
   p_list.SetColumnWidth(0, 200);
 
   item.col = 1;
-  item.strText = "Line";
+  item.strText = _T("Line");
   item.nFormat |= DT_SORT_NUMERIC;
   p_list.SetItem(&item);
   p_list.SetColumnWidth(0, 200);
@@ -268,12 +268,12 @@ COutputList::OnFindFilesClicked(NMHDR* pNotifyStruct, LRESULT* result)
     return;
   }
   CString fileName = GetItemText(row, 0);
-  int   lineNumber = atoi(GetItemText(row, 1));
+  int   lineNumber = _ttoi(GetItemText(row, 1));
 
 
   if (fileName.IsEmpty())
   {
-    AfxMessageBox("Cannot find file: " + fileName, MB_OK | MB_ICONEXCLAMATION);
+    AfxMessageBox(_T("Cannot find file: ") + fileName, MB_OK | MB_ICONEXCLAMATION);
     return;
   }
   CDocument* doc = AfxGetApp()->OpenDocumentFile(fileName);

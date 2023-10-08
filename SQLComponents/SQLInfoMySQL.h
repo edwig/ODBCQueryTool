@@ -35,6 +35,9 @@ public:
   explicit SQLInfoMySQL(SQLDatabase* p_database);
  ~SQLInfoMySQL();
 
+  // RDBMS Uses INDENTITY or SEQUENCE interface
+  void    SetUseSequences(bool p_sequences) override;
+
   //////////////////////////////////////////////////////////////////////////
   //
   // GENERALS (Strings & Booleans) 

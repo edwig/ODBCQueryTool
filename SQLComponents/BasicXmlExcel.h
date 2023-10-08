@@ -144,6 +144,7 @@ private:
   bool       LoadStrings();
   bool       LoadStyles();
   bool       LoadWorksheets();
+  XString    DecodeUTF8ZipItem(char* p_buffer);
 
   XString    m_filename;      // Filename
   HZIP       m_zip;           // ZIP handle for unzipping

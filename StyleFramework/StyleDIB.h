@@ -30,10 +30,10 @@ public:
     BOOL    Create(BITMAPINFO* pBMI, BYTE* pBits);  // Create from existing memory buffer
     void*   GetPixelAddress(int x, int y);
     virtual BOOL Load(CFile* fp);                   // Load from file
-    virtual BOOL Load(char* pszFileName = NULL);    // Load DIB from disk file
+    virtual BOOL Load(LPCTSTR pszFileName = NULL);  // Load DIB from disk file
     virtual BOOL LoadBitmap(WORD wResid);
     virtual BOOL Load(WORD wResid);                 // Load DIB from resource
-    virtual BOOL Save(char* pszFileName = NULL);    // Save DIB to disk file
+    virtual BOOL Save(LPCTSTR pszFileName = NULL);  // Save DIB to disk file
     virtual BOOL Save(CFile* fp);                   // Save to file
     virtual void Draw(CDC* pDC, int x, int y);
     virtual void Draw(CDC* pDC, int x, int y, int w, int h);

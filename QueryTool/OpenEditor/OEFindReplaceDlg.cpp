@@ -203,7 +203,7 @@ CFindReplaceDlg::OnInitDialog ()
 /////////////////////////////////////////////////////////////////////////////
 // CFindReplaceDlg message handlers
 
-void CFindReplaceDlg::toPrintableStr (const char* from, CString& _to)
+void CFindReplaceDlg::toPrintableStr (LPCTSTR from, CString& _to)
 {
   if(m_BackslashExpressions)
   {
@@ -215,7 +215,7 @@ void CFindReplaceDlg::toPrintableStr (const char* from, CString& _to)
   }
 }
 
-void CFindReplaceDlg::toUnprintableStr (const char* from, CString& _to, bool skipEscDgt)
+void CFindReplaceDlg::toUnprintableStr (LPCTSTR from, CString& _to, bool skipEscDgt)
 {
   if(m_BackslashExpressions)
   {
@@ -604,26 +604,31 @@ void CFindReplaceDlg::OnInsertRegexpFind (UINT nID)
         ::SendMessage(::GetDlgItem(m_hWnd, IDC_EF_REGEXP), BM_SETCHECK, BST_CHECKED, 0L);
 
     static
-    struct { const char* text; int offset; } 
-        expr[] = { 
-            { "\\t", -1 },
-            { ".",  -1 },
-            { "*",  -1 },
-            { "+",  -1 },
-            { "^",  -1 },
-            { "$",  -1 },
-            { "[]",  1 },
-            { "[^]", 2 },
-            { "|",  -1 },
-            { "\\", -1 },
-            { "([a-zA-Z0-9])",              -1 },
-            { "([a-zA-Z])",                 -1 },
-            { "([0-9])",                    -1 },
-            { "([0-9a-fA-F]+)",             -1 },
-            { "([a-zA-Z_$][a-zA-Z0-9_$]*)", -1 },
-            { "(([0-9]+\\.[0-9]*)|([0-9]*\\.[0-9]+)|([0-9]+))", -1 },
-            { "((\"[^\"]*\")|('[^']*'))",   -1 },
-        };
+    struct 
+    { 
+      LPCTSTR text; 
+      int     offset;
+    } 
+    expr[] = 
+    { 
+        { _T("\\t"), -1 },
+        { _T("."),  -1 },
+        { _T("*"),  -1 },
+        { _T("+"),  -1 },
+        { _T("^"),  -1 },
+        { _T("$"),  -1 },
+        { _T("[]"),  1 },
+        { _T("[^]"), 2 },
+        { _T("|"),  -1 },
+        { _T("\\"), -1 },
+        { _T("([a-zA-Z0-9])"),              -1 },
+        { _T("([a-zA-Z])"),                 -1 },
+        { _T("([0-9])"),                    -1 },
+        { _T("([0-9a-fA-F]+)"),             -1 },
+        { _T("([a-zA-Z_$][a-zA-Z0-9_$]*)"), -1 },
+        { _T("(([0-9]+\\.[0-9]*)|([0-9]*\\.[0-9]+)|([0-9]+))"), -1 },
+        { _T("((\"[^\"]*\")|('[^']*'))"),   -1 },
+    };
     
     _ASSERTE((nID - ID_REGEXP_FIND_TAB) < (sizeof(expr)/sizeof(expr[0])));
 
@@ -640,8 +645,18 @@ void CFindReplaceDlg::OnInsertRegexpReplace (UINT nID)
     ::SendMessage(::GetDlgItem(m_hWnd, IDC_EF_REGEXP), BM_SETCHECK, BST_CHECKED, 0L);
 
     static
-    const char* expr[] 
-        = { "\\0", "\\1", "\\2", "\\3", "\\4", "\\5", "\\6", "\\7", "\\8", "\\9" };
+    LPCTSTR expr[] = 
+    { _T("\\0"),
+      _T("\\1"), 
+      _T("\\2"),
+      _T("\\3"),
+      _T("\\4"),
+      _T("\\5"),
+      _T("\\6"),
+      _T("\\7"),
+      _T("\\8"),
+      _T("\\9")
+    };
     
     _ASSERTE((nID - ID_REGEXP_REPLACE_WHAT_FIND) < (sizeof(expr)/sizeof(expr[0])));
 

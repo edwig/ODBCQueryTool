@@ -40,21 +40,21 @@ namespace OpenEditor
 void CPlusPlusHighlighter::Init (const VisualAttributesSet& set_)
 {
     CommonHighlighter::Init(set_);
-    // required hardcoded categories
+    // required hard coded categories
     m_preprocessorAttrs = set_.FindByName(_T("Preprocessor"));
 }
 
-void CPlusPlusHighlighter::NextLine (const char* currentLine, int currentLineLength)
+void CPlusPlusHighlighter::NextLine (LPCTSTR currentLine, int currentLineLength)
 {
     m_includeDirective = false;
     m_openBrace = 0;
     CommonHighlighter::NextLine(currentLine, currentLineLength);
 }
 
-void CPlusPlusHighlighter::NextWord (const char* str, int len)
+void CPlusPlusHighlighter::NextWord (LPCTSTR str, int len)
 {
     if (m_isStartLine && len == (sizeof(_T("#include")) - 1)
-    && !strncmp(str, _T("#include"), len))
+    && !_tcsncmp(str, _T("#include"), len))
         m_includeDirective = true;
 
     if (m_openBrace)
@@ -90,7 +90,7 @@ void PlSqlHighlighter::Init (const VisualAttributesSet& set_)
     m_fileNameAttrs     = set_.FindByName(_T("File name (@ & @@)"));
 }
 
-void PlSqlHighlighter::NextLine (const char* currentLine, int currentLineLength)
+void PlSqlHighlighter::NextLine (LPCTSTR currentLine, int currentLineLength)
 {
   if (m_openBrace)
   {
@@ -104,7 +104,7 @@ void PlSqlHighlighter::NextLine (const char* currentLine, int currentLineLength)
   CommonHighlighter::NextLine(currentLine, currentLineLength);
 }
 
-void PlSqlHighlighter::NextWord (const char* str, int len)
+void PlSqlHighlighter::NextWord (LPCTSTR str, int len)
 {
     switch (m_openBrace)
     {
@@ -172,7 +172,7 @@ void SqrHighlighter::Init (const VisualAttributesSet& set_)
     m_preprocessorAttrs = set_.FindByName(_T("Preprocessor"));
 }
 
-void SqrHighlighter::NextWord (const char* str, int len)
+void SqrHighlighter::NextWord (LPCTSTR str, int len)
 {
     CommonHighlighter::NextWord(str, len);
 
@@ -181,7 +181,7 @@ void SqrHighlighter::NextWord (const char* str, int len)
         switch (*str)
         {
         case '#':
-            if (!_strnicmp(str, _T("#debug"), sizeof(_T("#debug"))-1))
+            if (!_tcsnicmp(str, _T("#debug"), sizeof(_T("#debug"))-1))
             {
                 m_current = m_preprocessorAttrs;
                 break;
@@ -209,13 +209,13 @@ void ShellHighlighter::Init (const VisualAttributesSet& set_)
     m_substAttrs = set_.FindByName(_T("Substitution"));
 }
 
-void ShellHighlighter::NextLine (const char* currentLine, int currentLineLength)
+void ShellHighlighter::NextLine (LPCTSTR currentLine, int currentLineLength)
 {
     m_isBraceToken = m_isSubstitution = false;
     CommonHighlighter::NextLine(currentLine, currentLineLength);
 }
 
-void ShellHighlighter::NextWord (const char* str, int len)
+void ShellHighlighter::NextWord (LPCTSTR str, int len)
 {
     if (m_isSubstitution)
     {
@@ -257,7 +257,7 @@ void PerlHighlighter::Init (const VisualAttributesSet& set_)
     m_vartAttrs = set_.FindByName(_T("Variables"));
 }
 
-void PerlHighlighter::NextWord (const char* str, int len)
+void PerlHighlighter::NextWord (LPCTSTR str, int len)
 {
   if (len > 0)
   {

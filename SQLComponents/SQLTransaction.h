@@ -37,7 +37,7 @@ class SQLTransaction
 {
 public:
   SQLTransaction(SQLDatabase* p_database, 
-                 const char*  p_name,
+                 LPCTSTR      p_name,
                  bool         p_startImmediate   = true, 
                  bool         p_isSubTransaction = false);
   SQLTransaction(HDBC p_hdbc, bool p_startImmediate);

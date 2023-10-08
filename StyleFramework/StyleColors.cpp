@@ -80,15 +80,15 @@ int ThemeColor::GetColor(Colors p_color)
   return ThemeColor::theme_colors[(int)p_color][(int)ThemeColor::_theme];
 }
 
-const char* ThemeColor::theme_names[NO_OF_THEMES] =
+LPCTSTR ThemeColor::theme_names[NO_OF_THEMES] =
 {
-   "Lime"
-  ,"Skyblue"
-  ,"Purple"
-  ,"Moderate gray"
-  ,"Pure gray"
-  ,"Black and White"
-  ,"Dark theme"
+   _T("Lime")
+  ,_T("Skyblue")
+  ,_T("Purple")
+  ,_T("Moderate gray")
+  ,_T("Pure gray")
+  ,_T("Black and White")
+  ,_T("Dark theme")
 };
 
 void ThemeColor::SetTheme(Themes pTheme)

@@ -49,7 +49,7 @@ BOOL
 COESettingsDlg::OnInitDialog()
 {
   StyleDialog::OnInitDialog();
-  SetWindowText("Document info");
+  SetWindowText(_T("Document info"));
   ShowMinMaxButton(false,true);
 
   InitTabs();
@@ -96,15 +96,15 @@ COESettingsDlg::InitTabs()
   m_page8->Create(IDD_OE_SQLSETTINGS,     &m_tabs);
   m_page9->Create(IDD_OE_PROP_FONT_COLORS,&m_tabs);
 
-  m_tabs.InsertItem(0,m_page1,"General");
-  m_tabs.InsertItem(1,m_page2,"Files");
-  m_tabs.InsertItem(2,m_page3,"Backup");
-  m_tabs.InsertItem(3,m_page4,"Editing");
-  m_tabs.InsertItem(4,m_page5,"Selection");
-  m_tabs.InsertItem(5,m_page6,"Categories");
-  m_tabs.InsertItem(6,m_page7,"Templates");
-  m_tabs.InsertItem(7,m_page8,"SQL");
-  m_tabs.InsertItem(8,m_page9,"Fonts");
+  m_tabs.InsertItem(0,m_page1,_T("General"));
+  m_tabs.InsertItem(1,m_page2,_T("Files"));
+  m_tabs.InsertItem(2,m_page3,_T("Backup"));
+  m_tabs.InsertItem(3,m_page4,_T("Editing"));
+  m_tabs.InsertItem(4,m_page5,_T("Selection"));
+  m_tabs.InsertItem(5,m_page6,_T("Categories"));
+  m_tabs.InsertItem(6,m_page7,_T("Templates"));
+  m_tabs.InsertItem(7,m_page8,_T("SQL"));
+  m_tabs.InsertItem(8,m_page9,_T("Fonts"));
 
   m_tabs.Init();
 }

@@ -18,7 +18,7 @@
 //
 #pragma once
 
-#define SFX_VERSION "1.0.1"       // Current SFX version number
+#define SFX_VERSION "1.1.0"       // Current SFX version number
 
 class StylingFramework
 {
@@ -94,11 +94,20 @@ void SFXResizeByFactor(int& p_x,int& p_y,int& p_w,int& p_h);
 
 // Selecting the right library to link with automatically
 // So we do not need to worry about which library to use in the linker settings
+
+#ifdef UNICODE
+#if defined _M_IX86
+#define SFX_PLATFORM "Ux86"
+#else
+#define SFX_PLATFORM "Ux64"
+#endif
+#else
 #if defined _M_IX86
 #define SFX_PLATFORM "x86"
 #else
 #define SFX_PLATFORM "x64"
 #endif
+#endif // UNICODE
 
 #if defined _DEBUG
 #define SFX_CONFIGURATION "D"
@@ -109,4 +118,6 @@ void SFXResizeByFactor(int& p_x,int& p_y,int& p_w,int& p_h);
 #ifndef STYLEFRAMEWORK_NOAUTOLINK
 #pragma comment(lib,"StyleFramework_"                        SFX_PLATFORM SFX_CONFIGURATION ".lib")
 #pragma message("Automatically linking with StyleFramework_" SFX_PLATFORM SFX_CONFIGURATION ".lib")
+#else
+#pragma message("Now building library 'StyleFramework_" SFX_PLATFORM SFX_CONFIGURATION ".lib'")
 #endif 

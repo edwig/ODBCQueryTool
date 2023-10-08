@@ -38,12 +38,12 @@ static bool IsSuppressableMessage(CString p_message);
 // OUTSIDE WORLD INTERFACE
 
 INT_PTR 
-StyleMessageBox(CWnd*  p_parent
-               ,LPCSTR p_message
-               ,LPCSTR p_title
-               ,long   p_styles         /*= MB_OK   */
-               ,bool*  p_doNotShowAgain /*= nullptr */
-               ,bool   p_foreground     /*= false   */)
+StyleMessageBox(CWnd*   p_parent
+               ,LPCTSTR p_message
+               ,LPCTSTR p_title
+               ,long    p_styles         /*= MB_OK   */
+               ,bool*   p_doNotShowAgain /*= nullptr */
+               ,bool    p_foreground     /*= false   */)
 {
   MessageDialog dlg(p_parent,p_title,p_message,p_styles,p_doNotShowAgain);
   if(p_foreground)
@@ -54,12 +54,12 @@ StyleMessageBox(CWnd*  p_parent
 }
 
 INT_PTR 
-StyleMessageBox(CWnd*  p_parent
-               ,LPCSTR p_message
-               ,LPCSTR p_title
-               ,LPCSTR p_labels         /*= "ok"    */
-               ,bool*  p_doNotShowAgain /*= nullptr */
-               ,bool   p_foreground     /*= false   */)
+StyleMessageBox(CWnd*   p_parent
+               ,LPCTSTR p_message
+               ,LPCTSTR p_title
+               ,LPCTSTR p_labels         /*= "ok"    */
+               ,bool*   p_doNotShowAgain /*= nullptr */
+               ,bool    p_foreground     /*= false   */)
 {
   MessageDialog dlg(p_parent,p_title,p_message,p_labels,p_doNotShowAgain);
   if(p_foreground)
@@ -71,11 +71,11 @@ StyleMessageBox(CWnd*  p_parent
 
 //////////////////////////////////////////////////////////////////////////
 
-MessageDialog::MessageDialog(CWnd*   p_parent
-                            ,LPCSTR  p_title
-                            ,LPCSTR  p_message
-                            ,LPCSTR  p_labels
-                            ,bool*   p_doNotShowAgain /*= NULL*/)
+MessageDialog::MessageDialog(CWnd*    p_parent
+                            ,LPCTSTR  p_title
+                            ,LPCTSTR  p_message
+                            ,LPCTSTR  p_labels
+                            ,bool*    p_doNotShowAgain /*= NULL*/)
               :StyleDialogCA(IDD_BOODSCHAP, p_parent)
               ,m_title(p_title)
               ,m_message(p_message)
@@ -118,22 +118,22 @@ MessageDialog::MessageDialog(CWnd*   p_parent
     }
 
     // find timer information
-    const CString tag = "_#timer";
+    const CString tag = _T("_#timer");
     int pos = FindNoCase(m_originalLabel[i],tag);
     if (pos >= 0)
     {
-      int begin = m_originalLabel[i].Find("[", pos + tag.GetLength());
+      int begin = m_originalLabel[i].Find(_T("["), pos + tag.GetLength());
       if (begin < 0)
       {
-        begin = m_originalLabel[i].Find("(", pos + tag.GetLength());
+        begin = m_originalLabel[i].Find(_T("("), pos + tag.GetLength());
         m_labelcountdown[i] = begin >= 0;
       }
       if (begin >= 0)
       {
-        int end = m_originalLabel[i].Find(m_labelcountdown[i] ? ")" : "]", begin + 1);
+        int end = m_originalLabel[i].Find(m_labelcountdown[i] ? _T(")") : _T("]"), begin + 1);
         if (end >= 0)
         {
-          m_labeltimers[i] = atoi(m_originalLabel[i].Mid(pos+tag.GetLength()+1, end - begin- 1));
+          m_labeltimers[i] = _ttoi(m_originalLabel[i].Mid(pos+tag.GetLength()+1, end - begin- 1));
           m_originalLabel[i].Delete(pos, end-pos+1);
         }
       }
@@ -162,24 +162,24 @@ MessageDialog::MessageDialog(CWnd*   p_parent
       break;
     }
 
-    m_originalLabel[i].Replace("_"," ");
+    m_originalLabel[i].Replace(_T("_"),_T(" "));
     rest.TrimLeft();
     if (m_originalLabel[i].Find('$') > 0)
     {
-      m_originalLabel[i] = EverythingBefore(m_originalLabel[i],"$");
+      m_originalLabel[i] = EverythingBefore(m_originalLabel[i],_T("$"));
     }
-    char exception = m_originalLabel[i].GetAt(0);
+    TCHAR exception = m_originalLabel[i].GetAt(0);
     if(exception == '!' || exception == '#' ||
        exception == '.' || exception == '?' ||
        exception == '*' )
     {
       m_originalLabel[i] = m_originalLabel[i].Mid(1);
     }
-    int posAmpersand = m_originalLabel[i].Find("&");
+    int posAmpersand = m_originalLabel[i].Find(_T("&"));
     while (posAmpersand >= 0)
     {
       m_originalLabel[i].Delete(posAmpersand);
-      posAmpersand = m_originalLabel[i].Find("&");
+      posAmpersand = m_originalLabel[i].Find(_T("&"));
     }
     if (m_originalLabel[i].GetAt(0) == '@')
     {
@@ -259,11 +259,11 @@ MessageDialog::MessageDialog(CWnd*   p_parent
   SplitLabelTextAndStyles(labels);
 }
 
-MessageDialog::MessageDialog(CWnd*  p_parent
-                            ,LPCSTR p_title
-                            ,LPCSTR p_message
-                            ,int    p_styles
-                            ,bool*  p_doNotShowAgain /*= NULL*/)
+MessageDialog::MessageDialog(CWnd*   p_parent
+                            ,LPCTSTR p_title
+                            ,LPCTSTR p_message
+                            ,int     p_styles
+                            ,bool*   p_doNotShowAgain /*= NULL*/)
               :StyleDialogCA(IDD_BOODSCHAP,p_parent)
               ,m_title(p_title)
               ,m_message(p_message)
@@ -376,7 +376,7 @@ MessageDialog::InitButtons()
   for (int i = 0; i < MAX_LABELS; ++i)
   {
     m_button[i]         = nullptr;
-    m_originalLabel[i]  = CString("");
+    m_originalLabel[i]  = CString(_T(""));
     m_labeltimers[i]    = 0;
     m_labelcountdown[i] = false;
   }
@@ -547,19 +547,19 @@ MessageDialog::SplitLabelTextAndStyles(CString& p_labels)
     spatiePos = rest.Find(' ');
     if(spatiePos > 0)
     {
-      m_label[i] = EverythingBefore(rest," ");
-      rest       = EverythingAfter(rest," ");
+      m_label[i] = EverythingBefore(rest,_T(" "));
+      rest       = EverythingAfter (rest,_T(" "));
     }
     else
     {
       m_label[i] = rest;
     }
-    m_label[i].Replace("_"," ");
+    m_label[i].Replace(_T("_"),_T(" "));
     rest.TrimLeft();
     if (m_label[i].Find('$') > 0)
     {
-      m_style[i] = EverythingAfter (m_label[i],"$");
-      m_label[i] = EverythingBefore(m_label[i],"$");
+      m_style[i] = EverythingAfter (m_label[i],_T("$"));
+      m_label[i] = EverythingBefore(m_label[i],_T("$"));
     }
     if (spatiePos < 0)
     {
@@ -592,9 +592,9 @@ MessageDialog::SplitLabelTextAndStyles(CString& p_labels)
   {
     if (!m_label[i].IsEmpty())
     {
-      if (m_label[i] == "ok")
+      if (m_label[i] == _T("ok"))
       {
-        m_label[i] = "OK";
+        m_label[i] = _T("OK");
       }
       else
       {
@@ -607,14 +607,14 @@ MessageDialog::SplitLabelTextAndStyles(CString& p_labels)
         if (index < m_label[i].GetLength()) // Something left?
         {
           // Set first character of the label to uppercase
-          m_label[i].SetAt(index, (char) toupper(m_label[i].GetAt(index)));
+          m_label[i].SetAt(index, (TCHAR) toupper(m_label[i].GetAt(index)));
         }
       }
     }
   }
 
   // Check if the message is suppressible
-  if (m_label[0].CompareNoCase("ok") != 0 || !m_label[1].IsEmpty())
+  if (m_label[0].CompareNoCase(_T("ok")) != 0 || !m_label[1].IsEmpty())
   {
     m_suppressable = false;
   }
@@ -714,7 +714,7 @@ MessageDialog::GetStandardPositive()
   {
     if (!m_style[i].IsEmpty())
     {
-      if (m_style[i].CompareNoCase("ok") == 0)
+      if (m_style[i].CompareNoCase(_T("ok")) == 0)
       {
         return m_label[i];
       }
@@ -730,7 +730,7 @@ MessageDialog::GetStandardNegative()
   {
     if (!m_style[i].IsEmpty())
     {
-      if (m_style[i].CompareNoCase("an") == 0)
+      if (m_style[i].CompareNoCase(_T("an")) == 0)
       {
         return m_label[i];
       }
@@ -746,7 +746,7 @@ MessageDialog::GetStandardPositiveID()
   {
     if (!m_style[i].IsEmpty())
     {
-      if (m_style[i].CompareNoCase("ok") == 0)
+      if (m_style[i].CompareNoCase(_T("ok")) == 0)
       {
         return i + ID_OFFSET;
       }
@@ -762,7 +762,7 @@ MessageDialog::GetStandardNegativeID()
   {
     if (!m_style[i].IsEmpty())
     {
-      if (m_style[i].CompareNoCase("an") == 0)
+      if (m_style[i].CompareNoCase(_T("an")) == 0)
       {
         return i + ID_OFFSET;
       }
@@ -792,23 +792,23 @@ MessageDialog::OnTimer(UINT_PTR nIDEvent)
   if (m_labelcountdown[nIDEvent])
   {
     CString sButtonTekst = m_label[nIDEvent];
-    if (!Contains(sButtonTekst,"&"))
+    if (!Contains(sButtonTekst,_T("&")))
     {
-      sButtonTekst = "&" + sButtonTekst;
+      sButtonTekst = _T("&") + sButtonTekst;
     }
     else
     {
-      int posAmpersand = m_label[nIDEvent].Find("&");
+      int posAmpersand = m_label[nIDEvent].Find(_T("&"));
       while (posAmpersand >= 0)
       {
         m_label[nIDEvent].Delete(posAmpersand);
-        posAmpersand = m_label[nIDEvent].Find("&");
+        posAmpersand = m_label[nIDEvent].Find(_T("&"));
       }
     }
 
     if (--m_labeltimers[nIDEvent] > 0)
     {
-      sButtonTekst.AppendFormat("(%d)",m_labeltimers[nIDEvent]);
+      sButtonTekst.AppendFormat(_T("(%d)"),m_labeltimers[nIDEvent]);
       SetTimer(nIDEvent, 1000, NULL);
       m_button[nIDEvent]->SetWindowText(sButtonTekst);
       return;
@@ -848,8 +848,8 @@ MessageDialog::OnInitDialog()
   CString text = m_message;
 
   // Replace all occurrences of \n for \r\n
-  text.Replace("\r\n", "\n");
-  text.Replace("\n", "\r\n");
+  text.Replace(_T("\r\n"), _T("\n"));
+  text.Replace(_T("\n"), _T("\r\n"));
 
   // Getting width and height
   CRect tekstRect = CRect(0, 0, 0, 0);
@@ -876,7 +876,7 @@ MessageDialog::OnInitDialog()
   // Add fixed offsets 
   tekstRect.OffsetRect(OFFSET,OFFSET);
 
-  // Information pictogram
+  // Information pictograph
   if (m_image)
   {
     // Extra space at the left side of 32 pixels for the icon
@@ -976,18 +976,18 @@ MessageDialog::OnInitDialog()
 				SetDefID(ID);
       }
       // Set an accelerator on the first char of the label, in case of no accelerator
-      if (!Contains(sButtonTekst,"&"))
+      if (!Contains(sButtonTekst,_T("&")))
       {
-        sButtonTekst = "&" + sButtonTekst;
+        sButtonTekst = _T("&") + sButtonTekst;
       }
       else
       {
         // Remove all cases of a '&' from the original string
-        int posAmpersand = m_label[i].Find("&");
+        int posAmpersand = m_label[i].Find(_T("&"));
         while (posAmpersand >= 0)
         {
           m_label[i].Delete(posAmpersand);
-          posAmpersand = m_label[i].Find("&");
+          posAmpersand = m_label[i].Find(_T("&"));
         }
       }
       
@@ -997,7 +997,7 @@ MessageDialog::OnInitDialog()
         SetTimer(i, m_labelcountdown[i] ? 1000 : m_labeltimers[i] * 1000, NULL);
         if (m_labelcountdown[i])
         {
-          sButtonTekst.AppendFormat("(%d)",m_labeltimers[i]);
+          sButtonTekst.AppendFormat(_T("(%d)"),m_labeltimers[i]);
         }
       }
 

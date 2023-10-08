@@ -34,54 +34,54 @@ namespace OpenEditor
 
 bool SyntaxNode::StopSign (EToken token) const
 {
-    switch (token)
-    {
+  switch (token)
+  {
     case etDECLARE:				return true;
     case etFUNCTION:			return true;
     case etPROCEDURE:			return true;
     case etPACKAGE:				return true;
-    case etBODY:				return false;
-    case etBEGIN:				return true;
+    case etBODY:				  return false;
+    case etBEGIN:				  return true;
     case etEXCEPTION:			return true;
-    case etEND:					return false;
-    case etIF:					return false;
-    case etTHEN:				return false;
-    case etELSE:				return true;
-    case etELSIF:				return true;
-    case etFOR:					return true;
-    case etWHILE:				return true;
-    case etLOOP:				return false;
-    case etEXIT:				return true;
-    case etIS:					return false;
-    case etAS:					return false;
+    case etEND:					  return false;
+    case etIF:					  return false;
+    case etTHEN:				  return false;
+    case etELSE:				  return true;
+    case etELSIF:				  return true;
+    case etFOR:					  return true;
+    case etWHILE:				  return true;
+    case etLOOP:				  return false;
+    case etEXIT:				  return true;
+    case etIS:					  return false;
+    case etAS:					  return false;
     case etSEMICOLON:			return true;
-    case etQUOTE:				return true;
-    case etDOUBLE_QUOTE:		return false;
+    case etQUOTE:				  return true;
+    case etDOUBLE_QUOTE:	return false;
     case etLEFT_ROUND_BRACKET:	return true;
     case etRIGHT_ROUND_BRACKET:	return true;
-    case etMINUS:				return false;
-    case etSLASH:				return true;
-    case etSTAR:				return false;
+    case etMINUS:				  return false;
+    case etSLASH:				  return true;
+    case etSTAR:				  return false;
     case etSELECT:				return true;
     case etINSERT:				return true;
     case etUPDATE:				return true;
     case etDELETE:				return true;
-    case etALTER:				return true;
+    case etALTER:				  return true;
     case etANALYZE:				return true;
     case etCREATE:				return true;
-    case etDROP:				return true;
-    case etFROM:				return true;
-    case etWHERE:				return true;
-    case etSET:					return true;
-    case etOPEN:                return true;
-    }
-    return false;
+    case etDROP:				  return true;
+    case etFROM:				  return true;
+    case etWHERE:				  return true;
+    case etSET:					  return true;
+    case etOPEN:          return true;
+  }
+  return false;
 }
 
-SyntaxNode::SyntaxNode ()                               
+SyntaxNode::SyntaxNode()
 { 
-    m_failure = false; 
-    m_sibling = m_parent = m_child = 0; 
+  m_failure = false; 
+  m_sibling = m_parent = m_child = 0; 
 }
 
 SyntaxNode::~SyntaxNode ()
@@ -90,24 +90,28 @@ SyntaxNode::~SyntaxNode ()
 
 void SyntaxNode::AppendSibling (SyntaxNode* sibling)    
 { 
-    if (!m_sibling)
-    {
-        m_sibling = sibling; 
-        sibling->m_parent = m_parent; 
-    }
-    else
-        m_sibling->AppendSibling(sibling);
+  if (!m_sibling)
+  {
+    m_sibling = sibling; 
+    sibling->m_parent = m_parent; 
+  }
+  else
+  {
+    m_sibling->AppendSibling(sibling);
+  }
 }
 
-void SyntaxNode::AppendChild  (SyntaxNode* child)       
+void SyntaxNode::AppendChild  (SyntaxNode* child)
 { 
-    if (!m_child)
-    {
-        m_child = child; 
-        child->m_parent = this; 
-    }
-    else
-        m_child->AppendSibling(child);
+  if (!m_child)
+  {
+    m_child = child; 
+    child->m_parent = this; 
+  }
+  else
+  {
+    m_child->AppendSibling(child);
+  }
 }
 
 int SyntaxNode::GetLevel () const

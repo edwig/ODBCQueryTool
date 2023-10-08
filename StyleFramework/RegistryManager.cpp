@@ -788,7 +788,7 @@ RegistryManager::GetRegistryPoint(LPCTSTR lpszSection, LPCTSTR lpszEntry, CPoint
     {
       return FALSE;
     }
-		scanf_s(str, _T("%ld,%ld"), &ptResult->x, &ptResult->y);
+		_tscanf_s(str, _T("%ld,%ld"), &ptResult->x, &ptResult->y);
 		return TRUE;
 	}
 }
@@ -878,7 +878,7 @@ RegistryManager::GetRegistryRect(LPCTSTR lpszSection, LPCTSTR lpszEntry, CRect* 
     {
       return FALSE;
     }
-		scanf_s(str, _T("%ld,%ld,%ld,%ld"), &rcResult->left, &rcResult->top, &rcResult->right, &rcResult->bottom);
+		_tscanf_s(str, _T("%ld,%ld,%ld,%ld"), &rcResult->left, &rcResult->top, &rcResult->right, &rcResult->bottom);
 	}
   return TRUE;
 }
@@ -967,7 +967,7 @@ RegistryManager::GetRegistrySize(LPCTSTR lpszSection, LPCTSTR lpszEntry, CSize* 
     {
       return FALSE;
     }
-		scanf_s(str, _T("%i,%i"), &szResult->cx, &szResult->cy);
+		_tscanf_s(str, _T("%i,%i"), &szResult->cx, &szResult->cy);
 	}
   return TRUE;
 }
@@ -1217,13 +1217,13 @@ int SetRegistryProfile(CString p_key,CString p_program,CString p_version)
   RegistryManager manager;
   manager.SetRegistryKey(p_key,p_program);
 
-  CString version = manager.GetRegistryString("Settings","StyleVersion","1.0");
+  CString version = manager.GetRegistryString(_T("Settings"),_T("StyleVersion"),_T("1.0"));
   if(version.CompareNoCase(p_version))
   {
     // Not our version: delete the workspace of the program
-    manager.DeleteRegistryKey("Workspace","");
+    manager.DeleteRegistryKey(_T("Workspace"),_T(""));
     // Next time: use this version
-    manager.SetRegistryString("Settings","StyleVersion",p_version);
+    manager.SetRegistryString(_T("Settings"),_T("StyleVersion"),p_version);
     return 1;
   }
   return 0;
@@ -1241,7 +1241,7 @@ SetGlobalEnvironmentVariable(CString p_variable,CString p_value)
 {
   bool success(false);
   RegistryManager manager(HKEY_LOCAL_MACHINE);
-  CString key("HKLM\\System\\CurrentControlSet\\Control\\Session Manager\\Environment");
+  CString key(_T("HKLM\\System\\CurrentControlSet\\Control\\Session Manager\\Environment"));
 
   // Possibly remove old value
   success = manager.DeleteRegistryKey(key,p_variable);

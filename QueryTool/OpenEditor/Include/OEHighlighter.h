@@ -48,7 +48,7 @@ namespace OpenEditor
 
     struct HighlighterFactory
     {
-        static HighlighterBasePtr CreateHighlighter (const char* name);
+        static HighlighterBasePtr CreateHighlighter (LPCTSTR name);
         static HighlighterBasePtr CreateHighlighter (const CString& name)
         { 
           return CreateHighlighter (name.GetString()); 
@@ -63,8 +63,8 @@ namespace OpenEditor
 	    virtual ~HighlighterBase () {};
 
 	    virtual void Init (const VisualAttributesSet&)  = 0;
-	    virtual void NextLine (const char*, int)        = 0;
-	    virtual void NextWord (const char*, int)        = 0;
+	    virtual void NextLine (LPCTSTR, int)        = 0;
+	    virtual void NextWord (LPCTSTR, int)        = 0;
 
         virtual void SetMultilineQuotesState (int, int, bool) = 0;
         virtual void InitStorageScanner (MultilineQuotesScanner&) const = 0;
@@ -77,7 +77,7 @@ namespace OpenEditor
         enum EFontMask { efmNormal = 0x00, efmBold = 0x01, efmItalic = 0x02, efmUnderline = 0x04 };
 
         // export some additional functionality
-        virtual bool IsKeyword (const char* str, int len, CString&) = 0;
+        virtual bool IsKeyword (LPCTSTR str, int len, CString&) = 0;
         virtual bool IsPlainText () = 0;
     protected:
         struct Attrib
@@ -98,23 +98,23 @@ namespace OpenEditor
     class CommonHighlighter : public HighlighterBase
     {
     public:
-	    CommonHighlighter (const char* language);
+	    CommonHighlighter (LPCTSTR language);
 
 	    virtual void Init (const VisualAttributesSet&);
-	    virtual void NextLine (const char*, int);
-	    virtual void NextWord (const char*, int);
+	    virtual void NextLine (LPCTSTR, int);
+	    virtual void NextWord (LPCTSTR, int);
         
         virtual void SetMultilineQuotesState (int, int, bool);
         virtual void InitStorageScanner (MultilineQuotesScanner&) const;
 
         // export some additional functionality
-        virtual bool IsKeyword (const char* str, int len, CString&);
+        virtual bool IsKeyword (LPCTSTR str, int len, CString&);
         virtual bool IsPlainText () { return m_seqOf & ePlainText? true : false; };
     protected:
-        bool openingOfSeq (const char* str, int len);
-        bool closingOfSeq (const char* str, int len);
-        bool isKeyword (const char* str, int len);
-        bool isDigit (const char* str, int len);
+        bool openingOfSeq (LPCTSTR str, int len);
+        bool closingOfSeq (LPCTSTR str, int len);
+        bool isKeyword (LPCTSTR str, int len);
+        bool isDigit (LPCTSTR str, int len);
 
         // language attributes
         bool                    m_caseSensiteve;
@@ -131,7 +131,7 @@ namespace OpenEditor
         Fastmap<bool> m_lineCommentFastMap;
 
         // whole line required for for some checks !!!
-        const char* m_currentLine;
+        LPCTSTR m_currentLine;
         int m_currentLineLength;
 
         // current state
@@ -155,12 +155,12 @@ namespace OpenEditor
         vector<Attrib> m_keyAttrs;
 
         // labels for runtime linking
-        const char* m_textLabel        ;//= "Text";
-        const char* m_numberLabel      ;//= "Number";
-        const char* m_characterLabel   ;//= "Character";
-        const char* m_stringLabel      ;//= "String";
-        const char* m_commentLabel     ;//= "Comment";
-        const char* m_lineCommentLabel ;//= "Line Comment";
+        LPCTSTR m_textLabel        ;//= "Text";
+        LPCTSTR m_numberLabel      ;//= "Number";
+        LPCTSTR m_characterLabel   ;//= "Character";
+        LPCTSTR m_stringLabel      ;//= "String";
+        LPCTSTR m_commentLabel     ;//= "Comment";
+        LPCTSTR m_lineCommentLabel ;//= "Line Comment";
     };
 
     ///////////////////////////////////////////////////////////////////////
@@ -171,12 +171,12 @@ namespace OpenEditor
         CPlusPlusHighlighter ();
 
 	    virtual void Init (const VisualAttributesSet&);
-	    virtual void NextLine (const char*, int);
-	    virtual void NextWord (const char*, int);
+	    virtual void NextLine (LPCTSTR, int);
+	    virtual void NextWord (LPCTSTR, int);
 
     private:
-        bool m_includeDirective;
-        char m_openBrace;
+        bool   m_includeDirective;
+        TCHAR  m_openBrace;
         Attrib m_preprocessorAttrs;
     };
 
@@ -188,11 +188,11 @@ namespace OpenEditor
         PlSqlHighlighter ();
 
 	    virtual void Init (const VisualAttributesSet&);
-	    virtual void NextLine (const char*, int);
-	    virtual void NextWord (const char*, int);
+	    virtual void NextLine (LPCTSTR, int);
+	    virtual void NextWord (LPCTSTR, int);
 
     private:
-        char m_openBrace;
+        TCHAR  m_openBrace;
         Attrib m_bindVarAttrs;
         Attrib m_substitutionAttrs;
         Attrib m_fileNameAttrs;
@@ -206,7 +206,7 @@ namespace OpenEditor
         SqrHighlighter ();
 
 	    virtual void Init (const VisualAttributesSet&);
-	    virtual void NextWord (const char*, int);
+	    virtual void NextWord (LPCTSTR, int);
 
     private:
         Attrib m_variablesAttrs;
@@ -221,8 +221,8 @@ namespace OpenEditor
         ShellHighlighter ();
 
 	    virtual void Init (const VisualAttributesSet&);
-	    virtual void NextLine (const char*, int);
-	    virtual void NextWord (const char*, int);
+	    virtual void NextLine (LPCTSTR, int);
+	    virtual void NextWord (LPCTSTR, int);
 
     private:
         bool m_isSubstitution;
@@ -238,8 +238,8 @@ namespace OpenEditor
         XmlHighlighter ();
 
 	    virtual void Init (const VisualAttributesSet&);
-	    virtual void NextLine (const char*, int);
-	    virtual void NextWord (const char*, int);
+	    virtual void NextLine (LPCTSTR, int);
+	    virtual void NextWord (LPCTSTR, int);
 
         void SetMultilineQuotesState (int state, int quoteId, bool parsing);
         void InitStorageScanner (MultilineQuotesScanner&) const;
@@ -264,7 +264,7 @@ namespace OpenEditor
         PerlHighlighter ();
 
 	    virtual void Init (const VisualAttributesSet&);
-	    virtual void NextWord (const char*, int);
+	    virtual void NextWord (LPCTSTR, int);
 
     private:
         Attrib m_vartAttrs;

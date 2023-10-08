@@ -40,13 +40,13 @@ static char THIS_FILE[] = __FILE__;
 //
 //////////////////////////////////////////////////////////////////////////
 
-static BOOL GetVolumeName(LPCSTR rootDirectory, CString& volumeName)
+static BOOL GetVolumeName(LPCTSTR rootDirectory, CString& volumeName)
 {
   const int STRSIZE = 80;
   DWORD volumeSerialNumber;           // volume serial number
   DWORD maximumComponentLength;       // maximum file name length
   DWORD fileSystemFlags;              // file system options
-  char  fileSystemNameBuffer[STRSIZE];// file system name buffer
+  TCHAR fileSystemNameBuffer[STRSIZE];// file system name buffer
 
   BOOL volInfo = GetVolumeInformation
   (
@@ -63,7 +63,7 @@ static BOOL GetVolumeName(LPCSTR rootDirectory, CString& volumeName)
   return volInfo;
 }
 
-static LPCSTR MakeVolumeLabel(LPCSTR rootDirectory, CString& volumeLabel)
+static LPCTSTR MakeVolumeLabel(LPCTSTR rootDirectory, CString& volumeLabel)
 {
   volumeLabel = rootDirectory;
   volumeLabel.TrimRight('\\');
@@ -71,7 +71,7 @@ static LPCSTR MakeVolumeLabel(LPCSTR rootDirectory, CString& volumeLabel)
   CString volumeName;
   if (GetVolumeName(rootDirectory, volumeName))
   {
-    volumeLabel += "   ";
+    volumeLabel += _T("   ");
     volumeLabel += volumeName;
   }
   return volumeLabel;
@@ -266,20 +266,20 @@ DirTreeView::DisplayDrivers(BOOL force, BOOL curOnly)
     }
     m_drivesCBox.SetRedraw(FALSE);
     m_drivesCBox.ResetContent();
-    char  szDrives[2 * 1024];
-    char* pDrive;
+    TCHAR  szDrives[2 * 1024];
+    LPTSTR pDrive;
 
     if (curOnly)
     {
       _CHECK_AND_THROW_(m_curDrivePath.GetLength() < sizeof(szDrives) - 2,
-                       "Current drive path is too long.");
+                        _T("Current drive path is too long."));
       memset(szDrives, 0, sizeof(szDrives));
-      memcpy(szDrives, (LPCSTR)m_curDrivePath, m_curDrivePath.GetLength());
+      memcpy(szDrives, (LPCTSTR)m_curDrivePath, m_curDrivePath.GetLength());
     }
     else
     {
       _CHECK_AND_THROW_(GetLogicalDriveStrings(sizeof(szDrives), szDrives),
-                        "Cannot get logical drive strings.");
+                       _T("Cannot get logical drive strings."));
     }
 
     m_driverPaths.RemoveAll();
@@ -288,12 +288,12 @@ DirTreeView::DisplayDrivers(BOOL force, BOOL curOnly)
     memset(&item, 0, sizeof(item));
     item.mask = CBEIF_TEXT;
 
-    for (pDrive = szDrives; *pDrive; pDrive += strlen(pDrive) + 1, item.iItem++)
+    for (pDrive = szDrives; *pDrive; pDrive += _tcslen(pDrive) + 1, item.iItem++)
     {
       m_driverPaths.Add(pDrive);
 
       CString volumeLabel;
-      item.pszText = (LPSTR)MakeVolumeLabel(pDrive, volumeLabel);
+      item.pszText = (LPTSTR)MakeVolumeLabel(pDrive, volumeLabel);
 
       SHFILEINFO shFinfo;
       if (SHGetFileInfo(pDrive, 0, &shFinfo, sizeof(shFinfo), SHGFI_ICON | SHGFI_SMALLICON))
@@ -338,7 +338,7 @@ DirTreeView::SelectDrive(const CString& path, BOOL force)
         if (!force && !GetVolumeName(path, volumeName))
         {
           CString message;
-          message.Format("Cannot select drive \"%s\". Drive/device is not available.", (LPCSTR)path);
+          message.Format(_T("Cannot select drive \"%s\". Drive/device is not available."), (LPCTSTR)path);
           AfxMessageBox(message, MB_OK | MB_ICONSTOP);
           SelectDrive(m_curDrivePath, TRUE);
         }
@@ -354,7 +354,7 @@ DirTreeView::SelectDrive(const CString& path, BOOL force)
           catch (CWinException* x)
           {
             CString message;
-            message.Format("Cannot select drive \"%s\". %s", (LPCSTR)path, (LPCSTR)*x);
+            message.Format(_T("Cannot select drive \"%s\". %s"), (LPCTSTR)path, (LPCTSTR)*x);
             AfxMessageBox(message, MB_OK | MB_ICONSTOP);
           }
         }
@@ -598,7 +598,7 @@ DirTreeView::OnExplorerTree_RClick(NMHDR*, LRESULT* pResult)
     {
       pPopup->SetDefaultItem(ID_FPW_OPEN);
     }
-    pPopup->ModifyMenu(ID_FPW_OPEN, MF_BYCOMMAND, ID_FPW_OPEN, !isFolder ? "Open File\tDblClick" : "Open File Dalog...\tCtrl+DblClick");
+    pPopup->ModifyMenu(ID_FPW_OPEN, MF_BYCOMMAND, ID_FPW_OPEN, !isFolder ? _T("Open File\tDblClick") : _T("Open File Dalog...\tCtrl+DblClick"));
     pPopup->EnableMenuItem(ID_FPW_REFRESH, isFolder ? MF_BYCOMMAND | MF_ENABLED : MF_BYCOMMAND | MF_GRAYED);
 
     pPopup->RemoveMenu(2, MF_BYPOSITION);
@@ -653,7 +653,7 @@ DirTreeView::OnFpwOpen()
       // 31.03.2003 bug fix, Attempt to open File dialog for a specified folder in File explorer fails 
       //                     if any file already open from another location
       AfxGetApp()->OnCmdMsg(ID_FILE_OPEN, 0, 0, 0);
-      CDocManagerExt::SetFileOpenPath("");
+      CDocManagerExt::SetFileOpenPath(_T(""));
     }
   }
 }
@@ -743,7 +743,7 @@ DirTreeView::OnTooltipNotify(UINT wnd, NMHDR* tooltip, LRESULT* res)
   ((TOOLTIPTEXT*)tooltip)->szText[0] = 0;
   if (wnd == (UINT)(DWORD_PTR)m_filterCBox.m_hWnd)
   {
-    strcpy_s(((TOOLTIPTEXT*)tooltip)->szText,80,"Filter for extensions of files in the explorer");
+    _tcscpy_s(((TOOLTIPTEXT*)tooltip)->szText,80,_T("Filter for extensions of files in the explorer"));
     return (BOOL)(*res = true);
   }
   return (BOOL)(*res = false);

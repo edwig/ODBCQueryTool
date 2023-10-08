@@ -344,7 +344,7 @@ StyleEdit::GetWindowNumber()
   // and not the one from CEdit
   CString text;
   GetWindowText(text);
-  return atoi(text);
+  return _ttoi(text);
 }
 
 int
@@ -352,7 +352,7 @@ StyleEdit::GetWindowText(LPTSTR lpszStringBuf, int p_maxCount) const
 {
   CString string;
   StyleEdit::GetWindowText(string);
-  strncpy_s(lpszStringBuf,p_maxCount,string.GetString(),p_maxCount);
+  _tcsncpy_s(lpszStringBuf,p_maxCount,string.GetString(),p_maxCount);
 
   if(string.GetLength() > p_maxCount)
   {
@@ -393,7 +393,7 @@ void
 StyleEdit::SetWindowNumber(int p_number)
 {
   CString number;
-  number.Format("%d",p_number);
+  number.Format(_T("%d"),p_number);
   CEdit::SetWindowText(number);
   m_empty = false;
   Invalidate();
@@ -405,7 +405,7 @@ StyleEdit::SetWindowText(LPTSTR lpszStringBuf)
   CEdit::SetWindowText(lpszStringBuf);
   if(!m_emptyText.IsEmpty())
   {
-    m_empty = strlen(lpszStringBuf) == 0;
+    m_empty = _tcslen(lpszStringBuf) == 0;
     if (m_empty)
     {
       CEdit::SetWindowText(m_emptyText);
@@ -431,7 +431,7 @@ StyleEdit::SetWindowText(CString p_string)
 }
 
 void 
-StyleEdit::InsertAtCurPos(const char* p_string,int p_offset)
+StyleEdit::InsertAtCurPos(LPCTSTR p_string,int p_offset)
 {
   CString text;
   GetWindowText(text);
@@ -443,7 +443,7 @@ StyleEdit::InsertAtCurPos(const char* p_string,int p_offset)
   text.Insert(m_startChar,p_string);
   SetWindowText(text);
 
-  int pos = m_startChar + ((p_offset != -1) ? p_offset : (int)strlen(p_string));
+  int pos = m_startChar + ((p_offset != -1) ? p_offset : (int)_tcslen(p_string));
 
   SetWindowText(text);
   SetFocus();
@@ -534,7 +534,7 @@ StyleEdit::OnChar(UINT p_char,UINT p_repetitions,UINT p_flags)
     if(m_password)
     {
       // Hide empty text and start a password
-      CEdit::SetWindowText("");
+      CEdit::SetWindowText(_T(""));
       SendMessage(EM_SETPASSWORDCHAR,(WPARAM)EDIT_PASSWORD_CHAR,0);
     }
     else if(!m_emptyText.IsEmpty())
@@ -542,7 +542,7 @@ StyleEdit::OnChar(UINT p_char,UINT p_repetitions,UINT p_flags)
       CEdit::GetWindowText(text);
       if(text.Compare(m_emptyText) == 0)
       {
-        CEdit::SetWindowText("");
+        CEdit::SetWindowText(_T(""));
       }
     }
     m_empty = false;
@@ -960,7 +960,7 @@ StyleEdit::OnLButtonDown(UINT nFlags, CPoint point)
       CEdit::GetWindowText(text);
       if(!m_emptyText.IsEmpty() && text.CompareNoCase(m_emptyText) == 0)
       {
-        CEdit::SetWindowText("");
+        CEdit::SetWindowText(_T(""));
         SendMessage(EM_SETPASSWORDCHAR,0,0);
       }
     }
@@ -1048,7 +1048,7 @@ StyleEdit::OnSetfocus()
   m_focus = TRUE;
   if(m_empty)
   {
-    CEdit::SetWindowText("");
+    CEdit::SetWindowText(_T(""));
     SetSel(0,0,TRUE);
     Invalidate();
   }
@@ -1142,7 +1142,7 @@ StyleEdit::OnDoubleClick(WPARAM wParam, LPARAM lParam)
       SetEmpty(false);
     }
     CEdit::SetWindowText(date);
-    SetErrorState(false,"");
+    SetErrorState(false,_T(""));
     Invalidate();
     // Set-off the content checks by sending a KILLFOCUS notify
     CWnd* dialog = GetSkin() ? GetSkin()->GetParent() : GetParent();
@@ -1226,7 +1226,7 @@ StyleEdit::ResetFont()
   lgFont.lfCharSet        = m_language;
   lgFont.lfClipPrecision  = 0;
   lgFont.lfEscapement     = 0;
-  strcpy_s(lgFont.lfFaceName,LF_FACESIZE,m_fontName);
+  _tcscpy_s(lgFont.lfFaceName,LF_FACESIZE,m_fontName);
   lgFont.lfHeight         = m_fontSize;
   lgFont.lfItalic         = m_italic;
   lgFont.lfOrientation    = 0;
@@ -1489,7 +1489,7 @@ StyleEdit::TrySelectWord()
 
 void WINAPI DDX_Control(CDataExchange* pDX,int nIDC,StyleEdit& p_editControl)
 {
-  StyleMessageBox(nullptr,"Use one of the DDX_StyleEdit functions!","ERROR",MB_OK|MB_ICONERROR);
+  StyleMessageBox(nullptr,_T("Use one of the DDX_StyleEdit functions!"),_T("ERROR"),MB_OK|MB_ICONERROR);
   // Keep on running on empty
   CString empty;
   DDX_Control(pDX,nIDC,p_editControl,empty);
@@ -1523,11 +1523,11 @@ void WINAPI DDX_Control(CDataExchange* pDX,int nIDC,StyleEdit& p_editControl,int
   if(pDX->m_bSaveAndValidate)
   {
     p_editControl.GetWindowText(text);
-    p_number = atoi(text);
+    p_number = _ttoi(text);
   }
   else
   {
-    text.Format("%d", p_number);
+    text.Format(_T("%d"), p_number);
     p_editControl.SetWindowText(text);
     if(p_editControl.GetIsPassword())
     {
@@ -1545,11 +1545,11 @@ void WINAPI DDX_Control(CDataExchange* pDX,int nIDC,StyleEdit& p_editControl,dou
   if(pDX->m_bSaveAndValidate)
   {
     p_editControl.GetWindowText(text);
-    p_number = atof(text);
+    p_number = _ttof(text);
   }
   else
   {
-    text.Format("%.2f", p_number);
+    text.Format(_T("%.2f"), p_number);
     p_editControl.SetWindowText(text);
     if(p_editControl.GetIsPassword())
     {
@@ -1606,7 +1606,7 @@ AFX_STATIC void AFXAPI StyleFailMinMaxWithFormat(CDataExchange* pDX,StyleEdit& p
 
   CString prompt;
   AfxFormatString2(prompt,nIDPrompt,szMin,szMax);
-  StyleMessageBox(&p_control,prompt,"Error",MB_OK|MB_ICONEXCLAMATION);
+  StyleMessageBox(&p_control,prompt,_T("Error"),MB_OK|MB_ICONEXCLAMATION);
   p_control.SetFocus();
 }
 
@@ -1615,7 +1615,7 @@ void AFXAPI DDV_MinMaxShort(CDataExchange* pDX,StyleEdit& p_control,short value,
   ASSERT(minVal <= maxVal);
   if(value < minVal || value > maxVal)
   {
-    StyleFailMinMaxWithFormat(pDX,p_control,minVal,maxVal,"%I64d",AFX_IDP_PARSE_INT_RANGE);
+    StyleFailMinMaxWithFormat(pDX,p_control,minVal,maxVal,_T("%I64d"),AFX_IDP_PARSE_INT_RANGE);
   }
 }
 
@@ -1624,7 +1624,7 @@ void AFXAPI DDV_MinMaxInt(CDataExchange* pDX,StyleEdit& p_control,int value,int 
   ASSERT(minVal <= maxVal);
   if(value < minVal || value > maxVal)
   {
-    StyleFailMinMaxWithFormat(pDX,p_control,minVal,maxVal,"%I64d",AFX_IDP_PARSE_INT_RANGE);
+    StyleFailMinMaxWithFormat(pDX,p_control,minVal,maxVal,_T("%I64d"),AFX_IDP_PARSE_INT_RANGE);
   }
 }
 
@@ -1633,7 +1633,7 @@ void AFXAPI DDV_MinMaxLong(CDataExchange* pDX,StyleEdit& p_control,long value,lo
   ASSERT(minVal <= maxVal);
   if(value < minVal || value > maxVal)
   {
-    StyleFailMinMaxWithFormat(pDX,p_control,minVal,maxVal,"%I64d",AFX_IDP_PARSE_INT_RANGE);
+    StyleFailMinMaxWithFormat(pDX,p_control,minVal,maxVal,_T("%I64d"),AFX_IDP_PARSE_INT_RANGE);
   }
 }
 
@@ -1642,7 +1642,7 @@ void AFXAPI DDV_MinMaxUint(CDataExchange* pDX,StyleEdit& p_control,UINT value,UI
   ASSERT(minVal <= maxVal);
   if(value < minVal || value > maxVal)
   {
-    StyleFailMinMaxWithFormat(pDX,p_control,minVal,maxVal,"%I64d",AFX_IDP_PARSE_INT_RANGE);
+    StyleFailMinMaxWithFormat(pDX,p_control,minVal,maxVal,_T("%I64d"),AFX_IDP_PARSE_INT_RANGE);
   }
 }
 
@@ -1651,7 +1651,7 @@ void AFXAPI DDV_MinMaxLongLong(CDataExchange* pDX,StyleEdit& p_control,LONGLONG 
   ASSERT(minVal <= maxVal);
   if(value < minVal || value > maxVal)
   {
-    StyleFailMinMaxWithFormat(pDX,p_control,minVal,maxVal,"%I64d",AFX_IDP_PARSE_INT_RANGE);
+    StyleFailMinMaxWithFormat(pDX,p_control,minVal,maxVal,_T("%I64d"),AFX_IDP_PARSE_INT_RANGE);
   }
 }
 
@@ -1660,6 +1660,6 @@ void AFXAPI DDV_MinMaxDouble(CDataExchange* pDX,StyleEdit& p_control,double valu
   ASSERT(minVal <= maxVal);
   if(value < minVal || value > maxVal)
   {
-    StyleFailMinMaxWithFormat(pDX,p_control,(LONGLONG)minVal,(LONGLONG)maxVal,"%I64d",AFX_IDP_PARSE_INT_RANGE);
+    StyleFailMinMaxWithFormat(pDX,p_control,(LONGLONG)minVal,(LONGLONG)maxVal,_T("%I64d"),AFX_IDP_PARSE_INT_RANGE);
   }
 }

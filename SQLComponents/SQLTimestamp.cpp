@@ -218,7 +218,7 @@ SQLTimestamp::RecalculateValue()
   int day   = m_timestamp.m_day;
 
   // Check on Gregorian definition of months
-  // Check on leapyear and days in the month
+  // Check on leap year and days in the month
   bool leapYear = ((year & 3) == 0) &&
                   ((year % 100) != 0 || (year % 400) == 0);
 
@@ -229,13 +229,13 @@ SQLTimestamp::RecalculateValue()
   {
     SetNull();
     XString error;
-    error.Format("Day of the month must be between 1 and %ld inclusive.",daysInMonth);
+    error.Format(_T("Day of the month must be between 1 and %ld inclusive."),daysInMonth);
     throw StdException(error);
   }
   // Calculate the Astronomical Julian Day Number (JD)
   // Method P.D-Smith: Practical Astronomy
   // Page 9: Paragraph 4: Julian day numbers.
-  // See alsoo: Robin M. Green: Spherical Astronomy, page 250
+  // See also: Robin M. Green: Spherical Astronomy, page 250
   if(month < 3)
   {
     month += 12;
@@ -315,32 +315,32 @@ SQLTimestamp::Validate()
   if (m_timestamp.m_year <= 0 || m_timestamp.m_year >= 10000)
   {
     SetNull();
-    throw StdException("Year must be between 1 and 9999 inclusive.");
+    throw StdException(_T("Year must be between 1 and 9999 inclusive."));
   }
   if (m_timestamp.m_month <= 0 || m_timestamp.m_month >= 13)
   {
     SetNull();
-    throw StdException("Month must be between 1 and 12 inclusive.");
+    throw StdException(_T("Month must be between 1 and 12 inclusive."));
   }
   if (m_timestamp.m_hour < 0 || m_timestamp.m_hour >= 24)
   {
     SetNull();
-    throw StdException("Hour must be between 0 and 23 inclusive.");
+    throw StdException(_T("Hour must be between 0 and 23 inclusive."));
   }
   if (m_timestamp.m_minute < 0 || m_timestamp.m_minute >= 60)
   {
     SetNull();
-    throw StdException("Minute must be between 0 and 59 inclusive.");
+    throw StdException(_T("Minute must be between 0 and 59 inclusive."));
   }
   if (m_timestamp.m_second < 0 || m_timestamp.m_second >= 62)
   {
     SetNull();
-    throw StdException("Number of seconds must be between 0 and 61 inclusive.");
+    throw StdException(_T("Number of seconds must be between 0 and 61 inclusive."));
   }
   if (m_fraction < 0 || m_fraction > NANOSECONDS_PER_SEC)
   {
     SetNull();
-    throw StdException("Fraction of seconds must be between 0 and 999,999,999");
+    throw StdException(_T("Fraction of seconds must be between 0 and 999,999,999"));
   }
 }
 
@@ -458,7 +458,7 @@ SQLTimestamp::WeekDayName(Language p_lang /*=LN_DEFAULT*/) const
 }
 
 // Name of the month in a language by your choice
-// Returns an emtpy string for a NULL timestamp
+// Returns an empty string for a NULL timestamp
 XString
 SQLTimestamp::MonthName(Language p_lang /*=LN_DEFAULT*/) const
 {
@@ -477,7 +477,7 @@ SQLTimestamp::MonthName(Language p_lang /*=LN_DEFAULT*/) const
       }
     }
   }
-  return "";
+  return _T("");
 }
 
 SQLTimestamp
@@ -531,7 +531,7 @@ SQLTimestamp::DaysInMonth(int p_year,int p_month) const
   if(Valid())
   {
     bool leapYear = ((p_year & 3) == 0) && // if (year & 3) == 0 then the year can be divided
-                    ((p_year % 100) != 0 || (p_year % 400) == 0);  // by 4 (binairy).
+                    ((p_year % 100) != 0 || (p_year % 400) == 0);  // by 4 (binary).
 
     return g_daysInTheMonth[p_month] - g_daysInTheMonth[p_month-1] +
                         ((leapYear && p_month == 2) ? 1 : 0);
@@ -678,10 +678,10 @@ SQLTimestamp::ParseMoment(const XString& p_string)
 {
   XString string(p_string);
   StampStorage temp;
-  XString currentDate = "";
-  XString sign		    = "";
-  XString extraTime   = "";
-  int     interval    = 0;
+  XString currentDate;
+  XString sign;
+  XString extraTime;
+  int interval = 0;
 
   // Trim spaces from string
   string.Trim();
@@ -712,7 +712,7 @@ SQLTimestamp::ParseMoment(const XString& p_string)
       {
         // Extra time definition not recognized
         XString error;
-        error.Format("Extra timestamp not recognized: %d %s",interval,extraTime.GetString());
+        error.Format(_T("Extra timestamp not recognized: %d %s"),interval,extraTime.GetString());
         throw StdException(error);
       }
       *this = CurrentTimestamp();
@@ -729,7 +729,7 @@ SQLTimestamp::ParseMoment(const XString& p_string)
       {
         // Extra time definition not recognized
         XString error;
-        error.Format("Extra date not recognized: %d %s",interval,extraTime.GetString());
+        error.Format(_T("Extra date not recognized: %d %s"),interval,extraTime.GetString());
         throw StdException(error);
       }
       *this = SQLDate::Today();
@@ -775,7 +775,7 @@ SQLTimestamp::ParseMoment(const XString& p_string)
     return;  
   }
   
-  // Check for a date with a monthname
+  // Check for a date with a month name
   if(ParseNamedDate(p_string))
   {
     return;
@@ -807,7 +807,7 @@ SQLTimestamp::ParseMoment(const XString& p_string)
       CString fraction = timeString.Mid(frac + 1);
       while(fraction.GetLength() < 9) fraction += '0';
       if (fraction.GetLength() > 9) fraction = fraction.Left(9);
-      m_fraction = atoi(fraction);
+      m_fraction = _ttoi(fraction);
     }
 
     return;
@@ -815,7 +815,7 @@ SQLTimestamp::ParseMoment(const XString& p_string)
   // See if we have a time only
   if(p_string.Find(':') > 0)
   {
-    // It is a timestring for today
+    // It is a time string for today
     SQLDate date(SQLDate::Today());
     SQLTime time(p_string);
     SetTimestamp(date.Year(),date.Month(), date.Day(),
@@ -829,7 +829,7 @@ SQLTimestamp::ParseMoment(const XString& p_string)
                time.Hour(),time.Minute(),time.Second());
 }
 
-// Named timestamp with short or long monthnames
+// Named timestamp with short or long month names
 bool
 SQLTimestamp::ParseNamedDate(const XString& p_string)
 {
@@ -845,10 +845,10 @@ SQLTimestamp::ParseNamedDate(const XString& p_string)
   }
   if(alpha == false)
   {
-    // No named monthname to find
+    // No named month name to find
     return result;
   }
-  // Find the timestring (if any)
+  // Find the time string (if any)
   int pos = p_string.Find(':');
   if(pos > 0)
   {
@@ -893,7 +893,7 @@ SQLTimestamp::AsString(int p_precision /*=0*/) const
   XString theStamp;
   if(IsNull() == false)
   {
-    theStamp.Format("%02d-%02d-%04d %02d:%02d:%02d"
+    theStamp.Format(_T("%02d-%02d-%04d %02d:%02d:%02d")
                     ,Day(),Month(), Year()
                     ,Hour(),Minute(),Second());
     if(m_fraction && p_precision)
@@ -910,7 +910,7 @@ SQLTimestamp::AsXMLString(int p_precision /*=0*/) const
   XString theStamp;
   if(IsNull() == false)
   {
-    theStamp.Format("%04d-%02d-%02dT%02d:%02d:%02d"
+    theStamp.Format(_T("%04d-%02d-%02dT%02d:%02d:%02d")
                     ,Year(),Month(), Day()
                     ,Hour(),Minute(),Second());
     if(m_fraction && p_precision)
@@ -930,7 +930,7 @@ SQLTimestamp::AsXMLStringUTC(int p_precision /*=0*/) const
     SQLTimestamp stamp(*this);
     stamp = stamp - g_sql_timezone;
 
-    theStamp.Format("%04d-%02d-%02dT%02d:%02d:%02d"
+    theStamp.Format(_T("%04d-%02d-%02dT%02d:%02d:%02d")
                     ,stamp.Year(),stamp.Month(), stamp.Day()
                     ,stamp.Hour(),stamp.Minute(),stamp.Second());
     if(m_fraction && p_precision)
@@ -949,7 +949,7 @@ SQLTimestamp::AsXMLStringTZ(int p_precision /*=0*/) const
   CString theStamp;
   if (IsNull() == false)
   {
-    theStamp.Format("%04d-%02d-%02dT%02d:%02d:%02d"
+    theStamp.Format(_T("%04d-%02d-%02dT%02d:%02d:%02d")
                     ,Year(),Month(), Day()
                     ,Hour(),Minute(),Second());
     if (m_fraction && p_precision)
@@ -959,8 +959,8 @@ SQLTimestamp::AsXMLStringTZ(int p_precision /*=0*/) const
     // Mark as UTC difference
     if (g_sql_timezone_hour || g_sql_timezone_minute )
     {
-      theStamp += g_west_of_greenwich ? "+" : "-";
-      theStamp.AppendFormat("%2.2d:%2.2d", g_sql_timezone_hour, g_sql_timezone_minute);
+      theStamp += g_west_of_greenwich ? _T("+") : _T("-");
+      theStamp.AppendFormat(_T("%2.2d:%2.2d"),g_sql_timezone_hour,g_sql_timezone_minute);
     }
   }
   return theStamp;
@@ -1013,11 +1013,11 @@ SQLTimestamp::GetVirtualMoment(XString        p_sign
   SQLTimestamp mom(CurrentTimestamp());
   if (!p_sign.IsEmpty())
   {
-    int factor = (p_sign == "+") ? 1 : -1;
-    if (p_sign == "+" || p_sign == "-")
+    int factor = (p_sign == _T("+")) ? 1 : -1;
+    if (p_sign == _T("+") || p_sign == _T("-"))
     {
       p_extraTime.MakeUpper();
-      if (p_extraTime == "" )      
+      if (p_extraTime == _T(""))
       {
         return false;
       }
@@ -1086,7 +1086,7 @@ SQLTimestamp::PrintFraction(int p_precision) const
     // Maximum precision is nanosecond resolution
     if(p_precision > 9) p_precision = 9;
     double fraction = (double)m_fraction / (double)NANOSECONDS_PER_SEC;
-    fract.Format("%.*f",p_precision,fraction);
+    fract.Format(_T("%.*f"),p_precision,fraction);
     // Do not use the prefix '0' (zero)
     return fract.Mid(1);
   }
@@ -1179,7 +1179,7 @@ SQLTimestamp::operator+(const SQLInterval& p_interval) const
   // Check on correct ordinal interval type
   if(p_interval.GetIsYearMonthType())
   {
-    throw StdException("Cannot add a year-month interval to a timestamp");
+    throw StdException(_T("Cannot add a year-month interval to a timestamp"));
   }
   // Do the calculation
   int sign = p_interval.GetIsNegative() ? -1 : 1;
@@ -1201,7 +1201,7 @@ SQLTimestamp::operator-(const SQLInterval& p_interval) const
   // Check on correct ordinal interval type
   if(p_interval.GetIsYearMonthType())
   {
-    throw StdException("Cannot subtract a year-month interval from a timestamp");
+    throw StdException(_T("Cannot subtract a year-month interval from a timestamp"));
   }
   // Do the calculation
   int sign = p_interval.GetIsNegative() ? -1 : 1;

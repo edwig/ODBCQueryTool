@@ -26,18 +26,14 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define OESMS_WRITE_MEMBER(o,p) m_out.write(#p, o.m_##p);
-#define OESMS_READ_MEMBER(o,p,b) m_in.read(#p, o.m_##p,b);
+#define OESMS_WRITE_MEMBER(o,p) m_out.write(_T(#p), o.m_##p);
+#define OESMS_READ_MEMBER(o,p,b) m_in.read (_T(#p), o.m_##p,b);
 #define OESMS_VER_READ_MEMBER(ver,o,p,def)  \
-    if (m_version >= ver) m_in.read(#p, o.m_##p); \
+    if (m_version >= ver) m_in.read(_T(#p), o.m_##p); \
     else o.m_##p = def;
 
 namespace OpenEditor
 {
-    using std::hex;
-    using std::dec;
-    using std::endl;
-    using std::getline;
     using namespace Common;
 
     const int TheSettingsVersion = 1018;
@@ -50,7 +46,7 @@ namespace OpenEditor
 
 void SettingsManagerWriter::operator << (const SettingsManager& mgr)
 {
-    m_out.write("Version", TheSettingsVersion);
+    m_out.write(_T("Version"), TheSettingsVersion);
 
     const GlobalSettings& settings = mgr.GetGlobalSettings();
 
@@ -122,9 +118,9 @@ void SettingsManagerWriter::operator << (const SettingsManager& mgr)
     OESMS_WRITE_MEMBER(settings, PrintBottomMargin);
 
     int count = mgr.GetClassCount();
-    m_out.write("Classes", count);
+    m_out.write(_T("Classes"), count);
 
-    Stream::Section sect(m_out, "Cls");
+    Stream::Section sect(m_out, _T("Cls"));
     for (int i(0); i < count; i++)
     {
         Stream::Section sect2(m_out, i);
@@ -137,14 +133,14 @@ void SettingsManagerWriter::operator << (const SettingsManager& mgr)
 void SettingsManagerReader::operator >> (SettingsManager& mgr)
 {
     m_version = 0;
-    m_in.read("Version", m_version);
+    m_in.read(_T("Version"), m_version);
 
-    _CHECK_AND_THROW_(m_version >= 1011 && m_version <= TheSettingsVersion, "Unsupported settings version!");
+    _CHECK_AND_THROW_(m_version >= 1011 && m_version <= TheSettingsVersion, _T("Unsupported settings version!"));
 
     GlobalSettings& settings = mgr.GetGlobalSettings();
 
-    OESMS_VER_READ_MEMBER(1013, settings, Locale, "English");
-    OESMS_VER_READ_MEMBER(1013, settings, KeymapLayout, "Default");
+    OESMS_VER_READ_MEMBER(1013, settings, Locale,       _T("English"));
+    OESMS_VER_READ_MEMBER(1013, settings, KeymapLayout, _T("Default"));
 
     OESMS_READ_MEMBER(settings, AllowMultipleInstances,false);
     OESMS_READ_MEMBER(settings, NewDocOnStartup,false);
@@ -183,7 +179,7 @@ void SettingsManagerReader::operator >> (SettingsManager& mgr)
     OESMS_READ_MEMBER(settings, SQLCharsetUsed,true);
 
     OESMS_READ_MEMBER(settings, PreferODBCMetaSQL,false);
-    OESMS_VER_READ_MEMBER(1013, settings, DefFileExtension, "sql");
+    OESMS_VER_READ_MEMBER(1013, settings, DefFileExtension, _T("sql"));
     OESMS_READ_MEMBER(settings, UndoLimit,false);
     OESMS_VER_READ_MEMBER(1013, settings, UndoMemLimit, 1000);
     OESMS_READ_MEMBER(settings, UndoAfterSaving,false);
@@ -192,7 +188,7 @@ void SettingsManagerReader::operator >> (SettingsManager& mgr)
     if (m_version < 1018)
     {
         bool virtualSpace = false;
-        m_in.read("VirtualSpace", virtualSpace);
+        m_in.read(_T("VirtualSpace"), virtualSpace);
         settings.m_CursorBeyondEOL = 
         settings.m_CursorBeyondEOF = virtualSpace;
     }
@@ -210,7 +206,7 @@ void SettingsManagerReader::operator >> (SettingsManager& mgr)
     OESMS_READ_MEMBER(settings, BlockTabIndent,false);
     OESMS_READ_MEMBER(settings, ColBlockDeleteSpaceAfterMove,false);
     OESMS_READ_MEMBER(settings, ColBlockCursorToStartAfterPaste,false);
-    OESMS_VER_READ_MEMBER(1016, settings, MouseSelectionDelimiters, "");
+    OESMS_VER_READ_MEMBER(1016, settings, MouseSelectionDelimiters, _T(""));
 
     OESMS_READ_MEMBER(settings, PrintBlackAndWhite,false);
     OESMS_READ_MEMBER(settings, PrintHeader,false);
@@ -222,11 +218,11 @@ void SettingsManagerReader::operator >> (SettingsManager& mgr)
     OESMS_READ_MEMBER(settings, PrintBottomMargin,false);
 
     int count = 0;
-    m_in.read("Classes", count);
+    m_in.read(_T("Classes"), count);
     mgr.m_classSettingsVector.clear();
     mgr.m_classSettingsVector.reserve(count);
 
-    Stream::Section sect(m_in, "Cls");
+    Stream::Section sect(m_in, _T("Cls"));
     for (int i(0); i < count; i++)
     {
         ClassSettingsPtr classSettingsPtr(new ClassSettings(mgr));
@@ -281,17 +277,17 @@ void SettingsManagerReader::read  (ClassSettings& settings)
     read(settings.GetVisualAttributesSet());
 
     if (m_version < 1017
-    && settings.GetName() == "SQL")
+    && settings.GetName() == _T("SQL"))
     {
         VisualAttributesSet& set_ = settings.GetVisualAttributesSet();
         try 
         {
-            set_.FindByName("Other Keywords");
+            set_.FindByName(_T("Other Keywords"));
         }
         catch (const std::out_of_range&)
         {
             VisualAttribute attr;
-            attr.m_Name       = "Other Keywords";
+            attr.m_Name       = _T("Other Keywords");
             attr.m_Mask       = vaoFontBold|vaoFontItalic|vaoFontUnderline|vaoForeground;
             attr.m_FontBold   = true;
             attr.m_Foreground = 0xC00000;
@@ -303,11 +299,11 @@ void SettingsManagerReader::read  (ClassSettings& settings)
 
 void SettingsManagerWriter::write (const VisualAttributesSet& set_)
 {
-    Stream::Section sect(m_out, "VA");
-    m_out.write("Name", set_.GetName());
+    Stream::Section sect(m_out, _T("VA"));
+    m_out.write(_T("Name"), set_.GetName());
 
     int count = set_.GetCount();
-    m_out.write("Count", count);
+    m_out.write(_T("Count"), count);
 
     for (int i(0); i < count; i++)
     {
@@ -319,14 +315,14 @@ void SettingsManagerWriter::write (const VisualAttributesSet& set_)
 
 void SettingsManagerReader::read  (VisualAttributesSet& set_)
 {
-    Stream::Section sect(m_in, "VA");
+    Stream::Section sect(m_in, _T("VA"));
 
     CString setName;
-    m_in.read("Name", setName);
+    m_in.read(_T("Name"), setName);
     set_.SetName(setName);
 
     int count = 0;
-    m_in.read("Count", count);
+    m_in.read(_T("Count"), count);
     set_.Clear();
 
     for (int i(0); i < count; i++)
@@ -336,9 +332,9 @@ void SettingsManagerReader::read  (VisualAttributesSet& set_)
         read(attr);
         set_.Add(attr);
 
-        if (m_version <= 1003 && attr.m_Name == "Selected Text")
+        if (m_version <= 1003 && attr.m_Name == _T("Selected Text"))
         {
-            attr.m_Name = "Current Line";
+            attr.m_Name = _T("Current Line");
             attr.m_Mask = Common::vaoBackground;
             attr.m_Background = RGB(255,255,127);
             set_.Add(attr);

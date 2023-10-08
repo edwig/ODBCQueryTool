@@ -34,7 +34,7 @@ static char THIS_FILE[]=__FILE__;
 
 namespace Common 
 {
-    void to_printable_str (const char* from, CString& _to)
+    void to_printable_str (LPCTSTR from, CString& _to)
     {
         CString to;
 
@@ -42,27 +42,29 @@ namespace Common
         {
             switch (*from)
             {
-            case '\a': to += "\\a";  break; // \a Bell (alert) 
-            case '\b': to += "\\b";  break; // \b Backspace 
-            case '\f': to += "\\f";  break; // \f Formfeed 
-            case '\n': to += "\\n";  break; // \n New line 
-            case '\r': to += "\\r";  break; // \r Carriage return 
-            case '\t': to += "\\t";  break; // \t Horizontal tab 
-            case '\v': to += "\\v";  break; // \v Vertical tab 
-//            case '\'': to += "\'";   break; // \' Single quotation mark 
-//            case '\"': to += "\"";   break; // \" Double quotation mark 
-            case '\\': to += "\\\\"; break; // \\ Backslash 
-//            case '\?': to += "\?";   break; // \? Literal question mark 
+            case '\a': to += _T("\\a");  break; // \a Bell (alert) 
+            case '\b': to += _T("\\b");  break; // \b Backspace 
+            case '\f': to += _T("\\f");  break; // \f Form Feed 
+            case '\n': to += _T("\\n");  break; // \n New line 
+            case '\r': to += _T("\\r");  break; // \r Carriage return 
+            case '\t': to += _T("\\t");  break; // \t Horizontal tab 
+            case '\v': to += _T("\\v");  break; // \v Vertical tab 
+//          case '\'': to += _T("\'");   break; // \' Single quotation mark 
+//          case '\"': to += _T("\"");   break; // \" Double quotation mark 
+            case '\\': to += _T("\\\\"); break; // \\ Backslash 
+//          case '\?': to += _T("\?");   break; // \? Literal question mark 
             default:
                 if (isprint(*from))
-                    to += (char)*from;
+                    to += (TCHAR)*from;
                 else // \ddd ASCII character in decimal notation
                 {
-                    char buff[20];
+                    TCHAR buff[20];
                     to += "\\";
-                    _itoa_s(*from,buff,20, 10);
-                    for (int j(0), len(3 - (int)strlen(buff)); j < len; j++)
-                        to += '0';
+                    _itot_s(*from,buff,20, 10);
+                    for(int j(0),len(3 - (int) _tcslen(buff)); j < len; j++)
+                    {
+                      to += '0';
+                    }
                     to += buff;
                 }
             }
@@ -70,13 +72,13 @@ namespace Common
         _to = to;
     }
 
-    void to_unprintable_str (const char* from, CString& _to, bool skipEscDgt)
+    void to_unprintable_str (LPCTSTR from, CString& _to, bool skipEscDgt)
     {
         CString to;
 
         for (; *from; from++)
         {
-            unsigned char ch = *from;
+            _TUCHAR ch = *from;
 
             if (*from == '\\')
             {
@@ -96,19 +98,23 @@ namespace Common
                 default:
                     if (!skipEscDgt)
                     {
-                        char digits[4];
+                        TCHAR digits[4];
                         int j;
-                        for (j = 0; j < 3 && isdigit(from[j+1]); j++)
-                            digits[j] = from[j+1];
+                        for(j = 0; j < 3 && isdigit(from[j + 1]); j++)
+                        {
+                          digits[j] = from[j + 1];
+                        }
                 
                         if (j > 0)
                         {
                             digits[j] = 0;
-                            ch = static_cast<char>(static_cast<unsigned>(atoi(digits)));
+                            ch = static_cast<TCHAR>(static_cast<unsigned>(_ttoi(digits)));
                             from += j; 
                         }
                         else
-                            _ASSERTE(0);
+                        {
+                          _ASSERTE(0);
+                        }
                     }
                 }
             }
@@ -117,7 +123,7 @@ namespace Common
         _to = to;
     }
 
-    void trim_symmetric (CString& str, const char* skip)
+    void trim_symmetric (CString& str, LPCTSTR skip)
     {
       if(!str.IsEmpty())
       {
@@ -129,48 +135,52 @@ namespace Common
 
     void Substitutor::ResetContent ()
     {
-        m_result.erase();
+        m_result.Empty();
         m_whatFind.clear(); 
         m_withReplace.clear();
     }
 
-    void Substitutor::AddPair (const char* find, const char* replace)
+    void Substitutor::AddPair (LPCTSTR find, LPCTSTR replace)
     {
         m_whatFind.push_back(find); 
         m_withReplace.push_back(replace);
     }
 
-    void Substitutor::AddPair (const string& find, const string& replace)
+    void Substitutor::AddPair (const CString& find, const CString& replace)
     {
         m_whatFind.push_back(find); 
         m_withReplace.push_back(replace);
     }
 
-    Substitutor& Substitutor::operator << (const char* input)
+    Substitutor& Substitutor::operator << (LPCTSTR input)
     {
         Fastmap<bool> fast_map;
 
-        std::vector<string>::const_iterator 
+        std::vector<CString>::const_iterator 
             it(m_whatFind.begin()), end(m_whatFind.end());
 
         if (m_casesensitive)
         {
-            for (; it != end; it++)
-                fast_map[(*it)[0]] = true;
+          for(; it != end; it++)
+          {
+            fast_map[(int) (*it).GetAt(0)] = true;
+          }
         }
         else
         {
-            for (; it != end; it++)
-                fast_map[static_cast<unsigned char>(toupper((*it)[0]))] = true;
+          for(; it != end; it++)
+          {
+            fast_map[(int) toupper((*it).GetAt(0))] = true;
+          }
         }
 
-        const char* chunk_begin = input;
-        const char* chunk_end   = input;
+        LPCTSTR chunk_begin = input;
+        LPCTSTR chunk_end   = input;
 
         while (*chunk_end)
         {
-            if (m_casesensitive && fast_map[*chunk_end]
-            || (!m_casesensitive && fast_map[static_cast<unsigned char>(toupper(*chunk_end))])) 
+            if (m_casesensitive  && fast_map[(int)*chunk_end]
+            || (!m_casesensitive && fast_map[(int)toupper(*chunk_end)]))
             {
                 bool hit = false;
                 it = m_whatFind.begin();
@@ -178,10 +188,10 @@ namespace Common
                 int i;
                 for (i = 0; it != end; it++, i++) 
                 {
-                    const string& str = (*it);
+                    const CString& str = (*it);
 
-                    if ((m_casesensitive && !strncmp(chunk_end, str.c_str(), str.size()))
-                    || (!m_casesensitive && !_strnicmp(chunk_end, str.c_str(), str.size())))
+                    if ((m_casesensitive && !_tcsncmp (chunk_end, str.GetString(), str.GetLength()))
+                    || (!m_casesensitive && !_tcsnicmp(chunk_end, str.GetString(), str.GetLength())))
                     {
                         hit = true;
                         break;
@@ -190,9 +200,9 @@ namespace Common
 
                 if (hit)
                 {
-                    m_result.append(chunk_begin, chunk_end - chunk_begin);
-                    m_result.append(m_withReplace[i].c_str(), m_withReplace[i].size());
-                    chunk_end  += m_whatFind[i].size();
+                    m_result.Append(chunk_begin, (int)(chunk_end - chunk_begin));
+                    m_result.Append(m_withReplace[i].GetString(), m_withReplace[i].GetLength());
+                    chunk_end  += m_whatFind[i].GetLength();
                     chunk_begin = chunk_end;
                     continue;
                 }
@@ -200,63 +210,66 @@ namespace Common
             chunk_end++;
         }
 
-        m_result.append(chunk_begin);
+        m_result.Append(chunk_begin);
 
         return *this;
     }
 
-    void date_c_to_oracle (const char* from, string& to)
+    void date_c_to_oracle (LPCTSTR from,CString& to)
     {
         Common::Substitutor subst;
-        subst.AddPair("%d", "dd"  );
-        subst.AddPair("%m", "mm"  );
-        subst.AddPair("%B", "month" );
-        subst.AddPair("%b", "mon" );
-        subst.AddPair("%Y", "yyyy");
-        subst.AddPair("%y", "yy"  );
-        subst.AddPair("%H", "hh24");
-        subst.AddPair("%I", "hh12");
-        subst.AddPair("%p", "am"  );
-        subst.AddPair("%M", "mi"  );
-        subst.AddPair("%S", "ss"  );
+        subst.AddPair(_T("%d"), _T("dd"  ));
+        subst.AddPair(_T("%m"), _T("mm"  ));
+        subst.AddPair(_T("%B"), _T("month"));
+        subst.AddPair(_T("%b"), _T("mon" ));
+        subst.AddPair(_T("%Y"), _T("yyyy"));
+        subst.AddPair(_T("%y"), _T("yy"  ));
+        subst.AddPair(_T("%H"), _T("hh24"));
+        subst.AddPair(_T("%I"), _T("hh12"));
+        subst.AddPair(_T("%p"), _T("am"  ));
+        subst.AddPair(_T("%M"), _T("mi"  ));
+        subst.AddPair(_T("%S"), _T("ss"  ));
         subst << from;
         to = subst.GetResult();
     }
 
-    void date_oracle_to_c (const char* from, string& to)
+    void date_oracle_to_c (LPCTSTR from, CString& to)
     {
         Common::Substitutor subst(false);
-        subst.AddPair("dd"  , "%d");
-        subst.AddPair("mm"  , "%m");
-         // 31.03.2003 bug fix, "Month" is not recognized as a valid token for date conversion
-        subst.AddPair("month","%B");
-        subst.AddPair("mon" , "%b");
-        subst.AddPair("yyyy", "%Y");
-        subst.AddPair("yy"  , "%y");
-        subst.AddPair("rrrr", "%Y");
-        subst.AddPair("rr"  , "%y");
-        subst.AddPair("hh24", "%H");
-        subst.AddPair("hh12", "%I");
-        subst.AddPair("am"  , "%p");
-        subst.AddPair("mi"  , "%M");
-        subst.AddPair("ss"  , "%S");
+        subst.AddPair(_T("dd")  , _T("%d"));
+        subst.AddPair(_T("mm")  , _T("%m"));
+        subst.AddPair(_T("month"),_T("%B"));
+        subst.AddPair(_T("mon") , _T("%b"));
+        subst.AddPair(_T("yyyy"), _T("%Y"));
+        subst.AddPair(_T("yy")  , _T("%y"));
+        subst.AddPair(_T("rrrr"), _T("%Y"));
+        subst.AddPair(_T("rr")  , _T("%y"));
+        subst.AddPair(_T("hh24"), _T("%H"));
+        subst.AddPair(_T("hh12"), _T("%I"));
+        subst.AddPair(_T("am")  , _T("%p"));
+        subst.AddPair(_T("mi")  , _T("%M"));
+        subst.AddPair(_T("ss")  , _T("%S"));
         subst << from;
         to = subst.GetResult();
     }
 
-    void to_upper_str (const char* from, string& _to)
+    void to_upper_str (LPCTSTR from, CString& _to)
     {
-        string to;
-        for (const char* ptr = from; ptr && *ptr; ptr++)
-            to += toupper(*ptr);
+        CString to;
+        for(LPCTSTR ptr = from; ptr && *ptr; ptr++)
+        {
+          to += (TCHAR) toupper(*ptr);
+        }
         _to = to;
     }
 
-    void to_lower_str (const char* from, string& _to)
+    void to_lower_str (LPCTSTR from, CString& _to)
     {
-        string to;
-        for (const char* ptr = from; ptr && *ptr; ptr++)
-            to += tolower(*ptr);
+        CString to;
+        for(LPCTSTR ptr = from; ptr && *ptr; ptr++)
+        {
+          to += (TCHAR) tolower(*ptr);
+        }
         _to = to;
     }
 }// END namespace Common

@@ -39,6 +39,9 @@ public:
   const int         NUMERIC_MIN_SCALE     = 0;
   const SQLSMALLINT NUMERIC_DEFAULT_SCALE = 16;
 
+  // RDBMS Uses INDENTITY or SEQUENCE interface
+  void    SetUseSequences(bool p_sequences) override;
+
   //////////////////////////////////////////////////////////////////////////
   //
   // GENERALS (Strings & Booleans) 

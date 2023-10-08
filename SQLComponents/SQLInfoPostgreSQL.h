@@ -35,6 +35,9 @@ public:
   explicit SQLInfoPostgreSQL(SQLDatabase* p_database);
  ~SQLInfoPostgreSQL();
 
+  // RDBMS Uses INDENTITY or SEQUENCE interface
+  void    SetUseSequences(bool p_sequences) override;
+
   //////////////////////////////////////////////////////////////////////////
   //
   // GENERALS (Strings & Booleans) 
@@ -427,7 +430,7 @@ private:
   // Construct the "SELECT procedure(?,?)" (input parameters ONLY!)
   XString    ConstructSQLForProcedureCall(SQLQuery* p_query,SQLQuery* p_thecall,XString& p_schema,const XString& p_procedure);
   // Get column from PostgreSQL result set
-  SQLVariant GetVarFromRecord(int p_type,char* p_pointer,int p_column,bool& p_ready);
+  SQLVariant GetVarFromRecord(int p_type,LPTSTR p_pointer,int p_column,bool& p_ready);
 };
 
 // End of namespace

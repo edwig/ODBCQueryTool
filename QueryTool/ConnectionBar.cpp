@@ -21,7 +21,7 @@
 #include "MultConnectionsDlg.h"
 
 ConnectionBar::ConnectionBar()
-              :m_text("No connection")
+              :m_text(_T("No connection"))
 {
 }
 

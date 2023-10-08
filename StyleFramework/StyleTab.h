@@ -33,9 +33,9 @@ protected:
   virtual BOOL OnInitDialog() override;
   virtual void SetupDynamicLayout();
 
-  void RegisterTooltip(int p_ID,const char* p_text);
-  void RegisterTooltip(CWnd& p_wnd,const char* p_text);
-  void RegisterTooltip(StyleComboBox& p_wnd,const char* p_text);
+  void RegisterTooltip(int p_ID,            LPCTSTR p_text);
+  void RegisterTooltip(CWnd& p_wnd,         LPCTSTR p_text);
+  void RegisterTooltip(StyleComboBox& p_wnd,LPCTSTR p_text);
 
 private:
   bool      m_error     { false  };

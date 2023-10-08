@@ -34,15 +34,15 @@ using namespace OpenEditor;
 
 static struct 
 {
-    const char* title;
+    LPCTSTR title;
     int width;
     int format;
 }
 g_columns[] =
 {
-    { "Name",   170, LVCFMT_LEFT  },
-    { "Key",    125, LVCFMT_LEFT  },
-    { "MinLen",  60, LVCFMT_RIGHT },
+    { _T("Name"),   170, LVCFMT_LEFT  },
+    { _T("Key"),    125, LVCFMT_LEFT  },
+    { _T("MinLen"),  60, LVCFMT_RIGHT },
 };
 
 /////////////////////////////////////////////////////////////////////////////
@@ -123,7 +123,7 @@ COETemplatesPage::OnInitDialog()
 
     for (int i = 0; i < sizeof g_columns/sizeof g_columns[0]; i++) 
     {
-        lvcolumn.pszText  = (LPSTR)(LPCSTR)g_columns[i].title;
+        lvcolumn.pszText  = (LPTSTR)g_columns[i].title;
         lvcolumn.iSubItem = i;
         lvcolumn.fmt      = g_columns[i].format;
         lvcolumn.cx       = g_columns[i].width;
@@ -142,17 +142,17 @@ void COETemplatesPage::OnLvnGetdispinfo_TemplList(NMHDR *pNMHDR, LRESULT *pResul
 
   try
   {
-    static char buffer[40];
+    static TCHAR buffer[40];
 
     const Template::Entry& entry 
         = m_currTemplate->GetEntry(pDispInfo->item.iItem);
 
     switch (pDispInfo->item.iSubItem)
     {
-      case 0: pDispInfo->item.pszText = (LPSTR)(LPCSTR)entry.name;    break;
-      case 1: pDispInfo->item.pszText = (LPSTR)(LPCSTR)entry.keyword; break;
-      case 2: _itoa_s(entry.minLength, buffer, 40, 10);
-              pDispInfo->item.pszText = (LPSTR)(LPCSTR)buffer; break;
+      case 0: pDispInfo->item.pszText = (LPTSTR)(LPCTSTR)entry.name;    break;
+      case 1: pDispInfo->item.pszText = (LPTSTR)(LPCTSTR)entry.keyword; break;
+      case 2: _itot_s(entry.minLength, buffer, 40, 10);
+              pDispInfo->item.pszText = (LPTSTR)(LPCTSTR)buffer; break;
     }
   }
   _OE_DEFAULT_HANDLER_;
@@ -261,7 +261,7 @@ COETemplatesPage::OnCbnSelchange_Category()
       {
         m_templateList.SetItemState(0, LVIS_SELECTED, LVIS_SELECTED);
       }
-      m_textAttr = m_manager.FindByName(m_templateName).GetVisualAttributesSet().FindByName("Text");
+      m_textAttr = m_manager.FindByName(m_templateName).GetVisualAttributesSet().FindByName(_T("Text"));
 
       m_alternative.SetCheck(m_currTemplate->GetAlwaysListIfAlternative());
     }

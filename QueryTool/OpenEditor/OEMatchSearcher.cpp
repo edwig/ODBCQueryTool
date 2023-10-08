@@ -32,7 +32,7 @@ static char THIS_FILE[] = __FILE__;
 
 namespace OpenEditor
 {
-    const char* GetLexemeName (EPLSLexeme lexeme)
+    LPCTSTR GetLexemeName (EPLSLexeme lexeme)
     {
       switch (lexeme)
       {
@@ -43,15 +43,15 @@ namespace OpenEditor
         case elEXPRESSION: return _T("EXPRESSION");
       }
 
-      return "Not found";
+      return _T("Not found");
     }
 
 DelimitersMap LexicalAnalyser::m_Delimiters(_T(" \t\'\\()[]{}+-*/.,!?;:=><%|@&^"));
 
 LexicalAnalyser::LexicalAnalyser ()
 {
-  m_analyzer  = 0;
-  m_lastToken = etUNKNOWN;
+  m_analyzer   = 0;
+  m_lastToken  = etUNKNOWN;
   m_sequenceOf = eNone;
 
   m_tokens.insert(std::map<CString,int>::value_type(_T("DECLARE"),    etDECLARE));
@@ -94,7 +94,7 @@ void LexicalAnalyser::Join (SyntaxAnalyser* analyser)
     m_sequenceOf = eNone;
 }
 
-bool LexicalAnalyser::PutLine (const char* str, int line, int offset, int length, bool backward)
+bool LexicalAnalyser::PutLine (LPCTSTR str, int line, int offset, int length, bool backward)
 {
     _ASSERTE(m_analyzer);
 
@@ -134,7 +134,7 @@ bool LexicalAnalyser::PutLine (const char* str, int line, int offset, int length
             // skip white space
             for (; offset < length && isspace(str[offset]); offset++)
             {
-                char buf[2];
+                TCHAR buf[2];
                 buf[0] = str[offset];
                 buf[1] = 0;
                 CString c(buf);
@@ -147,7 +147,7 @@ bool LexicalAnalyser::PutLine (const char* str, int line, int offset, int length
             // read CString token
             if (m_Delimiters[str[offset]])
             {
-              char buf[2];
+              TCHAR buf[2];
               buf[0] = str[offset++];
               buf[1] = 0;
               CString c(buf);
@@ -158,7 +158,7 @@ bool LexicalAnalyser::PutLine (const char* str, int line, int offset, int length
                 CString buffer;
                 for(; offset < length && !m_Delimiters[str[offset]]; offset++)
                 {
-                  buffer += (char) toupper(str[offset]);
+                  buffer += (TCHAR) toupper(str[offset]);
                 }
                 reversed = buffer + reversed;
             }
@@ -187,7 +187,7 @@ bool LexicalAnalyser::PutLine (const char* str, int line, int offset, int length
                 buffer += str[offset++];
             else
                 for (; offset < length && !m_Delimiters[str[offset]]; offset++)
-                    buffer += (char)toupper(str[offset]);
+                    buffer += (TCHAR)toupper(str[offset]);
         }
         else
         {
@@ -276,7 +276,7 @@ bool LexicalAnalyser::PutLine (const char* str, int line, int offset, int length
                     //if (m_lastToken == etMINUS)
                     if (str[offset] == '-')
                     {
-                        m_sequenceOf = eEndLineComment; // skip line remainer
+                        m_sequenceOf = eEndLineComment; // skip line remainder
                         offset++;
                     }
                     break;
@@ -286,7 +286,7 @@ bool LexicalAnalyser::PutLine (const char* str, int line, int offset, int length
                     break;
 //                case etSLASH:
 //                    if (m_lastToken == etSTAR)
-//                        _CHECK_AND_THROW_(0, "Unexpected commect end token!");
+//                        _CHECK_AND_THROW_(0, "Unexpected comment end token!");
                 }
             }
         }
@@ -735,14 +735,14 @@ bool MatchAnalyser::putTokenBackward (const TokenInfo& tokenInfo, const CString&
 */
 void GeneralMatchSearcher::Find (EditContext& editor, bool select)
 {
-    const char openBraces [] = _T("([{");
-    const char closeBraces[] = _T(")]}");
+    TCHAR openBraces [] = _T("([{");
+    TCHAR closeBraces[] = _T(")]}");
 
-    Fastmap<char> fastmap;
+    Fastmap<TCHAR> fastmap;
     for (int i(0); i < sizeof(openBraces)-1; i++)
     {
-        fastmap[openBraces[i]] = closeBraces[i];
-        fastmap[closeBraces[i]] = openBraces[i];
+        fastmap[openBraces [i]] = closeBraces[i];
+        fastmap[closeBraces[i]] = openBraces [i];
     }
 
     Square sqr;
@@ -757,9 +757,9 @@ void GeneralMatchSearcher::Find (EditContext& editor, bool select)
     
     if (buff.GetLength() == 1 && fastmap[buff[0]]) // search for match
     {
-        char startWith = buff[0];
-        char searchFor = fastmap[startWith];
-        backward = strchr(closeBraces, startWith) ? true : false;
+        TCHAR startWith = buff[0];
+        TCHAR searchFor = fastmap[startWith];
+        backward = _tcsrchr(closeBraces, startWith) ? true : false;
         balance = 0;
         
         fastmap.erase();
@@ -778,7 +778,7 @@ void GeneralMatchSearcher::Find (EditContext& editor, bool select)
         }
     }
 
-    const char* str = 0;
+    LPCTSTR str = 0;
     int col = -1, line = -1, length = -1;
     int nlines = editor.GetLineCount();
     int offset = editor.PosToInx(sqr.end.line, sqr.start.column);
@@ -850,7 +850,7 @@ void PlSqlMatchSearcher::Find (EditContext& editor, bool select)
         TRACE("Start with: \"%s\"\n", buff.GetString());
 
         int length;
-        const char* str;
+        LPCTSTR str;
         int nlines = editor.GetLineCount();
         int offset = editor.PosToInx(sqr.end.line, sqr.start.column);
 
@@ -963,9 +963,9 @@ void PlSqlMatchSearcher::Find (EditContext& editor, bool select)
     }
 }
 
-MatchSearcherBasePtr MatchSearcherFactory::CreateMatchSearcher (const char* lang)
+MatchSearcherBasePtr MatchSearcherFactory::CreateMatchSearcher (LPCTSTR lang)
 {
-    if (!strcmp(lang, _T("SQL")))
+    if (!_tcscmp(lang, _T("SQL")))
         return MatchSearcherBasePtr(new PlSqlMatchSearcher);
     else
         return MatchSearcherBasePtr(new GeneralMatchSearcher);

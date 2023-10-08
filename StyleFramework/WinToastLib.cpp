@@ -33,8 +33,8 @@
   #define DEBUG_MSG(str) do {  OutputDebugString(str) } while( false )
 #endif
 
-#define DEFAULT_SHELL_LINKS_PATH	L"\\Microsoft\\Windows\\Start Menu\\Programs\\"
-#define DEFAULT_LINK_FORMAT			  L".lnk"
+#define DEFAULT_SHELL_LINKS_PATH  L"\\Microsoft\\Windows\\Start Menu\\Programs\\"
+#define DEFAULT_LINK_FORMAT       L".lnk"
 #define STATUS_SUCCESS (0x00000000)
 
 // Quickstart: Handling toast activations from Win32 apps in Windows 10

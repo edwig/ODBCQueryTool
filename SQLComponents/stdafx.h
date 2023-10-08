@@ -20,10 +20,12 @@
 // #include <afxext.h>             // MFC extensions
 // #include <afxcmn.h>             // MFC support for Windows Common Controls
 
-// Autolink records only generated OUTSIDE this library
-#define SQL_COMPONENTS_NOAUTOLINK
 // Autolink to the base library
 #include <BaseLibrary.h>
+
+// Autolink records only generated OUTSIDE this library
+#define SQL_COMPONENTS_NOAUTOLINK
+#include "SQLComponents.h"
 
 // Automatically include the correct manifest
 #if defined _M_IX86

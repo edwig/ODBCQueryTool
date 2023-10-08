@@ -46,7 +46,7 @@ ObjectTree::CreateImageList()
 
   // Load bitmap from resources
   CBitmap bitmap;
-  bitmap.LoadBitmapA(MAKEINTRESOURCE(IDB_RDBMS_OBJECTS));
+  bitmap.LoadBitmap(MAKEINTRESOURCE(IDB_RDBMS_OBJECTS));
 
   // Set bitmap in image list, white is background color
   m_imageList.Add(&bitmap,RGB(0,0,0));
@@ -62,7 +62,7 @@ ObjectTree::CreateImageList()
 void
 ObjectTree::InsertNoInfo(HTREEITEM p_item)
 {
-  HTREEITEM noinfo = InsertItem("No information",p_item);
+  HTREEITEM noinfo = InsertItem(_T("No information"),p_item);
   SetItemImage(noinfo,IMG_INFO,IMG_INFO);
 }
 
@@ -76,7 +76,7 @@ ObjectTree::RemoveNoInfo(HTREEITEM p_item)
   if(child)
   {
     CString title = GetItemText(child);
-    if(title.Compare("No information") == 0)
+    if(title.Compare(_T("No information")) == 0)
     {
       DeleteItem(child);
     }
@@ -92,7 +92,7 @@ ObjectTree::ClearTree()
   // Stop actions on the tree
   m_busy = true;
 
-  StyleToast* toast = CreateToast(STYLE_TOAST_WARNING,STYLE_POS_MIDMIDDLE,"JUST A MOMENT!","Clearing the object tree!","",0);
+  StyleToast* toast = CreateToast(STYLE_TOAST_WARNING,STYLE_POS_MIDMIDDLE,_T("JUST A MOMENT!"),_T("Clearing the object tree!"),_T(""),0);
 
   // De-allocating large tree's can take a lot of time in the next step
   CWaitCursor takeADeepSigh;
@@ -101,13 +101,13 @@ ObjectTree::ClearTree()
 
   // Rebuild the basic tree
   HTREEITEM root       = GetRootItem();
-  HTREEITEM tables     = InsertItem("Tables",    root,TREE_TABLES);
-  HTREEITEM views      = InsertItem("Views",     root,TREE_TABLES);
-  HTREEITEM sequences  = InsertItem("Sequences", root,TREE_SEQUENCES);
-  HTREEITEM catalogs   = InsertItem("Catalog" ,  root,TREE_TABLES);
-  HTREEITEM synonyms   = InsertItem("Synonyms",  root,TREE_TABLES);
-  HTREEITEM triggers   = InsertItem("Triggers",  root,TREE_TRIGGERS);
-  HTREEITEM procedures = InsertItem("Procedures",root,TREE_PROCEDURES);
+  HTREEITEM tables     = InsertItem(_T("Tables"),    root,TREE_TABLES);
+  HTREEITEM views      = InsertItem(_T("Views"),     root,TREE_TABLES);
+  HTREEITEM sequences  = InsertItem(_T("Sequences"), root,TREE_SEQUENCES);
+  HTREEITEM catalogs   = InsertItem(_T("Catalog"),   root,TREE_TABLES);
+  HTREEITEM synonyms   = InsertItem(_T("Synonyms"),  root,TREE_TABLES);
+  HTREEITEM triggers   = InsertItem(_T("Triggers"),  root,TREE_TRIGGERS);
+  HTREEITEM procedures = InsertItem(_T("Procedures"),root,TREE_PROCEDURES);
 
   // Setting images on all nodes
   SetItemImage(tables,    IMG_TABLES,     IMG_TABLES);
@@ -150,13 +150,13 @@ ObjectTree::IsSpecialNode(CString& p_name)
   }
 
   // See if it is a type node instead of a schema name
-  if(p_name.Compare("Tables")     == 0)  return true;
-  if(p_name.Compare("Views")      == 0)  return true;
-  if(p_name.Compare("Sequences")  == 0)  return true;
-  if(p_name.Compare("Catalog")    == 0)  return true;
-  if(p_name.Compare("Synonyms")   == 0)  return true;
-  if(p_name.Compare("Triggers")   == 0)  return true;
-  if(p_name.Compare("Procedures") == 0)  return true;
+  if(p_name.Compare(_T("Tables"))     == 0)  return true;
+  if(p_name.Compare(_T("Views"))      == 0)  return true;
+  if(p_name.Compare(_T("Sequences"))  == 0)  return true;
+  if(p_name.Compare(_T("Catalog"))    == 0)  return true;
+  if(p_name.Compare(_T("Synonyms"))   == 0)  return true;
+  if(p_name.Compare(_T("Triggers"))   == 0)  return true;
+  if(p_name.Compare(_T("Procedures")) == 0)  return true;
 
   return false;
 }
@@ -164,12 +164,12 @@ ObjectTree::IsSpecialNode(CString& p_name)
 ObjectImage
 ObjectTree::TypeToImage(CString p_type)
 {
-  if(p_type == "T") return IMG_TABLE;
-  if(p_type == "V") return IMG_VIEW;
-  if(p_type == "C") return IMG_CATALOG;
-  if(p_type == "S") return IMG_SYNONYM;
-  if(p_type == "R") return IMG_TRIGGER;
-  if(p_type == "P") return IMG_PROCEDURE;
+  if(p_type == _T("T")) return IMG_TABLE;
+  if(p_type == _T("V")) return IMG_VIEW;
+  if(p_type == _T("C")) return IMG_CATALOG;
+  if(p_type == _T("S")) return IMG_SYNONYM;
+  if(p_type == _T("R")) return IMG_TRIGGER;
+  if(p_type == _T("P")) return IMG_PROCEDURE;
 
   return IMG_TABLES;
 }
@@ -190,7 +190,7 @@ ObjectTree::SetItemCount(HTREEITEM p_theItem,int p_size)
   // Append count if not zero
   if(p_size > 0)
   {
-    text.AppendFormat(" (%d)",p_size);
+    text.AppendFormat(_T(" (%d)"),p_size);
   }
 
   // Reformat the item text
@@ -281,7 +281,7 @@ ObjectTree::OnTableOrView(HTREEITEM p_theItem)
   special.Trim();
   if(IsSpecialNode(special))
   {
-    if(special == "Tables" || special == "Views")
+    if(special == _T("Tables") || special == _T("Views"))
     {
       return true;
     }
@@ -305,13 +305,13 @@ ObjectTree::OnTableFirst(HTREEITEM p_theItem)
   special.Trim();
   if(IsSpecialNode(special))
   {
-    if(special == "Tables" || special == "Views")
+    if(special == _T("Tables") || special == _T("Views"))
     {
       if(theApp.GetDatabase().GetSQLInfoDB()->GetCatalogNameUsage() & SQL_CU_DML_STATEMENTS)
       {
         if(!IsSpecialNode(schema))
         {
-          table = schema + "." + table;
+          table = schema + _T(".") + table;
         }
       }
       theApp.SelectFirst100(table);
@@ -333,7 +333,7 @@ ObjectTree::OnTableDDL(HTREEITEM p_theItem)
   special.Trim();
   if(IsSpecialNode(special))
   {
-    if(special == "Tables" || special == "Views")
+    if(special == _T("Tables") || special == _T("Views"))
     {
       theApp.TableDDL(table);
     }
@@ -348,7 +348,7 @@ ObjectTree::DispatchTreeAction(DWORD_PTR p_action,HTREEITEM theItem)
 
   if(p_action != TREE_SOURCECODE)
   {
-    toast = CreateToast(STYLE_TOAST_WARNING,STYLE_POS_MIDMIDDLE,"JUST A MOMENT!","Populating the object tree!","",0);
+    toast = CreateToast(STYLE_TOAST_WARNING,STYLE_POS_MIDMIDDLE,_T("JUST A MOMENT!"),_T("Populating the object tree!"),_T(""),0);
   }
 
   switch(p_action)
@@ -386,12 +386,12 @@ ObjectTree::GetObjectType(CString p_type)
 {
   switch(p_type.GetAt(0))
   {
-    case 'T': return "TABLE";   break;
-    case 'V': return "VIEW";    break;
-    case 'C': return "CATALOG"; break;
-    case 'S': return "SYNONYM"; break;
+    case _T('T'): return _T("TABLE");   break;
+    case _T('V'): return _T("VIEW");    break;
+    case _T('C'): return _T("CATALOG"); break;
+    case _T('S'): return _T("SYNONYM"); break;
   }
-  return "";
+  return _T("");
 }
 
 // Expand the first table in the tree
@@ -448,10 +448,10 @@ ObjectTree::FindTables(HTREEITEM p_theItem)
   // Go  find it
   switch(type.GetAt(0))
   {
-    case 'T': info->MakeInfoTableTable   (tables,errors,schema,table); break;
-    case 'V': info->MakeInfoTableView    (tables,errors,schema,table); break;
-    case 'C': info->MakeInfoTableCatalog (tables,errors,schema,table); break;
-    case 'S': info->MakeInfoTableSynonyms(tables,errors,schema,table); break;
+    case _T('T'): info->MakeInfoTableTable   (tables,errors,schema,table); break;
+    case _T('V'): info->MakeInfoTableView    (tables,errors,schema,table); break;
+    case _T('C'): info->MakeInfoTableCatalog (tables,errors,schema,table); break;
+    case _T('S'): info->MakeInfoTableSynonyms(tables,errors,schema,table); break;
     default:  info->MakeInfoTableObject  (tables,errors,schema,table); break;
   }
 
@@ -479,12 +479,12 @@ ObjectTree::FindTables(HTREEITEM p_theItem)
 
     if(!theTable.m_remarks.IsEmpty())
     {
-      object.AppendFormat(" (%s)",theTable.m_remarks);
+      object.AppendFormat(_T(" (%s)"),theTable.m_remarks);
     }
 
-    if(theTable.m_objectType.Find("TEMPORARY") >= 0)
+    if(theTable.m_objectType.Find(_T("TEMPORARY")) >= 0)
     {
-      object.AppendFormat(" (%s)",theTable.m_objectType);
+      object.AppendFormat(_T(" (%s)"),theTable.m_objectType);
     }
 
     if(schema.IsEmpty())
@@ -519,16 +519,16 @@ ObjectTree::FindTables(HTREEITEM p_theItem)
 void
 ObjectTree::PrepareTable(HTREEITEM p_theItem)
 {
-  HTREEITEM columns    = InsertItem("Columns",          p_theItem,TREE_COLUMNS);
-  HTREEITEM primary    = InsertItem("Primary key",      p_theItem,TREE_PRIMARY);
-  HTREEITEM foreigns   = InsertItem("Foreign keys",     p_theItem,TREE_FOREIGN);
-  HTREEITEM indices    = InsertItem("Statistics",       p_theItem,TREE_STATISTICS);
-  HTREEITEM specials   = InsertItem("Special columns",  p_theItem,TREE_SPECIALS);
-  HTREEITEM referenced = InsertItem("Referenced by",    p_theItem,TREE_REFERENCEDBY);
-  HTREEITEM triggers   = InsertItem("Triggers",         p_theItem,TREE_TABTRIGGERS);
-  HTREEITEM sequences  = InsertItem("Sequences",        p_theItem,TREE_TABSEQUENCES);
-  HTREEITEM tabaccess  = InsertItem("Table privileges", p_theItem,TREE_PRIVILEGES);
-  HTREEITEM colaccess  = InsertItem("Column privileges",p_theItem,TREE_COLPRIVILEGES);
+  HTREEITEM columns    = InsertItem(_T("Columns"),          p_theItem,TREE_COLUMNS);
+  HTREEITEM primary    = InsertItem(_T("Primary key"),      p_theItem,TREE_PRIMARY);
+  HTREEITEM foreigns   = InsertItem(_T("Foreign keys"),     p_theItem,TREE_FOREIGN);
+  HTREEITEM indices    = InsertItem(_T("Statistics"),       p_theItem,TREE_STATISTICS);
+  HTREEITEM specials   = InsertItem(_T("Special columns"),  p_theItem,TREE_SPECIALS);
+  HTREEITEM referenced = InsertItem(_T("Referenced by"),    p_theItem,TREE_REFERENCEDBY);
+  HTREEITEM triggers   = InsertItem(_T("Triggers"),         p_theItem,TREE_TABTRIGGERS);
+  HTREEITEM sequences  = InsertItem(_T("Sequences"),        p_theItem,TREE_TABSEQUENCES);
+  HTREEITEM tabaccess  = InsertItem(_T("Table privileges"), p_theItem,TREE_PRIVILEGES);
+  HTREEITEM colaccess  = InsertItem(_T("Column privileges"),p_theItem,TREE_COLPRIVILEGES);
 
   SetItemImage(columns,   IMG_COLUMN,  IMG_COLUMN);
   SetItemImage(primary,   IMG_PRIMARY, IMG_PRIMARY);
@@ -568,7 +568,7 @@ ObjectTree::PresetTable(HTREEITEM p_theItem)
   CString findtable(table);
   if(!IsSpecialNode(schema))
   {
-    findtable = schema + "." + table;
+    findtable = schema + _T(".") + table;
     m_schema = schema;
   }
   m_table  = table;
@@ -590,7 +590,7 @@ ObjectTree::PresetProcedure(HTREEITEM p_theItem,MProcedureMap& p_procedures)
   CString findproc(procedure);
   if(!IsSpecialNode(schema))
   {
-    findproc = schema + "." + procedure;
+    findproc = schema + _T(".") + procedure;
   }
   m_schema    = schema;
   m_procedure = procedure;
@@ -732,7 +732,7 @@ ObjectTree::FindTabSequences(HTREEITEM p_theItem)
     CString      errors;
 
     // Go find the sequences
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableSequences(sequences,errors,m_schema,m_table + "%");
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableSequences(sequences,errors,m_schema,m_table + _T("%"));
     SequencesToTree(sequences,p_theItem);
     AddErrorsToTree(errors,p_theItem);
   }
@@ -795,7 +795,7 @@ ObjectTree::FindSequences(HTREEITEM p_theItem)
   info->MakeInfoTableSequences(sequences,errors,schema,table);
   if(!errors.IsEmpty())
   {
-    StyleMessageBox(this,errors,"Querytool",MB_OK | MB_ICONERROR);
+    StyleMessageBox(this,errors,_T("Querytool"),MB_OK | MB_ICONERROR);
     return;
   }
 
@@ -842,27 +842,27 @@ ObjectTree::FindSequences(HTREEITEM p_theItem)
 
     // All info on the item
     CString line;
-    line.Format("Minimum value: %-12.0f",seq.m_minimalValue);
+    line.Format(_T("Minimum value: %-12.0f"),seq.m_minimalValue);
     HTREEITEM item = InsertItem(line,sequence);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Current value: %-12.0f",seq.m_currentValue);
+    line.Format(_T("Current value: %-12.0f"),seq.m_currentValue);
     item = InsertItem(line,sequence);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Increment with: %d",seq.m_increment);
+    line.Format(_T("Increment with: %d"),seq.m_increment);
     item = InsertItem(line,sequence);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Caching size: %d",seq.m_cache);
+    line.Format(_T("Caching size: %d"),seq.m_cache);
     item = InsertItem(line,sequence);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Re-Cycling of sets: %s",seq.m_cycle ? "yes" : "no");
+    line.Format(_T("Re-Cycling of sets: %s"),seq.m_cycle ? _T("yes") : _T("no"));
     item = InsertItem(line,sequence);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Cluster ordering: %s",seq.m_order ? "yes" : "no");
+    line.Format(_T("Cluster ordering: %s"),seq.m_order ? _T("yes") : _T("no"));
     item = InsertItem(line,sequence);
     SetItemImage(item,IMG_INFO,IMG_INFO);
   }
@@ -886,10 +886,10 @@ ObjectTree::FindTriggers(HTREEITEM p_theItem)
   info->GetObjectName(m_filter,catalog,schema,table);
 
   // Find relevant triggers
-  info->MakeInfoTableTriggers(triggers,errors,schema,table,"");
+  info->MakeInfoTableTriggers(triggers,errors,schema,table,_T(""));
   if(!errors.IsEmpty())
   {
-    StyleMessageBox(this,errors,"Querytool",MB_OK | MB_ICONERROR);
+    StyleMessageBox(this,errors,_T("Querytool"),MB_OK | MB_ICONERROR);
     return;
   }
 
@@ -964,7 +964,7 @@ ObjectTree::FindProcedures(HTREEITEM p_theItem)
   }
   catch(CString& er)
   {
-    StyleMessageBox(this,er,"Querytool",MB_OK | MB_ICONERROR);
+    StyleMessageBox(this,er,_T("Querytool"),MB_OK | MB_ICONERROR);
     return;
   }
   // See if we have something
@@ -1009,8 +1009,8 @@ ObjectTree::FindProcedures(HTREEITEM p_theItem)
     SetItemImage(procedure,IMG_PROCEDURE,IMG_PROCEDURE);
 
     // Insert the info and parameters nodes
-    HTREEITEM information = InsertItem("Information",procedure,TREE_PARAMETERS);
-    HTREEITEM parameters  = InsertItem("Parameters", procedure,TREE_PARAMETERS);
+    HTREEITEM information = InsertItem(_T("Information"),procedure,TREE_PARAMETERS);
+    HTREEITEM parameters  = InsertItem(_T("Parameters"), procedure,TREE_PARAMETERS);
 
     SetItemImage(information,IMG_INFO,     IMG_INFO);
     SetItemImage(parameters, IMG_PARAMETER,IMG_PARAMETER);
@@ -1048,37 +1048,37 @@ ObjectTree::FindParameters(HTREEITEM p_theItem)
       RemoveNoInfo(info);
     }
 
-    line = "PSM type: ";
+    line = _T("PSM type: ");
     switch(procedure.m_procedureType)      
     {
-      case SQL_PT_PROCEDURE:  line += "PROCEDURE"; break;
-      case SQL_PT_FUNCTION:   line += "FUNCTION";  break;
+      case SQL_PT_PROCEDURE:  line += _T("PROCEDURE"); break;
+      case SQL_PT_FUNCTION:   line += _T("FUNCTION");  break;
       case SQL_PT_UNKNOWN:    // Fall through
-      default:                line += "UNKNOWN";   break;
+      default:                line += _T("UNKNOWN");   break;
     }
     HTREEITEM item = InsertItem(line,info);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Input parameters: %d", procedure.m_inputParameters);
+    line.Format(_T("Input parameters: %d"), procedure.m_inputParameters);
     item = InsertItem(line,info);
     SetItemImage(item,IMG_INFO,IMG_INFO);
     
-    line.Format("Output parameters: %d",procedure.m_outputParameters);
+    line.Format(_T("Output parameters: %d"),procedure.m_outputParameters);
     item = InsertItem(line,info);
     SetItemImage(item,IMG_INFO,IMG_INFO);
     
-    line.Format("Result sets: %d",      procedure.m_resultSets);
+    line.Format(_T("Result sets: %d"),      procedure.m_resultSets);
     item = InsertItem(line,info);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Remarks: %s",procedure.m_remarks);
+    line.Format(_T("Remarks: %s"),procedure.m_remarks);
     item = InsertItem(line,info);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
     // Source
-    CString name = procedure.m_schemaName + "." + procedure.m_procedureName;
+    CString name = procedure.m_schemaName + _T(".") + procedure.m_procedureName;
     m_source.insert(std::make_pair(name, procedure.m_source));
-    line.Format("SQL Source: %d characters", procedure.m_source.GetLength());
+    line.Format(_T("SQL Source: %d characters"), procedure.m_source.GetLength());
     item = InsertItem(line,info,TREE_SOURCECODE);
     SetItemImage(item,IMG_SOURCE,IMG_SOURCE);
 
@@ -1128,12 +1128,12 @@ ObjectTree::FindSourcecode(HTREEITEM p_theItem)
 bool
 ObjectTree::ShowSourcecode(CString p_schema, CString p_procedure)
 {
-  CString name = p_schema + "." + p_procedure;
+  CString name = p_schema + _T(".") + p_procedure;
   SourceList::iterator it = m_source.find(name);
   if (it != m_source.end())
   {
     CString source = it->second;
-    if(source == "<@>" || source.IsEmpty())
+    if(source == _T("<@>") || source.IsEmpty())
     {
       QueryToolApp* app = (QueryToolApp*)AfxGetApp();
       SQLInfoDB* info = app->GetDatabase().GetSQLInfoDB();
@@ -1141,10 +1141,10 @@ ObjectTree::ShowSourcecode(CString p_schema, CString p_procedure)
     }
 
     // Prepare for MFC edit control
-    source.Replace("\n","\r\n");
+    source.Replace(_T("\n"),_T("\r\n"));
 
     // Show in source code popup
-    CNativeSQLDlg dlg(this,source,"Persistent Stored Module");
+    CNativeSQLDlg dlg(this,source,_T("Persistent Stored Module"));
     dlg.DoModal();
     return true;
   }
@@ -1162,20 +1162,20 @@ ObjectTree::ColumnDetailsToTree(MetaColumn& p_column,HTREEITEM p_item)
 {
   CString text;
 
-  text.Format("Datatype SQL = %d\n",      p_column.m_datatype);      InsertItem(text,p_item);
-  text.Format("Name datatype = %s\n",     p_column.m_typename);      InsertItem(text,p_item);
-  text.Format("Column size = %d\n",       p_column.m_columnSize);    InsertItem(text,p_item);
-  text.Format("Buffer length = %u\n",     p_column.m_bufferLength);  InsertItem(text,p_item);
-  text.Format("Decimal digits = %d\n",    p_column.m_decimalDigits); InsertItem(text,p_item);
-  text.Format("radix = %d\n",             p_column.m_numRadix);      InsertItem(text,p_item);
-  text.Format("nullable = %d\n",          p_column.m_nullable);      InsertItem(text,p_item);
-  text.Format("remarks = %s\n",           p_column.m_remarks);       InsertItem(text,p_item);
-  text.Format("Default value = %s\n",     p_column.m_default);       InsertItem(text,p_item);
-  text.Format("Datatype version 3 = %d\n",p_column.m_datatype3);     InsertItem(text,p_item);
-  text.Format("Datatype sub = %d\n",      p_column.m_sub_datatype);  InsertItem(text,p_item);
-  text.Format("Octet length = %d\n",      p_column.m_octet_length);  InsertItem(text,p_item);
-  text.Format("Ordinal position = %d\n",  p_column.m_position);      InsertItem(text,p_item);
-  text.Format("Is nullable = %s\n",       p_column.m_isNullable);    InsertItem(text,p_item);
+  text.Format(_T("Datatype SQL = %d\n"),      p_column.m_datatype);      InsertItem(text,p_item);
+  text.Format(_T("Name datatype = %s\n"),     p_column.m_typename);      InsertItem(text,p_item);
+  text.Format(_T("Column size = %d\n"),       p_column.m_columnSize);    InsertItem(text,p_item);
+  text.Format(_T("Buffer length = %u\n"),     p_column.m_bufferLength);  InsertItem(text,p_item);
+  text.Format(_T("Decimal digits = %d\n"),    p_column.m_decimalDigits); InsertItem(text,p_item);
+  text.Format(_T("radix = %d\n"),             p_column.m_numRadix);      InsertItem(text,p_item);
+  text.Format(_T("nullable = %d\n"),          p_column.m_nullable);      InsertItem(text,p_item);
+  text.Format(_T("remarks = %s\n"),           p_column.m_remarks);       InsertItem(text,p_item);
+  text.Format(_T("Default value = %s\n"),     p_column.m_default);       InsertItem(text,p_item);
+  text.Format(_T("Datatype version 3 = %d\n"),p_column.m_datatype3);     InsertItem(text,p_item);
+  text.Format(_T("Datatype sub = %d\n"),      p_column.m_sub_datatype);  InsertItem(text,p_item);
+  text.Format(_T("Octet length = %d\n"),      p_column.m_octet_length);  InsertItem(text,p_item);
+  text.Format(_T("Ordinal position = %d\n"),  p_column.m_position);      InsertItem(text,p_item);
+  text.Format(_T("Is nullable = %s\n"),       p_column.m_isNullable);    InsertItem(text,p_item);
 }
 
 void
@@ -1190,32 +1190,32 @@ ObjectTree::ColumnListToTree(MColumnMap& p_columns,HTREEITEM p_item)
   // Process columns
   for(auto& column : p_columns)
   {
-    CString line  = column.m_column + " " + column.m_typename;
+    CString line  = column.m_column + _T(" ") + column.m_typename;
     if((column.m_columnSize > 0) && (column.m_typename.Find('(') < 0))
     {
-      line.AppendFormat(" (%d",column.m_columnSize);
+      line.AppendFormat(_T(" (%d"),column.m_columnSize);
       if(column.m_decimalDigits)
       {
-        line.AppendFormat(",%d)",column.m_decimalDigits);
+        line.AppendFormat(_T(",%d)"),column.m_decimalDigits);
       }
       else
       {
-        line += ")";
+        line += _T(")");
       }
     }
     switch(column.m_nullable)
     {
-      case SQL_NO_NULLS:          line += " NOT NULL"; 
+      case SQL_NO_NULLS:          line += _T(" NOT NULL"); 
                                   break;
       case SQL_NULLABLE:          break;  
       default:                    // Fall through
-      case SQL_NULLABLE_UNKNOWN:  line += " NULLABLE UNKNOWN";
+      case SQL_NULLABLE_UNKNOWN:  line += _T(" NULLABLE UNKNOWN");
                                   break;
     }
 
     if(!column.m_remarks.IsEmpty())
     {
-      line.AppendFormat(" (%s)",column.m_remarks);
+      line.AppendFormat(_T(" (%s)"),column.m_remarks);
     }
     HTREEITEM item = InsertItem(line,p_item);
     SetItemImage(item,IMG_COLUMN,IMG_COLUMN);
@@ -1235,7 +1235,7 @@ ObjectTree::PrimariesToTree(MPrimaryMap& p_primaries,HTREEITEM p_item)
   RemoveNoInfo(p_item);
 
   // Insert primary constraint name
-  CString name("Constraint name: ");
+  CString name(_T("Constraint name: "));
   name += p_primaries.front().m_constraintName;
   HTREEITEM nameItem = InsertItem(name,p_item);
   SetItemImage(nameItem,IMG_PRIMARY,IMG_PRIMARY);
@@ -1254,11 +1254,11 @@ ObjectTree::ForeignRuleToString(int p_rule)
   CString text;
   switch(p_rule)
   {
-    case SQL_CASCADE:     text = "CASCADE";     break;
-    case SQL_NO_ACTION:   text = "NO ACTION";   break;
-    case SQL_SET_NULL:    text = "SET NULL";    break;
-    case SQL_SET_DEFAULT: text = "SET DEFAULT"; break;
-    default:              text = "No info";     break;
+    case SQL_CASCADE:     text = _T("CASCADE");     break;
+    case SQL_NO_ACTION:   text = _T("NO ACTION");   break;
+    case SQL_SET_NULL:    text = _T("SET NULL");    break;
+    case SQL_SET_DEFAULT: text = _T("SET DEFAULT"); break;
+    default:              text = _T("No info");     break;
   }
   return text;
 }
@@ -1269,10 +1269,10 @@ ObjectTree::DeferrableToString(int p_defer)
   CString text;
   switch(p_defer)
   {
-    case SQL_INITIALLY_DEFERRED:  text = "INITIALLY DEFERRED";  break;
-    case SQL_INITIALLY_IMMEDIATE: text = "INITIALLY IMMEDIATE"; break;
-    case SQL_NOT_DEFERRABLE:      text = "NOT DEFERRABLE";      break;
-    default:                      text = "No Info";             break;
+    case SQL_INITIALLY_DEFERRED:  text = _T("INITIALLY DEFERRED");  break;
+    case SQL_INITIALLY_IMMEDIATE: text = _T("INITIALLY IMMEDIATE"); break;
+    case SQL_NOT_DEFERRABLE:      text = _T("NOT DEFERRABLE");      break;
+    default:                      text = _T("No Info");             break;
   }
   return text;
 }
@@ -1299,35 +1299,35 @@ ObjectTree::ForeignsToTree(MForeignMap& p_foreigns,HTREEITEM p_item)
     if(foreign.m_keySequence == 1)
     {
       // Start a new foreign key
-      line  = "Constraint name: ";
+      line  = _T("Constraint name: ");
       line += foreign.m_foreignConstraint;
       keyItem = InsertItem(line,p_item);
       SetItemImage(keyItem,IMG_FOREIGN,IMG_FOREIGN);
 
       // Update rule
-      line = "Update rule: " + ForeignRuleToString(foreign.m_updateRule);
+      line = _T("Update rule: ") + ForeignRuleToString(foreign.m_updateRule);
       info = InsertItem(line,keyItem);
       SetItemImage(info,IMG_INFO,IMG_INFO);
 
       // Delete rule
-      line = "Delete rule: " + ForeignRuleToString(foreign.m_deleteRule);
+      line = _T("Delete rule: ") + ForeignRuleToString(foreign.m_deleteRule);
       info = InsertItem(line,keyItem);
       SetItemImage(info,IMG_INFO,IMG_INFO);
 
       // deferrable
-      line = "Deferrable: " + DeferrableToString(foreign.m_deferrable);
+      line = _T("Deferrable: ") + DeferrableToString(foreign.m_deferrable);
       info = InsertItem(line,keyItem);
       SetItemImage(info,IMG_INFO,IMG_INFO);
 
       // Primary key + columns
-      line.Format("Primary key: %s (%s)"
+      line.Format(_T("Primary key: %s (%s)")
                   ,foreign.m_pkTableName
                   ,foreign.m_primaryConstraint);
       primkey = InsertItem(line,keyItem);
       SetItemImage(primkey,IMG_FOREIGN,IMG_FOREIGN);
     }
     // Add the columns
-    line.Format("%s -> %s",foreign.m_fkColumnName,foreign.m_pkColumnName);
+    line.Format(_T("%s -> %s"),foreign.m_fkColumnName,foreign.m_pkColumnName);
     HTREEITEM col = InsertItem(line,primkey);
     SetItemImage(col,IMG_COLUMN,IMG_COLUMN);
   }
@@ -1355,33 +1355,33 @@ ObjectTree::ReferencedToTree(MForeignMap& p_foreigns,HTREEITEM p_item)
     if(foreign.m_keySequence == 1)
     {
       // Start a new table
-      line  = "Table: ";
+      line  = _T("Table: ");
       line += foreign.m_fkTableName;
       keyItem = InsertItem(line,p_item);
       SetItemImage(keyItem,IMG_FOREIGN,IMG_FOREIGN);
 
       // Update rule
-      line = "Update rule: " + ForeignRuleToString(foreign.m_updateRule);
+      line = _T("Update rule: ") + ForeignRuleToString(foreign.m_updateRule);
       info = InsertItem(line,keyItem);
       SetItemImage(info,IMG_INFO,IMG_INFO);
 
       // Delete rule
-      line = "Delete rule: " + ForeignRuleToString(foreign.m_deleteRule);
+      line = _T("Delete rule: ") + ForeignRuleToString(foreign.m_deleteRule);
       info = InsertItem(line,keyItem);
       SetItemImage(info,IMG_INFO,IMG_INFO);
 
       // Deferrable
-      line = "Deferrable: " + DeferrableToString(foreign.m_deferrable);
+      line = _T("Deferrable: ") + DeferrableToString(foreign.m_deferrable);
       info = InsertItem(line,keyItem);
       SetItemImage(info,IMG_INFO,IMG_INFO);
 
       // Primary key + columns
-      line.Format("Foreign key: %s",foreign.m_foreignConstraint);
+      line.Format(_T("Foreign key: %s"),foreign.m_foreignConstraint);
       primkey = InsertItem(line,keyItem);
       SetItemImage(primkey,IMG_FOREIGN,IMG_FOREIGN);
     }
     // Add the columns
-    line.Format("%s -> %s",foreign.m_fkColumnName,foreign.m_pkColumnName);
+    line.Format(_T("%s -> %s"),foreign.m_fkColumnName,foreign.m_pkColumnName);
     HTREEITEM col = InsertItem(line,primkey);
     SetItemImage(col,IMG_COLUMN,IMG_COLUMN);
   }
@@ -1411,36 +1411,36 @@ ObjectTree::StatisticsToTree(MIndicesMap& p_statistics,HTREEITEM p_item)
       if(stat.m_indexType == SQL_TABLE_STAT)
       {
         // Process whole table statistics
-        next = InsertItem("[Table statistics]",p_item);
+        next = InsertItem(_T("[Table statistics]"),p_item);
       }
       else
       {
         // New index on a table
-        line.Format("Index name: %s",stat.m_indexName);
+        line.Format(_T("Index name: %s"),stat.m_indexName);
         if(stat.m_nonunique == false)
         {
-          line += " (Unique)";
+          line += _T(" (Unique)");
         }
         if(stat.m_indexType == SQL_INDEX_CLUSTERED)
         {
-          line += " (Clustered)";
+          line += _T(" (Clustered)");
         }
         if(stat.m_indexType == SQL_INDEX_HASHED)
         {
-          line += " (Hashed)";
+          line += _T(" (Hashed)");
         }
         next = InsertItem(line,p_item);
       }
       SetItemImage(next,IMG_INDEX,IMG_INDEX);
 
       // Table/index nodes have cardinality and pages
-      line.Format("Cardinality: %d",stat.m_cardinality);
+      line.Format(_T("Cardinality: %d"),stat.m_cardinality);
       HTREEITEM item = InsertItem(line,next);
       SetItemImage(item,IMG_INDEX,IMG_INDEX);
-      line.Format("Data pages: %d",stat.m_pages);
+      line.Format(_T("Data pages: %d"),stat.m_pages);
       item = InsertItem(line,next);
       SetItemImage(item,IMG_INDEX,IMG_INDEX);
-      line.Format("Index filter: %s",stat.m_filter);
+      line.Format(_T("Index filter: %s"),stat.m_filter);
       item = InsertItem(line,next);
       SetItemImage(item,IMG_INDEX,IMG_INDEX);
     }
@@ -1455,13 +1455,13 @@ ObjectTree::StatisticsToTree(MIndicesMap& p_statistics,HTREEITEM p_item)
       // Extra column on an index
       if(!stat.m_filter.IsEmpty())
       {
-        line.Format("%d: %s",stat.m_position,stat.m_filter);
+        line.Format(_T("%d: %s"),stat.m_position,stat.m_filter);
       }
       else
       {
-        line.Format("%d: %s",stat.m_position,stat.m_columnName);
+        line.Format(_T("%d: %s"),stat.m_position,stat.m_columnName);
       }
-      line += (stat.m_ascending == "A") ? " (Ascending)" : " (Descending)";
+      line += (stat.m_ascending == _T("A")) ? _T(" (Ascending)") : _T(" (Descending)");
       HTREEITEM item = InsertItem(line,next);
       SetItemImage(item,IMG_COLUMN,IMG_COLUMN);
     }
@@ -1485,47 +1485,47 @@ ObjectTree::SpecialsToTree(MSpecialsMap& p_specials,HTREEITEM p_item)
   // Inserts the special columns
   for(auto& special : p_specials)
   {
-    CString line = "Columnname: " + special.m_columnName;
+    CString line = _T("Columnname: ") + special.m_columnName;
     next = InsertItem(line,p_item);
     SetItemImage(next,IMG_COLUMN,IMG_COLUMN);
 
-    line.Format("RDBMS Special type: %s",special.m_typeName);
+    line.Format(_T("RDBMS Special type: %s"),special.m_typeName);
     HTREEITEM item  = InsertItem(line,next);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("ODBC data type: %s",info->ODBCDataType(special.m_datatype));
+    line.Format(_T("ODBC data type: %s"),info->ODBCDataType(special.m_datatype));
     item = InsertItem(line,next);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Column size: %d",special.m_columnSize);
+    line.Format(_T("Column size: %d"),special.m_columnSize);
     item = InsertItem(line,next);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Buffer size: %d",special.m_bufferSize);
+    line.Format(_T("Buffer size: %d"),special.m_bufferSize);
     item = InsertItem(line,next);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Decimal digits: %d",special.m_decimalDigits);
+    line.Format(_T("Decimal digits: %d"),special.m_decimalDigits);
     item = InsertItem(line,next);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line = "Column scope: ";
+    line = _T("Column scope: ");
     switch(special.m_scope)
     {
-      case SQL_SCOPE_CURROW:      line += "Current row"; break;
-      case SQL_SCOPE_TRANSACTION: line += "Transaction"; break;
-      case SQL_SCOPE_SESSION:     line += "Session";     break;
-      default:                    line += "Unknown";     break;
+      case SQL_SCOPE_CURROW:      line += _T("Current row"); break;
+      case SQL_SCOPE_TRANSACTION: line += _T("Transaction"); break;
+      case SQL_SCOPE_SESSION:     line += _T("Session");     break;
+      default:                    line += _T("Unknown");     break;
     }
     item = InsertItem(line,next);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line = "Column scope: ";
+    line = _T("Column scope: ");
     switch(special.m_pseudo)
     {
-      case SQL_PC_NON_PSEUDO: line += "Non-pseudo";    break;
-      case SQL_PC_PSEUDO:     line += "Pseudo column"; break;
-      default:                line += "No info";       break;
+      case SQL_PC_NON_PSEUDO: line += _T("Non-pseudo");    break;
+      case SQL_PC_PSEUDO:     line += _T("Pseudo column"); break;
+      default:                line += _T("No info");       break;
     }
     item = InsertItem(line,next);
     SetItemImage(item,IMG_INFO,IMG_INFO);
@@ -1557,46 +1557,46 @@ ObjectTree::TriggerToTree(MetaTrigger& p_trigger,HTREEITEM p_item)
   CString line;
 
   // Active trigger
-  line.Format("Trigger is: %s",p_trigger.m_enabled ? "enabled" : "disabled");
+  line.Format(_T("Trigger is: %s"),p_trigger.m_enabled ? _T("enabled") : _T("disabled"));
   HTREEITEM item = InsertItem(line,p_item);
   SetItemImage(item,IMG_TRIGGER,IMG_TRIGGER);
 
   // Type before/after
-  line.Format("Trigger fires: %s",p_trigger.m_before ? "before" : "after");
+  line.Format(_T("Trigger fires: %s"),p_trigger.m_before ? _T("before") : _T("after"));
   item = InsertItem(line,p_item);
   SetItemImage(item,IMG_TRIGGER,IMG_TRIGGER);
 
   // Trigger currently enabled
-  line.Format("Trigger enabled: %s",p_trigger.m_enabled ? "yes" : "no");
+  line.Format(_T("Trigger enabled: %s"),p_trigger.m_enabled ? _T("yes") : _T("no"));
   item = InsertItem(line,p_item);
   SetItemImage(item,IMG_TRIGGER,IMG_TRIGGER);
 
   // Ordering of firing
   if(p_trigger.m_position > 0)
   {
-    line.Format("Trigger order: %d",p_trigger.m_position);
+    line.Format(_T("Trigger order: %d"),p_trigger.m_position);
   }
   else
   {
-    line = "Trigger order: indetermined";
+    line = _T("Trigger order: indetermined");
   }
   item = InsertItem(line,p_item);
   SetItemImage(item,IMG_TRIGGER,IMG_TRIGGER);
 
   // Remarks
-  line = "Remarks on trigger: " + p_trigger.m_remarks;
+  line = _T("Remarks on trigger: ") + p_trigger.m_remarks;
   item = InsertItem(line,p_item);
   SetItemImage(item, IMG_TRIGGER, IMG_TRIGGER);
 
   // Fires on INSERT/UPDATE/DELETE/SELECT
-  line = "Trigger on DML: ";
-  if(p_trigger.m_insert)      line += "insert,";
-  if(p_trigger.m_update)      line += "update,";
-  if(p_trigger.m_delete)      line += "delete,";
-  if(p_trigger.m_select)      line += "select,";
-  if(p_trigger.m_session)     line += "session,";
-  if(p_trigger.m_transaction) line += "transaction,";
-  if(p_trigger.m_rollback)    line += "rollback,";
+  line = _T("Trigger on DML: ");
+  if(p_trigger.m_insert)      line += _T("insert,");
+  if(p_trigger.m_update)      line += _T("update,");
+  if(p_trigger.m_delete)      line += _T("delete,");
+  if(p_trigger.m_select)      line += _T("select,");
+  if(p_trigger.m_session)     line += _T("session,");
+  if(p_trigger.m_transaction) line += _T("transaction,");
+  if(p_trigger.m_rollback)    line += _T("rollback,");
   line.TrimRight(',');
   item = InsertItem(line,p_item);
   SetItemImage(item,IMG_TRIGGER,IMG_TRIGGER);
@@ -1604,14 +1604,14 @@ ObjectTree::TriggerToTree(MetaTrigger& p_trigger,HTREEITEM p_item)
   // Referencing statement (if any)
   if(!p_trigger.m_referencing.IsEmpty())
   {
-    line.Format("Referencing: %s",p_trigger.m_referencing);
+    line.Format(_T("Referencing: %s"),p_trigger.m_referencing);
     item = InsertItem(line,p_item);
     SetItemImage(item,IMG_TRIGGER,IMG_TRIGGER);
   }
   // Source
-  CString name = p_trigger.m_schemaName + "." + p_trigger.m_triggerName;
+  CString name = p_trigger.m_schemaName + _T(".") + p_trigger.m_triggerName;
   m_source.insert(std::make_pair(name,p_trigger.m_source));
-  line.Format("SQL Source: %d characters",p_trigger.m_source.GetLength());
+  line.Format(_T("SQL Source: %d characters"),p_trigger.m_source.GetLength());
   item = InsertItem(line,p_item,TREE_SOURCECODE);
   SetItemImage(item,IMG_SOURCE,IMG_SOURCE);
 }
@@ -1630,32 +1630,32 @@ ObjectTree::SequencesToTree(MSequenceMap& p_sequences,HTREEITEM p_item)
   for(auto& seq : p_sequences)
   {
     // The main sequence item
-    line.Format("Sequence name: %s",seq.m_sequenceName);
+    line.Format(_T("Sequence name: %s"),seq.m_sequenceName);
     HTREEITEM seqItem = InsertItem(line,p_item);
     SetItemImage(seqItem,IMG_SEQUENCE,IMG_SEQUENCE);
 
     // All info on the item
-    line.Format("Minimum value: %-12.0f",seq.m_minimalValue);
+    line.Format(_T("Minimum value: %-12.0f"),seq.m_minimalValue);
     HTREEITEM item = InsertItem(line,seqItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Current value: %-12.0f",seq.m_currentValue);
+    line.Format(_T("Current value: %-12.0f"),seq.m_currentValue);
     item = InsertItem(line,seqItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Increment with: %d",seq.m_increment);
+    line.Format(_T("Increment with: %d"),seq.m_increment);
     item = InsertItem(line,seqItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Caching size: %d",seq.m_cache);
+    line.Format(_T("Caching size: %d"),seq.m_cache);
     item = InsertItem(line,seqItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Re-Cycling of sets: %s",seq.m_cycle ? "yes" : "no");
+    line.Format(_T("Re-Cycling of sets: %s"),seq.m_cycle ? _T("yes") : _T("no"));
     item = InsertItem(line,seqItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Cluster ordering: %s",seq.m_order ? "yes" : "no");
+    line.Format(_T("Cluster ordering: %s"),seq.m_order ? _T("yes") : _T("no"));
     item = InsertItem(line,seqItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
   }
@@ -1675,13 +1675,13 @@ ObjectTree::PrivilegesToTree(MPrivilegeMap& p_privileges,HTREEITEM p_item)
   for(auto& priv : p_privileges)
   {
     CString line;
-    line.Format("%s was granted %s by %s"
+    line.Format(_T("%s was granted %s by %s")
                 ,priv.m_grantee
                 ,priv.m_privilege
                 ,priv.m_grantor);
     if(priv.m_grantable)
     {
-      line += " (With GRANT OPTION)";
+      line += _T(" (With GRANT OPTION)");
     }
     HTREEITEM item = InsertItem(line,p_item);
     SetItemImage(item,IMG_ACCESS,IMG_ACCESS);
@@ -1702,14 +1702,14 @@ ObjectTree::ColumnPrivilegesToTree(MPrivilegeMap& p_privileges,HTREEITEM p_item)
   for(auto& priv : p_privileges)
   {
     CString line;
-    line.Format("%s was granted %s on column %s by %s"
+    line.Format(_T("%s was granted %s on column %s by %s")
                 ,priv.m_grantee
                 ,priv.m_privilege
                 ,priv.m_columnName
                 ,priv.m_grantor);
     if(priv.m_grantable)
     {
-      line += " (With GRANT OPTION)";
+      line += _T(" (With GRANT OPTION)");
     }
     HTREEITEM item = InsertItem(line,p_item);
     SetItemImage(item,IMG_ACCESS,IMG_ACCESS);
@@ -1733,63 +1733,63 @@ ObjectTree::ParametersToTree(MParameterMap& p_parameters,HTREEITEM p_item)
   for(auto& param : p_parameters)
   {
     CString line;
-    line.Format("%d: %s",param.m_position,param.m_parameter);
+    line.Format(_T("%d: %s"),param.m_position,param.m_parameter);
     switch(param.m_nullable)
     {
-      case SQL_NO_NULLS:         line += " (NOT NULL)"; break;
-      case SQL_NULLABLE:         line += " (NULLABLE)"; break;
+      case SQL_NO_NULLS:         line += _T(" (NOT NULL)"); break;
+      case SQL_NULLABLE:         line += _T(" (NULLABLE)"); break;
       case SQL_NULLABLE_UNKNOWN: // Fall through
-      default:                   line += " (NULLS unknown)";
+      default:                   line += _T(" (NULLS unknown)");
                                  break;
     }
     HTREEITEM paramItem = InsertItem(line,p_item);
     SetItemImage(paramItem,IMG_PARAMETER,IMG_PARAMETER);
 
-    line = "Parameter type: ";
+    line = _T("Parameter type: ");
     switch(param.m_columnType)
     {
-      case SQL_PARAM_INPUT:               line += "input";              break;
-      case SQL_PARAM_OUTPUT:              line += "output";             break;
-      case SQL_PARAM_INPUT_OUTPUT:        line += "input/output";       break;
-      case SQL_RETURN_VALUE:              line += "return value";       break;
-      case SQL_RESULT_COL:                line += "result column";      break;
-      case SQL_PARAM_INPUT_OUTPUT_STREAM: line += "input/output stream";break;
-      case SQL_PARAM_OUTPUT_STREAM:       line += "output stream";      break;
+      case SQL_PARAM_INPUT:               line += _T("input");              break;
+      case SQL_PARAM_OUTPUT:              line += _T("output");             break;
+      case SQL_PARAM_INPUT_OUTPUT:        line += _T("input/output");       break;
+      case SQL_RETURN_VALUE:              line += _T("return value");       break;
+      case SQL_RESULT_COL:                line += _T("result column");      break;
+      case SQL_PARAM_INPUT_OUTPUT_STREAM: line += _T("input/output stream");break;
+      case SQL_PARAM_OUTPUT_STREAM:       line += _T("output stream");      break;
       case SQL_PARAM_TYPE_UNKNOWN:        // fall through
-      default:                            line += "UNKNOWN";            break;
+      default:                            line += _T("UNKNOWN");            break;
     }
     HTREEITEM item = InsertItem(line,paramItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("ODBC Datatype: %s",info->ODBCDataType(param.m_datatype));
+    line.Format(_T("ODBC Datatype: %s"),info->ODBCDataType(param.m_datatype));
     item = InsertItem(line,paramItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("RDBMS Datatype: %s",param.m_typeName);
+    line.Format(_T("RDBMS Datatype: %s"),param.m_typeName);
     item = InsertItem(line,paramItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Column size: %d",param.m_columnSize);
+    line.Format(_T("Column size: %d"),param.m_columnSize);
     item = InsertItem(line,paramItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Buffer size: %d",param.m_bufferLength);
+    line.Format(_T("Buffer size: %d"),param.m_bufferLength);
     item = InsertItem(line,paramItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Decimal digits: %d",param.m_decimalDigits);
+    line.Format(_T("Decimal digits: %d"),param.m_decimalDigits);
     item = InsertItem(line,paramItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Radix: %d",param.m_numRadix);
+    line.Format(_T("Radix: %d"),param.m_numRadix);
     item = InsertItem(line,paramItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Default value: %s",param.m_default);
+    line.Format(_T("Default value: %s"),param.m_default);
     item = InsertItem(line,paramItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format("Comments: %s",param.m_remarks);
+    line.Format(_T("Comments: %s"),param.m_remarks);
     item = InsertItem(line,paramItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
   }
@@ -1800,7 +1800,7 @@ ObjectTree::AddErrorsToTree(CString p_errors,HTREEITEM p_theItem)
 {
   if(!p_errors.IsEmpty())
   {
-    CString line("ERROR: ");
+    CString line(_T("ERROR: "));
     line += p_errors;
     InsertItem(line,p_theItem);
   }

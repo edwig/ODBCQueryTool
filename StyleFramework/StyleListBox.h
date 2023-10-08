@@ -63,7 +63,7 @@ public:
   // Overrides of CListBox functions
   int  AddString(LPCTSTR p_string);
   int  InsertString(int p_index,LPCTSTR p_string,COLORREF p_foreground = FRAME_DEFAULT_COLOR,COLORREF p_background = FRAME_DEFAULT_COLOR);
-  int  AppendString(LPCSTR p_text,COLORREF p_foreground = FRAME_DEFAULT_COLOR,COLORREF p_background = FRAME_DEFAULT_COLOR);
+  int  AppendString(LPCTSTR p_text,COLORREF p_foreground = FRAME_DEFAULT_COLOR,COLORREF p_background = FRAME_DEFAULT_COLOR);
   void ResetContent();
   int  DeleteString(int p_number);
   void MoveWindow(int x,int y,int nWidth,int nHeight,BOOL bRepaint = TRUE);
@@ -76,8 +76,8 @@ public:
   void Copy();
   void Cut();
   void Paste();
-  bool Print         (CString p_documentName,CString p_printer = "",CString p_pageName = "",CString p_dateName = "",CString p_endlisting = "");
-  bool PrintSelection(CString p_documentName,CString p_printer = "",CString p_pageName = "",CString p_dateName = "",CString p_endlisting = "");
+  bool Print         (CString p_documentName,CString p_printer = _T(""),CString p_pageName = _T(""),CString p_dateName = _T(""),CString p_endlisting = _T(""));
+  bool PrintSelection(CString p_documentName,CString p_printer = _T(""),CString p_pageName = _T(""),CString p_dateName = _T(""),CString p_endlisting = _T(""));
 
   DECLARE_MESSAGE_MAP()
 

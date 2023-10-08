@@ -387,8 +387,8 @@ SkinScrollWnd::SkinWindow(CWnd* p_wnd,int p_borderSize /*=0*/,int p_clientBias /
   ::OffsetRect(&original,-original.left,-original.top);
 
   // Create the skinning windows (Frame, limiter and scrollbars)
-  this->CreateEx(dwFrmStyleEx,AfxRegisterWndClass(NULL),"CXSF",dwFrmStyle,rcFrm,parent,uID);
-  m_wndLimit.Create(NULL,"LIMIT",WS_CHILD|WS_VISIBLE|WS_CLIPCHILDREN,original,this,200);
+  this->CreateEx(dwFrmStyleEx,AfxRegisterWndClass(NULL),_T("CXSF"),dwFrmStyle,rcFrm,parent,uID);
+  m_wndLimit.Create(NULL,_T("LIMIT"),WS_CHILD|WS_VISIBLE|WS_CLIPCHILDREN,original,this,200);
   m_sbHorz.Create(WS_CHILD|SBS_HORZ,CRect(0,0,0,0),this,100);
   m_sbVert.Create(WS_CHILD|SBS_VERT,CRect(0,0,0,0),this,101);
   m_sbHorz.SetBitmapSize();

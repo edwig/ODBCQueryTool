@@ -25,7 +25,7 @@ StylingFramework::StylingFramework()
 {
   if(m_instance)
   {
-    throw CString("SFX can only be initialized once!");
+    throw CString(_T("SFX can only be initialized once!"));
   }
   m_instance = this;
   SFXCalculateDPI();

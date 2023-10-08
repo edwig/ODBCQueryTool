@@ -100,7 +100,7 @@ namespace OpenEditor
         elEXPRESSION,
     };
 
-    const char* GetLexemeName (EPLSLexeme lexeme);
+    LPCTSTR GetLexemeName (EPLSLexeme lexeme);
 
     struct LexemeInfo
     {
@@ -137,7 +137,7 @@ namespace OpenEditor
         LexicalAnalyser ();
 
         void Join (SyntaxAnalyser*);
-        bool PutLine (const char*, int line, int offset, int length, bool backward);
+        bool PutLine (LPCTSTR, int line, int offset, int length, bool backward);
 
     private:
         Fastmap<bool> m_fastmap;
@@ -219,7 +219,7 @@ namespace OpenEditor
 
     struct MatchSearcherFactory
     {
-        static MatchSearcherBasePtr CreateMatchSearcher (const char* lang);
+        static MatchSearcherBasePtr CreateMatchSearcher (LPCTSTR lang);
         static MatchSearcherBasePtr CreateMatchSearcher (const string& lang)
             { return CreateMatchSearcher (lang.c_str()); }
     };

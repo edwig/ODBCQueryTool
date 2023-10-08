@@ -178,14 +178,14 @@ COEFindFiles::GoFind(StyleGridCtrl* grid)
 int
 COEFindFiles::GoFindInFolder(CString p_folder,StyleGridCtrl* grid)
 {
-  struct _finddata_t fileinfo;
+  struct _tfinddata_t fileinfo;
   intptr_t fileHandle;
   CString patroon;
   int    aantal = 0;
 
   // Step 1: Find the files by pattern types
   patroon = p_folder + _T("\\") + m_filetypes;
-  fileHandle = _findfirst(patroon,&fileinfo);
+  fileHandle = _tfindfirst(patroon,&fileinfo);
   if(fileHandle != -1)
   {
     // OK, found something
@@ -198,14 +198,14 @@ COEFindFiles::GoFindInFolder(CString p_folder,StyleGridCtrl* grid)
         GoFindInFile(p_folder + _T("\\") + fileinfo.name,grid);
       }
     }
-    while(_findnext(fileHandle,&fileinfo) == 0);
+    while(_tfindnext(fileHandle,&fileinfo) == 0);
     _findclose(fileHandle);
   }
   // Step 2: Find the directories
   if(m_subfolders)
   {
     patroon = p_folder + _T("\\*.*");
-    fileHandle = _findfirst(patroon,&fileinfo);
+    fileHandle = _tfindfirst(patroon,&fileinfo);
     if(fileHandle != -1)
     {
       do
@@ -218,7 +218,7 @@ COEFindFiles::GoFindInFolder(CString p_folder,StyleGridCtrl* grid)
           }
         }
       }
-      while(_findnext(fileHandle,&fileinfo) == 0);
+      while(_tfindnext(fileHandle,&fileinfo) == 0);
       _findclose(fileHandle);
     }
   }
@@ -229,16 +229,19 @@ void
 COEFindFiles::GoFindInFile(CString fileName,StyleGridCtrl* grid)
 {
   // m_whole_word, m_match_case, m_use_regex, m_collapse
-  FILE*   file  = nullptr;
   bool    res   = false;
   int     len   = 0;
   CString findThis   = m_whattofind;
   long    lineNumber = 0;
   RegExp  rex;
-  char    buffer[MAX_BUFSIZE+1];
+  CString buffer;
+  WinFile file(fileName);
 
-  fopen_s(&file,fileName, _T("rt"));
-
+  file.Open(winfile_read | open_trans_text);
+  if(!file.GetIsOpen())
+  {
+    return;
+  }
   if(!m_match_case)
   {
     findThis.MakeUpper();
@@ -253,58 +256,50 @@ COEFindFiles::GoFindInFile(CString fileName,StyleGridCtrl* grid)
     }
     rex.SetUseCase(m_match_case);
   }
-  if(file)
+  while(file.Read(buffer))
   {
-    while(fgets(buffer,MAX_BUFSIZE,file) != NULL)
+    ++lineNumber;
+    if(buffer.Right(1) == _T("\n"))
     {
-      ++lineNumber;
-      do
-      {
-        len = (int)strlen(buffer);
-        if(buffer[len-1] == '\n') { buffer[len-1] = 0; continue; }
-        if(buffer[len-1] == '\r') { buffer[len-1] = 0; continue; }
-        break;
-      }
-      while(len > 0);
-      res = false;
-      if(!m_use_regex)
-      {
-        if(!m_match_case)
-        {
-          char* pnt = buffer;
-          while(*pnt)
-          {
-            *pnt = toupper(*pnt);
-            ++pnt;
-          }
-        }
-        res = (strstr(buffer,findThis) != NULL);
-      }
-      else
-      {
-        res = rex.Match(buffer);
-      }
-      if(m_collapse && res)
-      {
-        // Collapsed list and result, so perform early dropout
-        AppendRow(grid,fileName,lineNumber,buffer);
-        fclose(file);
-        return;
-      }
-      if(res)
-      {
-        AppendRow(grid,fileName,lineNumber,buffer);
-      }
+      buffer.Truncate(buffer.GetLength() - 1);
     }
-    fclose(file);
+    if(buffer.IsEmpty())
+    {
+      continue;
+    }
+    res = false;
+    if(!m_use_regex)
+    {
+      if(!m_match_case)
+      {
+        buffer.MakeUpper();
+      }
+      res = (_tcsstr(buffer,findThis) != NULL);
+    }
+    else
+    {
+      res = rex.Match(buffer);
+    }
+    if(m_collapse && res)
+    {
+      // Collapsed list and result, so perform early dropout
+      AppendRow(grid,fileName,lineNumber,buffer);
+      file.Close();
+      return;
+    }
+    if(res)
+    {
+      AppendRow(grid,fileName,lineNumber,buffer);
+    }
   }
+  file.Close();
 }
 
 void
-COEFindFiles::AppendRow(StyleGridCtrl* grid,CString& fileName,int lineNumber,char* buffer)
+COEFindFiles::AppendRow(StyleGridCtrl* grid,CString& fileName,int lineNumber,LPCTSTR buffer)
 {
-  char buf[20];
-  _itoa_s(lineNumber,buf,20,10);
+  TCHAR buf[20];
+  _itot_s(lineNumber,buf,20,10);
 
   GV_ITEM item;
   item.mask = GVIF_TEXT | GVIF_FORMAT;

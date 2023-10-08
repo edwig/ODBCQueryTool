@@ -257,7 +257,7 @@ SQLDate::AsString() const
   XString buffer;
   if(IsNull() == false)
   {
-    buffer.Format("%02ld-%02ld-%04ld", Day(), Month(), Year());
+    buffer.Format(_T("%02ld-%02ld-%04ld"), Day(), Month(), Year());
   }
   return buffer;
 }
@@ -268,7 +268,7 @@ SQLDate::AsXMLString() const
   XString buffer;
   if (IsNull() == false)
   {
-    buffer.Format("%04d-%02d-%02d",Year(),Month(),Day());
+    buffer.Format(_T("%04d-%02d-%02d"),Year(),Month(),Day());
   }
   return buffer;
 }
@@ -279,7 +279,7 @@ SQLDate::AsSQLString(SQLDatabase* p_database)
 {
   if(IsNull())
   {
-    return "NULL";
+    return _T("NULL");
   }
   return p_database->GetSQLDateString(Day(),Month(),Year()); 
 }
@@ -288,7 +288,7 @@ XString
 SQLDate::AsStrippedSQLString(SQLDatabase* /*p_database*/)
 {
   XString string;
-  string.Format("%04d-%02d-%02d",Year(),Month(),Day());
+  string.Format(_T("%04d-%02d-%02d"),Year(),Month(),Day());
   return string;
 }
 
@@ -320,7 +320,7 @@ SQLDate::WeekDayName(Language p_lang /*=LN_DEFAULT*/) const
 { 
   if(Valid())
   {
-    // Based on 0 (= sunday)
+    // Based on 0 (= Sunday)
     int weekday = (m_mjd + 3) % 7;
 
     if(p_lang == LN_DEFAULT)
@@ -371,7 +371,7 @@ SQLDate::FullDate(Language p_lang /*=LN_DEFAULT*/) const
     }
     if(p_lang >= LN_DUTCH && p_lang <= LN_FRENCH)
     {
-      fullName.Format("%s %ld %s %ld",WeekDayName(p_lang).GetString(),Day(),MonthName(p_lang).GetString(),Year());
+      fullName.Format(_T("%s %ld %s %ld"),WeekDayName(p_lang).GetString(),Day(),MonthName(p_lang).GetString(),Year());
     }
   }
   return fullName;
@@ -383,15 +383,15 @@ SQLDate::WeekNumber()  const
 {
   if(Valid())
   {
-    // Algorithme by: Tommy Skaue (CodeProject) / Peter-Paul Koch
-    // ISO8601 Weeknumber (monday is the beginning and 1)
+    // Algorithm by: Tommy Skaue (CodeProject) / Peter-Paul Koch
+    // ISO8601 Week number (Monday is the beginning and 1)
     // Two equivalent definitions
-    // 1) Week in which 4th of january falls is week 1, OR
-    // 2) Week where the first thursday of the year falls is week 1
+    // 1) Week in which 4th of January falls is week 1, OR
+    // 2) Week where the first Thursday of the year falls is week 1
     long a  = (14 - m_date.m_month) / 12;
     long y  = m_date.m_year + 4800 - a;
     long m  = m_date.m_month + (12 * a) - 3;
-    // Beware JD is misleading. In fact: Gregoriaanse day
+    // Beware JD is misleading. In fact: Gregorian day
     long jd = m_date.m_day + (long)(((153*m)+2)/5) +
               (365 * y)   + (long)(y / 4) - (long)(y / 100) +
               (long)(y / 400) - 32045;
@@ -420,8 +420,7 @@ SQLDate::IsNumericString(const XString& p_string)
   return true;
 }
 
-// Bepaal datum is veranderd in het zetten
-// van de datum van het huidige object i.p.v. een datum teruggeven
+// Getting the date from a string
 bool
 SQLDate::CalculateDate(const XString& p_datum)
 {
@@ -533,7 +532,7 @@ SQLDate::CalculateDate(const XString& p_datum)
     if(!ParseDate(datum,&jaar,&maand,&dag))
     {
       // Wrong formatted date
-      throw StdException("Date has a wrong format");
+      throw StdException(_T("Date has a wrong format"));
     }
     // Special case: Some applications do this
     // 00-00-00 -> Becomes today
@@ -573,27 +572,27 @@ SQLDate::ShortDate(const XString& p_date,int& p_year,int& p_month,int& p_day)
       case 1: // Fall through
       case 2: p_year  = vandaag.Year();
               p_month = vandaag.Month();
-              p_day   = atoi(p_date);
+              p_day   = _ttoi(p_date);
               success = true;
               break;
       case 4: p_year  = vandaag.Year();
-              p_month = atoi(p_date.Mid(2,2));
-              p_day   = atoi(p_date.Left(2));
+              p_month = _ttoi(p_date.Mid(2,2));
+              p_day   = _ttoi(p_date.Left(2));
               success = true;
               break;
-      case 6: p_year = atoi(p_date.Mid(4,2));
+      case 6: p_year = _ttoi(p_date.Mid(4,2));
               if(p_year > 50)
               {
                 eeuw = 19;
               }
               p_year += eeuw * 100;
-              p_month = atoi(p_date.Mid(2,2));
-              p_day   = atoi(p_date.Left(2));
+              p_month = _ttoi(p_date.Mid(2,2));
+              p_day   = _ttoi(p_date.Left(2));
               success = true;
               break;
-      case 8: p_year  = atoi(p_date.Mid(4,4));
-              p_month = atoi(p_date.Mid(2,2));
-              p_day   = atoi(p_date.Left(2));
+      case 8: p_year  = _ttoi(p_date.Mid(4,4));
+              p_month = _ttoi(p_date.Mid(2,2));
+              p_day   = _ttoi(p_date.Left(2));
               success = true;
               break;
     }
@@ -614,11 +613,11 @@ SQLDate::GetVirtualDate(XString       p_sign,
   if(!p_sign.IsEmpty())
   {
     p_extraTime.MakeUpper();
-    if(p_sign != "-" && p_sign != "+")
+    if(p_sign != _T("-") && p_sign != _T("+"))
     {
       return false;
     }
-    int factor = (p_sign == "-") ? -1 : 1;
+    int factor = (p_sign == _T("-")) ? -1 : 1;
     
     // Apply extra time
     if(p_extraTime == g_dateNames[g_defaultLanguage][DN_DAY] || 
@@ -660,7 +659,7 @@ SQLDate::ParseDate(const XString& p_datum,int* p_jaar,int* p_maand,int* p_dag)
   datum.Replace('/',' ');
   datum.Replace('.',' ');
 
-  int num = sscanf_s(datum,"%d %d %d",p_dag,p_maand,p_jaar);
+  int num = _stscanf_s(datum,_T("%d %d %d"),p_dag,p_maand,p_jaar);
 
   // Need at x-y-z pattern or x-y pattern
   bool result = (num == 2 || num == 3);
@@ -687,7 +686,7 @@ SQLDate::AddDays(const long p_numberOfDays) const
   if(Valid())
   {
     dat.m_mjd += p_numberOfDays;
-    dat.MJDtoDate(); // Recalc the date
+    dat.MJDtoDate(); // Recalculate the date
   }
   return dat;
 }
@@ -743,7 +742,7 @@ SQLDate::AddYears(const long p_numberOfYears) const
   return dat;
 }
 
-// Calculates the number of days betwee dates
+// Calculates the number of days between dates
 long
 SQLDate::DaysBetween(const SQLDate& p_date) const
 {
@@ -792,9 +791,9 @@ SQLDate::SplitStrDate(const XString& p_strDate,
                             int&     p_interval)
 {
   bool blnFound     = false;
-  p_currentDate     = "";
-  p_sign			      = "";
-  p_extraTime		    = "";
+  p_currentDate     = _T("");
+  p_sign			      = _T("");
+  p_extraTime		    = _T("");
   p_interval		    = 0;
   XString strIntrval;
 
@@ -803,12 +802,12 @@ SQLDate::SplitStrDate(const XString& p_strDate,
   for (int index = 0; index < intLength; index++)
   {
     XString temp(p_strDate.GetAt(index),1);
-    if (temp.Compare(" ") != 0)
+    if (temp.Compare(_T(" ")) != 0)
     {
       if ((p_strDate.GetAt(index) >= '0') && (p_strDate.GetAt(index) <= '9'))
       {
         strIntrval += p_strDate.GetAt(index);
-        p_interval = atoi(strIntrval); 
+        p_interval = _ttoi(strIntrval); 
       }
       else if (p_strDate.GetAt(index) == '+' || p_strDate.GetAt(index) == '-')
       {
@@ -846,25 +845,25 @@ SQLDate::ParseXMLDate(const XString& p_string,SQLTimestamp& p_moment)
   int UTCmi[2] = {0,0};
 
   // changed char to unsigned int for 64 bit implementation
-  char sep3,sep4,sep5,sep6,sep7,sep8;
+  TCHAR sep3,sep4,sep5,sep6,sep7,sep8;
 
-  int n = sscanf_s(p_string
-                  ,"%1d%1d%1d%1d-%1d%1d-%1d%1d%c%1d%1d%c%1d%1d%c%1d%1d%c%d%c%1d%1d%c%1d%1d"
-                  ,&ja[0],&ja[1],&ja[2],&ja[3]
-                  ,&ma[0],&ma[1]
-                  ,&da[0],&da[1]
-                  ,&sep3,(unsigned int) sizeof(char)
-                  ,&uu[0],&uu[1]
-                  ,&sep4,(unsigned int) sizeof(char)
-                  ,&mi[0],&mi[1]
-                  ,&sep5,(unsigned int) sizeof(char)
-                  ,&se[0],&se[1]
-                  ,&sep6,(unsigned int) sizeof(char)
-                  ,&fraction
-                  ,&sep7,(unsigned int) sizeof(char)
-                  ,&UTCuu[0],&UTCuu[1]
-                  ,&sep8,(unsigned int) sizeof(char)
-                  ,&UTCmi[0],&UTCmi[1]);
+  int n = _stscanf_s(p_string
+                    ,_T("%1d%1d%1d%1d-%1d%1d-%1d%1d%c%1d%1d%c%1d%1d%c%1d%1d%c%d%c%1d%1d%c%1d%1d")
+                    ,&ja[0],&ja[1],&ja[2],&ja[3]
+                    ,&ma[0],&ma[1]
+                    ,&da[0],&da[1]
+                    ,&sep3,(unsigned int) sizeof(char)
+                    ,&uu[0],&uu[1]
+                    ,&sep4,(unsigned int) sizeof(char)
+                    ,&mi[0],&mi[1]
+                    ,&sep5,(unsigned int) sizeof(char)
+                    ,&se[0],&se[1]
+                    ,&sep6,(unsigned int) sizeof(char)
+                    ,&fraction
+                    ,&sep7,(unsigned int) sizeof(char)
+                    ,&UTCuu[0],&UTCuu[1]
+                    ,&sep8,(unsigned int) sizeof(char)
+                    ,&UTCmi[0],&UTCmi[1]);
 
   int jaar    = ja[0] * 1000 + ja[1] * 100 + ja[2] * 10 + ja[3];
   int maand   = ma[0] * 10 + ma[1];
@@ -920,7 +919,7 @@ SQLDate::ParseXMLDate(const XString& p_string,SQLTimestamp& p_moment)
     case 20:  // Has "YYYY-MM-DDTHH:MM:SS.fractionZ" pattern
               UTC   = sep3 == 'T' && sep4 == ':' && sep5 == ':' && sep6 == '.' && sep7 == 'Z';
               break;
-    case 22:  // UTCuurBuffer in fractie
+    case 22:  // UTCuurBuffer in fraction
               // UTCminBuffer in UTCuurBuffer
               if(sep3 == 'T' && sep4 == ':'  && sep5 == ':' && 
                 (sep6 == '+' || sep6 == '-') && sep7 == ':' && 
@@ -1045,7 +1044,7 @@ SQLDate::NamedDate(const XString& p_date,int& p_year,int& p_month,int& p_day)
       // Check if first item is a number (day in the month)
       if(alphapos > 0)
       {
-        p_day = atoi(p_date);
+        p_day = _ttoi(p_date);
       }
       int spacepos = p_date.Find(' ',alphapos);
       if(spacepos > 0)
@@ -1059,13 +1058,13 @@ SQLDate::NamedDate(const XString& p_date,int& p_year,int& p_month,int& p_day)
         if(spacepos2 > 0)
         {
           // Two parts after the month name
-          p_day  = atoi(after);
-          p_year = atoi(after.Mid(spacepos2 + 1));
+          p_day  = _ttoi(after);
+          p_year = _ttoi(after.Mid(spacepos2 + 1));
         }
         else
         {
           // Just one part (year)
-          p_year = atoi(after);
+          p_year = _ttoi(after);
         }
       }
       // Adjust for century
@@ -1169,7 +1168,7 @@ SQLDate::operator+(const SQLInterval& p_interval) const
   // Check if interval is the correct type
   if(p_interval.GetIsYearMonthType())
   {
-    throw StdException("Incompatible interval to add to a date");
+    throw StdException(_T("Incompatible interval to add to a date"));
   }
   // Do the calculation
   SQLDate date(*this);
@@ -1202,7 +1201,7 @@ SQLDate::operator-(const SQLInterval& p_interval) const
   // Check if interval is the correct type
   if(p_interval.GetIsYearMonthType())
   {
-    throw StdException("Incompatible interval to add to a date");
+    throw StdException(_T("Incompatible interval to add to a date"));
   }
   // Do the calculation
   SQLDate date(*this);

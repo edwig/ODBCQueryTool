@@ -156,7 +156,7 @@ namespace ThemeColor
 
   constexpr unsigned NO_OF_THEMES = (int)Themes::ThemeMax;
   constexpr unsigned NO_OF_COLORS = (int)Colors::ColorMax;
-  extern const char* theme_names [NO_OF_THEMES];
+  extern LPCTSTR     theme_names [NO_OF_THEMES];
   extern const int   theme_colors[NO_OF_COLORS][NO_OF_THEMES];
   extern Themes     _theme;
 
@@ -169,8 +169,8 @@ namespace ThemeColor
 }
 
 // Where we store the styles in the registry of MS-Windows
-#define STYLECOLORS_KEY   "HKCU\\Software\\StyleFramework\\StyleThemes"
-#define STYLECOLORS_THEME "Theme"
+#define STYLECOLORS_KEY   _T("HKCU\\Software\\StyleFramework\\StyleThemes")
+#define STYLECOLORS_THEME _T("Theme")
 
 // Window
 #define ColorWindowTransparent      RGB(0xFF, 0x00, 0xFF)

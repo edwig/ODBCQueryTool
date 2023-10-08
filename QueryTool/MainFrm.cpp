@@ -37,7 +37,7 @@
 #define new DEBUG_NEW
 #endif
 
-LPCSTR CMainFrame::m_cszClassName = "ODBCQueryTool.OpenEditor";
+LPCTSTR CMainFrame::m_cszClassName = _T("ODBCQueryTool.OpenEditor");
 SettingsManager CMainFrame::m_settingsManager;
 
 // CMainFrame
@@ -162,8 +162,8 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	}
   m_wndToolBar.SetMenuSizes(buttonSize, imageSize);
   m_wndToolBar.SetHeight(TOOLBAR_HEIGHT);
-	m_wndToolBar.SetWindowText("Standard");
-	m_wndToolBar.EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, "Customize");
+	m_wndToolBar.SetWindowText(_T("Standard"));
+	m_wndToolBar.EnableCustomizeButton(TRUE, ID_VIEW_CUSTOMIZE, _T("Customize"));
 
 
   // Database toolbar
@@ -175,7 +175,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   }
   m_dbToolBar.SetMenuSizes(buttonSize, imageSize);
   m_dbToolBar.SetHeight(TOOLBAR_HEIGHT);
-	m_dbToolBar.SetWindowTextA("Database");
+	m_dbToolBar.SetWindowText(_T("Database"));
 
 
 	// Connection toolbar
@@ -187,7 +187,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   }
 	m_conToolBar.SetMenuSizes(buttonSize, imageSize);
 	m_conToolBar.SetHeight(TOOLBAR_HEIGHT);
-	m_conToolBar.SetWindowText("Connection");
+	m_conToolBar.SetWindowText(_T("Connection"));
 
 
 	// Allow user-defined toolbars operations:
@@ -249,7 +249,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	EnableWindowsDialog(ID_WINDOW_MANAGER, ID_WINDOW_MANAGER, TRUE);
 
 	// Enable toolbar and docking window menu replacement
-	EnablePaneMenu(TRUE, ID_VIEW_CUSTOMIZE, "Customize", ID_VIEW_TOOLBAR);
+	EnablePaneMenu(TRUE, ID_VIEW_CUSTOMIZE, _T("Customize"), ID_VIEW_TOOLBAR);
 
 	// enable quick (Alt+drag) toolbar customization
 	CMFCToolBar::EnableQuickCustomization();
@@ -462,7 +462,7 @@ BOOL CMainFrame::CreateDockingWindows()
 
 	SetDockingWindowIcons(theApp.m_bHiColorIcons);
 
-  CString drivePath = AfxGetApp()->GetProfileString("FileManager", "CurrentDrive");
+  CString drivePath = AfxGetApp()->GetProfileString(_T("FileManager"), _T("CurrentDrive"));
   if (drivePath.IsEmpty())
   {
     CString path;
@@ -720,7 +720,7 @@ BOOL CMainFrame::OnCopyData(CWnd*, COPYDATASTRUCT* pCopyDataStruct)
     {
       if (IsIconic()) OpenIcon();
       COEDocument::EnableOpenUnexisting enable;
-      AfxGetApp()->OpenDocumentFile(CString((LPCSTR)pCopyDataStruct->lpData, pCopyDataStruct->cbData));
+      AfxGetApp()->OpenDocumentFile(CString((LPCTSTR)pCopyDataStruct->lpData, pCopyDataStruct->cbData));
     }
     return TRUE;
   }
@@ -752,23 +752,23 @@ CMainFrame::OnDatabaseBar()
 void
 CMainFrame::OnSupportBug()
 {
-  SendSupportEmail("Bug report for Open-ODBCQueryTool", "The following functionality is broken...");
+  SendSupportEmail(_T("Bug report for Open-ODBCQueryTool"), _T("The following functionality is broken..."));
 }
 
 void
 CMainFrame::OnSupportFeature()
 {
-  SendSupportEmail("Feature request for Open-ODBCQueryTool", "I suggest that you....");
+  SendSupportEmail(_T("Feature request for Open-ODBCQueryTool"), _T("I suggest that you...."));
 }
 
 void
 CMainFrame::SendSupportEmail(CString p_subject, CString p_body)
 {
-  CString command("open");
-  CString parameters("mailto:edwig.huisman@hetnet.nl");
+  CString command(_T("open"));
+  CString parameters(_T("mailto:edwig.huisman@hetnet.nl"));
 
-  parameters.AppendFormat("?Subject=%s", p_subject);
-  parameters.AppendFormat("&Body=%s",    p_body);
+  parameters.AppendFormat(_T("?Subject=%s"), p_subject.GetString());
+  parameters.AppendFormat(_T("&Body=%s"),    p_body.GetString());
 
   CWaitCursor aSigh;
   ShellExecute(GetSafeHwnd(), command, parameters, NULL, NULL, SW_SHOWNORMAL);
@@ -777,31 +777,31 @@ CMainFrame::SendSupportEmail(CString p_subject, CString p_body)
 void
 CMainFrame::OnWebSourceforge()
 {
-  CString source("https://sourceforge.net/projects/odbcquerytool/");
-  ShellExecute(NULL, "open", source, NULL, NULL, SW_SHOWMAXIMIZED);
+  CString source(_T("https://sourceforge.net/projects/odbcquerytool/"));
+  ShellExecute(NULL, _T("open"), source, NULL, NULL, SW_SHOWMAXIMIZED);
 }
 
 void
 CMainFrame::OnWebGithub()
 {
-  CString github("https://github.com/edwig/ODBCQueryTool/");
-  ShellExecute(NULL, "open", github, NULL, NULL, SW_SHOWMAXIMIZED);
+  CString github(_T("https://github.com/edwig/ODBCQueryTool/"));
+  ShellExecute(NULL, _T("open"), github, NULL, NULL, SW_SHOWMAXIMIZED);
 }
 
 void
 CMainFrame::OnSQLMigration()
 {
   CString path = GetExePath();
-  path += "SQLMigrate.exe";
-  ShellExecute(NULL,"open",path,NULL,NULL,SW_SHOWNORMAL);
+  path += _T("SQLMigrate.exe");
+  ShellExecute(NULL,_T("open"),path,NULL,NULL,SW_SHOWNORMAL);
 }
 
 void
 CMainFrame::OnSQLReWriter()
 {
   CString path = GetExePath();
-  path += "QueryReWriter.exe";
-  ShellExecute(NULL,"open",path,NULL,NULL,SW_SHOWNORMAL);
+  path += _T("QueryReWriter.exe");
+  ShellExecute(NULL,_T("open"),path,NULL,NULL,SW_SHOWNORMAL);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -885,7 +885,7 @@ CMainFrame::LoadSettingsManager()
   Common::AppGetPath(path);
 
   // Load editor settings
-  OpenEditor::SettingsManagerReader(OpenEditor::FileInStream((path + "\\data\\settings.dat").GetString())) >> m_settingsManager;
+  OpenEditor::SettingsManagerReader(OpenEditor::FileInStream((path + _T("\\data\\settings.dat")).GetString())) >> m_settingsManager;
 }
 
 void
@@ -895,12 +895,12 @@ CMainFrame::SaveSettingsManager()
   Common::AppGetPath(path);
 
   // old settings backup
-  _CHECK_AND_THROW_(CopyFile((path + "\\data\\settings.dat"),
-										(path + "\\data\\settings.dat.old"), FALSE) != 0,
-										"File search: settings error!"
+  _CHECK_AND_THROW_(CopyFile((path + _T("\\data\\settings.dat")),
+										(path + _T("\\data\\settings.dat.old")), FALSE) != 0,
+										_T("File search: settings error!")
   );
 
-  OpenEditor::SettingsManagerWriter(OpenEditor::FileOutStream((path + "\\data\\settings.dat"))) << m_settingsManager;
+  OpenEditor::SettingsManagerWriter(OpenEditor::FileOutStream((path + _T("\\data\\settings.dat")))) << m_settingsManager;
 }
 
 void

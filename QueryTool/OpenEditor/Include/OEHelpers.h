@@ -128,12 +128,12 @@ typedef Common::QuickArray<String> StringArray;
     struct DelimitersMap : Fastmap<bool>
     {
         DelimitersMap ();
-        DelimitersMap (const char*);
+        DelimitersMap (LPCTSTR);
 
-        void Set (const char*);
-        void Get (string&);
+        void Set (LPCTSTR);
+        void Get (CString&);
 
-        static const char* m_cszDefDelimiters;
+        static LPCTSTR m_cszDefDelimiters;
     private:
         Fastmap<bool> m_Data;
     };
@@ -190,15 +190,15 @@ typedef Common::QuickArray<String> StringArray;
         enum Range { FIRST = 0, LAST = RANDOM_BOOKMARK_NUMBER - 1 };
 
         RandomBookmark ()                                       {}
-        explicit RandomBookmark (unsigned char val)             : m_id(val) { _ASSERTE(Valid()); }
-        explicit RandomBookmark (Range val)                     : m_id(static_cast<unsigned char>(val)) {}
+        explicit RandomBookmark (_TUCHAR val)                   : m_id(val) { _ASSERTE(Valid()); }
+        explicit RandomBookmark (Range val)                     : m_id(static_cast<_TUCHAR>(val)) {}
 
-        unsigned char GetId () const                            { return m_id; }
+        _TUCHAR GetId () const                                  { return m_id; }
 
         bool Valid() const                                      { return m_id <= LAST; }
         void operator ++ (int)                                  { m_id++; }
     private:
-        unsigned char m_id;
+        _TUCHAR m_id;
     };
 
 
@@ -229,34 +229,34 @@ typedef Common::QuickArray<String> StringArray;
     class LineTokenizer : CObject
     {
     public:
-        static const unsigned char cbSpaceChar;
-        static const unsigned char cbVirtSpaceChar;
-        static const unsigned char cbTabChar;
+        static const _TUCHAR cbSpaceChar;
+        static const _TUCHAR cbVirtSpaceChar;
+        static const _TUCHAR cbTabChar;
 
         LineTokenizer (bool showWhiteSpace, int tabSpacing, const DelimitersMap&);
 
-        void StartScan (const char* str, int len);
+        void StartScan (LPCTSTR str, int len);
         bool Next ();
         bool IsSpace () const   { return isspace(m_Buffer[m_Offset]) ? true : false; }
         bool Eol () const       { return m_Offset == m_Length; }
 
-        void GetCurentWord (const char*& str, int& pos, int& len) const;
-        void GetCurrentSQLToken(const char*& str, int& pos, int& len,char& instring);
+        void GetCurentWord (LPCTSTR& str, int& pos, int& len) const;
+        void GetCurrentSQLToken(LPCTSTR& str, int& pos, int& len,TCHAR& instring);
 
         void EnableProcessSpaces (bool);
 
     private:
         const DelimitersMap m_delimiters;
-        const char* m_Buffer;
-        int   m_Length,
-              m_Offset,
-              m_Position,
-              m_TabSpacing;
-        bool  m_showWhiteSpace, m_processSpaces;
-        unsigned char m_spaceChar;
-        unsigned char m_virtSpaceChar;
-        unsigned char m_tabChar;
-        mutable string m_Whitespaces;
+        LPCTSTR m_Buffer;
+        int     m_Length,
+                m_Offset,
+                m_Position,
+                m_TabSpacing;
+        bool    m_showWhiteSpace, m_processSpaces;
+        _TUCHAR m_spaceChar;
+        _TUCHAR m_virtSpaceChar;
+        _TUCHAR m_tabChar;
+        mutable CString m_Whitespaces;
 
         friend class EditContext;
     };
@@ -281,12 +281,12 @@ typedef Common::QuickArray<String> StringArray;
 
         void Invalidate (int from_line);
         void Scan (int to_line, int& state, int& quoteId, bool& parsing);
-        bool ScanLine (const char* str, int length, int& state, int& quoteId, bool& parsing, int* parsingLength = 0) const;
+        bool ScanLine (LPCTSTR str, int length, int& state, int& quoteId, bool& parsing, int* parsingLength = 0) const;
 
     private:
         void buildMap (int to_line);
         void buildOpeningFastMap () const;
-        bool is_equal (const char* str, int length, int offset, const CString& shape) const;
+        bool is_equal (LPCTSTR str, int length, int offset, const CString& shape) const;
 
         Storage& m_Storage;
         DelimitersMap m_delimiters;
@@ -305,7 +305,7 @@ typedef Common::QuickArray<String> StringArray;
             eqtOpeningParse = 0x10,
             eqtClosingParse = 0x40,
         };
-        mutable Fastmap<char> m_OpeningFastMap;
+        mutable Fastmap<TCHAR> m_OpeningFastMap;
         mutable bool m_OpeningFastMapDirty;
 
         struct Entry
@@ -335,8 +335,8 @@ typedef Common::QuickArray<String> StringArray;
         void RemoveRef (Storage*);
 
         bool IsTextEmpty () const;
-        const char* GetText () const;
-        void SetText (const char* str);
+        LPCTSTR GetText () const;
+        void SetText (LPCTSTR str);
         void GetOption (bool& backward, bool& wholeWords, bool& matchCase, bool& regExpr, bool& searchAll) const;
         void SetOption (bool backward, bool wholeWords, bool matchCase, bool regExpr, bool searchAll);
         bool IsBackwardSearch () const;
@@ -346,19 +346,19 @@ typedef Common::QuickArray<String> StringArray;
         bool Find (const Storage*&, int& line, int& start, int& end, bool thruEof = true) const;
 
         // 1st & 2d parameters are in, 3d,4th,5th are out
-        bool Replace (Storage*, const char* text, int line, int start, int& end);
-        int  DoBatch (Storage*, const char* text, ESearchBatch mode, Square& last);
+        bool Replace (Storage*, LPCTSTR text, int line, int start, int& end);
+        int  DoBatch (Storage*, LPCTSTR text, ESearchBatch mode, Square& last);
 
     private:
         void compileExpression () const;
         bool isSelectionMatched (const Storage*, int line, int start, int end) const;
-        bool isMatched (const char* str, int offset, int len, const DelimitersMap&, int& start, int& end) const;
-        bool isMatchedBackward (const char* str, int offset, int len, const DelimitersMap&, int& start, int& end) const;
+        bool isMatched (LPCTSTR str, int offset, int len, const DelimitersMap&, int& start, int& end) const;
+        bool isMatchedBackward (LPCTSTR str, int offset, int len, const DelimitersMap&, int& start, int& end) const;
 
         Searcher (const Searcher&);   // not supported
         int operator = (const Searcher&); // not supported
 
-        string m_strText;
+        CString m_strText;
 
         bool m_bBackward;
         bool m_bWholeWords;
@@ -458,13 +458,13 @@ typedef Common::QuickArray<String> StringArray;
     inline
     bool Searcher::IsTextEmpty () const
     {
-        return m_strText.empty();
+        return m_strText.IsEmpty();
     }
 
     inline
-    const char* Searcher::GetText () const
+    LPCTSTR Searcher::GetText () const
     {
-        return m_strText.c_str();
+        return m_strText.GetString();
     }
 
     inline

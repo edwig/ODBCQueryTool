@@ -98,7 +98,7 @@ COEEditingPage::OnApply()
   try
   {
     GlobalSettings& settings = m_manager.GetGlobalSettings();
-    settings.SetDefFileExtension((LPCSTR)m_DefFileExtension,      false /*notify*/);
+    settings.SetDefFileExtension((LPCTSTR)m_DefFileExtension,     false /*notify*/);
     settings.SetUndoMemLimit   (m_UndoMemLimit * 1024,            false /*notify*/);
     settings.SetUndoLimit      (m_MaxUndoCount,                   false /*notify*/);
     settings.SetUndoAfterSaving(m_UndoAfterSaving ? true : false, false /*notify*/);

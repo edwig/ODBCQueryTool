@@ -162,7 +162,7 @@ StyleTab::OnToolHitTest(CPoint point,TOOLINFO* pTI) const
     {
       CString check;
       skin->GetWindowText(check);
-      if(check.Compare("CXSF") == 0)
+      if(check.Compare(_T("CXSF")) == 0)
       {
         CWnd* control = ((SkinScrollWnd*) skin)->GetControl();
         if(control)
@@ -177,7 +177,7 @@ StyleTab::OnToolHitTest(CPoint point,TOOLINFO* pTI) const
 }
 
 void
-StyleTab::RegisterTooltip(int p_ID,const char* p_text)
+StyleTab::RegisterTooltip(int p_ID,LPCTSTR p_text)
 {
   CWnd* wnd = GetDlgItem(p_ID);
   if(wnd && wnd->GetSafeHwnd())
@@ -187,7 +187,7 @@ StyleTab::RegisterTooltip(int p_ID,const char* p_text)
 }
 
 void
-StyleTab::RegisterTooltip(CWnd& p_wnd,const char* p_text)
+StyleTab::RegisterTooltip(CWnd& p_wnd,LPCTSTR p_text)
 {
   if(p_wnd.GetSafeHwnd())
   {
@@ -196,7 +196,7 @@ StyleTab::RegisterTooltip(CWnd& p_wnd,const char* p_text)
 }
 
 void
-StyleTab::RegisterTooltip(StyleComboBox& p_wnd,const char* p_text)
+StyleTab::RegisterTooltip(StyleComboBox& p_wnd,LPCTSTR p_text)
 {
   if(p_wnd.GetSafeHwnd() && p_wnd.GetEditControl()->GetSafeHwnd())
   {
@@ -215,7 +215,7 @@ StyleTab::OnToolTipNotify(UINT id,NMHDR * pNMHDR,LRESULT * pResult)
     ToolTips::iterator tip = m_tooltips.find((HWND) pNMHDR->idFrom);
     if(tip != m_tooltips.end())
     {
-      pTTT->lpszText = (LPSTR) tip->second;
+      pTTT->lpszText = (LPTSTR) tip->second;
     }
   }
   // Return value of TTN_NEEDTEXT is not used.

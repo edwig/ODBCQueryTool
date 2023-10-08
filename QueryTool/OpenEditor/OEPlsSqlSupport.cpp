@@ -88,7 +88,7 @@ bool PlSqlSupport::processText (int batchLimit)
     for (int i = 0; i < batchLimit && m_currLine < nlines; i++, m_currLine++)
     {
 	    int length;
-	    const char* str;
+	    LPCTSTR str;
       m_pStorage->GetLine(m_currLine, str, length);
 	    m_parser.PutLine(m_currLine, str, length);
     }

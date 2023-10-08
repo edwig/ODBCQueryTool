@@ -35,9 +35,9 @@
 
 struct _initialGridCol
 {
-  int   size;
-  bool  sortNum;
-  char* name;
+  int    size;
+  bool   sortNum;
+  LPTSTR name;
 };
 
 typedef struct _initialGridCol InitalGridCol;

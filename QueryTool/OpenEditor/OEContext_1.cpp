@@ -94,7 +94,7 @@ int EditContext::GetLineLength (int line) const
     if (line < GetLineCount())
     {
         int len;
-        const char* ptr;
+        LPCTSTR ptr;
         GetLine(line, ptr, len);
         return EditContext::inx2pos (ptr, len, len);
     }
@@ -127,12 +127,12 @@ bool EditContext::Find (const EditContext*& pEditContext, int& line, int& start,
     return retVal;
 }
 
-bool EditContext::Replace (const char* text, int line, int start, int& end)
+bool EditContext::Replace (LPCTSTR text, int line, int start, int& end)
 {
     _ASSERTE(m_pStorage);
 
     int _start = pos2inx(line, start, GetCursorBeyondEOL());
-    int _end   = pos2inx(line, end, GetCursorBeyondEOL());
+    int _end   = pos2inx(line, end,   GetCursorBeyondEOL());
 
     bool retVal = m_pStorage->Replace(text, line, _start, _end);
 
@@ -153,7 +153,7 @@ bool EditContext::Replace (const char* text, int line, int start, int& end)
     return retVal;
 }
 
-int EditContext::SearchBatch (const char* text, ESearchBatch mode)
+int EditContext::SearchBatch (LPCTSTR text, ESearchBatch mode)
 {
     _ASSERTE(m_pStorage);
     Square blk;

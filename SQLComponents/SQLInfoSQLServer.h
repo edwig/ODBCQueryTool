@@ -45,6 +45,9 @@ public:
   const SQLULEN     NUMERIC_MIN_SCALE     = 0;
   const SQLSMALLINT NUMERIC_DEFAULT_SCALE = 16;
 
+  // RDBMS Uses INDENTITY or SEQUENCE interface
+  void    SetUseSequences(bool p_sequences) override;
+
   //////////////////////////////////////////////////////////////////////////
   //
   // GENERALS (Strings & Booleans) 
@@ -434,6 +437,8 @@ public:
 private:
   // Adjust catalog for temporary objects
   // XString GetCatalogAndSchema(XString& p_schema,XString p_table);
+
+  bool m_useSequences { true };
 };
 
 // End of namespace

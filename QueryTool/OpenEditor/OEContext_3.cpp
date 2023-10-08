@@ -101,7 +101,7 @@ void EditContext::expandVirtualSpace (int line, int column)
 }
 
 // string mustn't have '\r' or '\n'
-void EditContext::InsertLine (int line, const char* str, int len)
+void EditContext::InsertLine (int line, LPCTSTR str, int len)
 {
     if (line)
         m_pStorage->ExpandLinesTo(line - 1);
@@ -110,7 +110,7 @@ void EditContext::InsertLine (int line, const char* str, int len)
 }
 
 // string mustn't have '\r' or '\n'
-void EditContext::InsertLinePart (int line, int column, const char* str, int len)
+void EditContext::InsertLinePart (int line, int column, LPCTSTR str, int len)
 {
     expandVirtualSpace(line, column);
     m_pStorage->InsertLinePart(line, !column ? 0 : pos2inx(line, column), str, len);
@@ -184,7 +184,7 @@ void EditContext::DoCarriageReturn ()
             if (m_curPos.line > 0 && m_curPos.line < GetLineCount())
             {
                 int len = 0;
-                const char* str = 0;
+                LPCTSTR str = 0;
                 Position pos = GetPosition();
 
                 // 16.03.2003 bug fix, auto indent always uses a previous line as base even the line is empty
@@ -212,7 +212,7 @@ void EditContext::DoCarriageReturn ()
     PushInUndoStack(m_curPos);
 }
 
-void EditContext::Insert (char chr)
+void EditContext::Insert (TCHAR chr)
 {
     _CHECK_ALL_PTR_
 
@@ -258,7 +258,7 @@ void EditContext::Backspace ()
 
         int inx = pos2inx(m_curPos.line, m_curPos.column);
 
-        char chr(0);
+        TCHAR chr(0);
         try
         {
             chr = m_pStorage->GetChar(m_curPos.line, inx-1);
@@ -291,7 +291,7 @@ void EditContext::Backspace ()
     }
 }
 
-void EditContext::Overwrite (char chr)
+void EditContext::Overwrite (TCHAR chr)
 {
     _CHECK_ALL_PTR_
 
@@ -571,7 +571,7 @@ void EditContext::GetBlock (CString& str, const Square* sqr) const
         pos.normalize();
 
         int niLength;
-        const char* pszLine;
+        LPCTSTR pszLine;
         int nLines = GetLineCount();
 
         switch (GetBlockMode())
@@ -598,14 +598,14 @@ void EditContext::GetBlock (CString& str, const Square* sqr) const
                     line2buff(pos.start.line, pos.start.column, INT_MAX, str);
                     for (int i(pos.start.line + 1); i <= pos.end.line - 1; i++)
                     {
-                        str += "\r\n";
+                        str += _T("\r\n");
                         if (i < nLines)
                         {
                             GetLine(i, pszLine, niLength);
                             str.Append(pszLine, niLength);
                         }
                     }
-                    str += "\r\n";
+                    str += _T("\r\n");
                     line2buff(pos.end.line, 0, pos.end.column, str);
                 }
                 TRACE("Copy Block reserved = %d, actual length = %d\n",  reserve, str.GetLength());
@@ -629,7 +629,7 @@ void EditContext::GetBlock (CString& str, const Square* sqr) const
                 {
                   if(i > pos.start.line)
                   {
-                    str += "\r\n";
+                    str += _T("\r\n");
                   }
                   line2buff(i, pos.start.column, pos.end.column, str, true);
                 }
@@ -639,17 +639,17 @@ void EditContext::GetBlock (CString& str, const Square* sqr) const
     }
 }
 
-void EditContext::InsertBlock (const char* str)
+void EditContext::InsertBlock (LPCTSTR str)
 {
     InsertBlock(str, !GetBlockKeepMarking());
 }
 
-void EditContext::InsertBlock (const char* str, bool hideSelection, bool putSelInUndo)
+void EditContext::InsertBlock (LPCTSTR str, bool hideSelection, bool putSelInUndo)
 {
     _CHECK_ALL_PTR_
 
     CString buff;
-    istrstream io(str);
+    CString io(str);
     bool with_CR;
     Position orgPos = m_curPos;
 
@@ -673,18 +673,20 @@ void EditContext::InsertBlock (const char* str, bool hideSelection, bool putSelI
 
                 if (with_CR) // multiline selection
                 {
-                    StringArray lines(1024, 16 * 1024);
+                  StringArray lines(1024,16 * 1024);
 
                     m_curPos.column = 0;
                     while (getLine(io, buff, with_CR))
                     {
-                        if (with_CR)
-                            lines.append().assign(buff.GetString(), buff.GetLength(), true);
-                        else
-                        {
-                            InsertLinePart(m_curPos.line+1, 0, buff.GetString(), (int)buff.GetLength());
-                            m_curPos.column = inx2pos(buff.GetString(), (int)buff.GetLength(),(int) buff.GetLength());
-                        }
+                      if(with_CR)
+                      {
+                        lines.append().assign(buff.GetString(), buff.GetLength(), true);
+                      }
+                      else
+                      {
+                          InsertLinePart(m_curPos.line+1, 0, buff.GetString(), (int)buff.GetLength());
+                          m_curPos.column = inx2pos(buff.GetString(), (int)buff.GetLength(),(int) buff.GetLength());
+                      }
                     }
 
                     if (lines.size())
@@ -811,7 +813,7 @@ void EditContext::DeleteBlock (bool putSelInUndo)
                   }
                   else
                   {
-                    space.Append(" ",sel.start.column - sel.end.column);
+                    space.Append(_T(" "),sel.start.column - sel.end.column);
                   }
 //                   space.resize(sel.end.column > sel.start.column
 //                                ? sel.end.column - sel.start.column
@@ -917,7 +919,7 @@ void EditContext::UndentBlock ()
         for (int i = sel.start.line; i < sel.end.line && i < nLines; i++)
         {
             int len;
-            const char* str;
+            LPCTSTR str;
             GetLine(i, str, len);
 
             if (len)
@@ -962,7 +964,7 @@ void EditContext::CopyBookmarkedLines (CString& buff) const
         for (; it != lines.end(); it++)
         {
             int len;
-            const char* str;
+            LPCTSTR str;
             GetLine(*it, str, len);
             buff.Append(str, len);
             buff += "\r\n";
@@ -1030,11 +1032,11 @@ bool EditContext::ExpandTemplate (int index)
             DeleteBlock(false);
 
             bool with_CR;
-            std::istrstream io(text.GetString());
+            CString io(text.GetString());
             CString line;
             CString result;
             CString indent('\n');
-            indent.Append(" ",sqr.start.column);
+            indent.Append(_T(" "),sqr.start.column);
 
             if (getLine(io, line, with_CR))
                 result += line;
@@ -1147,13 +1149,16 @@ void EditContext::FindMatch (bool select)
                 MoveTo(sqr.end);
             }
             
-            if (match.broken) 
-                MessageBeep((UINT)-1);
-
-            Common::SetStatusText(!match.broken ? "Match found." : "Match broken.");
+            if(match.broken)
+            {
+              MessageBeep((UINT) -1);
+            }
+            Common::SetStatusText(!match.broken ? _T("Match found.") : _T("Match broken."));
         }
         else
-            Common::SetStatusText("Match not found.");
+        {
+          Common::SetStatusText(_T("Match not found."));
+        }
     }
 }
 

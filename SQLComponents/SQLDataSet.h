@@ -53,7 +53,7 @@ namespace SQLComponents
 #define NUM_DATASET_NAMES 8
 
 // Names for saving datasets to XML in various languages
-extern const char* dataset_names[LN_NUMLANG][NUM_DATASET_NAMES];
+extern LPCTSTR dataset_names[LN_NUMLANG][NUM_DATASET_NAMES];
 
 // Parameter for the query
 typedef struct _sql_parameter
@@ -239,7 +239,7 @@ public:
   void         SetCancelCallback(LPFN_CALLBACK p_cancelFunction);
 
   // XML Saving and loading
-  bool         XMLSave(XString p_filename,XString p_name,StringEncoding p_encoding = StringEncoding::ENC_UTF8);
+  bool         XMLSave(XString p_filename,XString p_name,Encoding p_encoding = Encoding::UTF8);
   bool         XMLLoad(XString p_filename);
   void         XMLSave(XMLMessage* p_msg,XMLElement* p_dataset);
   void         XMLLoad(XMLMessage* p_msg,XMLElement* p_dataset,const LONG* p_abort = nullptr);

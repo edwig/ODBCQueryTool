@@ -29,7 +29,7 @@ static char THIS_FILE[] = __FILE__;
 #define OEPP_GET_PROPERTY(N)         m_##N = settings.GetPrint##N();
 #define OEPP_GET_STR_PROPERTY(N)     m_##N = settings.GetPrint##N();
 #define OEPP_SET_PROPERTY(N)         settings.SetPrint##N(m_##N);
-#define OEPP_SET_STR_PROPERTY(N)     settings.SetPrint##N((const char*)m_##N);
+#define OEPP_SET_STR_PROPERTY(N)     settings.SetPrint##N((LPCTSTR)m_##N);
 
 /////////////////////////////////////////////////////////////////////////////
 // COEPrintPageSetup dialog
