@@ -810,43 +810,71 @@ XSDSchema::ValidateOrder(XMLMessage&      p_doc
 XsdError 
 XSDSchema::ValidateOrderSequence(XMLMessage& p_doc,XMLElement* p_compare,ElementMap& p_elements,XString& p_error)
 {
-  XsdError result = XsdError::XSDE_NoError;
-
   // Elements must occur in the same order, or must have "minOccur = 0"
-  int findpos = 0;
+  size_t   posXSD = 0;
+  unsigned occurs = 0;
 
-  XMLElement* tocheck = p_doc.GetElementFirstChild(p_compare);
-  while(tocheck)
+  XMLElement* elementXML = p_doc.GetElementFirstChild(p_compare);
+  while(elementXML)
   {
-    if(findpos >= (int)p_elements.size())
+    if(posXSD >= p_elements.size())
     {
-      // error: Element not found in definition
-      break;
+      // Element not found in definition
+      p_error = "Element not found in XSD type definition: " + elementXML->GetName();
+      return XsdError::XSDE_Element_not_in_xsd;
     }
-    XMLElement* defelem = p_elements[findpos];
-    if(tocheck->GetName().Compare(defelem->GetName()) != 0)
+    XMLElement* elementXSD = p_elements[posXSD];
+    XMLRestriction* restrict = elementXSD->GetRestriction();
+
+    if(elementXML->GetName().Compare(elementXSD->GetName()) == 0)
     {
-      // Not found: see if it has 'minOccur'
-      XMLRestriction* restrict = defelem->GetRestriction();
-      if(!restrict || restrict->HasMinOccurs() > 0)
+      // Found: check maxOccurs
+      if(++occurs > (restrict ? restrict->HasMaxOccurs() : 1))
       {
-        p_error = _T("Missing element in message: ") + defelem->GetName();
-        return XsdError::XSDE_Missing_element_in_xml;
+        p_error = "Extra element in message: " + elementXSD->GetName();
+        return XsdError::XSDE_Extra_elements_in_xml;
       }
     }
     else
     {
-      // Next element to check
-      tocheck = p_doc.GetElementSibling(tocheck);
+      // Not found: check for unknown element
+      if(occurs == 0 && (!restrict || restrict->HasMinOccurs() > 0))
+      {
+        // Element not found in definition
+        p_error = "Element not found in XSD type definition: " + elementXML->GetName();
+        return XsdError::XSDE_Element_not_in_xsd;
+      }
+
+      // Not found: check minOccurs
+      if(occurs < (restrict ? restrict->HasMinOccurs() : 1))
+      {
+        p_error = "Missing element in message: " + elementXSD->GetName();
+        return XsdError::XSDE_Missing_element_in_xml;
+      }
+
+      // Next XSD
+      ++posXSD;
+      occurs = 0;
+      continue;
     }
-    ++findpos;
+    // Next element to check
+    elementXML = p_doc.GetElementSibling(elementXML);
   }
-  if(tocheck)
+
+  // Check uncompleted XSD elements
+  for(; posXSD < p_elements.size(); ++posXSD,occurs = 0)
   {
-    p_error = _T("Element not found in XSD type definition: ") + tocheck->GetName();
-    result  = XsdError::XSDE_Element_not_in_xsd;
+    XMLElement* elementXSD = p_elements[posXSD];
+    XMLRestriction* restrict = elementXSD->GetRestriction();
+
+    if(occurs < (restrict ? restrict->HasMinOccurs() : 1))
+    {
+      // Element not found in xml
+      p_error = "Element not found in xml: " + elementXSD->GetName();
+      return XsdError::XSDE_Missing_element_in_xml;
+    }
   }
-  return result;
+  return XsdError::XSDE_NoError;
 }
 
 XsdError 

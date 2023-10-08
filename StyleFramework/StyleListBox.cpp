@@ -489,8 +489,6 @@ StyleListBox::SelectAll(BOOL p_select /*=TRUE*/)
 void 
 StyleListBox::Copy()
 {
-  USES_CONVERSION;
-
   // Get selection from the listbox
   int count = CListBox::GetSelCount();
   if(count <= 0)

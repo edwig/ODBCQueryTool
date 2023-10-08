@@ -90,7 +90,7 @@ XMLRestriction::AddMinOccurs(XString p_min)
   m_minOccurs = (unsigned) _ttoll(p_min);
   if(m_minOccurs > m_maxOccurs)
   {
-    m_minOccurs = m_maxOccurs;
+    m_maxOccurs = m_minOccurs;
   }
 }
 
@@ -105,7 +105,7 @@ XMLRestriction::AddMaxOccurs(XString p_max)
   m_maxOccurs = (unsigned) _ttoll(p_max);
   if(m_maxOccurs < m_minOccurs)
   {
-    m_maxOccurs = m_minOccurs;
+    m_minOccurs = m_maxOccurs;
   }
 }
 
@@ -336,11 +336,12 @@ XMLRestrictions::GiveDisplayValue(XString p_name,XString p_enum)
 XString   
 XMLRestriction::CheckRangeFloat(XString p_value)
 {
-  bcd value(_ttof(p_value));
+  double d = _ttof(p_value);
   if(errno == ERANGE)
   {
     return _T("Floating point overflow");
   }
+  bcd value(d);
 
   if(!m_minInclusive.IsEmpty())
   {
@@ -649,17 +650,31 @@ XMLRestriction::CheckBoolean(XString p_value)
 XString
 XMLRestriction::CheckBase64(XString p_value)
 {
-  for(int ind = 0; ind < p_value.GetLength(); ++ind)
+  int len = p_value.GetLength();
+  for(int ind = 0; ind < len; ++ind)
   {
-    _TUCHAR ch = p_value.GetAt(ind);
-    if(!isspace(ch) && !isalnum(ch))
+    _TUCHAR ch = p_value[ind];
+    switch(ch)
     {
-      if((ind >= p_value.GetLength() - 2) && ch == '=')
-      {
-        continue;
-      }
-      return _T("Not a base64Binary field");
+      case  9:      // Tab
+      case 10:      // LF 
+      case 13:      // CR
+      case 32:      // Space
+      case _T('/'): // Slash
+      case _T('+'): // Plus
+                    continue;
+      case _T('='): if(ind == len - 1 ||
+                      (ind == len - 2 && p_value[ind + 1] == '='))
+                    {
+                      return "";
+                    }
+                    break;
+      default:      if(_istalnum(ch))
+                    {
+                      continue;
+                    }
     }
+    return _T("Not a base64Binary field");
   }
   return _T("");
 }
