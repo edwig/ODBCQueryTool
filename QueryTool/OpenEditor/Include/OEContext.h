@@ -56,7 +56,7 @@ namespace OpenEditor
         int  GetLineCount () const;
         LineId GetLineId (int line) const;
         int  GetLineLength (int line) const;
-        void GetLine (int line, const char*& ptr, int& len) const;
+        void GetLine (int line, LPCTSTR& ptr, int& len) const;
 
         int GetCursorLine () const;
         int GetCursorColumn () const;
@@ -91,8 +91,8 @@ namespace OpenEditor
         void DoUndent ();
         void DoCarriageReturn ();
 
-        void Insert     (char);
-        void Overwrite  (char);
+        void Insert     (TCHAR);
+        void Overwrite  (TCHAR);
         void Backspace  ();
         void Delete     ();
 
@@ -115,13 +115,13 @@ namespace OpenEditor
         void SelectLine (int line);
         void SelectByCursor (Position prevPos);
 
-        bool WordFromPoint (Position, Square&, const char* delims = 0) const;
-        bool GetBlockOrWordUnderCursor (CString& buff, Square& sqr, bool onlyOneLine, const char* delims = 0);
-        bool WordOrSpaceFromPoint (Position, Square&, const char* delims = 0) const;
+        bool WordFromPoint (Position, Square&, LPCTSTR delims = 0) const;
+        bool GetBlockOrWordUnderCursor (CString& buff, Square& sqr, bool onlyOneLine, LPCTSTR delims = 0);
+        bool WordOrSpaceFromPoint (Position, Square&, LPCTSTR delims = 0) const;
 
         virtual void GetBlock    (CString&, const Square* = 0) const;
-        virtual void InsertBlock (const char*);
-        virtual void InsertBlock (const char*, bool hideSelection, bool putSelInUndo = true);
+        virtual void InsertBlock (LPCTSTR);
+        virtual void InsertBlock (LPCTSTR, bool hideSelection, bool putSelInUndo = true);
         virtual void DeleteBlock (bool putSelInUndo = true);
 
         void IndentBlock ();
@@ -150,8 +150,8 @@ namespace OpenEditor
 
         // Text searching
         bool IsSearchTextEmpty () const;
-        const char* GetSearchText () const;
-        void SetSearchText (const char* str);
+        LPCTSTR GetSearchText () const;
+        void SetSearchText (LPCTSTR str);
         void GetSearchOption (bool& backward, bool& wholeWords, bool& matchCase, bool& regExpr, bool& searchAll) const;
         void SetSearchOption (bool backward, bool wholeWords, bool matchCase, bool regExpr, bool searchAll);
         bool IsBackwardSearch () const;
@@ -160,8 +160,8 @@ namespace OpenEditor
         // 1st is out-parameter, 2d,3d,4th are in-out
         bool Find (const EditContext*&, int& line, int& start, int& end, bool thruEof = true) const;
         // 1st,2d,3d are in-parameter, 4th is out
-        bool Replace (const char* text, int line, int start, int& end);
-        int  SearchBatch (const char* text, ESearchBatch mode);
+        bool Replace (LPCTSTR text, int line, int start, int& end);
+        int  SearchBatch (LPCTSTR text, ESearchBatch mode);
 
         // Bookmark supporting
         bool IsBookmarked      (int line, EBookmarkGroup group) const;
@@ -183,9 +183,9 @@ namespace OpenEditor
         void StartScan (EBlockMode, const Square* = 0);
         bool Next ();
         bool Eof () const;
-        void GetScanLine (const char*& ptr, int& len) const;
+        void GetScanLine (LPCTSTR& ptr, int& len) const;
         void GetScanLine (int& line, int& start, int& end) const;
-        void PutLine (const char* ptr, int len);
+        void PutLine (LPCTSTR ptr, int len);
         void StopScan ();
 
         // Text manipulation utilities (see OpenEditor_Context_5.cpp)
@@ -252,8 +252,8 @@ namespace OpenEditor
         friend UndoGroup;
 
         // string mustn't have '\r' or '\n'
-        void InsertLine     (int, const char*, int);      
-        void InsertLinePart (int, int, const char*, int);
+        void InsertLine     (int, LPCTSTR, int);
+        void InsertLinePart (int, int, LPCTSTR, int);
         void DeleteLinePart (int, int, int);
         void SplitLine      (int, int);
 
@@ -263,9 +263,9 @@ namespace OpenEditor
 
     protected:
         int inx2pos (int, int) const;
-        int inx2pos (const char*, int, int) const;
+        int inx2pos (LPCTSTR, int, int) const;
         int pos2inx (int, int, bool = false) const;
-        int pos2inx (const char*, int, int, bool = false) const;
+        int pos2inx (LPCTSTR, int, int, bool = false) const;
         void moveCurrentLine (int);
     private:
         int adjustPosByTab (int, int, bool = false) const;
@@ -275,7 +275,7 @@ namespace OpenEditor
         Position wordRight (bool hurry);
         Position wordLeft (bool hurry);
 
-        static bool getLine (std::istrstream&, CString&, bool&);
+        static bool getLine (CString& p_input,CString& p_buffer,bool& p_withCR);
 
         Storage* m_pStorage;
 
@@ -336,7 +336,7 @@ namespace OpenEditor
     }
 
     inline
-    void EditContext::GetLine (int line, const char*& ptr, int& len) const
+    void EditContext::GetLine (int line, LPCTSTR& ptr, int& len) const
     {
         m_pStorage->GetLine(line, ptr, len);
     }
@@ -404,14 +404,14 @@ namespace OpenEditor
     }
 
     inline
-    const char* EditContext::GetSearchText () const
+    LPCTSTR EditContext::GetSearchText () const
     {
         _ASSERTE(m_pStorage);
         return m_pStorage->GetSearchText();
     }
 
     inline
-    void EditContext::SetSearchText (const char* str)
+    void EditContext::SetSearchText (LPCTSTR str)
     {
         _ASSERTE(m_pStorage);
         m_pStorage->SetSearchText(str);

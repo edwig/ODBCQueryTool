@@ -31,6 +31,7 @@
 #include "CrackURL.h"
 #include "Cookie.h"
 #include "Routing.h"
+#include "ConvertWideString.h"
 #include <http.h>
 #include <winhttp.h>
 #include <map>
@@ -86,11 +87,11 @@ enum class HTTPCommand
 };
 
 // All HTTP header commands
-extern const char* headers[];
+extern LPCTSTR headers[];
 
 // Incoming and responding header names
-extern const char* header_fields[];
-extern const char* header_response[];
+extern LPCTSTR header_fields[];
+extern LPCTSTR header_response[];
 
 using ushort    = unsigned short;
 
@@ -126,8 +127,8 @@ public:
   void Reset();
 
   // SETTERS
-  void SetBody(XString     p_body,XString p_encoding = "");
-  void SetBody(const char* p_body,XString p_encoding = "");
+  void SetBody(XString p_body,XString p_encoding = "");
+  void SetBody(LPCTSTR p_body,XString p_encoding = "");
   void SetBody(void* p_body,unsigned p_length);
   void SetURL(const XString& p_url);
   bool SetVerb(XString p_verb);
@@ -228,7 +229,7 @@ public:
   // Reset all cookies
   void    ResetCookies();
   // Add a body from a text field
-  void    AddBody(const char* p_body);
+  void    AddBody(LPCTSTR p_body);
   // Add a body from a binary BLOB
   void    AddBody(void* p_body,unsigned p_length);
   // Add a header-name / header-value pair
@@ -257,6 +258,8 @@ public:
   HTTPMessage& operator=(const JSONMessage& p_message);
 
 private:
+  // TO BE CALLED FROM THE XTOR!!
+  void    ConstructBodyFromString(XString p_string,XString p_charset,bool p_withBom);
   // Parse raw URL to cracked URL data
   bool    ParseURL(XString p_url);
   // Check for minimal sending requirements
@@ -313,9 +316,9 @@ HTTPMessage::GetBodyLength()
 }
 
 inline void
-HTTPMessage::AddBody(const char* p_buffer)
+HTTPMessage::AddBody(LPCTSTR p_buffer)
 {
-  m_buffer.AddBuffer(reinterpret_cast<uchar*>(const_cast<char*>(p_buffer)),strlen(p_buffer));
+  m_buffer.AddBuffer(reinterpret_cast<uchar*>(const_cast<LPTSTR>(p_buffer)),_tcslen(p_buffer));
 }
 
 inline void 

@@ -50,7 +50,7 @@ void convert_extensions(const CString& extensions,CString& ofn_extensions)
       {
         ofn_extensions += ';';
       }
-      ofn_extensions += "*." + buffer;
+      ofn_extensions += _T("*.") + buffer;
       buffer.Empty();
     }
     else
@@ -64,7 +64,7 @@ void convert_extensions(const CString& extensions,CString& ofn_extensions)
     {
       ofn_extensions += ';';
     }
-    ofn_extensions += "*." + buffer;
+    ofn_extensions += _T("*.") + buffer;
     buffer.Empty();
   }
 }
@@ -100,7 +100,7 @@ void make_filter (CString& filter, OPENFILENAME& ofn)
         convert_extensions(extensions, ofn_extensions);
 
         filter += name;
-        filter += " Files (";
+        filter += _T(" Files (");
         filter += ofn_extensions;
         filter += ')';
         filter += '\0';
@@ -139,7 +139,7 @@ BOOL CDocManagerExt::DoPromptFileName(CString& fileName, UINT nIDSTitle, DWORD l
 
 	CString strFilter;
 	// append the "*.*" all files filter
-	strFilter += "All Files (*.*)";
+	strFilter += _T("All Files (*.*)");
 	strFilter += (TCHAR)'\0';   // next string please
 	strFilter += _T("*.*");
 	strFilter += (TCHAR)'\0';   // last string
@@ -157,12 +157,12 @@ BOOL CDocManagerExt::DoPromptFileName(CString& fileName, UINT nIDSTitle, DWORD l
 #else
 #define PATH_BUFFER 64*1024-1
 #endif
-    dlgFile.m_ofn.nMaxFile = PATH_BUFFER;
-	dlgFile.m_ofn.lpstrFile = fileName.GetBuffer(dlgFile.m_ofn.nMaxFile);
+    dlgFile.m_ofn.nMaxFile  = PATH_BUFFER;
+	  dlgFile.m_ofn.lpstrFile = fileName.GetBuffer(dlgFile.m_ofn.nMaxFile);
     //dlgFile.m_ofn.lpstrFile[0] = 0; // 26.05.2003 bug fix, no file name on "Save As" or "Save" for a new file
 	
     // overwrite initial directory
-    dlgFile.m_ofn.lpstrInitialDir = m_fileOpenPath.IsEmpty() ? NULL : (LPCSTR)m_fileOpenPath;
+    dlgFile.m_ofn.lpstrInitialDir = m_fileOpenPath.IsEmpty() ? NULL : (LPCTSTR)m_fileOpenPath;
 
     INT_PTR nResult = dlgFile.DoModal();
     
@@ -186,8 +186,8 @@ void CDocManagerExt::OnFileOpen ()
             OFN_HIDEREADONLY | OFN_FILEMUSTEXIST, TRUE, NULL))
 		return; // open canceled
 
-    const char* pszBuffer = newName.LockBuffer();
-    const char* pszName = strchr(pszBuffer, 0);
+    LPCTSTR pszBuffer = newName.LockBuffer();
+    LPCTSTR pszName = _tcsrchr(pszBuffer, 0);
   
     _ASSERTE(pszName);
 
@@ -200,7 +200,7 @@ void CDocManagerExt::OnFileOpen ()
             CString strFileName(pszBuffer);
    	        AfxGetApp()->OpenDocumentFile(strFileName + '\\' + pszName);
         } 
-        while ((pszName = strchr(pszName, 0)) && (*(++pszName) != 0));
+        while ((pszName = _tcsrchr(pszName, 0)) && (*(++pszName) != 0));
     }
 }
 #pragma warning (pop)

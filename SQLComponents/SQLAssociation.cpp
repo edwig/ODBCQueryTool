@@ -114,9 +114,9 @@ SQLAssociation::GetAssocationName(int p_column)
   {
     // Returns "master.id->detail.id_master"
     XString name;
-    name = m_master->GetName() + "." +
-           m_assocs[p_column]->m_primary + "->" + 
-           m_detail->GetName() + "." + 
+    name = m_master->GetName() + _T(".") +
+           m_assocs[p_column]->m_primary + _T("->") + 
+           m_detail->GetName() + _T(".") + 
            m_assocs[p_column]->m_foreign;
     return name;
   }
@@ -166,7 +166,7 @@ SQLAssociation::GetSQLCondition()
   // See if we can do it
   if(!m_master || !m_detail)
   {
-    return "";
+    return _T("");
   }
   XString malias = m_master->GetPrimaryAlias();
   XString dalias = m_detail->GetPrimaryAlias();
@@ -181,17 +181,17 @@ SQLAssociation::GetSQLCondition()
   // Check if both sides are set
   if(malias.IsEmpty() || dalias.IsEmpty())
   {
-    return "";
+    return _T("");
   }
-  XString condition("(");
+  XString condition(_T("("));
   bool multi(false);
   for(const auto assoc : m_assocs)
   {
     if(multi)
     {
-      condition += " AND ";
+      condition += _T(" AND ");
     }
-    condition += malias + "." + assoc->m_primary + " = " + dalias + "." + assoc->m_foreign;
+    condition += malias + _T(".") + assoc->m_primary + _T(" = ") + dalias + _T(".") + assoc->m_foreign;
     multi = true;
   }
   condition += ")";

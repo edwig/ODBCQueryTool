@@ -35,6 +35,9 @@ public:
   explicit SQLInfoFirebird(SQLDatabase* p_database);
  ~SQLInfoFirebird();
 
+  // RDBMS Uses INDENTITY or SEQUENCE interface
+  void    SetUseSequences(bool p_sequences) override;
+ 
   //////////////////////////////////////////////////////////////////////////
   //
   // GENERALS (Strings & Booleans) 

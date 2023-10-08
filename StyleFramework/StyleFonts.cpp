@@ -41,23 +41,23 @@ StyleFonts::MakeLOGFONTFromString(CString fontstring)
   memset(&lf, 0, sizeof(lf));
 
   // Fill with default "Verdana;12;100"
-  strcpy_s(lf.lfFaceName, 32, StyleFontName);
+  _tcscpy_s(lf.lfFaceName, 32, StyleFontName);
   lf.lfWeight = FW_NORMAL;
   lf.lfHeight = -MulDiv(12,96,StyleFonts::logpixelsy());
 
   std::vector<CString> fontParts;
-  Split(fontstring,";",fontParts);
+  Split(fontstring,_T(";"),fontParts);
 
   // Set values from the fontstring
   if(fontParts.size() >= 1)
   {
-    strcpy_s(lf.lfFaceName,32,fontParts[0]);
+    _tcscpy_s(lf.lfFaceName,32,fontParts[0]);
     if(fontParts.size() >= 2)
     {
-      lf.lfHeight = -MulDiv(atoi(fontParts[1]),logpixelsy(),80);
+      lf.lfHeight = -MulDiv(_ttoi(fontParts[1]),logpixelsy(),80);
       if(fontParts.size() == 3)
       {
-        lf.lfWeight = atoi(fontParts[2]);
+        lf.lfWeight = _ttoi(fontParts[2]);
       }
     }
   }
@@ -103,18 +103,18 @@ StyleFonts::ReCreateFonts()
   ErrorTextFont     .DeleteObject();
   CaptionTextFont   .DeleteObject();
 
-  LOGFONT lf = MakeLOGFONTFromString(StyleFontName + CString(";") + IntegerToString((STANDARDFONTSIZE * m_factor)/100) + CString(";") + IntegerToString(FW_NORMAL));
+  LOGFONT lf = MakeLOGFONTFromString(StyleFontName + CString(_T(";")) + IntegerToString((STANDARDFONTSIZE * m_factor)/100) + CString(_T(";")) + IntegerToString(FW_NORMAL));
   DialogTextFont.CreateFontIndirect(&lf);
 
-  lf = MakeLOGFONTFromString(StyleFontName + CString(";") + IntegerToString((STANDARDFONTSIZE* m_factor)/100) + CString(";") + IntegerToString(FW_HEAVY));
+  lf = MakeLOGFONTFromString(StyleFontName + CString(_T(";")) + IntegerToString((STANDARDFONTSIZE* m_factor)/100) + CString(_T(";")) + IntegerToString(FW_HEAVY));
   DialogTextFontBold.CreateFontIndirect(&lf);
 
-  lf = MakeLOGFONTFromString(StyleFontName + CString(";") + IntegerToString((ERRORFONTSIZE * m_factor)/100) + CString(";") + IntegerToString(FW_BOLD));
+  lf = MakeLOGFONTFromString(StyleFontName + CString(_T(";")) + IntegerToString((ERRORFONTSIZE * m_factor)/100) + CString(_T(";")) + IntegerToString(FW_BOLD));
   ErrorTextFont.CreateFontIndirect(&lf);
 
-  lf = MakeLOGFONTFromString(StyleFontName + CString(";") + IntegerToString((CAPTIONTEXTSIZE * m_factor)/100) + CString(";") + IntegerToString(FW_BOLD));
+  lf = MakeLOGFONTFromString(StyleFontName + CString(_T(";")) + IntegerToString((CAPTIONTEXTSIZE * m_factor)/100) + CString(_T(";")) + IntegerToString(FW_BOLD));
   CaptionTextFont.CreateFontIndirect(&lf);
 
-  lf = MakeLOGFONTFromString(EditFontName + CString(";") + IntegerToString((STANDARDFONTSIZE * m_factor)/100) + CString(";") + IntegerToString(FW_BOLD));
+  lf = MakeLOGFONTFromString(EditFontName + CString(_T(";")) + IntegerToString((STANDARDFONTSIZE * m_factor)/100) + CString(_T(";")) + IntegerToString(FW_BOLD));
   EditorTextFont.CreateFontIndirect(&lf);
 }

@@ -30,8 +30,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define OESMS_WRITE_MEMBER(o,p) m_out.write(#p, o.m_##p);
-#define OESMS_READ_MEMBER(o,p)  m_in.read(#p, o.m_##p);
+#define OESMS_WRITE_MEMBER(o,p) m_out.write(_T(#p), o.m_##p);
+#define OESMS_READ_MEMBER(o,p)   m_in.read (_T(#p), o.m_##p);
 
 namespace OpenEditor
 {
@@ -43,8 +43,8 @@ const int TheLanguagesCollectionVersion = 1001;
 
 void LanguagesCollectionWriter::operator << (const LanguagesCollection&)
 {
-    m_out.write("version", TheLanguagesCollectionVersion);
-    m_out.write("languages", (int)LanguagesCollection::m_Languages.size());
+    m_out.write(_T("version"), TheLanguagesCollectionVersion);
+    m_out.write(_T("languages"), (int)LanguagesCollection::m_Languages.size());
 
     std::vector<LanguagePtr>::const_iterator
         colIt = LanguagesCollection::m_Languages.begin(),
@@ -99,8 +99,8 @@ void LanguagesCollectionWriter::write (const LanguageKeywordMapPtr& keywordMap, 
         for (int i(0); it != endIt; it++)
             if (groupIndex == it->second.groupIndex)
             {
-                char buff[80];
-                _itoa_s(i++, buff, 80, 10);
+                TCHAR buff[80];
+                _itot_s(i++, buff, 80, 10);
                 m_out.write(buff,it->second.keyword);
             }
     }
@@ -132,7 +132,7 @@ void LanguagesCollectionReader::operator >> (LanguagesCollection&)
 void LanguagesCollectionReader::read (Language& lang)
 {
     OESMS_READ_MEMBER(lang, name);
-    TRACE1(_T("Loading Language=%s\n"), lang.m_name.GetString());
+    TRACE1("Loading Language=%s\n", lang.m_name.GetString());
 
     OESMS_READ_MEMBER(lang, delimiters);
     OESMS_READ_MEMBER(lang, caseSensiteve);
@@ -151,7 +151,8 @@ void LanguagesCollectionReader::read (Language& lang)
     {
         struct 
         {
-            const char* open, *close;
+          LPCTSTR open;
+          LPCTSTR close;
         } 
         g_braces [] = 
         {
@@ -198,9 +199,9 @@ void LanguagesCollectionReader::read (LanguageKeywordMapPtr& keywordMap, vector<
 
         for (int j(0); j < keywords; j++)
         {
-            char buff[40];
+            TCHAR buff[40];
             LanguageKeyword keyword;
-            _itoa_s(j, buff, 40, 10);
+            _itot_s(j, buff, 40, 10);
             m_in.read(buff, keyword.keyword);
             keyword.groupIndex = groupIndex;
             CString key = keyword.keyword;
@@ -218,7 +219,7 @@ void LanguagesCollectionReader::read (LanguageKeywordMapPtr& keywordMap, vector<
             }
             else
             {
-              TRACE1(_T("\tWARNING: skip duplicated keyword \"%s\"\n"),key.GetString());
+              TRACE1("\tWARNING: skip duplicated keyword \"%s\"\n",key.GetString());
             }
         }
     }
@@ -245,9 +246,9 @@ struct _LanguagesCollection : LanguagesCollection
         (**m_Languages.rbegin()).m_keywordGroups.push_back("Keywords");
         (**m_Languages.rbegin()).m_keywordGroups.push_back("Built-in Commands");
         
-		const char* filenames[] =
+		LPCTSTR filenames[] =
 	    {
-  		    "\\Operators.kwd", "\\Keywords.kwd", "\\preprocessor.kwd", 
+      _T("\\Operators.kwd"), _T("\\Keywords.kwd"), _T("\\preprocessor.kwd"), 
 	    };
 
 	    for (int i(0); i < sizeof filenames/sizeof filenames[0]; i++)
@@ -259,9 +260,9 @@ struct _LanguagesCollection : LanguagesCollection
 		    {
 			    if (buff[0])
 			    {
-	                char key[60];
+	                TCHAR key[60];
                     int len = min(sizeof key, buff.size());
-	                strncpy(key, buff.c_str(), len);
+	                _tcsncpy(key, buff.c_str(), len);
                     key[len] = 0;
                     (*(**m_Languages.rbegin()).m_LanguageKeywordMap)[key] = LanguageKeyword(key, i);
 			    }

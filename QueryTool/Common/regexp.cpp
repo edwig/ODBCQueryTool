@@ -8,12 +8,12 @@
 
 #pragma warning (disable: 4996)
 
-#define	MAXPAT		1000 /* Max length of compiled pattern	*/
-#define	TRUE		     1
-#define	FALSE		     0
-#define	ALMOST		  -1
+#define	MAXPAT    1000 /* Max length of compiled pattern	*/
+#define	TRUE         1
+#define	FALSE        0
+#define	ALMOST      -1
 
-/* Constant and token values	      					                */
+// Constant and token values
 
 #define	ENDSTR		  '\0'	    /* End of string		            */
 #define	EOL		      '$'		    /* End of line			            */
@@ -23,50 +23,50 @@
 #define NCCL		    ']'		    /* No Class closing		          */
 #define CCLEND	  	']'		    /* Class closing end		        */
 #define	ANY		      '.'		    /* Any character		            */
-#define	DASH		    '-'		    /* Seperator in class length	  */
+#define	DASH		    '-'		    /* Separator in class length	  */
 #define	OR		      '|'		    /* Logical or for expression	  */
 #define	LPAREN  		'('		    /* Left parenthesis		          */
 #define	RPAREN	  	')'		    /* Right parenthesis		        */
-#define	POS_CLO		  '+'		    /* Aat least one or more char's	*/
+#define	POS_CLO		  '+'		    /* At least one or more char's	*/
 #define	LITCHAR	  	'c'		    /* Compiled literal		          */
 #define	END_TERM	  'e'		    /* Compiled end of class	      */
-#define	FS_DEFAULT	"[ \t]+"	/* Space default (white space)	*/
+#define	FS_DEFAULT  _T("[ \t]+")  // Space default (white space)
 
-static char* c;
+static LPTSTR c;
            
 RegExp::RegExp()
-       :m_use_case(1),
-        m_sql(1),
-        M_CLOSURE('%'),
+       :M_CLOSURE('%'),
         M_ZERO_ONE('_'),
         M_ESCAPE('\\')
 {
-	strcpy(m_nfac_chars,"^|)]+%_");
+	_tcscpy(m_nfac_chars,_T("^|)]+%_"));
 	return;
 }
 
 RegExp::RegExp(const CString& regexp)
-       :m_use_case(1),
-        m_sql(1),
-        M_CLOSURE('%'),
+       :M_CLOSURE('%'),
         M_ZERO_ONE('_'),
         M_ESCAPE('\\')
 {
-	strcpy(m_nfac_chars,"^|)]+%_");
+	_tcscpy(m_nfac_chars,_T("^|)]+%_"));
 	SetExp(regexp);
 	return;
 }
 
 RegExp::RegExp(const CString& regexp,bool reg)
-       :m_use_case(reg?0:1),
-        m_sql(reg?0:1),
+       :m_use_case(reg ? false : true),
+        m_sql     (reg ? false : true),
         M_CLOSURE('%'),
         M_ZERO_ONE('_'),
         M_ESCAPE('\\')
 {
-	strcpy(m_nfac_chars,"^|)]+%_");
+	_tcscpy(m_nfac_chars,_T("^|)]+%_"));
 	SetExp(regexp);
 	return;
+}
+
+RegExp::~RegExp()
+{
 }
 
 bool
@@ -74,8 +74,8 @@ RegExp::SetExp(const CString& regexp)
 {
 	CString redExp = m_regExp;
 	m_regExp = regexp;
-	char pat[MAXPAT];
-	if (makepat((char *)(LPCSTR)m_regExp,pat) != NULL)
+	TCHAR pat[MAXPAT];
+	if(makepat((LPTSTR)m_regExp.GetString(),pat) != NULL)
 	{
 		m_regExpPat = pat;
 		return true;
@@ -88,11 +88,11 @@ RegExp::SetExp(const CString& regexp)
 int
 RegExp::Match(CString& match)
 {
-	char* pos;
-	pos = re_match((char *)(LPCSTR)match,(char *)(LPCSTR)m_regExpPat);
+	LPTSTR pos;
+	pos = re_match((LPTSTR)match.GetString(),(LPTSTR)m_regExpPat.GetString());
 	if (match)
 	{
-		return (int)(pos - (char *)(LPCSTR)match);
+		return (int)(pos - (LPTSTR)match.GetString());
 	}
 	else
 	{
@@ -102,10 +102,10 @@ RegExp::Match(CString& match)
 
 // Returns the offset of the match or -1
 int
-RegExp::Match(LPCSTR match)
+RegExp::Match(LPCTSTR match)
 {
-	char* pos;
-	pos = re_match((char *)match,(char *)(LPCSTR)m_regExpPat);
+	LPTSTR pos;
+	pos = re_match((LPTSTR)match,(LPTSTR)m_regExpPat.GetString());
 	if (pos)
 	{
 		return (int)(pos - match);
@@ -117,17 +117,12 @@ RegExp::Match(LPCSTR match)
 }
 
 bool
-RegExp::MatchPos(int pos,char car)
+RegExp::MatchPos(int pos,TCHAR car)
 {
-	char* pat = (char *)(LPCSTR)m_regExpPat;
+	LPTSTR pat = (LPTSTR)m_regExpPat.GetString();
 	return re_matchpos(car,pat,pos);
 }
             
-RegExp::~RegExp()
-{
-	return;
-}
-
 bool 
 RegExp::SetUseCase(bool useCase)
 {
@@ -136,12 +131,16 @@ RegExp::SetUseCase(bool useCase)
 	return cc;
 }
 
+//////////////////////////////////////////////////////////////////////////
+//
+// PRIVATE IMPLEMENTATION
+//
+//////////////////////////////////////////////////////////////////////////
 
-//******* PRIVATE IMPLEMENTATION ********//
 void	
-RegExp::set_escape(char /* escape */,char zero_one,char closure)
+RegExp::set_escape(TCHAR /* escape */,TCHAR zero_one,TCHAR closure)
 {
-	if((zero_one=='?' || closure=='*') && (zero_one=='_' || closure=='%'))
+	if((zero_one == '?' || closure == '*') && (zero_one == '_' || closure == '%'))
 	{
 		M_ZERO_ONE = zero_one;
 		M_CLOSURE  = closure;
@@ -149,22 +148,22 @@ RegExp::set_escape(char /* escape */,char zero_one,char closure)
 		m_nfac_chars[5] = M_ZERO_ONE;
 		m_nfac_chars[6] = M_CLOSURE;	
 
-		/* Alsoo see the code sections marked "SQL" !!!		*/
+		/* Also see the code sections marked "SQL" !!!		*/
 		return;
 	}
 }
 
 int
-RegExp::isfactor(char c)
+RegExp::isfactor(TCHAR c)
 {
-	return (strchr(m_nfac_chars,c) == NULL ? TRUE : FALSE);
+	return (_tcschr(m_nfac_chars,c) == NULL ? TRUE : FALSE);
 }
 
 
-char*
-RegExp::strccat(char *s,char ch)
+LPTSTR
+RegExp::strccat(LPTSTR s,TCHAR ch)
 {
-	register int len = (int)strlen(s);
+	register int len = (int)_tcslen(s);
 	
 	s[len++] = ch;
 	s[len]   = ENDSTR;
@@ -172,11 +171,12 @@ RegExp::strccat(char *s,char ch)
 }
 
 
+
 // ******* PARSE ********//
-char*
-RegExp::makepat(char *re,char *pat)
+LPTSTR
+RegExp::makepat(LPTSTR re,LPTSTR pat)
 {
-	char *t;
+	LPTSTR t;
 	
 	m_re_ptr = re;
 	if((t = parse_expression()) == NULL)
@@ -192,18 +192,18 @@ RegExp::makepat(char *re,char *pat)
 		}
 		else
 		{
-			strcpy(pat,t);
+			_tcscpy(pat,t);
 			free(t);
 			return pat;
 		}
 	}
 }
 
-char*
+LPTSTR
 RegExp::parse_expression(void)
 {
-	char pat[MAXPAT];
-	char *arg1;
+	TCHAR pat[MAXPAT];
+  LPTSTR arg1 = nullptr;
 	
 	pat[0] = ENDSTR;
 	if((arg1 = parse_term()) == NULL)
@@ -214,7 +214,7 @@ RegExp::parse_expression(void)
 	{
 		/* Parse all subsequent terms	*/
 		strccat(pat,OR);
-		strcat (pat,arg1);
+		_tcscat(pat,arg1);
 		strccat(pat,END_TERM);
 		free(arg1);
 		++m_re_ptr;
@@ -223,19 +223,19 @@ RegExp::parse_expression(void)
 			return NULL;
 		}
 	}
-	strcat (pat,arg1);
+	_tcscat(pat,arg1);
 	strccat(pat,END_TERM);
 	free(arg1);
 	
-	return strdup(pat);
+	return _tcsdup(pat);
 }
 
 
-char* 
+LPTSTR 
 RegExp::parse_term(void)
 {
-	char *t;
-	char pat[MAXPAT];
+	LPTSTR t = nullptr;
+	TCHAR pat[MAXPAT];
 	
 	pat[0] = ENDSTR;
 	if(*m_re_ptr == BOL)
@@ -250,29 +250,28 @@ RegExp::parse_term(void)
 		}
 		else
 		{
-			strcat(pat,t);
+			_tcscat(pat,t);
 			free(t);
 		}
 	}
 	while(isfactor(*m_re_ptr));
 
-	return strdup(pat);
+	return _tcsdup(pat);
 }
 
-
-char*
+LPTSTR
 RegExp::parse_factor(void)
 {
-	char *t;
-	char pat[MAXPAT];
+	LPTSTR t = nullptr;
+	TCHAR pat[MAXPAT];
 
 	pat[0] = ENDSTR;
 	switch(*m_re_ptr)
 	{
-		case LPAREN:	/* Parenthesised expression	*/
+		case LPAREN:	/* Parenthesized expression	*/
 				++m_re_ptr;
 				t = parse_expression();
-				strcat(pat,t);
+				_tcscat(pat,t);
 				free(t);
 				if(*m_re_ptr++ != RPAREN)
 				{
@@ -282,7 +281,7 @@ RegExp::parse_factor(void)
 		case CCL:	/* Character class		*/
 				++m_re_ptr;
 				t = parse_cc1();
-				strcat(pat,t);
+				_tcscat(pat,t);
 				free(t);
 				if(*m_re_ptr++ != CCLEND)
 				{
@@ -358,10 +357,10 @@ literal:strccat(pat,LITCHAR);
 			}
 		}
 	}
-	return strdup(pat);
+	return _tcsdup(pat);
 }
 
-char 
+TCHAR
 RegExp::parse_escape(void)
 {
 	int ch;
@@ -384,42 +383,42 @@ RegExp::parse_escape(void)
 				      if(*m_re_ptr >= '0' && *m_re_ptr < '8')
 				      {
 					      ch <<= 3;
-					      ch  += (unsigned char)(*m_re_ptr++ - '0');
+					      ch  += (_TUCHAR)(*m_re_ptr++ - '0');
 				      }
 				      if(*m_re_ptr >= '0' && *m_re_ptr < '8')
 				      {
 					      ch <<= 3;
-					      ch  += (unsigned char)(*m_re_ptr++ - '0');
+					      ch  += (_TUCHAR)(*m_re_ptr++ - '0');
 				      }
-				      return (char)ch;
+				      return (TCHAR)ch;
 		default:	return *m_re_ptr++;
 	}
 }
 
 int
-RegExp::parse_closure(char *pat,char c)
+RegExp::parse_closure(LPTSTR pat,TCHAR c)
 {
-	memmove(pat+2,pat,strlen(pat)+1);
+	memmove(pat+2,pat,(_tcslen(pat)+1) * sizeof(TCHAR));
 	pat[0] = c;
-	int len = (int)strlen(pat + 2);
+	int len = (int)_tcslen(pat + 2);
 	if(len > 255)
 	{
 		return FALSE;
 	}
 	else
 	{
-		pat[1] = (char)len;
+		pat[1] = (TCHAR)len;
 		return TRUE;
 	}
 }
 
-char*
+LPTSTR
 RegExp::parse_cc1(void)
 {
-	char pat[MAXPAT];
+	TCHAR pat[MAXPAT];
 	short first=TRUE;
 	
-	strcpy(pat,"[ ");
+	_tcscpy(pat,_T("[ "));
 	if(*m_re_ptr == NEGATE)
 	{
 		pat[0] = NCCL;
@@ -443,7 +442,7 @@ RegExp::parse_cc1(void)
 			if(*m_re_ptr == M_ESCAPE)
 			{
 				++m_re_ptr;
-				strccat(pat,(char)parse_escape());
+				strccat(pat,(TCHAR)parse_escape());
 			}
 			else
 			{
@@ -452,35 +451,35 @@ RegExp::parse_cc1(void)
 		}
 		first = FALSE;
 	}
-	int len = (int)strlen(pat+2);
+	int len = (int)_tcslen(pat+2);
 	if(len > 255)
 	{
 		return NULL;
 	}
 	else
 	{
-		pat[1] = (char)len;
-		return strdup(pat);
+		pat[1] = (TCHAR)len;
+		return _tcsdup(pat);
 	}
 }
 
-char*
-RegExp::parse_dash(char *pat,char ch)
+LPTSTR
+RegExp::parse_dash(LPTSTR pat,TCHAR ch)
 {
 	int ch1;
 	
-	for(ch1=pat[strlen(pat)-1]+1;ch1 <= ch;++ch1)
+	for(ch1=pat[_tcslen(pat)-1]+1;ch1 <= ch;++ch1)
 	{
-		strccat(pat,(char)ch1);
+		strccat(pat,(TCHAR)ch1);
 	}
 	return pat;
 }
 
 //********* MATCHING *********//
-char*
-RegExp::str_match(char *s,char *re)
+LPTSTR
+RegExp::str_match(LPTSTR s,LPTSTR re)
 {
-	char pat[MAXPAT];
+	TCHAR pat[MAXPAT];
 	
 	pat[0] = ENDSTR;
 	if(makepat(re,pat) == NULL)
@@ -490,10 +489,10 @@ RegExp::str_match(char *s,char *re)
 	return re_match(s,pat);
 }
 
-char* 
-RegExp::re_match(char *s,char *pat)
+LPTSTR 
+RegExp::re_match(LPTSTR s,LPTSTR pat)
 {
-	char *c = s;
+	LPTSTR c = s;
 	
 	m_s_end = NULL;
 	while(*c != ENDSTR)
@@ -511,9 +510,9 @@ RegExp::re_match(char *s,char *pat)
 }
 
 bool 
-RegExp::re_matchpos(char car,char *pat,int pos)
+RegExp::re_matchpos(TCHAR car,LPTSTR pat,int pos)
 {
-	char c[2];
+	TCHAR c[2];
 	c[0] = car;
 	c[1] = ENDSTR;
 
@@ -525,7 +524,7 @@ RegExp::re_matchpos(char car,char *pat,int pos)
 }
 
 int 
-RegExp::match_term(int inx,char *s,char *pat,int aantalpos)
+RegExp::match_term(int inx,LPTSTR s,LPTSTR pat,int aantalpos)
 {
 	m_s_end = s;
 	if(*pat == ENDSTR)
@@ -571,8 +570,8 @@ RegExp::match_term(int inx,char *s,char *pat,int aantalpos)
 					      ++pat;
 					      break;
 			case OR:	return match_or(inx,s,pat);
-			case CCL:	/* Character class requires	*/
-			case NCCL:	/* Special proccessing		*/
+			case CCL:	/* Character class requires */
+			case NCCL:/* Special processing       */
 					      if(*s == ENDSTR)
 					      {
 						      return FALSE;
@@ -607,9 +606,9 @@ RegExp::match_term(int inx,char *s,char *pat,int aantalpos)
                 {
                   return true;
                 }
- 						    char clopat[MAXPAT];
-						    memset(clopat,0,MAXPAT);
-						    strncpy(clopat,pat+2,*(pat+1));
+ 						    TCHAR clopat[MAXPAT];
+						    memset(clopat,0,MAXPAT * sizeof (TCHAR));
+						    _tcsncpy(clopat,pat+2,*(pat+1));
 						    return match_closure(inx,s,pat,clopat);
      case '%':  /* CLOSURE IN % and _ types */
                 if(*pat != M_CLOSURE)
@@ -619,9 +618,9 @@ RegExp::match_term(int inx,char *s,char *pat,int aantalpos)
                 // Fall through
      case POS_CLO:	
                 {
-						      char clopat[MAXPAT];
-						      memset(clopat,0,MAXPAT);
-						      strncpy(clopat,pat+2,*(pat+1));
+						      TCHAR clopat[MAXPAT];
+						      memset(clopat,0,MAXPAT * sizeof(TCHAR));
+						      _tcsncpy(clopat,pat+2,*(pat+1));
 						      return match_closure(inx,s,pat,clopat);
 					      }
 			default:	return TRUE;	/* Cant't happen */
@@ -641,18 +640,18 @@ RegExp::match_term(int inx,char *s,char *pat,int aantalpos)
 }
 
 int 
-RegExp::match_or(int inx,char *s,char *pat)
+RegExp::match_or(int inx,LPTSTR s,LPTSTR pat)
 {
-	char workpat[MAXPAT];
-	char *t1;
-	char *t2 = NULL;
-	char *junk;
+	TCHAR workpat[MAXPAT];
+	LPTSTR t1;
+	LPTSTR t2 = NULL;
+	LPTSTR junk;
 	
 	workpat[0] = ENDSTR;
 	++pat;
 	junk = skip_term(pat);
-	strncat(workpat,pat,junk - pat);
-	strcat (workpat,skip_term(junk));
+	_tcsncat(workpat,pat,junk - pat);
+	_tcscat (workpat,skip_term(junk));
 	t1 = (match_term(inx,s,workpat) != FALSE) ? m_s_end : NULL;
 	if(t1 == NULL || *m_s_end != ENDSTR)
 	{
@@ -665,8 +664,8 @@ RegExp::match_or(int inx,char *s,char *pat)
 	return (t1 == NULL && t2 == NULL) ? FALSE : TRUE;
 }
 
-char*
-RegExp::skip_term(char *pat,int aantalpos)
+LPTSTR 
+RegExp::skip_term(LPTSTR pat,int aantalpos)
 {
 	register short nterm = 1;
 	
@@ -681,13 +680,13 @@ RegExp::skip_term(char *pat,int aantalpos)
       case '%':
 			case '?':	/* ZERO_ONE	*/
       case '_':
-			case POS_CLO:	++pat;
-					pat += *pat;
-					break;
-			case END_TERM:	--nterm;
-					break;
-			case LITCHAR:	++pat;
-					break;
+			case POS_CLO:  ++pat;
+                     pat += *pat;
+                     break;
+			case END_TERM: --nterm;
+                     break;
+			case LITCHAR:	 ++pat;
+                     break;
 		}
 		++pat;
 		if (aantalpos > 0)
@@ -703,9 +702,9 @@ RegExp::skip_term(char *pat,int aantalpos)
 }
 
 int 
-RegExp::match_0_1(int inx,char *s,char *pat)
+RegExp::match_0_1(int inx,LPTSTR s,LPTSTR pat)
 {
-	char *save_s = s;
+	LPTSTR save_s = s;
 	
 	if(match_term(inx,s,pat+2) == TRUE)
 	{
@@ -725,9 +724,9 @@ RegExp::match_0_1(int inx,char *s,char *pat)
 }
 
 int
-RegExp::match_closure(int inx,char *s,char *pat,char *clopat)
+RegExp::match_closure(int inx,LPTSTR s,LPTSTR pat,LPTSTR clopat)
 {
-	char *save_s = s;
+	LPTSTR save_s = s;
 
 	if(match_term(inx,s,clopat) == TRUE)
 	{
@@ -742,8 +741,8 @@ RegExp::match_closure(int inx,char *s,char *pat,char *clopat)
 			{
 				return TRUE;
 			}
-			// De closure mag altijd en car terug
-  			if (*pat == M_CLOSURE && match_term(inx,s,pat+2+*(pat+1)))
+      // Closure can always return one char
+      if (*pat == M_CLOSURE && match_term(inx,s,pat+2+*(pat+1)))
 			{
 				return TRUE;
 			}
@@ -771,10 +770,10 @@ RegExp::match_closure(int inx,char *s,char *pat,char *clopat)
 }
 
 short 
-RegExp::match_cc1(char c,char *pat)
+RegExp::match_cc1(TCHAR c,LPTSTR pat)
 {
 	register short x;
-	char cc1 = *pat++;
+	TCHAR cc1 = *pat++;
 
 	for(x=*pat;x>0;--x)
 	{

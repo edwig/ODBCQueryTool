@@ -370,7 +370,7 @@ $abort: // Something went wrong.
 
 // Load a DIB from a disk file. If no file name is given, show
 // an Open File dialog to get one.
-BOOL StyleDIB::Load(char* pszFileName)
+BOOL StyleDIB::Load(LPCTSTR pszFileName)
 {
   // Try to open the file for read access.
   CFile file;
@@ -418,7 +418,7 @@ BOOL StyleDIB::LoadBitmap(WORD wResid)
 BOOL StyleDIB::Load(WORD wResid)
 {
   HINSTANCE hInst = AfxGetResourceHandle();
-  HRSRC hrsrc = ::FindResource(hInst, MAKEINTRESOURCE(wResid), "DIB");
+  HRSRC hrsrc = ::FindResource(hInst, MAKEINTRESOURCE(wResid), _T("DIB"));
   if (!hrsrc)
   {
     TRACE("DIB resource not found");
@@ -728,7 +728,7 @@ BOOL StyleDIB::Save(CFile* fp)
 
 // Save a DIB to a disk file. If no file name is given, show
 // a File Save dialog to get one.
-BOOL StyleDIB::Save(char* pszFileName)
+BOOL StyleDIB::Save(LPCTSTR pszFileName)
 {
   // Try to open the file for write access.
   CFile file;

@@ -183,12 +183,12 @@ SQLPrimaryKey::GetCondition()
   {
     if(!condition.IsEmpty())
     {
-      condition += " AND ";
+      condition += _T(" AND ");
     }
 
     (*vl)->GetAsString(key);
     condition += *it;
-    condition += " = ";
+    condition += _T(" = ");
     if((*vl)->IsNumericType())
     {
       condition += key;

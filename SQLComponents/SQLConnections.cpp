@@ -85,7 +85,7 @@ SQLConnections::GetConnectionString(XString p_name)
     return "";
   }
   XString connect;
-  connect.Format("DSN=%s;UID=%s;PWD=%s;"
+  connect.Format(_T("DSN=%s;UID=%s;PWD=%s;")
                  ,conn->m_datasource.GetString()
                  ,conn->m_username.GetString()
                  ,conn->m_password.GetString());
@@ -142,7 +142,7 @@ SQLConnections::LoadConnectionsFile(XString p_filename /*=""*/,bool p_reset /*=f
 {
   if(p_filename.IsEmpty())
   {
-    p_filename = "Database.xml";
+    p_filename = _T("Database.xml");
   }
   p_filename = SQLGetExePath() + p_filename;
 
@@ -151,7 +151,7 @@ SQLConnections::LoadConnectionsFile(XString p_filename /*=""*/,bool p_reset /*=f
   {
     return false;
   }
-  if(msg.GetRoot()->GetName().Compare("Connections"))
+  if(msg.GetRoot()->GetName().Compare(_T("Connections")))
   {
     return false;
   }
@@ -163,15 +163,15 @@ SQLConnections::LoadConnectionsFile(XString p_filename /*=""*/,bool p_reset /*=f
   }
 
   // Read all connections
-  XMLElement* conn = msg.FindElement("Connect");
+  XMLElement* conn = msg.FindElement(_T("Connect"));
   while(conn)
   {
     SQLConnection connect;
-    connect.m_name       = msg.GetElement(conn,"Name");
-    connect.m_datasource = msg.GetElement(conn,"DSN");
-    connect.m_username   = msg.GetElement(conn,"User");
-    connect.m_options    = msg.GetElement(conn,"Options");
-    connect.m_password   = PasswordDecoding(msg.GetElement(conn,"Password"));
+    connect.m_name       = msg.GetElement(conn,_T("Name"));
+    connect.m_datasource = msg.GetElement(conn,_T("DSN"));
+    connect.m_username   = msg.GetElement(conn,_T("User"));
+    connect.m_options    = msg.GetElement(conn,_T("Options"));
+    connect.m_password   = PasswordDecoding(msg.GetElement(conn,_T("Password")));
 
     XString name(connect.m_name);
     name.MakeLower();
@@ -193,22 +193,22 @@ SQLConnections::SaveConnectionsFile(XString p_filename /*=""*/)
 {
   if(p_filename.IsEmpty())
   {
-    p_filename = "Database.xml";
+    p_filename = _T("Database.xml");
   }
   p_filename = SQLGetExePath() + p_filename;
 
   XMLMessage msg;
-  msg.SetRootNodeName("Connections");
+  msg.SetRootNodeName(_T("Connections"));
   
   for(auto& connect : m_connections)
   {
-    XMLElement* conn = msg.AddElement(nullptr,"Connect",XDT_String,"");
+    XMLElement* conn = msg.AddElement(nullptr,_T("Connect"),XDT_String,_T(""));
 
-    msg.AddElement(conn,"Name",     XDT_String,connect.second.m_name);
-    msg.AddElement(conn,"DSN",      XDT_String,connect.second.m_datasource);
-    msg.AddElement(conn,"User",     XDT_String,connect.second.m_username);
-    msg.AddElement(conn,"Options",  XDT_String,connect.second.m_options);
-    msg.AddElement(conn,"Password", XDT_String,PasswordScramble(connect.second.m_password));
+    msg.AddElement(conn,_T("Name"),     XDT_String,connect.second.m_name);
+    msg.AddElement(conn,_T("DSN"),      XDT_String,connect.second.m_datasource);
+    msg.AddElement(conn,_T("User"),     XDT_String,connect.second.m_username);
+    msg.AddElement(conn,_T("Options"),  XDT_String,connect.second.m_options);
+    msg.AddElement(conn,_T("Password"), XDT_String,PasswordScramble(connect.second.m_password));
   }
 
   // Save the file
@@ -242,7 +242,7 @@ SQLConnections::PasswordScramble(XString p_password)
   XString coded;
   for(int index = 0;index < scramble.GetLength(); ++index)
   {
-    coded.AppendFormat("%2.2X",(int)scramble.GetAt(index));
+    coded.AppendFormat(_T("%2.2X"),(int)scramble.GetAt(index));
   }
 
   // Coded result of our password

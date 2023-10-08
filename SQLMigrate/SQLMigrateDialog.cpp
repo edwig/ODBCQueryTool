@@ -169,7 +169,7 @@ BOOL
 SQLMigrateDialog::OnInitDialog()
 {
   StyleDialog::OnInitDialog();
-  SetWindowText(SQL_MIGRATE " " SQL_COMPONENTS_VERSION);
+  SetWindowText(SQL_MIGRATE _T(" ") SQL_COMPONENTS_VERSION);
   ShowMinMaxButton();
   // Use as system menu
   SetSysMenu(IDR_SYSMENU);
@@ -187,13 +187,13 @@ SQLMigrateDialog::OnInitDialog()
   m_editWhere.EnableWindow(FALSE);
 
   // Set font of the log window
-  m_editLog.SetFontName("Courier new",100);
+  m_editLog.SetFontName(_T("Courier new"),100);
   m_editLog.LimitText();
   m_editLog.SetMutable(false);
   // Set the buttons
-  m_buttonDirectory.SetStyle("dir");
-  m_buttonExport.SetStyle("ok");
-  m_buttonClose.SetStyle("can");
+  m_buttonDirectory.SetStyle(_T("dir"));
+  m_buttonExport.SetStyle(_T("ok"));
+  m_buttonClose.SetStyle(_T("can"));
 
   // Set the defaults
   m_toLogfile           = 0;
@@ -233,7 +233,7 @@ SQLMigrateDialog::StartFromCommandLine()
   LPWSTR* argv;
   int argc;
   argv = CommandLineToArgvW(GetCommandLineW(),&argc);
-  m_iniFile = "SQLMigrate.ini";
+  m_iniFile = _T("SQLMigrate.ini");
   if(argc == 2)
   {
     m_commandLineMode = true;
@@ -245,8 +245,8 @@ SQLMigrateDialog::StartFromCommandLine()
       m_toLogfile = true;
       Logging log;
       log.Open(false);
-      log.WriteLog("Absolute or relative pathname to SQLMigrate.ini is NOT correct!");
-      log.WriteLog("End of SQLMigrate.");
+      log.WriteLog(_T("Absolute or relative pathname to SQLMigrate.ini is NOT correct!"));
+      log.WriteLog(_T("End of SQLMigrate."));
       log.Close();
       Closing(false);
       return false;
@@ -257,7 +257,7 @@ SQLMigrateDialog::StartFromCommandLine()
 
   if(argc > 2)
   {
-    StyleMessageBox(this,"Wrong number of arguments on the command line",SQL_MIGRATE,MB_OK | MB_ICONERROR);
+    StyleMessageBox(this,_T("Wrong number of arguments on the command line"),SQL_MIGRATE,MB_OK | MB_ICONERROR);
   }
   return true;
 }
@@ -307,7 +307,7 @@ SQLMigrateDialog::InitTaskbar()
 void 
 SQLMigrateDialog::SetDirectory()
 {
-  char* dir = m_directory.GetBufferSetLength(MAX_PATH);
+  TCHAR* dir = m_directory.GetBufferSetLength(MAX_PATH);
   GetCurrentDirectory(MAX_PATH,dir);
   m_directory.ReleaseBuffer();
   UpdateData(FALSE);
@@ -327,9 +327,9 @@ SQLMigrateDialog::SetComboBoxes()
     m_comboTargetDSN.AddString(datasource.m_datasource);
   }
 
-  m_comboDirectMigration.AddString("Direct datapump migration");
-  m_comboDirectMigration.AddString("SELECT/INSERT migration");
-  m_comboDirectMigration.AddString("Write to scripts");
+  m_comboDirectMigration.AddString(_T("Direct datapump migration"));
+  m_comboDirectMigration.AddString(_T("SELECT/INSERT migration"));
+  m_comboDirectMigration.AddString(_T("Write to scripts"));
 }
 
 void 
@@ -343,7 +343,7 @@ SQLMigrateDialog::OnSysCommand(UINT nID, LPARAM lParam)
   }
   if(nID == SC_CLOSE)
   {
-    if(StyleMessageBox(this,"Do you want to close the program?",SQL_MIGRATE,MB_YESNO|MB_DEFBUTTON2|MB_ICONQUESTION) == IDNO)
+    if(StyleMessageBox(this,_T("Do you want to close the program?"),SQL_MIGRATE,MB_YESNO|MB_DEFBUTTON2|MB_ICONQUESTION) == IDNO)
     {
       return;
     }
@@ -354,29 +354,29 @@ SQLMigrateDialog::OnSysCommand(UINT nID, LPARAM lParam)
 void
 SQLMigrateDialog::FindProfile()
 {
-  XString workingDir("");
+  XString workingDir(_T(""));
 
-  if(m_iniFile.Left(2).Right(1) == ":" || m_iniFile.Left(1) == "\\")
+  if(m_iniFile.Left(2).Right(1) == _T(":") || m_iniFile.Left(1) == _T("\\"))
   {
     // absolute pathname
     LPCTSTR path = m_iniFile;
-    char drive[_MAX_DRIVE];
-    char dir  [_MAX_DIR];
-    char fname[_MAX_FNAME];
-    char ext  [_MAX_EXT];
-    _splitpath_s(path,drive,_MAX_DRIVE,dir,_MAX_DIR,fname,_MAX_FNAME,ext,_MAX_EXT);
+    TCHAR drive[_MAX_DRIVE];
+    TCHAR dir  [_MAX_DIR];
+    TCHAR fname[_MAX_FNAME];
+    TCHAR ext  [_MAX_EXT];
+    _tsplitpath_s(path,drive,_MAX_DRIVE,dir,_MAX_DIR,fname,_MAX_FNAME,ext,_MAX_EXT);
     workingDir = (XString) drive + (XString) dir;
     m_iniFile  = (XString) fname + (XString) ext;
   }
   else
   {
     // Find in the current working directory
-    char curdir[MAX_PATH];
-    _getcwd(curdir,MAX_PATH);
+    TCHAR curdir[MAX_PATH];
+    _tgetcwd(curdir,MAX_PATH);
     workingDir = curdir;
     if(workingDir.Right(1) != '\\')
     {
-      workingDir += "\\";
+      workingDir += _T("\\");
     }
   }
   m_profile = workingDir + m_iniFile;
@@ -385,66 +385,66 @@ SQLMigrateDialog::FindProfile()
 void
 SQLMigrateDialog::LoadProfile()
 {
-  char buffer[MAX_PATH + 1];
+  TCHAR buffer[MAX_PATH + 1];
   XString log_loglines;
 
   // Source Database
-  GetPrivateProfileString("SOURCE","database","<source-database>",buffer,MAX_PATH,m_profile); m_sourceDSN      = buffer;
-  GetPrivateProfileString("SOURCE","user"    ,"user",             buffer,MAX_PATH,m_profile); m_sourceUser     = buffer;
-  GetPrivateProfileString("SOURCE","password","password",         buffer,MAX_PATH,m_profile); m_sourcePassword = buffer;
-  GetPrivateProfileString("SOURCE","schema",  "",                 buffer,MAX_PATH,m_profile); m_sourceSchema   = buffer;
+  GetPrivateProfileString(_T("SOURCE"),_T("database"),_T("<source-database>"),buffer,MAX_PATH,m_profile); m_sourceDSN      = buffer;
+  GetPrivateProfileString(_T("SOURCE"),_T("user")    ,_T("user"),             buffer,MAX_PATH,m_profile); m_sourceUser     = buffer;
+  GetPrivateProfileString(_T("SOURCE"),_T("password"),_T("password"),         buffer,MAX_PATH,m_profile); m_sourcePassword = buffer;
+  GetPrivateProfileString(_T("SOURCE"),_T("schema"),  _T(""),                 buffer,MAX_PATH,m_profile); m_sourceSchema   = buffer;
 
   // Target Database
-  GetPrivateProfileString("TARGET","database","<target-database>",buffer,MAX_PATH,m_profile); m_targetDSN      = buffer;
-  GetPrivateProfileString("TARGET","user",    "user",             buffer,MAX_PATH,m_profile); m_targetUser     = buffer;
-  GetPrivateProfileString("TARGET","password","password",         buffer,MAX_PATH,m_profile); m_targetPassword = buffer;
-  GetPrivateProfileString("TARGET","schema",  "",                 buffer,MAX_PATH,m_profile); m_targetSchema   = buffer;
+  GetPrivateProfileString(_T("TARGET"),_T("database"),_T("<target-database>"),buffer,MAX_PATH,m_profile); m_targetDSN      = buffer;
+  GetPrivateProfileString(_T("TARGET"),_T("user"),    _T("user"),             buffer,MAX_PATH,m_profile); m_targetUser     = buffer;
+  GetPrivateProfileString(_T("TARGET"),_T("password"),_T("password"),         buffer,MAX_PATH,m_profile); m_targetPassword = buffer;
+  GetPrivateProfileString(_T("TARGET"),_T("schema"),  _T(""),                 buffer,MAX_PATH,m_profile); m_targetSchema   = buffer;
 
   // Type migration
-  GetPrivateProfileString("TABLE","tablespace","",                buffer,MAX_PATH,m_profile); m_tablespace     = buffer;
+  GetPrivateProfileString(_T("TABLE"),_T("tablespace"),_T(""),                buffer,MAX_PATH,m_profile); m_tablespace     = buffer;
 
   // File
-  GetPrivateProfileString("FILE","create",   "script.sql",    buffer,MAX_PATH,m_profile); m_createscript = buffer;
-  GetPrivateProfileString("FILE","drop",     "dropscript.sql",buffer,MAX_PATH,m_profile); m_dropscript   = buffer;
-  m_directMigration = (MigrateType) GetPrivateProfileInt("FILE", "direct",0,m_profile);
+  GetPrivateProfileString(_T("FILE"),_T("create"),   _T("script.sql"),    buffer,MAX_PATH,m_profile); m_createscript = buffer;
+  GetPrivateProfileString(_T("FILE"),_T("drop"),     _T("dropscript.sql"),buffer,MAX_PATH,m_profile); m_dropscript   = buffer;
+  m_directMigration = (MigrateType) GetPrivateProfileInt(_T("FILE"), _T("direct"),0,m_profile);
   m_comboDirectMigration.SetCurSel((int)m_directMigration);
 
   // Tables
-  GetPrivateProfileString("TABLE","table","",buffer,MAX_PATH,m_profile);  m_table = buffer;
-  GetPrivateProfileString("TABLE","where","",buffer,MAX_PATH,m_profile);  m_where = buffer;
-  m_allTables  = GetPrivateProfileInt("TABLE","all",    1,   m_profile);
+  GetPrivateProfileString(_T("TABLE"),_T("table"),_T(""),buffer,MAX_PATH,m_profile);  m_table = buffer;
+  GetPrivateProfileString(_T("TABLE"),_T("where"),_T(""),buffer,MAX_PATH,m_profile);  m_where = buffer;
+  m_allTables  = GetPrivateProfileInt(_T("TABLE"),_T("all"),    1,   m_profile);
 
   // Log and log lines
-  m_toLogfile = GetPrivateProfileInt("LOG","logging",1,m_profile);
-  int log_log = GetPrivateProfileInt("LOG","lines",1000,m_profile);
+  m_toLogfile = GetPrivateProfileInt(_T("LOG"),_T("logging"),1,m_profile);
+  int log_log = GetPrivateProfileInt(_T("LOG"),_T("lines"),1000,m_profile);
   if(log_log > 0)
   {
-    log_loglines.Format("%d",log_log);
+    log_loglines.Format(_T("%d"),log_log);
     m_logPerRow = log_loglines;
   }
 
   // Options
-  m_do_tables    = GetPrivateProfileInt("OPTION","tables",   1,m_profile);
-  m_do_data      = GetPrivateProfileInt("OPTION","data",     1,m_profile);
-  m_do_views     = GetPrivateProfileInt("OPTION","views",    1,m_profile);
-  m_do_truncate  = GetPrivateProfileInt("OPTION","truncate", 1,m_profile);
-  m_do_deletes   = GetPrivateProfileInt("OPTION","deletes",  1,m_profile);
-  m_do_primarys  = GetPrivateProfileInt("OPTION","primarys", 0,m_profile);
-  m_do_indices   = GetPrivateProfileInt("OPTION","indices",  0,m_profile);
-  m_do_foreigns  = GetPrivateProfileInt("OPTION","foreigns", 0,m_profile);
-  m_do_sequences = GetPrivateProfileInt("OPTION","sequences",0,m_profile);
-  m_do_triggers  = GetPrivateProfileInt("OPTION","triggers", 0,m_profile);
-  m_do_access    = GetPrivateProfileInt("OPTION","access",   0,m_profile);
+  m_do_tables    = GetPrivateProfileInt(_T("OPTION"),_T("tables"),   1,m_profile);
+  m_do_data      = GetPrivateProfileInt(_T("OPTION"),_T("data"),     1,m_profile);
+  m_do_views     = GetPrivateProfileInt(_T("OPTION"),_T("views"),    1,m_profile);
+  m_do_truncate  = GetPrivateProfileInt(_T("OPTION"),_T("truncate"), 1,m_profile);
+  m_do_deletes   = GetPrivateProfileInt(_T("OPTION"),_T("deletes"),  1,m_profile);
+  m_do_primarys  = GetPrivateProfileInt(_T("OPTION"),_T("primarys"), 0,m_profile);
+  m_do_indices   = GetPrivateProfileInt(_T("OPTION"),_T("indices"),  0,m_profile);
+  m_do_foreigns  = GetPrivateProfileInt(_T("OPTION"),_T("foreigns"), 0,m_profile);
+  m_do_sequences = GetPrivateProfileInt(_T("OPTION"),_T("sequences"),0,m_profile);
+  m_do_triggers  = GetPrivateProfileInt(_T("OPTION"),_T("triggers"), 0,m_profile);
+  m_do_access    = GetPrivateProfileInt(_T("OPTION"),_T("access"),   0,m_profile);
 
 
   // Check scripts
   if(m_dropscript.IsEmpty())
   {
-    m_dropscript = "dropscript.sql";
+    m_dropscript = _T("dropscript.sql");
   }
   if(m_createscript.IsEmpty())
   {
-    m_createscript = "createscript.sql";
+    m_createscript = _T("createscript.sql");
   }
 
   // Tell it the dialog
@@ -461,57 +461,57 @@ SQLMigrateDialog::SaveProfile()
 {
   UpdateData();
 
-  if(m_profile == "")
+  if(m_profile == _T(""))
   {
     return;
   }
 
   // Source Database
-  WritePrivateProfileString("SOURCE","database",m_sourceDSN,     m_profile);
-  WritePrivateProfileString("SOURCE","user",    m_sourceUser,    m_profile);
-  WritePrivateProfileString("SOURCE","password",m_sourcePassword,m_profile);
-  WritePrivateProfileString("SOURCE","schema",  m_sourceSchema,  m_profile);
+  WritePrivateProfileString(_T("SOURCE"),_T("database"),m_sourceDSN,     m_profile);
+  WritePrivateProfileString(_T("SOURCE"),_T("user"),    m_sourceUser,    m_profile);
+  WritePrivateProfileString(_T("SOURCE"),_T("password"),m_sourcePassword,m_profile);
+  WritePrivateProfileString(_T("SOURCE"),_T("schema"),  m_sourceSchema,  m_profile);
 
   // Target Database
-  WritePrivateProfileString("TARGET","database", m_targetDSN,      m_profile);
-  WritePrivateProfileString("TARGET","user",     m_targetUser,     m_profile);
-  WritePrivateProfileString("TARGET","password", m_targetPassword, m_profile);
-  WritePrivateProfileString("TARGET","schema",   m_targetSchema,   m_profile);
+  WritePrivateProfileString(_T("TARGET"),_T("database"), m_targetDSN,      m_profile);
+  WritePrivateProfileString(_T("TARGET"),_T("user"),     m_targetUser,     m_profile);
+  WritePrivateProfileString(_T("TARGET"),_T("password"), m_targetPassword, m_profile);
+  WritePrivateProfileString(_T("TARGET"),_T("schema"),   m_targetSchema,   m_profile);
 
   // Type Migration
-  WritePrivateProfileString("TABLE","tablespace",m_tablespace,     m_profile);
+  WritePrivateProfileString(_T("TABLE"),_T("tablespace"),m_tablespace,     m_profile);
 
   // files
   XString directstring;
-  directstring.Format("%d",m_directMigration);
+  directstring.Format(_T("%d"),m_directMigration);
 
   // Directory and files
-  WritePrivateProfileString("FILE","create",   m_createscript, m_profile);
-  WritePrivateProfileString("FILE","drop",     m_dropscript,   m_profile);
-  WritePrivateProfileString("FILE","direct",   directstring,   m_profile);
+  WritePrivateProfileString(_T("FILE"),_T("create"),   m_createscript, m_profile);
+  WritePrivateProfileString(_T("FILE"),_T("drop"),     m_dropscript,   m_profile);
+  WritePrivateProfileString(_T("FILE"),_T("direct"),   directstring,   m_profile);
 
   // Tables
-  XString table_allestr = m_allTables ? "1" : "0";
-  WritePrivateProfileString("TABLE","all",        table_allestr,    m_profile);
-  WritePrivateProfileString("TABLE","table",      m_table,          m_profile);
-  WritePrivateProfileString("TABLE","where",      m_where,         m_profile);
+  XString table_allestr = m_allTables ? _T("1") : _T("0");
+  WritePrivateProfileString(_T("TABLE"),_T("all"),        table_allestr,    m_profile);
+  WritePrivateProfileString(_T("TABLE"),_T("table"),      m_table,          m_profile);
+  WritePrivateProfileString(_T("TABLE"),_T("where"),      m_where,         m_profile);
 
   // Log en log lines
-  XString log_logstr = m_toLogfile ? "1" : "0";
-  WritePrivateProfileString("LOG","logging",log_logstr  ,m_profile);
-  WritePrivateProfileString("LOG","lines",  m_logPerRow ,m_profile);
+  XString log_logstr = m_toLogfile ? _T("1") : _T("0");
+  WritePrivateProfileString(_T("LOG"),_T("logging"),log_logstr  ,m_profile);
+  WritePrivateProfileString(_T("LOG"),_T("lines"),  m_logPerRow ,m_profile);
 
-  WritePrivateProfileString("OPTION","tables",   m_do_tables    ? "1" : "0",m_profile);
-  WritePrivateProfileString("OPTION","data",     m_do_data      ? "1" : "0",m_profile);
-  WritePrivateProfileString("OPTION","views",    m_do_views     ? "1" : "0",m_profile);
-  WritePrivateProfileString("OPTION","truncate", m_do_truncate  ? "1" : "0",m_profile);
-  WritePrivateProfileString("OPTION","deletes",  m_do_deletes   ? "1" : "0",m_profile);
-  WritePrivateProfileString("OPTION","primarys", m_do_primarys  ? "1" : "0",m_profile);
-  WritePrivateProfileString("OPTION","indices",  m_do_indices   ? "1" : "0",m_profile);
-  WritePrivateProfileString("OPTION","foreigns", m_do_foreigns  ? "1" : "0",m_profile);
-  WritePrivateProfileString("OPTION","sequences",m_do_sequences ? "1" : "0",m_profile);
-  WritePrivateProfileString("OPTION","triggers", m_do_triggers  ? "1" : "0",m_profile);
-  WritePrivateProfileString("OPTION","access",   m_do_access    ? "1" : "0",m_profile);
+  WritePrivateProfileString(_T("OPTION"),_T("tables"),   m_do_tables    ? _T("1") : _T("0"),m_profile);
+  WritePrivateProfileString(_T("OPTION"),_T("data"),     m_do_data      ? _T("1") : _T("0"),m_profile);
+  WritePrivateProfileString(_T("OPTION"),_T("views"),    m_do_views     ? _T("1") : _T("0"),m_profile);
+  WritePrivateProfileString(_T("OPTION"),_T("truncate"), m_do_truncate  ? _T("1") : _T("0"),m_profile);
+  WritePrivateProfileString(_T("OPTION"),_T("deletes"),  m_do_deletes   ? _T("1") : _T("0"),m_profile);
+  WritePrivateProfileString(_T("OPTION"),_T("primarys"), m_do_primarys  ? _T("1") : _T("0"),m_profile);
+  WritePrivateProfileString(_T("OPTION"),_T("indices"),  m_do_indices   ? _T("1") : _T("0"),m_profile);
+  WritePrivateProfileString(_T("OPTION"),_T("foreigns"), m_do_foreigns  ? _T("1") : _T("0"),m_profile);
+  WritePrivateProfileString(_T("OPTION"),_T("sequences"),m_do_sequences ? _T("1") : _T("0"),m_profile);
+  WritePrivateProfileString(_T("OPTION"),_T("triggers"), m_do_triggers  ? _T("1") : _T("0"),m_profile);
+  WritePrivateProfileString(_T("OPTION"),_T("access"),   m_do_access    ? _T("1") : _T("0"),m_profile);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -546,7 +546,7 @@ SQLMigrateDialog::GetMigrationParameters()
   m_parameters.v_table            = m_table; 
   m_parameters.v_tablespace       = m_tablespace;
   m_parameters.v_where            = m_where;
-  m_parameters.v_logLines         = atoi(m_logPerRow);
+  m_parameters.v_logLines         = _ttoi(m_logPerRow);
   m_parameters.v_direct           = m_directMigration;
   // Options: Booleans
   m_parameters.v_do_tables        = m_do_tables;
@@ -563,7 +563,7 @@ SQLMigrateDialog::GetMigrationParameters()
   m_parameters.v_allObjects       = m_allTables;
 
   // Empty the log window
-  m_editLog.SetWindowText(""); 
+  m_editLog.SetWindowText(_T("")); 
 }
 
 //   Perform the real migration now!
@@ -592,7 +592,7 @@ SQLMigrateDialog::PerformMigration()
   }
   catch(...)
   {
-    error = "Migration is stopped with an error";
+    error = _T("Migration is stopped with an error");
   }
 
   // NOW READY!
@@ -601,8 +601,8 @@ SQLMigrateDialog::PerformMigration()
   // Show errors (if any)
   if(!error.IsEmpty())
   {
-    m_logfile.WriteLog("");
-    m_logfile.WriteLog("STOPPED WITH ERROR!");
+    m_logfile.WriteLog(_T(""));
+    m_logfile.WriteLog(_T("STOPPED WITH ERROR!"));
     m_logfile.WriteLog(error);
 
     if(m_commandLineMode == false)
@@ -625,17 +625,17 @@ SQLMigrateDialog::PostMigration()
   SetTablesGauge(0,100);
   m_sourceType.Empty();
   m_targetType.Empty();
-  SetDlgItemText(IDC_SOURCE_TYPE,"");
-  SetDlgItemText(IDC_TARGET_TYPE,"");
-  SetStatus("");
+  SetDlgItemText(IDC_SOURCE_TYPE,_T(""));
+  SetDlgItemText(IDC_TARGET_TYPE,_T(""));
+  SetStatus(_T(""));
   m_editLog.LineScroll(m_editLog.GetLineCount());
 
   if(m_exportResult)
   {
-    XString text("The migration is complete");
+    XString text(_T("The migration is complete"));
     if (m_commandLineMode)
     {
-      m_logfile.WriteLog("");
+      m_logfile.WriteLog(_T(""));
       m_logfile.WriteLog(text);
     }
     else
@@ -708,11 +708,11 @@ void
 SQLMigrateDialog::OnDirectory()
 {
   MapDialog dlg;
-  if(dlg.Browse(GetSafeHwnd(),"Find working directory",m_directory))
+  if(dlg.Browse(GetSafeHwnd(),_T("Find working directory"),m_directory))
   {
     m_directory = dlg.GetPath();
-    m_profile   = m_directory + "\\" + m_iniFile;
-    if(StyleMessageBox(this,"Load profile from new working directory?",SQL_MIGRATE,MB_YESNO|MB_DEFBUTTON2|MB_ICONQUESTION) == IDYES)
+    m_profile   = m_directory + _T("\\") + m_iniFile;
+    if(StyleMessageBox(this,_T("Load profile from new working directory?"),SQL_MIGRATE,MB_YESNO|MB_DEFBUTTON2|MB_ICONQUESTION) == IDYES)
     {
       LoadProfile();
     }
@@ -853,7 +853,7 @@ SQLMigrateDialog::SetTablesGauge(int num,int maxnum)
   m_tables_gauge.SetRange(0,(short)maxnum);
   m_tables_gauge.SetPos(num);
 
-  // Show total gauge on the taskbar
+  // Show total gauge on the task bar
   if(ptbl)
   {
     ptbl->SetProgressValue(GetSafeHwnd(),num,maxnum);
@@ -877,7 +877,7 @@ SQLMigrateDialog::SetTargetType(XString p_type)
 void
 SQLMigrateDialog::SetStatus(XString status)
 {
-  m_editStatus.EnableWindow(status != "");
+  m_editStatus.EnableWindow(status != _T(""));
   m_editStatus.SetWindowText(status); 
   m_status = status;
 }
@@ -913,10 +913,10 @@ SQLMigrateDialog::AddLogLine(XString msg)
 
   m_editLog.SetRedraw(TRUE);
 
-  msg.Replace("\n","\r\n");
+  msg.Replace(_T("\n"),_T("\r\n"));
 
   m_editLog.ReplaceSel(msg);
-  m_editLog.ReplaceSel("\r\n");
+  m_editLog.ReplaceSel(_T("\r\n"));
 
   m_editLog.GetWindowText(m_log);
   m_editLog.LineScroll(m_editLog.GetLineCount());
@@ -945,9 +945,9 @@ SQLMigrateDialog::EstimateRemainingTime(int p_num,int p_maxnum)
 
     if(days)
     {
-      m_estimated.Format("%d days ",days);
+      m_estimated.Format(_T("%d days "),days);
     }
-    m_estimated.AppendFormat("%2.2d:%2.2d:%2.2d",hour,mins,secs);
+    m_estimated.AppendFormat(_T("%2.2d:%2.2d:%2.2d"),hour,mins,secs);
   }
   m_editEstimated.SetWindowText(m_estimated);
 }
@@ -979,7 +979,7 @@ SQLMigrateDialog::HandleMessages()
 void
 SQLMigrateDialog::OnCancel()
 {
-  if(StyleMessageBox(this,"Do you want to close the program?",SQL_MIGRATE,MB_YESNO|MB_DEFBUTTON2|MB_ICONQUESTION) == IDYES)
+  if(StyleMessageBox(this,_T("Do you want to close the program?"),SQL_MIGRATE,MB_YESNO|MB_DEFBUTTON2|MB_ICONQUESTION) == IDYES)
   {
     StyleDialog::OnCancel();
   }

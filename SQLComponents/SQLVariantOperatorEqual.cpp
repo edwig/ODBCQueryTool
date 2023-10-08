@@ -702,7 +702,7 @@ static SQL_OperNumEqualsBit(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   XString left;
   p_left.GetAsString(left);
-  int lf = atoi(left);
+  int lf = _ttoi(left.GetString());
  
   if((lf == 0 && p_right.GetAsBit() == 0) ||
      (lf != 0 && p_right.GetAsBit() != 0))
@@ -1251,7 +1251,7 @@ SQLVariant::operator==(const SQLVariant& p_right) const
   XString leftType  = SQLDataType::FindDatatype(m_datatype);
   XString rightType = SQLDataType::FindDatatype(p_right.m_datatype);
   XString error;
-  error.Format("Cannot do the equality operator on (%s == %s)",leftType.GetString(),rightType.GetString());
+  error.Format(_T("Cannot do the equality operator on (%s == %s)"),leftType.GetString(),rightType.GetString());
   throw StdException(error);
 }
 
@@ -1288,7 +1288,7 @@ SQLVariant::operator!=(const SQLVariant& p_right) const
   XString leftType  = SQLDataType::FindDatatype(m_datatype);
   XString rightType = SQLDataType::FindDatatype(p_right.m_datatype);
   XString error;
-  error.Format("Cannot do the inequality operator on (%s != %s)",leftType.GetString(),rightType.GetString());
+  error.Format(_T("Cannot do the inequality operator on (%s != %s)"),leftType.GetString(),rightType.GetString());
   throw StdException(error);
 }
 

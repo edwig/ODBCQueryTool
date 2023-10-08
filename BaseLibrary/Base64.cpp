@@ -27,6 +27,7 @@
 //
 #include "pch.h"
 #include "Base64.h"
+#include "ConvertWideString.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -136,24 +137,54 @@ Base64::Ascii_length(size_t len)
 XString
 Base64::Encrypt(XString p_unencrypted)
 {
-  XString encrypt;
-  int length = (int) B64_length(p_unencrypted.GetLength());
-  char* buffer = encrypt.GetBufferSetLength(length);
-  Encrypt(reinterpret_cast<const unsigned char*>(p_unencrypted.GetString()),p_unencrypted.GetLength(),reinterpret_cast<unsigned char*>(buffer));
-  encrypt.ReleaseBufferSetLength(length);
-
+  unsigned length = p_unencrypted.GetLength();
+  unsigned b64len = (unsigned) B64_length(p_unencrypted.GetLength());
+  uchar* buffer = new uchar[b64len+ 1];
+#ifdef UNICODE
+  uchar* original = new uchar[length + 1];
+  ImplodeString(p_unencrypted,original,length);
+#else
+  uchar* original = reinterpret_cast<uchar*>(const_cast<char*>(p_unencrypted.GetString()));
+#endif
+  Encrypt(original,length,buffer);
+#ifdef UNICODE
+  XString encrypt = ExplodeString(buffer,b64len);
+  delete[] original;
+#else
+  XString encrypt(buffer);
+#endif
+  delete[] buffer;
   return encrypt;
 }
 
 XString
 Base64::Decrypt(XString p_encrypted)
 {
-  XString decrypt;
-  int length = (int) Ascii_length(p_encrypted.GetLength());
-  char* buffer = decrypt.GetBufferSetLength(length);
-  Decrypt(reinterpret_cast<const unsigned char*>(p_encrypted.GetString()),p_encrypted.GetLength(),reinterpret_cast<unsigned char*>(buffer));
-  decrypt.ReleaseBuffer();
-
+  unsigned length = p_encrypted.GetLength();
+  unsigned asclen = (unsigned) Ascii_length(p_encrypted.GetLength());
+  if(p_encrypted.Right(1) == _T('='))
+  {
+    --asclen;
+  }
+  if(p_encrypted.Right(2) == _T("=="))
+  {
+    --asclen;
+  }
+  uchar* buffer = new uchar[asclen + 3];
+#ifdef UNICODE
+  uchar* original = new uchar[length + 1];
+  ImplodeString(p_encrypted,original,length);
+#else
+  uchar* original = reinterpret_cast<uchar*>(const_cast<char*>(p_encrypted.GetString()));
+#endif
+  Decrypt(original,length,buffer);
+#ifdef UNICODE
+  XString decrypt = ExplodeString(buffer,asclen);
+  delete[] original;
+#else
+  XString decrypt(buffer);
+#endif
+  delete[] buffer;
   return decrypt;
 }
 

@@ -43,13 +43,13 @@ class GUICommandDictionary
 public:
     static Command m_firstDblKeyAccelCommandId;
     
-    static void InsertCommand (const char*, Command);
-    static bool BuildAcceleratorTable (const char*, HACCEL& accelTable);
+    static void InsertCommand (const TCHAR*, Command);
+    static bool BuildAcceleratorTable (const TCHAR*, HACCEL& accelTable);
     static void AddAccelDescriptionToMenu (HMENU&);
 
-    static bool GetDblKeyDescription (int dblKeyAccelInx, string&, VKey = 0);
+    static bool GetDblKeyDescription (int dblKeyAccelInx, CString&, VKey = 0);
     static bool GetDblKeyAccelCmdId  (int dblKeyAccelInx, VKey, Command&);
-    static bool GetCommandAccelLabel (Command, string&);
+    static bool GetCommandAccelLabel (Command, CString&);
 };
 
 };//namespace Common

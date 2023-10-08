@@ -42,7 +42,7 @@ SetStatusHwnd (HWND hWnd)
 
 // Set a new status text
 void 
-SetStatusText(const char* text, BOOL update)
+SetStatusText(LPCTSTR text, BOOL update)
 {
   if(hWndStatus)
   {

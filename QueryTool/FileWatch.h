@@ -28,7 +28,7 @@ public:
   virtual ~CFileWatchClient ();
 
 protected:
-	void StartWatching (LPCSTR = NULL);
+	void StartWatching (LPCTSTR = NULL);
 	void StopWatching ();
 	void UpdateWatchInfo ();
 

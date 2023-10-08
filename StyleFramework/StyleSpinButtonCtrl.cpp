@@ -220,14 +220,14 @@ void AFXAPI DDX_Control(CDataExchange* pDX,int nIDC,StyleSpinButtonCtrl& p_contr
   }
   else
   {
-    StyleMessageBox(nullptr,"Provide for a buddy in the of the spin-button in DDX_Control!","ERROR",MB_OK|MB_ICONERROR);
+    StyleMessageBox(nullptr,_T("Provide for a buddy in the of the spin-button in DDX_Control!"),_T("ERROR"),MB_OK|MB_ICONERROR);
   }
 }
 
 void WINAPI
 DDV_StyleMinMaxInt(CDataExchange* pDX,int nIDC,CString& p_value,int p_minimum,int p_maximum)
 {
-  int value = atoi(p_value.GetString());
+  int value = _ttoi(p_value.GetString());
   DDV_StyleMinMaxInt(pDX,nIDC,value,p_minimum,p_maximum);
 }
 

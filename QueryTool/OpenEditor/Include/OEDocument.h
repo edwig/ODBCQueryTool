@@ -16,21 +16,13 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
-#ifndef __OEDocument_h__
-#define __OEDocument_h__
-
 #include "OEStorage.h"
 #include "OESettings.h"
-#include <COMMON/MemoryMappedFile.h>
 #include "FileWatch.h"
 #include "COMMON/DocManagerExt.h"
 
-
-  class COEditorView;
+class COEditorView;
 
 class COEDocument : public CDocumentExt, CFileWatchClient
 {
@@ -51,11 +43,9 @@ class COEDocument : public CDocumentExt, CFileWatchClient
     // the main object
     OpenEditor::Storage m_storage;
 
-    // memory mapped file support
-    Common::MemoryMappedFile m_mmfile;
     // allocated memory when file locking is disabled
     LPVOID m_vmdata;
-    void loadFile (const char* path, bool reload = false, bool external = false);
+    void loadFile (LPCTSTR path, bool reload = false, bool external = false);
 
     static CString m_settingsDir;
     static OpenEditor::SettingsManager m_settingsManager;
@@ -67,7 +57,7 @@ protected:
     using CDocumentExt::m_strPathName;
     virtual void GetNewPathName (CString& newName) const { newName = m_strPathName; }
 
-    void SetClassSetting (const char* name) { if (name) m_settings.SetClassSetting(&m_settingsManager.FindByName(name)); }
+    void SetClassSetting (LPCTSTR name) { if (name) m_settings.SetClassSetting(&m_settingsManager.FindByName(name)); }
     void SetText (LPVOID, unsigned long);
     LPCVOID GetVMData () const;
 
@@ -76,7 +66,7 @@ protected:
 	  DECLARE_DYNCREATE(COEDocument)
 
 public:
-    void SetText (const char*, unsigned long);
+    void SetText (LPCTSTR, unsigned long);
 
     static bool GetSaveModifiedSilent () { return m_saveModified_silent; }
     static void SetSaveModifiedSilent (bool silent) { m_saveModified_silent = silent; }
@@ -118,11 +108,9 @@ public:
 
 protected:
     BOOL doSave (LPCTSTR lpszPathName, BOOL bReplace);
-	//{{AFX_MSG(COEDocument)
     afx_msg void OnEditPrintPageSetup();
-	afx_msg void OnEditFileSettings();
-	//}}AFX_MSG
-	DECLARE_MESSAGE_MAP()
+    afx_msg void OnEditFileSettings();
+  	DECLARE_MESSAGE_MAP()
 public:
     afx_msg void OnFileReload();
     afx_msg void OnUpdate_FileReload(CCmdUI *pCmdUI);
@@ -138,13 +126,15 @@ public:
     //afx_msg void OnChangedViewList();
 };
 
-inline
-    LPCVOID COEDocument::GetVMData () const { return m_vmdata; }
+inline LPCVOID 
+COEDocument::GetVMData () const 
+{
+  return m_vmdata;
+}
 
-inline
-    const OpenEditor::SettingsManager& 
-        COEDocument::GetSettingsManager () { return m_settingsManager; }
+inline const OpenEditor::SettingsManager& 
+COEDocument::GetSettingsManager ()
+{
+  return m_settingsManager;
+}
 
-//{{AFX_INSERT_LOCATION}}
-
-#endif//__OEDocument_h__

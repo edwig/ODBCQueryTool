@@ -66,7 +66,7 @@ namespace OpenEditor
         virtual bool IsComplete () const = 0;
         virtual bool IsSQL      () const = 0;
         virtual bool IsPLSQL    () const = 0;
-        virtual const char* GetDebugString () const = 0;
+        virtual LPCTSTR GetDebugString () const = 0;
 
         int GetLevel () const;
         virtual bool StopSign (EToken token) const;
@@ -112,7 +112,7 @@ namespace OpenEditor
         virtual bool IsComplete () const { return false; }
         virtual bool IsSQL      () const { return true; }
         virtual bool IsPLSQL    () const { return true; }
-        virtual const char* GetDebugString () const { return "Unit"; };
+        virtual LPCTSTR GetDebugString () const { return _T("Unit"); };
 
         virtual bool FindToken (int line, int offset, const SyntaxNode*& node, int& index) const;
     };
@@ -131,7 +131,7 @@ namespace OpenEditor
         virtual bool IsComplete () const { return m_state == eComplete; }
         virtual bool IsSQL      () const { return false; }
         virtual bool IsPLSQL    () const { return true; }
-        virtual const char* GetDebugString () const { return "Block"; };
+        virtual LPCTSTR GetDebugString () const { return _T("Block"); };
     };
 
     class PackageNode : public SyntaxNode
@@ -149,7 +149,7 @@ namespace OpenEditor
         virtual bool IsComplete () const { return m_state == eComplete; }
         virtual bool IsSQL      () const { return false; }
         virtual bool IsPLSQL    () const { return true; }
-        virtual const char* GetDebugString () const { return m_body ? "Package" : "Package Body"; };
+        virtual LPCTSTR GetDebugString () const { return m_body ? _T("Package") : _T("Package Body"); };
     };
 
     class ProcedureNode : public SyntaxNode
@@ -167,7 +167,7 @@ namespace OpenEditor
         virtual bool IsComplete () const { return m_state == eComplete; }
         virtual bool IsSQL      () const { return false; }
         virtual bool IsPLSQL    () const { return true; }
-        virtual const char* GetDebugString () const { return m_tokens.begin()->token == etPROCEDURE ? "Procedure" : "Function"; };
+        virtual LPCTSTR GetDebugString () const { return m_tokens.begin()->token == etPROCEDURE ? _T("Procedure") : _T("Function"); };
     };
 
     class SelectionNode : public SyntaxNode
@@ -184,7 +184,7 @@ namespace OpenEditor
         virtual bool IsComplete () const { return m_state == eComplete; }
         virtual bool IsSQL      () const { return false; }
         virtual bool IsPLSQL    () const { return true; }
-        virtual const char* GetDebugString () const { return "Selection"; };
+        virtual LPCTSTR GetDebugString () const { return _T("Selection"); };
     };
 
     class IterationNode : public SyntaxNode
@@ -201,7 +201,7 @@ namespace OpenEditor
         virtual bool IsComplete () const { return m_state == eComplete; }
         virtual bool IsSQL      () const { return false; }
         virtual bool IsPLSQL    () const { return true; }
-        virtual const char* GetDebugString () const { return "Iteration"; };
+        virtual LPCTSTR GetDebugString () const { return _T("Iteration"); };
     };
 
 
@@ -219,7 +219,7 @@ namespace OpenEditor
         virtual bool IsComplete () const { return m_state == eComplete; }
         virtual bool IsSQL      () const { return m_parent ? m_parent->IsSQL() : true; }
         virtual bool IsPLSQL    () const { return m_parent ? m_parent->IsPLSQL() : true; }
-        virtual const char* GetDebugString () const { return "Expression"; };
+        virtual LPCTSTR GetDebugString () const { return _T("Expression"); };
     };
 
     class SelectNode : public SyntaxNode
@@ -236,7 +236,7 @@ namespace OpenEditor
         virtual bool IsComplete () const { return m_state == eComplete; }
         virtual bool IsSQL      () const { return true; }
         virtual bool IsPLSQL    () const { return false; }
-        virtual const char* GetDebugString () const { return "Select"; };
+        virtual LPCTSTR GetDebugString () const { return _T("Select"); };
     };
 
     class InsertNode : public SyntaxNode
@@ -253,7 +253,7 @@ namespace OpenEditor
         virtual bool IsComplete () const { return m_state == eComplete; }
         virtual bool IsSQL      () const { return true; }
         virtual bool IsPLSQL    () const { return false; }
-        virtual const char* GetDebugString () const { return "Insert"; };
+        virtual LPCTSTR GetDebugString () const { return _T("Insert"); };
     };
 
     class UpdateNode : public SyntaxNode
@@ -270,7 +270,7 @@ namespace OpenEditor
         virtual bool IsComplete () const { return m_state == eComplete; }
         virtual bool IsSQL      () const { return true; }
         virtual bool IsPLSQL    () const { return false; }
-        virtual const char* GetDebugString () const { return "Update"; };
+        virtual LPCTSTR GetDebugString () const { return _T("Update"); };
     };
 
     class DeleteNode : public SyntaxNode
@@ -287,7 +287,7 @@ namespace OpenEditor
         virtual bool IsComplete () const { return m_state == eComplete; }
         virtual bool IsSQL      () const { return true; }
         virtual bool IsPLSQL    () const { return false; }
-        virtual const char* GetDebugString () const { return "Update"; };
+        virtual LPCTSTR GetDebugString () const { return _T("Update"); };
     };
 
     class OpenCursorNode : public SyntaxNode
@@ -304,7 +304,7 @@ namespace OpenEditor
         virtual bool IsComplete () const { return m_state == eComplete; }
         virtual bool IsSQL      () const { return true; }
         virtual bool IsPLSQL    () const { return false; }
-        virtual const char* GetDebugString () const { return "Open Cursor"; };
+        virtual LPCTSTR GetDebugString () const { return _T("Open Cursor"); };
     };
 
 

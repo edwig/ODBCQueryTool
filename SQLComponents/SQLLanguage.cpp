@@ -6,7 +6,7 @@
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
-// this software and associated documentation files (the "Software"), 
+// this software and associated documentation files (the _T("Software"), 
 // to deal in the Software without restriction, including without limitation the rights 
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, 
 // and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
@@ -14,7 +14,7 @@
 // The above copyright notice and this permission notice shall be included in all copies 
 // or substantial portions of the Software.
 // 
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
+// THE SOFTWARE IS PROVIDED _T("AS IS"), WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
 // INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. 
 // IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
@@ -40,140 +40,140 @@ namespace SQLComponents
 Language g_defaultLanguage = LN_ENGLISH;
 
 // All the days of the week 
-const char* g_weekdays[LN_NUMLANG][DAYS_IN_WEEK] = 
+LPCTSTR g_weekdays[LN_NUMLANG][DAYS_IN_WEEK] = 
 {
-   { "zondag",  "maandag", "dinsdag", "woensdag", "donderdag", "vrijdag", "zaterdag" }
-  ,{ "sunday",  "monday",  "tuesday", "wednesday","thursday",  "friday",  "saturday" }
-  ,{ "Sonntag", "Montag",  "Dienstag","Mittwoch", "Donnerstag","Freitag", "Samstag"  }
-  ,{ "dimanche","lundi",   "mardi",   "mercredi", "jeudi",     "venvredi","samedi"   }
+   { _T("zondag"),  _T("maandag"), _T("dinsdag"), _T("woensdag"), _T("donderdag"), _T("vrijdag"), _T("zaterdag") }
+  ,{ _T("sunday"),  _T("monday"),  _T("tuesday"), _T("wednesday"),_T("thursday"),  _T("friday"),  _T("saturday") }
+  ,{ _T("Sonntag"), _T("Montag"),  _T("Dienstag"),_T("Mittwoch"), _T("Donnerstag"),_T("Freitag"), _T("Samstag")  }
+  ,{ _T("dimanche"),_T("lundi"),   _T("mardi"),   _T("mercredi"), _T("jeudi"),     _T("venvredi"),_T("samedi")   }
 };
 
 // All the months in the year
-const char* g_monthnames[LN_NUMLANG][MONTHS_IN_YEAR] =
+LPCTSTR g_monthnames[LN_NUMLANG][MONTHS_IN_YEAR] =
 {
-   { "januari", "februari", "maart", "april", "mei", "juni", "juli",   "augustus","september","oktober", "november", "december" }
-  ,{ "january", "february", "march", "april", "may", "june", "july",   "august",  "september","october", "november", "december" }
-  ,{ "Januar",  "Februar",  "März",  "April", "Mai", "Juni", "Juli",   "August",  "September","Oktober", "November", "Dezember" }
-  ,{ "janvier", "février",  "mars",  "avril", "mai", "juin", "juillet","août",    "septembre","octobre", "novembre", "décembre" }
+   { _T("januari"), _T("februari"), _T("maart"), _T("april"), _T("mei"), _T("juni"), _T("juli"),   _T("augustus"),_T("september"),_T("oktober"), _T("november"), _T("december") }
+  ,{ _T("january"), _T("february"), _T("march"), _T("april"), _T("may"), _T("june"), _T("july"),   _T("august"),  _T("september"),_T("october"), _T("november"), _T("december") }
+  ,{ _T("Januar"),  _T("Februar"),  _T("März"),  _T("April"), _T("Mai"), _T("Juni"), _T("Juli"),   _T("August"),  _T("September"),_T("Oktober"), _T("November"), _T("Dezember") }
+  ,{ _T("janvier"), _T("février"),  _T("mars"),  _T("avril"), _T("mai"), _T("juin"), _T("juillet"),_T("août"),    _T("septembre"),_T("octobre"), _T("novembre"), _T("décembre") }
 };
 
-const char* g_shortMonths[LN_NUMLANG][MONTHS_IN_YEAR] = 
+LPCTSTR g_shortMonths[LN_NUMLANG][MONTHS_IN_YEAR] = 
 {
-  { "jan", "feb", "maa", "apr", "mei", "jun", "jul", "aug", "sep", "okt", "nov", "dec" }
- ,{ "jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "oct", "nov", "dec" }
- ,{ "Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez" }
- ,{ "jan", "fév", "mar", "avr", "mai", "jui", "jul", "aoû", "sep", "oct", "nov", "déc" }
+  { _T("jan"), _T("feb"), _T("maa"), _T("apr"), _T("mei"), _T("jun"), _T("jul"), _T("aug"), _T("sep"), _T("okt"), _T("nov"), _T("dec") }
+ ,{ _T("jan"), _T("feb"), _T("mar"), _T("apr"), _T("may"), _T("jun"), _T("jul"), _T("aug"), _T("sep"), _T("oct"), _T("nov"), _T("dec") }
+ ,{ _T("Jan"), _T("Feb"), _T("Mär"), _T("Apr"), _T("Mai"), _T("Jun"), _T("Jul"), _T("Aug"), _T("Sep"), _T("Okt"), _T("Nov"), _T("Dez") }
+ ,{ _T("jan"), _T("fév"), _T("mar"), _T("avr"), _T("mai"), _T("jui"), _T("jul"), _T("aoû"), _T("sep"), _T("oct"), _T("nov"), _T("déc") }
 };
 
 // Operational names for dates/moments
-const char* g_dateNames[LN_NUMLANG][DN_LASTNAME] =
+LPCTSTR g_dateNames[LN_NUMLANG][DN_LASTNAME] =
 {
-   {  "VANDAAG"         // DN_TODAY
-     ,"HUIDIGMOMENT"    // DN_CURRENT
-     ,"HUIDIGETIJD"     // DN_CURRENTTIME
-     ,"NU"              // DN_NOW
-     ,"EVM"             // DN_FOM
-     ,"LVM"             // DN_LOM
-     ,"EVJ"             // DN_FOY
-     ,"HJ"              // DN_CY
-     ,"LVJ"             // DN_LOY
-     ,"SEC"             // DN_SEC
-     ,"SECONDE"         // DN_SECOND
-     ,"SECONDEN"        // DN_SECONDS
-     ,"MIN"             // DN_MIN
-     ,"MINUTE"          // DN_MINUTE
-     ,"MINUTEN"         // DN_MINUTES
-     ,"UUR"             // DN_HOUR
-     ,"UREN"            // DN_HOURS
-     ,"DAG"             // DN_DAY
-     ,"DAGEN"           // DN_DAYS
-     ,"WEEK"            // DN_WEEK
-     ,"WEKEN"           // DN_WEEKS
-     ,"MAAND"           // DN_MONTH
-     ,"MAANDEN"         // DN_MONTHS
-     ,"JAAR"            // DN_YEAR
-     ,"JAREN"           // DN_YEARS
+   {  _T("VANDAAG")         // DN_TODAY
+     ,_T("HUIDIGMOMENT")    // DN_CURRENT
+     ,_T("HUIDIGETIJD")     // DN_CURRENTTIME
+     ,_T("NU")              // DN_NOW
+     ,_T("EVM")             // DN_FOM
+     ,_T("LVM")             // DN_LOM
+     ,_T("EVJ")             // DN_FOY
+     ,_T("HJ")              // DN_CY
+     ,_T("LVJ")             // DN_LOY
+     ,_T("SEC")             // DN_SEC
+     ,_T("SECONDE")         // DN_SECOND
+     ,_T("SECONDEN")        // DN_SECONDS
+     ,_T("MIN")             // DN_MIN
+     ,_T("MINUTE")          // DN_MINUTE
+     ,_T("MINUTEN")         // DN_MINUTES
+     ,_T("UUR")             // DN_HOUR
+     ,_T("UREN")            // DN_HOURS
+     ,_T("DAG")             // DN_DAY
+     ,_T("DAGEN")           // DN_DAYS
+     ,_T("WEEK")            // DN_WEEK
+     ,_T("WEKEN")           // DN_WEEKS
+     ,_T("MAAND")           // DN_MONTH
+     ,_T("MAANDEN")         // DN_MONTHS
+     ,_T("JAAR")            // DN_YEAR
+     ,_T("JAREN")           // DN_YEARS
    }
   ,{
-      "TODAY"
-     ,"CURRENT"
-     ,"CURRENTTIME"
-     ,"NOW"
-     ,"FOM"
-     ,"LOM"
-     ,"FOY"
-     ,"CY"
-     ,"LOY"
-     ,"SEC"             // DN_SEC
-     ,"SECOND"          // DN_SECOND
-     ,"SECONDS"         // DN_SECONDS
-     ,"MIN"             // DN_MIN
-     ,"MINUTE"          // DN_MINUTE
-     ,"MINUTES"         // DN_MINUTES
-     ,"HOUR"            // DN_HOUR
-     ,"HOURS"           // DN_HOURS
-     ,"DAY"
-     ,"DAYS"
-     ,"WEEK"
-     ,"WEEKS"
-     ,"MONTH"
-     ,"MONTHS"
-     ,"YEAR"
-     ,"YEARS"  
+      _T("TODAY")
+     ,_T("CURRENT")
+     ,_T("CURRENTTIME")
+     ,_T("NOW")
+     ,_T("FOM")
+     ,_T("LOM")
+     ,_T("FOY")
+     ,_T("CY")
+     ,_T("LOY")
+     ,_T("SEC")             // DN_SEC
+     ,_T("SECOND")          // DN_SECOND
+     ,_T("SECONDS")         // DN_SECONDS
+     ,_T("MIN")             // DN_MIN
+     ,_T("MINUTE")          // DN_MINUTE
+     ,_T("MINUTES")         // DN_MINUTES
+     ,_T("HOUR")            // DN_HOUR
+     ,_T("HOURS")           // DN_HOURS
+     ,_T("DAY")
+     ,_T("DAYS")
+     ,_T("WEEK")
+     ,_T("WEEKS")
+     ,_T("MONTH")
+     ,_T("MONTHS")
+     ,_T("YEAR")
+     ,_T("YEARS")  
    }
   ,{ 
-      "HEUTE"           // DN_TODAY
-     ,"UHRZEIT"         // DN_CURRENT
-     ,"ZEIT"            // DN_CURRENTTIME
-     ,"JETZT"           // DN_NOW
-     ,"ME"              // DN_FOM     Monats ersten
-     ,"ML"              // DN_LOM     Monats letzten
-     ,"EDJ"             // DN_FOY     Erste des Jahren
-     ,"LJ"              // DN_CY      Laufenden Jahr
-     ,"LDJ"             // DN_LOY     Letzten des Jahren
-     ,"SEK"             // DN_SEC
-     ,"SEKUNDE"         // DN_SECOND
-     ,"SEKUNDEN"        // DN_SECONDS
-     ,"MIN"             // DN_MIN
-     ,"MINUTE"          // DN_MINUTE
-     ,"MINUTEN"         // DN_MINUTES
-     ,"STUNDE"          // DN_HOUR
-     ,"STUNDEN"         // DN_HOURS
-     ,"TAG"             // DN_DAY
-     ,"TAGE"            // DN_DAYS
-     ,"WOCHE"           // DN_WEEK
-     ,"WOCHEN"          // DN_WEEKS
-     ,"MONAT"           // DN_MONTH
-     ,"MONATE"          // DN_MONTHS
-     ,"JAHR"            // DN_YEAR
-     ,"JAHRE"           // DN_YEARS
+      _T("HEUTE")           // DN_TODAY
+     ,_T("UHRZEIT")         // DN_CURRENT
+     ,_T("ZEIT")            // DN_CURRENTTIME
+     ,_T("JETZT")           // DN_NOW
+     ,_T("ME")              // DN_FOM     Monats ersten
+     ,_T("ML")              // DN_LOM     Monats letzten
+     ,_T("EDJ")             // DN_FOY     Erste des Jahren
+     ,_T("LJ")              // DN_CY      Laufenden Jahr
+     ,_T("LDJ")             // DN_LOY     Letzten des Jahren
+     ,_T("SEK")             // DN_SEC
+     ,_T("SEKUNDE")         // DN_SECOND
+     ,_T("SEKUNDEN")        // DN_SECONDS
+     ,_T("MIN")             // DN_MIN
+     ,_T("MINUTE")          // DN_MINUTE
+     ,_T("MINUTEN")         // DN_MINUTES
+     ,_T("STUNDE")          // DN_HOUR
+     ,_T("STUNDEN")         // DN_HOURS
+     ,_T("TAG")             // DN_DAY
+     ,_T("TAGE")            // DN_DAYS
+     ,_T("WOCHE")           // DN_WEEK
+     ,_T("WOCHEN")          // DN_WEEKS
+     ,_T("MONAT")           // DN_MONTH
+     ,_T("MONATE")          // DN_MONTHS
+     ,_T("JAHR")            // DN_YEAR
+     ,_T("JAHRE")           // DN_YEARS
    }
   ,{
-      "AUJOURD'HUI"     // DN_TODAY
-     ,"MAINTENANT"      // DN_CURRENT
-     ,"L'HEURE"         // DN_CURRENTTIME
-     ,"ACTUEL"          // DN_NOW
-     ,"PJM"             // DN_FOM       Premier Jour du Mois
-     ,"DJM"             // DN_LOM       Dernier Jour du Mois
-     ,"PJA"             // DN_FOY       Premier jour de l'année
-     ,"AC"              // DN_CY        Année en Cours
-     ,"DJA"             // DN_LOY       Dernier jour de l'année
-     ,"SEC"             // DN_SEC
-     ,"SECONDE"         // DN_SECOND
-     ,"SECONDES"        // DN_SECONDS
-     ,"MIN"             // DN_MIN
-     ,"MINUTE"          // DN_MINUTE
-     ,"MINUTES"         // DN_MINUTES
-     ,"HEURE"           // DN_HOUR
-     ,"HEURES"          // DN_HOURS
-     ,"JOUR"            // DN_DAY
-     ,"JOURNEES"        // DN_DAYS
-     ,"SEMAINE"         // DN_WEEK
-     ,"SEMAINES"        // DN_WEEKS
-     ,"MOIS"            // DN_MONTH
-     ,"MOIS"            // DN_MONTHS
-     ,"ANNEE"           // DN_YEAR
-     ,"ANS"             // DN_YEARS
+      _T("AUJOURD'HUI")     // DN_TODAY
+     ,_T("MAINTENANT")      // DN_CURRENT
+     ,_T("L'HEURE")         // DN_CURRENTTIME
+     ,_T("ACTUEL")          // DN_NOW
+     ,_T("PJM")             // DN_FOM       Premier Jour du Mois
+     ,_T("DJM")             // DN_LOM       Dernier Jour du Mois
+     ,_T("PJA")             // DN_FOY       Premier jour de l'année
+     ,_T("AC")              // DN_CY        Année en Cours
+     ,_T("DJA")             // DN_LOY       Dernier jour de l'année
+     ,_T("SEC")             // DN_SEC
+     ,_T("SECONDE")         // DN_SECOND
+     ,_T("SECONDES")        // DN_SECONDS
+     ,_T("MIN")             // DN_MIN
+     ,_T("MINUTE")          // DN_MINUTE
+     ,_T("MINUTES")         // DN_MINUTES
+     ,_T("HEURE")           // DN_HOUR
+     ,_T("HEURES")          // DN_HOURS
+     ,_T("JOUR")            // DN_DAY
+     ,_T("JOURNEES")        // DN_DAYS
+     ,_T("SEMAINE")         // DN_WEEK
+     ,_T("SEMAINES")        // DN_WEEKS
+     ,_T("MOIS")            // DN_MONTH
+     ,_T("MOIS")            // DN_MONTHS
+     ,_T("ANNEE")           // DN_YEAR
+     ,_T("ANS")             // DN_YEARS
    }
 };
 

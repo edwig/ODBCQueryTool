@@ -2445,7 +2445,11 @@ void CGridCtrl::CutSelectedText()
 // Copies text from the selected cells to the clipboard
 COleDataSource* CGridCtrl::CopyTextFromGrid()
 {
-  USES_CONVERSION;
+#ifdef UNICODE
+  UINT format = CF_UNICODETEXT;
+#else
+  UINT format = CF_TEXT;
+#endif
 
   CCellRange Selection = GetSelectedCellRange();
   if(!IsValid(Selection))
@@ -2457,7 +2461,7 @@ COleDataSource* CGridCtrl::CopyTextFromGrid()
     SendCacheHintToParent(Selection);
   }
   // Write to shared file (REMEBER: CF_TEXT is ANSI, not UNICODE, so we need to convert)
-  CSharedFile sf(GMEM_MOVEABLE | GMEM_DDESHARE | GMEM_ZEROINIT);
+  CSharedFile sf(GMEM_MOVEABLE | GMEM_ZEROINIT);
 
   // Get a tab delimited string to copy to cache
   CString str;
@@ -2495,7 +2499,7 @@ COleDataSource* CGridCtrl::CopyTextFromGrid()
     {
       str += _T("\r\n");
     }
-    sf.Write(T2A(str.GetBuffer(1)), str.GetLength());
+    sf.Write(str.GetBuffer(), str.GetLength());
     str.ReleaseBuffer();
   }
     
@@ -2512,33 +2516,39 @@ COleDataSource* CGridCtrl::CopyTextFromGrid()
   {
     return NULL;
   }
-  hMem = ::GlobalReAlloc(hMem, dwLen, GMEM_MOVEABLE | GMEM_DDESHARE | GMEM_ZEROINIT);
+  hMem = ::GlobalReAlloc(hMem, dwLen, GMEM_MOVEABLE | GMEM_ZEROINIT);
   if(!hMem)
   {
     return NULL;
   }
   // Cache data
   COleDataSource* pSource = new COleDataSource();
-  pSource->CacheGlobalData(CF_TEXT, hMem);
+  pSource->CacheGlobalData(format, hMem);
 
   return pSource;
 }
 
 // Pastes text from the clipboard to the selected cells
-BOOL CGridCtrl::PasteTextToGrid(CCellID cell, COleDataObject* pDataObject, 
-								BOOL bSelectPastedCells /*=TRUE*/)
+BOOL CGridCtrl::PasteTextToGrid(CCellID         cell
+                               ,COleDataObject* pDataObject
+                               ,BOOL            bSelectPastedCells /*=TRUE*/)
 {
-  if(!IsValid(cell) || !IsCellEditable(cell) || !pDataObject->IsDataAvailable(CF_TEXT))
+#ifdef UNICODE
+  UINT format = CF_UNICODETEXT;
+#else
+  UINT format = CF_TEXT;
+#endif
+
+  if(!IsValid(cell) || !IsCellEditable(cell) || !pDataObject->IsDataAvailable(format))
   {
     return FALSE;
   }
   // Get the text from the COleDataObject
-  HGLOBAL hmem = pDataObject->GetGlobalData(CF_TEXT);
+  HGLOBAL hmem = pDataObject->GetGlobalData(format);
   CMemFile sf((BYTE*) ::GlobalLock(hmem), (UINT)::GlobalSize(hmem));
 
-  // CF_TEXT is ANSI text, so we need to allocate a char* buffer
-  // to hold this.
-  LPSTR szBuffer = new char[::GlobalSize(hmem)]; // FIX: Use LPSTR char here
+  // MBCS or Unicode text, so we need to allocate a TCHAR* buffer to hold this.
+  LPTSTR szBuffer = (LPTSTR) new char[::GlobalSize(hmem)]; 
   if(!szBuffer)
   {
     return FALSE;

@@ -60,7 +60,7 @@ COEViewPaintAccessories::COEViewPaintAccessories ()
 
 void COEViewPaintAccessories::OnSettingsChanged (CWnd* pwnd, const VisualAttributesSet& set_)
 {
-    const VisualAttribute& textAttr = set_.FindByName("Text");
+    const VisualAttribute& textAttr = set_.FindByName(_T("Text"));
     m_TextFont = (textAttr.m_FontBold ? HighlighterBase::efmBold : HighlighterBase::efmNormal)
             | (textAttr.m_FontItalic ? HighlighterBase::efmItalic : HighlighterBase::efmNormal)
             | (textAttr.m_FontUnderline ? HighlighterBase::efmUnderline : HighlighterBase::efmNormal);
@@ -69,29 +69,29 @@ void COEViewPaintAccessories::OnSettingsChanged (CWnd* pwnd, const VisualAttribu
     m_TextBrush.DeleteObject();
     m_TextBrush.CreateSolidBrush(textAttr.m_Background);
 
-    const VisualAttribute& selTextAttr = set_.FindByName("Selected Text");
+    const VisualAttribute& selTextAttr = set_.FindByName(_T("Selected Text"));
     m_SelTextForeground = selTextAttr.m_Foreground;
     m_SelTextBrush.DeleteObject();
     m_SelTextBrush.CreateSolidBrush(selTextAttr.m_Background);
 
-    const VisualAttribute& curLinetAttr = set_.FindByName("Current Line");
+    const VisualAttribute& curLinetAttr = set_.FindByName(_T("Current Line"));
     m_CurrentLineBrush.DeleteObject();
     m_CurrentLineBrush.CreateSolidBrush(curLinetAttr.m_Background);
 
-    const VisualAttribute& bmkAttr = set_.FindByName("Bookmark");
+    const VisualAttribute& bmkAttr = set_.FindByName(_T("Bookmark"));
     m_BmkBrush.DeleteObject();
     m_BmkBrush.CreateSolidBrush(bmkAttr.m_Background);
     m_BmkPen.DeleteObject();
     m_BmkPen.CreatePen(PS_SOLID, 1, RGB(0,0,0));
 
-    const VisualAttribute& rdmBmkAttr = set_.FindByName("Random Bookmark");
+    const VisualAttribute& rdmBmkAttr = set_.FindByName(_T("Random Bookmark"));
     m_RndBmkForeground = rdmBmkAttr.m_Foreground;
     m_RndBmkBrush.DeleteObject();
     m_RndBmkBrush.CreateSolidBrush(rdmBmkAttr.m_Background);
     m_RndBmkPen.DeleteObject();
     m_RndBmkPen.CreatePen(PS_SOLID, 1, rdmBmkAttr.m_Foreground);
 
-    m_EOFForeground = set_.FindByName("End of File").m_Foreground;
+    m_EOFForeground = set_.FindByName(_T("End of File")).m_Foreground;
 
 
     TEXTMETRIC tm;
@@ -115,7 +115,7 @@ void COEViewPaintAccessories::OnSettingsChanged (CWnd* pwnd, const VisualAttribu
     logfont.lfClipPrecision  = CLIP_DEFAULT_PRECIS;
     logfont.lfQuality        = DEFAULT_QUALITY;
     logfont.lfPitchAndFamily = FIXED_PITCH;
-    strncpy_s(logfont.lfFaceName, textAttr.m_FontName.GetString(), LF_FACESIZE-1);
+    _tcsncpy_s(logfont.lfFaceName, textAttr.m_FontName.GetString(), LF_FACESIZE-1);
 
 
     for (int i = 0; i < 8; i++)

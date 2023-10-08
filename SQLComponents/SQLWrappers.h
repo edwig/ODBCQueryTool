@@ -26,6 +26,7 @@
 #pragma once
 #include "SQLComponents.h"
 #include <sqltypes.h>
+#include <sqlucode.h>
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -38,11 +39,11 @@
 namespace SQLComponents
 {
 
-inline SQLRETURN SqlDriverConnect(SQLHDBC hdbc, SQLHWND hwnd, SQLCHAR *szConnStrIn, SQLSMALLINT cbConnStrIn, SQLCHAR *szConnStrOut, SQLSMALLINT cbConnStrOutMax, SQLSMALLINT *pcbConnStrOut, SQLUSMALLINT fDriverCompletion)
+inline SQLRETURN SqlDriverConnect(SQLHDBC hdbc, SQLHWND hwnd, SQLTCHAR *szConnStrIn, SQLSMALLINT cbConnStrIn, SQLTCHAR *szConnStrOut, SQLSMALLINT cbConnStrOutMax, SQLSMALLINT *pcbConnStrOut, SQLUSMALLINT fDriverCompletion)
 {
   try
   {
-    return ::SQLDriverConnect(hdbc, hwnd, szConnStrIn, cbConnStrIn, szConnStrOut, cbConnStrOutMax, pcbConnStrOut, fDriverCompletion);
+    return SQLDriverConnect(hdbc, hwnd, szConnStrIn, cbConnStrIn, szConnStrOut, cbConnStrOutMax, pcbConnStrOut, fDriverCompletion);
   }
   sql_catch(ex)
 }
@@ -119,7 +120,7 @@ inline SQLRETURN SqlAllocStmt(SQLHDBC ConnectionHandle, SQLHSTMT *StatementHandl
   sql_catch(ex)
 }
 
-inline SQLRETURN SqlGetDiagRec(SQLSMALLINT fHandleType, SQLHANDLE handle, SQLSMALLINT iRecord, SQLCHAR *szSqlState, SQLINTEGER *pfNativeError, SQLCHAR *szErrorMsg, SQLSMALLINT cbErrorMsgMax, SQLSMALLINT *pcbErrorMsg)
+inline SQLRETURN SqlGetDiagRec(SQLSMALLINT fHandleType, SQLHANDLE handle, SQLSMALLINT iRecord, SQLTCHAR *szSqlState, SQLINTEGER *pfNativeError, SQLTCHAR *szErrorMsg, SQLSMALLINT cbErrorMsgMax, SQLSMALLINT *pcbErrorMsg)
 {
   try
   {
@@ -155,7 +156,7 @@ inline SQLRETURN SqlCloseCursor(SQLHSTMT StatementHandle)
   sql_catch(ex)
 }
 
-inline SQLRETURN SqlPrepare(SQLHSTMT hstmt, SQLCHAR *szSqlStr, SQLINTEGER cbSqlStr)
+inline SQLRETURN SqlPrepare(SQLHSTMT hstmt, SQLTCHAR *szSqlStr, SQLINTEGER cbSqlStr)
 {
   try
   {
@@ -182,7 +183,7 @@ inline SQLRETURN SqlExecute(SQLHSTMT StatementHandle)
   sql_catch(ex)
 }
 
-inline SQLRETURN SqlExecDirect(SQLHSTMT hstmt, SQLCHAR *szSqlStr, SQLINTEGER cbSqlStr)
+inline SQLRETURN SqlExecDirect(SQLHSTMT hstmt, SQLTCHAR *szSqlStr, SQLINTEGER cbSqlStr)
 {
   try
   {
@@ -218,7 +219,7 @@ inline SQLRETURN SqlNumResultCols(SQLHSTMT StatementHandle, SQLSMALLINT *ColumnC
   sql_catch(ex)
 }
 
-inline SQLRETURN SqlDescribeCol(SQLHSTMT hstmt, SQLUSMALLINT icol, SQLCHAR *szColName, SQLSMALLINT cbColNameMax, SQLSMALLINT *pcbColName, SQLSMALLINT *pfSqlType, SQLULEN* pcbColDef, SQLSMALLINT *pibScale, SQLSMALLINT *pfNullable)
+inline SQLRETURN SqlDescribeCol(SQLHSTMT hstmt, SQLUSMALLINT icol, SQLTCHAR *szColName, SQLSMALLINT cbColNameMax, SQLSMALLINT *pcbColName, SQLSMALLINT *pfSqlType, SQLULEN* pcbColDef, SQLSMALLINT *pibScale, SQLSMALLINT *pfNullable)
 {
   try
   {
@@ -254,21 +255,21 @@ inline SQLRETURN SqlCancel(SQLHSTMT hstmt)
   sql_catch(ex)
 }
 
-inline SQLRETURN SqlNativeSql(HDBC hdbc,SQLCHAR* stmt,SQLINTEGER len,SQLCHAR* sql,SQLINTEGER max,SQLINTEGER* reslen)
+inline SQLRETURN SqlNativeSql(HDBC hdbc,SQLTCHAR* stmt,SQLINTEGER len,SQLTCHAR* sql,SQLINTEGER max,SQLINTEGER* reslen)
 {
   try
   {
-    return ::SQLNativeSql(hdbc,stmt,len,sql,max,reslen);
+    return SQLNativeSql(hdbc,stmt,len,sql,max,reslen);
   }
   sql_catch(ex)
 }
 
 inline SQLRETURN SqlDataSources(SQLHENV       EnvironmentHandle
                                ,SQLUSMALLINT  Direction
-                               ,SQLCHAR*      ServerName
+                               ,SQLTCHAR*     ServerName
                                ,SQLSMALLINT   BufferLength1
                                ,SQLSMALLINT*  NameLength1Ptr
-                               ,SQLCHAR*      Description
+                               ,SQLTCHAR*     Description
                                ,SQLSMALLINT   BufferLength2
                                ,SQLSMALLINT*  NameLength2Ptr)
 {
@@ -310,10 +311,10 @@ inline SQLRETURN SqlGetData(SQLHSTMT     p_hstmt
 
 inline SQLRETURN SqlDrivers(SQLHENV      EnvironmentHandle
                            ,SQLUSMALLINT Direction
-                           ,SQLCHAR*     DriverDescription
+                           ,SQLTCHAR*    DriverDescription
                            ,SQLSMALLINT  BufferLength1
                            ,SQLSMALLINT* DescriptionLengthPtr
-                           ,SQLCHAR*     DriverAttributes
+                           ,SQLTCHAR*    DriverAttributes
                            ,SQLSMALLINT  BufferLength2
                            ,SQLSMALLINT* AttributesLengthPtr)
 {
@@ -371,9 +372,9 @@ inline SQLRETURN SqlSetDescField(SQLHDESC    p_handle
 inline SQLRETURN SqlError(SQLHENV      p_henv
                          ,SQLHDBC      p_hdbc
                          ,SQLHSTMT     p_hstmt
-                         ,SQLCHAR*     p_state
+                         ,SQLTCHAR*    p_state
                          ,SQLINTEGER*  p_native
-                         ,SQLCHAR*     p_text
+                         ,SQLTCHAR*    p_text
                          ,SQLSMALLINT  p_buflen
                          ,SQLSMALLINT* p_txtlen)
 {
@@ -434,11 +435,11 @@ inline SQLRETURN SqlMoreResults(SQLHSTMT p_hstmt)
   sql_catch(ex)
 }
 
-inline SQLRETURN SqlGetCursorName(SQLHSTMT p_hstmt,SQLCHAR* p_buffer,SQLSMALLINT p_buflen,SQLSMALLINT* p_resultLength)
+inline SQLRETURN SqlGetCursorName(SQLHSTMT p_hstmt,SQLTCHAR* p_buffer,SQLSMALLINT p_buflen,SQLSMALLINT* p_resultLength)
 {
   try
   {
-    return ::SQLGetCursorName(p_hstmt,p_buffer,p_buflen,p_resultLength);
+    return SQLGetCursorName(p_hstmt,p_buffer,p_buflen,p_resultLength);
   }
   sql_catch(ex)
 }

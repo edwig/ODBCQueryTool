@@ -46,7 +46,7 @@ CNativeSQLDlg::SetMonoFont()
   {
     return;
   }
-  CString name = "Courier New";
+  CString name = _T("Courier New");
   CDC* dc = GetDC();
   m_font.CreateFont(-MulDiv(10, dc->GetDeviceCaps(LOGPIXELSY), 72),
                     0,0,0,
@@ -78,7 +78,7 @@ BOOL
 CNativeSQLDlg::OnInitDialog()
 {
   StyleDialog::OnInitDialog();
-  SetWindowText("Native SQL");
+  SetWindowText(_T("Native SQL"));
 
   SetMonoFont();
   if(!m_title.IsEmpty())

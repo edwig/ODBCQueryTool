@@ -36,6 +36,12 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#ifdef UNICODE
+#define RPC_TSTR RPC_WSTR
+#else
+#define RPC_TSTR RPC_CSTR
+#endif
+
 namespace SQLComponents
 {
 
@@ -77,7 +83,7 @@ bool
 SQLGuid::Set(const XString p_string)
 {
   m_initialized = false;
-  if(UuidFromString(reinterpret_cast<unsigned char*>(const_cast<char*>(p_string.GetString())),&m_guid) == RPC_S_OK)
+  if(UuidFromString(reinterpret_cast<RPC_TSTR>(const_cast<TCHAR*>(p_string.GetString())),&m_guid) == RPC_S_OK)
   {
     m_initialized = true;
   }
@@ -107,12 +113,12 @@ SQLGuid::AsString() const
   XString guid;
   if(m_initialized)
   {
-    RPC_CSTR guidString = nullptr;
+    RPC_TSTR guidString = nullptr;
     // Convert the GUID to a string
     if(UuidToString(&m_guid,&guidString) == RPC_S_OK)
     {
       // And convert to a XString
-      guid = XString(guidString);
+      guid = XString(reinterpret_cast<LPCTSTR>(guidString));
     }
   }
   return guid;

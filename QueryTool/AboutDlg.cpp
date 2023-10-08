@@ -26,27 +26,27 @@ IMPLEMENT_DYNAMIC(CAboutDlg, StyleDialog)
 CAboutDlg::CAboutDlg(CWnd* pParent /*=NULL*/)
           :StyleDialog(CAboutDlg::IDD, pParent)
 {
-  m_license = "ODBC Query Tool " ODBCQUERYTOOL_VERSION " Build: " ODBCQUERYTOOL_BUILD
-              "\r\n" ODBCQUERYTOOL_COPYRIGHT
-              "\r\n"
-              "\r\nThis program is free software; you can redistribute it" 
-              "\r\n"
-              "\r\nThis program is distributed in the hope that it will be useful,"
-              " but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY"
-              " or FITNESS FOR A PARTICULAR PURPOSE. See the license file for more details."
-              "\r\n"
-              "\r\nCredits go to the following persons:"
-              "\r\n"
-              "\r\nFor the OpenEditor: Aleksey Kochetov"
-              "\r\nFor his superb data grid: Chris Maunder"
-              "\r\nFor the ODBC ideas: B.P. Nebbeling"
-              "\r\nFor all the testing: Vincent Heuveling"
-              "\r\nFor editable query grids: Marco Brattinga"
-              "\r\nFor the binary coded decimal: Henrik Vestermark"
-              "\r\nFor NUMERIC corrections: Ibo Boekestijn"
-              "\r\nFor GUID corrections: Dann Corbit"
-              "\r\nFor documentation ideas: Chandra Sekhar"
-              "\r\nFor the table ideas: Dennis Walkewitz";
+  m_license = _T("ODBC Query Tool ") ODBCQUERYTOOL_VERSION _T(" Build: ") ODBCQUERYTOOL_BUILD
+              _T("\r\n") ODBCQUERYTOOL_COPYRIGHT
+              _T("\r\n")
+              _T("\r\nThis program is free software; you can redistribute it") 
+              _T("\r\n")
+              _T("\r\nThis program is distributed in the hope that it will be useful,")
+              _T(" but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY")
+              _T(" or FITNESS FOR A PARTICULAR PURPOSE. See the license file for more details.")
+              _T("\r\n")
+              _T("\r\nCredits go to the following persons:")
+              _T("\r\n")
+              _T("\r\nFor the OpenEditor: Aleksey Kochetov")
+              _T("\r\nFor his superb data grid: Chris Maunder")
+              _T("\r\nFor the ODBC ideas: B.P. Nebbeling")
+              _T("\r\nFor all the testing: Vincent Heuveling")
+              _T("\r\nFor editable query grids: Marco Brattinga")
+              _T("\r\nFor the binary coded decimal: Henrik Vestermark")
+              _T("\r\nFor NUMERIC corrections: Ibo Boekestijn")
+              _T("\r\nFor GUID corrections: Dann Corbit")
+              _T("\r\nFor documentation ideas: Chandra Sekhar")
+              _T("\r\nFor the table ideas: Dennis Walkewitz");
 }
 
 CAboutDlg::~CAboutDlg()
@@ -68,7 +68,7 @@ BOOL
 CAboutDlg::OnInitDialog()
 {
   StyleDialog::OnInitDialog();
-  SetWindowText("About Open ODBC QueryTool");
+  SetWindowText(_T("About Open ODBC QueryTool"));
 
   return TRUE;
 }
@@ -78,5 +78,5 @@ CAboutDlg::OnInitDialog()
 void CAboutDlg::OnStnClickedOeaLogo()
 {
 	// TODO: Add your control notification handler code here
-  AfxMessageBox("OK, This is the logo");
+  AfxMessageBox(_T("OK, This is the logo"));
 }

@@ -225,7 +225,7 @@ SQLRecord::Rollback()
 // }
 
 // void
-// SQLRecord::ModifyField(const char* p_name,void* p_field,int p_mutationID /*=0*/)
+// SQLRecord::ModifyField(LPCTSTR p_name,void* p_field,int p_mutationID /*=0*/)
 // {
 //   ModifyField(m_dataSet->GetFieldNumber(p_name),p_field,p_mutationID);
 // }
@@ -255,146 +255,148 @@ SQLRecord::ModifyField(int p_num,const SQLVariant* p_data,int p_mutationID /*=0*
 }
 
 void
-SQLRecord::ModifyField(const char* p_name,const SQLVariant* p_field,int p_mutationID /*= 0*/)
+SQLRecord::ModifyField(LPCTSTR p_name,const SQLVariant* p_field,int p_mutationID /*= 0*/)
 {
   ModifyField(m_dataSet->GetFieldNumber(p_name),p_field,p_mutationID);
 }
 
 void
-SQLRecord::ModifyField(const char* p_name,const bool& p_field,int p_mutationID /*= 0*/)
+SQLRecord::ModifyField(LPCTSTR p_name,const bool& p_field,int p_mutationID /*= 0*/)
 {
   SQLVariant value(p_field);
   ModifyField(m_dataSet->GetFieldNumber(p_name),&value,p_mutationID);
 }
 
 void
-SQLRecord::ModifyField(const char* p_name,const char& p_field,int p_mutationID /*= 0*/)
+SQLRecord::ModifyField(LPCTSTR p_name,const TCHAR& p_field,int p_mutationID /*= 0*/)
 {
   SQLVariant value(p_field);
   ModifyField(m_dataSet->GetFieldNumber(p_name),&value,p_mutationID);
 }
 
 void        
-SQLRecord::ModifyField(const char* p_name,const char* p_field,int p_mutationID /*= 0*/)
+SQLRecord::ModifyField(LPCTSTR p_name,LPCTSTR p_field,int p_mutationID /*= 0*/)
 {
   SQLVariant value(p_field);
   ModifyField(m_dataSet->GetFieldNumber(p_name),&value,p_mutationID);
 }
 
+#ifndef UNICODE
 void
-SQLRecord::ModifyField(const char* p_name,const unsigned char& p_field,int p_mutationID /*= 0*/)
+SQLRecord::ModifyField(LPCTSTR p_name,const _TUCHAR& p_field,int p_mutationID /*= 0*/)
+{
+  SQLVariant value(p_field);
+  ModifyField(m_dataSet->GetFieldNumber(p_name), &value, p_mutationID);
+}
+#endif
+
+void
+SQLRecord::ModifyField(LPCTSTR p_name,const short& p_field,int p_mutationID /*= 0*/)
 {
   SQLVariant value(p_field);
   ModifyField(m_dataSet->GetFieldNumber(p_name), &value, p_mutationID);
 }
 
 void
-SQLRecord::ModifyField(const char* p_name,const short& p_field,int p_mutationID /*= 0*/)
+SQLRecord::ModifyField(LPCTSTR p_name,const unsigned short& p_field,int p_mutationID /*= 0*/)
 {
   SQLVariant value(p_field);
   ModifyField(m_dataSet->GetFieldNumber(p_name), &value, p_mutationID);
 }
 
 void
-SQLRecord::ModifyField(const char* p_name,const unsigned short& p_field,int p_mutationID /*= 0*/)
+SQLRecord::ModifyField(LPCTSTR p_name,const int& p_field,int p_mutationID /*= 0*/)
 {
   SQLVariant value(p_field);
   ModifyField(m_dataSet->GetFieldNumber(p_name), &value, p_mutationID);
 }
 
 void
-SQLRecord::ModifyField(const char* p_name,const int& p_field,int p_mutationID /*= 0*/)
-{
-  SQLVariant value(p_field);
-  ModifyField(m_dataSet->GetFieldNumber(p_name), &value, p_mutationID);
-}
-
-void
-SQLRecord::ModifyField(const char* p_name,const unsigned int& p_field,int p_mutationID /*= 0*/)
+SQLRecord::ModifyField(LPCTSTR p_name,const unsigned int& p_field,int p_mutationID /*= 0*/)
 {
   SQLVariant value((unsigned int)p_field);
   ModifyField(m_dataSet->GetFieldNumber(p_name), &value, p_mutationID);
 }
 
 void
-SQLRecord::ModifyField(const char* p_name,const float& p_field,int p_mutationID /*= 0*/)
+SQLRecord::ModifyField(LPCTSTR p_name,const float& p_field,int p_mutationID /*= 0*/)
 {
   SQLVariant value(p_field);
   ModifyField(m_dataSet->GetFieldNumber(p_name), &value, p_mutationID);
 }
 
 void
-SQLRecord::ModifyField(const char* p_name,const double& p_field,int p_mutationID /*= 0*/)
+SQLRecord::ModifyField(LPCTSTR p_name,const double& p_field,int p_mutationID /*= 0*/)
 {
   SQLVariant value(p_field);
   ModifyField(m_dataSet->GetFieldNumber(p_name), &value, p_mutationID);
 }
 
 void
-SQLRecord::ModifyField(const char* p_name,const __int64& p_field,int p_mutationID /*= 0*/)
+SQLRecord::ModifyField(LPCTSTR p_name,const __int64& p_field,int p_mutationID /*= 0*/)
 {
   SQLVariant value(p_field);
   ModifyField(m_dataSet->GetFieldNumber(p_name), &value, p_mutationID);
 }
 
 void
-SQLRecord::ModifyField(const char* p_name,const unsigned __int64& p_field,int p_mutationID /*= 0*/)
+SQLRecord::ModifyField(LPCTSTR p_name,const unsigned __int64& p_field,int p_mutationID /*= 0*/)
 {
   SQLVariant value(p_field);
   ModifyField(m_dataSet->GetFieldNumber(p_name), &value, p_mutationID);
 }
 
 void
-SQLRecord::ModifyField(const char* p_name,const SQLDate& p_field,int p_mutationID /*= 0*/)
+SQLRecord::ModifyField(LPCTSTR p_name,const SQLDate& p_field,int p_mutationID /*= 0*/)
 {
   SQLVariant value(&p_field);
   ModifyField(m_dataSet->GetFieldNumber(p_name), &value, p_mutationID);
 }
 
 void
-SQLRecord::ModifyField(const char* p_name,const SQLTime& p_field,int p_mutationID /*= 0*/)
+SQLRecord::ModifyField(LPCTSTR p_name,const SQLTime& p_field,int p_mutationID /*= 0*/)
 {
   SQLVariant value(&p_field);
   ModifyField(m_dataSet->GetFieldNumber(p_name), &value, p_mutationID);
 }
 
 void
-SQLRecord::ModifyField(const char* p_name,const SQLTimestamp& p_field,int p_mutationID /*= 0*/)
+SQLRecord::ModifyField(LPCTSTR p_name,const SQLTimestamp& p_field,int p_mutationID /*= 0*/)
 {
   SQLVariant value(&p_field);
   ModifyField(m_dataSet->GetFieldNumber(p_name), &value, p_mutationID);
 }
 
 void
-SQLRecord::ModifyField(const char* p_name,const SQLInterval& p_field,int p_mutationID /*= 0*/)
+SQLRecord::ModifyField(LPCTSTR p_name,const SQLInterval& p_field,int p_mutationID /*= 0*/)
 {
   SQLVariant value(&p_field);
   ModifyField(m_dataSet->GetFieldNumber(p_name), &value, p_mutationID);
 }
 
 void
-SQLRecord::ModifyField(const char* p_name,const SQLGuid& p_field,int p_mutationID /*= 0*/)
+SQLRecord::ModifyField(LPCTSTR p_name,const SQLGuid& p_field,int p_mutationID /*= 0*/)
 {
   SQLVariant value(&p_field);
   ModifyField(m_dataSet->GetFieldNumber(p_name), &value, p_mutationID);
 }
 
 void
-SQLRecord::ModifyField(const char* p_name,const XString& p_field,int p_mutationID /*= 0*/)
+SQLRecord::ModifyField(LPCTSTR p_name,const XString& p_field,int p_mutationID /*= 0*/)
 {
   SQLVariant value(p_field);
   ModifyField(m_dataSet->GetFieldNumber(p_name), &value, p_mutationID);
 }
 
 void
-SQLRecord::ModifyField(const char* p_name,const bcd& p_field,int p_mutationID /*= 0*/)
+SQLRecord::ModifyField(LPCTSTR p_name,const bcd& p_field,int p_mutationID /*= 0*/)
 {
   SQLVariant value(&p_field);
   ModifyField(m_dataSet->GetFieldNumber(p_name), &value, p_mutationID);
 }
 
 bool
-SQLRecord::GetFieldBool(const char* p_name)
+SQLRecord::GetFieldBool(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
@@ -404,7 +406,7 @@ SQLRecord::GetFieldBool(const char* p_name)
 }
 
 char
-SQLRecord::GetFieldChar(const char* p_name)
+SQLRecord::GetFieldChar(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
@@ -414,7 +416,7 @@ SQLRecord::GetFieldChar(const char* p_name)
 }
 
 unsigned char
-SQLRecord::GetFieldUnsignedChar(const char* p_name)
+SQLRecord::GetFieldUnsignedChar(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
@@ -424,7 +426,7 @@ SQLRecord::GetFieldUnsignedChar(const char* p_name)
 }
 
 short
-SQLRecord::GetFieldShort(const char* p_name)
+SQLRecord::GetFieldShort(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
@@ -434,7 +436,7 @@ SQLRecord::GetFieldShort(const char* p_name)
 }
 
 unsigned short
-SQLRecord::GetFieldUnsignedShort(const char* p_name)
+SQLRecord::GetFieldUnsignedShort(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
@@ -444,7 +446,7 @@ SQLRecord::GetFieldUnsignedShort(const char* p_name)
 }
 
 int
-SQLRecord::GetFieldInteger(const char* p_name)
+SQLRecord::GetFieldInteger(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
@@ -454,7 +456,7 @@ SQLRecord::GetFieldInteger(const char* p_name)
 }
 
 unsigned int
-SQLRecord::GetFieldUnsignedInteger(const char* p_name)
+SQLRecord::GetFieldUnsignedInteger(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
@@ -464,7 +466,7 @@ SQLRecord::GetFieldUnsignedInteger(const char* p_name)
 }
 
 float
-SQLRecord::GetFieldFloat(const char* p_name)
+SQLRecord::GetFieldFloat(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
@@ -474,7 +476,7 @@ SQLRecord::GetFieldFloat(const char* p_name)
 }
 
 double
-SQLRecord::GetFieldDouble(const char* p_name)
+SQLRecord::GetFieldDouble(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
@@ -484,7 +486,7 @@ SQLRecord::GetFieldDouble(const char* p_name)
 }
 
 __int64
-SQLRecord::GetFieldInteger64(const char* p_name)
+SQLRecord::GetFieldInteger64(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
@@ -494,7 +496,7 @@ SQLRecord::GetFieldInteger64(const char* p_name)
 }
 
 unsigned __int64
-SQLRecord::GetFieldUnsignedInt64(const char* p_name)
+SQLRecord::GetFieldUnsignedInt64(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
@@ -504,7 +506,7 @@ SQLRecord::GetFieldUnsignedInt64(const char* p_name)
 }
 
 SQLDate
-SQLRecord::GetFieldSQLDate(const char* p_name)
+SQLRecord::GetFieldSQLDate(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
@@ -514,7 +516,7 @@ SQLRecord::GetFieldSQLDate(const char* p_name)
 }
 
 SQLTime
-SQLRecord::GetFieldSQLTime(const char* p_name)
+SQLRecord::GetFieldSQLTime(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
@@ -524,7 +526,7 @@ SQLRecord::GetFieldSQLTime(const char* p_name)
 }
 
 SQLTimestamp
-SQLRecord::GetFieldSQLTimestamp(const char* p_name)
+SQLRecord::GetFieldSQLTimestamp(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
@@ -534,7 +536,7 @@ SQLRecord::GetFieldSQLTimestamp(const char* p_name)
 }
 
 SQLInterval
-SQLRecord::GetFieldSQLInterval(const char* p_name)
+SQLRecord::GetFieldSQLInterval(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
@@ -544,7 +546,7 @@ SQLRecord::GetFieldSQLInterval(const char* p_name)
 }
 
 SQLGuid
-SQLRecord::GetFieldSQLGuid(const char* p_name)
+SQLRecord::GetFieldSQLGuid(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
@@ -554,7 +556,7 @@ SQLRecord::GetFieldSQLGuid(const char* p_name)
 }
 
 XString
-SQLRecord::GetFieldXString(const char* p_name)
+SQLRecord::GetFieldXString(LPCTSTR p_name)
 {
   XString string;
   if(m_dataSet)
@@ -565,7 +567,7 @@ SQLRecord::GetFieldXString(const char* p_name)
 }
 
 bcd
-SQLRecord::GetFieldBcd(const char* p_name)
+SQLRecord::GetFieldBcd(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
@@ -655,15 +657,15 @@ SQLRecord::MixedMutations(int p_mutationID)
     switch(mut)
     {
       case MUT_NoMutation: break;
-      case MUT_MyMutation: if(type == MUT_OnlyOthers)
+      case MUT_MyMutation: if(type & MutType::MUT_OnlyOthers)
                            {
-                             return MUT_Mixed;
+                             return MutType::MUT_Mixed;
                            }
                            type = mut;
                            break;
-      case MUT_OnlyOthers: if(type == MUT_MyMutation)
+      case MUT_OnlyOthers: if(type & MutType::MUT_MyMutation)
                            {
-                             return MUT_Mixed;
+                             return MutType::MUT_Mixed;
                            }
                            type = mut;
                            break;
@@ -703,7 +705,7 @@ SQLRecord::operator[](int p_index)
 }
 
 SQLVariant&
-SQLRecord::operator[](const char* p_name)
+SQLRecord::operator[](LPCTSTR p_name)
 {
   SQLVariant* var = GetField(p_name);
   if(var)
@@ -764,7 +766,7 @@ SQLRecord::XMLLoad(XMLMessage* p_msg,XMLElement* p_base)
     int id   = p_msg->GetAttributeInteger(field,idName);
     if(id != ind)
     {
-      throw StdException("Invalid field sequence in in record of: " + m_dataSet->GetName());
+      throw StdException(_T("Invalid field sequence in in record of: ") + m_dataSet->GetName());
     }
     SQLVariant value;
     value.SetData(type,field->GetValue());

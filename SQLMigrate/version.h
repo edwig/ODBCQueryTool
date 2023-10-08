@@ -27,4 +27,4 @@
 // Change to 1 to trigger dumping to the debug pane in a _DEBUG build
 #define DEBUG_DUMPING 0
 
-#define SQL_MIGRATE "SQLMigrate"
+#define SQL_MIGRATE _T("SQLMigrate")

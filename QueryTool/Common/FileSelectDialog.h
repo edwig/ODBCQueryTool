@@ -1,14 +1,7 @@
 ////////////////////////////////////////////////////////////////////////
 //
-// Bestand:      $Archive: /Pronto/pronto_ibs/FileSelectDialog.h $
-// Auteurs:      Edwig Huisman
-//
-// Copyright (c) 1998 - 2005 Centric IT Solutions
-// Alle rechten voorbehouden
-//
-// Laatste wijziging: $JustDate: 29-08-05 $
-// Gewijzigd door:    $Author: Bsamwel $
-// Versienummer:      $Revision: 4 $
+// File:   FileSelectDialog.h
+// Author: Edwig Huisman
 //
 #pragma once
 
@@ -210,25 +203,25 @@ OFN_SHOWHELP          Causes the dialog box to display the Help button. The hwnd
 class FileSelectDialog
 {
 public:
-  FileSelectDialog(bool    p_open              // true = open, false = SaveAs
-                ,CString p_titel             // Titel van de dialoog
-                ,CString p_defext  = ""      // Default extension
-                ,CString p_bestand = ""      // Default first file
-                ,int     p_vlaggen = 0       // Standaard vlaggen
-                ,CString p_filter  = "");    // Filter voor extensies
+  FileSelectDialog(bool    p_open                  // true = open, false = SaveAs
+                  ,CString p_title                 // Title of the dialog
+                  ,CString p_defext  = _T("")      // Default extension
+                  ,CString p_file    = _T("")      // Default first file
+                  ,int     p_flags   = 0           // Standard flags
+                  ,CString p_filter  = _T(""));    // Filter for extensions
   ~FileSelectDialog();
 
   int     DoModal();
   CString GetChosenFile();
 
 private:
-  void FilterString(char *filter);
-  bool          m_open;  // open of saveas
-  char          m_origineleDir[MAX_PATH+1];
-  char          m_bestand[MAX_PATH+1];
-  char          m_filter[1024];
-  char          m_titel[100];
-  char          m_defext[100];
+  void FilterString(LPTSTR filter);
+  bool          m_open;  // open of save- as
+  TCHAR         m_origineleDir[MAX_PATH+1];
+  TCHAR         m_bestand[MAX_PATH+1];
+  TCHAR         m_filter[MAX_PATH*4];
+  TCHAR         m_titel[100];
+  TCHAR         m_defext[100];
   OPENFILENAME  m_ofn;
 };
 

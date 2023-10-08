@@ -49,26 +49,26 @@
 #include <vector>
 
 // XML & SOAP
-constexpr auto NAMESPACE_SOAP11     = "http://schemas.xmlsoap.org/soap/envelope/";
-constexpr auto NAMESPACE_SOAP12     = "http://www.w3.org/2003/05/soap-envelope";
-constexpr auto NAMESPACE_WSADDRESS  = "http://www.w3.org/2005/08/addressing";
-constexpr auto NAMESPACE_XMLSCHEMA  = "http://www.w3.org/2001/XMLSchema";
-constexpr auto NAMESPACE_INSTANCE   = "http://www.w3.org/2001/XMLSchema-instance";
-constexpr auto NAMESPACE_ENVELOPE   = "http://www.w3.org/2003/05/soap-envelope";
-constexpr auto NAMESPACE_RELIABLE   = "http://schemas.xmlsoap.org/ws/2005/02/rm";
+constexpr auto NAMESPACE_SOAP11     = _T("http://schemas.xmlsoap.org/soap/envelope/");
+constexpr auto NAMESPACE_SOAP12     = _T("http://www.w3.org/2003/05/soap-envelope");
+constexpr auto NAMESPACE_WSADDRESS  = _T("http://www.w3.org/2005/08/addressing");
+constexpr auto NAMESPACE_XMLSCHEMA  = _T("http://www.w3.org/2001/XMLSchema");
+constexpr auto NAMESPACE_INSTANCE   = _T("http://www.w3.org/2001/XMLSchema-instance");
+constexpr auto NAMESPACE_ENVELOPE   = _T("http://www.w3.org/2003/05/soap-envelope");
+constexpr auto NAMESPACE_RELIABLE   = _T("http://schemas.xmlsoap.org/ws/2005/02/rm");
 // WS-Security
-constexpr auto NAMESPACE_SIGNATURE  = "http://www.w3.org/2000/09/xmldsig#";
-constexpr auto NAMESPACE_ENCODING   = "http://www.w3.org/2001/04/xmlenc#";
-constexpr auto NAMESPACE_SECEXT     = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd";
-constexpr auto NAMESPACE_SECUTILITY = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd";
-constexpr auto NAMESPACE_SECURITY   = "http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0";
+constexpr auto NAMESPACE_SIGNATURE  = _T("http://www.w3.org/2000/09/xmldsig#");
+constexpr auto NAMESPACE_ENCODING   = _T("http://www.w3.org/2001/04/xmlenc#");
+constexpr auto NAMESPACE_SECEXT     = _T("http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd");
+constexpr auto NAMESPACE_SECUTILITY = _T("http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd");
+constexpr auto NAMESPACE_SECURITY   = _T("http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0");
 
 // Must have a default namespace
 #ifndef DEFAULT_NAMESPACE 
-#define DEFAULT_NAMESPACE "http://www.marlinserver.org/Services"
+#define DEFAULT_NAMESPACE _T("http://www.marlinserver.org/Services")
 #endif
 #ifndef DEFAULT_TOKEN
-#define DEFAULT_TOKEN     ":MarlinServer:"
+#define DEFAULT_TOKEN     _T(":MarlinServer:")
 #endif
 
 using ushort = unsigned short;
@@ -119,7 +119,7 @@ public:
   // XTOR from a JSON message
   explicit SOAPMessage(JSONMessage* p_msg);
   // XTOR from an incoming message or string data
-  explicit SOAPMessage(const char* p_soapMessage,bool p_incoming = true);
+  explicit SOAPMessage(LPCTSTR p_soapMessage,bool p_incoming = true);
   // XTOR for a copy
   explicit SOAPMessage(SOAPMessage* p_orig);
   // XTOR for new outgoing message
@@ -147,10 +147,10 @@ public:
 
   // Load from file
   virtual bool    LoadFile(const XString& p_fileName) override;
-  virtual bool    LoadFile(const XString& p_fileName, StringEncoding p_encoding) override;
+  virtual bool    LoadFile(const XString& p_fileName, Encoding p_encoding) override;
   // Save to file
-  virtual bool    SaveFile(const XString& p_fileName, bool p_withBom = false) override;
-  virtual bool    SaveFile(const XString& p_fileName, StringEncoding p_encoding, bool p_withBom = false) override;
+  virtual bool    SaveFile(const XString& p_fileName) override;
+  virtual bool    SaveFile(const XString& p_fileName, Encoding p_encoding) override;
 
   // SETTERS
 
@@ -317,18 +317,18 @@ public:
 
   // PARAMETER INTERFACE
   // Most of it now is in XMLMessage in the Set/Get-Element interface
-  XMLElement*     SetParameter(XString p_name,XString&    p_value);
-  XMLElement*     SetParameter(XString p_name,const char* p_value);
-  XMLElement*     SetParameter(XString p_name,int         p_value);
-  XMLElement*     SetParameter(XString p_name,bool        p_value);
-  XMLElement*     SetParameter(XString p_name,double      p_value);
+  XMLElement*     SetParameter(XString p_name,XString& p_value);
+  XMLElement*     SetParameter(XString p_name,LPCTSTR  p_value);
+  XMLElement*     SetParameter(XString p_name,int      p_value);
+  XMLElement*     SetParameter(XString p_name,bool     p_value);
+  XMLElement*     SetParameter(XString p_name,double   p_value);
   // Set parameter object name
   void            SetParameterObject(XString p_name);
   // Set/Add parameter to the header section (level 1 only)
-  XMLElement*     SetHeaderParameter(XString p_paramName, const char* p_value, bool p_first = false);
+  XMLElement*     SetHeaderParameter(XString p_paramName, LPCTSTR p_value, bool p_first = false);
   // General add a parameter (always adds, so multiple parameters of same name can be added)
   XMLElement*     AddElement(XMLElement* p_base,XString p_name,XmlDataType p_type,XString           p_value,bool p_front = false);
-  XMLElement*     AddElement(XMLElement* p_base,XString p_name,XmlDataType p_type,const char*       p_value,bool p_front = false);
+  XMLElement*     AddElement(XMLElement* p_base,XString p_name,XmlDataType p_type,LPCTSTR           p_value,bool p_front = false);
   XMLElement*     AddElement(XMLElement* p_base,XString p_name,XmlDataType p_type,int               p_value,bool p_front = false);
   XMLElement*     AddElement(XMLElement* p_base,XString p_name,XmlDataType p_type,unsigned          p_value,bool p_front = false);
   XMLElement*     AddElement(XMLElement* p_base,XString p_name,XmlDataType p_type,bool              p_value,bool p_front = false);
@@ -361,6 +361,8 @@ public:
   bool            CleanUp();
 
 protected:
+  // TO BE CALLED FROM THE XTOR!!
+  XString         ConstructFromRawBuffer(uchar* p_buffer,unsigned p_length,XString p_charset);
   // Encrypt the whole message: yielding a new message
   virtual void    EncryptMessage(XString& p_message) override;
 
@@ -377,9 +379,9 @@ protected:
   // TO do after we set parts of the URL in setters
   void            ReparseURL();
   // Remove namespace from a node's name
-  XString         StripNamespace(const char* p_naam);
+  XString         StripNamespace(LPCTSTR p_naam);
   // Return the namespace of an XML node
-  XString         FindNamespace (const char* p_naam);
+  XString         FindNamespace (LPCTSTR p_naam);
   // Find Fault nodes in the message at the parse state
   void            HandleSoapFault(XMLElement* p_fault);
   // Setting the fault stack of the message

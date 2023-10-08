@@ -87,9 +87,9 @@ ConfigDlg::OnInitDialog()
   InitCombos();
   InitGrid();
 
-  m_buttonConfig.SetStyle("dir");
+  m_buttonConfig.SetStyle(_T("dir"));
   m_buttonAdd.SetIconImage(IDI_ADD);
-  m_buttonDelete.SetStyle("rem");
+  m_buttonDelete.SetStyle(_T("rem"));
 
   // Connect to this dialog
   theApp.SetConfig(this);
@@ -120,9 +120,9 @@ ConfigDlg::SetupDynamicLayout()
 void
 ConfigDlg::InitCombos()
 {
-  m_comboStrings.AddString("No action");
-  m_comboStrings.AddString("Transform standard || to SQL-Server '+'");
-  m_comboStrings.AddString("Transform SQL-Server '+' to standard ||");
+  m_comboStrings.AddString(_T("No action"));
+  m_comboStrings.AddString(_T("Transform standard || to SQL-Server '+'"));
+  m_comboStrings.AddString(_T("Transform SQL-Server '+' to standard ||"));
 }
 
 void
@@ -132,11 +132,11 @@ ConfigDlg::InitGrid()
   m_grid.SetRowCount(1);
   m_grid.SetFixedRowCount(1);
   m_grid.SetFixedColumnCount(1);
-  m_grid.GetCell(0,0)->SetText("Number");
-  m_grid.GetCell(0,1)->SetText("Keyword");
-  m_grid.GetCell(0,2)->SetText("Schema");
-  m_grid.GetCell(0,3)->SetText("Replace by");
-  m_grid.GetCell(0,4)->SetText("Function");
+  m_grid.GetCell(0,0)->SetText(_T("Number"));
+  m_grid.GetCell(0,1)->SetText(_T("Keyword"));
+  m_grid.GetCell(0,2)->SetText(_T("Schema"));
+  m_grid.GetCell(0,3)->SetText(_T("Replace by"));
+  m_grid.GetCell(0,4)->SetText(_T("Function"));
   m_grid.SetColumnWidth(0,60);
   m_grid.SetColumnWidth(1,200);
   m_grid.SetColumnWidth(2,200);
@@ -172,22 +172,22 @@ ConfigDlg::ReadConfig()
       {
         continue;
       }
-      string.Replace("\n","");
-      string.Replace("\r","");
+      string.Replace(_T("\n"),_T(""));
+      string.Replace(_T("\r"),_T(""));
 
-      if(string.Left(3) == ":P:")
+      if(string.Left(3) == _T(":P:"))
       {
         m_purpose = string.Mid(3);
         continue;
       }
-      if(string.Left(3) == ":S:")
+      if(string.Left(3) == _T(":S:"))
       {
         m_schema = string.Mid(3);
         continue;
       }
-      if(string.Left(3) == ":O:")
+      if(string.Left(3) == _T(":O:"))
       {
-        m_strings = atoi(string.Mid(3));
+        m_strings = _ttoi(string.Mid(3));
         continue;
       }
       if(string.GetAt(0) == '-')
@@ -201,7 +201,7 @@ ConfigDlg::ReadConfig()
   }
   else
   {
-    StyleMessageBox(this,"Cannot open configuration file: " + m_config,"ERROR",MB_OK|MB_ICONERROR);
+    StyleMessageBox(this,_T("Cannot open configuration file: ") + m_config,_T("ERROR"),MB_OK|MB_ICONERROR);
     return false;
   }
   return true;
@@ -220,13 +220,13 @@ ConfigDlg::WriteConfig()
   if(file.Open(winfile_write))
   {
     CString string;
-    string = "# Configuration file for Query ReWriter application\n";
+    string = _T("# Configuration file for Query ReWriter application\n");
     file.Write(string);
-    string = ":P:" + m_purpose + "\n";
+    string = _T(":P:") + m_purpose + _T("\n");
     file.Write(string);
-    string = ":S:" + m_schema + "\n";
+    string = _T(":S:") + m_schema + _T("\n");
     file.Write(string);
-    string.Format(":O:%d\n",m_strings);
+    string.Format(_T(":O:%d\n"),m_strings);
     file.Write(string);
 
     for(int row = 1;row < m_grid.GetRowCount();++row)
@@ -236,17 +236,21 @@ ConfigDlg::WriteConfig()
       CString replace  = m_grid.GetCell(row,3)->GetText();
       CString function = m_grid.GetCell(row,4)->GetText();
 
-      string.Format("-%s-%s-%s-%s\n",keyword,schema,replace,function);
+      string.Format(_T("-%s-%s-%s-%s\n")
+                    ,keyword.GetString()
+                    ,schema.GetString()
+                    ,replace.GetString()
+                    ,function.GetString());
       file.Write(string);
     }
     file.Close();
 
     RegistryManager manager;
-    manager.SetRegistryString("HKCU\\Software\\EDO\\QueryRewriter","configfile",m_config);
+    manager.SetRegistryString(_T("HKCU\\Software\\EDO\\QueryRewriter"),_T("configfile"),m_config);
   }
   else
   {
-    StyleMessageBox(this,"Cannot open configuration file for writing : " + m_config,"ERROR",MB_OK | MB_ICONERROR);
+    StyleMessageBox(this,_T("Cannot open configuration file for writing : ") + m_config,_T("ERROR"),MB_OK | MB_ICONERROR);
     return false;
   }
   return true;
@@ -257,7 +261,7 @@ ConfigDlg::InsertRow()
 {
   int rows = m_grid.GetRowCount();
   CString num;
-  num.Format("%d",rows);
+  num.Format(_T("%d"),rows);
   int newrow = m_grid.InsertRow(num);
 
   // Add function list
@@ -332,15 +336,15 @@ ConfigDlg::ODBCEscapeToString(OdbcEsc p_escape)
   switch(p_escape)
   {
     case OdbcEsc::None:      break;
-    case OdbcEsc::Function:  string = "ODBC Function { fn xxx }";         break;
-    case OdbcEsc::Procedure: string = "ODBC Procedure { [?=]call xxxx }"; break;
-    case OdbcEsc::Date:      string = "ODBC Date {d 'yyyy-mm-dd'}";       break;
-    case OdbcEsc::Time:      string = "ODBC Time {t 'hh:mm:ss'}";         break;
-    case OdbcEsc::Timestamp: string = "ODBC Timestamp {ts 'yyyy-mm-dd hh:mm:ss'}"; break;
-    case OdbcEsc::Guid:      string = "ODBC GUID {guid 'nnnnnnnn-nnnn-nnnn-nnnn-nnnnnnnnnnnn'}"; break;
-    case OdbcEsc::LikeEsc:   string = "ODBC LIKE Escape {'x'}";                                  break;
-    case OdbcEsc::Interval:  string = "ODBC Interval {INTERVAL [+|-]'n YEAR TO m SECOND(s)'}";   break;
-    case OdbcEsc::OuterJoin: string = "ODBC Outer-Join {oj table1 [as1] [LEFT|RIGHT|FULL] OUTER JOIN table2 [as2] ON as1.one = as2.two }"; break;
+    case OdbcEsc::Function:  string = _T("ODBC Function { fn xxx }");         break;
+    case OdbcEsc::Procedure: string = _T("ODBC Procedure { [?=]call xxxx }"); break;
+    case OdbcEsc::Date:      string = _T("ODBC Date {d 'yyyy-mm-dd'}");       break;
+    case OdbcEsc::Time:      string = _T("ODBC Time {t 'hh:mm:ss'}");         break;
+    case OdbcEsc::Timestamp: string = _T("ODBC Timestamp {ts 'yyyy-mm-dd hh:mm:ss'}");               break;
+    case OdbcEsc::Guid:      string = _T("ODBC GUID {guid 'nnnnnnnn-nnnn-nnnn-nnnn-nnnnnnnnnnnn'}"); break;
+    case OdbcEsc::LikeEsc:   string = _T("ODBC LIKE Escape {'x'}");                                  break;
+    case OdbcEsc::Interval:  string = _T("ODBC Interval {INTERVAL [+|-]'n YEAR TO m SECOND(s)'}");   break;
+    case OdbcEsc::OuterJoin: string = _T("ODBC Outer-Join {oj table1 [as1] [LEFT|RIGHT|FULL] OUTER JOIN table2 [as2] ON as1.one = as2.two }"); break;
   }
   return string;
 }
@@ -348,15 +352,15 @@ ConfigDlg::ODBCEscapeToString(OdbcEsc p_escape)
 OdbcEsc
 ConfigDlg::StringToODBCEscape(CString p_escape)
 {
-  if(p_escape.CompareNoCase("ODBC Function { fn xxx }")         == 0) return OdbcEsc::Function;
-  if(p_escape.CompareNoCase("ODBC Procedure { [?=]call xxxx }") == 0) return OdbcEsc::Procedure;
-  if(p_escape.CompareNoCase("ODBC Date {d 'yyyy-mm-dd'}")       == 0) return OdbcEsc::Date;
-  if(p_escape.CompareNoCase("ODBC Time {t 'hh:mm:ss'}")         == 0) return OdbcEsc::Time;
-  if(p_escape.CompareNoCase("ODBC Timestamp {ts 'yyyy-mm-dd hh:mm:ss'}")                == 0) return OdbcEsc::Timestamp;
-  if(p_escape.CompareNoCase("ODBC GUID {guid 'nnnnnnnn-nnnn-nnnn-nnnn-nnnnnnnnnnnn'}")  == 0) return OdbcEsc::Guid;
-  if(p_escape.CompareNoCase("ODBC LIKE Escape {'x'}")                                   == 0) return OdbcEsc::LikeEsc;
-  if(p_escape.CompareNoCase("ODBC Interval {INTERVAL [+|-]'n YEAR TO m SECOND(s)'}")    == 0) return OdbcEsc::Interval;
-  if(p_escape.CompareNoCase("ODBC Outer-Join {oj table1 [as1] [LEFT|RIGHT|FULL] OUTER JOIN table2 [as2] ON as1.one = as2.two }") == 0) return OdbcEsc::OuterJoin;
+  if(p_escape.CompareNoCase(_T("ODBC Function { fn xxx }"))         == 0) return OdbcEsc::Function;
+  if(p_escape.CompareNoCase(_T("ODBC Procedure { [?=]call xxxx }")) == 0) return OdbcEsc::Procedure;
+  if(p_escape.CompareNoCase(_T("ODBC Date {d 'yyyy-mm-dd'}"))       == 0) return OdbcEsc::Date;
+  if(p_escape.CompareNoCase(_T("ODBC Time {t 'hh:mm:ss'}"))         == 0) return OdbcEsc::Time;
+  if(p_escape.CompareNoCase(_T("ODBC Timestamp {ts 'yyyy-mm-dd hh:mm:ss'}"))                == 0) return OdbcEsc::Timestamp;
+  if(p_escape.CompareNoCase(_T("ODBC GUID {guid 'nnnnnnnn-nnnn-nnnn-nnnn-nnnnnnnnnnnn'}"))  == 0) return OdbcEsc::Guid;
+  if(p_escape.CompareNoCase(_T("ODBC LIKE Escape {'x'}"))                                   == 0) return OdbcEsc::LikeEsc;
+  if(p_escape.CompareNoCase(_T("ODBC Interval {INTERVAL [+|-]'n YEAR TO m SECOND(s)'}"))    == 0) return OdbcEsc::Interval;
+  if(p_escape.CompareNoCase(_T("ODBC Outer-Join {oj table1 [as1] [LEFT|RIGHT|FULL] OUTER JOIN table2 [as2] ON as1.one = as2.two }")) == 0) return OdbcEsc::OuterJoin;
 
   return OdbcEsc::None;
 }
@@ -374,8 +378,8 @@ ConfigDlg::OnBnClickedButtConfig()
 {
   UpdateData();
 
-  DocFileDialog dlg(GetSafeHwnd(),true,"Select query-rewriter config file","qrc","",0
-                   ,"Query-Rewriter config *.qrc|*.qrc|All files *.*|*.*|");
+  DocFileDialog dlg(GetSafeHwnd(),true,_T("Select query-rewriter config file"),_T("qrc"),_T(""),0
+                   ,_T("Query-Rewriter config *.qrc|*.qrc|All files *.*|*.*|"));
   if(dlg.DoModal() == IDOK)
   {
     m_config = dlg.GetChosenFile();
@@ -424,12 +428,12 @@ ConfigDlg::OnBnClickedDelete()
   CCellID cell = m_grid.GetFocusCell();
   if(cell.row < 1)
   {
-    StyleMessageBox(this,"Select a row in the keyword grid first!","ERROR",MB_OK|MB_ICONERROR);
+    StyleMessageBox(this,_T("Select a row in the keyword grid first!"),_T("ERROR"),MB_OK|MB_ICONERROR);
     return;
   }
   CString keyword = m_grid.GetCell(cell.row,cell.col)->GetText();
-  if(StyleMessageBox(this,"Do you want to remove the row for keyword: " + keyword
-                    ,"Query ReWrite",MB_YESNO|MB_DEFBUTTON2|MB_ICONQUESTION) == IDYES)
+  if(StyleMessageBox(this,_T("Do you want to remove the row for keyword: ") + keyword
+                    ,_T("Query ReWrite"),MB_YESNO|MB_DEFBUTTON2|MB_ICONQUESTION) == IDYES)
   {
     m_grid.DeleteRow(cell.row);
     m_grid.Refresh();

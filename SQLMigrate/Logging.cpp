@@ -91,14 +91,14 @@ int
 Logging::Open(bool p_scripting)
 {
   // Always open standard logfile
-  m_flog = _fsopen(m_logfile,"a+",_SH_DENYWR);
+  m_flog = _tfsopen(m_logfile,_T("a+"),_SH_DENYWR);
   if(m_flog == nullptr)
   {
     if(!m_flog)
     {
       StyleMessageBox(nullptr
-                     ,"No write access for file: " FILENAME_LOGFILE
-                     ,"No access"
+                     ,_T("No write access for file: ") FILENAME_LOGFILE
+                     ,_T("No access")
                      ,MB_OK | MB_ICONWARNING);
       return 0;
     }
@@ -106,22 +106,22 @@ Logging::Open(bool p_scripting)
   // If we do scripting: open the script files
   if(p_scripting)
   {
-    m_fout  = _fsopen(m_script,    "a+",_SH_DENYWR);
-    m_fdrop = _fsopen(m_dropscript,"a+",_SH_DENYWR);
+    m_fout  = _tfsopen(m_script,    _T("a+"),_SH_DENYWR);
+    m_fdrop = _tfsopen(m_dropscript,_T("a+"),_SH_DENYWR);
     if(m_fout == nullptr || m_fdrop == nullptr)
     {
       if(!m_fout)
       {
         StyleMessageBox(nullptr
-                       ,"No write access for file: " FILENAME_OUTPUT
-                       ,"No Access"
+                       ,_T("No write access for file: ") FILENAME_OUTPUT
+                       ,_T("No Access")
                        ,MB_OK | MB_ICONWARNING);
       }
       if(!m_fdrop)
       {
         StyleMessageBox(nullptr
-                       ,"No write access for file: " FILENAME_DROPFILE
-                       ,"No Access"
+                       ,_T("No write access for file: ") FILENAME_DROPFILE
+                       ,_T("No Access")
                        ,MB_OK | MB_ICONWARNING);
       }
       return 0;
@@ -153,7 +153,7 @@ Logging::SetDBType(bool p_source, XString p_type)
   {
     dlg->SetTargetType(p_type);
   }
-  XString text = "Database type       : " + p_type;
+  XString text = _T("Database type       : ") + p_type;
   WriteLog(text);
 }
 
@@ -182,7 +182,7 @@ Logging::WriteLog(XString message)
   {
     if(m_flog == nullptr)
     {
-      m_flog = _fsopen(m_logfile,"a",_SH_DENYWR);
+      m_flog = _tfsopen(m_logfile,_T("a"),_SH_DENYWR);
     }
     if(m_flog)
     {
@@ -190,7 +190,7 @@ Logging::WriteLog(XString message)
       struct tm *nu;
       time(&deSeconde);
       nu = localtime(&deSeconde);
-      fprintf(m_flog,"%4.4d-%2.2d-%2.2d %2.2d:%2.2d:%2.2d "
+      _ftprintf(m_flog,_T("%4.4d-%2.2d-%2.2d %2.2d:%2.2d:%2.2d ")
               ,nu->tm_year + 1900
               ,nu->tm_mon  + 1
               ,nu->tm_mday
@@ -198,8 +198,8 @@ Logging::WriteLog(XString message)
               ,nu->tm_min
               ,nu->tm_sec);
 
-      fputs(message,m_flog);
-      fputc('\n',m_flog);
+      _fputts(message,m_flog);
+      _fputtc('\n',m_flog);
     }
   }
 }
@@ -214,16 +214,16 @@ Logging::WriteOut(XString statement,bool p_delim /* = false*/)
 #endif
   if(m_fout == nullptr)
   {
-    m_fout = _fsopen(m_script,"a",_SH_DENYWR);
+    m_fout = _tfsopen(m_script,_T("a"),_SH_DENYWR);
   }
   if(m_fout)
   {
-    fputs(statement,m_fout);
+    _fputts(statement,m_fout);
     if(p_delim)
     {
-      fputc(';', m_fout);
+      _fputtc(';', m_fout);
     }
-    fputc('\n',m_fout);
+    _fputtc('\n',m_fout);
   }
 }
 
@@ -237,16 +237,16 @@ Logging::WriteDrop(XString statement,bool p_delim /*=false*/)
 #endif
   if(m_fdrop == nullptr)
   {
-    m_fdrop = _fsopen(m_dropscript,"a",_SH_DENYWR);
+    m_fdrop = _tfsopen(m_dropscript,_T("a"),_SH_DENYWR);
   }
   if(m_fdrop)
   {
-    fputs(statement,m_fdrop);
+    _fputts(statement,m_fdrop);
     if(p_delim)
     {
-      fputc(';', m_fdrop);
+      _fputtc(';', m_fdrop);
     }
-    fputc('\n',m_fdrop);
+    _fputtc('\n',m_fdrop);
   }
 }
 

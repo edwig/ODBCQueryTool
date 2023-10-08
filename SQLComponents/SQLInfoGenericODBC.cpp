@@ -48,6 +48,13 @@ SQLInfoGenericODBC::~SQLInfoGenericODBC()
 {
 }
 
+// RDBMS Uses INDENTITY or SEQUENCE interface
+void
+SQLInfoGenericODBC::SetUseSequences(bool /*p_sequences*/)
+{
+  // Does nothing
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // GENERALS (Strings & Booleans) 
@@ -67,7 +74,7 @@ XString
 SQLInfoGenericODBC::GetRDBMSVendorName() const
 {
   // The name of the database vendor
-  return "Generic ODBC Driver";
+  return _T("Generic ODBC Driver");
 }
 
 // Get the physical database name
@@ -180,35 +187,35 @@ SQLInfoGenericODBC::GetRDBMSMaxVarchar() const
 XString
 SQLInfoGenericODBC::GetKEYWORDCurrentTimestamp() const
 {
-  return "current_timestamp";
+  return _T("current_timestamp");
 }
 
 // String for the current date
 XString
 SQLInfoGenericODBC::GetKEYWORDCurrentDate() const
 {
-  return "current_date";
+  return _T("current_date");
 }
 
 // Get the concatenation operator
 XString
 SQLInfoGenericODBC::GetKEYWORDConcatanationOperator() const
 {
-  return "||";
+  return _T("||");
 }
 
 // Get quote character for strings
 XString
 SQLInfoGenericODBC::GetKEYWORDQuoteCharacter() const
 {
-  return "\'";
+  return _T("\'");
 }
 
 // Get quote character around reserved words as an identifier
 XString
 SQLInfoGenericODBC::GetKEYWORDReservedWordQuote() const
 {
-  return "\"";
+  return _T("\"");
 }
 
 // Get default NULL for parameter list input
@@ -216,21 +223,21 @@ XString
 SQLInfoGenericODBC::GetKEYWORDParameterDefaultNULL() const
 {
   // Standard, no definition defines the NULL state
-  return "";
+  return XString();
 }
 
 // Parameter is for INPUT and OUTPUT in parameter list
 XString
 SQLInfoGenericODBC::GetKEYWORDParameterINOUT() const
 {
-  return "";
+  return XString();
 }
 
 // Parameter is for OUTPUT only in parameter list
 XString
 SQLInfoGenericODBC::GetKEYWORDParameterOUT() const
 {
-  return "";
+  return XString();
 }
 
 // Get datatype of the IDENTITY primary key in a Network database
@@ -238,21 +245,21 @@ XString
 SQLInfoGenericODBC::GetKEYWORDNetworkPrimaryKeyType() const
 {
   // Use SEQUENCE to fill!
-  return "integer";
+  return _T("integer");
 }
 
 // Get datatype for timestamp (year to second)
 XString
 SQLInfoGenericODBC::GetKEYWORDTypeTimestamp() const
 {
-  return "timestamp";
+  return _T("timestamp");
 }
 
 // Prefix for a parameter in a stored procedure
 XString
 SQLInfoGenericODBC::GetKEYWORDParameterPrefix() const
 {
-  return "";
+  return XString();
 }
 
 // Get select part to add new record identity to a table
@@ -261,14 +268,14 @@ XString
 SQLInfoGenericODBC::GetKEYWORDIdentityString(XString& /*p_tablename*/,XString /*p_postfix*/ /*= "_seq"*/) const
 {
   // Undetermined: return nothing
-  return "";
+  return XString();
 }
 
 // Gets the UPPER function
 XString
 SQLInfoGenericODBC::GetKEYWORDUpper(XString& p_expression) const
 {
-  return "{fn UCASE(" + p_expression + ")}";
+  return _T("{fn UCASE(") + p_expression + _T(")}");
 }
 
 // Gets the construction for 1 minute ago
@@ -276,14 +283,14 @@ XString
 SQLInfoGenericODBC::GetKEYWORDInterval1MinuteAgo() const
 {
   // Not supported
-  return "ERROR";
+  return _T("ERROR");
 }
 
 // Gets the Not-NULL-Value statement of the database
 XString
 SQLInfoGenericODBC::GetKEYWORDStatementNVL(XString& p_test,XString& p_isnull) const
 {
-  return "{fn IFNULL(" + p_test + "," + p_isnull + ")}";
+  return _T("{fn IFNULL(") + p_test + _T(",") + p_isnull + _T(")}");
 }
 
 // Gets the RDBMS definition of the datatype
@@ -297,14 +304,14 @@ SQLInfoGenericODBC::GetKEYWORDDataType(MetaColumn* p_column)
 XString
 SQLInfoGenericODBC::GetKEYWORDCurrentUser() const
 {
-  return "CURRENT_USER";
+  return _T("CURRENT_USER");
 }
 
 // Connects to a default schema in the database/instance
 XString
 SQLInfoGenericODBC::GetSQLDefaultSchema(XString /*p_user*/,XString /*p_schema*/) const
 {
-  return "";
+  return XString();
 }
 
 // Gets the construction for inline generating a key within an INSERT statement
@@ -312,7 +319,7 @@ XString
 SQLInfoGenericODBC::GetSQLNewSerial(XString /*p_table*/, XString /*p_sequence*/) const
 {
   // Insert a zero in an IDENTITY column
-  return "0";
+  return _T("0");
 }
 
 // Gets the construction / select for generating a new serial identity
@@ -320,7 +327,7 @@ XString
 SQLInfoGenericODBC::GetSQLGenerateSerial(XString p_table) const
 {
   // NO WAY OF KNOWNING THIS / And no need to
-  return "0";
+  return _T("0");
 }
 
 // Gets the construction / select for the resulting effective generated serial
@@ -337,21 +344,21 @@ XString
 SQLInfoGenericODBC::GetSQLStartSubTransaction(XString p_savepointName) const
 {
   // Generic ODBC does not known about sub transactions!
-  return XString("");
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetSQLCommitSubTransaction(XString p_savepointName) const
 {
   // Generic ODBC does not known about sub transactions!
-  return XString("");
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetSQLRollbackSubTransaction(XString p_savepointName) const
 {
   // Generic ODBC does not known about sub transactions!
-  return XString("");
+  return XString();
 }
 
 // FROM-Part for a query to select only 1 (one) record / or empty!
@@ -359,7 +366,7 @@ XString
 SQLInfoGenericODBC::GetSQLFromDualClause() const
 {
   // No way of knowing this in standard ODBC
-  return "";
+  return XString();
 }
 
 // Get SQL to lock  a table 
@@ -367,9 +374,9 @@ XString
 SQLInfoGenericODBC::GetSQLLockTable(XString p_schema, XString p_tablename,bool p_exclusive,int /*p_waittime*/) const
 {
   // Standard ISO SQL Syntax
-  XString query = "LOCK TABLE " + p_schema + "." + p_tablename + " IN ";
-  query += p_exclusive ? "EXCLUSIVE" : "SHARE";
-  query += " MODE";
+  XString query = _T("LOCK TABLE ") + p_schema + _T(".") + p_tablename + _T(" IN ");
+  query += p_exclusive ? _T("EXCLUSIVE") : _T("SHARE");
+  query += _T(" MODE");
   return query;
 }
 
@@ -377,7 +384,7 @@ SQLInfoGenericODBC::GetSQLLockTable(XString p_schema, XString p_tablename,bool p
 XString
 SQLInfoGenericODBC::GetSQLOptimizeTable(XString p_schema, XString p_tablename) const
 {
-  return "";
+  return XString();
 }
 
 // Transform query to select top <n> rows
@@ -393,7 +400,7 @@ XString
 SQLInfoGenericODBC::GetPing() const
 {
   // Not implemented yet
-  return "";
+  return XString();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -407,7 +414,7 @@ XString
 SQLInfoGenericODBC::GetSQLString(const XString& p_string) const
 {
   XString s = p_string;
-  s.Replace("'","''");
+  s.Replace(_T("'"),_T("''"));
   XString kwoot = GetKEYWORDQuoteCharacter();
   return  kwoot + s + kwoot;
 }
@@ -417,7 +424,7 @@ XString
 SQLInfoGenericODBC::GetSQLDateString(int p_year,int p_month,int p_day) const
 {
   XString dateString;
-  dateString.Format("{d '%04d-%02d-%02d'}",p_year,p_month,p_day);
+  dateString.Format(_T("{d '%04d-%02d-%02d'}"),p_year,p_month,p_day);
   return dateString;
 }
 
@@ -426,7 +433,7 @@ XString
 SQLInfoGenericODBC::GetSQLTimeString(int p_hour,int p_minute,int p_second) const
 {
   XString retval;
-  retval.Format("{t '%02d:%02d:%02d'}",p_hour,p_minute,p_second);
+  retval.Format(_T("{t '%02d:%02d:%02d'}"),p_hour,p_minute,p_second);
   return retval;
 }
 
@@ -435,7 +442,7 @@ XString
 SQLInfoGenericODBC::GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
 {
   XString string;
-  string.Format("{ts '%04d-%02d-%02d %02d:%02d:%02d'}"
+  string.Format(_T("{ts '%04d-%02d-%02d %02d:%02d:%02d'}")
                 ,p_year,p_month,p_day // ODBC Ordering !!
                 ,p_hour,p_minute,p_second);
   return string;
@@ -445,7 +452,7 @@ SQLInfoGenericODBC::GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_
 XString
 SQLInfoGenericODBC::GetSQLDateTimeBoundString() const
 {
-  return "{ts ?}";
+  return _T("{ts ?}");
 }
 
 // Stripped data for the parameter binding
@@ -453,7 +460,7 @@ XString
 SQLInfoGenericODBC::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
 {
   XString string;
-  string.Format("%04d-%02d-%02d %02d:%02d:%02d"
+  string.Format(_T("%04d-%02d-%02d %02d:%02d:%02d")
                 ,p_year,p_month,p_day // ODBC Ordering !!
                 ,p_hour,p_minute,p_second);
   return string;
@@ -504,25 +511,25 @@ XString
 SQLInfoGenericODBC::GetCATALOGMetaTypes(int p_type) const
 {
   UNREFERENCED_PARAMETER(p_type);
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGDefaultCharset() const
 {
-  return "iso-8859-1";
+  return _T("iso-8859-1");
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGDefaultCharsetNCV() const
 {
-  return "utf-16";
+  return _T("utf-16");
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGDefaultCollation() const
 {
-  return "-";
+  return _T("-");
 }
 
 // ALL FUNCTIONS FOR TABLE(s)
@@ -531,21 +538,21 @@ XString
 SQLInfoGenericODBC::GetCATALOGTableExists(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
   // Cannot do this, let ODBC handle this
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGTablesList(XString& /*p_schema*/,XString& /*p_pattern*/) const
 {
   // Cannot do this, let ODBC handle this
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGTableAttributes(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
   // Cannot do this, let ODBC handle this
-  return "";
+  return XString();
 }
 
 XString
@@ -565,36 +572,36 @@ SQLInfoGenericODBC::GetCATALOGTableCatalog(XString& /*p_schema*/,XString& /*p_ta
 XString
 SQLInfoGenericODBC::GetCATALOGTableCreate(MetaTable& p_table,MetaColumn& /*p_column*/) const
 {
-  XString sql = "CREATE ";
+  XString sql = _T("CREATE ");
   if (p_table.m_temporary)
   {
-    sql += "TEMPORARY ";
+    sql += _T("TEMPORARY ");
   }
-  sql += "TABLE " + p_table.m_table;
+  sql += _T("TABLE ") + p_table.m_table;
   return sql;
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGTableCreatePostfix(MetaTable& /*p_table*/,MetaColumn& /*p_column*/) const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGTableRename(XString p_schema,XString p_tablename,XString p_newname) const
 {
-  XString sql("RENAME TABLE" + p_schema + "." + p_tablename + " TO " + p_newname);
+  XString sql(_T("RENAME TABLE") + p_schema + _T(".") + p_tablename + _T(" TO ") + p_newname);
   return sql;
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGTableDrop(XString p_schema,XString p_tablename,bool /*p_ifExist = false*/,bool /*p_restrict = false*/,bool /*p_cascade = false*/) const
 {
-  XString sql = "DROP TABLE ";
+  XString sql = _T("DROP TABLE ");
   if(!p_schema.IsEmpty())
   {
     sql += p_schema;
-    sql += ".";
+    sql += _T(".");
   }
   sql += p_tablename;
   return sql;
@@ -607,19 +614,19 @@ XString
 SQLInfoGenericODBC::GetCATALOGTemptableCreate(XString p_schema,XString p_tablename,XString p_select) const
 {
   // BEWARE: THIS IS A GUESS. NO REAL DEFINITION IN ODBC
-  return "CREATE TEMPORARY TABLE " + p_schema + "." + p_tablename + "\nAS " + p_select;
+  return _T("CREATE TEMPORARY TABLE ") + p_schema + _T(".") + p_tablename + _T("\nAS ") + p_select;
 }
 
 XString 
 SQLInfoGenericODBC::GetCATALOGTemptableIntoTemp(XString p_schema,XString p_tablename,XString p_select) const
 {
-  return "INSERT INTO " + p_schema + "." + p_tablename + "\n" + p_select + ";\n";
+  return _T("INSERT INTO ") + p_schema + _T(".") + p_tablename + _T("\n") + p_select + _T(";\n");
 }
 
 XString 
 SQLInfoGenericODBC::GetCATALOGTemptableDrop(XString p_schema,XString p_tablename) const
 {
-  return "DROP TABLE " + p_schema + "." + p_tablename;
+  return _T("DROP TABLE ") + p_schema + _T(".") + p_tablename;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -629,29 +636,29 @@ XString
 SQLInfoGenericODBC::GetCATALOGColumnExists(XString p_schema,XString p_tablename,XString p_columnname) const
 {
   // Cannot now that, use ODBC!
-  return "";
+  return XString();
 }
 
 XString 
 SQLInfoGenericODBC::GetCATALOGColumnList(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
   // Cannot now that, use ODBC!
-  return "";
+  return XString();
 }
 
 XString 
 SQLInfoGenericODBC::GetCATALOGColumnAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_columnname*/) const
 {
   // Cannot now that, use ODBC!
-  return "";
+  return XString();
 }
 
 XString 
 SQLInfoGenericODBC::GetCATALOGColumnCreate(MetaColumn& p_column) const
 {
   // General ISO 9075E syntax
-  XString sql = "ALTER TABLE  " + p_column.m_schema + "." + p_column.m_table  + "\n"
-                "  ADD COLUMN " + p_column.m_column + " " + p_column.m_typename;
+  XString sql = _T("ALTER TABLE  ") + p_column.m_schema + _T(".") + p_column.m_table  + _T("\n")
+                _T("  ADD COLUMN ") + p_column.m_column + _T(" ") + p_column.m_typename;
   p_column.GetPrecisionAndScale(sql);
   p_column.GetNullable(sql);
   p_column.GetDefault(sql);
@@ -665,8 +672,8 @@ XString
 SQLInfoGenericODBC::GetCATALOGColumnAlter(MetaColumn& p_column) const
 {
   // General ISO 9075E syntax
-  XString sql = "ALTER TABLE  " + p_column.m_schema + "." + p_column.m_table  + "\n"
-                "ALTER COLUMN " + p_column.m_column + " " + p_column.m_typename;
+  XString sql = _T("ALTER TABLE  ") + p_column.m_schema + _T(".") + p_column.m_table  + _T("\n")
+                _T("ALTER COLUMN ") + p_column.m_column + _T(" ") + p_column.m_typename;
   p_column.GetPrecisionAndScale(sql);
   p_column.GetNullable(sql);
   p_column.GetDefault(sql);
@@ -680,8 +687,8 @@ XString
 SQLInfoGenericODBC::GetCATALOGColumnRename(XString p_schema,XString p_tablename,XString p_columnname,XString p_newname,XString /*p_datatype*/) const
 {
   // General ISO 9075E syntax
-  XString sql("ALTER  TABLE  " + p_schema + "." + p_tablename + "\n"
-              "RENAME " + p_columnname + " TO " + p_newname + "\n");
+  XString sql(_T("ALTER  TABLE  ") + p_schema + _T(".") + p_tablename + _T("\n")
+              _T("RENAME ") + p_columnname + _T(" TO ") + p_newname + _T("\n"));
   return sql;
 }
 
@@ -689,8 +696,8 @@ XString
 SQLInfoGenericODBC::GetCATALOGColumnDrop(XString p_schema,XString p_tablename,XString p_columnname) const
 {
   // General ISO 9075E syntax
-  XString sql("ALTER TABLE  " + p_schema + "." + p_tablename + "\n"
-              "DROP  COLUMN " + p_columnname);
+  XString sql(_T("ALTER TABLE  ") + p_schema + _T(".") + p_tablename + _T("\n")
+              _T("DROP  COLUMN ") + p_columnname);
   return sql;
 }
 
@@ -703,7 +710,7 @@ SQLInfoGenericODBC::GetCATALOGIndexExists(XString p_schema,XString p_tablename,X
 {
   // Cannot be implemented for generic ODBC
   // Use SQLStatistics instead (see SQLInfo class)
-  return "";
+  return XString();
 }
 
 XString
@@ -711,7 +718,7 @@ SQLInfoGenericODBC::GetCATALOGIndexList(XString& /*p_schema*/,XString& /*p_table
 {
   // Cannot be implemented for generic ODBC
   // Use SQLStatistics instead (see SQLInfo class)
-  return "";
+  return XString();
 }
 
 XString
@@ -719,7 +726,7 @@ SQLInfoGenericODBC::GetCATALOGIndexAttributes(XString& /*p_schema*/,XString& /*p
 {
   // Cannot be implemented for generic ODBC
   // Use SQLStatistics instead (see SQLInfo class)
-  return "";
+  return XString();
 }
 
 XString
@@ -733,43 +740,43 @@ SQLInfoGenericODBC::GetCATALOGIndexCreate(MIndicesMap& p_indices,bool /*p_duplic
     if(index.m_position == 1)
     {
       // New index
-      query = "CREATE ";
+      query = _T("CREATE ");
       if(index.m_nonunique == false)
       {
-        query += "UNIQUE ";
+        query += _T("UNIQUE ");
       }
-      query += "INDEX ";
+      query += _T("INDEX ");
       if(!index.m_schemaName.IsEmpty())
       {
-        query += index.m_schemaName + ".";
+        query += index.m_schemaName + _T(".");
       }
       query += index.m_indexName;
-      query += " ON ";
+      query += _T(" ON ");
       if(!index.m_schemaName.IsEmpty())
       {
-        query += index.m_schemaName + ".";
+        query += index.m_schemaName + _T(".");
       }
       query += index.m_tableName;
-      query += "(";
+      query += _T("(");
     }
     else
     {
-      query += ",";
+      query += _T(",");
     }
     query += index.m_columnName;
-    if(index.m_ascending != "A")
+    if(index.m_ascending != _T("A"))
     {
-      query += " DESC";
+      query += _T(" DESC");
     }
   }
-  query += ")";
+  query += _T(")");
   return query;
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGIndexDrop(XString p_schema,XString /*p_tablename*/,XString p_indexname) const
 {
-  XString sql = "DROP INDEX " + p_schema + "." + p_indexname;
+  XString sql = _T("DROP INDEX ") + p_schema + _T(".") + p_indexname;
   return sql;
 }
 
@@ -777,7 +784,7 @@ SQLInfoGenericODBC::GetCATALOGIndexDrop(XString p_schema,XString /*p_tablename*/
 XString
 SQLInfoGenericODBC::GetCATALOGIndexFilter(MetaIndex& /*p_index*/) const
 {
-  return "";
+  return XString();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -787,21 +794,21 @@ XString
 SQLInfoGenericODBC::GetCATALOGPrimaryExists(XString /*p_schema*/,XString /*p_tablename*/) const
 {
   // Cannot do this, Use ODBC functions!
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGPrimaryAttributes(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
   // Cannot do this, Use ODBC functions!
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGPrimaryCreate(MPrimaryMap& p_primaries) const
 {
   // General ISO Primary key constraint
-  XString query("ALTER TABLE ");
+  XString query(_T("ALTER TABLE "));
 
   for(auto& prim : p_primaries)
   {
@@ -809,28 +816,28 @@ SQLInfoGenericODBC::GetCATALOGPrimaryCreate(MPrimaryMap& p_primaries) const
     {
       if(!prim.m_schema.IsEmpty())
       {
-        query += prim.m_schema + ".";
+        query += prim.m_schema + _T(".");
       }
-      query += prim.m_table + "\n";
-      query += "  ADD CONSTRAINT " + prim.m_constraintName + "\n";
-      query += "      PRIMARY KEY (";
+      query += prim.m_table + _T("\n");
+      query += _T("  ADD CONSTRAINT ") + prim.m_constraintName + _T("\n");
+      query += _T("      PRIMARY KEY (");
 
     }
     else
     {
-      query += ",";
+      query += _T(",");
     }
     query += prim.m_columnName;
   }
-  query += ")";
+  query += _T(")");
   return query;
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGPrimaryDrop(XString p_schema,XString p_tablename,XString p_constraintname) const
 {
-  XString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
-              " DROP CONSTRAINT " + p_constraintname);
+  XString sql(_T("ALTER TABLE ") + p_schema + _T(".") + p_tablename + _T("\n")
+              _T(" DROP CONSTRAINT ") + p_constraintname);
   return sql;
 }
 
@@ -842,7 +849,7 @@ SQLInfoGenericODBC::GetCATALOGForeignExists(XString p_schema,XString p_tablename
 {
   // Cannot be implemented for generic ODBC
   // Use SQLForeignKeys instead (see SQLInfo class)
-  return "";
+  return XString();
 }
 
 XString
@@ -850,7 +857,7 @@ SQLInfoGenericODBC::GetCATALOGForeignList(XString& /*p_schema*/,XString& /*p_tab
 {
   // Cannot be implemented for generic ODBC
   // Use SQLForeignKeys instead (see SQLInfo class)
-  return "";
+  return XString();
 }
 
 XString
@@ -858,7 +865,7 @@ SQLInfoGenericODBC::GetCATALOGForeignAttributes(XString& /*p_schema*/,XString& /
 {
   // Cannot be implemented for generic ODBC
   // Use SQLForeignKeys instead (see SQLInfo class)
-  return "";
+  return XString();
 }
 
 XString
@@ -867,78 +874,78 @@ SQLInfoGenericODBC::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
   // Get first record
   MetaForeign& foreign = p_foreigns.front();
 
-  // Construct the correct tablename
+  // Construct the correct table name
   XString table(foreign.m_fkTableName);
   XString primary(foreign.m_pkTableName);
   if(!foreign.m_fkSchemaName.IsEmpty())
   {
-    table = foreign.m_fkSchemaName + "." + table;
+    table = foreign.m_fkSchemaName + _T(".") + table;
   }
   if(!foreign.m_pkSchemaName.IsEmpty())
   {
-    primary = foreign.m_pkSchemaName + "." + primary;
+    primary = foreign.m_pkSchemaName + _T(".") + primary;
   }
 
   // The base foreign key command
-  XString query = "ALTER TABLE " + table + "\n"
-                  "  ADD CONSTRAINT " + foreign.m_foreignConstraint + "\n"
-                  "      FOREIGN KEY (";
+  XString query = _T("ALTER TABLE ") + table + _T("\n")
+                  _T("  ADD CONSTRAINT ") + foreign.m_foreignConstraint + _T("\n")
+                  _T("      FOREIGN KEY (");
 
   // Add the foreign key columns
   bool extra = false;
   for(const auto& key : p_foreigns)
   {
-    if(extra) query += ",";
+    if(extra) query += _T(",");
     query += key.m_fkColumnName;
     extra  = true;
   }
 
   // Add references primary table
-  query += ")\n      REFERENCES " + primary + "(";
+  query += _T(")\n      REFERENCES ") + primary + _T("(");
 
   // Add the primary key columns
   extra = false;
   for(const auto& key : p_foreigns)
   {
-    if(extra) query += ",";
+    if(extra) query += _T(",");
     query += key.m_pkColumnName;
     extra  = true;
   }
-  query += ")";
+  query += _T(")");
 
   // Add all relevant options
   switch(foreign.m_deferrable)
   {
-    case SQL_INITIALLY_DEFERRED:  query += "\n      INITIALLY DEFERRED"; break;
-    case SQL_INITIALLY_IMMEDIATE: query += "\n      DEFERRABLE";         break;
-    case SQL_NOT_DEFERRABLE:      query += "\n      NOT DEFERRABLE";     break;
+    case SQL_INITIALLY_DEFERRED:  query += _T("\n      INITIALLY DEFERRED"); break;
+    case SQL_INITIALLY_IMMEDIATE: query += _T("\n      DEFERRABLE");         break;
+    case SQL_NOT_DEFERRABLE:      query += _T("\n      NOT DEFERRABLE");     break;
     default:                      break;
   }
   switch(foreign.m_match)
   {
-    case SQL_MATCH_PARTIAL: query += "\n      MATCH PARTIAL"; break;
-    case SQL_MATCH_SIMPLE:  query += "\n      MATCH SIMPLE";  break;
-    case SQL_MATCH_FULL:    query += "\n      MATCH FULL";    break;
+    case SQL_MATCH_PARTIAL: query += _T("\n      MATCH PARTIAL"); break;
+    case SQL_MATCH_SIMPLE:  query += _T("\n      MATCH SIMPLE");  break;
+    case SQL_MATCH_FULL:    query += _T("\n      MATCH FULL");    break;
     default:                // In essence: MATCH FULL, but that's already the default
                             break;
   }
   switch(foreign.m_updateRule)
   {
-    case SQL_CASCADE :    query += "\n      ON UPDATE CASCADE";     break;
-    case SQL_SET_NULL:    query += "\n      ON UPDATE SET NULL";    break;
-    case SQL_SET_DEFAULT: query += "\n      ON UPDATE SET DEFAULT"; break;
-    case SQL_NO_ACTION:   query += "\n      ON UPDATE NO ACTION";   break;
-    case SQL_RESTRICT:    query += "\n      ON UPDATE NO RESTRICT"; break;
+    case SQL_CASCADE :    query += _T("\n      ON UPDATE CASCADE");     break;
+    case SQL_SET_NULL:    query += _T("\n      ON UPDATE SET NULL");    break;
+    case SQL_SET_DEFAULT: query += _T("\n      ON UPDATE SET DEFAULT"); break;
+    case SQL_NO_ACTION:   query += _T("\n      ON UPDATE NO ACTION");   break;
+    case SQL_RESTRICT:    query += _T("\n      ON UPDATE NO RESTRICT"); break;
     default:              // In essence: ON UPDATE RESTRICT, but that's already the default
                           break;
   }
   switch(foreign.m_deleteRule)
   {
-    case SQL_CASCADE:     query += "\n      ON DELETE CASCADE";     break;
-    case SQL_SET_NULL:    query += "\n      ON DELETE SET NULL";    break;
-    case SQL_SET_DEFAULT: query += "\n      ON DELETE SET DEFAULT"; break;
-    case SQL_NO_ACTION:   query += "\n      ON DELETE NO ACTION";   break;
-    case SQL_RESTRICT:    query += "\n      ON DELETE NO RESTRICT"; break;
+    case SQL_CASCADE:     query += _T("\n      ON DELETE CASCADE");     break;
+    case SQL_SET_NULL:    query += _T("\n      ON DELETE SET NULL");    break;
+    case SQL_SET_DEFAULT: query += _T("\n      ON DELETE SET DEFAULT"); break;
+    case SQL_NO_ACTION:   query += _T("\n      ON DELETE NO ACTION");   break;
+    case SQL_RESTRICT:    query += _T("\n      ON DELETE NO RESTRICT"); break;
     default:              // In essence: ON DELETE RESTRICT, but that's already the default
                           break;
   }
@@ -951,31 +958,31 @@ SQLInfoGenericODBC::GetCATALOGForeignAlter(MForeignMap& p_original,MForeignMap& 
   // Make sure we have both
   if(p_original.empty() || p_requested.empty())
   {
-    return "";
+    return XString();
   }
 
   const MetaForeign& original  = p_original.front();
   const MetaForeign& requested = p_requested.front();
 
-  // Construct the correct tablename
+  // Construct the correct table name
   XString table(original.m_fkTableName);
   if(!original.m_fkSchemaName.IsEmpty())
   {
-    table = original.m_fkSchemaName + "." + table;
+    table = original.m_fkSchemaName + _T(".") + table;
   }
 
   // The base foreign key command
-  XString query = "ALTER TABLE " + table + "\n"
-                  "ALTER CONSTRAINT " + original.m_foreignConstraint + "\n";
+  XString query = _T("ALTER TABLE ") + table + _T("\n")
+                  _T("ALTER CONSTRAINT ") + original.m_foreignConstraint + _T("\n");
 
   // Add all relevant options
   if(original.m_deferrable != requested.m_deferrable)
   {
     switch(requested.m_deferrable)
     {
-      case SQL_INITIALLY_DEFERRED:  query += "\n      INITIALLY DEFERRED"; break;
-      case SQL_INITIALLY_IMMEDIATE: query += "\n      DEFERRABLE";         break;
-      case SQL_NOT_DEFERRABLE:      query += "\n      NOT DEFERRABLE";     break;
+      case SQL_INITIALLY_DEFERRED:  query += _T("\n      INITIALLY DEFERRED"); break;
+      case SQL_INITIALLY_IMMEDIATE: query += _T("\n      DEFERRABLE");         break;
+      case SQL_NOT_DEFERRABLE:      query += _T("\n      NOT DEFERRABLE");     break;
       default:                      break;
     }
   }
@@ -983,19 +990,19 @@ SQLInfoGenericODBC::GetCATALOGForeignAlter(MForeignMap& p_original,MForeignMap& 
   {
     switch(requested.m_match)
     {
-      case SQL_MATCH_FULL:    query += "\n      MATCH FULL";    break;
-      case SQL_MATCH_PARTIAL: query += "\n      MATCH PARTIAL"; break;
-      case SQL_MATCH_SIMPLE:  query += "\n      MATCH SIMPLE";  break;
+      case SQL_MATCH_FULL:    query += _T("\n      MATCH FULL");    break;
+      case SQL_MATCH_PARTIAL: query += _T("\n      MATCH PARTIAL"); break;
+      case SQL_MATCH_SIMPLE:  query += _T("\n      MATCH SIMPLE");  break;
     }
   }
   if(original.m_updateRule != requested.m_updateRule)
   {
     switch(requested.m_updateRule)
     {
-      case SQL_CASCADE:     query += "\n      ON UPDATE CASCADE";     break;
-      case SQL_SET_NULL:    query += "\n      ON UPDATE SET NULL";    break;
-      case SQL_SET_DEFAULT: query += "\n      ON UPDATE SET DEFAULT"; break;
-      case SQL_NO_ACTION:   query += "\n      ON UPDATE NO ACTION";   break;
+      case SQL_CASCADE:     query += _T("\n      ON UPDATE CASCADE");     break;
+      case SQL_SET_NULL:    query += _T("\n      ON UPDATE SET NULL");    break;
+      case SQL_SET_DEFAULT: query += _T("\n      ON UPDATE SET DEFAULT"); break;
+      case SQL_NO_ACTION:   query += _T("\n      ON UPDATE NO ACTION");   break;
       default:              // In essence: ON UPDATE RESTRICT, but that's already the default
       case SQL_RESTRICT:    break;
     }
@@ -1004,10 +1011,10 @@ SQLInfoGenericODBC::GetCATALOGForeignAlter(MForeignMap& p_original,MForeignMap& 
   {
     switch(requested.m_deleteRule)
     {
-      case SQL_CASCADE:     query += "\n      ON DELETE CASCADE";     break;
-      case SQL_SET_NULL:    query += "\n      ON DELETE SET NULL";    break;
-      case SQL_SET_DEFAULT: query += "\n      ON DELETE SET DEFAULT"; break;
-      case SQL_NO_ACTION:   query += "\n      ON DELETE NO ACTION";   break;
+      case SQL_CASCADE:     query += _T("\n      ON DELETE CASCADE");     break;
+      case SQL_SET_NULL:    query += _T("\n      ON DELETE SET NULL");    break;
+      case SQL_SET_DEFAULT: query += _T("\n      ON DELETE SET DEFAULT"); break;
+      case SQL_NO_ACTION:   query += _T("\n      ON DELETE NO ACTION");   break;
       default:              // In essence: ON DELETE RESTRICT, but that's already the default
       case SQL_RESTRICT:    break;
     }
@@ -1018,8 +1025,8 @@ SQLInfoGenericODBC::GetCATALOGForeignAlter(MForeignMap& p_original,MForeignMap& 
 XString
 SQLInfoGenericODBC::GetCATALOGForeignDrop(XString p_schema,XString p_tablename,XString p_constraintname) const
 {
-  XString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
-              " DROP CONSTRAINT " + p_constraintname);
+  XString sql(_T("ALTER TABLE ") + p_schema + _T(".") + p_tablename + _T("\n")
+              _T(" DROP CONSTRAINT ") + p_constraintname);
   return sql;
 }
 
@@ -1028,31 +1035,31 @@ SQLInfoGenericODBC::GetCATALOGForeignDrop(XString p_schema,XString p_tablename,X
 XString
 SQLInfoGenericODBC::GetCATALOGDefaultExists(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_column*/) const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGDefaultList(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGDefaultAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_column*/) const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGDefaultCreate(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_constraint*/,XString /*p_column*/,XString /*p_code*/) const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGDefaultDrop(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_constraint*/) const
 {
-  return "";
+  return XString();
 }
 
 /////////////////////////
@@ -1061,31 +1068,31 @@ SQLInfoGenericODBC::GetCATALOGDefaultDrop(XString /*p_schema*/,XString /*p_table
 XString
 SQLInfoGenericODBC::GetCATALOGCheckExists(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/) const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGCheckList(XString  /*p_schema*/,XString  /*p_tablename*/) const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGCheckAttributes(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/) const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGCheckCreate(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/,XString /*p_condition*/) const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGCheckDrop(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/) const
 {
-  return "";
+  return XString();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1095,35 +1102,35 @@ XString
 SQLInfoGenericODBC::GetCATALOGTriggerExists(XString p_schema, XString p_tablename, XString p_triggername) const
 {
   // Not standard enough
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGTriggerList(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
   // Not standard enough
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGTriggerAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_triggername*/) const
 {
   // Not standard enough
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGTriggerCreate(MetaTrigger& /*p_trigger*/) const
 {
   // Not standard enough
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGTriggerDrop(XString p_schema, XString p_tablename, XString p_triggername) const
 {
   // Not standard enough
-  return "";
+  return XString();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1132,31 +1139,31 @@ SQLInfoGenericODBC::GetCATALOGTriggerDrop(XString p_schema, XString p_tablename,
 XString
 SQLInfoGenericODBC::GetCATALOGSequenceExists(XString p_schema, XString p_sequence) const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGSequenceList(XString& /*p_schema*/,XString& /*p_pattern*/) const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGSequenceAttributes(XString& /*p_schema*/,XString& /*p_sequence*/) const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGSequenceCreate(MetaSequence& /*p_sequence*/) const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGSequenceDrop(XString p_schema, XString p_sequence) const
 {
-  return "";
+  return XString();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1165,74 +1172,74 @@ SQLInfoGenericODBC::GetCATALOGSequenceDrop(XString p_schema, XString p_sequence)
 XString 
 SQLInfoGenericODBC::GetCATALOGViewExists(XString& /*p_schema*/,XString& /*p_viewname*/) const
 {
-  return "";
+  return XString();
 }
 
 XString 
 SQLInfoGenericODBC::GetCATALOGViewList(XString& /*p_schema*/,XString& /*p_pattern*/) const
 {
-  return "";
+  return XString();
 }
 
 XString 
 SQLInfoGenericODBC::GetCATALOGViewAttributes(XString& /*p_schema*/,XString& /*p_viewname*/) const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGViewText(XString& /*p_schema*/,XString& /*p_viewname*/) const
 {
   // Cannot query this, Use ODBC functions
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGViewCreate(XString p_schema,XString p_viewname,XString p_contents,bool /*p_ifexists = true*/) const
 {
-  return "CREATE VIEW " + p_schema + "." + p_viewname + "\n" + p_contents;
+  return _T("CREATE VIEW ") + p_schema + _T(".") + p_viewname + _T("\n") + p_contents;
 }
 
 XString 
 SQLInfoGenericODBC::GetCATALOGViewRename(XString p_schema,XString p_viewname,XString p_newname)    const
 {
-  return "";
+  return XString();
 }
 
 XString 
 SQLInfoGenericODBC::GetCATALOGViewDrop(XString p_schema,XString p_viewname,XString& p_precursor) const
 {
   p_precursor.Empty();
-  return "DROP VIEW " + p_schema + "." + p_viewname;
+  return _T("DROP VIEW ") + p_schema + _T(".") + p_viewname;
 }
 
 // All Privilege functions
 XString
 SQLInfoGenericODBC::GetCATALOGTablePrivileges(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
-  return "";
+  return XString();
 }
 
 XString 
 SQLInfoGenericODBC::GetCATALOGColumnPrivileges(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_columnname*/) const
 {
-  return "";
+  return XString();
 }
 
 XString 
 SQLInfoGenericODBC::GetCATALOGSequencePrivilege(XString& /*p_schema*/,XString& /*p_sequence*/) const
 {
-  return "";
+  return XString();
 }
 
 XString 
 SQLInfoGenericODBC::GetCATALOGGrantPrivilege(XString p_schema,XString p_objectname,XString p_privilege,XString p_grantee,bool p_grantable)
 {
   XString sql;
-  sql.Format("GRANT %s ON %s.%s TO %s",p_privilege.GetString(),p_schema.GetString(),p_objectname.GetString(),p_grantee.GetString());
+  sql.Format(_T("GRANT %s ON %s.%s TO %s"),p_privilege.GetString(),p_schema.GetString(),p_objectname.GetString(),p_grantee.GetString());
   if(p_grantable)
   {
-    sql += " WITH GRANT OPTION";
+    sql += _T(" WITH GRANT OPTION");
   }
   return sql;
 }
@@ -1241,7 +1248,7 @@ XString
 SQLInfoGenericODBC::GetCATALOGRevokePrivilege(XString p_schema,XString p_objectname,XString p_privilege,XString p_grantee)
 {
   XString sql;
-  sql.Format("REVOKE %s ON %s.%s FROM %s",p_privilege.GetString(),p_schema.GetString(),p_objectname.GetString(),p_grantee.GetString());
+  sql.Format(_T("REVOKE %s ON %s.%s FROM %s"),p_privilege.GetString(),p_schema.GetString(),p_objectname.GetString(),p_grantee.GetString());
   return sql;
 }
 
@@ -1250,28 +1257,28 @@ XString
 SQLInfoGenericODBC::GetCATALOGSynonymList(XString& /*p_schema*/,XString& /*p_pattern*/) const
 {
   // Not implemented yet
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGSynonymAttributes(XString& /*p_schema*/,XString& /*p_synonym*/) const
 {
   // Not implemented yet
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGSynonymCreate(XString& /*p_schema*/,XString& /*p_synonym*/,XString /*p_forObject*/,bool /*p_private = true*/) const
 {
   // Not implemented yet
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetCATALOGSynonymDrop(XString& /*p_schema*/,XString& /*p_synonym*/,bool /*p_private = true*/) const
 {
   // Not implemented yet
-  return "";
+  return XString();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1306,57 +1313,57 @@ SQLInfoGenericODBC::GetCATALOGSynonymDrop(XString& /*p_schema*/,XString& /*p_syn
 XString
 SQLInfoGenericODBC::GetPSMProcedureExists(XString p_schema, XString p_procedure) const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetPSMProcedureList(XString& /*p_schema*/) const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetPSMProcedureAttributes(XString& /*p_schema*/,XString& /*p_procedure*/) const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure) const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetPSMProcedureDrop(XString p_schema, XString p_procedure,bool /* p_function /*=false*/) const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetPSMProcedureErrors(XString p_schema,XString p_procedure) const
 {
   // ISO SQL does not support procedure errors
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetPSMProcedurePrivilege(XString& /*p_schema*/,XString& /*p_procedure*/) const
 {
-  return "";
+  return XString();
 }
 
 // And it's parameters
 XString
 SQLInfoGenericODBC::GetPSMProcedureParameters(XString& /*p_schema*/,XString& /*p_procedure*/) const
 {
-  return "";
+  return XString();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1375,18 +1382,18 @@ SQLInfoGenericODBC::GetPSMDeclaration(bool    /*p_first*/
                                      ,XString /*p_domain*/    /*= ""*/
                                      ,XString /*p_asColumn*/  /*= ""*/) const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetPSMAssignment(XString p_variable,XString p_statement /*=""*/) const
 {
   XString line(p_variable);
-  line += " [?=] ";
+  line += _T(" [?=] ");
   if(!p_statement.IsEmpty())
   {
     line += p_statement;
-    line += ";";
+    line += _T(";");
   }
   return line;
 }
@@ -1394,77 +1401,77 @@ SQLInfoGenericODBC::GetPSMAssignment(XString p_variable,XString p_statement /*="
 XString
 SQLInfoGenericODBC::GetPSMIF(XString p_condition) const
 {
-  XString line("IF (");
+  XString line(_T("IF ("));
   line += p_condition;
-  line += ") THEN\n";
-  return "";
+  line += _T(") THEN\n");
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetPSMIFElse() const
 {
-  return "  ELSE\n";
+  return _T("  ELSE\n");
 }
 
 XString
 SQLInfoGenericODBC::GetPSMIFEnd() const
 {
-  return "END IF;\n";
+  return _T("END IF;\n");
 }
 
 XString
 SQLInfoGenericODBC::GetPSMWhile(XString p_condition) const
 {
-  return "WHILE (" + p_condition + ") LOOP\n";
+  return _T("WHILE (") + p_condition + _T(") LOOP\n");
 }
 
 XString
 SQLInfoGenericODBC::GetPSMWhileEnd() const
 {
-  return "END LOOP;\n";
+  return _T("END LOOP;\n");
 }
 
 XString
 SQLInfoGenericODBC::GetPSMLOOP() const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetPSMLOOPEnd() const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetPSMBREAK() const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetPSMRETURN(XString p_statement /*= ""*/) const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetPSMExecute(XString /*p_procedure*/,MParameterMap& /*p_parameters*/) const
 {
-  return "";
+  return XString();
 }
 
 // The CURSOR
 XString
 SQLInfoGenericODBC::GetPSMCursorDeclaration(XString /*p_cursorname*/,XString /*p_select*/) const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetPSMCursorFetch(XString /*p_cursorname*/,std::vector<XString>& /*p_columnnames*/,std::vector<XString>& /*p_variablenames*/) const
 {
-  return "";
+  return XString();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1473,19 +1480,19 @@ SQLInfoGenericODBC::GetPSMCursorFetch(XString /*p_cursorname*/,std::vector<XStri
 XString
 SQLInfoGenericODBC::GetPSMExceptionCatchNoData() const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetPSMExceptionCatch(XString p_sqlState) const
 {
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetPSMExceptionRaise(XString p_sqlState) const
 {
-  return "";
+  return XString();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1506,28 +1513,28 @@ XString
 SQLInfoGenericODBC::GetSESSIONMyself() const
 {
   // Generic ISO ODBC has no info about other sessions
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetSESSIONExists(XString p_sessionID) const
 {
   // Generic ISO ODBC has no info about other sessions
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetSESSIONList() const
 {
   // Generic ISO ODBC has no info about other sessions
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetSESSIONAttributes(XString p_sessionID) const
 {
   // Generic ISO ODBC has no info about other sessions
-  return "";
+  return XString();
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1537,14 +1544,14 @@ XString
 SQLInfoGenericODBC::GetSESSIONConstraintsDeferred() const
 {
   // ISO SQL does not know how to defer constraints
-  return "";
+  return XString();
 }
 
 XString
 SQLInfoGenericODBC::GetSESSIONConstraintsImmediate() const
 {
   // ISO SQL constraints are always active
-  return "";
+  return XString();
 }
 
 //////////////////////////////////////////////////////////////////////////

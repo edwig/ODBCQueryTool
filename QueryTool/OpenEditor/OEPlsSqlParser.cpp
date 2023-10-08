@@ -37,90 +37,96 @@ namespace OpenEditor
 {
     using std::map;
 
-	static struct 
-	{
-		EToken token;
-		const char* keyword;
-	}
-	g_tokenDescs[] = 
-	{
-		etDECLARE,				"DECLARE",	   
-		etFUNCTION,				"FUNCTION",	
-		etPROCEDURE,			"PROCEDURE",
-		etPACKAGE,				"PACKAGE",	
-		etBODY,					"BODY",		
-		etBEGIN,				"BEGIN",	
-		etEXCEPTION,			"EXCEPTION",
-		etEND,					"END",		
-		etIF,					"IF",		
-		etTHEN,					"THEN",		
-		etELSE,					"ELSE",		
-		etELSIF,				"ELSIF",	
-		etFOR,					"FOR",		
-		etWHILE,				"WHILE",	
-		etLOOP,					"LOOP",		
-		etEXIT,					"EXIT",		
-		etIS,					"IS",		
-		etAS,					"AS",       
-		etSEMICOLON,			";",        
-		etQUOTE,				"'",		
-		etDOUBLE_QUOTE,			"\"",		
-		etLEFT_ROUND_BRACKET,	"(",		
-		etRIGHT_ROUND_BRACKET,	")",		
-		etMINUS,				"-",		
-		etSLASH,				"/",		
-		etSTAR,					"*",		
-		etSELECT,				"SELECT",	
-		etINSERT,				"INSERT",	
-		etUPDATE,				"UPDATE",	
-		etDELETE,				"DELETE",	
-		etALTER,				"ALTER",	
-		etANALYZE,				"ANALYZE",	
-		etCREATE,				"CREATE",	
-		etDROP,					"DROP",		
-		etFROM,					"FROM",
-		etWHERE,				"WHERE",
-		etSET,					"SET",
-		etOPEN,                 "OPEN",
-        etLANGUAGE,             "LANGUAGE"
+  static struct 
+  {
+    EToken token;
+    LPCTSTR keyword;
+  }
+  g_tokenDescs[] = 
+  {
+    etDECLARE,        _T("DECLARE"),
+    etFUNCTION,       _T("FUNCTION"),
+    etPROCEDURE,      _T("PROCEDURE"),
+    etPACKAGE,        _T("PACKAGE"),
+    etBODY,           _T("BODY"),
+    etBEGIN,          _T("BEGIN"),
+    etEXCEPTION,      _T("EXCEPTION"),
+    etEND,            _T("END"),
+    etIF,             _T("IF"),
+    etTHEN,           _T("THEN"),
+    etELSE,           _T("ELSE"),
+    etELSIF,          _T("ELSIF"),
+    etFOR,            _T("FOR"),
+    etWHILE,          _T("WHILE"),
+    etLOOP,           _T("LOOP"),
+    etEXIT,           _T("EXIT"),
+    etIS,             _T("IS"),
+    etAS,             _T("AS"),
+    etSEMICOLON,      _T(";"),
+    etQUOTE,          _T("'"),
+    etDOUBLE_QUOTE,   _T("\""),
+    etLEFT_ROUND_BRACKET,   _T("("),
+    etRIGHT_ROUND_BRACKET,  _T(")"),
+    etMINUS,          _T("-"),
+    etSLASH,          _T("/"),
+    etSTAR,           _T("*"),
+    etSELECT,         _T("SELECT"),
+    etINSERT,         _T("INSERT"),
+    etUPDATE,         _T("UPDATE"),
+    etDELETE,         _T("DELETE"),
+    etALTER,          _T("ALTER"),
+    etANALYZE,        _T("ANALYZE"),
+    etCREATE,         _T("CREATE"),
+    etDROP,           _T("DROP"),
+    etFROM,           _T("FROM"),
+    etWHERE,          _T("WHERE"),
+    etSET,            _T("SET"),
+    etOPEN,           _T("OPEN"),
+    etLANGUAGE,       _T("LANGUAGE")
 	};
 
-    const char* Token::GetString (EToken token)
-	{
-		for (int i(0); i < sizeof(g_tokenDescs)/sizeof(g_tokenDescs[0]); i++)
-			if (g_tokenDescs[i].token == token)
-				return g_tokenDescs[i].keyword;
-		return "Unknown Token";
-	}
-        
-	static class TokenDescsMap : public map<CString, int> 
-	{ 
-	public:
-		TokenDescsMap ()
-		{
-			for (int i(0); i < sizeof(g_tokenDescs)/sizeof(g_tokenDescs[0]); i++)
-				insert(std::map<CString, int>::value_type(g_tokenDescs[i].keyword, g_tokenDescs[i].token));
-		}
-	} 
-	g_tokenDescsMap;
+  LPCTSTR Token::GetString (EToken token)
+  {
+    for(int i(0); i < sizeof(g_tokenDescs) / sizeof(g_tokenDescs[0]); i++)
+    {
+      if(g_tokenDescs[i].token == token)
+      {
+        return g_tokenDescs[i].keyword;
+      }
+    }
+    return _T("Unknown Token");
+  }
 
-	
-	DelimitersMap PlsSqlParser::m_Delimiters(" \t\'\\()[]{}+-*/.,!?;:=><%|@&^");
+  static class TokenDescsMap : public map<CString, int> 
+  { 
+  public:
+    TokenDescsMap ()
+    {
+      for(int i(0); i < sizeof(g_tokenDescs) / sizeof(g_tokenDescs[0]); i++)
+      {
+        insert(std::map<CString,int>::value_type(g_tokenDescs[i].keyword,g_tokenDescs[i].token));
+      }
+    }
+  } 
+  g_tokenDescsMap;
+
+
+  DelimitersMap PlsSqlParser::m_Delimiters(_T(" \t\'\\()[]{}+-*/.,!?;:=><%|@&^"));
 
 
 PlsSqlParser::PlsSqlParser (SyntaxAnalyser& analyzer)
-	: m_analyzer(analyzer)
+             :m_analyzer(analyzer)
 {
-    m_sequenceOf = eNone;
+  m_sequenceOf = eNone;
 
-    m_fastmap.erase();
+  m_fastmap.erase();
 
-    for (std::map<CString, int>::const_iterator it = g_tokenDescsMap.begin();
-        it != g_tokenDescsMap.end();
-        it++)
-    {
-		m_fastmap[it->first[0]] = true;
-    }
+  for (std::map<CString, int>::const_iterator it = g_tokenDescsMap.begin();
+      it != g_tokenDescsMap.end();
+      it++)
+  {
+    m_fastmap[it->first[0]] = true;
+  }
 }
 
 // 16.03.2003 bug fix, plsql match sometimes fails after some edit operations
@@ -139,7 +145,7 @@ void PlsSqlParser::PutEOF (int line)
 	m_analyzer.PutToken(token);
 }
 
-bool PlsSqlParser::PutLine (int line, const char* str, int length)
+bool PlsSqlParser::PutLine (int line, LPCTSTR str, int length)
 {
     //TRACE("PutLine: %4d:%s\n", line+1, string(str, length).c_str());
 
@@ -170,7 +176,7 @@ bool PlsSqlParser::PutLine (int line, const char* str, int length)
                 buffer += str[offset++];
             else
                 for (; offset < length && !m_Delimiters[str[offset]]; offset++)
-                    buffer += (char)toupper(str[offset]);
+                    buffer += (TCHAR)toupper(str[offset]);
 
 			token.length = buffer.GetLength();
         }

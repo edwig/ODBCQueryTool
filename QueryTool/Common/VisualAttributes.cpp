@@ -50,8 +50,8 @@ VisualAttribute::VisualAttribute (const VisualAttribute& other)
 }
 
 VisualAttribute::VisualAttribute (
-    const char* name, 
-    const char* fontName, int size,
+    const TCHAR* name, 
+    const TCHAR* fontName, int size,
     bool bold, bool italic, bool underline,
     COLORREF foreground, COLORREF background,
     unsigned mask
@@ -155,8 +155,8 @@ int VisualAttribute::PointToPixel (int points)
 //  VisualAttributesSet
 ///////////////////////////////////////////////////////////////////////////////
 
-VisualAttributesSet::VisualAttributesSet (const char* name, int size)
-: m_name(name)
+VisualAttributesSet::VisualAttributesSet (LPTSTR name, int size)
+                    :m_name(name)
 {
     m_attrs.reserve(size);
 }
@@ -169,7 +169,7 @@ VisualAttributesSet& VisualAttributesSet::operator = (const VisualAttributesSet&
     return *this;
 }
 
-const VisualAttribute& VisualAttributesSet::FindByName (const char* name) const
+const VisualAttribute& VisualAttributesSet::FindByName (LPCTSTR name) const
 {
     _ASSERTE(name);
 
@@ -178,12 +178,16 @@ const VisualAttribute& VisualAttributesSet::FindByName (const char* name) const
         std::vector<VisualAttribute>::const_iterator
             it = m_attrs.begin(), end = m_attrs.end();
 
-        for (; it != end; it++)
-            if (it->m_Name == name)
-                return *it;
+        for(; it != end; it++)
+        {
+          if(it->m_Name == name)
+          {
+            return *it;
+          }
+        }
     }
 
-    throw std::out_of_range(CString("Visual attribute \"") + name + CString("\" not found in set \"") + m_name + CString("\"."));
+    throw StdException(CString(_T("Out-of-range: Visual attribute \"")) + name + CString(_T("\" not found in set \"")) + m_name + CString(_T("\".")));
 }
 
 }//namespace Common

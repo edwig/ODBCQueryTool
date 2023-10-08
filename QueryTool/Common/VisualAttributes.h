@@ -61,8 +61,8 @@ struct VisualAttribute
     VisualAttribute (const VisualAttribute&);
 
     VisualAttribute ( // is it used?
-        const char* name, 
-        const char* font, int size = 11,
+        const TCHAR* name, 
+        const TCHAR* font, int size = 11,
         bool bold = false, bool italic = false, bool underline = false,
         COLORREF foreground = -1, COLORREF background = -1,
         unsigned mask = vaoFont
@@ -96,13 +96,13 @@ class VisualAttributesSet
 {
 public:
     VisualAttributesSet () {};
-    VisualAttributesSet (const char* name, int size);
+    VisualAttributesSet (LPTSTR name, int size);
 
     VisualAttributesSet& operator = (const VisualAttributesSet&);
 
-    const char* GetName () const;
-    const char* GetName (int index) const;
-    void SetName (const char* name);
+    LPCTSTR GetName () const;
+    LPCTSTR GetName (int index) const;
+    void SetName (LPCTSTR name);
     void SetName (const CString& name);
 
     int  GetCount () const;
@@ -112,7 +112,7 @@ public:
     VisualAttribute& operator [] (int index)             { return m_attrs.at(index); }
     const VisualAttribute& operator [] (int index) const { return m_attrs.at(index); }
 
-    const VisualAttribute& FindByName (const char* name) const;
+    const VisualAttribute& FindByName (LPCTSTR name) const;
 
 protected:
     CString m_name;
@@ -125,19 +125,19 @@ protected:
 ///////////////////////////////////////////////////////////////////////////////
 
 inline
-const char* VisualAttributesSet::GetName () const
+LPCTSTR VisualAttributesSet::GetName () const
 {
     return m_name.GetString();
 }
 
 inline
-const char* VisualAttributesSet::GetName (int index) const
+LPCTSTR VisualAttributesSet::GetName (int index) const
 {
     return m_attrs.at(index).m_Name.GetString();
 }
 
 inline
-void VisualAttributesSet::SetName (const char* name)
+void VisualAttributesSet::SetName (LPCTSTR name)
 {
     m_name = name;
 }

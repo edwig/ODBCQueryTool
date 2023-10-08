@@ -25,13 +25,13 @@ namespace Common
 {
     using std::vector;
 
-    void trim_symmetric (CString& str, const char* skip = " \t\n\r");
-    void to_printable_str (const char* from, CString& to);
-    void to_unprintable_str (const char* from, CString& to, bool skipEscDgt = false);
-    void date_c_to_oracle (const char* from, string& to);
-    void date_oracle_to_c (const char* from, string& to);
-    void to_upper_str (const char* from, string& to);
-    void to_lower_str (const char* from, string& to);
+    void trim_symmetric (CString& str, LPCTSTR skip = _T(" \t\n\r"));
+    void to_printable_str   (LPCTSTR from, CString& to);
+    void to_unprintable_str (LPCTSTR from, CString& to, bool skipEscDgt = false);
+    void date_c_to_oracle   (LPCTSTR from, CString& to);
+    void date_oracle_to_c   (LPCTSTR from, CString& to);
+    void to_upper_str       (LPCTSTR from, CString& to);
+    void to_lower_str       (LPCTSTR from, CString& to);
 
     //  This object-procedure is quicker (two times) than vprintf.
     class Substitutor
@@ -42,25 +42,29 @@ namespace Common
         void ResetContent ();
         void ResetResult ();
 
-        void AddPair (const char*, const char*);
-        void AddPair (const string&, const string&);
-        Substitutor& operator << (const char*);
-        const char* GetResult () const;
+        void AddPair (LPCTSTR, LPCTSTR);
+        void AddPair (const CString&, const CString&);
+        Substitutor& operator << (LPCTSTR);
+        LPCTSTR GetResult () const;
 
     private:
-        string m_result;
-        vector<string>
-            m_whatFind, m_withReplace;
-        bool m_casesensitive;
+        CString         m_result;
+        vector<CString> m_whatFind;
+        vector<CString> m_withReplace;
+        bool            m_casesensitive;
     };
 
     inline
-    const char* Substitutor::GetResult () const
-        { return m_result.c_str(); }
+    LPCTSTR Substitutor::GetResult () const
+    { 
+      return m_result.GetString(); 
+    }
 
     inline
     void Substitutor::ResetResult ()
-        { m_result.erase(); }
+    { 
+      m_result.Empty();
+    }
 
 } // END namespace Common
 

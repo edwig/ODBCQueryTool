@@ -58,14 +58,17 @@ CWinException::~CWinException()
 //////////////////////////////////////////////////////////////////////
 // Get Last Error String
 
-BOOL CWinException::GetErrorMessage(LPTSTR lpszError, 
-					UINT nMaxError, PUINT pnHelpContext /*= NULL*/)
+BOOL CWinException::GetErrorMessage(LPTSTR lpszError,UINT nMaxError,PUINT pnHelpContext /*= NULL*/)
 {
 	pnHelpContext = NULL;
-	if(nMaxError)
-		return lstrcpyn(lpszError, m_szLastError, nMaxError) != nullptr;
-	else
-		return lstrcpy(lpszError, m_szLastError) != nullptr;
+  if(nMaxError)
+  {
+    return lstrcpyn(lpszError,m_szLastError.GetString(),nMaxError) != nullptr;
+  }
+  else
+  {
+    return lstrcpy(lpszError,m_szLastError.GetString()) != nullptr;
+  }
 }
 
 //////////////////////////////////////////////////////////////////////

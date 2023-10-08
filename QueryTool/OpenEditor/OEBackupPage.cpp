@@ -89,8 +89,8 @@ COEBackupPage::OnApply()
   {
     OpenEditor::GlobalSettings& settings = m_manager.GetGlobalSettings();
         
-    settings.SetFileBackupName((LPCSTR)m_BackupName, false /*notify*/);
-    settings.SetFileBackupDirectory((LPCSTR)m_BackupDirectory, false /*notify*/);
+    settings.SetFileBackupName((LPCTSTR)m_BackupName, false /*notify*/);
+    settings.SetFileBackupDirectory((LPCTSTR)m_BackupDirectory, false /*notify*/);
     settings.SetFileBackup(m_Backup
                           ? (!m_BackupMethod ? OpenEditor::ebmCurrentDirectory : OpenEditor::ebmBackupDirectory) 
                           : OpenEditor::ebmNone,

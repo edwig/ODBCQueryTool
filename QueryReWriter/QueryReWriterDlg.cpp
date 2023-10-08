@@ -82,10 +82,10 @@ BOOL
 AboutDlg::OnInitDialog()
 {
   StyleDialog::OnInitDialog();
-  SetWindowText("About Query ReWriter");
+  SetWindowText(_T("About Query ReWriter"));
 
-  m_buttonOk.SetStyle("ok");
-  m_version   = "Query ReWriter. Version: "  SQL_COMPONENTS_VERSION;
+  m_buttonOk.SetStyle(_T("ok"));
+  m_version   = _T("Query ReWriter. Version: ")  SQL_COMPONENTS_VERSION;
   m_copyright = SQL_COMPONENTS_COPYRIGHT;
   UpdateData(FALSE);
 
@@ -143,7 +143,7 @@ BOOL
 QueryReWriterDlg::OnInitDialog()
 {
 	StyleDialog::OnInitDialog();
-  SetWindowText("Query ReWriter");
+  SetWindowText(_T("Query ReWriter"));
   ShowMinMaxButton();
   SetSysMenu(IDR_MENU);
   SetAboutBoxAndIcon(IDM_ABOUTBOX,IDS_ABOUTBOX);
@@ -177,8 +177,8 @@ QueryReWriterDlg::InitTabs()
   m_page1->Create(IDD_QUERIES,&m_tabs);
   m_page2->Create(IDD_CONFIG, &m_tabs);
 
-  m_tabs.InsertItem(0,m_page1,"Query");
-  m_tabs.InsertItem(1,m_page2,"Configuration");
+  m_tabs.InsertItem(0,m_page1,_T("Query"));
+  m_tabs.InsertItem(1,m_page2,_T("Configuration"));
 
   m_tabs.Init();
 }
@@ -187,14 +187,14 @@ void
 QueryReWriterDlg::InitConfig()
 {
   RegistryManager manager;
-  CString config("HKCU\\Software\\EDO\\QueryRewriter");
-  CString file = manager.GetRegistryString(config,"configfile","");
+  CString config(_T("HKCU\\Software\\EDO\\QueryRewriter"));
+  CString file = manager.GetRegistryString(config,_T("configfile"),_T(""));
   if(!file.IsEmpty())
   {
     m_page2->SetConfigFile(file);
     if(!m_page2->ReadConfig())
     {
-      manager.DeleteRegistryValue(config,"configfile");
+      manager.DeleteRegistryValue(config,_T("configfile"));
     }
   }
 }

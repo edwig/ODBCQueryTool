@@ -111,7 +111,7 @@ StyleCalendar::OnDubbel(NMHDR* /*nMHdr*/,LRESULT *lResult)
   m_control.GetCurSel(sel);
   if(sel.m_status == COleDateTime::valid)
   {
-    m_select.Format("%2.2d-%2.2d-%4.4d",sel.GetDay(),sel.GetMonth(),sel.GetYear());
+    m_select.Format(_T("%2.2d-%2.2d-%4.4d"),sel.GetDay(),sel.GetMonth(),sel.GetYear());
   }
   OnOK();
   *lResult = 0;

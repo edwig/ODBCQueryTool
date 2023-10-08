@@ -245,7 +245,7 @@ StyleTabCtrl::OnPaint()
     for (int ind = 0;ind < count; ++ind)
     {
       // Getting the icon image an the tab text
-      char buffer[MAX_PATH + 1];
+      TCHAR buffer[MAX_PATH + 1];
       TCITEM item;
       item.mask       = TCIF_TEXT | TCIF_IMAGE;
       item.pszText    = buffer;

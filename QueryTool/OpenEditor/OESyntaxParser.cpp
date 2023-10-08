@@ -33,54 +33,54 @@ namespace OpenEditor
 {
   using std::map;
 
-	static struct 
-	{
-		EToken token;
-		const char* keyword;
-	}
-	g_tokenDescs[] = 
-	{
-		etDECLARE,				"DECLARE",	   
-		etFUNCTION,				"FUNCTION",	
-		etPROCEDURE,			"PROCEDURE",
-		etPACKAGE,				"PACKAGE",	
-		etBODY,					  "BODY",		
-		etBEGIN,				  "BEGIN",	
-		etEXCEPTION,			"EXCEPTION",
-		etEND,					  "END",		
-		etIF,					    "IF",		
-		etTHEN,					  "THEN",		
-		etELSE,					  "ELSE",		
-		etELSIF,				  "ELSIF",	
-		etFOR,					  "FOR",		
-		etWHILE,				  "WHILE",	
-		etLOOP,					  "LOOP",		
-		etEXIT,					  "EXIT",		
-		etIS,					    "IS",		
-		etAS,					    "AS",       
-		etSEMICOLON,			";",        
-		etQUOTE,			    	"'",		
-		etDOUBLE_QUOTE,			"\"",		
-		etLEFT_ROUND_BRACKET,	"(",		
-		etRIGHT_ROUND_BRACKET,	")",		
-		etMINUS,				"-",		
-		etSLASH,				"/",		
-		etSTAR,					"*",		
-		etSELECT,				"SELECT",	
-		etINSERT,				"INSERT",	
-		etUPDATE,				"UPDATE",	
-		etDELETE,				"DELETE",	
-		etALTER,				"ALTER",	
-		etANALYZE,			"ANALYZE",	
-		etCREATE,				"CREATE",	
-		etDROP,					"DROP",		
-		etFROM,					"FROM",
-		etWHERE,				"WHERE",
-		etSET,					"SET",
-		etOPEN,         "OPEN",
-	};
+  static struct 
+  {
+    EToken token;
+    LPCTSTR keyword;
+  }
+  g_tokenDescs[] = 
+  {
+    etDECLARE,        _T("DECLARE"),
+    etFUNCTION,       _T("FUNCTION"),
+    etPROCEDURE,      _T("PROCEDURE"),
+    etPACKAGE,        _T("PACKAGE"),
+    etBODY,           _T("BODY"),
+    etBEGIN,          _T("BEGIN"),
+    etEXCEPTION,      _T("EXCEPTION"),
+    etEND,            _T("END"),
+    etIF,             _T("IF"),
+    etTHEN,           _T("THEN"),
+    etELSE,           _T("ELSE"),
+    etELSIF,          _T("ELSIF"),
+    etFOR,            _T("FOR"),
+    etWHILE,          _T("WHILE"),
+    etLOOP,           _T("LOOP"),
+    etEXIT,           _T("EXIT"),
+    etIS,             _T("IS"),
+    etAS,             _T("AS"),
+    etSEMICOLON,      _T(";"),
+    etQUOTE,          _T("'"),
+    etDOUBLE_QUOTE,   _T("\""),
+    etLEFT_ROUND_BRACKET,   _T("("),
+    etRIGHT_ROUND_BRACKET,  _T(")"),
+    etMINUS,          _T("-"),
+    etSLASH,          _T("/"),
+    etSTAR,           _T("*"),
+    etSELECT,         _T("SELECT"),
+    etINSERT,         _T("INSERT"),
+    etUPDATE,         _T("UPDATE"),
+    etDELETE,         _T("DELETE"),
+    etALTER,          _T("ALTER"),
+    etANALYZE,        _T("ANALYZE"),
+    etCREATE,         _T("CREATE"),
+    etDROP,           _T("DROP"),
+    etFROM,           _T("FROM"),
+    etWHERE,          _T("WHERE"),
+    etSET,            _T("SET"),
+    etOPEN,           _T("OPEN"),
+  };
 /*
-        const char* Token::GetString (EToken token)
+        LPCTSTR Token::GetString (EToken token)
 	{
 		for (int i(0); i < sizeof(g_tokenDescs)/sizeof(g_tokenDescs[0]); i++)
 			if (g_tokenDescs[i].token == token)
@@ -127,7 +127,7 @@ void LexicalAnalyser::PutEOF (int line)
 	m_analyzer.PutToken(token);
 }
 
-bool LexicalAnalyser::PutLine (int line, const char* str, int length)
+bool LexicalAnalyser::PutLine (int line, LPCTSTR str, int length)
 {
   //TRACE("PutLine: %4d:%s\n", line+1, string(str, length).c_str());
 
@@ -145,7 +145,7 @@ bool LexicalAnalyser::PutLine (int line, const char* str, int length)
     if (m_sequenceOf == eNone)
     {
         // skip white space
-        for (; offset < length && isspace(str[offset]); offset++)
+        for (; offset < length && _istspace(str[offset]); offset++)
             {}
 
         // check EOL
@@ -158,7 +158,7 @@ bool LexicalAnalyser::PutLine (int line, const char* str, int length)
                 buffer += str[offset++];
             else
                 for (; offset < length && !m_Delimiters[str[offset]]; offset++)
-                    buffer += (TCHAR)toupper(str[offset]);
+                    buffer += (TCHAR)_totupper(str[offset]);
 
 			token.length = buffer.GetLength();
         }
@@ -203,7 +203,7 @@ bool LexicalAnalyser::PutLine (int line, const char* str, int length)
             case eComment:
                 for (; offset < length; offset++)
                 {
-                    if (str[offset] != '*' || str[offset+1] != '/')
+                    if (str[offset] != _T('*') || str[offset+1] != '/')
                         m_stringOf += str[offset];
                     else
                     {

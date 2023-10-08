@@ -1741,7 +1741,8 @@ class BasicExcel
 public:
   BasicExcel();
   explicit BasicExcel(const char* filename,bool readonly = false);
- ~BasicExcel();
+  explicit BasicExcel(const wchar_t* filename,bool readonly = false);
+  ~BasicExcel();
 
 public: // File functions.
   void  New(int sheets=3); ///< Create a new Excel workbook with a given number of spreadsheets (Minimum 1).
@@ -1754,7 +1755,8 @@ public: // File functions.
   char* GetError() { return error_;};
 
 public: // Worksheet functions.
-  int GetTotalWorkSheets(const char* p_file);	///< Total number of Excel worksheets in current Excel workbook.
+  int GetTotalWorkSheets(const char*    p_file);	///< Total number of Excel worksheets in current Excel workbook.
+  int GetTotalWorkSheets(const wchar_t* p_file);	///< Total number of Excel worksheets in current Excel workbook.
 
   BasicExcelWorksheet* GetWorksheet(int sheetIndex);	///< Get a pointer to an Excel worksheet at the given index. Index starts from 0. Returns 0 if index is invalid.
   BasicExcelWorksheet* GetWorksheet(const char* name);	///< Get a pointer to an Excel worksheet that has given ANSI name. Returns 0 if there is no Excel worksheet with the given name.
@@ -1832,7 +1834,7 @@ public: // Cell functions
   const BasicExcelCell* Cell(int row, int col) const; ///< Return a pointer to an Excel cell. row and col starts from 0. Returns 0 if row exceeds 65535 or col exceeds 255.
   bool    EraseCell(int row, int col);		///< Erase content of a cell. row and col starts from 0. Returns true if successful, false if row or col exceeds range.
   // Get the value of a cell, just as a end-user would see it.
-  char*   CellValue(int row,int col,char* p_buffer,int p_length);
+  TCHAR*   CellValue(int row,int col,TCHAR* p_buffer,int p_length);
 
   void    SetColWidth(const int colindex , const USHORT colwidth);
   USHORT  GetColWidth(const int colindex);
@@ -1843,7 +1845,7 @@ public: // Cell functions
     
 private: // Internal functions
   void UpdateCells(); ///< Update cells using information from BasicExcel.worksheets_.
-  void TrimDoubleString(char* p_number); ///< Trim value of a double in a string
+  void TrimDoubleString(TCHAR* p_number); ///< Trim value of a double in a string
 
 
 private:

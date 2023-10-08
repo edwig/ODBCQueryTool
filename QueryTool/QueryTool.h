@@ -56,7 +56,7 @@ public:
   bool          DatabaseIsOpen();
   bool          DatabaseHasTransaction();
   CString       GetDatasource();
-  void          RunShellCommand(const char* directory,const char* command,const char* filename,const char* parameters);
+  void          RunShellCommand(LPCTSTR directory,LPCTSTR command,LPCTSTR filename,LPCTSTR parameters);
   VarMap&       GetVariables();
   RebindMap*    GetRebinds();
   void          SelectFirst100(CString& p_table);

@@ -16,13 +16,7 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
-#ifndef __OESyntaxParser_h__
-#define __OESyntaxParser_h__
-
 #include <string>
 #include "Common/Fastmap.h"
 
@@ -93,7 +87,7 @@ namespace OpenEditor
         operator EToken () const { return token; }
         Token& operator = (EToken tk) { token = tk; return *this; }
 
-        static const char* GetString (EToken token);
+        static LPCTSTR GetString (EToken token);
     };
 
     class SyntaxAnalyser
@@ -108,7 +102,7 @@ namespace OpenEditor
     public:
         LexicalAnalyser (SyntaxAnalyser&);
 
-        bool PutLine (int line, const char*, int length);
+        bool PutLine (int line, LPCTSTR, int length);
         void PutEOF  (int line);
 
     private:
@@ -125,4 +119,4 @@ namespace OpenEditor
 
 };
 
-#endif//__OESyntaxParser_h__
+

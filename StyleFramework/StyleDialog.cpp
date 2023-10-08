@@ -133,13 +133,13 @@ StyleDialog::InitStatusBar()
   {
     m_statusBar.SetFont(&STYLEFONTS.DialogTextFont);
     m_statusBar.SetIndicators(auIDStatusBar,sizeof(auIDStatusBar) / sizeof(UINT));
-    m_statusBar.SetWindowText("");
+    m_statusBar.SetWindowText(_T(""));
     m_statusBar.SetPaneStyle(0, SBPS_STRETCH|SBPS_NOBORDERS);
     RepositionBars(AFX_IDW_CONTROLBAR_FIRST,AFX_IDW_CONTROLBAR_LAST,0);
   }
   else
   {
-    AfxMessageBox("Error: Cannot create a dialog statusbar");
+    AfxMessageBox(_T("Error: Cannot create a dialog statusbar"));
   }
 }
 
@@ -154,7 +154,7 @@ StyleDialog::InitFirstFocus()
     // Activate first control in the dialog
     CString text;
     pWndNext->GetWindowText(text);
-    if(text.Compare("CXSF") == 0)
+    if(text.Compare(_T("CXSF")) == 0)
     {
       SkinScrollWnd* skin = dynamic_cast<SkinScrollWnd*>(pWndNext);
       if (skin)
@@ -475,7 +475,7 @@ StyleDialog::OnToolHitTest(CPoint point,TOOLINFO* pTI) const
     {
       CString check;
       skin->GetWindowText(check);
-      if(check.Compare("CXSF") == 0)
+      if(check.Compare(_T("CXSF")) == 0)
       {
         CWnd* control = ((SkinScrollWnd*)skin)->GetControl();
         if(control)
@@ -490,7 +490,7 @@ StyleDialog::OnToolHitTest(CPoint point,TOOLINFO* pTI) const
 }
 
 void
-StyleDialog::RegisterTooltip(int p_ID,const char* p_text)
+StyleDialog::RegisterTooltip(int p_ID,LPCTSTR p_text)
 {
   CWnd* wnd = GetDlgItem(p_ID);
   if(wnd && wnd->GetSafeHwnd())
@@ -500,7 +500,7 @@ StyleDialog::RegisterTooltip(int p_ID,const char* p_text)
 }
 
 void
-StyleDialog::RegisterTooltip(CWnd& p_wnd,const char* p_text)
+StyleDialog::RegisterTooltip(CWnd& p_wnd,LPCTSTR p_text)
 {
   if(p_wnd.GetSafeHwnd())
   {
@@ -509,7 +509,7 @@ StyleDialog::RegisterTooltip(CWnd& p_wnd,const char* p_text)
 }
 
 void
-StyleDialog::RegisterTooltip(StyleComboBox& p_wnd,const char* p_text)
+StyleDialog::RegisterTooltip(StyleComboBox& p_wnd,LPCTSTR p_text)
 {
   if(p_wnd.GetSafeHwnd() && p_wnd.GetEditControl()->GetSafeHwnd())
   {
@@ -528,7 +528,7 @@ StyleDialog::OnToolTipNotify(UINT id,NMHDR* pNMHDR,LRESULT* pResult)
     ToolTips::iterator tip = m_tooltips.find((HWND)pNMHDR->idFrom);
     if(tip != m_tooltips.end())
     {
-      pTTT->lpszText = (LPSTR) tip->second;
+      pTTT->lpszText = (LPTSTR) tip->second;
     }
   }
   // Return value of TTN_NEEDTEXT is not used.

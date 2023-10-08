@@ -150,7 +150,9 @@ private:
   void        CreateINIDirectory();
   void        SetListFont();
   CString     Current();  
-  
+  CString     ExplodeString(BYTE* buffer,int p_size);
+  void        ImplodeString(CString p_codedPassword,BYTE* input,DWORD& p_lenInput);
+
   MCGridCtrl    m_list;
   StyleEdit     m_boxUserEdit;
   StyleEdit     m_boxUserPassword;

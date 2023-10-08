@@ -37,13 +37,12 @@ namespace OpenEditor
     using namespace std;
 
 MultilineQuotesScanner::MultilineQuotesScanner (Storage& storage)
-: m_Storage(storage)
+                       :m_Storage(storage)
 {
-    m_nQuotesValidLimit = 0;
-//    m_pDelimiters = 0;
-    m_bCaseSensitive = false;
+    m_nQuotesValidLimit   = 0;
+    m_bCaseSensitive      = false;
     m_OpeningFastMapDirty = true;
-    m_bParsingAlways = true;
+    m_bParsingAlways      = true;
 }
 
 bool MultilineQuotesScanner::IsCaseSensitive () const
@@ -133,22 +132,22 @@ void MultilineQuotesScanner::Scan (int to_line, int& state, int& quoteId, bool& 
     }
 }
 
-bool MultilineQuotesScanner::ScanLine (const char* str, int len, int& state, int& quoteId, bool& parsing, int* parsingLength) const
+bool MultilineQuotesScanner::ScanLine (LPCTSTR str, int len, int& state, int& quoteId, bool& parsing, int* parsingLength) const
 {
     int  quotesBalance = 0;
     int  parsingBalance = 0;
     bool isStartSpace = true;
     bool ignoreRemainder = false;
 
-    char closingFastChr = (state) ? m_MultilineQuotes.at(quoteId).second.GetAt(0) : '\0';
+    TCHAR closingFastChr = (state) ? m_MultilineQuotes.at(quoteId).second.GetAt(0) : '\0';
 
     if (m_OpeningFastMapDirty) buildOpeningFastMap();
 
     int i;
     for (i = 0; i < len; i++)
     {
-        char ch = str[i];
-        char probe = m_OpeningFastMap[ch];
+        TCHAR ch = str[i];
+        TCHAR probe = m_OpeningFastMap[ch];
 
         if (!m_bParsingAlways && !parsing)
         {
@@ -218,13 +217,13 @@ bool MultilineQuotesScanner::ScanLine (const char* str, int len, int& state, int
                     // the current position < escape size
                     || i < static_cast<int>(m_escapeChar.GetLength())
                     // the previous fragment is not escape
-                    || strncmp(m_escapeChar.GetString(), str + i - m_escapeChar.GetLength(), m_escapeChar.GetLength())
+                    || _tcsncmp(m_escapeChar.GetString(), str + i - m_escapeChar.GetLength(), m_escapeChar.GetLength())
                     // it is double escape
                     || (
                         // the current position >= 2 * escape size
                         i >= 2 * static_cast<int>(m_escapeChar.GetLength())
                         // the previous previous fragment is escape
-                        && !strncmp(m_escapeChar.GetString(), str + i - 2 * m_escapeChar.GetLength(), m_escapeChar.GetLength())
+                        && !_tcsncmp(m_escapeChar.GetString(), str + i - 2 * m_escapeChar.GetLength(), m_escapeChar.GetLength())
                     )
                 )
             )
@@ -266,7 +265,7 @@ void MultilineQuotesScanner::buildMap (int to_line)
     for (int line = m_nQuotesValidLimit; line < to_line; line++)
     {
         int length;
-        const char* str;
+        LPCTSTR str;
         m_Storage.GetLine(line, str, length);
 
         if (ScanLine(str, length, state, quoteId, parsing))
@@ -296,11 +295,11 @@ void MultilineQuotesScanner::buildOpeningFastMap () const
                 m_OpeningFastMap[it->GetAt(0)] |= eqtStartLine;
             else
             {
-                char str[2];
+                TCHAR str[2];
                 str[0] = it->GetAt(0);
                 str[1] = 0;
-                m_OpeningFastMap[*strupr(str)] |= eqtStartLine;
-                m_OpeningFastMap[*strlwr(str)] |= eqtStartLine;
+                m_OpeningFastMap[*_tcsupr(str)] |= eqtStartLine;
+                m_OpeningFastMap[*_tcslwr(str)] |= eqtStartLine;
             }
         }
     }
@@ -313,11 +312,11 @@ void MultilineQuotesScanner::buildOpeningFastMap () const
                 m_OpeningFastMap[it->GetAt(0)] |= eqtSingleLine;
             else
             {
-                char str[2];
+                TCHAR str[2];
                 str[0] = it->GetAt(0);
                 str[1] = 0;
-                m_OpeningFastMap[*strupr(str)] |= eqtSingleLine;
-                m_OpeningFastMap[*strlwr(str)] |= eqtSingleLine;
+                m_OpeningFastMap[*_tcsupr(str)] |= eqtSingleLine;
+                m_OpeningFastMap[*_tcslwr(str)] |= eqtSingleLine;
             }
     }
 
@@ -329,27 +328,31 @@ void MultilineQuotesScanner::buildOpeningFastMap () const
                 m_OpeningFastMap[it->first.GetAt(0)] |= eqtOpeningMultiline;
             else
             {
-                char str[2];
+                TCHAR str[2];
                 str[0] = it->first.GetAt(0);
                 str[1] = 0;
-                m_OpeningFastMap[*strupr(str)] |= eqtOpeningMultiline;
-                m_OpeningFastMap[*strlwr(str)] |= eqtOpeningMultiline;
+                m_OpeningFastMap[*_tcsupr(str)] |= eqtOpeningMultiline;
+                m_OpeningFastMap[*_tcslwr(str)] |= eqtOpeningMultiline;
             }
     }
 
     m_OpeningFastMapDirty = false;
 }
 
-bool MultilineQuotesScanner::is_equal (const char* str, int len, int offset, const CString& shape) const
+bool MultilineQuotesScanner::is_equal (LPCTSTR str, int len, int offset, const CString& shape) const
 {
     bool retVal = false;
 
-    if ((len - offset) >= static_cast<int>(shape.GetLength()))
+    if ((len - offset) >= shape.GetLength())
     {
-        if (m_bCaseSensitive)
-            retVal = !strncmp(str + offset, shape.GetString(), shape.GetLength()) ? true : false;
-        else
-            retVal = !_strnicmp(str + offset, shape.GetString(), shape.GetLength()) ? true : false;
+      if(m_bCaseSensitive)
+      {
+        retVal = !_tcsncmp(str + offset,shape.GetString(),shape.GetLength()) ? true : false;
+      }
+      else
+      {
+        retVal = !_tcsnicmp(str + offset,shape.GetString(),shape.GetLength()) ? true : false;
+      }
 
         // check begin of fragment
         if (retVal && !m_delimiters[shape.GetAt(0)]
@@ -358,10 +361,10 @@ bool MultilineQuotesScanner::is_equal (const char* str, int len, int offset, con
 
         // check end of fragment
         // 10.03.2003 bug fix, start-line comment (prompt & remark) should be separated by delimiter from text
-        if (retVal && !m_delimiters[shape.GetAt(shape.GetLength() - 1)]      // last char is not delimiter
-        && offset + static_cast<int>(shape.GetLength()) 
-            < len && str[offset + shape.GetLength()]                         // there is a char after keyword 
-        && !m_delimiters[str[offset + shape.GetLength()]])                   // this char is not delimiter
+        if (retVal && !m_delimiters[shape.GetAt(shape.GetLength() - 1)]      // last TCHAR is not delimiter
+        && offset + shape.GetLength() 
+            < len && str[offset + shape.GetLength()]                         // there is a TCHAR after keyword 
+        && !m_delimiters[str[offset + shape.GetLength()]])                   // this TCHAR is not delimiter
             retVal = false;
     }
 

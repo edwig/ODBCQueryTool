@@ -62,7 +62,7 @@ namespace SQLComponents
     // Initialize the COM subsystem
     if(CoInitialize(nullptr) == RPC_E_CHANGED_MODE)
     {
-      SQLMessage(nullptr,"COM subsystem incorrectly reset to single-threaded!","Error",MB_OK);
+      SQLMessage(nullptr,_T("COM subsystem incorrectly reset to single-threaded!"),_T("Error"),MB_OK);
     };
 
     // We are now officially 'in business' :-)
@@ -74,7 +74,7 @@ namespace SQLComponents
   {
     if(g_SQLComponentsInitialized == false)
     {
-      throw StdException("Call InitSQLComponents() before you use the 'SQLComponents' library.");
+      throw StdException(_T("Call InitSQLComponents() before you use the 'SQLComponents' library."));
     }
   }
 

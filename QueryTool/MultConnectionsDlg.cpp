@@ -1,4 +1,4 @@
-''/*
+/*
     Copyright (C) 2004-2023 Edwig Huisman
 
     This program is free software; you can redistribute it and/or modify
@@ -42,9 +42,9 @@ static char THIS_FILE[] = __FILE__;
 
 MultConnectionsDlg::MultConnectionsDlg(CWnd* pParent /*=NULL*/)
                    :StyleDialog(IDD_CONNECTION, pParent)
-                   ,m_UserEdit("")
-                   ,m_UserPassword("")
-                   ,m_DataSource("")
+                   ,m_UserEdit(_T(""))
+                   ,m_UserPassword(_T(""))
+                   ,m_DataSource(_T(""))
                    ,m_Safty(false)
                    ,m_nextSection(1)
                    ,m_useConnString(false)
@@ -53,7 +53,7 @@ MultConnectionsDlg::MultConnectionsDlg(CWnd* pParent /*=NULL*/)
 {
   Common::FindApplicDirectory(m_applicDirectory);
   CreateINIDirectory();
-  m_ODBC_iniFile = GetLocalDirectory() + "ODBC_querytool.ini";
+  m_ODBC_iniFile = GetLocalDirectory() + _T("ODBC_querytool.ini");
 }
 
 MultConnectionsDlg::~MultConnectionsDlg()
@@ -109,15 +109,15 @@ BOOL
 MultConnectionsDlg::OnInitDialog()
 {
   StyleDialog::OnInitDialog();
-  SetWindowText("ODBC Connections");
+  SetWindowText(_T("ODBC Connections"));
 
   // Set combo box
-  m_comboSafty.AddString("None (development)");
-  m_comboSafty.AddString("Read only (production)");
+  m_comboSafty.AddString(_T("None (development)"));
+  m_comboSafty.AddString(_T("Read only (production)"));
 
   // Set password field
   m_boxUserPassword.SetPassword(true);
-  m_boxUserPassword.SetEmpty(true,"Password");
+  m_boxUserPassword.SetEmpty(true,_T("Password"));
 
   // Fill the connection dialog
   InitGridEmpty();
@@ -257,7 +257,7 @@ MultConnectionsDlg::FillGridWithSettings()
 
   for(auto& setting : m_settings)
   {
-    int times = atol(setting.GetTimesUsed());
+    int times = _ttol(setting.GetTimesUsed().GetString());
     if(times > maxTimes)
     {
       maxTimes    = times;
@@ -271,7 +271,7 @@ MultConnectionsDlg::FillGridWithSettings()
     InsertListline(setting.GetDatasource()
                   ,setting.GetUser()
                   ,setting.GetTimesUsed()
-                  ,setting.GetConnString().IsEmpty() ? "" : "X"
+                  ,setting.GetConnString().IsEmpty() ? _T("") : _T("X")
                   ,setting.GetLastUsage());
   }
   // Set the boxes with the max value
@@ -343,28 +343,28 @@ MultConnectionsDlg::InitGridEmpty()
   item.col = 0;
 	item.nFormat = DT_LEFT|DT_VCENTER|DT_SINGLELINE|DT_END_ELLIPSIS|DT_NOPREFIX;
 
-  item.strText = "Datasource";
+  item.strText = _T("Datasource");
   m_list.SetItem(&item);
   m_list.SetColumnWidth(0,120);
 
   item.col     = 1;
-  item.strText = "User";
+  item.strText = _T("User");
   m_list.SetItem(&item);
   m_list.SetColumnWidth(1,120);
 
   item.col     = 2;
-  item.strText = "Total";
+  item.strText = _T("Total");
   item.nFormat |= DT_SORT_NUMERIC;
   m_list.SetItem(&item);
   m_list.SetColumnWidth(2,50);
 
   item.col     = 3;
-  item.strText = "STR";
+  item.strText = _T("STR");
   m_list.SetItem(&item);
   m_list.SetColumnWidth(3,40);
 
   item.col     = 4;
-  item.strText = "Last time";
+  item.strText = _T("Last time");
   m_list.SetItem(&item);
   m_list.SetColumnWidth(4,150);
 
@@ -392,11 +392,11 @@ MultConnectionsDlg::SetListFont()
   if(pos)
   {
     fontName = queryFont.Left(pos);
-    fontSize = atoi(queryFont.Mid(pos+1));
+    fontSize = _ttoi(queryFont.Mid(pos+1));
   }
   if(fontName.IsEmpty())
   {
-    fontName = "Tahoma";
+    fontName = _T("Tahoma");
   }
   if(fontSize < 8 ) fontSize = 8;
   if(fontSize > 24) fontSize = 24;
@@ -417,7 +417,7 @@ MultConnectionsDlg::Current()
   struct tm* ptnow = &now;
   localtime_s(ptnow,&ltime);
   CString moment;
-  moment.Format("%4d-%02d-%02d %d:%02d:%02d"
+  moment.Format(_T("%4d-%02d-%02d %d:%02d:%02d")
                ,now.tm_year + 1900
                ,now.tm_mon  + 1
                ,now.tm_mday
@@ -435,7 +435,7 @@ MultConnectionsDlg::OnOK()
 
   if(m_DataSource.IsEmpty() && m_connString.IsEmpty())
   {
-    AfxMessageBox("For an ODBC login we need at least a datasource or a connection string",MB_OK | MB_ICONERROR);
+    AfxMessageBox(_T("For an ODBC login we need at least a datasource or a connection string"),MB_OK | MB_ICONERROR);
     return;
   }
   m_boxUserEdit.SetFocus();
@@ -463,7 +463,7 @@ MultConnectionsDlg::SaveSettings(CString p_datasource
                                 ,bool    p_optionalUser
                                 ,bool    p_optionalPassword)
 {
-  CString timesUsed("1");
+  CString timesUsed(_T("1"));
   CString lastUsage = Current();
 
 #ifdef OQT_SAVE_PASSWORD
@@ -471,13 +471,13 @@ MultConnectionsDlg::SaveSettings(CString p_datasource
 #else
   CString password;
 #endif
-  CString safty    = p_safty ? "true" : "false";
+  CString safty    = p_safty ? _T("true") : _T("false");
   ODBCSetting* set = FindSetting(p_user,p_datasource);
   if(set)
   {
     // Set times used one (1) higher
-    int times = atol(set->GetTimesUsed()) ;
-    timesUsed.Format("%ld",times + 1);
+    int times = _ttol(set->GetTimesUsed()) ;
+    timesUsed.Format(_T("%ld"),times + 1);
 
     set->SetTimesUsed(timesUsed);
     set->SetLastUsage(lastUsage);
@@ -495,8 +495,8 @@ MultConnectionsDlg::SaveSettings(CString p_datasource
     if((p_user.IsEmpty() || p_password.IsEmpty()) && p_connString.IsEmpty())
     {
       if(StyleMessageBox(this
-                       ,"For this datasource the user/password combination is not completely filled in. Proceed anyway?"
-                       ,"Open ODBCQuerytool"
+                       ,_T("For this datasource the user/password combination is not completely filled in. Proceed anyway?")
+                       ,_T("Open ODBCQuerytool")
                        ,MB_YESNO | MB_ICONEXCLAMATION) == IDNO)
       {
         return false;
@@ -538,30 +538,40 @@ MultConnectionsDlg::WriteSettings()
     {
       section = m_nextSection++;
     }
-    number.Format("%d",section);
+    number.Format(_T("%d"),section);
     CCodeer cod;
     CString codedPassword = cod.CodeerString(setting.GetPassword(),setting.GetUser());
-    char buffer[1024];
-    DWORD size = 1024;
-    CryptBinaryToString((BYTE*)codedPassword.GetString(),codedPassword.GetLength(),CRYPT_STRING_BASE64|CRYPT_STRING_NOCRLF,buffer,&size);
-
-    CString safty = setting.GetSafty() ? "true" : "false";
-    ::WritePrivateProfileString(number,"Datasource",    setting.GetDatasource(),   m_ODBC_iniFile);
-    ::WritePrivateProfileString(number,"User",          setting.GetUser(),         m_ODBC_iniFile);
-#ifdef OQT_SAVE_PASSWORD
-    ::WritePrivateProfileString(number,"Password",      buffer,                    m_ODBC_iniFile);
+    BYTE  input[1024];
+    DWORD lenInput = 0;
+#ifdef UNICODE
+    ImplodeString(codedPassword,input,lenInput);
+#else
+    strncpy_s((char*)input,1024,(const char*)codedPassword.GetString(),(size_t)codedPassword.GetLength());
 #endif
-    ::WritePrivateProfileString(number,"LastUsage",     setting.GetLastUsage(),    m_ODBC_iniFile);
-    ::WritePrivateProfileString(number,"TimesUsed",     setting.GetTimesUsed(),    m_ODBC_iniFile);
-    ::WritePrivateProfileString(number,"Safty",         safty,                     m_ODBC_iniFile);
-    ::WritePrivateProfileString(number,"ConnString",    setting.GetConnString(),   m_ODBC_iniFile);
-    ::WritePrivateProfileString(number,"UseConnString", setting.GetUseConnection()    ? "true" : "false",m_ODBC_iniFile);
-    ::WritePrivateProfileString(number,"OptionalUser",  setting.GetOptionalUser()     ? "true" : "false",m_ODBC_iniFile);
-    ::WritePrivateProfileString(number,"OptionalPasswd",setting.GetOptionalPassword() ? "true" : "false",m_ODBC_iniFile);
+    TCHAR buffer[1024];
+    DWORD size = 1024;
+    if(CryptBinaryToString(input,lenInput,CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF,buffer,&size))
+    {
+      buffer[size] = 0;
+    }
+
+    CString safty = setting.GetSafty() ? _T("true") : _T("false");
+    ::WritePrivateProfileString(number,_T("Datasource"),    setting.GetDatasource(),   m_ODBC_iniFile);
+    ::WritePrivateProfileString(number,_T("User"),          setting.GetUser(),         m_ODBC_iniFile);
+#ifdef OQT_SAVE_PASSWORD
+    ::WritePrivateProfileString(number,_T("Password"),      buffer,                    m_ODBC_iniFile);
+#endif
+    ::WritePrivateProfileString(number,_T("LastUsage"),     setting.GetLastUsage(),    m_ODBC_iniFile);
+    ::WritePrivateProfileString(number,_T("TimesUsed"),     setting.GetTimesUsed(),    m_ODBC_iniFile);
+    ::WritePrivateProfileString(number,_T("Safty"),         safty,                     m_ODBC_iniFile);
+    ::WritePrivateProfileString(number,_T("ConnString"),    setting.GetConnString(),   m_ODBC_iniFile);
+    ::WritePrivateProfileString(number,_T("UseConnString"), setting.GetUseConnection()    ? _T("true") : _T("false"),m_ODBC_iniFile);
+    ::WritePrivateProfileString(number,_T("OptionalUser"),  setting.GetOptionalUser()     ? _T("true") : _T("false"),m_ODBC_iniFile);
+    ::WritePrivateProfileString(number,_T("OptionalPasswd"),setting.GetOptionalPassword() ? _T("true") : _T("false"),m_ODBC_iniFile);
   }
   if(ind > MAX_ODBCSETTINGS)
   {
-    AfxMessageBox("Max number of ODBC settings reached (50).\r\nLast setting will not be read back in next connection");
+    AfxMessageBox(_T("Max number of ODBC settings reached (50).\r\nLast setting will not be read back in next connection"));
   }
   return true;
 }
@@ -571,7 +581,7 @@ MultConnectionsDlg::ReadSettings()
 {
   int ind = 1;
   CString number;
-  char buffer[1025];
+  TCHAR buffer[1025];
   CString datasource;
   CString user;
   CString password;
@@ -585,19 +595,20 @@ MultConnectionsDlg::ReadSettings()
   
   for(ind = 1; ind < MAX_ODBCSETTINGS; ++ind)
   {
-    number.Format("%d",ind);
-    ::GetPrivateProfileString(number,"Datasource",  "",buffer,1024,m_ODBC_iniFile); datasource   = buffer;
-    ::GetPrivateProfileString(number,"User",        "",buffer,1024,m_ODBC_iniFile); user         = buffer;
+    buffer[0] = 0;
+    number.Format(_T("%d"),ind);
+    ::GetPrivateProfileString(number,_T("Datasource"),  _T(""),buffer,1024,m_ODBC_iniFile); datasource   = buffer;
+    ::GetPrivateProfileString(number,_T("User"),        _T(""),buffer,1024,m_ODBC_iniFile); user         = buffer;
 #ifdef OQT_SAVE_PASSWORD
-    ::GetPrivateProfileString(number,"Password",    "",buffer,1024,m_ODBC_iniFile); password     = buffer;
+    ::GetPrivateProfileString(number,_T("Password"),    _T(""),buffer,1024,m_ODBC_iniFile); password     = buffer;
 #endif
-    ::GetPrivateProfileString(number,"LastUsage",   "",buffer,1024,m_ODBC_iniFile); lastUsage    = buffer;
-    ::GetPrivateProfileString(number,"TimesUsed",   "",buffer,1024,m_ODBC_iniFile); timesUsed    = buffer;
-    ::GetPrivateProfileString(number,"Safty",       "",buffer,1024,m_ODBC_iniFile); safty        = buffer;
-    ::GetPrivateProfileString(number,"ConnString",  "",buffer,1024,m_ODBC_iniFile); connString   = buffer;
-    ::GetPrivateProfileString(number,"UseConnString", "false",buffer,1024,m_ODBC_iniFile); useConnString  = _stricmp(buffer,"true") == 0;
-    ::GetPrivateProfileString(number,"OptionalUser",  "false",buffer,1024,m_ODBC_iniFile); optionalUser   = _stricmp(buffer,"true") == 0;
-    ::GetPrivateProfileString(number,"OptionalPasswd","false",buffer,1024,m_ODBC_iniFile); optionalPasswd = _stricmp(buffer,"true") == 0;
+    ::GetPrivateProfileString(number,_T("LastUsage"),   _T(""),buffer,1024,m_ODBC_iniFile); lastUsage    = buffer;
+    ::GetPrivateProfileString(number,_T("TimesUsed"),   _T(""),buffer,1024,m_ODBC_iniFile); timesUsed    = buffer;
+    ::GetPrivateProfileString(number,_T("Safty"),       _T(""),buffer,1024,m_ODBC_iniFile); safty        = buffer;
+    ::GetPrivateProfileString(number,_T("ConnString"),  _T(""),buffer,1024,m_ODBC_iniFile); connString   = buffer;
+    ::GetPrivateProfileString(number,_T("UseConnString"), _T("false"),buffer,1024,m_ODBC_iniFile); useConnString  = _tcsicmp(buffer,_T("true")) == 0;
+    ::GetPrivateProfileString(number,_T("OptionalUser"),  _T("false"),buffer,1024,m_ODBC_iniFile); optionalUser   = _tcsicmp(buffer,_T("true")) == 0;
+    ::GetPrivateProfileString(number,_T("OptionalPasswd"),_T("false"),buffer,1024,m_ODBC_iniFile); optionalPasswd = _tcsicmp(buffer,_T("true")) == 0;
 
     if(!datasource.IsEmpty())
     {
@@ -605,7 +616,7 @@ MultConnectionsDlg::ReadSettings()
 
       if(!password.IsEmpty())
       {
-        char  buffer[1024];
+        BYTE  buffer[1024];
         DWORD size = 1024;
         DWORD skip = 0;
         DWORD flags = 0;
@@ -615,8 +626,13 @@ MultConnectionsDlg::ReadSettings()
           {
             buffer[size] = 0;
           }
+#ifdef UNICODE
+          CString buff = ExplodeString(buffer,size);
+#else
+          CString buff(buffer);
+#endif
           CCodeer cod;
-          decodedPassword = cod.DeCodeerString(buffer,user);
+          decodedPassword = cod.DeCodeerString(buff,user);
         }
       }
 
@@ -630,7 +646,7 @@ MultConnectionsDlg::ReadSettings()
                          ,datasource
                          ,lastUsage
                          ,timesUsed
-                         ,(safty == "true")
+                         ,(safty == _T("true"))
                          ,connString
                          ,useConnString
                          ,optionalUser
@@ -639,6 +655,33 @@ MultConnectionsDlg::ReadSettings()
     }
   }
   return true;
+}
+
+CString
+MultConnectionsDlg::ExplodeString(BYTE* buffer,int p_size)
+{
+  int index = 0;
+  CString string;
+  LPTSTR pnt = string.GetBufferSetLength(p_size);
+  LPTSTR org = pnt;
+  while(*buffer)
+  {
+    _TUCHAR ch = (int) *buffer++;
+    *pnt++ = ch;
+  }
+  string.ReleaseBufferSetLength(p_size);
+  return string;
+}
+
+void
+MultConnectionsDlg::ImplodeString(CString p_codedPassword,BYTE* input,DWORD& p_lenInput)
+{
+  p_lenInput = 0;
+  for(int ind = 0;ind < p_codedPassword.GetLength(); ++ind)
+  {
+    *input++ = (BYTE) p_codedPassword.GetAt(ind);
+    ++p_lenInput;
+  }
 }
 
 bool 
@@ -650,8 +693,8 @@ MultConnectionsDlg::GetDatasourcesFromODBCManager()
   if(ODBCHandle)
   {
     short dsnLen,desLen;
-    unsigned char DataSourceBuffer[SQL_MAX_DSN_LENGTH+1];
-    unsigned char Description[256];
+    _TUCHAR DataSourceBuffer[SQL_MAX_DSN_LENGTH+1];
+    _TUCHAR Description[256];
     SQLRETURN res;
 
     // Initial search
@@ -665,7 +708,7 @@ MultConnectionsDlg::GetDatasourcesFromODBCManager()
                           ,&desLen);
     while(res == SQL_SUCCESS)
     {
-      m_comboDataSource.AddString((const char *)DataSourceBuffer);
+      m_comboDataSource.AddString((const TCHAR *)DataSourceBuffer);
       // For all next datasources
       res = ::SQLDataSources(ODBCHandle
                             ,SQL_FETCH_NEXT
@@ -707,8 +750,8 @@ MultConnectionsDlg::OnBnClicked_test()
 
         if(password.IsEmpty())
         {
-          CString mesg("No password saved in the settings and no password given on the dialog.\n"
-                       "Are you sure you want to continue to test the datasource?");
+          CString mesg(_T("No password saved in the settings and no password given on the dialog.\n")
+                       _T("Are you sure you want to continue to test the datasource?"));
           if(AfxMessageBox(mesg,MB_YESNO|MB_ICONEXCLAMATION|MB_DEFBUTTON2) == IDNO)
           {
             return;
@@ -716,16 +759,16 @@ MultConnectionsDlg::OnBnClicked_test()
         }
 
         // Construct the connection string
-        connectStr += "DSN=";
+        connectStr += _T("DSN=");
         connectStr += set->GetDatasource();
-        connectStr += ";UID=";
+        connectStr += _T(";UID=");
         connectStr += set->GetUser();
-        connectStr += ";PWD=";
+        connectStr += _T(";PWD=");
         connectStr += password;
 
         // Setting the status for a long operation
         CString status;
-        status.Format("Trying to connect to: %s",set->GetDatasource().GetString());
+        status.Format(_T("Trying to connect to: %s"),set->GetDatasource().GetString());
 
         try
         {
@@ -736,14 +779,14 @@ MultConnectionsDlg::OnBnClicked_test()
         }
         catch(...)
         {
-          status.Format("Cannot make connection with: %s as: %s"
+          status.Format(_T("Cannot make connection with: %s as: %s")
                         ,set->GetDatasource()
                         ,set->GetUser());
           AfxMessageBox(status);
         }
         if(database && database->IsOpen())
         {
-          status.Format("Successful connection to: %s as: %s"
+          status.Format(_T("Successful connection to: %s as: %s")
                         ,set->GetDatasource()
                         ,set->GetUser());
           AfxMessageBox(status);
@@ -754,16 +797,16 @@ MultConnectionsDlg::OnBnClicked_test()
           delete database;
           database = NULL;
         }
-        Common::SetStatusText("",TRUE);
+        Common::SetStatusText(_T(""),TRUE);
     }
     else
     {
-      AfxMessageBox("No previous connections (yet)!");
+      AfxMessageBox(_T("No previous connections (yet)!"));
     }
   }
   else
   {
-    AfxMessageBox("Select an ODBC connection in the list first!");
+    AfxMessageBox(_T("Select an ODBC connection in the list first!"));
   }
 }
 
@@ -780,8 +823,8 @@ MultConnectionsDlg::OnBnClicked_delete()
     if(set)
     {
       CString question;
-      question.Format("Do you want to delete the datasource '%s' for user '%s'?",source,user);
-      if(StyleMessageBox(this,question,"ODBCQueryTool",MB_YESNO|MB_TASKMODAL|MB_DEFBUTTON2) != IDYES)
+      question.Format(_T("Do you want to delete the datasource '%s' for user '%s'?"),source,user);
+      if(StyleMessageBox(this,question,_T("ODBCQueryTool"),MB_YESNO|MB_TASKMODAL|MB_DEFBUTTON2) != IDYES)
       {
         // Then don't do it
         return;
@@ -789,17 +832,17 @@ MultConnectionsDlg::OnBnClicked_delete()
       // Remove from the ini file
       CString num;
       int section = set->GetSection();
-      num.Format("%d",section);
-      ::WritePrivateProfileString(num,"Datasource",    "",m_ODBC_iniFile);
-      ::WritePrivateProfileString(num,"User",          "",m_ODBC_iniFile);
-      ::WritePrivateProfileString(num,"LastUsage",     "",m_ODBC_iniFile);
-      ::WritePrivateProfileString(num,"TimesSaved",    "",m_ODBC_iniFile);
-      ::WritePrivateProfileString(num,"SavePassword",  "",m_ODBC_iniFile);
-      ::WritePrivateProfileString(num,"Safty",         "",m_ODBC_iniFile);
-      ::WritePrivateProfileString(num,"ConnString",    "",m_ODBC_iniFile);
-      ::WritePrivateProfileString(num,"UseConnString", "",m_ODBC_iniFile);
-      ::WritePrivateProfileString(num,"OptionalUser",  "",m_ODBC_iniFile);
-      ::WritePrivateProfileString(num,"OptionalPasswd","",m_ODBC_iniFile);
+      num.Format(_T("%d"),section);
+      ::WritePrivateProfileString(num,_T("Datasource"),    _T(""),m_ODBC_iniFile);
+      ::WritePrivateProfileString(num,_T("User"),          _T(""),m_ODBC_iniFile);
+      ::WritePrivateProfileString(num,_T("LastUsage"),     _T(""),m_ODBC_iniFile);
+      ::WritePrivateProfileString(num,_T("TimesSaved"),    _T(""),m_ODBC_iniFile);
+      ::WritePrivateProfileString(num,_T("SavePassword"),  _T(""),m_ODBC_iniFile);
+      ::WritePrivateProfileString(num,_T("Safty"),         _T(""),m_ODBC_iniFile);
+      ::WritePrivateProfileString(num,_T("ConnString"),    _T(""),m_ODBC_iniFile);
+      ::WritePrivateProfileString(num,_T("UseConnString"), _T(""),m_ODBC_iniFile);
+      ::WritePrivateProfileString(num,_T("OptionalUser"),  _T(""),m_ODBC_iniFile);
+      ::WritePrivateProfileString(num,_T("OptionalPasswd"),_T(""),m_ODBC_iniFile);
 
       // Remove from the settings registration
       RemoveSetting(set);
@@ -831,7 +874,7 @@ void MultConnectionsDlg::OnCbnSelchangeConSafty()
 CString
 MultConnectionsDlg::GetLocalDirectory()
 {
-  return m_applicDirectory + "\\EDO\\OpenODBCQuerytool\\";
+  return m_applicDirectory + _T("\\EDO\\OpenODBCQuerytool\\");
 }
 
 void
@@ -839,22 +882,22 @@ MultConnectionsDlg::CreateINIDirectory()
 {
   if(!m_applicDirectory.IsEmpty())
   {
-    CString directory = m_applicDirectory + "\\EDO";
-    if(_mkdir(directory))
+    CString directory = m_applicDirectory + _T("\\EDO");
+    if(_tmkdir(directory))
     {
       int er = GetLastError();
       if(er != EEXIST && er != ERROR_ALREADY_EXISTS)
       {
-        StyleMessageBox(this,"Cannot create directory: " + directory,"Error",MB_OK|MB_ICONERROR);
+        StyleMessageBox(this,_T("Cannot create directory: ") + directory,_T("Error"),MB_OK|MB_ICONERROR);
       }
     }
-    directory += "\\OpenODBCQuerytool";
-    if(_mkdir(directory))
+    directory += _T("\\OpenODBCQuerytool");
+    if(_tmkdir(directory))
     {
       int er = GetLastError();
       if(er != EEXIST && er != ERROR_ALREADY_EXISTS)
       {
-        StyleMessageBox(this,"Cannot create directory: " + directory,"Error",MB_OK|MB_ICONERROR);
+        StyleMessageBox(this,_T("Cannot create directory: ") + directory,_T("Error"),MB_OK|MB_ICONERROR);
       }
     }
   }

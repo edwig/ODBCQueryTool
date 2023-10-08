@@ -59,38 +59,38 @@ class SQLVariant
 {
 public:
    // Generic constructors
-   SQLVariant();                                    // Generic
-   SQLVariant(int p_type,int p_space);              // ODBC driver reserve precision
-   SQLVariant(const SQLVariant* p_var);             // From another SQLVariant pointer
-   SQLVariant(const SQLVariant& p_var);             // From another SQLVariant reference
+   SQLVariant();                                          // Generic
+   SQLVariant(int p_type,int p_space);                    // ODBC driver reserve precision
+   SQLVariant(const SQLVariant* p_var);                   // From another SQLVariant pointer
+   SQLVariant(const SQLVariant& p_var);                   // From another SQLVariant reference
    // Type constructors
-   SQLVariant(const char* p_data);                  // SQL_C_CHAR
-   SQLVariant(const XString& p_data);               // SQL_C_CHAR
-   SQLVariant(short p_short);                       // SQL_C_SHORT / SQL_C_SSHORT
-   SQLVariant(unsigned short p_short);              // SQL_C_USHORT
-   SQLVariant(int p_long);                          // SQL_C_LONG / SQL_C_SLONG
-   SQLVariant(unsigned int p_long);                 // SQL_C_ULONG
-   SQLVariant(float p_float);                       // SQL_C_FLOAT
-   SQLVariant(double p_double);                     // SQL_C_DOUBLE
-   SQLVariant(bool p_bit);                          // SQL_C_BIT
-   SQLVariant(char p_tinyint);                      // SQL_C_TINYINT / SQL_C_STINYINT
-   SQLVariant(unsigned char p_tinyint);             // SQL_C_UTINYINT
-   SQLVariant(__int64 p_bigint);                    // SQL_C_BIGINT
-   SQLVariant(unsigned __int64 p_bigint);           // SQL_C_UBIGINT
-   SQLVariant(const SQL_NUMERIC_STRUCT* p_numeric); // SQL_C_NUMERIC
-   SQLVariant(const SQLGUID* p_guid);               // SQL_C_GUID
-   SQLVariant(const void* p_binary,size_t p_size);  // SQL_C_BINARY
-   SQLVariant(const DATE_STRUCT* p_date);           // SQL_C_DATE / SQL_C_TYPE_DATE
-   SQLVariant(const TIME_STRUCT* p_time);           // SQL_C_TIME / SQL_C_TYPE_TIME
-   SQLVariant(const TIMESTAMP_STRUCT* p_stamp);     // SQL_C_TIMESTAMP / SQL_C_TYPE_TIMESTAMP
-   SQLVariant(const SQL_INTERVAL_STRUCT* p_inter);  // SQL_C_INTERVAL_YEAR -> SQL_C_INTERVAL_DAY_TO_SECOND
+   SQLVariant(LPCTSTR p_data,bool p_wide = false);        // SQL_C_CHAR / SQL_C_WCHAR
+   SQLVariant(const XString& p_data,bool p_wide = false); // SQL_C_CHAR / SQL_C_WCHAR
+   SQLVariant(short p_short);                             // SQL_C_SHORT / SQL_C_SSHORT
+   SQLVariant(unsigned short p_short);                    // SQL_C_USHORT
+   SQLVariant(int p_long);                                // SQL_C_LONG / SQL_C_SLONG
+   SQLVariant(unsigned int p_long);                       // SQL_C_ULONG
+   SQLVariant(float p_float);                             // SQL_C_FLOAT
+   SQLVariant(double p_double);                           // SQL_C_DOUBLE
+   SQLVariant(bool p_bit);                                // SQL_C_BIT
+   SQLVariant(char p_tinyint);                            // SQL_C_TINYINT / SQL_C_STINYINT
+   SQLVariant(unsigned char p_tinyint);                   // SQL_C_UTINYINT
+   SQLVariant(__int64 p_bigint);                          // SQL_C_BIGINT
+   SQLVariant(unsigned __int64 p_bigint);                 // SQL_C_UBIGINT
+   SQLVariant(const SQL_NUMERIC_STRUCT* p_numeric);       // SQL_C_NUMERIC
+   SQLVariant(const SQLGUID* p_guid);                     // SQL_C_GUID
+   SQLVariant(const void* p_binary,size_t p_size);        // SQL_C_BINARY
+   SQLVariant(const DATE_STRUCT* p_date);                 // SQL_C_DATE / SQL_C_TYPE_DATE
+   SQLVariant(const TIME_STRUCT* p_time);                 // SQL_C_TIME / SQL_C_TYPE_TIME
+   SQLVariant(const TIMESTAMP_STRUCT* p_stamp);           // SQL_C_TIMESTAMP / SQL_C_TYPE_TIMESTAMP
+   SQLVariant(const SQL_INTERVAL_STRUCT* p_inter);        // SQL_C_INTERVAL_YEAR -> SQL_C_INTERVAL_DAY_TO_SECOND
    // From complex constructors
-   SQLVariant(const SQLDate* p_date);               // SQLDate
-   SQLVariant(const SQLTime* p_time);               // SQLTime
-   SQLVariant(const SQLTimestamp* p_stamp);         // SQLTimestamp
-   SQLVariant(const SQLInterval* p_interval);       // SQLInterval
-   SQLVariant(const bcd* p_bcd);                    // Binary Coded Decimal
-   SQLVariant(const SQLGuid* p_guid);               // SQLGuid
+   SQLVariant(const SQLDate* p_date);                     // SQLDate
+   SQLVariant(const SQLTime* p_time);                     // SQLTime
+   SQLVariant(const SQLTimestamp* p_stamp);               // SQLTimestamp
+   SQLVariant(const SQLInterval* p_interval);             // SQLInterval
+   SQLVariant(const bcd* p_bcd);                          // Binary Coded Decimal
+   SQLVariant(const SQLGuid* p_guid);                     // SQLGuid
    // Destructor
   ~SQLVariant();
    
@@ -140,7 +140,7 @@ public:
    void    TruncateTimestamp(int p_decimals = 0);
 
    // General access
-   bool         SetData(int p_type,const char* p_data);
+   bool         SetData(int p_type,LPCTSTR p_data);
    void         SetFromRawDataPointer(void* p_pointer,int p_size = 0);
    const void*  GetDataPointer() const;
    // BLOB Functions
@@ -150,7 +150,8 @@ public:
    int     FindDataTypeFromSQLType();
 
    // Access per type
-   const char*          GetAsChar() const;
+   XString              GetAsChar() const;
+   XString              GetAsString() const;
    void                 GetAsString(XString& p_result) const;
    void*                GetAsBinary() const;
    bool                 GetAsBoolean() const;
@@ -182,8 +183,8 @@ public:
    bcd                  GetAsBCD() const;
 
    // SET VALUE PER TYPE
-   void                 Set(const char* p_string);
-   void                 Set(const XString p_string);
+   void                 Set(LPCTSTR       p_string,bool p_wide = false);
+   void                 Set(const XString p_string,bool p_wide = false);
    void                 Set(void* p_pointer,int p_length);
    void                 Set(bool p_boolean);
    void                 Set(short p_short);
@@ -213,7 +214,7 @@ public:
    // Assignment operator
    SQLVariant& operator  =(const SQLVariant& p_original);
    // Assignment operator from original data
-   SQLVariant& operator  =(const char* p_data);                    // SQL_C_CHAR
+   SQLVariant& operator  =(LPCTSTR p_data);                        // SQL_C_CHAR
    SQLVariant& operator  =(const XString& p_data);                 // SQL_C_CHAR
    SQLVariant& operator  =(const XString  p_data);                 // SQL_C_CHAR
    SQLVariant& operator  =(const short p_data);                    // SQL_C_SHORT / SQL_C_SSHORT
@@ -272,8 +273,8 @@ public:
    // Cast operators
    operator bool();
    operator char();
-   operator const char*();
-   operator unsigned char();
+   operator LPCTSTR();
+   operator uchar();
    operator short();
    operator unsigned short();
    operator int();
@@ -316,46 +317,46 @@ private:
    SQLParamType m_paramType;        // Input/output/input-output/result/column
    union _data
    {
-      // POINTER TYPES
-      char*                           m_dataCHAR;         // SQL_C_CHAR               SQL_CHAR
-//    wchar*                          m_dataWCHAR;        // SQL_C_WCHAR              SQL_WCHAR
-      void*                           m_dataBINARY;       // SQL_C_BINARY             SQL_BINARY
+      // HEAP POINTER TYPES
+      char*                           m_dataCHAR;         // SQL_C_CHAR                       SQL_CHAR
+      wchar_t*                        m_dataWCHAR;        // SQL_C_WCHAR                      SQL_WCHAR
+      void*                           m_dataBINARY;       // SQL_C_BINARY                     SQL_BINARY
       // STORAGE TYPES
-      short                           m_dataSHORT;        // SQL_C_SHORT              SQL_SMALLINT
-      signed short                    m_dataSSHORT;       // SQL_C_SSHORT             SQL_SHORT
-      unsigned short                  m_dataUSHORT;       // SQL_C_USHORT             SQL_USHORT
-      long                            m_dataLONG;         // SQL_C_LONG               SQL_INTEGER
-      signed long                     m_dataSLONG;        // SQL_C_SLONG              SQL_LONG
-      unsigned long                   m_dataULONG;        // SQL_C_ULONG              SQL_ULONG
-      float                           m_dataFLOAT;        // SQL_C_FLOAT              SQL_REAL
-      double                          m_dataDOUBLE;       // SQL_C_DOUBLE             SQL_DOUBLE
-      char                            m_dataBIT;          // SQL_C_BIT                SQL_BIT
-      char                            m_dataTINYINT;      // SQL_C_TINYINT            SQL_TINYINT
-      signed char                     m_dataSTINYINT;     // SQL_C_STINYINT           SQL_TINYINT
-      unsigned char                   m_dataUTINYINT;     // SQL_C_UTINYINT           SQL_UTINYINT
-      SQLBIGINT                       m_dataSBIGINT;      // SQL_C_SBIGINT            SQL_BIGINT
-      SQLUBIGINT                      m_dataUBIGINT;      // SQL_C_UBIGINT            SQL_UBIGINT
-      SQL_NUMERIC_STRUCT              m_dataNUMERIC;      // SQL_C_NUMERIC            SQL_NUMERIC
-      SQLGUID                         m_dataGUID;         // SQL_C_GUID               SQL_GUID
-      DATE_STRUCT                     m_dataDATE;         // SQL_C_DATE               SQL_DATE
-      TIME_STRUCT                     m_dataTIME;         // SQL_C_TIME               SQL_TIME
-      TIMESTAMP_STRUCT                m_dataTIMESTAMP;    // SQL_C_TIMESTAMP          SQL_TIMESTAMP
-      DATE_STRUCT                     m_dataTYPEDATE;     // SQL_C_TYPE_DATE          SQL_TYPE_DATE
-      TIME_STRUCT                     m_dataTYPETIME;     // SQL_C_TYPE_TIME          SQL_TYPE_TIME
-      TIMESTAMP_STRUCT                m_dataTYPETIMESTAMP;// SQL_C_TYPE_TIMESTAMP     SQL_TYPE_TIMESTAMP
-      SQL_INTERVAL_STRUCT             m_dataINTERVAL;     // SQL_C_INTERVAL_DAY       SQL_INTERVAL_DAY
-                                                          // SQL_C_INTERVAL_DAY_TO_HOUR      
-                                                          // SQL_C_INTERVAL_DAY_TO_MINUTE
-                                                          // SQL_C_INTERVAL_DAY_TO_SECOND
-                                                          // SQL_C_INTERVAL_YEAR         
-                                                          // SQL_C_INTERVAL_YEAR_TO_MONTH
-                                                          // SQL_C_INTERVAL_MONTH        
-                                                          // SQL_C_INTERVAL_HOUR         
-                                                          // SQL_C_INTERVAL_HOUR_TO_MINUTE
-                                                          // SQL_C_INTERVAL_HOUR_TO_SECOND
-                                                          // SQL_C_INTERVAL_MINUTE        
-                                                          // SQL_C_INTERVAL_MINUTE_TO_SECOND
-                                                          // SQL_C_INTERVAL_SECOND
+      short                           m_dataSHORT;        // SQL_C_SHORT                      SQL_SMALLINT
+      signed short                    m_dataSSHORT;       // SQL_C_SSHORT                     SQL_SHORT
+      unsigned short                  m_dataUSHORT;       // SQL_C_USHORT                     SQL_USHORT
+      long                            m_dataLONG;         // SQL_C_LONG                       SQL_INTEGER
+      signed long                     m_dataSLONG;        // SQL_C_SLONG                      SQL_LONG
+      unsigned long                   m_dataULONG;        // SQL_C_ULONG                      SQL_ULONG
+      float                           m_dataFLOAT;        // SQL_C_FLOAT                      SQL_REAL
+      double                          m_dataDOUBLE;       // SQL_C_DOUBLE                     SQL_DOUBLE
+      char                            m_dataBIT;          // SQL_C_BIT                        SQL_BIT
+      char                            m_dataTINYINT;      // SQL_C_TINYINT                    SQL_TINYINT
+      signed char                     m_dataSTINYINT;     // SQL_C_STINYINT                   SQL_TINYINT
+      unsigned char                   m_dataUTINYINT;     // SQL_C_UTINYINT                   SQL_UTINYINT
+      SQLBIGINT                       m_dataSBIGINT;      // SQL_C_SBIGINT                    SQL_BIGINT
+      SQLUBIGINT                      m_dataUBIGINT;      // SQL_C_UBIGINT                    SQL_UBIGINT
+      SQL_NUMERIC_STRUCT              m_dataNUMERIC;      // SQL_C_NUMERIC                    SQL_NUMERIC
+      SQLGUID                         m_dataGUID;         // SQL_C_GUID                       SQL_GUID
+      DATE_STRUCT                     m_dataDATE;         // SQL_C_DATE                       SQL_DATE
+      TIME_STRUCT                     m_dataTIME;         // SQL_C_TIME                       SQL_TIME
+      TIMESTAMP_STRUCT                m_dataTIMESTAMP;    // SQL_C_TIMESTAMP                  SQL_TIMESTAMP
+      DATE_STRUCT                     m_dataTYPEDATE;     // SQL_C_TYPE_DATE                  SQL_TYPE_DATE
+      TIME_STRUCT                     m_dataTYPETIME;     // SQL_C_TYPE_TIME                  SQL_TYPE_TIME
+      TIMESTAMP_STRUCT                m_dataTYPETIMESTAMP;// SQL_C_TYPE_TIMESTAMP             SQL_TYPE_TIMESTAMP
+      SQL_INTERVAL_STRUCT             m_dataINTERVAL;     // SQL_C_INTERVAL_DAY               SQL_INTERVAL_DAY
+                                                          // SQL_C_INTERVAL_DAY_TO_HOUR       SQL_INTERVAL_DAY_TO_HOUR
+                                                          // SQL_C_INTERVAL_DAY_TO_MINUTE     SQL_INTERVAL_DAY_TO_MINUTE
+                                                          // SQL_C_INTERVAL_DAY_TO_SECOND     SQL_INTERVAL_DAY_TO_SECOND
+                                                          // SQL_C_INTERVAL_YEAR              SQL_INTERVAL_YEAR
+                                                          // SQL_C_INTERVAL_YEAR_TO_MONTH     SQL_INTERVAL_YEAR_TO_MONTH
+                                                          // SQL_C_INTERVAL_MONTH             SQL_INTERVAL_MONTH
+                                                          // SQL_C_INTERVAL_HOUR              SQL_INTERVAL_HOUR
+                                                          // SQL_C_INTERVAL_HOUR_TO_MINUTE    SQL_INTERVAL_HOUR_TO_MINUTE
+                                                          // SQL_C_INTERVAL_HOUR_TO_SECOND    SQL_INTERVAL_HOUR_TO_SECOND
+                                                          // SQL_C_INTERVAL_MINUTE            SQL_INTERVAL_MINUTE
+                                                          // SQL_C_INTERVAL_MINUTE_TO_SECOND  SQL_INTERVAL_MINUTE_TO_SECOND
+                                                          // SQL_C_INTERVAL_SECOND            SQL_INTERVAL_SECOND
    }
    m_data;
 };

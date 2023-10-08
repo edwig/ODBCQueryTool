@@ -19,12 +19,7 @@
 // 23.09.2002 improvement/performance tuning, undo has been reimplemented
 // 06.12.2002 bug fix, in find dialog count and mark change "modified" status
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
-#ifndef __OEUndo_h__
-#define __OEUndo_h__
 
 #include <string>
 #include <vector>
@@ -103,7 +98,7 @@ namespace OpenEditor
 
         unsigned GetMemUsage() const;
 
-        bool AppendOnInsert (int, int, const char*, int, const DelimitersMap&);
+        bool AppendOnInsert (int, int, LPCTSTR, int, const DelimitersMap&);
 
         Sequence m_actionSeq, m_groupSeq;
     private:
@@ -146,13 +141,13 @@ namespace OpenEditor
     class UndoInsert : public UndoBase
     {
     public:
-        UndoInsert (int, int, const char*, int);
+        UndoInsert (int, int, LPCTSTR, int);
         virtual void Undo (UndoContext&) const;
         virtual void Redo (UndoContext&) const;
         virtual EEditOperation Type () const { return eeoInsert; };
         virtual unsigned GetMemUsage() const { return sizeof(*this) + (int)m_str.length(); };
 
-        bool Append (int, int, const char*, int, const DelimitersMap&);
+        bool Append (int, int, LPCTSTR, int, const DelimitersMap&);
     private:
         Position m_position;
         FixedString m_str;
@@ -161,7 +156,7 @@ namespace OpenEditor
     class UndoOverwrite : public UndoBase
     {
     public:
-        UndoOverwrite (int, int, const char*, int, const char*, int);
+        UndoOverwrite (int, int, LPCTSTR, int, LPCTSTR, int);
         virtual void Undo (UndoContext&) const;
         virtual void Redo (UndoContext&) const;
         virtual EEditOperation Type () const { return eeoOverwrite; };
@@ -175,7 +170,7 @@ namespace OpenEditor
     class UndoDelete : public UndoBase 
     {
     public:
-        UndoDelete (int, int, const char*, int);
+        UndoDelete (int, int, LPCTSTR, int);
         virtual void Undo (UndoContext&) const;
         virtual void Redo (UndoContext&) const;
         virtual EEditOperation Type () const { return eeoDelete; };
@@ -188,7 +183,7 @@ namespace OpenEditor
     class UndoInsertLine : public UndoBase
     {
     public:
-        UndoInsertLine (int, const char*, int);
+        UndoInsertLine (int, LPCTSTR, int);
         virtual void Undo (UndoContext&) const;
         virtual void Redo (UndoContext&) const;
         virtual EEditOperation Type () const { return eeoInsertLine; };
@@ -201,7 +196,7 @@ namespace OpenEditor
     class UndoDeleteLine : public UndoBase
     {
     public:
-        UndoDeleteLine (int, const char*, int);
+        UndoDeleteLine (int, LPCTSTR, int);
         virtual void Undo (UndoContext&) const;
         virtual void Redo (UndoContext&) const;
         virtual EEditOperation Type () const { return eeoDeleteLine; };
@@ -349,19 +344,19 @@ namespace OpenEditor
     UndoBase::~UndoBase () 
         { _ASSERTE(!m_above && !m_below); }
     inline
-    UndoInsert::UndoInsert (int line, int col, const char* str, int len) 
+    UndoInsert::UndoInsert (int line, int col, LPCTSTR str, int len) 
         : m_str(str, len) { m_position.line = line; m_position.column = col; }
     inline
-    UndoOverwrite::UndoOverwrite (int line, int col, const char* orgStr, int orgLen, const char* newStr, int newLen) 
+    UndoOverwrite::UndoOverwrite (int line, int col, LPCTSTR orgStr, int orgLen, LPCTSTR newStr, int newLen) 
         : m_orgStr(orgStr, orgLen), m_newStr(newStr, newLen) { m_position.line = line; m_position.column = col; }
     inline
-    UndoDelete::UndoDelete (int line, int col, const char* str, int len) 
+    UndoDelete::UndoDelete (int line, int col, LPCTSTR str, int len) 
         : m_str(str, len){ m_position.line = line; m_position.column = col; }
     inline
-    UndoInsertLine::UndoInsertLine (int line, const char* str, int len) 
+    UndoInsertLine::UndoInsertLine (int line, LPCTSTR str, int len) 
         : m_str(str, len){ m_line = line; }
     inline
-    UndoDeleteLine::UndoDeleteLine (int line, const char* str, int len) 
+    UndoDeleteLine::UndoDeleteLine (int line, LPCTSTR str, int len) 
         : m_str(str, len){ m_line = line; }
     inline
     UndoSplitLine::UndoSplitLine (int line, int col) 
@@ -388,4 +383,4 @@ namespace OpenEditor
 
 #pragma warning(pop)
 
-#endif//__OEUndo_h__
+

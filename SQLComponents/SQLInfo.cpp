@@ -43,7 +43,7 @@ static char THIS_FILE[] = __FILE__;
 namespace SQLComponents
 {
 
-// Used for metasearches
+// Used for meta searches
 #define META_SEARCH_LEN 10
 // This macro is used for synchronous ODBC calls
 #define ODBC_CALL_ONCE(SQLFunc) \
@@ -92,7 +92,7 @@ SQLInfo::Init()
   m_odbc_conformance    = 0;
   m_cli_conformance     = 0;
   m_maxTableName        = 0;
-  m_maxColumnName        = 0;
+  m_maxColumnName       = 0;
   m_oj_cap              = 0;
   m_oj_cap92            = 0;
   m_txn_cap             = 0;
@@ -164,13 +164,13 @@ SQLInfo::Init()
   m_rdbms_version       = "";
 
   // Fill as ANSI-ISO 9075E standard
-  m_specialChars     = "";
-  m_likeEscape       = "\\";
-  m_identifierQuote  = "\"";
-  m_catalogName      = "catalog";
-  m_schemaName       = "schema";
-  m_tableName        = "table";
-  m_procedureName    = "procedure";
+  m_specialChars     = _T("");
+  m_likeEscape       = _T("\\");
+  m_identifierQuote  = _T("\"");
+  m_catalogName      = _T("catalog");
+  m_schemaName       = _T("schema");
+  m_tableName        = _T("table");
+  m_procedureName    = _T("procedure");
   m_columnAliases    = true;
   m_maxCatalogName   = SQL_MAX_IDENTIFIER;
   m_maxSchemaName    = SQL_MAX_IDENTIFIER;
@@ -202,7 +202,7 @@ SQLInfo::Init()
   m_convertVarchar    = 0;
 
   // The driver
-  m_driverName         = "";
+  m_driverName         = _T("");
   m_getdata_extensions = 0;
 
   // Statement
@@ -233,7 +233,7 @@ SQLInfo::Init()
 void
 SQLInfo::InfoMessageBox(XString p_message,UINT p_type /*= MB_OK*/)
 {
-  SQLMessage(NULL,p_message,"ODBC Driver info",p_type);
+  SQLMessage(NULL,p_message,_T("ODBC Driver info"),p_type);
 }
 
 // Add an ODBC SQL Keyword
@@ -304,10 +304,10 @@ SQLInfo::GetInfoString(SQLUSMALLINT info)
   }
   if(overflow)
   {
-    InfoMessageBox("Buffer overflow on ::SQLGetInfo()\n\r"
-                  "This is a serious error in the ODBCDriver\n\r"
-                  "Please close this program and get a better ODBC driver!!"
-                  ,MB_OK | MB_ICONERROR);
+    InfoMessageBox(_T("Buffer overflow on ::SQLGetInfo()\n\r")
+                   _T("This is a serious error in the ODBCDriver\n\r")
+                   _T("Please close this program and get a better ODBC driver!!")
+                   ,MB_OK | MB_ICONERROR);
   }
   answer = buffer;
   return answer;
@@ -359,10 +359,10 @@ SQLInfo::GetInfo()
     return;
   }
 
-  char  buffer[5120];
-  char  woord [1024];
-  char* pw;
-  const char* pb;
+  TCHAR  buffer[5120];
+  TCHAR  woord [1024];
+  PTCHAR pw;
+  LPCTSTR pb;
   SQLSMALLINT len;
 
   Init();
@@ -385,7 +385,7 @@ SQLInfo::GetInfo()
   {
     woord[0] = '\0';
     pw = woord;
-    for(pb = SQL_ODBC_KEYWORDS;*pb != '\0';pb++)
+    for(pb = _T(SQL_ODBC_KEYWORDS);*pb != '\0';pb++)
     {
       if (*pb == ',')
       {
@@ -402,7 +402,7 @@ SQLInfo::GetInfo()
     m_ODBCKeywords.push_back(woord);
   }
   // KEYWORDS reported by the RDBMS
-  if(SQLGetInfo(m_hdbc, SQL_KEYWORDS, buffer, 5120, &len) == SQL_SUCCESS)
+  if(SQLGetInfo(m_hdbc, SQL_KEYWORDS, buffer, 5120 * sizeof(TCHAR),&len) == SQL_SUCCESS)
   {
     woord[0] = '\0';
     pw = woord;
@@ -424,7 +424,7 @@ SQLInfo::GetInfo()
   }   
   else
   {
-    m_RDBMSkeywords.push_back("(No information)");
+    m_RDBMSkeywords.push_back(_T("(No information)"));
   }
   // STRINGS
   m_manager_version     = GetInfoString(SQL_DM_VER);
@@ -450,7 +450,7 @@ SQLInfo::GetInfo()
   m_columnAliases       = (GetInfoString(SQL_COLUMN_ALIAS)              .GetAt(0) == 'Y');
   m_exprInOrderBy       = (GetInfoString(SQL_EXPRESSIONS_IN_ORDERBY)    .GetAt(0) == 'Y');
   m_orderByInSelect     = (GetInfoString(SQL_ORDER_BY_COLUMNS_IN_SELECT).GetAt(0) == 'Y');
-  m_likeEscape          = (GetInfoString(SQL_LIKE_ESCAPE_CLAUSE)        .GetAt(0) == 'Y') ? "% and '_'" : "";
+  m_likeEscape          = (GetInfoString(SQL_LIKE_ESCAPE_CLAUSE)        .GetAt(0) == 'Y') ? _T("% and '_'") : _T("");
   m_integrity           = (GetInfoString(SQL_INTEGRITY)                 .GetAt(0) == 'Y');
   m_needLongDataLen     = (GetInfoString(SQL_NEED_LONG_DATA_LEN)        .GetAt(0) == 'Y');
 
@@ -570,7 +570,7 @@ SQLInfo::ReadingDataTypes()
   }
   SQLHSTMT handle;
   SQLLEN   dataLen;
-  char     buffer[5120] = { 0 };
+  TCHAR    buffer[5120] = { 0 };
 
   m_retCode = SqlAllocHandle(SQL_HANDLE_STMT,m_hdbc,&handle);
   if (m_retCode == SQL_SUCCESS )
@@ -591,7 +591,7 @@ SQLInfo::ReadingDataTypes()
         dataLen =0;
 
         // DATA SOURCE DEPENDENT TYPE NAME. USE FOR CREATE TABLE
-        if(::SQLGetData(handle,1,SQL_C_CHAR,buffer,5120,&dataLen) == SQL_SUCCESS)
+        if(SQLGetData(handle,1,SQL_C_TCHAR,buffer,5120 * sizeof(TCHAR),&dataLen) == SQL_SUCCESS)
         {
           if(dataLen > 0) 
           {
@@ -607,7 +607,7 @@ SQLInfo::ReadingDataTypes()
         while(m_dataTypes.find(key) != m_dataTypes.end())
         {
           // Prefix duplicated datatypes with a number
-          key.Format("%d: %s",++num,buffer);
+          key.Format(_T("%d: %s"),++num,buffer);
         }
         // Put in m_datatypes
         m_dataTypes.insert(std::make_pair(key,ti));
@@ -624,19 +624,19 @@ SQLInfo::ReadingDataTypes()
         }
         // LITERAL PREFIX FOR ODBC DRIVER, like {ts' for timestamp
         buffer[0] = 0;
-        if(::SQLGetData(handle,4,SQL_C_CHAR,buffer,5120,&dataLen) == SQL_SUCCESS)
+        if(::SQLGetData(handle,4,SQL_C_TCHAR,buffer,5120,&dataLen) == SQL_SUCCESS)
         {
           if(dataLen > 0) ti->m_literal_prefix = buffer;
         }
         // LITERAL SUFFIX FOR ODBC DRIVER, like '} for timestamp
         buffer[0] = 0;
-        if(::SQLGetData(handle,5,SQL_C_CHAR,buffer,5120,&dataLen) == SQL_SUCCESS)
+        if(::SQLGetData(handle,5,SQL_C_TCHAR,buffer,5120,&dataLen) == SQL_SUCCESS)
         {
           if(dataLen > 0) ti->m_literal_suffix = buffer;
         }
         // HOW TO CREATE PARAMETERS, like "(precision,scale)"
         buffer[0] = 0;
-        if(::SQLGetData(handle,6,SQL_C_CHAR,buffer,5120,&dataLen) == SQL_SUCCESS)
+        if(::SQLGetData(handle,6,SQL_C_TCHAR,buffer,5120,&dataLen) == SQL_SUCCESS)
         {
           if(dataLen > 0) ti->m_create_params = buffer;
         }
@@ -680,7 +680,7 @@ SQLInfo::ReadingDataTypes()
         // Local type name for display on UI's (not in DDL!)
         ti->m_local_type_name = buffer;
         buffer[0] = 0;
-        if(::SQLGetData(handle,13,SQL_C_CHAR,buffer,5120,&dataLen) == SQL_SUCCESS)
+        if(::SQLGetData(handle,13,SQL_C_TCHAR,buffer,5120,&dataLen) == SQL_SUCCESS)
         {
           if(dataLen > 0) ti->m_local_type_name = buffer;
         }
@@ -804,13 +804,13 @@ SQLInfo::GetAttributeInteger(LPCTSTR description,SQLINTEGER attrib)
   if(!m_database->Check(nRetCode))
   {
     XString error;
-    error.Format("Cannot get connection attribute \"%s\": ",description);
+    error.Format(_T("Cannot get connection attribute \"%s\": "),description);
     error += m_database->GetErrorString(NULL);
     XString state = m_database->GetSQLState();
-    if(state.CompareNoCase("S1C00") == 0 || // Driver not capable
-       state.CompareNoCase("S1092") == 0 || // Option-id not supported on your database
-       state.CompareNoCase("HY092") == 0 || // Invalid attribute for this driver
-       state.CompareNoCase("HYC00") == 0 )  // Optional feature not implemented
+    if(state.CompareNoCase(_T("S1C00")) == 0 || // Driver not capable
+       state.CompareNoCase(_T("S1092")) == 0 || // Option-id not supported on your database
+       state.CompareNoCase(_T("HY092")) == 0 || // Invalid attribute for this driver
+       state.CompareNoCase(_T("HYC00")) == 0 )  // Optional feature not implemented
     {
       // Driver not capable to get/set this attribute
       ATLTRACE("%s\n",error.GetString());
@@ -832,18 +832,18 @@ SQLInfo::GetAttributeInteger(LPCTSTR description,SQLINTEGER attrib)
 XString
 SQLInfo::GetAttributeString(XString description,SQLINTEGER attrib)
 {
-  SQLCHAR    value[MAX_BUFFER + 1];
+  SQLTCHAR   value[MAX_BUFFER + 1];
   SQLINTEGER cbMax = 0;
   RETCODE    nRetCode = SQL_ERROR;
-  nRetCode = ::SQLGetConnectAttr(m_hdbc
-                                ,attrib
-                                ,(SQLPOINTER)&value
-                                ,MAX_BUFFER
-                                ,&cbMax);
+  nRetCode = SQLGetConnectAttr(m_hdbc
+                              ,attrib
+                              ,(SQLPOINTER)&value
+                              ,MAX_BUFFER
+                              ,&cbMax);
   if(!m_database->Check(nRetCode))
   {
     XString error;
-    error.Format("Cannot get connection attribute \"%s\": ",description.GetString());
+    error.Format(_T("Cannot get connection attribute \"%s\": "),description.GetString());
     error += m_database->GetErrorString(NULL);
     InfoMessageBox(error);
     return "";
@@ -867,7 +867,7 @@ SQLInfo::SetAttributeInteger(XString     description
   if(!m_database->Check(nRetCode))
   {
     XString error;
-    error.Format("Cannot set connection attribute \"%s\": ",description.GetString());
+    error.Format(_T("Cannot set connection attribute \"%s\": "),description.GetString());
     error += m_database->GetErrorString(NULL);
     InfoMessageBox(error);
     return false;
@@ -880,17 +880,17 @@ SQLInfo::SetAttributeInteger(XString     description
 bool 
 SQLInfo::SetAttributeString(XString    description
                            ,SQLINTEGER attrib
-                           ,SQLCHAR*   value)
+                           ,SQLTCHAR*  value)
 {
   RETCODE nRetCode = SQL_ERROR;
-  nRetCode = ::SQLSetConnectAttr(m_hdbc
-                                ,attrib
-                                ,(SQLPOINTER)value
-                                ,SQL_NTS);
+  nRetCode = SQLSetConnectAttr(m_hdbc
+                              ,attrib
+                              ,(SQLPOINTER)value
+                              ,SQL_NTS);
   if(!m_database->Check(nRetCode))
   {
     XString error;
-    error.Format("Cannot set connection attribute \"%s\": ",description.GetString());
+    error.Format(_T("Cannot set connection attribute \"%s\": "),description.GetString());
     error += m_database->GetErrorString(NULL);
     InfoMessageBox(error);
     return false;
@@ -903,7 +903,7 @@ SQLInfo::SetAttributeString(XString    description
 bool
 SQLInfo::GetConnectionDead()
 {
-  int dead = GetAttributeInteger("dead-connection",SQL_ATTR_CONNECTION_DEAD);
+  int dead = GetAttributeInteger(_T("dead-connection"),SQL_ATTR_CONNECTION_DEAD);
   return (bool)(dead == SQL_CD_TRUE);
 }
 
@@ -911,7 +911,7 @@ SQLInfo::GetConnectionDead()
 int
 SQLInfo::GetAttributeQuiet()
 {
-  int hand = GetAttributeInteger("quiet-mode",SQL_ATTR_QUIET_MODE);
+  int hand = GetAttributeInteger(_T("quiet-mode"),SQL_ATTR_QUIET_MODE);
   return (hand == 0);
 }
 
@@ -919,14 +919,14 @@ SQLInfo::GetAttributeQuiet()
 int
 SQLInfo::GetAttributeAutoIPD()
 {
-  return GetAttributeInteger("auto-ipd",SQL_ATTR_AUTO_IPD);
+  return GetAttributeInteger(_T("auto-ipd"),SQL_ATTR_AUTO_IPD);
 }
 
 // ODBC Tracing is on or off
 bool
 SQLInfo::GetAttributeTracing()
 {
-  int trace = GetAttributeInteger("tracing",SQL_ATTR_TRACE);
+  int trace = GetAttributeInteger(_T("tracing"),SQL_ATTR_TRACE);
   return (bool)(trace == SQL_OPT_TRACE_ON);
 }
 
@@ -934,14 +934,14 @@ SQLInfo::GetAttributeTracing()
 XString       
 SQLInfo::GetAttributeTraceFile()
 {
-  return GetAttributeString("tracefile",SQL_ATTR_TRACEFILE);
+  return GetAttributeString(_T("tracefile"),SQL_ATTR_TRACEFILE);
 }
 
 // Getting the current catalog name
 XString       
 SQLInfo::GetAttributeCatalog()
 {
-  XString catalog = GetAttributeString("current-catalog",SQL_ATTR_CURRENT_CATALOG);
+  XString catalog = GetAttributeString(_T("current-catalog"),SQL_ATTR_CURRENT_CATALOG);
   if(catalog.IsEmpty())
   {
     // Does not supports catalogs. Use database name
@@ -954,7 +954,7 @@ SQLInfo::GetAttributeCatalog()
 int
 SQLInfo::GetAttributePacketSize()
 {
-  m_packetSize = GetAttributeInteger("packet-size",SQL_ATTR_PACKET_SIZE);
+  m_packetSize = GetAttributeInteger(_T("packet-size"),SQL_ATTR_PACKET_SIZE);
   return m_packetSize;
 }
 
@@ -962,7 +962,7 @@ SQLInfo::GetAttributePacketSize()
 bool    
 SQLInfo::GetAttributeMetadataID()
 {
-  m_metadataID = GetAttributeInteger("metadata ID",SQL_ATTR_METADATA_ID) != 0;
+  m_metadataID = GetAttributeInteger(_T("metadata ID"),SQL_ATTR_METADATA_ID) != 0;
   return m_metadataID;
 }
 
@@ -970,7 +970,7 @@ SQLInfo::GetAttributeMetadataID()
 int
 SQLInfo::GetAttributeTransLevel()
 {
-  m_txnLevel = GetAttributeInteger("txn-isolation-level",SQL_ATTR_TXN_ISOLATION);
+  m_txnLevel = GetAttributeInteger(_T("txn-isolation-level"),SQL_ATTR_TXN_ISOLATION);
   return m_txnLevel;
 }
 
@@ -978,7 +978,7 @@ SQLInfo::GetAttributeTransLevel()
 int  
 SQLInfo::GetAttributeConnTimeout()
 {
-  m_connTimeout = GetAttributeInteger("connection-timeout",SQL_ATTR_CONNECTION_TIMEOUT);
+  m_connTimeout = GetAttributeInteger(_T("connection-timeout"),SQL_ATTR_CONNECTION_TIMEOUT);
   return m_connTimeout;
 }
 
@@ -986,7 +986,7 @@ SQLInfo::GetAttributeConnTimeout()
 XString
 SQLInfo::GetAttributeTranslib()
 {
-  m_transLib = GetAttributeString("translation-library",SQL_ATTR_TRANSLATE_LIB);
+  m_transLib = GetAttributeString(_T("translation-library"),SQL_ATTR_TRANSLATE_LIB);
   return m_transLib;
 }
 
@@ -994,7 +994,7 @@ SQLInfo::GetAttributeTranslib()
 int
 SQLInfo::GetAttributeTransoption()
 {
-  m_transOption = GetAttributeInteger("translation-option",SQL_ATTR_TRANSLATE_OPTION);
+  m_transOption = GetAttributeInteger(_T("translation-option"),SQL_ATTR_TRANSLATE_OPTION);
   return m_transOption;
 }
 
@@ -1003,7 +1003,7 @@ bool
 SQLInfo::SetAttributeOdbcCursors(int p_cursors)
 {
   m_odbcCursors = p_cursors;
-  return SetAttributeInteger("use-odbc-cursors",SQL_ATTR_ODBC_CURSORS,p_cursors);
+  return SetAttributeInteger(_T("use-odbc-cursors"),SQL_ATTR_ODBC_CURSORS,p_cursors);
 }
 
 // Setting the optimal IP Packet size
@@ -1011,18 +1011,18 @@ bool
 SQLInfo::SetAttributePacketSize(int p_packet)
 {
   m_packetSize = p_packet;
-  return SetAttributeInteger("packet-size",SQL_ATTR_PACKET_SIZE,p_packet);
+  return SetAttributeInteger(_T("packet-size"),SQL_ATTR_PACKET_SIZE,p_packet);
 }
 
 // Setting the ODBC Tracing file
 bool 
 SQLInfo::SetAttributeTraceFile(XString p_traceFile)
 {
-  SQLCHAR traceFile[512 + 1];
+  SQLTCHAR traceFile[512 + 1];
   SQLINTEGER cbMax = p_traceFile.GetLength();
-  strncpy_s(reinterpret_cast<char *>(traceFile),512,p_traceFile.GetString(),cbMax);
+  _tcsncpy_s(reinterpret_cast<TCHAR*>(traceFile),512,p_traceFile.GetString(),cbMax);
 
-  return SetAttributeString("tracefile",SQL_ATTR_TRACEFILE,traceFile);
+  return SetAttributeString(_T("tracefile"),SQL_ATTR_TRACEFILE,traceFile);
 }
 
 // Set tracing on or off
@@ -1030,7 +1030,7 @@ bool
 SQLInfo::SetAttributeTracing(bool p_tracing)
 {
   SQLUINTEGER tracing = p_tracing ? SQL_OPT_TRACE_ON : SQL_OPT_TRACE_OFF;
-  return SetAttributeInteger("tracing",SQL_ATTR_TRACE,tracing);
+  return SetAttributeInteger(_T("tracing"),SQL_ATTR_TRACE,tracing);
 }
 
 // Setting the automatic connection timeout (if supported)
@@ -1038,7 +1038,7 @@ bool
 SQLInfo::SetAttributeConnTimeout(int p_timeout)
 {
   m_connTimeout = p_timeout;
-  return SetAttributeInteger("connection-timeout",SQL_ATTR_CONNECTION_TIMEOUT,p_timeout);
+  return SetAttributeInteger(_T("connection-timeout"),SQL_ATTR_CONNECTION_TIMEOUT,p_timeout);
 }
 
 // Setting the METADATA-ID of the connection
@@ -1046,7 +1046,7 @@ bool
 SQLInfo::SetAttributeMetadataID(bool p_metadata)
 {
   m_metadataID = p_metadata;
-  return SetAttributeInteger("metadata ID",SQL_ATTR_METADATA_ID,p_metadata);
+  return SetAttributeInteger(_T("metadata ID"),SQL_ATTR_METADATA_ID,p_metadata);
 }
 
 // Setting the transaction isolation level
@@ -1054,7 +1054,7 @@ bool
 SQLInfo::SetAttributeTransLevel(int p_txnlevel)
 {
   m_txnLevel = p_txnlevel;
-  return SetAttributeInteger("txn-isolation-level",SQL_ATTR_TXN_ISOLATION,p_txnlevel);
+  return SetAttributeInteger(_T("txn-isolation-level"),SQL_ATTR_TXN_ISOLATION,p_txnlevel);
 }
 
 // Setting the transaction library (with or without connection)
@@ -1064,19 +1064,19 @@ SQLInfo::SetAttributeTranslib(XString p_transLib)
   m_transLib = p_transLib;
   if(m_hdbc)
   {
-    return SetAttributeString("translation-library",SQL_ATTR_TRANSLATE_LIB,reinterpret_cast<SQLCHAR*>(const_cast<char*>(p_transLib.GetString())));
+    return SetAttributeString(_T("translation-library"),SQL_ATTR_TRANSLATE_LIB,reinterpret_cast<SQLTCHAR*>(const_cast<TCHAR*>(p_transLib.GetString())));
   }
   return true;
 }
 
-// Setting the translation optioen (with or without connection)
+// Setting the translation option (with or without connection)
 bool
 SQLInfo::SetAttributeTransoption(int p_transOption)
 {
   m_transOption = p_transOption;
   if(m_hdbc)
   {
-    return SetAttributeInteger("translation-option",SQL_ATTR_TRANSLATE_OPTION,p_transOption);
+    return SetAttributeInteger(_T("translation-option"),SQL_ATTR_TRANSLATE_OPTION,p_transOption);
   }
   return true;
 }
@@ -1109,14 +1109,14 @@ SQLInfo::IsCorrectName(XString p_name,int p_type)
   // Must be an identifier, complying to ODBC rules
   for(int ind = 0;ind < p_name.GetLength(); ++ind)
   {
-    int ch = p_name.GetAt(ind);
-    if (ch == ' ' || ( !isalnum(ch) && ch != '_' && strchr(m_specialChars,ch) == NULL ))
+    TCHAR ch = p_name.GetAt(ind);
+    if (ch == ' ' || ( !isalnum(ch) && ch != '_' && _tcschr(m_specialChars,ch) == NULL ))
     {
       return false;
     }
   }
 
-  // Cannot be in the ODBC keywords list or in de RDBMS extra reserved words list
+  // Cannot be in the ODBC keywords list or in the RDBMS extra reserved words list
   if(IsReservedWord(p_name))
   {
     return false;
@@ -1171,16 +1171,16 @@ SQLInfo::GetPrimaryKeyInfo(XString&    p_tablename
   GetInfo();
 
   // Reset
-  p_primary = "";
+  p_primary = _T("");
   p_primaries.clear();
 
   XString   errors;
-  MakeInfoTablePrimary(p_primaries,errors,"",p_tablename);
+  MakeInfoTablePrimary(p_primaries,errors,_T(""),p_tablename);
   if(!p_primaries.size())
   {
     // If no primary key found, search for the first unique key
     MIndicesMap statistics;
-    MakeInfoTableStatistics(statistics,errors,"",p_tablename,&p_primaries,false);
+    MakeInfoTableStatistics(statistics,errors,_T(""),p_tablename,&p_primaries,false);
   }
   else
   {
@@ -1198,7 +1198,7 @@ SQLInfo::GetStatement(bool p_metadataID /*= true*/)
   m_retCode = m_database->GetSQLHandle(&m_hstmt,FALSE);
   if (!SQL_SUCCEEDED(m_retCode))
   {
-    XString errorText = "Error in ODBC statement: ";
+    XString errorText = _T("Error in ODBC statement: ");
     errorText += m_database->GetErrorString(m_hstmt);
     throw StdException(errorText);
   }
@@ -1245,7 +1245,7 @@ SQLInfo::GetObjectName(XString  p_pattern
 
   int pos = 0;
 
-  // Search for tablename
+  // Search for table name
   pos = p_pattern.ReverseFind('.');
   if(pos < 0)
   {
@@ -1271,15 +1271,15 @@ SQLInfo::GetObjectName(XString  p_pattern
   }
   if(m_maxCatalogName && p_catalog.GetLength() > (int)m_maxCatalogName)
   {
-    InfoMessageBox("Requested catalog name is longer than this ODBC database supports!",MB_OK);
+    InfoMessageBox(_T("Requested catalog name is longer than this ODBC database supports!"),MB_OK);
   }
   if(m_maxSchemaName  && p_schema.GetLength() > (int)m_maxSchemaName)
   {
-    InfoMessageBox("Requested schema name is longer than this ODBC database supports!",MB_OK);
+    InfoMessageBox(_T("Requested schema name is longer than this ODBC database supports!"),MB_OK);
   }
   if(m_maxTableName   && p_table.GetLength() > (int)m_maxTableName)
   {
-    InfoMessageBox("Requested table name is longer than this ODBC database supports!",MB_OK);
+    InfoMessageBox(_T("Requested table name is longer than this ODBC database supports!"),MB_OK);
   }
 }
 
@@ -1288,17 +1288,17 @@ SQLInfo::GetObjectName(XString  p_pattern
 // so can be: "X: schema.table@catalog"
 // Or ANSI:   "X: catalog:schema.table"
 XString
-SQLInfo::MakeObjectName(SQLCHAR* search_catalog
-                       ,SQLCHAR* search_schema
-                       ,SQLCHAR* search_table
-                       ,SQLCHAR* search_type)
+SQLInfo::MakeObjectName(SQLTCHAR* search_catalog
+                       ,SQLTCHAR* search_schema
+                       ,SQLTCHAR* search_table
+                       ,SQLTCHAR* search_type)
 {
   XString objectName;
 
   if(strlen(reinterpret_cast<char*>(search_schema)))
   {
     objectName += XString(search_schema);
-    objectName += ".";
+    objectName += _T(".");
   }
   if(strlen(reinterpret_cast<char*>(search_table)))
   {
@@ -1309,7 +1309,7 @@ SQLInfo::MakeObjectName(SQLCHAR* search_catalog
     XString separator = m_catalogNameSeparator;
     if(separator.IsEmpty())
     {
-      separator = ":"; // ANSI separator
+      separator = _T(":"); // ANSI separator
     }
     if(m_catalogLocation == SQL_CL_END)
     {
@@ -1322,7 +1322,7 @@ SQLInfo::MakeObjectName(SQLCHAR* search_catalog
   }
   if(search_type && strlen(reinterpret_cast<char*>(search_type)))
   {
-    objectName = XString(search_type) + ": " + objectName;
+    objectName = XString(search_type) + _T(": ") + objectName;
   }
   return objectName;
 }
@@ -1334,48 +1334,48 @@ SQLInfo::ODBCDataType(int DataType)
 
   switch(DataType)
   {
-    case SQL_CHAR:                      type = "CHAR";          break;
-    case SQL_VARCHAR:                   type = "VARCHAR";       break;
-    case SQL_LONGVARCHAR:               type = "LONGVARCHAR";   break;
-    case SQL_WCHAR:                     type = "WCHAR";         break;
-    case SQL_WVARCHAR:                  type = "WVARCHAR";      break;
-    case SQL_WLONGVARCHAR:              type = "WLONGVARCHAR";  break;
-    case SQL_NUMERIC:                   type = "NUMERIC";       break;
-    case SQL_DECIMAL:                   type = "DECIMAL";       break;
-    case SQL_INTEGER:                   type = "INTEGER";       break;
-    case SQL_SMALLINT:                  type = "SMALLINT";      break;
-    case SQL_FLOAT:                     type = "FLOAT";         break;
-    case SQL_REAL:                      type = "REAL";          break;
-    case SQL_DOUBLE:                    type = "DOUBLE";        break;
+    case SQL_CHAR:                      type = _T("CHAR");          break;
+    case SQL_VARCHAR:                   type = _T("VARCHAR");       break;
+    case SQL_LONGVARCHAR:               type = _T("LONGVARCHAR");   break;
+    case SQL_WCHAR:                     type = _T("WCHAR");         break;
+    case SQL_WVARCHAR:                  type = _T("WVARCHAR");      break;
+    case SQL_WLONGVARCHAR:              type = _T("WLONGVARCHAR");  break;
+    case SQL_NUMERIC:                   type = _T("NUMERIC");       break;
+    case SQL_DECIMAL:                   type = _T("DECIMAL");       break;
+    case SQL_INTEGER:                   type = _T("INTEGER");       break;
+    case SQL_SMALLINT:                  type = _T("SMALLINT");      break;
+    case SQL_FLOAT:                     type = _T("FLOAT");         break;
+    case SQL_REAL:                      type = _T("REAL");          break;
+    case SQL_DOUBLE:                    type = _T("DOUBLE");        break;
     //case SQL_DATE:
-    case SQL_DATETIME:                  type = "DATETIME";      break;
-    case SQL_TYPE_DATE:                 type = "TYPE DATE";     break;
-    case SQL_TIME:                      type = "TIME";          break;
-    case SQL_TYPE_TIME:                 type = "TYPE TIME";     break;
-    case SQL_TIMESTAMP:                 type = "TIMESTAMP";     break;
-    case SQL_TYPE_TIMESTAMP:            type = "TYPE TIMESTAMP";break;
-    case SQL_BINARY:                    type = "BINARY";        break;
-    case SQL_VARBINARY:                 type = "VARBINARY";     break;
-    case SQL_LONGVARBINARY:             type = "LONGVARBINARY"; break;
-    case SQL_BIGINT:                    type = "BIGINT";        break;
-    case SQL_TINYINT:                   type = "TINYINT";       break;
-    case SQL_BIT:                       type = "BIT";           break;
-    case SQL_GUID:                      type = "GUID";          break;
-    case SQL_INTERVAL_YEAR:             type = "INTERVAL YEAR"; break;
-    case SQL_INTERVAL_MONTH:            type = "INTERVAL MONTH";break;
-    case SQL_INTERVAL_DAY:              type = "INTERVAL DAY";  break;
-    case SQL_INTERVAL_HOUR:             type = "INTERVAL HOUR"; break;
-    case SQL_INTERVAL_MINUTE:           type = "INTERVAL MINUTE";          break;
-    case SQL_INTERVAL_SECOND:           type = "INTERVAL SECOND";          break;
-    case SQL_INTERVAL_YEAR_TO_MONTH:    type = "INTERVAL YEAR TO MONTH";   break;
-    case SQL_INTERVAL_DAY_TO_HOUR:      type = "INTERVAL DAY TO HOUR";     break;
-    case SQL_INTERVAL_DAY_TO_MINUTE:    type = "INTERVAL DAY TO MINUTE";   break;
-    case SQL_INTERVAL_DAY_TO_SECOND:    type = "INTERVAL DAY TO SECOND";   break;
-    case SQL_INTERVAL_HOUR_TO_MINUTE:   type = "INTERVAL HOUR TO MINUTE";  break;
-    case SQL_INTERVAL_HOUR_TO_SECOND:   type = "INTERVAL HOUR TO SECOND";  break;
-    case SQL_INTERVAL_MINUTE_TO_SECOND: type = "INTERVAL MINUTE TO SECOND";break;
+    case SQL_DATETIME:                  type = _T("DATETIME");      break;
+    case SQL_TYPE_DATE:                 type = _T("TYPE DATE");     break;
+    case SQL_TIME:                      type = _T("TIME");          break;
+    case SQL_TYPE_TIME:                 type = _T("TYPE TIME");     break;
+    case SQL_TIMESTAMP:                 type = _T("TIMESTAMP");     break;
+    case SQL_TYPE_TIMESTAMP:            type = _T("TYPE TIMESTAMP");break;
+    case SQL_BINARY:                    type = _T("BINARY");        break;
+    case SQL_VARBINARY:                 type = _T("VARBINARY");     break;
+    case SQL_LONGVARBINARY:             type = _T("LONGVARBINARY"); break;
+    case SQL_BIGINT:                    type = _T("BIGINT");        break;
+    case SQL_TINYINT:                   type = _T("TINYINT");       break;
+    case SQL_BIT:                       type = _T("BIT");           break;
+    case SQL_GUID:                      type = _T("GUID");          break;
+    case SQL_INTERVAL_YEAR:             type = _T("INTERVAL YEAR"); break;
+    case SQL_INTERVAL_MONTH:            type = _T("INTERVAL MONTH");break;
+    case SQL_INTERVAL_DAY:              type = _T("INTERVAL DAY");  break;
+    case SQL_INTERVAL_HOUR:             type = _T("INTERVAL HOUR"); break;
+    case SQL_INTERVAL_MINUTE:           type = _T("INTERVAL MINUTE");          break;
+    case SQL_INTERVAL_SECOND:           type = _T("INTERVAL SECOND");          break;
+    case SQL_INTERVAL_YEAR_TO_MONTH:    type = _T("INTERVAL YEAR TO MONTH");   break;
+    case SQL_INTERVAL_DAY_TO_HOUR:      type = _T("INTERVAL DAY TO HOUR");     break;
+    case SQL_INTERVAL_DAY_TO_MINUTE:    type = _T("INTERVAL DAY TO MINUTE");   break;
+    case SQL_INTERVAL_DAY_TO_SECOND:    type = _T("INTERVAL DAY TO SECOND");   break;
+    case SQL_INTERVAL_HOUR_TO_MINUTE:   type = _T("INTERVAL HOUR TO MINUTE");  break;
+    case SQL_INTERVAL_HOUR_TO_SECOND:   type = _T("INTERVAL HOUR TO SECOND");  break;
+    case SQL_INTERVAL_MINUTE_TO_SECOND: type = _T("INTERVAL MINUTE TO SECOND");break;
     case SQL_UNKNOWN_TYPE:
-    default:                            type = "UNKNOWN ODBC DATA TYPE!";  break;
+    default:                            type = _T("UNKNOWN ODBC DATA TYPE!");  break;
   }
   return type;
 }
@@ -1389,26 +1389,26 @@ SQLInfo::MakeInfoTableTable(MTableMap& p_tables
                            ,XString    p_tablename
                            ,XString    p_type)
 {
-  SQLCHAR      szCatalogName [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szCatalogName [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbCatalogName = 0;
-  SQLCHAR      szSchemaName  [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szSchemaName  [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbSchemaName  = 0;
-  SQLCHAR      szTableName   [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szTableName   [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbTableName   = 0;
-  SQLCHAR      szTableType   [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szTableType   [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbTableType   = 0;
-  SQLCHAR      szRemarks     [2 * SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szRemarks     [2 * SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbRemarks     = 0;
   // Where to search
-  unsigned char search_catalog[SQL_MAX_BUFFER] = { 0 };
-  unsigned char search_schema [SQL_MAX_BUFFER] = { 0 };
-  unsigned char search_table  [SQL_MAX_BUFFER] = { 0 };
-  unsigned char search_type   [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR search_catalog[SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR search_schema [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR search_table  [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR search_type   [SQL_MAX_BUFFER] = { 0 };
 
   // Check whether we can do this
   if(!SupportedFunction(SQL_API_SQLTABLES))
   {
-    p_errors = "SQLTables unsupported. Get a better ODBC driver!";
+    p_errors = _T("SQLTables unsupported. Get a better ODBC driver!");
     return false;
   }
   // Get a statement handle for metadata use
@@ -1431,12 +1431,12 @@ SQLInfo::MakeInfoTableTable(MTableMap& p_tables
                              // e.g. MS-SQLServer / MS-Access / mySQL
       default:               if(m_METADATA_ID_unsupported && (m_METADATA_ID_errorseen == false))
                              {
-                               InfoMessageBox("Cannot guarantee to find object '" + p_tablename + "' for one of the following reasons:\r\n"
-                                             "- The usage of SQL_ATTR_METADATA_ID is not supported on the statement level\r\n"
-                                             "- The usage of SQL_ATTR_METADATA_ID is not supported on the connection level\r\n"
-                                             "- SQLInfo of catalog identifiers is not simply SQL_IC_UPPER or SQL_IC_LOWER\r\n"
-                                             "  and the catalog is not treated in a case-insensitive way."
-                                            ,MB_OK);
+                               InfoMessageBox(_T("Cannot guarantee to find object '" + p_tablename + "' for one of the following reasons:\r\n"
+                                                 "- The usage of SQL_ATTR_METADATA_ID is not supported on the statement level\r\n"
+                                                 "- The usage of SQL_ATTR_METADATA_ID is not supported on the connection level\r\n"
+                                                 "- SQLInfo of catalog identifiers is not simply SQL_IC_UPPER or SQL_IC_LOWER\r\n"
+                                                 "  and the catalog is not treated in a case-insensitive way.")
+                                             ,MB_OK);
                                m_METADATA_ID_errorseen = true;
                              }
                              break;
@@ -1445,9 +1445,9 @@ SQLInfo::MakeInfoTableTable(MTableMap& p_tables
 
   // Setting the search arguments
   search_catalog[0] = 0;
-  strcpy_s(reinterpret_cast<char*>(search_schema),SQL_MAX_BUFFER,p_schema);
-  strcpy_s(reinterpret_cast<char*>(search_table), SQL_MAX_BUFFER,p_tablename);
-  strcpy_s(reinterpret_cast<char*>(search_type),  SQL_MAX_BUFFER,p_type);
+  _tcscpy_s(reinterpret_cast<TCHAR*>(search_schema),SQL_MAX_BUFFER,p_schema);
+  _tcscpy_s(reinterpret_cast<TCHAR*>(search_table), SQL_MAX_BUFFER,p_tablename);
+  _tcscpy_s(reinterpret_cast<TCHAR*>(search_type),  SQL_MAX_BUFFER,p_type);
 
   // Have care: Empty strings denotes a special case
   // - Empty strings for a search catalog means tables with no catalog in an 
@@ -1457,10 +1457,10 @@ SQLInfo::MakeInfoTableTable(MTableMap& p_tables
   //   owner means we must provide a NULL pointer
   // - If the driver cannot search on this type of META-object the pointer MUST be NULL
 
-  unsigned char* catalog = GetMetaPointer(search_catalog,meta);
-  unsigned char* schema  = GetMetaPointer(search_schema, meta);
-  unsigned char* table   = GetMetaPointer(search_table,  meta);
-  unsigned char* stype   = GetMetaPointer(search_type,   meta);
+  SQLTCHAR* catalog = GetMetaPointer(search_catalog,meta);
+  SQLTCHAR* schema  = GetMetaPointer(search_schema, meta);
+  SQLTCHAR* table   = GetMetaPointer(search_table,  meta);
+  SQLTCHAR* stype   = GetMetaPointer(search_type,   meta);
 
   ODBC_CALL_ONCE(SQLTables(m_hstmt
                           ,catalog                   // Catalog name to search for
@@ -1473,11 +1473,11 @@ SQLInfo::MakeInfoTableTable(MTableMap& p_tables
                           ,stype   ? SQL_NTS : 0 )); // Table types length
   if(m_retCode == SQL_SUCCESS)
   {
-     SQLBindCol(m_hstmt, 1, SQL_C_CHAR,szCatalogName,SQL_MAX_BUFFER, &cbCatalogName);
-     SQLBindCol(m_hstmt, 2, SQL_C_CHAR,szSchemaName, SQL_MAX_BUFFER, &cbSchemaName);
-     SQLBindCol(m_hstmt, 3, SQL_C_CHAR,szTableName,  SQL_MAX_BUFFER, &cbTableName);
-     SQLBindCol(m_hstmt, 4, SQL_C_CHAR,szTableType,  SQL_MAX_BUFFER, &cbTableType);
-     SQLBindCol(m_hstmt, 5, SQL_C_CHAR,szRemarks,  2*SQL_MAX_BUFFER, &cbRemarks);
+     SQLBindCol(m_hstmt, 1, SQL_C_TCHAR,szCatalogName,SQL_MAX_BUFFER, &cbCatalogName);
+     SQLBindCol(m_hstmt, 2, SQL_C_TCHAR,szSchemaName, SQL_MAX_BUFFER, &cbSchemaName);
+     SQLBindCol(m_hstmt, 3, SQL_C_TCHAR,szTableName,  SQL_MAX_BUFFER, &cbTableName);
+     SQLBindCol(m_hstmt, 4, SQL_C_TCHAR,szTableType,  SQL_MAX_BUFFER, &cbTableType);
+     SQLBindCol(m_hstmt, 5, SQL_C_TCHAR,szRemarks,  2*SQL_MAX_BUFFER, &cbRemarks);
      while(true)
      {
        m_retCode = SqlFetch(m_hstmt);
@@ -1503,10 +1503,10 @@ SQLInfo::MakeInfoTableTable(MTableMap& p_tables
          if(cbTableType   > 0) theTable.m_objectType  = szTableType;
 
          // Build "TYPE: catalog.schema.table" object type name
-         theTable.m_fullName = MakeObjectName(reinterpret_cast<SQLCHAR*>(const_cast<char*>(theTable.m_catalog.GetString()))
-                                             ,reinterpret_cast<SQLCHAR*>(const_cast<char*>(theTable.m_schema.GetString()))
-                                             ,reinterpret_cast<SQLCHAR*>(const_cast<char*>(theTable.m_table.GetString()))
-                                             ,reinterpret_cast<SQLCHAR*>(const_cast<char*>(theTable.m_objectType.GetString())));
+         theTable.m_fullName = MakeObjectName(reinterpret_cast<SQLTCHAR*>(const_cast<TCHAR*>(theTable.m_catalog.GetString()))
+                                             ,reinterpret_cast<SQLTCHAR*>(const_cast<TCHAR*>(theTable.m_schema.GetString()))
+                                             ,reinterpret_cast<SQLTCHAR*>(const_cast<TCHAR*>(theTable.m_table.GetString()))
+                                             ,reinterpret_cast<SQLTCHAR*>(const_cast<TCHAR*>(theTable.m_objectType.GetString())));
          // Remember this table as a result
          p_tables.push_back(theTable);
        }
@@ -1518,12 +1518,12 @@ SQLInfo::MakeInfoTableTable(MTableMap& p_tables
   }
   else
   {
-    p_errors  = "Driver not capable to find table/view: ";
+    p_errors  = _T("Driver not capable to find table/view: ");
     p_errors += MakeObjectName(search_catalog,search_schema,search_table,search_type);
 
-    p_errors += ". Error in ODBC statement: ";
+    p_errors += _T(". Error in ODBC statement: ");
     p_errors += m_database->GetErrorString(m_hstmt);
-    }
+  }
   CloseStatement();
   return p_tables.size() > 0;
 }
@@ -1533,23 +1533,23 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns
                              ,XString&    p_errors
                              ,XString     p_schema
                              ,XString     p_tablename
-                             ,XString     p_columnname /*=""*/)
+                             ,XString     p_columnname /*=_T("")*/)
 {
-  SQLCHAR      szCatalogName [SQL_MAX_BUFFER+1] = { 0 };
+  SQLTCHAR     szCatalogName [SQL_MAX_BUFFER+1] = { 0 };
   SQLLEN       cbCatalogName = 0;
-  SQLCHAR      szSchemaName  [SQL_MAX_BUFFER+1] = { 0 };
+  SQLTCHAR     szSchemaName  [SQL_MAX_BUFFER+1] = { 0 };
   SQLLEN       cbSchemaName  = 0;
-  SQLCHAR      szTableName   [SQL_MAX_BUFFER+1] = { 0 };
+  SQLTCHAR     szTableName   [SQL_MAX_BUFFER+1] = { 0 };
   SQLLEN       cbTableName   = 0;
-  SQLCHAR      szColumnName  [SQL_MAX_BUFFER+1] = { 0 };
+  SQLTCHAR     szColumnName  [SQL_MAX_BUFFER+1] = { 0 };
   SQLLEN       cbColumnName  = 0;
-  SQLCHAR      szTypeName    [SQL_MAX_BUFFER+1] = { 0 };
+  SQLTCHAR     szTypeName    [SQL_MAX_BUFFER+1] = { 0 };
   SQLLEN       cbTypeName    = 0;
-  SQLCHAR      szRemarks     [2 * SQL_MAX_BUFFER + 1] = { 0 };
+  SQLTCHAR     szRemarks     [2 * SQL_MAX_BUFFER + 1] = { 0 };
   SQLLEN       cbRemarks     = 0;
-  SQLCHAR      szDefault     [2 * SQL_MAX_BUFFER + 1] = { 0 };
+  SQLTCHAR     szDefault     [2 * SQL_MAX_BUFFER + 1] = { 0 };
   SQLLEN       cbDefault     = 0;
-  SQLCHAR      szNullable    [SQL_MAX_BUFFER+1] = { 0 };
+  SQLTCHAR     szNullable    [SQL_MAX_BUFFER+1] = { 0 };
   SQLLEN       cbIsNullable  = 0;
   SQLSMALLINT  DataType    = 0;
   SQLLEN       cbDataType    = 0;
@@ -1575,7 +1575,7 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns
   // Check whether we can do this
   if(!SupportedFunction(SQL_API_SQLCOLUMNS))
   {
-    p_errors = "SQLColumns unsupported. Get a better ODBC driver!";
+    p_errors = _T("SQLColumns unsupported. Get a better ODBC driver!");
     return false;
   }
 
@@ -1608,15 +1608,15 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns
 
   //strcpy_s((char*)szCatalogName,SQL_MAX_IDENTIFIER,m_searchCatalogName.GetString());
   szCatalogName[0] = 0;
-  strcpy_s(reinterpret_cast<char*>(szSchemaName),SQL_MAX_BUFFER,p_schema.GetString());
-  strcpy_s(reinterpret_cast<char*>(szTableName), SQL_MAX_BUFFER,p_tablename.GetString());
-  strcpy_s(reinterpret_cast<char*>(szColumnName),SQL_MAX_BUFFER,p_columnname.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName),SQL_MAX_BUFFER,p_schema.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szTableName), SQL_MAX_BUFFER,p_tablename.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szColumnName),SQL_MAX_BUFFER,p_columnname.GetString());
 
   // - If the driver cannot search on this type of META-object the pointer MUST be NULL
-  unsigned char* catalog = GetMetaPointer(szCatalogName,meta);
-  unsigned char* schema  = GetMetaPointer(szSchemaName, meta);
-  unsigned char* table   = GetMetaPointer(szTableName,  meta);
-  unsigned char* column  = GetMetaPointer(szColumnName, meta);
+  SQLTCHAR* catalog = GetMetaPointer(szCatalogName,meta);
+  SQLTCHAR* schema  = GetMetaPointer(szSchemaName, meta);
+  SQLTCHAR* table   = GetMetaPointer(szTableName,  meta);
+  SQLTCHAR* column  = GetMetaPointer(szColumnName, meta);
 
   ODBC_CALL_ONCE(SQLColumns(m_hstmt
                            ,catalog                  // Catalog name to search for
@@ -1629,24 +1629,24 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns
                            ,column  ? SQL_NTS : 0)); // Column name length
   if(m_retCode == SQL_SUCCESS)
   {
-     SQLBindCol(m_hstmt, 1, SQL_C_CHAR,   szCatalogName,SQL_MAX_BUFFER, &cbCatalogName);
-     SQLBindCol(m_hstmt, 2, SQL_C_CHAR,   szSchemaName, SQL_MAX_BUFFER, &cbSchemaName);
-     SQLBindCol(m_hstmt, 3, SQL_C_CHAR,   szTableName,  SQL_MAX_BUFFER, &cbTableName);
-     SQLBindCol(m_hstmt, 4, SQL_C_CHAR,   szColumnName, SQL_MAX_BUFFER, &cbColumnName);
-     SQLBindCol(m_hstmt, 5, SQL_C_SHORT, &DataType,     2,              &cbDataType);
-     SQLBindCol(m_hstmt, 6, SQL_C_CHAR,   szTypeName,   SQL_MAX_BUFFER, &cbTypeName);
-     SQLBindCol(m_hstmt, 7, SQL_C_SLONG, &Precision,    4,              &cbPrecision);
-     SQLBindCol(m_hstmt, 8, SQL_C_SLONG, &Length,       4,              &cbLength);
-     SQLBindCol(m_hstmt, 9, SQL_C_SSHORT,&Scale,        2,              &cbScale);
-     SQLBindCol(m_hstmt,10, SQL_C_SHORT, &NumRadix,     2,              &cbNumRadix);
-     SQLBindCol(m_hstmt,11, SQL_C_SSHORT,&Nullable,     2,              &cbNullable);
-     SQLBindCol(m_hstmt,12, SQL_C_CHAR,   szRemarks,  2*SQL_MAX_BUFFER, &cbRemarks);
-     SQLBindCol(m_hstmt,13, SQL_C_CHAR,   szDefault,  2*SQL_MAX_BUFFER, &cbDefault);
-     SQLBindCol(m_hstmt,14, SQL_C_SHORT, &DataType3,    2,              &cbDataType3);
-     SQLBindCol(m_hstmt,15, SQL_C_SHORT, &TypeSub,      2,              &cbTypeSub);
-     SQLBindCol(m_hstmt,16, SQL_C_SLONG, &OctetLength,  4,              &cbOctetLength);
-     SQLBindCol(m_hstmt,17, SQL_C_SLONG, &Position,     4,              &cbPosition);
-     SQLBindCol(m_hstmt,18, SQL_C_CHAR,  &szNullable,   SQL_MAX_BUFFER, &cbIsNullable);
+     SQLBindCol(m_hstmt, 1, SQL_C_TCHAR,   szCatalogName,SQL_MAX_BUFFER, &cbCatalogName);
+     SQLBindCol(m_hstmt, 2, SQL_C_TCHAR,   szSchemaName, SQL_MAX_BUFFER, &cbSchemaName);
+     SQLBindCol(m_hstmt, 3, SQL_C_TCHAR,   szTableName,  SQL_MAX_BUFFER, &cbTableName);
+     SQLBindCol(m_hstmt, 4, SQL_C_TCHAR,   szColumnName, SQL_MAX_BUFFER, &cbColumnName);
+     SQLBindCol(m_hstmt, 5, SQL_C_SHORT,  &DataType,     2,              &cbDataType);
+     SQLBindCol(m_hstmt, 6, SQL_C_TCHAR,   szTypeName,   SQL_MAX_BUFFER, &cbTypeName);
+     SQLBindCol(m_hstmt, 7, SQL_C_SLONG,  &Precision,    4,              &cbPrecision);
+     SQLBindCol(m_hstmt, 8, SQL_C_SLONG,  &Length,       4,              &cbLength);
+     SQLBindCol(m_hstmt, 9, SQL_C_SSHORT, &Scale,        2,              &cbScale);
+     SQLBindCol(m_hstmt,10, SQL_C_SHORT,  &NumRadix,     2,              &cbNumRadix);
+     SQLBindCol(m_hstmt,11, SQL_C_SSHORT, &Nullable,     2,              &cbNullable);
+     SQLBindCol(m_hstmt,12, SQL_C_TCHAR,   szRemarks,  2*SQL_MAX_BUFFER, &cbRemarks);
+     SQLBindCol(m_hstmt,13, SQL_C_TCHAR,   szDefault,  2*SQL_MAX_BUFFER, &cbDefault);
+     SQLBindCol(m_hstmt,14, SQL_C_SHORT,  &DataType3,    2,              &cbDataType3);
+     SQLBindCol(m_hstmt,15, SQL_C_SHORT,  &TypeSub,      2,              &cbTypeSub);
+     SQLBindCol(m_hstmt,16, SQL_C_SLONG,  &OctetLength,  4,              &cbOctetLength);
+     SQLBindCol(m_hstmt,17, SQL_C_SLONG,  &Position,     4,              &cbPosition);
+     SQLBindCol(m_hstmt,18, SQL_C_TCHAR,  &szNullable,   SQL_MAX_BUFFER, &cbIsNullable);
 
      while(true)
      {
@@ -1687,7 +1687,7 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns
            type = ODBCDataType(DataType);
            if(cbTypeName > 0)
            {
-             if(type.CompareNoCase(reinterpret_cast<char*>(szTypeName)))
+             if(type.CompareNoCase(reinterpret_cast<TCHAR*>(szTypeName)))
              {
                type = szTypeName;                                      // 6
              }
@@ -1695,7 +1695,7 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns
          }
          if(cbDataType <= 0 && cbTypeName <= 0)
          {
-           type = "UNKNOWN-TYPE";
+           type = _T("UNKNOWN-TYPE");
          }
          theColumn.m_typename = type;
 
@@ -1719,10 +1719,10 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns
   }
   else
   {
-    SQLCHAR type[2] = "";
-    p_errors  = "Driver not capable to find columns for: ";
+    SQLTCHAR type[2] = _T("");
+    p_errors  = _T("Driver not capable to find columns for: ");
     p_errors += MakeObjectName(catalog,schema,table,type);
-    p_errors += ". Error in ODBC statement: ";
+    p_errors += _T(". Error in ODBC statement: ");
     p_errors += m_database->GetErrorString(m_hstmt);
   }
   CloseStatement();
@@ -1732,35 +1732,35 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns
 bool
 SQLInfo::MakeInfoTablePrimary(MPrimaryMap& p_primaries,XString& p_errors,XString p_schema,XString p_tablename)
 {
-  SQLCHAR      szCatalogName [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szCatalogName [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbCatalogName = 0;
-  SQLCHAR      szSchemaName  [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szSchemaName  [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbSchemaName  = 0;
-  SQLCHAR      szTableName   [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szTableName   [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbTableName   = 0;
-  SQLCHAR      szColumnName  [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szColumnName  [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbColumnName  = 0;
   SWORD          KeySeq      = 0;
   SQLLEN       cbKeySeq      = 0;
-  SQLCHAR      szPkName      [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szPkName      [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbPkName      = 0;
 
   // Check whether we can do this
   if(!SupportedFunction(SQL_API_SQLPRIMARYKEYS))
   {
-    p_errors = "SQLPrimaryKeys unsupported. Get a better ODBC driver!";
+    p_errors = _T("SQLPrimaryKeys unsupported. Get a better ODBC driver!");
     return false;
   }
   szCatalogName[0] = 0;
-  strcpy_s(reinterpret_cast<char*>(szSchemaName), SQL_MAX_IDENTIFIER,p_schema.GetString());
-  strcpy_s(reinterpret_cast<char*>(szTableName),  SQL_MAX_IDENTIFIER,p_tablename.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName), SQL_MAX_IDENTIFIER,p_schema.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szTableName),  SQL_MAX_IDENTIFIER,p_tablename.GetString());
 
   CloseStatement();
   bool meta = GetStatement(false);
 
-  unsigned char* catalog = GetMetaPointer(szCatalogName,meta);
-  unsigned char* schema  = GetMetaPointer(szSchemaName, meta);
-  unsigned char* table   = GetMetaPointer(szTableName,  meta);
+  SQLTCHAR* catalog = GetMetaPointer(szCatalogName,meta);
+  SQLTCHAR* schema  = GetMetaPointer(szSchemaName, meta);
+  SQLTCHAR* table   = GetMetaPointer(szTableName,  meta);
 
   ODBC_CALL_ONCE(SQLPrimaryKeys(m_hstmt
                                ,catalog                  // Catalog name to search for
@@ -1772,12 +1772,12 @@ SQLInfo::MakeInfoTablePrimary(MPrimaryMap& p_primaries,XString& p_errors,XString
                                ));
   if(m_retCode == SQL_SUCCESS)
   {
-     SQLBindCol(m_hstmt, 1, SQL_C_CHAR,  szCatalogName,SQL_MAX_BUFFER, &cbCatalogName);
-     SQLBindCol(m_hstmt, 2, SQL_C_CHAR,  szSchemaName, SQL_MAX_BUFFER, &cbSchemaName);
-     SQLBindCol(m_hstmt, 3, SQL_C_CHAR,  szTableName,  SQL_MAX_BUFFER, &cbTableName);
-     SQLBindCol(m_hstmt, 4, SQL_C_CHAR,  szColumnName, SQL_MAX_BUFFER, &cbColumnName);
-     SQLBindCol(m_hstmt, 5, SQL_C_SSHORT,&KeySeq,      0,              &cbKeySeq);
-     SQLBindCol(m_hstmt, 6, SQL_C_CHAR,  szPkName,     SQL_MAX_BUFFER, &cbPkName);
+     SQLBindCol(m_hstmt, 1, SQL_C_TCHAR,  szCatalogName,SQL_MAX_BUFFER, &cbCatalogName);
+     SQLBindCol(m_hstmt, 2, SQL_C_TCHAR,  szSchemaName, SQL_MAX_BUFFER, &cbSchemaName);
+     SQLBindCol(m_hstmt, 3, SQL_C_TCHAR,  szTableName,  SQL_MAX_BUFFER, &cbTableName);
+     SQLBindCol(m_hstmt, 4, SQL_C_TCHAR,  szColumnName, SQL_MAX_BUFFER, &cbColumnName);
+     SQLBindCol(m_hstmt, 5, SQL_C_SSHORT, &KeySeq,      0,              &cbKeySeq);
+     SQLBindCol(m_hstmt, 6, SQL_C_TCHAR,  szPkName,     SQL_MAX_BUFFER, &cbPkName);
      while(true)
      {
        m_retCode = SqlFetch(m_hstmt);
@@ -1812,10 +1812,10 @@ SQLInfo::MakeInfoTablePrimary(MPrimaryMap& p_primaries,XString& p_errors,XString
   }
   else
   {
-    SQLCHAR type[2] = "";
-    p_errors  = "Driver not capable to find primary key for: ";
+    SQLTCHAR type[2] = _T("");
+    p_errors  = _T("Driver not capable to find primary key for: ");
     p_errors += MakeObjectName(catalog,schema,table,type);
-    p_errors += ". Error in ODBC statement: ";
+    p_errors += _T(". Error in ODBC statement: ");
     p_errors += m_database->GetErrorString(m_hstmt);
   }
   CloseStatement();
@@ -1827,23 +1827,23 @@ SQLInfo::MakeInfoTableForeign(MForeignMap& p_foreigns
                              ,XString&     p_errors
                              ,XString      p_schema
                              ,XString      p_tablename
-                             ,bool         p_referenced /* = false */)
+                             ,bool         p_referenced  /* = false */)
 {
-  SQLCHAR      szPKCatalogName [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szPKCatalogName [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbPKCatalogName = 0;
-  SQLCHAR      szPKSchemaName  [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szPKSchemaName  [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbPKSchemaName  = 0;
-  SQLCHAR      szPKTableName   [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szPKTableName   [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbPKTableName   = 0;
-  SQLCHAR      szFKCatalogName [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szFKCatalogName [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbFKCatalogName = 0;
-  SQLCHAR      szFKSchemaName  [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szFKSchemaName  [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbFKSchemaName  = 0;
-  SQLCHAR      szFKTableName   [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szFKTableName   [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbFKTableName   = 0;
-  SQLCHAR      szPKColumnName  [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szPKColumnName  [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbPKColumnName  = 0;
-  SQLCHAR      szFKColumnName  [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szFKColumnName  [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbFKColumnName  = 0;
   SWORD          KeySeq        = 0;
   SQLLEN       cbKeySeq        = 0;
@@ -1853,15 +1853,15 @@ SQLInfo::MakeInfoTableForeign(MForeignMap& p_foreigns
   SQLLEN       cbDeleteRule    = 0;
   SWORD          Deferrab      = 0;
   SQLLEN       cbDeferrab      = 0;
-  SQLCHAR      szFKKeyName    [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szFKKeyName     [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbFKKeyName     = 0;
-  SQLCHAR      szPKKeyName    [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szPKKeyName     [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbPKKeyName     = 0;
 
   // Check whether we can do this
   if(!SupportedFunction(SQL_API_SQLFOREIGNKEYS))
   {
-    p_errors = "SQLForeignKeys unsupported. Get a better ODBC driver!";
+    p_errors = _T("SQLForeignKeys unsupported. Get a better ODBC driver!");
     return false;
   }
   CloseStatement();
@@ -1870,8 +1870,8 @@ SQLInfo::MakeInfoTableForeign(MForeignMap& p_foreigns
   if(p_referenced)
   {
     szPKCatalogName[0] = 0;
-    strcpy_s(reinterpret_cast<char*>(szPKSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
-    strcpy_s(reinterpret_cast<char*>(szPKTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
+    _tcscpy_s(reinterpret_cast<TCHAR*>(szPKSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
+    _tcscpy_s(reinterpret_cast<TCHAR*>(szPKTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
     szFKCatalogName[0] = 0;
     szFKSchemaName [0] = 0;
     szFKTableName  [0] = 0;
@@ -1882,15 +1882,15 @@ SQLInfo::MakeInfoTableForeign(MForeignMap& p_foreigns
     szPKSchemaName [0] = 0;
     szPKTableName  [0] = 0;
     szFKCatalogName[0] = 0;
-    strcpy_s(reinterpret_cast<char*>(szFKSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
-    strcpy_s(reinterpret_cast<char*>(szFKTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
+    _tcscpy_s(reinterpret_cast<TCHAR*>(szFKSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
+    _tcscpy_s(reinterpret_cast<TCHAR*>(szFKTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
   }
-  unsigned char* PKcatalog = GetMetaPointer(szPKCatalogName,meta);
-  unsigned char* PKschema  = GetMetaPointer(szPKSchemaName, meta);
-  unsigned char* PKtable   = GetMetaPointer(szPKTableName,  meta);
-  unsigned char* FKcatalog = GetMetaPointer(szFKCatalogName,meta);
-  unsigned char* FKschema  = GetMetaPointer(szFKSchemaName, meta);
-  unsigned char* FKtable   = GetMetaPointer(szFKTableName,  meta);
+  SQLTCHAR* PKcatalog = GetMetaPointer(szPKCatalogName,meta);
+  SQLTCHAR* PKschema  = GetMetaPointer(szPKSchemaName, meta);
+  SQLTCHAR* PKtable   = GetMetaPointer(szPKTableName,  meta);
+  SQLTCHAR* FKcatalog = GetMetaPointer(szFKCatalogName,meta);
+  SQLTCHAR* FKschema  = GetMetaPointer(szFKSchemaName, meta);
+  SQLTCHAR* FKtable   = GetMetaPointer(szFKTableName,  meta);
 
   m_retCode = SQL_ERROR;
   ODBC_CALL_ONCE(SQLForeignKeys(m_hstmt
@@ -1909,20 +1909,20 @@ SQLInfo::MakeInfoTableForeign(MForeignMap& p_foreigns
                                ));
   if(m_retCode == SQL_SUCCESS)
   {
-     SQLBindCol(m_hstmt, 1, SQL_C_CHAR, szPKCatalogName,SQL_MAX_BUFFER, &cbPKCatalogName);
-     SQLBindCol(m_hstmt, 2, SQL_C_CHAR, szPKSchemaName, SQL_MAX_BUFFER, &cbPKSchemaName);
-     SQLBindCol(m_hstmt, 3, SQL_C_CHAR, szPKTableName,  SQL_MAX_BUFFER, &cbPKTableName);
-     SQLBindCol(m_hstmt, 4, SQL_C_CHAR, szPKColumnName, SQL_MAX_BUFFER, &cbPKColumnName);
-     SQLBindCol(m_hstmt, 5, SQL_C_CHAR, szFKCatalogName,SQL_MAX_BUFFER, &cbFKCatalogName);
-     SQLBindCol(m_hstmt, 6, SQL_C_CHAR, szFKSchemaName, SQL_MAX_BUFFER, &cbFKSchemaName);
-     SQLBindCol(m_hstmt, 7, SQL_C_CHAR, szFKTableName,  SQL_MAX_BUFFER, &cbFKTableName);
-     SQLBindCol(m_hstmt, 8, SQL_C_CHAR, szFKColumnName, SQL_MAX_BUFFER, &cbFKColumnName);
-     SQLBindCol(m_hstmt, 9, SQL_C_SSHORT,&KeySeq,       0,              &cbKeySeq);
-     SQLBindCol(m_hstmt,10, SQL_C_SSHORT,&UpdateRule,   0,              &cbUpdateRule);
-     SQLBindCol(m_hstmt,11, SQL_C_SSHORT,&DeleteRule,   0,              &cbDeleteRule);
-     SQLBindCol(m_hstmt,12, SQL_C_CHAR, szFKKeyName,    SQL_MAX_BUFFER, &cbFKKeyName);
-     SQLBindCol(m_hstmt,13, SQL_C_CHAR, szPKKeyName,    SQL_MAX_BUFFER, &cbPKKeyName);
-     SQLBindCol(m_hstmt,14, SQL_C_SSHORT,&Deferrab,     0,              &cbDeferrab);
+     SQLBindCol(m_hstmt, 1, SQL_C_TCHAR, szPKCatalogName,SQL_MAX_BUFFER, &cbPKCatalogName);
+     SQLBindCol(m_hstmt, 2, SQL_C_TCHAR, szPKSchemaName, SQL_MAX_BUFFER, &cbPKSchemaName);
+     SQLBindCol(m_hstmt, 3, SQL_C_TCHAR, szPKTableName,  SQL_MAX_BUFFER, &cbPKTableName);
+     SQLBindCol(m_hstmt, 4, SQL_C_TCHAR, szPKColumnName, SQL_MAX_BUFFER, &cbPKColumnName);
+     SQLBindCol(m_hstmt, 5, SQL_C_TCHAR, szFKCatalogName,SQL_MAX_BUFFER, &cbFKCatalogName);
+     SQLBindCol(m_hstmt, 6, SQL_C_TCHAR, szFKSchemaName, SQL_MAX_BUFFER, &cbFKSchemaName);
+     SQLBindCol(m_hstmt, 7, SQL_C_TCHAR, szFKTableName,  SQL_MAX_BUFFER, &cbFKTableName);
+     SQLBindCol(m_hstmt, 8, SQL_C_TCHAR, szFKColumnName, SQL_MAX_BUFFER, &cbFKColumnName);
+     SQLBindCol(m_hstmt, 9, SQL_C_SSHORT, &KeySeq,       0,              &cbKeySeq);
+     SQLBindCol(m_hstmt,10, SQL_C_SSHORT, &UpdateRule,   0,              &cbUpdateRule);
+     SQLBindCol(m_hstmt,11, SQL_C_SSHORT, &DeleteRule,   0,              &cbDeleteRule);
+     SQLBindCol(m_hstmt,12, SQL_C_TCHAR, szFKKeyName,    SQL_MAX_BUFFER, &cbFKKeyName);
+     SQLBindCol(m_hstmt,13, SQL_C_TCHAR, szPKKeyName,    SQL_MAX_BUFFER, &cbPKKeyName);
+     SQLBindCol(m_hstmt,14, SQL_C_SSHORT, &Deferrab,     0,              &cbDeferrab);
      while(true)
      {
        m_retCode = SqlFetch(m_hstmt);
@@ -1969,13 +1969,13 @@ SQLInfo::MakeInfoTableForeign(MForeignMap& p_foreigns
   }
   else
   {
-    SQLCHAR empty[2] = "";
-    p_errors  = "Driver not capable to find foreign keys for: ";
+    SQLTCHAR empty[2] = _T("");
+    p_errors  = _T("Driver not capable to find foreign keys for: ");
     p_errors += MakeObjectName(empty
-                              ,reinterpret_cast<SQLCHAR*>(const_cast<char*>(p_schema.GetString()))
-                              ,reinterpret_cast<SQLCHAR*>(const_cast<char*>(p_tablename.GetString()))
+                              ,reinterpret_cast<SQLTCHAR*>(const_cast<TCHAR*>(p_schema.GetString()))
+                              ,reinterpret_cast<SQLTCHAR*>(const_cast<TCHAR*>(p_tablename.GetString()))
                               ,empty);
-    p_errors += ". Error in ODBC statement: ";
+    p_errors += _T(". Error in ODBC statement: ");
     p_errors += m_database->GetErrorString(m_hstmt);
   }
   CloseStatement();
@@ -1987,24 +1987,24 @@ SQLInfo::MakeInfoTableStatistics(MIndicesMap& p_statistics
                                 ,XString&     p_errors
                                 ,XString      p_schema
                                 ,XString      p_tablename
-                                ,MPrimaryMap*    p_keymap
-                                ,bool            p_all /*=true*/)
+                                ,MPrimaryMap* p_keymap
+                                ,bool         p_all /*=true*/)
 {
-  SQLCHAR      szCatalogName [SQL_MAX_BUFFER + 1] = "";
+  SQLTCHAR     szCatalogName [SQL_MAX_BUFFER + 1] = _T("");
   SQLLEN       cbCatalogName = 0;
-  SQLCHAR      szSchemaName  [SQL_MAX_BUFFER + 1] = "";
+  SQLTCHAR     szSchemaName  [SQL_MAX_BUFFER + 1] = _T("");
   SQLLEN       cbSchemaName  = 0;
-  SQLCHAR      szTableName   [SQL_MAX_BUFFER + 1] = "";
+  SQLTCHAR     szTableName   [SQL_MAX_BUFFER + 1] = _T("");
   SQLLEN       cbTableName   = 0;
-  SQLSMALLINT  NonUnique   = 0;
+  SQLSMALLINT    NonUnique   = 0;
   SQLLEN       cbNonUnique   = 0;
-  SQLCHAR      szIndexName   [SQL_MAX_BUFFER + 1] = "";
+  SQLTCHAR     szIndexName   [SQL_MAX_BUFFER + 1] = _T("");
   SQLLEN       cbIndexName   = 0;
   SQLSMALLINT    IndexType   = 0;
   SQLLEN       cbIndexType   = 0;
   SQLSMALLINT    OrdinalPos  = 0;
   SQLLEN       cbOrdinalPos  = 0;
-  SQLCHAR      szColumnName  [SQL_MAX_BUFFER + 1] = "";
+  SQLTCHAR     szColumnName  [SQL_MAX_BUFFER + 1] = _T("");
   SQLLEN       cbColumnName  = 0;
   SQLCHAR        AscDesc     [10] = "";
   SQLLEN       cbAscDesc     = 0;
@@ -2012,26 +2012,26 @@ SQLInfo::MakeInfoTableStatistics(MIndicesMap& p_statistics
   SQLLEN       cbCardinality = 0;
   SQLINTEGER     Pages       = 0;
   SQLLEN       cbPages       = 0;
-  SQLCHAR      szFilter      [SQL_MAX_BUFFER + 1] = "";
+  SQLTCHAR     szFilter      [SQL_MAX_BUFFER + 1] = _T("");
   SQLLEN       cbFilter      = 0;
   SQLUSMALLINT searchType    = p_all ? SQL_INDEX_ALL : SQL_INDEX_UNIQUE;
 
   // Check whether we can do this
   if(!SupportedFunction(SQL_API_SQLSTATISTICS))
   {
-    p_errors = "SQLStatistics unsupported. Get a better ODBC driver!";
+    p_errors = _T("SQLStatistics unsupported. Get a better ODBC driver!");
     return true;
   }
   szCatalogName[0] = 0;
-  strcpy_s(reinterpret_cast<char*>(szSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
-  strcpy_s(reinterpret_cast<char*>(szTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
 
   CloseStatement();
   bool meta = GetStatement(false);
 
-  unsigned char* catalog = GetMetaPointer(szCatalogName,meta);
-  unsigned char* schema  = GetMetaPointer(szSchemaName, meta);
-  unsigned char* table   = GetMetaPointer(szTableName,  meta);
+  SQLTCHAR* catalog = GetMetaPointer(szCatalogName,meta);
+  SQLTCHAR* schema  = GetMetaPointer(szSchemaName, meta);
+  SQLTCHAR* table   = GetMetaPointer(szTableName,  meta);
 
   m_retCode = SQL_ERROR;
   ODBC_CALL_ONCE(SQLStatistics(m_hstmt
@@ -2045,18 +2045,18 @@ SQLInfo::MakeInfoTableStatistics(MIndicesMap& p_statistics
                               ,SQL_QUICK));    // Make sure we get the right Cardinality and Pages (SQL_ENSURE)
   if(m_retCode == SQL_SUCCESS)
   {
-    SQLBindCol(m_hstmt, 1, SQL_C_CHAR,   szCatalogName,SQL_MAX_BUFFER, &cbCatalogName);
-    SQLBindCol(m_hstmt, 2, SQL_C_CHAR,   szSchemaName, SQL_MAX_BUFFER, &cbSchemaName);
-    SQLBindCol(m_hstmt, 3, SQL_C_CHAR,   szTableName,  SQL_MAX_BUFFER, &cbTableName);
-    SQLBindCol(m_hstmt, 4, SQL_C_SSHORT,&NonUnique,    0,              &cbNonUnique);
-    SQLBindCol(m_hstmt, 6, SQL_C_CHAR,   szIndexName,  SQL_MAX_BUFFER, &cbIndexName);
-    SQLBindCol(m_hstmt, 7, SQL_C_SSHORT,&IndexType,    0,              &cbIndexType);
-    SQLBindCol(m_hstmt, 8, SQL_C_SSHORT,&OrdinalPos,   0,              &cbOrdinalPos);
-    SQLBindCol(m_hstmt, 9, SQL_C_CHAR,   szColumnName, SQL_MAX_BUFFER, &cbColumnName);
-    SQLBindCol(m_hstmt,10, SQL_C_CHAR,  &AscDesc,      2,              &cbAscDesc);
-    SQLBindCol(m_hstmt,11, SQL_C_LONG,  &Cardinality,  0,              &cbCardinality);
-    SQLBindCol(m_hstmt,12, SQL_C_LONG,  &Pages,        0,              &cbPages);
-    SQLBindCol(m_hstmt,13, SQL_C_CHAR,   szFilter,     SQL_MAX_BUFFER, &cbFilter);
+    SQLBindCol(m_hstmt, 1, SQL_C_TCHAR,   szCatalogName,SQL_MAX_BUFFER, &cbCatalogName);
+    SQLBindCol(m_hstmt, 2, SQL_C_TCHAR,   szSchemaName, SQL_MAX_BUFFER, &cbSchemaName);
+    SQLBindCol(m_hstmt, 3, SQL_C_TCHAR,   szTableName,  SQL_MAX_BUFFER, &cbTableName);
+    SQLBindCol(m_hstmt, 4, SQL_C_SSHORT, &NonUnique,    0,              &cbNonUnique);
+    SQLBindCol(m_hstmt, 6, SQL_C_TCHAR,   szIndexName,  SQL_MAX_BUFFER, &cbIndexName);
+    SQLBindCol(m_hstmt, 7, SQL_C_SSHORT, &IndexType,    0,              &cbIndexType);
+    SQLBindCol(m_hstmt, 8, SQL_C_SSHORT, &OrdinalPos,   0,              &cbOrdinalPos);
+    SQLBindCol(m_hstmt, 9, SQL_C_TCHAR,   szColumnName, SQL_MAX_BUFFER, &cbColumnName);
+    SQLBindCol(m_hstmt,10, SQL_C_TCHAR,  &AscDesc,      2,              &cbAscDesc);
+    SQLBindCol(m_hstmt,11, SQL_C_TCHAR,  &Cardinality,  0,              &cbCardinality);
+    SQLBindCol(m_hstmt,12, SQL_C_TCHAR,  &Pages,        0,              &cbPages);
+    SQLBindCol(m_hstmt,13, SQL_C_TCHAR,   szFilter,     SQL_MAX_BUFFER, &cbFilter);
     while(true)
     {
       m_retCode = SqlFetch(m_hstmt);
@@ -2110,10 +2110,10 @@ SQLInfo::MakeInfoTableStatistics(MIndicesMap& p_statistics
   }
   else
   {
-    SQLCHAR empty[2] = "";
-    p_errors  = "Driver not capable to find statistics for: ";
+    SQLTCHAR empty[2] = _T("");
+    p_errors  = _T("Driver not capable to find statistics for: ");
     p_errors += MakeObjectName(catalog,schema,table,empty);
-    p_errors += ". Error in ODBC statement: ";
+    p_errors += _T(". Error in ODBC statement: ");
     p_errors += m_database->GetErrorString(m_hstmt);
   }
   CloseStatement();
@@ -2125,12 +2125,12 @@ SQLInfo::MakeInfoTableSpecials(MSpecialsMap& p_specials
                               ,XString&      p_errors
                               ,XString       p_schema
                               ,XString       p_tablename)
-  {
-  SQLCHAR      szCatalogName [SQL_MAX_BUFFER] = { 0 };
-  SQLCHAR      szSchemaName  [SQL_MAX_BUFFER] = { 0 };
-  SQLCHAR      szTableName   [SQL_MAX_BUFFER] = { 0 };
-  SQLCHAR      szColumnName  [SQL_MAX_BUFFER] = { 0 };
-  SQLCHAR      szTypeName    [SQL_MAX_BUFFER] = { 0 };
+{
+  SQLTCHAR     szCatalogName [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szSchemaName  [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szTableName   [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szColumnName  [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szTypeName    [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbColumnName  = 0;
   SQLLEN       cbTypeName    = 0;
   SWORD          Scope       = 0;
@@ -2149,19 +2149,19 @@ SQLInfo::MakeInfoTableSpecials(MSpecialsMap& p_specials
   // Check whether we can do this
   if(!SupportedFunction(SQL_API_SQLSPECIALCOLUMNS))
   {
-    p_errors = "SQLSpecialColumns unsupported. Get a better ODBC driver!";
+    p_errors = _T("SQLSpecialColumns unsupported. Get a better ODBC driver!");
     return false;
   }
   szCatalogName[0] = 0;
-  strcpy_s(reinterpret_cast<char*>(szSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
-  strcpy_s(reinterpret_cast<char*>(szTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
 
   CloseStatement();
   bool meta = GetStatement(false);
 
-  unsigned char* catalog = GetMetaPointer(szCatalogName,meta);
-  unsigned char* schema  = GetMetaPointer(szSchemaName, meta);
-  unsigned char* table   = GetMetaPointer(szTableName,  meta);
+  SQLTCHAR* catalog = GetMetaPointer(szCatalogName,meta);
+  SQLTCHAR* schema  = GetMetaPointer(szSchemaName, meta);
+  SQLTCHAR* table   = GetMetaPointer(szTableName,  meta);
 
   m_retCode = SQL_ERROR;
   ODBC_CALL_ONCE(SQLSpecialColumns(m_hstmt
@@ -2177,9 +2177,9 @@ SQLInfo::MakeInfoTableSpecials(MSpecialsMap& p_specials
   if(m_retCode == SQL_SUCCESS)
   {
      SQLBindCol(m_hstmt, 1, SQL_C_SSHORT,&Scope,      0,              &cbScope);
-     SQLBindCol(m_hstmt, 2, SQL_C_CHAR,  szColumnName,SQL_MAX_BUFFER, &cbColumnName);
+     SQLBindCol(m_hstmt, 2, SQL_C_TCHAR, szColumnName,SQL_MAX_BUFFER, &cbColumnName);
      SQLBindCol(m_hstmt, 3, SQL_C_SHORT, &DataType,   0,              &cbDataType);
-     SQLBindCol(m_hstmt, 4, SQL_C_CHAR,  szTypeName,  SQL_MAX_BUFFER, &cbTypeName);
+     SQLBindCol(m_hstmt, 4, SQL_C_TCHAR, szTypeName,  SQL_MAX_BUFFER, &cbTypeName);
      SQLBindCol(m_hstmt, 5, SQL_C_LONG,  &ColumnSize, 0,              &cbColumnSize);
      SQLBindCol(m_hstmt, 6, SQL_C_LONG,  &BufferSize, 0,              &cbBufferSize);
      SQLBindCol(m_hstmt, 7, SQL_C_SHORT, &DecDigits,  0,              &cbDecDigits);
@@ -2221,10 +2221,10 @@ SQLInfo::MakeInfoTableSpecials(MSpecialsMap& p_specials
   }
   else
   {
-    SQLCHAR empty[2] = "";
-    p_errors  = "Driver not capable to find specials for: ";
+    SQLTCHAR empty[2] = _T("");
+    p_errors  = _T("Driver not capable to find specials for: ");
     p_errors += MakeObjectName(catalog,schema,table,empty);
-    p_errors += ". Error in ODBC statement: ";
+    p_errors += _T(". Error in ODBC statement: ");
     p_errors += m_database->GetErrorString(m_hstmt);
   }
   CloseStatement();
@@ -2237,17 +2237,17 @@ SQLInfo::MakeInfoTablePrivileges(MPrivilegeMap& p_privileges
                                 ,XString        p_schema
                                 ,XString        p_tablename)
 {
-  SQLCHAR      szCatalogName [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szCatalogName [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbCatalogName = 0;
-  SQLCHAR      szSchemaName  [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szSchemaName  [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbSchemaName  = 0;
-  SQLCHAR      szTableName   [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szTableName   [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbTableName   = 0;
-  SQLCHAR      szGrantor     [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szGrantor     [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbGrantor     = 0;
-  SQLCHAR      szGrantee     [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szGrantee     [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbGrantee     = 0;
-  SQLCHAR      szPrivilege   [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szPrivilege   [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbPrivilege   = 0;
   SQLCHAR      szGrantable   [10] = { 0 };
   SQLLEN       cbGrantable   = 0;
@@ -2255,19 +2255,19 @@ SQLInfo::MakeInfoTablePrivileges(MPrivilegeMap& p_privileges
   // Check whether we can do this
   if(!SupportedFunction(SQL_API_SQLTABLEPRIVILEGES))
   {
-    p_errors = "SQLTablePrivileges unsupported. Get a better ODBC driver!";
+    p_errors = _T("SQLTablePrivileges unsupported. Get a better ODBC driver!");
     return false;
   }
   szCatalogName[0] = 0;
-  strcpy_s(reinterpret_cast<char*>(szSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
-  strcpy_s(reinterpret_cast<char*>(szTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
 
   CloseStatement();
   bool meta = GetStatement(false);
 
-  unsigned char* catalog = GetMetaPointer(szCatalogName,meta);
-  unsigned char* schema  = GetMetaPointer(szSchemaName, meta);
-  unsigned char* table   = GetMetaPointer(szTableName,  meta);
+  SQLTCHAR* catalog = GetMetaPointer(szCatalogName,meta);
+  SQLTCHAR* schema  = GetMetaPointer(szSchemaName, meta);
+  SQLTCHAR* table   = GetMetaPointer(szTableName,  meta);
 
   m_retCode = SQL_ERROR;
   ODBC_CALL_ONCE(SQLTablePrivileges(m_hstmt
@@ -2280,13 +2280,13 @@ SQLInfo::MakeInfoTablePrivileges(MPrivilegeMap& p_privileges
                                    ));
   if(m_retCode == SQL_SUCCESS)
   {
-     SQLBindCol(m_hstmt, 1, SQL_C_CHAR, szCatalogName,SQL_MAX_BUFFER, &cbCatalogName);
-     SQLBindCol(m_hstmt, 2, SQL_C_CHAR, szSchemaName, SQL_MAX_BUFFER, &cbSchemaName);
-     SQLBindCol(m_hstmt, 3, SQL_C_CHAR, szTableName,  SQL_MAX_BUFFER, &cbTableName);
-     SQLBindCol(m_hstmt, 4, SQL_C_CHAR, szGrantor,    SQL_MAX_BUFFER, &cbGrantor);
-     SQLBindCol(m_hstmt, 5, SQL_C_CHAR, szGrantee,    SQL_MAX_BUFFER, &cbGrantee);
-     SQLBindCol(m_hstmt, 6, SQL_C_CHAR, szPrivilege,  SQL_MAX_BUFFER, &cbPrivilege);
-     SQLBindCol(m_hstmt, 7, SQL_C_CHAR, szGrantable,  SQL_MAX_BUFFER, &cbGrantable);
+     SQLBindCol(m_hstmt, 1, SQL_C_TCHAR, szCatalogName,SQL_MAX_BUFFER, &cbCatalogName);
+     SQLBindCol(m_hstmt, 2, SQL_C_TCHAR, szSchemaName, SQL_MAX_BUFFER, &cbSchemaName);
+     SQLBindCol(m_hstmt, 3, SQL_C_TCHAR, szTableName,  SQL_MAX_BUFFER, &cbTableName);
+     SQLBindCol(m_hstmt, 4, SQL_C_TCHAR, szGrantor,    SQL_MAX_BUFFER, &cbGrantor);
+     SQLBindCol(m_hstmt, 5, SQL_C_TCHAR, szGrantee,    SQL_MAX_BUFFER, &cbGrantee);
+     SQLBindCol(m_hstmt, 6, SQL_C_TCHAR, szPrivilege,  SQL_MAX_BUFFER, &cbPrivilege);
+     SQLBindCol(m_hstmt, 7, SQL_C_TCHAR, szGrantable,  SQL_MAX_BUFFER, &cbGrantable);
      while(true)
      {
        m_retCode = SqlFetch(m_hstmt);
@@ -2313,7 +2313,7 @@ SQLInfo::MakeInfoTablePrivileges(MPrivilegeMap& p_privileges
          priv.m_grantable = false;
          if(cbGrantable > 0)
          {
-           if(_stricmp(reinterpret_cast<char*>(szGrantable),"YES") == 0)
+           if(_tcsicmp(reinterpret_cast<TCHAR*>(szGrantable),_T("YES")) == 0)
            {
              priv.m_grantable = true;
            }
@@ -2329,10 +2329,10 @@ SQLInfo::MakeInfoTablePrivileges(MPrivilegeMap& p_privileges
   }
   else
   {
-    SQLCHAR empty[2] = "";
-    p_errors  = "Driver not capable to find privileges for: ";
+    SQLTCHAR empty[2] = _T("");
+    p_errors  = _T("Driver not capable to find privileges for: ");
     p_errors += MakeObjectName(catalog,schema,table,empty);
-    p_errors += ". Error in ODBC statement: ";
+    p_errors += _T(". Error in ODBC statement: ");
     p_errors += m_database->GetErrorString(m_hstmt);
   }
   CloseStatement();
@@ -2346,41 +2346,41 @@ SQLInfo::MakeInfoColumnPrivileges(MPrivilegeMap&  p_privileges
                                  ,XString         p_tablename
                                  ,XString         p_columnname /*= ""*/)
 {
-  SQLCHAR      szCatalogName [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szCatalogName [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbCatalogName = 0;
-  SQLCHAR      szSchemaName  [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szSchemaName  [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbSchemaName  = 0;
-  SQLCHAR      szTableName   [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szTableName   [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbTableName   = 0;
-  SQLCHAR      szColumnName  [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szColumnName  [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbColumnName  = 0;
-  SQLCHAR      szGrantor     [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szGrantor     [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbGrantor     = 0;
-  SQLCHAR      szGrantee     [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szGrantee     [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbGrantee     = 0;
-  SQLCHAR      szPrivilege   [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szPrivilege   [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbPrivilege   = 0;
-  SQLCHAR      szGrantable   [10] = { 0 };
+  SQLTCHAR     szGrantable   [10] = { 0 };
   SQLLEN       cbGrantable   = 0;
 
   // Check whether we can do this
   if(!SupportedFunction(SQL_API_SQLCOLUMNPRIVILEGES))
   {
-    p_errors = "SQLColumnPrivileges unsupported. Get a better ODBC driver!";
+    p_errors = _T("SQLColumnPrivileges unsupported. Get a better ODBC driver!");
     return false;
   }
   szCatalogName[0] = 0;
-  strcpy_s(reinterpret_cast<char*>(szSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
-  strcpy_s(reinterpret_cast<char*>(szTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
-  strcpy_s(reinterpret_cast<char*>(szColumnName), SQL_MAX_BUFFER,p_columnname.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szColumnName), SQL_MAX_BUFFER,p_columnname.GetString());
 
   CloseStatement();
   bool meta = GetStatement(false);
 
-  unsigned char* catalog = GetMetaPointer(szCatalogName,meta);
-  unsigned char* schema  = GetMetaPointer(szSchemaName, meta);
-  unsigned char* table   = GetMetaPointer(szTableName,  meta);
-  unsigned char* column  = GetMetaPointer(szColumnName, meta);
+  SQLTCHAR* catalog = GetMetaPointer(szCatalogName,meta);
+  SQLTCHAR* schema  = GetMetaPointer(szSchemaName, meta);
+  SQLTCHAR* table   = GetMetaPointer(szTableName,  meta);
+  SQLTCHAR* column  = GetMetaPointer(szColumnName, meta);
 
   m_retCode = SQL_ERROR;
   ODBC_CALL_ONCE(SQLColumnPrivileges(m_hstmt
@@ -2395,14 +2395,14 @@ SQLInfo::MakeInfoColumnPrivileges(MPrivilegeMap&  p_privileges
                                    ));
   if(m_retCode == SQL_SUCCESS)
   {
-     SQLBindCol(m_hstmt, 1, SQL_C_CHAR, szCatalogName,SQL_MAX_BUFFER, &cbCatalogName);
-     SQLBindCol(m_hstmt, 2, SQL_C_CHAR, szSchemaName, SQL_MAX_BUFFER, &cbSchemaName);
-     SQLBindCol(m_hstmt, 3, SQL_C_CHAR, szTableName,  SQL_MAX_BUFFER, &cbTableName);
-     SQLBindCol(m_hstmt, 4, SQL_C_CHAR, szColumnName, SQL_MAX_BUFFER, &cbColumnName);
-     SQLBindCol(m_hstmt, 5, SQL_C_CHAR, szGrantor,    SQL_MAX_BUFFER, &cbGrantor);
-     SQLBindCol(m_hstmt, 6, SQL_C_CHAR, szGrantee,    SQL_MAX_BUFFER, &cbGrantee);
-     SQLBindCol(m_hstmt, 7, SQL_C_CHAR, szPrivilege,  SQL_MAX_BUFFER, &cbPrivilege);
-     SQLBindCol(m_hstmt, 8, SQL_C_CHAR, szGrantable,  SQL_MAX_BUFFER, &cbGrantable);
+     SQLBindCol(m_hstmt, 1, SQL_C_TCHAR, szCatalogName,SQL_MAX_BUFFER, &cbCatalogName);
+     SQLBindCol(m_hstmt, 2, SQL_C_TCHAR, szSchemaName, SQL_MAX_BUFFER, &cbSchemaName);
+     SQLBindCol(m_hstmt, 3, SQL_C_TCHAR, szTableName,  SQL_MAX_BUFFER, &cbTableName);
+     SQLBindCol(m_hstmt, 4, SQL_C_TCHAR, szColumnName, SQL_MAX_BUFFER, &cbColumnName);
+     SQLBindCol(m_hstmt, 5, SQL_C_TCHAR, szGrantor,    SQL_MAX_BUFFER, &cbGrantor);
+     SQLBindCol(m_hstmt, 6, SQL_C_TCHAR, szGrantee,    SQL_MAX_BUFFER, &cbGrantee);
+     SQLBindCol(m_hstmt, 7, SQL_C_TCHAR, szPrivilege,  SQL_MAX_BUFFER, &cbPrivilege);
+     SQLBindCol(m_hstmt, 8, SQL_C_TCHAR, szGrantable,  SQL_MAX_BUFFER, &cbGrantable);
      while(true)
      {
        m_retCode = SqlFetch(m_hstmt);
@@ -2430,7 +2430,7 @@ SQLInfo::MakeInfoColumnPrivileges(MPrivilegeMap&  p_privileges
          priv.m_grantable = false;
          if(cbGrantable > 0)
          {
-           if(_stricmp(reinterpret_cast<char*>(szGrantable),"YES") == 0)
+           if(_tcsicmp(reinterpret_cast<TCHAR*>(szGrantable),_T("YES")) == 0)
            {
              priv.m_grantable = true;
            }
@@ -2446,9 +2446,9 @@ SQLInfo::MakeInfoColumnPrivileges(MPrivilegeMap&  p_privileges
   }
   else
   {
-    p_errors  = "Driver not capable to find privileges for: ";
+    p_errors  = _T("Driver not capable to find privileges for: ");
     p_errors += MakeObjectName(catalog,schema,table,column);
-    p_errors += ". Error in ODBC statement: ";
+    p_errors += _T(". Error in ODBC statement: ");
     p_errors += m_database->GetErrorString(m_hstmt);
   }
   CloseStatement();
@@ -2461,11 +2461,11 @@ SQLInfo::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
                               ,XString         p_schema
                               ,XString         p_procedure)
 {
-  SQLCHAR      szCatalogName     [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szCatalogName     [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbCatalogName     = 0;
-  SQLCHAR      szSchemaName      [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szSchemaName      [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbSchemaName      = 0;
-  SQLCHAR      szProcedureName   [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szProcedureName   [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbProcedureName   = 0;
   SQLSMALLINT    NumInputParams  = 0;  // Unreliable
   SQLLEN       cbNumInputParams  = 0;
@@ -2473,7 +2473,7 @@ SQLInfo::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
   SQLLEN       cbNumOutputParams = 0;
   SQLSMALLINT    NumResultSets   = 0;  // Unreliable
   SQLLEN       cbNumResultSets   = 0;
-  SQLCHAR      szRemarks         [2 * SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szRemarks         [2 * SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbRemarks         = 0;
   SQLSMALLINT    ProcedureType   = 0;
   SQLLEN       cbProcedureType   = 0;
@@ -2481,7 +2481,7 @@ SQLInfo::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
   // Check whether we can do this
   if(!SupportedFunction(SQL_API_SQLPROCEDURES))
   {
-    p_errors = "SQLProcedures unsupported. Get a better ODBC driver!";
+    p_errors = _T("SQLProcedures unsupported. Get a better ODBC driver!");
     return false;
   }
   if(m_METADATA_ID_unsupported)
@@ -2499,15 +2499,15 @@ SQLInfo::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
   }
   // Split name in a maximum of three parts
   szCatalogName[0] = 0;
-  strcpy_s(reinterpret_cast<char*>(szSchemaName),   SQL_MAX_BUFFER,p_schema.GetString());
-  strcpy_s(reinterpret_cast<char*>(szProcedureName),SQL_MAX_BUFFER,p_procedure.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName),   SQL_MAX_BUFFER,p_schema.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szProcedureName),SQL_MAX_BUFFER,p_procedure.GetString());
 
   CloseStatement();
   bool meta = GetStatement(false);
 
-  unsigned char* catalog   = GetMetaPointer(szCatalogName,  meta);
-  unsigned char* schema    = GetMetaPointer(szSchemaName,   meta);
-  unsigned char* procedure = GetMetaPointer(szProcedureName,meta);
+  SQLTCHAR* catalog   = GetMetaPointer(szCatalogName,  meta);
+  SQLTCHAR* schema    = GetMetaPointer(szSchemaName,   meta);
+  SQLTCHAR* procedure = GetMetaPointer(szProcedureName,meta);
 
   ODBC_CALL_ONCE(::SQLProcedures(m_hstmt
                                 ,catalog 
@@ -2518,14 +2518,14 @@ SQLInfo::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
                                 ,procedure ? SQL_NTS : 0));
   if(m_retCode == SQL_SUCCESS)
   {
-    SQLBindCol(m_hstmt, 1, SQL_C_CHAR,  szCatalogName,   SQL_MAX_BUFFER, &cbCatalogName);
-    SQLBindCol(m_hstmt, 2, SQL_C_CHAR,  szSchemaName,    SQL_MAX_BUFFER, &cbSchemaName);
-    SQLBindCol(m_hstmt, 3, SQL_C_CHAR,  szProcedureName, SQL_MAX_BUFFER, &cbProcedureName);
-    SQLBindCol(m_hstmt, 4, SQL_C_SSHORT,&NumInputParams, 0,              &cbNumInputParams);
-    SQLBindCol(m_hstmt, 5, SQL_C_SSHORT,&NumOutputParams,0,              &cbNumOutputParams);
-    SQLBindCol(m_hstmt, 6, SQL_C_SSHORT,&NumResultSets,  0,              &cbNumResultSets);
-    SQLBindCol(m_hstmt, 7, SQL_C_CHAR,  szRemarks,     2*SQL_MAX_BUFFER, &cbRemarks);
-    SQLBindCol(m_hstmt, 8, SQL_C_SSHORT,&ProcedureType,  0,              &cbProcedureType);
+    SQLBindCol(m_hstmt, 1, SQL_C_TCHAR,  szCatalogName,   SQL_MAX_BUFFER, &cbCatalogName);
+    SQLBindCol(m_hstmt, 2, SQL_C_TCHAR,  szSchemaName,    SQL_MAX_BUFFER, &cbSchemaName);
+    SQLBindCol(m_hstmt, 3, SQL_C_TCHAR,  szProcedureName, SQL_MAX_BUFFER, &cbProcedureName);
+    SQLBindCol(m_hstmt, 4, SQL_C_SSHORT, &NumInputParams, 0,              &cbNumInputParams);
+    SQLBindCol(m_hstmt, 5, SQL_C_SSHORT, &NumOutputParams,0,              &cbNumOutputParams);
+    SQLBindCol(m_hstmt, 6, SQL_C_SSHORT, &NumResultSets,  0,              &cbNumResultSets);
+    SQLBindCol(m_hstmt, 7, SQL_C_TCHAR,  szRemarks,     2*SQL_MAX_BUFFER, &cbRemarks);
+    SQLBindCol(m_hstmt, 8, SQL_C_SSHORT, &ProcedureType,  0,              &cbProcedureType);
     while(true)
     {
       m_retCode = SqlFetch(m_hstmt);
@@ -2574,10 +2574,10 @@ SQLInfo::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
   }
   else
   {
-    SQLCHAR empty[2] = "";
-    p_errors  = "Driver not capable to find procedures for: ";
+    SQLTCHAR empty[2] = _T("");
+    p_errors  = _T("Driver not capable to find procedures for: ");
     p_errors += MakeObjectName(catalog,schema,procedure,empty);
-    p_errors += ". Error in ODBC statement: ";
+    p_errors += _T(". Error in ODBC statement: ");
     p_errors += m_database->GetErrorString(m_hstmt);
   }
   CloseStatement();
@@ -2590,19 +2590,19 @@ SQLInfo::MakeInfoPSMParameters(MParameterMap& p_parameters
                               ,XString        p_schema
                               ,XString        p_procedure)
 {
-  SQLCHAR      szCatalogName     [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szCatalogName     [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbCatalogName     = 0;
-  SQLCHAR      szSchemaName      [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szSchemaName      [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbSchemaName      = 0;
-  SQLCHAR      szProcedureName   [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szProcedureName   [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbProcedureName   = 0;
-  SQLCHAR      szColumnName      [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szColumnName      [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbColumnName      = 0;
   SQLSMALLINT    ColumnType      = 0;
   SQLLEN       cbColumnType      = 0;
   SQLSMALLINT    DataType        = 0;
   SQLLEN       cbDataType        = 0;
-  SQLCHAR      szTypeName        [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szTypeName        [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbTypeName        = 0;
   SQLINTEGER     ColumnSize      = 0;
   SQLINTEGER     BufferSize      = 0;
@@ -2614,13 +2614,13 @@ SQLInfo::MakeInfoPSMParameters(MParameterMap& p_parameters
   SQLLEN       cbRadix           = 0;
   SQLSMALLINT    Nullable        = 0;
   SQLLEN       cbNullable        = 0;
-  SQLCHAR      szRemarks         [2 * SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szRemarks         [2 * SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbRemarks         = 0;
-  SQLCHAR      szDefaultValue    [2 * SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szDefaultValue    [2 * SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbDefaultValue    = 0;
   SQLINTEGER     OrdinalPos      = 0;
   SQLLEN       cbOrdinalPos      = 0;
-  SQLCHAR      szIsNullable      [10] = { 0 };
+  SQLTCHAR     szIsNullable      [10] = { 0 };
   SQLLEN       cbIsNullable      = 0;
   SQLSMALLINT    DataType3       = 0;
   SQLLEN       cbDataType3       = 0;
@@ -2632,22 +2632,22 @@ SQLInfo::MakeInfoPSMParameters(MParameterMap& p_parameters
   // Check whether we can do this
   if(!SupportedFunction(SQL_API_SQLPROCEDURECOLUMNS))
   {
-    p_errors = "SQLProcedureColumns unsupported. Get a better ODBC driver!";
+    p_errors = _T("SQLProcedureColumns unsupported. Get a better ODBC driver!");
     return false;
   }
   // Init search arguments
   szCatalogName[0] = 0;
-  strcpy_s(reinterpret_cast<char*>(szSchemaName),   SQL_MAX_BUFFER,p_schema.GetString());
-  strcpy_s(reinterpret_cast<char*>(szProcedureName),SQL_MAX_BUFFER,p_procedure.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName),   SQL_MAX_BUFFER,p_schema.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szProcedureName),SQL_MAX_BUFFER,p_procedure.GetString());
   szColumnName[0] = 0;
 
   CloseStatement();
   bool meta = GetStatement();
 
-  unsigned char* catalog   = GetMetaPointer(szCatalogName,  meta);
-  unsigned char* schema    = GetMetaPointer(szSchemaName,   meta);
-  unsigned char* procedure = GetMetaPointer(szProcedureName,meta);
-  unsigned char* column    = GetMetaPointer(szColumnName,   meta);
+  SQLTCHAR* catalog   = GetMetaPointer(szCatalogName,  meta);
+  SQLTCHAR* schema    = GetMetaPointer(szSchemaName,   meta);
+  SQLTCHAR* procedure = GetMetaPointer(szProcedureName,meta);
+  SQLTCHAR* column    = GetMetaPointer(szColumnName,   meta);
 
   ODBC_CALL_ONCE(SQLProcedureColumns(m_hstmt
                                     ,catalog
@@ -2658,25 +2658,25 @@ SQLInfo::MakeInfoPSMParameters(MParameterMap& p_parameters
                                     ,column   ,0)); // All columns
   if(m_retCode == SQL_SUCCESS)
   {
-    SQLBindCol(m_hstmt, 1, SQL_C_CHAR, szCatalogName,  SQL_MAX_BUFFER, &cbCatalogName);
-    SQLBindCol(m_hstmt, 2, SQL_C_CHAR, szSchemaName,   SQL_MAX_BUFFER, &cbSchemaName);
-    SQLBindCol(m_hstmt, 3, SQL_C_CHAR, szProcedureName,SQL_MAX_BUFFER, &cbProcedureName);
-    SQLBindCol(m_hstmt, 4, SQL_C_CHAR, szColumnName,   SQL_MAX_BUFFER, &cbColumnName);
-    SQLBindCol(m_hstmt, 5, SQL_C_SSHORT,&ColumnType,   0,              &cbColumnType);
-    SQLBindCol(m_hstmt, 6, SQL_C_SSHORT,&DataType,     0,              &cbDataType);
-    SQLBindCol(m_hstmt, 7, SQL_C_CHAR, szTypeName,     SQL_MAX_BUFFER, &cbTypeName);
-    SQLBindCol(m_hstmt, 8, SQL_C_LONG,  &ColumnSize,   0,              &cbColumnSize);
-    SQLBindCol(m_hstmt, 9, SQL_C_LONG,  &BufferSize,   0,              &cbBufferSize);
-    SQLBindCol(m_hstmt,10, SQL_C_SSHORT,&DecimalDigits,0,              &cbDecimalDigits);
-    SQLBindCol(m_hstmt,11, SQL_C_SSHORT,&Radix,        0,              &cbRadix);
-    SQLBindCol(m_hstmt,12, SQL_C_SSHORT,&Nullable,     0,              &cbNullable);
-    SQLBindCol(m_hstmt,13, SQL_C_CHAR, szRemarks,     2*SQL_MAX_BUFFER,&cbRemarks);
-    SQLBindCol(m_hstmt,14, SQL_C_CHAR, szDefaultValue,2*SQL_MAX_BUFFER,&cbDefaultValue);
-    SQLBindCol(m_hstmt,15, SQL_C_SSHORT,&DataType3,    2,              &cbDataType3);
-    SQLBindCol(m_hstmt,16, SQL_C_SSHORT,&SubType,      2,              &cbSubType);
-    SQLBindCol(m_hstmt,17, SQL_C_LONG,  &OctetLength,  4,              &cbOctetLength);
-    SQLBindCol(m_hstmt,18, SQL_C_LONG,  &OrdinalPos,   0,              &cbOrdinalPos);
-    SQLBindCol(m_hstmt,19, SQL_C_CHAR, szIsNullable,   10,             &cbIsNullable);
+    SQLBindCol(m_hstmt, 1, SQL_C_TCHAR, szCatalogName,  SQL_MAX_BUFFER, &cbCatalogName);
+    SQLBindCol(m_hstmt, 2, SQL_C_TCHAR, szSchemaName,   SQL_MAX_BUFFER, &cbSchemaName);
+    SQLBindCol(m_hstmt, 3, SQL_C_TCHAR, szProcedureName,SQL_MAX_BUFFER, &cbProcedureName);
+    SQLBindCol(m_hstmt, 4, SQL_C_TCHAR, szColumnName,   SQL_MAX_BUFFER, &cbColumnName);
+    SQLBindCol(m_hstmt, 5, SQL_C_SSHORT, &ColumnType,   0,              &cbColumnType);
+    SQLBindCol(m_hstmt, 6, SQL_C_SSHORT, &DataType,     0,              &cbDataType);
+    SQLBindCol(m_hstmt, 7, SQL_C_TCHAR, szTypeName,     SQL_MAX_BUFFER, &cbTypeName);
+    SQLBindCol(m_hstmt, 8, SQL_C_LONG,   &ColumnSize,   0,              &cbColumnSize);
+    SQLBindCol(m_hstmt, 9, SQL_C_LONG,   &BufferSize,   0,              &cbBufferSize);
+    SQLBindCol(m_hstmt,10, SQL_C_SSHORT, &DecimalDigits,0,              &cbDecimalDigits);
+    SQLBindCol(m_hstmt,11, SQL_C_SSHORT, &Radix,        0,              &cbRadix);
+    SQLBindCol(m_hstmt,12, SQL_C_SSHORT, &Nullable,     0,              &cbNullable);
+    SQLBindCol(m_hstmt,13, SQL_C_TCHAR ,szRemarks,     2*SQL_MAX_BUFFER,&cbRemarks);
+    SQLBindCol(m_hstmt,14, SQL_C_TCHAR, szDefaultValue,2*SQL_MAX_BUFFER,&cbDefaultValue);
+    SQLBindCol(m_hstmt,15, SQL_C_SSHORT, &DataType3,    2,              &cbDataType3);
+    SQLBindCol(m_hstmt,16, SQL_C_SSHORT, &SubType,      2,              &cbSubType);
+    SQLBindCol(m_hstmt,17, SQL_C_LONG,   &OctetLength,  4,              &cbOctetLength);
+    SQLBindCol(m_hstmt,18, SQL_C_LONG,   &OrdinalPos,   0,              &cbOrdinalPos);
+    SQLBindCol(m_hstmt,19, SQL_C_TCHAR, szIsNullable,   10,             &cbIsNullable);
     while(true)
     {
       m_retCode = SqlFetch(m_hstmt);
@@ -2725,10 +2725,10 @@ SQLInfo::MakeInfoPSMParameters(MParameterMap& p_parameters
   }
   else
   {
-    SQLCHAR empty[2] = "";
-    p_errors  = "Driver not capable to find procedures columns for: ";
+    SQLTCHAR empty[2] = _T("");
+    p_errors  = _T("Driver not capable to find procedures columns for: ");
     p_errors += MakeObjectName(catalog,schema,procedure,empty);
-    p_errors += ". Error in ODBC statement: ";
+    p_errors += _T(". Error in ODBC statement: ");
     p_errors += m_database->GetErrorString(m_hstmt);
   }
   CloseStatement();
@@ -2742,8 +2742,8 @@ SQLInfo::NativeSQL(HDBC hdbc,XString& sqlCommand)
   // Check whether we can do this
   if(!SupportedFunction(SQL_API_SQLNATIVESQL))
   {
-    InfoMessageBox("SQLNativeSQL unsupported. Get a better ODBC driver!",MB_OK|MB_ICONEXCLAMATION);
-    return "";
+    InfoMessageBox(_T("SQLNativeSQL unsupported. Get a better ODBC driver!"),MB_OK|MB_ICONEXCLAMATION);
+    return _T("");
   }
   // In case we need to get the HDBC handle from the database object
   if(!hdbc && m_database)
@@ -2757,11 +2757,11 @@ SQLInfo::NativeSQL(HDBC hdbc,XString& sqlCommand)
 
   SQLINTEGER retLen = 0;
   SQLINTEGER buflen = sqlCommand.GetLength() * 2;
-  SQLCHAR*   buffer = new SQLCHAR[(size_t)buflen + 1];
+  SQLTCHAR*  buffer = new SQLTCHAR[(size_t)buflen + 1];
 
   // Perform the conversion call
   m_retCode = SqlNativeSql(hdbc
-                         ,reinterpret_cast<SQLCHAR*>(const_cast<char*>(sqlCommand.GetString()))
+                         ,reinterpret_cast<SQLTCHAR*>(const_cast<TCHAR*>(sqlCommand.GetString()))
                          ,sqlCommand.GetLength()
                          ,buffer
                          ,buflen
@@ -2778,14 +2778,14 @@ SQLInfo::NativeSQL(HDBC hdbc,XString& sqlCommand)
     else
     {
       // Overflow error
-      XString error = "Buffer overflow (30.000 chars) on SQLNativeSQL";
+      XString error = _T("Buffer overflow (30.000 chars) on SQLNativeSQL");
       InfoMessageBox(error,MB_OK|MB_ICONERROR);
       delete[] buffer;
       return error;
     }
   }
   // SQLNativeSQL returned an error
-  XString errorText = "Error while retrieving SQLNativeSQL:\n";
+  XString errorText = _T("Error while retrieving SQLNativeSQL:\n");
   errorText += m_database->GetErrorString(NULL);
   InfoMessageBox(errorText,MB_OK|MB_ICONERROR);
   delete[] buffer;
@@ -2794,10 +2794,10 @@ SQLInfo::NativeSQL(HDBC hdbc,XString& sqlCommand)
 
 // Meta pointer to SQLGet<META> functions
 // Catalog/Schema/Table/Column/Types fields
-unsigned char*
-SQLInfo::GetMetaPointer(unsigned char* p_buffer,bool p_meta)
+SQLTCHAR*
+SQLInfo::GetMetaPointer(SQLTCHAR* p_buffer,bool p_meta)
 {
-  unsigned char* pointer = p_buffer;
+  SQLTCHAR* pointer = p_buffer;
   if(!pointer[0] && !p_meta)
   {
     pointer = NULL;
@@ -2810,26 +2810,26 @@ bool
 SQLInfo::MakeInfoMetaTypes(MMetaMap& p_objects,XString& p_errors,int p_type)
 {
   XString      sitem;
-  SQLCHAR      szCatalogName [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szCatalogName [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbCatalogName = 0;
-  SQLCHAR      szSchemaName  [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szSchemaName  [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbSchemaName  = 0;
-  SQLCHAR      szTableType   [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szTableType   [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbTableType   = 0;
-  SQLCHAR      szRemarks     [SQL_MAX_BUFFER] = { 0 };
+  SQLTCHAR     szRemarks     [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbRemarks     = 0;
   // Where to search
-  unsigned char search_catalog[META_SEARCH_LEN] = "";
-  unsigned char search_schema [META_SEARCH_LEN] = "";
-  unsigned char search_table  [META_SEARCH_LEN] = "";
-  unsigned char search_type   [META_SEARCH_LEN] = "";
+  SQLTCHAR search_catalog[META_SEARCH_LEN] = _T("");
+  SQLTCHAR search_schema [META_SEARCH_LEN] = _T("");
+  SQLTCHAR search_table  [META_SEARCH_LEN] = _T("");
+  SQLTCHAR search_type   [META_SEARCH_LEN] = _T("");
   // For duplicates
-  SQLCHAR* nameFound = NULL;
+  SQLTCHAR* nameFound = NULL;
 
   // Check whether we can do this
   if(!SupportedFunction(SQL_API_SQLTABLES))
   {
-    p_errors = "SQLTables unsupported. Get a better ODBC driver!";
+    p_errors = _T("SQLTables unsupported. Get a better ODBC driver!");
     return false;
   }
   // Get a statement handle for metadata use
@@ -2838,15 +2838,15 @@ SQLInfo::MakeInfoMetaTypes(MMetaMap& p_objects,XString& p_errors,int p_type)
 
   switch(p_type)
   {
-    case META_CATALOGS: strcpy_s(reinterpret_cast<char*>(search_catalog),META_SEARCH_LEN,SQL_ALL_CATALOGS);     break;
-    case META_SCHEMAS:  strcpy_s(reinterpret_cast<char*>(search_schema), META_SEARCH_LEN,SQL_ALL_SCHEMAS);      break;
-    case META_TABLES:   strcpy_s(reinterpret_cast<char*>(search_type),   META_SEARCH_LEN,SQL_ALL_TABLE_TYPES);  break;
+    case META_CATALOGS: _tcscpy_s(reinterpret_cast<TCHAR*>(search_catalog),META_SEARCH_LEN,_T(SQL_ALL_CATALOGS));     break;
+    case META_SCHEMAS:  _tcscpy_s(reinterpret_cast<TCHAR*>(search_schema), META_SEARCH_LEN,_T(SQL_ALL_SCHEMAS));      break;
+    case META_TABLES:   _tcscpy_s(reinterpret_cast<TCHAR*>(search_type),   META_SEARCH_LEN,_T(SQL_ALL_TABLE_TYPES));  break;
     default: return false;
   }
-  unsigned char* catalog = GetMetaPointer(search_catalog,meta);
-  unsigned char* schema  = GetMetaPointer(search_schema, meta);
-  unsigned char* table   = GetMetaPointer(search_table,  meta);
-  unsigned char* stype   = GetMetaPointer(search_type,   meta);
+  SQLTCHAR* catalog = GetMetaPointer(search_catalog,meta);
+  SQLTCHAR* schema  = GetMetaPointer(search_schema, meta);
+  SQLTCHAR* table   = GetMetaPointer(search_table,  meta);
+  SQLTCHAR* stype   = GetMetaPointer(search_type,   meta);
 
   ODBC_CALL_ONCE(SQLTables(m_hstmt
                           ,catalog                   // Catalog name to search for
@@ -2859,10 +2859,10 @@ SQLInfo::MakeInfoMetaTypes(MMetaMap& p_objects,XString& p_errors,int p_type)
                           ,stype   ? SQL_NTS : 0 )); // Table types length
   if(m_retCode == SQL_SUCCESS)
   {
-    SqlBindCol(m_hstmt, 1, SQL_C_CHAR,szCatalogName,SQL_MAX_BUFFER, &cbCatalogName);
-    SqlBindCol(m_hstmt, 2, SQL_C_CHAR,szSchemaName, SQL_MAX_BUFFER, &cbSchemaName);
-    SqlBindCol(m_hstmt, 4, SQL_C_CHAR,szTableType,  SQL_MAX_BUFFER, &cbTableType);
-    SqlBindCol(m_hstmt, 5, SQL_C_CHAR,szRemarks,    SQL_MAX_BUFFER, &cbRemarks);
+    SqlBindCol(m_hstmt, 1, SQL_C_TCHAR,szCatalogName,SQL_MAX_BUFFER, &cbCatalogName);
+    SqlBindCol(m_hstmt, 2, SQL_C_TCHAR,szSchemaName, SQL_MAX_BUFFER, &cbSchemaName);
+    SqlBindCol(m_hstmt, 4, SQL_C_TCHAR,szTableType,  SQL_MAX_BUFFER, &cbTableType);
+    SqlBindCol(m_hstmt, 5, SQL_C_TCHAR,szRemarks,    SQL_MAX_BUFFER, &cbRemarks);
 
     std::map<XString,XString> found;
     while(true)
@@ -2893,7 +2893,7 @@ SQLInfo::MakeInfoMetaTypes(MMetaMap& p_objects,XString& p_errors,int p_type)
         if(nameFound)
         {
           XString val;
-          if(found.find(reinterpret_cast<char*>(nameFound)) == found.end())
+          if(found.find(reinterpret_cast<TCHAR*>(nameFound)) == found.end())
           {
             found.insert(std::make_pair(reinterpret_cast<char*>(nameFound),reinterpret_cast<char*>(nameFound)));
             object.m_objectName = nameFound;
@@ -2919,11 +2919,11 @@ SQLInfo::MakeInfoMetaTypes(MMetaMap& p_objects,XString& p_errors,int p_type)
   }
   if(m_retCode == SQL_ERROR)
   {
-    p_errors  = "Driver not capable to find meta-objects";
-    p_errors += ". Error in ODBC statement: ";
+    p_errors  = _T("Driver not capable to find meta-objects");
+    p_errors += _T(". Error in ODBC statement: ");
     p_errors += m_database->GetErrorString(m_hstmt);
 
-    if(p_errors.Find("HYC00") >= 0)
+    if(p_errors.Find(_T("HYC00")) >= 0)
     {
       switch(p_type)
       {

@@ -57,7 +57,7 @@ public:
   virtual bool GoFind(StyleGridCtrl* grid);
   virtual int  GoFindInFolder(CString Folder,StyleGridCtrl* grid);
   virtual void GoFindInFile(CString fileName,StyleGridCtrl* grid);
-  virtual void AppendRow(StyleGridCtrl* grid,CString& fileName,int lineNumber,char* buffer);
+  virtual void AppendRow(StyleGridCtrl* grid,CString& fileName,int lineNumber,LPCTSTR buffer);
 
   SettingsManager& m_manager;
 

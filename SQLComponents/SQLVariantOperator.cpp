@@ -48,7 +48,8 @@ SQLConciseType SQLTypeToConciseType(int p_datatype)
 {
   switch(p_datatype)
   {
-    case SQL_C_CHAR:                      return CT_CHAR;
+    case SQL_C_CHAR:                      // fall through
+    case SQL_C_WCHAR:                     return CT_CHAR;
     case SQL_C_SHORT:                     // fall through
     case SQL_C_SSHORT:                    return CT_SSHORT;
     case SQL_C_USHORT:                    return CT_USHORT;
@@ -116,6 +117,11 @@ SQLVariant::operator=(const SQLVariant& p_original)
     m_data.m_dataBINARY = new unsigned char[(size_t)m_binaryLength + 1];
     memcpy(m_data.m_dataBINARY,p_original.m_data.m_dataBINARY,(size_t)m_binaryLength + 1);
   }
+  else if(m_datatype == SQL_C_WCHAR)
+  {
+    m_data.m_dataWCHAR = new wchar_t[(size_t)m_binaryLength / 2 + 1];
+    memcpy(m_data.m_dataWCHAR,p_original.m_data.m_dataWCHAR,m_binaryLength + 2);
+  }
   else
   {
     // Copy the data member for ALL OTHER DATATYPES!
@@ -124,27 +130,50 @@ SQLVariant::operator=(const SQLVariant& p_original)
   return *this;
 }
 
+// Undesired side effect if SQL_C_CHAR to SQL_C_WCHAR copy
 SQLVariant& 
-SQLVariant::operator=(const char* p_data)
+SQLVariant::operator=(LPCTSTR p_data)
 {
-  SetData(SQL_C_CHAR,p_data);
+  if(m_datatype == SQL_C_WCHAR)
+  {
+    SetData(SQL_C_WCHAR,p_data);
+  }
+  else
+  {
+    SetData(SQL_C_CHAR,p_data);
+  }
   return *this;
 }
 
+// Undesired side effect if SQL_C_CHAR to SQL_C_WCHAR copy
 SQLVariant& 
 SQLVariant::operator=(const XString& p_data)
 {
-  SetData(SQL_C_CHAR,p_data.GetString());
+  if(m_datatype == SQL_C_WCHAR)
+  {
+    SetData(SQL_C_WCHAR,p_data.GetString());
+  }
+  else
+  {
+    SetData(SQL_C_CHAR,p_data.GetString());
+  }
   return *this;
 }
 
+// Undesired side effect if SQL_C_CHAR to SQL_C_WCHAR copy
 SQLVariant& 
 SQLVariant::operator=(const XString p_data)
 {
-  SetData(SQL_C_CHAR,p_data.GetString());
+  if(m_datatype == SQL_C_WCHAR)
+  {
+    SetData(SQL_C_WCHAR,p_data.GetString());
+  }
+  else
+  {
+    SetData(SQL_C_CHAR,p_data.GetString());
+  }
   return *this;
 }
-
 
 SQLVariant& 
 SQLVariant::operator=(const short p_data)
@@ -482,14 +511,14 @@ SQLVariant::operator char()
   return GetAsSTinyInt();
 }
 
-SQLVariant::operator unsigned char()
+SQLVariant::operator uchar()
 {
   return GetAsUTinyInt();
 }
 
-SQLVariant::operator const char*()
+SQLVariant::operator LPCTSTR()
 {
-  return (const char*)GetAsChar();
+  return (LPCTSTR)GetAsChar();
 }
 
 SQLVariant::operator short()
@@ -587,22 +616,22 @@ void
 SQLVariant::ThrowErrorOperator(SQLVarOperator p_operator)
 {
   XString error;
-  const char* type = SQLDataType::FindDatatype(m_datatype);
-  const char* oper = nullptr;
+  LPCTSTR type = SQLDataType::FindDatatype(m_datatype);
+  LPCTSTR oper = nullptr;
   switch (p_operator)
   {
-    case SVO_PreIncrement:    oper = "pre-increment";  break;
-    case SVO_PreDecrement:    oper = "pre-decrement";  break;
-    case SVO_PostIncrement:   oper = "post-increment"; break;
-    case SVO_PostDecrement:   oper = "post-decrement"; break;
-    case SVO_AssignAdd:       oper = "+=";             break;
-    case SVO_AssignSubtract:  oper = "-=";             break;
-    case SVO_AssignMultiply:  oper = "*=";             break;
-    case SVO_AssignDivide:    oper = "/=";             break;
-    case SVO_AssignModulo:    oper = "%=";             break;
-    default:                  oper = "unknown";        break;
+    case SVO_PreIncrement:    oper = _T("pre-increment");  break;
+    case SVO_PreDecrement:    oper = _T("pre-decrement");  break;
+    case SVO_PostIncrement:   oper = _T("post-increment"); break;
+    case SVO_PostDecrement:   oper = _T("post-decrement"); break;
+    case SVO_AssignAdd:       oper = _T("+=");             break;
+    case SVO_AssignSubtract:  oper = _T("-=");             break;
+    case SVO_AssignMultiply:  oper = _T("*=");             break;
+    case SVO_AssignDivide:    oper = _T("/=");             break;
+    case SVO_AssignModulo:    oper = _T("%=");             break;
+    default:                  oper = _T("unknown");        break;
   }
-  error.Format("Cannot execute %s operator on datatype: %s.",oper,type);
+  error.Format(_T("Cannot execute %s operator on datatype: %s."),oper,type);
   throw StdException(error);
 }
 
@@ -618,6 +647,7 @@ SQLVariant::operator++()
   switch(m_datatype)
   {
     case SQL_C_CHAR:                      // fall through
+    case SQL_C_WCHAR:                     // fall through
     case SQL_C_GUID:                      // fall through
     case SQL_C_BINARY:                    // fall through
     default:                              ThrowErrorOperator(SVO_PreIncrement);
@@ -760,6 +790,7 @@ SQLVariant::operator++(int p_val)
   switch(m_datatype)
   {
     case SQL_C_CHAR:                      // fall through
+    case SQL_C_WCHAR:                     // fall through
     case SQL_C_GUID:                      // fall through
     case SQL_C_BINARY:                    // fall through
     default:                              ThrowErrorOperator(SVO_PostIncrement);
@@ -894,6 +925,7 @@ SQLVariant::operator--()
   switch(m_datatype)
   {
     case SQL_C_CHAR:                      // fall through
+    case SQL_C_WCHAR:                     // fall through
     case SQL_C_GUID:                      // fall through
     case SQL_C_BINARY:                    // fall through
     default:                              ThrowErrorOperator(SVO_PreDecrement);
@@ -1036,6 +1068,7 @@ SQLVariant::operator--(int p_val)
   switch(m_datatype)
   {
     case SQL_C_CHAR:                      // fall through
+    case SQL_C_WCHAR:                     // fall through
     case SQL_C_GUID:                      // fall through
     case SQL_C_BINARY:                    // fall through
     default:                              ThrowErrorOperator(SVO_PostDecrement);

@@ -146,7 +146,7 @@ LinePrinter::Document(CString p_printerName
 	pd.m_pd.nFromPage = 1;
 	pd.m_pd.nToPage   = 32000;
   pd.m_pd.nCopies   = (WORD) p_numberCopies;
-  pd.m_pd.lpPrintTemplateName = (LPCSTR) p_printerName.GetString();
+  pd.m_pd.lpPrintTemplateName = (LPCTSTR) p_printerName.GetString();
 
   // Get the page orientation of the printer from the user
   if (pd.DoModal() != IDOK)
@@ -170,7 +170,7 @@ LinePrinter::Document(CString p_printerName
                       CLIP_DEFAULT_PRECIS,
                       DEFAULT_QUALITY,
                       DEFAULT_PITCH | FF_MODERN,
-                      (LPCSTR)p_fontName);
+                      (LPCTSTR)p_fontName);
   }
 
   // Calculate the paper size. Font extensions can only be calculated after the
@@ -199,10 +199,10 @@ LinePrinter::Document(CString p_printerName
   // Create the document-info to send the document as a logical unit to the printer spooler system
   DOCINFO info;
   info.cbSize       = sizeof(DOCINFO);
-  info.lpszDocName  = (LPCSTR) p_documentName.GetString();
+  info.lpszDocName  = (LPCTSTR) p_documentName.GetString();
   info.lpszOutput   = NULL;
   info.lpszDatatype = NULL;
-  // This document is a 'per line' type. Optimalisation on some versions of the OS
+  // This document is a 'per line' type. Optimalization on some versions of the OS
   info.fwType       = DI_APPBANDING;  // Currently only Windows95, ignored under Windows-NT type OS
 
   // Standard colors
@@ -416,7 +416,7 @@ LinePrinter::PrintHeaderFooter(HeaderFooter p_line)
   if(p_line & LPHF_LEFT_PAGENO || p_line & LPHF_RIGHT_PAGENO)
   {
     CString date;
-    date.Format("%s: %d",m_headerPageText,m_pageNumber);
+    date.Format(_T("%s: %d"),m_headerPageText,m_pageNumber);
     if (p_line & LPHF_LEFT_PAGENO)
     {
       printLeft = date;
@@ -435,7 +435,7 @@ LinePrinter::PrintHeaderFooter(HeaderFooter p_line)
     _time64(&datetime);
     struct tm now;
     _localtime64_s(&now,&datetime);
-    time.Format("%s: %02.2d-%02.2d-%4.4d %02.2d:%02.2d:%02.2d"
+    time.Format(_T("%s: %02.2d-%02.2d-%4.4d %02.2d:%02.2d:%02.2d")
                ,m_headerDateText
                ,now.tm_mday,now.tm_mon,now.tm_year + 1900
                ,now.tm_hour,now.tm_min,now.tm_sec);
@@ -450,7 +450,7 @@ LinePrinter::PrintHeaderFooter(HeaderFooter p_line)
   }
   if(printLeft.GetLength())
   {
-    // Printpos = 1, so we are sure to start left
+    // Print position = 1, so we are sure to start left
     Arguments args;
     Print(0,1,printLeft,&args);
   }
@@ -531,12 +531,12 @@ LinePrinter::SetFont(CString p_fontName
     bool italic    = false;
     bool underline = false;
     p_attributes.MakeUpper();
-    if(p_attributes.Find("B",0) >= 0)   weight    = FW_BOLD; // BOLD
-    if(p_attributes.Find("V",0) >= 0)   weight    = FW_BOLD; // VET
-    if(p_attributes.Find("U",0) >= 0)   underline = true;    // UNDERLINE
-    if(p_attributes.Find("O",0) >= 0)   underline = true;    // ONDERSTREEPT
-    if(p_attributes.Find("I",0) >= 0)   italic    = true;    // ITALIC
-    if(p_attributes.Find("C",0) >= 0)   italic    = true;    // CURSIEF
+    if(p_attributes.Find(_T("B"),0) >= 0)   weight    = FW_BOLD; // BOLD
+    if(p_attributes.Find(_T("V"),0) >= 0)   weight    = FW_BOLD; // VET
+    if(p_attributes.Find(_T("U"),0) >= 0)   underline = true;    // UNDERLINE
+    if(p_attributes.Find(_T("O"),0) >= 0)   underline = true;    // ONDERSTREEPT
+    if(p_attributes.Find(_T("I"),0) >= 0)   italic    = true;    // ITALIC
+    if(p_attributes.Find(_T("C"),0) >= 0)   italic    = true;    // CURSIEF
 
     if(p_fontSize <= 4)
     {
@@ -552,7 +552,7 @@ LinePrinter::SetFont(CString p_fontName
     }
     m_font.DeleteObject();
     //::DeleteObject(m_font);
-    m_font.CreateFont(-MulDiv(p_fontSize, m_dc->GetDeviceCaps(LOGPIXELSY), 72) // hoogte
+    m_font.CreateFont(-MulDiv(p_fontSize, m_dc->GetDeviceCaps(LOGPIXELSY), 72) // height
                      ,0  // width
                      ,0  // escapement
                      ,0  // orientation
@@ -630,7 +630,7 @@ LinePrinter::Format(CString& p_string,Arguments* p_args)
   int position = 0;
   int argnum   = 0;
   CString answer;
-  char    cc;
+  TCHAR cc;
 
   for(position = 0; position < maxLen; ++position)
   {
@@ -683,9 +683,9 @@ LinePrinter::Format(CString& p_string,Arguments* p_args)
       CString extra;
       switch(cc)
       {      
-        case 'G': number = atof(p_args->at(argnum++));
+        case 'G': number = _ttof(p_args->at(argnum++));
                   number = Round(number,precision);
-                  extra.Format("%g",number);
+                  extra.Format(_T("%g"),number);
                   dpos  = extra.Find('.');
                   if(dpos >= 0)
                   {
@@ -695,7 +695,7 @@ LinePrinter::Format(CString& p_string,Arguments* p_args)
                     }
                   }
                   break;
-        case 'B': if(atoi(p_args->at(argnum++)))
+        case 'B': if(_ttoi(p_args->at(argnum++)))
                   {
                     extra = GetStyleText(TXT_BOOLEAN_TRUE); // TRUE
                   }
@@ -710,7 +710,7 @@ LinePrinter::Format(CString& p_string,Arguments* p_args)
         case 'T': // Fall through
         case 'M': extra = p_args->at(argnum++);
                   break;
-        case 'P': extra.Format("%d",m_pageNumber);
+        case 'P': extra.Format(_T("%d"),m_pageNumber);
                   break;
         case '$': extra += cc; // Process the $$
                   break;
@@ -751,7 +751,7 @@ LinePrinter::PrintBitmap(int     p_lineNumber
   StyleDIB afb;
   CRect rect;
   // Load a bitmap, if not loaded yet
-  afb.Load((LPSTR)p_bitmap.GetString());
+  afb.Load((LPCTSTR)p_bitmap.GetString());
   if((afb.GetWidth() == 0) && (afb.GetHeight() == 0))
   {
     CString error = GetStyleText(TXT_NO_BMP_FILE) + p_bitmap;

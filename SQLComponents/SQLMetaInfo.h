@@ -95,19 +95,19 @@ typedef struct _metaInfoColumn
   {
     if(m_columnSize > 0)
     {
-      p_sql.AppendFormat("(%d",m_columnSize);
+      p_sql.AppendFormat(_T("(%d"),m_columnSize);
       if(m_decimalDigits > 0)
       {
-        p_sql.AppendFormat(",%d",m_decimalDigits);
+        p_sql.AppendFormat(_T(",%d"),m_decimalDigits);
       }
-      p_sql += ")";
+      p_sql += _T(")");
     }
   };
   void GetNullable(XString& p_sql)
   {
     if(!m_nullable)
     {
-      p_sql += " NOT NULL";
+      p_sql += _T(" NOT NULL");
     }
   };
   void GetDefault(XString& p_sql)

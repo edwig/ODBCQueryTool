@@ -112,7 +112,7 @@ int ObjectView::OnCreate(LPCREATESTRUCT lpCreateStruct)
   m_tableCBox.InitSkin();
   m_tableCBox.ReadjustDynamic();
   // So we can empty the combo again
-  m_tableCBox.AddString("");
+  m_tableCBox.AddString(_T(""));
   m_tableCBox.SetFocusDots(false);
   SetStyleFxComboBoxDots(false);
 
@@ -184,7 +184,7 @@ void
 ObjectView::ClearObjectTree()
 {
   // Clear the tree
-  m_wndObjectTree.SetFilter("");
+  m_wndObjectTree.SetFilter(_T(""));
   m_wndObjectTree.ClearTree();
 }
 

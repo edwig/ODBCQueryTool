@@ -122,24 +122,24 @@ public:
   // GETTING ALL META TYPES
 protected:
   virtual bool MakeInfoTableTable      (MTableMap&     p_tables,    XString& p_errors,XString p_schema,XString p_tablename,XString p_type);
-  virtual bool MakeInfoTableColumns    (MColumnMap&    p_columns,   XString& p_errors,XString p_schema,XString p_tablename,XString p_columnname = "");
+  virtual bool MakeInfoTableColumns    (MColumnMap&    p_columns,   XString& p_errors,XString p_schema,XString p_tablename,XString p_columnname = _T(""));
   virtual bool MakeInfoTablePrimary    (MPrimaryMap&   p_primaries, XString& p_errors,XString p_schema,XString p_tablename);
   virtual bool MakeInfoPSMProcedures   (MProcedureMap& p_procedures,XString& p_errors,XString p_schema,XString p_procedure);
   virtual bool MakeInfoPSMParameters   (MParameterMap& p_parameters,XString& p_errors,XString p_schema,XString p_procedure);
   virtual bool MakeInfoTableForeign    (MForeignMap&   p_foreigns,  XString& p_errors,XString p_schema,XString p_tablename,bool p_referenced = false);
   virtual bool MakeInfoTableStatistics (MIndicesMap&   p_statistics,XString& p_errors,XString p_schema,XString p_tablename,MPrimaryMap* p_keymap,bool p_all = true);
   virtual bool MakeInfoTablePrivileges (MPrivilegeMap& p_privileges,XString& p_errors,XString p_schema,XString p_tablename);
-  virtual bool MakeInfoColumnPrivileges(MPrivilegeMap& p_privileges,XString& p_errors,XString p_schema,XString p_tablename,XString p_columnname = "");
+  virtual bool MakeInfoColumnPrivileges(MPrivilegeMap& p_privileges,XString& p_errors,XString p_schema,XString p_tablename,XString p_columnname = _T(""));
 
 public:
   virtual bool MakeInfoTableSpecials  (MSpecialsMap&  p_specials,  XString& p_errors,XString p_schema,XString p_tablename);
   virtual bool MakeInfoMetaTypes      (MMetaMap&      p_objects,   XString& p_errors,int p_type);
 
   // Meta pointer to SQLGet<META> functions
-  unsigned char* GetMetaPointer(unsigned char* p_buffer,bool p_meta);
+  SQLTCHAR* GetMetaPointer(SQLTCHAR* p_buffer,bool p_meta);
 
   // Getting datatype info
-  TypeInfo* GetTypeInfo(int p_sqlDatatype,XString p_typename = "") const;
+  TypeInfo* GetTypeInfo(int p_sqlDatatype,XString p_typename = _T("")) const;
 
   // CONNECTION ATTRIBUTES
 
@@ -342,14 +342,14 @@ private:
   // Setting an INTEGER attribute
   bool    SetAttributeInteger(XString description,SQLINTEGER  attrib,SQLUINTEGER value);
   // Setting a STRING attribute
-  bool    SetAttributeString(XString description,SQLINTEGER attrib,SQLCHAR* value);
+  bool    SetAttributeString(XString description,SQLINTEGER attrib,SQLTCHAR* value);
 
 protected:
   // Reprint the catalog.schema.table combination
-  XString MakeObjectName(SQLCHAR* search_catalog
-                        ,SQLCHAR* search_schema
-                        ,SQLCHAR* search_table
-                        ,SQLCHAR* search_type);
+  XString MakeObjectName(SQLTCHAR* search_catalog
+                        ,SQLTCHAR* search_schema
+                        ,SQLTCHAR* search_table
+                        ,SQLTCHAR* search_type);
   void    ReadingDataTypes();
   void    InfoMessageBox(XString p_message,UINT p_type = MB_OK);
 

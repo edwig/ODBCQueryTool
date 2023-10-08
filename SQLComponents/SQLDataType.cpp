@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////
++////////////////////////////////////////////////////////////////////////
 //
 // File: SQLDataType.cpp
 //
@@ -35,80 +35,80 @@ namespace SQLComponents
 // Translation list of SQL datatype constants and names
 typedef struct _types
 {
-  const char* name;
-  int         type;
+  LPCTSTR name;
+  int     type;
 }
 DataTypes;
 
 static DataTypes allTypes[] = 
 {
-   { "<NO TYPE>",                  0                               }
-  ,{ "CHAR",                       SQL_C_CHAR                      } 
-  ,{ "SHORT",                      SQL_C_SHORT                     }
-  ,{ "SIGNED SHORT",               SQL_C_SSHORT                    }
-  ,{ "UNSIGNED SHORT",             SQL_C_USHORT                    }
-  ,{ "LONG",                       SQL_C_LONG                      }
-  ,{ "SIGNED LONG",                SQL_C_SLONG                     }
-  ,{ "UNSIGNED LONG",              SQL_C_ULONG                     }
-  ,{ "REAL",                       SQL_C_FLOAT                     }
-  ,{ "FLOAT",                      SQL_C_FLOAT                     }
-  ,{ "DOUBLE",                     SQL_C_DOUBLE                    }
-  ,{ "BIT",                        SQL_C_BIT                       }
-  ,{ "TINYINT",                    SQL_C_TINYINT                   }
-  ,{ "SIGNED TINYINT",             SQL_C_STINYINT                  }
-  ,{ "UNSIGNED TINYINT",           SQL_C_UTINYINT                  }
-  ,{ "SIGNED BIGINT",              SQL_C_SBIGINT                   }
-  ,{ "UNSIGNED BIGINT",            SQL_C_UBIGINT                   }
-  ,{ "DECIMAL",                    SQL_C_NUMERIC                   }
-  ,{ "NUMERIC",                    SQL_C_NUMERIC                   }
-  ,{ "GUID",                       SQL_C_GUID                      }
-  ,{ "BINARY",                     SQL_C_BINARY                    }
-  ,{ "DATE",                       SQL_C_DATE                      }
-  ,{ "TIME",                       SQL_C_TIME                      }
-  ,{ "TIMESTAMP",                  SQL_C_TIMESTAMP                 }
-  ,{ "TYPE DATE",                  SQL_C_TYPE_DATE                 }
-  ,{ "TYPE TIME",                  SQL_C_TYPE_TIME                 }
-  ,{ "TYPE TIMESTAMP",             SQL_C_TYPE_TIMESTAMP            }
-  ,{ "INTERVAL YEAR",              SQL_C_INTERVAL_YEAR             }
-  ,{ "INTERVAL MONTH",             SQL_C_INTERVAL_MONTH            }
-  ,{ "INTERVAL DAY",               SQL_C_INTERVAL_DAY              }
-  ,{ "INTERVAL HOUR",              SQL_C_INTERVAL_HOUR             }
-  ,{ "INTERVAL MINUTE",            SQL_C_INTERVAL_MINUTE           }
-  ,{ "INTERVAL SECOND",            SQL_C_INTERVAL_SECOND           }
-  ,{ "INTERVAL YEAR TO MONTH",     SQL_C_INTERVAL_YEAR_TO_MONTH    }
-  ,{ "INTERVAL DAY TO HOUR",       SQL_C_INTERVAL_DAY_TO_HOUR      }
-  ,{ "INTERVAL DAY TO MINUTE",     SQL_C_INTERVAL_DAY_TO_MINUTE    }
-  ,{ "INTERVAL DAY TO SECOND",     SQL_C_INTERVAL_DAY_TO_SECOND    }
-  ,{ "INTERVAL HOUR TO MINUTE",    SQL_C_INTERVAL_HOUR_TO_MINUTE   }
-  ,{ "INTERVAL HOUR TO SECOND",    SQL_C_INTERVAL_HOUR_TO_SECOND   }
-  ,{ "INTERVAL MINUTE TO SECOND",  SQL_C_INTERVAL_MINUTE_TO_SECOND }
-  ,{ NULL,                         0                               }
+   { _T("<NO TYPE>"),                  0                               }
+  ,{ _T("CHAR"),                       SQL_C_CHAR                      } 
+  ,{ _T("NCHAR"),                      SQL_C_WCHAR                     } 
+  ,{ _T("SHORT"),                      SQL_C_SHORT                     }
+  ,{ _T("SIGNED SHORT"),               SQL_C_SSHORT                    }
+  ,{ _T("UNSIGNED SHORT"),             SQL_C_USHORT                    }
+  ,{ _T("LONG"),                       SQL_C_LONG                      }
+  ,{ _T("SIGNED LONG"),                SQL_C_SLONG                     }
+  ,{ _T("UNSIGNED LONG"),              SQL_C_ULONG                     }
+  ,{ _T("REAL"),                       SQL_C_FLOAT                     }
+  ,{ _T("FLOAT"),                      SQL_C_FLOAT                     }
+  ,{ _T("DOUBLE"),                     SQL_C_DOUBLE                    }
+  ,{ _T("BIT"),                        SQL_C_BIT                       }
+  ,{ _T("TINYINT"),                    SQL_C_TINYINT                   }
+  ,{ _T("SIGNED TINYINT"),             SQL_C_STINYINT                  }
+  ,{ _T("UNSIGNED TINYINT"),           SQL_C_UTINYINT                  }
+  ,{ _T("SIGNED BIGINT"),              SQL_C_SBIGINT                   }
+  ,{ _T("UNSIGNED BIGINT"),            SQL_C_UBIGINT                   }
+  ,{ _T("DECIMAL"),                    SQL_C_NUMERIC                   }
+  ,{ _T("NUMERIC"),                    SQL_C_NUMERIC                   }
+  ,{ _T("GUID"),                       SQL_C_GUID                      }
+  ,{ _T("BINARY"),                     SQL_C_BINARY                    }
+  ,{ _T("DATE"),                       SQL_C_DATE                      }
+  ,{ _T("TIME"),                       SQL_C_TIME                      }
+  ,{ _T("TIMESTAMP"),                  SQL_C_TIMESTAMP                 }
+  ,{ _T("TYPE DATE"),                  SQL_C_TYPE_DATE                 }
+  ,{ _T("TYPE TIME"),                  SQL_C_TYPE_TIME                 }
+  ,{ _T("TYPE TIMESTAMP"),             SQL_C_TYPE_TIMESTAMP            }
+  ,{ _T("INTERVAL YEAR"),              SQL_C_INTERVAL_YEAR             }
+  ,{ _T("INTERVAL MONTH"),             SQL_C_INTERVAL_MONTH            }
+  ,{ _T("INTERVAL DAY"),               SQL_C_INTERVAL_DAY              }
+  ,{ _T("INTERVAL HOUR"),              SQL_C_INTERVAL_HOUR             }
+  ,{ _T("INTERVAL MINUTE"),            SQL_C_INTERVAL_MINUTE           }
+  ,{ _T("INTERVAL SECOND"),            SQL_C_INTERVAL_SECOND           }
+  ,{ _T("INTERVAL YEAR TO MONTH"),     SQL_C_INTERVAL_YEAR_TO_MONTH    }
+  ,{ _T("INTERVAL DAY TO HOUR"),       SQL_C_INTERVAL_DAY_TO_HOUR      }
+  ,{ _T("INTERVAL DAY TO MINUTE"),     SQL_C_INTERVAL_DAY_TO_MINUTE    }
+  ,{ _T("INTERVAL DAY TO SECOND"),     SQL_C_INTERVAL_DAY_TO_SECOND    }
+  ,{ _T("INTERVAL HOUR TO MINUTE"),    SQL_C_INTERVAL_HOUR_TO_MINUTE   }
+  ,{ _T("INTERVAL HOUR TO SECOND"),    SQL_C_INTERVAL_HOUR_TO_SECOND   }
+  ,{ _T("INTERVAL MINUTE TO SECOND"),  SQL_C_INTERVAL_MINUTE_TO_SECOND }
+  ,{ NULL,                             0                               }
 };
 
 // All datatypes not having a counterpart in SQL_C_XXX set
 // SQL Datatypes should be used for binding in SQLBindParameter
 static DataTypes allOther[] = 
 {
-  { "VARBINARY",       SQL_VARBINARY      }  // LONG RAW
- ,{ "LONGVARBINARY",   SQL_LONGVARBINARY  }  // BLOB
- ,{ "LONGVARCHAR",     SQL_LONGVARCHAR    }  // CLOB
- ,{ "VARCHAR",         SQL_VARCHAR        }  // VARCHAR2
- ,{ "WCHAR",           SQL_WCHAR          }  // NCHAR
- ,{ "WVARCHAR",        SQL_WVARCHAR       }  // NVARCHAR
- ,{ "WLONGVARCHAR",    SQL_WLONGVARCHAR   }  // NCLOB
- ,{ NULL,              0                  } 
+  { _T("VARBINARY"),       SQL_VARBINARY      }  // LONG RAW
+ ,{ _T("LONGVARBINARY"),   SQL_LONGVARBINARY  }  // BLOB
+ ,{ _T("LONGVARCHAR"),     SQL_LONGVARCHAR    }  // CLOB
+ ,{ _T("VARCHAR"),         SQL_VARCHAR        }  // VARCHAR2
+ ,{ _T("WVARCHAR"),        SQL_WVARCHAR       }  // NVARCHAR
+ ,{ _T("WLONGVARCHAR"),    SQL_WLONGVARCHAR   }  // NCLOB
+ ,{ NULL,                  0                  } 
 };
 
 // Names must appear in this order to work properly!!
 static DataTypes allParams[] = 
 {
-  { "<UNKNOWN>", P_SQL_PARAM_TYPE_UNKNOWN }    // 0
- ,{ "INPUT",     P_SQL_PARAM_INPUT        }    // 1
- ,{ "INOUT",     P_SQL_PARAM_INPUT_OUTPUT }    // 2
- ,{ "COLUMN",    P_SQL_RESULT_COL         }    // 3
- ,{ "OUTPUT",    P_SQL_PARAM_OUTPUT       }    // 4
- ,{ "RETURN",    P_SQL_RETURN_VALUE       }    // 5
- ,{ NULL,        0                        }
+  { _T("<UNKNOWN>"), P_SQL_PARAM_TYPE_UNKNOWN }    // 0
+ ,{ _T("INPUT"),     P_SQL_PARAM_INPUT        }    // 1
+ ,{ _T("INOUT"),     P_SQL_PARAM_INPUT_OUTPUT }    // 2
+ ,{ _T("COLUMN"),    P_SQL_RESULT_COL         }    // 3
+ ,{ _T("OUTPUT"),    P_SQL_PARAM_OUTPUT       }    // 4
+ ,{ _T("RETURN"),    P_SQL_RETURN_VALUE       }    // 5
+ ,{ NULL,            0                        }
 };
 
 SQLDataType::SQLDataType()
@@ -124,7 +124,7 @@ SQLDataType::SQLDataType(int p_sqlType)
 SQLDataType::SQLDataType(XString p_typeName)
             :m_typeName(p_typeName)
 {
-  m_sqlType  = FindDatatype(reinterpret_cast<char*>(const_cast<char*>(p_typeName.GetString())));
+  m_sqlType  = FindDatatype(reinterpret_cast<LPTSTR>(const_cast<TCHAR*>(p_typeName.GetString())));
 }
 
 SQLDataType::SQLDataType(MetaColumn& p_column)
@@ -136,11 +136,23 @@ SQLDataType::SQLDataType(MetaColumn& p_column)
             ,m_octetLength  (p_column.m_octet_length)
             ,m_subType      (p_column.m_sub_datatype)
 {
-  m_sqlType = FindDatatype(reinterpret_cast<char*>(const_cast<char*>(m_typeName.GetString())));
+  m_sqlType = FindDatatype(reinterpret_cast<LPTSTR>(const_cast<TCHAR*>(m_typeName.GetString())));
 }
 
 SQLDataType::~SQLDataType()
 {
+}
+
+// CHAR, WCHAR, VARCHAR, WVARCHAR
+bool
+SQLDataType::GetIsString()
+{
+  if(m_sqlType == SQL_C_CHAR  || m_sqlType == SQL_VARCHAR  || m_sqlType == SQL_LONGVARCHAR ||
+     m_sqlType == SQL_C_WCHAR || m_sqlType == SQL_WVARCHAR || m_sqlType == SQL_WLONGVARCHAR)
+  {
+    return true;
+  }
+  return false;
 }
 
 // 1, 8, 16, 32 or 64 bits Integer
@@ -235,12 +247,12 @@ SQLDataType::GetisInterval()
 }
 
 /*static*/ int
-SQLDataType::FindDatatype(char* p_type)
+SQLDataType::FindDatatype(LPTSTR p_type)
 {
   DataTypes* types = allTypes;
   while(types->name)
   {
-    if(_stricmp(p_type,types->name) == 0)
+    if(_tcsicmp(p_type,types->name) == 0)
     {
       return types->type;
     }
@@ -249,7 +261,7 @@ SQLDataType::FindDatatype(char* p_type)
   return 0;
 }
 
-/*static*/ const char*
+/*static*/ LPCTSTR
 SQLDataType::FindDatatype(int p_type)
 {
   DataTypes* types = allTypes;
@@ -261,16 +273,16 @@ SQLDataType::FindDatatype(int p_type)
     }
     ++types;
   }
-  return "";
+  return _T("");
 }
 
 /*static*/ int
-SQLDataType::FindParamtype(char* p_type)
+SQLDataType::FindParamtype(LPTSTR p_type)
 {
   DataTypes* param = allParams;
   while(param->name)
   {
-    if(_stricmp(p_type,param->name) == 0)
+    if(_tcsicmp(p_type,param->name) == 0)
     {
       return param->type;
     }
@@ -279,7 +291,7 @@ SQLDataType::FindParamtype(char* p_type)
   return 0;
 }
 
-/*static*/ const char*
+/*static*/ LPCTSTR
 SQLDataType::FindParamtype(int p_type)
 {
   DataTypes* param = allParams;
@@ -291,18 +303,18 @@ SQLDataType::FindParamtype(int p_type)
     }
     ++param;
   }
-  return "";
+  return _T("");
 }
 
 // Find the extra SQL_XXX datatype for
 // variants of CHAR and BINARY
 /*static*/ int
-SQLDataType::FindSQLDatatype(char* p_type)
+SQLDataType::FindSQLDatatype(LPTSTR p_type)
 {
   DataTypes* types = allOther;
   while(types->name)
   {
-    if(_stricmp(types->name,p_type) == 0)
+    if(_tcsicmp(types->name,p_type) == 0)
     {
       return types->type;
     }
@@ -311,7 +323,7 @@ SQLDataType::FindSQLDatatype(char* p_type)
   return 0;
 }
 
-/*static*/ const char*
+/*static*/ LPCTSTR
 SQLDataType::FindSQLDatatype(int p_type)
 {
   DataTypes* types = allOther;
@@ -323,7 +335,7 @@ SQLDataType::FindSQLDatatype(int p_type)
     }
     ++types;
   }
-  return "";
+  return _T("");
 }
 
 // Microsoft Entity Framework datatypes (CSDL like)
@@ -337,32 +349,32 @@ SQLDataType::GetAsEdmType()
     case SQL_VARCHAR:
     case SQL_WCHAR:
     case SQL_WVARCHAR:
-    case SQL_WLONGVARCHAR:      return "Edm.String";
+    case SQL_WLONGVARCHAR:      return _T("Edm.String");
     case SQL_C_SHORT:
     case SQL_C_SSHORT:
-    case SQL_C_USHORT:          return "Edm.Int16";
-    case SQL_C_UTINYINT:        return "Edm.Byte";
+    case SQL_C_USHORT:          return _T("Edm.Int16");
+    case SQL_C_UTINYINT:        return _T("Edm.Byte");
     case SQL_C_TINYINT:
-    case SQL_C_STINYINT:        return "Edm.SByte";
+    case SQL_C_STINYINT:        return _T("Edm.SByte");
     case SQL_C_LONG:
     case SQL_C_ULONG:
-    case SQL_C_SLONG:           return "Edm.Int32";
+    case SQL_C_SLONG:           return _T("Edm.Int32");
     case SQL_C_UBIGINT:
-    case SQL_C_SBIGINT:         return "Edm.Int64";
+    case SQL_C_SBIGINT:         return _T("Edm.Int64");
     case SQL_C_FLOAT:
-    case SQL_C_DOUBLE:          return "Edm.Double";
-    case SQL_C_BIT:             return "Edm.Boolean";
-    case SQL_C_NUMERIC:         return "Edm.Decimal";
+    case SQL_C_DOUBLE:          return _T("Edm.Double");
+    case SQL_C_BIT:             return _T("Edm.Boolean");
+    case SQL_C_NUMERIC:         return _T("Edm.Decimal");
     case SQL_VARBINARY:
     case SQL_LONGVARBINARY:
-    case SQL_C_BINARY:          return "Edm.Binary";
+    case SQL_C_BINARY:          return _T("Edm.Binary");
     case SQL_C_DATE:
-    case SQL_C_TYPE_DATE:       return "Edm.Date";
+    case SQL_C_TYPE_DATE:       return _T("Edm.Date");
     case SQL_C_TIME:
-    case SQL_C_TYPE_TIME:       return "Edm.TimeOfDay";
+    case SQL_C_TYPE_TIME:       return _T("Edm.TimeOfDay");
     case SQL_C_TIMESTAMP:
-    case SQL_C_TYPE_TIMESTAMP:  return "Edm.DateTimeOffset";
-    case SQL_C_GUID:            return "Edm.Guid";
+    case SQL_C_TYPE_TIMESTAMP:  return _T("Edm.DateTimeOffset");
+    case SQL_C_GUID:            return _T("Edm.Guid");
     case SQL_C_INTERVAL_YEAR:
     case SQL_C_INTERVAL_MONTH:
     case SQL_C_INTERVAL_YEAR_TO_MONTH:
@@ -375,9 +387,9 @@ SQLDataType::GetAsEdmType()
     case SQL_C_INTERVAL_DAY_TO_SECOND:
     case SQL_C_INTERVAL_HOUR_TO_MINUTE:
     case SQL_C_INTERVAL_HOUR_TO_SECOND:
-    case SQL_C_INTERVAL_MINUTE_TO_SECOND:  return "Edm.Duration";
+    case SQL_C_INTERVAL_MINUTE_TO_SECOND:  return _T("Edm.Duration");
   }
-  return "Edm.Unknown";
+  return _T("Edm.Unknown");
 }
 
 // Datatype formatted according to a specific RDBMS dialect
@@ -394,42 +406,42 @@ SQLDataType::TypeNameWithPrecisionScale(TypeInfo* p_type)
   XString length,precision,scale;
   if(m_columnSize > 0)
   {
-    length.Format("%d",m_columnSize);
+    length.Format(_T("%d"),m_columnSize);
   }
   if(m_columnSize > 0 || m_decimalDigits > 0)
   {
-    precision.Format("%d",m_columnSize);
-    scale.Format("%d",m_decimalDigits);
+    precision.Format(_T("%d"),m_columnSize);
+    scale.Format(_T("%d"),m_decimalDigits);
   }
 
   // Replace as strings
   if(m_columnSize > 0)
   {
-    params.Replace("max length",length);    // ORACLE DOES THIS!!
-    params.Replace("length",length);
+    params.Replace(_T("max length"),length);    // ORACLE DOES THIS!!
+    params.Replace(_T("length"),length);
   }
-  else if(p_type->m_type_name.CompareNoCase("varchar") == 0)
+  else if(p_type->m_type_name.CompareNoCase(_T("varchar")) == 0)
   {
     // SQL-Server does this as a replacement for CLOB
-    params.Replace("max length","max");
+    params.Replace(_T("max length"),_T("max"));
     max = true;
   }
 
   if(m_columnSize > 0)
   {
-    params.Replace("precision",precision);
-    params.Replace("scale",scale);
+    params.Replace(_T("precision"),precision);
+    params.Replace(_T("scale"),scale);
   }
   else if(!max)
   {
     params.Empty();
   }
   // Make sure we have parenthesis
-  if(!params.IsEmpty() && params.Left(1) != "(" && params != ",")
+  if(!params.IsEmpty() && params.Left(1) != _T("(") && params != _T(","))
   {
-    params = "(" + params + ")";
+    params = _T("(") + params + _T(")");
   }
-  if(params != ",")
+  if(params != _T(","))
   {
     return m_typeName + params;
   }

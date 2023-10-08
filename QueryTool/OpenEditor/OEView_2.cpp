@@ -56,13 +56,13 @@ void COEditorView::DrawLineNumber (CDC& dc, RECT rc, int line)
 {
     rc.right -= (m_Rulers[0].m_CharSize*3)/4;
 
-    char buff[40];
-    _itoa_s(line + 1, buff, 40,10);
+    TCHAR buff[40];
+    _itot_s(line + 1, buff, 40,10);
     dc.SetBkMode(TRANSPARENT);
     dc.SetTextColor(GetSysColor(COLOR_BTNTEXT));
     
     CFont* pOrgFont = m_paintAccessories->SelectFont(dc, 0);
-    dc.DrawText(buff, (int)strlen(buff), &rc, DT_RIGHT|DT_TOP);
+    dc.DrawText(buff, (int)_tcslen(buff), &rc, DT_RIGHT|DT_TOP);
     dc.SelectObject(pOrgFont);
 }
 
@@ -93,13 +93,13 @@ void COEditorView::DrawRandomBookmark (CDC& dc, RECT rc, int index, bool halfcli
     if (halfclip)
         dc.SelectClipRgn(NULL);
 
-    char buff[40];
-    _itoa_s(index, buff,40, 10);
+    TCHAR buff[40];
+    _itot_s(index, buff,40, 10);
     dc.SetBkMode(TRANSPARENT);
     dc.SetTextColor(m_paintAccessories->m_RndBmkForeground);
 
     CFont* pOrgFont = m_paintAccessories->SelectFont(dc, GetSettings().GetLineNumbers() ? HighlighterBase::efmBold : HighlighterBase::efmNormal);
-    dc.DrawText(buff, (int)strlen(buff), &rc, DT_CENTER|DT_TOP);
+    dc.DrawText(buff, (int)_tcslen(buff), &rc, DT_CENTER|DT_TOP);
     dc.SelectObject(pOrgFont);
 }
 
@@ -279,10 +279,10 @@ void COEditorView::OnPaint ()
 
       if (i < endFileLine)
       {
-        const char* currentLine; 
+        LPCTSTR currentLine = nullptr; 
         int currentLineLength;
         GetLine(i + m_Rulers[1].m_Topmost, currentLine, currentLineLength);
-        // recalculation for maximum of visible line lengthes
+        // recalculation for maximum of visible line lengths
         if (currentLineLength)
         {
             int length = inx2pos(currentLine, currentLineLength, currentLineLength - 1);
@@ -305,7 +305,7 @@ void COEditorView::OnPaint ()
         while (!tokenizer.Eol())
         {
           int pos, len;
-          const char* str;
+          LPCTSTR str;
 
           tokenizer.GetCurentWord(str, pos, len);
 
@@ -354,18 +354,19 @@ void COEditorView::OnPaint ()
       }
       else if (i == endFileLine)
       {
-        static const char str[] = ">> EOF <<";
+        static const TCHAR str[] = _T(">> EOF <<");
+        static const int str_size = _tcslen(str);
 
-        if (sizeof(str)-1 > m_Rulers[0].m_Topmost)
+        if (str_size > m_Rulers[0].m_Topmost)
         {
           m_paintAccessories->SelectTextFont(memDc);
           memDc.SetTextColor(m_paintAccessories->m_EOFForeground);
-          memDc.TextOut(m_Rulers[0].PosToPix(0), rcLine.top, str, sizeof(str)-1);
+          memDc.TextOut(m_Rulers[0].PosToPix(0), rcLine.top, str, str_size);
 
           if (blockExist)
           {
               m_paintAccessories->SelectTextFont(memSelDc);
-              memSelDc.TextOut(m_Rulers[0].PosToPix(0), rcLine.top, str, sizeof(str)-1);
+              memSelDc.TextOut(m_Rulers[0].PosToPix(0), rcLine.top, str, str_size);
           }
         }
       }
@@ -436,8 +437,8 @@ void COEditorView::OnSettingsChanged ()
         m_highlighter->Init(set);
     }
 
-    const VisualAttribute& textAttr = set.FindByName("Text");
-    const VisualAttribute& curLinetAttr = set.FindByName("Current Line");
+    const VisualAttribute& textAttr = set.FindByName(_T("Text"));
+    const VisualAttribute& curLinetAttr = set.FindByName(_T("Current Line"));
     HighlightCurrentLine(textAttr.m_Background != curLinetAttr.m_Background ? true : false);
 
     bool recalcSize = false;

@@ -114,7 +114,7 @@ namespace OpenEditor
                 if (casesensitive)
                 {
                     brace = braceSet[j];
-                    fastmap[brace[0]] = 1;
+                    fastmap[(int)brace[0]] = 1;
                 }
                 else
                 {
@@ -267,7 +267,7 @@ void CommonLanguageSupport::readTokens (int line, Context& cxt)
     LineTokenizer tokenizer(false, 1, GetDelimitersMap());
 
     int lineLength;
-    const char* lineStr;
+    LPCTSTR lineStr;
     m_pStorage->GetLine(line, lineStr, lineLength);
     tokenizer.StartScan(lineStr, lineLength);
     cxt.tokens.clear();
@@ -275,10 +275,10 @@ void CommonLanguageSupport::readTokens (int line, Context& cxt)
     while (!tokenizer.Eol())
     {
         int pos, len;
-        const char* str;
+        LPCTSTR str;
         tokenizer.GetCurentWord(str, pos, len);
         
-        if (len > 0 && cxt.fastmap[*str])
+        if (len > 0 && cxt.fastmap[(int) *str])
         {
             CString brace(str, len);
             

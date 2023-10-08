@@ -36,7 +36,7 @@ static char THIS_FILE[] = __FILE__;
 namespace SQLComponents
 {
 
-static char g_staticAddress;
+static TCHAR g_staticAddress;
 
 HMODULE SQLGetModuleHandle()
 {
@@ -54,7 +54,7 @@ HMODULE SQLGetModuleHandle()
 
 XString SQLGetExeFile()
 {
-  char buffer[_MAX_PATH + 1];
+  TCHAR buffer[_MAX_PATH + 1];
 
   HMODULE mod = SQLGetModuleHandle();
 
@@ -90,31 +90,31 @@ SQLTerminateWithoutCleanup(int p_exitcode)
   abort();
 }
 
-// Check the renaming of the runtimer (exe, dll, or whatever)
+// Check the renaming of the runtimer (EXE, DLL, or whatever)
 void
 SQLCheckExePath(XString p_runtimer)
 {
-  char drive    [_MAX_DRIVE];
-  char directory[_MAX_DIR  ];
-  char filename [_MAX_FNAME];
-  char extension[_MAX_EXT  ];
+  TCHAR drive    [_MAX_DRIVE];
+  TCHAR directory[_MAX_DIR  ];
+  TCHAR filename [_MAX_FNAME];
+  TCHAR extension[_MAX_EXT  ];
 
   XString program = SQLGetExeFile();
-  _splitpath_s(program.GetString(),drive,_MAX_DRIVE,directory,_MAX_DIR,filename,_MAX_FNAME,extension,_MAX_EXT);
+  _tsplitpath_s(program.GetString(),drive,_MAX_DRIVE,directory,_MAX_DIR,filename,_MAX_FNAME,extension,_MAX_EXT);
 
   XString runtimer = XString(filename) + XString(extension);
   if(runtimer.CompareNoCase(p_runtimer))
   {
     XString error;
-    error.Format("You have started the program: %s\n"
-                 "But in reality it is now: %s\n"
-                 "Your product cannot function properly under this difference!\n"
-                 "\n"
-                 "Contact your friendly system administrator about this problem.\n"
-                 "Fix the installation of the program and retry this operation."
-                ,  runtimer.GetString()
+    error.Format(_T("You have started the program: %s\n"
+                    "But in reality it is now: %s\n"
+                    "Your product cannot function properly under this difference!\n"
+                    "\n"
+                    "Contact your friendly system administrator about this problem.\n"
+                    "Fix the installation of the program and retry this operation.")
+                ,runtimer.GetString()
                 ,p_runtimer.GetString());
-    SQLMessage(NULL,error,"Installation",MB_OK|MB_ICONERROR);
+    SQLMessage(NULL,error,_T("Installation"),MB_OK|MB_ICONERROR);
     SQLTerminateWithoutCleanup(-4);
   }
 }

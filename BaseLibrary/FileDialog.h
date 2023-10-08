@@ -234,13 +234,13 @@ public:
   XString GetChosenFile();
 
 private:
-  void FilterString(char *filter);
+  void FilterString(PTCHAR filter);
 
-  bool          m_open;  // open of saveas
-  char          m_original[MAX_PATH+1];
-  char          m_filename[MAX_PATH+1];
-  char          m_filter[1024];
-  char          m_title [100];
-  char          m_defext[100];
+  bool          m_open;  // open of save-as
+  TCHAR         m_original[MAX_PATH+1];
+  TCHAR         m_filename[MAX_PATH+1];
+  TCHAR         m_filter[1024];
+  TCHAR         m_title [100];
+  TCHAR         m_defext[100];
   OPENFILENAME  m_ofn;
 };

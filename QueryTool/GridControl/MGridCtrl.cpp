@@ -2320,182 +2320,210 @@ void MCGridCtrl::CutSelectedText()
 // Copies text from the selected cells to the clipboard
 COleDataSource* MCGridCtrl::CopyTextFromGrid()
 {
-    USES_CONVERSION;
+#ifdef UNICODE
+  UINT format = CF_UNICODETEXT;
+#else
+  UINT format = CF_TEXT;
+#endif
 
-    MCCellRange Selection = GetSelectedCellRange();
-    if (!IsValid(Selection))
-        return NULL;
+  MCCellRange Selection = GetSelectedCellRange();
+  if(!IsValid(Selection))
+  {
+    return NULL;
+  }
+  if(GetVirtualMode())
+  {
+    SendCacheHintToParent(Selection);
+  }
+  // Write to shared file (REMEBER: CF_TEXT is ANSI, not UNICODE, so we need to convert)
+  CSharedFile sf(GMEM_MOVEABLE | GMEM_DDESHARE | GMEM_ZEROINIT);
 
-    if (GetVirtualMode())
-        SendCacheHintToParent(Selection);
-
-    // Write to shared file (REMEBER: CF_TEXT is ANSI, not UNICODE, so we need to convert)
-    CSharedFile sf(GMEM_MOVEABLE | GMEM_DDESHARE | GMEM_ZEROINIT);
-
-    // Get a tab delimited string to copy to cache
-    CString str;
-    MCGridCellBase *pCell;
-    for (int row = Selection.GetMinRow(); row <= Selection.GetMaxRow(); row++)
+  // Get a tab delimited string to copy to cache
+  CString str;
+  MCGridCellBase *pCell;
+  for (int row = Selection.GetMinRow(); row <= Selection.GetMaxRow(); row++)
+  {
+    // don't copy hidden cells
+    if(m_arRowHeights[row] <= 0)
     {
-        // don't copy hidden cells
-        if( m_arRowHeights[row] <= 0 )
-            continue;
-
-        str.Empty();
-        for (int col = Selection.GetMinCol(); col <= Selection.GetMaxCol(); col++)
-        {
-            // don't copy hidden cells
-            if( m_arColWidths[col] <= 0 )
-                continue;
-
-            pCell = GetCell(row, col);
-            if (pCell &&(pCell->GetState() & GVIS_SELECTED))
-            {
-                // if (!pCell->GetText())
-                //    str += _T(" ");
-                // else 
-                str += pCell->GetText();
-            }
-            if (col != Selection.GetMaxCol()) 
-                str += _T("\t");
-        }
-        if (row != Selection.GetMaxRow()) 
-            str += _T("\n");
-        
-        sf.Write(T2A(str.GetBuffer(1)), str.GetLength());
-        str.ReleaseBuffer();
+      continue;
     }
+    str.Empty();
+    for (int col = Selection.GetMinCol(); col <= Selection.GetMaxCol(); col++)
+    {
+      // don't copy hidden cells
+      if(m_arColWidths[col] <= 0)
+      {
+        continue;
+      }
+      pCell = GetCell(row, col);
+      if (pCell &&(pCell->GetState() & GVIS_SELECTED))
+      {
+        str += pCell->GetText();
+      }
+      if(col != Selection.GetMaxCol())
+      {
+        str += _T("\t");
+      }
+    }
+    if(row != Selection.GetMaxRow())
+    {
+      str += _T("\n");
+    }
+    sf.Write(str.GetBuffer(1),str.GetLength());
+    str.ReleaseBuffer();
+  }
     
-    char c = '\0';
-    sf.Write(&c, 1);
+  TCHAR c = '\0';
+  sf.Write(&c, 1);
 
-    if (GetVirtualMode())
-        SendCacheHintToParent(MCCellRange(-1,-1,-1,-1));
+  if(GetVirtualMode())
+  {
+    SendCacheHintToParent(MCCellRange(-1,-1,-1,-1));
+  }
+  DWORD dwLen = (DWORD) sf.GetLength();
+  HGLOBAL hMem = sf.Detach();
+  if(!hMem)
+  {
+    return NULL;
+  }
+  hMem = ::GlobalReAlloc(hMem, dwLen, GMEM_MOVEABLE | GMEM_ZEROINIT);
+  if(!hMem)
+  {
+    return NULL;
+  }
+  // Cache data
+  COleDataSource* pSource = new COleDataSource();
+  pSource->CacheGlobalData(format, hMem);
 
-    DWORD dwLen = (DWORD) sf.GetLength();
-    HGLOBAL hMem = sf.Detach();
-    if (!hMem)
-        return NULL;
-
-    hMem = ::GlobalReAlloc(hMem, dwLen, GMEM_MOVEABLE | GMEM_DDESHARE | GMEM_ZEROINIT);
-    if (!hMem)
-        return NULL;
-
-    // Cache data
-    COleDataSource* pSource = new COleDataSource();
-    pSource->CacheGlobalData(CF_TEXT, hMem);
-
-    return pSource;
+  return pSource;
 }
 
 // Pastes text from the clipboard to the selected cells
-BOOL MCGridCtrl::PasteTextToGrid(MCCellID cell, COleDataObject* pDataObject, 
-								BOOL bSelectPastedCells /*=TRUE*/)
+BOOL MCGridCtrl::PasteTextToGrid(MCCellID        cell
+                                ,COleDataObject* pDataObject
+                                ,BOOL            bSelectPastedCells /*=TRUE*/)
 {
-    if (!IsValid(cell) || !IsCellEditable(cell) || !pDataObject->IsDataAvailable(CF_TEXT))
-        return FALSE;
+#ifdef UNICODE
+  UINT format = CF_UNICODETEXT;
+#else
+  UINT format = CF_TEXT;
+#endif
 
-    // Get the text from the COleDataObject
-    HGLOBAL hmem = pDataObject->GetGlobalData(CF_TEXT);
-    CMemFile sf((BYTE*) ::GlobalLock(hmem), (UINT)::GlobalSize(hmem));
+  if(!IsValid(cell) || !IsCellEditable(cell) || !pDataObject->IsDataAvailable(CF_TEXT))
+  {
+    return FALSE;
+  }
+  // Get the text from the COleDataObject
+  HGLOBAL hmem = pDataObject->GetGlobalData(format);
+  CMemFile sf((BYTE*) ::GlobalLock(hmem), (UINT)::GlobalSize(hmem));
 
-    // CF_TEXT is ANSI text, so we need to allocate a char* buffer
-    // to hold this.
-    LPSTR szBuffer = new char[::GlobalSize(hmem)];
-    if (!szBuffer)
-        return FALSE;
+  // Format is MCS/Unicode text, so we need to allocate a TCHAR* buffer to hold this.
+  LPTSTR szBuffer = new TCHAR[::GlobalSize(hmem)];
+  if(!szBuffer)
+  {
+    return FALSE;
+  }
+  sf.Read(szBuffer, (UINT)::GlobalSize(hmem));
+  ::GlobalUnlock(hmem);
 
-    sf.Read(szBuffer, (UINT)::GlobalSize(hmem));
-    ::GlobalUnlock(hmem);
+  // Now store in generic TCHAR form so we no longer have to deal with MBCS/UNICODE problems
+  CString strText = szBuffer;
+  delete[] szBuffer;
 
-    // Now store in generic TCHAR form so we no longer have to deal with
-    // ANSI/UNICODE problems
-    CString strText = szBuffer;
-    delete szBuffer;
-
-    // Parse text data and set in cells...
-    strText.LockBuffer();
-    CString strLine = strText;
-    int nLine = 0;
+  // Parse text data and set in cells...
+  strText.LockBuffer();
+  CString strLine = strText;
+  int nLine = 0;
 
     // Find the end of the first line
 	MCCellRange PasteRange(cell.row, cell.col,-1,-1);
-    int nIndex;
-    do
+  int nIndex;
+  do
+  {
+    int nColumn = 0;
+    nIndex = strLine.Find(_T("\n"));
+
+    // Store the remaining chars after the newline
+    CString strNext = (nIndex < 0)? _T("")  : strLine.Mid(nIndex + 1);
+
+    // Remove all chars after the newline
+    if(nIndex >= 0)
     {
-        int nColumn = 0;
-        nIndex = strLine.Find(_T("\n"));
+      strLine = strLine.Left(nIndex);
+    }
+    int nLineIndex = strLine.FindOneOf(_T("\t,"));
+    CString strCellText = (nLineIndex >= 0)? strLine.Left(nLineIndex) : strLine;
 
-        // Store the remaining chars after the newline
-        CString strNext = (nIndex < 0)? _T("")  : strLine.Mid(nIndex + 1);
+    // skip hidden rows
+    int iRowVis = cell.row + nLine;
+    while( iRowVis < GetRowCount())
+    {
+      if(GetRowHeight(iRowVis) > 0)
+      {
+        break;
+      }
+      nLine++;
+      iRowVis++;
+    }
 
-        // Remove all chars after the newline
-        if (nIndex >= 0)
-            strLine = strLine.Left(nIndex);
-
-        int nLineIndex = strLine.FindOneOf(_T("\t,"));
-        CString strCellText = (nLineIndex >= 0)? strLine.Left(nLineIndex) : strLine;
-
-        // skip hidden rows
-        int iRowVis = cell.row + nLine;
-        while( iRowVis < GetRowCount())
+    while (!strLine.IsEmpty())
+    {
+      // skip hidden columns
+      int iColVis = cell.col + nColumn;
+      while( iColVis < GetColumnCount())
+      {
+        if(GetColumnWidth(iColVis) > 0)
         {
-            if( GetRowHeight( iRowVis) > 0)
-                break;
-            nLine++;
-            iRowVis++;
+          break;
         }
+        nColumn++;
+        iColVis++;
+      }
 
-        while (!strLine.IsEmpty())
+        MCCellID TargetCell(iRowVis, iColVis);
+        if (IsValid(TargetCell))
         {
-            // skip hidden columns
-            int iColVis = cell.col + nColumn;
-            while( iColVis < GetColumnCount())
-            {
-                if( GetColumnWidth( iColVis) > 0)
-                    break;
-                nColumn++;
-                iColVis++;
-            }
+          strCellText.TrimLeft();
+          strCellText.TrimRight();
 
-            MCCellID TargetCell(iRowVis, iColVis);
-            if (IsValid(TargetCell))
-            {
-                strCellText.TrimLeft();
-                strCellText.TrimRight();
+          ValidateAndModifyCellContents(TargetCell.row, TargetCell.col, strCellText);
 
-                ValidateAndModifyCellContents(TargetCell.row, TargetCell.col, strCellText);
+          // Make sure cell is not selected to avoid data loss
+          SetItemState(TargetCell.row, TargetCell.col,GetItemState(TargetCell.row, TargetCell.col) & ~GVIS_SELECTED);
 
-                // Make sure cell is not selected to avoid data loss
-                SetItemState(TargetCell.row, TargetCell.col,
-                    GetItemState(TargetCell.row, TargetCell.col) & ~GVIS_SELECTED);
-
-				if (iRowVis > PasteRange.GetMaxRow()) PasteRange.SetMaxRow(iRowVis);
-				if (iColVis > PasteRange.GetMaxCol()) PasteRange.SetMaxCol(iColVis);
-            }
-
-            strLine = (nLineIndex >= 0)? strLine.Mid(nLineIndex + 1) : _T("");
-            nLineIndex = strLine.FindOneOf(_T("\t,"));
-            strCellText = (nLineIndex >= 0)? strLine.Left(nLineIndex) : strLine;
-
-            nColumn++;
+          if(iRowVis > PasteRange.GetMaxRow())
+          {
+            PasteRange.SetMaxRow(iRowVis);
+          }
+          if(iColVis > PasteRange.GetMaxCol())
+          {
+            PasteRange.SetMaxCol(iColVis);
+          }
         }
+        strLine     = (nLineIndex >= 0)? strLine.Mid(nLineIndex + 1) : _T("");
+        nLineIndex  = strLine.FindOneOf(_T("\t,"));
+        strCellText = (nLineIndex >= 0)? strLine.Left(nLineIndex) : strLine;
 
-        strLine = strNext;
-        nLine++;
-    } while (nIndex >= 0);
+        nColumn++;
+    }
+    strLine = strNext;
+    nLine++;
+  } 
+  while (nIndex >= 0);
 
-    strText.UnlockBuffer();
+  strText.UnlockBuffer();
 
-	if (bSelectPastedCells)
-		SetSelectedRange(PasteRange, TRUE);
+  if(bSelectPastedCells)
+  {
+    SetSelectedRange(PasteRange,TRUE);
+  }
 	else
 	{
 		ResetSelectedRange();
 		Refresh();
 	}
-
-    return TRUE;
+  return TRUE;
 }
 #endif
 
@@ -2573,7 +2601,7 @@ DROPEFFECT MCGridCtrl::OnDragOver(COleDataObject* pDataObject, DWORD dwKeyState,
         }
     }
 
-    // Return an appropraite value of DROPEFFECT so mouse cursor is set properly
+    // Return an appropriate value of DROPEFFECT so mouse cursor is set properly
     if (dwKeyState & MK_CONTROL)
         return DROPEFFECT_COPY;
     else
@@ -6472,7 +6500,7 @@ void MCGridCtrl::OnBeginPrinting(CDC *pDC, CPrintInfo *pInfo)
 
     // Create the printer font
     int nFontSize = -10;
-    CString strFontName = "Arial";
+    CString strFontName = _T("Arial");
     m_PrinterFont.CreateFont(nFontSize, 0,0,0, FW_NORMAL, 0,0,0, DEFAULT_CHARSET,
                              OUT_CHARACTER_PRECIS, CLIP_CHARACTER_PRECIS, DEFAULT_QUALITY,
                              DEFAULT_PITCH | FF_DONTCARE, strFontName);

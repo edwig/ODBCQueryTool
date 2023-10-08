@@ -33,3 +33,7 @@ void    RepositionFrameWnd(CWnd* p_wnd,bool p_isFrame = true);
 void    MinimalFrameWnd   (CWnd* p_wnd);
 
 void    ScaleControl(CWnd* p_wnd);
+
+// Unicode aware Clipboard handling
+CString StyleGetStringFromClipboard(HWND p_wnd = NULL);
+bool    StylePutStringToClipboard(CString p_string,HWND p_wnd = NULL,bool p_append = false);

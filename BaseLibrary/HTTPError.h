@@ -57,12 +57,12 @@
 
 typedef struct _httpError
 {
-  int         m_error;
-  const char* m_text;
+  int          m_error;
+  const PTCHAR m_text;
 }
 HTTPError;
 
 XString GetHTTPErrorText(int p_error);
 
 // Get text from HTTP_STATUS code
-const char* GetHTTPStatusText(int p_status);
+PCTSTR GetHTTPStatusText(int p_status);

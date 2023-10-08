@@ -26,7 +26,7 @@
 #define   EDIT_EYE_WEIGHT WS(2)
 
 // The password character
-#define   EDIT_PASSWORD_CHAR '•'
+#define   EDIT_PASSWORD_CHAR _T('•')
 
 // Default font name
 #define   STYLE_DEFAULT_FONT     "Verdana"
@@ -67,7 +67,7 @@ public:
   void SetWindowNumber(int p_number);
   void SetWindowText(LPTSTR lpszStringBuf);
   void SetWindowText(CString p_string1);
-  void InsertAtCurPos(const char* p_text,int p_offset);
+  void InsertAtCurPos(LPCTSTR p_text,int p_offset);
   int  CheckEditOK();
   void SetSpinBuddy(StyleSpinButtonCtrl* p_buddy);
 
@@ -87,7 +87,7 @@ public:
   void SetCalendar(bool p_calendar = true);
   void SetCheckDate(bool p_check = true);
   void SetComboBox(StyleComboBox* p_combo);
-  void SetEmpty(bool p_empty, CString p_text = "");
+  void SetEmpty(bool p_empty, CString p_text = _T(""));
 
   void SetTextColor           (COLORREF p_colorText);
   void SetBkColor             (COLORREF p_colorBackground);

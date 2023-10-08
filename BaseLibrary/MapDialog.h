@@ -58,7 +58,7 @@ private:
   static int CALLBACK CallbackProcS(HWND hwnd,UINT uMsg,LPARAM lParam,LPARAM lpData);
 
   HWND      m_hwnd;
-  char      m_originalDir[MAX_PATH+1];
+  TCHAR     m_originalDir[MAX_PATH+1];
   XString   m_disp;
   XString   m_path;
   XString   m_root;

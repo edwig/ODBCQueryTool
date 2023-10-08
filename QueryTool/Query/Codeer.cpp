@@ -109,12 +109,12 @@ CString CCodeer::CodeerString(CString p_str,int p_stap /* = 10*/)
 {
   CString retval;
   int len = p_str.GetLength();
-  char *buf=retval.GetBufferSetLength(len);
+  TCHAR *buf=retval.GetBufferSetLength(len);
   for(int i=0;i<p_stap;i++)
   {
     for(int n=i;n<len;n+=p_stap)
     {
-      buf[n]=CodeerChar(p_str[n]);
+      buf[n]=CodeerChar((char) p_str[n]);
     }
   }
   retval.ReleaseBuffer(len); 
@@ -127,12 +127,12 @@ CString CCodeer::DeCodeerString(CString p_str,int p_stap /* = 10*/)
 {
   CString retval;
   int len = p_str.GetLength();
-  char *buf=retval.GetBufferSetLength(len);
+  TCHAR *buf=retval.GetBufferSetLength(len);
   for(int i=0;i<p_stap;i++)
   {
     for(int n=i;n<len;n+=p_stap)
     {
-      buf[n]=DeCodeerChar(p_str[n]);
+      buf[n]=DeCodeerChar((uchar) p_str[n]);
     }
   }   
   retval.ReleaseBuffer(len); 
@@ -150,7 +150,7 @@ CString CCodeer::CodeerStringHex(CString p_str,int p_stap /* = 10*/)
   {
     for(int n=i;n<len;n+=p_stap)
     {
-      buf.Format("%02x",(unsigned char)CodeerChar(p_str[n]));
+      buf.Format(_T("%02x"),(unsigned char)CodeerChar((char)p_str[n]));
       retval += buf;
     }
   }
@@ -163,15 +163,15 @@ CString CCodeer::DeCodeerStringHex(CString p_str,int p_stap /* = 10*/)
 {
 	CString retval;
 	int len = p_str.GetLength() / 2;
-	char *bufs=retval.GetBufferSetLength(len);
-	const char *bufl=(const char *)p_str;
+	TCHAR *bufs=retval.GetBufferSetLength(len);
+	const TCHAR *bufl=(const TCHAR *)p_str;
 	int code;
 	for(int i=0;i<p_stap;i++)
 	{
 		for(int n=i;n<len;n+=p_stap)
 		{
-			sscanf_s(bufl,"%2x",&code);
-			bufs[n]=DeCodeerChar((char)code);
+			_stscanf_s(bufl,_T("%2x"),&code);
+			bufs[n]=DeCodeerChar((uchar)code);
 			bufl+=2;
 		}
 	}   

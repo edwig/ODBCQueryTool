@@ -28,113 +28,69 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define VERBOSE_EXCEPTION_HANDLER
-
 namespace Common
 {
     using namespace std;
 
-#ifdef _AFX
     inline
-    void print_exception (const string& str) 
+    void print_exception (const CString& str) 
     { 
-      StyleMessageBox(nullptr,str.c_str(), "ERROR",MB_OK|MB_ICONSTOP); 
+      StyleMessageBox(nullptr,str.GetString(), _T("ERROR"),MB_OK|MB_ICONSTOP); 
     }
-#else
-    inline
-    void print_exception (const string& str) 
-        { cerr << str << endl; }
-#endif//_AFX
 
-#ifdef VERBOSE_EXCEPTION_HANDLER
-
-    void default_handler (const char* file, int line) // for ...
+    void default_handler (LPCTSTR file, int line) // for ...
     {
-        ostringstream o;
-        o << "Unknown exception is being caught at " << file << '(' << line << ").\n\n"
-  		  << "Please notify me about this problem. You can use email to edwig.huisman@hetnet.nl\n"
-             "Thank you\n";
-
-        print_exception(o.str());
+      CString str;
+      str.Format(_T("Unknown exception is being caught at [%s] on line: %d.\n\n")
+                 _T("Please notify me about this problem. You can use email address 'edwig.huisman@hetnet.nl'\n")
+                 _T("Thank you!!\n")
+                 ,file,line);
+      print_exception(str);
     }
 
-    void default_handler (const char *er, const char* file,int line)
+    void default_handler (LPCTSTR er, LPCTSTR file,int line)
     {
-       ostringstream o;
-        o << "Unexpected exception \"" << er << "\" is being caught at " << file << '(' << line << ").\n\n"
-          << "Please notify me about this problem. You can use email to edwig.huisman@hetnet.nl\n"
-             "Thank you\n";
-    
-        print_exception(o.str());
+      CString str;
+      str.Format(_T("Unexpected exception \"%s\" is being caught at [%s] ;on line: %d.\n\n")
+                 _T("Please notify me about this problem. You can use email address: 'edwig.huisman@hetnet.nl'\n")
+                 _T("Thank you!!\n")
+                 ,er,file,line);
+        print_exception(str);
     }
 
-    void default_handler(const CString& er, const char* file, int line)
+    void default_handler(const CString& er, LPCTSTR file, int line)
     {
-      ostringstream o;
-      o << "Unexpected exception \"" << er << "\" is being caught at " << file << '(' << line << ").\n\n"
-        << "Please notify me about this problem. You can use email to edwig.huisman@hetnet.nl\n"
-           "Thank you\n";
-
-      print_exception(o.str());
+      CString str;
+      str.Format(_T("Unexpected exception \"%s\" is being caught at [%s] ;on line: %d.\n\n")
+                 _T("Please notify me about this problem. You can use email address: 'edwig.huisman@hetnet.nl'\n")
+                 _T("Thank you!!\n")
+                 ,er.GetString(),file,line);
+      print_exception(str);
     }
 
-    void default_handler (const std::exception& x, const char* file, int line)
+    void default_handler (const std::exception& x, LPCTSTR file, int line)
     {
-        ostringstream o;
-        o << "Unexpected exception \"" << x.what() << "\" is being caught at " << file << '(' << line << ").\n\n"
-          << "Please notify me about this problem. You can use email to edwig.huisman@hetnet.nl\n"
-             "Thank you\n";
-
-        print_exception(o.str());
+      CString str;
+      str.Format(_T("Unexpected exception \"%s\" is being caught at [%s] ;on line: %d.\n\n")
+                 _T("Please notify me about this problem. You can use email address: 'edwig.huisman@hetnet.nl'\n")
+                 _T("Thank you!!\n")
+                 ,x.what(),file,line);
+      print_exception(str);
     }
 
-    void default_handler(StdException& x, const char* file, int line)
+    void default_handler(StdException& x, LPCTSTR file, int line)
     {
-      ostringstream o;
-      o << "UNEXPECTED EXCEPTION:\n\n" << x.GetErrorMessage();
-      o << "\nError is being caught at " << file << '(' << line << ").\n";
-      o << "Please notify me about this problem. You can use email to edwig.huisman@hetnet.nl\n"
-           "Thank you\n";
-
-      print_exception(o.str());
+      CString str;
+      str.Format(_T("Unexpected exception \"%s\" is being caught at [%s] ;on line: %d.\n\n")
+                 _T("Please notify me about this problem. You can use email address: 'edwig.huisman@hetnet.nl'\n")
+                 _T("Thank you!!\n")
+                 ,x.GetErrorMessage().GetString(),file,line);
+      print_exception(str);
     }
 
-
-#ifdef _AFX
-    void default_handler (CException* /*x*/, const char* /*file*/, int /*line*/)
+    void default_handler (CException* /*x*/, LPCTSTR /*file*/, int /*line*/)
     { 
         throw; 
     }
-#endif//_AFX
-
-#else// VERBOSE_EXCEPTION_HANDLER is not defined
-    void default_handler (const char* file, int line) // for ...
-    {
-#ifdef _AFX
-        AfxMessageBox("Unknown exception!", MB_OK|MB_ICONSTOP);
-#else
-        cerr << "Unknown exception!" << endl;
-#endif//_AFX
-    }
-
-
-    void default_handler (const std::exception& x, const char* file, int line)
-    {
-#ifdef _AFX
-        AfxMessageBox(x.what(), MB_OK|MB_ICONSTOP);
-#else
-        cerr << CString("Unexpected error (") << x.what() << ")!" << endl;
-#endif//_AFX
-    }
-
-#ifdef _AFX
-    void default_handler (CException*, const char* file, int line)
-    {
-        throw;
-    }
-#endif//_AFX
-
-#endif//VERBOSE_EXCEPTION_HANDLER
-
 }
 

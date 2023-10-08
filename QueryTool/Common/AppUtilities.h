@@ -23,24 +23,24 @@
 
 namespace Common
 {
-    void AppRestoreHistory(CComboBox&     wndList,const char* szSection,const char* szEntry,int nSize);
-    void AppRestoreHistory(StyleComboBox& wndList,const char* szSection,const char* szEntry,int nSize);
-    void AppSaveHistory   (CComboBox&     wndList,const char* szSection,const char* szEntry,int nSize);
-    void AppSaveHistory   (StyleComboBox& wndList,const char* szSection,const char* szEntry,int nSize);
+    void AppRestoreHistory(CComboBox&     wndList,LPCTSTR szSection,LPCTSTR szEntry,int nSize);
+    void AppRestoreHistory(StyleComboBox& wndList,LPCTSTR szSection,LPCTSTR szEntry,int nSize);
+    void AppSaveHistory   (CComboBox&     wndList,LPCTSTR szSection,LPCTSTR szEntry,int nSize);
+    void AppSaveHistory   (StyleComboBox& wndList,LPCTSTR szSection,LPCTSTR szEntry,int nSize);
 
     typedef CString              String;
     typedef std::list<String>    StringList;
     typedef StringList::iterator StringListIt;
 
-    void AppWalkDir (const char* szPath, const char* szFileMask,
+    void AppWalkDir (LPCTSTR szPath, LPCTSTR szFileMask,
                      StringList& listFiles, BOOL bSortFiles = TRUE, StringList* pListSubdir = 0);
-    BOOL AppDeleteFiles (const char* szPath, const char* szFileMask, BOOL bAndSubdir);
-    BOOL AppDeleteDirectory (const char* szPath);
+    BOOL AppDeleteFiles (LPCTSTR szPath, LPCTSTR szFileMask, BOOL bAndSubdir);
+    BOOL AppDeleteDirectory (LPCTSTR szPath);
     void AppGetPath (CString& path);
     void AppGetFullPathName (const String& path, String& fullPath);
     void FindApplicDirectory(CString& p_directory);
 
-    bool AppGetFileAttrs (const char* szPath
+    bool AppGetFileAttrs (LPCTSTR szPath
                          ,DWORD*      attrs
                          ,__int64*    fileSize      = 0
                          ,__int64*    creationTime  = 0

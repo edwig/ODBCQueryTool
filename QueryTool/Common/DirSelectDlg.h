@@ -54,7 +54,7 @@ namespace Common
 	public:
 		CDirSelectDlg (LPCTSTR lpcszCaption, CWnd* pWndParent = NULL, LPCTSTR lpcszInitialDir = NULL );
 		void GetPath (CString& strPath) const { strPath = m_folder; }
-		LPCSTR GetPath () const               { return m_folder; }
+		LPCTSTR GetPath () const               { return m_folder.GetString(); }
 		int DoModal ();
 
 	private:

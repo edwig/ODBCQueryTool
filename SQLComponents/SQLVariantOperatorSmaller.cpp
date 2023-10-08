@@ -1120,7 +1120,7 @@ SQLVariant::operator<(const SQLVariant& p_right) const
   XString leftType  = SQLDataType::FindDatatype(m_datatype);
   XString rightType = SQLDataType::FindDatatype(p_right.m_datatype);
   XString error;
-  error.Format("Cannot do the Smaller operator on (%s < %s)",leftType.GetString(),rightType.GetString());
+  error.Format(_T("Cannot do the Smaller operator on (%s < %s)"),leftType.GetString(),rightType.GetString());
   throw StdException(error);
 }
 

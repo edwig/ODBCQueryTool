@@ -62,7 +62,7 @@ public:
   StyleComboBox     m_comboKeymap;
   StyleComboBox     m_comboLocale;
 
-  static const char* m_keymapLayoutList;
+  static LPCTSTR    m_keymapLayoutList;
 };
 
 #endif//__OEGeneralPage_h__

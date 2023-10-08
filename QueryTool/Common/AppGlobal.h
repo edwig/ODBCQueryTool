@@ -26,7 +26,7 @@ namespace Common
 {
 
     HWND SetStatusHwnd (HWND);
-    void SetStatusText (const char* text, BOOL update = FALSE);
+    void SetStatusText (LPCTSTR text, BOOL update = FALSE);
 
 };//namespace Common
 

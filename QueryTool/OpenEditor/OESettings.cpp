@@ -79,8 +79,8 @@ void BaseSettings::NotifySettingsChanged ()
 GlobalSettings::GlobalSettings ()
 {
 
-  m_PrintHeader       = ""  ;
-	m_PrintFooter       = "&P";
+  m_PrintHeader       = _T("");
+	m_PrintFooter       = _T("&P");
 	m_PrintLeftMargin   = 20  ;
 	m_PrintRightMargin  = 10  ;
 	m_PrintTopMargin    = 10  ;
@@ -88,7 +88,7 @@ GlobalSettings::GlobalSettings ()
 
   m_PrintMarginMeasurement = GetSysPrintMeasuremnt();
 
-  m_DefFileExtension = "sql";
+  m_DefFileExtension = _T("sql");
   m_UndoLimit      = 1000 ;
   m_UndoMemLimit   = 1000 ; // kb
   m_TabExpand      = true ;
@@ -120,13 +120,13 @@ GlobalSettings::GlobalSettings ()
   m_FileStartDirectory = "";
 
   m_FileAutoscrollAfterReload = false;
-  m_Locale = "English";
+  m_Locale = _T("English");
 }
 
 
 int GlobalSettings::GetSysPrintMeasuremnt ()
 {
-    char buff[4];
+    TCHAR buff[4];
 
     if (::GetLocaleInfo(LOCALE_USER_DEFAULT, LOCALE_IMEASURE, buff, sizeof(buff)))
     {
@@ -239,21 +239,21 @@ SettingsManager& SettingsManager::operator = (const SettingsManager& other)
     }
     else
     {
-        throw std::logic_error("SettingsManager: illegal assigment.");
+        throw StdException(_T("Logic error: SettingsManager: illegal assignment."));
     }
 
     return *this;
 }
 
 
-void SettingsManager::CreateClass (const char* name)
+void SettingsManager::CreateClass (LPCTSTR name)
 {
     m_classSettingsVector.push_back(ClassSettingsPtr(new ClassSettings(*this)));
     m_classSettingsVector.back()->SetName(name);
 }
 
 
-void SettingsManager::DestroyClass (const char* name)
+void SettingsManager::DestroyClass (LPCTSTR name)
 {
     ClassSettingsVector::iterator
         it(m_classSettingsVector.begin()),
@@ -269,14 +269,14 @@ void SettingsManager::DestroyClass (const char* name)
 
 
 inline
-bool is_ext_supported (const CString& _list, const char* _ext)
+bool is_ext_supported (const CString& _list, LPCTSTR _ext)
 {
   if (_ext && *_ext)
   {
-    CString list = " " + _list + " ";
+    CString list = _T(" ") + _list + _T(" ");
     list.MakeUpper();
 
-    CString ext = " " + CString(_ext) + " ";
+    CString ext = _T(" ") + CString(_ext) + _T(" ");
     ext.MakeUpper();
 
     if(list.Find(ext) >= 0)
@@ -287,7 +287,7 @@ bool is_ext_supported (const CString& _list, const char* _ext)
   return false;
 }
 
-const ClassSettings& SettingsManager::FindByExt(const char* ext, bool _default) const
+const ClassSettings& SettingsManager::FindByExt(LPCTSTR ext, bool _default) const
 {
   for(auto& classet : m_classSettingsVector)
   {
@@ -298,13 +298,13 @@ const ClassSettings& SettingsManager::FindByExt(const char* ext, bool _default) 
   }
   if(!_default)
   {
-    throw StdException(XString("Class for extension [") + ext + " not found!");
+    throw StdException(XString(_T("Class for extension [")) + ext + _T(" not found!"));
   }
   return *m_classSettingsVector.at(0);
 }
 
 
-const ClassSettings& SettingsManager::FindByName (const char* name) const
+const ClassSettings& SettingsManager::FindByName (LPCTSTR name) const
 {
   for(auto& classet : m_classSettingsVector)
   {
@@ -313,7 +313,7 @@ const ClassSettings& SettingsManager::FindByName (const char* name) const
       return *classet;
     }
   }
-  throw StdException(XString("Class with name [") + name + "] not found!");
+  throw StdException(XString(_T("Class with name [")) + name + _T("] not found!"));
 }
 
 };//namespace OpenEditor

@@ -487,23 +487,23 @@ void StyleHyperLink::ReportError(int nError)
   CString str;
   switch (nError) 
   {
-      case 0:                       str = "The operating system is out\nof memory or resources."; break;
-      case SE_ERR_PNF:              str = "The specified path was not found."; break;
-      case SE_ERR_FNF:              str = "The specified file was not found."; break;
-      case ERROR_BAD_FORMAT:        str = "The .EXE file is invalid\n(non-Win32 .EXE or error in .EXE image)."; break;
-      case SE_ERR_ACCESSDENIED:     str = "The operating system denied\naccess to the specified file."; break;
-      case SE_ERR_ASSOCINCOMPLETE:  str = "The filename association is\nincomplete or invalid."; break;
-      case SE_ERR_DDEBUSY:          str = "The DDE transaction could not\nbe completed because other DDE transactions\nwere being processed."; break;
-      case SE_ERR_DDEFAIL:          str = "The DDE transaction failed."; break;
-      case SE_ERR_DDETIMEOUT:       str = "The DDE transaction could not\nbe completed because the request timed out."; break;
-      case SE_ERR_DLLNOTFOUND:      str = "The specified dynamic-link library was not found."; break;
-      case SE_ERR_NOASSOC:          str = "There is no application associated\nwith the given filename extension."; break;
-      case SE_ERR_OOM:              str = "There was not enough memory to complete the operation."; break;
-      case SE_ERR_SHARE:            str = "A sharing violation occurred. ";
+      case 0:                       str = _T("The operating system is out\nof memory or resources."); break;
+      case SE_ERR_PNF:              str = _T("The specified path was not found."); break;
+      case SE_ERR_FNF:              str = _T("The specified file was not found."); break;
+      case ERROR_BAD_FORMAT:        str = _T("The .EXE file is invalid\n(non-Win32 .EXE or error in .EXE image)."); break;
+      case SE_ERR_ACCESSDENIED:     str = _T("The operating system denied\naccess to the specified file."); break;
+      case SE_ERR_ASSOCINCOMPLETE:  str = _T("The filename association is\nincomplete or invalid."); break;
+      case SE_ERR_DDEBUSY:          str = _T("The DDE transaction could not\nbe completed because other DDE transactions\nwere being processed."); break;
+      case SE_ERR_DDEFAIL:          str = _T("The DDE transaction failed."); break;
+      case SE_ERR_DDETIMEOUT:       str = _T("The DDE transaction could not\nbe completed because the request timed out."); break;
+      case SE_ERR_DLLNOTFOUND:      str = _T("The specified dynamic-link library was not found."); break;
+      case SE_ERR_NOASSOC:          str = _T("There is no application associated\nwith the given filename extension."); break;
+      case SE_ERR_OOM:              str = _T("There was not enough memory to complete the operation."); break;
+      case SE_ERR_SHARE:            str = _T("A sharing violation occurred. ");
       default:                      str.Format(_T("Unknown Error (%d) occurred."), nError); break;
   }
-  str = "Unable to open hyperlink:\n\n" + str;
-  StyleMessageBox(this,str,"ERROR",MB_ICONEXCLAMATION|MB_OK);
+  str = _T("Unable to open hyperlink:\n\n") + str;
+  StyleMessageBox(this,str,_T("ERROR"),MB_ICONEXCLAMATION|MB_OK);
 }
 
 HINSTANCE StyleHyperLink::GotoURL(LPCTSTR url, int showcmd)
@@ -518,15 +518,15 @@ HINSTANCE StyleHyperLink::GotoURL(LPCTSTR url, int showcmd)
   {
     if(GetRegKey(HKEY_CLASSES_ROOT, _T(".htm"), key) == ERROR_SUCCESS) 
     {
-      strcat_s(key,(2*MAX_PATH),"\\shell\\open\\command");
+      _tcscat_s(key,(2*MAX_PATH),_T("\\shell\\open\\command"));
       if(GetRegKey(HKEY_CLASSES_ROOT,key,key) == ERROR_SUCCESS) 
       {
         TCHAR *pos;
-        pos = strstr(key,"\"%1\"");
+        pos = _tcsstr(key,_T("\"%1\""));
         if (pos == NULL) 
         {
           // No quotes found
-          pos = strstr(key,"%1");      // Check for %1, without quotes 
+          pos = _tcsstr(key,_T("%1"));      // Check for %1, without quotes 
           if (pos == NULL)             // No parameter at all...
           {
             pos = key + lstrlen(key) - 1;
@@ -542,8 +542,8 @@ HINSTANCE StyleHyperLink::GotoURL(LPCTSTR url, int showcmd)
           // Remove the parameter
           *pos = '\0';
         }
-        strcat_s(pos,(2*MAX_PATH)," ");
-        strcat_s(pos,(2*MAX_PATH),url);
+        _tcscat_s(pos,(2*MAX_PATH),_T(" "));
+        _tcscat_s(pos,(2*MAX_PATH),url);
 
         USES_CONVERSION;
         result = (HINSTANCE)(INT64)WinExec(T2A(key),showcmd);

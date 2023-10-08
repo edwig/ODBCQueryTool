@@ -6,7 +6,7 @@
 //
 //  Modification History
 //
-//	04-Nov-99 : Revised copyright notice						Alan Griffiths
+//	04-Nov-99 : Revised copyright notice                        Alan Griffiths
 //	01-Sep-99 : Correct decrement_references() reptd. egcs 2.95 Alan Griffiths
 //  03_Jun-99 : Refactored to remove unnecessary class          Alan Griffiths
 //  28-May-99 : Original version                                Alan Griffiths
@@ -17,9 +17,9 @@
 	**                                                                   **
 	**  This code is part of the 'arglib' library. The latest version of **
 	**  this library is available from:                                  **
-	**																	 **
+	**                                                                   **
 	**      http://www.octopull.demon.co.uk/arglib/                      **
-	**																	 **
+	**                                                                   **
 	**  This code may be used for any purpose provided that:             **
 	**                                                                   **
 	**    1. This complete notice is retained unchanged in any version   **
@@ -30,8 +30,8 @@
 	**       library must be included.                                   **
 	**                                                                   **
 	**  This library is distributed in the hope that it will be useful,  **
-    **  but WITHOUT ANY WARRANTY; without even the implied warranty of   **
-    **  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.             **
+  **  but WITHOUT ANY WARRANTY; without even the implied warranty of   **
+  **  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.             **
 	**                                                                   **
 	**  You may contact the author at: alan@octopull.demon.co.uk         **
 	**-------------------------------------------------------------------*/
@@ -47,7 +47,7 @@ namespace arg
 	/*
 	* 	Factored code for shared ownership management.  This manages
     *   ownership of the pointee and weak & strong reference counts.
-    *   It manages its own deletion and needs to be specialised to
+    *   It manages its own deletion and needs to be specialized to
     *   delete the pointee type.
 	*
 	* @author Alan Griffiths

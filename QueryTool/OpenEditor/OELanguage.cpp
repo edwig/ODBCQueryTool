@@ -33,11 +33,15 @@ namespace OpenEditor
 const LanguagePtr LanguagesCollection::Find (const CString& name)
 {
     std::vector<LanguagePtr>::const_iterator it = m_Languages.begin();
-    for (; it != m_Languages.end(); it++)
-        if ((*it)->GetName() == name)
-            return *it;
+    for(; it != m_Languages.end(); it++)
+    {
+      if((*it)->GetName() == name)
+      {
+        return *it;
+      }
+    }
 
-    throw std::logic_error(CString(_T("Language \"")) + name + _T("\" not found."));
+    throw StdException(_T("Logic error: Language \"") + name + _T("\" not found."));
 }
 
 };//namespace OpenEditor

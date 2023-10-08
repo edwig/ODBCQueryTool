@@ -16,18 +16,10 @@
     Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
 */
 
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
-
-#ifndef __OEStreams_h__
-#define __OEStreams_h__
-
-#include <CString>
+#include <WinFile.h>
 #include <vector>
 #include <set>
-#include <fstream>
-
 
 namespace OpenEditor
 {
@@ -50,9 +42,9 @@ namespace OpenEditor
         {
         public:
             Section (Stream&, int);
-            Section (Stream&, const char* section);
+            Section (Stream&, LPCTSTR section);
             Section (Stream&, const CString& section);
-            ~Section ();
+           ~Section ();
         private:
             Stream& m_stream;
             int m_length;
@@ -63,12 +55,12 @@ namespace OpenEditor
         {
         public:
             StreamKey ();
-            CString& Format (const char* property);
+            CString& Format (LPCTSTR property);
             CString& Format (const CString& property);
             
         private:
             friend class Section;
-            int  append (const char* section); // it's invoked from Section only
+            int  append (LPCTSTR section); // it's invoked from Section only
             void cut    (int shift);           // it's invoked from ~Section only
             int m_length;
             CString m_key;
@@ -101,7 +93,7 @@ namespace OpenEditor
     class OutStream : public Stream
     {
     public:
-        virtual void write (const CString&, const char*)    = 0;
+        virtual void write (const CString&, LPCTSTR)    = 0;
         virtual void write (const CString&, const CString&)  = 0;
         virtual void write (const CString&, double)         = 0;
         virtual void write (const CString&, long)           = 0;
@@ -120,46 +112,43 @@ namespace OpenEditor
     class FileInStream : public InStream
     {
     public:
-        FileInStream (const char* filename);
+      FileInStream (LPCTSTR filename);
 
     public:
-        virtual void read  (const CString&, CString&,bool p_skip = false);
-        virtual void read  (const CString&, double&,bool p_skip = false);
-        virtual void read  (const CString&, long&,bool p_skip = false);
-        virtual void read  (const CString&, unsigned long&,bool p_skip = false);
-        virtual void read  (const CString&, unsigned int&,bool p_skip = false);
-        virtual void read  (const CString&, int&, bool p_skip = false);
-        virtual void read  (const CString&, bool&,bool p_skip = false);
+      virtual void read  (const CString&, CString&,bool p_skip = false);
+      virtual void read  (const CString&, double&,bool p_skip = false);
+      virtual void read  (const CString&, long&,bool p_skip = false);
+      virtual void read  (const CString&, unsigned long&,bool p_skip = false);
+      virtual void read  (const CString&, unsigned int&,bool p_skip = false);
+      virtual void read  (const CString&, int&, bool p_skip = false);
+      virtual void read  (const CString&, bool&,bool p_skip = false);
 
     private:
-        void validateEntryName (const CString&, const CString&,bool* p_skip = nullptr);
-        std::ifstream m_infile;
-        CString       m_last;
+      void validateEntryName (const CString&,CString&,bool* p_skip = nullptr);
+      WinFile m_infile;
+      CString m_last;
     };
 
 
     class FileOutStream : public OutStream
     {
     public:
-        FileOutStream (const char* filename);
+      FileOutStream (LPCTSTR filename);
 
     public:
-        virtual void write (const CString&, const char*);
-        virtual void write (const CString&, const CString&);
-        virtual void write (const CString&, double);
-        virtual void write (const CString&, long);
-        virtual void write (const CString&, unsigned long);
-        virtual void write (const CString&, int);
-        virtual void write (const CString&, unsigned int);
-        virtual void write (const CString&, bool);
+      virtual void write (const CString&, LPCTSTR);
+      virtual void write (const CString&, const CString&);
+      virtual void write (const CString&, double);
+      virtual void write (const CString&, long);
+      virtual void write (const CString&, unsigned long);
+      virtual void write (const CString&, int);
+      virtual void write (const CString&, unsigned int);
+      virtual void write (const CString&, bool);
 
     private:
-        std::ofstream m_outfile;
+      WinFile m_outfile;
     };
 
 
 };//namespace OpenEditor
-
-
-#endif//__OEStreams_h__
 

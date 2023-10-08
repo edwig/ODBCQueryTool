@@ -29,15 +29,15 @@ static char THIS_FILE[] = __FILE__;
 namespace OpenEditor
 {
 
-HighlighterBasePtr HighlighterFactory::CreateHighlighter (const char* name)
+HighlighterBasePtr HighlighterFactory::CreateHighlighter (LPCTSTR name)
 {
-    if (!strcmp(name, _T("NONE")))  return HighlighterBasePtr();
-    if (!strcmp(name, _T("SQL")))   return HighlighterBasePtr(new PlSqlHighlighter);
-    if (!strcmp(name, _T("C++")))   return HighlighterBasePtr(new CPlusPlusHighlighter);
-    if (!strcmp(name, _T("Shell"))) return HighlighterBasePtr(new ShellHighlighter);
-    if (!strcmp(name, _T("XML")))   return HighlighterBasePtr(new XmlHighlighter);
-    if (!strcmp(name, _T("SQR")))   return HighlighterBasePtr(new SqrHighlighter);
-    if (!strcmp(name, _T("PERL")))  return HighlighterBasePtr(new PerlHighlighter);
+    if (!_tcscmp(name, _T("NONE")))  return HighlighterBasePtr();
+    if (!_tcscmp(name, _T("SQL")))   return HighlighterBasePtr(new PlSqlHighlighter);
+    if (!_tcscmp(name, _T("C++")))   return HighlighterBasePtr(new CPlusPlusHighlighter);
+    if (!_tcscmp(name, _T("Shell"))) return HighlighterBasePtr(new ShellHighlighter);
+    if (!_tcscmp(name, _T("XML")))   return HighlighterBasePtr(new XmlHighlighter);
+    if (!_tcscmp(name, _T("SQR")))   return HighlighterBasePtr(new SqrHighlighter);
+    if (!_tcscmp(name, _T("PERL")))  return HighlighterBasePtr(new PerlHighlighter);
 
     return HighlighterBasePtr(new CommonHighlighter(name));
 }
@@ -52,12 +52,12 @@ HighlighterBase::HighlighterBase ()
 ///////////////////////////////////////////////////////////////////////////////
 // CommonHighlighter
 //  TODO:
-//      SQL     - '.' as separator, sys package hook, a new list of sys pakages
+//      SQL     - '.' as separator, sys package hook, a new list of sys packages
 //      Shell   - one string
 //      XML/XSL -
 //
 
-CommonHighlighter::CommonHighlighter (const char* langName)
+CommonHighlighter::CommonHighlighter (LPCTSTR langName)
 {
     m_currentLine = 0;
     m_currentLineLength = 0;
@@ -104,7 +104,7 @@ CommonHighlighter::CommonHighlighter (const char* langName)
 
     if (!m_endLineComment.IsEmpty())
     {
-        char ch = m_endLineComment.GetAt(0);
+        TCHAR ch = m_endLineComment.GetAt(0);
         if (m_caseSensiteve)
         {
             m_symbolFastMap[ch] = true;
@@ -123,7 +123,7 @@ CommonHighlighter::CommonHighlighter (const char* langName)
     for (; it != m_startLineComment.end(); it++)
         if (it->GetLength())
         {
-            char ch = it->GetAt(0);
+            TCHAR ch = it->GetAt(0);
             if (m_caseSensiteve)
             {
                 m_symbolFastMap[ch] = true;
@@ -167,7 +167,7 @@ void CommonHighlighter::Init (const VisualAttributesSet& set_)
     }
 }
 
-void CommonHighlighter::NextLine (const char* currentLine, int currentLineLength)
+void CommonHighlighter::NextLine (LPCTSTR currentLine, int currentLineLength)
 {
     m_currentLine = currentLine;
     m_currentLineLength = currentLineLength;
@@ -182,13 +182,13 @@ void CommonHighlighter::NextLine (const char* currentLine, int currentLineLength
     }
 }
 
-bool CommonHighlighter::closingOfSeq (const char* str, int /*len*/)
+bool CommonHighlighter::closingOfSeq (LPCTSTR str, int /*len*/)
 {
     switch (m_seqOf)
     {
     case eComment:
         if ((str - m_commentPair.second.GetLength() + 1) >= m_currentLine
-            && !strncmp(
+            && !_tcsncmp(
                     m_commentPair.second.GetString(),
                     str - m_commentPair.second.GetLength() + 1,
                     m_commentPair.second.GetLength())
@@ -201,7 +201,7 @@ bool CommonHighlighter::closingOfSeq (const char* str, int /*len*/)
         break;
     case eCharacter:
         if ((str - m_charPair.second.GetLength() + 1) >= m_currentLine
-            && !strncmp(
+            && !_tcsncmp(
                     m_charPair.second.GetString(),
                     str - m_charPair.second.GetLength() + 1,
                     m_charPair.second.GetLength())
@@ -211,13 +211,13 @@ bool CommonHighlighter::closingOfSeq (const char* str, int /*len*/)
                 // the current position < escape size
                 || str - m_currentLine < static_cast<int>(m_escapeChar.GetLength())
                 // the previous fragment is not escape
-                || strncmp(m_escapeChar.GetString(), str - m_escapeChar.GetLength(), m_escapeChar.GetLength())
+                || _tcsncmp(m_escapeChar.GetString(), str - m_escapeChar.GetLength(), m_escapeChar.GetLength())
                 // it is double escape
                 || (
                     // the current position >= 2 * escape size
                     str - m_currentLine >= 2 * static_cast<int>(m_escapeChar.GetLength())
                     // the previous previous fragment is escape
-                    && !strncmp(m_escapeChar.GetString(), str - 2 * m_escapeChar.GetLength(), m_escapeChar.GetLength())
+                    && !_tcsncmp(m_escapeChar.GetString(), str - 2 * m_escapeChar.GetLength(), m_escapeChar.GetLength())
                 )
             )
         )
@@ -229,7 +229,7 @@ bool CommonHighlighter::closingOfSeq (const char* str, int /*len*/)
         break;
     case eString:
         if ((str - m_stringPair.second.GetLength() + 1) >= m_currentLine
-            && !strncmp(
+            && !_tcsncmp(
                     m_stringPair.second.GetString(),
                     str - m_stringPair.second.GetLength() + 1,
                     m_stringPair.second.GetLength())
@@ -239,13 +239,13 @@ bool CommonHighlighter::closingOfSeq (const char* str, int /*len*/)
                 // the current position < escape size
                 || str - m_currentLine < static_cast<int>(m_escapeChar.GetLength())
                 // the previous fragment is not escape
-                || strncmp(m_escapeChar.GetString(), str - m_escapeChar.GetLength(), m_escapeChar.GetLength())
+                || _tcsncmp(m_escapeChar.GetString(), str - m_escapeChar.GetLength(), m_escapeChar.GetLength())
                 // it is double escape
                 || (
                     // the current position >= 2 * escape size
                     str - m_currentLine >= 2 * static_cast<int>(m_escapeChar.GetLength())
                     // the previous previous fragment is escape
-                    && !strncmp(m_escapeChar.GetString(), str - 2 * m_escapeChar.GetLength(), m_escapeChar.GetLength())
+                    && !_tcsncmp(m_escapeChar.GetString(), str - 2 * m_escapeChar.GetLength(), m_escapeChar.GetLength())
                 )
             )
         )
@@ -259,14 +259,14 @@ bool CommonHighlighter::closingOfSeq (const char* str, int /*len*/)
     return false;
 }
 
-bool CommonHighlighter::openingOfSeq (const char* str, int len)
+bool CommonHighlighter::openingOfSeq (LPCTSTR str, int len)
 {
     bool comment = false;
 
     if (m_lineCommentFastMap[*str])
     {
         if (!m_endLineComment.IsEmpty()
-            && !strncmp(str, m_endLineComment.GetString(), m_endLineComment.GetLength())
+            && !_tcsncmp(str, m_endLineComment.GetString(), m_endLineComment.GetLength())
         )
             comment = true;
 
@@ -275,8 +275,8 @@ bool CommonHighlighter::openingOfSeq (const char* str, int len)
             std::set<CString>::const_iterator it = m_startLineComment.begin();
             for (; it != m_startLineComment.end(); it++)
                 if (len == static_cast<int>(it->GetLength()) // 10.03.2003 bug fix, start-line comment (prompt & remark) should be separated by delimiter from text
-                && (m_caseSensiteve && !strncmp(str, it->GetString(), it->GetLength())
-                    || !m_caseSensiteve && !_strnicmp(str, it->GetString(), it->GetLength()))
+                && (m_caseSensiteve && !_tcsncmp(str, it->GetString(), it->GetLength())
+                    || !m_caseSensiteve && !_tcsnicmp(str, it->GetString(), it->GetLength()))
                 )
                 {
                     comment = true;
@@ -294,7 +294,7 @@ bool CommonHighlighter::openingOfSeq (const char* str, int len)
     }
     else if (!m_charPair.first.IsEmpty()
         && (m_currentLine + m_currentLineLength) >= (str + m_charPair.first.GetLength())
-        && !strncmp(str, m_charPair.first.GetString(), m_charPair.first.GetLength()))
+        && !_tcsncmp(str, m_charPair.first.GetString(), m_charPair.first.GetLength()))
     {
         m_seqOf = eCharacter;
         m_current = m_characterAttr;
@@ -303,7 +303,7 @@ bool CommonHighlighter::openingOfSeq (const char* str, int len)
     }
     else if (!m_stringPair.first.IsEmpty()
         && (m_currentLine + m_currentLineLength) >= (str + m_stringPair.first.GetLength())
-        && !strncmp(str, m_stringPair.first.GetString(), m_stringPair.first.GetLength()))
+        && !_tcsncmp(str, m_stringPair.first.GetString(), m_stringPair.first.GetLength()))
     {
         m_seqOf = eString;
         m_current = m_stringAttr;
@@ -312,7 +312,7 @@ bool CommonHighlighter::openingOfSeq (const char* str, int len)
     }
     else if (!m_commentPair.first.IsEmpty()
         && (m_currentLine + m_currentLineLength) >= (str + m_commentPair.first.GetLength())
-        && !strncmp(str, m_commentPair.first.GetString(), m_commentPair.first.GetLength()))
+        && !_tcsncmp(str, m_commentPair.first.GetString(), m_commentPair.first.GetLength()))
     {
         m_seqOf = eComment;
         m_current = m_commentAttr;
@@ -324,7 +324,7 @@ bool CommonHighlighter::openingOfSeq (const char* str, int len)
 }
 
 // export some additional functionality
-bool CommonHighlighter::IsKeyword (const char* str, int len, CString& keyword)
+bool CommonHighlighter::IsKeyword (LPCTSTR str, int len, CString& keyword)
 {
   CString key(str);
   key = key.Left(len);
@@ -342,7 +342,7 @@ bool CommonHighlighter::IsKeyword (const char* str, int len, CString& keyword)
   return false;
 }
 
-bool CommonHighlighter::isKeyword (const char* str, int len)
+bool CommonHighlighter::isKeyword (LPCTSTR str, int len)
 {
   CString key(str);
   key = key.Left(len);
@@ -369,7 +369,7 @@ bool CommonHighlighter::isKeyword (const char* str, int len)
 
 // it's the simplest implementation of isDigit
 // we check only the first character
-bool CommonHighlighter::isDigit (const char* str, int /*len*/)
+bool CommonHighlighter::isDigit (LPCTSTR str, int /*len*/)
 {
   if (isdigit(*str))
   {
@@ -379,7 +379,7 @@ bool CommonHighlighter::isDigit (const char* str, int /*len*/)
   return false;
 }
 
-void CommonHighlighter::NextWord (const char* str, int len)
+void CommonHighlighter::NextWord (LPCTSTR str, int len)
 {
 	_ASSERTE(str && len > 0);
 

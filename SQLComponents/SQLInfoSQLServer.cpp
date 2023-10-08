@@ -49,6 +49,13 @@ SQLInfoSQLServer::~SQLInfoSQLServer()
 {
 }
 
+// RDBMS Uses INDENTITY or SEQUENCE interface
+void
+SQLInfoSQLServer::SetUseSequences(bool p_sequences)
+{
+  m_useSequences = p_sequences;
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // GENERALS (Strings & Booleans) 
@@ -68,21 +75,21 @@ XString
 SQLInfoSQLServer::GetRDBMSVendorName() const
 {
   // The name of the database vendor
-  return "Microsoft";
+  return _T("Microsoft");
 }
 
 // Get the physical database name
 XString
 SQLInfoSQLServer::GetRDBMSPhysicalDatabaseName() const
 {
-  XString query = "SELECT DB_NAME()";
+  XString query = _T("SELECT DB_NAME()");
   SQLQuery qry(m_database);
   qry.DoSQLStatement(query);
   if(qry.GetRecord())
   {
     return qry.GetColumn(1)->GetAsChar();
   }
-  return XString("");
+  return XString(_T(""));
 }
 
 // System catalog is stored in uppercase in the database?
@@ -209,106 +216,113 @@ SQLInfoSQLServer::GetRDBMSMaxVarchar() const
 XString
 SQLInfoSQLServer::GetKEYWORDCurrentTimestamp() const
 {
-  return "GETDATE()";
+  return _T("GETDATE()");
 }
 
 // String for the current date
 XString
 SQLInfoSQLServer::GetKEYWORDCurrentDate() const
 {
-  return "GETDATE()";
+  return _T("GETDATE()");
 }
 
 // Get the concatenation operator
 XString
 SQLInfoSQLServer::GetKEYWORDConcatanationOperator() const
 {
-  return "+";
+  return _T("+");
 }
 
 // Get quote character for strings
 XString
 SQLInfoSQLServer::GetKEYWORDQuoteCharacter() const
 {
-  return "\'";
+  return _T("\'");
 }
 
 // Get quote character around reserved words as an identifier
 XString
 SQLInfoSQLServer::GetKEYWORDReservedWordQuote() const
 {
-  return "\"";
+  return _T("\"");
 }
 
 // Get default NULL for parameter list input
 XString
 SQLInfoSQLServer::GetKEYWORDParameterDefaultNULL() const
 {
-  return "= NULL";
+  return _T("= NULL");
 }
 
 // Parameter is for INPUT and OUTPUT in parameter list
 XString
 SQLInfoSQLServer::GetKEYWORDParameterINOUT() const
 {
-  return "OUTPUT";
+  return _T("OUTPUT");
 }
 
 // Parameter is for OUTPUT only in parameter list
 XString
 SQLInfoSQLServer::GetKEYWORDParameterOUT() const
 {
-  return "OUTPUT";
+  return _T("OUTPUT");
 }
 
 // Get datatype of the IDENTITY primary key in a Network database
 XString
 SQLInfoSQLServer::GetKEYWORDNetworkPrimaryKeyType() const
 {
-  return "INTEGER IDENTITY(1,1)";
+  return _T("INTEGER IDENTITY(1,1)");
 }
 
 // Get datatype for timestamp (year to second)
 XString
 SQLInfoSQLServer::GetKEYWORDTypeTimestamp() const
 {
-  return "DATETIME";
+  return _T("DATETIME");
 }
 
 // Prefix for a parameter in a stored procedure
 XString
 SQLInfoSQLServer::GetKEYWORDParameterPrefix() const
 {
-  return "@";
+  return _T("@");
 }
 
 // Get select part to add new record identity to a table
 // Can be special column like 'OID' or a sequence select
 XString
-SQLInfoSQLServer::GetKEYWORDIdentityString(XString& p_tablename,XString /*p_postfix*/ /*= "_seq"*/) const
+SQLInfoSQLServer::GetKEYWORDIdentityString(XString& p_tablename,XString p_postfix /*= "_seq"*/) const
 {
-  return "IDENT_CURRENT('" + p_tablename + "') + " + "IDENT_INCR('" + p_tablename + "')";
+  if(m_useSequences)
+  {
+    return _T("NEXT VALUE FOR ") + p_tablename + p_postfix;
+  }
+  else
+  {
+    return _T("IDENT_CURRENT('") + p_tablename + _T("') + ") + _T("IDENT_INCR('") + p_tablename + _T("')");
+  }
 }
 
 // Gets the UPPER function
 XString
 SQLInfoSQLServer::GetKEYWORDUpper(XString& p_expression) const
 {
-  return "UPPER(" + p_expression + ")";
+  return _T("UPPER(") + p_expression + _T(")");
 }
 
 // Gets the construction for 1 minute ago
 XString
 SQLInfoSQLServer::GetKEYWORDInterval1MinuteAgo() const
 {
-  return "DATEADD(minute,-1,current_timestamp)";
+  return _T("DATEADD(minute,-1,current_timestamp)");
 }
 
 // Gets the Not-NULL-Value statement of the database
 XString
 SQLInfoSQLServer::GetKEYWORDStatementNVL(XString& p_test,XString& p_isnull) const
 {
-  return XString("NVL(") + p_test + "," + p_isnull + ")";
+  return XString(_T("NVL(")) + p_test + _T(",") + p_isnull + _T(")");
 }
 
 // Gets the RDBMS definition of the datatype
@@ -321,11 +335,11 @@ SQLInfoSQLServer::GetKEYWORDDataType(MetaColumn* p_column)
     case SQL_CHAR:                      // fall through
     case SQL_VARCHAR:                   // fall through
     case SQL_WCHAR:                     // fall through
-    case SQL_WVARCHAR:                  type = "VARCHAR";  break;
-    case SQL_LONGVARCHAR:               type = "VARCHAR(max)";
+    case SQL_WVARCHAR:                  type = _T("VARCHAR");  break;
+    case SQL_LONGVARCHAR:               type = _T("VARCHAR(max)");
                                         p_column->m_columnSize = 0;
                                         break;
-    case SQL_WLONGVARCHAR:              type = "NVARCHAR(max)";
+    case SQL_WLONGVARCHAR:              type = _T("NVARCHAR(max)");
                                         p_column->m_columnSize = 0;
                                         break;
     case SQL_NUMERIC:                   [[fallthrough]];
@@ -333,41 +347,41 @@ SQLInfoSQLServer::GetKEYWORDDataType(MetaColumn* p_column)
                                             p_column->m_columnSize    ==  0 ) &&
                                             p_column->m_decimalDigits ==  0 )
                                         {
-                                          type = "INT";
+                                          type = _T("INT");
                                           p_column->m_columnSize = 0;
                                         }
                                         else
                                         {
-                                          type = "NUMERIC";
+                                          type = _T("NUMERIC");
                                         }
                                         break;
-    case SQL_INTEGER:                   type = "INT";      break;
-    case SQL_SMALLINT:                  type = "SMALLINT"; break;
+    case SQL_INTEGER:                   type = _T("INT");      break;
+    case SQL_SMALLINT:                  type = _T("SMALLINT"); break;
     case SQL_FLOAT:                     if(p_column->m_columnSize == 38 ||
                                            p_column->m_columnSize == 18)
                                         {
                                           if(p_column->m_decimalDigits == 0)
                                           {
-                                            type = "INT";
+                                            type = _T("INT");
                                             p_column->m_columnSize = 0;
                                           }
                                           else
                                           {
-                                          type = "NUMERIC";
+                                          type = _T("NUMERIC");
                                           }
                                           p_column->m_columnSize    = 18;
                                           p_column->m_decimalDigits = 0;
                                         }
                                         else
                                         {
-                                          type = "FLOAT";
+                                          type = _T("FLOAT");
                                         }
                                         break;
     case SQL_REAL:                      // fall through
-    case SQL_DOUBLE:                    type = "REAL";     break;
-    case SQL_BIGINT:                    type = "BIGINT";   break;
-    case SQL_TINYINT:                   type = "TINYINT";  break;
-    case SQL_BIT:                       type = "TINYINT";
+    case SQL_DOUBLE:                    type = _T("REAL");     break;
+    case SQL_BIGINT:                    type = _T("BIGINT");   break;
+    case SQL_TINYINT:                   type = _T("TINYINT");  break;
+    case SQL_BIT:                       type = _T("TINYINT");
                                         p_column->m_columnSize    = 0;
                                         p_column->m_decimalDigits = 0;
                                         break;
@@ -375,22 +389,22 @@ SQLInfoSQLServer::GetKEYWORDDataType(MetaColumn* p_column)
     case SQL_DATETIME:                  // fall through
     case SQL_TYPE_DATE:                 // fall through
     case SQL_TIMESTAMP:                 // fall through
-    case SQL_TYPE_TIMESTAMP:            type = "DATETIME";
+    case SQL_TYPE_TIMESTAMP:            type = _T("DATETIME");
                                         p_column->m_columnSize    = 0;
                                         p_column->m_decimalDigits = 0;
                                         break;
     case SQL_TIME:                      // fall through
-    case SQL_TYPE_TIME:                 type = "TIME";
+    case SQL_TYPE_TIME:                 type = _T("TIME");
                                         p_column->m_columnSize    = 0;
                                         p_column->m_decimalDigits = 0;
                                         break;
-    case SQL_BINARY:                    type = "BINARY";        break;
-    case SQL_VARBINARY:                 type = "VARBINARY";     break;
-    case SQL_LONGVARBINARY:             type = "VARBINARY";     break;
-    case SQL_GUID:                      type = "UNIQUEIDENTIFIER"; break;
+    case SQL_BINARY:                    type = _T("BINARY");        break;
+    case SQL_VARBINARY:                 type = _T("VARBINARY");     break;
+    case SQL_LONGVARBINARY:             type = _T("VARBINARY");     break;
+    case SQL_GUID:                      type = _T("UNIQUEIDENTIFIER"); break;
     case SQL_INTERVAL_YEAR:             // fall through
     case SQL_INTERVAL_YEAR_TO_MONTH:    // fall through
-    case SQL_INTERVAL_MONTH:            type = "VARCHAR";
+    case SQL_INTERVAL_MONTH:            type = _T("VARCHAR");
                                         p_column->m_columnSize    = 80;
                                         p_column->m_decimalDigits = 0;
                                         break;
@@ -403,7 +417,7 @@ SQLInfoSQLServer::GetKEYWORDDataType(MetaColumn* p_column)
     case SQL_INTERVAL_HOUR_TO_MINUTE:   // fall through
     case SQL_INTERVAL_HOUR_TO_SECOND:   // fall through
     case SQL_INTERVAL_MINUTE_TO_SECOND: // fall through
-    case SQL_INTERVAL_DAY_TO_SECOND:    type = "VARCHAR";
+    case SQL_INTERVAL_DAY_TO_SECOND:    type = _T("VARCHAR");
                                         p_column->m_columnSize    = 80;
                                         p_column->m_decimalDigits = 0;
                                         break;
@@ -417,81 +431,107 @@ SQLInfoSQLServer::GetKEYWORDDataType(MetaColumn* p_column)
 XString
 SQLInfoSQLServer::GetKEYWORDCurrentUser() const
 {
-  return "CURRENT_USER";
+  return _T("CURRENT_USER");
 }
 
 // Connects to a default schema in the database/instance
 XString
 SQLInfoSQLServer::GetSQLDefaultSchema(XString p_user,XString p_schema) const
 {
-  return "ALTER USER " + p_user + " WITH DEFAULT_SCHEMA = " + p_schema;
+  return _T("ALTER USER ") + p_user + _T(" WITH DEFAULT_SCHEMA = ") + p_schema;
 }
 
 // Gets the construction for inline generating a key within an INSERT statement
 XString
-SQLInfoSQLServer::GetSQLNewSerial(XString /*p_table*/, XString /*p_sequence*/) const
+SQLInfoSQLServer::GetSQLNewSerial(XString p_table,XString p_sequence) const
 {
-  // Insert a zero in an IDENTITY column
-  return "0";
+  if(m_useSequences)
+  {
+    XString sequence(p_sequence);
+    if(sequence.IsEmpty() && !p_table.IsEmpty())
+    {
+      sequence = p_table + _T("_seq");
+    }
+    return _T("NEXT VALUE FOR ") + sequence;
+  }
+  else
+  {
+    // Insert a zero in an IDENTITY column
+    return _T("0");
+  }
 }
 
 // Gets the construction / select for generating a new serial identity
 XString
 SQLInfoSQLServer::GetSQLGenerateSerial(XString p_table) const
 {
-  // Is generated by the IDENTITY system
-  return "";
+  if(m_useSequences)
+  {
+    return _T("SELECT NEXT VALUE FOR ") + p_table + _T("_seq");
+  }
+  else
+  {
+    // Is generated by the IDENTITY system
+    return _T("");
+  }
 }
 
 // Gets the construction / select for the resulting effective generated serial
 XString
 SQLInfoSQLServer::GetSQLEffectiveSerial(XString p_identity) const
 {
-  return "SELECT @@IDENTITY";
+  if(m_useSequences)
+  {
+    return p_identity;
+  }
+  else
+  {
+    return _T("SELECT @@IDENTITY");
+  }
 }
 
 // Gets the sub transaction commands
 XString
 SQLInfoSQLServer::GetSQLStartSubTransaction(XString p_savepointName) const
 {
-  return XString("BEGIN TRANSACTION ") + p_savepointName;
+  return XString(_T("SAVE TRANSACTION ")) + p_savepointName;
 }
 
 XString
 SQLInfoSQLServer::GetSQLCommitSubTransaction(XString p_savepointName) const
 {
-  return XString("ROLLBACK TRANSACTION ") + p_savepointName;
+  return XString(_T("COMMIT TRANSACTION ")) + p_savepointName;
 }
 
 XString
 SQLInfoSQLServer::GetSQLRollbackSubTransaction(XString p_savepointName) const
 {
-  return XString("ROLLBACK TRANSACTION ") + p_savepointName;
+  return XString(_T("ROLLBACK TRANSACTION ")) + p_savepointName;
 }
 
 // FROM-Part for a query to select only 1 (one) record / or empty!
 XString
 SQLInfoSQLServer::GetSQLFromDualClause() const
 {
-  return "";
+  return _T("");
 }
 
 // Get SQL to lock  a table 
 XString
 SQLInfoSQLServer::GetSQLLockTable(XString p_schema, XString p_tablename, bool p_exclusive,int p_waittime) const
 {
-  XString query = "SELECT TOP(1) 1 FROM " + p_schema + "." + p_tablename + " WITH ";
-  query += p_exclusive ? "(TABLOCKX)" : "(TABLOCK)";
+  XString query = _T("SELECT TOP(1) 1 FROM ") + p_schema + _T(".") + p_tablename + _T(" WITH ");
+  query += p_exclusive ? _T("(TABLOCKX)") : _T("(TABLOCK)");
   if(p_waittime)
   {
-    query += " WAITFOR TIMEOUT ";
-    XString wait("'00:");
+    query += _T(" WAITFOR TIMEOUT ");
+    XString wait(_T("'00:"));
     if(p_waittime > 3600)
     {
-      wait.Format("%2.2d:",p_waittime / 3600);
+      wait.Format(_T("%2.2d:"),p_waittime / 3600);
       p_waittime %= 3600;
     }
-    wait.AppendFormat("%2.2d:%2.2d'",p_waittime / 60,p_waittime % 60);
+    wait.AppendFormat(_T("%2.2d:%2.2d'"),p_waittime / 60,p_waittime % 60);
     query += wait;
   }
   return query;
@@ -501,14 +541,14 @@ SQLInfoSQLServer::GetSQLLockTable(XString p_schema, XString p_tablename, bool p_
 XString
 SQLInfoSQLServer::GetSQLOptimizeTable(XString p_schema, XString p_tablename) const
 {
-  XString query("UPDATE STATISTICS ");
+  XString query(_T("UPDATE STATISTICS "));
   if (!p_schema.IsEmpty())
   {
     query += p_schema;
-    query += ".";
+    query += _T(".");
   }
   query += p_tablename;
-  query += " WITH FULLSCAN";
+  query += _T(" WITH FULLSCAN");
   return query;
 }
 
@@ -516,17 +556,17 @@ SQLInfoSQLServer::GetSQLOptimizeTable(XString p_schema, XString p_tablename) con
 XString
 SQLInfoSQLServer::GetSQLTopNRows(XString p_sql,int p_top,int p_skip /*= 0*/) const
 {
-  if(p_top > 0 && p_sql.Find("SELECT ") == 0)
+  if(p_top > 0 && p_sql.Find(_T("SELECT ")) == 0)
   {
     if(p_skip)
     {
-      p_sql.AppendFormat("\n OFFSET %d ROWS FETCH NEXT %d ROWS ONLY",p_skip,p_top);
+      p_sql.AppendFormat(_T("\n OFFSET %d ROWS FETCH NEXT %d ROWS ONLY"),p_skip,p_top);
     }
     else
     {
       XString selectFirst;
-      selectFirst.Format("SELECT TOP %d ",p_top);
-      p_sql.Replace("SELECT ",selectFirst);
+      selectFirst.Format(_T("SELECT TOP %d "),p_top);
+      p_sql.Replace(_T("SELECT "),selectFirst);
     }
   }
   return p_sql;
@@ -537,7 +577,7 @@ XString
 SQLInfoSQLServer::GetPing() const
 {
   // Getting the time does a ping
-  return "SELECT current_timestamp";
+  return _T("SELECT current_timestamp");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -551,7 +591,7 @@ XString
 SQLInfoSQLServer::GetSQLString(const XString& p_string) const
 {
   XString s = p_string;
-  s.Replace("'","''");
+  s.Replace(_T("'"),_T("''"));
   XString kwoot = GetKEYWORDQuoteCharacter();
   return  kwoot + s + kwoot;
 }
@@ -561,7 +601,7 @@ XString
 SQLInfoSQLServer::GetSQLDateString(int p_year,int p_month,int p_day) const
 {
   XString retval;
-  retval.Format("{d '%04d-%02d-%02d' }",p_year,p_month,p_day);
+  retval.Format(_T("{d '%04d-%02d-%02d' }"),p_year,p_month,p_day);
   return retval;
 }
 
@@ -570,7 +610,7 @@ XString
 SQLInfoSQLServer::GetSQLTimeString(int p_hour,int p_minute,int p_second) const
 {
   XString retval;
-  retval.Format("{t '%02d:%02d:%02d' }",p_hour,p_minute,p_second);
+  retval.Format(_T("{t '%02d:%02d:%02d' }"),p_hour,p_minute,p_second);
   return retval;
 }
 
@@ -579,7 +619,7 @@ XString
 SQLInfoSQLServer::GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
 {
   XString retval;
-  retval.Format("{ts '%04d-%02d-%02d %02d:%02d:%02d' }",p_year,p_month,p_day,p_hour,p_minute,p_second);
+  retval.Format(_T("{ts '%04d-%02d-%02d %02d:%02d:%02d' }"),p_year,p_month,p_day,p_hour,p_minute,p_second);
   return retval;
 }
 
@@ -587,7 +627,7 @@ SQLInfoSQLServer::GetSQLDateTimeString(int p_year,int p_month,int p_day,int p_ho
 XString
 SQLInfoSQLServer::GetSQLDateTimeBoundString() const
 {
-  return "{ts ?}";
+  return _T("{ts ?}");
 }
 
 // Stripped data for the parameter binding
@@ -595,7 +635,7 @@ XString
 SQLInfoSQLServer::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const
 {
   XString retval;
-  retval.Format("%04d-%02d-%02d %02d:%02d:%02d",p_year,p_month,p_day,p_hour,p_minute,p_second);
+  retval.Format(_T("%04d-%02d-%02d %02d:%02d:%02d"),p_year,p_month,p_day,p_hour,p_minute,p_second);
   return retval;
 }
 
@@ -605,7 +645,7 @@ SQLInfoSQLServer::GetSQLDDLIdentifier(XString p_identifier) const
 {
   XString ident;
   p_identifier.MakeLower();
-  ident.Format("[%s]",p_identifier.GetString());
+  ident.Format(_T("[%s]"),p_identifier.GetString());
   return ident;;
 }
 
@@ -690,25 +730,25 @@ XString
 SQLInfoSQLServer::GetCATALOGMetaTypes(int p_type) const
 {
   UNREFERENCED_PARAMETER(p_type);
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoSQLServer::GetCATALOGDefaultCharset() const
 {
-  return "iso-8859-1";
+  return _T("iso-8859-1");
 }
 
 XString
 SQLInfoSQLServer::GetCATALOGDefaultCharsetNCV() const
 {
-  return "utf-16";
+  return _T("utf-16");
 }
 
 XString
 SQLInfoSQLServer::GetCATALOGDefaultCollation() const
 {
-  return "SELECT SERVERPROPERTY('Collation')";
+  return _T("SELECT SERVERPROPERTY('Collation')");
 }
 
 // Get SQL to check if a table already exists in the database
@@ -717,12 +757,12 @@ SQLInfoSQLServer::GetCATALOGTableExists(XString& p_schema,XString& p_tablename) 
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
-  XString query = "SELECT count(*)\n"
-                  "  FROM dbo.sysobjects tab\n"
-                  "      ,dbo.sysschemas sch\n"
-                  " WHERE sch.name = ?\n"
-                  "   AND tab.name = ?\n"
-                  "   AND tab.schema_id = sch.schema_id\n";
+  XString query = _T("SELECT count(*)\n")
+                  _T("  FROM dbo.sysobjects tab\n")
+                  _T("      ,dbo.sysschemas sch\n")
+                  _T(" WHERE sch.name = ?\n")
+                  _T("   AND tab.name = ?\n")
+                  _T("   AND tab.schema_id = sch.schema_id\n");
   return query;
 }
 
@@ -736,69 +776,69 @@ XString
 SQLInfoSQLServer::GetCATALOGTableAttributes(XString& p_schema,XString& p_tablename) const
 {
   XString query =
-    "SELECT db_name() AS table_catalog\n"
-    "      ,s.name    AS table_schema\n"
-    "      ,o.name    AS table_name\n"
-    "      ,CASE o.type\n"
-    "            WHEN 'U'  THEN 'TABLE'\n"
-    "            WHEN 'TT' THEN 'TABLE'\n"
-    "            WHEN 'S'  THEN 'SYSTEM TABLE'\n"
-    "                      ELSE 'UNKNOWN'\n"
-    "       END AS table_type\n"
-    "      ,CASE e.name\n"
-    "            WHEN N'MS_Description' THEN CAST (e.value AS VARCHAR(4000))\n"
-    "            ELSE ''\n"
-    "       END  AS remarks\n"
-    "      ,null AS tablespace\n"
-    "      ,0    AS temporary\n"
-    "  FROM sys.objects o\n"
-    "            INNER JOIN sys.schemas s  ON o.schema_id = s.schema_id\n"
-    "       LEFT OUTER JOIN sys.extended_properties e ON\n"
-    "                     ((e.major_id  = o.object_id OR e.major_id IS null)\n"
-    "                   AND e.minor_id  = 0\n"
-    "                   AND e.class     = 1)\n"
-    " WHERE o.type IN ('U','TT','S')\n";
+    _T("SELECT db_name() AS table_catalog\n")
+    _T("      ,s.name    AS table_schema\n")
+    _T("      ,o.name    AS table_name\n")
+    _T("      ,CASE o.type\n")
+    _T("            WHEN 'U'  THEN 'TABLE'\n")
+    _T("            WHEN 'TT' THEN 'TABLE'\n")
+    _T("            WHEN 'S'  THEN 'SYSTEM TABLE'\n")
+    _T("                      ELSE 'UNKNOWN'\n")
+    _T("       END AS table_type\n")
+    _T("      ,CASE e.name\n")
+    _T("            WHEN N'MS_Description' THEN CAST (e.value AS VARCHAR(4000))\n")
+    _T("            ELSE ''\n")
+    _T("       END  AS remarks\n")
+    _T("      ,null AS tablespace\n")
+    _T("      ,0    AS temporary\n")
+    _T("  FROM sys.objects o\n")
+    _T("            INNER JOIN sys.schemas s  ON o.schema_id = s.schema_id\n")
+    _T("       LEFT OUTER JOIN sys.extended_properties e ON\n")
+    _T("                     ((e.major_id  = o.object_id OR e.major_id IS null)\n")
+    _T("                   AND e.minor_id  = 0\n")
+    _T("                   AND e.class     = 1)\n")
+    _T(" WHERE o.type IN ('U','TT','S')\n");
   if(!p_schema.IsEmpty())
   {
-    query += "   AND s.name = ?\n";
+    query += _T("   AND s.name = ?\n");
   }
   if(!p_tablename.IsEmpty())
   {
-    query += "   AND o.name ";
-    query += p_tablename.Find('%') >= 0 ? "LIKE" : "=";
-    query += " ?\n";
+    query += _T("   AND o.name ");
+    query += p_tablename.Find('%') >= 0 ? _T("LIKE") : _T("=");
+    query += _T(" ?\n");
   }
 
   if(p_tablename.IsEmpty())
   {
-    p_tablename = "%";
+    p_tablename = _T("%");
   }
 
-  query += "UNION ALL\n"
-           "SELECT db_name()\n"             // AS table_catalog
-           "      ,'dbo'\n"                 // AS table_schema
-           "      ,o.name\n"                // AS table_name
-           "      ,'LOCAL TEMPORARY'\n"     // AS table_type
-           "      ,null\n"                  // AS remarks
-           "      ,null\n"                  // AS tablespace
-           "      ,1\n"                     // AS temporary
-           "  FROM tempdb.sys.objects o\n"
-           " WHERE o.type      = 'U'\n"
-           "   AND o.schema_id = 1\n"
-           "   AND o.name      LIKE '##" + p_tablename + "'\n"
-           "UNION ALL\n"
-           "SELECT db_name()\n"                                       // AS table_catalog
-           "      ,'dbo'\n"                                           // AS table_schema
-           "      ,substring(o.name,1,charindex('___',o.name) - 1)\n" // AS table_name
-           "      ,'GLOBAL TEMPORARY'\n"                              // AS table_type
-           "      ,null\n"                                            // AS remarks
-           "      ,null\n"                                            // AS tablespace
-           "      ,1\n"                                               // AS temporary
-           "  FROM tempdb.sys.objects o\n"
-           " WHERE o.type      = 'U'\n"
-           "   AND o.schema_id = 1\n"   // 1 = 'dbo'
-           "   AND o.name LIKE '#" + p_tablename + "\\_\\_\\_%' ESCAPE '\\'\n"
-           " ORDER BY 1,2,3";
+  query += _T("UNION ALL\n")
+           _T("SELECT db_name()\n")             // AS table_catalog
+           _T("      ,'dbo'\n")                 // AS table_schema
+           _T("      ,o.name\n")                // AS table_name
+           _T("      ,'LOCAL TEMPORARY'\n")     // AS table_type
+           _T("      ,null\n")                  // AS remarks
+           _T("      ,null\n")                  // AS tablespace
+           _T("      ,1\n")                     // AS temporary
+           _T("  FROM tempdb.sys.objects o\n")
+           _T(" WHERE o.type      = 'U'\n")
+           _T("   AND o.schema_id = 1\n")
+           _T("   AND o.name      LIKE '##") + p_tablename + _T("'\n")
+           _T("UNION ALL\n")
+           _T("SELECT db_name()\n")                                       // AS table_catalog
+           _T("      ,'dbo'\n")                                           // AS table_schema
+           _T("      ,substring(o.name,1,charindex('___',o.name) - 1)\n") // AS table_name
+           _T("      ,'GLOBAL TEMPORARY'\n")                              // AS table_type
+           _T("      ,null\n")                                            // AS remarks
+           _T("      ,null\n")                                            // AS tablespace
+           _T("      ,1\n")                                               // AS temporary
+           _T("  FROM tempdb.sys.objects o\n")
+           _T(" WHERE o.type      = 'U'\n")
+           _T("   AND o.schema_id = 1\n")   // 1 = 'dbo'
+           _T("   AND o.name LIKE '#") + p_tablename + _T("\\_\\_\\_%' ESCAPE '\\'\n")
+           _T(" ORDER BY 1,2,3");
   return query;
 }
 
@@ -806,34 +846,34 @@ XString
 SQLInfoSQLServer::GetCATALOGTableSynonyms(XString& p_schema,XString& p_tablename) const
 {
   XString query =
-    "SELECT db_name() AS table_catalog\n"
-    "      ,s.name    AS table_schema\n"
-    "      ,o.name    AS table_name\n"
-    "      ,'SYNONYM' AS table_type\n"
-    "      ,CASE e.name\n"
-    "            WHEN N'MS_Description' THEN CAST (e.value AS VARCHAR(Max))\n"
-    "            ELSE ''\n"
-    "       END  AS remarks\n"
-    "      ,null AS tablespace\n"
-    "      ,0    AS temporary\n"
-    "  FROM sys.objects o\n"
-    "            INNER JOIN sys.schemas s ON o.schema_id = s.schema_id\n"
-    "       LEFT OUTER JOIN sys.extended_properties e ON\n"
-    "                     ((e.major_id  = o.object_id OR e.major_id IS null)\n"
-    "                   AND e.minor_id  = 0\n"
-    "                   AND e.class     = 1)\n"
-    " WHERE o.type = 'SN'\n";
+    _T("SELECT db_name() AS table_catalog\n")
+    _T("      ,s.name    AS table_schema\n")
+    _T("      ,o.name    AS table_name\n")
+    _T("      ,'SYNONYM' AS table_type\n")
+    _T("      ,CASE e.name\n")
+    _T("            WHEN N'MS_Description' THEN CAST (e.value AS VARCHAR(Max))\n")
+    _T("            ELSE ''\n")
+    _T("       END  AS remarks\n")
+    _T("      ,null AS tablespace\n")
+    _T("      ,0    AS temporary\n")
+    _T("  FROM sys.objects o\n")
+    _T("            INNER JOIN sys.schemas s ON o.schema_id = s.schema_id\n")
+    _T("       LEFT OUTER JOIN sys.extended_properties e ON\n")
+    _T("                     ((e.major_id  = o.object_id OR e.major_id IS null)\n")
+    _T("                   AND e.minor_id  = 0\n")
+    _T("                   AND e.class     = 1)\n")
+    _T(" WHERE o.type = 'SN'\n");
   if(!p_schema.IsEmpty())
   {
-    query += "   AND s.name = ?\n";
+    query += _T("   AND s.name = ?\n");
   }
   if(!p_tablename.IsEmpty())
   {
-    query += "   AND o.name ";
-    query += p_tablename.Find('%') >= 0 ? "LIKE" : "=";
-    query += " ?\n";
+    query += _T("   AND o.name ");
+    query += p_tablename.Find('%') >= 0 ? _T("LIKE") : _T("=");
+    query += _T(" ?\n");
   }
-  query += " ORDER BY 1,2,3";
+  query += _T(" ORDER BY 1,2,3");
   return query;
 }
 
@@ -843,41 +883,41 @@ SQLInfoSQLServer::GetCATALOGTableCatalog(XString& p_schema,XString& p_tablename)
   p_schema.MakeLower();
   p_tablename.MakeLower();
 
-  XString query = "SELECT db_name()      AS table_catalog\n"
-                  "      ,usr.name       AS schema_name\n"
-                  "      ,obj.name       AS table_name\n"
-                  "      ,'SYSTEM TABLE' AS object_type\n"
-                  "      ,''             AS remarks\n"
-                  "      ,'master.' + usr.name + '.' + obj.name as fullname\n"
-                  "      ,db_name() as tablespace\n"
-                  "      ,0         as temporary\n"
-                  "  FROM master.sys.sysobjects obj\n"
-                  "      ,master.sys.sysusers   usr\n"
-                  " WHERE xtype IN ('V','S')\n"
-                  "   AND obj.uid = usr.uid\n";
+  XString query = _T("SELECT db_name()      AS table_catalog\n")
+                  _T("      ,usr.name       AS schema_name\n")
+                  _T("      ,obj.name       AS table_name\n")
+                  _T("      ,'SYSTEM TABLE' AS object_type\n")
+                  _T("      ,''             AS remarks\n")
+                  _T("      ,'master.' + usr.name + '.' + obj.name as fullname\n")
+                  _T("      ,db_name() as tablespace\n")
+                  _T("      ,0         as temporary\n")
+                  _T("  FROM master.sys.sysobjects obj\n")
+                  _T("      ,master.sys.sysusers   usr\n")
+                  _T(" WHERE xtype IN ('V','S')\n")
+                  _T("   AND obj.uid = usr.uid\n");
   if(!p_schema.IsEmpty())
   {
-    query += "   AND usr.name      = ?\n";
+    query += _T("   AND usr.name      = ?\n");
   }
   if(!p_tablename.IsEmpty())
   {
-    query += "   AND obj.name ";
-    query += p_tablename.Find('%') >= 0 ? "LIKE" : "=";
-    query += " ?\n";
+    query += _T("   AND obj.name ");
+    query += p_tablename.Find('%') >= 0 ? _T("LIKE") : _T("=");
+    query += _T(" ?\n");
   }
-  query += " ORDER BY 1,2,3";
+  query += _T(" ORDER BY 1,2,3");
   return query;
 }
 
 XString
 SQLInfoSQLServer::GetCATALOGTableCreate(MetaTable& p_table,MetaColumn& /*p_column*/) const
 {
-  XString sql = "CREATE ";
+  XString sql = _T("CREATE ");
   if (p_table.m_temporary)
   {
-    sql += "TEMPORARY ";
+    sql += _T("TEMPORARY ");
   }
-  sql += "TABLE ";
+  sql += _T("TABLE ");
   XString schema = p_table.m_schema;
   XString table  = p_table.m_table;
 
@@ -886,42 +926,42 @@ SQLInfoSQLServer::GetCATALOGTableCreate(MetaTable& p_table,MetaColumn& /*p_colum
 
   if (!schema.IsEmpty())
   {
-    sql.AppendFormat("[%s].",schema.GetString());
+    sql.AppendFormat(_T("[%s]."),schema.GetString());
   }
-  sql.AppendFormat("[%s]",table.GetString());
+  sql.AppendFormat(_T("[%s]"),table.GetString());
   return sql;
 }
 
 XString
 SQLInfoSQLServer::GetCATALOGTableCreatePostfix(MetaTable& /*p_table*/,MetaColumn& /*p_column*/) const
 {
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoSQLServer::GetCATALOGTableRename(XString p_schema,XString p_tablename,XString p_newname) const
 {
   // Beware: No 'TABLE' in the statement
-  XString sql("RENAME " + p_schema + "." + p_tablename + " TO " + p_newname);
+  XString sql(_T("RENAME ") + p_schema + _T(".") + p_tablename + _T(" TO ") + p_newname);
   return sql;
 }
 
 XString
 SQLInfoSQLServer::GetCATALOGTableDrop(XString p_schema,XString p_tablename,bool p_ifExist /*= false*/,bool /*p_restrict = false*/,bool /*p_cascade = false*/) const
 {
-  XString sql("DROP TABLE "); 
+  XString sql(_T("DROP TABLE ")); 
   if (p_ifExist)
   {
-    sql += "IF EXISTS ";
+    sql += _T("IF EXISTS ");
   }
   p_schema.MakeLower();
   p_tablename.MakeLower();
 
   if(!p_schema.IsEmpty())
   {
-    sql.AppendFormat("[%s].",p_schema.GetString());
+    sql.AppendFormat(_T("[%s]."),p_schema.GetString());
   }
-  sql.AppendFormat("[%s]",p_tablename.GetString());
+  sql.AppendFormat(_T("[%s]"),p_tablename.GetString());
   return sql;
 }
 
@@ -931,24 +971,24 @@ SQLInfoSQLServer::GetCATALOGTableDrop(XString p_schema,XString p_tablename,bool 
 XString 
 SQLInfoSQLServer::GetCATALOGTemptableCreate(XString p_schema,XString p_tablename,XString p_select) const
 {
-  return "CREATE TABLE #" + p_schema + "." + p_tablename + "\nAS " + p_select;
+  return _T("CREATE TABLE #") + p_schema + _T(".") + p_tablename + _T("\nAS ") + p_select;
 }
 
 XString 
 SQLInfoSQLServer::GetCATALOGTemptableIntoTemp(XString p_schema,XString p_tablename,XString p_select) const
 {
-  return "INSERT INTO #" + p_schema + "." + p_tablename + "\n" + p_select;
+  return _T("INSERT INTO #") + p_schema + _T(".") + p_tablename + _T("\n") + p_select;
 }
 
 XString 
 SQLInfoSQLServer::GetCATALOGTemptableDrop(XString p_schema,XString p_tablename) const
 {
-  XString tablename = p_schema + "." + p_tablename;
-  return "DELETE FROM #"    + tablename + ";\n"
-         "<@>\n"
-         "TRUNCATE TABLE #" + tablename + ";\n"
-         "<@>\n"
-         "DROP TABLE #"     + tablename + ";\n";
+  XString tablename = p_schema + _T(".") + p_tablename;
+  return _T("DELETE FROM #")    + tablename + _T(";\n")
+         _T("<@>\n")
+         _T("TRUNCATE TABLE #") + tablename + _T(";\n")
+         _T("<@>\n")
+         _T("DROP TABLE #")     + tablename + _T(";\n");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -960,15 +1000,15 @@ SQLInfoSQLServer::GetCATALOGColumnExists(XString p_schema,XString p_tablename,XS
   p_schema.MakeLower();
   p_tablename.MakeLower();
   p_columnname.MakeLower();
-  XString query = "SELECT count(*)\n"
-                  "  FROM sys.sysobjects tab\n"
-                  "      ,sys.schemas    sch\n"
-                  "     , dbo.syscolumns att\n"
-                  " WHERE tab.name  = '" + p_tablename  + "'\n"
-                  "   AND sch.name  = '" + p_schema     + "'"
-                  "   AND att.name  = '" + p_columnname + "'\n"
-                  "   AND tab.id    = att.id\n"
-                  "   AND tab.schema_id = sch.schema_id\n";
+  XString query = _T("SELECT count(*)\n")
+                  _T("  FROM sys.sysobjects tab\n")
+                  _T("      ,sys.schemas    sch\n")
+                  _T("     , dbo.syscolumns att\n")
+                  _T(" WHERE tab.name  = '") + p_tablename  + _T("'\n")
+                  _T("   AND sch.name  = '") + p_schema     + _T("'")
+                  _T("   AND att.name  = '") + p_columnname + _T("'\n")
+                  _T("   AND tab.id    = att.id\n")
+                  _T("   AND tab.schema_id = sch.schema_id\n");
   return query;
 }
 
@@ -983,157 +1023,157 @@ XString
 SQLInfoSQLServer::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablename,XString& p_columnname) const
 {
   // In case of a NON-TEMPORARY table, the standard ODBC driver is better
-  if(p_tablename.Left(1).Compare("#"))
+  if(p_tablename.Left(1).Compare(_T("#")))
   {
-    return "";
+    return _T("");
   }
   // GLOBAL AND LOCAL TEMPORARY TABLES ONLY!!!
 
   // All temporary tables are stored under this schema!
-  p_schema = "dbo";
+  p_schema = _T("dbo");
   // Globals must always be searched with a like 
   // because of the storage of the global number in the tablename
-  if(p_tablename.Left(2).Compare("##"))
+  if(p_tablename.Left(2).Compare(_T("##")))
   {
-    p_tablename += "%";
+    p_tablename += _T("%");
   }
 
-  XString query = "SELECT db_name() as table_catalog\n"
-                  "      ,table_schema\n"
-                  "      ,CASE substring(table_name,1,2)\n"
-                  "            WHEN '##' THEN table_name\n"
-                  "                      ELSE '#' + substring(table_name,2,charindex('___',table_name) - 2)\n"
-                  "       END AS table_name\n"
-                  "      ,column_name\n"
-                  "      ,CASE data_type\n"
-                  "            WHEN 'char'      THEN 1\n"
-                  "            WHEN 'numeric'   THEN 2\n"
-                  "            WHEN 'decimal'   THEN 3\n"
-                  "            WHEN 'int'       THEN 4\n"
-                  "            WHEN 'smallint'  THEN 5\n"
-                  "            WHEN 'float'     THEN 6\n"
-                  "            WHEN 'real'      THEN 7\n"
-                  "            WHEN 'varchar'   THEN 12\n"
-                  "            WHEN 'date'      THEN 91\n"
-                  "            WHEN 'datetime'  THEN 93\n"
-                  "            WHEN 'datetime2' THEN 93\n"
-                  "            WHEN 'time'      THEN -154\n"
-                  "            WHEN 'uniqueidentifier' THEN -11\n"
-                  "            WHEN 'ntext'     THEN -10\n"
-                  "            WHEN 'nvarchar'  THEN -9\n"
-                  "            WHEN 'nchar'     THEN -8\n"
-                  "            WHEN 'bit'       THEN -7\n"
-                  "            WHEN 'tinyint'   THEN -6\n"
-                  "            WHEN 'bigint'    THEN -5\n"
-                  "            WHEN 'varbinary' THEN -4\n"
-                  "            WHEN 'binary'    THEN -2\n"
-                  "            WHEN 'text'      THEN -1\n"
-                  "       END AS datatype\n"
-                  "      ,data_type AS type_name\n"
-                  "      ,CASE data_type\n"
-                  "            WHEN 'char'      THEN character_maximum_length\n"
-                  "            WHEN 'numeric'   THEN 38\n"
-                  "            WHEN 'decimal'   THEN 38\n"
-                  "            WHEN 'int'       THEN 10\n"
-                  "            WHEN 'smallint'  THEN 5\n"
-                  "            WHEN 'float'     THEN 53\n"
-                  "            WHEN 'real'      THEN 24\n"
-                  "            WHEN 'varchar'   THEN character_maximum_length\n"
-                  "            WHEN 'date'      THEN 10\n"
-                  "            WHEN 'datetime'  THEN 23\n"
-                  "            WHEN 'datetime2' THEN 27\n"
-                  "            WHEN 'time'      THEN 16\n"
-                  "            WHEN 'uniqueidentifier' THEN 36\n"
-                  "            WHEN 'ntext'     THEN character_maximum_length\n"
-                  "            WHEN 'nvarchar'  THEN character_maximum_length\n"
-                  "            WHEN 'nchar'     THEN character_maximum_length\n"
-                  "            WHEN 'bit'       THEN 1\n"
-                  "            WHEN 'tinyint'   THEN 3\n"
-                  "            WHEN 'bigint'    THEN 19\n"
-                  "            WHEN 'varbinary' THEN character_maximum_length\n"
-                  "            WHEN 'binary'    THEN character_octet_length\n"
-                  "            WHEN 'text'      THEN 2147483647\n"
-                  "       END AS column_size\n"
-                  "      ,CASE data_type\n"
-                  "            WHEN 'char'      THEN character_maximum_length\n"
-                  "            WHEN 'numeric'   THEN 40\n"
-                  "            WHEN 'decimal'   THEN 40\n"
-                  "            WHEN 'int'       THEN 4\n"
-                  "            WHEN 'smallint'  THEN 2\n"
-                  "            WHEN 'float'     THEN 8\n"
-                  "            WHEN 'real'      THEN 4\n"
-                  "            WHEN 'varchar'   THEN character_maximum_length\n"
-                  "            WHEN 'date'      THEN 6\n"
-                  "            WHEN 'datetime'  THEN 16\n"
-                  "            WHEN 'datetime2' THEN 16\n"
-                  "            WHEN 'time'      THEN 12\n"
-                  "            WHEN 'uniqueidentifier' THEN 16\n"
-                  "            WHEN 'ntext'     THEN character_octet_length\n"
-                  "            WHEN 'nvarchar'  THEN character_octet_length\n"
-                  "            WHEN 'nchar'     THEN character_octet_length\n"
-                  "            WHEN 'bit'       THEN 1\n"
-                  "            WHEN 'tinyint'   THEN 1\n"
-                  "            WHEN 'bigint'    THEN 8\n"
-                  "            WHEN 'varbinary' THEN character_octet_length\n"
-                  "            WHEN 'binary'    THEN character_octet_length\n"
-                  "            WHEN 'text'      THEN 2147483647\n"
-                  "       END AS buffer_length\n"
-                  "      ,numeric_scale AS decimal_digits\n"
-                  "      ,numeric_precision_radix\n"
-                  "      ,CASE is_nullable\n"
-                  "            WHEN 'NO'  THEN 0\n"
-                  "            WHEN 'YES' THEN 1\n"
-                  "                       ELSE 2\n"
-                  "       END AS nullable\n"
-                  "      ,''  AS remarks\n"
-                  "      ,column_default\n"
-                  "      ,CASE data_type\n"
-                  "            WHEN 'char'      THEN 1\n"
-                  "            WHEN 'numeric'   THEN 2\n"
-                  "            WHEN 'decimal'   THEN 3\n"
-                  "            WHEN 'int'       THEN 4\n"
-                  "            WHEN 'smallint'  THEN 5\n"
-                  "            WHEN 'float'     THEN 6\n"
-                  "            WHEN 'real'      THEN 7\n"
-                  "            WHEN 'varchar'   THEN 12\n"
-                  "            WHEN 'date'      THEN 9\n"
-                  "            WHEN 'datetime'  THEN 9\n"
-                  "            WHEN 'datetime2' THEN 93\n"
-                  "            WHEN 'time'      THEN -154\n"
-                  "            WHEN 'uniqueidentifier' THEN -11\n"
-                  "            WHEN 'ntext'     THEN -10\n"
-                  "            WHEN 'nvarchar'  THEN -9\n"
-                  "            WHEN 'nchar'     THEN -8\n"
-                  "            WHEN 'bit'       THEN -7\n"
-                  "            WHEN 'tinyint'   THEN -6\n"
-                  "            WHEN 'bigint'    THEN -5\n"
-                  "            WHEN 'varbinary' THEN -3\n"
-                  "            WHEN 'binary'    THEN -2\n"
-                  "            WHEN 'text'      THEN -1\n"
-                  "       END AS sql_datatype\n"
-                  "      ,CASE data_type\n"
-                  "            WHEN 'date'      THEN 1\n"
-                  "            WHEN 'datetime'  THEN 3\n"
-                  "                             ELSE 0\n"
-                  "       END AS datatype_sub\n"
-                  "      ,character_octet_length\n"
-                  "      ,ordinal_position\n"
-                  "      ,is_nullable\n"
-                  "  FROM tempdb.information_schema.columns\n"
-                  " WHERE table_schema = ?\n";
+  XString query = _T("SELECT db_name() as table_catalog\n")
+                  _T("      ,table_schema\n")
+                  _T("      ,CASE substring(table_name,1,2)\n")
+                  _T("            WHEN '##' THEN table_name\n")
+                  _T("                      ELSE '#' + substring(table_name,2,charindex('___',table_name) - 2)\n")
+                  _T("       END AS table_name\n")
+                  _T("      ,column_name\n")
+                  _T("      ,CASE data_type\n")
+                  _T("            WHEN 'char'      THEN 1\n")
+                  _T("            WHEN 'numeric'   THEN 2\n")
+                  _T("            WHEN 'decimal'   THEN 3\n")
+                  _T("            WHEN 'int'       THEN 4\n")
+                  _T("            WHEN 'smallint'  THEN 5\n")
+                  _T("            WHEN 'float'     THEN 6\n")
+                  _T("            WHEN 'real'      THEN 7\n")
+                  _T("            WHEN 'varchar'   THEN 12\n")
+                  _T("            WHEN 'date'      THEN 91\n")
+                  _T("            WHEN 'datetime'  THEN 93\n")
+                  _T("            WHEN 'datetime2' THEN 93\n")
+                  _T("            WHEN 'time'      THEN -154\n")
+                  _T("            WHEN 'uniqueidentifier' THEN -11\n")
+                  _T("            WHEN 'ntext'     THEN -10\n")
+                  _T("            WHEN 'nvarchar'  THEN -9\n")
+                  _T("            WHEN 'nchar'     THEN -8\n")
+                  _T("            WHEN 'bit'       THEN -7\n")
+                  _T("            WHEN 'tinyint'   THEN -6\n")
+                  _T("            WHEN 'bigint'    THEN -5\n")
+                  _T("            WHEN 'varbinary' THEN -4\n")
+                  _T("            WHEN 'binary'    THEN -2\n")
+                  _T("            WHEN 'text'      THEN -1\n")
+                  _T("       END AS datatype\n")
+                  _T("      ,data_type AS type_name\n")
+                  _T("      ,CASE data_type\n")
+                  _T("            WHEN 'char'      THEN character_maximum_length\n")
+                  _T("            WHEN 'numeric'   THEN 38\n")
+                  _T("            WHEN 'decimal'   THEN 38\n")
+                  _T("            WHEN 'int'       THEN 10\n")
+                  _T("            WHEN 'smallint'  THEN 5\n")
+                  _T("            WHEN 'float'     THEN 53\n")
+                  _T("            WHEN 'real'      THEN 24\n")
+                  _T("            WHEN 'varchar'   THEN character_maximum_length\n")
+                  _T("            WHEN 'date'      THEN 10\n")
+                  _T("            WHEN 'datetime'  THEN 23\n")
+                  _T("            WHEN 'datetime2' THEN 27\n")
+                  _T("            WHEN 'time'      THEN 16\n")
+                  _T("            WHEN 'uniqueidentifier' THEN 36\n")
+                  _T("            WHEN 'ntext'     THEN character_maximum_length\n")
+                  _T("            WHEN 'nvarchar'  THEN character_maximum_length\n")
+                  _T("            WHEN 'nchar'     THEN character_maximum_length\n")
+                  _T("            WHEN 'bit'       THEN 1\n")
+                  _T("            WHEN 'tinyint'   THEN 3\n")
+                  _T("            WHEN 'bigint'    THEN 19\n")
+                  _T("            WHEN 'varbinary' THEN character_maximum_length\n")
+                  _T("            WHEN 'binary'    THEN character_octet_length\n")
+                  _T("            WHEN 'text'      THEN 2147483647\n")
+                  _T("       END AS column_size\n")
+                  _T("      ,CASE data_type\n")
+                  _T("            WHEN 'char'      THEN character_maximum_length\n")
+                  _T("            WHEN 'numeric'   THEN 40\n")
+                  _T("            WHEN 'decimal'   THEN 40\n")
+                  _T("            WHEN 'int'       THEN 4\n")
+                  _T("            WHEN 'smallint'  THEN 2\n")
+                  _T("            WHEN 'float'     THEN 8\n")
+                  _T("            WHEN 'real'      THEN 4\n")
+                  _T("            WHEN 'varchar'   THEN character_maximum_length\n")
+                  _T("            WHEN 'date'      THEN 6\n")
+                  _T("            WHEN 'datetime'  THEN 16\n")
+                  _T("            WHEN 'datetime2' THEN 16\n")
+                  _T("            WHEN 'time'      THEN 12\n")
+                  _T("            WHEN 'uniqueidentifier' THEN 16\n")
+                  _T("            WHEN 'ntext'     THEN character_octet_length\n")
+                  _T("            WHEN 'nvarchar'  THEN character_octet_length\n")
+                  _T("            WHEN 'nchar'     THEN character_octet_length\n")
+                  _T("            WHEN 'bit'       THEN 1\n")
+                  _T("            WHEN 'tinyint'   THEN 1\n")
+                  _T("            WHEN 'bigint'    THEN 8\n")
+                  _T("            WHEN 'varbinary' THEN character_octet_length\n")
+                  _T("            WHEN 'binary'    THEN character_octet_length\n")
+                  _T("            WHEN 'text'      THEN 2147483647\n")
+                  _T("       END AS buffer_length\n")
+                  _T("      ,numeric_scale AS decimal_digits\n")
+                  _T("      ,numeric_precision_radix\n")
+                  _T("      ,CASE is_nullable\n")
+                  _T("            WHEN 'NO'  THEN 0\n")
+                  _T("            WHEN 'YES' THEN 1\n")
+                  _T("                       ELSE 2\n")
+                  _T("       END AS nullable\n")
+                  _T("      ,''  AS remarks\n")
+                  _T("      ,column_default\n")
+                  _T("      ,CASE data_type\n")
+                  _T("            WHEN 'char'      THEN 1\n")
+                  _T("            WHEN 'numeric'   THEN 2\n")
+                  _T("            WHEN 'decimal'   THEN 3\n")
+                  _T("            WHEN 'int'       THEN 4\n")
+                  _T("            WHEN 'smallint'  THEN 5\n")
+                  _T("            WHEN 'float'     THEN 6\n")
+                  _T("            WHEN 'real'      THEN 7\n")
+                  _T("            WHEN 'varchar'   THEN 12\n")
+                  _T("            WHEN 'date'      THEN 9\n")
+                  _T("            WHEN 'datetime'  THEN 9\n")
+                  _T("            WHEN 'datetime2' THEN 93\n")
+                  _T("            WHEN 'time'      THEN -154\n")
+                  _T("            WHEN 'uniqueidentifier' THEN -11\n")
+                  _T("            WHEN 'ntext'     THEN -10\n")
+                  _T("            WHEN 'nvarchar'  THEN -9\n")
+                  _T("            WHEN 'nchar'     THEN -8\n")
+                  _T("            WHEN 'bit'       THEN -7\n")
+                  _T("            WHEN 'tinyint'   THEN -6\n")
+                  _T("            WHEN 'bigint'    THEN -5\n")
+                  _T("            WHEN 'varbinary' THEN -3\n")
+                  _T("            WHEN 'binary'    THEN -2\n")
+                  _T("            WHEN 'text'      THEN -1\n")
+                  _T("       END AS sql_datatype\n")
+                  _T("      ,CASE data_type\n")
+                  _T("            WHEN 'date'      THEN 1\n")
+                  _T("            WHEN 'datetime'  THEN 3\n")
+                  _T("                             ELSE 0\n")
+                  _T("       END AS datatype_sub\n")
+                  _T("      ,character_octet_length\n")
+                  _T("      ,ordinal_position\n")
+                  _T("      ,is_nullable\n")
+                  _T("  FROM tempdb.information_schema.columns\n")
+                  _T(" WHERE table_schema = ?\n");
   if(!p_tablename.IsEmpty())
   {
-    query += "   AND table_name ";
-    query += p_tablename.Find('%') >= 0 ? "LIKE" : "=";
-    query += " ?\n";
+    query += _T("   AND table_name ");
+    query += p_tablename.Find('%') >= 0 ? _T("LIKE") : _T("=");
+    query += _T(" ?\n");
   }
   if(!p_columnname.IsEmpty())
   {
-    query += "   AND column_name ";
-    query += p_columnname.Find('%') >= 0 ? "LIKE" : "=";
-    query += " ?\n";
+    query += _T("   AND column_name ");
+    query += p_columnname.Find('%') >= 0 ? _T("LIKE") : _T("=");
+    query += _T(" ?\n");
   }
-  query += " ORDER BY 1,2,3\n";
+  query += _T(" ORDER BY 1,2,3\n");
 
   return query;
 }
@@ -1141,8 +1181,8 @@ SQLInfoSQLServer::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablen
 XString 
 SQLInfoSQLServer::GetCATALOGColumnCreate(MetaColumn& p_column) const
 {
-  XString sql = "ALTER TABLE  " + p_column.m_schema + "." + p_column.m_table  + "\n"
-                "  ADD COLUMN " + p_column.m_column + " " + p_column.m_typename;
+  XString sql = _T("ALTER TABLE  ") + p_column.m_schema + _T(".") + p_column.m_table  + _T("\n")
+                _T("  ADD COLUMN ") + p_column.m_column + _T(" ") + p_column.m_typename;
   p_column.GetPrecisionAndScale(sql);
   p_column.GetNullable(sql);
   p_column.GetDefault(sql);
@@ -1155,8 +1195,8 @@ SQLInfoSQLServer::GetCATALOGColumnCreate(MetaColumn& p_column) const
 XString 
 SQLInfoSQLServer::GetCATALOGColumnAlter(MetaColumn& p_column) const
 {
-  XString sql = "ALTER TABLE  " + p_column.m_schema + "." + p_column.m_table  + "\n"
-                "ALTER COLUMN " + p_column.m_column + " " + p_column.m_typename;
+  XString sql = _T("ALTER TABLE  ") + p_column.m_schema + _T(".") + p_column.m_table  + _T("\n")
+                _T("ALTER COLUMN ") + p_column.m_column + _T(" ") + p_column.m_typename;
   p_column.GetPrecisionAndScale(sql);
   p_column.GetNullable(sql);
   p_column.GetDefault(sql);
@@ -1167,20 +1207,20 @@ XString
 SQLInfoSQLServer::GetCATALOGColumnRename(XString p_schema,XString p_tablename,XString p_columnname,XString p_newname,XString p_datatype) const
 {
   XString sqlCode;
-  sqlCode  = "ALTER TABLE " + p_schema + "." + p_tablename + "\n"
-             "        ADD " + p_newname + " " + p_datatype + ";\n";
-  sqlCode += "UPDATE " + p_schema + "." + p_tablename + "\n"
-             "   SET " + p_newname   + " = " + p_columnname + ";\n";
-  sqlCode += "ALTER TABLE " + p_schema + "." + p_tablename + "\n"
-             " DROP COLUMN " + p_columnname + ";";
+  sqlCode  = _T("ALTER TABLE ") + p_schema + _T(".") + p_tablename + _T("\n")
+             _T("        ADD ") + p_newname + _T(" ") + p_datatype + _T(";\n");
+  sqlCode += _T("UPDATE ") + p_schema + _T(".") + p_tablename + _T("\n")
+             _T("   SET ") + p_newname   + _T(" = ") + p_columnname + _T(";\n");
+  sqlCode += _T("ALTER TABLE ") + p_schema + _T(".") + p_tablename + _T("\n")
+             _T(" DROP COLUMN ") + p_columnname + _T(";");
   return sqlCode;
 }
 
 XString 
 SQLInfoSQLServer::GetCATALOGColumnDrop(XString p_schema,XString p_tablename,XString p_columnname) const
 {
-  XString sql("ALTER TABLE " + p_schema + "." + p_tablename + "\n"
-              " DROP COLUMN " + p_columnname);
+  XString sql(_T("ALTER TABLE ") + p_schema + _T(".") + p_tablename + _T("\n")
+              _T(" DROP COLUMN ") + p_columnname);
   return sql;
 }
 
@@ -1191,7 +1231,7 @@ SQLInfoSQLServer::GetCATALOGColumnDrop(XString p_schema,XString p_tablename,XStr
 XString
 SQLInfoSQLServer::GetCATALOGIndexExists(XString p_schema,XString p_tablename,XString p_indexname) const
 {
-  return "";
+  return _T("");
 }
 
 XString
@@ -1199,26 +1239,26 @@ SQLInfoSQLServer::GetCATALOGIndexList(XString& p_schema,XString& p_tablename) co
 {
   p_schema.Empty(); // Do not use
   p_tablename.MakeLower();
-  XString query = "SELECT idx.name\n"
-                  "      ,col.name\n"
-                  "      ,ixk.keyno\n"
-                  "      ,indexproperty(obj.Id, idx.name, 'IsUnique')\n"
-                  "      ,indexkey_property(obj.Id, idx.indid, ixk.keyno, 'IsDescending')\n"
-                  "      ,'' as index_source"
-                  "  FROM dbo.sysindexes idx\n"
-                  "      ,dbo.sysindexkeys ixk\n"
-                  "      ,dbo.sysobjects obj\n"
-                  "      ,dbo.syscolumns col\n"
-                  " WHERE obj.name = ?\n"  // <== PARAMETER
-                  "   AND obj.Id = idx.id\n"
-                  "   AND obj.Id = ixk.id\n"
-                  "   AND idx.indid = ixk.indid\n"
-                  "   AND ixk.colid = col.colid\n"
-                  "   AND col.id = obj.Id\n"
-                  "   AND NOT idx.name LIKE '\\_WA\\_Sys\\_%\\_%' ESCAPE '\\'\n"
+  XString query = _T("SELECT idx.name\n")
+                  _T("      ,col.name\n")
+                  _T("      ,ixk.keyno\n")
+                  _T("      ,indexproperty(obj.Id, idx.name, 'IsUnique')\n")
+                  _T("      ,indexkey_property(obj.Id, idx.indid, ixk.keyno, 'IsDescending')\n")
+                  _T("      ,'' as index_source")
+                  _T("  FROM dbo.sysindexes idx\n")
+                  _T("      ,dbo.sysindexkeys ixk\n")
+                  _T("      ,dbo.sysobjects obj\n")
+                  _T("      ,dbo.syscolumns col\n")
+                  _T(" WHERE obj.name = ?\n")  // <== PARAMETER
+                  _T("   AND obj.Id = idx.id\n")
+                  _T("   AND obj.Id = ixk.id\n")
+                  _T("   AND idx.indid = ixk.indid\n")
+                  _T("   AND ixk.colid = col.colid\n")
+                  _T("   AND col.id = obj.Id\n")
+                  _T("   AND NOT idx.name LIKE '\\_WA\\_Sys\\_%\\_%' ESCAPE '\\'\n")
 //                       "   AND idx.first <> 0\n"
-                  " ORDER BY idx.name\n"
-                  "         ,ixk.keyno\n";
+                  _T(" ORDER BY idx.name\n")
+                  _T("         ,ixk.keyno\n");
   return query;
 }
 
@@ -1229,82 +1269,82 @@ SQLInfoSQLServer::GetCATALOGIndexAttributes(XString& p_schema,XString& p_tablena
   p_tablename.MakeLower();
 
   // In case of a NON-TEMPORARY table, the standard ODBC driver is better
-  if(p_tablename.Left(1).Compare("#"))
+  if(p_tablename.Left(1).Compare(_T("#")))
   {
-    return "";
+    return _T("");
   }
   // GLOBAL AND LOCAL TEMPORARY TABLES ONLY!!!
   // All temporary tables are stored under this schema!
-  p_schema = "dbo";
+  p_schema = _T("dbo");
   // Globals must always be searched with a like 
   // because of the storage of the global number in the tablename
-  if(p_tablename.Left(2).Compare("##"))
+  if(p_tablename.Left(2).Compare(_T("##")))
   {
-    p_tablename += "%";
+    p_tablename += _T("%");
   }
   // Getting the tables statistics
-  if(p_indexname.Compare("0") == 0)
+  if(p_indexname.Compare(_T("0")) == 0)
   {
-    XString query = "SELECT db_name() AS catalog_name\n"
-                    "      ,s.name    AS schema_name\n"
-                    "      ,t.name    AS table_name\n"
-                    "      ,1         AS non_unique\n"
-                    "      ,''        AS index_name\n"
-                    "      ,0         AS type\n" // table_stats
-                    "      ,0         AS ordinal_position\n"
-                    "      ,''        AS column_name\n"
-                    "      ,''        AS asc_or_desc\n"
-                    "      ,p.rows    AS cardinality\n"
-                    "      ,Max(a.data_pages) AS pages\n"
-                    "      ,''        AS filter\n"
-                    "  FROM tempdb.sys.tables t\n"
-                    "       INNER JOIN tempdb.sys.partitions p       ON t.object_id    = p.object_id\n"
-                    "       INNER JOIN tempdb.sys.allocation_units a ON p.partition_id = a.container_id\n"
-                    "       INNER JOIN tempdb.sys.schemas s          ON t.schema_id    = s.schema_id\n"
-                    " WHERE s.name = ?\n";
+    XString query = _T("SELECT db_name() AS catalog_name\n")
+                    _T("      ,s.name    AS schema_name\n")
+                    _T("      ,t.name    AS table_name\n")
+                    _T("      ,1         AS non_unique\n")
+                    _T("      ,''        AS index_name\n")
+                    _T("      ,0         AS type\n") // table_stats
+                    _T("      ,0         AS ordinal_position\n")
+                    _T("      ,''        AS column_name\n")
+                    _T("      ,''        AS asc_or_desc\n")
+                    _T("      ,p.rows    AS cardinality\n")
+                    _T("      ,Max(a.data_pages) AS pages\n")
+                    _T("      ,''        AS filter\n")
+                    _T("  FROM tempdb.sys.tables t\n")
+                    _T("       INNER JOIN tempdb.sys.partitions p       ON t.object_id    = p.object_id\n")
+                    _T("       INNER JOIN tempdb.sys.allocation_units a ON p.partition_id = a.container_id\n")
+                    _T("       INNER JOIN tempdb.sys.schemas s          ON t.schema_id    = s.schema_id\n")
+                    _T(" WHERE s.name = ?\n");
     if(!p_tablename.IsEmpty())
     {
-      query += "   AND t.name ";
-      query += p_tablename.Find('%') >= 0 ? "LIKE" : "=";
-      query += " ?\n";
+      query += _T("   AND t.name ");
+      query += p_tablename.Find('%') >= 0 ? _T("LIKE") : _T("=");
+      query += _T(" ?\n");
     }
-    query += " GROUP BY s.name,t.name,p.rows\n"
-             " ORDER BY 1,2,3,4\n";
+    query += _T(" GROUP BY s.name,t.name,p.rows\n")
+             _T(" ORDER BY 1,2,3,4\n");
     return query;
   }
-  XString query = "SELECT db_name() AS catalog_name\n"
-                  "      ,s.name    AS table_schema\n"
-                  "      ,o.name    AS table_name\n"
-                  "      ,CASE i.is_unique\n"
-                  "            WHEN 1 THEN 0\n"
-                  "                   ELSE 1\n"
-                  "       END       AS non_unique\n"
+  XString query = _T("SELECT db_name() AS catalog_name\n")
+                  _T("      ,s.name    AS table_schema\n")
+                  _T("      ,o.name    AS table_name\n")
+                  _T("      ,CASE i.is_unique\n")
+                  _T("            WHEN 1 THEN 0\n")
+                  _T("                   ELSE 1\n")
+                  _T("       END       AS non_unique\n")
 //                "      ,s.name    AS index_qualifier\n"
-                  "      ,i.name    AS index_name\n"
-                  "      ,1         AS TYPE\n"
-                  "      ,x.index_column_id AS ordinal_position\n"
-                  "      ,c.name    AS column_name\n"
-                  "      ,CASE x.is_descending_key\n"
-                  "            WHEN 0 THEN 'A'\n"
-                  "            WHEN 1 THEN 'D'\n"
-                  "                   ELSE ''\n"
-                  "       END       AS asc_or_desc\n"
-                  "      ,y.rowcnt  AS cardinality\n"
-                  "      ,y.dpages  AS pages\n"
-                  "      ,CAST(i.filter_definition AS varchar) AS filter\n"
-                  "  FROM tempdb.sys.indexes i\n"
-                  "       INNER JOIN tempdb.sys.objects       o ON  o.object_id = i.object_id\n"
-                  "       INNER JOIN tempdb.sys.index_columns x ON (x.object_id = i.object_id AND x.index_id  = i.index_id)\n"
-                  "       INNER JOIN tempdb.sys.columns       c ON (c.object_id = o.object_id AND x.column_id = c.column_id)\n"
-                  "       INNER JOIN tempdb.sys.schemas       s ON  s.schema_id = o.schema_id\n"
-                  "       INNER JOIN tempdb.sys.sysindexes    y ON (i.object_id = y.id AND i.name = y.name)\n"
-                  " WHERE s.name = ?\n";
+                  _T("      ,i.name    AS index_name\n")
+                  _T("      ,1         AS TYPE\n")
+                  _T("      ,x.index_column_id AS ordinal_position\n")
+                  _T("      ,c.name    AS column_name\n")
+                  _T("      ,CASE x.is_descending_key\n")
+                  _T("            WHEN 0 THEN 'A'\n")
+                  _T("            WHEN 1 THEN 'D'\n")
+                  _T("                   ELSE ''\n")
+                  _T("       END       AS asc_or_desc\n")
+                  _T("      ,y.rowcnt  AS cardinality\n")
+                  _T("      ,y.dpages  AS pages\n")
+                  _T("      ,CAST(i.filter_definition AS varchar) AS filter\n")
+                  _T("  FROM tempdb.sys.indexes i\n")
+                  _T("       INNER JOIN tempdb.sys.objects       o ON  o.object_id = i.object_id\n")
+                  _T("       INNER JOIN tempdb.sys.index_columns x ON (x.object_id = i.object_id AND x.index_id  = i.index_id)\n")
+                  _T("       INNER JOIN tempdb.sys.columns       c ON (c.object_id = o.object_id AND x.column_id = c.column_id)\n")
+                  _T("       INNER JOIN tempdb.sys.schemas       s ON  s.schema_id = o.schema_id\n")
+                  _T("       INNER JOIN tempdb.sys.sysindexes    y ON (i.object_id = y.id AND i.name = y.name)\n")
+                  _T(" WHERE s.name = ?\n");
 
   if(!p_tablename.IsEmpty())
   {
-    query += "   AND o.name ";
-    query += p_tablename.Find('%') >= 0 ? "LIKE" : "=";
-    query += " ?\n";
+    query += _T("   AND o.name ");
+    query += p_tablename.Find('%') >= 0 ? _T("LIKE") : _T("=");
+    query += _T(" ?\n");
   }
   return query;
 }
@@ -1328,51 +1368,51 @@ SQLInfoSQLServer::GetCATALOGIndexCreate(MIndicesMap& p_indices,bool p_duplicateN
       tablen.MakeLower();
 
       // New index
-      query = "CREATE ";
+      query = _T("CREATE ");
       if(index.m_nonunique == false)
       {
-        query += "UNIQUE ";
+        query += _T("UNIQUE ");
       }
       // If duplicate nulls allowed, it must be a NON-CLUSTERED index
       if(p_duplicateNulls)
       {
-        query += "NONCLUSTERED ";
+        query += _T("NONCLUSTERED ");
       }
-      query.AppendFormat("INDEX [%s] ON ",idname.GetString());
+      query.AppendFormat(_T("INDEX [%s] ON "),idname.GetString());
 
       if(!schema.IsEmpty())
       {
-        query.AppendFormat("[%s].",schema.GetString());
+        query.AppendFormat(_T("[%s]."),schema.GetString());
       }
-      query.AppendFormat("[%s](",tablen.GetString());
+      query.AppendFormat(_T("[%s]("),tablen.GetString());
     }
     else
     {
-      query += ",";
+      query += _T(",");
     }
     XString column = index.m_columnName;
     column.MakeLower();
-    query.AppendFormat("[%s]",column.GetString());
-    if(index.m_ascending != "A")
+    query.AppendFormat(_T("[%s]"),column.GetString());
+    if(index.m_ascending != _T("A"))
     {
-      query += " DESC";
+      query += _T(" DESC");
     }
   }
-  query += ")";
+  query += _T(")");
 
   // If duplicate nulls allowed, at least one of the columns must be non-null
   if(p_duplicateNulls)
   {
-    query += "\n WHERE ";
+    query += _T("\n WHERE ");
     for(const auto& index : p_indices)
     {
       if(index.m_position != 1)
       {
-        query += " AND ";
+        query += _T(" AND ");
       }
       XString column = index.m_columnName;
       column.MakeLower();
-      query.AppendFormat("[%s] IS NOT NULL", column.GetString());
+      query.AppendFormat(_T("[%s] IS NOT NULL"), column.GetString());
     }
   }
   return query;
@@ -1384,7 +1424,7 @@ SQLInfoSQLServer::GetCATALOGIndexDrop(XString p_schema,XString /*p_tablename*/,X
   p_schema.MakeLower();
   p_indexname.MakeLower();
 
-  XString sql = "DROP INDEX [" + p_schema + "].[" + p_indexname + "]";
+  XString sql = _T("DROP INDEX [") + p_schema + _T("].[") + p_indexname + _T("]");
   return sql;
 }
 
@@ -1392,7 +1432,7 @@ SQLInfoSQLServer::GetCATALOGIndexDrop(XString p_schema,XString /*p_tablename*/,X
 XString
 SQLInfoSQLServer::GetCATALOGIndexFilter(MetaIndex& /*p_index*/) const
 {
-  return "";
+  return _T("");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1404,16 +1444,16 @@ SQLInfoSQLServer::GetCATALOGPrimaryExists(XString p_schema,XString p_tablename) 
   p_schema.MakeLower();
   p_tablename.MakeLower();
 
-  XString query = "SELECT COUNT(*)\n"
-                  "  FROM dbo.sysobjects tab\n"
-                  "      ,dbo.sysobjects con\n"
-                  "      ,dbo.sysusers   use\n"
-                  " WHERE tab.id    = con.parent_obj\n"
-                  "   AND tab.uid   = use.uid\n"
-                  "   AND con.xtype = 'PK'\n"
-                  "   AND con.type  = 'K'"
-                  "   AND use.name  = '" + p_schema    + "'\n"
-                  "   AND tab.name  = '" + p_tablename + "'";
+  XString query = _T("SELECT COUNT(*)\n")
+                  _T("  FROM dbo.sysobjects tab\n")
+                  _T("      ,dbo.sysobjects con\n")
+                  _T("      ,dbo.sysusers   use\n")
+                  _T(" WHERE tab.id    = con.parent_obj\n")
+                  _T("   AND tab.uid   = use.uid\n")
+                  _T("   AND con.xtype = 'PK'\n")
+                  _T("   AND con.type  = 'K'")
+                  _T("   AND use.name  = '") + p_schema    + _T("'\n")
+                  _T("   AND tab.name  = '") + p_tablename + _T("'");
   return query;
 }
 
@@ -1421,42 +1461,42 @@ XString
 SQLInfoSQLServer::GetCATALOGPrimaryAttributes(XString& p_schema,XString& p_tablename) const
 {
   // In case of a NON-TEMPORARY table, the standard ODBC driver is better
-  if(p_tablename.Left(1).Compare("#"))
+  if(p_tablename.Left(1).Compare(_T("#")))
   {
-    return "";
+    return _T("");
   }
   // GLOBAL AND LOCAL TEMPORARY TABLES ONLY!!!
 
   // All temporary tables are stored under this schema!
   // From now we search in 'tempdb' under the 'dbo' schema
-  p_schema = "dbo";
+  p_schema = _T("dbo");
   // Globals must always be searched with a like 
   // because of the storage of the global number in the tablename
-  if(p_tablename.Left(2).Compare("##"))
+  if(p_tablename.Left(2).Compare(_T("##")))
   {
-    p_tablename += "%";
+    p_tablename += _T("%");
   }
-  XString query = "SELECT db_name()     AS table_catalog\n"
-                  "      ,s.name        AS table_schema\n"
-                  "      ,o.name        AS table_name\n"
-                  "      ,c.name        AS column_name\n"
-                  "      ,x.key_ordinal AS key_sequence\n"
-                  "      ,k.name        AS pk_name\n"
-                  "  FROM tempdb.sys.key_constraints k\n"
-                  "       inner join tempdb.sys.indexes i       ON  i.object_id = k.parent_object_id\n"
-                  "       inner join tempdb.sys.objects o       ON  i.object_id = o.object_id\n"
-                  "       inner join tempdb.sys.schemas s       ON  s.schema_id = o.schema_id\n"
-                  "       inner join tempdb.sys.index_columns x ON (i.object_id = x.object_id AND i.index_id  = x.index_id)\n"
-                  "       inner join tempdb.sys.columns c       ON (c.object_id = o.object_id AND x.column_id = c.column_id)\n"
-                  " WHERE k.type           = 'PK'\n"
-                  "   AND i.is_primary_key = 1\n"
-                  "   AND s.name           = ?\n";
+  XString query = _T("SELECT db_name()     AS table_catalog\n")
+                  _T("      ,s.name        AS table_schema\n")
+                  _T("      ,o.name        AS table_name\n")
+                  _T("      ,c.name        AS column_name\n")
+                  _T("      ,x.key_ordinal AS key_sequence\n")
+                  _T("      ,k.name        AS pk_name\n")
+                  _T("  FROM tempdb.sys.key_constraints k\n")
+                  _T("       inner join tempdb.sys.indexes i       ON  i.object_id = k.parent_object_id\n")
+                  _T("       inner join tempdb.sys.objects o       ON  i.object_id = o.object_id\n")
+                  _T("       inner join tempdb.sys.schemas s       ON  s.schema_id = o.schema_id\n")
+                  _T("       inner join tempdb.sys.index_columns x ON (i.object_id = x.object_id AND i.index_id  = x.index_id)\n")
+                  _T("       inner join tempdb.sys.columns c       ON (c.object_id = o.object_id AND x.column_id = c.column_id)\n")
+                  _T(" WHERE k.type           = 'PK'\n")
+                  _T("   AND i.is_primary_key = 1\n")
+                  _T("   AND s.name           = ?\n");
 
   if(!p_tablename.IsEmpty())
   {
-    query += "   AND o.name ";
-    query += p_tablename.Find('%') >= 0 ? "LIKE" : "=";
-    query += " ?\n";
+    query += _T("   AND o.name ");
+    query += p_tablename.Find('%') >= 0 ? _T("LIKE") : _T("=");
+    query += _T(" ?\n");
   }
   return query;
 }
@@ -1464,7 +1504,7 @@ SQLInfoSQLServer::GetCATALOGPrimaryAttributes(XString& p_schema,XString& p_table
 XString
 SQLInfoSQLServer::GetCATALOGPrimaryCreate(MPrimaryMap& p_primaries) const
 {
-  XString query("ALTER TABLE ");
+  XString query(_T("ALTER TABLE "));
 
   for(const auto& prim : p_primaries)
   {
@@ -1480,22 +1520,22 @@ SQLInfoSQLServer::GetCATALOGPrimaryCreate(MPrimaryMap& p_primaries) const
 
       if(!schema.IsEmpty())
       {
-        query.AppendFormat("[%s].",schema.GetString());
+        query.AppendFormat(_T("[%s]."),schema.GetString());
       }
-      query.AppendFormat("[%s]\n",table.GetString());
-      query.AppendFormat("  ADD CONSTRAINT [%s]\n",constr.GetString());
-      query += "      PRIMARY KEY (";
+      query.AppendFormat(_T("[%s]\n"),table.GetString());
+      query.AppendFormat(_T("  ADD CONSTRAINT [%s]\n"),constr.GetString());
+      query += _T("      PRIMARY KEY (");
 
     }
     else
     {
-      query += ",";
+      query += _T(",");
     }
     XString column = prim.m_columnName;
     column.MakeLower();
-    query.AppendFormat("[%s]",column.GetString());
+    query.AppendFormat(_T("[%s]"),column.GetString());
   }
-  query += ")";
+  query += _T(")");
   return query;
 }
 
@@ -1506,8 +1546,8 @@ SQLInfoSQLServer::GetCATALOGPrimaryDrop(XString p_schema,XString p_tablename,XSt
   p_tablename.MakeLower();
   p_constraintname.MakeLower();
 
-  XString sql("ALTER TABLE [" + p_schema + "].[" + p_tablename + "]\n"
-              " DROP CONSTRAINT [" + p_constraintname + "]");
+  XString sql(_T("ALTER TABLE [") + p_schema + _T("].[") + p_tablename + _T("]\n")
+              _T(" DROP CONSTRAINT [") + p_constraintname + _T("]"));
   return sql;
 }
 
@@ -1522,16 +1562,16 @@ SQLInfoSQLServer::GetCATALOGForeignExists(XString p_schema,XString p_tablename,X
   p_constraintname.MakeLower();
 
   XString sql;
-  sql.Format("SELECT COUNT(*)\n"
-             "  FROM sys.foreign_keys fok\n"
-             "      ,sys.schemas      sch\n"
-             "      ,sys.tables       tab\n"
-             " WHERE fok.type = 'F'\n"
-             "   AND fok.parent_object_id = tab.object_id\n"
-             "   AND tab.schema_id        = sch.schema_id\n"
-             "   AND sch.name             = '" + p_schema + "'\n"
-             "   AND tab.name             = '" + p_tablename + "'\n"
-             "   AND fok.name             = '" + p_constraintname + "'"
+  sql.Format(_T("SELECT COUNT(*)\n")
+             _T("  FROM sys.foreign_keys fok\n")
+             _T("      ,sys.schemas      sch\n")
+             _T("      ,sys.tables       tab\n")
+             _T(" WHERE fok.type = 'F'\n")
+             _T("   AND fok.parent_object_id = tab.object_id\n")
+             _T("   AND tab.schema_id        = sch.schema_id\n")
+             _T("   AND sch.name             = '") + p_schema + _T("'\n")
+             _T("   AND tab.name             = '") + p_tablename + _T("'\n")
+             _T("   AND fok.name             = '") + p_constraintname + _T("'")
             ,p_schema.GetString()
             ,p_tablename.GetString()
             ,p_constraintname.GetString());
@@ -1555,71 +1595,71 @@ SQLInfoSQLServer::GetCATALOGForeignAttributes(XString& p_schema
   p_schema.MakeLower();
   p_tablename.MakeLower();
   p_constraint.MakeLower();
-  XString query = "SELECT db_name()         as primary_catalog_name\n"
-                  "      ,sch.name          as primary_schema_name\n"
-                  "      ,pri.name          as primary_table_name\n"
-                  "      ,db_name()         as foreign_catalog_name\n"
-                  "      ,sch.name          as foreign_schema_name\n"
-                  "      ,tab.name          as foreign_table_name\n"
-                  "      ,prk.name          as primary_key_constraint\n"
-                  "      ,fok.name          as foreign_key_constraint\n"
-                  "      ,fkc.constraint_column_id as key_sequence\n"
-                  "      ,pky.name          as primary_key_column\n"
-                  "      ,col.name          as foreign_key_column\n"
-                  "      ,fok.update_referential_action as update_rule\n"
-                  "      ,fok.delete_referential_action as delete_rule\n"
-                  "      ,0                 as deferrable\n"
-                  "      ,1                 as match_option\n"
-                  "      ,0                 as initially_deferred\n"
-                  "      ,fok.is_disabled   as disabled\n"
-                  "  FROM sys.foreign_keys        fok\n"
-                  "      ,sys.foreign_key_columns fkc\n"
-                  "      ,sys.schemas    sch\n"
-                  "      ,sys.tables     tab\n"
-                  "      ,sys.columns    col\n"
-                  "      ,sys.tables     pri\n"
-                  "      ,sys.columns    pky\n"
-                  "      ,sys.sysobjects prk\n"
-                  " WHERE fok.type = 'F'\n"
-                  "   AND fok.parent_object_id     = tab.object_id\n"
-                  "   AND tab.schema_id            = sch.schema_id\n"
-                  "   AND fkc.constraint_object_id = fok.object_id\n"
-                  "   AND fkc.parent_object_id     = col.object_id\n"
-                  "   AND fkc.parent_column_id     = col.column_id\n"
-                  "   AND fkc.referenced_object_id = pri.object_id\n"
-                  "   AND fkc.referenced_object_id = pky.object_id\n"
-                  "   AND fkc.referenced_column_id = pky.column_id\n"
-                  "   AND prk.parent_obj           = pri.object_id\n"
-                  "   AND prk.xtype                = 'PK'\n"
-                  "   AND prk.type                 = 'K '\n";
+  XString query = _T("SELECT db_name()         as primary_catalog_name\n")
+                  _T("      ,sch.name          as primary_schema_name\n")
+                  _T("      ,pri.name          as primary_table_name\n")
+                  _T("      ,db_name()         as foreign_catalog_name\n")
+                  _T("      ,sch.name          as foreign_schema_name\n")
+                  _T("      ,tab.name          as foreign_table_name\n")
+                  _T("      ,prk.name          as primary_key_constraint\n")
+                  _T("      ,fok.name          as foreign_key_constraint\n")
+                  _T("      ,fkc.constraint_column_id as key_sequence\n")
+                  _T("      ,pky.name          as primary_key_column\n")
+                  _T("      ,col.name          as foreign_key_column\n")
+                  _T("      ,fok.update_referential_action as update_rule\n")
+                  _T("      ,fok.delete_referential_action as delete_rule\n")
+                  _T("      ,0                 as deferrable\n")
+                  _T("      ,1                 as match_option\n")
+                  _T("      ,0                 as initially_deferred\n")
+                  _T("      ,fok.is_disabled   as disabled\n")
+                  _T("  FROM sys.foreign_keys        fok\n")
+                  _T("      ,sys.foreign_key_columns fkc\n")
+                  _T("      ,sys.schemas    sch\n")
+                  _T("      ,sys.tables     tab\n")
+                  _T("      ,sys.columns    col\n")
+                  _T("      ,sys.tables     pri\n")
+                  _T("      ,sys.columns    pky\n")
+                  _T("      ,sys.sysobjects prk\n")
+                  _T(" WHERE fok.type = 'F'\n")
+                  _T("   AND fok.parent_object_id     = tab.object_id\n")
+                  _T("   AND tab.schema_id            = sch.schema_id\n")
+                  _T("   AND fkc.constraint_object_id = fok.object_id\n")
+                  _T("   AND fkc.parent_object_id     = col.object_id\n")
+                  _T("   AND fkc.parent_column_id     = col.column_id\n")
+                  _T("   AND fkc.referenced_object_id = pri.object_id\n")
+                  _T("   AND fkc.referenced_object_id = pky.object_id\n")
+                  _T("   AND fkc.referenced_column_id = pky.column_id\n")
+                  _T("   AND prk.parent_obj           = pri.object_id\n")
+                  _T("   AND prk.xtype                = 'PK'\n")
+                  _T("   AND prk.type                 = 'K '\n");
   if(!p_schema.IsEmpty())
   {
-    query += "   AND sch.name = ?\n";
+    query += _T("   AND sch.name = ?\n");
   }
   if(!p_tablename.IsEmpty())
   {
     if(p_referenced)
     {
-      query += "   AND pri.name = ?\n";
+      query += _T("   AND pri.name = ?\n");
     }
     else
     {
-      query += "   AND tab.name = ?\n";
+      query += _T("   AND tab.name = ?\n");
     }
   }
   if(!p_constraint.IsEmpty())
   {
     if(p_referenced)
     {
-      query += "   AND prk.name = ?\n";
+      query += _T("   AND prk.name = ?\n");
     }
     else
     {
-      query += "   AND fok.name = ?\n";
+      query += _T("   AND fok.name = ?\n");
     }
   }
   // Order up to column number
-  query += " ORDER BY 1,2,3,4,5,6,7,8,9";
+  query += _T(" ORDER BY 1,2,3,4,5,6,7,8,9");
 
   return query;
 }
@@ -1645,61 +1685,61 @@ SQLInfoSQLServer::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
 
   if(!foreign.m_fkSchemaName.IsEmpty())
   {
-    table = fkschema + "].[" + table;
+    table = fkschema + _T("].[") + table;
   }
   if(!foreign.m_pkSchemaName.IsEmpty())
   {
-    primary = pkschema + "].[" + primary;
+    primary = pkschema + _T("].[") + primary;
   }
 
   // The base foreign key command
-  XString query = "ALTER TABLE [" + table + "]\n"
-                  "  ADD CONSTRAINT [" + constraint + "]\n"
-                  "      FOREIGN KEY (";
+  XString query = _T("ALTER TABLE [") + table + _T("]\n")
+                  _T("  ADD CONSTRAINT [") + constraint + _T("]\n")
+                  _T("      FOREIGN KEY (");
 
   // Add the foreign key columns
   bool extra = false;
   for(const auto& key : p_foreigns)
   {
-    if(extra) query += ",";
+    if(extra) query += _T(",");
     XString column = key.m_fkColumnName;
     column.MakeLower();
-    query.AppendFormat("[%s]",column.GetString());
+    query.AppendFormat(_T("[%s]"),column.GetString());
     extra  = true;
   }
 
   // Add references primary table
-  query += ")\n      REFERENCES [" + primary + "] (";
+  query += _T(")\n      REFERENCES [") + primary + _T("] (");
 
   // Add the primary key columns
   extra = false;
   for(const auto& key : p_foreigns)
   {
-    if(extra) query += ",";
+    if(extra) query += _T(",");
     XString column = key.m_pkColumnName;
     column.MakeLower();
-    query.AppendFormat("[%s]",column.GetString());
+    query.AppendFormat(_T("[%s]"),column.GetString());
     extra  = true;
   }
-  query += ")";
+  query += _T(")");
 
   // Add all relevant options
   switch(foreign.m_updateRule)
   {
-    case SQL_CASCADE :    query += "\n      ON UPDATE NO ACTION";   break; // CASCADE is unreliable
-    case SQL_SET_NULL:    query += "\n      ON UPDATE SET NULL";    break;
-    case SQL_SET_DEFAULT: query += "\n      ON UPDATE SET DEFAULT"; break;
-    case SQL_NO_ACTION:   query += "\n      ON UPDATE NO ACTION";   break;
+    case SQL_CASCADE :    query += _T("\n      ON UPDATE NO ACTION");   break; // CASCADE is unreliable
+    case SQL_SET_NULL:    query += _T("\n      ON UPDATE SET NULL");    break;
+    case SQL_SET_DEFAULT: query += _T("\n      ON UPDATE SET DEFAULT"); break;
+    case SQL_NO_ACTION:   query += _T("\n      ON UPDATE NO ACTION");   break;
     case SQL_RESTRICT:    // Fall through
     default:              // In essence: ON UPDATE RESTRICT, but that's already the default
                           break;
   }
   switch(foreign.m_deleteRule)
   {
-    case SQL_CASCADE:     query += "\n      ON DELETE CASCADE";     break;
-    case SQL_SET_NULL:    query += "\n      ON DELETE SET NULL";    break;
-    case SQL_SET_DEFAULT: query += "\n      ON DELETE SET DEFAULT"; break;
-    case SQL_NO_ACTION:   query += "\n      ON DELETE NO ACTION";   break;
+    case SQL_CASCADE:     query += _T("\n      ON DELETE CASCADE");     break;
+    case SQL_SET_NULL:    query += _T("\n      ON DELETE SET NULL");    break;
+    case SQL_SET_DEFAULT: query += _T("\n      ON DELETE SET DEFAULT"); break;
+    case SQL_NO_ACTION:   query += _T("\n      ON DELETE NO ACTION");   break;
     case SQL_RESTRICT:    // Fall through
     default:              // In essence: ON DELETE RESTRICT, but that's already the default
                           break;
@@ -1717,7 +1757,7 @@ SQLInfoSQLServer::GetCATALOGForeignAlter(MForeignMap& /*p_original*/, MForeignMa
   // THIS IS POSSIBLE!
   // ALTER TABLE schema.table { NOCHECK | CHECK } CONSTRAINT <constraintname>
 
-  return "";
+  return _T("");
 }
 
 XString
@@ -1727,8 +1767,8 @@ SQLInfoSQLServer::GetCATALOGForeignDrop(XString p_schema,XString p_tablename,XSt
   p_tablename.MakeLower();
   p_constraintname.MakeLower();
 
-  XString sql("ALTER TABLE [" + p_schema + "].[" + p_tablename + "]\n"
-              " DROP CONSTRAINT [" + p_constraintname + "]");
+  XString sql(_T("ALTER TABLE [") + p_schema + _T("].[") + p_tablename + _T("]\n")
+              _T(" DROP CONSTRAINT [") + p_constraintname + _T("]"));
   return sql;
 }
 
@@ -1742,14 +1782,14 @@ SQLInfoSQLServer::GetCATALOGDefaultExists(XString& p_schema,XString& p_tablename
   p_column.MakeLower();
 
   XString sql =
-    "SELECT 1\n"
-    "  FROM sys.default_constraints d\n"
-    "       inner join sys.objects o ON o.object_id = d.parent_object_id\n"
-    "       inner join sys.schemas s ON s.schema_id = o.schema_id\n"
-    "       inner join sys.columns c ON o.object_id = c.object_id AND c.column_id = d.parent_column_id\n"
-    " WHERE s.name = '" + p_schema    + "'\n"
-    "   AND o.name = '" + p_tablename + "'\n"
-    "   AND c.name = '" + p_column    + "'\n";
+    _T("SELECT 1\n")
+    _T("  FROM sys.default_constraints d\n")
+    _T("       inner join sys.objects o ON o.object_id = d.parent_object_id\n")
+    _T("       inner join sys.schemas s ON s.schema_id = o.schema_id\n")
+    _T("       inner join sys.columns c ON o.object_id = c.object_id AND c.column_id = d.parent_column_id\n")
+    _T(" WHERE s.name = '") + p_schema    + _T("'\n")
+    _T("   AND o.name = '") + p_tablename + _T("'\n")
+    _T("   AND c.name = '") + p_column    + _T("'\n");
 
   return sql;
 }
@@ -1769,30 +1809,30 @@ SQLInfoSQLServer::GetCATALOGDefaultAttributes(XString& p_schema,XString& p_table
   p_column.MakeLower();
 
   XString sql =
-    "SELECT db_name() AS constraint_catalog\n"
-    "      ,s.name    AS constraint_schema\n"
-    "      ,o.name    AS constraint_table\n"
-    "      ,d.name    AS constraint_name\n"
-    "      ,c.name    AS constraint_column\n"
-    "      ,CAST(definition AS VARCHAR(Max)) AS constraint_code\n"
-    "  FROM sys.default_constraints d\n"
-    "       inner join sys.objects o ON o.object_id = d.parent_object_id\n"
-    "       inner join sys.schemas s ON s.schema_id = o.schema_id\n"
-    "       inner join sys.columns c ON o.object_id = c.object_id AND c.column_id = d.parent_column_id\n"
-    " WHERE s.name = ?\n";
+    _T("SELECT db_name() AS constraint_catalog\n")
+    _T("      ,s.name    AS constraint_schema\n")
+    _T("      ,o.name    AS constraint_table\n")
+    _T("      ,d.name    AS constraint_name\n")
+    _T("      ,c.name    AS constraint_column\n")
+    _T("      ,CAST(definition AS VARCHAR(Max)) AS constraint_code\n")
+    _T("  FROM sys.default_constraints d\n")
+    _T("       inner join sys.objects o ON o.object_id = d.parent_object_id\n")
+    _T("       inner join sys.schemas s ON s.schema_id = o.schema_id\n")
+    _T("       inner join sys.columns c ON o.object_id = c.object_id AND c.column_id = d.parent_column_id\n")
+    _T(" WHERE s.name = ?\n");
   if(!p_tablename.IsEmpty())
   {
-    sql += "   AND o.name ";
-    sql += p_tablename.Find('%') < 0 ? "=" : "LIKE";
-    sql += " ?\n";
+    sql += _T("   AND o.name ");
+    sql += p_tablename.Find('%') < 0 ? _T("=") : _T("LIKE");
+    sql += _T(" ?\n");
   }
   if(!p_column.IsEmpty())
   {
-    sql += "   AND c.name = ";
-    sql += p_column.Find('%') < 0 ? "=" : "LIKE";
-    sql += " ?\n";
+    sql += _T("   AND c.name = ");
+    sql += p_column.Find('%') < 0 ? _T("=") : _T("LIKE");
+    sql += _T(" ?\n");
   }
-  sql += " ORDER BY 1,2,3,4";
+  sql += _T(" ORDER BY 1,2,3,4");
 
   return sql;
 }
@@ -1805,9 +1845,9 @@ SQLInfoSQLServer::GetCATALOGDefaultCreate(XString p_schema,XString p_tablename,X
   p_constraint.MakeLower();
   p_column    .MakeLower();
 
-  return "ALTER TABLE [" + p_schema + "].[" + p_tablename + "]\n"
-         "  ADD CONSTRAINT [" + p_constraint + "]\n"
-         "      DEFAULT " + p_code + " FOR [" + p_column + "]";
+  return _T("ALTER TABLE [") + p_schema + _T("].[") + p_tablename + _T("]\n")
+         _T("  ADD CONSTRAINT [") + p_constraint + _T("]\n")
+         _T("      DEFAULT ") + p_code + _T(" FOR [") + p_column + _T("]");
 }
 
 XString
@@ -1817,8 +1857,8 @@ SQLInfoSQLServer::GetCATALOGDefaultDrop(XString p_schema,XString p_tablename,XSt
   p_tablename .MakeLower();
   p_constraint.MakeLower();
 
-  return "ALTER TABLE [" + p_schema + "].[" + p_tablename + "]\n"
-         " DROP CONSTRAINT [" + p_constraint + "]";
+  return _T("ALTER TABLE [") + p_schema + _T("].[") + p_tablename + _T("]\n")
+         _T(" DROP CONSTRAINT [") + p_constraint + _T("]");
 }
 
 /////////////////////////
@@ -1831,13 +1871,13 @@ SQLInfoSQLServer::GetCATALOGCheckExists(XString p_schema,XString p_tablename,XSt
   p_tablename.MakeLower();
   p_constraint.MakeLower();
 
-  XString sql = "SELECT 1\n"
-                "  FROM sys.check_constraints c\n"
-                "       inner join sys.objects o ON o.object_id = c.parent_object_id\n"
-                "       inner join sys.schemas s ON o.schema_id = s.schema_id\n"
-                " WHERE s.name = '" + p_schema     + "'\n";
-                "   AND o.name = '" + p_tablename  + "'\n"
-                "   AND c.name = '" + p_constraint + "'";
+  XString sql = _T("SELECT 1\n")
+                _T("  FROM sys.check_constraints c\n")
+                _T("       inner join sys.objects o ON o.object_id = c.parent_object_id\n")
+                _T("       inner join sys.schemas s ON o.schema_id = s.schema_id\n")
+                _T(" WHERE s.name = '") + p_schema     + _T("'\n");
+                _T("   AND o.name = '") + p_tablename  + _T("'\n")
+                _T("   AND c.name = '") + p_constraint + _T("'");
   return sql;
 }
 
@@ -1855,28 +1895,28 @@ SQLInfoSQLServer::GetCATALOGCheckAttributes(XString  p_schema,XString  p_tablena
   p_tablename.MakeLower();
   p_constraint.MakeLower();
 
-  XString sql = "SELECT db_name() AS catalog\n"
-                "      ,s.name    AS constraint_schema\n"
-                "      ,o.name    AS constraint_table\n"
-                "      ,c.name    AS constraint_name\n"
-                "      ,CAST(c.definition as VARCHAR) AS constraint_code\n"
-                "  FROM sys.check_constraints c\n"
-                "       inner join sys.objects o ON o.object_id = c.parent_object_id\n"
-                "       inner join sys.schemas s ON o.schema_id = s.schema_id\n"
-                " WHERE s.name = ?\n";
+  XString sql = _T("SELECT db_name() AS catalog\n")
+                _T("      ,s.name    AS constraint_schema\n")
+                _T("      ,o.name    AS constraint_table\n")
+                _T("      ,c.name    AS constraint_name\n")
+                _T("      ,CAST(c.definition as VARCHAR) AS constraint_code\n")
+                _T("  FROM sys.check_constraints c\n")
+                _T("       inner join sys.objects o ON o.object_id = c.parent_object_id\n")
+                _T("       inner join sys.schemas s ON o.schema_id = s.schema_id\n")
+                _T(" WHERE s.name = ?\n");
   if(!p_tablename.IsEmpty())
   {
-    sql += "   AND o.name ";
-    sql += p_tablename.Find('%') >= 0 ? "LIKE" : "=";
-    sql += " ?\n";
+    sql += _T("   AND o.name ");
+    sql += p_tablename.Find('%') >= 0 ? _T("LIKE") : _T("=");
+    sql += _T(" ?\n");
   }
   if(!p_constraint.IsEmpty())
   {
-    sql += "   AND c.name ";
-    sql += p_constraint.Find('%') >= 0 ? "LIKE" : "=";
-    sql += " ?\n";
+    sql += _T("   AND c.name ");
+    sql += p_constraint.Find('%') >= 0 ? _T("LIKE") : _T("=");
+    sql += _T(" ?\n");
   }
-  sql += " ORDER  BY 1,2,3";
+  sql += _T(" ORDER  BY 1,2,3");
   return sql;
 }
 
@@ -1887,19 +1927,19 @@ SQLInfoSQLServer::GetCATALOGCheckCreate(XString p_schema,XString p_tablename,XSt
   p_tablename.MakeLower();
   p_constraint.MakeLower();
 
-  if((p_condition.Left(1) != "(") || (p_condition.Right(1) != ")"))
+  if((p_condition.Left(1) != _T("(")) || (p_condition.Right(1) != _T(")")))
   {
-    p_condition = "(" + p_condition + ")";
+    p_condition = _T("(") + p_condition + _T(")");
   }
 
-  XString sql = "ALTER TABLE ";
+  XString sql = _T("ALTER TABLE ");
   if(!p_schema.IsEmpty())
   {
-    sql += p_schema + ".";
+    sql += p_schema + _T(".");
   }
-  sql += p_tablename + "\n";
-  sql += "  ADD CONSTRAINT " + p_constraint + "\n";
-  sql += "      CHECK " + p_condition;
+  sql += p_tablename + _T("\n");
+  sql += _T("  ADD CONSTRAINT ") + p_constraint + _T("\n");
+  sql += _T("      CHECK ") + p_condition;
   return sql;
 }
 
@@ -1910,13 +1950,13 @@ SQLInfoSQLServer::GetCATALOGCheckDrop(XString p_schema,XString p_tablename,XStri
   p_tablename.MakeLower();
   p_constraint.MakeLower();
 
-  XString sql = "ALTER TABLE ";
+  XString sql = _T("ALTER TABLE ");
   if(!p_schema.IsEmpty())
   {
-    sql += p_schema + ".";
+    sql += p_schema + _T(".");
   }
-  sql += p_tablename + "\n";
-  sql += "  DROP CONSTRAINT " + p_constraint;
+  sql += p_tablename + _T("\n");
+  sql += _T("  DROP CONSTRAINT ") + p_constraint;
 
   return sql;
 }
@@ -1932,15 +1972,15 @@ SQLInfoSQLServer::GetCATALOGTriggerExists(XString p_schema, XString p_tablename,
   p_triggername.MakeLower();
 
   XString sql;
-  sql.Format("SELECT COUNT(*)\n"
-             "  FROM sys.triggers trg\n"
-             "      ,sys.objects  tab\n"
-             "      ,sys.schemas  sch\n"
-             " WHERE sch.name      = '%s'\n"
-             "   AND tab.name      = '%s'\n"
-             "   AND trg.name      = '%s'\n"
-             "   AND tab.object_id = trg.parent_id\n"
-             "   AND tab.schema_id = sch.schema_id"
+  sql.Format(_T("SELECT COUNT(*)\n")
+             _T("  FROM sys.triggers trg\n")
+             _T("      ,sys.objects  tab\n")
+             _T("      ,sys.schemas  sch\n")
+             _T(" WHERE sch.name      = '%s'\n")
+             _T("   AND tab.name      = '%s'\n")
+             _T("   AND trg.name      = '%s'\n")
+             _T("   AND tab.object_id = trg.parent_id\n")
+             _T("   AND tab.schema_id = sch.schema_id")
             ,p_schema.GetString()
             ,p_tablename.GetString()
             ,p_triggername.GetString());
@@ -1961,51 +2001,51 @@ SQLInfoSQLServer::GetCATALOGTriggerAttributes(XString& p_schema,XString& p_table
   p_tablename.MakeLower();
   p_triggername.MakeLower();
 
-  XString sql("SELECT ''       AS catalog_name\n"
-              "      ,sch.name AS schema_name\n"
-              "      ,tab.name AS table_name\n"
-              "      ,trg.name AS trigger_name\n"
-              "      ,trg.name + ' ON TABLE ' + tab.name AS trigger_description\n"
-              "      ,0        AS position\n"
-              "      ,0        AS trigger_before\n"
-              "      ,(SELECT CASE type_desc WHEN 'INSERT' THEN 1 ELSE 0 END\n"
-              "          FROM sys.trigger_events ev\n"
-              "         WHERE ev.object_id = trg.object_id) AS trigger_insert\n"
-              "      ,(SELECT CASE type_desc WHEN 'UPDATE' THEN 1 ELSE 0 END\n"
-              "          FROM sys.trigger_events ev\n"
-              "         WHERE ev.object_id = trg.object_id) AS trigger_update\n"
-              "      ,(SELECT CASE type_desc WHEN 'DELETE' THEN 1 ELSE 0 END\n"
-              "          FROM sys.trigger_events ev\n"
-              "         WHERE ev.object_id = trg.object_id) AS trigger_delete\n"
-              "      ,(SELECT CASE type_desc WHEN 'SELECT' THEN 1 ELSE 0 END\n"
-              "          FROM sys.trigger_events ev\n"
-              "         WHERE ev.object_id = trg.object_id) AS trigger_select\n"
-              "      ,0  AS trigger_session\n"
-              "   	  ,0  AS trigger_transaction\n"
-              "      ,0  AS trigger_rollback\n"
-              "      ,'' AS trigger_referencing\n"
-              "  	  ,CASE trg.is_disabled WHEN 0 THEN 1 ELSE 0 END AS trigger_enabled\n"
-              "  	  ,mod.definition AS trigger_source\n"
-              "  FROM sys.triggers    trg\n"
-              "      ,sys.sql_modules mod\n"
-              "      ,sys.objects     tab\n"
-              "      ,sys.schemas     sch\n"
-              " WHERE trg.object_id = mod.object_id\n"
-              "   AND tab.object_id = trg.parent_id\n"
-              "   AND tab.schema_id = sch.schema_id\n");
+  XString sql(_T("SELECT ''       AS catalog_name\n")
+              _T("      ,sch.name AS schema_name\n")
+              _T("      ,tab.name AS table_name\n")
+              _T("      ,trg.name AS trigger_name\n")
+              _T("      ,trg.name + ' ON TABLE ' + tab.name AS trigger_description\n")
+              _T("      ,0        AS position\n")
+              _T("      ,0        AS trigger_before\n")
+              _T("      ,(SELECT CASE type_desc WHEN 'INSERT' THEN 1 ELSE 0 END\n")
+              _T("          FROM sys.trigger_events ev\n")
+              _T("         WHERE ev.object_id = trg.object_id) AS trigger_insert\n")
+              _T("      ,(SELECT CASE type_desc WHEN 'UPDATE' THEN 1 ELSE 0 END\n")
+              _T("          FROM sys.trigger_events ev\n")
+              _T("         WHERE ev.object_id = trg.object_id) AS trigger_update\n")
+              _T("      ,(SELECT CASE type_desc WHEN 'DELETE' THEN 1 ELSE 0 END\n")
+              _T("          FROM sys.trigger_events ev\n")
+              _T("         WHERE ev.object_id = trg.object_id) AS trigger_delete\n")
+              _T("      ,(SELECT CASE type_desc WHEN 'SELECT' THEN 1 ELSE 0 END\n")
+              _T("          FROM sys.trigger_events ev\n")
+              _T("         WHERE ev.object_id = trg.object_id) AS trigger_select\n")
+              _T("      ,0  AS trigger_session\n")
+              _T("   	  ,0  AS trigger_transaction\n")
+              _T("      ,0  AS trigger_rollback\n")
+              _T("      ,'' AS trigger_referencing\n")
+              _T("  	  ,CASE trg.is_disabled WHEN 0 THEN 1 ELSE 0 END AS trigger_enabled\n")
+              _T("  	  ,mod.definition AS trigger_source\n")
+              _T("  FROM sys.triggers    trg\n")
+              _T("      ,sys.sql_modules mod\n")
+              _T("      ,sys.objects     tab\n")
+              _T("      ,sys.schemas     sch\n")
+              _T(" WHERE trg.object_id = mod.object_id\n")
+              _T("   AND tab.object_id = trg.parent_id\n")
+              _T("   AND tab.schema_id = sch.schema_id\n"));
   if(!p_schema.IsEmpty())
   {
-    sql += "   AND sch.name = ?\n";
+    sql += _T("   AND sch.name = ?\n");
   }
   if(!p_tablename.IsEmpty())
   {
-    sql += "   AND tab.name ";
-    sql += p_tablename.Find('%') >= 0 ? "LIKE" : "=";
-    sql += " ?\n";
+    sql += _T("   AND tab.name ");
+    sql += p_tablename.Find('%') >= 0 ? _T("LIKE") : _T("=");
+    sql += _T(" ?\n");
   }
   if(!p_triggername.IsEmpty())
   {
-    sql += "   AND trg.name = ?";
+    sql += _T("   AND trg.name = ?");
   }
   return sql;
 }
@@ -2025,12 +2065,12 @@ SQLInfoSQLServer::GetCATALOGTriggerDrop(XString p_schema, XString /*p_tablename*
   p_schema.MakeLower();
   p_triggername.MakeLower();
 
-  XString sql("DROP TRIGGER ");
+  XString sql(_T("DROP TRIGGER "));
   if(!p_schema.IsEmpty())
   {
-    sql.AppendFormat("[%s].",p_schema.GetString());
+    sql.AppendFormat(_T("[%s]."),p_schema.GetString());
   }
-  sql.AppendFormat("[%s]",p_triggername.GetString());
+  sql.AppendFormat(_T("[%s]"),p_triggername.GetString());
   return sql;
 }
 
@@ -2042,12 +2082,12 @@ SQLInfoSQLServer::GetCATALOGSequenceExists(XString p_schema, XString p_sequence)
 {
   p_schema.MakeLower();
   p_sequence.MakeLower();
-  XString sql = "SELECT COUNT(*)\n"
-                "  FROM sys.sequences seq\n"
-                "      ,sys.schemas   sch\n"
-                " WHERE sch.object_id = seq.schema_id\n"
-                "   AND seq.name = '" + p_sequence + "'\n"
-                "   AND sch.name = '" + p_schema   + "'";
+  XString sql = _T("SELECT COUNT(*)\n")
+                _T("  FROM sys.sequences seq\n")
+                _T("      ,sys.schemas   sch\n")
+                _T(" WHERE sch.object_id = seq.schema_id\n")
+                _T("   AND seq.name = '") + p_sequence + _T("'\n")
+                _T("   AND sch.name = '") + p_schema   + _T("'");
   return sql;
 }
 
@@ -2058,29 +2098,29 @@ SQLInfoSQLServer::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern) c
   p_pattern.MakeLower();
   if(!p_pattern.IsEmpty() && (p_pattern.Find('%') < 0))
   {
-    p_pattern = "%" + p_pattern + "%";
+    p_pattern = _T("%") + p_pattern + _T("%");
   }
-  XString sql = "SELECT db_name() AS catalog_name\n"
-                "      ,sch.name  AS schema_name\n"
-                "      ,seq.name  AS sequence_name\n"
-                "      ,CAST(current_value AS BIGINT) AS current_value\n"
-                "      ,CAST(minimum_value AS BIGINT) AS minimum_value\n"
-                "      ,CAST(increment     AS BIGINT) AS increment_value\n"
-                "      ,cache_size AS CACHE\n"
-                "      ,is_cycling\n"
-                "      ,0 ordering\n"
-                "  FROM sys.sequences seq\n"
-                "      ,sys.schemas   sch\n"
-                " WHERE sch.schema_id = seq.schema_id\n";
+  XString sql = _T("SELECT db_name() AS catalog_name\n")
+                _T("      ,sch.name  AS schema_name\n")
+                _T("      ,seq.name  AS sequence_name\n")
+                _T("      ,CAST(current_value AS BIGINT) AS current_value\n")
+                _T("      ,CAST(minimum_value AS BIGINT) AS minimum_value\n")
+                _T("      ,CAST(increment     AS BIGINT) AS increment_value\n")
+                _T("      ,cache_size AS CACHE\n")
+                _T("      ,is_cycling\n")
+                _T("      ,0 ordering\n")
+                _T("  FROM sys.sequences seq\n")
+                _T("      ,sys.schemas   sch\n")
+                _T(" WHERE sch.schema_id = seq.schema_id\n");
   if(!p_schema.IsEmpty())
   {
-    sql += "   AND sch.name = ?\n";
+    sql += _T("   AND sch.name = ?\n");
   }
   if(!p_pattern.IsEmpty())
   {
-    sql += "   AND seq.name LIKE ?\n";
+    sql += _T("   AND seq.name LIKE ?\n");
   }
-  sql += " ORDER BY 1,2,3";
+  sql += _T(" ORDER BY 1,2,3");
   return sql;
 }
 
@@ -2089,36 +2129,36 @@ SQLInfoSQLServer::GetCATALOGSequenceAttributes(XString& p_schema,XString& p_sequ
 {
   p_schema.MakeLower();
   p_sequence.MakeLower();
-  XString sql = "SELECT ''       AS catalog_name\n"
-                "      ,sch.name AS schema_name\n"
-                "      ,seq.name AS sequence_name\n"
-                "      ,CAST(current_value AS BIGINT) AS current_value\n"
-                "      ,CAST(minimum_value AS BIGINT) AS minimum_value\n"
-                "      ,CAST(increment     AS BIGINT) AS increment_value\n"
-                "      ,cache_size AS CACHE\n"
-                "      ,is_cycling\n"
-                "      ,0 ordering\n"
-                "  FROM sys.sequences seq\n"
-                "      ,sys.schemas   sch\n"
-                " WHERE sch.schema_id = seq.schema_id\n";
+  XString sql = _T("SELECT ''       AS catalog_name\n")
+                _T("      ,sch.name AS schema_name\n")
+                _T("      ,seq.name AS sequence_name\n")
+                _T("      ,CAST(current_value AS BIGINT) AS current_value\n")
+                _T("      ,CAST(minimum_value AS BIGINT) AS minimum_value\n")
+                _T("      ,CAST(increment     AS BIGINT) AS increment_value\n")
+                _T("      ,cache_size AS CACHE\n")
+                _T("      ,is_cycling\n")
+                _T("      ,0 ordering\n")
+                _T("  FROM sys.sequences seq\n")
+                _T("      ,sys.schemas   sch\n")
+                _T(" WHERE sch.schema_id = seq.schema_id\n");
   if(!p_schema.IsEmpty())
   {
-    sql += "   AND sch.name = ?\n";
+    sql += _T("   AND sch.name = ?\n");
   }
   if(!p_sequence.IsEmpty())
   {
-    sql += "   AND seq.name ";
-    sql += p_sequence.Find('%') >= 0 ? "LIKE" : "=";
-    sql += " ?\n";
+    sql += _T("   AND seq.name ");
+    sql += p_sequence.Find('%') >= 0 ? _T("LIKE") : _T("=");
+    sql += _T(" ?\n");
   }
-  sql += " ORDER BY 1,2,3";
+  sql += _T(" ORDER BY 1,2,3");
   return sql;
 }
 
 XString
 SQLInfoSQLServer::GetCATALOGSequenceCreate(MetaSequence& p_sequence) const
 {
-  XString sql("CREATE SEQUENCE ");
+  XString sql(_T("CREATE SEQUENCE "));
   XString schemanm = p_sequence.m_schemaName;
   XString sequence = p_sequence.m_sequenceName;
   schemanm.MakeLower();
@@ -2126,19 +2166,19 @@ SQLInfoSQLServer::GetCATALOGSequenceCreate(MetaSequence& p_sequence) const
 
   if(!schemanm.IsEmpty())
   {
-    sql.AppendFormat("[%s].",schemanm.GetString());
+    sql.AppendFormat(_T("[%s]."),schemanm.GetString());
   }
-  sql.AppendFormat("[%s]",sequence.GetString());
-  sql.AppendFormat("\n START WITH %d INCREMENT BY 1", (int) p_sequence.m_currentValue);
+  sql.AppendFormat(_T("[%s]"),sequence.GetString());
+  sql.AppendFormat(_T("\n START WITH %d INCREMENT BY 1"), (int) p_sequence.m_currentValue);
 
-  sql += p_sequence.m_cycle ? "\n CYCLE" : "\n NO CYCLE";
+  sql += p_sequence.m_cycle ? _T("\n CYCLE") : _T("\n NO CYCLE");
   if (p_sequence.m_cache > 0)
   {
-    sql.AppendFormat("\n CACHE %d",p_sequence.m_cache);
+    sql.AppendFormat(_T("\n CACHE %d"),p_sequence.m_cache);
   }
   else
   {
-    sql += "\n NO CACHE";
+    sql += _T("\n NO CACHE");
   }
   return sql;
 }
@@ -2150,7 +2190,7 @@ SQLInfoSQLServer::GetCATALOGSequenceDrop(XString p_schema, XString p_sequence) c
   p_sequence.MakeLower();
 
   XString sql;
-  sql.Format("DROP SEQUENCE IF EXISTS [%s].[%s]",p_schema.GetString(),p_sequence.GetString());
+  sql.Format(_T("DROP SEQUENCE IF EXISTS [%s].[%s]"),p_schema.GetString(),p_sequence.GetString());
   return  sql;
 }
 
@@ -2160,7 +2200,7 @@ SQLInfoSQLServer::GetCATALOGSequenceDrop(XString p_schema, XString p_sequence) c
 XString 
 SQLInfoSQLServer::GetCATALOGViewExists(XString& /*p_schema*/,XString& /*p_viewname*/) const
 {
-  return "";
+  return _T("");
 }
 
 XString 
@@ -2175,29 +2215,29 @@ SQLInfoSQLServer::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewname
   p_schema.MakeLower();
   p_viewname.MakeLower();
 
-  XString query = "SELECT db_name()  AS table_catalog\n"
-                  "      ,usr.name   AS schema_name\n"
-                  "      ,obj.name   AS table_name\n"
-                  "      ,'VIEW'     AS object_type\n"
-                  "      ,''         AS remarks\n"
-                  "      ,'master.' + usr.name + '.' + obj.name as fullname\n"
-                  "      ,db_name() as tablespace\n"
-                  "      ,0         as temporary\n"
-                  "  FROM sys.sysobjects obj\n"
-                  "      ,sys.sysusers   usr\n"
-                  " WHERE xtype   = 'V'\n"
-                  "   AND obj.uid = usr.uid\n";
+  XString query = _T("SELECT db_name()  AS table_catalog\n")
+                  _T("      ,usr.name   AS schema_name\n")
+                  _T("      ,obj.name   AS table_name\n")
+                  _T("      ,'VIEW'     AS object_type\n")
+                  _T("      ,''         AS remarks\n")
+                  _T("      ,'master.' + usr.name + '.' + obj.name as fullname\n")
+                  _T("      ,db_name() as tablespace\n")
+                  _T("      ,0         as temporary\n")
+                  _T("  FROM sys.sysobjects obj\n")
+                  _T("      ,sys.sysusers   usr\n")
+                  _T(" WHERE xtype   = 'V'\n")
+                  _T("   AND obj.uid = usr.uid\n");
   if (!p_schema.IsEmpty())
   {
-    query += "   AND usr.name = ?\n";
+    query += _T("   AND usr.name = ?\n");
   }
   if (!p_viewname.IsEmpty())
   {
-    query += "   AND obj.name ";
-    query += p_viewname.Find('%') >= 0 ? "LIKE" : "=";
-    query += " ?\n";
+    query += _T("   AND obj.name ");
+    query += p_viewname.Find('%') >= 0 ? _T("LIKE") : _T("=");
+    query += _T(" ?\n");
   }
-  query += " ORDER BY 1,2,3";
+  query += _T(" ORDER BY 1,2,3");
   return query;
 }
 
@@ -2207,13 +2247,13 @@ SQLInfoSQLServer::GetCATALOGViewText(XString& p_schema,XString& p_viewname) cons
   p_schema.MakeLower();
   p_viewname.MakeLower();
 
-  CString sql = "SELECT CAST(definition AS varchar(max)) view_text\n"
-                "  FROM sys.objects     o\n"
-                "       inner join sys.sql_modules m on m.object_id = o.object_id\n"
-                "       inner join sys.schemas s     on s.schema_id = o.schema_id\n"
-                " WHERE o.type = 'V'\n"
-                "   AND s.name = '" + p_schema   + "'\n"
-                "   AND o.name = '" + p_viewname + "'";
+  CString sql = _T("SELECT CAST(definition AS varchar(max)) view_text\n")
+                _T("  FROM sys.objects     o\n")
+                _T("       inner join sys.sql_modules m on m.object_id = o.object_id\n")
+                _T("       inner join sys.schemas s     on s.schema_id = o.schema_id\n")
+                _T(" WHERE o.type = 'V'\n")
+                _T("   AND s.name = '") + p_schema   + _T("'\n")
+                _T("   AND o.name = '") + p_viewname + _T("'");
   return sql;
 }
 
@@ -2223,19 +2263,19 @@ SQLInfoSQLServer::GetCATALOGViewCreate(XString p_schema,XString p_viewname,XStri
   p_schema.MakeLower();
   p_viewname.MakeLower();
 
-  XString sql("CREATE ");
+  XString sql(_T("CREATE "));
   if(p_ifexists)
   {
-    sql += "OR ALTER ";
+    sql += _T("OR ALTER ");
   }
-  sql += "VIEW [" + p_schema + "].[" + p_viewname + "]\n" + p_contents;
+  sql += _T("VIEW [") + p_schema + _T("].[") + p_viewname + _T("]\n") + p_contents;
   return sql;
 }
 
 XString 
 SQLInfoSQLServer::GetCATALOGViewRename(XString p_schema,XString p_viewname,XString p_newname)    const
 {
-  return "";
+  return _T("");
 }
 
 XString 
@@ -2245,79 +2285,79 @@ SQLInfoSQLServer::GetCATALOGViewDrop(XString p_schema,XString p_viewname,XString
   p_schema.MakeLower();
   p_viewname.MakeLower();
 
-  return "DROP VIEW [" + p_schema + "].[" + p_viewname + "]";
+  return _T("DROP VIEW [") + p_schema + _T("].[") + p_viewname + _T("]");
 }
 
 // All Privilege functions
 XString
 SQLInfoSQLServer::GetCATALOGTablePrivileges(XString& p_schema,XString& p_tablename) const
 {
-  CString sql = "SELECT db_name() AS table_catalog\n"
-                "      ,s.name    AS table_schema\n"
-                "      ,o.name    AS table_name\n"
-                "      ,g.name    AS grantor\n"
-                "      ,u.name    AS grantee\n"
-                "      ,p.permission_name AS privilege\n"
-                "      ,CASE state_desc\n"
-                "            WHEN 'GRANT' THEN 'NO'\n"
-                "            WHEN 'GRANT_WITH_GRANT_OPTION' THEN 'YES'\n"
-                "            ELSE 'NO'\n"
-                "       END AS grantable\n"
-                "  FROM sys.database_permissions p\n"
-                "       inner join sys.objects o ON o.object_id = p.major_id\n"
-                "       inner join sys.schemas s ON s.schema_id = o.schema_id\n"
-                "       inner join sys.database_principals u ON u.principal_id = p.grantee_principal_id\n"
-                "       inner join sys.database_principals g ON g.principal_id = p.grantor_principal_id\n"
-                " WHERE p.minor_id = 0\n"; // Only table privileges
+  CString sql = _T("SELECT db_name() AS table_catalog\n")
+                _T("      ,s.name    AS table_schema\n")
+                _T("      ,o.name    AS table_name\n")
+                _T("      ,g.name    AS grantor\n")
+                _T("      ,u.name    AS grantee\n")
+                _T("      ,p.permission_name AS privilege\n")
+                _T("      ,CASE state_desc\n")
+                _T("            WHEN 'GRANT' THEN 'NO'\n")
+                _T("            WHEN 'GRANT_WITH_GRANT_OPTION' THEN 'YES'\n")
+                _T("            ELSE 'NO'\n")
+                _T("       END AS grantable\n")
+                _T("  FROM sys.database_permissions p\n")
+                _T("       inner join sys.objects o ON o.object_id = p.major_id\n")
+                _T("       inner join sys.schemas s ON s.schema_id = o.schema_id\n")
+                _T("       inner join sys.database_principals u ON u.principal_id = p.grantee_principal_id\n")
+                _T("       inner join sys.database_principals g ON g.principal_id = p.grantor_principal_id\n")
+                _T(" WHERE p.minor_id = 0\n"); // Only table privileges
   // Add the filter
   if(!p_schema.IsEmpty())
   {
-    sql += "   AND s.name = '" + p_schema + "'\n";
+    sql += _T("   AND s.name = '") + p_schema + _T("'\n");
   }
   if(!p_tablename.IsEmpty())
   {
-    sql += "   AND o.name = '" + p_tablename + "'\n";
+    sql += _T("   AND o.name = '") + p_tablename + _T("'\n");
   }
-  sql += " ORDER BY 1,2,3,4,5";
+  sql += _T(" ORDER BY 1,2,3,4,5");
   return sql;
 }
 
 XString
 SQLInfoSQLServer::GetCATALOGColumnPrivileges(XString& p_schema,XString& p_tablename,XString& p_columnname) const
 {
-  CString sql = "SELECT db_name() AS table_catalog\n"
-                "      ,s.name    AS table_schema\n"
-                "      ,o.name    AS table_name\n"
-                "      ,c.name    AS column_name\n"
-                "      ,g.name    AS grantor\n"
-                "      ,u.name    AS grantee\n"
-                "      ,p.permission_name AS privilege\n"
-                "      ,CASE state_desc\n"
-                "            WHEN 'GRANT' THEN 'NO'\n"
-                "            WHEN 'GRANT_WITH_GRANT_OPTION' THEN 'YES'\n"
-                "            ELSE 'NO'\n"
-                "       END AS grantable\n"
-                "  FROM sys.database_permissions p\n"
-                "       inner join sys.objects o ON o.object_id = p.major_id\n"
-                "       inner join sys.schemas s ON s.schema_id = o.schema_id\n"
-                "       inner join sys.database_principals u ON u.principal_id = p.grantee_principal_id\n"
-                "       inner join sys.database_principals g ON g.principal_id = p.grantor_principal_id\n"
-                "       inner join sys.columns c ON c.object_id = o.object_id AND c.column_id = p.minor_id\n"
-                " WHERE p.minor_id > 0\n";
+  CString sql = _T("SELECT db_name() AS table_catalog\n")
+                _T("      ,s.name    AS table_schema\n")
+                _T("      ,o.name    AS table_name\n")
+                _T("      ,c.name    AS column_name\n")
+                _T("      ,g.name    AS grantor\n")
+                _T("      ,u.name    AS grantee\n")
+                _T("      ,p.permission_name AS privilege\n")
+                _T("      ,CASE state_desc\n")
+                _T("            WHEN 'GRANT' THEN 'NO'\n")
+                _T("            WHEN 'GRANT_WITH_GRANT_OPTION' THEN 'YES'\n")
+                _T("            ELSE 'NO'\n")
+                _T("       END AS grantable\n")
+                _T("  FROM sys.database_permissions p\n")
+                _T("       inner join sys.objects o ON o.object_id = p.major_id\n")
+                _T("       inner join sys.schemas s ON s.schema_id = o.schema_id\n")
+                _T("       inner join sys.database_principals u ON u.principal_id = p.grantee_principal_id\n")
+                _T("       inner join sys.database_principals g ON g.principal_id = p.grantor_principal_id\n")
+                _T("       inner join sys.columns c ON c.object_id = o.object_id AND c.column_id = p.minor_id\n")
+                _T(" WHERE p.minor_id > 0\n");
   // Add the filter
   if(!p_schema.IsEmpty())
   {
-    sql += "   AND s.name = ?\n";
+    sql += _T("   AND s.name = ?\n");
   }
   if(!p_tablename.IsEmpty())
   {
-    sql += "   AND o.name = ?\n";
+    sql += _T("   AND o.name = ?\n");
   }
   if(!p_columnname.IsEmpty())
   {
-    sql += "   AND c.name = ?\n";
+    sql += _T("   AND c.name = ?\n");
   }
-  sql += " ORDER BY 1,2,3,4,5,6";
+  sql += _T(" ORDER BY 1,2,3,4,5,6");
   return sql;
 }
 
@@ -2328,30 +2368,30 @@ SQLInfoSQLServer::GetCATALOGSequencePrivilege(XString& p_schema,XString& p_seque
   p_sequence.MakeLower();
 
   XString sql =
-    "SELECT db_name() AS sequence_catalog\n"
-    "      ,s.name    AS sequence_schema\n"
-    "      ,q.name    AS sequence_name\n"
-    "      ,p.permission_name AS privilege\n"
-    "      ,pe.name   AS grantee\n"
-    "      ,CASE p.state\n"
-    "            WHEN 'G' THEN 'NO'\n"
-    "            WHEN 'W' THEN 'YES'\n"
-    "                     ELSE 'NO'\n"
-    "       END AS grant_option\n"
-    "  FROM sys.sequences q\n"
-    "       inner join sys.objects o ON o.object_id = q.object_id\n"
-    "       inner join sys.schemas s ON s.schema_id = o.schema_id\n"
-    "       inner join sys.database_permissions p ON o.object_id = p.major_id\n"
-    "       inner join sys.database_principals pg ON p.grantor_principal_id = pg.principal_id\n"
-    "       inner join sys.database_principals pe ON p.grantee_principal_id = pe.principal_id\n"
-    " WHERE q.type = 'SO'\n"
-    "   AND s.name = ?\n";
+    _T("SELECT db_name() AS sequence_catalog\n")
+    _T("      ,s.name    AS sequence_schema\n")
+    _T("      ,q.name    AS sequence_name\n")
+    _T("      ,p.permission_name AS privilege\n")
+    _T("      ,pe.name   AS grantee\n")
+    _T("      ,CASE p.state\n")
+    _T("            WHEN 'G' THEN 'NO'\n")
+    _T("            WHEN 'W' THEN 'YES'\n")
+    _T("                     ELSE 'NO'\n")
+    _T("       END AS grant_option\n")
+    _T("  FROM sys.sequences q\n")
+    _T("       inner join sys.objects o ON o.object_id = q.object_id\n")
+    _T("       inner join sys.schemas s ON s.schema_id = o.schema_id\n")
+    _T("       inner join sys.database_permissions p ON o.object_id = p.major_id\n")
+    _T("       inner join sys.database_principals pg ON p.grantor_principal_id = pg.principal_id\n")
+    _T("       inner join sys.database_principals pe ON p.grantee_principal_id = pe.principal_id\n")
+    _T(" WHERE q.type = 'SO'\n")
+    _T("   AND s.name = ?\n");
 
   if(!p_sequence.IsEmpty())
   {
-    sql += "   AND q.name ";
-    sql += p_sequence.Find('%') < 0 ? "=" : "LIKE";
-    sql += " ?";
+    sql += _T("   AND q.name ");
+    sql += p_sequence.Find('%') < 0 ? _T("=") : _T("LIKE");
+    sql += _T(" ?");
   }
   return sql;
 }
@@ -2362,8 +2402,8 @@ SQLInfoSQLServer::GetCATALOGGrantPrivilege(XString p_schema,XString p_objectname
   XString sql;
 
   // Filter out unwanted/not-supported privileges
-  if((p_privilege.CompareNoCase("create") == 0) ||
-     (p_privilege.CompareNoCase("index")  == 0))
+  if((p_privilege.CompareNoCase(_T("create")) == 0) ||
+     (p_privilege.CompareNoCase(_T("index"))  == 0))
   {
     return sql;
   }
@@ -2373,10 +2413,10 @@ SQLInfoSQLServer::GetCATALOGGrantPrivilege(XString p_schema,XString p_objectname
   p_objectname.MakeLower();
 
   // Create grant
-  sql.Format("GRANT %s ON [%s].[%s] TO [%s]",p_privilege.GetString(),p_schema.GetString(),p_objectname.GetString(),p_grantee.GetString());
+  sql.Format(_T("GRANT %s ON [%s].[%s] TO [%s]"),p_privilege.GetString(),p_schema.GetString(),p_objectname.GetString(),p_grantee.GetString());
   if(p_grantable)
   {
-    sql += " WITH GRANT OPTION";
+    sql += _T(" WITH GRANT OPTION");
   }
   return sql;
 }
@@ -2385,7 +2425,7 @@ XString
 SQLInfoSQLServer::GetCATALOGRevokePrivilege(XString p_schema,XString p_objectname,XString p_privilege,XString p_grantee)
 {
   XString sql;
-  sql.Format("REVOKE %s ON %s.%s FROM %s",p_privilege.GetString(),p_schema.GetString(),p_objectname.GetString(),p_grantee.GetString());
+  sql.Format(_T("REVOKE %s ON %s.%s FROM %s"),p_privilege.GetString(),p_schema.GetString(),p_objectname.GetString(),p_grantee.GetString());
   return sql;
 }
 
@@ -2397,7 +2437,7 @@ SQLInfoSQLServer::GetCATALOGSynonymList(XString& p_schema,XString& p_pattern) co
   p_pattern.MakeLower();
   if(p_pattern.Find('%') < 0)
   {
-    p_pattern += "%";
+    p_pattern += _T("%");
   }
   return GetCATALOGSynonymAttributes(p_schema,p_pattern);
 }
@@ -2408,18 +2448,18 @@ SQLInfoSQLServer::GetCATALOGSynonymAttributes(XString& p_schema,XString& p_synon
   p_schema.MakeLower();
   p_synonym.MakeLower();
 
-  XString sql = "SELECT db_name()  AS synonym_catalog\n"
-                "      ,s.name     AS synonym_schema\n"
-                "      ,y.name     AS synonym_name\n"
-                "      ,y.base_object_name AS definition\n"
-                "  FROM sys.synonyms y\n"
-                "       INNER JOIN sys.schemas s ON s.schema_id = y.schema_id\n"
-                " WHERE y.type = 'SN'\n"
-                "   AND s.name = ?\n";
+  XString sql = _T("SELECT db_name()  AS synonym_catalog\n")
+                _T("      ,s.name     AS synonym_schema\n")
+                _T("      ,y.name     AS synonym_name\n")
+                _T("      ,y.base_object_name AS definition\n")
+                _T("  FROM sys.synonyms y\n")
+                _T("       INNER JOIN sys.schemas s ON s.schema_id = y.schema_id\n")
+                _T(" WHERE y.type = 'SN'\n")
+                _T("   AND s.name = ?\n");
   if(!p_synonym.IsEmpty())
   {
-    sql += "   AND y.name ";
-    sql += p_synonym.Find('%') >= 0 ? "LIKE ?\n" : "= ?\n";
+    sql += _T("   AND y.name ");
+    sql += p_synonym.Find('%') >= 0 ? _T("LIKE ?\n") : _T("= ?\n");
   }
   return sql;
 }
@@ -2430,7 +2470,7 @@ SQLInfoSQLServer::GetCATALOGSynonymCreate(XString& p_schema,XString& p_synonym,X
   p_schema.MakeLower();
   p_synonym.MakeLower();
 
-  XString sql = "CREATE SYNONYM [" + p_schema + "].[" + p_synonym + "] FOR " + p_forObject;
+  XString sql = _T("CREATE SYNONYM [") + p_schema + _T("].[") + p_synonym + _T("] FOR ") + p_forObject;
   return sql;
 }
 
@@ -2440,7 +2480,7 @@ SQLInfoSQLServer::GetCATALOGSynonymDrop(XString& p_schema,XString& p_synonym,boo
   p_schema.MakeLower();
   p_synonym.MakeLower();
 
-  XString sql = "DROP SYNONYM [" + p_schema + "].[" + p_synonym + "]";
+  XString sql = _T("DROP SYNONYM [") + p_schema + _T("].[") + p_synonym + _T("]");
   return sql;
 }
 
@@ -2478,15 +2518,15 @@ SQLInfoSQLServer::GetPSMProcedureExists(XString p_schema, XString p_procedure) c
 {
   XString query =
 
-    "SELECT COUNT(*)\n"
-    "  FROM sys.objects o\n"
-    "       INNER JOIN sys.schemas s ON o.schema_id = s.schema_id\n"
-    " WHERE (type_desc LIKE '%PROCEDURE%' OR type_desc LIKE '%FUNCTION%')\n"
-    "   AND o.name = '" + p_procedure + "'";
+    _T("SELECT COUNT(*)\n")
+    _T("  FROM sys.objects o\n")
+    _T("       INNER JOIN sys.schemas s ON o.schema_id = s.schema_id\n")
+    _T(" WHERE (type_desc LIKE '%PROCEDURE%' OR type_desc LIKE '%FUNCTION%')\n")
+    _T("   AND o.name = '") + p_procedure + _T("'");
 
   if(!p_schema.IsEmpty())
   {
-    query += "\n   AND s.name = '" + p_schema + "'";
+    query += _T("\n   AND s.name = '") + p_schema + _T("'");
   }
   return query;
 }
@@ -2495,21 +2535,21 @@ XString
 SQLInfoSQLServer::GetPSMProcedureList(XString& p_schema) const
 {
   XString query =
-    "SELECT db_name() as catalog_name\n"
-    "      ,s.name    as schema_name\n"
-    "      ,o.name    as procedure_name\n"
-    "      ,CASE o.type\n"
-    "            WHEN 'P' THEN 1\n"
-    "            ELSE 2\n"
-    "       END       as procedure_type\n"
-    "  FROM sys.objects o\n"
-    "       INNER JOIN sys.schemas s ON o.schema_id = s.schema_id\n"
-    " WHERE type IN ('P','FN')\n";
+    _T("SELECT db_name() as catalog_name\n")
+    _T("      ,s.name    as schema_name\n")
+    _T("      ,o.name    as procedure_name\n")
+    _T("      ,CASE o.type\n")
+    _T("            WHEN 'P' THEN 1\n")
+    _T("            ELSE 2\n")
+    _T("       END       as procedure_type\n")
+    _T("  FROM sys.objects o\n")
+    _T("       INNER JOIN sys.schemas s ON o.schema_id = s.schema_id\n")
+    _T(" WHERE type IN ('P','FN')\n");
   if(!p_schema.IsEmpty())
   {
-    query += "   AND s.name = ?\n";
+    query += _T("   AND s.name = ?\n");
   }
-  query += " ORDER BY 1,2,3";
+  query += _T(" ORDER BY 1,2,3");
   return query;
 }
 
@@ -2517,43 +2557,43 @@ XString
 SQLInfoSQLServer::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure) const
 {
   XString sql =
-    "SELECT db_name() as catalog_name\n"
-    "      ,s.name    as schema_name\n"
-    "      ,o.name    as procedure_name\n"
-    "      ,(SELECT Count(*)\n"
-    "          FROM sys.parameters p1\n"
-    "         WHERE p1.object_id = o.object_id\n"
-    "           AND p1.parameter_id > 0\n"
-    "           AND p1.is_output = 0) AS input_parameters\n"
-    "      ,(SELECT Count(*)\n"
-    "          FROM sys.parameters p2\n"
-    "         WHERE p2.object_id = o.object_id\n"
-    "           AND p2.parameter_id > 0\n"
-    "           AND p2.is_output = 1)  AS output_parameters\n"
-    "      ,0    as result_sets\n"
-    "      ,NULL AS remarks\n"
-    "      ,CASE type\n"
-    "            WHEN 'P'  THEN 1\n"
-    "            WHEN 'FN' THEN 2\n"
-    "                      ELSE 3\n"
-    "       END AS procedure_type\n"
-    "      ,m.definition AS source\n"
-    "  FROM sys.objects o\n"
-    "       INNER JOIN sys.schemas     s ON o.schema_id = s.schema_id\n"
-    "       INNER JOIN sys.sql_modules m ON m.object_id = o.object_id\n"
-    " WHERE o.type IN ('P','FN')\n";
+    _T("SELECT db_name() as catalog_name\n")
+    _T("      ,s.name    as schema_name\n")
+    _T("      ,o.name    as procedure_name\n")
+    _T("      ,(SELECT Count(*)\n")
+    _T("          FROM sys.parameters p1\n")
+    _T("         WHERE p1.object_id = o.object_id\n")
+    _T("           AND p1.parameter_id > 0\n")
+    _T("           AND p1.is_output = 0) AS input_parameters\n")
+    _T("      ,(SELECT Count(*)\n")
+    _T("          FROM sys.parameters p2\n")
+    _T("         WHERE p2.object_id = o.object_id\n")
+    _T("           AND p2.parameter_id > 0\n")
+    _T("           AND p2.is_output = 1)  AS output_parameters\n")
+    _T("      ,0    as result_sets\n")
+    _T("      ,NULL AS remarks\n")
+    _T("      ,CASE type\n")
+    _T("            WHEN 'P'  THEN 1\n")
+    _T("            WHEN 'FN' THEN 2\n")
+    _T("                      ELSE 3\n")
+    _T("       END AS procedure_type\n")
+    _T("      ,m.definition AS source\n")
+    _T("  FROM sys.objects o\n")
+    _T("       INNER JOIN sys.schemas     s ON o.schema_id = s.schema_id\n")
+    _T("       INNER JOIN sys.sql_modules m ON m.object_id = o.object_id\n")
+    _T(" WHERE o.type IN ('P','FN')\n");
 
   if(!p_schema.IsEmpty())
   {
-    sql += "   AND s.name = ?\n";
+    sql += _T("   AND s.name = ?\n");
   }
   if(!p_procedure.IsEmpty())
   {
-    sql += "   AND o.name ";
-    sql += p_procedure.Find('%') >= 0 ? "LIKE" : "=";
-    sql += " ?\n";
+    sql += _T("   AND o.name ");
+    sql += p_procedure.Find('%') >= 0 ? _T("LIKE") : _T("=");
+    sql += _T(" ?\n");
   }
-  sql += "ORDER BY 1,2,3";
+  sql += _T("ORDER BY 1,2,3");
 
   return sql;
 }
@@ -2562,17 +2602,17 @@ XString
 SQLInfoSQLServer::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure) const
 {
   XString query =
-    "SELECT s.name as source_schema\n"
-    "      ,o.name as source_procedure\n"
-    "      ,CAST(m.definition AS VARCHAR(max)) as source_code\n"
-    "  FROM sys.sql_modules m\n"
-    "       INNER JOIN sys.objects o  ON m.object_id = o.object_id\n"
-    "       INNER JOIN sys.schemas s  ON o.schema_id = s.schema_id\n"
-    "WHERE o.name = '" + p_procedure + "'";
+    _T("SELECT s.name as source_schema\n")
+    _T("      ,o.name as source_procedure\n")
+    _T("      ,CAST(m.definition AS VARCHAR(max)) as source_code\n")
+    _T("  FROM sys.sql_modules m\n")
+    _T("       INNER JOIN sys.objects o  ON m.object_id = o.object_id\n")
+    _T("       INNER JOIN sys.schemas s  ON o.schema_id = s.schema_id\n")
+    _T("WHERE o.name = '") + p_procedure + _T("'");
 
   if(!p_schema.IsEmpty())
   {
-    query += "\n   AND s.name = '" + p_schema + "'";
+    query += _T("\n   AND s.name = '") + p_schema + _T("'");
   }
   return query;
 }
@@ -2580,7 +2620,7 @@ SQLInfoSQLServer::GetPSMProcedureSourcecode(XString p_schema, XString p_procedur
 XString
 SQLInfoSQLServer::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
 {
-  return "";
+  return _T("");
 }
 
 XString
@@ -2588,8 +2628,8 @@ SQLInfoSQLServer::GetPSMProcedureDrop(XString p_schema,XString p_procedure,bool 
 {
   p_schema.MakeLower();
   p_procedure.MakeLower();
-  XString object = p_function ? "FUNCTION" : "PROCEDURE";
-  XString sql = "DROP " + object + " IF EXISTS [" + p_schema + "].[" + p_procedure + "]";
+  XString object = p_function ? _T("FUNCTION") : _T("PROCEDURE");
+  XString sql = _T("DROP ") + object + _T(" IF EXISTS [") + p_schema + _T("].[") + p_procedure + _T("]");
   return sql;
 }
 
@@ -2597,39 +2637,39 @@ XString
 SQLInfoSQLServer::GetPSMProcedureErrors(XString p_schema,XString p_procedure) const
 {
   // SQL-Server does not support procedure errors
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoSQLServer::GetPSMProcedurePrivilege(XString& p_schema,XString& p_procedure) const
 {
-  CString sql = "SELECT db_name() AS table_catalog\n"
-                "      ,s.name    AS table_schema\n"
-                "      ,o.name    AS table_name\n"
-                "      ,g.name    AS grantor\n"
-                "      ,u.name    AS grantee\n"
-                "      ,p.permission_name AS privilege\n"
-                "      ,CASE state_desc\n"
-                "            WHEN 'GRANT' THEN 'NO'\n"
-                "            WHEN 'GRANT_WITH_GRANT_OPTION' THEN 'YES'\n"
-                "            ELSE 'NO'\n"
-                "       END AS grantable\n"
-                "  FROM sys.database_permissions p\n"
-                "       inner join sys.objects o ON o.object_id = p.major_id\n"
-                "       inner join sys.schemas s ON s.schema_id = o.schema_id\n"
-                "       inner join sys.database_principals u ON u.principal_id = p.grantee_principal_id\n"
-                "       inner join sys.database_principals g ON g.principal_id = p.grantor_principal_id\n"
-                " WHERE o.type IN ('P','FN')\n";
+  CString sql = _T("SELECT db_name() AS table_catalog\n")
+                _T("      ,s.name    AS table_schema\n")
+                _T("      ,o.name    AS table_name\n")
+                _T("      ,g.name    AS grantor\n")
+                _T("      ,u.name    AS grantee\n")
+                _T("      ,p.permission_name AS privilege\n")
+                _T("      ,CASE state_desc\n")
+                _T("            WHEN 'GRANT' THEN 'NO'\n")
+                _T("            WHEN 'GRANT_WITH_GRANT_OPTION' THEN 'YES'\n")
+                _T("            ELSE 'NO'\n")
+                _T("       END AS grantable\n")
+                _T("  FROM sys.database_permissions p\n")
+                _T("       inner join sys.objects o ON o.object_id = p.major_id\n")
+                _T("       inner join sys.schemas s ON s.schema_id = o.schema_id\n")
+                _T("       inner join sys.database_principals u ON u.principal_id = p.grantee_principal_id\n")
+                _T("       inner join sys.database_principals g ON g.principal_id = p.grantor_principal_id\n")
+                _T(" WHERE o.type IN ('P','FN')\n");
   // Add the filter
   if(!p_schema.IsEmpty())
   {
-    sql += "   AND s.name = '" + p_schema + "'\n";
+    sql += _T("   AND s.name = '") + p_schema + _T("'\n");
   }
   if(!p_procedure.IsEmpty())
   {
-    sql += "   AND o.name = '" + p_procedure + "'\n";
+    sql += _T("   AND o.name = '") + p_procedure + _T("'\n");
   }
-  sql += " ORDER BY 1,2,3,4,5";
+  sql += _T(" ORDER BY 1,2,3,4,5");
   return sql;
 }
 
@@ -2638,48 +2678,48 @@ XString
 SQLInfoSQLServer::GetPSMProcedureParameters(XString& p_schema,XString& p_procedure) const
 {
   XString query = 
-    "SELECT specific_catalog AS procedure_cat\n"
-    "      ,specific_schema  AS procedure_schem\n"
-    "      ,specific_name    AS procedure_name\n"
-    "      ,coalesce(parameter_name,'RETURNS')  AS column_name\n"
-    "      ,CASE parameter_mode\n"
-    "            WHEN 'IN'    THEN 1\n"
-    "            WHEN 'INOUT' THEN 2\n"
-    "            WHEN 'OUT'   THEN 3\n"
-    "            ELSE 4\n"
-    "       END AS column_type\n"
-    "      ,CASE data_type\n"
-    "            WHEN 'numeric'   THEN 2\n"
-    "            WHEN 'varchar'   THEN 1\n"
-    "            WHEN 'datetime'  THEN 11\n"
-    "            WHEN 'datetime2' THEN 11\n"
-    "            WHEN 'int'       THEN 4\n"
-    "       END AS data_type\n"
-    "      ,data_type AS type_name\n"
-    "      ,character_maximum_length AS column_size\n"
-    "      ,CASE data_type\n"
-    "            WHEN 'numeric'   THEN 36\n"
-    "            WHEN 'varchar'   THEN character_maximum_length\n"
-    "            WHEN 'datetime'  THEN 20\n"
-    "            WHEN 'datetime2' THEN 20\n"
-    "            WHEN 'int'       THEN 8\n"
-    "       END AS buffer_length\n"
-    "      ,numeric_scale           AS decimal_digits\n"
-    "      ,numeric_precision_radix AS num_prec_radix\n"
-    "      ,3  AS nullable\n"
-    "      ,null AS remarks\n"
-    "      ,null AS column_default\n"
-    "      ,null as sql_data_type\n"
-    "      ,null AS sql_datetime_sub\n"
-    "      ,character_octet_length AS char_octet_length\n"
-    "      ,ordinal_position\n"
-    "      ,'YES' AS is_nullable \n"
-    "  FROM information_schema.parameters\n"
-    " WHERE specific_name = '" + p_procedure + "'";
+    _T("SELECT specific_catalog AS procedure_cat\n")
+    _T("      ,specific_schema  AS procedure_schem\n")
+    _T("      ,specific_name    AS procedure_name\n")
+    _T("      ,coalesce(parameter_name,'RETURNS')  AS column_name\n")
+    _T("      ,CASE parameter_mode\n")
+    _T("            WHEN 'IN'    THEN 1\n")
+    _T("            WHEN 'INOUT' THEN 2\n")
+    _T("            WHEN 'OUT'   THEN 3\n")
+    _T("            ELSE 4\n")
+    _T("       END AS column_type\n")
+    _T("      ,CASE data_type\n")
+    _T("            WHEN 'numeric'   THEN 2\n")
+    _T("            WHEN 'varchar'   THEN 1\n")
+    _T("            WHEN 'datetime'  THEN 11\n")
+    _T("            WHEN 'datetime2' THEN 11\n")
+    _T("            WHEN 'int'       THEN 4\n")
+    _T("       END AS data_type\n")
+    _T("      ,data_type AS type_name\n")
+    _T("      ,character_maximum_length AS column_size\n")
+    _T("      ,CASE data_type\n")
+    _T("            WHEN 'numeric'   THEN 36\n")
+    _T("            WHEN 'varchar'   THEN character_maximum_length\n")
+    _T("            WHEN 'datetime'  THEN 20\n")
+    _T("            WHEN 'datetime2' THEN 20\n")
+    _T("            WHEN 'int'       THEN 8\n")
+    _T("       END AS buffer_length\n")
+    _T("      ,numeric_scale           AS decimal_digits\n")
+    _T("      ,numeric_precision_radix AS num_prec_radix\n")
+    _T("      ,3  AS nullable\n")
+    _T("      ,null AS remarks\n")
+    _T("      ,null AS column_default\n")
+    _T("      ,null as sql_data_type\n")
+    _T("      ,null AS sql_datetime_sub\n")
+    _T("      ,character_octet_length AS char_octet_length\n")
+    _T("      ,ordinal_position\n")
+    _T("      ,'YES' AS is_nullable \n")
+    _T("  FROM information_schema.parameters\n")
+    _T(" WHERE specific_name = '") + p_procedure + _T("'");
 
   if(!p_schema.IsEmpty())
   {
-    query += "\n   AND specific_schema = '" + p_schema + "'";
+    query += _T("\n   AND specific_schema = '") + p_schema + _T("'");
   }
   return query;
 }
@@ -2701,7 +2741,7 @@ SQLInfoSQLServer::GetPSMDeclaration(bool    /*p_first*/
                                    ,XString p_asColumn  /*= ""*/) const
 {
   XString line;
-  line.Format("DECLARE @%s AS ",p_variable.GetString());
+  line.Format(_T("DECLARE @%s AS "),p_variable.GetString());
 
   if(p_datatype)
   {
@@ -2711,41 +2751,41 @@ SQLInfoSQLServer::GetPSMDeclaration(bool    /*p_first*/
 
     if(p_precision > 0)
     {
-      line.AppendFormat("(%d",p_precision);
+      line.AppendFormat(_T("(%d"),p_precision);
       if(p_scale > 0)
       {
-        line.AppendFormat("%d",p_scale);
+        line.AppendFormat(_T("%d"),p_scale);
       }
-      line += ")";
+      line += _T(")");
     }
 
     if(!p_default.IsEmpty())
     {
-      line += " = " + p_default;
+      line += _T(" = ") + p_default;
     }
   }
-  line += ";\n";
+  line += _T(";\n");
   return line;
 }
 
 XString
 SQLInfoSQLServer::GetPSMAssignment(XString p_variable,XString p_statement /*=""*/) const
 {
-  if(p_statement.Find("EXECUTE") == -1)
+  if(p_statement.Find(_T("EXECUTE")) == -1)
   {
-    XString line = "SET " + p_variable + "=";
+    XString line = _T("SET ") + p_variable + _T("=");
     if(!p_statement.IsEmpty())
     {
       line += p_statement;
-      line += ";";
+      line += _T(";");
     }
     return line;
   }
   else
   {
-    p_statement.Replace("(EXECUTE","EXECUTE");
-    p_statement.Replace("<@@@var@@@>",p_variable);
-    p_statement.Replace(";)",";");
+    p_statement.Replace(_T("(EXECUTE"),_T("EXECUTE"));
+    p_statement.Replace(_T("<@@@var@@@>"),p_variable);
+    p_statement.Replace(_T(";)"),_T(";"));
     return p_statement;
   }
 }
@@ -2753,66 +2793,66 @@ SQLInfoSQLServer::GetPSMAssignment(XString p_variable,XString p_statement /*=""*
 XString
 SQLInfoSQLServer::GetPSMIF(XString p_condition) const
 {
-  XString line("IF (");
+  XString line(_T("IF ("));
   line += p_condition;
-  line += ") THEN\n"
-          "  BEGIN\n";
+  line += _T(") THEN\n")
+          _T("  BEGIN\n");
   return line;
 }
 
 XString
 SQLInfoSQLServer::GetPSMIFElse() const
 {
-  return "  END\n"
-         "ELSE\n"
-         "  BEGIN\n";
+  return _T("  END\n")
+         _T("ELSE\n")
+         _T("  BEGIN\n");
 }
 
 XString
 SQLInfoSQLServer::GetPSMIFEnd() const
 {
-  return "  END;\n";
+  return _T("  END;\n");
 }
 
 XString
 SQLInfoSQLServer::GetPSMWhile(XString p_condition) const
 {
-  return "WHILE (" + p_condition + ")\n";
+  return _T("WHILE (") + p_condition + _T(")\n");
 }
 
 XString
 SQLInfoSQLServer::GetPSMWhileEnd() const
 {
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoSQLServer::GetPSMLOOP() const
 {
-  return "WHILE true\n";
+  return _T("WHILE true\n");
 }
 
 XString
 SQLInfoSQLServer::GetPSMLOOPEnd() const
 {
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoSQLServer::GetPSMBREAK() const
 {
-  return "BREAK;\n";
+  return _T("BREAK;\n");
 }
 
 XString
 SQLInfoSQLServer::GetPSMRETURN(XString p_statement /*= ""*/) const
 {
-  XString line("RETURN");
+  XString line(_T("RETURN"));
   if(!p_statement.IsEmpty())
   {
-    line += " " + p_statement;
+    line += _T(" ") + p_statement;
   }
-  line += ";\n";
+  line += _T(";\n");
   return line;
 }
 
@@ -2820,25 +2860,25 @@ XString
 SQLInfoSQLServer::GetPSMExecute(XString p_procedure,MParameterMap& p_parameters) const
 {
   XString line;
-  line.Format("EXECUTE %s ",p_procedure.GetString());
+  line.Format(_T("EXECUTE %s "),p_procedure.GetString());
   bool cont = false;
 
   for(const auto& param : p_parameters)
   {
     // Continuing
-    if(cont) line += ",";
+    if(cont) line += _T(",");
     cont = true;
 
-    line += "@";
+    line += _T("@");
     line += param.m_parameter;
-    line += " ";
+    line += _T(" ");
     switch(param.m_columnType)
     {
       case 0: break;
-      case SQL_PARAM_OUTPUT:       line += "OUTPUT"; break;
-      case SQL_PARAM_INPUT_OUTPUT: line += "INOUT";  break;
+      case SQL_PARAM_OUTPUT:       line += _T("OUTPUT"); break;
+      case SQL_PARAM_INPUT_OUTPUT: line += _T("INOUT");  break;
     }
-    line += ";\n";
+    line += _T(";\n");
   }
   return line;
 }
@@ -2847,13 +2887,13 @@ SQLInfoSQLServer::GetPSMExecute(XString p_procedure,MParameterMap& p_parameters)
 XString
 SQLInfoSQLServer::GetPSMCursorDeclaration(XString p_cursorname,XString p_select) const
 {
-  return "CURSOR " + p_cursorname + " IS " + p_select + ";";
+  return _T("CURSOR ") + p_cursorname + _T(" IS ") + p_select + _T(";");
 }
 
 XString
 SQLInfoSQLServer::GetPSMCursorFetch(XString p_cursorname,std::vector<XString>& p_columnnames,std::vector<XString>& p_variablenames) const
 {
-  XString query = "FETCH " + p_cursorname + " INTO ";
+  XString query = _T("FETCH ") + p_cursorname + _T(" INTO ");
 
   std::vector<XString>::iterator cNames;
   std::vector<XString>::iterator vNames;
@@ -2863,10 +2903,10 @@ SQLInfoSQLServer::GetPSMCursorFetch(XString p_cursorname,std::vector<XString>& p
       cNames != p_columnnames.end() && vNames != p_variablenames.end();
       ++cNames,++vNames)
   {
-    query += (moreThenOne ? "," : "") + *vNames;
+    query += (moreThenOne ? _T(",") : _T("")) + *vNames;
     moreThenOne = true;
   }
-  query += ";";
+  query += _T(";");
   return query;
 }
 
@@ -2877,20 +2917,20 @@ XString
 SQLInfoSQLServer::GetPSMExceptionCatchNoData() const
 {
   // SQL SERVER has BEGIN TRY .... END TRY -> BEGIN CATCH ... END CATCH
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoSQLServer::GetPSMExceptionCatch(XString p_sqlState) const
 {
   // SQL SERVER has BEGIN TRY .... END TRY -> BEGIN CATCH ... END CATCH
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoSQLServer::GetPSMExceptionRaise(XString p_sqlState) const
 {
-  return "RAISE " + p_sqlState + ";\n";
+  return _T("RAISE ") + p_sqlState + _T(";\n");
 }
 
 
@@ -2911,47 +2951,47 @@ SQLInfoSQLServer::GetPSMExceptionRaise(XString p_sqlState) const
 XString
 SQLInfoSQLServer::GetSESSIONMyself() const
 {
-  XString query = "SELECT rtrim(hostprocess)\n"
-                  "      ,user\n"
-                  "      ,rtrim(hostname)\n"    
-                  "      ,getdata()\n"  // moment
-                  "      ,''\n"         // remote address
-                  "      ,''\n"         // remote process name
-                  "      ,''\n"         // remote process ID
-                  "  FROM master.dbo.sysprocesses\n"
-                  " WHERE hostprocess = host_id()\n"
-                  "   AND hostname    = host_name()";
+  XString query = _T("SELECT rtrim(hostprocess)\n")
+                  _T("      ,user\n")
+                  _T("      ,rtrim(hostname)\n")    
+                  _T("      ,getdata()\n")  // moment
+                  _T("      ,''\n")         // remote address
+                  _T("      ,''\n")         // remote process name
+                  _T("      ,''\n")         // remote process ID
+                  _T("  FROM master.dbo.sysprocesses\n")
+                  _T(" WHERE hostprocess = host_id()\n")
+                  _T("   AND hostname    = host_name()");
   return query;
 }
 
 XString
 SQLInfoSQLServer::GetSESSIONExists(XString p_sessionID) const
 {
-  return "SELECT COUNT(*)\n"
-         "  FROM master.dbo.sysprocesses\n"
-         " WHERE rtrim(hostprocess) = " + p_sessionID;
+  return _T("SELECT COUNT(*)\n")
+         _T("  FROM master.dbo.sysprocesses\n")
+         _T(" WHERE rtrim(hostprocess) = ") + p_sessionID;
 }
 
 XString
 SQLInfoSQLServer::GetSESSIONList() const
 {
-  return GetSESSIONAttributes("");
+  return GetSESSIONAttributes(_T(""));
 }
 
 XString
 SQLInfoSQLServer::GetSESSIONAttributes(XString p_sessionID) const
 {
-  XString sql = "SELECT rtrim(hostprocess)\n"
-                "      ,user\n"
-                "      ,rtrim(hostname)\n"    
-                "      ,getdata()\n"  // moment
-                "      ,''\n"         // remote address
-                "      ,''\n"         // remote process name
-                "      ,''\n"         // remote process ID
-                "  FROM master.dbo.sysprocesses\n";
+  XString sql = _T("SELECT rtrim(hostprocess)\n")
+                _T("      ,user\n")
+                _T("      ,rtrim(hostname)\n")    
+                _T("      ,getdata()\n")  // moment
+                _T("      ,''\n")         // remote address
+                _T("      ,''\n")         // remote process name
+                _T("      ,''\n")         // remote process ID
+                _T("  FROM master.dbo.sysprocesses\n");
   if(!p_sessionID.IsEmpty())
   {
-    sql += "\n WHERE rtrim(hostprocess) = " + p_sessionID;
+    sql += _T("\n WHERE rtrim(hostprocess) = ") + p_sessionID;
   }
   return sql;
 }
@@ -2963,14 +3003,14 @@ XString
 SQLInfoSQLServer::GetSESSIONConstraintsDeferred() const
 {
   // SQL-Server cannot defer constraints
-  return "";
+  return _T("");
 }
 
 XString
 SQLInfoSQLServer::GetSESSIONConstraintsImmediate() const
 {
   // SQL-Server constraints are always active
-  return "";
+  return _T("");
 }
 
 //////////////////////////////////////////////////////////////////////////

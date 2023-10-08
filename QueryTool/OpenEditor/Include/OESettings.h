@@ -563,16 +563,16 @@ namespace OpenEditor
         SettingsManager& operator = (const SettingsManager&);
 
         // create, destroy a class (for GUI)
-        void CreateClass (const char* name);
-        void DestroyClass (const char* name);
+        void CreateClass (LPCTSTR name);
+        void DestroyClass (LPCTSTR name);
 
         // global settings
         GlobalSettings&  GetGlobalSettings ()               { return m_globalSettings; }
         const GlobalSettings&  GetGlobalSettings () const   { return m_globalSettings; }
 
         // find methods
-        const ClassSettings& FindByExt (const char*, bool _default) const;
-        const ClassSettings& FindByName (const char*) const;
+        const ClassSettings& FindByExt (LPCTSTR, bool _default) const;
+        const ClassSettings& FindByName (LPCTSTR) const;
         const ClassSettings& GetDefaults () const;
 
         // enumeration

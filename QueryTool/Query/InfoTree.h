@@ -26,6 +26,7 @@
 #include "SQLInfoDB.h"
 
 using namespace SQLComponents;
+class WinFile;
 
 class InfoTree : public StyleTreeCtrl
 {
@@ -43,10 +44,10 @@ public:
 
 private:
   CString   InfoNumberToString(SQLINTEGER num);
-  HTREEITEM DisplayBitfield(HTREEITEM   item
-                           ,SQLUINTEGER var
-                           ,SQLUINTEGER macro
-                           ,char*       text);
+  HTREEITEM DisplayBitfield(HTREEITEM    item
+                           ,SQLUINTEGER  var
+                           ,SQLUINTEGER  macro
+                           ,LPTSTR       text);
   // Helper for displaying SQLGetInfo information
   void DisplayConversion(HTREEITEM  item
                         ,CString    type
@@ -62,7 +63,7 @@ private:
   // Printing the DBInfo tree to a report
   void ReportCapabilities(HTREEITEM  p_branch
                          ,int        p_level
-                         ,FILE*      p_file);
+                         ,WinFile&   p_file);
 
   SQLDatabase* m_database;
   SQLInfoDB*   m_info;

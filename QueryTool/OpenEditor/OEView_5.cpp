@@ -43,18 +43,18 @@ using namespace OpenEditor;
     public:
         enum EPart { epLeft = 0, epCenter = 1, epRight = 2 };
 
-        void SetShape (const char*);
-        void SetSubstVariables (int pages, const char* file);
+        void SetShape (LPCTSTR);
+        void SetSubstVariables (int pages, LPCTSTR file);
         void GetHeaderPart (CString& dest, EPart part, int page, int width);
         bool IsEmpty () const;
 
     private:
         void substitute (const CString& shape, CString& dest, bool& comleted);
 
-        typedef std::map<char,CString>::value_type MapValueType;
-        typedef std::map<char,CString>::const_iterator ConstIterator;
+        typedef std::map<TCHAR,CString>::value_type MapValueType;
+        typedef std::map<TCHAR,CString>::const_iterator ConstIterator;
 
-        map<char,CString> m_substMap;
+        map<TCHAR,CString> m_substMap;
 
         struct Part
         {
@@ -177,7 +177,7 @@ void COEditorView::OnBeginPrinting (CDC* pDC, CPrintInfo* pInfo)
 	pDC->DPtoLP(&pInfo->m_rectDraw);
 
   const VisualAttributesSet& set = GetSettings().GetVisualAttributesSet();
-  const VisualAttribute& textAttr = set.FindByName("Text");
+  const VisualAttribute& textAttr = set.FindByName(_T("Text"));
 
   PrintContext& pc = *new PrintContext;
   pInfo->m_lpUserData = &pc;
@@ -205,7 +205,7 @@ void COEditorView::OnBeginPrinting (CDC* pDC, CPrintInfo* pInfo)
   logfont.lfClipPrecision  = CLIP_DEFAULT_PRECIS;
   logfont.lfQuality        = DEFAULT_QUALITY;
   logfont.lfPitchAndFamily = FIXED_PITCH;
-  strncpy_s(logfont.lfFaceName, textAttr.m_FontName.GetString(), LF_FACESIZE-1);
+  _tcsncpy_s(logfont.lfFaceName, textAttr.m_FontName.GetString(), LF_FACESIZE-1);
 
   for (int i = 0; i < 8; i++)
   {
@@ -367,7 +367,7 @@ COEditorView::OnPrint (CDC* pDC, CPrintInfo* pInfo)
       pageLine < pc.m_Rulers[1].m_Count && pc.m_cacheLine < lineCount;
       pageLine++, pc.m_cacheLine++)
   {
-    const char* currentLine; 
+    LPCTSTR currentLine; 
     int currentLineLength;
     GetLine(pc.m_cacheLine, currentLine, currentLineLength);
     tokenizer.StartScan(currentLine, currentLineLength);
@@ -381,7 +381,7 @@ COEditorView::OnPrint (CDC* pDC, CPrintInfo* pInfo)
     while (!tokenizer.Eol())
     {
       int pos, len;
-      const char* str;
+      LPCTSTR str;
 
       tokenizer.GetCurentWord(str, pos, len);
 
@@ -479,7 +479,7 @@ COEditorView::MoveToPage (CPrintInfo* pInfo, int* pMaxPage)
     while (pc.m_cacheLine < lineCount 
     && pc.m_cachePage < static_cast<int>(pInfo->m_nCurPage))
     {
-        const char* currentLine; 
+        LPCTSTR currentLine; 
         int currentLineLength;
         GetLine(pc.m_cacheLine, currentLine, currentLineLength);
         tokenizer.StartScan(currentLine, currentLineLength);
@@ -487,7 +487,7 @@ COEditorView::MoveToPage (CPrintInfo* pInfo, int* pMaxPage)
         while (!tokenizer.Eol())
         {
             int pos, len;
-            const char* str;
+            LPCTSTR str;
 
             tokenizer.GetCurentWord(str, pos, len);
 
@@ -599,10 +599,10 @@ COEditorView::GetMargins (CRect& rc) const
 }
 
 void 
-PrintHeader::SetShape (const char* shape)
+PrintHeader::SetShape (LPCTSTR shape)
 {
   // split an original shape to three part (left, center and right)
-  const char* ptr = shape;
+  LPCTSTR ptr = shape;
 
   for (int i = 0; *ptr && i < 3; ptr++)
   {
@@ -618,12 +618,12 @@ PrintHeader::SetShape (const char* shape)
 }
 
 void 
-PrintHeader::SetSubstVariables (int pages, const char* file)
+PrintHeader::SetSubstVariables (int pages, LPCTSTR file)
 {
-  char buffer[80];
+  TCHAR buffer[80];
   // the file name
   m_substMap['F'] = file;
-  _itoa_s(pages, buffer,80, 10);
+  _itot_s(pages, buffer,80, 10);
   // the number of pages
   m_substMap['P'] = buffer;
   // local format time
@@ -678,8 +678,8 @@ void PrintHeader::GetHeaderPart (CString& dest, EPart part, int page, int width)
         if (partWidth > 0)
         {
             bool dummy;
-            char pageStr[40];
-            _itoa_s(page, pageStr,40, 10);
+            TCHAR pageStr[40];
+            _itot_s(page, pageStr,40, 10);
             m_substMap['p'] = pageStr;
 
             // if non complete then substitute a page number
@@ -705,7 +705,7 @@ void PrintHeader::substitute (const CString& shape, CString& dest, bool& comlete
     CString _dest;
     bool _comleted = true;
 
-    for (const char* ptr = shape.GetString(); *ptr; ptr++)
+    for (LPCTSTR ptr = shape.GetString(); *ptr; ptr++)
     {
         if (*ptr == '&')
         {

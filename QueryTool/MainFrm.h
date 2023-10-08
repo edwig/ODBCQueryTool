@@ -43,8 +43,8 @@ public:
 
 // Attributes
 public:
-  static LPCSTR m_cszClassName;
-  static UINT   m_nOpenFileMsg;
+  static LPCTSTR m_cszClassName;
+  static UINT    m_nOpenFileMsg;
 
   virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
   virtual BOOL LoadFrame(UINT nIDResource, DWORD dwDefaultStyle = WS_OVERLAPPEDWINDOW | FWS_ADDTOTITLE, CWnd* pParentWnd = nullptr, CCreateContext* pContext = nullptr);

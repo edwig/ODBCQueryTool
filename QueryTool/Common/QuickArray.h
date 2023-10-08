@@ -30,25 +30,25 @@ namespace Common
     class FakeArray
     {
     public:
-        void  realloc (size_t elemSize, size_t extra);
-        void  init    (size_t elemSize, size_t items);
-        void  reduce  (size_t elemSize, size_t items);
-        void  expand  (size_t elemSize, size_t items);
-        void  copy    (size_t elemSize, FakeArray *src);
-        char* insert  (size_t elemSize, size_t index = 0, size_t count = 1);
-        char* append  (size_t elemSize);
-        void  erase   (size_t elemSize, size_t index, size_t count = 1);
-        void  free    ();
-        void  append  (size_t elemSize, FakeArray *src);
-        void  swap    (size_t elemSize, size_t idest, size_t isrc);
-        void  construct (size_t elemSize, size_t capacity, size_t growBy);
-        void  extract (FakeArray* array);
+        void   realloc  (size_t elemSize, size_t extra);
+        void   init     (size_t elemSize, size_t items);
+        void   reduce   (size_t elemSize, size_t items);
+        void   expand   (size_t elemSize, size_t items);
+        void   copy     (size_t elemSize, FakeArray *src);
+        BYTE*  insert   (size_t elemSize, size_t index = 0, size_t count = 1);
+        BYTE*  append   (size_t elemSize);
+        void   erase    (size_t elemSize, size_t index, size_t count = 1);
+        void   free     ();
+        void   append   (size_t elemSize, FakeArray *src);
+        void   swap     (size_t elemSize, size_t idest, size_t isrc);
+        void   construct(size_t elemSize, size_t capacity, size_t growBy);
+        void   extract  (FakeArray* array);
         
         static FakeArray *castPtr (void *ptr) { return (FakeArray *)ptr; }
 
 
     private:
-        char*  m_data;
+        BYTE*  m_data;
         size_t m_size, m_capacity, m_growBy;
 
     private:
@@ -217,17 +217,17 @@ namespace Common
     template <class T>
     T& QuickArray<T>::append (const T& elem) 
     {
-        char* ptr = FakeArray::castPtr(this)->append(sizeof(T));
-        new ((T*)ptr)T(elem);
-        return *(T*)ptr;
+      BYTE* ptr = FakeArray::castPtr(this)->append(sizeof(T));
+      new ((T*)ptr)T(elem);
+      return *(T*)ptr;
     }
 
     template <class T>
     T& QuickArray<T>::append () 
     {
-        char* ptr = FakeArray::castPtr(this)->append(sizeof(T));
-        new ((T*)ptr)T();
-        return *(T*)ptr;
+      BYTE* ptr = FakeArray::castPtr(this)->append(sizeof(T));
+      new ((T*)ptr)T();
+      return *(T*)ptr;
     }
 
     template <class T> inline
@@ -245,23 +245,25 @@ namespace Common
     template <class T>
     T& QuickArray<T>::insert (const T& elem, size_t index) 
     {
-        char* ptr = FakeArray::castPtr(this)->insert(sizeof(T), index);
-        new ((T*)ptr)T(elem);
-        return *(T*)ptr;
+      BYTE* ptr = FakeArray::castPtr(this)->insert(sizeof(T), index);
+      new ((T*)ptr)T(elem);
+      return *(T*)ptr;
     }
    
     template <class T>
     void QuickArray<T>::insert (const QuickArray<T>& array, size_t index)
     {
-        FakeArray::castPtr(this)->insert(sizeof(T), index, array.size());
-        for (size_t i = 0; i < array.size(); i++)
-            new ((T*)&operator[](index + i))T(array[i]);
+      FakeArray::castPtr(this)->insert(sizeof(T), index, array.size());
+      for(size_t i = 0; i < array.size(); i++)
+      {
+        new ((T*) &operator[](index + i))T(array[i]);
+      }
     }
    
     template <class T> inline 
     void QuickArray<T>::swap (size_t idest, size_t isrc) 
     {
-        FakeArray::castPtr(this)->swap(sizeof(T), idest, isrc);
+      FakeArray::castPtr(this)->swap(sizeof(T), idest, isrc);
     }
 
     template <class T>

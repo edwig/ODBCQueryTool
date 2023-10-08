@@ -31,7 +31,7 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#define _CHECK_ALL_PTR_ _CHECK_AND_THROW_(m_pStorage, "Editor has not been initialized properly!")
+#define _CHECK_ALL_PTR_ _CHECK_AND_THROW_(m_pStorage, _T("Editor has not been initialized properly!"))
 
 namespace OpenEditor
 {
@@ -44,7 +44,7 @@ int EditContext::adjustPosByTab (int line, int column, bool next) const
     if (line < GetLineCount())
     {
         int len;
-        const char* ptr;
+        LPCTSTR ptr;
         GetLine(line, ptr, len);
         int col, i;
 
@@ -83,13 +83,13 @@ int EditContext::inx2pos (int line, int inx) const
     _CHECK_ALL_PTR_;
 
     int len;
-    const char* str;
+    LPCTSTR str;
     GetLine(line, str, len);
 
     return inx2pos(str, len, inx);
 }
 
-int EditContext::inx2pos (const char* ptr, int len, int inx) const
+int EditContext::inx2pos (LPCTSTR ptr, int len, int inx) const
 {
     _CHECK_ALL_PTR_;
 
@@ -124,7 +124,7 @@ int EditContext::pos2inx (int line, int pos, bool virt_spaces) const
     if (line < m_pStorage->GetLineCount())
     {
         int len;
-        const char* str;
+        LPCTSTR str;
         GetLine(line, str, len);
 
         return pos2inx(str, len, pos, virt_spaces);
@@ -136,7 +136,7 @@ int EditContext::pos2inx (int line, int pos, bool virt_spaces) const
     }
 }
 
-int EditContext::pos2inx (const char* ptr, int len, int _pos, bool virt_spaces) const
+int EditContext::pos2inx (LPCTSTR ptr, int len, int _pos, bool virt_spaces) const
 {
     _CHECK_ALL_PTR_;
 
@@ -198,7 +198,7 @@ void EditContext::line2buff (int line, int start, int end, CString& buff, bool f
     if (line < GetLineCount())
     {
         int len;
-        const char* str;
+        LPCTSTR str;
         GetLine(line, str, len);
 
         if (start < inx2pos(str, len, len))
@@ -219,35 +219,71 @@ void EditContext::line2buff (int line, int start, int end, CString& buff, bool f
     }
 }
 
-bool EditContext::getLine (std::istrstream& io, CString& buff, bool& with_CR)
+// bool EditContext::getLine (std::istrstream& io, CString& buff, bool& with_CR)
+// {
+//     TCHAR chr;
+//     bool ret_val = false;
+//     
+//     buff.Empty();
+//     with_CR = false;
+// 
+//     while (io.get(chr))
+//     {
+//         ret_val = true;
+// 
+//         switch (chr)
+//         {
+//         case '\r':
+//             io.get(chr);
+//             if (chr != '\n') 
+//                 io.putback(chr);
+//         case '\n':
+//             with_CR = true;
+//             break;
+//         }
+// 
+//         if (with_CR) break;
+// 
+//         buff += chr;
+//     }
+// 
+//     return ret_val;
+// }
+
+bool EditContext::getLine(CString& p_input,CString& p_buff,bool& p_withCR)
 {
-    char chr;
-    bool ret_val = false;
-    
-    buff.Empty();
-    with_CR = false;
+  TCHAR chr;
+  bool ret_val = false;
 
-    while (io.get(chr))
+  // Init
+  p_buff.Empty();
+  p_withCR = false;
+
+  while(!p_input.IsEmpty())
+  {
+    chr = p_input.GetAt(0);
+    ret_val = true;
+
+    switch(chr)
     {
-        ret_val = true;
-
-        switch (chr)
-        {
-        case '\r':
-            io.get(chr);
-            if (chr != '\n') 
-                io.putback(chr);
-        case '\n':
-            with_CR = true;
-            break;
-        }
-
-        if (with_CR) break;
-
-        buff += chr;
+      case _T('\r'): chr = p_input.GetAt(1);
+                     if(chr == _T('\n'))
+                     {
+                       p_input = p_input.Mid(1);
+                     }
+      case _T('\n'): p_withCR = true;
+                     break;
     }
-
-    return ret_val;
+    p_input = p_input.Mid(1);
+    if(p_withCR)
+    {
+      break;
+    }
+    p_buff += chr;
+  }
+  return ret_val;
 }
 
+
 };
+

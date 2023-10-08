@@ -219,9 +219,9 @@ StyleListBox::InsertString(int p_index,LPCTSTR p_string,COLORREF p_foreground,CO
 }
 
 int 
-StyleListBox::AppendString(LPCSTR p_string,COLORREF p_foreground,COLORREF p_background)
+StyleListBox::AppendString(LPCTSTR p_string,COLORREF p_foreground,COLORREF p_background)
 {
-  // Add string anyhow, so we can honour the LBS_SORT settings
+  // Add string anyhow, so we can honor the LBS_SORT settings
   int result = CListBox::InsertString(-1,p_string);
   if (result != LB_ERR)
   {
@@ -489,6 +489,8 @@ StyleListBox::SelectAll(BOOL p_select /*=TRUE*/)
 void 
 StyleListBox::Copy()
 {
+  USES_CONVERSION;
+
   // Get selection from the listbox
   int count = CListBox::GetSelCount();
   if(count <= 0)
@@ -504,7 +506,7 @@ StyleListBox::Copy()
   {
     if(result.GetLength())
     {
-      result += "\r\n";
+      result += _T("\r\n");
     }
     CString text;
     GetText(lines[index],text);
@@ -512,25 +514,9 @@ StyleListBox::Copy()
     result += text;
   }
 
-  // Put the text in a global GMEM_MOVABLE memory handle
-  size_t    size = (size_t)result.GetLength() + 1;
-  HGLOBAL memory = GlobalAlloc(GHND,size);
-  if(memory)
-  {
-    void* data = GlobalLock(memory);
-    if(data)
-    {
-      strncpy_s((char*)data,size,result.GetString(),size);
-    }
-    GlobalUnlock(memory);
+  // Put to clipboard (Unicode aware!)
+  StylePutStringToClipboard(result,GetSafeHwnd());
 
-    // Set the text on the clipboard
-    // and transfer ownership of the memory segment
-    OpenClipboard();
-    EmptyClipboard();
-    SetClipboardData(CF_TEXT,memory);
-    CloseClipboard();
-  }
   // Free lines array
   delete[] lines;
 }
@@ -564,45 +550,30 @@ StyleListBox::Paste()
     insert = GetCount();
   }
 
-  // Set the text on the clipboard
-  // and transfer ownership of the memory segment
-  OpenClipboard();
-  HANDLE memory = GetClipboardData(CF_TEXT);
-  if(memory)
-  {
-    // Getting clipboard text as a string
-    CString text;
-    void* data = GlobalLock(memory);
-    if(data)
-    {
-      text = (const char*)data;
-    }
-    // Insert into the listbox
-    while(text.GetLength())
-    {
-      int pos = text.FindOneOf("\r\n");
-      if (pos > 0)
-      {
-        CString part = text.Left(pos);
-        CListBox::InsertString(insert++, part);
-        text = text.Mid(pos + 1);
-        if (text.Left(1) == "\n")
-        {
-          text = text.Mid(1);
-        }
-      }
-      else
-      {
-        // One/Last line insert
-        CListBox::InsertString(insert, text);
-        text.Empty();
-      }
-    }
+  // Get text from the clipboard (Unicode aware!)
+  CString text = StyleGetStringFromClipboard(GetSafeHwnd());
 
-    // Closing the clipboard
-    GlobalUnlock(memory);
+  // Insert into the listbox
+  while(text.GetLength())
+  {
+    int pos = text.FindOneOf(_T("\r\n"));
+    if (pos > 0)
+    {
+      CString part = text.Left(pos);
+      CListBox::InsertString(insert++, part);
+      text = text.Mid(pos + 1);
+      if(text.Left(1) == _T("\n"))
+      {
+        text = text.Mid(1);
+      }
+    }
+    else
+    {
+      // One/Last line insert
+      CListBox::InsertString(insert,text);
+      text.Empty();
+    }
   }
-  CloseClipboard();
 }
 
 // Print the complete list
@@ -715,7 +686,7 @@ StyleListBox::GetText(int p_index,LPTSTR p_buffer) const
       if(listBox && listBox->m_magic == LIST_MAGIC)
       {
         length = listBox->m_text.GetLength() + 1;
-        strcpy_s(p_buffer, length, listBox->m_text.GetString());
+        _tcscpy_s(p_buffer, length, listBox->m_text.GetString());
       }
     }
     else
@@ -786,7 +757,7 @@ StyleListBox::UpdateWidth(LPCTSTR p_string)
 
   // Guard against really long strings like SOAP messages
   int len = 0;
-  const char* pos = strchr(p_string,'\n');
+  LPCTSTR pos = _tcschr(p_string,'\n');
   if(pos)
   {
     len = (int)(pos - p_string);
@@ -822,7 +793,7 @@ StyleListBox::AdjustScroll()
 void    
 StyleListBox::RemoveLineNumber(CString& p_text)
 {
-  int pos = p_text.Find(": ");
+  int pos = p_text.Find(_T(": "));
   if(pos >= 0)
   {
     CString number = p_text.Left(pos);
@@ -1067,7 +1038,7 @@ StyleListBox::ResetFont()
   lgFont.lfCharSet        = m_language;
   lgFont.lfClipPrecision  = 0;
   lgFont.lfEscapement     = 0;
-  strcpy_s(lgFont.lfFaceName,LF_FACESIZE,m_fontName);
+  _tcscpy_s(lgFont.lfFaceName,LF_FACESIZE,m_fontName);
   lgFont.lfHeight         = m_fontSize;
   lgFont.lfItalic         = m_italic;
   lgFont.lfOrientation    = 0;

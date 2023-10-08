@@ -59,7 +59,7 @@ SQLDriverManager::GetDriverManagerPath()
   if(m_driverManagerPath.IsEmpty())
   {
     WORD size = 0;
-    char path[MAX_PATH + 1];
+    TCHAR path[MAX_PATH + 1];
 
     memset(path,0,MAX_PATH+1);
     if(SQLInstallDriverManager(path,MAX_PATH,&size) && size > 0)
@@ -86,8 +86,8 @@ SQLDriverManager::GetDataSources(DataSources& p_list,int p_type /*= SQL_FETCH_FI
   ResetErrorState();
 
   // Data variables
-  SQLCHAR      server           [SQL_MAX_DSN_LENGTH+1];
-  SQLCHAR      description      [SQL_MAX_CATALOG_NAME_LEN+1];
+  SQLTCHAR     server           [SQL_MAX_DSN_LENGTH+1];
+  SQLTCHAR     description      [SQL_MAX_CATALOG_NAME_LEN+1];
   SQLSMALLINT  serverLengthInp = SQL_MAX_DSN_LENGTH;
   SQLSMALLINT  serverLengthOut = 0;
   SQLSMALLINT  descLengthInp   = SQL_MAX_CATALOG_NAME_LEN;
@@ -143,9 +143,9 @@ SQLDriverManager::GetDataSources(DataSources& p_list,int p_type /*= SQL_FETCH_FI
 XString
 SQLDriverManager::GetSpecialDriver(XString p_base,XString p_extension)
 {
-  SQLCHAR     driverDescription[MAX_DRIVER_DESCRIPTION + 1];
+  SQLTCHAR    driverDescription[MAX_DRIVER_DESCRIPTION + 1];
   SQLSMALLINT dLength = 0;
-  SQLCHAR     attribDescription[MAX_DRIVER_DESCRIPTION + 1];
+  SQLTCHAR    attribDescription[MAX_DRIVER_DESCRIPTION + 1];
   SQLSMALLINT aLength = 0;
   RETCODE     result  = SQL_ERROR;
 
@@ -191,7 +191,7 @@ SQLDriverManager::ODBCManagerDialog(HWND p_parent)
   if(::SQLManageDataSources(p_parent) == false)
   {
     m_error = ERROR_ACCESS_DENIED;
-    m_errorString = "ODBCManager has been blocked by your system administrator";
+    m_errorString = _T("ODBCManager has been blocked by your system administrator");
     return false;
   }
   return true;
@@ -233,7 +233,7 @@ SQLDriverManager::MakeEnvironmentHandle()
   // Check results
   if(res != SQL_SUCCESS && res != SQL_SUCCESS_WITH_INFO)
   {
-    throw StdException("Error at opening: cannot create an ODBC environment.");
+    throw StdException(_T("Error at opening: cannot create an ODBC environment."));
   }
 
   // Tell the driver how we use the handles
@@ -242,7 +242,7 @@ SQLDriverManager::MakeEnvironmentHandle()
   res = SQLSetEnvAttr(m_environment,SQL_ATTR_ODBC_VERSION,startVersion,0);
   if(res != SQL_SUCCESS && res != SQL_SUCCESS_WITH_INFO)
   {
-    throw StdException("Cannot set the ODBC version for the environment.");
+    throw StdException(_T("Cannot set the ODBC version for the environment."));
   }
 }
 
@@ -267,8 +267,8 @@ SQLDriverManager::GetInstallerError()
   {
     WORD  size  = 0;
     DWORD error = 0;
-    char errorMsg[MAX_PATH + 1];
-    SQLRETURN ret = SQLInstallerError(static_cast<WORD>(err_index),&error,reinterpret_cast<LPSTR>(&errorMsg),MAX_PATH,&size);
+    TCHAR errorMsg[MAX_PATH + 1];
+    SQLRETURN ret = SQLInstallerError(static_cast<WORD>(err_index),&error,reinterpret_cast<LPTSTR>(&errorMsg),MAX_PATH,&size);
     if(ret == SQL_SUCCESS || ret == SQL_SUCCESS_WITH_INFO)
     {
       m_error = error;
@@ -289,9 +289,9 @@ void
 SQLDriverManager::GetEnvironmentError()
 {
   // Fields for SQLGetDiagRec
-  SQLCHAR     szSqlState[SQLSTATE_LEN + 1];
+  SQLTCHAR    szSqlState[SQLSTATE_LEN + 1];
   SQLINTEGER  fNativeError;
-  SQLCHAR     szErrorMsg[ERROR_BUFFERSIZE + 1];
+  SQLTCHAR    szErrorMsg[ERROR_BUFFERSIZE + 1];
   SQLSMALLINT cbErrorMsg;
   SQLSMALLINT recNummer = 0;
 
@@ -328,13 +328,13 @@ SQLDriverManager::GetEnvironmentError()
     // Optional add a linefeed
     if (errors.GetLength())
     {
-      errors += "\n";
+      errors += _T("\n");
     }
     // Error at getting errors
     if(!(res == SQL_SUCCESS || res == SQL_SUCCESS_WITH_INFO))
     {
       XString err;
-      err.Format("Error %d found while reading the SQL error status.", res);
+      err.Format(_T("Error %d found while reading the SQL error status."), res);
       errors += err;
       break;
     }
@@ -345,7 +345,7 @@ SQLDriverManager::GetEnvironmentError()
     }
     // Take SQLState and native error into account
     XString error;
-    error.Format("[%s][%d]", szSqlState, fNativeError);
+    error.Format(_T("[%s][%d]"), szSqlState, fNativeError);
     // Add state and error message
     errors += error + XString(szErrorMsg);
   }
@@ -361,6 +361,5 @@ SQLDriverManager::ResetErrorState()
   m_errorString.Empty();
   m_sqlState.Empty();
 }
-
 
 }

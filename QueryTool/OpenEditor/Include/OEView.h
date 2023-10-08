@@ -39,6 +39,7 @@
 using arg::counted_ptr;
 using namespace SQLComponents;
 class COEDocument;
+class WinFile;
 namespace OpenEditor { class HighlighterBase; };
 enum SearchDirection { esdDown, esdUp, esdDefault };
 
@@ -180,7 +181,7 @@ public:
     void MoveToAndCenter (OpenEditor::Position);
 
     virtual void GetBlock    (CString&, const OpenEditor::Square* = 0) const;
-    virtual void InsertBlock (const char*, bool hideSelection, bool putSelInUndo = true);
+    virtual void InsertBlock (LPCTSTR, bool hideSelection, bool putSelInUndo = true);
     virtual void DeleteBlock (bool putSelInUndo = true);
 
     // Searching
@@ -231,7 +232,7 @@ protected:
     void OnChangedLinesStatus (int, int);
 
 public:
-    static void DoEditCopy (const CString&, bool append = false);
+    void DoEditCopy (const CString&, bool append = false);
 
 protected:
 
@@ -279,7 +280,7 @@ protected:
         CString keyword; 
         OpenEditor::Square sqr; 
     };
-    bool PreNormalizeOnChar (NormalizeOnCharCxt&, char ch);
+    bool PreNormalizeOnChar (NormalizeOnCharCxt&, TCHAR ch);
     void NormalizeOnChar    (NormalizeOnCharCxt&);
     // it's not comment and string position
     bool IsNormalizeablePos (OpenEditor::Position pos) const;
@@ -428,14 +429,14 @@ public:
   bool ExecuteQuery(int p_line
                    ,CString& odbcCommand
                    ,bool batch = false
-                   ,FILE* p_script = NULL);
+                   ,WinFile* p_script = NULL);
   bool ExecuteQueryRepeat(int p_line
                          ,CString& odbcCommand
                          ,bool batch = false);
   void GetLineFromQuery(int row);
   void ReadRestOfQuery();
   int  LinesFetchedSoFar();
-  bool IsDigits(char* token);
+  bool IsDigits(LPTSTR token);
   void TranslateText(CString& p_text,int p_translation,CString p_charset);
 
   // Write a line with info to the statistics view
@@ -480,7 +481,7 @@ public:
   SQLQuery        m_query;
   PrimaryMap      m_keyMap;
   CString         m_primaryName;
-  FILE*           m_scriptOutput;
+  WinFile*        m_scriptOutput;
   bool            m_scriptCompare;
   bool            m_scriptSelect;
   bool            m_ifLast;

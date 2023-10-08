@@ -82,7 +82,7 @@ public:
 
   // Support of logging functions (for all databases in the pool)
   void            RegisterLogContext(int p_level, LOGLEVEL p_loglevel, LOGPRINT p_logprinter, void* p_logContext);
-  void            LogPrint(const char* p_text);
+  void            LogPrint(LPCTSTR p_text);
   int             LogLevel();
   bool            WilLog();
   void            SetLoggingActivation(int p_loglevel);

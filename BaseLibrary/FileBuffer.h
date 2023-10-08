@@ -41,8 +41,6 @@
 extern unsigned long g_streaming_limit; // = STREAMING_LIMIT;
 extern unsigned long g_compress_limit;  // = COMPRESS_LIMIT;
 
-using uchar = unsigned char;
-
 typedef struct _bufferPart
 {
   size_t m_length;
@@ -121,11 +119,11 @@ private:
   bool    Defragment();
 
   // Data contents of the HTTP buffer
-  XString m_fileName;     // File to receive/send
-  HANDLE  m_file          { NULL };
-  size_t  m_binaryLength  { NULL };
-  uchar*  m_buffer        { nullptr };
-  Parts   m_parts;
+  XString  m_fileName;     // File to receive/send
+  HANDLE   m_file          { NULL };
+  size_t   m_binaryLength  { NULL };
+  uchar*   m_buffer        { nullptr };
+  Parts    m_parts;
 };
 
 inline bool

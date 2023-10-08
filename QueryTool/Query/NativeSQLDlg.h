@@ -31,8 +31,8 @@ class CNativeSQLDlg : public StyleDialog
 
 public:
 	CNativeSQLDlg(CWnd*   pParent = NULL
-               ,CString native  = ""
-               ,CString title   = ""); 
+               ,CString native  = _T("")
+               ,CString title   = _T("")); 
 	virtual ~CNativeSQLDlg();
   void SetMonoFont();
   BOOL OnInitDialog();

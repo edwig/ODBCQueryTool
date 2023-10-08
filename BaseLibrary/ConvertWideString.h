@@ -27,22 +27,43 @@
 //
 #pragma once
 #include "XString.h"
+#include "Encoding.h"
 
 using uchar = unsigned char;
 
 // String coding of the messages over the Internet
 // BEWARE: Values must be the same as JsonEncoding
-enum class StringEncoding
-{
-   ENC_Plain    = 0  // No action taken, use GetACP(): windows-1252 in "The Netherlands"
-  ,ENC_UTF8     = 1  // Default XML encoding
-  ,ENC_UTF16    = 2  // Default MS-Windows encoding
-  ,ENC_ISO88591 = 3  // Default (X)HTML 4.01 encoding
-};
+// enum class StringEncoding
+// {
+//    ENC_Plain    = 0  // No action taken, use GetACP(): windows-1252 in "The Netherlands"
+//   ,ENC_UTF8     = 1  // Default XML encoding
+//   ,ENC_UTF16    = 2  // Default MS-Windows encoding
+//   ,ENC_ISO88591 = 3  // Default (X)HTML 4.01 encoding
+// };
 
 // Init the code page system
 void    InitCodePageNames();
-// Convert strings from/to Unicode
+
+#ifdef UNICODE
+// Convert strings to/from Unicode-16
+bool    TryConvertNarrowString(const uchar* p_buffer
+                              ,int          p_length
+                              ,XString      p_charset
+                              ,XString&     p_string
+                              ,bool&        p_foundBOM);
+bool    TryCreateNarrowString (const XString& p_string
+                              ,const XString  p_charset
+                              ,const bool     p_doBom
+                              ,      uchar**  p_buffer
+                              ,      int&     p_length);
+// Implode an UTF-16 string to a unsigned char buffer (for UTF-8 purposes)
+void    ImplodeString(XString p_string,uchar* p_buffer,unsigned p_length);
+XString ExplodeString(uchar* p_buffer,unsigned p_length);
+// Construct a UTF-16 Byte-Order-Mark
+XString ConstructBOMUTF16();
+
+#else
+// Convert strings from/to Unicode-16
 bool    TryConvertWideString(const uchar* p_buffer
                             ,int          p_length
                             ,XString      p_charset
@@ -53,6 +74,10 @@ bool    TryCreateWideString (const XString& p_string
                             ,const bool     p_doBom
                             ,      uchar**  p_buffer
                             ,      int&     p_length);
+// Construct a UTF-16 Byte-Order-Mark
+std::wstring ConstructBOMUTF16();
+#endif
+
 // Convert directly
 std::wstring StringToWString(XString p_string);
 XString      WStringToString(std::wstring p_string);
@@ -72,15 +97,12 @@ XString FindCharsetInContentType(XString p_contentType);
 XString FindMimeTypeInContentType(XString p_contentType);
 // Construct an UTF-8 Byte-Order-Mark
 XString ConstructBOM();
-// Construct a UTF-16 Byte-Order-Mark
-std::wstring ConstructBOMUTF16();
 // Construct a BOM
-XString ConstructBOM(StringEncoding p_encoding);
+XString ConstructBOM(Encoding p_encoding);
 // Decoding incoming strings from the internet. Defaults to UTF-8 encoding
-XString DecodeStringFromTheWire(XString p_string,XString p_charset = "utf-8");
+XString DecodeStringFromTheWire(XString p_string,XString p_charset = _T("utf-8"));
 // Encode to string for internet. Defaults to UTF-8 encoding
-XString EncodeStringForTheWire (XString p_string,XString p_charset = "utf-8");
+XString EncodeStringForTheWire (XString p_string,XString p_charset = _T("utf-8"));
 // Scan for UTF-8 chars in a string
 bool    DetectUTF8(XString& p_string);
-
-
+bool    DetectUTF8(const uchar* p_bytes);

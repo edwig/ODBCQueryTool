@@ -40,7 +40,7 @@ namespace SQLComponents
 SQLInfoDB::SQLInfoDB(SQLDatabase* p_database)
           :SQLInfo(p_database)
           // Must be 'PUBLIC' for an ANSI-compliant database
-          ,m_grantedUsers("PUBLIC")
+          ,m_grantedUsers(_T("PUBLIC"))
 {
   // Granted users.
   // Comma separated list of granted users
@@ -155,7 +155,7 @@ SQLInfoDB::MakeInfoDefaultCharset(XString& p_default)
   }
   catch(...)
   {
-    m_defaultCharset = "-";
+    m_defaultCharset = _T("-");
   }
   return false;
 }
@@ -339,10 +339,10 @@ SQLInfoDB::MakeInfoTableCatalog(MTableMap&  p_tables
   XString sql = GetCATALOGTableCatalog(p_schema,p_tablename);
   if(sql.IsEmpty() || m_preferODBC)
   {
-    p_schema = "%";
-    p_tablename = "%";
+    p_schema    = _T("%");
+    p_tablename = _T("%");
     // Ask ODBC driver to find system tables
-    return SQLInfo::MakeInfoTableTable(p_tables,p_errors,p_schema,p_tablename,"SYSTEM TABLE");
+    return SQLInfo::MakeInfoTableTable(p_tables,p_errors,p_schema,p_tablename,_T("SYSTEM TABLE"));
   }
 
   try
@@ -604,7 +604,7 @@ SQLInfoDB::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
 {
   XString sql;
 
-  if(p_procedure.IsEmpty() || p_procedure.Compare("%") == 0)
+  if(p_procedure.IsEmpty() || p_procedure.Compare(_T("%")) == 0)
   {
     sql = GetPSMProcedureList(p_schema);
     p_procedure.Empty();
@@ -660,7 +660,7 @@ SQLInfoDB::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
         proc.m_procedureType    = qry.GetColumn(8)->GetAsSLong();
         proc.m_source           = qry.GetColumn(9)->GetAsChar();
 
-        if(proc.m_source.IsEmpty() || proc.m_source.Compare("<@>") == 0)
+        if(proc.m_source.IsEmpty() || proc.m_source.Compare(_T("<@>")) == 0)
         {
           proc.m_source = MakeInfoPSMSourcecode(proc.m_schemaName, proc.m_procedureName);
         }
@@ -811,9 +811,9 @@ SQLInfoDB::MakeInfoTableTriggers(MTriggerMap& p_triggers
       trigger.m_triggerName.Trim();
       trigger.m_remarks.Trim();
       trigger.m_source.Trim();
-      trigger.m_source.Replace("\r\n","\n");
+      trigger.m_source.Replace(_T("\r\n"),_T("\n"));
 
-      if(trigger.m_source.Compare("<@>") == 0)
+      if(trigger.m_source.Compare(_T("<@>")) == 0)
       {
         trigger.m_source = MakeInfoPSMSourcecode(trigger.m_schemaName,trigger.m_triggerName);
       }
@@ -892,10 +892,10 @@ SQLInfoDB::MakeInfoTableSequences(MSequenceMap& p_sequences,XString& p_errors,XS
   {
     ReThrowSafeException(er);
     XString message = er.GetErrorMessage();
-    if(message.Find("[42S02]") > 0)
+    if(message.Find(_T("[42S02]")) > 0)
     {
       // Older versions of MS-SQLServer return this SQLSTATE
-      p_errors.Append("Version of RDBMS that does not support SEQUENCE feature (yet)!");
+      p_errors.Append(_T("Version of RDBMS that does not support SEQUENCE feature (yet)!"));
   }
     else
     {
@@ -932,7 +932,7 @@ SQLInfoDB::MakeInfoTablePrivileges(MPrivilegeMap& p_privileges,XString& p_errors
       priv.m_grantor     = (XString) query[4];
       priv.m_grantee     = (XString) query[5];
       priv.m_privilege   = (XString) query[6];
-      priv.m_grantable   = ((XString)query[7]).Compare("YES") == 0;
+      priv.m_grantable   = ((XString)query[7]).Compare(_T("YES")) == 0;
 
       p_privileges.push_back(priv);
     }
@@ -975,7 +975,7 @@ SQLInfoDB::MakeInfoColumnPrivileges(MPrivilegeMap& p_privileges,XString& p_error
       priv.m_grantor     = (XString) query[5];
       priv.m_grantee     = (XString) query[6];
       priv.m_privilege   = (XString) query[7];
-      priv.m_grantable   = ((XString)query[8]).Compare("YES") == 0;
+      priv.m_grantable   = ((XString)query[8]).Compare(_T("YES")) == 0;
 
       p_privileges.push_back(priv);
     }

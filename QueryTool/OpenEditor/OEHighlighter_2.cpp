@@ -49,13 +49,13 @@ void XmlHighlighter::Init (const VisualAttributesSet& set_)
     m_attrsAttr    = set_.FindByName(_T("Attributes"));
 }
 
-void XmlHighlighter::NextLine (const char* currentLine, int currentLineLength)
+void XmlHighlighter::NextLine (LPCTSTR currentLine, int currentLineLength)
 {
     m_xmlAmpSeq = eXmlAmpNone;
     CommonHighlighter::NextLine(currentLine, currentLineLength);
 }
 
-void XmlHighlighter::NextWord (const char* str, int len)
+void XmlHighlighter::NextWord (LPCTSTR str, int len)
 {
     ESeqOf _seqOf = m_seqOf;
 
@@ -106,7 +106,7 @@ void XmlHighlighter::NextWord (const char* str, int len)
         {
         case '<': 
             if (str + 4 <= m_currentLine + m_currentLineLength
-            && !strncmp(str, _T("<!--"), 4))
+            && !_tcsncmp(str, _T("<!--"), 4))
                 m_xmlSeqOf = eXmlComment;
             else
                 m_xmlSeqOf = eXmlOpen;  

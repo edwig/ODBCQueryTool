@@ -374,7 +374,7 @@ bool EditContext::SmartGoToStart ()
 
     if (m_curPos.line < GetLineCount())
     {
-        const char* str; int len;
+        LPCTSTR str; int len;
         GetLine(m_curPos.line, str, len);
 
         int true_pos;
@@ -391,20 +391,20 @@ bool EditContext::SmartGoToStart ()
 }
 
     static
-    bool _skip_spaces_right (const char* str, int len, int& start)
+    bool _skip_spaces_right (LPCTSTR str, int len, int& start)
     {
         int i = 0;
-        for (i = start; i < len && isspace(str[i]); i++);
+        for (i = start; i < len && _istspace(str[i]); i++);
         bool ret_val = (i != start) ? true : false;
         start = i;
         return ret_val;
     }
 
     static
-    bool _skip_delimiters_right (const char* str, int len, int& start, const DelimitersMap& delim, bool hurry)
+    bool _skip_delimiters_right (LPCTSTR str, int len, int& start, const DelimitersMap& delim, bool hurry)
     {
         int i;
-        for (i = start; i < len && !isspace(str[i]) && delim[str[i]]; i++)
+        for (i = start; i < len && !_istspace(str[i]) && delim[(int)str[i]]; i++)
             if (!hurry && i != start) break;
         bool ret_val = (i != start) ? true : false;
         start = i;
@@ -412,10 +412,10 @@ bool EditContext::SmartGoToStart ()
     }
 
     static
-    bool _skip_word_right (const char* str, int len, int& start, const DelimitersMap& delim)
+    bool _skip_word_right (LPCTSTR str, int len, int& start, const DelimitersMap& delim)
     {
         int i;
-        for (i = start; i < len && !delim[str[i]]; i++);
+        for (i = start; i < len && !delim[(int)str[i]]; i++);
         bool ret_val = (i != start) ? true : false;
         start = i;
         return ret_val;
@@ -442,7 +442,7 @@ EditContext::wordRight (bool hurry)
     }
 
     int len;
-    const char* str;
+    LPCTSTR str;
     GetLine(pos.line, str, len);
 
     int first = pos2inx(str, len, pos.column);
@@ -464,20 +464,20 @@ EditContext::wordRight (bool hurry)
 }
 
     static
-    bool _skip_spaces_left (const char* str, int& start)
+    bool _skip_spaces_left (LPCTSTR str, int& start)
     {
         int i;
-        for (i = start; i >= 0 && str && isspace(str[i]); i--);
+        for (i = start; i >= 0 && str && _istspace(str[i]); i--);
         bool ret_val = (i != start) ? true : false;
         start = i;
         return ret_val;
     }
 
     static
-    bool _skip_delimiters_left (const char* str, int& start, const DelimitersMap& delim, bool hurry)
+    bool _skip_delimiters_left (LPCTSTR str, int& start, const DelimitersMap& delim, bool hurry)
     {
         int i;
-        for (i = start; i >= 0 && str && !isspace(str[i]) && delim[str[i]]; i--)
+        for (i = start; i >= 0 && str && !_istspace(str[i]) && delim[(int)str[i]]; i--)
             if (!hurry && i != start) break;
         bool ret_val = (i != start) ? true : false;
         start = i;
@@ -485,10 +485,10 @@ EditContext::wordRight (bool hurry)
     }
 
     static
-    bool _skip_word_left (const char* str, int& start, const DelimitersMap& delim)
+    bool _skip_word_left (LPCTSTR str, int& start, const DelimitersMap& delim)
     {
         int i;
-        for (i = start; i >= 0 && str && !delim[str[i]]; i--);
+        for (i = start; i >= 0 && str && !delim[(int)str[i]]; i--);
         bool ret_val = (i != start) ? true : false;
         start = str ? i : -1;
         return ret_val;
@@ -518,7 +518,7 @@ EditContext::wordLeft (bool hurry)
     }
 
     int len;
-    const char* str;
+    LPCTSTR str;
     GetLine(pos.line, str, len);
 
     int last = max(0, pos2inx(str, len, pos.column)
@@ -533,7 +533,7 @@ EditContext::wordLeft (bool hurry)
     return pos;
 }
 
-bool EditContext::WordFromPoint (Position pos, Square& sqr, const char* delims) const
+bool EditContext::WordFromPoint (Position pos, Square& sqr, LPCTSTR delims) const
 {
     _CHECK_ALL_PTR_;
 
@@ -541,7 +541,7 @@ bool EditContext::WordFromPoint (Position pos, Square& sqr, const char* delims) 
     && pos.column <= GetLineLength(pos.line))
     {
         int len;
-        const char* str;
+        LPCTSTR str;
         GetLine(pos.line, str, len);
 
         if (len > 0)
@@ -551,9 +551,9 @@ bool EditContext::WordFromPoint (Position pos, Square& sqr, const char* delims) 
             if (!(
                   // the first space
                   !inx && isspace(str[inx])
-                  // it's EOL and last char is space
+                  // it's EOL and last TCHAR is space
                   || inx == len && isspace(str[inx-1])
-                  // OR it's space in the line and previous char is space again
+                  // OR it's space in the line and previous TCHAR is space again
                   || inx != -1 && isspace(str[inx]) && (inx > 0 && isspace(str[inx-1]))
                ))
             {
@@ -566,7 +566,7 @@ bool EditContext::WordFromPoint (Position pos, Square& sqr, const char* delims) 
                 else
                     delimsMap = GetDelimiters();
 
-                if (delimsMap[str[inx]])
+                if (delimsMap[(int)str[inx]])
                 {
                     sqr.start.line = sqr.end.line = pos.line;
                     sqr.start.column = inx2pos(str, len, inx);
@@ -590,7 +590,7 @@ bool EditContext::WordFromPoint (Position pos, Square& sqr, const char* delims) 
     return false;
 }
 
-bool EditContext::WordOrSpaceFromPoint (Position pos, Square& sqr, const char* delims) const
+bool EditContext::WordOrSpaceFromPoint (Position pos, Square& sqr, LPCTSTR delims) const
 {
     _CHECK_ALL_PTR_;
 
@@ -599,7 +599,7 @@ bool EditContext::WordOrSpaceFromPoint (Position pos, Square& sqr, const char* d
     if (pos.line < GetLineCount())
     {
         int len;
-        const char* str;
+        LPCTSTR str;
         GetLine(pos.line, str, len);
 
         if (len > 0)
@@ -614,27 +614,27 @@ bool EditContext::WordOrSpaceFromPoint (Position pos, Square& sqr, const char* d
             int inx = pos2inx(str, len, pos.column, true); // covert screen position to string index
 
             // ignore click belong the line except lines with trailing spaces
-            if (inx >= len && isspace(str[len - 1])) inx = len - 1;
+            if (inx >= len && _istspace(str[len - 1])) inx = len - 1;
 
             if (inx < len
-            && delimsMap[str[inx]]
-            && !(inx > 0 && isspace(str[inx]) && !delimsMap[str[inx - 1]])) // if it's a space after word - try get a word later
+            && delimsMap[(int)str[inx]]
+            && !(inx > 0 && _istspace(str[inx]) && !delimsMap[(int)str[inx - 1]])) // if it's a space after word - try get a word later
             {
-                if (isspace(str[inx]))
-                    delimsMap.Set(" \t");
+                if (_istspace(str[inx]))
+                    delimsMap.Set(_T(" \t"));
 
-                for (unsigned char i = 0; i < delimsMap.size(); i++)
-                    delimsMap[i] = delimsMap[i] ? false : true;
+                for (_TUCHAR i = 0; i < delimsMap.size(); i++)
+                    delimsMap[(int)i] = delimsMap[(int)i] ? false : true;
 
-                if (!isspace(str[inx]))
+                if (!_istspace(str[inx]))
                     delimsMap[' '] = delimsMap['\t'] = true;
 
                 sqr.start.line = sqr.end.line = pos.line;
 
-                for (sqr.start.column = inx; sqr.start.column >=0 && !delimsMap[str[sqr.start.column]]; sqr.start.column--)
+                for (sqr.start.column = inx; sqr.start.column >=0 && !delimsMap[(int)str[sqr.start.column]]; sqr.start.column--)
                     ;
 
-                for (sqr.end.column = inx; sqr.end.column < len && !delimsMap[str[sqr.end.column]]; sqr.end.column++)
+                for (sqr.end.column = inx; sqr.end.column < len && !delimsMap[(int)str[sqr.end.column]]; sqr.end.column++)
                     ;
 
                 sqr.start.column = inx2pos(str, len, sqr.start.column + 1);
@@ -650,7 +650,7 @@ bool EditContext::WordOrSpaceFromPoint (Position pos, Square& sqr, const char* d
     return false;
 }
 
-bool EditContext::GetBlockOrWordUnderCursor (CString& buff, Square& sqr, bool onlyOneLine, const char* delims)
+bool EditContext::GetBlockOrWordUnderCursor (CString& buff, Square& sqr, bool onlyOneLine, LPCTSTR delims)
 {
     _CHECK_ALL_PTR_;
 

@@ -1639,7 +1639,7 @@ SQLVariant::operator+(const SQLVariant& p_right)
   XString leftType  = SQLDataType::FindDatatype(m_datatype);
   XString rightType = SQLDataType::FindDatatype(p_right.m_datatype);
   XString error;
-  error.Format("Cannot do the add operator on (%s + %s)",leftType.GetString(),rightType.GetString());
+  error.Format(_T("Cannot do the add operator on (%s + %s)"),leftType.GetString(),rightType.GetString());
   throw StdException(error);
 }
 
@@ -1677,7 +1677,7 @@ SQLVariant::operator+=(const SQLVariant& p_right)
   XString leftType  = SQLDataType::FindDatatype(m_datatype);
   XString rightType = SQLDataType::FindDatatype(p_right.m_datatype);
   XString error;
-  error.Format("Cannot do the += operator on (%s + %s)",leftType.GetString(),rightType.GetString());
+  error.Format(_T("Cannot do the += operator on (%s + %s)"),leftType.GetString(),rightType.GetString());
   throw StdException(error);
 }
 

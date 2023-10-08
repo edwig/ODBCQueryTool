@@ -65,7 +65,7 @@ CFileWatchClient::~CFileWatchClient ()
 	CFileWatch::m_csDataLock.Unlock();
 }
 
-void CFileWatchClient::StartWatching (LPCSTR file)
+void CFileWatchClient::StartWatching (LPCTSTR file)
 {
   if (file && m_fileName != file)
   {

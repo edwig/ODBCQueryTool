@@ -170,7 +170,7 @@ void COEAutocompleteCtrl::CheckMatch (bool init)
             // selection must not contain delimiters
             for(int i = 0;i < substring.GetLength(); ++i)
             {
-              if(pEditor->GetDelimiters()[substring.GetAt(i)])
+              if(pEditor->GetDelimiters()[(int)substring.GetAt(i)])
               {
                 resetSelecetion = true;
                 break;
@@ -206,7 +206,7 @@ void COEAutocompleteCtrl::CheckMatch (bool init)
             }
             EnsureVisible(index, FALSE);
  
-            UINT state = (substring.GetLength() && !_strnicmp(substring.GetString(), GetItemText(index, 0), substring.GetLength())) 
+            UINT state = (substring.GetLength() && !_tcsnicmp(substring.GetString(), GetItemText(index, 0), substring.GetLength())) 
                  ? LVIS_FOCUSED|LVIS_SELECTED : LVIS_FOCUSED;
             
             SetItemState(index, state, state);
@@ -305,13 +305,15 @@ void COEAutocompleteCtrl::Populate (const TemplatePtr tmpl)
         item.lParam = (LPARAM)i;
         item.iSubItem = 0;
         item.mask = LVIF_TEXT|LVIF_PARAM;
-        item.pszText = (LPSTR)it->keyword.GetString(); 
+        item.pszText = (LPTSTR)it->keyword.GetString(); 
         item.iItem = InsertItem(&item);
-        SetItemText(item.iItem, 1, (LPSTR)it->name.GetString());
+        SetItemText(item.iItem, 1, (LPTSTR)it->name.GetString());
     }
 
-    if (i > 0)
-        SetItemState(0, LVIS_FOCUSED|LVIS_SELECTED, LVIS_FOCUSED|LVIS_SELECTED);
+    if(i > 0)
+    {
+      SetItemState(0,LVIS_FOCUSED | LVIS_SELECTED,LVIS_FOCUSED | LVIS_SELECTED);
+    }
 }
 
 void COEAutocompleteCtrl::OnSetFocus (CWnd* pOldWnd)
@@ -373,7 +375,7 @@ void COEAutocompleteCtrl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 void COEAutocompleteCtrl::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-    if (isalnum((char)nChar) || nChar == VK_BACK)
+    if (isalnum((TCHAR)nChar) || nChar == VK_BACK)
     {
         if (m_hwndEditor && ::IsWindow(m_hwndEditor))
         {

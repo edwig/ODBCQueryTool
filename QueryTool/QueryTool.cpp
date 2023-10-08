@@ -140,7 +140,7 @@ QueryToolApp::~QueryToolApp()
 void QueryToolApp::InitGUICommand()
 {
 #if (ID_APP_DBLKEYACCEL_FIRST != 0xDF00 || ID_APP_DBLKEYACCEL_LAST != 0xDFFF)
-#pragma error("Check ID_APP_DBLKEYACCEL_FIRST or ID_APP_DBLKEYACCEL_LAST definition")
+#pragma error(_T("Check ID_APP_DBLKEYACCEL_FIRST or ID_APP_DBLKEYACCEL_LAST definition"))
 #endif
 
   if(!GUICommandDictionary::m_firstDblKeyAccelCommandId)
@@ -148,162 +148,162 @@ void QueryToolApp::InitGUICommand()
     GUICommandDictionary::m_firstDblKeyAccelCommandId = ID_APP_DBLKEYACCEL_FIRST;
 
     //File
-    GUICommandDictionary::InsertCommand("File.New",                        ID_FILE_NEW);
-    GUICommandDictionary::InsertCommand("File.Open",                       ID_FILE_OPEN);
-    GUICommandDictionary::InsertCommand("File.Reload",                     ID_FILE_RELOAD);
-    GUICommandDictionary::InsertCommand("File.Close",                      ID_FILE_CLOSE);
-    GUICommandDictionary::InsertCommand("File.CloseAll",                   ID_FILE_CLOSE_ALL);
-    GUICommandDictionary::InsertCommand("File.Save",                       ID_FILE_SAVE);
-    GUICommandDictionary::InsertCommand("File.SaveAs",                     ID_FILE_SAVE_AS);
-    GUICommandDictionary::InsertCommand("File.SaveAll",                    ID_FILE_SAVE_ALL);
-    GUICommandDictionary::InsertCommand("File.ShowFileLocation",           ID_FILE_SYNC_LOCATION);
-    GUICommandDictionary::InsertCommand("File.PageSetup",                  ID_EDIT_PRINT_PAGE_SETUP);
-    GUICommandDictionary::InsertCommand("File.PrintSetup",                 ID_FILE_PRINT_SETUP);
-    GUICommandDictionary::InsertCommand("File.PrintPreview",               ID_FILE_PRINT_PREVIEW);
-    GUICommandDictionary::InsertCommand("File.Print",                      ID_FILE_PRINT);
-    GUICommandDictionary::InsertCommand("File.Exit",                       ID_APP_EXIT);
+    GUICommandDictionary::InsertCommand(_T("File.New"),                        ID_FILE_NEW);
+    GUICommandDictionary::InsertCommand(_T("File.Open"),                       ID_FILE_OPEN);
+    GUICommandDictionary::InsertCommand(_T("File.Reload"),                     ID_FILE_RELOAD);
+    GUICommandDictionary::InsertCommand(_T("File.Close"),                      ID_FILE_CLOSE);
+    GUICommandDictionary::InsertCommand(_T("File.CloseAll"),                   ID_FILE_CLOSE_ALL);
+    GUICommandDictionary::InsertCommand(_T("File.Save"),                       ID_FILE_SAVE);
+    GUICommandDictionary::InsertCommand(_T("File.SaveAs"),                     ID_FILE_SAVE_AS);
+    GUICommandDictionary::InsertCommand(_T("File.SaveAll"),                    ID_FILE_SAVE_ALL);
+    GUICommandDictionary::InsertCommand(_T("File.ShowFileLocation"),           ID_FILE_SYNC_LOCATION);
+    GUICommandDictionary::InsertCommand(_T("File.PageSetup"),                  ID_EDIT_PRINT_PAGE_SETUP);
+    GUICommandDictionary::InsertCommand(_T("File.PrintSetup"),                 ID_FILE_PRINT_SETUP);
+    GUICommandDictionary::InsertCommand(_T("File.PrintPreview"),               ID_FILE_PRINT_PREVIEW);
+    GUICommandDictionary::InsertCommand(_T("File.Print"),                      ID_FILE_PRINT);
+    GUICommandDictionary::InsertCommand(_T("File.Exit"),                       ID_APP_EXIT);
     //Edit
-    GUICommandDictionary::InsertCommand("Edit.Undo",                       ID_EDIT_UNDO);
-    GUICommandDictionary::InsertCommand("Edit.Undo",                       ID_EDIT_UNDO);
-    GUICommandDictionary::InsertCommand("Edit.Redo",                       ID_EDIT_REDO);
-    GUICommandDictionary::InsertCommand("Edit.Cut",                        ID_EDIT_CUT);
-    GUICommandDictionary::InsertCommand("Edit.Cut",                        ID_EDIT_CUT);
-    GUICommandDictionary::InsertCommand("Edit.Copy",                       ID_EDIT_COPY);
-    GUICommandDictionary::InsertCommand("Edit.Copy",                       ID_EDIT_COPY);
-    GUICommandDictionary::InsertCommand("Edit.Paste",                      ID_EDIT_PASTE);
-    GUICommandDictionary::InsertCommand("Edit.Paste",                      ID_EDIT_PASTE);
-    GUICommandDictionary::InsertCommand("Edit.CutAppend",                  ID_EDIT_CUT_N_APPEND);
-    GUICommandDictionary::InsertCommand("Edit.CutAppend",                  ID_EDIT_CUT_N_APPEND);
-    GUICommandDictionary::InsertCommand("Edit.CutBookmarkedLines",         ID_EDIT_CUT_BOOKMARKED);
-    GUICommandDictionary::InsertCommand("Edit.CopyAppend",                 ID_EDIT_COPY_N_APPEND);
-    GUICommandDictionary::InsertCommand("Edit.CopyAppend",                 ID_EDIT_COPY_N_APPEND);
-    GUICommandDictionary::InsertCommand("Edit.CopyBookmarkedLines",        ID_EDIT_COPY_BOOKMARKED);
-    GUICommandDictionary::InsertCommand("Edit.Delete",                     ID_EDIT_DELETE);
-    GUICommandDictionary::InsertCommand("Edit.DeletetoEndOfWord",          ID_EDIT_DELETE_WORD_TO_RIGHT);
-    GUICommandDictionary::InsertCommand("Edit.DeleteWordBack",             ID_EDIT_DELETE_WORD_TO_LEFT);
-    GUICommandDictionary::InsertCommand("Edit.DeleteLine",                 ID_EDIT_DELETE_LINE);
-    GUICommandDictionary::InsertCommand("Edit.DeleteBookmarkedLines",      ID_EDIT_DELETE_BOOKMARKED);
-    GUICommandDictionary::InsertCommand("Edit.SelectWord",                 ID_EDIT_SELECT_WORD);
-    GUICommandDictionary::InsertCommand("Edit.SelectLine",                 ID_EDIT_SELECT_LINE);
-    GUICommandDictionary::InsertCommand("Edit.SelectAll",                  ID_EDIT_SELECT_ALL);
-    GUICommandDictionary::InsertCommand("Edit.ScrollUp",                   ID_EDIT_SCROLL_UP);
-    GUICommandDictionary::InsertCommand("Edit.ScrollToCenter",             ID_EDIT_SCROLL_CENTER);
-    GUICommandDictionary::InsertCommand("Edit.ScrollToCenter",             ID_EDIT_SCROLL_CENTER);
-    GUICommandDictionary::InsertCommand("Edit.ScrollDown",                 ID_EDIT_SCROLL_DOWN);
+    GUICommandDictionary::InsertCommand(_T("Edit.Undo"),                       ID_EDIT_UNDO);
+    GUICommandDictionary::InsertCommand(_T("Edit.Undo"),                       ID_EDIT_UNDO);
+    GUICommandDictionary::InsertCommand(_T("Edit.Redo"),                       ID_EDIT_REDO);
+    GUICommandDictionary::InsertCommand(_T("Edit.Cut"),                        ID_EDIT_CUT);
+    GUICommandDictionary::InsertCommand(_T("Edit.Cut"),                        ID_EDIT_CUT);
+    GUICommandDictionary::InsertCommand(_T("Edit.Copy"),                       ID_EDIT_COPY);
+    GUICommandDictionary::InsertCommand(_T("Edit.Copy"),                       ID_EDIT_COPY);
+    GUICommandDictionary::InsertCommand(_T("Edit.Paste"),                      ID_EDIT_PASTE);
+    GUICommandDictionary::InsertCommand(_T("Edit.Paste"),                      ID_EDIT_PASTE);
+    GUICommandDictionary::InsertCommand(_T("Edit.CutAppend"),                  ID_EDIT_CUT_N_APPEND);
+    GUICommandDictionary::InsertCommand(_T("Edit.CutAppend"),                  ID_EDIT_CUT_N_APPEND);
+    GUICommandDictionary::InsertCommand(_T("Edit.CutBookmarkedLines"),         ID_EDIT_CUT_BOOKMARKED);
+    GUICommandDictionary::InsertCommand(_T("Edit.CopyAppend"),                 ID_EDIT_COPY_N_APPEND);
+    GUICommandDictionary::InsertCommand(_T("Edit.CopyAppend"),                 ID_EDIT_COPY_N_APPEND);
+    GUICommandDictionary::InsertCommand(_T("Edit.CopyBookmarkedLines"),        ID_EDIT_COPY_BOOKMARKED);
+    GUICommandDictionary::InsertCommand(_T("Edit.Delete"),                     ID_EDIT_DELETE);
+    GUICommandDictionary::InsertCommand(_T("Edit.DeletetoEndOfWord"),          ID_EDIT_DELETE_WORD_TO_RIGHT);
+    GUICommandDictionary::InsertCommand(_T("Edit.DeleteWordBack"),             ID_EDIT_DELETE_WORD_TO_LEFT);
+    GUICommandDictionary::InsertCommand(_T("Edit.DeleteLine"),                 ID_EDIT_DELETE_LINE);
+    GUICommandDictionary::InsertCommand(_T("Edit.DeleteBookmarkedLines"),      ID_EDIT_DELETE_BOOKMARKED);
+    GUICommandDictionary::InsertCommand(_T("Edit.SelectWord"),                 ID_EDIT_SELECT_WORD);
+    GUICommandDictionary::InsertCommand(_T("Edit.SelectLine"),                 ID_EDIT_SELECT_LINE);
+    GUICommandDictionary::InsertCommand(_T("Edit.SelectAll"),                  ID_EDIT_SELECT_ALL);
+    GUICommandDictionary::InsertCommand(_T("Edit.ScrollUp"),                   ID_EDIT_SCROLL_UP);
+    GUICommandDictionary::InsertCommand(_T("Edit.ScrollToCenter"),             ID_EDIT_SCROLL_CENTER);
+    GUICommandDictionary::InsertCommand(_T("Edit.ScrollToCenter"),             ID_EDIT_SCROLL_CENTER);
+    GUICommandDictionary::InsertCommand(_T("Edit.ScrollDown"),                 ID_EDIT_SCROLL_DOWN);
     //Search
-    GUICommandDictionary::InsertCommand("Edit.Find",                       ID_EDIT_FIND);
-    GUICommandDictionary::InsertCommand("Edit.Replace",                    ID_EDIT_REPLACE);
-    GUICommandDictionary::InsertCommand("Edit.FindNext",                   ID_EDIT_FIND_NEXT);
-    GUICommandDictionary::InsertCommand("Edit.FindPrevious",               ID_EDIT_FIND_PREVIOUS);
-    GUICommandDictionary::InsertCommand("Edit.GoTo",                       ID_EDIT_GOTO);
-    GUICommandDictionary::InsertCommand("Edit.JumpNext",                   ID_EDIT_NEXT);
-    GUICommandDictionary::InsertCommand("Edit.JumpPrevious",               ID_EDIT_PREVIOUS);
-    GUICommandDictionary::InsertCommand("Edit.ToggleBookmark",             ID_EDIT_BKM_TOGGLE);
-    GUICommandDictionary::InsertCommand("Edit.NextBookmark",               ID_EDIT_BKM_NEXT);
-    GUICommandDictionary::InsertCommand("Edit.PreviousBookmark",           ID_EDIT_BKM_PREV);
-    GUICommandDictionary::InsertCommand("Edit.RemoveallBookmarks",         ID_EDIT_BKM_REMOVE_ALL);
+    GUICommandDictionary::InsertCommand(_T("Edit.Find"),                       ID_EDIT_FIND);
+    GUICommandDictionary::InsertCommand(_T("Edit.Replace"),                    ID_EDIT_REPLACE);
+    GUICommandDictionary::InsertCommand(_T("Edit.FindNext"),                   ID_EDIT_FIND_NEXT);
+    GUICommandDictionary::InsertCommand(_T("Edit.FindPrevious"),               ID_EDIT_FIND_PREVIOUS);
+    GUICommandDictionary::InsertCommand(_T("Edit.GoTo"),                       ID_EDIT_GOTO);
+    GUICommandDictionary::InsertCommand(_T("Edit.JumpNext"),                   ID_EDIT_NEXT);
+    GUICommandDictionary::InsertCommand(_T("Edit.JumpPrevious"),               ID_EDIT_PREVIOUS);
+    GUICommandDictionary::InsertCommand(_T("Edit.ToggleBookmark"),             ID_EDIT_BKM_TOGGLE);
+    GUICommandDictionary::InsertCommand(_T("Edit.NextBookmark"),               ID_EDIT_BKM_NEXT);
+    GUICommandDictionary::InsertCommand(_T("Edit.PreviousBookmark"),           ID_EDIT_BKM_PREV);
+    GUICommandDictionary::InsertCommand(_T("Edit.RemoveallBookmarks"),         ID_EDIT_BKM_REMOVE_ALL);
     //SetRandomBookmark
-    GUICommandDictionary::InsertCommand("Edit.SetRandomBookmark.0",        ID_EDIT_BKM_SET_0);
-    GUICommandDictionary::InsertCommand("Edit.SetRandomBookmark.1",        ID_EDIT_BKM_SET_1);
-    GUICommandDictionary::InsertCommand("Edit.SetRandomBookmark.2",        ID_EDIT_BKM_SET_2);
-    GUICommandDictionary::InsertCommand("Edit.SetRandomBookmark.3",        ID_EDIT_BKM_SET_3);
-    GUICommandDictionary::InsertCommand("Edit.SetRandomBookmark.4",        ID_EDIT_BKM_SET_4);
-    GUICommandDictionary::InsertCommand("Edit.SetRandomBookmark.5",        ID_EDIT_BKM_SET_5);
-    GUICommandDictionary::InsertCommand("Edit.SetRandomBookmark.6",        ID_EDIT_BKM_SET_6);
-    GUICommandDictionary::InsertCommand("Edit.SetRandomBookmark.7",        ID_EDIT_BKM_SET_7);
-    GUICommandDictionary::InsertCommand("Edit.SetRandomBookmark.8",        ID_EDIT_BKM_SET_8);
-    GUICommandDictionary::InsertCommand("Edit.SetRandomBookmark.9",        ID_EDIT_BKM_SET_9);
+    GUICommandDictionary::InsertCommand(_T("Edit.SetRandomBookmark.0"),        ID_EDIT_BKM_SET_0);
+    GUICommandDictionary::InsertCommand(_T("Edit.SetRandomBookmark.1"),        ID_EDIT_BKM_SET_1);
+    GUICommandDictionary::InsertCommand(_T("Edit.SetRandomBookmark.2"),        ID_EDIT_BKM_SET_2);
+    GUICommandDictionary::InsertCommand(_T("Edit.SetRandomBookmark.3"),        ID_EDIT_BKM_SET_3);
+    GUICommandDictionary::InsertCommand(_T("Edit.SetRandomBookmark.4"),        ID_EDIT_BKM_SET_4);
+    GUICommandDictionary::InsertCommand(_T("Edit.SetRandomBookmark.5"),        ID_EDIT_BKM_SET_5);
+    GUICommandDictionary::InsertCommand(_T("Edit.SetRandomBookmark.6"),        ID_EDIT_BKM_SET_6);
+    GUICommandDictionary::InsertCommand(_T("Edit.SetRandomBookmark.7"),        ID_EDIT_BKM_SET_7);
+    GUICommandDictionary::InsertCommand(_T("Edit.SetRandomBookmark.8"),        ID_EDIT_BKM_SET_8);
+    GUICommandDictionary::InsertCommand(_T("Edit.SetRandomBookmark.9"),        ID_EDIT_BKM_SET_9);
     //GetRandomBookmark
-    GUICommandDictionary::InsertCommand("Edit.GetRandomBookmark.0",        ID_EDIT_BKM_GET_0);
-    GUICommandDictionary::InsertCommand("Edit.GetRandomBookmark.1",        ID_EDIT_BKM_GET_1);
-    GUICommandDictionary::InsertCommand("Edit.GetRandomBookmark.2",        ID_EDIT_BKM_GET_2);
-    GUICommandDictionary::InsertCommand("Edit.GetRandomBookmark.3",        ID_EDIT_BKM_GET_3);
-    GUICommandDictionary::InsertCommand("Edit.GetRandomBookmark.4",        ID_EDIT_BKM_GET_4);
-    GUICommandDictionary::InsertCommand("Edit.GetRandomBookmark.5",        ID_EDIT_BKM_GET_5);
-    GUICommandDictionary::InsertCommand("Edit.GetRandomBookmark.6",        ID_EDIT_BKM_GET_6);
-    GUICommandDictionary::InsertCommand("Edit.GetRandomBookmark.7",        ID_EDIT_BKM_GET_7);
-    GUICommandDictionary::InsertCommand("Edit.GetRandomBookmark.8",        ID_EDIT_BKM_GET_8);
-    GUICommandDictionary::InsertCommand("Edit.GetRandomBookmark.9",        ID_EDIT_BKM_GET_9);
-    GUICommandDictionary::InsertCommand("Edit.FindMatch",                  ID_EDIT_FIND_MATCH);
-    GUICommandDictionary::InsertCommand("Edit.FindMatchSelect",            ID_EDIT_FIND_MATCH_N_SELECT);
-    GUICommandDictionary::InsertCommand("Edit.FindInFile",                 ID_FILE_FIND_IN_FILE);
+    GUICommandDictionary::InsertCommand(_T("Edit.GetRandomBookmark.0"),        ID_EDIT_BKM_GET_0);
+    GUICommandDictionary::InsertCommand(_T("Edit.GetRandomBookmark.1"),        ID_EDIT_BKM_GET_1);
+    GUICommandDictionary::InsertCommand(_T("Edit.GetRandomBookmark.2"),        ID_EDIT_BKM_GET_2);
+    GUICommandDictionary::InsertCommand(_T("Edit.GetRandomBookmark.3"),        ID_EDIT_BKM_GET_3);
+    GUICommandDictionary::InsertCommand(_T("Edit.GetRandomBookmark.4"),        ID_EDIT_BKM_GET_4);
+    GUICommandDictionary::InsertCommand(_T("Edit.GetRandomBookmark.5"),        ID_EDIT_BKM_GET_5);
+    GUICommandDictionary::InsertCommand(_T("Edit.GetRandomBookmark.6"),        ID_EDIT_BKM_GET_6);
+    GUICommandDictionary::InsertCommand(_T("Edit.GetRandomBookmark.7"),        ID_EDIT_BKM_GET_7);
+    GUICommandDictionary::InsertCommand(_T("Edit.GetRandomBookmark.8"),        ID_EDIT_BKM_GET_8);
+    GUICommandDictionary::InsertCommand(_T("Edit.GetRandomBookmark.9"),        ID_EDIT_BKM_GET_9);
+    GUICommandDictionary::InsertCommand(_T("Edit.FindMatch"),                  ID_EDIT_FIND_MATCH);
+    GUICommandDictionary::InsertCommand(_T("Edit.FindMatchSelect"),            ID_EDIT_FIND_MATCH_N_SELECT);
+    GUICommandDictionary::InsertCommand(_T("Edit.FindInFile"),                 ID_FILE_FIND_IN_FILE);
     //Format
-    GUICommandDictionary::InsertCommand("Edit.Sort",                       ID_EDIT_SORT);
-    GUICommandDictionary::InsertCommand("Edit.IndentSelection",            ID_EDIT_INDENT);
-    GUICommandDictionary::InsertCommand("Edit.UndentSelection",            ID_EDIT_UNDENT);
-    GUICommandDictionary::InsertCommand("Edit.UntabifySelection",          ID_EDIT_UNTABIFY);
-    GUICommandDictionary::InsertCommand("Edit.TabifySelectionAll",         ID_EDIT_TABIFY);
-    GUICommandDictionary::InsertCommand("Edit.TabifySelectionLeading",     ID_EDIT_TABIFY_LEADING);
-    GUICommandDictionary::InsertCommand("Edit.NormalizeKeyword",           ID_EDIT_NORMALIZE_TEXT);
-    GUICommandDictionary::InsertCommand("Edit.Lowercase",                  ID_EDIT_LOWER);
-    GUICommandDictionary::InsertCommand("Edit.Uppercase",                  ID_EDIT_UPPER);
-    GUICommandDictionary::InsertCommand("Edit.Capitalize",                 ID_EDIT_CAPITALIZE);
-    GUICommandDictionary::InsertCommand("Edit.InvertCase",                 ID_EDIT_INVERT_CASE);
-    GUICommandDictionary::InsertCommand("Edit.CommentLine",                ID_EDIT_COMMENT);
-    GUICommandDictionary::InsertCommand("Edit.UncommentLine",              ID_EDIT_UNCOMMENT);
-    GUICommandDictionary::InsertCommand("Edit.ExpandTemplate",             ID_EDIT_EXPAND_TEMPLATE);
-    GUICommandDictionary::InsertCommand("Edit.DatetimeStamp",              ID_EDIT_DATETIME_STAMP);
+    GUICommandDictionary::InsertCommand(_T("Edit.Sort"),                       ID_EDIT_SORT);
+    GUICommandDictionary::InsertCommand(_T("Edit.IndentSelection"),            ID_EDIT_INDENT);
+    GUICommandDictionary::InsertCommand(_T("Edit.UndentSelection"),            ID_EDIT_UNDENT);
+    GUICommandDictionary::InsertCommand(_T("Edit.UntabifySelection"),          ID_EDIT_UNTABIFY);
+    GUICommandDictionary::InsertCommand(_T("Edit.TabifySelectionAll"),         ID_EDIT_TABIFY);
+    GUICommandDictionary::InsertCommand(_T("Edit.TabifySelectionLeading"),     ID_EDIT_TABIFY_LEADING);
+    GUICommandDictionary::InsertCommand(_T("Edit.NormalizeKeyword"),           ID_EDIT_NORMALIZE_TEXT);
+    GUICommandDictionary::InsertCommand(_T("Edit.Lowercase"),                  ID_EDIT_LOWER);
+    GUICommandDictionary::InsertCommand(_T("Edit.Uppercase"),                  ID_EDIT_UPPER);
+    GUICommandDictionary::InsertCommand(_T("Edit.Capitalize"),                 ID_EDIT_CAPITALIZE);
+    GUICommandDictionary::InsertCommand(_T("Edit.InvertCase"),                 ID_EDIT_INVERT_CASE);
+    GUICommandDictionary::InsertCommand(_T("Edit.CommentLine"),                ID_EDIT_COMMENT);
+    GUICommandDictionary::InsertCommand(_T("Edit.UncommentLine"),              ID_EDIT_UNCOMMENT);
+    GUICommandDictionary::InsertCommand(_T("Edit.ExpandTemplate"),             ID_EDIT_EXPAND_TEMPLATE);
+    GUICommandDictionary::InsertCommand(_T("Edit.DatetimeStamp"),              ID_EDIT_DATETIME_STAMP);
     //Text
-    GUICommandDictionary::InsertCommand("Edit.StreamSelection",            ID_EDIT_STREAM_SEL);
-    GUICommandDictionary::InsertCommand("Edit.ColumnSelection",            ID_EDIT_COLUMN_SEL);
-    GUICommandDictionary::InsertCommand("Edit.ToggleSelectionMode",        ID_EDIT_TOGGLES_SEL);
-    GUICommandDictionary::InsertCommand("Edit.VisibleSpaces",              ID_EDIT_VIEW_WHITE_SPACE);
-    GUICommandDictionary::InsertCommand("Edit.LineNumbers",                ID_EDIT_VIEW_LINE_NUMBERS);
-    GUICommandDictionary::InsertCommand("Edit.FileSettings",               ID_EDIT_FILE_SETTINGS);
-    GUICommandDictionary::InsertCommand("Edit.PermanentSettings",          ID_EDIT_PERMANENT_SETTINGS);
+    GUICommandDictionary::InsertCommand(_T("Edit.StreamSelection"),            ID_EDIT_STREAM_SEL);
+    GUICommandDictionary::InsertCommand(_T("Edit.ColumnSelection"),            ID_EDIT_COLUMN_SEL);
+    GUICommandDictionary::InsertCommand(_T("Edit.ToggleSelectionMode"),        ID_EDIT_TOGGLES_SEL);
+    GUICommandDictionary::InsertCommand(_T("Edit.VisibleSpaces"),              ID_EDIT_VIEW_WHITE_SPACE);
+    GUICommandDictionary::InsertCommand(_T("Edit.LineNumbers"),                ID_EDIT_VIEW_LINE_NUMBERS);
+    GUICommandDictionary::InsertCommand(_T("Edit.FileSettings"),               ID_EDIT_FILE_SETTINGS);
+    GUICommandDictionary::InsertCommand(_T("Edit.PermanentSettings"),          ID_EDIT_PERMANENT_SETTINGS);
     //Session
-    GUICommandDictionary::InsertCommand("Session.Connect",                 ID_ODBC_CONNECT);
-    GUICommandDictionary::InsertCommand("Session.Disconnect",              ID_ODBC_DISCONNECT);
-    GUICommandDictionary::InsertCommand("Session.Begin",                   ID_ODBC_BEGIN);
-    GUICommandDictionary::InsertCommand("Session.Commit",                  ID_ODBC_COMMIT);
-    GUICommandDictionary::InsertCommand("Session.Rollback",                ID_ODBC_ROLLBACK);
-    GUICommandDictionary::InsertCommand("Session.ODBCReport",              ID_SESSION_ODBCREPORT);
-    GUICommandDictionary::InsertCommand("Session.SessionStatus",           ID_SESSIONSTATUS);
+    GUICommandDictionary::InsertCommand(_T("Session.Connect"),                 ID_ODBC_CONNECT);
+    GUICommandDictionary::InsertCommand(_T("Session.Disconnect"),              ID_ODBC_DISCONNECT);
+    GUICommandDictionary::InsertCommand(_T("Session.Begin"),                   ID_ODBC_BEGIN);
+    GUICommandDictionary::InsertCommand(_T("Session.Commit"),                  ID_ODBC_COMMIT);
+    GUICommandDictionary::InsertCommand(_T("Session.Rollback"),                ID_ODBC_ROLLBACK);
+    GUICommandDictionary::InsertCommand(_T("Session.ODBCReport"),              ID_SESSION_ODBCREPORT);
+    GUICommandDictionary::InsertCommand(_T("Session.SessionStatus"),           ID_SESSIONSTATUS);
     //Script
-    GUICommandDictionary::InsertCommand("Script.Native",                   ID_SCRIPT_NATIVE);
-    GUICommandDictionary::InsertCommand("Script.Execute",                  ID_SCRIPT_EXECUTE);
-    GUICommandDictionary::InsertCommand("Script.ExecuteCurrent",           ID_SCRIPT_CURRENT);
-    GUICommandDictionary::InsertCommand("Script.ExecuteAndStep",           ID_SCRIPT_EXECUTESTEP);
-    GUICommandDictionary::InsertCommand("Script.FindTable",                ID_SCRIPT_FINDTABLE);
-    GUICommandDictionary::InsertCommand("Script.TableDDL",                 ID_SCRIPT_TABLEDDL);
-    GUICommandDictionary::InsertCommand("Script.Variables",                ID_SCRIPT_VARIABLES);
-    GUICommandDictionary::InsertCommand("Script.NextError",                ID_SCRIPT_NEXTERROR);
-    GUICommandDictionary::InsertCommand("Script.PreviousError",            ID_SCRIPT_PREVERROR);
+    GUICommandDictionary::InsertCommand(_T("Script.Native"),                   ID_SCRIPT_NATIVE);
+    GUICommandDictionary::InsertCommand(_T("Script.Execute"),                  ID_SCRIPT_EXECUTE);
+    GUICommandDictionary::InsertCommand(_T("Script.ExecuteCurrent"),           ID_SCRIPT_CURRENT);
+    GUICommandDictionary::InsertCommand(_T("Script.ExecuteAndStep"),           ID_SCRIPT_EXECUTESTEP);
+    GUICommandDictionary::InsertCommand(_T("Script.FindTable"),                ID_SCRIPT_FINDTABLE);
+    GUICommandDictionary::InsertCommand(_T("Script.TableDDL"),                 ID_SCRIPT_TABLEDDL);
+    GUICommandDictionary::InsertCommand(_T("Script.Variables"),                ID_SCRIPT_VARIABLES);
+    GUICommandDictionary::InsertCommand(_T("Script.NextError"),                ID_SCRIPT_NEXTERROR);
+    GUICommandDictionary::InsertCommand(_T("Script.PreviousError"),            ID_SCRIPT_PREVERROR);
     //View
-    GUICommandDictionary::InsertCommand("View.Toolbar",                    ID_VIEW_TOOLBAR);
-    GUICommandDictionary::InsertCommand("View.StatusBar",                  ID_VIEW_STATUS_BAR);
-    GUICommandDictionary::InsertCommand("View.FilePanel",                  ID_VIEW_FILE_PANEL);
-    GUICommandDictionary::InsertCommand("View.Workbook",                   ID_VIEW_WORKBOOK);
-    GUICommandDictionary::InsertCommand("View.NextPane",                   ID_NEXT_PANE);
-    GUICommandDictionary::InsertCommand("View.PrevPane",                   ID_PREV_PANE);
+    GUICommandDictionary::InsertCommand(_T("View.Toolbar"),                    ID_VIEW_TOOLBAR);
+    GUICommandDictionary::InsertCommand(_T("View.StatusBar"),                  ID_VIEW_STATUS_BAR);
+    GUICommandDictionary::InsertCommand(_T("View.FilePanel"),                  ID_VIEW_FILE_PANEL);
+    GUICommandDictionary::InsertCommand(_T("View.Workbook"),                   ID_VIEW_WORKBOOK);
+    GUICommandDictionary::InsertCommand(_T("View.NextPane"),                   ID_NEXT_PANE);
+    GUICommandDictionary::InsertCommand(_T("View.PrevPane"),                   ID_PREV_PANE);
     //Grid
-    GUICommandDictionary::InsertCommand("Grid.ShowGrid",                   ID_QUERY_GRID);
-    GUICommandDictionary::InsertCommand("Grid.ShowStatistics",             ID_QUERY_STATISTICS);
-    GUICommandDictionary::InsertCommand("Grid.ShowOutput",                 ID_QUERY_OUTPUT);
-    GUICommandDictionary::InsertCommand("Grid.ShowHistory",                ID_QUERY_HISTORY);
-    GUICommandDictionary::InsertCommand("Grid.SizeHeader",                 ID_QUERY_SIZEHEADER);
-    GUICommandDictionary::InsertCommand("Grid.SizeData",                   ID_QUERY_SIZEDATA);
-    GUICommandDictionary::InsertCommand("Grid.SizeBoth",                   ID_QUERY_SIZEBOTH);
+    GUICommandDictionary::InsertCommand(_T("Grid.ShowGrid"),                   ID_QUERY_GRID);
+    GUICommandDictionary::InsertCommand(_T("Grid.ShowStatistics"),             ID_QUERY_STATISTICS);
+    GUICommandDictionary::InsertCommand(_T("Grid.ShowOutput"),                 ID_QUERY_OUTPUT);
+    GUICommandDictionary::InsertCommand(_T("Grid.ShowHistory"),                ID_QUERY_HISTORY);
+    GUICommandDictionary::InsertCommand(_T("Grid.SizeHeader"),                 ID_QUERY_SIZEHEADER);
+    GUICommandDictionary::InsertCommand(_T("Grid.SizeData"),                   ID_QUERY_SIZEDATA);
+    GUICommandDictionary::InsertCommand(_T("Grid.SizeBoth"),                   ID_QUERY_SIZEBOTH);
 
-    GUICommandDictionary::InsertCommand("Grid.Begin",                      ID_QUERY_BEGIN);
-    GUICommandDictionary::InsertCommand("Grid.PrevPage",                   ID_QUERY_PREVPAGE);
-    GUICommandDictionary::InsertCommand("Grid.Prev",                       ID_QUERY_PREV);
-    GUICommandDictionary::InsertCommand("Grid.Next",                       ID_QUERY_NEXT);
-    GUICommandDictionary::InsertCommand("Grid.NextPage",                   ID_QUERY_NEXTPAGE);
-    GUICommandDictionary::InsertCommand("Grid.End",                        ID_QUERY_END);
-    GUICommandDictionary::InsertCommand("Grid.ExportHTML",                 ID_QUERY_HTML);
-    GUICommandDictionary::InsertCommand("Grid.ExportExcel",                ID_QUERY_EXCEL);   
-    GUICommandDictionary::InsertCommand("Grid.ExportTxt",                  ID_QUERY_TXT);
+    GUICommandDictionary::InsertCommand(_T("Grid.Begin"),                      ID_QUERY_BEGIN);
+    GUICommandDictionary::InsertCommand(_T("Grid.PrevPage"),                   ID_QUERY_PREVPAGE);
+    GUICommandDictionary::InsertCommand(_T("Grid.Prev"),                       ID_QUERY_PREV);
+    GUICommandDictionary::InsertCommand(_T("Grid.Next"),                       ID_QUERY_NEXT);
+    GUICommandDictionary::InsertCommand(_T("Grid.NextPage"),                   ID_QUERY_NEXTPAGE);
+    GUICommandDictionary::InsertCommand(_T("Grid.End"),                        ID_QUERY_END);
+    GUICommandDictionary::InsertCommand(_T("Grid.ExportHTML"),                 ID_QUERY_HTML);
+    GUICommandDictionary::InsertCommand(_T("Grid.ExportExcel"),                ID_QUERY_EXCEL);   
+    GUICommandDictionary::InsertCommand(_T("Grid.ExportTxt"),                  ID_QUERY_TXT);
     //Window
-    GUICommandDictionary::InsertCommand("Window.NewWindow",                ID_WINDOW_NEW);
-    GUICommandDictionary::InsertCommand("Window.Cascade",                  ID_WINDOW_CASCADE);
-    GUICommandDictionary::InsertCommand("Window.TileHorizontally",         ID_WINDOW_TILE_HORZ);
-    GUICommandDictionary::InsertCommand("Window.TileVertically",           ID_WINDOW_TILE_VERT);
-    GUICommandDictionary::InsertCommand("Window.ArrangeIcons",             ID_WINDOW_ARRANGE);
-    GUICommandDictionary::InsertCommand("Window.LastWindow",               ID_WINDOW_LAST);
+    GUICommandDictionary::InsertCommand(_T("Window.NewWindow"),                ID_WINDOW_NEW);
+    GUICommandDictionary::InsertCommand(_T("Window.Cascade"),                  ID_WINDOW_CASCADE);
+    GUICommandDictionary::InsertCommand(_T("Window.TileHorizontally"),         ID_WINDOW_TILE_HORZ);
+    GUICommandDictionary::InsertCommand(_T("Window.TileVertically"),           ID_WINDOW_TILE_VERT);
+    GUICommandDictionary::InsertCommand(_T("Window.ArrangeIcons"),             ID_WINDOW_ARRANGE);
+    GUICommandDictionary::InsertCommand(_T("Window.LastWindow"),               ID_WINDOW_LAST);
     //Help
-    GUICommandDictionary::InsertCommand("Help.Index",                      ID_HELP_INDEX);
-    GUICommandDictionary::InsertCommand("Help.AboutOpenEditor",            ID_APP_ABOUT);
+    GUICommandDictionary::InsertCommand(_T("Help.Index"),                      ID_HELP_INDEX);
+    GUICommandDictionary::InsertCommand(_T("Help.AboutOpenEditor"),            ID_APP_ABOUT);
   }
 }
 
@@ -315,7 +315,7 @@ QueryToolApp::UpdateAccelAndMenu()
   CString buffer;
   Common::AppGetPath(buffer);
   if(GUICommandDictionary::BuildAcceleratorTable(
-    (buffer + "\\data\\" + COEDocument::GetSettingsManager().GetGlobalSettings().GetKeymapLayout() + ".keymap"),
+    (buffer + _T("\\data\\") + COEDocument::GetSettingsManager().GetGlobalSettings().GetKeymapLayout() + _T(".keymap")),
     m_accelTable))
   {
     POSITION pos = m_pDocManager->GetFirstDocTemplatePosition();
@@ -353,7 +353,7 @@ BOOL QueryToolApp::InitInstance()
   {
     // Load editor settings
     COEDocument::LoadSettingsManager();
-    setlocale(LC_ALL, COEDocument::GetSettingsManager().GetGlobalSettings().GetLocale());
+    _tsetlocale(LC_ALL, COEDocument::GetSettingsManager().GetGlobalSettings().GetLocale());
 
     if (!AllowThisInstance()) // must be after COEDocument::LoadSettingsManager();
     {
@@ -363,7 +363,7 @@ BOOL QueryToolApp::InitInstance()
 
     if (!AfxOleInit())
     {
-      AfxMessageBox("OLE Initialization failed!");
+      AfxMessageBox(_T("OLE Initialization failed!"));
       return FALSE;
     }
     InitSQLComponents();
@@ -371,7 +371,7 @@ BOOL QueryToolApp::InitInstance()
     SetRegistryKey(PRODUCT_REGISTRY);
     if(SetRegistryProfile(PRODUCT_REGISTRY,PROGRAM_NAME,PROFILE_VERSION))
     {
-      StyleMessageBox(nullptr,"Version change: Your profile is re-initialized","Warning",MB_OK|MB_ICONINFORMATION);
+      StyleMessageBox(nullptr,_T("Version change: Your profile is re-initialized"),_T("Warning"),MB_OK|MB_ICONINFORMATION);
     }
     LoadStdProfileSettings(10);  // Load standard INI file options (including MRU)
     ParseODBCCommandLine();
@@ -451,7 +451,7 @@ BOOL QueryToolApp::InitInstance()
 	  pMainFrame->ShowWindow(m_nCmdShow);
 	  pMainFrame->UpdateWindow();
 
-    pMainFrame->SetConnectionText((CString)"No connection");
+    pMainFrame->SetConnectionText((CString)_T("No connection"));
     if (m_connString.IsEmpty())
     {
       // Go find a connection after we start
@@ -497,14 +497,14 @@ int QueryToolApp::ExitInstance()
 BOOL
 QueryToolApp::ParseODBCCommandLine()
 {
-  m_connString = "";
+  m_connString = _T("");
   for (int i = 1; i < __argc; i++)
   {
-    LPCSTR lpszParam = __argv[i];
+    LPCTSTR lpszParam = __targv[i];
 
-    if (lpszParam[0] == '-' || lpszParam[0] == '/')
+    if (lpszParam[0] == _T('-') || lpszParam[0] == '/')
     {
-      if (_strnicmp(&lpszParam[1], "CONNECT:", 8) == 0)
+      if (_tcsncicmp(&lpszParam[1], _T("CONNECT:"), 8) == 0)
       {
         m_connString = &lpszParam[9];
       }
@@ -521,20 +521,20 @@ BOOL QueryToolApp::AllowThisInstance ()
        cmdInfo.m_nShellCommand == CCommandLineInfo::FileOpen)
   && !COEDocument::GetSettingsManager().GetGlobalSettings().GetAllowMultipleInstances())
   {
-    const char* cszMutex = "EDO.ODBCQueryTool";
-    const char* cszError = "Cannot connect to another program instance.";
+    const TCHAR* cszMutex = _T("EDO.ODBCQueryTool");
+    const TCHAR* cszError = _T("Cannot connect to another program instance.");
 
     m_hMutex = CreateMutex(NULL, FALSE, cszMutex);
     if (m_hMutex == NULL)
     {
-        AfxMessageBox(CString(cszError) + " CreateMutex error.", MB_OK|MB_ICONHAND);
+        AfxMessageBox(CString(cszError) + _T(" CreateMutex error."), MB_OK|MB_ICONHAND);
         return TRUE;
     }
 
     DWORD dwWaitResult = WaitForSingleObject(m_hMutex, 3000L);
     if (dwWaitResult == WAIT_TIMEOUT)
     {
-      AfxMessageBox(CString(cszError) + " WaitForMutex timeout.", MB_OK|MB_ICONHAND);
+      AfxMessageBox(CString(cszError) + _T(" WaitForMutex timeout."), MB_OK|MB_ICONHAND);
       return TRUE;
     }
 
@@ -544,9 +544,9 @@ BOOL QueryToolApp::AllowThisInstance ()
       CString buffer;
       if (cmdInfo.m_nShellCommand == CCommandLineInfo::FileOpen)
       {
-	      char *filename;
+	      TCHAR *filename;
         int length = GetFullPathName(cmdInfo.m_strFileName, 0, 0, &filename);
-        char *buff = buffer.GetBuffer(length + 1);
+        TCHAR *buff = buffer.GetBuffer(length + 1);
         GetFullPathName(cmdInfo.m_strFileName, length + 1, buff, &filename);
         buffer.ReleaseBuffer();
       }
@@ -554,7 +554,7 @@ BOOL QueryToolApp::AllowThisInstance ()
       COPYDATASTRUCT cpdata;
       cpdata.dwData = 1;
       cpdata.cbData = buffer.GetLength();
-      cpdata.lpData = (cpdata.cbData) ? (LPVOID)(LPCSTR)buffer : NULL;
+      cpdata.lpData = (cpdata.cbData) ? (LPVOID)(LPCTSTR)buffer : NULL;
 
       DWORD_PTR dwResult = TRUE;
       if (SendMessageTimeout( hAnother,                       // handle to window
@@ -612,9 +612,9 @@ bool
 QueryToolApp::AppStarted25Times()
 {
   bool result = false;
-  CString key("HKCU\\Software\\");
+  CString key(_T("HKCU\\Software\\"));
   key += PRODUCT_REGISTRY;
-  CString amount("TimesStarted");
+  CString amount(_T("TimesStarted"));
 
   RegistryManager manager;
   int times = manager.GetRegistryInteger(key,amount,0);
@@ -639,7 +639,7 @@ QueryToolApp::OnEditPermanetSettings()
   try
   {
     COEDocument::ShowSettingsDialog();
-    setlocale(LC_ALL, COEDocument::GetSettingsManager().GetGlobalSettings().GetLocale());
+    _tsetlocale(LC_ALL, COEDocument::GetSettingsManager().GetGlobalSettings().GetLocale());
     UpdateAccelAndMenu();
     RefreshODBCPanels();
   }
@@ -655,7 +655,7 @@ QueryToolApp::OnUpdateEditIndicators(CCmdUI* pCmdUI)
 void 
 QueryToolApp::OnFileWatchNotify(WPARAM, LPARAM)
 {
-  TRACE("COpenEditorApp::OnFileWatchNotify\n");
+  TRACE(_T("COpenEditorApp::OnFileWatchNotify\n"));
   CFileWatch::NotifyClients();
 }
 
@@ -720,12 +720,12 @@ QueryToolApp::OnUpdate_FileSaveAll(CCmdUI* pCmdUI)
 
 void QueryToolApp::OnDblKeyAccel(UINT nID)
 {
-  string desc;
+  CString desc;
   m_dblKeyAccelInx = nID - ID_APP_DBLKEYACCEL_FIRST;
   if (GUICommandDictionary::GetDblKeyDescription(m_dblKeyAccelInx, desc))
   {
-    desc += " was pressed. Waiting for second key of chord...";
-    Common::SetStatusText(desc.c_str(), TRUE);
+    desc += _T(" was pressed. Waiting for second key of chord...");
+    Common::SetStatusText(desc.GetString(), TRUE);
   }
 }
 
@@ -756,16 +756,16 @@ QueryToolApp::UpdateDatabaseConnector()
     CString conText(m_user);
     if(!m_user.IsEmpty())
     {
-      conText += "@";
+      conText += _T("@");
     }
     conText += m_datasource;
     if(m_safty)
     {
-      conText += " (safe)";
+      conText += _T(" (safe)");
     }
     frame->SetConnectionText(conText);
   }
-  Common::SetStatusText("", TRUE);
+  Common::SetStatusText(_T(""), TRUE);
   // Refresh the ODBC Pane
   // TAKES TOO MUCH TIME
   // frame->OnFpwRefreshOdbc();
@@ -783,7 +783,7 @@ QueryToolApp::OnConnect()
 {
   if(m_database.IsOpen())
   {
-    AfxMessageBox("Already connected to an ODBC datasource!");
+    AfxMessageBox(_T("Already connected to an ODBC datasource!"));
     return;
   }
   INT_PTR result = 0;
@@ -869,7 +869,7 @@ QueryToolApp::OnConnect()
       }
       if(!result)
       {
-        AfxMessageBox("Cannot open database. Provide correct user/password details",MB_OK | MB_ICONERROR);
+        AfxMessageBox(_T("Cannot open database. Provide correct user/password details"),MB_OK | MB_ICONERROR);
       }
       delete connection;
     }
@@ -886,8 +886,8 @@ QueryToolApp::OnDisconnect()
     if(m_database.GetTransaction())
     {
       CString warning;
-      warning.Format("There is still a running transaction to database: %s.\r\n"
-                     "Loose your changes altogether and disconnect?",GetDatasource());
+      warning.Format(_T("There is still a running transaction to database: %s.\r\n")
+                     _T("Loose your changes altogether and disconnect?"),GetDatasource());
       if(AfxMessageBox(warning,MB_YESNO | MB_ICONEXCLAMATION) == IDNO)
       {
         return;
@@ -899,7 +899,7 @@ QueryToolApp::OnDisconnect()
     // OK, It's disconnected
     if(!m_isClosing)
     {
-      CString conText = "No connection";
+      CString conText = _T("No connection");
       ((CMainFrame*)m_pMainWnd)->SetConnectionText(conText);
     }
   }
@@ -907,7 +907,7 @@ QueryToolApp::OnDisconnect()
   {
     if(!m_isClosing)
     {
-      AfxMessageBox("Not connected to an ODBC datasource!");
+      AfxMessageBox(_T("Not connected to an ODBC datasource!"));
     }
   }
   // Refresh the ODBC info
@@ -930,7 +930,7 @@ QueryToolApp::ReportCapabilities()
 {
   if (m_pMainWnd)
   {
-    CString filename = "C:\\ReportODBC.txt";
+    CString filename = _T("C:\\ReportODBC.txt");
 
     if (!AfxGetApp()->DoPromptFileName(filename
                                       ,AFX_IDS_SAVEFILE
@@ -950,10 +950,10 @@ QueryToolApp::OnODBCBegin()
 {
   if (!m_database.IsOpen())
   {
-    AfxMessageBox("BEGIN: There is no current connection to a database", MB_OK | MB_ICONEXCLAMATION);
+    AfxMessageBox(_T("BEGIN: There is no current connection to a database"), MB_OK | MB_ICONEXCLAMATION);
     return;
   }
-  m_transaction = new SQLTransaction(&m_database, "Transaction");
+  m_transaction = new SQLTransaction(&m_database, _T("Transaction"));
 }
 
 void
@@ -961,7 +961,7 @@ QueryToolApp::OnODBCCommit()
 {
   if (!m_database.IsOpen())
   {
-    AfxMessageBox("COMMIT: There is no current connection to a database", MB_OK | MB_ICONEXCLAMATION);
+    AfxMessageBox(_T("COMMIT: There is no current connection to a database"), MB_OK | MB_ICONEXCLAMATION);
     return;
   }
   if (m_transaction)
@@ -977,7 +977,7 @@ QueryToolApp::OnODBCRollback()
 {
   if (!m_database.IsOpen())
   {
-    AfxMessageBox("ROLLBACK: There is no current connection to a database", MB_OK | MB_ICONEXCLAMATION);
+    AfxMessageBox(_T("ROLLBACK: There is no current connection to a database"), MB_OK | MB_ICONEXCLAMATION);
     return;
   }
   if (m_transaction)
@@ -997,7 +997,7 @@ QueryToolApp::GetExeDirectory(void)
   // stands between " 
   {
     int pos1 = sCommandLine.Find('"');
-    int pos = sCommandLine.Find('"',pos1+1);
+    int pos = sCommandLine.Find(_T('"'),pos1+1);
     if(pos >= 0)
     {
       sRetval = sCommandLine.Mid(1,pos-1);
@@ -1032,7 +1032,7 @@ QueryToolApp::GetExeDirectory(void)
   }
   if(slash==-1)
   {
-    return "";
+    return _T("");
   }
   return sRetval.Left(slash);
 }
@@ -1041,17 +1041,17 @@ QueryToolApp::OnCHMHelp()
 {
   CString directory = GetExeDirectory();
   directory.MakeUpper();
-  RunShellCommand((char *)directory.GetString()
-                 ,"open"
-                 ,"ODBCQueryTool.chm"
-                 ,"");
+  RunShellCommand((TCHAR *)directory.GetString()
+                 ,_T("open")
+                 ,_T("ODBCQueryTool.chm")
+                 ,_T(""));
 }
 
 void
-QueryToolApp::RunShellCommand(const char* directory
-                             ,const char* command
-                             ,const char* filename
-                             ,const char* parameters)
+QueryToolApp::RunShellCommand(const TCHAR* directory
+                             ,const TCHAR* command
+                             ,const TCHAR* filename
+                             ,const TCHAR* parameters)
 {
   HWND hwnd = GetMainWnd()->GetSafeHwnd();
   HINSTANCE res = ShellExecute(hwnd         // Controlling window
@@ -1062,8 +1062,8 @@ QueryToolApp::RunShellCommand(const char* directory
                               ,SW_MAXIMIZE);// Full scale visibility
   if ((DWORD_PTR)res < 32)
 	{
-		char buffer[1025];
-		char fout[100];
+		TCHAR buffer[1025];
+		TCHAR fout[100];
 		DWORD error = GetLastError();
 		FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM |
 									FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -1074,12 +1074,12 @@ QueryToolApp::RunShellCommand(const char* directory
 									500,
 									NULL
 		);
-		strcat_s(buffer,1024,"\r\nFile: ");
-		strcat_s(buffer,1024,filename);
-		sprintf_s(fout,100,"\r\nMS-Windows error: %d", error);
-		strcat_s(buffer,1024,fout);
+		_tcscat_s(buffer,1024,_T("\r\nFile: "));
+		_tcscat_s(buffer,1024,filename);
+		_stprintf_s(fout,100,_T("\r\nMS-Windows error: %d"), error);
+		_tcscat_s(buffer,1024,fout);
 		// Display the string. 
-		StyleMessageBox(m_pMainWnd,buffer,"ODBC QueryTool",MB_OK|MB_ICONINFORMATION);
+		StyleMessageBox(m_pMainWnd,buffer,_T("ODBC QueryTool"),MB_OK|MB_ICONINFORMATION);
 	}
 }
 
@@ -1105,11 +1105,11 @@ QueryToolApp::OpenDatabaseConnectie()
   if(m_connString.IsEmpty())
   {
     // Standard ODBC connection string
-    connectStr += "DSN=";
+    connectStr += _T("DSN=");
     connectStr += m_datasource;
-    connectStr += ";UID=";
+    connectStr += _T(";UID=");
     connectStr += m_user;
-    connectStr += ";PWD=";
+    connectStr += _T(";PWD=");
     connectStr += m_password;
   }
   else
@@ -1118,12 +1118,12 @@ QueryToolApp::OpenDatabaseConnectie()
     connectStr = m_connString;
   }
   CString status;
-  status.Format("Trying to connect to: %s", m_datasource.GetString());
+  status.Format(_T("Trying to connect to: %s"), m_datasource.GetString());
   Common::SetStatusText(status,TRUE);
 
   // Reset the connection status on the DialogBar
   CMainFrame* frame = (CMainFrame*)m_pMainWnd;
-  frame->SetConnectionText((CString)"No connection");
+  frame->SetConnectionText((CString)_T("No connection"));
 
   try
   {
@@ -1141,7 +1141,7 @@ QueryToolApp::OpenDatabaseConnectie()
   }
   catch (CException* e)
   {
-    char buffer[1024];
+    TCHAR buffer[1024];
 
     e->ReportError();
     e->Delete();
@@ -1156,30 +1156,30 @@ QueryToolApp::OpenDatabaseConnectie()
   }
   catch (...)
   {
-    errorMessage += "No connection with the database";
+    errorMessage += _T("No connection with the database");
     didError = true;
   }
   if(didError)
   {
     CString password;
-    if(m_password != "")
+    if(m_password != _T(""))
     {
-      password = "********";
+      password = _T("********");
     }
-    errorMessage += "\r\nDatasource=\"";
+    errorMessage += _T("\r\nDatasource=\"");
     errorMessage += m_datasource;
-    errorMessage += "\" User=\"";
+    errorMessage += _T("\" User=\"");
     errorMessage += m_user;
-    errorMessage += "\" Password=\"";
+    errorMessage += _T("\" Password=\"");
     errorMessage += password;
-    errorMessage += "\"";
+    errorMessage += _T("\"");
     if(!m_connString.IsEmpty())
     {
-      errorMessage += "ConnectString = ";
+      errorMessage += _T("ConnectString = ");
       errorMessage += m_connString;
     }
     AfxMessageBox(errorMessage);
-    Common::SetStatusText("", TRUE);
+    Common::SetStatusText(_T(""), TRUE);
     return false;
   }
   return true;
@@ -1194,27 +1194,26 @@ QueryToolApp::SelectFirst100(CString& p_table)
 
     // Get the temp directory
     CString directory;
-    directory.GetEnvironmentVariable("TMP");
+    directory.GetEnvironmentVariable(_T("TMP"));
     directory.TrimRight('\\');
     // Get a filename for the table
     CString filename(directory);
-    filename += "\\";
-    filename += "Select_";
+    filename += _T("\\");
+    filename += _T("Select_");
     filename += p_table;
-    filename += ".sql";
+    filename += _T(".sql");
 
     try
     {
-      CString select("SELECT * FROM ");
+      CString select(_T("SELECT * FROM "));
       select += p_table;
-      select += ";\n";
+      select += _T(";\n");
 
-      FILE* fp = nullptr;
-      fopen_s(&fp, filename, "w");
-      if (fp)
+      WinFile file(filename);
+      if(file.Open(winfile_write | open_trans_text,FAttributes::attrib_none,Encoding::UTF8))
       {
-        fputs(select, fp);
-        fclose(fp);
+        file.Write(select);
+        file.Close();
       }
 
       // Open as a document
@@ -1225,7 +1224,7 @@ QueryToolApp::SelectFirst100(CString& p_table)
     }
     catch (CString& error)
     {
-      DoMessageBox("Cannot create select script for table: " + p_table + "\n" + error, MB_OK | MB_ICONERROR, 0);
+      DoMessageBox(_T("Cannot create select script for table: ") + p_table + _T("\n") + error, MB_OK | MB_ICONERROR, 0);
     }
   }
 }
@@ -1239,14 +1238,14 @@ QueryToolApp::TableDDL(CString& p_table)
 
     // Get the temp directory
     CString directory;
-    directory.GetEnvironmentVariable("TMP");
+    directory.GetEnvironmentVariable(_T("TMP"));
     directory.TrimRight('\\');
     // Get a filename for the table
     CString filename(directory);
-    filename += "\\";
-    filename += "CreateTable_";
+    filename += _T("\\");
+    filename += _T("CreateTable_");
     filename += p_table;
-    filename += ".sql";
+    filename += _T(".sql");
 
     try
     {
@@ -1257,7 +1256,7 @@ QueryToolApp::TableDDL(CString& p_table)
     }
     catch (CString& error)
     {
-      DoMessageBox("Cannot create DDL for table: " + p_table + "\n" + error, MB_OK | MB_ICONERROR, 0);
+      DoMessageBox(_T("Cannot create DDL for table: ") + p_table + _T("\n") + error, MB_OK | MB_ICONERROR, 0);
     }
   }
 }
@@ -1293,8 +1292,8 @@ QueryToolApp::SaveAllModified()
   if (m_database.GetTransaction())
   {
     CString warning;
-    warning.Format("There is still a running transaction to database: %s.\r\n"
-                   "Loose your changes altogether and disconnect?", GetDatasource());
+    warning.Format(_T("There is still a running transaction to database: %s.\r\n")
+                   _T("Loose your changes altogether and disconnect?"), GetDatasource());
     if (AfxMessageBox(warning, MB_YESNO | MB_ICONEXCLAMATION) == IDNO)
     {
       return FALSE;
@@ -1328,7 +1327,7 @@ QueryToolApp::SetTitle(CString p_document)
     title.LoadString(IDR_MAINFRAME);
     if(!p_document.IsEmpty())
     {
-      title += " - ";
+      title += _T(" - ");
       title += p_document;
     }
     m_pMainWnd->SetWindowText(title);
@@ -1347,7 +1346,7 @@ QueryToolApp::PreTranslateMessage(MSG* pMsg)
     {
       pMsg->message = WM_NULL;
       m_dblKeyAccelInx = -1;
-      Common::SetStatusText("", TRUE);
+      Common::SetStatusText(_T(""), TRUE);
       if (m_pMainWnd)
       {
         m_pMainWnd->SendMessage(WM_COMMAND, commandId);
@@ -1359,10 +1358,10 @@ QueryToolApp::PreTranslateMessage(MSG* pMsg)
           || (pMsg->message == WM_SYSCOMMAND)
           || (pMsg->message > WM_MOUSEFIRST && pMsg->message <= WM_MOUSELAST))
     {
-      string desc;
+      CString desc;
       GUICommandDictionary::GetDblKeyDescription(m_dblKeyAccelInx, desc, vkey);
-      desc += "   is not an acceleration sequence.";
-      Common::SetStatusText(desc.c_str(), TRUE);
+      desc += _T("   is not an acceleration sequence.");
+      Common::SetStatusText(desc.GetString(), TRUE);
       pMsg->message = WM_NULL;
       m_dblKeyAccelInx = -1;
       MessageBeep((UINT)-1);
@@ -1371,7 +1370,7 @@ QueryToolApp::PreTranslateMessage(MSG* pMsg)
   }
   else if(pMsg->message == WM_SYSKEYDOWN && pMsg->wParam == VK_F10)
   {
-    // Special case to bypase the F10 system key.
+    // Special case to bypass the F10 system key.
     // use the ALT key alone to get to the menu!!
     bool lctrldown = ::GetAsyncKeyState(VK_LCONTROL) & 0x8000;
     bool rctrldown = ::GetAsyncKeyState(VK_RCONTROL) & 0x8000;

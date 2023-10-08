@@ -54,8 +54,8 @@ SQLOperator;
 // Word translation of operators for filters, needed for XMLMessages
 typedef struct _operatorName
 {
-  const char* m_name;
-  int         m_operator;
+  LPCTSTR m_name;
+  int     m_operator;
 }
 OperatorName;
 

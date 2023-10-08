@@ -35,7 +35,10 @@ public:
   explicit SQLInfoAccess(SQLDatabase* p_database);
  ~SQLInfoAccess();
 
-  //////////////////////////////////////////////////////////////////////////
+ // RDBMS Uses INDENTITY or SEQUENCE interface
+ void    SetUseSequences(bool p_sequences) override;
+ 
+ //////////////////////////////////////////////////////////////////////////
   //
   // GENERALS (Strings & Booleans) 
   //
