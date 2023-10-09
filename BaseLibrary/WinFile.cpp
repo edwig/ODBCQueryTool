@@ -2231,7 +2231,7 @@ WinFile::GetIsAtEnd() const
     m_error = ::GetLastError();
     return true;
   }
-  size_t cpos = pos.QuadPart;
+  size_t cpos = (size_t)pos.QuadPart;
 
   // See if something went wrong
   if(size == (size_t)-1 || cpos == (size_t)-1)

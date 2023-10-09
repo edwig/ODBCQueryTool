@@ -13,6 +13,14 @@
       <Configuration>Debug</Configuration>
       <Platform>Win32</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseUnicode|Win32">
+      <Configuration>ReleaseUnicode</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="ReleaseUnicode|x64">
+      <Configuration>ReleaseUnicode</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
     <ProjectConfiguration Include="Release|Win32">
       <Configuration>Release</Configuration>
       <Platform>Win32</Platform>
@@ -53,6 +61,13 @@
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnicode|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
@@ -66,6 +81,13 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnicode|x64'" Label="Configuration">
     <ConfigurationType>Utility</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
@@ -86,6 +108,9 @@
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnicode|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
@@ -93,6 +118,9 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnicode|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
@@ -105,17 +133,29 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)bin_$(Configuration)x86\</OutDir>
-    <TargetName>Setup_OpenODBCQuerytool_3.1.1_32-Bits.exe</TargetName>
+    <TargetName>Setup_OpenODBCQuerytool_3.4.0_32-Bits.exe</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnicode|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)bin_$(Configuration)$(Platform)\</OutDir>
+    <TargetName>Setup_OpenODBCQuerytool_3.4.0_32-Bits.exe</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)bin_$(Configuration)$(Platform)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DebugUnicode|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)bin_$(Configuration)$(Platform)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <TargetName>Setup_OpenODBCQuerytool_3.3.1_64-Bits.exe</TargetName>
+    <TargetName>Setup_OpenODBCQuerytool_3.4.0_64-Bits.exe</TargetName>
+    <OutDir>$(SolutionDir)bin_$(Configuration)$(Platform)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnicode|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <TargetName>Setup_OpenODBCQuerytool_3.4.0_64-Bits.exe</TargetName>
     <OutDir>$(SolutionDir)bin_$(Configuration)$(Platform)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -160,11 +200,40 @@
     <PreBuildEvent>
       <Message>Building the installer</Message>
       <Command>cd "$(SolutionDir)Installer\Installer_32Bits"
-"C:\Program Files (x86)\NSIS\makensis.exe" Installer_32Bits.nsi</Command>
+"C:\Program Files (x86)\NSIS\makensis.exe" Installer_32Bits.nsi
+</Command>
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>cd "$(SolutionDir)Installer\Installer_32Bits"
-copy $(TargetName) "$(OutDir)"</Command>
+copy *.exe "$(OutDir)"</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>Deploying the installer</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnicode|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <PreBuildEvent>
+      <Message>Building the installer</Message>
+      <Command>cd "$(SolutionDir)Installer\Installer_32Bits"
+"C:\Program Files (x86)\NSIS\makensis.exe" Installer_32BitsUnicode.nsi</Command>
+    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>cd "$(SolutionDir)Installer\Installer_32Bits"
+copy *.exe "$(OutDir)"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Deploying the installer</Message>
@@ -211,14 +280,47 @@ copy $(TargetName) "$(OutDir)"</Command>
     </Link>
     <PreBuildEvent>
       <Command>cd "$(SolutionDir)Installer\Installer_64Bits"
-"C:\Program Files\NSIS\makensis.exe" Installer_64Bits.nsi</Command>
+"C:\Program Files\NSIS\makensis.exe" Installer_64Bits.nsi
+</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Building the installer</Message>
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>cd "$(SolutionDir)Installer\Installer_64Bits"
-copy $(TargetName) "$(OutDir)"</Command>
+copy *.exe "$(OutDir)"
+</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Message>To deployment directory</Message>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnicode|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <PreBuildEvent>
+      <Command>cd "$(SolutionDir)Installer\Installer_64Bits"
+"C:\Program Files\NSIS\makensis.exe" Installer_64BitsUnicode.nsi</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Building the installer</Message>
+    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>cd "$(SolutionDir)Installer\Installer_64Bits"
+copy *.exe "$(OutDir)"
+</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>To deployment directory</Message>
@@ -226,7 +328,9 @@ copy $(TargetName) "$(OutDir)"</Command>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="Installer_32bits\Installer_32Bits.nsi" />
+    <None Include="Installer_32bits\Installer_32BitsUnicode.nsi" />
     <None Include="Installer_64bits\Installer_64Bits.nsi" />
+    <None Include="Installer_64bits\Installer_64BitsUnicode.nsi" />
     <None Include="Installer_Algemeen.nsh" />
   </ItemGroup>
   <ItemGroup>

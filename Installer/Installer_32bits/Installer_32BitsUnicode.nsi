@@ -9,10 +9,11 @@
 ; Last change:       10-08-2023
 ; Versionnumber:     3.3.1
 ;-------------------------------------------------------
- !define PRODUCT_BITNESS      "64-Bits"
- !define InputDir             "..\..\Bin_Releasex64\"
+ !define PRODUCT_BITNESS      "32-Bits"
+ !define InputDir             "..\..\Bin_ReleaseUnicodeWin32\"
  !define RootDir              "..\..\"
- !define Unicode              ""
+ !define Unicode              "Unicode"
 
  !include ..\Installer_Algemeen.nsh
+ 
  

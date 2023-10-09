@@ -24,6 +24,12 @@
     <None Include="Installer_32bits\Installer_32Bits.nsi">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="Installer_64bits\Installer_64BitsUnicode.nsi">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="Installer_32bits\Installer_32BitsUnicode.nsi">
+      <Filter>Source Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="QUERY.ICO">

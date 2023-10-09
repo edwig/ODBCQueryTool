@@ -65,7 +65,7 @@
  XPStyle on
  RequestExecutionLevel admin
 ;--------------------------------------------------------------------------------------------------------
- OutFile "Setup_${PRODUCT_NAME}_${PRODUCT_VERSION}_${PRODUCT_BITNESS}.exe"
+ OutFile "Setup_${PRODUCT_NAME}_${PRODUCT_VERSION}_${PRODUCT_BITNESS}${Unicode}.exe"
 ;--------------------------------------------------------------------------------------------------------
 ; title of the setup
  Name "${PRODUCT_NAME} ${PRODUCT_VERSION} ${PRODUCT_BITNESS}"

@@ -12,6 +12,7 @@
  !define PRODUCT_BITNESS      "32-Bits"
  !define InputDir             "..\..\Bin_Releasex86\"
  !define RootDir              "..\..\"
+ !define Unicode              ""
 
  !include ..\Installer_Algemeen.nsh
  

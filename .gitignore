@@ -28,6 +28,16 @@ bin_Debugx64/
 bin_Releasex64/
 bin_Debugx86/
 bin_Releasex86/
+bin_DebugUnicodex86/
+bin_DebugUnicodex64/
+bin_ReleaseUnicodeWin32/
+bin_ReleaseUnicodex64/
+UnicodeDebug/
+UnicodeRelease/
+
+ReleaseUnicode/
+DebugUnicode/
+Win32/
 
 # Visual Studio 2015 cache/options directory 
 **/.vs/

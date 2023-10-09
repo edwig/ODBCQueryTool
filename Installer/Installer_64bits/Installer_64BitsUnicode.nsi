@@ -10,9 +10,9 @@
 ; Versionnumber:     3.3.1
 ;-------------------------------------------------------
  !define PRODUCT_BITNESS      "64-Bits"
- !define InputDir             "..\..\Bin_Releasex64\"
+ !define InputDir             "..\..\Bin_ReleaseUnicodex64\"
  !define RootDir              "..\..\"
- !define Unicode              ""
+ !define Unicode              "Unicode"
 
  !include ..\Installer_Algemeen.nsh
  

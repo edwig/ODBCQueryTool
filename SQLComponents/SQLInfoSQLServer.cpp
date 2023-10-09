@@ -197,7 +197,7 @@ SQLInfoSQLServer::GetRDBMSNumericPrecisionScale(SQLULEN& p_precision, SQLSMALLIN
   }
 
   // Scale MUST be smaller than the precision
-  if(p_scale >= p_precision)
+  if(p_scale >= (SQLSMALLINT) p_precision)
   {
     p_scale = (SQLSMALLINT) (p_precision - 1);
   }
