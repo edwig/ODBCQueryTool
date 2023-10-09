@@ -22,6 +22,19 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes 3.4.0
+------------------
+This version is dedicated to the conversion to Unicode 16. 
+The Unicode versions are still in early development stages. 
+For production environments you are still encouraged to choose for the (old fashioned) 
+ANSI/MBCS coding version.
+
+You can make a choise from the following set of installers:
+- 32 Bits ANSI/MBCS coding 
+- 32 Bits Unicode version 
+- 64 Bits ANSI/MBCS coding 
+- 64 Bits Unicode version 
+
 Releasenotes 3.3.1
 ------------------
 It is now possible to override the character set from the database by using one of two methods:

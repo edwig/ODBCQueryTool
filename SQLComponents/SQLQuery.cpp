@@ -1184,7 +1184,7 @@ SQLQuery::BindColumns()
     XString name(colName);
     if(type == SQL_C_CHAR || type == SQL_C_WCHAR || type == SQL_C_BINARY)
     {
-      if(precision <= 0 || precision > m_maxColumnLength)
+      if(precision <= 0 || precision > (SQLULEN)m_maxColumnLength)
       {
         atexec = icol;
         precision = 0;
