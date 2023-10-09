@@ -6,11 +6,11 @@
 ; Copyright (c) 2017 ir. W.E. Huisman
 ; All rights reserved
 ;
-; Last change:       10-08-2023
-; Versionnumber:     3.3.1
+; Last change:       09-10-2023
+; Versionnumber:     3.4.0
 ;-------------------------------------------------------
  !define PRODUCT_NAME                         "OpenODBCQuerytool"
- !define PRODUCT_VERSION                      "3.3.1"
+ !define PRODUCT_VERSION                      "3.4.0"
  !define PRODUCT_BUILDNUMBER                  "392"
  !define PRODUCT_PUBLISHER                    "EDO"
  !define PRODUCT_WEB_SITE                     "https://sourceforge.net/projects/odbcquerytool"
