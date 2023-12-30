@@ -91,7 +91,7 @@ typedef struct _metaInfoColumn
   int       m_position      { 0 };    // 17 Ordinal position in the table
   XString   m_isNullable;             // 18 'YES', 'NO' or 'UNKNOWN'
 
-  void GetPrecisionAndScale(XString& p_sql)
+  void GetPrecisionAndScale(XString& p_sql) const
   {
     if(m_columnSize > 0)
     {
@@ -103,14 +103,14 @@ typedef struct _metaInfoColumn
       p_sql += _T(")");
     }
   };
-  void GetNullable(XString& p_sql)
+  void GetNullable(XString& p_sql) const
   {
     if(!m_nullable)
     {
       p_sql += _T(" NOT NULL");
     }
   };
-  void GetDefault(XString& p_sql)
+  void GetDefault(XString& p_sql) const
   {
     if(!m_default.IsEmpty())
     {

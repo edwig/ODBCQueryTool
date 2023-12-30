@@ -54,6 +54,7 @@ public:
   SQLDatabase*    GetDatabase(const XString& p_connectionName);
   // Get the connection by name
   SQLConnection*  GetConnection(const XString& p_connectionName);
+  SQLConnection*  GetConnection(const int p_index);
   // Return current number of connections
   unsigned        GetConnections();
   // Return current number of maximum databases

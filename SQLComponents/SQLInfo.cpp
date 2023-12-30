@@ -2756,7 +2756,7 @@ SQLInfo::NativeSQL(HDBC hdbc,XString& sqlCommand)
   }
 
   SQLINTEGER retLen = 0;
-  SQLINTEGER buflen = sqlCommand.GetLength() * 2;
+  SQLINTEGER buflen = sqlCommand.GetLength() * 4;
   SQLTCHAR*  buffer = new SQLTCHAR[(size_t)buflen + 1];
 
   // Perform the conversion call

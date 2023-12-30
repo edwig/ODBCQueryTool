@@ -123,8 +123,8 @@ public:
   SQLVariant* SetParameter(          XString& p_param,bool p_wide = false,SQLParamType p_type = P_SQL_PARAM_INPUT);
 
   // Named parameters for DoSQLCall()
-  void SetParameterName(int p_num,XString p_name);
-  // Set bounded parameters for execute (all in one go)
+  bool SetParameterName(int p_num,XString p_name);
+  // Set bounded parameters for execute for datapumps (all in one go) 
   void SetParameters(VarMap* p_map);
 
   // SINGLE STATEMENT
@@ -204,13 +204,13 @@ public:
   // Getting the database (if any)
   SQLDatabase* GetDatabase();
   // Getting the database handle (if any)
-  HDBC        GetDatabaseHandle();
+  HDBC        GetDatabaseHandle() const;
   // Getting the statement handle (if any)
-  HSTMT       GetStatementHandle();
+  HSTMT       GetStatementHandle() const;
   // Getting the 'noscan' setting
-  bool        GetNoScan();
+  bool        GetNoScan() const;
   // LengthOption for SQLPrepare/SQLExecDirect
-  LOption     GetLengthOption();
+  LOption     GetLengthOption() const;
 
   // Getting the results of the query as a SQLVariant reference
   SQLVariant& operator[](int p_index);
@@ -263,7 +263,9 @@ private:
   // Construct the SQL for a function/procedure call
   XString     ConstructSQLForCall(XString& p_schema,const XString& p_procedure,bool p_hasReturn);
   // Direct call through ODBC escape language
-  SQLVariant* DoSQLCallODBCEscape(XString& p_schema,const XString& p_procedure,bool p_hasReturn);
+  SQLVariant* DoSQLCallODBCEscape         (XString& p_schema,const XString& p_procedure,bool p_hasReturn);
+  SQLVariant* DoSQLCallODBCNamedParameters(XString& p_schema,const XString& p_procedure,bool p_hasReturn);
+
   // Log parameter during the binding process
   void  LogParameter(int p_column,const SQLVariant* p_parameter);
   // Do the rebind replacement for a parameter
@@ -276,7 +278,7 @@ private:
   SQLDatabase*  m_database;          // Database
   HDBC          m_connection;        // In CTOR connection handle.
   HSTMT         m_hstmt;             // Statement handle
-  LOption       m_lengthOption;      // Statementlength at SQLPrepare/SQLExecDirect
+  LOption       m_lengthOption;      // Statement 1length at SQLPrepare/SQLExecDirect
   RETCODE       m_retCode;           // last SQL (error)code
   XString       m_lastError;         // last error string
   int           m_maxColumnLength;   // Max length
@@ -376,7 +378,7 @@ SQLQuery::SetNoScan(bool p_noscan)
 }
 
 inline bool
-SQLQuery::GetNoScan()
+SQLQuery::GetNoScan() const
 {
   return m_noscan;
 }
@@ -392,7 +394,7 @@ SQLQuery::SetFetchPolicy(bool p_policy)
 }
 
 inline LOption
-SQLQuery::GetLengthOption()
+SQLQuery::GetLengthOption() const
 {
   return m_lengthOption;
 }

@@ -128,7 +128,8 @@ SQLDataType::SQLDataType(XString p_typeName)
 }
 
 SQLDataType::SQLDataType(MetaColumn& p_column)
-            :m_typeName     (p_column.m_typename)
+            :m_sqlType      (p_column.m_datatype)
+            ,m_typeName     (p_column.m_typename)
             ,m_columnSize   (p_column.m_columnSize)
             ,m_bufferSize   (p_column.m_bufferLength)
             ,m_decimalDigits(p_column.m_decimalDigits)
@@ -136,7 +137,10 @@ SQLDataType::SQLDataType(MetaColumn& p_column)
             ,m_octetLength  (p_column.m_octet_length)
             ,m_subType      (p_column.m_sub_datatype)
 {
-  m_sqlType = FindDatatype(reinterpret_cast<LPTSTR>(const_cast<TCHAR*>(m_typeName.GetString())));
+  if(!m_sqlType)
+  {
+    m_sqlType = FindDatatype(reinterpret_cast<LPTSTR>(const_cast<TCHAR*>(m_typeName.GetString())));
+  }
 }
 
 SQLDataType::~SQLDataType()
@@ -364,6 +368,7 @@ SQLDataType::GetAsEdmType()
     case SQL_C_FLOAT:
     case SQL_C_DOUBLE:          return _T("Edm.Double");
     case SQL_C_BIT:             return _T("Edm.Boolean");
+    case SQL_DECIMAL:
     case SQL_C_NUMERIC:         return _T("Edm.Decimal");
     case SQL_VARBINARY:
     case SQL_LONGVARBINARY:

@@ -128,6 +128,13 @@ SQLInfoFirebird::GetRDBMSSupportsODBCCallEscapes() const
   return false;
 }
 
+// Supports the ODBC call procedure with named parameters
+bool
+SQLInfoFirebird::GetRDBMSSupportsODBCCallNamedParameters() const
+{
+  return false;
+}
+
 // If the database does not support the datatype TIME, it can be implemented as a DECIMAL
 bool
 SQLInfoFirebird::GetRDBMSSupportsDatatypeTime() const
@@ -512,12 +519,30 @@ SQLInfoFirebird::GetSQLTopNRows(XString p_sql,int p_top,int p_skip /*= 0*/) cons
   return p_sql;
 }
 
+// Expand a SELECT with an 'FOR UPDATE' lock clause
+XString
+SQLInfoFirebird::GetSelectForUpdateTableClause(unsigned /*p_lockWaitTime*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoFirebird::GetSelectForUpdateTrailer(XString p_select,unsigned p_lockWaitTime) const
+{
+  XString sql = p_select + "\nFOR UPDATE";
+  if(p_lockWaitTime)
+  {
+    sql += "\nWITH LOCK";
+  }
+  return sql;
+}
+
 // Query to perform a keep alive ping
 XString
 SQLInfoFirebird::GetPing() const
 {
   // Not implemented yet
-  return "SELECT current_timestamp FROM rdb$database";
+  return "SELECT CAST('now' AS timestamp) FROM rdb$database";
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -584,6 +609,13 @@ XString
 SQLInfoFirebird::GetSQLDDLIdentifier(XString p_identifier) const
 {
   return p_identifier;
+}
+
+// Get the name of a temp table (local temporary or global temporary)
+XString
+SQLInfoFirebird::GetTempTablename(XString /*p_schema*/,XString p_tablename,bool /*p_local*/) const
+{
+  return p_tablename;
 }
 
 // Changes to parameters before binding to an ODBC HSTMT handle

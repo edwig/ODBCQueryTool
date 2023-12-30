@@ -65,8 +65,8 @@ public:
   void DrawEditFrame();
   void DrawFrame();
   void SetWindowNumber(int p_number);
-  void SetWindowText(LPTSTR lpszStringBuf);
-  void SetWindowText(CString p_string1);
+  void SetWindowText(LPCTSTR lpszStringBuf);
+  void SetWindowText(CString p_string);
   void InsertAtCurPos(LPCTSTR p_text,int p_offset);
   int  CheckEditOK();
   void SetSpinBuddy(StyleSpinButtonCtrl* p_buddy);
