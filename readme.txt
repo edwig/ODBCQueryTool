@@ -22,6 +22,11 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes 3.4.1
+------------------
+Fixed a bug getting the database "Ping" from Firebird. 
+Also fixes a crash on that database after a few minutes.
+
 Releasenotes 3.4.0
 ------------------
 This version is dedicated to the conversion to Unicode 16. 

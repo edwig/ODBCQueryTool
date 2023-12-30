@@ -3128,14 +3128,14 @@ SQLInfoSQLServer::DoSQLCallNamedParameters(SQLQuery* /*p_query*/,XString& /*p_sc
 XString
 SQLInfoSQLServer::GetCatalogAndSchema(XString& p_schema,XString& p_table) const
 {
-  if(p_table.GetLength() > 1 && p_table.Left(1).Compare("#") == 0)
+  if(p_table.GetLength() > 1 && p_table.Left(1).Compare(_T("#")) == 0)
   {
-    // Temp tables are stored in the 'dbo' schema in the 'tempdbs' database
-    p_schema = "dbo";
-    return "tempdb.sys";
+    // Temp tables are stored in the 'dbo' schema in the 'tempdb' database
+    p_schema = _T("dbo");
+    return _T("tempdb.sys");
   }
   // Normal object, use the sys schema
-  return "sys";
+  return _T("sys");
 }
 
 // End of namespace
