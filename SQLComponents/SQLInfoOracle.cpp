@@ -543,14 +543,14 @@ SQLInfoOracle::GetSelectForUpdateTableClause(unsigned /*p_lockWaitTime*/) const
 XString
 SQLInfoOracle::GetSelectForUpdateTrailer(XString p_select,unsigned p_lockWaitTime) const
 {
-  XString sql = p_select + "\nFOR UPDATE";
+  XString sql = p_select + _T("\nFOR UPDATE");
   if(p_lockWaitTime)
   {
-    sql.AppendFormat(" WAIT %d",p_lockWaitTime);
+    sql.AppendFormat(_T(" WAIT %d"),p_lockWaitTime);
   }
   else
   {
-    sql += " SKIP LOCKED";
+    sql += _T(" SKIP LOCKED");
   }
   return sql;
 }

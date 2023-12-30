@@ -24,16 +24,16 @@
 #pragma once
 
 // General text version
-#define ODBCQUERYTOOL_VERSION   _T("3.4.0")
-#define ODBCQUERYTOOL_BUILD     _T("393")
+#define ODBCQUERYTOOL_VERSION   _T("3.4.1")
+#define ODBCQUERYTOOL_BUILD     _T("395")
 #define ODBCQUERYTOOL_COPYRIGHT _T("Copyright (c) Edwig Huisman 2004-2023")
 
 // For the resource files
 #define QT_RES_VERSION 3
 #define QT_RES_MAJOR   4
-#define QT_RES_MINOR   0
-#define QT_RES_BUILD   393
-#define QT_RES_FILE    _T("3,4,0,393")
+#define QT_RES_MINOR   1
+#define QT_RES_BUILD   395
+#define QT_RES_FILE    _T("3,4,1,395")
 
 // For the registry and the theme framework
 #define PRODUCT_REGISTRY _T("EDO\\ODBCQueryTool")
