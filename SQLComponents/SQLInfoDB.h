@@ -135,6 +135,9 @@ public:
   // Supports the ODBC escape sequence {[?=] CALL procedure (?,?,?)}
   virtual bool GetRDBMSSupportsODBCCallEscapes() const = 0;
 
+  // Supports the ODBC call procedure with named parameters
+  virtual bool GetRDBMSSupportsODBCCallNamedParameters() const = 0;
+
   // If the database does not support the datatype TIME, it can be implemented as a DECIMAL
   // BEWARE BOOL INVERTED!!
   virtual bool GetRDBMSSupportsDatatypeTime() const = 0;
@@ -245,6 +248,10 @@ public:
   // Transform query to select top <n> rows
   virtual XString GetSQLTopNRows(XString p_sql,int p_top,int p_skip = 0) const = 0;
 
+  // Expand a SELECT with an 'FOR UPDATE' lock clause
+  virtual XString GetSelectForUpdateTableClause(unsigned p_lockWaitTime) const = 0;
+  virtual XString GetSelectForUpdateTrailer(XString p_select,unsigned p_lockWaitTime) const = 0;
+
   // Query to perform a keep alive ping
   virtual XString GetPing() const = 0;
 
@@ -271,6 +278,9 @@ public:
 
   // Makes an catalog identifier string (possibly quoted on both sides)
   virtual XString GetSQLDDLIdentifier(XString p_identifier) const = 0;
+
+  // Get the name of a temp table (local temporary or global temporary)
+  virtual XString GetTempTablename(XString p_schema,XString p_tablename,bool p_local) const = 0;
 
   //////////////////////////////////////////////////////////////////////////
   //

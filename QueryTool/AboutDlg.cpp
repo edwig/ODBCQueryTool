@@ -26,8 +26,16 @@ IMPLEMENT_DYNAMIC(CAboutDlg, StyleDialog)
 CAboutDlg::CAboutDlg(CWnd* pParent /*=NULL*/)
           :StyleDialog(CAboutDlg::IDD, pParent)
 {
-  m_license = _T("ODBC Query Tool ") ODBCQUERYTOOL_VERSION _T(" Build: ") ODBCQUERYTOOL_BUILD
-              _T("\r\n") ODBCQUERYTOOL_COPYRIGHT
+#ifdef _UNICODE
+  CString implementation = _T("Unicode Version\r\n");
+#else
+  CString implementation = _T("ANSI/MBCS Version\r\n");
+#endif
+
+  m_license = _T("ODBC Query Tool ") ODBCQUERYTOOL_VERSION _T(" Build: ") ODBCQUERYTOOL_BUILD _T("\r\n") 
+                 ODBCQUERYTOOL_COPYRIGHT _T("\r\n")
+              _T("\r\n")
+              + implementation +
               _T("\r\n")
               _T("\r\nThis program is free software; you can redistribute it") 
               _T("\r\n")

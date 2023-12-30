@@ -136,6 +136,13 @@ SQLInfoPostgreSQL::GetRDBMSSupportsODBCCallEscapes() const
   return false;
 }
 
+// Supports the ODBC call procedure with named parameters
+bool
+SQLInfoPostgreSQL::GetRDBMSSupportsODBCCallNamedParameters() const
+{
+  return false;
+}
+
 // If the database does not support the datatype TIME, it can be implemented as a DECIMAL
 bool
 SQLInfoPostgreSQL::GetRDBMSSupportsDatatypeTime() const
@@ -411,6 +418,24 @@ SQLInfoPostgreSQL::GetSQLTopNRows(XString p_sql,int p_top,int p_skip /*= 0*/) co
   return p_sql;
 }
 
+// Expand a SELECT with an 'FOR UPDATE' lock clause
+XString
+SQLInfoPostgreSQL::GetSelectForUpdateTableClause(unsigned /*p_lockWaitTime*/) const
+{
+  return "";
+}
+
+XString
+SQLInfoPostgreSQL::GetSelectForUpdateTrailer(XString p_select,unsigned p_lockWaitTime) const
+{
+  XString sql = p_select + "\nFOR UPDATE";
+  if(!p_lockWaitTime)
+  {
+    sql += " SKIP LOCKED";
+  }
+  return sql;
+}
+
 // Query to perform a keep alive ping
 XString
 SQLInfoPostgreSQL::GetPing() const
@@ -481,6 +506,13 @@ XString
 SQLInfoPostgreSQL::GetSQLDDLIdentifier(XString p_identifier) const
 {
   return p_identifier;
+}
+
+// Get the name of a temp table (local temporary or global temporary)
+XString
+SQLInfoPostgreSQL::GetTempTablename(XString /*p_schema*/,XString p_tablename,bool /*p_local*/) const
+{
+  return p_tablename;
 }
 
 // Changes to parameters before binding to an ODBC HSTMT handle

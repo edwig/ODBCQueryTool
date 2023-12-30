@@ -1,1 +1,1 @@
-etst
+select * from detail;

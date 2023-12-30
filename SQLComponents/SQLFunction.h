@@ -115,6 +115,8 @@ typedef enum _sqlFunction
   ,FN_MIN
   ,FN_MAX
   ,FN_AVG
+  // EXTRA FUNCTIONS
+  ,FN_REGEXP_MATCH
 }
 SQLFunction;
 

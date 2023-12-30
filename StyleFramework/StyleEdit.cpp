@@ -400,7 +400,7 @@ StyleEdit::SetWindowNumber(int p_number)
 }
 
 void 
-StyleEdit::SetWindowText(LPTSTR lpszStringBuf)
+StyleEdit::SetWindowText(LPCTSTR lpszStringBuf)
 {
   CEdit::SetWindowText(lpszStringBuf);
   if(!m_emptyText.IsEmpty())

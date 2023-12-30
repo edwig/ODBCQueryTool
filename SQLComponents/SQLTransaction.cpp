@@ -51,6 +51,8 @@ SQLTransaction::SQLTransaction(SQLDatabase* p_database
                ,m_active    (false)
                ,m_hdbc      (NULL)
 {
+  // No spaces allowed in the name on any RDBMS platform
+  m_name.Replace(' ','_');
   // If asked for, start it right away
   if(p_startImmediate)
   {

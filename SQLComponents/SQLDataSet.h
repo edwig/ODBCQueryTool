@@ -52,6 +52,9 @@ namespace SQLComponents
 #define DATASET_TYPENAME  7
 #define NUM_DATASET_NAMES 8
 
+// Default waittime for a record lock (seconds!)
+#define DEFAULT_LOCK_TIMEOUT  15
+
 // Names for saving datasets to XML in various languages
 extern LPCTSTR dataset_names[LN_NUMLANG][NUM_DATASET_NAMES];
 
@@ -153,6 +156,9 @@ public:
   virtual void SetSelection(XString p_selection);
   // Set the isolated query status
   virtual void SetIsolation(bool p_isolation);
+  // Set the lock-for-update / Waittime
+  virtual void SetLockForUpdate(bool p_lock);
+  virtual void SetLockWaitTime(unsigned p_seconds);
   // Set FROM selection of several tables (more than one!)
   virtual void SetFromTables(XString p_from);
   // Set FROM  primary table (for updates)
@@ -237,6 +243,9 @@ public:
   SQLFilterSet* GetHavings();
   // Exposing the statement for a SQLCancel
   void         SetCancelCallback(LPFN_CALLBACK p_cancelFunction);
+  // Getting the status
+  bool         GetLockForUpdate();
+  unsigned     GetLockWaitTime();
 
   // XML Saving and loading
   bool         XMLSave(XString p_filename,XString p_name,Encoding p_encoding = Encoding::UTF8);
@@ -316,6 +325,8 @@ protected:
   int          m_skipRecords   { 0 };
   bool         m_stopNoColumns { false };
   bool         m_isolation     { false };
+  bool         m_lockForUpdate { false };
+  unsigned     m_lockWaitTime  { DEFAULT_LOCK_TIMEOUT };
   // Filter sets
   SQLFilterSet* m_filters      { nullptr };
   SQLFilterSet* m_havings      { nullptr };
@@ -490,6 +501,30 @@ inline int
 SQLDataSet::GetSkippedRecords()
 {
   return m_skipRecords;
+}
+
+inline bool
+SQLDataSet::GetLockForUpdate()
+{
+  return m_lockForUpdate;
+}
+
+inline void
+SQLDataSet::SetLockForUpdate(bool p_lock)
+{
+  m_lockForUpdate = p_lock;
+}
+
+inline unsigned
+SQLDataSet::GetLockWaitTime()
+{
+  return m_lockWaitTime;
+}
+
+inline void
+SQLDataSet::SetLockWaitTime(unsigned p_wait)
+{
+  m_lockWaitTime = p_wait;
 }
 
 inline void

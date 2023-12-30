@@ -71,6 +71,9 @@ public:
   // Supports the ODBC escape sequence {[?=] CALL procedure (?,?,?)}
   bool    GetRDBMSSupportsODBCCallEscapes() const override;
 
+  // Supports the ODBC call procedure with named parameters
+  bool    GetRDBMSSupportsODBCCallNamedParameters() const;
+
   // If the database does not support the datatype TIME, it can be implemented as a DECIMAL
   bool    GetRDBMSSupportsDatatypeTime() const override;
 
@@ -177,6 +180,10 @@ public:
   // Transform query to select top <n> rows
   XString GetSQLTopNRows(XString p_sql,int p_top,int p_skip = 0) const override;
 
+  // Expand a SELECT with an 'FOR UPDATE' lock clause
+  XString GetSelectForUpdateTableClause(unsigned p_lockWaitTime) const;
+  XString GetSelectForUpdateTrailer(XString p_select,unsigned p_lockWaitTime) const;
+
   // Query to perform a keep alive ping
   XString GetPing() const override;
 
@@ -203,6 +210,9 @@ public:
 
   // Makes an catalog identifier string (possibly quoted on both sides)
   virtual XString GetSQLDDLIdentifier(XString p_identifier) const override;
+
+  // Get the name of a temp table (local temporary or global temporary)
+  XString GetTempTablename(XString p_schema,XString p_tablename,bool p_local) const;
 
   // Changes to parameters before binding to an ODBC HSTMT handle
   void DoBindParameterFixup(SQLSMALLINT& p_sqlDatatype,SQLULEN& p_columnSize,SQLSMALLINT& p_scale,SQLLEN& p_bufferSize,SQLLEN* p_indicator) const override;

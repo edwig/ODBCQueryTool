@@ -159,7 +159,6 @@ SQLQuery::Close(bool p_throw /*= true*/)
     delete column.second;
   }
   m_numMap.clear();
-  m_nameMap.clear();
 
   // Reset other variables
   m_lastError.Empty();
@@ -193,6 +192,7 @@ SQLQuery::ResetParameters()
     delete parm.second;
   }
   m_parameters.clear();
+  m_nameMap.clear();
 }
 
 void
@@ -561,13 +561,23 @@ SQLQuery::SetParameter(const bcd& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT
 }
 
 // Named parameters for DoSQLCall()
-void 
+bool
 SQLQuery::SetParameterName(int p_param,XString p_name)
 {
   SQLVariant* var = GetParameter(p_param);
-  var->SetColumnNumber(p_param);
-  // Keep as name
-  m_nameMap.insert(std::make_pair(p_name,var));
+  if(var)
+  {
+    var->SetColumnNumber(p_param);
+    // Keep as name in the names map
+    // Number map cannot be used (double delete!)
+    if(m_database)
+    {
+      p_name = m_database->GetSQLInfoDB()->GetKEYWORDParameterPrefix() + p_name;
+    }
+    m_nameMap[p_name] = var;
+    return true;
+  }
+  return false;
 }
 
 // Set parameters from another SQLQuery
@@ -655,9 +665,8 @@ SQLQuery::DoSQLStatement(const XString& p_statement)
   if(m_database && m_database->WilLog())
   {
     logging = true;
-    m_database->LogPrint(_T("[Database query]\n"));
-    m_database->LogPrint(statement.GetString());
-    m_database->LogPrint(_T("\n"));
+    XString log = "[Database query]\n" + statement + "\n";
+    m_database->LogPrint(log);
   }
 
   // The Oracle 10.2.0.3.0 ODBC Driver - and later versions - contain a bug
@@ -1133,9 +1142,15 @@ SQLQuery::LogParameter(int p_column,const SQLVariant* p_parameter)
   {
     m_database->LogPrint(_T("Parameters as passed on to the database:\n"));
   }
-  XString text,value;
+  XString text,name,value;
   p_parameter->GetAsString(value);
-  text.Format(_T("Parameter %d: %s\n"),p_column,value.GetString());
+  text.Format(_T("Parameter %d: %s"),p_column,value.GetString());
+  GetColumnName(p_parameter->GetColumnNumber(),name);
+  if(!name.IsEmpty())
+  {
+    text += _T(" name: ") + name;
+  }
+  text += _T("\n");
   m_database->LogPrint(text);
 }
 
@@ -1154,6 +1169,9 @@ SQLQuery::BindColumns()
 
   // Prepare for at-exec buffering. If not set, use the default of 32K
   int BUFFERSIZE = m_bufferSize ? m_bufferSize : OPTIM_BUFFERSIZE;
+
+  // Clear the map with names to be sure
+  m_nameMap.clear();
 
   // COLLECT INFO FOR ALL COLUMNS AND CREATE VARIANTS
 
@@ -1427,7 +1445,7 @@ void
 SQLQuery::FetchCursorName()
 {
   SQLSMALLINT length = 0;
-  SQLTCHAR cursorName[SQL_MAX_IDENTIFIER + 1];
+  SQLTCHAR cursorName[SQL_MAX_IDENTIFIER + 1] = { 0 };
   cursorName[0] = 0;
 
   // Not all RDBMS'es return cursor names for all types of queries
@@ -2052,9 +2070,9 @@ SQLQuery::DoSQLCall(XString p_schema,XString p_procedure,bool p_hasReturn /*=fal
     throw StdException(_T("Cannot do a function/procedure call without a database object"));
   }
 
-  // Make sure we have a minimal output parameter (SQL_SLONG !!)
+  // Make sure we have a minimal output parameter (Standard = SQL_SLONG !!)
   // OTHERWISE, YOU HAVE TO PROVIDE IT YOURSELF!
-  if(p_hasReturn && m_parameters.find(0) == m_parameters.end() && m_nameMap.empty())
+  if(p_hasReturn && m_parameters.find(0) == m_parameters.end())
   {
     SQLVariant* var = new SQLVariant((int)0);
     InternalSetParameter(0,var,P_SQL_PARAM_OUTPUT);
@@ -2063,6 +2081,10 @@ SQLQuery::DoSQLCall(XString p_schema,XString p_procedure,bool p_hasReturn /*=fal
   // See if we ask for a call with named parameters
   if(!m_nameMap.empty())
   {
+    if(m_database->GetSQLInfoDB()->GetRDBMSSupportsODBCCallNamedParameters())
+    {
+      return DoSQLCallODBCNamedParameters(p_schema,p_procedure,p_hasReturn);
+    }
     return m_database->GetSQLInfoDB()->DoSQLCallNamedParameters(this,p_schema,p_procedure);
   }
 
@@ -2086,6 +2108,62 @@ SQLQuery::DoSQLCallODBCEscape(XString& p_schema,const XString& p_procedure,bool 
   // Do the call and fetch return values
   DoSQLStatement(sql);
 
+  // Clear any result sets generated
+  // On some RDBMS'es this fetches the OUTPUT parameters of the procedure/function
+  do
+  {
+    m_retCode = SqlMoreResults(m_hstmt);
+  }
+  while(m_retCode != SQL_NO_DATA && m_retCode != SQL_ERROR);
+
+  // Correct RDBMS that give too much spaces in strings
+  LimitOutputParameters();
+
+  // Return the return-parameter (if any)
+  return GetParameter(0);
+}
+
+// For a description of the method see:
+// https://learn.microsoft.com/en-us/sql/odbc/reference/develop-app/binding-parameters-by-name-named-parameters
+//
+SQLVariant*
+SQLQuery::DoSQLCallODBCNamedParameters(XString& p_schema,const XString& p_procedure,bool p_hasReturn)
+{
+  // Start with generating the SQL
+  XString sql = ConstructSQLForCall(p_schema,p_procedure,p_hasReturn);
+
+  // Prepare the statement
+  DoSQLPrepare(sql);
+
+  // Bind parameters & do not bind again
+  BindParameters();
+  m_boundDone = true;
+
+  // Getting parameter IPD, so we can fiddle with the names
+  SQL_HANDLE hIPD = NULL;
+  SQLGetStmtAttr(m_hstmt,SQL_ATTR_IMP_PARAM_DESC,&hIPD,0,0);
+
+  // Named parameters must all be accounted for !!
+  bool found = true;
+  int  index = 1;
+  int  field = index + (p_hasReturn ? 1 : 0);
+  while(found)
+  {
+    XString name;
+    found = GetColumnName(index,name);
+    if(found)
+    {
+      // Bind name to the parameter in the IPD
+      SQLSetDescField(hIPD,(SQLSMALLINT)field,SQL_DESC_NAME,(SQLPOINTER)name.GetString(),SQL_NTS);
+      ++index;
+      ++field;
+    }
+  }
+
+  // Go Execute it now!
+  DoSQLExecute();
+
+  // Post Processing
   // Clear any result sets generated
   // On some RDBMS'es this fetches the OUTPUT parameters of the procedure/function
   do
@@ -2181,14 +2259,14 @@ SQLQuery::GetParameter(int p_num)
 
 // Getting the database handle (if any)
 HDBC
-SQLQuery::GetDatabaseHandle()
+SQLQuery::GetDatabaseHandle() const
 {
   return m_connection;
 }
 
 // Getting the statement handle (if any)
 HSTMT
-SQLQuery::GetStatementHandle()
+SQLQuery::GetStatementHandle() const
 {
   return m_hstmt;
 }

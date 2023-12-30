@@ -617,6 +617,11 @@ SQLFilter::ConstructFunctionSQL(SQLQuery& p_query)
   {
     m_field = m_subfilters->ParseFiltersToCondition(p_query);
   }
+  // Check for optional parameters
+  if(parameters > ((int)m_values.size()) + 1)
+  {
+    parameters = ((int)m_values.size()) + 1;
+  }
   switch(parameters)
   {
     case 0: m_expression = sql = _T("{fn ") + sql + _T("()}");

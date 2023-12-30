@@ -1502,7 +1502,7 @@ StyleDialog::OnPaint()
 void
 StyleDialog::EraseGripper()
 {
-  if(m_canResize && (GetParent() == nullptr) && (GetStyle() & WS_MAXIMIZE) == 0)
+  if(m_canResize && (m_hasGripper || (GetParent() == nullptr) && (GetStyle() & WS_MAXIMIZE) == 0))
   {
     CDC* pDC = GetDC();
     CRect rect;

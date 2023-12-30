@@ -147,7 +147,7 @@ public:
    void    AttachBinary(void* p_pointer,unsigned long p_size = 0);
    void    DetachBinary();
    // Find special char type
-   int     FindDataTypeFromSQLType();
+   int     FindDataTypeFromSQLType() const;
 
    // Access per type
    XString              GetAsChar() const;
@@ -299,7 +299,7 @@ private:
    // Total internal reset (type and data store)
    void    ResetDataType(int p_type);
    // Internal conversions
-   bool    StringToBinary (const char* p_data);
+   bool    StringToBinary (const char* p_data) const;
    bool    BinaryToString (unsigned char* buffer,int buflen) const;
    // Throw error as a result of internal trimming
    void*   ThrowErrorDatatype(int p_getas) const;
