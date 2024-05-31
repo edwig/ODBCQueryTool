@@ -3,15 +3,15 @@
 ; Project:      Open ODBC Querytool
 ; Auteurs:      Edo Huisman
 ;
-; Copyright (c) 2017 ir. W.E. Huisman
+; Copyright (c) 2017-2024 ir. W.E. Huisman
 ; All rights reserved
 ;
-; Last change:       30-11-2023
-; Versionnumber:     3.4.1
+; Last change:       30-05-2024
+; Versionnumber:     3.4.2
 ;-------------------------------------------------------
  !define PRODUCT_NAME                         "OpenODBCQuerytool"
- !define PRODUCT_VERSION                      "3.4.1"
- !define PRODUCT_BUILDNUMBER                  "395"
+ !define PRODUCT_VERSION                      "3.4.2"
+ !define PRODUCT_BUILDNUMBER                  "402"
  !define PRODUCT_PUBLISHER                    "EDO"
  !define PRODUCT_WEB_SITE                     "https://sourceforge.net/projects/odbcquerytool"
  !define PRODUCT_DIR_REGKEY                   "Software\Microsoft\Windows\CurrentVersion\App Paths\${PRODUCT_NAME}"
@@ -198,6 +198,7 @@ Function .onInit
 
 ;Check if there is a newer version of the product
  Readregstr $currentVersion "${PRODUCT_UNINST_ROOT_KEY}" "${PRODUCT_UNINST_KEY}" "DisplayVersion"
+ StrCmp $currentVersion "" doInstallAfterAll 0  ; In case not yet installed at all
  StrCmp $currentVersion "${PRODUCT_VERSION}.${PRODUCT_BUILDNUMBER}" versionTheSame alreadyInstalled
 
  versionTheSame:
