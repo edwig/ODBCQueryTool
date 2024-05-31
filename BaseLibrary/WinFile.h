@@ -28,6 +28,7 @@
 #include <atlstr.h>
 #include <string>
 #include "Encoding.h"
+#include "AutoCritical.h"
 
 // MS-Windows codepage numbers for translation of text files
 #define CODEPAGE_UTF8   65001
@@ -166,7 +167,7 @@ public:
   void      ForgetFile(); // BEWARE!
 
   // OPERATIONS TO READ AND WRITE CONTENT
-  bool      Read(CString& p_string,uchar p_delim = '\n');
+  bool      Read(XString& p_string,uchar p_delim = '\n');
   bool      Read(void* p_buffer,size_t p_bufsize,int& p_read);
   bool      Write(const CString& p_string);
   bool      Write(void* p_buffer,size_t p_bufsize);
@@ -181,13 +182,14 @@ public:
   // Classic STDIO.H like functions
   bool      Gets(uchar* p_buffer,size_t p_size);
   bool      Puts(uchar* p_buffer);
-  uchar     Getch();
+  int       Getch();
   bool      Putch(uchar p_char);
   bool      Ungetch(uchar p_ch);  // only works in conjunction with "Getch()"
 
   // SETTERS
   bool      SetFilename(CString p_filename);
   bool      SetFilenameInFolder(int p_folder,CString p_filename);  // Use CSIDL_* names !
+  bool      SetFilenameFromResource(CString p_resource);
   bool      SetFileHandle(HANDLE p_handle);
   bool      SetFileAttribute(FAttributes p_attribute,bool p_set);
   bool      SetHidden(bool p_hidden);
@@ -261,6 +263,12 @@ public:
                               ,bool     p_trycreate = false   // Create with m_filename if not exists
                               ,size_t   p_size      = 0);     // Size of memory if we create it
   CString   LegalDirectoryName(CString  p_name,bool p_extensionAllowed = true);
+  // Create a file name from an HTTP resource name
+  CString   FileNameFromResourceName(CString p_resource);
+  // Reduce file path name for RE-BASE of directories, removing \..\ parts
+  XString  ReduceDirectoryPath(XString& path);
+  // Makes a relative pathname from an absolute one
+  bool     MakeRelativePathname(const XString& p_base,const XString& p_absolute,XString& p_relative);
 
   // OPERATORS
 
@@ -309,11 +317,12 @@ private:
   void      FilenameParts(CString p_fullpath,CString& p_drive,CString& p_directory,CString& p_filename,CString& p_extension);
   CString   StripFileProtocol  (CString  p_fileref);
   int       ResolveSpecialChars(CString& p_value);
+  int       EncodeSpecialChars(XString& p_value);
   CString   GetBaseDirectory   (CString& p_path);
   // Page buffer cache functions
   uchar*    PageBuffer();
   void      PageBufferFree();
-  uchar     PageBufferRead();
+  int       PageBufferRead();
   bool      PageBufferReadForeward(bool p_scanBom);
   bool      PageBufferWrite(uchar ch);
   bool      PageBufferFlush();
@@ -344,6 +353,8 @@ private:
   // Shared Memory
   void*       m_sharedMemory { nullptr };           // Pointer in memory (if any)
   size_t      m_sharedSize   { 0 };                 // Size of shared memory segment
+  // One thread at the time!
+  mutable CRITICAL_SECTION m_fileaccess;
 };
 
 //////////////////////////////////////////////////////////////////////////

@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -897,7 +897,7 @@ void
 JSONPath::HandleLogicalAnd(XString p_token,int& p_pos)
 {
   HandleLogicalOr(p_token,p_pos);
-  // logical and afhandelen
+  // Processing logical AND
   if(GetCurrentCharacter(p_token,p_pos) == '&')
   {
     if(GetNextCharacter(p_token,p_pos) == '&')
@@ -906,12 +906,12 @@ JSONPath::HandleLogicalAnd(XString p_token,int& p_pos)
       XString rightSide;
       rightSide = p_token.Mid(p_pos,p_token.GetLength()).Trim();
 
-      // Evaluate the part after "&&" seperately
-      JSONPath path(m_message,_T("$") + m_rootWord + _T("[?(" + rightSide + ")]"));
+      // Evaluate the part after "&&" separately
+      JSONPath path(m_message,CString(_T("$")) + m_rootWord + _T("[?(") + rightSide + _T(")]"));
       JPResults newResults;
 
       bool exist = false;
-      // We add the reuslt from path.m_results only if it was present
+      // We add the result from path.m_results only if it was present
       if(path.GetNumberOfMatches() == 1)
       {
         for(const JSONvalue* val : m_results)
@@ -966,7 +966,7 @@ JSONPath::HandleLogicalOr(XString p_token,int& p_pos)
       rightSide = p_token.Mid(p_pos,p_token.GetLength()).Trim();
 
       // Evaluate the part after the "||"
-      JSONPath path(m_message,_T("$") + m_rootWord + _T("[?(" + rightSide + ")]"));
+      JSONPath path(m_message,_T("$") + m_rootWord + _T("[?(") + rightSide + _T(")]"));
 
       // Result from path.m_reuslts only to be appended if not already present
       bool exist = false;

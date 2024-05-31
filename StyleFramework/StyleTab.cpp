@@ -55,6 +55,8 @@ StyleTab::OnInitDialog()
 {
   CDialog::OnInitDialog();
   OnStyleChanged(0,0);
+
+  ASSERT(GetStyle() & WS_CHILD);
   return TRUE;
 }
 
@@ -94,6 +96,33 @@ StyleTab::SetupDynamicLayout()
     manager->Create(this);
     LoadDynamicLayoutResource(m_lpszTemplateName);
   }
+}
+
+bool
+StyleTab::InitStyleTab(void* /*p_data*/)
+{
+  // Does nothing: Implement your own!
+  return true;
+}
+
+bool
+StyleTab::CheckStyleTab(void* /*p_data*/)
+{
+  // Does nothing: Implement your own!
+  return true;
+}
+
+bool
+StyleTab::SaveStyleTab(void* /*p_data*/)
+{
+  // Does nothing: Implement your own!
+  return true;
+}
+
+void 
+StyleTab::OnDroppedFile(UINT p_id,UINT p_index,LPCTSTR p_fileName)
+{
+  StyleMessageBox(this,_T("ERROR: Implement your own OnDroppedFile for this TAB"),_T("Error"),MB_OK|MB_ICONERROR);
 }
 
 // Another program has changed our styling

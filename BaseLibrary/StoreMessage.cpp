@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -820,7 +820,7 @@ StoreMessage::ReadBody(HTTPMessage* p_msg)
   {
     int read = 0;
     unsigned char* buffer = new unsigned char[length];
-    if(!m_file.Read(&buffer,length,read))
+    if(!m_file.Read(buffer,length,read))
     {
       delete[] buffer;
       throw StdException(ERROR_FT_BODY);

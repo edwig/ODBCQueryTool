@@ -21,9 +21,13 @@
 #include "resource.h"
 #include <vector>
 
-#define EV_TOAST    99  // Timer ID
-#define TOAST_SPACE  2  // 2 pixels from the side/top/bottom
-#define TOAST_STACK  4  // Maximum toasts to stack on the screen
+#define EV_TOAST     99  // Timer ID for total toast
+#define EV_STEPPER   98  // Timer ID for the stepper
+#define TOAST_STEPS 100  // Number of steps in the stepper
+
+#define TOAST_SPACE   2  // 2 pixels from the side/top/bottom
+#define TOAST_STACK   4  // Maximum toasts to stack on the screen
+#define TOAST_LINE   12  // 12 pixels for the stepper line
 
 // Styles of the toast message
 #define STYLE_TOAST_MESSAGE   1
@@ -76,11 +80,14 @@ public:
   afx_msg int     OnCreate(LPCREATESTRUCT p_create);
   afx_msg void    OnSize(UINT nType, int x, int y);
   afx_msg void    OnClicked();
+  afx_msg void    OnPaint();
   afx_msg void    OnTimer(UINT_PTR nIDEvent);
   afx_msg HBRUSH  OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor);
   afx_msg void    PumpMessage();
 
 protected:
+  void SetHalfBackgroundColor();
+  void PaintStepper(CDC* p_dc,CRect p_stepper,DWORD p_color);
 
   DECLARE_MESSAGE_MAP()
 
@@ -92,7 +99,9 @@ private:
   CString     m_text2;
   CString     m_text3;
   unsigned    m_timeout;
+  unsigned    m_steps;
   DWORD       m_background;
   DWORD       m_foreground;
+  DWORD       m_dimmedback;
   StyleStaticToast m_showText;
 };

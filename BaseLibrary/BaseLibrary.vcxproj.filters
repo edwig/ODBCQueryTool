@@ -282,6 +282,9 @@
     <ClInclude Include="Environment.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ServiceQuality.h">
+      <Filter>Header Files\HTTP_JSON</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="bcd.cpp">
@@ -493,6 +496,9 @@
     </ClCompile>
     <ClCompile Include="Environment.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ServiceQuality.cpp">
+      <Filter>Source Files\HTTP_JSON</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

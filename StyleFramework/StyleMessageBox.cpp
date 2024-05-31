@@ -45,12 +45,18 @@ StyleMessageBox(CWnd*   p_parent
                ,bool*   p_doNotShowAgain /*= nullptr */
                ,bool    p_foreground     /*= false   */)
 {
+  HWND wnd = GetFocus();
   MessageDialog dlg(p_parent,p_title,p_message,p_styles,p_doNotShowAgain);
   if(p_foreground)
   {
     dlg.SetForeground();
   }
-  return dlg.GetResultID(dlg.DoModal());
+  INT_PTR result = dlg.GetResultID(dlg.DoModal());
+  if(wnd)
+  {
+    SetFocus(wnd);
+  }
+  return result;
 }
 
 INT_PTR 
@@ -61,12 +67,18 @@ StyleMessageBox(CWnd*   p_parent
                ,bool*   p_doNotShowAgain /*= nullptr */
                ,bool    p_foreground     /*= false   */)
 {
+  HWND wnd = GetFocus();
   MessageDialog dlg(p_parent,p_title,p_message,p_labels,p_doNotShowAgain);
   if(p_foreground)
   {
     dlg.SetForeground();
   }
-  return dlg.GetResultID(dlg.DoModal());
+  INT_PTR result = dlg.GetResultID(dlg.DoModal());
+  if(wnd)
+  {
+    SetFocus(wnd);
+  }
+  return result;
 }
 
 //////////////////////////////////////////////////////////////////////////

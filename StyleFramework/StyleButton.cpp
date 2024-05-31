@@ -294,6 +294,25 @@ StyleButton::SetFontColor(int p_color)
   }
 }
 
+void
+StyleButton::SetTextColor(int p_color)
+{
+  if(p_color >= 0 && p_color <= RGB(0xFF,0xFF,0xFF))
+  {
+    m_colorText = p_color;
+  }
+}
+
+
+void
+StyleButton::SetBkColor(int p_color)
+{
+  if(p_color >= 0 && p_color <= RGB(0xFF,0xFF,0xFF))
+  {
+    m_colorBackgnd = p_color;
+  }
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // MESSAGE HANDLERS
@@ -581,12 +600,29 @@ StyleButton::Draw(CDC*    pDC
       textcolor = ThemeColor::GetColor(Colors::ColorControlTextHover);
       outline   = ThemeColor::GetColor(Colors::ColorControlFrameHover);
     }
-
     else
     {
       filling   = ThemeColor::GetColor(Colors::ColorButtonBackground);
       textcolor = ThemeColor::GetColor(Colors::ColorButtonText);
       outline   = ThemeColor::GetColor(Colors::AccentColor1);
+    }
+    if(m_colorText && !pInError)
+    {
+      textcolor = m_colorText;
+    }
+    if(m_colorBackgnd)
+    {
+      if(over)
+      {
+        int r = GetRValue(m_colorBackgnd) * BUTTON_DIMMING / 100;
+        int g = GetGValue(m_colorBackgnd) * BUTTON_DIMMING / 100;
+        int b = GetBValue(m_colorBackgnd) * BUTTON_DIMMING / 100;
+        filling = RGB(r,g,b);
+      }
+      else
+      {
+        filling = m_colorBackgnd;
+      }
     }
   }
   else

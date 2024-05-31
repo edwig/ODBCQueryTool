@@ -26,7 +26,7 @@
 #include "GridCell.h"
 #include <afxtempl.h>
 #include <vector>
-
+#include <map>
 
 ///////////////////////////////////////////////////////////////////////////////////
 // Defines - these determine the features (and the final size) of the final code
@@ -113,6 +113,8 @@ typedef CTypedPtrArray<CObArray, CGridCellBase*> GRID_ROW;
 
 // For virtual mode callback
 typedef BOOL (CALLBACK* GRIDCALLBACK)(GV_DISPINFO *, LPARAM);
+
+typedef std::map<int,CString> TitleTipMap;
 
 ///////////////////////////////////////////////////////////////////////////////////
 // Defines
@@ -231,10 +233,15 @@ public:
     void     SetGridLineColor(COLORREF clr)       { m_crGridLineColour = clr;         }
     COLORREF GetGridLineColor() const             { return m_crGridLineColour;        }
 
-	void	 SetTitleTipBackClr(COLORREF clr = CLR_DEFAULT) { m_crTTipBackClr = clr;  }
-	COLORREF GetTitleTipBackClr()				            { return m_crTTipBackClr; }
-	void	 SetTitleTipTextClr(COLORREF clr = CLR_DEFAULT) { m_crTTipTextClr = clr;  }
-	COLORREF GetTitleTipTextClr()				            { return m_crTTipTextClr; }
+	  void	   SetTitleTipBackClr(COLORREF clr = CLR_DEFAULT) { m_crTTipBackClr = clr;  }
+	  COLORREF GetTitleTipBackClr()				          { return m_crTTipBackClr; }
+	  void	   SetTitleTipTextClr(COLORREF clr = CLR_DEFAULT) { m_crTTipTextClr = clr;  }
+	  COLORREF GetTitleTipTextClr()				          { return m_crTTipTextClr; }
+
+    // The map of title tips
+    void     SetTitleTip(int p_tip,CString p_text);
+    CString  GetTitleTip(int p_tip);
+    void     RemoveTitleTip(int p_tip);
 
     // ***************************************************************************** //
     // These have been deprecated. Use GetDefaultCell and then set the colors
@@ -364,6 +371,8 @@ public:
     // The following was virtual. If you want to override, use 
     //  CGridCellBase-derived class's GetText() to accomplish same thing
     CString GetItemText(int nRow, int nCol) const;
+    // In case a subclass starts the edit
+    void    RegisterEditCell(int nRow,int nCol);
 
     // EFW - 06/13/99 - Added to support printf-style formatting codes.
     // Also supports use with a string resource ID
@@ -419,8 +428,8 @@ public:
     void Refresh();
     void AutoFill();   // Fill grid with blank cells
 
-    void EnsureVisible(CCellID &cell)       { EnsureVisible(cell.row, cell.col); }
-    void EnsureVisible(int nRow, int nCol);
+    void EnsureVisible(CCellID& cell,bool p_ingrid = false);
+    void EnsureVisible(int nRow, int nCol,bool p_ingrid = false);
     BOOL IsCellVisible(int nRow, int nCol);
     BOOL IsCellVisible(CCellID cell);
     BOOL IsCellEditable(int nRow, int nCol) const;
@@ -681,9 +690,8 @@ protected:
     int         m_nRowsPerWheelNotch;
     CMap<DWORD,DWORD, CCellID, CCellID&> m_SelectedCellMap, m_PrevSelectedCellMap;
 
-#ifndef GRIDCONTROL_NO_TITLETIPS
     CTitleTip   m_TitleTip;             // Title tips for cells
-#endif
+    TitleTipMap m_tips;                 // Title tips
 
     // Drag and drop
     CCellID     m_LastDragOverCell;
@@ -769,6 +777,8 @@ protected:
     afx_msg LRESULT OnGetFont(WPARAM hFont, LPARAM lParam);
     afx_msg LRESULT OnImeChar(WPARAM wCharCode, LPARAM lParam);
     afx_msg void OnEndInPlaceEdit(NMHDR* pNMHDR, LRESULT* pResult);
+    afx_msg BOOL OnComboKillFocus();
+
     DECLARE_MESSAGE_MAP()
 
     enum eMouseModes { MOUSE_NOTHING, MOUSE_SELECT_ALL, MOUSE_SELECT_COL, MOUSE_SELECT_ROW,
@@ -806,6 +816,8 @@ private:
 	bool m_QuitFocusOnTab;
 	bool m_AllowSelectRowInFixedCol;
 
+  int  m_curEditRow { -1 };
+  int  m_curEditCol { -1 };
 };
 
 // Returns the default cell implementation for the given grid region

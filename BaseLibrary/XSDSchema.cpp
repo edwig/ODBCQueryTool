@@ -2,7 +2,7 @@
 //
 // SourceFile: XSDSchema.cpp
 //
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -497,7 +497,7 @@ XSDSchema::WriteXSDElements(XMLMessage& p_doc,XMLElement* p_base,ElementMap& p_e
 {
   for(int index = 0;index < (int) p_elements.size();++index)
   {
-    XMLElement* elem = p_doc.AddElement(p_base,_T("xs:element"),XDT_String,"");
+    XMLElement* elem = p_doc.AddElement(p_base,_T("xs:element"),XDT_String,_T(""));
     p_doc.SetAttribute(elem,_T("name"),p_elements[index]->GetName());
     XMLRestriction* restrict = p_elements[index]->GetRestriction();
     if(restrict)
@@ -820,7 +820,7 @@ XSDSchema::ValidateOrderSequence(XMLMessage& p_doc,XMLElement* p_compare,Element
     if(posXSD >= p_elements.size())
     {
       // Element not found in definition
-      p_error = "Element not found in XSD type definition: " + elementXML->GetName();
+      p_error = _T("Element not found in XSD type definition: ") + elementXML->GetName();
       return XsdError::XSDE_Element_not_in_xsd;
     }
     XMLElement* elementXSD = p_elements[posXSD];
@@ -831,7 +831,7 @@ XSDSchema::ValidateOrderSequence(XMLMessage& p_doc,XMLElement* p_compare,Element
       // Found: check maxOccurs
       if(++occurs > (restrict ? restrict->HasMaxOccurs() : 1))
       {
-        p_error = "Extra element in message: " + elementXSD->GetName();
+        p_error = _T("Extra element in message: ") + elementXSD->GetName();
         return XsdError::XSDE_Extra_elements_in_xml;
       }
     }
@@ -841,14 +841,14 @@ XSDSchema::ValidateOrderSequence(XMLMessage& p_doc,XMLElement* p_compare,Element
       if(occurs == 0 && (!restrict || restrict->HasMinOccurs() > 0))
       {
         // Element not found in definition
-        p_error = "Element not found in XSD type definition: " + elementXML->GetName();
+        p_error = _T("Element not found in XSD type definition: ") + elementXML->GetName();
         return XsdError::XSDE_Element_not_in_xsd;
       }
 
       // Not found: check minOccurs
       if(occurs < (restrict ? restrict->HasMinOccurs() : 1))
       {
-        p_error = "Missing element in message: " + elementXSD->GetName();
+        p_error = _T("Missing element in message: ") + elementXSD->GetName();
         return XsdError::XSDE_Missing_element_in_xml;
       }
 
@@ -870,7 +870,7 @@ XSDSchema::ValidateOrderSequence(XMLMessage& p_doc,XMLElement* p_compare,Element
     if(occurs < (restrict ? restrict->HasMinOccurs() : 1))
     {
       // Element not found in xml
-      p_error = "Element not found in xml: " + elementXSD->GetName();
+      p_error = _T("Element not found in xml: ") + elementXSD->GetName();
       return XsdError::XSDE_Missing_element_in_xml;
     }
   }

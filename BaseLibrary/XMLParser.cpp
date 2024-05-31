@@ -2,7 +2,7 @@
 //
 // SourceFile: XMLParser.cpp
 //
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -56,7 +56,7 @@ XMLParser::PrintXmlString(const XString& p_string,bool p_utf8 /*=false*/)
   if(p_utf8)
   {
     // Now encode MBCS to UTF-8 without a BOM
-    uncoded = EncodeStringForTheWire(uncoded,"utf-8");
+    uncoded = EncodeStringForTheWire(uncoded,_T("utf-8"));
   }
 
   _TUCHAR* pointer = (_TUCHAR*)uncoded.GetString();
@@ -385,10 +385,9 @@ XMLParser::ParseDeclaration()
     }
     else if(attributeName.Compare(_T("encoding")) == 0)
     {
-      m_message->m_encoding = Encoding::Default;
       if(value.CompareNoCase(_T("utf-8")) == 0)
       {
-        if(m_message->GetEncoding() != Encoding::Default)
+        if(m_message->GetEncoding() != Encoding::UTF8)
         {
           // UTF-8 Not detected earlier by WinFile or by Byte-Order-Mark
           // So we choose to believe the header and scan for UTF-8 anyhow
@@ -398,16 +397,8 @@ XMLParser::ParseDeclaration()
       }
       else if(value.Left(6).CompareNoCase(_T("utf-16")) == 0)
       {
-        // Works for "UTF-16", "UTF-16LE" and "UTF-16BE" as of RFC 2781
-        // Although one should only specify "utf-16" without the endianess
-#ifdef UNICODE
+        m_message->SetSendUnicode(true);
         m_message->m_encoding = Encoding::LE_UTF16;
-#else
-        if(m_message->GetEncoding() != Encoding::LE_UTF16)
-        {
-          SetError(XmlError::XE_UnknownEncoding,"UTF-16 Encoding can only be read from files!");
-        }
-#endif
       }
       else
       {
@@ -421,7 +412,7 @@ XMLParser::ParseDeclaration()
         {
           XString message;
           message.Format(_T("Unknown XML character encoding: %s"),value.GetString());
-          SetError(XmlError::XE_UnknownEncoding,message.GetString());
+          SetError(XmlError::XE_NoError,message.GetString(),false);
         }
       }
     }

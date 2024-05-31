@@ -2,7 +2,7 @@
 //
 // SourceFile: XMLParserJSON.h
 //
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -40,7 +40,7 @@ public:
  void  ParseMain(XMLElement* p_element,JSONvalue& p_value);
 private:
   void ParseMainSOAP (XMLElement* p_element,JSONvalue& p_value);
-  void ParseLevel    (XMLElement* p_element,JSONvalue& p_value,XString p_arrayName = "");
+  void ParseLevel    (XMLElement* p_element,JSONvalue& p_value,XString p_arrayName = _T(""));
 private:
   SOAPMessage* m_soap      { nullptr };
   bool         m_rootFound { false   };

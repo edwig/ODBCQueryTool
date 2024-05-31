@@ -120,11 +120,14 @@ BOOL CTitleTip::DestroyWindow()
 // lpszTitleText	- The text to be displayed
 // xoffset				- Number of pixel that the text is offset from
 //									left border of the cell
-void CTitleTip::Show(CWnd* p_parent,CRect rectTitle, LPCTSTR lpszTitleText, int xoffset /*=0*/,
-                     LPRECT lpHoverRect /*=NULL*/,
-                     const LOGFONT* lpLogFont /*=NULL*/,
-                     COLORREF crTextClr /* CLR_DEFAULT */,
-                     COLORREF crBackClr /* CLR_DEFAULT */)
+void CTitleTip::Show(CWnd* p_parent
+	                  ,CRect rectTitle
+	                  ,LPCTSTR lpszTitleText
+	                  ,int xoffset /*=0*/
+	                  ,LPRECT lpHoverRect /*=NULL*/
+	                  ,const LOGFONT* lpLogFont /*=NULL*/
+	                  ,COLORREF crTextClr /* CLR_DEFAULT */
+										,COLORREF crBackClr /* CLR_DEFAULT */)
 {
 	if (!IsWindow(m_hWnd))
 	{
@@ -191,7 +194,7 @@ void CTitleTip::Show(CWnd* p_parent,CRect rectTitle, LPCTSTR lpszTitleText, int 
 	rectDisplay.right = rectDisplay.left + size.cx + xoffset;
     
   // Do not display if the text fits within available space
-  if ( rectDisplay.right > rectTitle.right-xoffset )
+  if(xoffset || (rectDisplay.right > rectTitle.right-xoffset))
   {
 		// Show the titletip
     SetWindowPos( &wndTop, rectDisplay.left, rectDisplay.top, 

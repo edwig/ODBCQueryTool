@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -84,7 +84,10 @@ JSONParser::ParseMessage(XString& p_message,bool& p_whitespace,Encoding p_encodi
   Encoding charset = Encoding::Default;
   unsigned int skip = 0;
   BOMOpenResult bomResult = WinFile::DefuseBOM((const unsigned char*)m_pointer,charset,skip);
-
+  if(bomResult == BOMOpenResult::NoString)
+  {
+    return;
+  }
   if(bomResult != BOMOpenResult::NoEncoding)
   {
     if(charset != Encoding::UTF8)

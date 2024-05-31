@@ -125,9 +125,11 @@ BEGIN
             MENUITEM "Lime",                        ID_THEMA_LIME
             MENUITEM "Skyblue",                     ID_THEMA_SKYBLUE
             MENUITEM "Purple",                      ID_THEMA_PURPLE
+            MENUITEM "Mustart",                     ID_THEMA_MUSTARD
             MENUITEM "Moderate gray",               ID_THEMA_MODERATE
             MENUITEM "Pure gray",                   ID_THEMA_PUREGRAY
             MENUITEM "Black && White",              ID_THEMA_BLACKWHITE
+            MENUITEM "Dark",                        ID_THEMA_DARK
         END
         MENUITEM "About...",                    ID_APP_ABOUT
         MENUITEM "Exit",                        ID_APP_EXIT

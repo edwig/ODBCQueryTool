@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,6 +27,7 @@
 //
 #include "pch.h"
 #include "ServiceReporting.h"
+#include "EventLogRegistration.h"
 #include "AutoCritical.h"
 #include "GetLastErrorAsString.h"
 #include "Alert.h"
@@ -39,12 +40,12 @@ static char THIS_FILE[] = __FILE__;
 #endif
 
 // Each buffer in a event buffer array has a limit of 31K characters
-// See MSDN: ReportEvent function (31.839 characters)
-#define EVENTBUFFER  (31 * 1024)
+// See MSDN: ReportEvent function (31.839 bytes)
+#define EVENTBUFFER  ((31 * 1024) / sizeof(TCHAR))
 
 PTCHAR           g_eventBuffer = nullptr;
 CRITICAL_SECTION g_eventBufferLock;
-TCHAR            g_svcname[SERVICE_NAME_LENGTH];
+TCHAR            g_svcname[SERVICE_NAME_LENGTH] = _T("");
 
 static void
 SvcFreeEventBuffer()
@@ -75,7 +76,7 @@ SvcStartEventBuffer()
 }
 
 void
-SvcReportInfoEvent(bool p_doFormat,PTSTR p_message,...)
+SvcReportInfoEvent(bool p_doFormat,LPCTSTR p_message,...)
 {
   // Be sure our event system is started
   SvcStartEventBuffer();
@@ -90,7 +91,7 @@ SvcReportInfoEvent(bool p_doFormat,PTSTR p_message,...)
   }
   else
   {
-    _tcscpy_s(g_eventBuffer,EVENTBUFFER,p_message);
+    StringCchCopyN(g_eventBuffer,EVENTBUFFER,p_message,EVENTBUFFER - 1);
   }
 
   HANDLE hEventSource = OpenEventLog(nullptr,g_svcname);
@@ -114,7 +115,7 @@ SvcReportInfoEvent(bool p_doFormat,PTSTR p_message,...)
 }
 
 void
-SvcReportSuccessEvent(PTSTR p_message)
+SvcReportSuccessEvent(LPCTSTR p_message)
 {
   // Be sure our event system is started
   SvcStartEventBuffer();
@@ -147,7 +148,7 @@ SvcReportSuccessEvent(PTSTR p_message)
 // Remarks:       The service must have an entry in the Application event log.
 //
 void
-SvcReportErrorEvent(int p_module,bool p_doFormat,PTSTR szFunction,PTSTR p_message,...)
+SvcReportErrorEvent(int p_module,bool p_doFormat,LPCTSTR szFunction,LPCTSTR p_message,...)
 {
   TCHAR   buffer1[256];
   TCHAR   buffer2[256];
@@ -166,7 +167,7 @@ SvcReportErrorEvent(int p_module,bool p_doFormat,PTSTR szFunction,PTSTR p_messag
   }
   else
   {
-    _tcscpy_s(g_eventBuffer,EVENTBUFFER,p_message);
+    StringCchCopyN(g_eventBuffer,EVENTBUFFER,p_message,EVENTBUFFER - 1);
   }
   _stprintf_s(buffer1, 256, _T("Function %s"), szFunction);
   _stprintf_s(buffer2, 256, _T("Last OS error: [%d] %s"),lastError,GetLastErrorAsString(lastError).GetString());
@@ -197,6 +198,6 @@ SvcReportErrorEvent(int p_module,bool p_doFormat,PTSTR szFunction,PTSTR p_messag
   // Create alert file if requested
   if(p_module)
   {
-    CreateAlert(szFunction, buffer2, g_eventBuffer, p_module);
+    CreateAlert(szFunction,buffer2,g_eventBuffer,p_module);
   }
 }

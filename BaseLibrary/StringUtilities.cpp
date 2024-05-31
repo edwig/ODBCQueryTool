@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -61,7 +61,7 @@ bcd AsBcd(XString p_string)
   return num;
 }
 
-int SplitString(XString p_string,std::vector<XString>& p_vector,char p_separator /*= ','*/,bool p_trim /*=false*/)
+int SplitString(XString p_string,std::vector<XString>& p_vector,TCHAR p_separator /*= ','*/,bool p_trim /*=false*/)
 {
   p_vector.clear();
   int pos = p_string.Find(p_separator);
@@ -295,4 +295,20 @@ bool PutStringToClipboard(XString p_string,HWND p_wnd /*=NULL*/,bool p_append /*
     CloseClipboard();
   }
   return result;
+}
+
+
+// Count the number of characters in a string
+int
+CountOfChars(XString p_string,TCHAR p_char)
+{
+  int count = 0;
+  for(int index = 0;index < p_string.GetLength();++index)
+  {
+    if(p_string.GetAt(index) == p_char)
+    {
+      ++count;
+    }
+  }
+  return count;
 }

@@ -2,7 +2,7 @@
 //
 // SourceFile: XMLMessage.cpp
 //
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -216,6 +216,12 @@ XMLMessage::SetRoot(XMLElement* p_root)
   m_root->AddReference();
 }
 
+void
+XMLMessage::SetStandalone(bool p_alone)
+{
+  m_standalone = p_alone ? _T("yes") : _T("no");
+}
+
 #pragma endregion XMLMessage_XTOR
 
 #pragma region File_Load_Save
@@ -364,12 +370,11 @@ XMLMessage::ParseForNode(XMLElement* p_node,XString& p_message,WhiteSpace p_whit
 XString
 XMLMessage::Print()
 {
-  bool utf8 = (m_encoding == Encoding::UTF8);
-
   XString message = PrintHeader();
 
   message += PrintStylesheet();
-  message += PrintElements(m_root,utf8);
+  message += PrintElements(m_root,false,0);
+
   if(m_condensed)
   {
     message += "\n";
@@ -394,16 +399,18 @@ XMLMessage::PrintHeader()
     header.AppendFormat(_T(" version=\"%s\""),m_version.GetString());
   }
   // Take care of character encoding
-  int acp = -1;
+  XString charset;
   switch(m_encoding)
   {
-    case Encoding::Default:     acp =    -1; break; // Find Active Code Page
-    case Encoding::UTF8:       acp = 65001; break; // See ConvertWideString.cpp
-    case Encoding::LE_UTF16:   acp =  1200; break; // See ConvertWideString.cpp
-    case Encoding::BE_UTF16:   acp =  1201; break; // See ConvertWideString.cpp
-    default:                                break;
+    default:                   [[fallthrough]];
+    case Encoding::UTF8:       charset = "utf-8";
+                               break;
+    case Encoding::LE_UTF16:   charset = "utf-16";
+                               break;
+    case Encoding::Default:    charset = CodepageToCharset(GetACP());
+                               break;
   }
-  header.AppendFormat(_T(" encoding=\"%s\""),CodepageToCharset(acp).GetString());
+  header.AppendFormat(_T(" encoding=\"%s\""),charset.GetString());
 
   // Add standalone?
   if(!m_standalone.IsEmpty())
@@ -974,7 +981,7 @@ XMLMessage::GetElement(XMLElement* p_elem,XString p_name)
       return map[ind]->GetValue();
     }
   }
-  return "";
+  return _T("");
 }
 
 int      
@@ -1155,11 +1162,20 @@ XMLMessage::GetAttribute(XMLElement* p_elem,XString p_attribName)
 {
   if(p_elem)
   {
+    XString namesp = SplitNamespace(p_attribName);
+
     for(auto& attrib : p_elem->GetAttributes())
     {
       if(attrib.m_name.Compare(p_attribName) == 0)
       {
-        return attrib.m_value;
+        if(namesp.IsEmpty())
+        {
+          return attrib.m_value;
+        }
+        if(attrib.m_namespace.Compare(namesp) == 0)
+        {
+          return attrib.m_value;
+        }
       }
     }
   }
@@ -1353,11 +1369,13 @@ XMLMessage::FindElementByAttribute(XMLElement* p_element, XString p_attribute, X
   return nullptr;
 }
 
-void
+Encoding
 XMLMessage::SetEncoding(Encoding p_encoding)
 {
+  Encoding previous = m_encoding;
   m_encoding    = p_encoding;
   m_sendUnicode = (p_encoding == Encoding::LE_UTF16);
+  return previous;
 }
 
 // Set sending in Unicode

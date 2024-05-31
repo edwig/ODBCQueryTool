@@ -2,7 +2,7 @@
 //
 // File: SQLInfoOracle.cpp
 //
-// Copyright (c) 1998-2022 ir. W.E. Huisman
+// Copyright (c) 1998-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -2426,7 +2426,7 @@ SQLInfoOracle::GetPSMProcedureErrors(XString p_schema,XString p_procedure) const
     {
       s.Format(_T("Error in line %d, column %d: %s\n"),qry1.GetColumn(1)->GetAsSLong()
 	                                              ,qry1.GetColumn(2)->GetAsSLong()
-                                                ,qry1.GetColumn(3)->GetAsChar().GetString());
+                                                  ,qry1.GetColumn(3)->GetAsChar());
       errorText += s;
       query.Format( _T("SELECT text\n")
                     _T("  FROM all_source\n")
@@ -2440,7 +2440,7 @@ SQLInfoOracle::GetPSMProcedureErrors(XString p_schema,XString p_procedure) const
       {
         s.Format(_T("Line %d: %s\n")
                  ,qry1.GetColumn(1)->GetAsSLong()
-                 ,qry2.GetColumn(1)->GetAsChar().GetString());
+                 ,qry2.GetColumn(1)->GetAsChar());
         errorText += s;
       }
     }

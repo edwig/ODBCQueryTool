@@ -23,12 +23,14 @@
 #define IDB_SCROLLBAR5                  142
 #define IDB_SCROLLBAR6                  143
 #define IDB_SCROLLBAR7                  144
-#define IDD_CALENDAR                    145
-#define IDI_CALENDAR                    146
-#define IDB_MLD_STOP                    150
-#define IDB_MLD_INFO                    151
-#define IDB_MLD_VRAAG                   152
-#define IDB_MLD_UITROEP                 153
+#define IDB_SCROLLBAR8                  145
+#define IDD_CALENDAR                    146
+#define IDI_CALENDAR                    147
+#define IDD_STEPPER                     148
+#define IDC_PRIOR                       149
+#define IDC_NEXT                        150
+#define IDI_PRIOR                       151
+#define IDI_NEXT                        152
 #define IDR_MELDINGEN                   180
 #define IDD_EXPORT                      200
 #define IDD_MIGRATE_WIZARD              201
@@ -96,6 +98,8 @@
 #define ID_THEMA_MODERATE               32774
 #define ID_THEMA_PUREGRAY               32775
 #define ID_THEMA_BLACKWHITE             32776
+#define ID_THEMA_MUSTARD                32777
+#define ID_THEMA_DARK                   32778
 
 
 // Next default values for new objects
@@ -103,7 +107,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        204
-#define _APS_NEXT_COMMAND_VALUE         32777
+#define _APS_NEXT_COMMAND_VALUE         32779
 #define _APS_NEXT_CONTROL_VALUE         1043
 #define _APS_NEXT_SYMED_VALUE           103
 #endif

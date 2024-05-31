@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -62,6 +62,7 @@ constexpr auto NAMESPACE_ENCODING   = _T("http://www.w3.org/2001/04/xmlenc#");
 constexpr auto NAMESPACE_SECEXT     = _T("http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd");
 constexpr auto NAMESPACE_SECUTILITY = _T("http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-utility-1.0.xsd");
 constexpr auto NAMESPACE_SECURITY   = _T("http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-soap-message-security-1.0");
+constexpr auto NAMESPACE_UNAMETOKEN = _T("http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0");
 
 // Must have a default namespace
 #ifndef DEFAULT_NAMESPACE 
@@ -126,16 +127,18 @@ public:
   explicit SOAPMessage(XString&    p_namespace
                       ,XString&    p_soapAction
                       ,SoapVersion p_version = SoapVersion::SOAP_12
-                      ,XString     p_url     = ""
+                      ,XString     p_url     = _T("")
                       ,bool        p_secure  = false
-                      ,XString     p_server  = ""
+                      ,XString     p_server  = _T("")
                       ,int         p_port    = INTERNET_DEFAULT_HTTP_PORT
-                      ,XString     p_absPath = "");
+                      ,XString     p_absPath = _T(""));
   // DTOR
   virtual ~SOAPMessage();
 
   // Reset parameters, transforming it in an answer, preferable in our namespace
-  virtual void    Reset(ResponseType p_responseType = ResponseType::RESP_ACTION_NAME,XString p_namespace = "");
+  virtual void    Reset(ResponseType p_responseType = ResponseType::RESP_ACTION_NAME
+                       ,XString      p_namespace    = _T("")
+                       ,bool         p_resetURL     = false);
   // Parse incoming message to members
   virtual void    ParseMessage(XString& p_message);
   // Parse incoming soap as new body of the message
@@ -156,6 +159,7 @@ public:
 
   // Set the alternative namespace
   void            SetNamespace(XString p_namespace);
+  void            SetForceNamespace(bool p_force);
   // Set Command name
   void            SetSoapAction(const XString& p_name);
   void            SetHasInitialAction(bool p_initial);
@@ -173,7 +177,7 @@ public:
   bool            SetPreserveWhitespace(bool p_preserve = true);
   // Set the cookies
   void            SetCookie(Cookie& p_cookie);
-  void            SetCookie(XString p_name,XString p_value,XString p_metadata = "",bool p_secure = false);
+  void            SetCookie(XString p_name,XString p_value,XString p_metadata = _T(""),bool p_secure = false);
   void            SetCookies(const Cookies& p_cookies);
   // Set request Handle
   void            SetRequestHandle(HTTP_OPAQUE_ID p_request);
@@ -191,7 +195,7 @@ public:
   void            SetPassword(const XString& p_password);
   void            SetTokenNonce(XString p_nonce);
   void            SetTokenCreated(XString p_created);
-  bool            SetTokenProfile(XString p_user,XString p_password,XString p_created,XString p_nonce = "");
+  bool            SetTokenProfile(XString p_user,XString p_password,XString p_created,XString p_nonce = _T(""));
   // Set security access token
   void            SetAccessToken(HANDLE p_token);
   // Set senders address
@@ -233,6 +237,7 @@ public:
 
   // Get the service level namespace
   XString         GetNamespace() const;
+  bool            GetForceNamespace() const;
   // Get name of the soap action command (e.g. for messages and debug)
   XString         GetSoapAction() const;
   bool            GetMustUnderstandAction() const;
@@ -250,8 +255,8 @@ public:
   XString         GetAcceptEncoding() const;
   // Get the cookies
   Cookie*         GetCookie(unsigned p_ind);
-  XString         GetCookie(unsigned p_ind = 0, XString p_metadata = "");
-  XString         GetCookie(XString p_name = "",XString p_metadata = "");
+  XString         GetCookie(unsigned p_ind = 0,     XString p_metadata = _T(""));
+  XString         GetCookie(XString p_name = _T(""),XString p_metadata = _T(""));
   const Cookies&  GetCookies() const;
   // Get URL destination
   XString         GetURL() const;
@@ -437,6 +442,7 @@ protected:
   bool            m_incoming      { false };              // Incoming SOAP message
   bool            m_addAttribute  { true  };              // Add "mustUnderstand" attribute to <Envelope>/<Action>
   bool            m_understand    { true  };              // Set "mustUnderstand" to true or false
+  bool            m_forceNamespace{ true  };              // Force message namespace in first body node
   // DESTINATION
   unsigned        m_status        { HTTP_STATUS_OK };     // HTTP status return code
   HTTP_OPAQUE_ID  m_request       { NULL  };              // Request it must answer
@@ -996,6 +1002,18 @@ inline void
 SOAPMessage::SetStatus(unsigned p_status)
 {
   m_status = p_status;
+}
+
+inline bool
+SOAPMessage::GetForceNamespace() const
+{
+  return m_forceNamespace;
+}
+
+inline void
+SOAPMessage::SetForceNamespace(bool p_force)
+{
+  m_forceNamespace = p_force;
 }
 
 //////////////////////////////////////////////////////////////////////////

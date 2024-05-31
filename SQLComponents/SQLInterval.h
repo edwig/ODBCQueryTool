@@ -2,7 +2,7 @@
 //
 // File: SQLInterval.h
 //
-// Copyright (c) 1998-2022 ir. W.E. Huisman
+// Copyright (c) 1998-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -105,7 +105,7 @@ public:
   int     GetFractionPart() const;
   XString GetTypeAsString() const;
 
-  double  AsDatabaseDouble() const;
+  bcd     AsDatabaseNumber() const;
   XString AsString(bool p_withFraction = false) const;
   XString AsXMLString(bool p_withFraction = false) const;
   XString AsXMLDuration() const;

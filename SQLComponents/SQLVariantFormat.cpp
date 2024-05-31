@@ -2,7 +2,7 @@
 //
 // File: SQLVariantFormat.cpp
 //
-// Copyright (c) 1998-2022 ir. W.E. Huisman
+// Copyright (c) 1998-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -31,7 +31,9 @@
 #include "SQLTime.h"
 #include "SQLDate.h"
 #include "SQLTimestamp.h"
-#include "bcd.h"
+#include "SQLInfoDB.h"
+#include <bcd.h>
+#include <StringUtilities.h>
 #include <locale.h>
 
 #ifdef _DEBUG
@@ -65,7 +67,7 @@ SQLVariantFormat::~SQLVariantFormat()
   {
     delete m_variant;
   }
-  m_variant = NULL;
+  m_variant = nullptr;
 }
 
 void
@@ -75,7 +77,7 @@ SQLVariantFormat::Reset()
   {
     delete m_variant;
   }
-  m_variant    = NULL;
+  m_variant    = nullptr;
   m_userStatus = 0;
   m_format     = _T("");
 }
@@ -87,7 +89,7 @@ SQLVariantFormat::ResetValue()
   {
     delete m_variant;
   }
-  m_variant = NULL;
+  m_variant = nullptr;
   m_format  = _T("");
 }
 
@@ -161,14 +163,15 @@ SQLVariantFormat::StringStartCapital()
   }
 }
 
-// The format is a constant or a simple number
+// The format is ONE constant or a simple number (-,+, . included)
+// Characters '-', '+' and '.' may only be scanned once!
 bool
 SQLVariantFormat::IsConstantOrNumber(char p_seperator /*='.'*/)
 {
-  bool bDecimal  = false;
-  bool bSpace    = false;
-  bool bTeken    = false;
-  bool bNumber   = false;
+  bool isDecimal = false;
+  bool isSpace   = false;
+  bool isSign    = false;
+  bool isNumber  = false;
   XString string = m_format;
 
   string.Trim();
@@ -179,31 +182,31 @@ SQLVariantFormat::IsConstantOrNumber(char p_seperator /*='.'*/)
     int ch = string.GetAt(pos);
     if(isdigit(ch))
     {
-      if(bSpace)
+      if(isSpace)
       {
         return false;
       }
-      bNumber = true;
+      isNumber = true;
     }
-    else if (ch == '-' || ch == '+')
+    else if(ch == '-' || ch == '+')
     {
-      if(bNumber || bSpace || bDecimal || bTeken)
+      if(isNumber || isSpace || isDecimal || isSign)
       {
         return false;
       }
-      bTeken = true;
+      isSign = true;
     }
-    else if (ch == p_seperator)
+    else if(ch == p_seperator)
     {
-      if(bSpace || bDecimal)
+      if(isSpace || isDecimal)
       {
         return false;
       }
-      bDecimal = true;
+      isDecimal = true;
     }
     else if(isspace(ch))
     {
-      bSpace = true;
+      isSpace = true;
     }
     else
     {
@@ -216,7 +219,7 @@ SQLVariantFormat::IsConstantOrNumber(char p_seperator /*='.'*/)
 }
 
 int 
-SQLVariantFormat::StrValutaNLOmzetten(XString& p_string,bool p_enkelValuta)
+SQLVariantFormat::RemoveValutaEuro(XString& p_string,bool p_enkelValuta)
 {
   p_string.Replace(_T(" ")   ,_T(""));
   p_string.Replace(_T("EUR."),_T(""));
@@ -233,7 +236,7 @@ SQLVariantFormat::StrValutaNLOmzetten(XString& p_string,bool p_enkelValuta)
 }
 
 int 
-SQLVariantFormat::StrValutaAMOmzetten(XString& p_string,bool p_enkelValuta)
+SQLVariantFormat::RemoveValutaDollar(XString& p_string,bool p_enkelValuta)
 {
   p_string.Replace(_T(" ") ,_T(""));
   p_string.Replace(_T("$."),_T(""));
@@ -255,15 +258,15 @@ SQLVariantFormat::IsWinNumber(const XString p_string
                              ,PTCHAR        p_valuta
                              ,XString*      p_newNumber)
 {
-  XString newGetal(_T("+"));
-  bool bDecimal   = false;   // decimal separator found
-  bool bThousend  = false;   // thousand separator found
-  bool bSpace     = false;   // Spaces behind the number
-  bool bSign      = false;   // Found a sign
-  bool bAfterSign = false;   // Sign after the number
-  bool bNumber    = false;   // First digit found
-  bool bNegative  = false;   // Negative number
-  int  pString    = 0;
+  XString newNumber(_T("+"));
+  bool isDecimal   = false;   // decimal separator found
+  bool isThousend  = false;   // thousand separator found
+  bool isSpace     = false;   // Spaces behind the number
+  bool isSign      = false;   // Found a sign
+  bool isSignAfter = false;   // Sign after the number
+  bool isNumber    = false;   // First digit found
+  bool isNegative  = false;   // Negative number
+  int  stringPos   = 0;
 
   int DSLen = 0;
   int TSLen = 0;
@@ -271,80 +274,80 @@ SQLVariantFormat::IsWinNumber(const XString p_string
 
   ::InitValutaString();
 
-  if(p_decSeperator != NULL)
+  if(p_decSeperator != nullptr)
   {
     DSLen = (int)_tcslen(p_decSeperator);
   }
-  if(p_thouSeperator != NULL)
+  if(p_thouSeperator != nullptr)
   {
     TSLen = (int)_tcslen(p_thouSeperator);
   }
-  if(p_valuta != NULL)
+  if(p_valuta != nullptr)
   {
     VALen = (int)_tcslen(p_valuta);
   }
-  while(isspace(p_string.GetAt(pString)))
+  while(isspace(p_string.GetAt(stringPos)))
   {
-    ++pString;
+    ++stringPos;
   }
-  while(pString < p_string.GetLength())
+  while(stringPos < p_string.GetLength())
   {
-    if(isdigit(p_string.GetAt(pString)))
+    if(isdigit(p_string.GetAt(stringPos)))
     {
-      if(bSpace || bAfterSign)
+      if(isSpace || isSignAfter)
       {
         return false;
       }
-      bNumber = true;
-      newGetal += p_string.GetAt(pString++);
+      isNumber = true;
+      newNumber += p_string.GetAt(stringPos++);
     }
-    else if(p_string.GetAt(pString) == '-' ||
-            p_string.GetAt(pString) == '+' )
+    else if(p_string.GetAt(stringPos) == _T('-') ||
+            p_string.GetAt(stringPos) == _T('+') )
     {
-      if(bSign)
+      if(isSign)
       {
         return false;
       }
-      bSign    = true;
-      bAfterSign  = bNumber;
-      bNegative = (p_string.GetAt(pString) == '-');
-      newGetal.SetAt(0,p_string.GetAt(pString++));
+      isSign      = true;
+      isSignAfter = isNumber;
+      isNegative  = (p_string.GetAt(stringPos) == _T('-'));
+      newNumber.SetAt(0,p_string.GetAt(stringPos++));
     }
-    else if(DSLen > 0 && _tcsncmp(p_string.Mid(pString),p_decSeperator,DSLen) == 0)
+    else if(DSLen > 0 && _tcsncmp(p_string.Mid(stringPos),p_decSeperator,DSLen) == 0)
     {
-      if(bSpace || bDecimal)
+      if(isSpace || isDecimal)
       {
         return false;
       }
-      if(!bNumber)
+      if(!isNumber)
       {
-        newGetal += '0';
+        newNumber += '0';
       }
-      newGetal += '.';
-      bNumber   = true;
-      bDecimal  = true;
-      pString  += DSLen;
+      newNumber += '.';
+      isNumber   = true;
+      isDecimal  = true;
+      stringPos += DSLen;
     }
-    else if(TSLen > 0 && _tcsncmp(p_string.Mid(pString),p_thouSeperator,TSLen) == 0)
+    else if(TSLen > 0 && _tcsncmp(p_string.Mid(stringPos),p_thouSeperator,TSLen) == 0)
     {
-      if(bSpace || bDecimal)
+      if(isSpace || isDecimal)
       {
         return false;
       }
-      pString += TSLen;
-      bThousend = true;
+      stringPos += TSLen;
+      isThousend = true;
     }
-    else if(VALen > 0 && _tcsncmp(p_string.Mid(pString),p_valuta,VALen) == 0)
+    else if(VALen > 0 && _tcsncmp(p_string.Mid(stringPos),p_valuta,VALen) == 0)
     {
-      pString += VALen;
+      stringPos += VALen;
     }
-    else if(isspace(p_string.GetAt(pString)))
+    else if(isspace(p_string.GetAt(stringPos)))
     {
-      if(bNumber || bDecimal)
+      if(isNumber || isDecimal)
       {
-        bSpace = true;
+        isSpace = true;
       }
-      ++pString;
+      ++stringPos;
     }
     else
     {
@@ -353,66 +356,76 @@ SQLVariantFormat::IsWinNumber(const XString p_string
   }
 
   // Eventually place extra 0 after a number ending in a decimal point
-  if(newGetal.Right(1) == _T('.'))
+  if(newNumber.Right(1) == _T('.'))
   {
-    newGetal += _T('0');
+    newNumber += _T('0');
   }
-  if(bNumber && p_newNumber != NULL)
+  if(isNumber && p_newNumber != nullptr)
   {
-    *p_newNumber = newGetal;
+    *p_newNumber = newNumber;
   }
   return true;
 }
 
-double
-SQLVariantFormat::StringDoubleValue()
+bcd
+SQLVariantFormat::StringDecimalValue(CString& p_error)
 {
-  double result = 0.0;
+  bcd result;
   ::InitValutaString();
 
   if(IsConstantOrNumber())
   {
-    result = _ttof(m_format);
+    result = bcd(m_format);
   }
   else
   {
     XString waarde = m_format;
     if(IsConstantOrNumber(','))
     {
-      StrValutaNLOmzetten(waarde,false);
-      result = _ttof(waarde);
+      RemoveValutaEuro(waarde,false);
+      result = bcd(waarde);
     }
     else
     {
       XString newGetal;
       if(IsWinNumber(waarde,::g_locale_decimalSep,::g_locale_thousandSep,::g_locale_strCurrency,&newGetal))
       {
-        result = _ttof(newGetal);
+        result = bcd(newGetal);
       }
       else
       {
         XString newWaarde = waarde;
-        StrValutaNLOmzetten(newWaarde,true);
+        RemoveValutaEuro(newWaarde,true);
         if(IsWinNumber(newWaarde,::g_locale_decimalSep,::g_locale_thousandSep,::g_locale_strCurrency,&newGetal))
         {
-          result = _ttof(newGetal);
+          result = bcd(newGetal);
         }
         else
         {
           if(IsWinNumber(newWaarde,const_cast<TCHAR*>(_T(",")),const_cast<TCHAR*>(_T(".")),::g_locale_strCurrency,&newGetal))
           {
-            result = _ttof(newGetal);
+            result = bcd(newGetal);
           }
           else
           {
             if(IsWinNumber(newWaarde,const_cast<TCHAR*>(_T(".")),const_cast<TCHAR*>(_T(",")),::g_locale_strCurrency,&newGetal))
             {
-              result = _ttof(newGetal);
+              result = bcd(newGetal);
             }
             else
             {
               // Cross our fingers and hope to die!!
-              result = _ttof(waarde);
+              try
+              {
+                result = bcd(waarde);
+              }
+              catch(StdException& ex)
+              {
+                p_error  = ex.GetErrorMessage();
+                p_error += " : ";
+                p_error += waarde;
+                result.Zero();
+              }
             }
           }
         }
@@ -424,7 +437,7 @@ SQLVariantFormat::StringDoubleValue()
 
 // Setting the current date and time
 void
-SQLVariantFormat::SetCurrentDate()
+SQLVariantFormat::SetCurrentDateAndTime()
 {
   // Making place for our own variant
   if(m_variant && m_owner)
@@ -434,7 +447,7 @@ SQLVariantFormat::SetCurrentDate()
   }
 
   // Setting the current timestamp in the format string
-  // Does so in standard order "Y-M-D H:M:S" 
+  // Does so in standard ISO order "Y-M-D H:M:S" 
   SQLTimestamp stamp = SQLTimestamp::CurrentTimestamp();
   m_format = stamp.AsXMLString();
   m_format.Replace(_T("T"),_T(" "));
@@ -444,66 +457,98 @@ SQLVariantFormat::SetCurrentDate()
   m_owner   = true;
 }
 
+// Getting a time value from a string
+// There can be various info before the time part, but not AFTER it
+// E.g. in most cases it has a date before it, so we can read from a timestamp string
 bool
 SQLVariantFormat::GetTimeFromStringVariant(const SQLVariant* p_variant,XString p_format,TIME_STRUCT* p_time)
 {
   ZeroMemory(p_time,sizeof(TIME_STRUCT));
-  //XString tijd("");
   
-  XString tijd(p_variant ? XString(p_variant->GetAsChar()) : p_format);
-
-  int pos = tijd.Find(':');
+  XString theTime;
+  if(p_variant)
+  {
+    p_variant->GetAsString(theTime);
+  }
+  else
+  {
+    theTime = p_format;
+  }
+  int pos = theTime.Find(_T(':'));
   if(pos < 0)
   {
     return false;
   }
 
-  // Is there a time present int he string?
-  if(pos > 0 && isdigit(tijd.GetAt(pos - 1)))
+  // Is there a time present in the string?
+  if(pos > 0 && isdigit(theTime.GetAt(pos - 1)))
   {
     --pos;
-    if(pos > 0 && isdigit(tijd.GetAt(pos - 1)))
+    if(pos > 0 && isdigit(theTime.GetAt(pos - 1)))
     {
       --pos;
     }
   }
-  tijd = tijd.Mid(pos);
-  int uur = 0;
+  theTime = theTime.Mid(pos);
+  int our = 0;
   int min = 0;
   int sec = 0;
-  if(_stscanf_s(tijd,_T("%d:%d:%d"),&uur,&min,&sec) == 3)
+  if(_stscanf_s(theTime,_T("%d:%d:%d"),&our,&min,&sec) == 3)
   {
-    p_time->hour   = (SQLUSMALLINT) uur;
-    p_time->minute = (SQLUSMALLINT) min;
-    p_time->second = (SQLUSMALLINT) sec;
-
-    return true;
+    if(our >= 0 && our < 23 &&
+       min >= 0 && min < 60 &&
+       sec >= 0 && min < 61)  // Allow for leap second!
+    {
+      p_time->hour   = (SQLUSMALLINT)our;
+      p_time->minute = (SQLUSMALLINT)min;
+      p_time->second = (SQLUSMALLINT)sec;
+      return true;
+    }
   }
   return false;
 }
 
+// Find a date at the beginning of a string. 
+// Dates can be given in various formats. The following are recognized:
+// DDMMYY       -> Compact 2 digit year/month/day
+// DDMMYYYY     -> Compact 4 digit year/month/day
+// DD/MM/YY     -> American formatting 2 digit year/month/day
+// DD/MM/YYYY   -> American formatting 4 digit year/month/day
+// DD-MM-YY     -> ISO formatting 2 digit year/month/day
+// DD-MM-YYYY   -> ISO formatting 4 digit year/month/day
+// YYYY-MM-DD   -> ISO formatting 4 digit year/month day
+// YYYY/MM/DD   -> American formatting 4 digit year/month/day
+// NOW          -> Current day (and Dutch/French/German forms)
+// Dates can have coded additions or subtractions
+// <date> [- | +] n [DAY | MONTH | YEAR]
 bool
 SQLVariantFormat::GetDateFromStringVariant(const SQLVariant* p_variant,XString p_format,DATE_STRUCT* p_date)
 {
   ZeroMemory(p_date,sizeof(DATE_STRUCT));
 
-  XString datum = p_variant ? p_variant->GetAsChar() : XString();
-  if(datum.IsEmpty() && !p_format.IsEmpty())
+  XString theDate;
+  if(p_variant)
   {
-    datum = p_format;
+    p_variant->GetAsString(theDate);
+  }
+  if(theDate.IsEmpty() && !p_format.IsEmpty())
+  {
+    theDate = p_format;
   }
 
   // To fix the American date formats
-  datum.Replace(_T("/"),_T("-"));
+  theDate.Replace(_T("/"),_T("-"));
 
   // Let SQLDate catch formats like "dd" "ddmm" and "ddmmyy[yy]"
   // And all special cases where we do "NOW +1 DAY" etc
-  int posDate = datum.Find('-');
-  if(posDate < 0)
+  int countMinus = CountOfChars(theDate,_T('-'));
+  int countPlus  = CountOfChars(theDate,_T('+'));
+
+  if(countMinus != 2 || countPlus)
   {
     try
     {
-      SQLDate lang(datum);
+      SQLDate lang(theDate);
       lang.AsDateStruct(p_date);
       return true;
     }
@@ -513,7 +558,8 @@ SQLVariantFormat::GetDateFromStringVariant(const SQLVariant* p_variant,XString p
     }
     return false;
   }
-  int posDat2 = datum.Find('-',posDate + 1);
+  int posDate = theDate.Find(_T('-'));
+  int posDat2 = theDate.Find(_T('-'),posDate + 1);
   if(posDat2 < 0)
   {
     return false;
@@ -521,17 +567,17 @@ SQLVariantFormat::GetDateFromStringVariant(const SQLVariant* p_variant,XString p
   if(posDate == 2 && posDat2 == 5)
   {
     // Formatted as "dd-mm-yy[yy]" (from a date)
-    p_date->day   = (SQLUSMALLINT) _ttoi(datum.Left(2));
-    p_date->month = (SQLUSMALLINT) _ttoi(datum.Mid(3,2));
-    p_date->year  = (SQLUSMALLINT) _ttoi(datum.Mid(6,4));
+    p_date->day   = (SQLUSMALLINT) _ttoi(theDate.Left(2));
+    p_date->month = (SQLUSMALLINT) _ttoi(theDate.Mid(3,2));
+    p_date->year  = (SQLUSMALLINT) _ttoi(theDate.Mid(6,4));
     return true;
   }
   if(posDate == 4 && posDat2 == 7)
   {
     // Formatted as "yyyy-mm-dd" (from a timestamp)
-    p_date->year  = (SQLUSMALLINT) _ttoi(datum.Left(4));
-    p_date->month = (SQLUSMALLINT) _ttoi(datum.Mid(5,2));
-    p_date->day   = (SQLUSMALLINT) _ttoi(datum.Mid(8,2));
+    p_date->year  = (SQLUSMALLINT) _ttoi(theDate.Left(4));
+    p_date->month = (SQLUSMALLINT) _ttoi(theDate.Mid(5,2));
+    p_date->day   = (SQLUSMALLINT) _ttoi(theDate.Mid(8,2));
     return true;
   }
   return false;
@@ -540,7 +586,7 @@ SQLVariantFormat::GetDateFromStringVariant(const SQLVariant* p_variant,XString p
 // Format the date
 // Empty string -> Short windows notation
 // "@"          -> long  windows notation
-// "d MMMM yyyy om |H:mm:ss|"  -> Most expanded form
+// "d MMMM yyyy <word> |H:mm:ss|"  -> Most expanded form
 int
 SQLVariantFormat::FormatDate(XString p_pattern)
 {
@@ -555,7 +601,7 @@ SQLVariantFormat::FormatDate(XString p_pattern)
   if(m_variant && (m_variant->GetDataType() != SQL_C_CHAR)
                && (m_variant->GetDataType() != SQL_C_WCHAR))
   {
-    if(! m_variant->IsDateTimeType())
+    if(!m_variant->IsDateTimeType())
     {
       // ACTUALLY AN ERROR
       // But we let it pass unnoticed to support constructions like '0'/@yyyy
@@ -611,9 +657,9 @@ SQLVariantFormat::FormatDate(XString p_pattern)
     else if(hasDate)
     {
       DATE_STRUCT datestr;
-      datestr.year = date.year;
+      datestr.year  = date.year;
       datestr.month = date.month;
-      datestr.day = date.day;
+      datestr.day   = date.day;
       if(m_owner)
       {
         delete m_variant;
@@ -624,7 +670,7 @@ SQLVariantFormat::FormatDate(XString p_pattern)
     else if(hasTime)
     {
         TIME_STRUCT timestr;
-        timestr.hour = time.hour;
+        timestr.hour   = time.hour;
         timestr.minute = time.minute;
         timestr.second = time.second;
         if(m_owner)
@@ -634,7 +680,6 @@ SQLVariantFormat::FormatDate(XString p_pattern)
         m_variant = new SQLVariant(&timestr);
         m_owner=true;
     }
-    
   }
   else
   {
@@ -657,8 +702,9 @@ SQLVariantFormat::FormatDate(XString p_pattern)
   }
   else
   {
-    // Prepare for an API call
+    // Prepare for an API call from German/Dutch/French
     p_pattern.Replace(_T("jj"),_T("yy"));
+    p_pattern.Replace(_T("aa"),_T("yy"));
   }
   // STEP 4: Splitting of the patterns
   if(!p_pattern.IsEmpty())
@@ -677,7 +723,11 @@ SQLVariantFormat::FormatDate(XString p_pattern)
     }
   }
   // STEP 5: Processing the DATE part
-  int type = m_variant->GetDataType();
+  int type(SQL_C_TIMESTAMP); // Defaults to full timestamp
+  if(m_variant)
+  {
+    type = m_variant->GetDataType();
+  }
   if(type == SQL_C_DATE      || type == SQL_C_TIMESTAMP ||
      type == SQL_C_TYPE_DATE || type == SQL_C_TYPE_TIMESTAMP)
   {
@@ -688,7 +738,7 @@ SQLVariantFormat::FormatDate(XString p_pattern)
     str.wMonth = date->month;
     str.wDay   = date->day;
     int buflen;
-    if((buflen = GetDateFormat(0,opties,&str,((opties != 0) ? NULL : reinterpret_cast<LPCTSTR>(dateFormat.GetBuffer())),buffer1,NUMBER_BUFFER_SIZE)) < 0)
+    if((buflen = GetDateFormat(0,opties,&str,((opties != 0) ? nullptr : reinterpret_cast<LPCTSTR>(dateFormat.GetBuffer())),buffer1,NUMBER_BUFFER_SIZE)) < 0)
     {
       buflen = 0;
     }
@@ -707,7 +757,7 @@ SQLVariantFormat::FormatDate(XString p_pattern)
     str.wMinute = time->minute;
     str.wSecond = time->second;
     int buflen;
-    if((buflen = GetTimeFormat(0,0,&str,(timeFormat.GetLength() > 0 ? reinterpret_cast<LPCTSTR>(timeFormat.GetBuffer()) : NULL),buffer2,NUMBER_BUFFER_SIZE)) < 0)
+    if((buflen = GetTimeFormat(0,0,&str,(timeFormat.GetLength() > 0 ? reinterpret_cast<LPCTSTR>(timeFormat.GetBuffer()) : nullptr),buffer2,NUMBER_BUFFER_SIZE)) < 0)
     {
       buflen = 0;
     }
@@ -729,9 +779,9 @@ SQLVariantFormat::FormatDate(XString p_pattern)
 // p_argument  :  n   -> Always days
 //                nD  -> n days
 //                nM  -> n months
-//                nY  -> n years (english)
-//                nJ  -> n years (dutch / german)
-//                nA  -> n years (french)
+//                nY  -> n years (English)
+//                nJ  -> n years (Dutch / German)
+//                nA  -> n years (French)
 int
 SQLVariantFormat::DateCalculate(char p_operator,XString p_argument)
 {
@@ -770,7 +820,7 @@ SQLVariantFormat::DateCalculate(char p_operator,XString p_argument)
   {
     // Not a variant and not a string
     // Default is a NULL date
-    if(m_variant == NULL)
+    if(m_variant == nullptr)
     {
       DATE_STRUCT date = {0,0,0};
       m_variant = new SQLVariant(&date);
@@ -818,7 +868,8 @@ SQLVariantFormat::DateCalculate(char p_operator,XString p_argument)
                   m_variant->Set(&date);
                   m_format = date.AsString();
                   break;
-        case 'Y': // Fall through
+        case 'Y': [[fallthrough]];
+        case 'A': [[fallthrough]];
         case 'J': date = date.AddYears(number);
                   m_variant->Set(&date);
                   m_format = date.AsString();
@@ -873,8 +924,9 @@ SQLVariantFormat::FormatNumber(XString p_format,bool p_currency)
     }
   }
   // Converting number variants. Also "123,4500000" to "123.45"
-  double value = StringDoubleValue();
-  number.Format(_T("%.6f"),value);
+  XString error;
+  bcd value = StringDecimalValue(error);
+  number = value.AsString(bcd::Format::Bookkeeping,false,SQLNUM_MAX_PREC / 2);
 
   if(p_format.IsEmpty())
   {
@@ -882,11 +934,11 @@ SQLVariantFormat::FormatNumber(XString p_format,bool p_currency)
     int	 bufLen = 0;
     if (p_currency)
     {
-      bufLen = GetCurrencyFormat(LOCALE_USER_DEFAULT,0,number,NULL,buffer,NUMBER_BUFFER_SIZE);
+      bufLen = GetCurrencyFormat(LOCALE_USER_DEFAULT,0,number,nullptr,buffer,NUMBER_BUFFER_SIZE);
     }
     else
     {
-      bufLen = GetNumberFormat(LOCALE_USER_DEFAULT,0,number,NULL,buffer,NUMBER_BUFFER_SIZE);
+      bufLen = GetNumberFormat(LOCALE_USER_DEFAULT,0,number,nullptr,buffer,NUMBER_BUFFER_SIZE);
     }
     if (bufLen <= 0)
     {
@@ -949,10 +1001,10 @@ SQLVariantFormat::FormatVariantForSQL(SQLDatabase* p_database)
     SQLTimestamp stamp = m_variant->GetAsSQLTimestamp();
     text = p_database->GetTimestampAsString(stamp);
   }
-//   else if(m_variant->IsIntervalType())
-//   {
-//     text = FormatVariantAsInterval(p_rdbmsType);
-//   }
+  else if(m_variant->IsIntervalType())
+  {
+    text = FormatVariantAsInterval(p_database);
+  }
   else if(toCdatatype == SQL_C_GUID)
   {
     m_variant->GetAsString(text);
@@ -968,207 +1020,219 @@ SQLVariantFormat::FormatVariantForSQL(SQLDatabase* p_database)
   return text;
 }
 
+// Return the value as a SQL string for the database interval fields
+XString
+SQLVariantFormat::FormatVariantAsInterval(SQLDatabase* p_database)
+{
+  SQLInfoDB* info = p_database->GetSQLInfoDB();
+  if(info->GetRDBMSSupportsDatatypeInterval())
+  {
+    return m_variant->GetAsSQLInterval().AsSQLString(p_database,true);
+  }
+  else
+  {
+    bcd intval = m_variant->GetAsSQLInterval().AsDatabaseNumber();
+    return intval.AsString(bcd::Format::Bookkeeping,false,0);
+  }
+}
+
 // Internally formatting a number according to a template
 int
-SQLVariantFormat::FormatNumberTemplate(LPTSTR Getal,LPCTSTR strNumFormat,int p_buflen)
+SQLVariantFormat::FormatNumberTemplate(LPTSTR p_number,LPCTSTR p_numFormat,int p_buflen)
 {
-  TCHAR strFormat[2 * NUMBER_BUFFER_SIZE + 1];
-  TCHAR Buffer   [2 * NUMBER_BUFFER_SIZE + 1];
-  TCHAR *pFormat;
-  TCHAR *pGetal;
-  TCHAR *pFormatStart;
+  TCHAR  strFormat[2 * NUMBER_BUFFER_SIZE + 1];
+  TCHAR  buffer   [2 * NUMBER_BUFFER_SIZE + 1];
+  int    BufLen = 0;
+  TCHAR* format;
+  TCHAR* number;
 
-  BOOL	bInFormat  = FALSE;
-  BOOL	bFormat    = FALSE;
-  BOOL	bInDecimal = FALSE;
-  BOOL	bZero      = FALSE;
-  BOOL	bNummer    = FALSE;
-  BOOL	bNegatief  = FALSE;
-  BOOL	bNul       = TRUE;
-  BOOL	bAfronden  = FALSE;
-  BOOL	bSign      = FALSE;
-  TCHAR InString   = _T('\0');
-  TCHAR LastChar   = _T('\0');
-  TCHAR LastOpmaak = _T('\0');
-  int	  Tel;
-  int	  Pos;
-  TCHAR	FmtString [NUMBER_BUFFER_SIZE + 1];
-  TCHAR RestString[NUMBER_BUFFER_SIZE + 1];
-  int	  FmtPos  = 0;
-  int	  RestPos = 0;
+  bool   inFormat   = false;
+  bool   formatting = false;
+  bool   isZero     = false;
+  bool   isNegative = false;
+  bool   isNull     = true;
+  bool   rounding   = false;
+  TCHAR  inString   = '\0';
+  TCHAR  lastChar   = '\0';
+  TCHAR  lastFormat = '\0';
+  int    position   = 0;
+  TCHAR  formString[NUMBER_BUFFER_SIZE + 1];
+  TCHAR  restString[NUMBER_BUFFER_SIZE + 1];
+  int    formPos = 0;
+  int    RestPos = 0;
 
-  BOOL	bGrouping     = FALSE;	// Do we have a grouping
-  int	  nEersteGroup  = 0;		  // Size of the first group
-  int	  nTweedeGroup  = 0;		  // Size of the second group
-  int	  nGroup        = 0;			// Current group counter
-  int	  nGroupSize    = 0;			// Size of the repeating group
+  bool   grouping        = false;  // Do we have a grouping
+  int    sizeFirstGroup  = 0;      // Size of the first group
+  int    sizeSecondGroup = 0;      // Size of the second group
+  int    groupCounter    = 0;      // Current group counter
+  int    groupSize       = 0;      // Size of the repeating group
 
-  int	  iGetalTrailing  = 0;
-  int	  iGetalLeading   = 0;
-  int	  iLeadingDigits  = 0;
-  int	  iLeadingZero    = 0;
-  int	  iTrailingDigits = 0;
-  int	  iTrailingZero   = 0;
-  int	  iAfronden       = 0;
+  int    iNumberTrailing  = 0;
+  int    iNumberLeading   = 0;
+  int    iLeadingDigits   = 0;
+  int    iLeadingZero     = 0;
+  int    iTrailingDigits  = 0;
+  int    iTrailingZero    = 0;
+  int    iRouding         = 0;
 
   // Finding the format of the number
   // Remove junk and first checks
-  bInDecimal = FALSE;
-  bNummer    = FALSE;
-  bSign      = FALSE;
+  bool   inDecimal = false;
+  bool   isNumber  = false;
+  bool   hasSign   = false;
 
-  pFormatStart = Getal;
-  for(pFormat = Getal;*pFormat != '\0';++pFormat)
+  LPTSTR formatStart = p_number;
+  for(format  = p_number;*format != '\0';++format)
   {
-    if (!bNummer && (*pFormat == ' ' || *pFormat == '0' ))
+    if(!isNumber && (*format == ' ' || *format == '0' ))
     {
       continue;
     }
-    if (_tcschr(_T("1234567890"), *pFormat) != NULL )
+    if(_tcsrchr(_T("1234567890"),*format) != nullptr )
     {
-      bNummer = TRUE;
-      *pFormatStart++ = *pFormat;
+      isNumber = true;
+      *formatStart++ = *format;
     }
-    else if (*pFormat == '.')
+    else if(*format == '.')
     {
-      if (bInDecimal)
+      if(inDecimal)
       {
         return ER_FormatNumberTemplateDecimal;
       }
-      bInDecimal = TRUE;
-      bNummer    = TRUE;
-      *pFormatStart++ = '.';
+      inDecimal = true;
+      isNumber  = true;
+      *formatStart++ = '.';
     }
-    else if (*pFormat == '-' || *pFormat == '+')
+    else if(*format == '-' || *format == '+')
     {
-      if ( !bSign )
+      if(!hasSign )
       {
-        bSign = TRUE;
-        bNegatief = (*pFormat == '-');
-        if (bNummer)
+        hasSign = true;
+        isNegative = (*format == '-');
+        if(isNumber)
         {
-          *pFormat = '\0';
+          *format = '\0';
           break;
         }
       }
       else
       {
-        *pFormat = '\0';
+        *format = '\0';
         break;
       }
     }
     else
     {
-      *pFormat = '\0';
+      *format = '\0';
       break;
     }
   }
-  *pFormatStart = '\0';
+  *formatStart = '\0';
 
   // Finding out the format string
-  // RestString[0] = '\0';
-  // FmtString[0] = '\0';
-  _tcsncpy_s(strFormat, strNumFormat, NUMBER_BUFFER_SIZE);
+  // restString[0] = '\0';
+  // formString[0] = '\0';
+  _tcsncpy_s(strFormat, p_numFormat, NUMBER_BUFFER_SIZE);
 
-  bInDecimal = FALSE;
-  bNummer    = FALSE;
-  for (pFormat = strFormat ; *pFormat != '\0' ; LastChar = *(pFormat++) )
+  inDecimal = false;
+  isNumber  = false;
+  for (format = strFormat ; *format != '\0' ; lastChar = *(format++) )
   {
-    if (LastChar == '\\')
+    if (lastChar == '\\')
     {
       RestPos--;
-      RestString[RestPos++] = *pFormat;
+      restString[RestPos++] = *format;
       continue;
     }
-    if (InString == '\0')
+    if(inString == '\0')
     {
-      if (_tcschr(_T("\"'"), *pFormat) != NULL )
+      if(_tcsrchr(_T("\"'"), *format) != nullptr )
       {
-        InString = *pFormat;
+        inString = *format;
       }
-      else if (_tcschr(_T("@"), *pFormat) != NULL )
+      else if(_tcsrchr(_T("@"), *format) != nullptr )
       {
         // @# = Original number format
         // @$ = Original money  format
-        if (*(pFormat + 1) == '#')
+        if (*(format + 1) == '#')
         {
-          if(GetNumberFormat(0,LOCALE_NOUSEROVERRIDE, Getal, NULL, Buffer, p_buflen) > 0)
+          if(GetNumberFormat(0,LOCALE_NOUSEROVERRIDE,p_number,nullptr,buffer,p_buflen) > 0)
           {
-            _tcscpy_s(&RestString[RestPos], NUMBER_BUFFER_SIZE,Buffer);
-            RestPos += (int)_tcslen(Buffer);
+            _tcscpy_s(&restString[RestPos],NUMBER_BUFFER_SIZE,buffer);
+            RestPos += (int)_tcslen(buffer);
           }
           else
           {
             return ER_FormatNumberTemplateGetNumberFormat;
           }
-          pFormat++;
+          format++;
         }
-        if (*(pFormat + 1) == '$')
+        if (*(format + 1) == '$')
         {
-          if(GetCurrencyFormat(0, LOCALE_NOUSEROVERRIDE, Getal, NULL, Buffer, p_buflen) > 0)
+          if(GetCurrencyFormat(0,LOCALE_NOUSEROVERRIDE,p_number,nullptr,buffer,p_buflen) > 0)
           {
-            _tcscpy_s(&RestString[RestPos], NUMBER_BUFFER_SIZE, Buffer);
-            RestPos += (int)_tcslen(Buffer);
+            _tcscpy_s(&restString[RestPos],NUMBER_BUFFER_SIZE,buffer);
+            RestPos += (int)_tcslen(buffer);
           }
           else
           {
             return ER_FormatNumberTemplateGetCurrencyFormat;
           }
-          pFormat++;
+          format++;
         }
       }
-      else if (_tcschr(_T("-+~^"), *pFormat) != NULL )
+      else if(_tcschr(_T("-+~^"), *format) != nullptr)
       {
-        switch (*pFormat)
+        switch(*format)
         {
-          case '^': _tcscpy_s(&RestString[RestPos],10, ::g_locale_strCurrency);
+          case '^': _tcscpy_s(&restString[RestPos],10, ::g_locale_strCurrency);
                     RestPos += (int)_tcslen(::g_locale_strCurrency);
                     break;
-          case '+': RestString[RestPos++] = 1;
+          case '+': restString[RestPos++] = 1;
                     break;
-          case '-': RestString[RestPos++] = 2;
+          case '-': restString[RestPos++] = 2;
                     break;
-          case '~': RestString[RestPos++] = 3;
+          case '~': restString[RestPos++] = 3;
                     break;
         }
-        bInFormat = FALSE;
+        inFormat = false;
       }
-      else if (_tcschr(_T("&#0xX.:,"), *pFormat) != NULL )
+      else if(_tcschr(_T("&#0xX.:,"), *format) != nullptr)
       {
-        if (! bInFormat)
+        if(!inFormat)
         {
-          if (bFormat)
+          if(formatting)
           {
             return ER_FormatNumberTemplateFormat;
           }
-          _tcscpy_s(&RestString[RestPos],NUMBER_BUFFER_SIZE,_T("@*@"));
-          RestPos += 3;
-          bFormat = TRUE;
-          bInFormat = TRUE;
+          _tcscpy_s(&restString[RestPos],NUMBER_BUFFER_SIZE,_T("@*@"));
+          RestPos   += 3;
+          formatting = true;
+          inFormat   = true;
         }
-        switch (*pFormat)
+        switch (*format)
         {
           case '#':
-          case '&': bNummer = TRUE;
-                    if (bInDecimal)
+          case '&': isNumber = true;
+                    if (inDecimal)
                     {
                       iTrailingDigits++;
                     }
                     else
                     {
-                      if(bZero)
+                      if(isZero)
                       {
                         return ER_FormatNumberTemplateZero;
                       }
                       iLeadingDigits++;
-                      nGroup++;
+                      groupCounter++;
                     }
-                    FmtString[FmtPos++] = *pFormat;
+                    formString[formPos++] = *format;
                     break;
-          case '0': bZero = TRUE;
-                    if (bInDecimal)
+          case '0': isZero = true;
+                    if (inDecimal)
                     {
-                      if(bNummer)
+                      if(isNumber)
                       {
                         return ER_FormatNumberTemplateNummer;
                       }
@@ -1179,27 +1243,27 @@ SQLVariantFormat::FormatNumberTemplate(LPTSTR Getal,LPCTSTR strNumFormat,int p_b
                     {
                       iLeadingZero++;
                       iLeadingDigits++;
-                      nGroup++;
+                      groupCounter++;
                     }
-                    FmtString[FmtPos++] = *pFormat;
+                    formString[formPos++] = *format;
                     break;
-          case 'x':
-          case 'X': if (bInDecimal)
+          case 'x': [[fallthrough]];
+          case 'X': if (inDecimal)
                     {
-                      if (bAfronden)
+                      if(rounding)
                       {
                         return ER_FormatNumberTemplateRounding;
                       }
-                      bAfronden = TRUE;
-                      if (*pFormat == 'x')
+                      rounding = true;
+                      if (*format == 'x')
                       {
                         iTrailingDigits++;
-                        iAfronden = iTrailingDigits;
-                        FmtString[FmtPos++] = *pFormat;
+                        iRouding = iTrailingDigits;
+                        formString[formPos++] = *format;
                       }
                       else
                       {
-                        iAfronden = iTrailingDigits;
+                        iRouding = iTrailingDigits;
                       }
                     }
                     else
@@ -1207,146 +1271,146 @@ SQLVariantFormat::FormatNumberTemplate(LPTSTR Getal,LPCTSTR strNumFormat,int p_b
                       return ER_FormatNumberTemplateNoDecimal;
                     }
                     break;
-          case '.':
-          case ':': bZero = FALSE;
-                    bNummer = FALSE;
-                    if (bInDecimal)
+          case '.': [[fallthrough]];
+          case ':': isZero   = false;
+                    isNumber = false;
+                    if (inDecimal)
                     {
                       return ER_FormatNumberTemplateDecimal2;
                     }
-                    bInDecimal = TRUE;
+                    inDecimal = true;
                     // Finding the grouping
-                    if (bGrouping)
+                    if (grouping)
                     {
-                      if (nEersteGroup == 0)
+                      if (sizeFirstGroup == 0)
                       {
-                        nEersteGroup = nGroup;
+                        sizeFirstGroup = groupCounter;
                       }
-                      else if (nTweedeGroup == 0)
+                      else if (sizeSecondGroup == 0)
                       {
-                        nTweedeGroup = nGroup;
+                        sizeSecondGroup = groupCounter;
                       }
                     }
-                    nGroup = 0;
+                    groupCounter = 0;
                     //
-                    FmtString[FmtPos++] = *pFormat;
+                    formString[formPos++] = *format;
                     break;
-          case ',': if (bInDecimal)
+          case ',': if (inDecimal)
                     {
                       return ER_FormatNumberTemplateDecimal3;
                     }
                     // Finding the grouping
-                    bGrouping = TRUE;
-                    if (nEersteGroup == 0)
+                    grouping = true;
+                    if (sizeFirstGroup == 0)
                     {
-                      nEersteGroup = nGroup;
+                      sizeFirstGroup = groupCounter;
                     }
-                    else if (nTweedeGroup == 0)
+                    else if (sizeSecondGroup == 0)
                     {
-                      nTweedeGroup = nGroup;
+                      sizeSecondGroup = groupCounter;
                     }
-                    nGroup = 0;
+                    groupCounter = 0;
                     //
-                    FmtString[FmtPos++] = *pFormat;
+                    formString[formPos++] = *format;
                     break;
           case '"':
-          case '\'':InString = *pFormat;
+          case '\'':inString = *format;
                     break;
-          default : RestString[RestPos++] = *pFormat;
+          default : restString[RestPos++] = *format;
                     break;
         }
       }
       else
       {
-        RestString[RestPos++] = *pFormat;
+        restString[RestPos++] = *format;
       }
     }
     else
     {
-      if (*pFormat == InString)
+      if(*format == inString)
       {
-        InString = '\0';
+        inString = '\0';
       }
       else
       {
-        RestString[RestPos++] = *pFormat;
+        restString[RestPos++] = *format;
       }
     }
   }
   // Eventually the last group
-  if (!bInDecimal && bGrouping)
+  if(!inDecimal && grouping)
   {
-    if (nEersteGroup == 0)
+    if(sizeFirstGroup == 0)
     {
-      nEersteGroup = nGroup;
+      sizeFirstGroup = groupCounter;
     }
-    else if (nTweedeGroup == 0)
+    else if(sizeSecondGroup == 0)
     {
-      nTweedeGroup = nGroup;
+      sizeSecondGroup = groupCounter;
     }
   }
-  if (bGrouping)
+  if(grouping)
   {
-    nGroupSize = max(nEersteGroup, nTweedeGroup);
+    groupSize = max(sizeFirstGroup, sizeSecondGroup);
   }
   // Closing the strings
-  RestString[RestPos] = '\0';
-  FmtString[FmtPos]   = '\0';
+  restString[RestPos] = '\0';
+  formString[formPos] = '\0';
 
   // Do the rounding if necessary
-  if(bAfronden)
+  if(rounding)
   {
     NUMBERFMT NumFormat;
-    NumFormat.NumDigits     = iAfronden;
+    NumFormat.NumDigits     = iRouding;
     NumFormat.LeadingZero   = 0;
     NumFormat.Grouping      = 0;
-    NumFormat.lpDecimalSep  = const_cast<LPTSTR>(_T("."));
-    NumFormat.lpThousandSep = const_cast<LPTSTR>(_T(","));
+    NumFormat.lpDecimalSep  = (LPTSTR)_T(".");
+    NumFormat.lpThousandSep = (LPTSTR)_T(",");
     NumFormat.NegativeOrder = 0;
-    int BufLen = GetNumberFormat(0, 0, Getal, &NumFormat, Buffer, p_buflen);
+    BufLen = GetNumberFormat(0, 0, p_number, &NumFormat, buffer, p_buflen);
     if (BufLen <= 0)
     {
       return ER_FormatNumberTemplateBuflen;
     }
-    _tcscpy_s(Getal,p_buflen,Buffer);
+    _tcscpy_s(p_number,p_buflen,buffer);
   }
   //
   // Getting the attributes of the number
   //
-  bInDecimal = FALSE;
-  for(pFormat = Getal ; *pFormat != '\0' ;++pFormat)
+  inDecimal = false;
+  for(format = p_number ; *format != '\0' ;++format)
   {
-    if (_tcschr(_T("0123456789"), *pFormat) != NULL )
+    if(_tcsrchr(_T("0123456789"),*format) != nullptr)
     {
-      if (bInDecimal)
+      if(inDecimal)
       {
-        iGetalTrailing++;
+        iNumberTrailing++;
       }
       else
       {
-        iGetalLeading++;
+        iNumberLeading++;
       }
     }
-    else if (*pFormat == '.')
+    else if(*format == '.')
     {
-      bInDecimal = TRUE;
+      inDecimal = true;
     }
     else
     {
-      *pFormat = '\0';
+      *format = '\0';
       break;
     }
   }
-  *pFormatStart = '\0';
-  if (bInDecimal && iGetalTrailing > 0 )
+  *formatStart = '\0';
+  if(inDecimal && iNumberTrailing > 0 )
   {
-    while (iGetalTrailing > 0)
+    while(iNumberTrailing > 0)
     {
-      if (*(pFormatStart - 1) == '0' )
+      if(*(formatStart - 1) == '0' )
       {
-        pFormatStart--;
-        *pFormatStart = '\0';
-        iGetalTrailing--;
+        formatStart--;
+        *formatStart = '\0';
+        iNumberTrailing--;
       }
       else
       {
@@ -1355,83 +1419,87 @@ SQLVariantFormat::FormatNumberTemplate(LPTSTR Getal,LPCTSTR strNumFormat,int p_b
     }
   }
   // Adjusting the number size and format string size
-  if (iGetalLeading > iLeadingDigits)
+  if(iNumberLeading > iLeadingDigits)
   {
     // Adding '#' to the format string
     XString NewFormat;
-    Pos = 0;
-    nGroup = nEersteGroup;
-    for (Tel = 0 ; Tel < (iGetalLeading - iLeadingDigits) ; Tel++ )
+    position = 0;
+    groupCounter = sizeFirstGroup;
+    for(int count = 0 ; count < (iNumberLeading - iLeadingDigits) ; count++ )
     {
-      if (bGrouping)
+      if(grouping)
       {
-        if (nGroup == nGroupSize)
+        if(groupCounter == groupSize)
         {
           NewFormat = ',' + NewFormat;
-          nGroup = 0;
+          groupCounter = 0;
         }
         NewFormat = '#' + NewFormat;
-        nGroup++;
+        groupCounter++;
       }
       else
       {
         NewFormat += '#';
       }
     }
-    NewFormat += FmtString;
-    _tcscpy_s(FmtString, NUMBER_BUFFER_SIZE, reinterpret_cast<LPCTSTR>(NewFormat.GetBuffer()));
+    NewFormat += formString;
+    _tcscpy_s(formString, NUMBER_BUFFER_SIZE, (LPCTSTR)NewFormat);
   }
-  else if (iGetalLeading < iLeadingDigits)
+  else if(iNumberLeading < iLeadingDigits)
   {
     XString NewGetal;
-    for (Tel = 0 ; Tel < (iLeadingDigits - iGetalLeading) ; Tel++ )
+    for(int count = 0 ; count < (iLeadingDigits - iNumberLeading) ; count++)
     {
       NewGetal += '0';
     }
-    NewGetal += Getal;
-    _tcscpy_s(Getal, p_buflen,reinterpret_cast<LPCTSTR>(NewGetal.GetBuffer()));
+    NewGetal += p_number;
+    _tcscpy_s(p_number, p_buflen,(LPCTSTR)NewGetal);
   }
 
   // Formatting the number
-  Pos = 0;
-  RestPos = 0;
-  bNummer = FALSE;
-  LastOpmaak = '#';
-  for (pFormat = FmtString, pGetal = Getal ; *pFormat != '\0' ; pFormat++)
+  position   = 0;
+  RestPos    = 0;
+  isNumber   = false;
+  lastFormat = '#';
+  for(format = formString, number = p_number ; *format != '\0' ; format++)
   {
-    switch (*pFormat)
+    switch(*format)
     {
-      case 'X' : break;
-      case 'x' : *pFormat = LastOpmaak;
-      case '#' :
-      case '&' :
-      case '0' :  LastOpmaak = *pFormat;
-                  if ( (LastChar = *pGetal) == '\0' )
-                    LastChar = '0';
-                  else
-                    pGetal++;
-                  if (isdigit(LastChar))
+      case 'X' :  break;
+      case 'x' :  *format = lastFormat;
+      case '#':   [[fallthrough]];
+      case '&':   [[fallthrough]];
+      case '0' :  lastFormat = *format;
+                  if((lastChar = *number) == '\0')
                   {
-                    if (*pFormat != '0')
+                    lastChar = '0';
+                  }
+                  else
+                  {
+                    ++number;
+                  }
+                  if(isdigit(lastChar))
+                  {
+                    if(*format != '0')
                     {
-                      bNul = FALSE;
+                      isNull = false;
                     }
-                    if (!bNummer && LastChar == '0')
+                    if(!isNumber && lastChar == '0')
                     {
-                      if (*pFormat == '#' )
+                      if(*format == '#' )
                       {
-                        Buffer[Pos++] = ' ';
+                        buffer[position++] = ' ';
                       }
-                      else if (*pFormat != '&' )
+                      else if(*format != '&' )
                       {
-                        Buffer[Pos++] = '0';
-                        bNummer = TRUE;
+                        buffer[position++] = '0';
+                        isNumber = true;
                       }
                     }
                     else
                     {
-                      Buffer[Pos++] = LastChar;
-                      bNummer = TRUE;
+                      buffer[position++] = lastChar;
+                      isNumber = true;
                     }
                   }
                   else
@@ -1439,54 +1507,54 @@ SQLVariantFormat::FormatNumberTemplate(LPTSTR Getal,LPCTSTR strNumFormat,int p_b
                     return ER_FormatNumberTemplateNoDigit;
                   }
                   break;
-      case ',' :  if (bNummer)
+      case ',' :  if(isNumber)
                   {
-                    _tcscpy_s(&Buffer[Pos], NUMBER_BUFFER_SIZE, ::g_locale_thousandSep);
-                    Pos += (int)_tcslen(::g_locale_thousandSep);
+                    _tcscpy_s(&buffer[position],NUMBER_BUFFER_SIZE,::g_locale_thousandSep);
+                    position += (int)_tcslen(::g_locale_thousandSep);
                   }
                   else
                   {
-                    if (LastOpmaak != '&')
+                    if(lastFormat != '&')
                     {
-                      Buffer[Pos++] = ' ';
+                      buffer[position++] = ' ';
                     }
                   }
                   break;
-      case '.' :
-      case ':' :  if (*pGetal != '.' && *pGetal != '\0')
+      case '.' :  [[fallthrough]];
+      case ':' :  if(*number != '.' && *number != '\0')
                   {
                     return ER_FormatNumberTemplateSomeKindOfError ;
                   }
-                  if(*pGetal)
+                  if(*number)
                   {
-                    pGetal++;
+                    number++;
                   }
-                  if (iTrailingDigits > 0)
+                  if(iTrailingDigits > 0)
                   {
-                    _tcscpy_s(&Buffer[Pos], NUMBER_BUFFER_SIZE,::g_locale_decimalSep);
-                    Pos += (int)_tcslen(::g_locale_decimalSep);
+                    _tcscpy_s(&buffer[position], NUMBER_BUFFER_SIZE,::g_locale_decimalSep);
+                    position += (int)_tcslen(::g_locale_decimalSep);
                   }
-                  if (*pFormat == ':')
+                  if(*format == ':')
                   {
-                    Pos = 0;
+                    position = 0;
                   }
                   break;
     }
   }
-  Buffer[Pos] = '\0';
-  XString string = RestString;
-  string.Replace(_T("@*@"),Buffer);
+  buffer[position] = '\0';
+  XString string = restString;
+  string.Replace(_T("@*@"),buffer);
   // The placing of the '+' or '-' sign
   TCHAR tPlus[2]  = {1 , 0};
   TCHAR tMin[2]   = {2 , 0};
   TCHAR tTilde[2] = {3 , 0};
-  if (bNul)
+  if(isNull)
   {
-    string.Replace(tPlus,_T(" "));
-    string.Replace(tMin, _T(" "));
+    string.Replace(tPlus, _T(" "));
+    string.Replace(tMin,  _T(" "));
     string.Replace(tTilde,_T(""));
   }
-  else if (bNegatief)
+  else if(isNegative)
   {
     string.Replace(tPlus, _T("-"));
     string.Replace(tMin,  _T("-"));
@@ -1494,8 +1562,8 @@ SQLVariantFormat::FormatNumberTemplate(LPTSTR Getal,LPCTSTR strNumFormat,int p_b
   }
   else
   {
-    string.Replace(tPlus,_T(" "));
-    string.Replace(tMin, _T("+"));
+    string.Replace(tPlus, _T(" "));
+    string.Replace(tMin,  _T("+"));
     string.Replace(tTilde,_T(""));
   }
   m_format = string;

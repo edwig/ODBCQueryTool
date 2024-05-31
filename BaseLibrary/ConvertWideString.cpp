@@ -2,7 +2,7 @@
 //
 // SourceFile: ConvertWideString.cpp
 //
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -204,8 +204,17 @@ static CodePageName cpNames[] =
  ,{    -1,   _T(""),                    _T("")                                                                                        }
 };
 
+// Name mapping of code-page names is case insensitive
+struct CPCompare
+{
+  bool operator()(const XString& p_left,const XString& p_right) const
+  {
+    return (p_left.CompareNoCase(p_right) < 0);
+  }
+};
+
 using CPIDNameMap = std::map<int,XString>;
-using NameCPIDMap = std::map<XString,int>;
+using NameCPIDMap = std::map<XString,int,CPCompare>;
 // 
 static CPIDNameMap cp_cpid_map;
 static NameCPIDMap cp_name_map;
@@ -255,7 +264,7 @@ CharsetToCodePageInfo(XString p_charset)
       return in->second;
     }
   }
-  return "";
+  return _T("");
 }
 
 // Getting the codepage number from the charset
@@ -439,7 +448,7 @@ FindMimeTypeInContentType(XString p_contentType)
 }
 
 // Construct an UTF-8 Byte-Order-Mark
-XString ConstructBOM()
+XString ConstructBOMUTF8()
 {
   _TUCHAR bom[4];
 
@@ -452,36 +461,23 @@ XString ConstructBOM()
   bom[2] = 0;
   bom[3] = 0;
 #else
-  bom[0] = (unsigned char) 0xEF;
-  bom[1] = (unsigned char) 0xBB;
-  bom[2] = (unsigned char) 0xBF;
+  bom[0] = (_TUCHAR) 0xEF;
+  bom[1] = (_TUCHAR) 0xBB;
+  bom[2] = (_TUCHAR) 0xBF;
   bom[3] = 0;
 #endif
 
   return XString(bom);
 }
 
-// Construct a BOM (GOES AWAY!)
-XString ConstructBOM(Encoding p_encoding)
-{
-  XString bom;
-
-  switch (p_encoding)
-  {
-    case Encoding::UTF8:    bom = ConstructBOM();      break;
-    default:                break;
-  }
-  return bom;
-}
-
 #ifdef UNICODE
 // Convert a narrow string (utf-8, MBCS, win1252) to UTF-16
 bool
-TryConvertNarrowString(const uchar* p_buffer
-                      ,int          p_length
-                      ,XString      p_charset
-                      ,XString&     p_string
-                      ,bool&        p_foundBOM)
+TryConvertNarrowString(const BYTE* p_buffer
+                      ,int         p_length
+                      ,XString     p_charset
+                      ,XString&    p_string
+                      ,bool&       p_foundBOM)
 {
   UINT   codePage = GetACP(); // Default is to use the current codepage
   int    iLength  = -1;       // I think it will be null terminated
@@ -537,7 +533,7 @@ TryConvertNarrowString(const uchar* p_buffer
 
   // Getting the length of the buffer, by specifying no output
   iLength = MultiByteToWideChar(codePage
-                               ,MB_PRECOMPOSED
+                               ,0
                                ,(LPCCH)p_buffer
                                ,-1 // p_string.GetLength()
                                ,NULL
@@ -550,7 +546,7 @@ TryConvertNarrowString(const uchar* p_buffer
 
     // Doing the 'real' conversion
     iLength = MultiByteToWideChar(codePage
-                                 ,MB_PRECOMPOSED
+                                 ,0
                                  ,(LPCCH)p_buffer
                                  ,-1 // p_string.GetLength()
                                  ,reinterpret_cast<LPWSTR>(extraBuffer)
@@ -559,8 +555,8 @@ TryConvertNarrowString(const uchar* p_buffer
     {
       // UTF-16 closing zero
       extraBuffer[iLength] = 0;
-      result = extraBuffer;
-      result = true;
+      p_string = extraBuffer;
+      result   = true;
     }
     delete[] extraBuffer;
   }
@@ -568,11 +564,12 @@ TryConvertNarrowString(const uchar* p_buffer
 }
 
 // Convert an UTF-16 string to a narrow string (utf-8)
+// Allocates a buffer, caller is responsible for the destruction!
 bool
 TryCreateNarrowString(const XString& p_string
                      ,const XString  p_charset
                      ,const bool     p_doBom
-                     ,      uchar**  p_buffer
+                     ,      BYTE**   p_buffer
                      ,      int&     p_length)
 {
   UINT codePage = GetACP(); // Default is to use the current codepage
@@ -580,17 +577,11 @@ TryCreateNarrowString(const XString& p_string
   int  extra    = 0;        // Extra space for a BOM
   bool result   = false;
 
-  // Early dropout
-  if(p_buffer == nullptr)
-  {
-    return true;
-  }
-
   // Fill the code page names the first time
   InitCodePageNames();
 
   // Check if we know the codepage from the charset
-  XString charset = p_charset.IsEmpty() ? _T("utf-8") :p_charset;
+  XString charset = p_charset.IsEmpty() ? _T("utf-8") : p_charset;
   NameCPIDMap::iterator it = cp_name_map.find(charset);
   if(it != cp_name_map.end())
   {
@@ -610,16 +601,16 @@ TryCreateNarrowString(const XString& p_string
   if(iLength > 0)
   {
     iLength *= 2; // Funny but needed in most cases with 3-byte composite chars
-    uchar* buffer = new uchar[iLength];
-    memset(buffer,0,iLength * sizeof(char));
+    *p_buffer = new BYTE[iLength];
+    memset(*p_buffer,0,iLength * sizeof(char));
 
     // Construct an UTF-8 BOM
-    if(p_doBom)
+    if(p_doBom && codePage == 65001)
     {
       extra = 3;
-      buffer[0] = (unsigned char) 0xEF;
-      buffer[1] = (unsigned char) 0xBB;
-      buffer[2] = (unsigned char) 0xBF;
+      *p_buffer[0] = (BYTE) 0xEF;
+      *p_buffer[1] = (BYTE) 0xBB;
+      *p_buffer[2] = (BYTE) 0xBF;
     }
 
     DWORD dwFlag = 0; // WC_COMPOSITECHECK | WC_DISCARDNS;
@@ -627,31 +618,31 @@ TryCreateNarrowString(const XString& p_string
                                     dwFlag,
                                     p_string.GetString(),
                                     -1, // p_length, 
-                                    reinterpret_cast<LPSTR>(buffer + extra),
+                                    reinterpret_cast<LPSTR>(*p_buffer + extra),
                                     iLength,
                                     NULL,
                                     NULL);
     // Result!
-    p_length = iLength > 0 ? iLength : 0;
+    p_length = iLength > 0 ? iLength - 1: 0;
     result   = true;
   }
   return result;
 }
 
-// Implode an UTF-16 string to a unsigned char buffer (for UTF-8 purposes)
+// Implode an UTF-16 string to a BYTE buffer (for UTF-8 purposes)
 // BEWARE: Cannot contain Multi-Lingual-Plane characters 
 void 
-ImplodeString(XString p_string,uchar* p_buffer,unsigned p_length)
+ImplodeString(XString p_string,BYTE* p_buffer,unsigned p_length)
 {
   for(int index = 0;index < p_string.GetLength(); ++index)
   {
-    p_buffer[index] = (uchar) p_string.GetAt(index);
+    p_buffer[index] = (BYTE) p_string.GetAt(index);
   }
   p_buffer[p_length] = 0;
 }
 
 XString 
-ExplodeString(uchar* p_buffer,unsigned p_length)
+ExplodeString(BYTE* p_buffer,unsigned p_length)
 {
   XString string;
   PWSTR buf = string.GetBufferSetLength(p_length + 1);
@@ -683,12 +674,38 @@ WStringToString(std::wstring p_string)
 XString
 DecodeStringFromTheWire(XString p_string,XString p_charset /*="utf-8"*/)
 {
-  return p_string;
+  int   length = p_string.GetLength();
+  BYTE* buffer = new BYTE[length + 1];
+  for(int ind = 0;ind < length; ++ind)
+  {
+    buffer[ind] = (uchar) p_string.GetAt(ind);
+  }
+  buffer[length] = 0;
+  bool foundBom = false;
+  XString result;
+  if(!TryConvertNarrowString(buffer,length,p_charset,result,foundBom))
+  {
+    result = p_string;
+  }
+  delete[] buffer;
+  return result;
 }
 
 XString
 EncodeStringForTheWire(XString p_string,XString p_charset /*="utf-8"*/)
 {
+  BYTE* buffer = nullptr;
+  int length = 0;
+  if(TryCreateNarrowString(p_string,p_charset,false,&buffer,length))
+  {
+    XString result;
+    for(int ind = 0;ind < length; ++ind)
+    {
+      result += (TCHAR) buffer[ind];
+    }
+    delete[] buffer;
+    return result;
+  }
   return p_string;
 }
 
@@ -703,15 +720,72 @@ XString ConstructBOMUTF16()
   return XString(bom);
 }
 
+// Convert directly from LPCSTR (No 'T' !!) to XString
+// UNICODE   -> char* to wchar_t*
+// ANSI/MBCS -> char* to char*
+// Optionally convert to UTF8
+XString
+LPCSTRToString(LPCSTR p_string,bool p_utf8 /*= false*/)
+{
+  XString result;           // Nothing yet
+  int    length = -1;       // I think it will be null terminated
+  UINT codePage = p_utf8 ? 65001 : GetACP();
+  DWORD   flags = p_utf8 ? 0     : MB_PRECOMPOSED;
+
+  // Getting the length of the buffer, by specifying no output
+  length = MultiByteToWideChar(codePage
+                              ,flags
+                              ,p_string
+                              ,-1        // Null-terminated-string
+                              ,NULL
+                              ,0);
+  if(length)
+  {
+    // Getting a UTF-16 wide-character buffer
+    // +2 chars for a BOM, +2 chars for the closing zeros
+    BYTE* buffer = new BYTE[2 * (size_t) length + 4];
+
+    // Doing the 'real' conversion
+    length = MultiByteToWideChar(codePage
+                                ,flags
+                                ,p_string
+                                ,-1        // Null-terminated-string
+                                ,reinterpret_cast<LPWSTR>(buffer)
+                                ,length);
+    if(length > 0)
+    {
+      // Buffer length is twice the number of logical characters
+      length *= 2;
+      // UTF-16 has two closing zeros
+      buffer[length] = 0;
+      buffer[length + 1] = 0;
+
+      result = reinterpret_cast<LPWSTR>(buffer);
+    }
+    delete[] buffer;
+  }
+  return result;
+}
+
+// Convert a XString (here ANSI/MBCS) to a PCSTR buffer
+// Allocates a buffer. Caller is responsible for destruction!
+int
+StringToLPCSTR(XString p_string,LPCSTR* p_buffer,int& p_size,bool p_utf8 /*= false*/)
+{
+  XString charset = p_utf8 ? _T("utf-8") : _T("");
+  TryCreateNarrowString(p_string,charset,false,(BYTE**)p_buffer,p_size);
+  return p_size;
+}
+
 #else
 
 // Convert incoming buffer via UTF-16 to our MBCS format
 bool
-TryConvertWideString(const uchar* p_buffer
-                    ,int          p_length
-                    ,XString      p_charset
-                    ,XString&     p_string
-                    ,bool&        p_foundBOM)
+TryConvertWideString(const BYTE* p_buffer
+                    ,int         p_length
+                    ,XString     p_charset
+                    ,XString&    p_string
+                    ,bool&       p_foundBOM)
 {
   UINT codePage = GetACP(); // Default is to use the current codepage
   int   iLength = -1;       // I think it will be null terminated
@@ -811,7 +885,7 @@ bool
 TryCreateWideString(const XString& p_string
                    ,const XString  p_charset
                    ,const bool     p_doBom
-                   ,      uchar**  p_buffer
+                   ,      BYTE**   p_buffer
                    ,      int&     p_length)
 {
   bool   result = false;    // No yet
@@ -837,17 +911,17 @@ TryCreateWideString(const XString& p_string
 
   // Getting the length of the buffer, by specifying no output
   iLength = MultiByteToWideChar(codePage
-                               ,MB_PRECOMPOSED
+                               ,0
                                ,p_string.GetString()
-                               ,-1 // p_string.GetLength()
+                               ,-1  // Convert including closing 0
                                ,NULL
                                ,0);
   if(iLength)
   {
     // Getting a UTF-16 wide-character buffer
-    // +2 chars for a BOM, +2 chars for the closing zeros
-    *p_buffer = new uchar[2*(size_t)iLength + 4];
-    unsigned char* buffer = (unsigned char*) *p_buffer;
+    // +2 chars for a BOM
+    *p_buffer = new BYTE[2*(size_t)iLength + 2];
+    BYTE* buffer = (BYTE*) *p_buffer;
 
     // Construct an UTF-16 Byte-Order-Mark
     // In little endian order. OS/X calls this UTF-16LE
@@ -859,20 +933,17 @@ TryCreateWideString(const XString& p_string
 
     // Doing the 'real' conversion
     iLength = MultiByteToWideChar(codePage
-                                 ,MB_PRECOMPOSED
+                                 ,0
                                  ,p_string.GetString()
-                                 ,-1 // p_string.GetLength()
+                                 ,-1 // Including closing zero
                                  ,reinterpret_cast<LPWSTR>(buffer)
                                  ,iLength);
     if(iLength > 0)
     {
       // Buffer length is twice the number of logical characters
       iLength *= 2;
-      // UTF-16 has two closing zeros
-      buffer[iLength    ] = 0;
-      buffer[iLength + 1] = 0;
-      // Result is OK, but 2 longer if we constructed a BOM
-      p_length = iLength + (p_doBom ? 2 : 0);
+      // Result is OK, but 2 longer if we constructed a BOM or 2 shorter for zero's
+      p_length = iLength - (p_doBom ? 0 : 2);
       result   = true;
     }
     else
@@ -905,7 +976,7 @@ StringToWString(XString p_string)
   {
     // Getting a UTF-16 wide-character buffer
     // +2 chars for a BOM, +2 chars for the closing zeros
-    unsigned char* buffer = new uchar[2*(size_t)length + 4];
+    BYTE* buffer = new BYTE[2*(size_t)length + 4];
 
     // Doing the 'real' conversion
     length = MultiByteToWideChar(codePage
@@ -919,8 +990,8 @@ StringToWString(XString p_string)
       // Buffer length is twice the number of logical characters
       length *= 2;
       // UTF-16 has two closing zeros
-      buffer[length    ] = 0;
-      buffer[length + 1] = 0;
+//       buffer[length    ] = 0;
+//       buffer[length + 1] = 0;
 
       result = reinterpret_cast<LPWSTR>(buffer);
     }
@@ -984,7 +1055,7 @@ DecodeStringFromTheWire(XString p_string,XString p_charset /*="utf-8"*/)
   }
 
   // Now decode the UTF-8 in the encoded string, to decoded MBCS
-  uchar* buffer = nullptr;
+  BYTE*  buffer = nullptr;
   int    length = 0;
   if (TryCreateWideString(p_string,p_charset,false,&buffer,length))
   {
@@ -1011,8 +1082,8 @@ EncodeStringForTheWire(XString p_string,XString p_charset /*="utf-8"*/)
   }
 
   // Now encode MBCS to UTF-8 without a BOM
-  uchar*  buffer = nullptr;
-  int     length = 0;
+  BYTE*  buffer = nullptr;
+  int    length = 0;
   if(TryCreateWideString(p_string,"",false,&buffer,length))
   {
     XString encoded;
@@ -1027,17 +1098,75 @@ EncodeStringForTheWire(XString p_string,XString p_charset /*="utf-8"*/)
   return p_string;
 }
 
+// Implode an UTF-16 string to a MBCS XString
+XString ImplodeString(BYTE* p_buffer,unsigned p_length)
+{
+  XString result;
+
+  wchar_t* buf = (wchar_t*) p_buffer;
+  unsigned tcharlen = p_length / 2;
+  for(unsigned ind = 0;ind < tcharlen; ++ind)
+  {
+    result += (uchar) buf[ind];
+  }
+  return result;
+}
+
+// Convert an UTF-16 buffer to a XString in ANSI/MBCS mode
+void ExplodeString(XString p_string,BYTE* p_buffer,unsigned p_length)
+{
+  if((unsigned)(p_string.GetLength() * 2 + 2) <= p_length)
+  {
+    for(int ind = 0;ind < p_string.GetLength(); ++ind)
+    {
+      *p_buffer++ = (BYTE) p_string.GetAt(ind);
+      *p_buffer++ = 0;
+    }
+    *p_buffer++ = 0;
+    *p_buffer++ = 0;
+  }
+}
+
 // Construct a UTF-16 Byte-Order-Mark
 std::wstring ConstructBOMUTF16()
 {
   // 2 BYTE UTF-16 Byte-order-Mark "\0xFE\0xFF"
-  uchar bom[4];
+  BYTE bom[4];
 
-  bom[0] = (unsigned char) 0xFE;
-  bom[1] = (unsigned char) 0xFF;
+  bom[0] = (BYTE) 0xFE;
+  bom[1] = (BYTE) 0xFF;
   bom[2] = 0;
   bom[3] = 0;
   return std::wstring((LPCWSTR) bom);
+}
+
+// Convert directly from LPCSTR (No 'T' !!) to XString
+// UNICODE   -> char* to wchar_t*
+// ANSI/MBCS -> char* to char*
+// Optionally convert to UTF8
+XString
+LPCSTRToString(LPCSTR p_string,bool p_utf8 /*= false*/)
+{
+  if(p_utf8)
+  {
+    return DecodeStringFromTheWire(p_string);
+  }
+  else
+  {
+    // No conversions
+    return XString(p_string);
+  }
+}
+
+// Convert a XString (here ANSI/MBCS) to a PCSTR buffer
+int
+StringToLPCSTR(XString p_string,LPCSTR* p_buffer,int& p_size,bool p_utf8 /*= false*/)
+{
+  XString string = p_utf8 ? EncodeStringForTheWire(p_string) : p_string;
+  p_size   = string.GetLength();
+  *p_buffer = new char[p_size + 1];
+  strncpy_s((char*)*p_buffer,p_size + 1,string.GetString(),p_size + 1);
+  return p_size;
 }
 
 #endif // UNICODE
@@ -1046,12 +1175,12 @@ std::wstring ConstructBOMUTF16()
 bool
 DetectUTF8(XString& p_string)
 {
-  const unsigned char* bytes = reinterpret_cast<const unsigned char*>(p_string.GetString());
+  const BYTE* bytes = reinterpret_cast<const BYTE*>(p_string.GetString());
   return DetectUTF8(bytes);
 }
 
 bool
-DetectUTF8(const uchar* bytes)
+DetectUTF8(const BYTE* bytes)
 {
   bool detectedUTF8 = false;
   unsigned int cp = 0;

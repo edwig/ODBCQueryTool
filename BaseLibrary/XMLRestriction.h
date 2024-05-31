@@ -2,7 +2,7 @@
 //
 // SourceFile: XMLRestriction.h
 //
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -39,7 +39,7 @@ public:
   XString HandleWhitespace(XmlDataType p_type,XString p_value);
 
   // Set restrictions
-  void    AddEnumeration(XString p_enum,XString p_displayValue = "");
+  void    AddEnumeration(XString p_enum,XString p_displayValue = _T(""));
   void    AddBaseType(XString p_type)     { m_baseType       = p_type;   }
   void    AddLength(int p_length)         { m_length         = p_length; }
   void    AddMinLength(int p_length)      { m_minLength      = p_length; }
@@ -171,7 +171,7 @@ class XMLRestrictions
 public:
   XMLRestriction* FindRestriction (XString p_name);
   XMLRestriction* AddRestriction  (XString p_name);
-  void            AddEnumeration  (XString p_name,XString p_enum,XString p_displayValue = "");
+  void            AddEnumeration  (XString p_name,XString p_enum,XString p_displayValue = _T(""));
   bool            HasEnumeration  (XString p_name,XString p_enum);
   XString         GiveDisplayValue(XString p_name,XString p_enum);
 

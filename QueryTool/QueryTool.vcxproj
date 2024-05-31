@@ -699,7 +699,12 @@ copy $(SolutionDir)\Data\*.*  $(OutDir)\Data\</Command>
     <None Include="res\QueryTool.rc2" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="QueryTool.rc" />
+    <ResourceCompile Include="QueryTool.rc">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)StyleFramework\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='DebugUnicode|x64'">$(SolutionDir)StyleFramework\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='ReleaseUnicode|x64'">$(SolutionDir)StyleFramework\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)StyleFramework\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Icons\12_help.ico" />

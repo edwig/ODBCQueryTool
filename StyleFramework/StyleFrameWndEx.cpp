@@ -217,6 +217,12 @@ StyleFrameWndEx::OnStylePurple()
 }
 
 void
+StyleFrameWndEx::OnStyleMustard()
+{
+  SetTheme(ThemeColor::Themes::ThemeMustard);
+}
+
+void
 StyleFrameWndEx::OnStyleModerateGray()
 {
   SetTheme(ThemeColor::Themes::ThemeModerateGray);
@@ -232,6 +238,12 @@ void
 StyleFrameWndEx::OnStyleBlackWhite()
 {
   SetTheme(ThemeColor::Themes::ThemeBlackWhite);
+}
+
+void
+StyleFrameWndEx::OnStyleDark()
+{
+  SetTheme(ThemeColor::Themes::ThemeDark);
 }
 
 // Setting the resource and tooltip for a menu entry

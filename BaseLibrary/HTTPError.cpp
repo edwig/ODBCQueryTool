@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -127,6 +127,11 @@ GetHTTPStatusText(int p_status)
     case HTTP_STATUS_SWITCH_PROTOCOLS:   return _T("Switching protocols");
     case HTTP_STATUS_PROCESSING:         return _T("Processing");
     case HTTP_STATUS_EARLYHINTS:         return _T("Early hints");
+    case HTTP_STATUS_STALE:              return _T("Response is stale");
+    case HTTP_STATUS_REVALIDATION_FAILED:return _T("Revalidation failed");
+    case HTTP_STATUS_DISCONNECTED:       return _T("Disconnected operation");
+    case HTTP_STATUS_HEURISTIC_EXPIRE:   return _T("Heuristic expiration");
+    case HTTP_STATUS_WARNING:            return _T("Miscellaneous warning");
     // 200
     case HTTP_STATUS_OK:                 return _T("OK");
     case HTTP_STATUS_CREATED:            return _T("Created");
@@ -134,10 +139,13 @@ GetHTTPStatusText(int p_status)
     case HTTP_STATUS_PARTIAL:            return _T("Partial completion");
     case HTTP_STATUS_NO_CONTENT:         return _T("No content");
     case HTTP_STATUS_RESET_CONTENT:      return _T("Completed, form cleared");
-    case HTTP_STATUS_PARTIAL_CONTENT:    return _T("Partial GET");
+    case HTTP_STATUS_PARTIAL_CONTENT:    return _T("Partial content");
     case HTTP_STATUS_MULTISTATUS:        return _T("Multi-status");
     case HTTP_STATUS_ALREADYREPORTED:    return _T("Already reported");
+    case HTTP_STATUS_TRANSFORMATION:     return _T("Transformation applied");
+    case HTTP_STATUS_THIS_IS_FINE:       return _T("This is fine");
     case HTTP_STATUS_IM_USED:            return _T("IM used");
+    case HTTP_STATUS_PERSISTENT_WARNING: return _T("Miscellaneous Persistent Warning");
     // 300
     case HTTP_STATUS_AMBIGUOUS:          return _T("Server could not decide");
     case HTTP_STATUS_MOVED:              return _T("Moved resource");
@@ -177,8 +185,19 @@ GetHTTPStatusText(int p_status)
     case HTTP_STATUS_PRECOND_REQUIRED:   return _T("Precondition required");
     case HTTP_STATUS_TOO_MANY_REQUESTS:  return _T("Too many requests");
     case HTTP_STATUS_HEADERS_TOO_LARGE:  return _T("Headers too large");
+    case HTTP_STATUS_LOGIN_TIMEOUT:      return _T("Login Time-out");
+    case HTTP_STATUS_NO_RESPONSE:        return _T("No response");
     case HTTP_STATUS_RETRY_WITH:         return _T("Retry after appropriate action");
     case HTTP_STATUS_LEGALREASONS:       return _T("Unavailable for legal reasons");
+    case HTTP_STATUS_CLIENT_CLOSE_PREM:  return _T("Client closed connection prematurely");
+    case HTTP_STATUS_TOO_MANY_FORWARD:   return _T("Too many forwarded IP addresses");
+    case HTTP_STATUS_INCOMPAT_PROTOCOL:  return _T("Incompatible protocol");
+    case HTTP_STATUS_REQ_HEADER_LARGE:   return _T("Request header too large");
+    case HTTP_STATUS_CERT_ERROR:         return _T("Certificate error");
+    case HTTP_STATUS_CERT_REQUIRED:      return _T("Certificate required");
+    case HTTP_STATUS_HTTP_HTTPS:         return _T("HTTP Request Sent to HTTPS Port");
+    case HTTP_STATUS_INVALID_TOKEN:      return _T("Invalid authorization token");
+    case HTTP_STATUS_TOKEN_REQUIRED:     return _T("Authorization token required");
     // 500
     case HTTP_STATUS_SERVER_ERROR:       return _T("Internal server error");
     case HTTP_STATUS_NOT_SUPPORTED:      return _T("Not supported");
@@ -191,6 +210,21 @@ GetHTTPStatusText(int p_status)
     case HTTP_STATUS_LOOP_DETECTED:      return _T("Infinite loop detected");
     case HTTP_STATUS_NOT_EXTENDED:       return _T("Server not extended");
     case HTTP_STATUS_NETWORK_AUTHENT:    return _T("Network authentication required");
+    case HTTP_STATUS_UNKNOWN_ERROR:      return _T("Web server is returning an unknown error");
+    case HTTP_STATUS_SERVER_DOWN:        return _T("Web server is down");
+    case HTTP_STATUS_CONN_TIME_OUT:      return _T("Connection timed out");
+    case HTTP_STATUS_ORIGIN_UNREACHABLE: return _T("Origin is Unreachable");
+    case HTTP_STATUS_TIMEOUT:            return _T("A timeout occurred");
+    case HTTP_STATUS_HANDSHAKE_FAILED:   return _T("SSL Handshake failed");
+    case HTTP_STATUS_INVALID_CERTIFICATE:return _T("Invalid SSL Certificate");
+    case HTTP_STATUS_RAILGUN_LISTENER:   return _T("Railgun listener to Origin");
+    case HTTP_STATUS_OVERLOADED:         return _T("The service is overloaded");
+    case HTTP_STATUS_SITE_FROZEN:        return _T("Site frozen");
+    case HTTP_STATUS_SERVER_UNAUTH:      return _T("Unauthorized by fault of the server");
+    case HTTP_STATUS_NETWRK_READ_TIMEOUT:return _T("Network read timeout");
+    case HTTP_STATUS_NETWRK_CONN_TIMEOUT:return _T("Network connection timeout");
+    // 900
+    case HTTP_STATUS_REQUEST_DENIED:     return _T("Request denied");
     // Fallback
     default:                             return _T("Unknown HTTP Status");
   }

@@ -92,6 +92,7 @@ public:
   virtual void SetMargin( UINT /* nMargin */)             = 0 ;
   virtual void SetGrid(CGridCtrl* /* pGrid */)            = 0 ;
   virtual void SetCoords( int /* nRow */, int /* nCol */) = 0 ;
+  virtual void SetTipNumber(int /*p_number*/)             = 0 ;
 
   virtual LPCTSTR    GetText()       const                = 0 ;
   virtual LPCTSTR    GetTipText()    const                { return GetText(); } // may override TitleTip return
@@ -106,6 +107,7 @@ public:
   virtual CGridCtrl* GetGrid()       const                = 0 ;
   virtual CWnd     * GetEditWnd()    const                = 0 ;
   virtual UINT       GetMargin()     const                = 0 ;
+  virtual int        GetTipNumber()  const                = 0 ;
 
   virtual CGridCellBase* GetDefaultCell() const;
 

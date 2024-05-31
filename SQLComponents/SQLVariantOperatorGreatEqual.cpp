@@ -2,7 +2,7 @@
 //
 // File: SQLVariantOperatorGreatEqual.cpp
 //
-// Copyright (c) 1998-2022 ir. W.E. Huisman
+// Copyright (c) 1998-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -1045,7 +1045,7 @@ bool
 static SQL_OperIntYMGreatEQIntYM(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   // Relies on the calculation of months in SQLInterval
-  return p_left.GetAsSQLInterval().AsDatabaseDouble() >= p_right.GetAsSQLInterval().AsDatabaseDouble();
+  return p_left.GetAsSQLInterval().AsDatabaseNumber() >= p_right.GetAsSQLInterval().AsDatabaseNumber();
 }
 
 // TYPE == INTERVAL_DAY_SECOND
@@ -1054,7 +1054,7 @@ bool
 static SQL_OperIntDSGreatEQIntDS(const SQLVariant& p_left,const SQLVariant& p_right)
 {
   // Relies on the calculation of seconds in SQLInterval
-  return p_left.GetAsSQLInterval().AsDatabaseDouble() >= p_right.GetAsSQLInterval().AsDatabaseDouble();
+  return p_left.GetAsSQLInterval().AsDatabaseNumber() >= p_right.GetAsSQLInterval().AsDatabaseNumber();
 }
 
 // OPERATOR ARRAY

@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -69,7 +69,7 @@ MultiPart::SetFile(XString p_filename)
   m_modificationDate.Empty();
   m_readDate.Empty();
 
-  // Open file to read the filetimes from the filesystem
+  // Open file to read the file times from the filesystem
   HANDLE fileHandle = CreateFile(p_filename
                                 ,GENERIC_READ
                                 ,FILE_SHARE_READ
@@ -79,7 +79,7 @@ MultiPart::SetFile(XString p_filename)
                                 ,NULL);
   if(fileHandle)
   {
-    // New filetimes
+    // New file times
     FILETIME creation     { 0, 0 };
     FILETIME modification { 0, 0 };
     FILETIME readtime     { 0, 0 };
@@ -118,7 +118,7 @@ bool
 MultiPart::CheckBoundaryExists(XString p_boundary)
 {
   // If data message, search in the form-data message
-  if(!m_data.IsEmpty())
+  if(m_data.GetLength())
   {
     if(m_data.Find(p_boundary) >= 0)
     {
@@ -134,10 +134,9 @@ MultiPart::CheckBoundaryExists(XString p_boundary)
     m_file.GetBuffer(buffer,length);
     if(buffer && length > (size_t)p_boundary.GetLength())
     {
-      int bdlen = p_boundary.GetLength();
-      for(char* buf = (char*)buffer; buf < (char*)((char*)buffer + length - bdlen); ++buf)
+      for(char* buf = (char*)buffer; buf < (char*)((char*)buffer + length - p_boundary.GetLength()); ++buf)
       {
-        if(memcmp(buf,p_boundary,bdlen) == 0)
+        if(memcmp(buf,p_boundary,p_boundary.GetLength()) == 0)
         {
           return true;
         }
@@ -235,7 +234,7 @@ MultiPart::TrySettingFiletimes()
   {
     return;
   }
-  // Filetime dates, and pointers to it.
+  // File time dates, and pointers to it.
   FILETIME  creation;
   FILETIME  modifcation;
   FILETIME  readTime;
@@ -323,7 +322,7 @@ MultiPart::GetHeader(XString p_header)
   {
     return it->second;
   }
-  return "";
+  return _T("");
 }
 
 void
@@ -366,6 +365,7 @@ MultiPartBuffer::Reset()
   m_incomingCharset.Empty();
   m_extensions = false;
   m_useCharset = false;
+  m_charSize   = 1;
   // Leave m_type alone: otherwise create another MultiPartBuffer
 }
 
@@ -391,7 +391,7 @@ MultiPartBuffer::GetBoundary()
   {
     return m_boundary;
   }
-  return "";
+  return _T("");
 }
 
 bool
@@ -561,6 +561,8 @@ MultiPartBuffer::CalculateBoundary(XString p_special /*= "#" */)
   return m_boundary;
 }
 
+// Check that the newly found boundary does *NOT* exist
+// within any of the parts of this MultiPartBuffer
 bool
 MultiPartBuffer::SetBoundary(XString p_boundary)
 {
@@ -616,10 +618,16 @@ MultiPartBuffer::CalculateAcceptHeader()
 
 // Re-create from an existing (incoming!) buffer
 bool         
-MultiPartBuffer::ParseBuffer(XString p_contentType,FileBuffer* p_buffer,bool p_conversion /*=false*/)
+MultiPartBuffer::ParseBuffer(XString      p_contentType
+                            ,FileBuffer*  p_buffer
+                            ,bool         p_conversion /*=false*/
+                            ,bool         p_utf16      /*=false*/)
 {
   // Start anew
   Reset();
+
+  // Incoming buffer encoding
+  m_charSize = p_utf16 ? 2 : 1;
 
   // Check that we have a buffer
   if(p_buffer == nullptr)
@@ -645,6 +653,9 @@ MultiPartBuffer::ParseBufferFormData(XString p_contentType,FileBuffer* p_buffer,
   bool   result = false;
   uchar* buffer = nullptr;
   size_t length = 0;
+  // Binary boundary
+  BYTE*    boundaryBinary = nullptr;
+  unsigned boundaryLength = 0;
 
   // Find the boundary between the parts
   m_boundary = FindFieldInHTTPHeader(p_contentType,_T("boundary"));
@@ -659,12 +670,15 @@ MultiPartBuffer::ParseBufferFormData(XString p_contentType,FileBuffer* p_buffer,
     return false;
   }
 
+  // Getting a binary boundary in MBCS/UTF-16 configuration
+  CalculateBinaryBoundary(m_boundary,boundaryBinary,boundaryLength);
+
   // Cycle through the raw buffer from the HTTP message
   uchar* finding = buffer;
   size_t  remain = length;
   while(true)
   {
-    void* partBuffer = FindPartBuffer(finding,remain,m_boundary);
+    void* partBuffer = FindPartBuffer(finding,remain,boundaryBinary,boundaryLength);
     if(partBuffer == nullptr)
     {
       break;
@@ -672,8 +686,9 @@ MultiPartBuffer::ParseBufferFormData(XString p_contentType,FileBuffer* p_buffer,
     AddRawBufferPart(reinterpret_cast<uchar*>(partBuffer),finding,p_conversion);
     result = true;
   }
-  // Release the buffer copy 
+  // Release the buffer copy and the boundary
   delete[] buffer;
+  delete[] boundaryBinary;
   return result;
 }
 
@@ -724,48 +739,88 @@ MultiPartBuffer::ParseBufferUrlEncoded(FileBuffer* p_buffer)
       // No value. Use as key only
       name = CrackedURL::DecodeURLChars(part);
     }
-    // Save as bufferpart
-    AddPart(name,"text",value);
+    // Save as buffer part
+    AddPart(name,_T("text"),value);
   }
   return true;
 }
 
-// Finding a new partial message
-// Finding a new partial message
+// Create a boundary representation in a new allocated BYTE buffer
+// So we can scan for UTF-16 or ANSI/MBCS in either configuration
+void
+MultiPartBuffer::CalculateBinaryBoundary(XString p_boundary,BYTE*& p_binary,unsigned& p_length)
+{
+  // Message buffer must end in "<BOUNDARY>--", so no need to seek to the exact end of the buffer
+  // Beware of WebKit (Chrome) that will send "<BOUNDARY>--\r\n" at the end of the buffer
+  int length = p_boundary.GetLength();
+  p_binary = nullptr;
+#ifdef UNICODE
+  if(m_charSize == 2)
+  {
+    length *= 2;
+    p_binary = new BYTE[length + 2];
+    memcpy(p_binary,p_boundary.GetString(),length + 2);
+  }
+  else // m_charSize == 1
+  {
+    // Implode
+    p_binary = new BYTE[length + 2];
+    ImplodeString(p_boundary,p_binary,(unsigned) length);
+  }
+#else
+  if(m_charSize == 2)
+  {
+    // Explode
+    length *= 2;
+    p_binary = new BYTE[length + 2];
+    ExplodeString(p_boundary,p_binary,(unsigned) (length + 2));
+  }
+  else // m_charSize == 1
+  {
+    p_binary = new BYTE[length + 2];
+    memcpy(p_binary,p_boundary.GetString(),length);
+  }
+#endif
+  // Zero terminate the string (to be sure) also for UTF-16
+  p_binary[length    ] = 0;
+  p_binary[length + 1] = 0;
+  // New length of the binary (could be doubled)
+  p_length = length;
+}
+
+// Finding a new partial message in the buffer
+// Looks for the NEXT occurrence of the boundary
 void*
-MultiPartBuffer::FindPartBuffer(uchar*& p_finding,size_t& p_remaining,XString& p_boundary)
+MultiPartBuffer::FindPartBuffer(uchar*& p_finding,size_t& p_remaining,BYTE* p_boundary,unsigned p_boundaryLength)
 {
   void* result = nullptr;
 
-  // Message buffer must end in "<BOUNDARY>--", so no need to seek to the exact end of the buffer
-  // Beware of WebKit (Chrome) that will send "<BOUNDARY>--\r\n" at the end of the buffer
-  size_t length = (size_t)p_boundary.GetLength() * sizeof(TCHAR);
-  while(p_remaining > (length + 4))
+  while(p_remaining > (p_boundaryLength + 4 * m_charSize))
   {
-    --p_remaining;
-    if(memcmp(p_finding,p_boundary.GetString(),length) == 0)
+    p_remaining -= m_charSize;
+    if(memcmp(p_finding,p_boundary,p_boundaryLength) == 0)
     {
       // Positioning of the boundary found
-      p_finding   += length + 2; // 2 is for CR/LF of the HTTP protocol 
-      p_remaining -= length + 2; // 2 is for CR/LF of the HTTP protocol 
+      p_finding   += p_boundaryLength + 2 * m_charSize; // 2 is for CR/LF of the HTTP protocol 
+      p_remaining -= p_boundaryLength + 2 * m_charSize; // 2 is for CR/LF of the HTTP protocol 
       result       = p_finding;
 
       while(p_remaining)
       {
-        if(memcmp(p_finding,p_boundary.GetString(),length) == 0)
+        if(memcmp(p_finding,p_boundary,p_boundaryLength) == 0)
         {
           // Two '-' signs before the boundary  
-          if((*(p_finding - 1)) == '-') --p_finding;
-          if((*(p_finding - 1)) == '-') --p_finding;
+          if((*(p_finding - m_charSize)) == '-') p_finding -= m_charSize;
+          if((*(p_finding - m_charSize)) == '-') p_finding -= m_charSize;
           // Ending of the part found
           break;
         }
-        ++p_finding;
-        --p_remaining;
+        p_finding   += m_charSize;
+        p_remaining -= m_charSize;
       }
       break;
     }
-    ++p_finding;
+    p_finding += m_charSize;
   }
   return result;
 }
@@ -847,13 +902,34 @@ MultiPartBuffer::AddRawBufferPart(uchar* p_partialBegin,const uchar* p_partialEn
   {
     // PART
     // Buffer is the data component
-    XString data;
-    size_t length = p_partialEnd - p_partialBegin;
-    PTCHAR buffer = data.GetBufferSetLength((int)length + 1);
-    _tcsncpy_s(buffer,length + 1,reinterpret_cast<const PTCHAR>(p_partialBegin),length);
-    buffer[length] = 0;
-    data.ReleaseBuffer((int)length);
 
+    XString data;
+
+    if(m_charSize == 1)
+    {
+#ifdef UNICODE
+      size_t length = (p_partialEnd - p_partialBegin);
+      data = ExplodeString(p_partialBegin,(unsigned)length);
+#else
+      size_t length = (p_partialEnd - p_partialBegin);
+      char* pnt = data.GetBufferSetLength((int)length + 1);
+      strncpy_s(pnt,length + 1,(char*)p_partialBegin,length);
+      data.ReleaseBufferSetLength((int)length);
+#endif
+    }
+    else
+    {
+#ifdef UNICODE
+      size_t length = (p_partialEnd - p_partialBegin) / m_charSize;
+      PTCHAR buffer = data.GetBufferSetLength((int) length + 1);
+      _tcsncpy_s(buffer,length + 1,reinterpret_cast<const PTCHAR>(p_partialBegin),length);
+      buffer[length] = 0;
+      data.ReleaseBuffer((int) length);
+#else
+      size_t length = (p_partialEnd - p_partialBegin);
+      data = ImplodeString(p_partialBegin,(unsigned)length);
+#endif
+    }
     // Decoding the string, possible changing the length
     if(p_conversion)
     {
@@ -886,21 +962,48 @@ XString
 MultiPartBuffer::GetLineFromBuffer(uchar*& p_begin,const uchar* p_end)
 {
   XString line;
+  const uchar* end = nullptr;
 
-  const PTCHAR end = _tcschr(reinterpret_cast<const PTCHAR>(p_begin),'\n');
-  if(end > reinterpret_cast<PTCHAR>(const_cast<uchar*>(p_end)))
+  if(m_charSize == 1)
   {
-    return line;
+    end = (uchar*) strchr((const char*) p_begin,'\n');
+    if(!end || end > p_end)
+    {
+      return line;
+    }
+    size_t length = end - p_begin;
+
+#ifdef UNICODE
+    line = ExplodeString(p_begin,(unsigned)length);
+#else
+    char* buf = line.GetBufferSetLength((int) length + 1);
+    strncpy_s(buf,length + 1,reinterpret_cast<const char*>(p_begin),length);
+    buf[length] = 0;
+    line.ReleaseBuffer(static_cast<int>(length));
+#endif
   }
-  size_t length = end - reinterpret_cast<const PTCHAR>(p_begin);
-  PTCHAR buf = line.GetBufferSetLength((int)length + 1);
-  _tcsncpy_s(buf,length+1,reinterpret_cast<const PTCHAR>(p_begin),length);
-  buf[length] = 0;
-  line.ReleaseBuffer(static_cast<int>(length));
-  line.TrimRight('\r');
+  else // UTF-16
+  {
+    end = (uchar*) wcschr((const wchar_t*) p_begin,_T('\n'));
+    if(!end || end > p_end)
+    {
+      return line;
+    }
+#ifdef UNICODE
+    size_t length = (end - p_begin) / m_charSize;
+    PTCHAR buf = line.GetBufferSetLength((int) length + 1);
+    _tcsncpy_s(buf,length + 1,reinterpret_cast<const PTCHAR>(p_begin),length);
+    buf[length] = 0;
+    line.ReleaseBuffer(static_cast<int>(length));
+#else
+    size_t length = end - p_begin;
+    line = ImplodeString(p_begin,(unsigned)length);
+#endif
+  }
+  line.TrimRight(_T('\r'));
 
   // Position after the end
-  p_begin = reinterpret_cast<uchar*>(end + sizeof(TCHAR));
+  p_begin = (uchar*)end + m_charSize;
   return line;
 }
 
