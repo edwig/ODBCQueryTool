@@ -160,9 +160,11 @@ BEGIN_MESSAGE_MAP(SQLMigrateDialog, StyleDialog)
   ON_COMMAND      (ID_THEMA_LIME,       OnStyleLime)
   ON_COMMAND      (ID_THEMA_SKYBLUE,    OnStyleSkyblue)
   ON_COMMAND      (ID_THEMA_PURPLE,     OnStylePurple)
+  ON_COMMAND      (ID_THEMA_MUSTARD,    OnStyleMustard)
   ON_COMMAND      (ID_THEMA_MODERATE,   OnStyleModerateGray)
   ON_COMMAND      (ID_THEMA_PUREGRAY,   OnStylePureGray)
   ON_COMMAND      (ID_THEMA_BLACKWHITE, OnStyleBlackWhite)
+  ON_COMMAND      (ID_THEMA_DARK,       OnStyleDark)
 END_MESSAGE_MAP()
 
 BOOL 

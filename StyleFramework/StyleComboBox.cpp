@@ -20,6 +20,7 @@
 #include "stdafx.h"
 #include "StyleComboBox.h"
 #include "StyleUtilities.h"
+#include "Grid\GridCellCombo.h"
 #include <algorithm>
 #include <atlconv.h>
 
@@ -249,6 +250,7 @@ StyleComboBox::CreateListControl()
   {
     m_listControl->GetSkin()->SetScrollbarBias(0);
     m_listControl->GetSkin()->SetMouseCapture(TRUE,TME_HOVER);
+    m_listControl->GetSkin()->SkinSetMouseTracking();
   }
 }
 
@@ -402,13 +404,13 @@ StyleComboBox::ShowComboList()
 void 
 StyleComboBox::PostShowComboList()
 {
-  // Provide your own override if neccessary
+  // Provide your own override if necessary
   m_listControl->SetFocus();
 }
 
 void StyleComboBox::PreHideComboList() 
 {
-  // Provide your own override if neccessary
+  // Provide your own override if necessary
 }
 
 void
@@ -894,19 +896,34 @@ StyleComboBox::OnGetTextLength(WPARAM wParam,LPARAM lParam)
 void
 StyleComboBox::OnChar(UINT nChar,UINT nRepCnt,UINT nFlags)
 {
-  if((nChar != VK_TAB) && m_itemControl)
-  {
-    m_itemControl->SetFocus();
-    m_itemControl->OnChar(nChar,nRepCnt,nFlags);
-    return;
-  }
-  CEdit::OnChar(nChar,nRepCnt,nFlags);
-
   if((nChar == VK_TAB) && m_itemControl)
   {
     m_itemControl->SendMessage(WM_CHAR,VK_TAB,nFlags);
-    return;
   }
+  else
+  {
+    if(m_buttonDown)
+    {
+      if(m_listControl)
+      {
+        m_listControl->SetFocus();
+        m_listControl->PostMessage(WM_KEYDOWN,nChar,nFlags);
+        m_listControl->PostMessage(WM_CHAR,   nChar,nFlags);
+        m_listControl->PostMessage(WM_KEYUP,  nChar,nFlags);
+        return;
+      }
+    }
+    else
+    {
+      if(m_itemControl)
+      {
+        m_itemControl->SetFocus();
+        m_itemControl->OnChar(nChar,nRepCnt,nFlags);
+        return;
+      }
+    }
+  }
+  CEdit::OnChar(nChar,nRepCnt,nFlags);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -962,6 +979,7 @@ StyleComboBox::OnDropdown()
   PreShowComboList();
   ShowComboList();
   PostShowComboList();
+
   m_buttonDown = true;
 }
 
@@ -1042,25 +1060,18 @@ StyleComboBox::OnSetFocus(CWnd* pOldWnd)
   {
     CWnd* owner = GetOwner();
     if(owner)
-      {
+    {
       ::SendMessage(owner->GetSafeHwnd(),WM_COMMAND,MAKELONG(GetDlgCtrlID(),CBN_SETFOCUS),(LPARAM)m_hWnd);
     }
   }
-//   CRect rect;
-//   GetClientRect(rect);
-//   rect.left = rect.right - rect.Height();
-//   CPoint here = GetCaretPos();
-//   if(!rect.PtInRect(here))
-//   {
-//     if(!m_listControl->IsWindowVisible())
-//     {
-//       // We are not on the combobox button and listcontrol is visible
-//       if(m_itemControl)
-//       {
-//         m_itemControl->SetFocus();
-//       }
-//     }
-//   }
+  if(m_listControl && m_listControl->IsWindowVisible())
+  {
+    m_listControl->SetFocus();
+  }
+  else if(m_itemControl && m_itemControl->GetSafeHwnd())
+  {
+    m_itemControl->SetFocus();
+  }
 }
 
 void
@@ -1214,8 +1225,8 @@ StyleComboBox::DeleteString(UINT nIndex)
 {
   if(m_listControl)
   {
-  return m_listControl->DeleteString(nIndex);
-}
+    return m_listControl->DeleteString(nIndex);
+  }
   return -1;
 }
 
@@ -1364,8 +1375,8 @@ StyleComboBox::GetItemDataPtr(int nIndex) const
 {
   if(m_listControl)
   {
-  return m_listControl->GetItemDataPtr(nIndex);
-}
+    return m_listControl->GetItemDataPtr(nIndex);
+  }
   return nullptr;
 }
 
@@ -1381,8 +1392,8 @@ StyleComboBox::GetItemHeight(int nIndex) const
   }
   if(m_listControl)
   {
-  return m_listControl->GetItemHeight(nIndex);
-}
+    return m_listControl->GetItemHeight(nIndex);
+  }
   return CB_ERR;
 }
 
@@ -1391,8 +1402,8 @@ StyleComboBox::GetLBText(int nIndex,LPTSTR lpszText) const
 {
   if(m_listControl)
   {
-  return m_listControl->GetText(nIndex,lpszText);
-}
+    return m_listControl->GetText(nIndex,lpszText);
+  }
   return 0;
 }
 
@@ -1792,60 +1803,11 @@ StyleComboBox::OnPaint()
     {
       m_itemControl->GetSkin()->GetClientRect(&editItem);
     }
-    // Find the arrow color
-    COLORREF color = ThemeColor::GetColor(Colors::AccentColor1);
-    if(m_arrowColor)
-    {
-      color = m_arrowColor;
-    }
-    else if(!this->IsWindowEnabled())
-    {
-      color = ThemeColor::GetColor(Colors::AccentColor2);
-    }
-
-    // Create pen
-    CPen pen;
-    pen.CreatePen(PS_SOLID, 1, color);
-    HGDIOBJ orgpen = dc->SelectObject(pen);
-
-    // Paint the button
     int size = editItem.Height();
-    CRect but(rcItem.right-size,rcItem.top,rcItem.right,rcItem.top + size);
-    DWORD background = ThemeColor::GetColor(Colors::ColorCtrlBackground);
-    if(m_buttonDown)
-    {
-      background = ThemeColor::GetColor(Colors::ColorComboDropped);
-    }
-    else if(m_itemControl->GetHoverOver())
-    {
-      background = ThemeColor::GetColor(Colors::ColorComboActive);
-    }
-    dc->FillSolidRect(but, background);
-    but.CenterPoint();
+    CRect but(rcItem.right - size,rcItem.top,rcItem.right,rcItem.top + size);
 
-    POINT points[3];
-    if(m_buttonDown)
-    {
-      points[0].x = but.CenterPoint().x - WS(4);
-      points[0].y = but.CenterPoint().y + WS(4);
-      points[1].x = but.CenterPoint().x + 1;
-      points[1].y = but.CenterPoint().y - 1;
-      points[2].x = but.CenterPoint().x + WS(4) + 2;
-      points[2].y = but.CenterPoint().y + WS(4);
-    }
-    else
-    {
-      points[0].x = but.CenterPoint().x - WS(4);
-      points[0].y = but.CenterPoint().y - 1;
-      points[1].x = but.CenterPoint().x + 1;
-      points[1].y = but.CenterPoint().y + WS(4);
-      points[2].x = but.CenterPoint().x + WS(4) + 2;
-      points[2].y = but.CenterPoint().y - 1;
-    }
-
-    CBrush brush(color);
-    HGDIOBJ orgbrush = dc->SelectObject(&brush);
-    dc->Polygon(points,3);
+    // Draw the arrow
+    COLORREF color = DrawComboButton(dc,but);
 
     CPen framepen;
     COLORREF framecolor = FRAME_DEFAULT_COLOR;
@@ -1854,7 +1816,9 @@ StyleComboBox::OnPaint()
     m_itemControl->GetDrawFrameColor(framecolor,bordersize,readonly);
 
     framepen.CreatePen(PS_SOLID,bordersize,framecolor);
-    dc->SelectObject(framepen);
+    HGDIOBJ orgpen = dc->SelectObject(framepen);
+    CBrush  brush(color);
+    HGDIOBJ orgbrush = dc->SelectObject(&brush);
 
     // Paint the frame
     dc->MoveTo(rcItem.left  + 1,    rcItem.top + bordersize - 1);
@@ -1869,6 +1833,68 @@ StyleComboBox::OnPaint()
     dc->SelectObject(orgbrush);
   }
   EndPaint(&paint);
+}
+
+COLORREF
+StyleComboBox::DrawComboButton(CDC* p_dc,CRect& p_but)
+{
+  // Find the arrow color
+  COLORREF color = ThemeColor::GetColor(Colors::AccentColor1);
+  if(m_arrowColor)
+  {
+    color = m_arrowColor;
+  }
+  else if(!this->IsWindowEnabled())
+  {
+    color = ThemeColor::GetColor(Colors::AccentColor2);
+  }
+
+  // Create pen
+  CPen pen;
+  pen.CreatePen(PS_SOLID,1,color);
+  HGDIOBJ orgpen = p_dc->SelectObject(pen);
+
+  // Paint the button
+  DWORD background = ThemeColor::GetColor(Colors::ColorCtrlBackground);
+  if(m_buttonDown)
+  {
+    background = ThemeColor::GetColor(Colors::ColorComboDropped);
+  }
+  else if(m_itemControl->GetHoverOver())
+  {
+    background = ThemeColor::GetColor(Colors::ColorComboActive);
+  }
+  p_dc->FillSolidRect(p_but,background);
+  p_but.CenterPoint();
+
+  POINT points[3];
+  if(m_buttonDown)
+  {
+    points[0].x = p_but.CenterPoint().x - WS(4);
+    points[0].y = p_but.CenterPoint().y + WS(4);
+    points[1].x = p_but.CenterPoint().x + 1;
+    points[1].y = p_but.CenterPoint().y - 1;
+    points[2].x = p_but.CenterPoint().x + WS(4) + 2;
+    points[2].y = p_but.CenterPoint().y + WS(4);
+  }
+  else
+  {
+    points[0].x = p_but.CenterPoint().x - WS(4);
+    points[0].y = p_but.CenterPoint().y - 1;
+    points[1].x = p_but.CenterPoint().x + 1;
+    points[1].y = p_but.CenterPoint().y + WS(4);
+    points[2].x = p_but.CenterPoint().x + WS(4) + 2;
+    points[2].y = p_but.CenterPoint().y - 1;
+  }
+
+  CBrush brush(color);
+  HGDIOBJ orgbrush = p_dc->SelectObject(&brush);
+  p_dc->Polygon(points,3);
+
+  p_dc->SelectObject(orgpen);
+  p_dc->SelectObject(orgbrush);
+
+  return color;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1977,6 +2003,13 @@ SCBTextEdit::OnChar(UINT nChar,UINT nRepCnt,UINT nFlags)
         m_origText = (char)nChar;
       }
     }
+    else
+    {
+      if(GetTickCount() >= (m_keyboardTime + COMBO_KEYBOARD_CACHE))
+      {
+        m_origText = (char)nChar;
+      }
+    }
   }
 
   m_keyboardTime = GetTickCount();
@@ -1994,18 +2027,23 @@ SCBTextEdit::OnChar(UINT nChar,UINT nRepCnt,UINT nFlags)
   {
     int base = m_combo->GetCurSel();
     int find = 0;
-    if (m_origText.GetLength() > 1)
+    CString searchtext(m_origText);
+    if(!type)
     {
-      find = m_combo->FindString(0,m_origText);
+      searchtext = (char)nChar;
+    }
+    if(m_origText.GetLength() > 1)
+    {
+      find = m_combo->FindString(0,searchtext);
     }
     else
     {
-       find = m_combo->FindString(base - type, m_origText);
+       find = m_combo->FindString(base - type, searchtext);
     }
     if(find == -1 && base > 0)
     {
       // Search from the beginning, in case we searched past the end
-      find = m_combo->FindString(-1,m_origText);
+      find = m_combo->FindString(-1,searchtext);
     }
     if(find >= 0)
     {
@@ -2118,7 +2156,10 @@ SCBTextEdit::PreTranslateMessage(MSG* p_msg)
 {
   if(p_msg->message == WM_KEYDOWN)
   {
-    if(p_msg->wParam == VK_F4 || p_msg->wParam == VK_DOWN)
+    UINT key   = (UINT) p_msg->wParam;
+    bool cntrl = GetKeyState(VK_CONTROL) != 0;
+    if(p_msg->wParam == VK_F4 || 
+      (p_msg->wParam == VK_DOWN && !cntrl))
     {
       if(m_combo && m_combo->GetExtendedUI())
       {
@@ -2130,6 +2171,22 @@ SCBTextEdit::PreTranslateMessage(MSG* p_msg)
         DrawFrame();
         return TRUE;
       }
+    }
+    if(cntrl &&
+       (key == VK_PRIOR || key == VK_NEXT  ||
+        key == VK_DOWN  || key == VK_UP    ||
+        key == VK_RIGHT || key == VK_LEFT) )
+    {
+      if(m_combo->GetGridCell())
+      {
+        CGridCellCombo* cell = m_combo->GetGridCell();
+        CGridCtrl* grid = reinterpret_cast<CGridCtrl*>(m_combo->GetParent());
+        cell->SetLastChar(key);
+        cell->EndEdit();
+        // This will end this control!
+        grid->SetFocus();
+      }
+      return TRUE;
     }
   }
   if(p_msg->message == WM_KEYUP)
@@ -2204,7 +2261,10 @@ SCBListBox::SCBListBox()
 
 SCBListBox::~SCBListBox()
 {
-  DestroyWindow();
+  if(GetSafeHwnd())
+  {
+    DestroyWindow();
+  }
 }
 
 void
@@ -2410,6 +2470,7 @@ SCBListBox::SelectCurrentSelection()
   }
   m_active = false;
   GetSkin()->SkinReleaseCapture();
+  GetSkin()->SkinCancelMouseTracking();
   // Notify that selection has changed
   m_combo->OnSelEndOK();
   m_combo->OnCloseup();
@@ -2420,6 +2481,7 @@ void
 SCBListBox::CancelCurrentSelection()
 {
   GetSkin()->SkinReleaseCapture();
+  GetSkin()->SkinCancelMouseTracking();
   ResetCurSel();
   m_combo->OnSelEndCancel();
   m_combo->OnCloseup();
@@ -2428,7 +2490,7 @@ SCBListBox::CancelCurrentSelection()
 void
 SCBListBox::OnActivate(UINT nState,CWnd* pWndOther,BOOL pMinimized)
 {
-  if(nState == WA_INACTIVE)
+  if(nState == WA_INACTIVE && pWndOther)
   {
     // Application loses the focus
     m_combo->OnCloseup();
@@ -2611,6 +2673,7 @@ SCBListBox::OnLButtonDown(UINT nFlags,CPoint point)
   {
     SkinScrollWnd* skin = GetSkin();
     skin->SkinReleaseCapture();
+    skin->SkinCancelMouseTracking();
 
     LPARAM param = MAKELONG(point.x,point.y);
     skin->m_sbVert.SendMessage(WM_LBUTTONDOWN,(WPARAM)nFlags,param);

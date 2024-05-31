@@ -37,6 +37,7 @@ StyleToast::StyleToast(int      p_style
            ,m_text2(p_text2)
            ,m_text3(p_text3)
            ,m_timeout(p_timeout)
+           ,m_steps(0)
            ,m_background(RGB(255,255,255))
            ,m_foreground(RGB(0,0,0))
 {
@@ -58,6 +59,7 @@ BEGIN_MESSAGE_MAP(StyleToast,CDialog)
   ON_WM_CREATE()
   ON_WM_TIMER()
   ON_WM_CTLCOLOR()
+  ON_WM_PAINT()
   ON_STN_CLICKED(IDC_TOAST,OnClicked)
 END_MESSAGE_MAP()
 
@@ -85,8 +87,12 @@ StyleToast::OnInitDialog()
   if(m_background == 0)
   {
     m_foreground = RGB(255,255,255);
+    m_dimmedback = RGB(127,127,127);
   }
-
+  else
+  {
+    SetHalfBackgroundColor();
+  }
   m_showText.SetBkColor(m_background);
   m_showText.SetTextColor(m_foreground);
   m_showText.SetWindowText(m_text1);
@@ -95,12 +101,23 @@ StyleToast::OnInitDialog()
   
   if(m_timeout > 0)
   {
-    SetTimer(EV_TOAST,m_timeout,nullptr);
+    SetTimer(EV_TOAST,  m_timeout,nullptr);
+    SetTimer(EV_STEPPER,m_timeout / TOAST_STEPS,nullptr);
+    m_steps = TOAST_STEPS;
   }
   UpdateData(FALSE);
   PumpMessage();
 
   return TRUE;
+}
+
+void
+StyleToast::SetHalfBackgroundColor()
+{
+  int halfred  =  (m_background & 0xFF) * 4 / 5;
+  int halfgre  = ((m_background & 0xFFFF) >> 8) * 4 / 5;
+  int halfblu  =  (m_background >> 16) * 4 / 5;
+  m_dimmedback = RGB(halfred,halfgre,halfblu);
 }
 
 int
@@ -119,13 +136,22 @@ StyleToast::OnCreate(LPCREATESTRUCT p_create)
 void
 StyleToast::OnSize(UINT nType, int x, int y)
 {
+  y -= m_timeout ? TOAST_LINE : 0;
   m_showText.MoveWindow(0,0,x,y);
 }
 
 void
 StyleToast::OnTimer(UINT_PTR nIDEvent)
 {
-  DestroyToast(this);
+  if(nIDEvent == EV_TOAST)
+  {
+    DestroyToast(this);
+  }
+  if(nIDEvent == EV_STEPPER)
+  {
+    --m_steps;
+    Invalidate();
+  }
 }
 
 HBRUSH
@@ -142,6 +168,47 @@ void
 StyleToast::OnClicked()
 {
   DestroyToast(this);
+}
+
+void
+StyleToast::OnPaint()
+{
+  CDialog::OnPaint();
+
+  CRect rect;
+  GetClientRect(rect);
+  CDC* dc = GetDC();
+  CRect stepper(rect);
+  stepper.top    = rect.bottom - TOAST_LINE;
+  stepper.right  = rect.left + (rect.Width() * m_steps / TOAST_STEPS);
+
+  // Paint left side of the stepper
+  PaintStepper(dc,stepper,m_dimmedback);
+
+  // Draw the right side
+  stepper.left  = stepper.right;
+  stepper.right = rect.right;
+  PaintStepper(dc,stepper,m_background);
+
+  ReleaseDC(dc);
+}
+
+void
+StyleToast::PaintStepper(CDC* p_dc,CRect p_stepper,DWORD p_color)
+{
+  // Select brush and pen
+  CBrush  brush(p_color);
+  CBrush* oldBrush = p_dc->SelectObject(&brush);
+  CPen    pen;
+  pen.CreatePen(PS_SOLID,1,p_color);
+  CPen* oldPen = p_dc->SelectObject(&pen);
+
+  // Draw the stepper part
+  p_dc->Rectangle(p_stepper);
+
+  /// Reselect original objects
+  p_dc->SelectObject(oldBrush);
+  p_dc->SelectObject(oldPen);
 }
 
 void
@@ -264,11 +331,13 @@ StyleToast* CreateToast(int      p_style
   CDC* dc = toast->GetDC();
   if(CalculateHorizontalSize(dc,p_text1,cx,max) ||
      CalculateHorizontalSize(dc,p_text2,cx,max) ||
-     CalculateHorizontalSize(dc,p_text3,cx,max))
+     CalculateHorizontalSize(dc,p_text3,cx,max) ||
+     p_timeout)
   {
-    size.left = size.right - cx;
+    size.left    = size.right - cx;
+    size.bottom += p_timeout ? TOAST_LINE : 0;
     toast->MoveWindow(size);
-    toast->OnSize(SIZE_MAXIMIZED, cx, cy);
+    toast->OnSize(SIZE_MAXIMIZED,size.Width(),size.Height());
   }
   toast->ReleaseDC(dc);
   

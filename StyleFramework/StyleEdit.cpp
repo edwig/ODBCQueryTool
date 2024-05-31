@@ -1,4 +1,4 @@
- ////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
 //
 // File: StyleEdit.cpp
 // Function: Styling frame for a CEdit control
@@ -42,6 +42,7 @@ BEGIN_MESSAGE_MAP(StyleEdit,CEdit)
   ON_WM_LBUTTONDOWN()
   ON_WM_LBUTTONUP()
   ON_WM_NCCALCSIZE()
+  ON_WM_DROPFILES()
   ON_MESSAGE(WM_MOUSEHOVER,           OnMouseHover)
   ON_MESSAGE(WM_MOUSELEAVE,           OnMouseLeave)
   ON_MESSAGE(WM_LBUTTONDBLCLK,        OnDoubleClick)
@@ -1481,6 +1482,44 @@ StyleEdit::TrySelectWord()
   }
 }
 
+// Call: m_control.DragAcceptFiles(TRUE) 
+// and make sure you have implemented the override method
+// "OnDroppedFile" of the parent control (Dialog, Tab)
+void
+StyleEdit::OnDropFiles(HDROP p_drop)
+{
+  StyleDialog* dialog = dynamic_cast<StyleDialog*>(GetParent());
+  StyleTab*    tbpage = dynamic_cast<StyleTab*>(GetParent());
+  UINT         id = GetDlgCtrlID();
+
+  if(dialog || tbpage)
+  {
+    int numFiles = DragQueryFile(p_drop,-1,NULL,0);
+    for(int ind = 0;ind < numFiles;++ind)
+    {
+      int size = DragQueryFile(p_drop,ind,NULL,0) + sizeof(TCHAR);
+      LPTSTR str = new TCHAR[size];
+      if(DragQueryFile(p_drop,ind,str,size))
+      {
+        if(dialog)
+        {
+          dialog->OnDroppedFile(id,ind,str);
+        }
+        else
+        {
+          tbpage->OnDroppedFile(id,ind,str);
+        }
+      }
+      delete str;
+    }
+  }
+  else
+  {
+    StyleMessageBox(this,_T("ALERT: DragAcceptFiles only working in a StyleDialog or StyleTab"),_T("Error"),MB_OK|MB_ICONERROR);
+  }
+  DragFinish(p_drop);
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // SUPPORT FOR DynamicDataEXchange in Dialogs
@@ -1607,6 +1646,10 @@ AFX_STATIC void AFXAPI StyleFailMinMaxWithFormat(CDataExchange* pDX,StyleEdit& p
   CString prompt;
   AfxFormatString2(prompt,nIDPrompt,szMin,szMax);
   StyleMessageBox(&p_control,prompt,_T("Error"),MB_OK|MB_ICONEXCLAMATION);
+
+  // Reset field to minimum value to be certain
+  _sntprintf_s(szMin,MINMAX_BUFFER_SIZE,_T("%I64d"),minVal);
+  p_control.SetWindowText(szMin);
   p_control.SetFocus();
 }
 

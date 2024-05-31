@@ -2,7 +2,7 @@
 //
 // File: SQLDatabasePool.cpp
 //
-// Copyright (c) 1998-2022 ir. W.E. Huisman
+// Copyright (c) 1998-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -73,7 +73,7 @@ public:
   // Set current max databases allowed
   void            SetMaxDatabases(unsigned p_maximum);
   // Read all database definitions from 'database.xml'
-  bool            ReadConnections(XString p_filename = "",bool p_reset = false);
+  bool            ReadConnections(XString p_filename = _T(""),bool p_reset = false);
 
   // Add a column rebind for this database session: No bounds checking!
   void            AddColumnRebind(int p_sqlType, int p_cppType);

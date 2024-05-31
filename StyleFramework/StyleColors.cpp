@@ -37,42 +37,42 @@ Themes   ThemeColor::_theme   = ThemeColor::Themes::ThemeSkyblue;
 
 const int ThemeColor::theme_colors[NO_OF_COLORS][NO_OF_THEMES] =
 {
- /* LIME            SKYBLUE         PURPLE          MODERATE-GRAY      PURE-GRAY       BLACK-WHITE,     DARK-THEME  */
-  { Lime1,          Skyblue1,       Purple1,        ModerateGray1,     PureGray1,      BlackWhite1,     Dark1               }  // AccentColor1
- ,{ Lime2,          Skyblue2,       Purple2,        ModerateGray2,     PureGray2,      BlackWhite2,     Dark2               }  // AccentColor2
- ,{ Lime3,          Skyblue3,       Purple3,        ModerateGray3,     PureGray3,      BlackWhite3,     Dark3               }  // AccentColor3
- ,{ LimeHeader,     SkyblueHeader,  PurpleHeader,   ModerateGrayHeader,PureGrayHeader, BlackWhiteHeader,DarkHeader          }  // AccentColor4
- ,{ UsersBackground,UsersBackground,UsersBackground,UsersBackground,   UsersBackground,UsersBackground, DarkBackground      }  // ColorWindowFrame
- ,{ Assistant0,     Assistant0,     Assistant0,     Assistant0,        Assistant0,     Assistant0,      DarkCtrlBackground  }  // ColorCtrlBackground
- ,{ InputTextActive,InputTextActive,InputTextActive,InputTextActive,   InputTextActive,InputTextActive, ClrEditDark         }  // ColorEditText
- ,{ Assistant0,     Assistant0,     Assistant0,     Assistant0,        Assistant0,     Assistant0,      Assistant10         }  // ColorEditBkgnd
- ,{ ClrEditText,    ClrEditText,    ClrEditText,    ClrEditText,       ClrEditText,    ClrEditText,     ClrEditDarkHover    }  // ColorEditHover
- ,{ ClrEditText,    ClrEditText,    ClrEditText,    ClrEditText,       ClrEditText,    ClrEditText,     ClrEditDark         }  // ColorLabelText
- ,{ ComboBoxActive, ComboBoxActive, ComboBoxActive, ComboBoxActive,    ComboBoxActive, ComboBoxActive,  ComboBoxDActive     }  // ColorComboActive
- ,{ ComboBoxDropped,ComboBoxDropped,ComboBoxDropped,ComboBoxDropped,   ComboBoxDropped,ComboBoxDropped, ComboBoxDDropped    }  // ColorComboDropped
- ,{ GroupBoxLine,   GroupBoxLine,   GroupBoxLine,   GroupBoxLine,      GroupBoxLine,   GroupBoxLine,    GroupBoxLineDark    }  // ColorGroupLine
- ,{ Lime1,          Skyblue1,       Purple1,        ModerateGray1,     PureGray1,      BlackWhite1,     GroupBoxLine        }  // ColorButtonCheck
- ,{ UsersBackground,UsersBackground,UsersBackground,UsersBackground,   UsersBackground,UsersBackground, DarkCtrlBackground  }  // ColorButtonBackground
- ,{ Lime3,          Skyblue3,       Purple3,        ModerateGray3,     PureGray3,      BlackWhite3,     DarkButtonText      }  // ColorButtonText
- ,{ Assistant5,     Assistant5,     Assistant5,     Assistant5,        Assistant5,     Assistant5,      Assistant5          }  // ColorControlHover
- ,{ Assistant6,     Assistant6,     Assistant6,     Assistant6,        Assistant6,     Assistant6,      Assistant6          }  // ColorControlPressed
- ,{ Assistant7,     Assistant7,     Assistant7,     Assistant7,        Assistant7,     Assistant7,      Assistant7          }  // ColorControlFramePressed
- ,{ Assistant8,     Assistant8,     Assistant8,     Assistant8,        Assistant8,     Assistant8,      Assistant8          }  // ColorControlFrameHover
- ,{ Assistant9,     Assistant9,     Assistant9,     Assistant9,        Assistant9,     Assistant9,      Assistant9          }  // ColorControlTextPressed
- ,{ Assistant9,     Assistant9,     Assistant9,     Assistant9,        Assistant9,     Assistant9,      Assistant9          }  // ColorControlTextHover
+ /* LIME            SKYBLUE         PURPLE          MUSTARD            MODERATE-GRAY      PURE-GRAY       BLACK-WHITE,     DARK-THEME  */
+  { Lime1,          Skyblue1,       Purple1,        Mustard1,          ModerateGray1,     PureGray1,      BlackWhite1,     Dark1               }  // AccentColor1
+ ,{ Lime2,          Skyblue2,       Purple2,        Mustard2,          ModerateGray2,     PureGray2,      BlackWhite2,     Dark2               }  // AccentColor2
+ ,{ Lime3,          Skyblue3,       Purple3,        Mustard3,          ModerateGray3,     PureGray3,      BlackWhite3,     Dark3               }  // AccentColor3
+ ,{ LimeHeader,     SkyblueHeader,  PurpleHeader,   MustardHeader,     ModerateGrayHeader,PureGrayHeader, BlackWhiteHeader,DarkHeader          }  // AccentColor4
+ ,{ UsersBackground,UsersBackground,UsersBackground,UsersBackground,   UsersBackground,   UsersBackground,UsersBackground, DarkBackground      }  // ColorWindowFrame
+ ,{ Assistant0,     Assistant0,     Assistant0,     Assistant0,        Assistant0,        Assistant0,     Assistant0,      DarkCtrlBackground  }  // ColorCtrlBackground
+ ,{ InputTextActive,InputTextActive,InputTextActive,InputTextActive,   InputTextActive,   InputTextActive,InputTextActive, ClrEditDark         }  // ColorEditText
+ ,{ Assistant0,     Assistant0,     Assistant0,     Assistant0,        Assistant0,        Assistant0,     Assistant0,      Assistant10         }  // ColorEditBkgnd
+ ,{ ClrEditText,    ClrEditText,    ClrEditText,    ClrEditText,       ClrEditText,       ClrEditText,    ClrEditText,     ClrEditDarkHover    }  // ColorEditHover
+ ,{ ClrEditText,    ClrEditText,    ClrEditText,    ClrEditText,       ClrEditText,       ClrEditText,    ClrEditText,     ClrEditDark         }  // ColorLabelText
+ ,{ ComboBoxActive, ComboBoxActive, ComboBoxActive, ComboBoxActive,    ComboBoxActive,    ComboBoxActive, ComboBoxActive,  ComboBoxDActive     }  // ColorComboActive
+ ,{ ComboBoxDropped,ComboBoxDropped,ComboBoxDropped,ComboBoxDropped,   ComboBoxDropped,   ComboBoxDropped,ComboBoxDropped, ComboBoxDDropped    }  // ColorComboDropped
+ ,{ GroupBoxLine,   GroupBoxLine,   GroupBoxLine,   GroupBoxLine,      GroupBoxLine,      GroupBoxLine,   GroupBoxLine,    GroupBoxLineDark    }  // ColorGroupLine
+ ,{ Lime1,          Skyblue1,       Purple1,        Mustard1,          ModerateGray1,     PureGray1,      BlackWhite1,     GroupBoxLine        }  // ColorButtonCheck
+ ,{ UsersBackground,UsersBackground,UsersBackground,UsersBackground,   UsersBackground,   UsersBackground,UsersBackground, DarkCtrlBackground  }  // ColorButtonBackground
+ ,{ Lime3,          Skyblue3,       Purple3,        Mustard3,          ModerateGray3,     PureGray3,      BlackWhite3,     DarkButtonText      }  // ColorButtonText
+ ,{ Assistant5,     Assistant5,     Assistant5,     Assistant5,        Assistant5,        Assistant5,     Assistant5,      Assistant5          }  // ColorControlHover
+ ,{ Assistant6,     Assistant6,     Assistant6,     Assistant6,        Assistant6,        Assistant6,     Assistant6,      Assistant6          }  // ColorControlPressed
+ ,{ Assistant7,     Assistant7,     Assistant7,     Assistant7,        Assistant7,        Assistant7,     Assistant7,      Assistant7          }  // ColorControlFramePressed
+ ,{ Assistant8,     Assistant8,     Assistant8,     Assistant8,        Assistant8,        Assistant8,     Assistant8,      Assistant8          }  // ColorControlFrameHover
+ ,{ Assistant9,     Assistant9,     Assistant9,     Assistant9,        Assistant9,        Assistant9,     Assistant9,      Assistant9          }  // ColorControlTextPressed
+ ,{ Assistant9,     Assistant9,     Assistant9,     Assistant9,        Assistant9,        Assistant9,     Assistant9,      Assistant9          }  // ColorControlTextHover
 
- ,{ Assistant6,     Assistant6,     Assistant6,     Assistant6,        Assistant6,     Assistant6,      Assistant6          }  // ColorControlFrameDisabled
- ,{ Assistant2,     Assistant2,     Assistant2,     Assistant2,        Assistant2,     Assistant2,      Assistant2          }  // ColorControlDisabled
- ,{ Assistant7,     Assistant7,     Assistant7,     Assistant7,        Assistant7,     Assistant7,      Assistant7          }  // ColorControlTextDisabled
+ ,{ Assistant6,     Assistant6,     Assistant6,     Assistant6,        Assistant6,        Assistant6,     Assistant6,      Assistant6          }  // ColorControlFrameDisabled
+ ,{ Assistant2,     Assistant2,     Assistant2,     Assistant2,        Assistant2,        Assistant2,     Assistant2,      Assistant2          }  // ColorControlDisabled
+ ,{ Assistant7,     Assistant7,     Assistant7,     Assistant7,        Assistant7,        Assistant7,     Assistant7,      Assistant7          }  // ColorControlTextDisabled
 
- ,{ TabTextActive,  TabTextActive,  TabTextActive,  TabTextActive,     TabTextActive,  TabTextActive,   TabTextActive       }  // ColorTabTextActive
- ,{ TabTextInactive,TabTextInactive,TabTextInactive,TabTextInactive,   TabTextInactive,TabTextInactive, TabTextInactive     }  // ColorTabTextInactive
- ,{ Assistant5,     Assistant5,     Assistant5,     Assistant5,        Assistant5,     Assistant5,      Assistant5          }  // ColorTabFrame
- ,{ UsersBackground,UsersBackground,UsersBackground,UsersBackground,   UsersBackground,UsersBackground, DarkBackground      }  // ColorTabBkGndActive
- ,{ UsersBackground,UsersBackground,UsersBackground,UsersBackground,   UsersBackground,UsersBackground, DarkBackground      }  // ColorTabBkGndInactive
- ,{ TabTextSelected,TabTextSelected,TabTextSelected,TabTextSelected,   TabTextSelected,TabTextSelected, TabTextSelected     }  // ColorTabTextSelected
- ,{ Assistant4,     Assistant4,     Assistant4,     Assistant4,        Assistant4,     Assistant4,      Assistant4          }  // ColorTabBkGndHover
- ,{ Assistant9,     Assistant9,     Assistant9,     Assistant9,        Assistant9,     Assistant9,      Assistant9          }  // ColorTabTextHover
+ ,{ TabTextActive,  TabTextActive,  TabTextActive,  TabTextActive,     TabTextActive,     TabTextActive,  TabTextActive,   TabTextActive       }  // ColorTabTextActive
+ ,{ TabTextInactive,TabTextInactive,TabTextInactive,TabTextInactive,   TabTextInactive,   TabTextInactive,TabTextInactive, TabTextInactive     }  // ColorTabTextInactive
+ ,{ Assistant5,     Assistant5,     Assistant5,     Assistant5,        Assistant5,        Assistant5,     Assistant5,      Assistant5          }  // ColorTabFrame
+ ,{ UsersBackground,UsersBackground,UsersBackground,UsersBackground,   UsersBackground,   UsersBackground,UsersBackground, DarkBackground      }  // ColorTabBkGndActive
+ ,{ UsersBackground,UsersBackground,UsersBackground,UsersBackground,   UsersBackground,   UsersBackground,UsersBackground, DarkBackground      }  // ColorTabBkGndInactive
+ ,{ TabTextSelected,TabTextSelected,TabTextSelected,TabTextSelected,   TabTextSelected,   TabTextSelected,TabTextSelected, TabTextSelected     }  // ColorTabTextSelected
+ ,{ Assistant4,     Assistant4,     Assistant4,     Assistant4,        Assistant4,        Assistant4,     Assistant4,      Assistant4          }  // ColorTabBkGndHover
+ ,{ Assistant9,     Assistant9,     Assistant9,     Assistant9,        Assistant9,        Assistant9,     Assistant9,      Assistant9          }  // ColorTabTextHover
 };
 
 int ThemeColor::GetColor(Colors p_color)
@@ -85,6 +85,7 @@ LPCTSTR ThemeColor::theme_names[NO_OF_THEMES] =
    _T("Lime")
   ,_T("Skyblue")
   ,_T("Purple")
+  ,_T("Mustard")
   ,_T("Moderate gray")
   ,_T("Pure gray")
   ,_T("Black and White")

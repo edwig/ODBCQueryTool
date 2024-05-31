@@ -2,7 +2,7 @@
 //
 // File: SQLInfoFirebird.cpp
 //
-// Copyright (c) 1998-2022 ir. W.E. Huisman
+// Copyright (c) 1998-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -994,11 +994,14 @@ SQLInfoFirebird::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablena
         "            WHEN 35 THEN 26\n"
         "            WHEN 37 THEN fld.rdb$field_length\n"
         "            WHEN 261 THEN 2147483647\n"
-        "       END                                        as column_size\n"      		    // 7  - INTEGER
-        "      ,cast(fld.rdb$field_length as integer)      as buffer_length\n"	          // 8  - INTEGER
-        "      ,cast (fld.rdb$field_scale as smallint)*-1  as decimal_digits\n"		        // 9  - SMALLINT
+        "       END                                        as column_size\n"              // 7  - INTEGER
+        "      ,cast(fld.rdb$field_length as integer)      as buffer_length\n"            // 8  - INTEGER
+        "      ,cast (fld.rdb$field_scale as smallint)*-1  as decimal_digits\n"           // 9  - SMALLINT
         "      ,10                                         as num_prec_radix\n"           // 10 - SMALLINT
-        "      ,(coalesce(col.rdb$null_flag,0,0)-1)*-1     as nullable\n"        				  // 11 - SMALLINT NOT NULL
+        "      ,CASE coalesce(col.rdb$null_flag,0)\n"
+        "            WHEN 0 THEN 1\n"
+        "                   ELSE 0\n"
+        "       END                                        as nullable\n"                 // 11 - SMALLINT NOT NULL
         "      ,trim(col.rdb$description)                  as remarks\n"                  // 12 - VARCHAR
         "      ,trim(col.rdb$default_source)               as column_def\n"               // 13 - VARCHAR
         "      ,CASE fld.rdb$field_type\n"
@@ -1035,9 +1038,9 @@ SQLInfoFirebird::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablena
         "      ,CAST(0 AS SMALLINT)                         as sql_datetime_sub\n"        // 15 - SMALLINT
         "      ,fld.rdb$field_length / rdb$character_length as char_octet_length\n"    		// 16 - INTEGER
         "      ,col.rdb$field_position + 1                  as ordinal_position\n"				// 17 - INTEGER NOT NULL
-        "      ,CASE (coalesce(col.rdb$null_flag,0,0)-1)*-1\n"
-        "            WHEN 0 THEN 'NO'\n"
-        "            WHEN 1 THEN 'YES'\n"
+        "      ,CASE coalesce(col.rdb$null_flag,0)\n"
+        "            WHEN 0 THEN 'YES'\n"
+        "            WHEN 1 THEN 'NO'\n"
         "                   ELSE 'UNKNOWN'\n"
         "       END                                         AS is_nullable\n"             // 18 - VARCHAR
         "  FROM rdb$relation_fields  col\n"
@@ -2369,7 +2372,11 @@ SQLInfoFirebird::GetPSMProcedureParameters(XString& p_schema,XString& p_procedur
                 "      ,cast(fld.rdb$field_length as integer)      as buffer_length\n"
                 "      ,cast (fld.rdb$field_scale as smallint)*-1  as scale\n"
                 "      ,10                    as radix\n"
-                "      ,(coalesce(par.rdb$null_flag,0,0)-1)*-1     as nullable\n"
+                "      ,CASE coalesce(par.rdb$null_flag,0)\n"
+                "            WHEN 0 THEN 'YES'\n"
+                "            WHEN 1 THEN 'NO'\n"
+                "                   ELSE 'UNKNOWN'\n"
+                "       END                                         AS is_nullable\n"
                 "      ,par.RDB$DESCRIPTION   as remarks\n"
                 "      ,par.RDB$DEFAULT_source as default_value\n"
                 "      ,CASE fld.rdb$field_type\n"

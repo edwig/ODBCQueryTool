@@ -2,7 +2,7 @@
 //
 // SourceFile: XMLRestriction.cpp
 //
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -377,7 +377,8 @@ XMLRestriction::CheckRangeFloat(XString p_value)
 XString   
 XMLRestriction::CheckRangeDecimal(XString p_value)
 {
-  INT64 value = _ttoi64(p_value);
+  _set_errno(0);
+  INT64 value = _ttoi64(p_value.GetString());
   if(errno == ERANGE)
   {
     return _T("Numeric overflow");
@@ -666,7 +667,7 @@ XMLRestriction::CheckBase64(XString p_value)
       case _T('='): if(ind == len - 1 ||
                       (ind == len - 2 && p_value[ind + 1] == '='))
                     {
-                      return "";
+                      return _T("");
                     }
                     break;
       default:      if(_istalnum(ch))
@@ -674,11 +675,10 @@ XMLRestriction::CheckBase64(XString p_value)
                       continue;
                     }
     }
-    return _T("Not a base64Binary field");
+    return _T("Not a base64Binary value");
   }
   return _T("");
 }
-
 
 // Number can be: nnnnn[.nnnnnn][[+|-]{E|e}nnn]
 XString

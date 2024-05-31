@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 //
-// // Copyright (c) 2014-2022 ir. W.E. Huisman
+// // Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -56,7 +56,7 @@ XString CreateAuthentication(XString p_user,XString p_password)
   //         with the formula ('~' - char + ' ')
   for(int index = 0;index < authenticate.GetLength(); ++index)
   {
-    XString::XCHAR ch = authenticate.GetAt(index);
+    uchar ch = (uchar) authenticate.GetAt(index);
     if(ch >= _T(' ') && ch <= _T('~'))
     {
       ch = _T('~') - ch + _T(' ');
@@ -86,10 +86,10 @@ XString CreateAuthentication(XString p_user,XString p_password)
 // 1) Empty the result
 // 2) Base64 decode the string
 // 3) If long enough, remove first and last five random characters
-// 4) Apply Ceasar Cipher by inverting in between ' ' and '~'
-// 5) Search for the LAST seperator in the string
+// 4) Apply Caesar Cipher by inverting in between ' ' and '~'
+// 5) Search for the LAST separator in the string
 // 6) Split the strings and reverse the order
-// 7) Do the UTF-8 decoding (if neccesary for your language)
+// 7) Do the UTF-8 decoding (if necessary for your language)
 
 bool DecodeAuthentication(XString p_scramble,XString& p_user,XString& p_password)
 {
@@ -119,10 +119,10 @@ bool DecodeAuthentication(XString p_scramble,XString& p_user,XString& p_password
     return false;
   }
 
-  // STEP 4) Invert the Ceasar cipher
+  // STEP 4) Invert the Caesar cipher
   for(int index = 0;index < authenticate.GetLength(); ++index)
   {
-    XString::XCHAR ch = authenticate.GetAt(index);
+    uchar ch = (uchar) authenticate.GetAt(index);
     if(ch >= _T(' ') && ch <= _T('~'))
     {
       ch = _T('~') - ch + _T(' ');

@@ -2,7 +2,7 @@
 //
 // SourceFile: XMLTemporal.cpp
 //
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -644,7 +644,7 @@ XMLDate::SetMJD()
 //////////////////////////////////////////////////////////////////////////
 
 XMLTimestamp::XMLTimestamp()
-             :XMLTemporal("")
+             :XMLTemporal(_T(""))
 {
 }
 
@@ -714,7 +714,7 @@ XMLTimestamp::ParseMoment(XString p_value)
   }
   // It's a date only
   XMLDate date(string);
-  XMLTime time("");
+  XMLTime time(_T(""));
   SetTimestamp(date.Year(),date.Month(),date.Day(),
                time.Hour(),time.Minute(),time.Second());
 

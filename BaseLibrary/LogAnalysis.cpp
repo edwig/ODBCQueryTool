@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -55,9 +55,11 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+// CTOR is private: See static NewLogfile method
 LogAnalysis::LogAnalysis(XString p_name)
             :m_name(p_name)
 {
+  Acquire();
   InitializeCriticalSection(&m_lock);
 }
 
@@ -65,6 +67,46 @@ LogAnalysis::~LogAnalysis()
 {
   Reset();
   DeleteCriticalSection(&m_lock);
+}
+
+/*static */
+LogAnalysis* 
+LogAnalysis::CreateLogfile(XString p_name)
+{
+  return new LogAnalysis(p_name);
+}
+
+/*static */bool
+LogAnalysis::DeleteLogfile(LogAnalysis* p_log)
+{
+  if(p_log)
+  {
+    return p_log->Release() <= 0;
+  }
+  return false;
+}
+
+long 
+LogAnalysis::Acquire()
+{
+  return InterlockedIncrement(&m_refcounter);
+}
+
+long
+LogAnalysis::Release()
+{
+  long refs = InterlockedDecrement(&m_refcounter);
+  if(refs <= 0)
+  {
+    delete this;
+  }
+  else if(refs == 1 && m_useWriter)
+  {
+    // Flushing the cache and ending all writing activity
+    // Writer will delete by releasing last reference counter
+    SetEvent(m_event);
+  }
+  return refs;
 }
 
 void
@@ -120,10 +162,9 @@ LogAnalysis::Reset()
   }
 
   // Flush file to disk, after thread has ended
-  if(m_file)
+  if(m_file.GetIsOpen())
   {
-    CloseHandle(m_file);
-    m_file = NULL;
+    m_file.Close();
   }
   // Clear the list (any remains get freed)
   m_list.clear();
@@ -174,7 +215,7 @@ LogAnalysis::SetLogFilename(XString p_filename,bool p_perUser /*=false*/)
   if(m_logFileName.CompareNoCase(p_filename) != 0)
   {
     // See if a full reset is needed to flush and close the current file
-    if(m_file || m_initialised)
+    if(m_file.GetIsOpen() || m_initialised)
     {
       Reset();
     }
@@ -323,14 +364,11 @@ LogAnalysis::Initialisation()
   }
 
   // Open the logfile
-  m_file = CreateFile(m_logFileName
-                     ,GENERIC_WRITE
-                     ,FILE_SHARE_READ | FILE_SHARE_WRITE
-                     ,NULL              // Security
-                     ,CREATE_ALWAYS     // Always throw away old log
-                     ,FILE_ATTRIBUTE_NORMAL
-                     ,NULL);
-  if(m_file ==  INVALID_HANDLE_VALUE)
+  m_file.SetFilename(m_logFileName);
+  m_file.Open(winfile_write | open_trans_text | open_shared_write | open_shared_read
+             ,FAttributes::attrib_normal
+             ,Encoding::UTF8);
+  if(!m_file.GetIsOpen())
   {
     XString file;
     if(file.GetEnvironmentVariable(_T("TMP")))
@@ -340,17 +378,12 @@ LogAnalysis::Initialisation()
 
       // Open the logfile in shared writing mode
       // more applications can write to the file
-      m_file = CreateFile(file
-                         ,GENERIC_WRITE
-                         ,FILE_SHARE_READ | FILE_SHARE_WRITE
-                         ,NULL              // Security
-                         ,CREATE_ALWAYS     // Always throw away old log
-                         ,FILE_ATTRIBUTE_NORMAL
-                         ,NULL);
-      if(m_file == INVALID_HANDLE_VALUE)
+      m_file.Open(winfile_write | open_trans_text | open_shared_write | open_shared_read
+                  ,FAttributes::attrib_normal
+                  ,Encoding::UTF8);
+      if(m_file.GetIsOpen())
       {
         // Give up. Cannot create a logfile
-        m_file = NULL;
         m_logLevel = HLL_NOLOG;
         return;
       }
@@ -362,26 +395,18 @@ LogAnalysis::Initialisation()
     }
   }
 
-  if(m_file)
+  // Starting the log writing thread
+  if(m_useWriter)
   {
-    // Write a BOM to the logfile, so we can read logged UTF-8 strings
-    DWORD written = 0;		// Not optional for MS-Windows Server 2012!!
-    XString bom = ConstructBOM();
-    WriteFile(m_file,bom.GetString(),bom.GetLength(),&written,nullptr);
-
-    // Starting the log writing thread
-    if(m_useWriter)
-    {
-      RunLog();
-    }
+    RunLog();
   }
   // Tell that we are now running
-  AnalysisLog(_T("Logfile now running for:"), LogType::LOG_INFO,false,const_cast<PTCHAR>(m_name.GetString()));
+  AnalysisLog(_T("Logfile now running for:"), LogType::LOG_INFO,false,m_name.GetString());
 }
 
 // PRIMARY FUNCTION TO WRITE A LINE TO THE LOGFILE
 bool
-LogAnalysis::AnalysisLog(LPCTSTR p_function,LogType p_type,bool p_doFormat,PTCHAR p_format,...)
+LogAnalysis::AnalysisLog(LPCTSTR p_function,LogType p_type,bool p_doFormat,LPCTSTR p_format,...)
 {
   // Multi threaded protection
   AutoCritSec lock(&m_lock);
@@ -458,9 +483,9 @@ LogAnalysis::AnalysisLog(LPCTSTR p_function,LogType p_type,bool p_doFormat,PTCHA
   }
 
   // Add end-of line
-  logBuffer += _T("\r\n");
+  logBuffer += _T("\n");
 
-  if(m_file)
+  if(m_file.GetIsOpen())
   {
     // Locked m_list gets a buffer
     m_list.push_back(logBuffer);
@@ -478,7 +503,7 @@ LogAnalysis::AnalysisLog(LPCTSTR p_function,LogType p_type,bool p_doFormat,PTCHA
     result = true;
   }
   // In case of an error, flush immediately!
-  if(m_file && p_type == LogType::LOG_ERROR)
+  if(m_file.GetIsOpen() && p_type == LogType::LOG_ERROR)
   {
     if(m_useWriter)
     {
@@ -507,7 +532,7 @@ bool
 LogAnalysis::AnalysisHex(LPCTSTR p_function,XString p_name,void* p_buffer,unsigned long p_length,unsigned p_linelength /*=16*/)
 {
   // Only dump in the logfile, not to the MS-Windows event log
-  if(!m_file || m_logLevel < HLL_TRACEDUMP)
+  if(!m_file.GetIsOpen() || m_logLevel < HLL_TRACEDUMP)
   {
     return false;
   }
@@ -570,33 +595,37 @@ LogAnalysis::AnalysisHex(LPCTSTR p_function,XString p_name,void* p_buffer,unsign
   return true;
 }
 
-// Use sparingly!
-// Dump string buffer in the log
+// Dump string directly without formatting or headers
 void
-LogAnalysis::BareStringLog(const char* p_buffer,int p_length)
+LogAnalysis::BareStringLog(XString p_string)
 {
-  if (m_file)
+  if (m_file.GetIsOpen())
   {
     // Multi threaded protection
     AutoCritSec lock(&m_lock);
 
-    XString buffer;
-    PTCHAR pointer = buffer.GetBufferSetLength(p_length + 1);
-    memcpy_s(pointer,(size_t)p_length + 1, p_buffer,(size_t)p_length);
-    pointer[p_length] = 0;
-    buffer.ReleaseBufferSetLength(p_length);
-
-    // Test for newline
-    if (buffer.Right(1) != _T("\n"))
-    {
-      buffer += _T("\n");
-    }
-
-    // Keep the line
-    m_list.push_back(buffer);
+    p_string += _T("\n");
+    m_list.push_back(p_string);
   }
 }
 
+void
+LogAnalysis::BareBufferLog(void* p_buffer,unsigned p_length)
+{
+  XString marker(_T(BUFFER_MARKER));
+  BYTE* copy = new BYTE[p_length];
+  memcpy(copy,p_buffer,p_length);
+
+  LogBuff buff;
+  buff.m_buffer = copy;
+  buff.m_length = p_length;
+
+  // Multi threaded protection
+  AutoCritSec lock(&m_lock);
+
+  m_buffers.push_back(buff);
+  m_list.push_back(marker);
+}
 
 // Force flushing of the logfile
 void
@@ -617,7 +646,7 @@ void
 LogAnalysis::Flush(bool p_all)
 {
   // See if we have a file at all
-  if(m_file == nullptr)
+  if(!m_file.GetIsOpen())
   {
     return;
   }
@@ -642,26 +671,32 @@ LogAnalysis::Flush(bool p_all)
       }
     }
   }
-  catch(StdException& /*er*/)
+  catch(StdException& er)
   {
     // Logfile failed. Where to log this??
-    // TRACE("%s\n",er.GetErrorMessage().GetString());
+    TRACE("%s\n",er.GetErrorMessage().GetString());
   }
-  FlushFileBuffers(m_file);
+  m_file.Flush();
 }
 
 // Write out a log line
 void
 LogAnalysis::WriteLog(XString& p_buffer)
 {
-  DWORD written = 0L;
-  if(!WriteFile(m_file
-               ,(void*)p_buffer.GetString()
-               ,(DWORD)p_buffer.GetLength()
-               ,&written
-               ,NULL))
+  if(p_buffer.Compare(_T(BUFFER_MARKER)) == 0)
   {
-    //ATLTRACE("Cannot write logfile. Error: %d\n",GetLastError());
+    if(!m_buffers.empty())
+    {
+      LogBuff buff = m_buffers.front();
+      m_file.Write(buff.m_buffer,buff.m_length);
+      m_file.Write((void*)"\r\n",2);
+      delete[] buff.m_buffer;
+      m_buffers.pop_front();
+    }
+  }
+  else if(!m_file.Write(p_buffer))
+  {
+    TRACE("Cannot write logfile. Error: %d\n",GetLastError());
   }
 }
 
@@ -775,16 +810,22 @@ LogAnalysis::RunLog()
       m_logThread = NULL;
       //ATLTRACE("Cannot make a thread for the LogAnalysis function\n");
     }
+    else
+    {
+      Acquire();
+    }
   }
 }
 
 // Running the main thread of the logfile
+// As long as it's initialized and we holds at lease 1 more
+// reference than just the writer thread.
 void
 LogAnalysis::RunLogAnalysis()
 {
   DWORD sync = 0;
 
-  while(m_initialised)
+  while(m_initialised && m_refcounter > 1)
   {
     DWORD res = WaitForSingleObjectEx(m_event,m_interval,true);
 
@@ -808,6 +849,10 @@ LogAnalysis::RunLogAnalysis()
 
   // Also ending this thread
   m_logThread = NULL;
+  m_useWriter = false;
+
+  // Release hold on the object
+  Release();
 }
 
 // Append date time to log's filename

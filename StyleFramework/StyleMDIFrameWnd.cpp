@@ -211,6 +211,12 @@ StyleMDIFrameWnd::OnStylePurple()
 }
 
 void
+StyleMDIFrameWnd::OnStyleMustard()
+{
+  SetTheme(ThemeColor::Themes::ThemeMustard);
+}
+
+void
 StyleMDIFrameWnd::OnStyleModerateGray()
 {
   SetTheme(ThemeColor::Themes::ThemeModerateGray);
@@ -226,6 +232,12 @@ void
 StyleMDIFrameWnd::OnStyleBlackWhite()
 {
   SetTheme(ThemeColor::Themes::ThemeBlackWhite);
+}
+
+void
+StyleMDIFrameWnd::OnStyleDark()
+{
+  SetTheme(ThemeColor::Themes::ThemeDark);
 }
 
 void

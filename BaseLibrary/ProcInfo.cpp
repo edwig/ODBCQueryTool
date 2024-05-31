@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -386,7 +386,7 @@ ProcInfo::GetModuleInfo()
   
     //  Get address of enum process
     EnumProcessModulesProc EnumProcessModules;
-    psapi.GetProcAddress("EnumProcessModules", EnumProcessModules);
+    psapi.GetProcAddress(_T("EnumProcessModules"), EnumProcessModules);
 
     //  Enumerate modules
     HMODULE hModules[500];
@@ -409,9 +409,9 @@ ProcInfo::GetModuleInfo()
     CreateToolhelp32SnapshotProc	ctsp;
     Module32FirstProc							m32f;
     Module32NextProc							m32n;
-    toolhelp.GetProcAddress("CreateToolhelp32Snapshot", ctsp);
-    toolhelp.GetProcAddress("Module32First", m32f);
-    toolhelp.GetProcAddress("Module32Next",  m32n);
+    toolhelp.GetProcAddress(_T("CreateToolhelp32Snapshot"), ctsp);
+    toolhelp.GetProcAddress(_T("Module32First"), m32f);
+    toolhelp.GetProcAddress(_T("Module32Next"),  m32n);
 
     //	Create the snapshot
     HANDLE hSnap = ctsp(TH32CS_SNAPMODULE, 0);

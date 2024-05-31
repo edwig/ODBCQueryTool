@@ -302,13 +302,10 @@ CGridCtrl::~CGridCtrl()
 	m_InDestructor = true;
   DeleteAllItems();
 
-#ifndef GRIDCONTROL_NO_TITLETIPS
   if(m_bTitleTips && ::IsWindow(m_TitleTip.GetSafeHwnd()))
   {
     m_TitleTip.DestroyWindow();
   }
-#endif
-
   DestroyWindow();
 
 #if !defined(GRIDCONTROL_NO_DRAGDROP) || !defined(GRIDCONTROL_NO_CLIPBOARD)
@@ -360,10 +357,7 @@ BOOL CGridCtrl::Initialise()
   }
   bInProcedure = TRUE;
 
-#ifndef GRIDCONTROL_NO_TITLETIPS
-  //m_TitleTip.Create(this);
   m_TitleTip.SetParentWnd(this);
-#endif
 
 	// This would be a good place to register the droptarget but
 	// unfortunately this causes problems if you are using the 
@@ -579,6 +573,8 @@ BEGIN_MESSAGE_MAP(CGridCtrl, CWnd)
   ON_WM_SIZE()
   ON_WM_LBUTTONUP()
   ON_WM_LBUTTONDOWN()
+  ON_WM_RBUTTONDOWN()
+  ON_WM_RBUTTONUP()
   ON_WM_MOUSEMOVE()
   ON_WM_TIMER()
   ON_WM_GETDLGCODE()
@@ -590,7 +586,6 @@ BEGIN_MESSAGE_MAP(CGridCtrl, CWnd)
   ON_COMMAND(ID_EDIT_SELECT_ALL, OnEditSelectAll)
   ON_WM_SYSKEYDOWN()
   ON_WM_SETCURSOR()
-  ON_WM_RBUTTONUP()
   ON_WM_SYSCOLORCHANGE()
   ON_WM_CAPTURECHANGED()
   ON_WM_MOUSEWHEEL()
@@ -606,6 +601,7 @@ BEGIN_MESSAGE_MAP(CGridCtrl, CWnd)
   ON_MESSAGE(WM_GETFONT, OnGetFont)
   ON_MESSAGE(WM_IME_CHAR, OnImeChar)
   ON_NOTIFY(GVN_ENDLABELEDIT, IDC_INPLACE_CONTROL, OnEndInPlaceEdit)
+  ON_CONTROL_REFLECT_EX(CBN_KILLFOCUS,OnComboKillFocus)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -957,6 +953,14 @@ void CGridCtrl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
   BOOL bFoundVisible;
   int iOrig;
 
+  // Check for end-of-edit
+  if(nChar == VK_UP    || nChar == VK_DOWN  ||
+     nChar == VK_LEFT  || nChar == VK_RIGHT ||
+     nChar == VK_PRIOR || nChar == VK_NEXT)
+  {
+    EndEditing();
+  }
+
   if (nChar == VK_DELETE)
   {
 		CutSelectedText();
@@ -1221,7 +1225,8 @@ void CGridCtrl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
   }
   else
   {
-    CWnd::OnKeyDown(nChar, nRepCnt, nFlags);
+    // OnEditCell(m_idCurrentCell.row,m_idCurrentCell.col,CPoint(-1,-1),nChar);
+    CWnd::OnKeyDown(nChar,nRepCnt,nFlags);
     return;
   }
 
@@ -1300,10 +1305,10 @@ void CGridCtrl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
                       }
                       break;
       }
-      EnsureVisible(next); // Make sure cell is visible
+      EnsureVisible(next,true); // Make sure cell is visible
       Invalidate();
     }
-    EnsureVisible(next); // Make sure cell is visible
+    EnsureVisible(next,true); // Make sure cell is visible
 
     if(bHorzScrollAction)
     {
@@ -1323,9 +1328,7 @@ void CGridCtrl::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
 
 void CGridCtrl::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-#ifdef GRIDCONTROL_USE_TITLETIPS
   m_TitleTip.Hide();  // hide any titletips
-#endif
 
   CWnd::OnSysKeyDown(nChar, nRepCnt, nFlags);
 }
@@ -1339,6 +1342,7 @@ void CGridCtrl::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
     if(!m_bHandleTabKey || (m_bHandleTabKey && nChar != VK_TAB))
     {
       OnEditCell(m_idCurrentCell.row,m_idCurrentCell.col,CPoint(-1,-1),nChar);
+      return;
     }
   }
 
@@ -1370,7 +1374,6 @@ void CGridCtrl::OnEndInPlaceEdit(NMHDR* pNMHDR, LRESULT* pResult)
     return;
   }
   OnEndEditCell(pgvItem->row, pgvItem->col, pgvItem->strText);
-  //InvalidateCellRect(CCellID(pgvItem->row, pgvItem->col));
 
   switch (pgvItem->lParam)
   {
@@ -1384,8 +1387,9 @@ void CGridCtrl::OnEndInPlaceEdit(NMHDR* pNMHDR, LRESULT* pResult)
     case VK_HOME:
     case VK_END:
                   OnKeyDown((UINT)pgvItem->lParam, 0, 0);
-                  OnEditCell(m_idCurrentCell.row, m_idCurrentCell.col, CPoint( -1, -1), (UINT)pgvItem->lParam);
+                  OnEditCell(m_idCurrentCell.row,m_idCurrentCell.col,CPoint(-1,-1),0); //(UINT)pgvItem->lParam);
   }
+  InvalidateCellRect(CCellID(pgvItem->row,pgvItem->col));
   *pResult = 0;
 }
 
@@ -1394,9 +1398,7 @@ void CGridCtrl::OnHScroll(UINT nSBCode, UINT /*nPos*/, CScrollBar* /*pScrollBar*
 {
   EndEditing();
 
-#ifndef GRIDCONTROL_NO_TITLETIPS
   m_TitleTip.Hide();  // hide any titletips
-#endif
 
   int scrollPos = GetScrollPos32(SB_HORZ);
 
@@ -1503,9 +1505,7 @@ void CGridCtrl::OnVScroll(UINT nSBCode, UINT /*nPos*/, CScrollBar* /*pScrollBar*
 {
   EndEditing();
 
-#ifndef GRIDCONTROL_NO_TITLETIPS
-    m_TitleTip.Hide();  // hide any titletips
-#endif
+  m_TitleTip.Hide();  // hide any titletips
 
   // Get the scroll position ourselves to ensure we get a 32 bit value
   int scrollPos = GetScrollPos32(SB_VERT);
@@ -5828,8 +5828,15 @@ void CGridCtrl::Refresh()
   }
 }
 
+void
+CGridCtrl::EnsureVisible(CCellID& p_cell,bool p_ingrid /*=false*/)
+{ 
+  EnsureVisible(p_cell.row, p_cell.col,p_ingrid); 
+}
+
 // EnsureVisible supplied by Roelf Werkman
-void CGridCtrl::EnsureVisible(int nRow, int nCol)
+void 
+CGridCtrl::EnsureVisible(int nRow, int nCol,bool p_ingrid /*=false*/)
 {
   if(!m_bAllowDraw)
   {
@@ -5860,7 +5867,7 @@ void CGridCtrl::EnsureVisible(int nRow, int nCol)
   // We are going to send some scroll messages, which will steal the focus 
   // from it's rightful owner. Squirrel it away ourselves so we can give
   // it back. (Damir)
-  CWnd* pFocusWnd = GetFocus();
+  CWnd* pFocusWnd = p_ingrid ? this : GetFocus();
 
   CCellRange VisibleCells = GetVisibleNonFixedCellRange();
 
@@ -6239,34 +6246,56 @@ void CGridCtrl::OnMouseMove(UINT /*nFlags*/,CPoint point)
         }
       }
 
-#ifndef GRIDCONTROL_NO_TITLETIPS
       // Title tips anyone? anyone?
       if (m_bTitleTips)
       {
         CRect TextRect, CellRect;
-        if (pCell)
+        if (pCell && ! m_bRMouseButtonDown)
         {
+          int     tipnum    = pCell->GetTipNumber();
           LPCTSTR szTipText = pCell->GetTipText();
-          if (!m_bRMouseButtonDown
-              && szTipText && szTipText[0]
-              && !pCell->IsEditing()
-              && GetCellRect( idCurrentCell.row, idCurrentCell.col, &TextRect)
-              && pCell->GetTipTextRect( &TextRect)
-              && GetCellRect(idCurrentCell.row, idCurrentCell.col, CellRect) )
+
+          if(tipnum >= 0)
           {
-//						TRACE0("Showing TitleTip\n");
-            	m_TitleTip.Show(this
-                             ,TextRect
-                             ,pCell->GetTipText()
-                             ,0
-                             ,CellRect
-                             ,pCell->GetFont()
-                             ,GetTitleTipTextClr()
-                             ,GetTitleTipBackClr());
+            szTipText = GetTitleTip(tipnum);
+            if(tipnum >= 0 && szTipText && szTipText[0])
+            {
+              TRACE("Title tip: %s\n",szTipText);
+              GetCellRect(idCurrentCell.row,idCurrentCell.col,TextRect);
+              pCell->GetTipTextRect(TextRect);
+              GetCellRect(idCurrentCell.row, idCurrentCell.col, CellRect);
+              int height = TextRect.Height();
+              CellRect.top    += height / 2;
+              CellRect.bottom += height / 2;
+
+              m_TitleTip.Show(this
+                              ,TextRect
+                              ,szTipText
+                              ,1
+                              ,CellRect
+                              ,pCell->GetFont()
+                              ,GetTitleTipTextClr()
+                              ,GetTitleTipBackClr());
+            }
           }
+          else if(szTipText && szTipText[0]
+               && !pCell->IsEditing()
+               && GetCellRect( idCurrentCell.row, idCurrentCell.col, &TextRect)
+               && pCell->GetTipTextRect( &TextRect)
+               && GetCellRect(idCurrentCell.row, idCurrentCell.col, CellRect) )
+          {
+            m_TitleTip.Show(this
+                            ,TextRect
+                            ,szTipText
+                            ,0
+                            ,CellRect
+                            ,pCell->GetFont()
+                            ,GetTitleTipTextClr()
+                            ,GetTitleTipBackClr());
+          }
+          m_bRMouseButtonDown = FALSE;
         }
       }
-#endif
     }
     m_LastMousePoint = point;
     return;
@@ -6487,10 +6516,7 @@ void CGridCtrl::OnLButtonDblClk(UINT nFlags, CPoint point)
 
 void CGridCtrl::OnLButtonDown(UINT nFlags, CPoint point)
 {
-#ifdef GRIDCONTROL_USE_TITLETIPS
-  // EFW - Bug Fix
   m_TitleTip.Hide();  // hide any titletips
-#endif
 
   // TRACE0("CGridCtrl::OnLButtonDown\n");
   // CWnd::OnLButtonDown(nFlags, point);
@@ -6994,10 +7020,10 @@ void CGridCtrl::OnRButtonDown(UINT nFlags, CPoint point)
   CWnd::OnRButtonDown(nFlags, point);
 	m_bRMouseButtonDown = TRUE;
 
-#ifdef GRIDCONTROL_USE_TITLETIPS
-	TRACE0("Hiding TitleTip\n");
+	TRACE0("RBUTTON DOWN Hiding TitleTip\n");
   m_TitleTip.Hide();  // hide any title tips
-#endif
+
+  OnMouseMove(0,point);
 }
 
 // EFW - Added to forward right click to parent so that a context
@@ -7994,9 +8020,7 @@ CSize CGridCtrl::GetTextExtent(int nRow, int nCol, LPCTSTR str)
 // virtual
 void CGridCtrl::OnEditCell(int nRow, int nCol, CPoint point, UINT nChar)
 {
-#ifndef GRIDCONTROL_NO_TITLETIPS
   m_TitleTip.Hide();  // hide any titletips
-#endif
 
   // Can we do it?
   CCellID cell(nRow, nCol);
@@ -8005,7 +8029,7 @@ void CGridCtrl::OnEditCell(int nRow, int nCol, CPoint point, UINT nChar)
     return;
   }
   // Can we see what we are doing?
-  EnsureVisible(nRow, nCol);
+  EnsureVisible(nRow, nCol,true);
   if(!IsCellVisible(nRow,nCol))
   {
     return;
@@ -8024,6 +8048,8 @@ void CGridCtrl::OnEditCell(int nRow, int nCol, CPoint point, UINT nChar)
     if(pCell)
     {
       pCell->Edit(nRow,nCol,rect,point,IDC_INPLACE_CONTROL,nChar);
+      m_curEditRow = nRow;
+      m_curEditCol = nCol;
     }
   }
 }
@@ -8031,6 +8057,17 @@ void CGridCtrl::OnEditCell(int nRow, int nCol, CPoint point, UINT nChar)
 // virtual
 void CGridCtrl::EndEditing()
 {
+  if(m_curEditRow >= 0 && m_curEditCol >= 0)
+  {
+    CGridCellBase* pCell = GetCell(m_curEditRow,m_curEditCol);
+    if(pCell)
+    {
+      pCell->EndEdit();
+    }
+    m_curEditRow = -1;
+    m_curEditCol = -1;
+    return;
+  }
   CCellID cell = GetFocusCell();
   if(!IsValid(cell))
   {
@@ -8115,4 +8152,59 @@ void CGridCtrl::Reorder(int From, int To)
 	m_arRowOrder.erase(m_arRowOrder.begin()+From);
 	int Offset = (From>=To ? 1:0);
 	m_arRowOrder.insert(m_arRowOrder.begin()+To+Offset, Value);
+}
+
+void
+CGridCtrl::RegisterEditCell(int nRow,int nCol)
+{
+  m_curEditRow = nRow;
+  m_curEditCol = nCol;
+}
+
+BOOL
+CGridCtrl::OnComboKillFocus()
+{
+  CGridCellBase* cell = GetCell(m_idCurrentCell.row,m_idCurrentCell.col);
+  if(cell)
+  {
+    cell->EndEdit();
+  }
+  SetFocus();
+  return FALSE;
+}
+
+// The map of title tips
+void
+CGridCtrl::SetTitleTip(int p_tip, CString p_text)
+{
+  TitleTipMap::iterator it = m_tips.find(p_tip);
+  if(it == m_tips.end())
+  {
+    m_tips.insert(std::make_pair(p_tip,p_text));
+  }
+  else
+  {
+    it->second = p_text;
+  }
+}
+
+CString
+CGridCtrl::GetTitleTip(int p_tip)
+{
+  TitleTipMap::iterator it = m_tips.find(p_tip);
+  if(it != m_tips.end())
+  {
+    return it->second;
+  }
+  return "";
+}
+
+void
+CGridCtrl::RemoveTitleTip(int p_tip)
+{
+  TitleTipMap::iterator it = m_tips.find(p_tip);
+  if (it != m_tips.end())
+  {
+    m_tips.erase(it);
+  }
 }

@@ -209,6 +209,12 @@ StyleFrameWnd::OnStylePurple()
 }
 
 void
+StyleFrameWnd::OnStyleMustard()
+{
+  SetTheme(ThemeColor::Themes::ThemeMustard);
+}
+
+void
 StyleFrameWnd::OnStyleModerateGray()
 {
   SetTheme(ThemeColor::Themes::ThemeModerateGray);
@@ -224,6 +230,12 @@ void
 StyleFrameWnd::OnStyleBlackWhite()
 {
   SetTheme(ThemeColor::Themes::ThemeBlackWhite);
+}
+
+void
+StyleFrameWnd::OnStyleDark()
+{
+  SetTheme(ThemeColor::Themes::ThemeDark);
 }
 
 void

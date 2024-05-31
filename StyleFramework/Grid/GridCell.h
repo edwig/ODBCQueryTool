@@ -55,6 +55,7 @@ public:
     virtual void  SetFont(const LOGFONT* plf);
     virtual void  SetMargin(UINT nMargin)        { m_nMargin = nMargin; }
     virtual CWnd* GetEditWnd() const             { return m_pEditWnd;   }
+    virtual void  SetTipNumber(int p_number)     { m_tipNumber = p_number; }
     virtual void  SetCoords(int /*nRow*/, int /*nCol*/) {}  // don't need to know the row and
                                                             // column for base implementation
 
@@ -66,6 +67,7 @@ public:
     virtual DWORD       GetFormat() const;
     virtual COLORREF    GetTextClr() const          { return m_crFgClr; } 
     virtual COLORREF    GetBackClr() const          { return m_crBkClr; }
+    virtual int         GetTipNumber() const        { return m_tipNumber; }
     virtual LOGFONT*    GetFont() const;
     virtual CFont*      GetFontObject() const;
     virtual UINT        GetMargin() const;
@@ -95,6 +97,7 @@ protected:
 
     CGridCtrl* m_pGrid;        // Parent grid control
     CWnd*      m_pEditWnd;
+    int        m_tipNumber;    // Tooltip number from the grid
 };
 
 // This class is for storing grid default values. It's a little heavy weight, so

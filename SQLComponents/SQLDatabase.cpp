@@ -2,7 +2,7 @@
 //
 // File: SQLDatabase.cpp
 //
-// Copyright (c) 1998-2022 ir. W.E. Huisman
+// Copyright (c) 1998-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -409,7 +409,7 @@ SQLDatabase::SetConnectionInitialisations()
     SQLQuery query(this);
     for(int index = 0;index < SQLCOMP_MAX_SESS_SETTINGS;++index)
     {
-      char* sql = g_SQLSessionInitialization[m_rdbmsType][index];
+      PTCHAR sql = g_SQLSessionInitialization[m_rdbmsType][index];
       if(sql)
       {
         query.DoSQLStatementNonQuery(sql);

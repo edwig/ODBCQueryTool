@@ -23,7 +23,7 @@ StylingFramework g_styling;
 
 StylingFramework::StylingFramework()
 {
-  if(m_instance)
+  if(m_instance || &g_styling != this)
   {
     throw CString(_T("SFX can only be initialized once!"));
   }

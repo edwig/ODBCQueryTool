@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -81,6 +81,7 @@ public:
   // Add buffer part
   void    AddBuffer(uchar* p_buffer,size_t p_length);
   void    AddBufferCRLF(uchar* p_buffer,size_t p_length);
+  void    AddStringToBuffer(XString p_string,XString p_charset,bool p_crlf = true);
   // Allocate a one-buffer block
   bool    AllocateBuffer(size_t p_length);
 

@@ -52,6 +52,7 @@ void SFXResizeByFactor(CRect& p_rect);
 void SFXResizeByFactor(int& p_x,int& p_y,int& p_w,int& p_h);
 
 // General headers
+#include "AutoFocus.h"
 #include "StyleColors.h"
 #include "StyleFonts.h"
 #include "StyleMacros.h"
@@ -71,6 +72,7 @@ void SFXResizeByFactor(int& p_x,int& p_y,int& p_w,int& p_h);
 #include "StyleMessageBox.h"      // MessageBox       -> StyleMessageBox
 #include "StyleMDIFrameWnd.h"     // CMDIFrameWndEx   -> StyleMDIFrameWnd
 #include "StyleToast.h"           // ---              -> StyleToast
+#include "StyleStepper.h"         // ---              -> StyleStepper
 
 // Controls
 #include "StyleButton.h"          // CButton          -> StyleButton

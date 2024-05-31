@@ -34,7 +34,12 @@
 #define Purple1           RGB(0x87, 0x5A, 0xF7)   // Purple color
 #define Purple2           RGB(0xC2, 0xA9, 0xFF)
 #define Purple3           RGB(0x63, 0x33, 0xC0)
-#define PurpleHeader      RGB(0x81, 0x56, 0XED)
+#define PurpleHeader      RGB(0x81, 0x56, 0xED)
+
+#define Mustard1          RGB(0xFD, 0xCA, 0x1C)   // Mustard color
+#define Mustard2          RGB(0xC6, 0x9E, 0x2A)
+#define Mustard3          RGB(0xA1, 0x80, 0x22)
+#define MustardHeader     RGB(0xF0, 0x90, 0x30)
 
 #define ModerateGray1          RGB(0x86, 0xA9, 0xBE)   // ModerateGray color
 #define ModerateGray2          RGB(0xC2, 0xE8, 0xF5)
@@ -106,6 +111,7 @@ namespace ThemeColor
     ThemeLime,          // Theme in color Lime
     ThemeSkyblue,       // Theme in color Skyblue
     ThemePurple,        // Theme in color Purple
+    ThemeMustard,       // Theme in color Mustard
     ThemeModerateGray,  // Theme in color ModerateGray
     ThemePureGray,      // Theme in color PureGray
     ThemeBlackWhite,    // Theme in color BlackWhite
@@ -186,8 +192,8 @@ namespace ThemeColor
 #define ClrWindowMessageError       ClrEditBkgnd
 #define ColorWindowMessageTextError RGB(0xFF, 0x00, 0x00)
 
-#define ClrEditText               InputTextActive
-#define ClrEditBkgnd              Assistant0
-#define ClrEditDark               RGB(0xFF,0xFF,0xFF)
-#define ClrEditDarkHover          RGB(0x00,0x00,0xFF)
+#define ClrEditText                 InputTextActive
+#define ClrEditBkgnd                Assistant0
+#define ClrEditDark                 RGB(0xFF,0xFF,0xFF)
+#define ClrEditDarkHover            RGB(0x00,0x00,0xFF)
 

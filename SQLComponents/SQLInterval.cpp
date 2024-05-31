@@ -2,7 +2,7 @@
 //
 // File: SQLInterval.cpp
 //
-// Copyright (c) 1998-2022 ir. W.E. Huisman
+// Copyright (c) 1998-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -470,19 +470,19 @@ SQLInterval::AsValue() const
 // Databases like Oracle store a date interval
 // in the form of decimal days (24 hours = 1.0000)
 // Or just the number of months
-double  
-SQLInterval::AsDatabaseDouble() const
+bcd
+SQLInterval::AsDatabaseNumber() const
 {
   // Year-month intervals
   if(GetIsYearMonthType())
   {
-    return static_cast<double>(m_value);
+    return bcd(m_value);
   }
 
   // Return a decimal day value
-  double value = static_cast<double>(m_value);
-  value /= (double) NANOSECONDS_PER_SEC;
-  value /= (double) SECONDS_PER_DAY;
+  bcd value = bcd(m_value);
+  value /= NANOSECONDS_PER_SEC;
+  value /= SECONDS_PER_DAY;
 
   return value;
 }

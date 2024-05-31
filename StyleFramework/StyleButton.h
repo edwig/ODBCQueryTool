@@ -20,6 +20,8 @@
 
 // WM_IBS_SetStyle message
 #define WM_NORMALBUTTON (WM_USER + 13)
+// Pressed buttons are only 80% of the background color
+#define BUTTON_DIMMING 80
 
 class StyleEdit;
 
@@ -47,6 +49,8 @@ public:
   void      SetFontName(CString p_fontName,int p_fontSize);
   void      SetFontStyle(bool p_bold,bool p_italic,bool p_underLine);
   void      SetFontColor(int p_color);
+  void      SetTextColor(int p_color);
+  void      SetBkColor(int p_color);
 
   // GETTERS
   CBitmap&  GetBitmap();
@@ -89,20 +93,22 @@ protected:
               ,bool    p_themeColor  = false
               ,bool    p_default     = false);
 
-  CBitmap m_bitmap;
-  CString m_fontName;
-  HICON   m_icon          { nullptr };
-  CFont*  m_font          { nullptr };
-  bool    m_error         { false   };
-  bool    m_over          { false   };
-  bool    m_mandatory     { false   };
-  bool    m_defaultButton { false   };
-  int     m_style         { 0       };
-  int     m_fontSize      { 100     };
-  bool    m_bold          { false   };
-  bool    m_italic        { false   };
-  bool    m_underLine     { false   };
-  int     m_fontcolor     { -1      };
+  CBitmap   m_bitmap;
+  CString   m_fontName;
+  HICON     m_icon          { nullptr };
+  CFont*    m_font          { nullptr };
+  bool      m_error         { false   };
+  bool      m_over          { false   };
+  bool      m_mandatory     { false   };
+  bool      m_defaultButton { false   };
+  int       m_style         { 0       };
+  int       m_fontSize      { 100     };
+  bool      m_bold          { false   };
+  bool      m_italic        { false   };
+  bool      m_underLine     { false   };
+  int       m_fontcolor     { -1      };
+  COLORREF  m_colorText     { 0       };
+  COLORREF  m_colorBackgnd  { 0       };
 };
 
 inline CBitmap& 

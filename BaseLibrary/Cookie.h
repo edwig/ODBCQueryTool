@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -69,7 +69,7 @@ public:
   // Compound getters
   XString        GetSetCookieText();
   XString        GetCookieText();
-  XString        GetValue(XString p_metadata = "");
+  XString        GetValue(XString p_metadata = _T(""));
   // Individual getters
   XString        GetName()       { return m_name;     }
   bool           GetSecure()     { return m_secure;   }
@@ -120,7 +120,7 @@ class Cookies
 public:
   void        AddCookie(XString p_fromHTTP);
   void        AddCookie(Cookie& p_cookie);
-  void        AddCookie(XString p_name,XString p_value,XString p_metadata = "");
+  void        AddCookie(XString p_name,XString p_value,XString p_metadata = _T(""));
   Cookie*     GetCookie(unsigned p_index = 0);
   Cookie*     GetCookie(XString p_name);
   XString     GetCookieText(); // Client side only!!

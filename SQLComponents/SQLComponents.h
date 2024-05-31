@@ -2,7 +2,7 @@
 //
 // File: SQLComponents.h
 //
-// Copyright (c) 1998-2022 ir. W.E. Huisman
+// Copyright (c) 1998-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -61,7 +61,7 @@ DatabaseType;
 // Array with session initialization statements
 #define SQLCOMP_MAX_SESS_DATABASES 10
 #define SQLCOMP_MAX_SESS_SETTINGS  10
-extern char* g_SQLSessionInitialization[SQLCOMP_MAX_SESS_DATABASES][SQLCOMP_MAX_SESS_SETTINGS];
+extern PTCHAR g_SQLSessionInitialization[SQLCOMP_MAX_SESS_DATABASES][SQLCOMP_MAX_SESS_SETTINGS];
 
 // We are running in a background server (No message boxes allowed!)
 extern bool g_SQLComponentsInServer;

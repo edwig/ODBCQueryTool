@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,15 +26,13 @@
 // THE SOFTWARE.
 //
 #pragma once
+#include <wincrypt.h>
 
 // Standard signing hashing 
 // 
 // METHOD    MACRO         PROVIDER       KEY_HASH
 // ========= ============= ============== ===============
 // sha1      CALG_SHA1     PROV_RSA_FULL  CALG_RC4
-// hmac-sha1 CALG_HMAC     PROV_RSA_FULL  CALG_RC4
-// dsa-sha1  CALG_DSS_SIGN PROV_DSS_SH    CALG_CYLINK_MEK
-// rsa-sha1  CALG_RSA_SIGN PROV_RSA_AES   CALG_AES_256
 // --------- ------------- -------------- ---------------
 // md2       CALG_MD2      PROV_RSA_FULL  CALG_RC4
 // md4       CALG_MD4      PROV_RSA_FULL  CALG_RC4
@@ -71,9 +69,9 @@ public:
   XString  FastDecryption(XString p_input, XString password);
 
   // Make a MD5 Hash value for a buffer
-  XString& Digest(XString& p_buffer,XString& p_password);
-  XString  Digest(const void* data,const size_t data_size,unsigned hashType);
+  XString  Digest(const void* data,const size_t data_size,unsigned hashType = 0);
   XString& GetDigest(void);
+  void     SetDigestBase64(bool p_base64);
 
   // Get the protocol types
   XString  GetSSLProtocol(unsigned p_type);
@@ -86,7 +84,8 @@ public:
 private:
   XString  m_error;
   XString	 m_digest;
-  unsigned m_hashMethod;
+  unsigned m_hashMethod { CALG_SHA1 };  // Digests are mostly in SHA1
+  bool     m_base64     { true      };  // Default as a base64 string instead of binary
 
   static   CRITICAL_SECTION m_lock;
 };
@@ -95,6 +94,12 @@ inline XString&
 Crypto::GetDigest()
 {
   return m_digest;
+}
+
+inline void
+Crypto::SetDigestBase64(bool p_base64)
+{
+  m_base64 = p_base64;
 }
 
 inline XString

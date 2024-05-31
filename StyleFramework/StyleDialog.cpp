@@ -79,6 +79,7 @@ BEGIN_MESSAGE_MAP(StyleDialog,CDialog)
   ON_WM_ACTIVATEAPP()
   ON_WM_SETTINGCHANGE()
   ON_WM_QUERYDRAGICON()
+  ON_WM_DROPFILES()
   ON_REGISTERED_MESSAGE(g_msg_changed,OnStyleChanged)
   ON_NOTIFY_EX(TTN_NEEDTEXT,0,        OnToolTipNotify)
   ON_MESSAGE(WM_CTLCOLORSTATIC,       OnCtlColorStatic)
@@ -116,6 +117,7 @@ int
 StyleDialog::OnCreate(LPCREATESTRUCT p_create)
 {
   p_create->dwExStyle |= WS_EX_CONTROLPARENT;
+
   int res = CDialog::OnCreate(p_create);
 
   CRect rect;
@@ -582,7 +584,10 @@ StyleDialog::SendMessageToAllChildWindows(UINT MessageId,WPARAM wParam,LPARAM lP
   sMessage.wParam    = wParam;
   sMessage.lParam    = lParam;
 
-  EnumChildWindows(GetSafeHwnd(),EnumChildProc,(LPARAM) &sMessage);
+  if(GetSafeHwnd())
+  {
+    EnumChildWindows(GetSafeHwnd(),EnumChildProc,(LPARAM)&sMessage);
+  }
 }
 
 // After setting of a theme,
@@ -628,6 +633,12 @@ void
 StyleDialog::OnStylePurple()
 {
   SetTheme(ThemeColor::Themes::ThemePurple);
+}
+
+void
+StyleDialog::OnStyleMustard()
+{
+  SetTheme(ThemeColor::Themes::ThemeMustard);
 }
 
 void
@@ -713,21 +724,48 @@ StyleDialog::OnNcMouseMove(UINT nFlags, CPoint point)
   }
   else
   {
-    CDialog::OnNcMouseMove(nFlags, point);
+    CDialog::OnNcMouseMove(nFlags,point);
 
-    if (m_curhit != (LRESULT)nFlags)
+    if(m_curhit != (LRESULT)nFlags)
     {
-      UINT prev = (UINT) m_curhit;
+      UINT prev = (UINT)m_curhit;
       m_curhit = nFlags;
       ReDrawButton(prev);
       ReDrawButton(m_curhit);
     }
 
+    if(!m_trackMouse && OnNcHitTest(point) != HTNOWHERE)
+    {
+      TRACKMOUSEEVENT mouseEvent;
+      mouseEvent.cbSize      = sizeof(TRACKMOUSEEVENT);
+      mouseEvent.dwFlags     = TME_NONCLIENT | TME_LEAVE;
+      mouseEvent.hwndTrack   = m_hWnd;
+      mouseEvent.dwHoverTime = HOVER_DEFAULT;
+      _TrackMouseEvent(&mouseEvent);
+      m_trackMouse = true;
+    }
+  }
+}
+
+void
+StyleDialog::OnNcMouseLeave()
+{
+  if(m_curhit != HTNOWHERE)
+  {
+    UINT prev = (UINT)m_curhit;
+    m_curhit = HTNOWHERE;
+    m_down = false;
+    ReDrawButton(prev);
+  }
+  if(m_trackMouse)
+  {
     TRACKMOUSEEVENT mouseEvent;
-    mouseEvent.cbSize = sizeof(TRACKMOUSEEVENT);
-    mouseEvent.dwFlags = TME_NONCLIENT | TME_LEAVE;
-    mouseEvent.hwndTrack = m_hWnd;
+    mouseEvent.cbSize      = sizeof(TRACKMOUSEEVENT);
+    mouseEvent.dwFlags     = TME_NONCLIENT | TME_LEAVE | TME_CANCEL;
+    mouseEvent.hwndTrack   = m_hWnd;
+    mouseEvent.dwHoverTime = 0;
     _TrackMouseEvent(&mouseEvent);
+    m_trackMouse = false;
   }
 }
 
@@ -774,7 +812,7 @@ StyleDialog::PerformMenu()
 void
 StyleDialog::OnNcLButtonDown(UINT nFlags, CPoint point)
 {
-  if ((GetStyle() & WS_POPUP) == 0)
+  if((GetStyle() & WS_POPUP) == 0)
   {
     CDialog::OnNcLButtonDown(nFlags, point);
     return;
@@ -957,18 +995,6 @@ bool
 StyleDialog::OnClosing()
 {
   return true;
-}
-
-void
-StyleDialog::OnNcMouseLeave()
-{
-  if (m_curhit != HTNOWHERE)
-  {
-    UINT prev = (UINT) m_curhit;
-    m_curhit = HTNOWHERE;
-    m_down = false;
-    ReDrawButton(prev);
-  }
 }
 
 void
@@ -1520,6 +1546,12 @@ HCURSOR
 StyleDialog::OnQueryDragIcon()
 {
   return static_cast<HCURSOR>(m_hIcon);
+}
+
+void
+StyleDialog::OnDroppedFile(UINT p_id,UINT p_index,LPCTSTR p_fileName)
+{
+  StyleMessageBox(this,_T("ERROR: Implement your own OnDroppedFile for this Dialog"),_T("Error"),MB_OK | MB_ICONERROR);
 }
 
 // Try overridden OnClosing before canceling the dialog

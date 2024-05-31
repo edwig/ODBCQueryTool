@@ -29,6 +29,7 @@
 
 class SCBTextEdit;
 class SCBListBox;
+class CGridCellCombo;
 
 // Storage for Set/Get ItemData
 using ItemStore = std::map<int,DWORD_PTR>;
@@ -137,12 +138,14 @@ public:
   void  Cut();
   void  Paste();
 
-  SCBTextEdit*  GetEditControl()                { return m_itemControl;  }
-  SCBListBox*   GetListControl()                { return m_listControl;  }
-  COLORREF      GetFrameColor()                 { return m_frameColor;   }
-  void          SetFrameColor(COLORREF p_color) { m_frameColor = p_color;}
-  COLORREF      GetArrowColor()                 { return m_arrowColor;   }
-  void          SetArrowColor(COLORREF p_color) { m_arrowColor = p_color;}
+  SCBTextEdit*    GetEditControl()                    { return m_itemControl;   }
+  SCBListBox*     GetListControl()                    { return m_listControl;   }
+  COLORREF        GetFrameColor()                     { return m_frameColor;    }
+  void            SetFrameColor(COLORREF p_color)     { m_frameColor = p_color; }
+  COLORREF        GetArrowColor()                     { return m_arrowColor;    }
+  void            SetArrowColor(COLORREF p_color)     { m_arrowColor = p_color; }
+  CGridCellCombo* GetGridCell()                       { return m_gridcell;      }
+  void            SetGridCell(CGridCellCombo* p_cell) { m_gridcell = p_cell;    }
 
   virtual void PreShowComboList();
   virtual void PostShowComboList();
@@ -163,6 +166,9 @@ protected:
   virtual void PositionDropList(int p_width,int p_height);
   virtual void FindSelectionFromEdit();
 
+  friend CGridCellCombo;
+  COLORREF     DrawComboButton(CDC* p_dc,CRect& p_but);
+
   SCBTextEdit* m_itemControl        { nullptr };                    // The real edit control
   SCBListBox*  m_listControl        { nullptr };                    // The list control
   int          m_minimum            { COMBO_DEFAULT_MINVISIBLE };   // Minimum visible items in the list
@@ -177,6 +183,7 @@ protected:
   ItemStore    m_items;                                             // Set/GetDataItem storage
   COLORREF     m_frameColor         { RGB(0,0,0) };                 // Color of the outer rim of the combobox
   COLORREF     m_arrowColor         { RGB(0,0,0) };                 // Color of the combobox arrow
+  CGridCellCombo* m_gridcell        { nullptr    };                 // Cell of the grid we are in
 
   virtual void PreSubclassWindow() override;
 

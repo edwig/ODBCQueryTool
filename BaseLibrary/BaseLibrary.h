@@ -12,7 +12,7 @@
 //                          __/ |                                           
 //                         |___/                                            
 //
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // MIT License:
@@ -47,14 +47,13 @@
 #include "bcd.h"
 
 // VERSION NUMBER OF THIS LIBRARY
-#define BASELIBRARY_VERSION 1.2.0
+#define BASELIBRARY_VERSION 1.3.1
 
 // Selecting the right library to link with automatically
 // So we do not need to worry about which library to use in the linker settings
 // As long as we use the $(SolutionDir)Lib\ as the library location of all our projects
 
-#ifdef UNICODE
-
+#ifdef _UNICODE
 #if defined _M_IX86
 #define BASELIBRARY_PLATFORM "Ux86"
 #else

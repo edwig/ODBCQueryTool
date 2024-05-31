@@ -159,6 +159,7 @@ void CInPlaceEdit::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
     GetParent()->SetFocus();    // This will destroy this window
     return;
   }
+
   if (nChar == VK_ESCAPE) 
   {
     SetWindowText(m_sInitText);    // restore previous text
@@ -166,7 +167,16 @@ void CInPlaceEdit::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
     GetParent()->SetFocus();
     return;
   }
-    
+  
+  // Check for GridCellNumeric
+  if(((GetStyle() & ES_NUMBER) == ES_NUMBER) && !isdigit(nChar))
+  {
+    StyleMessageBox(this,_T("NO LETTERS!\n")
+                         _T("You are only allowed to enter digits here!"),_T("Error")
+                        ,MB_OK|MB_ICONERROR);
+    return;
+  }
+
   CEdit::OnChar(nChar, nRepCnt, nFlags);
     
   // Resize edit control if needed

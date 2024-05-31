@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -102,7 +102,10 @@ public:
   bool        GetMark()      const { return m_mark;     }
   JSONarray&  GetArray()           { return m_array;    }
   JSONobject& GetObject()          { return m_object;   }
-  XString     GetAsJsonString(bool p_white,Encoding p_encoding,unsigned p_level = 0);
+  XString     GetAsJsonString(bool p_white,Encoding p_encoding = Encoding::Default,unsigned p_level = 0);
+
+  // FUNCTIONS
+  void        JsonReplace(XString p_namePattern,XString p_tofind,XString p_replace,int& p_number,bool p_caseSensitive = true);
 
   // Specials for the empty/null state
   void        Empty();
@@ -132,6 +135,9 @@ public:
   void        DropReference();
 
 private:
+  void        JsonReplaceObject(XString p_namePattern,XString p_tofind,XString p_replace,int& p_number,bool p_caseSensitive);
+  void        JsonReplaceArray (XString p_namePattern,XString p_tofind,XString p_replace,int& p_number,bool p_caseSensitive);
+
   // JSONPointer may have access to the objects
   friend     JSONPointer;
 
@@ -206,7 +212,7 @@ public:
   // XTOR: For incoming UTF-8 String
   explicit JSONMessage(XString p_message);
   // XTOR: Internal construction from MBCS string
-  explicit JSONMessage(XString p_message,bool p_whitespace,Encoding p_encoding);
+  explicit JSONMessage(XString p_message,bool p_whitespace,Encoding p_encoding = Encoding::Default);
   // XTOR: Outgoing to a URL
   explicit JSONMessage(XString p_message,XString p_url);
   // XTOR: From another XXXmessage
@@ -237,6 +243,7 @@ public:
   bcd             GetValueNumber  (XString p_name);
   JsonConst       GetValueConstant(XString p_name);
   bool            AddNamedObject(XString p_name,const JSONobject& p_object,bool p_forceArray = false);
+  int             JsonReplace(XString p_namePattern,XString p_tofind,XString p_replace,bool p_caseSensitive = true);
 
   // GETTERS
   XString         GetJsonMessage       (Encoding p_encoding = Encoding::Default) const;

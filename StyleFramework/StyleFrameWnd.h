@@ -66,9 +66,11 @@ protected:
   afx_msg void    OnStyleLime();
   afx_msg void    OnStyleSkyblue();
   afx_msg void    OnStylePurple();
+  afx_msg void    OnStyleMustard();
   afx_msg void    OnStyleModerateGray();
   afx_msg void    OnStylePureGray();
   afx_msg void    OnStyleBlackWhite();
+  afx_msg void    OnStyleDark();
 
   // Move hovers and is currently down
   LRESULT   m_curhit    { HTNOWHERE };

@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -298,28 +298,35 @@ XString
 CrackedURL::EncodeURLChars(XString p_text,bool p_queryValue /*=false*/)
 {
   XString encoded;
+  uchar*  buffer = nullptr;
+  int     length = 0;
 
-#ifndef UNICODE
+#ifdef UNICODE
+  if(!TryCreateNarrowString(p_text,_T("utf-8"),false,&buffer,length))
+  {
+    return p_text;
+  }
+#else
   // Now encode MBCS to UTF-8
-  uchar* buffer = nullptr;
-  int    length = 0;
   if(TryCreateWideString(p_text,"",false,&buffer,length))
   {
     bool foundBom = false;
     if(TryConvertWideString(buffer,length,_T("utf-8"),encoded,foundBom))
     {
-      p_text = encoded;
+      delete[] buffer;
+      length = encoded.GetLength();
+      buffer = new uchar[length + 1];
+      memcpy(buffer,encoded.GetString(),length + 1);
       encoded.Empty();
     }
   }
-  delete [] buffer;
 #endif
 
-  // Re-encode the string. 
+  // Re-encode the string: Now in buffer/length
   // Watch out: strange code ahead!
-  for(int ind = 0;ind < p_text.GetLength(); ++ind)
+  for(int ind = 0;ind < length; ++ind)
   {
-    XString::XCHAR ch = p_text.GetAt(ind);
+    uchar ch = buffer[ind];
     if(ch == '?')
     {
       p_queryValue = true;
@@ -328,18 +335,19 @@ CrackedURL::EncodeURLChars(XString p_text,bool p_queryValue /*=false*/)
     {
       encoded += '+';
     }
-    else if(_tcschr(m_unsafeString,ch) ||                     // " \"<>#{}|\\^~[]`"     -> All strings
-           (p_queryValue && _tcschr(m_reservedString,ch)) ||  // "$&+,./:;=?@-!*()'"   -> In query parameter value strings
-           (ch < 0x20) ||                                     // 7BITS ASCII Control characters
-           (ch > 0x7F) )                                      // Converted UTF-8 characters
+    else if(_tcschr(m_unsafeString,ch) ||                      // " \"<>#{}|\\^~[]`"     -> All strings
+           (p_queryValue && _tcsrchr(m_reservedString,ch)) ||  // "$&+,./:;=?@-!*()'"   -> In query parameter value strings
+           (ch < 0x20) ||                                      // 7BITS ASCII Control characters
+           (ch > 0x7F) )                                       // Converted UTF-8 characters
     {
-      encoded.AppendFormat(_T("%%%2X"),ch);
+      encoded.AppendFormat(_T("%%%2.2X"),(int)ch);
     }
     else
     {
-      encoded += ch;
+      encoded += (_TUCHAR) ch;
     }
   }
+  delete[] buffer;
   return encoded;
 }
 
@@ -350,34 +358,38 @@ CrackedURL::DecodeURLChars(XString p_text,bool p_queryValue /*=false*/)
   XString encoded;
   XString decoded;
   bool  convertUTF = false;
+  bool  percent    = false;
 
   // Whole string decoded for %XX strings
   for(int ind = 0;ind < p_text.GetLength(); ++ind)
   {
-    XString::XCHAR ch = GetHexcodedChar(p_text,ind,p_queryValue);
+    uchar ch = GetHexcodedChar(p_text,ind,percent,p_queryValue);
     decoded += ch;
-    if(ch > 0x7F)
+    if(ch > 0x7F && percent)
     {
       convertUTF = true;
     }
   }
 #ifdef UNICODE
-  // Compress to real UTF-8
-  int length = decoded.GetLength();
-  uchar* buffer = new uchar[length + 1];
-  bool foundBom = false;
-
-  // Make a real UTF-8 memory string
-  ImplodeString(decoded,buffer,length);
-
-  // Convert to UTF-16
-  bool converted = TryConvertNarrowString(reinterpret_cast<const uchar*>(buffer),length,_T("utf-8"),decoded,foundBom);
-  delete[] buffer;
-
-  // No glory, end of the line!
-  if(!converted)
+  if(convertUTF)
   {
-    return p_text;
+    // Compress to real UTF-8
+    int length = decoded.GetLength();
+    uchar* buffer = new uchar[length + 1];
+    bool foundBom = false;
+
+    // Make a real UTF-8 memory string
+    ImplodeString(decoded,buffer,length);
+
+    // Convert to UTF-16
+    bool converted = TryConvertNarrowString(reinterpret_cast<const uchar*>(buffer),length,_T("utf-8"),decoded,foundBom);
+    delete[] buffer;
+
+    // No glory, end of the line!
+    if(!converted)
+    {
+      return p_text;
+    }
   }
 #else
 
@@ -387,7 +399,7 @@ CrackedURL::DecodeURLChars(XString p_text,bool p_queryValue /*=false*/)
     // Now decode the UTF-8 in the encoded string, to decoded MBCS
     uchar* buffer = nullptr;
     int    length = 0;
-    if(TryCreateWideString(decoded,"utf-8",false,&buffer,length))
+    if(TryCreateWideString(decoded,_T("utf-8"),false,&buffer,length))
     {
       bool foundBom = false;
       if(TryConvertWideString(buffer,length,"",encoded,foundBom))
@@ -402,22 +414,26 @@ CrackedURL::DecodeURLChars(XString p_text,bool p_queryValue /*=false*/)
 }
 
 // Decode 1 hex char for URL decoding
-XString::XCHAR
-CrackedURL::GetHexcodedChar(XString& p_text,int& p_index,bool& p_queryValue)
+uchar
+CrackedURL::GetHexcodedChar(XString& p_text
+                           ,int&     p_index
+                           ,bool&    p_percent
+                           ,bool&    p_queryValue)
 {
-  XString::XCHAR ch = p_text.GetAt(p_index);
+  uchar ch = (uchar) p_text.GetAt(p_index);
 
   if(ch == '%')
   {
     int num1 = 0;
     int num2 = 0;
-    
+
+    p_percent = true;
          if(isdigit (p_text.GetAt(++p_index))) num1 = p_text.GetAt(p_index) - '0';
     else if(isxdigit(p_text.GetAt(  p_index))) num1 = toupper(p_text.GetAt(p_index)) - 'A' + 10;
          if(isdigit (p_text.GetAt(++p_index))) num2 = p_text.GetAt(p_index) - '0';
     else if(isxdigit(p_text.GetAt(  p_index))) num2 = toupper(p_text.GetAt(p_index)) - 'A' + 10;
 
-    ch = (_TUCHAR)(16 * num1 + num2);
+    ch = (uchar)(16 * num1 + num2);
   }
   else if(ch == '?')
   {

@@ -2,7 +2,7 @@
 //
 // SourceFile: XMLParserJSON.cpp
 //
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -124,7 +124,7 @@ XMLParserJSON::ParseLevel(XMLElement* p_element,JSONvalue& p_value,XString p_arr
                                       {
                                         if(m_soap || m_rootFound)
                                         {
-                                          element = m_soap->AddElement(p_element,pair.m_name,XDT_String,"");
+                                          element = m_soap->AddElement(p_element,pair.m_name,XDT_String,_T(""));
                                         }
                                         else
                                         {

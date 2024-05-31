@@ -189,6 +189,12 @@
     <ClInclude Include="StyleTab.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AutoFocus.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleStepper.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GrayWindow.cpp">
@@ -339,6 +345,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StyleTab.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleStepper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

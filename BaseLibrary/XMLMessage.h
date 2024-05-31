@@ -2,7 +2,7 @@
 //
 // SourceFile: XMLMessage.h
 //
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -190,7 +190,7 @@ public:
 
   // SETTERS
   // Set the output encoding of the message
-  void            SetEncoding(Encoding p_encoding);
+  Encoding        SetEncoding(Encoding p_encoding);
   // Set the name of the root-node
   void            SetRootNodeName(XString p_name);
   // Set condensed format (no spaces or newlines)
@@ -202,6 +202,8 @@ public:
   // Stylesheet info
   void            SetStylesheetType(XString p_type);
   void            SetStylesheet(XString p_sheet);
+  // Standalone XML
+  void            SetStandalone(bool p_alone);
   // Setting an element
   XMLElement*     SetElement(XString p_name, const XString& p_value);
   XMLElement*     SetElement(XString p_name, LPCTSTR        p_value);
@@ -265,8 +267,8 @@ public:
   XMLElement*     FindElementWithAttribute(XMLElement* p_base
                                           ,XString     p_elementName
                                           ,XString     p_attribName
-                                          ,XString     p_attribValue = ""
-                                          ,bool        p_recurse = true);
+                                          ,XString     p_attribValue = _T("")
+                                          ,bool        p_recurse     = true);
   XMLAttribute*   FindAttribute(XMLElement* p_elem, XString p_attribName);
 
   // EXTRA OPERATIONS on element nodes
@@ -302,7 +304,7 @@ protected:
   Encoding        m_encoding        { Encoding::UTF8 };       // Encoding scheme
   XString         m_version         { "1.0" };                // XML Version, most likely 1.0
   XString         m_standalone;                               // Stand alone from DTD or XSD's
-  bool            m_condensed       { false } ;               // Condensed output format (no spaces/newlines)
+  bool            m_condensed       { false };                // Condensed output format (no spaces/newlines)
   bool            m_whitespace      { false };                // Collapse whitespace
   bool            m_sendUnicode     { false };                // Construct UTF-16 on sending out
   bool            m_sendBOM         { false };                // Prepend Byte-Order-Mark before message (UTF-8 / UTF-16)

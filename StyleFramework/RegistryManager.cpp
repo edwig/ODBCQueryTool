@@ -1257,3 +1257,14 @@ SetGlobalEnvironmentVariable(CString p_variable,CString p_value)
   }
   return success;
 }
+
+// Getting a global environment variable
+CString
+GetGlobalEnvironmentVariable(CString p_variable)
+{
+  bool success(false);
+  RegistryManager manager(HKEY_LOCAL_MACHINE);
+  CString key(_T("HKLM\\System\\CurrentControlSet\\Control\\Session Manager\\Environment"));
+
+  return manager.GetRegistryString(key,p_variable,_T(""));
+}

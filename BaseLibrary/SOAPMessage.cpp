@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -72,6 +72,7 @@ SOAPMessage::SOAPMessage(HTTPMessage* p_msg)
   m_incoming = p_msg->GetCommand() != HTTPCommand::http_response;
 
   // Overrides from class defaults
+  m_sendUnicode   = p_msg->GetSendUnicode();
   m_soapVersion   = SoapVersion::SOAP_10;
   m_initialAction = false;
 
@@ -120,6 +121,7 @@ SOAPMessage::SOAPMessage(HTTPMessage* p_msg)
     XString action = FindFieldInHTTPHeader(m_contentType,_T("Action"));
     SetSoapActionFromHTTTP(action);
   }
+  delete[] buffer;
 }
 
 // XTOR from a JSON message
@@ -136,7 +138,8 @@ SOAPMessage::SOAPMessage(JSONMessage* p_msg)
             ,m_acceptEncoding(p_msg->GetAcceptEncoding())
             ,m_headers       (*p_msg->GetHeaderMap())
 {
-  m_sendBOM = p_msg->GetSendBOM();
+  m_sendBOM     = p_msg->GetSendBOM();
+  m_sendUnicode = p_msg->GetSendUnicode();
 
   // Duplicate all cookies
   m_cookies = p_msg->GetCookies();
@@ -249,6 +252,7 @@ SOAPMessage::SOAPMessage(SOAPMessage* p_orig)
   m_encoding    = p_orig->m_encoding;
   m_sendUnicode = p_orig->m_sendUnicode;
   m_sendBOM     = p_orig->m_sendBOM;
+  m_sendUnicode = p_orig->m_sendUnicode;
   // WS-Reliability
   m_addressing    = p_orig->m_addressing;
   m_reliable      = p_orig->m_reliable;
@@ -331,6 +335,7 @@ SOAPMessage::ConstructFromRawBuffer(uchar* p_buffer,unsigned p_length,XString p_
     // It's just our way of Unicode
     message = reinterpret_cast<LPCTSTR>(p_buffer);
     m_sendUnicode = true;
+    m_encoding = Encoding::LE_UTF16;
   }
   else
   {
@@ -348,9 +353,10 @@ SOAPMessage::ConstructFromRawBuffer(uchar* p_buffer,unsigned p_length,XString p_
     int uni = IS_TEXT_UNICODE_UNICODE_MASK;  // Intel/AMD processors + BOM
     if(IsTextUnicode(p_buffer,(int)p_length,&uni))
     {
-      if(TryConvertWideString(p_buffer,(int) p_length,p_charset,message,m_sendBOM))
+      if(TryConvertWideString(p_buffer,(int) p_length,_T(""),message,m_sendBOM))
       {
         m_sendUnicode = true;
+        m_encoding = Encoding::LE_UTF16;
       }
       else
       {
@@ -365,9 +371,17 @@ SOAPMessage::ConstructFromRawBuffer(uchar* p_buffer,unsigned p_length,XString p_
       message = p_buffer;
     }
   }
-  else
+  else 
   {
-    message = p_buffer;
+    if(p_charset.IsEmpty())
+    {
+      p_charset = "utf-8";
+    }
+    if(p_charset.CompareNoCase("utf-8") == 0)
+    {
+      m_encoding = Encoding::UTF8;
+    }
+    message = DecodeStringFromTheWire(XString(p_buffer),p_charset);
   }
 #endif
   return message;
@@ -380,7 +394,8 @@ SOAPMessage::ConstructFromRawBuffer(uchar* p_buffer,unsigned p_length,XString p_
 // Reset parameters, transforming it in an answer
 void 
 SOAPMessage::Reset(ResponseType p_responseType  /* = ResponseType::RESP_ACTION_NAME */
-                  ,XString      p_namespace     /* = "" */)
+                  ,XString      p_namespace     /* = ""    */
+                  ,bool         p_resetURL      /* = false */)
 {
   XMLMessage::Reset();
 
@@ -399,9 +414,12 @@ SOAPMessage::Reset(ResponseType p_responseType  /* = ResponseType::RESP_ACTION_N
   // Reset the HTTP headers
   m_headers.clear();
 
-  // Reset the URL
-  m_url.Empty();
-  m_cracked.Reset();
+  // Only reset the URL if we specifically request it
+  if(p_resetURL)
+  {
+    m_url.Empty();
+    m_cracked.Reset();
+  }
 
   // If, given: use the our namespace for an answer
   if(!p_namespace.IsEmpty())
@@ -442,7 +460,7 @@ SOAPMessage::SetSoapVersion(SoapVersion p_version)
     m_paramObject = m_root;
     CleanNode(m_root);
     m_root->SetName(m_soapAction);
-    m_root->SetNamespace("");
+    m_root->SetNamespace(_T(""));
   }
   else
   {
@@ -528,7 +546,7 @@ SOAPMessage::GetHeader(XString p_name)
   {
     return it->second;
   }
-  return "";
+  return _T("");
 }
 
 // OPERATORS
@@ -544,6 +562,7 @@ SOAPMessage::operator=(JSONMessage& p_json)
   m_contentType   = p_json.GetContentType();
   m_sendBOM       = p_json.GetSendBOM();
   m_incoming      = p_json.GetIncoming();
+  m_sendUnicode   = p_json.GetSendUnicode();
   m_headers       =*p_json.GetHeaderMap();
 
   // Duplicate all cookies
@@ -687,7 +706,16 @@ void
 SOAPMessage::SetURL(const XString& p_url)
 {
   m_url = p_url;
-  m_cracked.CrackURL(p_url);
+
+  CrackedURL url;
+  if(url.CrackURL(p_url))
+  {
+    m_cracked = url;
+  }
+  else
+  {
+    m_cracked.m_valid = false;
+  }
 }
 
 // URL without user/password
@@ -754,7 +782,7 @@ SOAPMessage::GetRoute(int p_index)
   {
     return m_routing[p_index];
   }
-  return "";
+  return _T("");
 }
 
 // TO do after we set parts of the URL in setters
@@ -804,7 +832,7 @@ SOAPMessage::GetCookie(unsigned p_ind /*= 0*/,XString p_metadata /*= ""*/)
   {
     return monster->GetValue(p_metadata);
   }
-  return "";
+  return _T("");
 }
 
 XString
@@ -815,7 +843,7 @@ SOAPMessage::GetCookie(XString p_name /*= ""*/,XString p_metadata /*= ""*/)
   {
     return monster->GetValue(p_metadata);
   }
-  return "";
+  return _T("");
 }
 
 Cookie*
@@ -853,10 +881,10 @@ SOAPMessage::SetHeaderParameter(XString p_name,LPCTSTR p_value,bool p_first /*=f
     // Header must be the first child element of Envelope
     if(!m_root->GetNamespace().IsEmpty())
     {
-      header = m_root->GetNamespace() + ":";
+      header = m_root->GetNamespace() + _T(":");
     }
     header += _T("Header");
-    m_header = SetElement(m_root,header,XDT_String,"",true);
+    m_header = SetElement(m_root,header,XDT_String,_T(""),true);
   }
   if(m_header)
   {
@@ -1143,7 +1171,7 @@ SOAPMessage::GetSoapMessageWithBOM()
 {
   if(m_sendBOM && m_encoding == Encoding::UTF8)
   {
-    XString msg = ConstructBOM();
+    XString msg = ConstructBOMUTF8();
     msg += GetSoapMessage();
     return msg;
   }
@@ -1173,7 +1201,7 @@ SOAPMessage::GetJsonMessageWithBOM(bool p_full /*=false*/,bool p_attributes /*=f
 {
   if(m_sendBOM && m_encoding == Encoding::UTF8)
   {
-    XString msg = ConstructBOM();
+    XString msg = ConstructBOMUTF8();
     msg += GetJsonMessage(p_full,p_attributes);
     return msg;
   }
@@ -1209,7 +1237,7 @@ SOAPMessage::SetSoapEnvelope()
 
   if(m_addressing || m_reliable || m_soapVersion > SoapVersion::SOAP_11)
   {
-    SetElementNamespace(m_root,"a",NAMESPACE_WSADDRESS);
+    SetElementNamespace(m_root,_T("a"),NAMESPACE_WSADDRESS);
   }
   if(m_reliable)
   {
@@ -1322,14 +1350,20 @@ SOAPMessage::SetSoapBody()
       xmlns = FindAttribute(m_paramObject,_T("xmlns:tns"));
       if(xmlns)
       {
-        xmlns->m_value = m_namespace;
+        if(m_forceNamespace)
+        {
+          xmlns->m_value = m_namespace;
+        }
       }
       else
       {
         xmlns = FindAttribute(m_paramObject,_T("xmlns"));
         if(xmlns)
         {
-          xmlns->m_value = m_namespace;
+          if(m_forceNamespace)
+          {
+            xmlns->m_value = m_namespace;
+          }
         }
         else
         {
@@ -1387,8 +1421,8 @@ SOAPMessage::AddToHeaderAcknowledgement()
         XMLElement* ack = SetHeaderParameter(_T("rm:SequenceAcknowledgement"),_T(""));
                           SetElement(ack,_T("rm:Identifier"),m_guidSequenceClient);
         XMLElement* rng = SetElement(ack,_T("rm:AcknowledgementRange"),_T(""));
-        SetAttribute(rng,"Lower",1);
-        SetAttribute(rng,"Upper",m_serverMessageNumber);
+        SetAttribute(rng,_T("Lower"),1);
+        SetAttribute(rng,_T("Upper"),m_serverMessageNumber);
       }
     }
   }
@@ -1602,8 +1636,12 @@ SOAPMessage::Url2SoapParameters(const CrackedURL& p_url)
   CreateParametersObject();
 
   WinFile part(p_url.m_path);
-  XString action = part.GetFilenamePartFilename();
-
+  XString action = part.GetFilenamePartBasename();
+  XString extens = part.GetFilenamePartExtension();
+  if(!extens.IsEmpty() && !isalpha(extens.GetAt(0)))
+  {
+    action = "Doc_" + action;
+  }
   SetSoapAction(action);
   SetParameterObject(action);
 
@@ -1795,7 +1833,8 @@ SOAPMessage::CreateParametersObject(ResponseType p_responseType)
       {
         // Make sure we have a valid XML name
         // If not, we provide a generic default name to proceed with fingers crossed
-        if(m_soapAction.IsEmpty() || !XMLElement::IsValidName(m_soapAction))
+        if(m_soapVersion == SoapVersion::SOAP_12 &&
+          (m_soapAction.IsEmpty() || !XMLElement::IsValidName(m_soapAction)))
         {
           m_soapAction = _T("SoapAction");
         }
@@ -2187,7 +2226,7 @@ SOAPMessage::SignBody()
 {
   Crypto md5(m_signingMethod);
   XString total = GetBodyPart();
-  XString sign = md5.Digest(total,m_enc_password);
+  XString sign = md5.Digest(total.GetString(),total.GetLength() * sizeof(TCHAR));
 
   if(!md5.GetError().IsEmpty())
   {
@@ -2264,8 +2303,8 @@ SOAPMessage::EncryptBody()
                         SetElement(cdata,  _T("ds:CypherValue"),     bodyString);
 
   // Our default namespace settings
-  SetAttribute(custTok,"wsu:Id","MyToken");
-  SetElementNamespace(custTok,"sym",DEFAULT_NAMESPACE);
+  SetAttribute(custTok,_T("wsu:Id"),_T("MyToken"));
+  SetElementNamespace(custTok,_T("sym"),DEFAULT_NAMESPACE);
 
   // KeyInfo reference to the default namespace token
   XMLElement* secRef = SetElement(keyInfo,_T("wsse:SecurityTokenReference"),empty);
@@ -2300,24 +2339,22 @@ SOAPMessage::EncryptMessage(XString& p_message)
   // Create password token
   XString token = GetPasswordAsToken();
 
-  p_message =_T("<Envelope>\n"
-                "<xenc:EncryptionData>\n"
-
+  p_message = _T("<Envelope>\n")
+              _T("<xenc:EncryptionData>\n")
                 // Our token
-                "  <sym:CustomToken wsu:Id=\"MyToken\" xmlns:sym=\"" DEFAULT_NAMESPACE  "\">" + token + "</sym:CustomToken>\n"
-
+              _T("  <sym:CustomToken wsu:Id=\"MyToken\" xmlns:sym=\"" DEFAULT_NAMESPACE  "\">") + token + _T("</sym:CustomToken>\n")
                 // Key Info
-                "  <ds:KeyInfo>\n"
-                "    <wsse:SecurityTokenReference>\n"
-                "      <wsse:Reference URI=\"#MyToken\" />\n"
-                "    </wsse:SecurityTokenReference>\n"
-                "  </ds:KeyInfo>\n"
+              _T("  <ds:KeyInfo>\n")
+              _T("    <wsse:SecurityTokenReference>\n")
+              _T("      <wsse:Reference URI=\"#MyToken\" />\n")
+              _T("    </wsse:SecurityTokenReference>\n")
+              _T("  </ds:KeyInfo>\n")
                 // The real message (coded data)
-                "  <ds:CypherData>\n"
-                "    <ds:CypherValue>" + p_message + "</ds:CypherValue>\n"
-                "  </ds:CypherData>\n"
-                "</xenc:EncryptionData>\n"
-                "</Envelope>\n");
+              _T("  <ds:CypherData>\n")
+              _T("    <ds:CypherValue>") + p_message + _T("</ds:CypherValue>\n")
+              _T("  </ds:CypherData>\n")
+              _T("</xenc:EncryptionData>\n")
+              _T("</Envelope>\n");
 }
 
 // Get body signing and authentication from the security header
@@ -2448,6 +2485,7 @@ SOAPMessage::SetTokenProfile(XString p_user,XString p_password,XString p_created
 {
   XString namesp(NAMESPACE_SECEXT);
   XString secure(NAMESPACE_SECURITY);
+  XString unametoken(NAMESPACE_UNAMETOKEN);
   XString empty;
 
   XMLElement* header = FindElement(_T("Header"), false);
@@ -2487,16 +2525,29 @@ SOAPMessage::SetTokenProfile(XString p_user,XString p_password,XString p_created
     Crypto crypt;
     // Password text = Base64(SHA1(nonce + created + password))
     XString combined = p_nonce + p_created + p_password;
+
+    #ifdef _UNICODE
+    std::string basic = WinFile().TranslateOutputBuffer(combined);
+    XString password = crypt.Digest(basic.c_str(), basic.length(), CALG_SHA1);
+    #else
     XString password = crypt.Digest(combined.GetString(),combined.GetLength(),CALG_SHA1);
+    #endif
     passwd->SetValue(password);
-    SetAttribute(passwd,_T("Type"),namesp + _T("#PasswordDigest"));
+    SetAttribute(passwd,_T("Type"),unametoken + _T("#PasswordDigest"));
 
     XMLElement* nonce = FindElement(token,_T("Nonce"),false);
     if(!nonce)
     {
       nonce = AddElement(token,_T("wsse:Nonce"),XDT_String,"");
     }
-    nonce->SetValue(Base64::Encrypt(p_nonce));
+    Base64 base;
+
+    #ifdef _UNICODE
+    basic = WinFile().TranslateOutputBuffer(p_nonce);
+    nonce->SetValue(base.Encrypt((BYTE*)basic.c_str(), (int)basic.length()));
+    #else
+    nonce->SetValue(base.Encrypt(p_nonce));
+    #endif
     SetAttribute(nonce,_T("EncodingType"),secure + _T("#Base64Binary"));
   }
   else

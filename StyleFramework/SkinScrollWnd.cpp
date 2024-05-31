@@ -271,6 +271,7 @@ SkinScrollWnd::SkinScrollWnd()
   m_doPaint      = FALSE;
   m_doCapture    = FALSE;
   m_didCapture   = FALSE;
+  m_didTracking  = false;
   m_nScrollWid   = 16;
   m_nAngleType   = 0;
   m_lastColor    = RGB(0,0,0);
@@ -949,7 +950,7 @@ SkinScrollWnd::OnCaptureChanged(CWnd* pWnd)
 void
 SkinScrollWnd::SkinSetMouseTracking()
 {
-  if(m_captureFlags && m_hoverTime)
+  if(!m_didTracking && m_captureFlags && m_hoverTime)
   {
     TRACKMOUSEEVENT mouseEvent;
     mouseEvent.cbSize      = sizeof(TRACKMOUSEEVENT);
@@ -957,13 +958,14 @@ SkinScrollWnd::SkinSetMouseTracking()
     mouseEvent.dwHoverTime = m_hoverTime;
     mouseEvent.hwndTrack   = m_hWnd;
     _TrackMouseEvent(&mouseEvent);
+    m_didTracking = true;
   }
 }
 
 void
 SkinScrollWnd::SkinCancelMouseTracking()
 {
-  if(m_captureFlags && m_hoverTime)
+  if(m_didTracking && (m_captureFlags || m_hoverTime))
   {
     TRACKMOUSEEVENT mouseEvent;
     mouseEvent.cbSize      = sizeof(TRACKMOUSEEVENT);
@@ -971,6 +973,7 @@ SkinScrollWnd::SkinCancelMouseTracking()
     mouseEvent.dwHoverTime = 0;
     mouseEvent.hwndTrack   = m_hWnd;
     _TrackMouseEvent(&mouseEvent);
+    m_didTracking = false;
   }
 }
 

@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -110,7 +110,7 @@ XString GetAlertlogPath(int p_module)
       return it->second;
     }
   }
-  return "";
+  return _T("");
 }
 
 // Clean up all alert paths and modules
@@ -147,8 +147,8 @@ void CleanupAlerts()
 // Create the alert. Returns the alert number (natural ordinal number)
 __int64 CreateAlert(LPCTSTR p_function,LPCTSTR p_oserror,LPCTSTR p_eventdata,int p_module /*=0*/)
 {
-  // See if we are configured
-  if(g_alertPath == nullptr)
+  // See if we are configured and have something to do
+  if(g_alertPath == nullptr || _tcslen(p_eventdata) == 0)
   {
     return 0;
   }

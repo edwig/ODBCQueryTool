@@ -2,7 +2,7 @@
 //
 // File: FileDialog.h
 //
-// Copyright (c) 1998-2022 ir. W.E. Huisman
+// Copyright (c) 1998-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -221,13 +221,13 @@ class DocFileDialog
 {
 public:
   DocFileDialog(HWND    p_owner
-               ,bool    p_open              // true = open, false = SaveAs
-               ,XString p_title             // Title of the dialog
-               ,XString p_defext   = ""     // Default extension
-               ,XString p_filename = ""     // Default first file
-               ,int     p_flags    = 0      // Default flags
-               ,XString p_filter  = ""      // Filter for extensions
-               ,XString p_direct  = "");    // Default directory to start in
+               ,bool    p_open                  // true = open, false = SaveAs
+               ,XString p_title                 // Title of the dialog
+               ,XString p_defext   = _T("")     // Default extension
+               ,XString p_filename = _T("")     // Default first file
+               ,int     p_flags    = 0          // Default flags
+               ,XString p_filter   = _T("")     // Filter for extensions
+               ,XString p_direct   = _T(""));   // Default directory to start in
   ~DocFileDialog();
 
   int     DoModal();

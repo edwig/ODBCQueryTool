@@ -4,7 +4,7 @@
 //
 // Marlin Component: Internet server/client
 // 
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,7 +29,7 @@
 #include "AutoCritical.h"
 
 // Command line length in NT technology
-#define BUFFER_SIZE 8192
+#define BUFFER_SIZE             8192
 // Maximum wait 1 minute for input idle
 #define MAXWAIT_FOR_INPUT_IDLE 60000
 // After the process we must wait for the stdout to be completely read
@@ -55,12 +55,13 @@ public:
   int  WriteChildStdIn(PTCHAR lpszInput);
   void SetTimeoutIdle(ULONG p_timeout);
   void CloseChildStdIn();
+  bool SetStreamCharset(XString p_charset);
 
   // Virtual interface. Derived class must implement this!!
-  virtual void OnChildStarted    (PTCHAR lpszCmdLine) = 0;
-  virtual void OnChildStdOutWrite(PTCHAR lpszOutput)  = 0;
-  virtual void OnChildStdErrWrite(PTCHAR lpszOutput)  = 0;
-  virtual void OnChildTerminate  ()                   = 0;
+  virtual void OnChildStarted    (LPCTSTR lpszCmdLine) = 0;
+  virtual void OnChildStdOutWrite(LPCTSTR lpszOutput)  = 0;
+  virtual void OnChildStdErrWrite(LPCTSTR lpszOutput)  = 0;
+  virtual void OnChildTerminate  ()                    = 0;
 
   mutable int m_exitCode;
   mutable int m_eof_input;
@@ -111,5 +112,16 @@ protected:
   int ProcessThread();
 
 protected:
+  // Unicode / 8-bits variants
+  int StdOutThreadUnicode(HANDLE hStdOutRead);
+  int StdErrThreadUnicode(HANDLE hStdErrRead);
+  int StdOutThread8Bits  (HANDLE hStdOutRead);
+  int StdErrThread8Bits  (HANDLE hStdErrRead);
+  int WriteChildStdInputUnicode(PTCHAR lpszInput);
+  int WriteChildStdInput8Bits  (PTCHAR lpszInput);
+  //  Data
+  XString          m_streamCharset;
+  bool             m_charsetIsCurrent;
+  bool             m_charsetIs16Bit;
   CRITICAL_SECTION m_critical;
 };

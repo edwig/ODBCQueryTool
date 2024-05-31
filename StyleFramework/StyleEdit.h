@@ -145,6 +145,7 @@ protected:
   afx_msg void    OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
   afx_msg void    OnWindowPosChanged(WINDOWPOS* lpwndpos);
   afx_msg void    OnNcCalcSize(BOOL calcValidRects,NCCALCSIZE_PARAMS* params);
+  afx_msg void    OnDropFiles(HDROP p_drop);
 public:
   afx_msg void    OnMouseMove (UINT   nFlags,CPoint point);
   afx_msg LRESULT OnMouseHover(WPARAM wParam,LPARAM lParam);

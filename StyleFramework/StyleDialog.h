@@ -23,6 +23,7 @@ class StyleComboBox;
 class AutoBlockActivation;
 using ToolTips = std::map<HWND,LPCTSTR>;
 
+// Used for sending messages to all child windows
 typedef struct
 {
   UINT   MessageId;
@@ -56,6 +57,7 @@ public:
   virtual BOOL    InitFirstFocus();
   virtual bool    OnClosing();
   virtual void    SetupDynamicLayout();
+  virtual void    OnDroppedFile(UINT p_id,UINT p_index,LPCTSTR p_fileName);
 
   void    ReDrawFrame();
   void    ShowSysMenu     (bool p_sysmenu     = true);
@@ -125,6 +127,7 @@ protected:
   afx_msg void    OnStyleLime();
   afx_msg void    OnStyleSkyblue();
   afx_msg void    OnStylePurple();
+  afx_msg void    OnStyleMustard();
   afx_msg void    OnStyleModerateGray();
   afx_msg void    OnStylePureGray();
   afx_msg void    OnStyleBlackWhite();
@@ -134,6 +137,7 @@ protected:
   bool      m_down        { false   };  // mouse pressed in m_closeRect
   bool      m_dtsize      { false   };  // Down-to-size above task bar
   bool      m_menuFocus   { false   };  // System menu has the focus
+  bool      m_trackMouse  { false   };  // Non client area is capturing the mouse
   // Button rectangles
   CRect     m_sysRect     { 0,0,0,0 };  // System   button rectangle
   CRect     m_minRect     { 0,0,0,0 };  // Minimize button rectangle

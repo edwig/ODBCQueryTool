@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -37,7 +37,7 @@ int     AsInteger(XString p_string);
 double  AsDouble(XString p_string);
 bcd     AsBcd(XString p_string);
 
-int     SplitString(XString p_string,std::vector<XString>& p_vector,char p_separator = ',',bool p_trim = false);
+int     SplitString(XString p_string,std::vector<XString>& p_vector,TCHAR p_separator = _T(','),bool p_trim = false);
 void    NormalizeLineEndings(XString& p_string);
 
 // Find the position of the matching bracket
@@ -52,3 +52,6 @@ bool    SplitArgument(int& p_pos,const CString& p_data,TCHAR p_splitter,CString&
 // Unicode aware Clipboard handling
 XString GetStringFromClipboard(HWND p_wnd = NULL);
 bool    PutStringToClipboard(XString p_string,HWND p_wnd = NULL,bool p_append = false);
+
+// Count the number of instances of a character in a string
+int     CountOfChars(XString p_string,TCHAR p_char);

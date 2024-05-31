@@ -2,7 +2,7 @@
 //
 // File: SQLVariantFormat.h
 //
-// Copyright (c) 1998-2022 ir. W.E. Huisman
+// Copyright (c) 1998-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -26,13 +26,13 @@
 #pragma once
 #include "SQLVariant.h"
 #include "SQLDatabase.h"
-#include "bcd.h"
+#include <bcd.h>
 
 namespace SQLComponents
 {
 
 // User status
-#define USER_DISPLAY		   1
+#define USER_DISPLAY         1
 #define NUMBER_BUFFER_SIZE 100
 
 class SQLVariantFormat
@@ -49,17 +49,17 @@ public:
   // First letter of first word starts with a capital
   void        StringStartCapital();
   // Set current date and time
-  void        SetCurrentDate();
+  void        SetCurrentDateAndTime();
   // Format the date
   int         FormatDate(XString p_pattern);
   // Is a constant or a numeric / IsConstanteOfNummer
   bool        IsConstantOrNumber(char p_seperator = '.');
   // Converting European values to system values
-  int         StrValutaNLOmzetten(XString& p_string,bool p_enkelValuta);
+  int         RemoveValutaEuro(XString& p_string,bool p_enkelValuta);
   // Converting American $ values to dutch values
-  int         StrValutaAMOmzetten(XString& p_string,bool p_enkelValuta);
+  int         RemoveValutaDollar(XString& p_string,bool p_enkelValuta);
   // Value of a string as a double
-  double      StringDoubleValue();
+  bcd         StringDecimalValue(XString& p_error);
   // Format according to user interface
   int         FormatNumber(XString p_format,bool p_currency);
   // Do math on dates
@@ -75,6 +75,8 @@ public:
 private:
   // Internal formatting of a number by a template
   int         FormatNumberTemplate(LPTSTR Getal,LPCTSTR strNumFormat,int p_buflen);
+  // Internal formatting of an interval
+  XString     FormatVariantAsInterval(SQLDatabase* p_database);
   // Scan for '23-09-2012' or for '2012-09-23' // Beware "09/23/2012" is not supported!
   bool        GetDateFromStringVariant(const SQLVariant* p_variant,XString p_format,DATE_STRUCT* p_date);
   bool        GetTimeFromStringVariant(const SQLVariant* p_variant,XString p_format,TIME_STRUCT* p_date);

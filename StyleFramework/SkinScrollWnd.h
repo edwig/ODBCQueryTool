@@ -62,6 +62,7 @@ public:
   BOOL          m_doTimer;      // Keep polling the scroll positions
   BOOL          m_doCapture;    // Skin must capture the mouse for the control
   BOOL          m_didCapture;   // Skin has an active mouse capture
+  bool          m_didTracking;  // Skin is tracking the mouse
   DWORD         m_captureFlags; // Mouse move capture flags (TME_HOVER / TM_LEAVE)
   DWORD         m_hoverTime;    // hover time in milliseconds
   BOOL          m_doPaint;      // Paint pass-through

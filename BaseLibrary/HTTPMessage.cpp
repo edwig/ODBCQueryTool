@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2022 ir. W.E. Huisman
+// Copyright (c) 2014-2024 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -141,6 +141,7 @@ HTTPMessage::HTTPMessage(HTTPMessage* p_msg,bool p_deep /*=false*/)
             ,m_referrer      (p_msg->m_referrer)
             ,m_user          (p_msg->m_user)
             ,m_password      (p_msg->m_password)
+            ,m_sendUnicode   (p_msg->m_sendUnicode)
 {
   // Taking a duplicate token
   if(DuplicateTokenEx(p_msg->m_token
@@ -194,6 +195,7 @@ HTTPMessage::HTTPMessage(HTTPCommand p_command,const SOAPMessage* p_msg)
             ,m_headers       (*p_msg->GetHeaderMap())
             ,m_url           (p_msg->GetURL())
             ,m_cracked       (p_msg->GetCrackedURL())
+            ,m_sendUnicode   (p_msg->GetSendUnicode())
 {
   memset(&m_systemtime,0,sizeof(SYSTEMTIME));
 
@@ -223,14 +225,15 @@ HTTPMessage::HTTPMessage(HTTPCommand p_command,const SOAPMessage* p_msg)
     encoding = Encoding::LE_UTF16;
   }
 
-  int acp = -1;
   switch(encoding)
   {
-    case Encoding::Default:   acp =    -1; break; // Find Active Code Page
-    case Encoding::UTF8:     acp = 65001; break; // See ConvertWideString.cpp
-    case Encoding::LE_UTF16: acp =  1200; break; // See ConvertWideString.cpp
-//  case Encoding::ISO88591: acp = 28591; break; // See ConvertWideString.cpp
-    default:                              break;
+    case Encoding::Default:  charset = CodepageToCharset(-1);
+                             break;
+    case Encoding::LE_UTF16: charset = "utf-16";
+                             break;
+    default:                 [[fallthrough]];
+    case Encoding::UTF8:     charset = "utf-8";
+                             break;
   }
 
   // Reconstruct the content type header
@@ -265,6 +268,7 @@ HTTPMessage::operator=(const JSONMessage& p_msg)
   m_status         = p_msg.GetStatus();
   m_user           = p_msg.GetUser();
   m_password       = p_msg.GetPassword();
+  m_sendUnicode    = p_msg.GetSendUnicode();
   m_headers        =*p_msg.GetHeaderMap();
   memset(&m_systemtime,0,sizeof(SYSTEMTIME));
 
@@ -289,9 +293,6 @@ HTTPMessage::operator=(const JSONMessage& p_msg)
   // Copy all routing
   m_routing = p_msg.GetRouting();
 
-  // Setting the payload of the message
-  SetBody(p_msg.GetJsonMessage());
-
   // Take care of character encoding
   XString charset = FindCharsetInContentType(m_contentType);
   Encoding encoding = p_msg.GetEncoding();
@@ -301,14 +302,15 @@ HTTPMessage::operator=(const JSONMessage& p_msg)
     encoding = Encoding::LE_UTF16;
   }
 
-  int acp = -1;
   switch(encoding)
   {
-    case Encoding::Default:    acp =    -1; break; // Find Active Code Page
-    case Encoding::UTF8:      acp = 65001; break; // See ConvertWideString.cpp
-    case Encoding::LE_UTF16:  acp =  1200; break; // See ConvertWideString.cpp
-//  case Encoding::ISO88591:  acp = 28591; break; // See ConvertWideString.cpp
-    default:                               break;
+    case Encoding::Default:   charset = CodepageToCharset(-1);
+                              break;
+    case Encoding::LE_UTF16:  charset = "utf-16"; 
+                              break;
+    default:                  [[fallthrough]];
+    case Encoding::UTF8:      charset = "utf-8";  
+                              break;
   }
 
   // Reconstruct the content type header
@@ -316,7 +318,7 @@ HTTPMessage::operator=(const JSONMessage& p_msg)
   m_contentType.AppendFormat(_T("; charset=%s"),charset.GetString());
 
   // Set body 
-  ConstructBodyFromString(p_msg.GetJsonMessage(Encoding::Default),charset,p_msg.GetSendBOM());
+  ConstructBodyFromString(p_msg.GetJsonMessage(),charset,p_msg.GetSendBOM());
 
   // Make sure we have a server name for host headers
   CheckServer();
@@ -328,6 +330,8 @@ HTTPMessage::operator=(const JSONMessage& p_msg)
 void
 HTTPMessage::ConstructBodyFromString(XString p_string,XString p_charset,bool p_withBom)
 {
+  int length = 0;
+
 #ifdef UNICODE
   // Set body 
   if(p_charset.CompareNoCase(_T("utf-16")) == 0)
@@ -337,12 +341,12 @@ HTTPMessage::ConstructBodyFromString(XString p_string,XString p_charset,bool p_w
     {
       p_string = ConstructBOMUTF16() + p_string;
     }
-    SetBody(p_string);
+    SetBody(p_string,p_charset);
+    length = p_string.GetLength() * sizeof(TCHAR);
   }
   else
   {
     uchar* buffer = nullptr;
-    int length = 0;
     if(TryCreateNarrowString(p_string,p_charset,p_withBom,&buffer,length))
     {
       SetBody(buffer,length);
@@ -358,13 +362,12 @@ HTTPMessage::ConstructBodyFromString(XString p_string,XString p_charset,bool p_w
   }
 #else
   // Set body 
-  if(p_charset.CompareNoCase("utf-16") == 0)
+  if(p_charset.CompareNoCase(_T("utf-16")) == 0)
   {
     uchar* buffer = nullptr;
-    int    length = 0;
-    if(TryCreateWideString(p_string,p_charset,p_withBom,&buffer,length))
+    if(TryCreateWideString(p_string,_T(""),p_withBom,&buffer,length))
     {
-      SetBody(buffer,length + p_withBom ? 2 : 0);
+      SetBody(buffer,length);
       delete[] buffer;
     }
     else
@@ -378,9 +381,16 @@ HTTPMessage::ConstructBodyFromString(XString p_string,XString p_charset,bool p_w
   else
   {
     // Simply record as our body
-    SetBody(p_string);
+    SetBody(p_string,p_charset);
+    length = p_string.GetLength();
   }
 #endif
+  // Set the correct content length after constructing the body
+  XString cl;
+  cl.Format(_T("%d"),length);
+
+  DelHeader(_T("Content-Length"));
+  AddHeader(_T("Content-Length"),cl);
 }
 
 // General DTOR
@@ -395,17 +405,21 @@ HTTPMessage::~HTTPMessage()
 
 // Recycle the object for usage in a return message
 void
-HTTPMessage::Reset()
+HTTPMessage::Reset(bool p_resetURL /*=false*/)
 {
   m_command       = HTTPCommand::http_response;
   m_status        = HTTP_STATUS_OK;
   m_ifmodified    = false;
   memset(&m_systemtime,0,sizeof(SYSTEMTIME));
 
-  // Reset resulting cracked URL;
-  m_cracked.Reset();
+  // Reset resulting cracked URL
+  if(p_resetURL)
+  {
+    m_url.Empty();
+    m_cracked.Reset();
+  }
+
   // Resetting members
-  m_url.Empty();
   m_user.Empty();
   m_password.Empty();
   m_buffer.Reset();
@@ -460,32 +474,45 @@ HTTPMessage::GetVerb()
 }
 
 // Getting the whole body as one string of chars
-// No embedded '0' are possible!!
 XString
 HTTPMessage::GetBody()
 {
   XString answer;
-  uchar*  buffer = NULL;
+  BYTE*   buffer = NULL;
   size_t  length = 0;
+  bool  foundBom = false;
 
-  if(m_buffer.GetHasBufferParts())
+  if(m_buffer.GetBufferCopy(buffer,length))
   {
-    int part = 0;
-    while(m_buffer.GetBufferPart(part++,buffer,length))
+    XString contenttype = m_contentType.IsEmpty() ? GetHeader(_T("Content-Type")) : m_contentType;
+    XString charset = FindCharsetInContentType(contenttype);
+
+#ifdef UNICODE
+    if(m_sendUnicode || charset.CompareNoCase(_T("utf-16")) == 0)
     {
-      if(buffer)
-      {
-        answer.Append(reinterpret_cast<TCHAR*>(buffer),(int)length);
-      }
+      // Direct buffer copy
+      answer = (LPCTSTR) buffer;
     }
-  }
-  else
-  {
-    m_buffer.GetBuffer(buffer,length);
-    if(buffer)
+    else // Charset is filled
     {
-      answer.Append(reinterpret_cast<TCHAR*>(buffer),(int)length);
+      TryConvertNarrowString(buffer,(int)length,charset,answer,foundBom);
     }
+#else
+    if(m_sendUnicode || charset.CompareNoCase(_T("utf-16")) == 0)
+    {
+      TryConvertWideString(buffer,(int)length,_T("utf-16"),answer,foundBom);
+    }
+    else if(!charset.IsEmpty())
+    {
+      XString buff(buffer);
+      answer = DecodeStringFromTheWire(buff,charset);
+    }
+    else
+    {
+      answer = (LPCTSTR) buffer;
+    }
+#endif
+    delete[] buffer;
   }
   return answer;
 }
@@ -540,20 +567,45 @@ HTTPMessage::SetURL(const XString& p_url)
 }
 
 void
-HTTPMessage::SetBody(XString p_body,XString p_encoding /*=""*/)
+HTTPMessage::SetBody(XString p_body,XString p_charset /*=""*/)
 {
-  if(!p_encoding.IsEmpty())
+#ifdef UNICODE
+  if(m_sendUnicode || p_charset.CompareNoCase(_T("utf-16")) == 0)
   {
-    p_body = EncodeStringForTheWire(p_body.GetString(),p_encoding);
+    m_buffer.SetBuffer((uchar*) p_body.GetString(),p_body.GetLength() * sizeof(TCHAR));
   }
-  m_buffer.SetBuffer(reinterpret_cast<uchar*>(const_cast<PTCHAR>(p_body.GetString())),p_body.GetLength() * sizeof(TCHAR));
+  else
+  {
+    BYTE* buffer = nullptr;
+    int length = 0;
+    if(TryCreateNarrowString(p_body,p_charset,false,&buffer,length))
+    {
+      m_buffer.SetBuffer(buffer,length);
+    }
+    delete[] buffer;
+  }
+#else
+  if(m_sendUnicode || p_charset.CompareNoCase(_T("utf-16")) == 0)
+  {
+    BYTE* buffer = nullptr;
+    int   length = 0;
+    TryCreateWideString(p_body,_T(""),false,&buffer,length);
+    m_buffer.SetBuffer(buffer,length);
+    delete[] buffer;
+  }
+  else
+  {
+    p_body = EncodeStringForTheWire(p_body.GetString(),p_charset);
+    m_buffer.SetBuffer((uchar*) p_body.GetString(),p_body.GetLength());
+}
+#endif
 }
 
 void
-HTTPMessage::SetBody(LPCTSTR  p_body,XString p_encoding /*=""*/)
+HTTPMessage::SetBody(LPCTSTR  p_body,XString p_charset /*=""*/)
 {
   XString body(p_body);
-  SetBody(body,p_encoding);
+  SetBody(body,p_charset);
 }
 
 void 
@@ -926,17 +978,21 @@ HTTPMessage::DelHeader(XString p_name)
 // Convert system time to HTTP time string
 // leaves the m_systemtime member untouched!!
 XString
-HTTPMessage::HTTPTimeFormat(PSYSTEMTIME p_systime /*=NULL*/)
+HTTPMessage::HTTPTimeFormat(PSYSTEMTIME p_systime /*=nullptr*/)
 {
   XString    result;
-  SYSTEMTIME sTime;
+  SYSTEMTIME systime;
 
   // Getting the current time if not given
   // WINDOWS API does also this if p_systime is empty
-  if(p_systime == nullptr)
+  if(p_systime == nullptr || (p_systime->wYear   == 0 &&
+                              p_systime->wMonth  == 0 && 
+                              p_systime->wDay    == 0 &&
+                              p_systime->wHour   == 0 && 
+                              p_systime->wMinute == 0))
   {
-    p_systime = &sTime;
-    ::GetSystemTime(&sTime);
+    p_systime = &systime;
+    ::GetSystemTime(&systime);
   }
   // Convert the current time to HTTP format.
   if(!HTTPTimeFromSystemTime(p_systime,result))
@@ -1082,7 +1138,7 @@ HTTPMessage::SetMultiPartURLPost(MultiPartBuffer* p_buffer)
   // Set parameters together as the body
   XString parameters = url.AbsolutePath();
   parameters.TrimLeft('?');
-  SetBody(parameters);
+  SetBody(parameters,_T("utf-8"));
 
   return true;
 }
@@ -1108,12 +1164,11 @@ HTTPMessage::SetMultiPartBuffer(MultiPartBuffer* p_buffer)
   do
   {
     XString header = part->CreateHeader(boundary,p_buffer->GetFileExtensions());
-    m_buffer.AddBuffer(reinterpret_cast<uchar*>(const_cast<PTCHAR>(header.GetString())),(size_t)(header.GetLength() * sizeof(TCHAR)));
+    m_buffer.AddStringToBuffer(header,_T("utf-8"),false);
     if(part->GetShortFileName().IsEmpty())
     {
       // Add data
-      m_buffer.AddBufferCRLF(reinterpret_cast<uchar*>(const_cast<PTCHAR>(part->GetData().GetString()))
-                            ,(size_t)(part->GetData().GetLength() * sizeof(TCHAR)));
+      m_buffer.AddStringToBuffer(part->GetData(),part->GetCharset(),true);
     }
     else
     {
@@ -1124,7 +1179,7 @@ HTTPMessage::SetMultiPartBuffer(MultiPartBuffer* p_buffer)
       partBuffer->GetBuffer(buf,size);
       if(buf && size)
       {
-        m_buffer.AddBufferCRLF(buf, size);
+        m_buffer.AddBufferCRLF(buf,size);
       }
     }
     // At least one part added
@@ -1137,12 +1192,10 @@ HTTPMessage::SetMultiPartBuffer(MultiPartBuffer* p_buffer)
   // The ending boundary after the last part
   // Beware. Does NOT end with CR-LF but two hyphens!
   XString lastBoundary = _T("--") + boundary + _T("--");
-  m_buffer.AddBuffer(reinterpret_cast<uchar*>(const_cast<PTCHAR>(lastBoundary.GetString()))
-                    ,(size_t)(lastBoundary.GetLength() * sizeof(TCHAR)));
+  m_buffer.AddStringToBuffer(lastBoundary,_T("utf-8"),false);
 
   return result;
 }
-
 
 // HTTPMessages can be stored elsewhere. Use the reference mechanism to add/drop references
 // With the drop of the last reference, the object WILL destroy itself

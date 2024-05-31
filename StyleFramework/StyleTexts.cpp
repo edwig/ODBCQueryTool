@@ -307,7 +307,7 @@ static void LoadFXTexts()
     AddStyleText(g_fxtext[index].m_id,g_fxtext[index].m_word,g_fxtext[index].m_language);
   }
 
-  // Load external texts
+  // Load external texts: Plain ASCII file!
   FILE* file = nullptr;
   if(_tfopen_s(&file,_T("StyleTexts.txt"),_T("r")) == 0 && file != nullptr)
   {
