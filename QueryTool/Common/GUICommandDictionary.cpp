@@ -409,13 +409,11 @@ static void walk_menu (HMENU& hMenu, MenuItemVector& menuitems)
         {
             _ASSERTE(mii.cch < sizeof buffer);
 
-            buffer[sizeof buffer - 1] = '\0';
-            LPCTSTR text = (LPCTSTR)mii.dwTypeData;
+            LPTSTR text = (LPTSTR)(mii.dwTypeData);
 
             if (mii.hSubMenu != NULL)
             {
                 //TRACE1("\t%s\n", text);
-
                 walk_menu(mii.hSubMenu, menuitems);
             }
             else if (mii.fType == MFT_STRING)
