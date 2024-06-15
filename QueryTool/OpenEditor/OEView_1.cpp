@@ -217,7 +217,7 @@ COEditorView::COEditorView ()
     m_bDragScrolling          = FALSE;
     m_currentError            = 0;
     m_scriptOutput            = NULL;
-    m_scriptCompare           = false;
+    m_scriptCompare           = true;
     m_scriptSelect            = false;
     m_ifLast                  = false;
     m_inboundBufferSize       = 0;

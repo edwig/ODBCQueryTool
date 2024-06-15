@@ -109,6 +109,8 @@ the next printing command will be skipped. So you can write
 :if variable4 <> 123;
 :print 'ERROR Should give a result of 123';
 
+You can use the following operators: =, <>, <=, >=, >, <
+
 The 'rebind' command
 --------------------
 The rebind command makes it possible to bind a datatype as a different one.
