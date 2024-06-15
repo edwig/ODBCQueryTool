@@ -98,6 +98,35 @@ StyleTab::SetupDynamicLayout()
   }
 }
 
+// NOW MISSING FROM AFX in HandleInitDialog()
+BOOL
+StyleTab::InitFirstFocus()
+{
+  BOOL bResult = TRUE;
+  CWnd* pWndNext = GetNextDlgTabItem(nullptr);
+  if(pWndNext != NULL)
+  {
+    // Activate first control in the dialog
+    CString text;
+    pWndNext->GetWindowText(text);
+    if(text.Compare(_T("CXSF")) == 0)
+    {
+      SkinScrollWnd* skin = dynamic_cast<SkinScrollWnd*>(pWndNext);
+      if(skin)
+      {
+        CWnd* control = skin->m_wndLimit.GetWindow(GW_CHILD);
+        if(control)
+        {
+          pWndNext = control;
+        }
+      }
+    }
+    pWndNext->SetFocus();
+    bResult = FALSE;
+  }
+  return bResult;
+}
+
 bool
 StyleTab::InitStyleTab(void* /*p_data*/)
 {

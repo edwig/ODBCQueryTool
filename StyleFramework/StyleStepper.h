@@ -57,7 +57,7 @@ public:
   virtual void SetButtonTextNext (CString p_text)   { m_textNext  = p_text; }
   virtual void SetButtonTextReady(CString p_text)   { m_textReady = p_text; }
   virtual void SetCaption(CString p_caption);
-
+  virtual void SetDefaultButton(bool p_prior = false,bool p_next = true);
   // GETTERS
   void*   GetStepperData()      { return m_data;      }
   int     GetPagesCount()       { return (int) m_pages.size(); }
@@ -65,6 +65,8 @@ public:
   CString GetButtonTextNext()   { return m_textNext;  }
   CString GetButtonTextReady()  { return m_textReady; }
   CString GetCaption()          { return m_caption;   }
+  // Steppers do not close with ENTER
+  virtual bool OnClosing();
 
 protected:
   virtual void DoDataExchange(CDataExchange* pDX) override;
@@ -83,6 +85,7 @@ protected:
   void ClearStepperArea();
   void AdjustSteperSize();
   void MoveButton(StyleButton& p_button,int x,int y);
+  void AdjustDefaultButtons();
 
 private:
   CString      m_caption;
@@ -96,6 +99,8 @@ private:
   CFont        m_titleFont;
   unsigned     m_activePage;
   void*        m_data;
+  bool         m_priorIsDefault { false };
+  bool         m_nextIsDefault  { true  };
 
   DECLARE_MESSAGE_MAP();
 
@@ -103,5 +108,6 @@ private:
   afx_msg void OnBnClickedPrior();
   afx_msg void OnBnClickedNext();
   afx_msg void OnSize(UINT p_type,int cx,int cy);
+  afx_msg void OnCancel();
 };
 
