@@ -598,7 +598,9 @@ SQLVariant::operator SQLGuid()
 
 SQLVariant::operator XString()
 {
-  return XString(GetAsChar());
+  XString string;
+  GetAsString(string);
+  return string;
 }
 
 SQLVariant::operator bcd()

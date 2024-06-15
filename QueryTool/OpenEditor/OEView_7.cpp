@@ -907,8 +907,8 @@ COEditorView::GetLineFromQuery(int row)
     {
       int len = var->GetDataSize();
       _TUCHAR* buffer = (_TUCHAR*) calloc(2,(len * 2) + 6);
-      const TCHAR* binbuf = var->GetAsChar();
-      _tcsncpy_s((TCHAR*)buffer,len*2+1,binbuf,len*2);
+      const void* binbuf = var->GetAsBinary();
+      _tcsncpy_s((TCHAR*)buffer,len*2+1,(TCHAR*)binbuf,len*2);
       buffer[len * 2]  = 0;
       text = (TCHAR*)buffer;
       m_gridView->InsertItem(row,k,text,DT_LEFT);
@@ -1274,7 +1274,7 @@ COEditorView::ScriptCommand(int p_line,CString &odbcCommand)
   odbcCommand.TrimLeft(':');
   odbcCommand.TrimLeft(' ');
   int end   = odbcCommand.Find(' ');
-  if(end >= 0)
+  if(end >= 0 && m_scriptCompare)
   {
     try
     {
@@ -1298,6 +1298,9 @@ COEditorView::ScriptCommand(int p_line,CString &odbcCommand)
     }
     _OE_DEFAULT_HANDLER_;
   }
+  // Can be set by the IF command!
+  m_scriptCompare = true;
+  m_ifLast        = false;
   return false;
 };
 
@@ -1310,23 +1313,24 @@ COEditorView::ScriptCommandPrint(int p_line,CString print)
     print.Trim();
     print.TrimLeft('\'');
     print.TrimRight('\'');
-    if(m_scriptCompare)
+    
+    if(print.Left(8).CompareNoCase(_T("variable")) == 0)
     {
-      m_scriptOutput->Write(CString(_T(":COMPARE OK\n")));
-    }
-    else
-    {
-      m_scriptOutput->Format(_T("%s\n"),print.GetString());
-      if(m_ifLast)
+      VarMap& variables = theApp.GetVariables();
+      int  numVariables = (int)variables.size();
+      int  toprint = _ttoi(print.Right(1));
+      if (toprint > 0 && toprint <= numVariables)
       {
-        error = _T("ERROR");
-        WriteOutputLine(p_line,0,_T(":print ") + print,error);
+        variables[toprint]->GetAsString(print);
       }
     }
+    m_scriptOutput->Format(_T("%s\n"),print.GetString());
+    if(m_ifLast)
+    {
+      error = _T("ERROR");
+      WriteOutputLine(p_line,0,_T(":print ") + print,error);
+    }
   }
-  // Can be set by the IF command!
-  m_scriptCompare = false;
-  m_ifLast        = false;
   return true;
 }
 
@@ -1470,6 +1474,49 @@ COEditorView::ScriptCommandRebind(int p_line,CString rebind)
   return false;
 }
 
+// Determine which operator has been used
+int
+COEditorView::FindIfOperator(CString& p_command,CString& p_operatorText)
+{
+  // 2 char operators
+  p_operatorText = p_command.Left(2);
+  if(p_operatorText.Compare(_T("<>")) == 0)
+  {
+    p_command = p_command.Mid(2);
+    return 1;
+  }
+  if(p_operatorText.Compare(_T("<=")) == 0)
+  {
+    p_command = p_command.Mid(2);
+    return 3;
+  }
+  if(p_operatorText.Compare(_T(">=")) == 0)
+  {
+    p_command = p_command.Mid(2);
+    return 4;
+  }
+
+  // 1 char operators
+  p_operatorText = p_command.Left(1);
+  if(p_operatorText.Compare(_T("=")) == 0)
+  {
+    p_command = p_command.Mid(1);
+    return 2;
+  }
+  if(p_operatorText.Compare(_T("<")) == 0)
+  {
+    p_command = p_command.Mid(1);
+    return 5;
+  }
+  if(p_operatorText.Compare(_T(">")) == 0)
+  {
+    p_command = p_command.Mid(1);
+    return 6;
+  }
+
+  return 0;
+}
+
 bool
 COEditorView::ScriptCommandIf(int p_line,CString command)
 {
@@ -1483,29 +1530,41 @@ COEditorView::ScriptCommandIf(int p_line,CString command)
   if(var.CompareNoCase(_T("variable")) == 0)
   {
     int numVar = _ttoi(command);
+    command = command.Mid(1);
     VarMap& varMap = theApp.GetVariables();
     VarMap::iterator it = varMap.find(numVar);
     if(it != varMap.end())
     {
       SQLVariant* var = it->second;
-      int pos = command.Find(_T("<>"));
-      if(pos > 0)
+      CString operatorText;
+
+      command.Trim();
+      int oper = FindIfOperator(command,operatorText);
+
+      if(oper)
       {
-        command = command.Mid(pos + 2);
         command.Trim();
         command.TrimLeft ('\'');
         command.TrimRight('\'');
 
         CString value;
 		    var->GetAsString(value);
-        m_scriptCompare = (command.Compare(value) == 0);
+        switch(oper)
+        {
+          case 1: m_scriptCompare = (value.Compare(command) != 0); break;
+          case 2: m_scriptCompare = (value.Compare(command) == 0); break;
+          case 3: m_scriptCompare = (value.Compare(command) <= 0); break;
+          case 4: m_scriptCompare = (value.Compare(command) >= 0); break;
+          case 5: m_scriptCompare = (value.Compare(command)  < 0); break;
+          case 6: m_scriptCompare = (value.Compare(command)  > 0); break;
+        }
         m_ifLast = true;
         if(m_scriptOutput && m_scriptOutput->GetIsOpen())
         {
           m_scriptOutput->Format(_T(":IF variable%d [%s] %s [%s]\n")
                                  ,numVar
                                  ,value.GetString()
-                                 ,m_scriptCompare ? _T("==") : _T("<>")
+                                 ,operatorText.GetString()
                                  ,command.GetString());
         }
         result = true;

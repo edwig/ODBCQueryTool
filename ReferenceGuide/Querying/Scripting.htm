@@ -75,7 +75,7 @@
 
     <p>As with all commands, the command begins with a ':' and ends in a ';'</p>
 
-    <p>The 'variable'&nbsp;command</p>
+    <h2>The 'variable'&nbsp;command</h2>
 
     <p>Use this command to define a variable and set a value in the variable. Alternativly you can define a type binding for
     the query input. You are allowed a total maximum of 9 variables (1 to 9). The syntax is as follows:</p>
@@ -415,7 +415,7 @@
 
     <h2>The 'if' command</h2>
 
-    <p>This very limited 'if'&nbsp;command is for testing of a result value. If it does **NOT** meet the expected value. If the
+    <p>This very limited 'if'&nbsp;command is for testing of a result value. If it does meet the expected value. If the
     condition holds, the next scripting command will be executed. This makes it possible to report the missing of an expected
     value in the output file. Example:</p>
 
@@ -424,6 +424,9 @@
     <p><font face="Courier New">:print 'ERROR Should give a result of 123';</font></p>
 
     <p>Of course, when the variable has the desired value, the next command will be skipped.</p>
+
+    <p>The 'if' command can have various operators, as long as the left side is a variable and the right side is a text.
+    Operatoros that you can use are: '=', '&lt;&gt;', '&lt;', '&gt;', '&lt;=' and '&gt;='.</p>
 
     <h2>The 'rebind' command</h2>
 

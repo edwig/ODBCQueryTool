@@ -22,6 +22,21 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes 3.4.3
+------------------
+The scripting :if command now has multiple operators: '=', '<>', '<', '>', '<=', '>='
+The value of a variable can now be printed in the :print command to the output file
+Fixed a bug in the variables dialog (See menu: Script/Variables)
+
+Releasenotes 3.4.2
+------------------
+Updated the libraries to the latest version. After a half year of testing: fixing 
+a lot of small Unicode bugs
+Added the 'mustard' (yelow) and 'dark' themes
+Fixed a bug in the object-discovery of the Firebird drivers.
+Columns of tables and procedure arguments are working again.
+Fixed a bug in the installer. Check on 'not-yet-installed' added
+
 Releasenotes 3.4.1
 ------------------
 Fixed a bug getting the database "Ping" from Firebird. 

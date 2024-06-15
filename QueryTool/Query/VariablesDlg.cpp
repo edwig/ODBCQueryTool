@@ -119,7 +119,7 @@ VariablesDlg::OnInitDialog()
     m_typeCombo4.AddString(types->name);
     ++types;
   }
-  m_variableString1 = m_variable1->GetAsChar();
+  m_variable1->GetAsString(m_variableString1);
   m_type1           = m_variable1->GetDataType();
   m_length1         = m_variable1->GetBinaryPieceSize();
   CString type      = SQLDataType::FindDatatype(m_type1);
@@ -128,7 +128,7 @@ VariablesDlg::OnInitDialog()
   m_AtExec1.SetCheck(m_variable1->GetAtExec());
   SetParam(m_inoutCombo1,m_variable1->GetParameterType());
 
-  m_variableString2 = m_variable2->GetAsChar();
+  m_variable2->GetAsString(m_variableString2);
   m_type2           = m_variable2->GetDataType();
   m_length2         = m_variable2->GetBinaryPieceSize();
   type              = SQLDataType::FindDatatype(m_type2);
@@ -137,7 +137,7 @@ VariablesDlg::OnInitDialog()
   m_AtExec2.SetCheck(m_variable2->GetAtExec());
   SetParam(m_inoutCombo2,m_variable2->GetParameterType());
 
-  m_variableString3 = m_variable3->GetAsChar();
+  m_variable3->GetAsString(m_variableString3);
   m_type3           = m_variable3->GetDataType();
   m_length3         = m_variable3->GetBinaryPieceSize();
   type              = SQLDataType::FindDatatype(m_type3);
@@ -146,7 +146,7 @@ VariablesDlg::OnInitDialog()
   m_AtExec3.SetCheck(m_variable3->GetAtExec());
   SetParam(m_inoutCombo3,m_variable3->GetParameterType());
 
-  m_variableString4 = m_variable4->GetAsChar();
+  m_variable4->GetAsString(m_variableString4);
   m_type4           = m_variable4->GetDataType();
   m_length4         = m_variable4->GetBinaryPieceSize();
   type              = SQLDataType::FindDatatype(m_type4);
@@ -201,10 +201,10 @@ VariablesDlg::OnCbnSelchangeType1()
     m_type1 = SQLDataType::FindDatatype((LPTSTR)type.GetString());
 
     // Do the conversion
-    m_variableString1 = m_variable1->GetAsChar();
+    m_variable1->GetAsString(m_variableString1);
     m_variable1->SetData(m_type1,(LPTSTR)m_variableString1.GetString());
     // Could be reformatted
-    m_variableString1 = m_variable1->GetAsChar();
+    m_variable1->GetAsString(m_variableString1);
 
     UpdateData(FALSE);
   }
@@ -246,10 +246,10 @@ VariablesDlg::OnCbnSelchangeType2()
     m_type2 = SQLDataType::FindDatatype((LPTSTR)type.GetString());
 
     // Do the conversion
-    m_variableString2 = m_variable2->GetAsChar();
+    m_variable2->GetAsString(m_variableString2);
     m_variable2->SetData(m_type2,(LPTSTR)m_variableString2.GetString());
     // Could be reformatted
-    m_variableString2 = m_variable2->GetAsChar();
+    m_variable2->GetAsString(m_variableString2);
 
     UpdateData(FALSE);
   }
@@ -289,10 +289,10 @@ VariablesDlg::OnCbnSelchangeType3()
     m_type3 = SQLDataType::FindDatatype((LPTSTR)type.GetString());
 
     // Do the conversion
-    m_variableString3 = m_variable3->GetAsChar();
+    m_variable3->GetAsString(m_variableString3);
     m_variable3->SetData(m_type3,(LPTSTR)m_variableString3.GetString());
     // Could be reformatted
-    m_variableString3 = m_variable3->GetAsChar();
+    m_variable3->GetAsString(m_variableString3);
 
     UpdateData(FALSE);
   }
@@ -334,10 +334,10 @@ VariablesDlg::OnCbnSelchangeType4()
     m_type4 = SQLDataType::FindDatatype((LPTSTR)type.GetString());
 
     // Do the conversion
-    m_variableString4 = m_variable4->GetAsChar();
+    m_variable4->GetAsString(m_variableString4);
     m_variable4->SetData(m_type4,(LPTSTR)m_variableString4.GetString());
     // Could be reformatted
-    m_variableString4 = m_variable4->GetAsChar();
+    m_variable4->GetAsString(m_variableString4);
 
     UpdateData(FALSE);
   }
