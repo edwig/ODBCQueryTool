@@ -311,8 +311,11 @@ StyleEdit::SetEmpty(bool p_empty,CString p_text)
     m_emptyText = p_text;
   }
   m_empty = p_empty;
-  CEdit::SetWindowText(p_text);
-  SetPassword(m_password);
+  if(GetSafeHwnd())
+  {
+    CEdit::SetWindowText(p_text);
+    SetPassword(m_password);
+  }
 }
 
 bool

@@ -75,3 +75,5 @@ CString GetStyleText(int p_id,               StyleLanguage p_language = StyleLan
 #define TXT_PRINT_DATE       29
 #define TXT_BOOLEAN_TRUE     30
 #define TXT_BOOLEAN_FALSE    31
+#define TXT_WIZARD           32
+#define TXT_CANCEL_WIZARD    33

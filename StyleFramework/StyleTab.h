@@ -28,6 +28,7 @@ public:
 
   void SetCanResize(bool p_resize = true);
   virtual void OnDroppedFile(UINT p_id,UINT p_index,LPCTSTR p_fileName);
+  virtual BOOL InitFirstFocus();
 
   // Stepper and other logic
   virtual bool InitStyleTab (void* p_data);

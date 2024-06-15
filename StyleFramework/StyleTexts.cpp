@@ -291,6 +291,16 @@ g_fxtext[] =
  ,{ StyleLanguage::SL_DUTCH,   TXT_BOOLEAN_FALSE, _T("ONWAAR")  }
  ,{ StyleLanguage::SL_GERMAN,  TXT_BOOLEAN_FALSE, _T("FALSCH")  }
  ,{ StyleLanguage::SL_FRENCH,  TXT_BOOLEAN_FALSE, _T("FAUX")    }
+
+ ,{ StyleLanguage::SL_ENGLISH, TXT_WIZARD,        _T("Wizard")      }
+ ,{ StyleLanguage::SL_DUTCH,   TXT_WIZARD,        _T("Wizard")      }
+ ,{ StyleLanguage::SL_GERMAN,  TXT_WIZARD,        _T("Assistenten") }
+ ,{ StyleLanguage::SL_FRENCH,  TXT_WIZARD,        _T("Assistant")   }
+
+ ,{ StyleLanguage::SL_ENGLISH, TXT_CANCEL_WIZARD, _T("Do you want to leave the wizard?")      }
+ ,{ StyleLanguage::SL_DUTCH,   TXT_CANCEL_WIZARD, _T("Wilt u deze wizard verlaten?")          }
+ ,{ StyleLanguage::SL_GERMAN,  TXT_CANCEL_WIZARD, _T("Möchten Sie den Assistenten beenden?")  }
+ ,{ StyleLanguage::SL_FRENCH,  TXT_CANCEL_WIZARD, _T("Voulez-vous quitter l'assistant ?")     }
 };
 
 static void LoadFXTexts()
