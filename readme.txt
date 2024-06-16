@@ -26,7 +26,7 @@ Releasenotes 3.4.3
 ------------------
 The scripting :if command now has multiple operators: '=', '<>', '<', '>', '<=', '>='
 The value of a variable can now be printed in the :print command to the output file
-A variable can be assigned the value of another variable with ":variable<n> = variable<x>;"
+A variable can be assigned the value of another variable with ":variable<n> = variable<x>;" 
 Fixed a bug in the variables dialog (See menu: Script/Variables)
 
 Releasenotes 3.4.2
