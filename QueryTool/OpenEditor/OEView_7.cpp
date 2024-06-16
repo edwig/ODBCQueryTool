@@ -1620,9 +1620,14 @@ COEditorView::ScriptCommandVariable(int p_line,int p_varNum,CString p_tail)
       if(word.Left(8).CompareNoCase(_T("variable")) == 0)
       {
         int num = _ttoi(word.Mid(8));
-        if (num >= 0 && num <= (int)varMap.size())
+        if((num >= 0 && num <= (int)varMap.size()))
         {
-          varMap.at(num)->GetAsString(word);
+          // To make it more safe, the variables need to have the same datatype
+          if(varMap[num]->GetDataType() == var->GetDataType())
+          {
+            // Assign this value
+            varMap.at(num)->GetAsString(word);
+          }
         }
       }
       // Show as output
