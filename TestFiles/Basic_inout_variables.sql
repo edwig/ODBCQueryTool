@@ -19,7 +19,10 @@ SELECT id
 
 :select off;
 
--- Check variables in dialog: MENU "Script / Variables"
+:variable4 input CHAR;
+:variable4 = variable2;
+
+-- Check first 4 variables in dialog: MENU "Script / Variables"
 
 -- WRITE RESULT TO FILE
 :file write 'C:\tmp\Testfile_2.txt';
@@ -29,6 +32,7 @@ SELECT id
 :if variable3 <= 750;
 :print variable3;
 :file close;
+
 
 
 

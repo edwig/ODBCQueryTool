@@ -1615,10 +1615,22 @@ COEditorView::ScriptCommandVariable(int p_line,int p_varNum,CString p_tail)
       // Assignment
       word.TrimLeft('\'');
       word.TrimRight('\'');
+
+      // See if we must assign a variable
+      if(word.Left(8).CompareNoCase(_T("variable")) == 0)
+      {
+        int num = _ttoi(word.Mid(8));
+        if (num >= 0 && num <= (int)varMap.size())
+        {
+          varMap.at(num)->GetAsString(word);
+        }
+      }
+      // Show as output
       if(m_scriptOutput && m_scriptOutput->GetIsOpen())
       {
         m_scriptOutput->Format(_T(":ASSIGN variable%d = [%s]\n"),p_varNum,word.GetString());
       }
+      // Set the value
       var->SetData(var->GetDataType(),(TCHAR*)word.GetString());
       result = true;
     }
