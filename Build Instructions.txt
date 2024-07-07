@@ -1,0 +1,36 @@
+BUILD INSTRUCTIONS
+==================
+
+To build the ODBCQuerytool program and helpers (QueryRewriter, SQLMigrate)
+you need the following toolset:
+
+1)  Microsoft Visual Studio, preferrable the last version.
+    Version 2022 at the moment of this writing (july 2024)
+    Install with support for C++ and MFC (latest version)
+2)  The Microsoft "HTML Help Workshop"
+    This tool can be downloaded from the following link
+    https://learn.microsoft.com/en-us/previous-versions/windows/desktop/htmlhelp/microsoft-html-help-downloads
+3)  NSIS installer for 32 bits
+    This tool can be downloaded from the following link
+    https://nsis.sourceforge.io/Main_Page
+4)  NSIS installer for 64 bits
+    This tool is no longer developed, but can be downloaded from
+    https://web.archive.org/web/20160329184013/https://bitbucket.org/dgolub/nsis64
+
+After installing all the tools, follow these steps:
+
+A)  Start up Visual Studio and open the "ODBCQueryTool.sln" solution
+B)  Go to the "Build" / Batch build" menu
+C)  Push the button "Build all" and then "Build"
+D)  Sit back and relax and wait for all 8 versions to be bild
+    - 32 bits MBCS Debug
+    - 32 bits MBCS Release
+    - 32 bits Unicode Debug
+    - 32 bits Unicode Release
+    - 64 bits MBCS Debug
+    - 64 bits MBCS Release
+    - 64 bits Unicode Debug
+    - 64 bits Unicode Release
+OR
+E)  Just select one of these with the comboboxes in the main toolbar
+    and press F7 (Build)
