@@ -18,7 +18,7 @@
  !define PRODUCT_UNINST_KEY                   "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
  !define PRODUCT_UNINST_ROOT_KEY              "HKLM"
  !define MUI_HEADERIMAGE
- !define MUI_HEADERIMAGE_BITMAP               "..\..\ReferenceGuide\EDO.jpg"
+ !define MUI_HEADERIMAGE_BITMAP               "..\EDO.bmp"
  !define MUI_DIRECTORYPAGE_VERIFYONLEAVE
  
  ; map waar de bestanden zitten.
@@ -80,12 +80,12 @@
  !define MUI_UNICON "Query.ico"
  !define MUI_BGCOLOR F0F0F0
  !define MUI_HEADER_TRANSPARENT_TEXT
-; !define MUI_WELCOMEFINISHPAGE_BITMAP "edo.bmp"
+ !define MUI_WELCOMEFINISHPAGE_BITMAP "..\EdoCastle.bmp"
  !define MUI_LICENSEPAGE_BGCOLOR /grey
  !define MUI_COMPONENTSPAGE_NODESC
  !define MUI_COMPONENTSPAGE_TEXT_COMPLIST "To be installed"
  !define MUI_FINISHPAGE_NOAUTOCLOSE
- ;!define MUI_UNWELCOMEFINISHPAGE_BITMAP "edo.bmp"
+ !define MUI_UNWELCOMEFINISHPAGE_BITMAP "..\EdoCastle.bmp"
  !define MUI_UNFINISHPAGE_NOAUTOCLOSE
  !define MUI_ABORTWARNING
  !define MUI_ABORTWARNING_TEXT "Do you wish to abort the installation of ${PRODUCT_NAME} ?"
