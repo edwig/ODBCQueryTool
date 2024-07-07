@@ -27,6 +27,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution files", "Solution files", "{D5364850-013F-4713-8F8C-E65D1AFEB893}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
+		Build Instructions.txt = Build Instructions.txt
 		framework.h = framework.h
 		license.rtf = license.rtf
 		plan.txt = plan.txt
