@@ -1069,7 +1069,7 @@ SQLQuery::BindParameters()
 //     TRACE("Scale     : %d\n", scale);
 //     TRACE("Buffersize: %d\n", bufferSize);
 //     TRACE("Indicator : %d\n", (int)*indicator);
-//     TRACE("DATA      : %s\n", var->GetAsChar());
+//     TRACE("DATA      : %s\n", var->GetAsString());
 
     // Do the bindings
     m_retCode = SqlBindParameter(m_hstmt        // Statement handle

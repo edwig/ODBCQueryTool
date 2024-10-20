@@ -87,7 +87,7 @@ SQLInfoSQLServer::GetRDBMSPhysicalDatabaseName() const
   qry.DoSQLStatement(query);
   if(qry.GetRecord())
   {
-    return qry.GetColumn(1)->GetAsChar();
+    return qry.GetColumn(1)->GetAsString();
   }
   return XString(_T(""));
 }

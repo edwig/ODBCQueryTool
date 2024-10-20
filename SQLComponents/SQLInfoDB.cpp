@@ -147,7 +147,7 @@ SQLInfoDB::MakeInfoDefaultCharset(XString& p_default)
     qry.DoSQLStatement(sql);
     if(qry.GetRecord())
     {
-      m_defaultCharset = qry[1].GetAsChar();
+      m_defaultCharset = qry[1].GetAsString();
       m_defaultCharset = m_defaultCharset.Trim();
       p_default = m_defaultCharset;
       return true;
@@ -184,7 +184,7 @@ SQLInfoDB::MakeInfoDefaultCharsetNC(XString& p_default)
     qry.DoSQLStatement(sql);
     if(qry.GetRecord())
     {
-      m_defaultCharsetNCV = qry[1].GetAsChar();
+      m_defaultCharsetNCV = qry[1].GetAsString();
       p_default = m_defaultCharsetNCV;
       return true;
     }
@@ -219,7 +219,7 @@ SQLInfoDB::MakeInfoDefaultCollation(XString& p_default)
     qry.DoSQLStatement(sql);
     if(qry.GetRecord())
     {
-      m_defaultCollation = qry[1].GetAsChar();
+      m_defaultCollation = qry[1].GetAsString();
       p_default = m_defaultCollation;
       return true;
     }
@@ -452,12 +452,12 @@ SQLInfoDB::MakeInfoTablePrimary(MPrimaryMap&  p_primaries
       MetaPrimary prim;
 
       prim.m_catalog        = (XString) qry[1];
-      prim.m_catalog        = qry.GetColumn(1)->GetAsChar();
-      prim.m_schema         = qry.GetColumn(2)->GetAsChar();
-      prim.m_table          = qry.GetColumn(3)->GetAsChar();
-      prim.m_columnName     = qry.GetColumn(4)->GetAsChar();
+      prim.m_catalog        = qry.GetColumn(1)->GetAsString();
+      prim.m_schema         = qry.GetColumn(2)->GetAsString();
+      prim.m_table          = qry.GetColumn(3)->GetAsString();
+      prim.m_columnName     = qry.GetColumn(4)->GetAsString();
       prim.m_columnPosition = qry.GetColumn(5)->GetAsSLong();
-      prim.m_constraintName = qry.GetColumn(6)->GetAsChar();
+      prim.m_constraintName = qry.GetColumn(6)->GetAsString();
 
       p_primaries.push_back(prim);
     }
@@ -636,9 +636,9 @@ SQLInfoDB::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
       {
         MetaProcedure proc;
 
-        proc.m_catalogName   = qry.GetColumn(1)->GetAsChar();
-        proc.m_schemaName    = qry.GetColumn(2)->GetAsChar();
-        proc.m_procedureName = qry.GetColumn(3)->GetAsChar();
+        proc.m_catalogName   = qry.GetColumn(1)->GetAsString();
+        proc.m_schemaName    = qry.GetColumn(2)->GetAsString();
+        proc.m_procedureName = qry.GetColumn(3)->GetAsString();
 
         p_procedures.push_back(proc);
       }
@@ -650,15 +650,15 @@ SQLInfoDB::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
       {
         MetaProcedure proc;
 
-        proc.m_catalogName      = qry.GetColumn(1)->GetAsChar();
-        proc.m_schemaName       = qry.GetColumn(2)->GetAsChar();
-        proc.m_procedureName    = qry.GetColumn(3)->GetAsChar();
+        proc.m_catalogName      = qry.GetColumn(1)->GetAsString();
+        proc.m_schemaName       = qry.GetColumn(2)->GetAsString();
+        proc.m_procedureName    = qry.GetColumn(3)->GetAsString();
         proc.m_inputParameters  = qry.GetColumn(4)->GetAsSLong();
         proc.m_outputParameters = qry.GetColumn(5)->GetAsSLong();
         proc.m_resultSets       = qry.GetColumn(6)->GetAsSLong();
-        proc.m_remarks          = qry.GetColumn(7)->GetAsChar();
+        proc.m_remarks          = qry.GetColumn(7)->GetAsString();
         proc.m_procedureType    = qry.GetColumn(8)->GetAsSLong();
-        proc.m_source           = qry.GetColumn(9)->GetAsChar();
+        proc.m_source           = qry.GetColumn(9)->GetAsString();
 
         if(proc.m_source.IsEmpty() || proc.m_source.Compare(_T("<@>")) == 0)
         {
@@ -686,9 +686,9 @@ SQLInfoDB::MakeInfoPSMSourcecode(XString p_schema, XString p_procedure)
   {
     SQLQuery query(m_database);
     query.DoSQLStatement(sql);
-    while (query.GetRecord())
+    while(query.GetRecord())
     {
-      sourcecode += (XString)query[3];
+      sourcecode += query.GetColumn(3)->GetAsString();
     }
   }
   return sourcecode;
@@ -718,25 +718,25 @@ SQLInfoDB::MakeInfoPSMParameters(MParameterMap& p_parameters
     {
       MetaParameter param;
 
-      param.m_catalog       = qry.GetColumn(1)->GetAsChar();
-      param.m_schema        = qry.GetColumn(2)->GetAsChar();
-      param.m_procedure     = qry.GetColumn(3)->GetAsChar();
-      param.m_parameter     = qry.GetColumn(4)->GetAsChar();
+      param.m_catalog       = qry.GetColumn(1)->GetAsString();
+      param.m_schema        = qry.GetColumn(2)->GetAsString();
+      param.m_procedure     = qry.GetColumn(3)->GetAsString();
+      param.m_parameter     = qry.GetColumn(4)->GetAsString();
       param.m_columnType    = qry.GetColumn(5)->GetAsSLong();
       param.m_datatype      = qry.GetColumn(6)->GetAsSLong();
-      param.m_typeName      = qry.GetColumn(7)->GetAsChar();
+      param.m_typeName      = qry.GetColumn(7)->GetAsString();
       param.m_columnSize    = qry.GetColumn(8)->GetAsSLong();
       param.m_bufferLength  = qry.GetColumn(9)->GetAsSLong();
       param.m_decimalDigits = qry.GetColumn(10)->GetAsSLong();
       param.m_numRadix      = qry.GetColumn(11)->GetAsSLong();
       param.m_nullable      = qry.GetColumn(12)->GetAsSLong();
-      param.m_remarks       = qry.GetColumn(13)->GetAsChar();
-      param.m_default       = qry.GetColumn(14)->GetAsChar();
+      param.m_remarks       = qry.GetColumn(13)->GetAsString();
+      param.m_default       = qry.GetColumn(14)->GetAsString();
       param.m_datatype3     = qry.GetColumn(15)->GetAsSLong();
       param.m_subType       = qry.GetColumn(16)->GetAsSLong();
       param.m_octetLength   = qry.GetColumn(17)->GetAsSLong();
       param.m_position      = qry.GetColumn(18)->GetAsSLong();
-      param.m_isNullable    = qry.GetColumn(19)->GetAsChar();
+      param.m_isNullable    = qry.GetColumn(19)->GetAsString();
       // Trimming
       param.m_typeName = param.m_typeName.Trim();
 
@@ -789,11 +789,11 @@ SQLInfoDB::MakeInfoTableTriggers(MTriggerMap& p_triggers
     while(qry.GetRecord())
     {
       MetaTrigger trigger;
-      trigger.m_catalogName = qry.GetColumn(1)->GetAsChar();
-      trigger.m_schemaName  = qry.GetColumn(2)->GetAsChar();
-      trigger.m_tableName   = qry.GetColumn(3)->GetAsChar();
-      trigger.m_triggerName = qry.GetColumn(4)->GetAsChar();
-      trigger.m_remarks     = qry.GetColumn(5)->GetAsChar();
+      trigger.m_catalogName = qry.GetColumn(1)->GetAsString();
+      trigger.m_schemaName  = qry.GetColumn(2)->GetAsString();
+      trigger.m_tableName   = qry.GetColumn(3)->GetAsString();
+      trigger.m_triggerName = qry.GetColumn(4)->GetAsString();
+      trigger.m_remarks     = qry.GetColumn(5)->GetAsString();
       trigger.m_position    = qry.GetColumn(6)->GetAsSLong();
       trigger.m_before      = qry.GetColumn(7)->GetAsBoolean();
       trigger.m_insert      = qry.GetColumn(8)->GetAsBoolean();
@@ -803,9 +803,9 @@ SQLInfoDB::MakeInfoTableTriggers(MTriggerMap& p_triggers
       trigger.m_session     = qry.GetColumn(12)->GetAsBoolean();
       trigger.m_transaction = qry.GetColumn(13)->GetAsBoolean();
       trigger.m_rollback    = qry.GetColumn(14)->GetAsBoolean();
-      trigger.m_referencing = qry.GetColumn(15)->GetAsChar();
+      trigger.m_referencing = qry.GetColumn(15)->GetAsString();
       trigger.m_enabled     = qry.GetColumn(16)->GetAsBoolean();
-      trigger.m_source      = qry.GetColumn(17)->GetAsChar();
+      trigger.m_source      = qry.GetColumn(17)->GetAsString();
 
       // Some RDBMS'es have extra trailing spaces in these fields
       trigger.m_triggerName.Trim();
@@ -852,9 +852,9 @@ SQLInfoDB::MakeInfoTableSequences(MSequenceMap& p_sequences,XString& p_errors,XS
     {
       MetaSequence sequence;
 
-      sequence.m_catalogName  = qry.GetColumn(1)->GetAsChar();
-      sequence.m_schemaName   = qry.GetColumn(2)->GetAsChar();
-      sequence.m_sequenceName = qry.GetColumn(3)->GetAsChar();
+      sequence.m_catalogName  = qry.GetColumn(1)->GetAsString();
+      sequence.m_schemaName   = qry.GetColumn(2)->GetAsString();
+      sequence.m_sequenceName = qry.GetColumn(3)->GetAsString();
       sequence.m_currentValue = qry.GetColumn(4)->GetAsDouble();
       sequence.m_minimalValue = qry.GetColumn(5)->GetAsDouble();
       sequence.m_increment    = qry.GetColumn(6)->GetAsSLong();
@@ -1003,7 +1003,7 @@ SQLInfoDB::MakeInfoViewDefinition(XString& p_defintion,XString& p_errors,XString
       query.DoSQLStatement(sql);
       while(query.GetRecord())
       {
-        p_defintion += query.GetColumn(1)->GetAsChar();
+        p_defintion += query.GetColumn(1)->GetAsString();
       }
       result = true;
     }

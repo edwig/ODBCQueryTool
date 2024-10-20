@@ -50,8 +50,8 @@ public:
  ~SQLAssociation();
 
   // ACTIONS
-  SQLRecord* FollowToMaster();
-  RecordSet* FollowToDetails();
+  SQLRecord* FollowToMaster (bool p_all = true);
+  RecordSet* FollowToDetails(bool p_all = true);
 
   // SETTERS
   void SetMaster      (SQLDataSet* p_master)  { m_master = p_master; };

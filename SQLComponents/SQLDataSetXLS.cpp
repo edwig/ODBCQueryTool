@@ -204,7 +204,7 @@ SQLDataSetXLS::Commit()
           for(int ind = 0;ind < GetNumberOfFields(); ++ind)
           {
             if(ind) text += m_separator;
-            text += XString(_T("\"")) + XString(record->GetField(ind)->GetAsChar()) + _T("\"");
+            text += XString(_T("\"")) + record->GetField(ind)->GetAsString() + _T("\"");
           }
           WriteString(file,text,true);
         }

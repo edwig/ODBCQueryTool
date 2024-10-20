@@ -1076,7 +1076,7 @@ ObjectTree::FindParameters(HTREEITEM p_theItem)
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
     // Source
-    CString name = procedure.m_schemaName + _T(".") + procedure.m_procedureName;
+    CString name = procedure.m_schemaName + _T(".") + m_procedure;
     m_source.insert(std::make_pair(name, procedure.m_source));
     line.Format(_T("SQL Source: %d characters"), procedure.m_source.GetLength());
     item = InsertItem(line,info,TREE_SOURCECODE);
@@ -1084,7 +1084,7 @@ ObjectTree::FindParameters(HTREEITEM p_theItem)
 
     // Go find the parameters for the procedure
     MParameterMap parameters;
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoPSMParameters(parameters,errors,procedure.m_schemaName,procedure.m_procedureName);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoPSMParameters(parameters,errors,procedure.m_schemaName,m_procedure);
     ParametersToTree(parameters,param);
     AddErrorsToTree(errors,p_theItem);
 

@@ -146,7 +146,7 @@ static SQL_OperUBigAddChar(const SQLVariant& p_left,const SQLVariant& p_right)
 SQLVariant 
 static SQL_OperNumAddChar(const SQLVariant& p_left,const SQLVariant& p_right)
 {
-  bcd num = p_left.GetAsBCD() + bcd(p_right.GetAsChar());
+  bcd num = p_left.GetAsBCD() + bcd(p_right.GetAsString());
   SQLVariant var(&num);
   return var;
 }
@@ -1388,7 +1388,7 @@ static SQL_OperNumAddUBig(const SQLVariant& p_left,const SQLVariant& p_right)
 SQLVariant 
 static SQL_OperCharAddNum(const SQLVariant& p_left,const SQLVariant& p_right)
 {
-  bcd num = bcd(p_left.GetAsChar()) + p_right.GetAsBCD();
+  bcd num = bcd(p_left.GetAsString()) + p_right.GetAsBCD();
   SQLVariant var(num.AsString(bcd::Format::Bookkeeping,false,0));
   return var;
 }

@@ -2160,7 +2160,7 @@ SQLInfoFirebird::GetPSMProcedureList(XString& p_schema) const
                   "  FROM rdb$procedures pro\n"));
   if(!p_schema.IsEmpty())
   {
-    sql1 += _T(" WHERE pro.rdb$owner = '") + p_schema + _T("'\n");
+    sql1 += _T(" WHERE pro.rdb$owner_name = '") + p_schema + _T("'\n");
   }
 
   XString sql2(_T("SELECT '' as catalog_name\n"
@@ -2171,7 +2171,7 @@ SQLInfoFirebird::GetPSMProcedureList(XString& p_schema) const
 
   if(!p_schema.IsEmpty())
   {
-    sql2 += _T(" WHERE fun.rdb$owner = '") + p_schema + _T("'\n");
+    sql2 += _T(" WHERE fun.rdb$owner_name = '") + p_schema + _T("'\n");
   }
 
   p_schema.Empty(); // Do not bind parameters

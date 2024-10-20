@@ -830,7 +830,7 @@ SQLVariantFormat::DateCalculate(char p_operator,XString p_argument)
     {
       // It's a variant, but a string
       // Try to convert to a date
-      XString date = m_variant->GetAsChar();
+      XString date = m_variant->GetAsString();
       m_variant->SetData(SQL_C_DATE,date);
     }
   }

@@ -667,7 +667,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="QueryTool.reg" />
     <None Include="res\QueryTool.rc2">
       <Filter>Resource Files</Filter>
     </None>
@@ -703,6 +702,9 @@
     </None>
     <None Include="..\Data\settings.dat">
       <Filter>Installation\Data Files</Filter>
+    </None>
+    <None Include="QueryTool.reg">
+      <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
