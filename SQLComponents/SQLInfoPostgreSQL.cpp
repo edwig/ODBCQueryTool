@@ -86,7 +86,7 @@ SQLInfoPostgreSQL::GetRDBMSPhysicalDatabaseName() const
   sql.DoSQLStatement(query);
   if(sql.GetRecord())
   {
-    return sql.GetColumn(1)->GetAsChar();
+    return sql.GetColumn(1)->GetAsString();
   }
   return _T("");
 }
@@ -2262,7 +2262,7 @@ SQLInfoPostgreSQL::DoSQLCall(SQLQuery* p_query,XString& p_schema,XString& p_proc
       if(result->GetDataType() == SQL_C_CHAR ||
          result->GetDataType() == SQL_C_WCHAR)
       {
-        XString resstring = result->GetAsChar();
+        XString resstring = result->GetAsString();
         if(!resstring.IsEmpty() && resstring.GetAt(0) == _T('(') && numReturn)
         {
           var = GetVarFromRecord(dataType,(LPTSTR)resstring.GetString(),recIndex++,ready);

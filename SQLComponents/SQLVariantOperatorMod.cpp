@@ -130,7 +130,7 @@ static SQL_OperUBigModChar(const SQLVariant& p_left,const SQLVariant& p_right)
 SQLVariant 
 static SQL_OperNumModChar(const SQLVariant& p_left,const SQLVariant& p_right)
 {
-  bcd num = p_left.GetAsBCD() % bcd(p_right.GetAsChar());
+  bcd num = p_left.GetAsBCD() % bcd(p_right.GetAsString());
   SQLVariant var(&num);
   return var;
 }

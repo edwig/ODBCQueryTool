@@ -610,6 +610,8 @@ SQLFilter::ConstructFunctionSQL(SQLQuery& p_query)
     case FN_MIN:              sql = _T("MIN");              parameters = 1; trim = true; break;
     case FN_MAX:              sql = _T("MAX");              parameters = 1; trim = true; break;
     case FN_AVG:              sql = _T("AVG");              parameters = 1; trim = true; break;
+    // EXTRA FUNCTIONS
+    case FN_REGEXP_MATCH:     sql = _T("REGEXP_LIKE");      parameters = 3; trim = true; break;
   }
 
   // Construct ODBC Function

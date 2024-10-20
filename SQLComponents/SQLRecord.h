@@ -53,6 +53,7 @@ public:
  ~SQLRecord();
   // Get the status of the record
   int         GetStatus() const;
+  int         GetNumberOfFields() const;
   SQLVariant* GetField(int p_num) const;
   SQLVariant* GetField(XString p_name) const;
   int         GetGenerator() const;
@@ -166,6 +167,12 @@ inline int
 SQLRecord::GetGenerator() const
 {
   return m_generator;
+}
+
+inline int
+SQLRecord::GetNumberOfFields() const
+{
+  return (int) m_fields.size();
 }
 
 // End of namespace

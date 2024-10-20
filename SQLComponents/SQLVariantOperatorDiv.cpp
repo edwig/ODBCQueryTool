@@ -133,7 +133,7 @@ static SQL_OperUBigDivChar(const SQLVariant& p_left,const SQLVariant& p_right)
 SQLVariant 
 static SQL_OperNumDivChar(const SQLVariant& p_left,const SQLVariant& p_right)
 {
-  bcd num = p_left.GetAsBCD() / bcd(p_right.GetAsChar());
+  bcd num = p_left.GetAsBCD() / bcd(p_right.GetAsString());
   SQLVariant var(&num);
   return var;
 }
