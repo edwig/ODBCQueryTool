@@ -74,6 +74,7 @@ constexpr auto LOGWRITE_MAXHEXDUMP    = (32 * 1024);                   // First 
 constexpr auto LOGWRITE_KEEPFILES     = 128;                           // Keep last 128 logfiles in a directory (2 months, 2 per day)
 constexpr auto LOGWRITE_KEEPLOG_MIN   = 10;                            // Keep last 10 logfiles as a minimum
 constexpr auto LOGWRITE_KEEPLOG_MAX   = 500;                           // Keep no more than 500 logfiles of a server
+constexpr auto LOGWRITE_WAITSTOP      = 100;                           // Number of loops to wait for the logwriter to stop
 
 // Various types of log events
 enum class LogType
@@ -166,8 +167,8 @@ private:
   void    Initialisation();
   void    ReadConfig();
   void    AppendDateTimeToFilename();
-  void    RemoveLastMonthsFiles(struct tm& today);
-  void    RemoveLogfilesKeeping();
+  void    RemoveLastMonthsFiles(XString p_file,XString p_pattern,struct tm& today);
+  void    RemoveLogfilesKeeping(XString p_file,XString p_pattern);
   XString CreateUserLogfile(XString p_filename);
   // Writing out a log line
   void    Flush(bool p_all);
