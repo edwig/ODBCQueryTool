@@ -2,7 +2,7 @@
 //
 // File: Locker.h
 //
-// Copyright (c) 1998-2024 ir. W.E. Huisman
+// Copyright (c) 1998-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -60,7 +60,7 @@ public:
   {
     if(m_toBeLocked)
     {
-      if(++m_locked == 1)
+      if(InterlockedIncrement(&m_locked) == 1)
       {
         m_toBeLocked->Acquire(p_timeout);
       }
@@ -70,13 +70,13 @@ public:
   {
     if(m_toBeLocked)
     {
-      if(--m_locked == 0)
+      if(InterlockedDecrement(&m_locked) <= 0)
       {
         m_toBeLocked->Release();
       }
     }
   }
 private:
-  TC* m_toBeLocked; // Pointer to template class
-  int m_locked;     // int, not unsigned (when there are to much Releases)
+  TC*  m_toBeLocked; // Pointer to template class
+  long m_locked;     // int, not unsigned (when there are to much Releases)
 };

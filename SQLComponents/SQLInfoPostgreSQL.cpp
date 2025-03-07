@@ -2,7 +2,7 @@
 //
 // File: SQLInfoPostgreSQL.cpp
 //
-// Copyright (c) 1998-2024 ir. W.E. Huisman
+// Copyright (c) 1998-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -349,6 +349,12 @@ SQLInfoPostgreSQL::GetSQLGenerateSerial(XString p_table) const
   return _T("SELECT ") + p_table + _T("_seq.nextval FROM DUAL");
 }
 
+XString
+SQLInfoPostgreSQL::GetSQLGenerateSequence(XString p_sequence) const
+{
+  return _T("SELECT ") + p_sequence + _T(".nextval FROM DUAL");
+}
+
 // Gets the construction / select for the resulting effective generated serial
 XString
 SQLInfoPostgreSQL::GetSQLEffectiveSerial(XString p_identity) const
@@ -517,7 +523,7 @@ SQLInfoPostgreSQL::GetTempTablename(XString /*p_schema*/,XString p_tablename,boo
 
 // Changes to parameters before binding to an ODBC HSTMT handle
 void
-SQLInfoPostgreSQL::DoBindParameterFixup(SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*p_columnSize*/,SQLSMALLINT& /*p_scale*/,SQLLEN& /*p_bufferSize*/,SQLLEN* /*p_indicator*/) const
+SQLInfoPostgreSQL::DoBindParameterFixup(SQLSMALLINT& /*p_dataType*/,SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*p_columnSize*/,SQLSMALLINT& /*p_scale*/,SQLLEN& /*p_bufferSize*/,SQLLEN* /*p_indicator*/) const
 {
 }
 
@@ -2288,7 +2294,7 @@ SQLInfoPostgreSQL::DoSQLCall(SQLQuery* p_query,XString& p_schema,XString& p_proc
 
 // Calling a stored function with named parameters, returning a value
 SQLVariant*
-SQLInfoPostgreSQL::DoSQLCallNamedParameters(SQLQuery* /*p_query*/,XString& /*p_schema*/,XString& /*p_procedure*/)
+SQLInfoPostgreSQL::DoSQLCallNamedParameters(SQLQuery* /*p_query*/,XString& /*p_schema*/,XString& /*p_procedure*/,bool /*p_function = true*/)
 {
   return nullptr;
 }

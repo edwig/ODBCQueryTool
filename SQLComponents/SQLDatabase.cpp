@@ -2,7 +2,7 @@
 //
 // File: SQLDatabase.cpp
 //
-// Copyright (c) 1998-2024 ir. W.E. Huisman
+// Copyright (c) 1998-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -1235,7 +1235,7 @@ SQLDatabase::StartTransaction(SQLTransaction* p_transaction, bool p_startSubtran
         {
           SQLQuery rs(this);
           rs.DoSQLStatement(startSubtrans);
-          TRACE("Start transaction: %s\n",startSubtrans.GetString());
+          // TRACE("Start transaction: %s\n",startSubtrans.GetString());
         }
         catch(StdException& err)
         {
@@ -1542,12 +1542,19 @@ SQLDatabase::GetSQL_NewSerial(XString p_table,XString p_sequence)
 }
 
 XString 
-SQLDatabase::GetSQL_GenerateSerial(XString p_table)
+SQLDatabase::GetSQL_GenerateSerial(XString p_table,XString p_sequence /*=""*/)
 {
   XString query;
   if(GetSQLInfoDB())
   {
-    query = m_info->GetSQLGenerateSerial(p_table);
+    if(p_sequence.IsEmpty())
+    {
+      query = m_info->GetSQLGenerateSerial(p_table);
+    }
+    else
+    {
+      query = m_info->GetSQLGenerateSequence(p_sequence);
+    }
   }
   if(query.Left(6).CompareNoCase(_T("SELECT")) == 0)
   {

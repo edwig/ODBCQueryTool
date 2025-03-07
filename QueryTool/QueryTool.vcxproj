@@ -271,6 +271,9 @@ copy $(SolutionDir)\Data\*.*  $(OutDir)\Data\</Command>
 copy $(SolutionDir)\Data\*.*  $(OutDir)\Data\</Command>
       <Message>Copy settings files</Message>
     </PreBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>false</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugUnicode|x64'">
     <ClCompile>
@@ -303,6 +306,9 @@ copy $(SolutionDir)\Data\*.*  $(OutDir)\Data\</Command>
 copy $(SolutionDir)\Data\*.*  $(OutDir)\Data\</Command>
       <Message>Copy settings files</Message>
     </PreBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>false</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -418,6 +424,9 @@ copy $(SolutionDir)\Data\*.*  $(OutDir)\Data\</Command>
     <PreBuildEvent>
       <Message>Copy settings files</Message>
     </PreBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>false</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnicode|x64'">
     <ClCompile>
@@ -457,6 +466,9 @@ copy $(SolutionDir)\Data\*.*  $(OutDir)\Data\</Command>
     <PreBuildEvent>
       <Message>Copy settings files</Message>
     </PreBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>false</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AboutDlg.h" />

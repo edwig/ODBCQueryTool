@@ -2,7 +2,7 @@
 //
 // File: SQLDataSet.cpp
 //
-// Copyright (c) 1998-2024 ir. W.E. Huisman
+// Copyright (c) 1998-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -1667,22 +1667,21 @@ SQLDataSet::Inserts(int p_mutationID)
     {
       ++total;
       XString sql;
-      XString serial;
       MutType type = record->MixedMutations(p_mutationID);
       switch(type)
       {
         case MUT_NoMutation: // Fall through: Do nothing
         case MUT_OnlyOthers: break;
         case MUT_Mixed:      throw StdException(_T("Mixed mutations"));
-        case MUT_MyMutation: sql = GetSQLInsert(&query,record,serial);
+        case MUT_MyMutation: sql = GetSQLInsert(&query,record);
                              query.DoSQLStatement(sql);
                              ++insert;
                              break;
       }
       // For an active generator, fill in the retrieved value
-      if(record->GetGenerator() >= 0 && !serial.IsEmpty())
+      if(record->GetGenerator() >= 0 && !m_serial.IsEmpty())
       {
-        int value = m_database->GetSQL_EffectiveSerial(serial);
+        int value = m_database->GetSQL_EffectiveSerial(m_serial);
         SQLVariant val(value);
         record->SetField(record->GetGenerator(),&val,0);
       }
@@ -1802,7 +1801,7 @@ SQLDataSet::GetSQLUpdate(SQLQuery* p_query,const SQLRecord* p_record)
 }
 
 XString
-SQLDataSet::GetSQLInsert(SQLQuery* p_query,const SQLRecord* p_record,XString& p_serial)
+SQLDataSet::GetSQLInsert(SQLQuery* p_query,const SQLRecord* p_record)
 {
   int parameter = 1;
   XString sql(_T("INSERT INTO ") + m_primaryTableName);
@@ -1820,8 +1819,8 @@ SQLDataSet::GetSQLInsert(SQLQuery* p_query,const SQLRecord* p_record,XString& p_
     if((int)ind == p_record->GetGenerator() && value->IsEmpty())
     {
       fields  += m_names[ind] + _T(",");
-      p_serial = m_database->GetSQL_GenerateSerial(m_primaryTableName);
-      params  += p_serial;
+      m_serial = m_database->GetSQL_GenerateSerial(m_primaryTableName,m_sequenceName);
+      params  += m_serial;
       params  += _T(",");
     }
     else

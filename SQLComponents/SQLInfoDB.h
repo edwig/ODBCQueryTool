@@ -2,7 +2,7 @@
 //
 // File: SQLInfoDB.h
 //
-// Copyright (c) 1998-2024 ir. W.E. Huisman
+// Copyright (c) 1998-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -226,7 +226,8 @@ public:
   virtual XString GetSQLNewSerial(XString p_table,XString p_sequence) const = 0;
 
   // Gets the construction / select for generating a new serial identity
-  virtual XString GetSQLGenerateSerial(XString p_table) const = 0;
+  virtual XString GetSQLGenerateSerial  (XString p_table)    const = 0;
+  virtual XString GetSQLGenerateSequence(XString p_sequence) const = 0;
 
   // Gets the construction / select for the resulting effective generated serial
   virtual XString GetSQLEffectiveSerial(XString p_identity) const = 0;
@@ -288,7 +289,7 @@ public:
   //
 
   // Changes to parameters before binding to an ODBC HSTMT handle
-  virtual void DoBindParameterFixup(SQLSMALLINT& p_sqlDatatype,SQLULEN& p_columnSize,SQLSMALLINT& p_scale,SQLLEN& p_bufferSize,SQLLEN* p_indicator) const = 0;
+  virtual void DoBindParameterFixup(SQLSMALLINT& p_dataType,SQLSMALLINT& p_sqlDatatype,SQLULEN& p_columnSize,SQLSMALLINT& p_scale,SQLLEN& p_bufferSize,SQLLEN* p_indicator) const = 0;
 
   //////////////////////////////////////////////////////////////////////////
   //
@@ -504,7 +505,7 @@ public:
   // Calling a stored function or procedure if the RDBMS does not support ODBC call escapes
   virtual SQLVariant* DoSQLCall(SQLQuery* p_query,XString& p_schema,XString& p_procedure) = 0;
   // Calling a stored function with named parameters, returning a value
-  virtual SQLVariant* DoSQLCallNamedParameters(SQLQuery* p_query,XString& p_schema,XString& p_procedure) = 0;
+  virtual SQLVariant* DoSQLCallNamedParameters(SQLQuery* p_query,XString& p_schema,XString& p_procedure,bool p_function = true) = 0;
   
 private:
   // Read a tables cursor from the database

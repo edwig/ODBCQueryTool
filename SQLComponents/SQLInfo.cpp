@@ -2,7 +2,7 @@
 //
 // File: SQLInfo.cpp
 //
-// Copyright (c) 1998-2024 ir. W.E. Huisman
+// Copyright (c) 1998-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -2006,7 +2006,7 @@ SQLInfo::MakeInfoTableStatistics(MIndicesMap& p_statistics
   SQLLEN       cbOrdinalPos  = 0;
   SQLTCHAR     szColumnName  [SQL_MAX_BUFFER + 1] = _T("");
   SQLLEN       cbColumnName  = 0;
-  SQLCHAR        AscDesc     [10] = "";
+  SQLTCHAR       AscDesc     [10] = _T("");
   SQLLEN       cbAscDesc     = 0;
   SQLINTEGER     Cardinality = 0;
   SQLLEN       cbCardinality = 0;
@@ -2053,9 +2053,9 @@ SQLInfo::MakeInfoTableStatistics(MIndicesMap& p_statistics
     SQLBindCol(m_hstmt, 7, SQL_C_SSHORT, &IndexType,    0,              &cbIndexType);
     SQLBindCol(m_hstmt, 8, SQL_C_SSHORT, &OrdinalPos,   0,              &cbOrdinalPos);
     SQLBindCol(m_hstmt, 9, SQL_C_TCHAR,   szColumnName, SQL_MAX_BUFFER, &cbColumnName);
-    SQLBindCol(m_hstmt,10, SQL_C_TCHAR,  &AscDesc,      2,              &cbAscDesc);
-    SQLBindCol(m_hstmt,11, SQL_C_TCHAR,  &Cardinality,  0,              &cbCardinality);
-    SQLBindCol(m_hstmt,12, SQL_C_TCHAR,  &Pages,        0,              &cbPages);
+    SQLBindCol(m_hstmt,10, SQL_C_TCHAR,  &AscDesc,      10,             &cbAscDesc);
+    SQLBindCol(m_hstmt,11, SQL_C_SLONG,  &Cardinality,  0,              &cbCardinality);
+    SQLBindCol(m_hstmt,12, SQL_C_SLONG,  &Pages,        0,              &cbPages);
     SQLBindCol(m_hstmt,13, SQL_C_TCHAR,   szFilter,     SQL_MAX_BUFFER, &cbFilter);
     while(true)
     {

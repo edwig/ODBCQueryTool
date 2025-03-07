@@ -2,7 +2,7 @@
 //
 // File: SQLVariantOperator.cpp
 //
-// Copyright (c) 1998-2024 ir. W.E. Huisman
+// Copyright (c) 1998-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -516,9 +516,9 @@ SQLVariant::operator uchar()
   return GetAsUTinyInt();
 }
 
-SQLVariant::operator LPCTSTR()
+SQLVariant::operator LPCSTR()
 {
-  return (LPCTSTR)GetAsChar();
+  return (LPCSTR)GetAsChar();
 }
 
 SQLVariant::operator short()
@@ -598,9 +598,7 @@ SQLVariant::operator SQLGuid()
 
 SQLVariant::operator XString()
 {
-  XString string;
-  GetAsString(string);
-  return string;
+  return GetAsString();
 }
 
 SQLVariant::operator bcd()
