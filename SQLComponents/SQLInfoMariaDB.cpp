@@ -2,7 +2,7 @@
 //
 // File: SQLInfoMariaDB.cpp
 //
-// Copyright (c) 1998-2024 ir. W.E. Huisman
+// Copyright (c) 1998-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -468,6 +468,16 @@ SQLInfoMariaDB::GetSQLGenerateSerial(XString p_table) const
   else return _T("");
 }
 
+XString
+SQLInfoMariaDB::GetSQLGenerateSequence(XString p_sequence) const
+{
+  if(m_oracleMode)
+  {
+    return _T("SELECT ") + p_sequence + _T(".nextval FROM DUAL");
+  }
+  else return _T("");
+}
+
 // Gets the construction / select for the resulting effective generated serial
 XString
 SQLInfoMariaDB::GetSQLEffectiveSerial(XString p_identity) const
@@ -642,7 +652,7 @@ SQLInfoMariaDB::GetTempTablename(XString /*p_schema*/,XString p_tablename,bool /
 
 // Changes to parameters before binding to an ODBC HSTMT handle
 void
-SQLInfoMariaDB::DoBindParameterFixup(SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*p_columnSize*/,SQLSMALLINT& /*p_scale*/,SQLLEN& /*p_bufferSize*/,SQLLEN* /*p_indicator*/) const
+SQLInfoMariaDB::DoBindParameterFixup(SQLSMALLINT& /*p_dataType*/,SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*p_columnSize*/,SQLSMALLINT& /*p_scale*/,SQLLEN& /*p_bufferSize*/,SQLLEN* /*p_indicator*/) const
 {
 }
 
@@ -2210,7 +2220,7 @@ SQLInfoMariaDB::DoSQLCall(SQLQuery* /*p_query*/,XString& /*p_schema*/,XString& /
 
 // Calling a stored function with named parameters, returning a value
 SQLVariant*
-SQLInfoMariaDB::DoSQLCallNamedParameters(SQLQuery* /*p_query*/,XString& /*p_schema*/,XString& /*p_procedure*/)
+SQLInfoMariaDB::DoSQLCallNamedParameters(SQLQuery* /*p_query*/,XString& /*p_schema*/,XString& /*p_procedure*/,bool /*p_function = true*/)
 {
   return nullptr;
 }

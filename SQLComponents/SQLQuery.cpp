@@ -2,7 +2,7 @@
 //
 // File: SQLQuery.cpp
 //
-// Copyright (c) 1998-2024 ir. W.E. Huisman
+// Copyright (c) 1998-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -372,6 +372,7 @@ SQLQuery::ReportQuerySpeed(LARGE_INTEGER p_start)
 void
 SQLQuery::InternalSetParameter(int p_num,SQLVariant* p_param,SQLParamType p_type /*=P_SQL_PARAM_INPUT*/)
 {
+  p_param->SetColumnNumber(p_num);
   p_param->SetParameterType(p_type);
   VarMap::iterator it = m_parameters.find(p_num);
   if(it == m_parameters.end())
@@ -1053,7 +1054,7 @@ SQLQuery::BindParameters()
     }
 
     // Fix max length parameters for some database types
-    m_database->GetSQLInfoDB()->DoBindParameterFixup(sqlDatatype,columnSize,scale,bufferSize,indicator);
+    m_database->GetSQLInfoDB()->DoBindParameterFixup(dataType,sqlDatatype,columnSize,scale,bufferSize,indicator);
 
     // Log what we bind here
     if(logging)
@@ -1144,8 +1145,9 @@ SQLQuery::LogParameter(int p_column,const SQLVariant* p_parameter)
   }
   XString text,name,value;
   p_parameter->GetAsString(value);
-  text.Format(_T("Parameter %d: %s"),p_column,value.GetString());
-  GetColumnName(p_parameter->GetColumnNumber(),name);
+  int column = p_parameter->GetColumnNumber();
+  text.Format(_T("Parameter %d: %s"),column,value.GetString());
+  GetColumnName(column,name);
   if(!name.IsEmpty())
   {
     text += _T(" name: ") + name;
@@ -1274,7 +1276,7 @@ SQLQuery::BindColumns()
     type = RebindColumn(type);
 
     // Bind columns up to the first long column
-    if(m_hasLongColumns == 0 || bcol < m_hasLongColumns)
+    if(!var->GetAtExec())
     {
       m_retCode = SQLBindCol(m_hstmt                    // statement handle
                              ,bcol                       // Column number
@@ -1282,7 +1284,7 @@ SQLQuery::BindColumns()
                              ,const_cast<SQLPOINTER>(var->GetDataPointer())      // Data pointer
                              ,size                       // Buffer length
                              ,var->GetIndicatorPointer() // Indicator address
-      );
+                            );
       if(!SQL_SUCCEEDED(m_retCode))
       {
         GetLastError(_T("Cannot bind to column. Error: "));
@@ -1295,7 +1297,7 @@ SQLQuery::BindColumns()
         BindColumnNumeric((SQLSMALLINT)bcol,var,SQL_RESULT_COL);
       }
     }
-    else
+    if(m_hasLongColumns && (bcol > m_hasLongColumns))
     {
       if(type == SQL_C_NUMERIC && 
          m_database && ((m_database->GetSQLInfoDB()->GetGetDataExtensions() & SQL_GD_BOUND) == 0) && 
@@ -2085,7 +2087,7 @@ SQLQuery::DoSQLCall(XString p_schema,XString p_procedure,bool p_hasReturn /*=fal
     {
       return DoSQLCallODBCNamedParameters(p_schema,p_procedure,p_hasReturn);
     }
-    return m_database->GetSQLInfoDB()->DoSQLCallNamedParameters(this,p_schema,p_procedure);
+    return m_database->GetSQLInfoDB()->DoSQLCallNamedParameters(this,p_schema,p_procedure,p_hasReturn);
   }
 
   // Is we support standard ODBC, do that call

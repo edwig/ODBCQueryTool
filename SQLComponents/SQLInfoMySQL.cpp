@@ -2,7 +2,7 @@
 //
 // File: SQLInfoMySQL.cpp
 //
-// Copyright (c) 1998-2024 ir. W.E. Huisman
+// Copyright (c) 1998-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -339,6 +339,13 @@ SQLInfoMySQL::GetSQLGenerateSerial(XString p_table) const
   return _T("0");
 }
 
+XString
+SQLInfoMySQL::GetSQLGenerateSequence(XString p_sequence) const
+{
+  // Not supported
+  return _T("");
+}
+
 // Gets the construction / select for the resulting effective generated serial
 XString
 SQLInfoMySQL::GetSQLEffectiveSerial(XString p_identity) const
@@ -515,7 +522,7 @@ SQLInfoMySQL::GetTempTablename(XString /*p_schema*/,XString p_tablename,bool /*p
 
 // Changes to parameters before binding to an ODBC HSTMT handle
 void
-SQLInfoMySQL::DoBindParameterFixup(SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*p_columnSize*/,SQLSMALLINT& /*p_scale*/,SQLLEN& /*p_bufferSize*/,SQLLEN* /*p_indicator*/) const
+SQLInfoMySQL::DoBindParameterFixup(SQLSMALLINT& /*p_dataType*/,SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*p_columnSize*/,SQLSMALLINT& /*p_scale*/,SQLLEN& /*p_bufferSize*/,SQLLEN* /*p_indicator*/) const
 {
 }
 
@@ -1866,7 +1873,7 @@ SQLInfoMySQL::DoSQLCall(SQLQuery* /*p_query*/,XString& /*p_schema*/,XString& /*p
 
 // Calling a stored function with named parameters, returning a value
 SQLVariant*
-SQLInfoMySQL::DoSQLCallNamedParameters(SQLQuery* /*p_query*/,XString& /*p_schema*/,XString& /*p_procedure*/)
+SQLInfoMySQL::DoSQLCallNamedParameters(SQLQuery* /*p_query*/,XString& /*p_schema*/,XString& /*p_procedure*/,bool /*p_function = true*/)
 {
   return nullptr;
 }

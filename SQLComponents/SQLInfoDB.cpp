@@ -2,7 +2,7 @@
 //
 // File: SQLInfoDB.cpp
 //
-// Copyright (c) 1998-2024 ir. W.E. Huisman
+// Copyright (c) 1998-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -639,6 +639,7 @@ SQLInfoDB::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
         proc.m_catalogName   = qry.GetColumn(1)->GetAsString();
         proc.m_schemaName    = qry.GetColumn(2)->GetAsString();
         proc.m_procedureName = qry.GetColumn(3)->GetAsString();
+        proc.m_procedureType = qry.GetColumn(4)->GetAsSLong();
 
         p_procedures.push_back(proc);
       }

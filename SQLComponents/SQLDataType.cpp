@@ -2,7 +2,7 @@
 //
 // File: SQLDataType.cpp
 //
-// Copyright (c) 1998-2024 ir. W.E. Huisman
+// Copyright (c) 1998-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -365,7 +365,7 @@ SQLDataType::GetAsEdmType()
     case SQL_C_SLONG:           return _T("Edm.Int32");
     case SQL_C_UBIGINT:
     case SQL_C_SBIGINT:         return _T("Edm.Int64");
-    case SQL_C_FLOAT:
+    case SQL_C_FLOAT:           return _T("Edm.Single");
     case SQL_C_DOUBLE:          return _T("Edm.Double");
     case SQL_C_BIT:             return _T("Edm.Boolean");
     case SQL_DECIMAL:

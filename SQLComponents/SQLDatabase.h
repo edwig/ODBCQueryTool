@@ -2,7 +2,7 @@
 //
 // File: Database.h
 //
-// Copyright (c) 1998-2024 ir. W.E. Huisman
+// Copyright (c) 1998-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -234,7 +234,7 @@ public:
   XString        GetSQLDateString        (int p_day, int p_month, int p_year);
   XString        GetCurrentTimestampQualifier();
   XString        GetSQL_NewSerial(XString p_table,XString p_sequence);
-  XString        GetSQL_GenerateSerial(XString p_table);
+  XString        GetSQL_GenerateSerial(XString p_table,XString p_sequence = _T(""));
   int            GetSQL_EffectiveSerial(XString p_oid_string);
   XString        GetTimestampAsString(const SQLTimestamp& p_timestamp);
   XString        GetTimestampAsBoundString();

@@ -2,7 +2,7 @@
 //
 // File: SQLVariant.h
 //
-// Copyright (c) 1998-2024 ir. W.E. Huisman
+// Copyright (c) 1998-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -150,7 +150,7 @@ public:
    int     FindDataTypeFromSQLType() const;
 
    // Access per type
-   TCHAR*               GetAsChar() const;
+   char*                GetAsChar() const;
    XString              GetAsString() const;
    void                 GetAsString(XString& p_result) const;
    void*                GetAsBinary() const;
@@ -273,7 +273,7 @@ public:
    // Cast operators
    operator bool();
    operator char();
-   operator LPCTSTR();
+   operator LPCSTR();
    operator uchar();
    operator short();
    operator unsigned short();

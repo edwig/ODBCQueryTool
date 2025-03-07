@@ -2,7 +2,7 @@
 //
 // File: SQLDate.h
 //
-// Copyright (c) 1998-2024 ir. W.E. Huisman
+// Copyright (c) 1998-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -156,6 +156,8 @@ private:
   // Correction factor is MJD (2,400,000.5) + 0.5 (17 nov 1858 instead of 16 nov 12:00 hours)
   const long JULIAN_DAY_MODIFIED  = 2400001;
 
+  // Check if acceptable input to be converted to a date
+  bool AcceptableDateString(const XString& p_date);
   // Calculate m_mjd from a date
   bool SetMJD();
   // Calculate MJD back to a date

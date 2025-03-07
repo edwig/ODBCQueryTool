@@ -2,7 +2,7 @@
 //
 // File: SQLInfoOracle.cpp
 //
-// Copyright (c) 1998-2024 ir. W.E. Huisman
+// Copyright (c) 1998-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -454,6 +454,12 @@ SQLInfoOracle::GetSQLGenerateSerial(XString p_table) const
   return _T("SELECT ") + p_table + _T("_seq.nextval FROM DUAL");
 }
 
+XString
+SQLInfoOracle::GetSQLGenerateSequence(XString p_sequence) const
+{
+  return _T("SELECT ") + p_sequence + _T(".nextval FROM DUAL");
+}
+
 // Gets the construction / select for the resulting effective generated serial
 XString
 SQLInfoOracle::GetSQLEffectiveSerial(XString p_identity) const
@@ -651,8 +657,17 @@ SQLInfoOracle::GetTempTablename(XString /*p_schema*/,XString p_tablename,bool /*
 
 // Changes to parameters before binding to an ODBC HSTMT handle
 void
-SQLInfoOracle::DoBindParameterFixup(SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*p_columnSize*/,SQLSMALLINT& /*p_scale*/,SQLLEN& /*p_bufferSize*/,SQLLEN* /*p_indicator*/) const
+SQLInfoOracle::DoBindParameterFixup(SQLSMALLINT& p_dataType,SQLSMALLINT& p_sqlDatatype,SQLULEN& /*p_columnSize*/,SQLSMALLINT& /*p_scale*/,SQLLEN& /*p_bufferSize*/,SQLLEN* /*p_indicator*/) const
 {
+  // Oracle driver can only bind to SQL_DECIMAL
+  if(p_dataType == SQL_DECIMAL)
+  {
+    p_dataType = SQL_NUMERIC;
+  }
+  if(p_sqlDatatype == SQL_DECIMAL)
+  {
+    p_sqlDatatype = SQL_NUMERIC;
+  }
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2293,10 +2308,10 @@ SQLInfoOracle::GetPSMProcedureExists(XString p_schema,XString p_procedure) const
   p_procedure.MakeUpper();
   return _T("SELECT COUNT(*)\n")
          _T("  FROM all_procedures\n")
-         _T(" WHERE object_type IN ('PACKAGE','PROCEDURE','FUNCTION')")
+         _T(" WHERE object_type IN ('PACKAGE','PROCEDURE','FUNCTION')\n")
          _T("   AND owner            = '") + p_schema + _T("'\n")
          _T("   AND ( object_name    = '") + p_procedure + _T("'\n")
-         _T("      OR procedure_name = '") + p_procedure + _T("'");
+         _T("      OR procedure_name = '") + p_procedure + _T("')");
 }
 
 XString
@@ -2466,9 +2481,10 @@ SQLInfoOracle::GetPSMProcedureErrors(XString p_schema,XString p_procedure) const
     XString s = qry1.GetColumn(3)->GetAsString();
     if(s.Find(_T("Statement ignored")) < 0) 
     {
+      XString error = qry1.GetColumn(3)->GetAsString();
       s.Format(_T("Error in line %d, column %d: %s\n"),qry1.GetColumn(1)->GetAsSLong()
 	                                                    ,qry1.GetColumn(2)->GetAsSLong()
-                                                      ,qry1.GetColumn(3)->GetAsChar());
+                                                      ,error.GetString());
       errorText += s;
       query.Format( _T("SELECT text\n")
                     _T("  FROM all_source\n")
@@ -2480,9 +2496,10 @@ SQLInfoOracle::GetPSMProcedureErrors(XString p_schema,XString p_procedure) const
       qry2.DoSQLStatement(query);
       while(qry2.GetRecord())
       {
+        XString code = qry2.GetColumn(1)->GetAsString();
         s.Format(_T("Line %d: %s\n")
                  ,qry1.GetColumn(1)->GetAsSLong()
-                 ,qry2.GetColumn(1)->GetAsChar());
+                 ,code.GetString());
         errorText += s;
       }
     }
@@ -2798,9 +2815,19 @@ SQLInfoOracle::DoSQLCall(SQLQuery* /*p_query*/,XString& /*p_schema*/,XString& /*
 
 // Calling a stored function with named parameters, returning a value
 SQLVariant*
-SQLInfoOracle::DoSQLCallNamedParameters(SQLQuery* p_query,XString& p_schema,XString& p_procedure)
+SQLInfoOracle::DoSQLCallNamedParameters(SQLQuery* p_query,XString& p_schema,XString& p_procedure,bool p_function /*= true*/)
 {
-  XString sql = _T("BEGIN DECLARE x NUMBER; BEGIN ? := ");
+  XString sql;
+  
+  if(p_function)
+  {
+    sql = _T("BEGIN\n  DECLARE x NUMBER;\n  BEGIN\n    ? := ");
+  }
+  else
+  {
+    // Nope: it's a procedure
+    sql = _T("BEGIN\n  ");
+  }
   if(!p_schema.IsEmpty())
   {
     sql += p_schema;
@@ -2825,11 +2852,18 @@ SQLInfoOracle::DoSQLCallNamedParameters(SQLQuery* p_query,XString& p_schema,XStr
       sql += _T(" => ? ");
     }
   }
-  sql += _T("); END; END;");
+  sql += _T(");\n  END;");
+  if(!p_procedure)
+  {
+    sql += _T("\nEND;");
+  }
 
   // Add parameter 0 as result parameter
-  p_query->SetParameter(0,0);
-
+  if(p_function && p_query->GetParameter(0) == nullptr)
+  {
+    SQLVariant ret((int)0);
+    p_query->SetParameter(0,&ret);
+  }
   // Now find the result
   p_query->DoSQLStatement(sql);
   return p_query->GetParameter(0);

@@ -2,7 +2,7 @@
 //
 // File: SQLInfoGenericODBC.h
 //
-// Copyright (c) 1998-2024 ir. W.E. Huisman
+// Copyright (c) 1998-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -159,6 +159,7 @@ public:
 
   // Gets the construction / select for generating a new serial identity
   XString GetSQLGenerateSerial(XString p_table) const override;
+  XString GetSQLGenerateSequence(XString p_sequence) const override;
 
   // Gets the construction / select for the resulting effective generated serial
   XString GetSQLEffectiveSerial(XString p_identity) const override;
@@ -215,7 +216,7 @@ public:
   XString GetTempTablename(XString p_schema,XString p_tablename,bool p_local) const override;
 
   // Changes to parameters before binding to an ODBC HSTMT handle
-  void DoBindParameterFixup(SQLSMALLINT& p_sqlDatatype,SQLULEN& p_columnSize,SQLSMALLINT& p_scale,SQLLEN& p_bufferSize,SQLLEN* p_indicator) const override;
+  void DoBindParameterFixup(SQLSMALLINT& p_dataType,SQLSMALLINT& p_sqlDatatype,SQLULEN& p_columnSize,SQLSMALLINT& p_scale,SQLLEN& p_bufferSize,SQLLEN* p_indicator) const override;
 
   //////////////////////////////////////////////////////////////////////////
   //
@@ -431,7 +432,7 @@ public:
   // Calling a stored function or procedure if the RDBMS does not support ODBC call escapes
   SQLVariant* DoSQLCall(SQLQuery* p_query,XString& p_schema,XString& p_procedure) override;
   // Calling a stored function with named parameters, returning a value
-  SQLVariant* DoSQLCallNamedParameters(SQLQuery* p_query,XString& p_schema,XString& p_procedure) override;
+  SQLVariant* DoSQLCallNamedParameters(SQLQuery* p_query,XString& p_schema,XString& p_procedure,bool p_function = true) override;
 };
 
 // End of namespace

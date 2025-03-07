@@ -2,7 +2,7 @@
 //
 // File: SQLInfoAccess.cpp
 //
-// Copyright (c) 1998-2024 ir. W.E. Huisman
+// Copyright (c) 1998-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -331,6 +331,13 @@ SQLInfoAccess::GetSQLGenerateSerial(XString p_table) const
   return _T("");
 }
 
+XString 
+SQLInfoAccess::GetSQLGenerateSequence(XString p_sequence) const
+{
+  // Not supported by MS-Access
+  return _T("");
+}
+
 // Gets the construction / select for the resulting effective generated serial
 XString
 SQLInfoAccess::GetSQLEffectiveSerial(XString p_identity) const
@@ -487,7 +494,7 @@ SQLInfoAccess::GetTempTablename(XString /*p_schema*/,XString p_tablename,bool /*
 
 // Changes to parameters before binding to an ODBC HSTMT handle
 void 
-SQLInfoAccess::DoBindParameterFixup(SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*p_columnSize*/,SQLSMALLINT& /*p_scale*/,SQLLEN& /*p_bufferSize*/,SQLLEN* /*p_indicator*/) const
+SQLInfoAccess::DoBindParameterFixup(SQLSMALLINT& /*p_dataType*/,SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*p_columnSize*/,SQLSMALLINT& /*p_scale*/,SQLLEN& /*p_bufferSize*/,SQLLEN* /*p_indicator*/) const
 {
 }
 
@@ -1512,7 +1519,7 @@ SQLInfoAccess::DoSQLCall(SQLQuery* /*p_query*/,XString& /*p_schema*/,XString& /*
 
 // Calling a stored function with named parameters, returning a value
 SQLVariant*
-SQLInfoAccess::DoSQLCallNamedParameters(SQLQuery* /*p_query*/,XString& /*p_schema*/,XString& /*p_procedure*/)
+SQLInfoAccess::DoSQLCallNamedParameters(SQLQuery* /*p_query*/,XString& /*p_schema*/,XString& /*p_procedure*/,bool /*p_function = true*/)
 {
   return nullptr;
 }

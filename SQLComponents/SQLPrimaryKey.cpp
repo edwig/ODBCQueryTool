@@ -2,7 +2,7 @@
 //
 // File: SQLPrimaryKey.cpp
 //
-// Copyright (c) 1998-2024 ir. W.E. Huisman
+// Copyright (c) 1998-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
@@ -204,6 +204,16 @@ SQLPrimaryKey::GetCondition()
     ++vl;
   }
   return condition;
+}
+
+void 
+SQLPrimaryKey::AddField(XString p_field,SQLVariant& p_value)
+{
+  SQLVariant* value = new SQLVariant(p_value);
+
+  m_fields.push_back(p_field);
+  m_values.push_back(value);
+  m_status = PKStatus::PK_Created;
 }
 
 void
