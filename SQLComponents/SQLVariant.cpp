@@ -226,7 +226,7 @@ SQLVariant::SQLVariant(const void* p_binary,size_t p_size)
   m_datatype    = SQL_C_BINARY;
   m_sqlDatatype = SQL_BINARY;
   m_indicator   = 0;
-  m_data.m_dataBINARY = new unsigned char[(size_t)p_size + 1];
+  m_data.m_dataBINARY = new BYTE[(size_t)p_size + 1];
   memcpy(m_data.m_dataBINARY,p_binary,p_size);
 }
 
@@ -390,16 +390,18 @@ SQLVariant::ReserveSpace(int p_type,int p_space)
   {
     m_binaryLength = p_space + 1;
     m_data.m_dataCHAR = new char[(size_t)m_binaryLength];
+    m_data.m_dataCHAR[0] = 0;
   }
   if(p_type == SQL_C_WCHAR)
   {
     m_binaryLength = (p_space + 1) * 2;
     m_data.m_dataWCHAR = new wchar_t[(size_t) (p_space + 1)];
+    m_data.m_dataWCHAR[0] = 0;
   }
   if(p_type == SQL_C_BINARY)
   {
     m_binaryLength = p_space + 1;
-    m_data.m_dataBINARY = new unsigned char[(size_t)m_binaryLength];
+    m_data.m_dataBINARY = new BYTE[(size_t)m_binaryLength];
   }
   // Reserving space means, that the contents is reset to logical NULL
   // Only, leave the indicator in case of AT_EXEC_DATA so drivers will not get upset!
@@ -732,9 +734,9 @@ SQLVariant::SetFromBinaryStreamData(int   p_type
     // Allocated buffer types
     m_binaryLength = p_length;
     m_indicator    = p_isnull ? SQL_NULL_DATA : p_length;
-    m_data.m_dataBINARY = new unsigned char[(size_t)m_binaryLength + 2];
+    m_data.m_dataBINARY = new BYTE[(size_t)m_binaryLength + 2];
     memcpy(m_data.m_dataBINARY,p_data,(size_t)p_length);
-    (reinterpret_cast<char*>(m_data.m_dataBINARY))[p_length] = 0;
+    (reinterpret_cast<BYTE*>(m_data.m_dataBINARY))[p_length] = 0;
   }
   else
   {
@@ -2426,7 +2428,7 @@ SQLVariant::SetData(int p_type,LPCTSTR p_data)
                                           break;
     case SQL_C_BINARY:                    m_binaryLength = (int)(dataLen / 2);
                                           m_indicator    = m_binaryLength > 0 ? m_binaryLength : SQL_NULL_DATA;
-                                          m_data.m_dataBINARY = new unsigned char[(size_t)m_binaryLength + 2];
+                                          m_data.m_dataBINARY = new BYTE[(size_t)m_binaryLength + 2];
                                           StringToBinary((const char*)p_data);
                                           break;
     case SQL_C_SHORT:                     // Fall through
@@ -2747,7 +2749,7 @@ SQLVariant::SetFromRawDataPointer(void* p_pointer,int p_size /*= 0*/)
                                           break;
     case SQL_C_BINARY:                    m_binaryLength = p_size;
                                           m_indicator = m_binaryLength > 0 ? m_binaryLength : SQL_NULL_DATA;
-                                          m_data.m_dataBINARY = new unsigned char[(size_t)m_binaryLength + 1];
+                                          m_data.m_dataBINARY = new BYTE[(size_t)m_binaryLength + 1];
                                           memcpy_s(m_data.m_dataBINARY,p_size,p_pointer,p_size);
                                           break;
     case SQL_C_SHORT:                     // Fall through
@@ -3164,7 +3166,7 @@ SQLVariant::BinaryToString(unsigned char* buffer,int buflen) const
     // Returning a NULL is very easy
     return true;
   }
-  unsigned char* colPointer = reinterpret_cast<unsigned char*>(m_data.m_dataBINARY);
+  BYTE* colPointer = reinterpret_cast<BYTE*>(m_data.m_dataBINARY);
   SQLLEN dataLen = m_binaryLength;
   if(m_indicator >= 0 && m_indicator < m_binaryLength)
   {
@@ -3189,7 +3191,7 @@ SQLVariant::StringToBinary(const char* p_data) const
 {
   const char* colPointer = p_data;
   int len = (int)strlen(p_data);
-  unsigned char* buffer = reinterpret_cast<unsigned char*>(m_data.m_dataBINARY);
+  BYTE* buffer = reinterpret_cast<BYTE*>(m_data.m_dataBINARY);
   int binlen = m_binaryLength;
 
   if(m_datatype != SQL_C_BINARY)
@@ -3202,7 +3204,7 @@ SQLVariant::StringToBinary(const char* p_data) const
     int b = toupper(*colPointer++) - '0';
     if(a > 9) a -= 7;
     if(b > 9) b -= 7;
-    *buffer++ = (unsigned char)((a * 16) + b);
+    *buffer++ = (BYTE)((a * 16) + b);
     len -= 2;
     --binlen;
   }
