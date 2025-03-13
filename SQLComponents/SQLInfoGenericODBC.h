@@ -132,7 +132,7 @@ public:
 
   // Get select part to add new record identity to a table
   // Can be special column like 'OID' or a sequence select
-  XString GetKEYWORDIdentityString(XString& p_tablename,XString p_postfix = "_seq") const override;
+  XString GetKEYWORDIdentityString(XString& p_tablename,XString p_postfix = _T("_seq")) const override;
 
   // Gets the UPPER function
   XString GetKEYWORDUpper(XString& p_expression) const override;
@@ -377,8 +377,8 @@ public:
 
   // All Language elements
   XString GetPSMDeclaration(bool p_first,XString p_variable,int p_datatype,int p_precision = 0,int p_scale = 0,
-                            XString p_default = "",XString p_domain = "",XString p_asColumn = "") const override;
-  XString GetPSMAssignment (XString p_variable,XString p_statement = "") const override;
+                            XString p_default = _T(""),XString p_domain = _T(""),XString p_asColumn = _T("")) const override;
+  XString GetPSMAssignment (XString p_variable,XString p_statement = _T("")) const override;
   XString GetPSMIF         (XString p_condition) const override;
   XString GetPSMIFElse     () const override;
   XString GetPSMIFEnd      () const override;
@@ -387,7 +387,7 @@ public:
   XString GetPSMLOOP       () const override;
   XString GetPSMLOOPEnd    () const override;
   XString GetPSMBREAK      () const override;
-  XString GetPSMRETURN     (XString p_statement = "") const override;
+  XString GetPSMRETURN     (XString p_statement = _T("")) const override;
   XString GetPSMExecute    (XString p_procedure,MParameterMap& p_parameters) const override;
 
   // The CURSOR
