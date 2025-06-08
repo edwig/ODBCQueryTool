@@ -2223,7 +2223,7 @@ SQLInfoFirebird::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedur
                _T("      ,1 as procedure_type\n") // SQL_PROCEDURE
                _T("      ,rdb$procedure_source as source\n")
                _T("  FROM rdb$procedures pro\n")
-               _T(" WHERE rdb$procedures_source IS NOT NULL\n"));
+               _T(" WHERE rdb$procedure_source IS NOT NULL\n"));
 
   XString sql2 (_T("SELECT '' as catalog_name\n")
                 _T("      ,trim(rdb$owner_name) as schema_name\n")
