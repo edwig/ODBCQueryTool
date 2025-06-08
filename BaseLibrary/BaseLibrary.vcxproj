@@ -40,6 +40,7 @@
     <ProjectGuid>{2364c44b-2e4d-4631-a050-b47509afbc82}</ProjectGuid>
     <RootNamespace>BaseLibrary</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>BaseLibrary</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
@@ -509,6 +510,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ActiveDirectory.h" />
     <ClInclude Include="Alert.h" />
     <ClInclude Include="AuthenticationHeader.h" />
     <ClInclude Include="AutoCritical.h" />
@@ -594,6 +596,7 @@
     <ClInclude Include="ZIP\zutil.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ActiveDirectory.cpp" />
     <ClCompile Include="Alert.cpp" />
     <ClCompile Include="AuthenticationHeader.cpp" />
     <ClCompile Include="AutoCritical.cpp" />

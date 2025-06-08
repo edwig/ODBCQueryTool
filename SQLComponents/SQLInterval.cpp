@@ -243,9 +243,8 @@ SQLInterval::SetFromDatabaseDouble(SQLINTERVAL p_type,double p_number)
   }
   else
   {
-    m_value = static_cast<InterValue>((size_t)p_number * SECONDS_PER_DAY * NANOSECONDS_PER_SEC);
+    m_value = static_cast<InterValue>(round(p_number * SECONDS_PER_DAY * NANOSECONDS_PER_SEC));
   }
-  Normalise();
   RecalculateInterval();
 }
 
@@ -604,47 +603,67 @@ SQLInterval::AsXMLDuration() const
       m_interval.interval_type == SQL_IS_YEAR_TO_MONTH)
   {
     // Add year-month-day part
-    if (m_interval.intval.year_month.year)
+    if(m_interval.intval.year_month.year  == 0 &&
+       m_interval.intval.year_month.month == 0 )
     {
-      duration.AppendFormat(_T("%dY"), m_interval.intval.year_month.year);
+      duration = _T("P0M");
     }
-    if (m_interval.intval.year_month.month)
+    else
     {
-      duration.AppendFormat(_T("%dM"), m_interval.intval.year_month.month);
+      if(m_interval.intval.year_month.year)
+      {
+        duration.AppendFormat(_T("%dY"),m_interval.intval.year_month.year);
+      }
+      if(m_interval.intval.year_month.month)
+      {
+        duration.AppendFormat(_T("%dM"),m_interval.intval.year_month.month);
+      }
     }
   }
   else
   {
-    if(m_interval.intval.day_second.day)
+    if(m_interval.intval.day_second.day      == 0 &&
+       m_interval.intval.day_second.hour     == 0 &&
+       m_interval.intval.day_second.minute   == 0 &&
+       m_interval.intval.day_second.second   == 0 &&
+       m_interval.intval.day_second.fraction == 0 )
     {
-      duration.AppendFormat(_T("%dD"),m_interval.intval.day_second.day);
+      duration = _T("PT0S");
     }
-
-    // See if we must do the time part
-    if(m_interval.intval.day_second.hour   ||
-       m_interval.intval.day_second.minute ||
-       m_interval.intval.day_second.second ||
-       m_interval.intval.day_second.fraction)
+    else
     {
-      duration += _T("T");
-
-      if(m_interval.intval.day_second.hour)
+      if(m_interval.intval.day_second.day)
       {
-        duration.AppendFormat(_T("%dH"),m_interval.intval.day_second.hour);
+        duration.AppendFormat(_T("%dD"),m_interval.intval.day_second.day);
       }
-      if(m_interval.intval.day_second.minute)
-      {
-        duration.AppendFormat(_T("%dM"),m_interval.intval.day_second.minute);
-      }
-      if(m_interval.intval.day_second.second)
-      {
-        duration.AppendFormat(_T("%d"),m_interval.intval.day_second.second);
 
-        if(m_interval.intval.day_second.fraction)
+      // See if we must do the time part
+      if(m_interval.intval.day_second.hour   ||
+         m_interval.intval.day_second.minute ||
+         m_interval.intval.day_second.second ||
+         m_interval.intval.day_second.fraction)
+      {
+        duration += _T("T");
+
+        if(m_interval.intval.day_second.hour)
         {
-          duration.AppendFormat(_T(".%09d"),m_interval.intval.day_second.fraction);
+          duration.AppendFormat(_T("%dH"),m_interval.intval.day_second.hour);
         }
-        duration += _T("S");
+        if(m_interval.intval.day_second.minute)
+        {
+          duration.AppendFormat(_T("%dM"),m_interval.intval.day_second.minute);
+        }
+        if(m_interval.intval.day_second.second ||
+           m_interval.intval.day_second.fraction)
+        {
+          duration.AppendFormat(_T("%d"),m_interval.intval.day_second.second);
+
+          if(m_interval.intval.day_second.fraction)
+          {
+            duration.AppendFormat(_T(".%09d"),m_interval.intval.day_second.fraction);
+          }
+          duration += _T("S");
+        }
       }
     }
   }

@@ -164,6 +164,13 @@ SQLInfoMariaDB::GetRDBMSSupportsFunctionalIndexes() const
   return false;
 }
 
+// Support for "as" in alias statements (FROM clause)
+bool
+SQLInfoMariaDB::GetRDBMSSupportsAsInAlias() const
+{
+  return true;
+}
+
 // Gets the maximum length of an SQL statement
 unsigned long
 SQLInfoMariaDB::GetRDBMSMaxStatementLength() const
@@ -869,7 +876,7 @@ SQLInfoMariaDB::GetCATALOGTemptableDrop(XString /*p_schema*/,XString p_tablename
 // ALL COLUMN FUNCTIONS
 
 XString 
-SQLInfoMariaDB::GetCATALOGColumnExists(XString /*p_schema*/,XString p_tablename,XString p_columnname) const
+SQLInfoMariaDB::GetCATALOGColumnExists(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_columnname*/) const
 {
   return _T("");
 }
@@ -1040,7 +1047,7 @@ SQLInfoMariaDB::GetCATALOGColumnAlter(MetaColumn& p_column) const
 }
 
 XString 
-SQLInfoMariaDB::GetCATALOGColumnRename(XString p_schema,XString p_tablename,XString p_columnname,XString p_newname,XString /*p_datatype*/) const
+SQLInfoMariaDB::GetCATALOGColumnRename(XString /*p_schema*/,XString p_tablename,XString p_columnname,XString p_newname,XString /*p_datatype*/) const
 {
   // General ISO syntax
   XString sql(_T("ALTER  TABLE  ") + p_tablename + _T("\n")
@@ -1049,7 +1056,7 @@ SQLInfoMariaDB::GetCATALOGColumnRename(XString p_schema,XString p_tablename,XStr
 }
 
 XString 
-SQLInfoMariaDB::GetCATALOGColumnDrop(XString p_schema,XString p_tablename,XString p_columnname) const
+SQLInfoMariaDB::GetCATALOGColumnDrop(XString /*p_schema*/,XString p_tablename,XString p_columnname) const
 {
   XString sql(_T("ALTER TABLE  ") + p_tablename + _T("\n")
               _T(" DROP COLUMN ") + p_columnname);
@@ -1061,7 +1068,7 @@ SQLInfoMariaDB::GetCATALOGColumnDrop(XString p_schema,XString p_tablename,XStrin
 
 // All index functions
 XString
-SQLInfoMariaDB::GetCATALOGIndexExists(XString /*p_schema*/,XString p_tablename,XString p_indexname) const
+SQLInfoMariaDB::GetCATALOGIndexExists(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_indexname*/) const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLStatistics instead (see SQLInfo class)
@@ -1145,7 +1152,7 @@ SQLInfoMariaDB::GetCATALOGIndexFilter(MetaIndex& /*p_index*/) const
 // ALL PRIMARY KEY FUNCTIONS
 
 XString
-SQLInfoMariaDB::GetCATALOGPrimaryExists(XString /*p_schema*/,XString p_tablename) const
+SQLInfoMariaDB::GetCATALOGPrimaryExists(XString /*p_schema*/,XString /*p_tablename*/) const
 {
   // To be implemented
   return _T("");
@@ -1196,7 +1203,7 @@ SQLInfoMariaDB::GetCATALOGPrimaryDrop(XString p_schema,XString p_tablename,XStri
 // ALL FOREIGN KEY FUNCTIONS
 
 XString
-SQLInfoMariaDB::GetCATALOGForeignExists(XString /*p_schema*/,XString p_tablename,XString p_constraintname) const
+SQLInfoMariaDB::GetCATALOGForeignExists(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_constraintname*/) const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLForeignKeys instead (see SQLInfo class)
@@ -1431,7 +1438,7 @@ SQLInfoMariaDB::GetCATALOGCheckDrop(XString  /*p_schema*/,XString  /*p_tablename
 // ALL TRIGGER FUNCTIONS
 
 XString
-SQLInfoMariaDB::GetCATALOGTriggerExists(XString /*p_schema*/, XString p_tablename, XString p_triggername) const
+SQLInfoMariaDB::GetCATALOGTriggerExists(XString /*p_schema*/, XString /*p_tablename*/, XString /*p_triggername*/) const
 {
   return _T("");
 }
@@ -1498,7 +1505,7 @@ SQLInfoMariaDB::GetCATALOGTriggerCreate(MetaTrigger& /*p_trigger*/) const
 }
 
 XString
-SQLInfoMariaDB::GetCATALOGTriggerDrop(XString /*p_schema*/, XString p_tablename, XString p_triggername) const
+SQLInfoMariaDB::GetCATALOGTriggerDrop(XString /*p_schema*/, XString /*p_tablename*/, XString /*p_triggername*/) const
 {
   return _T("");
 }
@@ -1674,7 +1681,7 @@ SQLInfoMariaDB::GetCATALOGViewCreate(XString /*p_schema*/,XString p_viewname,XSt
 }
 
 XString 
-SQLInfoMariaDB::GetCATALOGViewRename(XString p_schema,XString p_viewname,XString p_newname)    const
+SQLInfoMariaDB::GetCATALOGViewRename(XString /*p_schema*/,XString /*p_viewname*/,XString /*p_newname*/)    const
 {
   return _T("");
 }
@@ -1883,7 +1890,7 @@ SQLInfoMariaDB::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure
 }
 
 XString
-SQLInfoMariaDB::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure) const
+SQLInfoMariaDB::GetPSMProcedureSourcecode(XString /*p_schema*/, XString /*p_procedure*/) const
 {
   // Source-code already gotten with attributes
   return _T("");
@@ -1896,13 +1903,13 @@ SQLInfoMariaDB::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
 }
 
 XString
-SQLInfoMariaDB::GetPSMProcedureDrop(XString /*p_schema*/, XString p_procedure,bool /*p_function /*=false*/) const
+SQLInfoMariaDB::GetPSMProcedureDrop(XString /*p_schema*/, XString /*p_procedure*/,bool /*p_function /*=false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoMariaDB::GetPSMProcedureErrors(XString p_schema,XString p_procedure) const
+SQLInfoMariaDB::GetPSMProcedureErrors(XString /*p_schema*/,XString /*p_procedure*/) const
 {
   return _T("");
 }
@@ -2170,7 +2177,7 @@ SQLInfoMariaDB::GetSESSIONMyself() const
 }
 
 XString
-SQLInfoMariaDB::GetSESSIONExists(XString p_sessionID) const
+SQLInfoMariaDB::GetSESSIONExists(XString /*p_sessionID*/) const
 {
   return _T("");
 }
@@ -2182,7 +2189,7 @@ SQLInfoMariaDB::GetSESSIONList() const
 }
 
 XString
-SQLInfoMariaDB::GetSESSIONAttributes(XString p_sessionID) const
+SQLInfoMariaDB::GetSESSIONAttributes(XString /*p_sessionID*/) const
 {
   return _T("");
 }

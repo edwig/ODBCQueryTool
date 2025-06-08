@@ -165,6 +165,13 @@ SQLInfoSQLServer::GetRDBMSSupportsFunctionalIndexes() const
   return false;
 }
 
+// Support for "as" in alias statements (FROM clause)
+bool
+SQLInfoSQLServer::GetRDBMSSupportsAsInAlias() const
+{
+  return true;
+}
+
 // Gets the maximum length of an SQL statement
 unsigned long
 SQLInfoSQLServer::GetRDBMSMaxStatementLength() const
@@ -691,7 +698,7 @@ SQLInfoSQLServer::GetSQLDDLIdentifier(XString p_identifier) const
 
 // Get the name of a temp table (local temporary or global temporary)
 XString
-SQLInfoSQLServer::GetTempTablename(XString p_schema,XString p_tablename,bool p_local) const
+SQLInfoSQLServer::GetTempTablename(XString /*p_schema*/,XString p_tablename,bool p_local) const
 {
   if(p_local)
   {
@@ -1049,7 +1056,7 @@ SQLInfoSQLServer::GetCATALOGTableDrop(XString p_schema,XString p_tablename,bool 
 // ALL TEMPORARY TABLE FUNCTIONS
 
 XString 
-SQLInfoSQLServer::GetCATALOGTemptableCreate(XString p_schema,XString p_tablename,XString p_select) const
+SQLInfoSQLServer::GetCATALOGTemptableCreate(XString /*p_schema*/,XString p_tablename,XString p_select) const
 {
   CString sel(p_select);
   sel.MakeLower();
@@ -1323,7 +1330,7 @@ SQLInfoSQLServer::GetCATALOGColumnDrop(XString p_schema,XString p_tablename,XStr
 
 // All index functions
 XString
-SQLInfoSQLServer::GetCATALOGIndexExists(XString p_schema,XString p_tablename,XString p_indexname) const
+SQLInfoSQLServer::GetCATALOGIndexExists(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_indexname*/) const
 {
   return _T("");
 }
@@ -2367,7 +2374,7 @@ SQLInfoSQLServer::GetCATALOGViewCreate(XString p_schema,XString p_viewname,XStri
 }
 
 XString 
-SQLInfoSQLServer::GetCATALOGViewRename(XString p_schema,XString p_viewname,XString p_newname)    const
+SQLInfoSQLServer::GetCATALOGViewRename(XString /*p_schema*/,XString /*p_viewname*/,XString /*p_newname*/)    const
 {
   return _T("");
 }
@@ -2730,7 +2737,7 @@ SQLInfoSQLServer::GetPSMProcedureDrop(XString p_schema,XString p_procedure,bool 
 }
 
 XString
-SQLInfoSQLServer::GetPSMProcedureErrors(XString p_schema,XString p_procedure) const
+SQLInfoSQLServer::GetPSMProcedureErrors(XString /*p_schema*/,XString /*p_procedure*/) const
 {
   // SQL-Server does not support procedure errors
   return _T("");
@@ -2833,8 +2840,8 @@ SQLInfoSQLServer::GetPSMDeclaration(bool    /*p_first*/
                                    ,int     p_precision /*= 0 */
                                    ,int     p_scale     /*= 0 */
                                    ,XString p_default   /*= ""*/
-                                   ,XString p_domain    /*= ""*/
-                                   ,XString p_asColumn  /*= ""*/) const
+                                   ,XString /*p_domain*/    /*= ""*/
+                                   ,XString /*p_asColumn*/  /*= ""*/) const
 {
   XString line;
   line.Format(_T("DECLARE @%s AS "),p_variable.GetString());
@@ -3017,7 +3024,7 @@ SQLInfoSQLServer::GetPSMExceptionCatchNoData() const
 }
 
 XString
-SQLInfoSQLServer::GetPSMExceptionCatch(XString p_sqlState) const
+SQLInfoSQLServer::GetPSMExceptionCatch(XString /*p_sqlState*/) const
 {
   // SQL SERVER has BEGIN TRY .... END TRY -> BEGIN CATCH ... END CATCH
   return _T("");

@@ -420,31 +420,6 @@ SQLDate::IsNumericString(const XString& p_string)
   return true;
 }
 
-  // Check if acceptable input to be converted to a date
-bool
-SQLDate::AcceptableDateString(const XString& p_date)
-{
-  int spaces = 0;
-  int dashes = 0;
-  int numbers = 0;
-
-  for(int ind = 0;ind < p_date.GetLength(); ++ind)
-  {
-    if(isspace(p_date.GetAt(ind)))  ++spaces;
-    if(isdigit(p_date.GetAt(ind)))  ++numbers;
-    if(p_date.GetAt(ind) == '-')    ++dashes;
-  }
-  if(dashes % 2) return false;
-  if(spaces % 2) return false;
-  
-  if(dashes == 2) return true;
-  if(dashes == 0)
-  {
-    if(numbers % 2) return false;
-  }
-  return true;
-}
-
 // Getting the date from a string
 bool
 SQLDate::CalculateDate(const XString& p_datum)

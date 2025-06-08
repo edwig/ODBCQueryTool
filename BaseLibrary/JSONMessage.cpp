@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2024 ir. W.E. Huisman
+// Copyright (c) 2014-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -34,10 +34,12 @@
 #include <iterator>
 #include <algorithm>
 
-#ifdef _DEBUG
+#ifdef _AFX
+#ifdef _DEBUG 
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
+#endif
 #endif
 
 JSONvalue::JSONvalue()
@@ -350,7 +352,7 @@ JSONvalue::Add(JSONpair& p_value)
 }
 
 XString
-JSONvalue::GetAsJsonString(bool p_white,unsigned p_level /*=0*/)
+JSONvalue::GetAsJsonString(bool p_white,unsigned p_level /*=0*/,bool p_exponential /*= false*/)
 {
   XString result;
   XString separ,less;
@@ -378,13 +380,13 @@ JSONvalue::GetAsJsonString(bool p_white,unsigned p_level /*=0*/)
     case JsonType::JDT_string:      return XMLParser::PrintJsonString(m_string);
     case JsonType::JDT_number_int:  result.Format(_T("%d"),m_intNumber);
                                     break;
-    case JsonType::JDT_number_bcd:  result = m_bcdNumber.AsString(bcd::Format::Bookkeeping,false,0);
+    case JsonType::JDT_number_bcd:  result = m_bcdNumber.AsString(p_exponential ? bcd::Format::Engineering : bcd::Format::Bookkeeping,false,0);
                                     break;
     case JsonType::JDT_array:       result = _T("[") + newln;
                                     for(unsigned ind = 0;ind < m_array.size();++ind)
                                     {
                                       result += separ;
-                                      result += m_array[ind].GetAsJsonString(p_white,p_level+1);
+                                      result += m_array[ind].GetAsJsonString(p_white,p_level+1,p_exponential);
                                       if(ind < m_array.size() - 1)
                                       {
                                         result += _T(",");
@@ -408,7 +410,7 @@ JSONvalue::GetAsJsonString(bool p_white,unsigned p_level /*=0*/)
                                       result += p_white ? _T("\t") : _T("");
                                       result += XMLParser::PrintJsonString(m_object[ind].m_name);
                                       result += _T(":");
-                                      result += m_object[ind].m_value.GetAsJsonString(p_white,p_level+1).TrimLeft('\t');
+                                      result += m_object[ind].m_value.GetAsJsonString(p_white,p_level+1,p_exponential).TrimLeft('\t');
                                       if(ind < m_object.size() - 1)
                                       {
                                         result += _T(",");
@@ -1093,7 +1095,7 @@ JSONMessage::ParseMessage(XString p_message)
 XString 
 JSONMessage::GetJsonMessage() const
 {
-  return m_value->GetAsJsonString(m_whitespace);
+  return m_value->GetAsJsonString(m_whitespace,0,m_exponential);
 }
 
 // Use POST method for PUT/MERGE/PATCH/DELETE
@@ -1144,6 +1146,13 @@ JSONMessage::LoadFile(const XString& p_fileName)
     // Record the found encodings
     m_encoding = file.GetEncoding();
     m_sendBOM  = file.GetFoundBOM();
+
+    // No encoding in the file: presume it is a file from our OS
+    // JSON is always UTF-8 by default
+    if(!m_sendBOM && m_encoding == Encoding::EN_ACP)
+    {
+      m_encoding = Encoding::UTF8;
+    }
 
     // Done with the file
     if(!file.Close())
@@ -1302,6 +1311,103 @@ JSONMessage::FindPair(JSONvalue* p_value,XString p_name,bool p_recursief /*= tru
     }
   }
   return nullptr;
+}
+
+// Deleting the first name/value pair of this name
+bool
+JSONMessage::DeletePair(XString p_name)
+{
+  if(m_value)
+  {
+    return DeletePair(m_value,p_name);
+  }
+  return false;
+}
+
+// Finding the first name/value pair AFTER this value
+bool
+JSONMessage::DeletePair(JSONvalue* p_value,XString p_name)
+{
+  if(p_value && p_value->GetDataType() == JsonType::JDT_object)
+  {
+    for(JSONobject::iterator it = p_value->GetObject().begin(); it != p_value->GetObject().end();++it)
+    {
+      if(it->m_name.Compare(p_name) == 0)
+      {
+        p_value->GetObject().erase(it);
+        return true;
+      }
+      bool deleted = DeletePair(&(it->m_value),p_name);
+      if(deleted)
+      {
+        return true;
+      }
+    }
+  }
+  if(p_value && (p_value->GetDataType() == JsonType::JDT_array))
+  {
+    for(auto& val : p_value->GetArray())
+    {
+      if(val.GetDataType() == JsonType::JDT_object ||
+         val.GetDataType() == JsonType::JDT_array)
+      {
+        bool deleted = DeletePair(&val,p_name);
+        if(deleted)
+        {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
+}
+
+// Finding the EXACT JSONvalue (can come from a JSONPath or JSONPointer) !!
+bool
+JSONMessage::DeletePair(JSONvalue* p_value,JSONvalue* p_base /*= nullptr*/)
+{
+  if(p_base == nullptr)
+  {
+    p_base = m_value;
+  }
+
+  if(p_base && p_base->GetDataType() == JsonType::JDT_object)
+  {
+    for(JSONobject::iterator it = p_base->GetObject().begin(); it != p_base->GetObject().end();++it)
+    {
+      if(&(it->m_value) == p_value)
+      {
+        p_base->GetObject().erase(it);
+        return true;
+      }
+      bool deleted = DeletePair(p_value,&(it->m_value));
+      if(deleted)
+      {
+        return true;
+      }
+    }
+  }
+  if(p_base && (p_base->GetDataType() == JsonType::JDT_array))
+  {
+    for(JSONarray::iterator it = p_base->GetArray().begin(); it != p_base->GetArray().end();++it)
+    {
+      if(&(*it) == p_value)
+      {
+        p_base->GetArray().erase(it);
+        return true;
+      }
+      if(it->GetDataType() == JsonType::JDT_object ||
+         it->GetDataType() == JsonType::JDT_array)
+      {
+        bool deleted = DeletePair(p_value,&(*it));
+        if(deleted)
+        {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
 }
 
 // Get an array element of an array value node

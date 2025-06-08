@@ -40,10 +40,12 @@
 #include <filesystem>
 #include <io.h>
 
+#ifdef _AFX
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
+#endif
 #endif
 
 //////////////////////////////////////////////////////////////////////////
@@ -71,7 +73,7 @@ WinFile::WinFile()
 }
 
 // CTOR from a filename
-WinFile::WinFile(CString p_filename)
+WinFile::WinFile(XString p_filename)
         :m_filename(p_filename)
 {
   InitializeCriticalSection(&m_fileaccess);
@@ -312,22 +314,26 @@ WinFile::CreateDirectory()
     m_error = ERROR_NOT_FOUND;
     return false;
   }
-  CString drive,directory,filename,extension;
+  XString drive,directory,filename,extension;
   FilenameParts(m_filename,drive,directory,filename,extension);
 
-  CString dirToBeOpened(drive);
-  CString path(directory);
-  CString part = GetBaseDirectory(path);
+  XString dirToBeOpened(drive);
+  XString path(directory);
+  XString part = GetBaseDirectory(path);
   while(!part.IsEmpty())
   {
-    dirToBeOpened += _T("\\") + part;
+    dirToBeOpened += _T("\\");
+    dirToBeOpened += part;
     if (!::CreateDirectory(dirToBeOpened.GetString(),nullptr))
     {
       m_error = ::GetLastError();
-      if(m_error != ERROR_ALREADY_EXISTS)
+      if(!(m_error == ERROR_ACCESS_DENIED && !path.IsEmpty()))
       {
-        // Cannot create the directory
-        return false;
+        if(m_error != ERROR_ALREADY_EXISTS)
+        {
+          // Cannot create the directory
+          return false;
+        }
       }
     }
     part = GetBaseDirectory(path);
@@ -520,7 +526,7 @@ WinFile::DeleteToTrashcan(bool p_show /*= false*/,bool p_confirm /*= false*/)
 
 // Make a copy of the file
 bool
-WinFile::CopyFile(CString p_destination,FCopy p_how /*= winfile_copy*/)
+WinFile::CopyFile(XString p_destination,FCopy p_how /*= winfile_copy*/)
 {
   // Reset the error
   m_error = 0;
@@ -550,7 +556,7 @@ WinFile::CopyFile(CString p_destination,FCopy p_how /*= winfile_copy*/)
 
 // Move the file by making a copy and removing the original file
 bool
-WinFile::MoveFile(CString p_destination,FMove p_how /*= winfile_move*/)
+WinFile::MoveFile(XString p_destination,FMove p_how /*= winfile_move*/)
 {
   // Reset the error
   m_error = 0;
@@ -583,7 +589,7 @@ WinFile::MoveFile(CString p_destination,FMove p_how /*= winfile_move*/)
 
 // Create a temporary file on the %TMP% directory
 bool      
-WinFile::CreateTempFileName(CString p_pattern,CString p_extension /*= ""*/)
+WinFile::CreateTempFileName(XString p_pattern,XString p_extension /*= ""*/)
 {
   // Directory for GetTempFileName cannot be larger than (MAX_PATH-14)
   // See documentation on "docs.microsoft.com"
@@ -621,7 +627,7 @@ WinFile::CreateTempFileName(CString p_pattern,CString p_extension /*= ""*/)
 }
 
 void* 
-WinFile::OpenAsSharedMemory(CString  p_name
+WinFile::OpenAsSharedMemory(XString  p_name
                            ,bool     p_local     /*= true*/
                            ,bool     p_trycreate /*= false*/
                            ,size_t   p_size      /*= 0*/)
@@ -822,7 +828,7 @@ WinFile::Read(XString& p_string,uchar p_delim /*= '\n'*/)
   while(true)
   {
     int ch(PageBufferRead());
-    if(ch == EOF)
+    if(ch == EOF || ch == 0)
     {
       m_error = ::GetLastError();
       p_string = TranslateInputBuffer(result);
@@ -898,7 +904,7 @@ WinFile::Read(XString& p_string,uchar p_delim /*= '\n'*/)
   return true;
 }
 
-CString 
+XString 
 WinFile::TranslateInputBuffer(std::string& p_string)
 {
   if(p_string.empty())
@@ -918,7 +924,7 @@ WinFile::TranslateInputBuffer(std::string& p_string)
      m_encoding == Encoding::BE_UTF16)
   {
     // We are already UTF-16
-    CString result;
+    XString result;
     int size = (int) p_string.size();
     LPTSTR resbuf = result.GetBufferSetLength(size + 1);
     memcpy(resbuf,p_string.c_str(),size);
@@ -927,7 +933,7 @@ WinFile::TranslateInputBuffer(std::string& p_string)
     result.ReleaseBufferSetLength(size);
     return result;
   }
-  // Last resort, create CString for current codepage
+  // Last resort, create XString for current codepage
   // Mostly MS-Windows 1252 in Western Europe
   return ExplodeString(p_string,GetACP());
 #else
@@ -943,7 +949,7 @@ WinFile::TranslateInputBuffer(std::string& p_string)
 
     // Getting the needed length for MBCS
     clength = ::WideCharToMultiByte(GetACP(),0,(LPCWSTR) buffer,-1,NULL,NULL,NULL,NULL);
-    CString result;
+    XString result;
     LPTSTR strbuf = result.GetBufferSetLength(clength);
     // Doing the conversion to MBCS
     clength = ::WideCharToMultiByte(GetACP(),0,(LPCWSTR) buffer,-1,reinterpret_cast<LPSTR>(strbuf),clength,NULL,NULL);
@@ -959,7 +965,7 @@ WinFile::TranslateInputBuffer(std::string& p_string)
       BlefuscuToLilliput(p_string);
     }
     // Implode to MBCS
-    CString result;
+    XString result;
     int clength = 0;
     int blength = 0;
     // Zero delimit the input string for sure!
@@ -982,12 +988,12 @@ WinFile::TranslateInputBuffer(std::string& p_string)
   else if(m_encoding == Encoding::EN_ACP || m_encoding == (Encoding)GetACP())
   {
     // Simply the string in the current encoding
-    return CString(p_string.c_str());
+    return XString(p_string.c_str());
   }
   else
   {
     // We got some strange encoding which we try to convert to MBCS
-    CString string(p_string.c_str());
+    XString string(p_string.c_str());
     return DecodeStringFromTheWire(string,CodepageToCharset((int)m_encoding));
   }
 #endif
@@ -1047,7 +1053,7 @@ WinFile::Read(void* p_buffer,size_t p_bufsize,int& p_read)
 
 // Writing a string to the WinFile
 bool
-WinFile::Write(const CString& p_string)
+WinFile::Write(const XString& p_string)
 {
   // Reset the error
   m_error = 0;
@@ -1103,7 +1109,7 @@ WinFile::Write(const CString& p_string)
 }
 
 std::string 
-WinFile::TranslateOutputBuffer(const CString& p_string)
+WinFile::TranslateOutputBuffer(const XString& p_string)
 {
   if(p_string.IsEmpty())
   {
@@ -1243,7 +1249,7 @@ WinFile::Format(LPCTSTR p_format,...)
 bool
 WinFile::FormatV(LPCTSTR p_format,va_list p_list)
 {
-  CString buffer;
+  XString buffer;
   buffer.FormatV(p_format,p_list);
   return Write(buffer);
 }
@@ -1794,7 +1800,7 @@ WinFile::DefuseBOM(const uchar*  p_pointer
 
 // Set the filename, but only if the file was not (yet) opened
 bool
-WinFile::SetFilename(CString p_filename)
+WinFile::SetFilename(XString p_filename)
 {
   if(m_file == nullptr)
   {
@@ -1807,7 +1813,7 @@ WinFile::SetFilename(CString p_filename)
 // Get a filename in a 'special' Windows folder
 // p_folder parameter is one of the many CSIDL_* folder names
 bool
-WinFile::SetFilenameInFolder(int p_folder,CString p_filename)
+WinFile::SetFilenameInFolder(int p_folder,XString p_filename)
 {
   // Check if file was already opened
   if(m_file)
@@ -1868,12 +1874,12 @@ WinFile::SetFilenameInFolder(int p_folder,CString p_filename)
   }
   pShellMalloc->Release();
 
-  m_filename = special + CString(_T("\\")) + p_filename;
+  m_filename = special + XString(_T("\\")) + p_filename;
   return result;
 }
 
 bool
-WinFile::SetFilenameFromResource(CString p_resource)
+WinFile::SetFilenameFromResource(XString p_resource)
 {
   m_filename = FileNameFromResourceName(p_resource);
   return !m_filename.IsEmpty();
@@ -2148,7 +2154,7 @@ WinFile::GetIsOpen() const
 }
 
 // Getting the name of the file
-CString
+XString
 WinFile::GetFilename()
 {
   return m_filename;
@@ -2175,11 +2181,11 @@ WinFile::GetLastError()
   return m_error;
 }
 
-CString
+XString
 WinFile::GetLastErrorString()
 {
   // This will be the resulting message
-  CString message;
+  XString message;
 
   // This is the "errno" error number
   DWORD dwError = m_error;
@@ -2348,10 +2354,10 @@ WinFile::GetSharedMemorySize()
   return 0;
 }
 
-CString
+XString
 WinFile::GetNamePercentEncoded()
 {
-  CString      encoded;
+  XString      encoded;
   bool         queryValue = false;
   static TCHAR unsafeString[]   = _T(" \"<>#{}|^~[]`");
   static TCHAR reservedString[] = _T("$&/;?@-!*()'");
@@ -2386,46 +2392,46 @@ WinFile::GetNamePercentEncoded()
   return encoded;
 }
 
-CString
+XString
 WinFile::GetFilenamePartDirectory()
 {
-  CString drive,directory,filename,extension;
+  XString drive,directory,filename,extension;
   FilenameParts(m_filename,drive,directory,filename,extension);
 
   return directory;
 }
 
-CString    
+XString    
 WinFile::GetFilenamePartFilename()
 {
-  CString drive,directory,filename,extension;
+  XString drive,directory,filename,extension;
   FilenameParts(m_filename,drive,directory,filename,extension);
 
   return filename + extension;
 }
 
-CString
+XString
 WinFile::GetFilenamePartBasename()
 {
-  CString drive,directory,filename,extension;
+  XString drive,directory,filename,extension;
   FilenameParts(m_filename,drive,directory,filename,extension);
 
   return filename;
 }
 
-CString    
+XString    
 WinFile::GetFilenamePartExtension()
 {
-  CString drive,directory,filename,extension;
+  XString drive,directory,filename,extension;
   FilenameParts(m_filename,drive,directory,filename,extension);
 
   return extension;
 }
 
-CString 
+XString 
 WinFile::GetFilenamePartDrive()
 {
-  CString drive,directory,filename,extension;
+  XString drive,directory,filename,extension;
   FilenameParts(m_filename,drive,directory,filename,extension);
 
   return drive;
@@ -2666,12 +2672,12 @@ WinFile::GetFoundBOM()
 bool
 WinFile::SetFilenameByDialog(HWND    p_parent      // Parent window (if any)
                             ,bool    p_open        // true = Open/New, false = SaveAs
-                            ,CString p_title       // Title of the dialog
-                            ,CString p_defext      // Default extension
-                            ,CString p_filename    // Default first file
+                            ,XString p_title       // Title of the dialog
+                            ,XString p_defext      // Default extension
+                            ,XString p_filename    // Default first file
                             ,int     p_flags       // Default flags
-                            ,CString p_filter      // Filter for extensions
-                            ,CString p_direct)     // Directory to start in
+                            ,XString p_filter      // Filter for extensions
+                            ,XString p_direct)     // Directory to start in
 {
   // Reset error
   m_error = 0;
@@ -2680,7 +2686,7 @@ WinFile::SetFilenameByDialog(HWND    p_parent      // Parent window (if any)
   OPENFILENAME ofn;
   TCHAR   original[MAX_PATH + 1];
   TCHAR   filename[MAX_PATH + 1];
-  CString filter;
+  XString filter;
 
   if(p_filter.IsEmpty())
   {
@@ -2824,8 +2830,8 @@ WinFile::operator=(const WinFile& p_other)
   return *this;
 }
 
-CString
-WinFile::LegalDirectoryName(CString p_name,bool p_extensionAllowed /*= true*/)
+XString
+WinFile::LegalDirectoryName(XString p_name,bool p_extensionAllowed /*= true*/)
 {
   // Check on non-empty
   if(p_name.IsEmpty())
@@ -2833,7 +2839,7 @@ WinFile::LegalDirectoryName(CString p_name,bool p_extensionAllowed /*= true*/)
     return _T("NewDirectory");
   }
 
-  CString name(p_name);
+  XString name(p_name);
   const TCHAR  forbidden_all[] = _T("<>:\"/\\|?*");
   const TCHAR  forbidden_ext[] = _T("<>:\"/\\|?*.");
   const TCHAR* reserved[] =
@@ -2850,7 +2856,7 @@ WinFile::LegalDirectoryName(CString p_name,bool p_extensionAllowed /*= true*/)
   for(int index = 0;index < name.GetLength();++index)
   {
     // Replace interpunction
-    if(_tcsrchr(forbidden,name.GetAt(index)) != nullptr)
+    if(_tcsrchr(forbidden,(TCHAR)name.GetAt(index)) != nullptr)
     {
       name.SetAt(index,'_');
     }
@@ -2862,7 +2868,7 @@ WinFile::LegalDirectoryName(CString p_name,bool p_extensionAllowed /*= true*/)
   }
 
   // Construct uppercase name
-  CString upper(name);
+  XString upper(name);
   upper.MakeUpper();
 
   // Scan for reserved names
@@ -2888,7 +2894,7 @@ WinFile::LegalDirectoryName(CString p_name,bool p_extensionAllowed /*= true*/)
   }
 
   // Check on the ending on a space or dot
-  CString ch = name.Right(1);
+  XString ch = name.Right(1);
   if(ch == _T(".") || ch == _T(" "))
   {
     name = name.Left(name.GetLength() - 1);
@@ -2899,10 +2905,10 @@ WinFile::LegalDirectoryName(CString p_name,bool p_extensionAllowed /*= true*/)
 }
 
 // Create a file name from an HTTP resource name
-CString
-WinFile::FileNameFromResourceName(CString p_resource)
+XString
+WinFile::FileNameFromResourceName(XString p_resource)
 {
-  CString filename = CrackedURL::DecodeURLChars(p_resource);
+  XString filename = CrackedURL::DecodeURLChars(p_resource);
   filename.Replace(_T('/'),_T('\\'));
   filename.Replace(_T("\\\\"),_T("\\"));
   return filename;
@@ -2915,11 +2921,11 @@ WinFile::FileNameFromResourceName(CString p_resource)
 //////////////////////////////////////////////////////////////////////////
 
 void
-WinFile::FilenameParts(CString  p_fullpath
-                      ,CString& p_drive
-                      ,CString& p_directory
-                      ,CString& p_filename
-                      ,CString& p_extension)
+WinFile::FilenameParts(XString  p_fullpath
+                      ,XString& p_drive
+                      ,XString& p_directory
+                      ,XString& p_filename
+                      ,XString& p_extension)
 {
   TCHAR drive [_MAX_DRIVE + 1];
   TCHAR direct[_MAX_DIR   + 1];
@@ -2937,8 +2943,8 @@ WinFile::FilenameParts(CString  p_fullpath
 // Generic strip protocol from URL to form OS filenames
 // "file:///c|/Program%20Files/Program%23name/file%25name.exe" =>
 // "c:\Program Files\Program#name\file%name.exe"
-CString
-WinFile::StripFileProtocol(CString p_fileref)
+XString
+WinFile::StripFileProtocol(XString p_fileref)
 {
   if(p_fileref.GetLength() > 8)
   {
@@ -2962,7 +2968,7 @@ WinFile::StripFileProtocol(CString p_fileref)
 // Special optimized function to resolve %5C -> '\' in pathnames
 // Returns number of chars replaced
 int
-WinFile::ResolveSpecialChars(CString& p_value)
+WinFile::ResolveSpecialChars(XString& p_value)
 {
   int total = 0;
 
@@ -2971,7 +2977,7 @@ WinFile::ResolveSpecialChars(CString& p_value)
   {
     ++total;
     int num = 0;
-    CString hexstring = p_value.Mid(pos+1,2);
+    XString hexstring = p_value.Mid(pos+1,2);
     hexstring.SetAt(0,(TCHAR)toupper(hexstring[0]));
     hexstring.SetAt(1,(TCHAR)toupper(hexstring[1]));
 
@@ -2993,7 +2999,8 @@ WinFile::ResolveSpecialChars(CString& p_value)
       num += hexstring[1] - 'A' + 10;
     }
     p_value.SetAt(pos,(char)num);
-    p_value = p_value.Left(pos+1) + p_value.Mid(pos+3);
+    p_value  = p_value.Left(pos+1);
+    p_value += p_value.Mid(pos+3);
     pos = p_value.Find('%');
   }
   return total;
@@ -3008,7 +3015,7 @@ WinFile::EncodeSpecialChars(XString& p_value)
   int pos = 0;
   while(pos < p_value.GetLength())
   {
-    TCHAR ch = p_value.GetAt(pos);
+    TCHAR ch = (TCHAR) p_value.GetAt(pos);
     if(!_istalnum(ch) && ch != '/')
     {
       // Encoding in 2 chars HEX
@@ -3034,10 +3041,10 @@ WinFile::EncodeSpecialChars(XString& p_value)
 }
 
 // Getting the first (base) directory
-CString
-WinFile::GetBaseDirectory(CString& p_path)
+XString
+WinFile::GetBaseDirectory(XString& p_path)
 {
-  CString result;
+  XString result;
 
   // Strip of an extra path separator
   while (p_path[0] == '\\')
@@ -3286,7 +3293,7 @@ WinFile::IsTextUnicodeUTF8(const uchar* p_pointer,size_t p_length)
 }
 
 #ifdef _UNICODE
-CString
+XString
 WinFile::ExplodeString(const std::string& p_string,unsigned p_codepage)
 {
   // Convert UTF-8 -> UTF-16
@@ -3296,7 +3303,7 @@ WinFile::ExplodeString(const std::string& p_string,unsigned p_codepage)
   uchar* buffer = new uchar[length * 2];
   // Doing the 'real' conversion
   MultiByteToWideChar(p_codepage,0,p_string.c_str(),-1,reinterpret_cast<LPWSTR>(buffer),length);
-  CString result;
+  XString result;
   LPCTSTR resbuf = result.GetBufferSetLength(length);
   memcpy((void*) resbuf,buffer,length * 2);
   result.ReleaseBuffer();
@@ -3305,7 +3312,7 @@ WinFile::ExplodeString(const std::string& p_string,unsigned p_codepage)
 }
 
 std::string 
-WinFile::ImplodeString(const CString& p_string,unsigned p_codepage)
+WinFile::ImplodeString(const XString& p_string,unsigned p_codepage)
 {
   int clength = 0;
   int blength = 0;
@@ -3333,7 +3340,7 @@ WinFile::ImplodeString(const CString& p_string,unsigned p_codepage)
 WinFile& 
 WinFile::operator<<(const TCHAR p_char)
 {
-  CString str(p_char);
+  XString str(p_char);
   Write(str);
   return *this;
 }
@@ -3347,7 +3354,7 @@ WinFile::operator<<(const short p_num)
   }
   else
   {
-    CString buf;
+    XString buf;
     buf.Format(_T("%d"),(int) p_num);
     Write(buf);
   }
@@ -3363,7 +3370,7 @@ WinFile::operator<<(const int p_num)
   }
   else
   {
-    CString buf;
+    XString buf;
     buf.Format(_T("%d"),p_num);
     Write(buf);
   }
@@ -3379,7 +3386,7 @@ WinFile::operator<<(const unsigned p_num)
   }
   else
   {
-    CString buf;
+    XString buf;
     buf.Format(_T("%u"),p_num);
     Write(buf);
   }
@@ -3395,7 +3402,7 @@ WinFile::operator<<(const INT64 p_num)
   }
   else
   {
-    CString buf;
+    XString buf;
     buf.Format(_T("%I64d"),p_num);
     Write(buf);
   }
@@ -3412,7 +3419,7 @@ WinFile::operator<<(const float p_num)
   }
   else
   {
-    CString buf;
+    XString buf;
     buf.Format(_T("%G"),(double)p_num);
     Write(buf);
   }
@@ -3428,7 +3435,7 @@ WinFile::operator<<(const double p_num)
   }
   else
   {
-    CString buf;
+    XString buf;
     buf.Format(_T("%G"),p_num);
     Write(buf);
   }
@@ -3438,13 +3445,13 @@ WinFile::operator<<(const double p_num)
 WinFile&
 WinFile::operator<<(const LPCTSTR p_string)
 {
-  CString string(p_string);
+  XString string(p_string);
   *this << string;
   return *this;
 }
 
 WinFile&
-WinFile::operator<<(const CString& p_string)
+WinFile::operator<<(const XString& p_string)
 {
   if(m_openMode & open_trans_binary)
   {
@@ -3556,7 +3563,7 @@ WinFile::operator>>(double& p_num)
 }
 
 WinFile&
-WinFile::operator>>(CString& p_string)
+WinFile::operator>>(XString& p_string)
 {
   if(m_openMode & open_trans_text)
   {
@@ -3666,10 +3673,19 @@ WinFile::PageBufferRead()
       m_pagePointer = m_pageBuffer;
       m_pageTop     = (uchar*) ((size_t)m_pageBuffer + (size_t)size);
 
+      if(size <= PAGESIZE)
+      {
+        m_pageBuffer[size] = 0;
+      }
+
       // First buffer read in: scan for encoding
       if(scanBom)
       {
         ScanBomInFirstPageBuffer();
+        if(m_pagePointer >= m_pageTop)
+        {
+          return EOF;
+        }
       }
     }
   }

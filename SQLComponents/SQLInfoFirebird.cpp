@@ -158,6 +158,13 @@ SQLInfoFirebird::GetRDBMSSupportsFunctionalIndexes() const
   return false;
 }
 
+// Support for "as" in alias statements (FROM clause)
+bool
+SQLInfoFirebird::GetRDBMSSupportsAsInAlias() const
+{
+  return true;
+}
+
 // Gets the maximum length of an SQL statement
 unsigned long 
 SQLInfoFirebird::GetRDBMSMaxStatementLength() const
@@ -491,7 +498,7 @@ SQLInfoFirebird::GetSQLFromDualClause() const
 
 // Get SQL to lock  a table 
 XString
-SQLInfoFirebird::GetSQLLockTable(XString p_schema, XString p_tablename, bool /*p_exclusive*/,int /*p_waittime*/) const
+SQLInfoFirebird::GetSQLLockTable(XString /*p_schema*/, XString /*p_tablename*/, bool /*p_exclusive*/,int /*p_waittime*/) const
 {
   // Firebird does NOT have a LOCK-TABLE statement
   return XString();
@@ -499,7 +506,7 @@ SQLInfoFirebird::GetSQLLockTable(XString p_schema, XString p_tablename, bool /*p
 
 // Get query to optimize the table statistics
 XString
-SQLInfoFirebird::GetSQLOptimizeTable(XString p_schema, XString p_tablename) const
+SQLInfoFirebird::GetSQLOptimizeTable(XString /*p_schema*/, XString /*p_tablename*/) const
 {
   // Firebird has no SQL for this, it uses the "GFIX.EXE -sweep <database>" tool
   return XString();
@@ -882,7 +889,7 @@ SQLInfoFirebird::GetCATALOGTemptableDrop(XString /*p_schema*/,XString p_tablenam
 // ALL COLUMN FUNCTIONS
 
 XString 
-SQLInfoFirebird::GetCATALOGColumnExists(XString p_schema,XString p_tablename,XString p_columnname) const
+SQLInfoFirebird::GetCATALOGColumnExists(XString /*p_schema*/,XString p_tablename,XString p_columnname) const
 {
   p_tablename.MakeUpper();
   p_columnname.MakeUpper();
@@ -1105,7 +1112,7 @@ SQLInfoFirebird::GetCATALOGColumnRename(XString /*p_schema*/,XString p_tablename
 
 
 XString 
-SQLInfoFirebird::GetCATALOGColumnDrop(XString p_schema,XString p_tablename,XString p_columnname) const
+SQLInfoFirebird::GetCATALOGColumnDrop(XString /*p_schema*/,XString p_tablename,XString p_columnname) const
 {
   XString sql(_T("ALTER TABLE ")  + p_tablename + _T("\n")
               _T(" DROP COLUMN ") + p_columnname);
@@ -1924,7 +1931,7 @@ SQLInfoFirebird::GetCATALOGViewCreate(XString /*p_schema*/,XString p_viewname,XS
 }
 
 XString 
-SQLInfoFirebird::GetCATALOGViewRename(XString p_schema,XString p_viewname,XString p_newname)    const
+SQLInfoFirebird::GetCATALOGViewRename(XString /*p_schema*/,XString /*p_viewname*/,XString /*p_newname*/)    const
 {
   return XString();
 }
@@ -2080,7 +2087,7 @@ SQLInfoFirebird::GetCATALOGGrantPrivilege(XString /*p_schema*/,XString p_objectn
 }
 
 XString 
-SQLInfoFirebird::GetCATALOGRevokePrivilege(XString p_schema,XString p_objectname,XString p_privilege,XString p_grantee)
+SQLInfoFirebird::GetCATALOGRevokePrivilege(XString /*p_schema*/,XString p_objectname,XString p_privilege,XString p_grantee)
 {
   XString sql;
   sql.Format(_T("REVOKE %s ON %s FROM %s"),p_privilege.GetString(),p_objectname.GetString(),p_grantee.GetString());
@@ -2250,7 +2257,7 @@ SQLInfoFirebird::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedur
 }
 
 XString
-SQLInfoFirebird::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure) const
+SQLInfoFirebird::GetPSMProcedureSourcecode(XString /*p_schema*/, XString /*p_procedure*/) const
 {
   // Source code already gotten with attributes
   return XString();
@@ -2263,14 +2270,14 @@ SQLInfoFirebird::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
 }
 
 XString
-SQLInfoFirebird::GetPSMProcedureDrop(XString p_schema, XString p_procedure,bool /*p_function /*=false*/) const
+SQLInfoFirebird::GetPSMProcedureDrop(XString /*p_schema*/, XString p_procedure,bool /*p_function /*=false*/) const
 {
   XString sql(_T("DROP PROCEDURE ") + p_procedure);
   return sql;
 }
 
 XString
-SQLInfoFirebird::GetPSMProcedureErrors(XString p_schema,XString p_procedure) const
+SQLInfoFirebird::GetPSMProcedureErrors(XString /*p_schema*/,XString /*p_procedure*/) const
 {
   // Firebird does not support procedure errors
   return XString();
@@ -2710,7 +2717,7 @@ SQLInfoFirebird::GetPSMBREAK() const
 }
 
 XString
-SQLInfoFirebird::GetPSMRETURN(XString p_statement /*= ""*/) const
+SQLInfoFirebird::GetPSMRETURN(XString /* p_statement /*= ""*/) const
 {
   return _T("SUSPEND;\n");
 }

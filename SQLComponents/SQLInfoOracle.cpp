@@ -175,6 +175,13 @@ SQLInfoOracle::GetRDBMSSupportsFunctionalIndexes() const
   return true;
 }
 
+// Support for "as" in alias statements (FROM clause)
+bool
+SQLInfoOracle::GetRDBMSSupportsAsInAlias() const
+{
+  return false;
+}
+
 // Gets the maximum length of an SQL statement
 unsigned long
 SQLInfoOracle::GetRDBMSMaxStatementLength() const
@@ -476,7 +483,7 @@ SQLInfoOracle::GetSQLStartSubTransaction(XString p_savepointName) const
 }
 
 XString
-SQLInfoOracle::GetSQLCommitSubTransaction(XString p_savepointName) const
+SQLInfoOracle::GetSQLCommitSubTransaction(XString /*p_savepointName*/) const
 {
   // There is no savepoint commit in Oracle!!
   return _T("");
@@ -756,8 +763,11 @@ XString
 SQLInfoOracle::GetCATALOGDefaultCollation() const
 {
   XString nlslang;
-  nlslang.GetEnvironmentVariable(_T("NLS_LANG"));
-  return nlslang;
+  if(nlslang.GetEnvironmentVariable(_T("NLS_LANG")))
+  {
+    return nlslang;
+  }
+  return XString();
 }
 
 // Get SQL to check if a table already exists in the database
@@ -1198,7 +1208,7 @@ SQLInfoOracle::GetCATALOGColumnDrop(XString p_schema,XString p_tablename,XString
 
 // All index functions
 XString
-SQLInfoOracle::GetCATALOGIndexExists(XString p_schema,XString p_tablename,XString p_indexname) const
+SQLInfoOracle::GetCATALOGIndexExists(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_indexname*/) const
 {
   return _T("");
 }
@@ -1913,7 +1923,7 @@ SQLInfoOracle::GetCATALOGTriggerCreate(MetaTrigger& p_trigger) const
 }
 
 XString
-SQLInfoOracle::GetCATALOGTriggerDrop(XString p_schema, XString p_tablename, XString p_triggername) const
+SQLInfoOracle::GetCATALOGTriggerDrop(XString /*p_schema*/, XString /*p_tablename*/, XString /*p_triggername*/) const
 {
   return _T("");
 }
@@ -2116,7 +2126,7 @@ SQLInfoOracle::GetCATALOGViewCreate(XString p_schema,XString p_viewname,XString 
 }
 
 XString 
-SQLInfoOracle::GetCATALOGViewRename(XString p_schema,XString p_viewname,XString p_newname)    const
+SQLInfoOracle::GetCATALOGViewRename(XString /*p_schema*/,XString /*p_viewname*/,XString /*p_newname*/) const
 {
   return _T("");
 }
@@ -2454,7 +2464,7 @@ SQLInfoOracle::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
 }
 
 XString
-SQLInfoOracle::GetPSMProcedureDrop(XString p_schema, XString p_procedure,bool /*p_function /*=false*/) const
+SQLInfoOracle::GetPSMProcedureDrop(XString /*p_schema*/, XString /*p_procedure*/,bool /*p_function /*=false*/) const
 {
   return _T("");
 }
@@ -2853,7 +2863,7 @@ SQLInfoOracle::DoSQLCallNamedParameters(SQLQuery* p_query,XString& p_schema,XStr
     }
   }
   sql += _T(");\n  END;");
-  if(!p_procedure)
+  if(p_function)
   {
     sql += _T("\nEND;");
   }

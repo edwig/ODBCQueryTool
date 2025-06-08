@@ -81,7 +81,7 @@ SQLTransaction::~SQLTransaction()
   catch(StdException& error)
   {
     XString message;
-    message.Format(_T("Error in rollback of transaction [%s] : %s\n"),m_name.GetString(),error.GetErrorMessage().GetString());
+    message.Format(_T("Error in rollback of transaction [%s] : %s"),m_name.GetString(),error.GetErrorMessage().GetString());
     if(m_database)
     {
       m_database->LogPrint(message);

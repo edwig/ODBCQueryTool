@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2024 ir. W.E. Huisman
+// Copyright (c) 2014-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,6 +28,14 @@
 #include "pch.h"
 #include "StringUtilities.h"
 
+#ifdef _AFX
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+#endif
+
 XString AsString(int p_number,int p_radix /*=10*/)
 {
   XString string;
@@ -47,12 +55,12 @@ XString AsString(double p_number)
 
 int AsInteger(XString p_string)
 {
-  return _ttoi(p_string.GetBuffer());
+  return _ttoi(p_string.GetString());
 }
 
 double  AsDouble(XString p_string)
 {
-  return _ttof(p_string.GetBuffer());
+  return _ttof(p_string.GetString());
 }
 
 bcd AsBcd(XString p_string)
@@ -131,7 +139,7 @@ void NormalizeLineEndings(XString& p_string)
 // Find the position of the matching bracket
 // starting at the bracket in the parameters bracketPos
 //
-int FindMatchingBracket(const CString& p_string,int p_bracketPos)
+int FindMatchingBracket(const XString& p_string,int p_bracketPos)
 {
   TCHAR bracket = p_string[p_bracketPos];
   TCHAR   match = 0;
@@ -200,7 +208,7 @@ int FindMatchingBracket(const CString& p_string,int p_bracketPos)
 
 // Split arguments with p_splitter not within brackets
 // p_pos must be 0 initially
-bool SplitArgument(int& p_pos,const CString& p_data,TCHAR p_splitter,CString& p_argument)
+bool SplitArgument(int& p_pos,const XString& p_data,TCHAR p_splitter,XString& p_argument)
 {
   int len = p_data.GetLength();
   if(p_pos >= len)

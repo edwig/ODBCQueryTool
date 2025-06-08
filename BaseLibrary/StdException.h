@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2024 ir. W.E. Huisman
+// Copyright (c) 2014-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -70,7 +70,7 @@ protected:
 };
 
 void SeTranslator(unsigned p_safe,_EXCEPTION_POINTERS* p_exceptionPointers);
-#ifdef _ATL
+#ifdef _AFX 
 // Translate CException to XString
 XString MessageFromException(CException& p_exception);
 #endif

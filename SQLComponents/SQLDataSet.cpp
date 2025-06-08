@@ -444,13 +444,23 @@ SQLDataSet::SetOrderBy(XString p_orderby)
 }
 
 void
-SQLDataSet::AddGroupby(XString p_property)
+SQLDataSet::AddGroupby(XString p_groupby)
 {
   if(!m_groupby.IsEmpty())
   {
     m_groupby += ", ";
   }
-  m_groupby += p_property;
+  m_groupby += p_groupby;
+}
+
+void
+SQLDataSet::AddOrderBy(XString p_orderby)
+{
+  if(!m_orderby.IsEmpty())
+  {
+    m_orderby += ", ";
+  }
+  m_orderby += p_orderby;
 }
 
 void
@@ -587,12 +597,15 @@ SQLDataSet::ParseFilters(SQLQuery& p_query,XString p_sql)
   query.Replace(_T("\t"),_T(" "));
   bool whereFound = m_query.Find(_T("WHERE ")) > 0;
 
-  // Offset in the WHERE clause
-  query += whereFound ? _T("\n   AND ") : _T("\n WHERE ");
+  XString condition = m_filters->ParseFiltersToCondition(p_query);
 
   // Add all filters
-  query += m_filters->ParseFiltersToCondition(p_query);
-
+  if(!condition.IsEmpty())
+  {
+    // Offset in the WHERE clause
+    query += whereFound ? _T("\n   AND ") : _T("\n WHERE ");
+    query += condition;
+  }
   return query;
 }
 
@@ -1003,17 +1016,33 @@ SQLDataSet::ReadRecordFromQuery(SQLQuery& p_query,bool p_modifiable,bool p_appen
       ObjectMap::iterator it = m_objects.find(key);
       extra = (it == m_objects.end());
     }
-    if(extra)
+    if(m_keepDuplicates)
     {
-      // New record: keep it along with the primary key info
+      // Keep duplicates, but only the first key will be kept in the
+      // object cache for update / delete purposes
       m_records.push_back(record);
-      int recnum = (int)m_records.size() - 1;
-      m_objects.insert(std::make_pair(key,recnum));
+      if(extra)
+      {
+        // New record: keep it along with the primary key info
+        int recnum = (int)m_records.size() - 1;
+        m_objects.insert(std::make_pair(key,recnum));
+      }
     }
     else
     {
-      // We already had the record
-      delete record;
+      // Only one (1) record per key will be kept
+      if(extra)
+      {
+        // New record: keep it along with the primary key info
+        m_records.push_back(record);
+        int recnum = (int)m_records.size() - 1;
+        m_objects.insert(std::make_pair(key,recnum));
+      }
+      else
+      {
+        // We already had the record
+        delete record;
+      }
     }
   }
   return true;
@@ -1402,13 +1431,15 @@ SQLDataSet::CancelMutation(int p_mutationID)
 int
 SQLDataSet::Aggregate(int p_num,AggregateInfo& p_info)
 {
-  unsigned int total   = (int)m_records.size();
-  for(unsigned int ind = 0;ind < total; ++ind)
+  int values  = 0;
+  int total   = (int)m_records.size();
+  for(int ind = 0;ind < total; ++ind)
   {
     const SQLVariant* var = m_records[ind]->GetField(p_num);
     if(var && var->IsNULL() == false)
     {
-      double waarde = var->GetAsDouble();
+      ++values;
+      bcd waarde = var->GetAsBCD();
       if(p_info.m_max < waarde)
       {
         p_info.m_max = waarde;
@@ -1421,6 +1452,14 @@ SQLDataSet::Aggregate(int p_num,AggregateInfo& p_info)
       p_info.m_mean = p_info.m_sum / total;
     }
   }
+
+  // Could still be MIN_BCD / MAX_BCD
+  if(values == 0)
+  {
+    p_info.m_min = 0;
+    p_info.m_max = 0;
+  }
+
   // Return the number of records processed
   return total;
 }

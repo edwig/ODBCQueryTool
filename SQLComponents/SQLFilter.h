@@ -123,7 +123,7 @@ private:
   // Constructing the default operand
   void        ConstructOperand(XString& p_sql,SQLQuery& p_query);
   // Constructing the LIKE clause
-  void        ConstructLike(XString& p_sql);
+  void        ConstructLike(XString& p_sql,SQLQuery& p_query);
   // Constructing the IN clause
   void        ConstructIN(XString& p_sql,SQLQuery& p_query);
   // Constructing the BETWEEN clause
@@ -160,8 +160,8 @@ private:
   XString     m_expression;                    // Free expression (no values!)
   SQLFunction m_function         { FN_NOP };   // Extra function for the field operator
   bool        m_negate           { false  };   // Negate the whole condition
-  bool        m_openParenthesis  { false  };   // Start with an opening parenthesis
-  bool        m_closeParenthesis { false  };   // End with a closing parenthesis
+  int         m_openParenthesis  { 0      };   // Start with an opening parenthesis
+  int         m_closeParenthesis { 0      };   // End with a closing parenthesis
   union       {                                // Parts for functions EXTRACT/TIMESTAMP ADD/DIFF
                 SQLExtractPart        m_extract  { TS_EXT_NONE  };
                 SQLTimestampCalcPart  m_calcpart;
@@ -228,13 +228,13 @@ SQLFilter::GetNegate() const
 inline void
 SQLFilter::SetOpenParenthesis()
 {
-  m_openParenthesis = true;
+  ++m_openParenthesis;
 }
 
 inline void
 SQLFilter::SetCloseParenthesis()
 {
-  m_closeParenthesis = true;
+  ++m_closeParenthesis;
 }
 
 inline void

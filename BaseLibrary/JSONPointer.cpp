@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2024 ir. W.E. Huisman
+// Copyright (c) 2014-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,10 +29,12 @@
 #include "JSONPointer.h"
 #include "CrackURL.h"
 
+#ifdef _AFX
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
+#endif
 #endif
 
 // Global value to reference non-existing array or object members
@@ -335,7 +337,7 @@ JSONPointer::UnescapeType(XString& p_pointer)
 
   if(!p_pointer.IsEmpty())
   {
-    first = p_pointer.GetAt(0);
+    first = (TCHAR) p_pointer.GetAt(0);
   }
 
   if(first == '#')
@@ -344,7 +346,7 @@ JSONPointer::UnescapeType(XString& p_pointer)
     p_pointer = CrackedURL::DecodeURLChars(p_pointer.Mid(1));
     if(!p_pointer.IsEmpty())
     {
-      first = p_pointer.GetAt(0);
+      first = (TCHAR) p_pointer.GetAt(0);
     }
   }
 

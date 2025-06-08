@@ -26,6 +26,7 @@
 #pragma once
 #include "SQLDatabase.h"
 #include "SQLConnections.h"
+#include <XString.h>
 #include <deque>
 #include <map>
 
@@ -79,7 +80,9 @@ public:
   void            AddColumnRebind(int p_sqlType, int p_cppType);
   // Add a parameter rebind for this database session: No bounds checking!
   void            AddParameterRebind(int p_sqlType, int p_cppType);
-
+  // Adding / Deleting connections to the connections list
+  bool            AddConnection(XString p_name,XString p_datasource,XString p_username,XString p_password,XString p_options);
+  bool            DelConnection(XString p_name);
 
   // Support of logging functions (for all databases in the pool)
   void            RegisterLogContext(int p_level, LOGLEVEL p_loglevel, LOGPRINT p_logprinter, void* p_logContext);
@@ -87,6 +90,7 @@ public:
   int             LogLevel();
   bool            WilLog();
   void            SetLoggingActivation(int p_loglevel);
+  void            SetEncryptionKey(XString p_key);
 
 private:
   // Get OR make a logged in database connection
@@ -134,6 +138,12 @@ inline void
 SQLDatabasePool::SetLoggingActivation(int p_loglevel)
 {
   m_logActive = p_loglevel;
+}
+
+inline void
+SQLDatabasePool::SetEncryptionKey(XString p_key)
+{
+  m_connections.SetEncryptionKey(p_key);
 }
 
 }

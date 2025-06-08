@@ -2,7 +2,7 @@
 //
 // SourceFile: XMLTemporal.cpp
 //
-// Copyright (c) 2014-2024 ir. W.E. Huisman
+// Copyright (c) 2014-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,10 +28,12 @@
 #include "XMLTemporal.h"
 #include <time.h>
 
+#ifdef _AFX
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
+#endif
 #endif
 
 // Number of days at the beginning of the month
@@ -970,6 +972,14 @@ XMLDuration::XMLDuration(XString p_value)
   ParseDuration(p_value);
 }
 
+XMLDuration::XMLDuration(SQL_INTERVAL_STRUCT* p_interval)
+            :XMLTemporal(_T(""))
+{
+  memcpy(&m_interval,p_interval,sizeof(SQL_INTERVAL_STRUCT));
+  RecalculateValue();
+  RecalculateString();
+}
+
 // Parse an interval from a XML duration string
 // a la: http://www.w3.org/TR/2012/REC-xmlschema11-2-20120405/datatypes.html#duration
 bool
@@ -1132,7 +1142,7 @@ XMLDuration::ScanDurationValue(XString& p_duration
   // Scan a marker
   if(isalpha(p_duration.GetAt(0)))
   {
-    p_marker = p_duration.GetAt(0);
+    p_marker   = (TCHAR) p_duration.GetAt(0);
     p_duration = p_duration.Mid(1);
   }
 
@@ -1236,6 +1246,80 @@ XMLDuration::Normalise()
                                   }
                                   break;
     default:                      break;
+  }
+}
+
+// Recalculate the string from the interval struct
+void
+XMLDuration::RecalculateString()
+{
+  m_string.Empty();
+
+  if(m_interval.interval_type < SQL_IS_YEAR ||
+     m_interval.interval_type > SQL_IS_MINUTE_TO_SECOND)
+  {
+    return;
+  }
+
+  switch(m_interval.interval_type)
+  {
+    case SQL_IS_YEAR:             m_string.Format(_T("%dY"),m_interval.intval.year_month.year);
+                                  break;
+    case SQL_IS_MONTH:            m_string.Format(_T("%dM"),m_interval.intval.year_month.month);
+                                  break;
+    case SQL_IS_DAY:              m_string.Format(_T("%dD"),m_interval.intval.day_second.day);
+                                  break;
+    case SQL_IS_HOUR:             m_string.Format(_T("T%dH"),m_interval.intval.day_second.hour);
+                                  break;
+    case SQL_IS_MINUTE:           m_string.Format(_T("T%dM"),m_interval.intval.day_second.hour);
+                                  break;
+    case SQL_IS_SECOND:           m_string.Format(_T("T%dS"),m_interval.intval.day_second.second);
+                                  break;
+    case SQL_IS_YEAR_TO_MONTH:    m_string.Format(_T("%dY%M"),m_interval.intval.year_month.year
+                                                             ,m_interval.intval.year_month.month);
+                                  break;
+    case SQL_IS_DAY_TO_HOUR:      m_string.Format(_T("%dDT%dH"),m_interval.intval.day_second.day,
+                                                                m_interval.intval.day_second.hour);
+                                  break;
+    case SQL_IS_DAY_TO_MINUTE:    m_string.Format(_T("%dDT%dH%dM"),m_interval.intval.day_second.day
+                                                                  ,m_interval.intval.day_second.hour
+                                                                  ,m_interval.intval.day_second.minute);
+                                  break;
+    case SQL_IS_DAY_TO_SECOND:    m_string.Format(_T("%dDT%dH%dM%dS"),m_interval.intval.day_second.day
+                                                                     ,m_interval.intval.day_second.hour
+                                                                     ,m_interval.intval.day_second.minute
+                                                                     ,m_interval.intval.day_second.second);
+                                  break;
+    case SQL_IS_HOUR_TO_MINUTE:   m_string.Format(_T("T%dH%dM"),m_interval.intval.day_second.hour
+                                                               ,m_interval.intval.day_second.minute);
+                                  break;
+    case SQL_IS_HOUR_TO_SECOND:   m_string.Format(_T("T%dH%dM%dS"),m_interval.intval.day_second.hour
+                                                                  ,m_interval.intval.day_second.minute
+                                                                  ,m_interval.intval.day_second.second);
+                                  break;
+
+    case SQL_IS_MINUTE_TO_SECOND: m_string.Format(_T("T%dM%dS"),m_interval.intval.day_second.minute
+                                                               ,m_interval.intval.day_second.second);
+                                  break;
+  }
+
+  // Set Period and sign
+  m_string = _T("P") + m_string;
+  if(m_interval.interval_sign)
+  {
+    m_string = _T("-") + m_string;
+  }
+
+  // See if we have nano-seconds
+  if(m_interval.intval.day_second.fraction)
+  {
+    bcd nano(m_interval.intval.day_second.fraction);
+    bcd persec(NANOSECONDS_PER_SEC);
+    nano /= persec;
+
+    m_string = m_string.TrimRight(_T("S"));
+    m_string += nano.AsString(bcd::Format::Bookkeeping,false,0).Mid(2);
+    m_string += _T("S");
   }
 }
 

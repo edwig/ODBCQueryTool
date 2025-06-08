@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2024 ir. W.E. Huisman
+// Copyright (c) 2014-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -74,7 +74,6 @@ constexpr auto LOGWRITE_MAXHEXDUMP    = (32 * 1024);                   // First 
 constexpr auto LOGWRITE_KEEPFILES     = 128;                           // Keep last 128 logfiles in a directory (2 months, 2 per day)
 constexpr auto LOGWRITE_KEEPLOG_MIN   = 10;                            // Keep last 10 logfiles as a minimum
 constexpr auto LOGWRITE_KEEPLOG_MAX   = 500;                           // Keep no more than 500 logfiles of a server
-constexpr auto LOGWRITE_WAITSTOP      = 100;                           // Number of loops to wait for the logwriter to stop
 
 // Various types of log events
 enum class LogType
@@ -150,6 +149,7 @@ public:
   bool    GetLogRotation()                     { return m_rotate;     }
   int     GetKeepfiles()                       { return m_keepfiles;  }
   bool    GetBackgroundWriter()                { return m_useWriter;  }
+  HANDLE  GetBackgroundWriterThread()          { return m_logThread;  }
   int     GetCacheSize();
   int     GetCacheMaxSize();
 

@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2024 ir. W.E. Huisman
+// Copyright (c) 2014-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -49,10 +49,12 @@
 #include <vector>
 #include <algorithm>
 
+#ifdef _AFX
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
+#endif
 #endif
 
 // CTOR is private: See static NewLogfile method
@@ -105,16 +107,6 @@ LogAnalysis::Release()
     // Flushing the cache and ending all writing activity
     // Writer will delete by releasing last reference counter
     SetEvent(m_event);
-
-    // Wait until the writer has stopped
-    for(int ind = 0; ind < LOGWRITE_WAITSTOP; ++ind)
-    {
-      if(m_logThread == NULL)
-      {
-        break;
-      }
-      Sleep(50);
-    }
   }
   return refs;
 }
@@ -187,7 +179,8 @@ LogAnalysis::Reset()
   }
 
   // Reset loglevel
-  m_logLevel = HLL_NOLOG;
+  m_useWriter   = false;
+  m_logLevel    = HLL_NOLOG;
   m_initialised = false;
 }
 
@@ -694,7 +687,7 @@ LogAnalysis::Flush(bool p_all)
   catch(StdException& er)
   {
     // Logfile failed. Where to log this??
-    TRACE("%s\n",er.GetErrorMessage().GetString());
+    OutputDebugString(er.GetErrorMessage() + _T("\n"));
   }
   m_file.Flush();
 }
@@ -716,7 +709,7 @@ LogAnalysis::WriteLog(XString& p_buffer)
   }
   else if(!m_file.Write(p_buffer))
   {
-    TRACE("Cannot write logfile. Error: %d\n",GetLastError());
+    OutputDebugString(_T("Cannot write logfile. Error: ") + GetLastError());
   }
 }
 
@@ -739,7 +732,7 @@ LogAnalysis::ReadConfig()
       if(line.GetLength() > 0)
       {
         // Look for a comment
-        TCHAR ch = line.GetAt(0);
+        TCHAR ch = (TCHAR) line.GetAt(0);
         if(ch == ';' || ch == '#')
         {
           continue;
@@ -830,10 +823,6 @@ LogAnalysis::RunLog()
       m_logThread = NULL;
       //ATLTRACE("Cannot make a thread for the LogAnalysis function\n");
     }
-    else
-    {
-      Acquire();
-    }
   }
 }
 
@@ -844,6 +833,9 @@ void
 LogAnalysis::RunLogAnalysis()
 {
   DWORD sync = 0;
+
+  // Writing thread acquires a lock on the object
+  Acquire();
 
   while(m_initialised && m_refcounter > 1)
   {

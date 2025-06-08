@@ -738,7 +738,8 @@ SQLVariantFormat::FormatDate(XString p_pattern)
     str.wMonth = date->month;
     str.wDay   = date->day;
     int buflen;
-    if((buflen = GetDateFormat(0,opties,&str,((opties != 0) ? nullptr : reinterpret_cast<LPCTSTR>(dateFormat.GetBuffer())),buffer1,NUMBER_BUFFER_SIZE)) < 0)
+
+    if((buflen = GetDateFormat(LOCALE_USER_DEFAULT,opties,&str,((opties != 0) ? nullptr : reinterpret_cast<LPCTSTR>(dateFormat.GetBuffer())),buffer1,NUMBER_BUFFER_SIZE)) < 0)
     {
       buflen = 0;
     }
@@ -757,7 +758,7 @@ SQLVariantFormat::FormatDate(XString p_pattern)
     str.wMinute = time->minute;
     str.wSecond = time->second;
     int buflen;
-    if((buflen = GetTimeFormat(0,0,&str,(timeFormat.GetLength() > 0 ? reinterpret_cast<LPCTSTR>(timeFormat.GetBuffer()) : nullptr),buffer2,NUMBER_BUFFER_SIZE)) < 0)
+    if((buflen = GetTimeFormat(LOCALE_USER_DEFAULT,0,&str,(timeFormat.GetLength() > 0 ? reinterpret_cast<LPCTSTR>(timeFormat.GetBuffer()) : nullptr),buffer2,NUMBER_BUFFER_SIZE)) < 0)
     {
       buflen = 0;
     }
