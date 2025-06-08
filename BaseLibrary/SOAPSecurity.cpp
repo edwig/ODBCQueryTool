@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2024 ir. W.E. Huisman
+// Copyright (c) 2014-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -37,6 +37,14 @@
 #include "GenerateGUID.h"
 #include "Base64.h"
 #include "Crypto.h"
+
+#ifdef _AFX
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+#endif
 
 SOAPSecurity::SOAPSecurity()
 {
@@ -166,7 +174,12 @@ SOAPSecurity::CheckSecurity(SOAPMessage* p_message)
 
       Crypto  crypt;
       XString encrypt  = DeBase64(nonce) + created + shouldbePassword;
+#ifdef _UNICODE
+      AutoCSTR enc(encrypt);
+      shouldbePassword = crypt.Digest(enc.cstr(),enc.size(),CALG_SHA1);
+#else
       shouldbePassword = crypt.Digest(encrypt,encrypt.GetLength(),CALG_SHA1);
+#endif
     }
 
     // Try if passwords do match
@@ -343,10 +356,15 @@ SOAPSecurity::DigestPassword()
   GenerateNonce(nonce);
 
   // According to the standard. This is how we scramble the password
-  XString encrypted = nonce + m_timestamp.AsString() + _T("Z") + m_password;
+  XString encrypted = nonce + m_timestamp.AsString() + XString(_T("Z")) + m_password;
 
   Crypto crypt;
+#ifdef _UNICODE
+  AutoCSTR enc(encrypted);
+  return crypt.Digest(enc.cstr(),enc.size(),CALG_SHA1);
+#else
   return crypt.Digest(encrypted,encrypted.GetLength(),CALG_SHA1);
+#endif
 }
 
 void

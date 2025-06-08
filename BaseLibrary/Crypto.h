@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2024 ir. W.E. Huisman
+// Copyright (c) 2014-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,6 +27,7 @@
 //
 #pragma once
 #include <wincrypt.h>
+#include <string>
 
 // Standard signing hashing 
 // 
@@ -83,9 +84,9 @@ public:
 
 private:
   // ENCRYPT a buffer in AES-256
-  XString  ImplementEncryption(const BYTE* p_input,int p_lengthINP,const BYTE* p_password,int p_lengthPWD);
+  XString     ImplementEncryption(const BYTE* p_input,int p_lengthINP,const BYTE* p_password,int p_lengthPWD);
   // DECRYPT a buffer in AES-256
-  CStringA ImplementDecryption(const BYTE* p_input,int p_lengthINP,const BYTE* p_password,int p_lengthPWD);
+  std::string ImplementDecryption(const BYTE* p_input,int p_lengthINP,const BYTE* p_password,int p_lengthPWD);
 
   XString  m_error;
   XString	 m_digest;

@@ -70,6 +70,7 @@ public:
   void InsertAtCurPos(LPCTSTR p_text,int p_offset);
   int  CheckEditOK();
   void SetSpinBuddy(StyleSpinButtonCtrl* p_buddy);
+  void UsePasswordEye(bool p_use = true);
 
   // SETTERS
 
@@ -181,7 +182,8 @@ private:
   bool     m_mandatory    { false };      // Mandatory edit field. Must be filled
   bool     m_error        { false };      // Field currently in error state (red-border)
   bool     m_numeric      { false };      // Contents is a NUMBER
-  bool     m_password     { false };      // Contents is a password (show eye)
+  bool     m_password     { false };      // Contents is a password (possibly show eye)
+  bool     m_usePWeye     { false };      // Use the password eye
   bool     m_calendar     { false };      // Contents is a date (use calendar)
   bool     m_checkDate    { false };      // Check valid date in a calendar field
   bool     m_empty        { false };      // Currently empty, show emptyText

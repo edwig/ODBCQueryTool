@@ -2,7 +2,7 @@
 //
 // SourceFile: XMLParserJSON.cpp
 //
-// Copyright (c) 2014-2024 ir. W.E. Huisman
+// Copyright (c) 2014-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,10 +28,12 @@
 #include "SOAPMessage.h"
 #include "JSONMessage.h"
 
+#ifdef _AFX
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
+#endif
 #endif
 
 //////////////////////////////////////////////////////////////////////////
@@ -139,7 +141,7 @@ XMLParserJSON::ParseLevel(XMLElement* p_element,JSONvalue& p_value,XString p_arr
     case JsonType::JDT_array:       array = &p_value.GetArray();
                                     for(auto& val : *array)
                                     {
-                                      element = m_soap->AddElement(p_element,p_arrayName,XDT_String,"");
+                                      element = m_soap->AddElement(p_element,p_arrayName,XDT_String,_T(""));
                                       ParseLevel(element,val);
                                     }
                                     break;

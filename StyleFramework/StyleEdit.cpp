@@ -612,6 +612,13 @@ StyleEdit::SetPassword(bool p_password /* = true */)
 }
 
 void
+StyleEdit::UsePasswordEye(bool p_use /*= true*/)
+{
+  m_usePWeye = p_use;
+  Invalidate();
+}
+
+void
 StyleEdit::OnPaint()
 {
   CEdit::OnPaint();
@@ -841,7 +848,8 @@ void
 StyleEdit::DrawPasswordEye()
 {
   // Only draw a password eye if we are a password field
-  if(!m_password)
+  // And we have NOT disabled the use of the password EYE
+  if(!m_password || !m_usePWeye)
   {
     return;
   }
@@ -950,7 +958,7 @@ StyleEdit::OnLButtonDown(UINT nFlags, CPoint point)
   this->GetClientRect(&rcItem);
 
   // Only if the mouse is above the password eye do we reveal the password
-  if(m_password)
+  if(m_password && m_usePWeye)
   {
     // See if we hit the password eye
     if(point.y <= rcItem.bottom && point.x >= (rcItem.right - rcItem.Height()))
@@ -980,7 +988,7 @@ StyleEdit::OnLButtonUp(UINT nFlags,CPoint point)
   CRect rcItem;
   this->GetClientRect(&rcItem);
 
-  if(m_password)
+  if(m_password && m_usePWeye)
   {
     CString text;
     CEdit::GetWindowText(text);

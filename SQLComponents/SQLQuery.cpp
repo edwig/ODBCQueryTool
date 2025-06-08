@@ -352,11 +352,11 @@ SQLQuery::ReportQuerySpeed(LARGE_INTEGER p_start)
   XString message;
   if(seconds > m_speedThreshold)
   {
-    message.Format(_T("[999] Query too long: %.6f seconds\n"),secondsDBL);
+    message.Format(_T("[999] Query too long: %.6f seconds"),secondsDBL);
   }
   else
   {
-    message.Format(_T("Query time: %.6f seconds\n"),secondsDBL);
+    message.Format(_T("Query time: %.6f seconds"),secondsDBL);
   }
   m_database->LogPrint(message);
 }
@@ -666,7 +666,7 @@ SQLQuery::DoSQLStatement(const XString& p_statement)
   if(m_database && m_database->WilLog())
   {
     logging = true;
-    XString log = "[Database query]\n" + statement + "\n";
+    XString log = "[Database query]\n" + statement;
     m_database->LogPrint(log);
   }
 
@@ -892,7 +892,6 @@ SQLQuery::DoSQLPrepare(const XString& p_statement)
   {
     m_database->LogPrint(_T("[Database query]\n"));
     m_database->LogPrint(statement.GetString());
-    m_database->LogPrint(_T("\n"));
   }
 
   // The Oracle 10.2.0.3.0 ODBC Driver - and later versions - contain a bug
@@ -1141,7 +1140,7 @@ SQLQuery::LogParameter(int p_column,const SQLVariant* p_parameter)
 {
   if(p_column == 1)
   {
-    m_database->LogPrint(_T("Parameters as passed on to the database:\n"));
+    m_database->LogPrint(_T("Parameters as passed on to the database:"));
   }
   XString text,name,value;
   p_parameter->GetAsString(value);
@@ -1152,7 +1151,6 @@ SQLQuery::LogParameter(int p_column,const SQLVariant* p_parameter)
   {
     text += _T(" name: ") + name;
   }
-  text += _T("\n");
   m_database->LogPrint(text);
 }
 
@@ -1295,20 +1293,6 @@ SQLQuery::BindColumns()
       if(type == SQL_C_NUMERIC)
       {
         BindColumnNumeric((SQLSMALLINT)bcol,var,SQL_RESULT_COL);
-      }
-    }
-    if(m_hasLongColumns && (bcol > m_hasLongColumns))
-    {
-      if(type == SQL_C_NUMERIC && 
-         m_database && ((m_database->GetSQLInfoDB()->GetGetDataExtensions() & SQL_GD_BOUND) == 0) && 
-         var->GetNumericScale() > 0 &&
-         !(var->GetNumericPrecision() == 38 && var->GetNumericScale() == 16))
-      {
-        // Cannot get a NUMERIC with decimals after a At-Exec column,
-        // because we cannot bind the precision and scale
-        m_lastError = _T("Cannot retrieve a NUMERIC after a (binary)large object.");
-        m_lastError.AppendFormat(_T(" Column: %d"),bcol);
-        throw StdException(m_lastError);
       }
     }
   }

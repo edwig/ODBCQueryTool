@@ -166,6 +166,13 @@ SQLInfoPostgreSQL::GetRDBMSSupportsFunctionalIndexes() const
   return false;
 }
 
+// Support for "as" in alias statements (FROM clause)
+bool
+SQLInfoPostgreSQL::GetRDBMSSupportsAsInAlias() const
+{
+  return true;
+}
+
 // Gets the maximum length of an SQL statement
 unsigned long
 SQLInfoPostgreSQL::GetRDBMSMaxStatementLength() const
@@ -371,7 +378,7 @@ SQLInfoPostgreSQL::GetSQLStartSubTransaction(XString p_savepointName) const
 }
 
 XString
-SQLInfoPostgreSQL::GetSQLCommitSubTransaction(XString p_savepointName) const
+SQLInfoPostgreSQL::GetSQLCommitSubTransaction(XString /*p_savepointName*/) const
 {
   // No commit for a sub transaction
   return XString(_T(""));
@@ -941,7 +948,7 @@ SQLInfoPostgreSQL::GetCATALOGColumnDrop(XString p_schema,XString p_tablename,XSt
 
 // All index functions
 XString
-SQLInfoPostgreSQL::GetCATALOGIndexExists(XString p_schema,XString p_tablename,XString p_indexname) const
+SQLInfoPostgreSQL::GetCATALOGIndexExists(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_indexname*/) const
 {
   return _T("");
 }
@@ -1551,7 +1558,7 @@ SQLInfoPostgreSQL::GetCATALOGTriggerCreate(MetaTrigger& /*p_trigger*/) const
 }
 
 XString
-SQLInfoPostgreSQL::GetCATALOGTriggerDrop(XString p_schema, XString p_tablename, XString p_triggername) const
+SQLInfoPostgreSQL::GetCATALOGTriggerDrop(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_triggername*/) const
 {
   return _T("");
 }
@@ -1734,7 +1741,7 @@ SQLInfoPostgreSQL::GetCATALOGViewCreate(XString p_schema,XString p_viewname,XStr
 }
 
 XString 
-SQLInfoPostgreSQL::GetCATALOGViewRename(XString p_schema,XString p_viewname,XString p_newname)    const
+SQLInfoPostgreSQL::GetCATALOGViewRename(XString /*p_schema*/,XString /*p_viewname*/,XString /*p_newname*/)    const
 {
   return _T("");
 }
@@ -1874,7 +1881,7 @@ SQLInfoPostgreSQL::GetPSMProcedureAttributes(XString& /*p_schema*/,XString& /*p_
 }
 
 XString
-SQLInfoPostgreSQL::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure) const
+SQLInfoPostgreSQL::GetPSMProcedureSourcecode(XString /*p_schema*/, XString /*p_procedure*/) const
 {
   return _T("");
 }
@@ -1886,13 +1893,13 @@ SQLInfoPostgreSQL::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
 }
 
 XString
-SQLInfoPostgreSQL::GetPSMProcedureDrop(XString p_schema, XString p_procedure,bool /*p_function /*=false*/) const
+SQLInfoPostgreSQL::GetPSMProcedureDrop(XString /*p_schema*/, XString /*p_procedure*/,bool /*p_function /*=false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoPostgreSQL::GetPSMProcedureErrors(XString p_schema,XString p_procedure) const
+SQLInfoPostgreSQL::GetPSMProcedureErrors(XString /*p_schema*/,XString /*p_procedure*/) const
 {
   return _T("");
 }
@@ -1965,7 +1972,7 @@ SQLInfoPostgreSQL::GetPSMDeclaration(bool    /*p_first*/
                                     ,int     p_precision /*= 0 */
                                     ,int     p_scale     /*= 0 */
                                     ,XString p_default   /*= ""*/
-                                    ,XString p_domain    /*= ""*/
+                                    ,XString /*p_domain*/    /*= ""*/
                                     ,XString p_asColumn  /*= ""*/) const
 {
   XString line;

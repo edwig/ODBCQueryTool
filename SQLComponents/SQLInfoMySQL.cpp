@@ -160,6 +160,13 @@ SQLInfoMySQL::GetRDBMSSupportsFunctionalIndexes() const
   return true;
 }
 
+// Support for "as" in alias statements (FROM clause)
+bool
+SQLInfoMySQL::GetRDBMSSupportsAsInAlias() const
+{
+  return true;
+}
+
 // Gets the maximum length of an SQL statement
 unsigned long
 SQLInfoMySQL::GetRDBMSMaxStatementLength() const
@@ -333,14 +340,14 @@ SQLInfoMySQL::GetSQLNewSerial(XString /*p_table*/, XString /*p_sequence*/) const
 
 // Gets the construction / select for generating a new serial identity
 XString
-SQLInfoMySQL::GetSQLGenerateSerial(XString p_table) const
+SQLInfoMySQL::GetSQLGenerateSerial(XString /*p_table*/) const
 {
   // NO WAY OF KNOWNING THIS
   return _T("0");
 }
 
 XString
-SQLInfoMySQL::GetSQLGenerateSequence(XString p_sequence) const
+SQLInfoMySQL::GetSQLGenerateSequence(XString /*p_sequence*/) const
 {
   // Not supported
   return _T("");
@@ -357,21 +364,21 @@ SQLInfoMySQL::GetSQLEffectiveSerial(XString p_identity) const
 
 // Gets the sub-transaction commands
 XString
-SQLInfoMySQL::GetSQLStartSubTransaction(XString p_savepointName) const
+SQLInfoMySQL::GetSQLStartSubTransaction(XString /*p_savepointName*/) const
 {
   // Generic ODBC does not known about sub transactions!
   return XString(_T(""));
 }
 
 XString
-SQLInfoMySQL::GetSQLCommitSubTransaction(XString p_savepointName) const
+SQLInfoMySQL::GetSQLCommitSubTransaction(XString /*p_savepointName*/) const
 {
   // Generic ODBC does not known about sub transactions!
   return XString(_T(""));
 }
 
 XString
-SQLInfoMySQL::GetSQLRollbackSubTransaction(XString p_savepointName) const
+SQLInfoMySQL::GetSQLRollbackSubTransaction(XString /*p_savepointName*/) const
 {
   // Generic ODBC does not known about sub transactions!
   return XString(_T(""));
@@ -398,7 +405,7 @@ SQLInfoMySQL::GetSQLLockTable(XString /*p_schema*/,XString p_tablename,bool p_ex
 
 // Get query to optimize the table statistics
 XString
-SQLInfoMySQL::GetSQLOptimizeTable(XString p_schema, XString p_tablename) const
+SQLInfoMySQL::GetSQLOptimizeTable(XString /*p_schema*/, XString /*p_tablename*/) const
 {
   // To be implemented
   return _T("");
@@ -729,7 +736,7 @@ SQLInfoMySQL::GetCATALOGTemptableDrop(XString /*p_schema*/,XString p_tablename) 
 // ALL COLUMN FUNCTIONS
 
 XString 
-SQLInfoMySQL::GetCATALOGColumnExists(XString /*p_schema*/,XString p_tablename,XString p_columnname) const
+SQLInfoMySQL::GetCATALOGColumnExists(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_columnname*/) const
 {
   return _T("");
 }
@@ -777,7 +784,7 @@ SQLInfoMySQL::GetCATALOGColumnAlter(MetaColumn& p_column) const
 }
 
 XString 
-SQLInfoMySQL::GetCATALOGColumnRename(XString p_schema,XString p_tablename,XString p_columnname,XString p_newname,XString /*p_datatype*/) const
+SQLInfoMySQL::GetCATALOGColumnRename(XString /*p_schema*/,XString p_tablename,XString p_columnname,XString p_newname,XString /*p_datatype*/) const
 {
   // General ISO syntax
   XString sql(_T("ALTER  TABLE  ") + p_tablename + _T("\n")
@@ -786,7 +793,7 @@ SQLInfoMySQL::GetCATALOGColumnRename(XString p_schema,XString p_tablename,XStrin
 }
 
 XString 
-SQLInfoMySQL::GetCATALOGColumnDrop(XString p_schema,XString p_tablename,XString p_columnname) const
+SQLInfoMySQL::GetCATALOGColumnDrop(XString /*p_schema*/,XString p_tablename,XString p_columnname) const
 {
   XString sql(_T("ALTER TABLE  ") + p_tablename + _T("\n")
               _T(" DROP COLUMN ") + p_columnname);
@@ -798,7 +805,7 @@ SQLInfoMySQL::GetCATALOGColumnDrop(XString p_schema,XString p_tablename,XString 
 
 // All index functions
 XString
-SQLInfoMySQL::GetCATALOGIndexExists(XString /*p_schema*/,XString p_tablename,XString p_indexname) const
+SQLInfoMySQL::GetCATALOGIndexExists(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_indexname*/) const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLStatistics instead (see SQLInfo class)
@@ -879,7 +886,7 @@ SQLInfoMySQL::GetCATALOGIndexFilter(MetaIndex& /*p_index*/) const
 // ALL PRIMARY KEY FUNCTIONS
 
 XString
-SQLInfoMySQL::GetCATALOGPrimaryExists(XString /*p_schema*/,XString p_tablename) const
+SQLInfoMySQL::GetCATALOGPrimaryExists(XString /*p_schema*/,XString /*p_tablename*/) const
 {
   // To be implemented
   return _T("");
@@ -928,7 +935,7 @@ SQLInfoMySQL::GetCATALOGPrimaryDrop(XString /*p_schema*/,XString p_tablename,XSt
 // ALL FOREIGN KEY FUNCTIONS
 
 XString
-SQLInfoMySQL::GetCATALOGForeignExists(XString /*p_schema*/,XString p_tablename,XString p_constraintname) const
+SQLInfoMySQL::GetCATALOGForeignExists(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_constraintname*/) const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLForeignKeys instead (see SQLInfo class)
@@ -1163,7 +1170,7 @@ SQLInfoMySQL::GetCATALOGCheckDrop(XString  /*p_schema*/,XString  /*p_tablename*/
 // ALL TRIGGER FUNCTIONS
 
 XString
-SQLInfoMySQL::GetCATALOGTriggerExists(XString /*p_schema*/, XString p_tablename, XString p_triggername) const
+SQLInfoMySQL::GetCATALOGTriggerExists(XString /*p_schema*/, XString /*p_tablename*/, XString /*p_triggername*/) const
 {
   return _T("");
 }
@@ -1230,7 +1237,7 @@ SQLInfoMySQL::GetCATALOGTriggerCreate(MetaTrigger& /*p_trigger*/) const
 }
 
 XString
-SQLInfoMySQL::GetCATALOGTriggerDrop(XString /*p_schema*/, XString p_tablename, XString p_triggername) const
+SQLInfoMySQL::GetCATALOGTriggerDrop(XString /*p_schema*/, XString /*p_tablename*/, XString /*p_triggername*/) const
 {
   return _T("");
 }
@@ -1239,7 +1246,7 @@ SQLInfoMySQL::GetCATALOGTriggerDrop(XString /*p_schema*/, XString p_tablename, X
 // ALL SEQUENCE FUNCTIONS
 
 XString
-SQLInfoMySQL::GetCATALOGSequenceExists(XString /*p_schema*/, XString p_sequence) const
+SQLInfoMySQL::GetCATALOGSequenceExists(XString /*p_schema*/, XString /*p_sequence*/) const
 {
   return _T("");
 }
@@ -1263,7 +1270,7 @@ SQLInfoMySQL::GetCATALOGSequenceCreate(MetaSequence& /*p_sequence*/) const
 }
 
 XString
-SQLInfoMySQL::GetCATALOGSequenceDrop(XString /*p_schema*/, XString p_sequence) const
+SQLInfoMySQL::GetCATALOGSequenceDrop(XString /*p_schema*/, XString /*p_sequence*/) const
 {
   return _T("");
 }
@@ -1326,7 +1333,7 @@ SQLInfoMySQL::GetCATALOGViewCreate(XString /*p_schema*/,XString p_viewname,XStri
 }
 
 XString 
-SQLInfoMySQL::GetCATALOGViewRename(XString p_schema,XString p_viewname,XString p_newname)    const
+SQLInfoMySQL::GetCATALOGViewRename(XString /*p_schema*/,XString /*p_viewname*/,XString /*p_newname*/)    const
 {
   return _T("");
 }
@@ -1535,7 +1542,7 @@ SQLInfoMySQL::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure) 
 }
 
 XString
-SQLInfoMySQL::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure) const
+SQLInfoMySQL::GetPSMProcedureSourcecode(XString /*p_schema*/, XString /*p_procedure*/) const
 {
   // Source-code already gotten with attributes
   return _T("");
@@ -1548,13 +1555,13 @@ SQLInfoMySQL::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
 }
 
 XString
-SQLInfoMySQL::GetPSMProcedureDrop(XString /*p_schema*/, XString p_procedure,bool /*p_function /*=false*/) const
+SQLInfoMySQL::GetPSMProcedureDrop(XString /*p_schema*/, XString /*p_procedure*/,bool /*p_function /*=false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoMySQL::GetPSMProcedureErrors(XString p_schema,XString p_procedure) const
+SQLInfoMySQL::GetPSMProcedureErrors(XString /*p_schema*/,XString /*p_procedure*/) const
 {
   return _T("");
 }
@@ -1823,7 +1830,7 @@ SQLInfoMySQL::GetSESSIONMyself() const
 }
 
 XString
-SQLInfoMySQL::GetSESSIONExists(XString p_sessionID) const
+SQLInfoMySQL::GetSESSIONExists(XString /*p_sessionID*/) const
 {
   return _T("");
 }
@@ -1835,7 +1842,7 @@ SQLInfoMySQL::GetSESSIONList() const
 }
 
 XString
-SQLInfoMySQL::GetSESSIONAttributes(XString p_sessionID) const
+SQLInfoMySQL::GetSESSIONAttributes(XString /*p_sessionID*/) const
 {
   return _T("");
 }

@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2024 ir. W.E. Huisman
+// Copyright (c) 2014-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,6 +29,14 @@
 #include "ExecuteShell.h"
 #include <shellapi.h>
 
+#ifdef _AFX
+#ifdef _DEBUG
+#define new DEBUG_NEW
+#undef THIS_FILE
+static char THIS_FILE[] = __FILE__;
+#endif
+#endif
+
 // General function to start a 'command' option in the MS-Windows shell
 // Adds error handling stuff if needed.
 // Normally used for actions like 'open' or 'print'
@@ -47,7 +55,7 @@ ExecuteShell(XString  p_command
   {
     if(p_error)
     {
-      CString reason;
+      XString reason;
       switch(res)
       {
         case ERROR_FILE_NOT_FOUND:     reason = _T("File not found");                   break;

@@ -53,7 +53,8 @@ StyleToast* CreateToast(int      p_style
                        ,CString  p_text1
                        ,CString  p_text2   = _T("")
                        ,CString  p_text3   = _T("")
-                       ,unsigned p_timeout = 3000);
+                       ,unsigned p_timeout = 3000
+                       ,bool*    p_success = nullptr);
 
 class Toasts
 {

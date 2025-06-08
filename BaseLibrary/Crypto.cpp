@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2024 ir. W.E. Huisman
+// Copyright (c) 2014-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -36,10 +36,12 @@
 #include <schannel.h>
 #include <vector>
 
+#ifdef _AFX
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
+#endif
 #endif
 
 // Encryption providers support password-hashing and encryption algorithms
@@ -349,8 +351,8 @@ Crypto::Decryption(XString p_input,XString p_password)
      TryCreateNarrowString(p_password,_T("utf-8"),false,&bufferPWD,lengthPWD))
   {
     bool bom(false);
-    CStringA result = ImplementDecryption(bufferINP,lengthINP,bufferPWD,lengthPWD);
-    if(!TryConvertNarrowString((const BYTE*)result.GetString(),result.GetLength(),_T("utf-8"),decoded,bom))
+    std::string result = ImplementDecryption(bufferINP,lengthINP,bufferPWD,lengthPWD);
+    if(!TryConvertNarrowString((const BYTE*)result.c_str(),(int)result.size(),_T("utf-8"),decoded,bom))
     {
       decoded.Empty();
     }
@@ -367,31 +369,31 @@ Crypto::Decryption(XString p_input, XString p_password)
   XString passwUTF8 = EncodeStringForTheWire(p_password);
 
   return ImplementDecryption((const BYTE*)inputUTF8.GetString(),inputUTF8.GetLength(),
-                             (const BYTE*)passwUTF8.GetString(),passwUTF8.GetLength());
+                             (const BYTE*)passwUTF8.GetString(),passwUTF8.GetLength()).c_str();
 }
 #endif
 
 // Implementation of the DECRYPT of a buffer
-CStringA
+std::string
 Crypto::ImplementDecryption(const BYTE* p_input,int p_lengthINP,const BYTE* p_password,int p_lengthPWD)
 {
   AutoCritSec lock(&m_lock);
 
-  HCRYPTPROV hCryptProv = NULL;
-  HCRYPTKEY  hCryptKey  = NULL;
-  HCRYPTHASH hCryptHash = NULL;
-  DWORD      dwDataLen  = 0;
-  DWORD      dataLength = 0;
-  BYTE*      pbData     = NULL;
-  BYTE*      pbEncrypt  = nullptr;
-  DWORD      blocklen   = 0;
-  DWORD      cbBlocklen = sizeof(DWORD);
-  BOOL       bFinal     = FALSE;
-  DWORD      dwFlags    = 0;
-  DWORD      totallen   = 0;
-  BYTE*      decrypting = nullptr;
-  CStringA   result;
-  Base64     base64;
+  HCRYPTPROV  hCryptProv = NULL;
+  HCRYPTKEY   hCryptKey  = NULL;
+  HCRYPTHASH  hCryptHash = NULL;
+  DWORD       dwDataLen  = 0;
+  DWORD       dataLength = 0;
+  BYTE*       pbData     = NULL;
+  BYTE*       pbEncrypt  = nullptr;
+  DWORD       blocklen   = 0;
+  DWORD       cbBlocklen = sizeof(DWORD);
+  BOOL        bFinal     = FALSE;
+  DWORD       dwFlags    = 0;
+  DWORD       totallen   = 0;
+  BYTE*       decrypting = nullptr;
+  std::string result;
+  Base64      base64;
 
   dwDataLen = p_lengthINP;
 
@@ -737,15 +739,15 @@ Crypto::GetKeyExchange(unsigned p_type)
 
   switch(p_type)
   {
-    case CALG_RSA_KEYX:      exchange = "RSA KEYX";       break;
-    case CALG_DH_SF:         exchange = "Diffie-Hellman"; break;
-    case CALG_DH_EPHEM:      exchange = "DH EPHEM";       break;
-    case CALG_AGREEDKEY_ANY: exchange = "Any-AgreedKey";  break;
-    case CALG_KEA_KEYX:      exchange = "KEA KEYX";       break;
-    case CALG_HUGHES_MD5:    exchange = "Hughes MD5";     break;
-    case CALG_ECDH:          exchange = "ECDH";           break;
-    case CALG_ECMQV:         exchange = "ECMQV";          break;
-    default:                 exchange = "AES";            break;
+    case CALG_RSA_KEYX:      exchange = _T("RSA KEYX");       break;
+    case CALG_DH_SF:         exchange = _T("Diffie-Hellman"); break;
+    case CALG_DH_EPHEM:      exchange = _T("DH EPHEM");       break;
+    case CALG_AGREEDKEY_ANY: exchange = _T("Any-AgreedKey");  break;
+    case CALG_KEA_KEYX:      exchange = _T("KEA KEYX");       break;
+    case CALG_HUGHES_MD5:    exchange = _T("Hughes MD5");     break;
+    case CALG_ECDH:          exchange = _T("ECDH");           break;
+    case CALG_ECMQV:         exchange = _T("ECMQV");          break;
+    default:                 exchange = _T("AES");            break;
   }
   return exchange;
 }

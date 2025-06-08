@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2024 ir. W.E. Huisman
+// Copyright (c) 2014-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,12 +27,14 @@
 //
 #include "pch.h"
 #include "Base64.h"
+#include <ConvertWideString.h>
 
+#ifdef _AFX
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
-
+#endif
 #endif
 
 Base64::Base64(int p_method /*= CRYPT_STRING_BASE64*/,int p_options /*= CRYPT_STRING_NOCRLF*/)
@@ -69,7 +71,7 @@ Base64::Ascii_length(size_t len)
   return  (len*6)/8;
 }
 
-// ANSI Version only
+// Encrypt a binary buffer to an ANSI/UNICODE aware string
 XString
 Base64::Encrypt(BYTE* p_buffer,int p_length)
 {
@@ -87,9 +89,37 @@ Base64::Encrypt(BYTE* p_buffer,int p_length)
   return result;
 }
 
-// ANSI/UNICODE aware version
+// Encrypt a ANSI/UNICODE string to a ANSI/UNICODE base64
+// In UNICODE use only for purposes where strings contain characters > 0x00FF
 XString
 Base64::Encrypt(XString p_unencrypted)
+{
+  if(p_unencrypted.GetLength() == 0)
+  {
+    return XString();
+  }
+#ifdef _UNICODE
+  AutoCSTR unen(p_unencrypted,false);
+  const BYTE* unencrypted = (BYTE*) unen.cstr();
+  const int   length      = unen.size();
+#else
+  const BYTE* unencrypted = (BYTE*) p_unencrypted.GetString();
+  const int   length      = p_unencrypted.GetLength();
+#endif
+  DWORD tchars = 0;
+  CryptBinaryToString(unencrypted,length,m_method | m_options,(LPTSTR)NULL,&tchars);
+  _TUCHAR* buffer = new _TUCHAR[tchars + 2];
+  CryptBinaryToString(unencrypted,length,m_method | m_options,(LPTSTR)buffer,&tchars);
+  buffer[tchars] = 0;
+  XString result(buffer);
+  delete[] buffer;
+  return result;
+}
+
+// Encrypt a ANSI/UNICODE string to a ANSI/UNICODE base64
+// In UNICODE use only for purposes where strings contain characters > 0x00FF
+XString
+Base64::EncryptUnicode(XString p_unencrypted)
 {
   if(p_unencrypted.GetLength() == 0)
   {
@@ -105,6 +135,7 @@ Base64::Encrypt(XString p_unencrypted)
   return result;
 }
 
+// Convert into a string
 XString
 Base64::Decrypt(XString p_encrypted)
 {
@@ -115,20 +146,27 @@ Base64::Decrypt(XString p_encrypted)
   DWORD length = 0;
   DWORD type = CRYPT_STRING_BASE64_ANY;
   CryptStringToBinary(p_encrypted.GetString(),p_encrypted.GetLength(),m_method,NULL,&length,0,&type);
-  _TUCHAR* buffer = new _TUCHAR[length + 2];
-  CryptStringToBinary(p_encrypted.GetString(),p_encrypted.GetLength(),m_method,(BYTE*) buffer,&length,0,&type);
-  buffer[length / sizeof(TCHAR)] = 0;
-  XString result(buffer);
+  BYTE* buffer = new BYTE[length + 2];
+  CryptStringToBinary(p_encrypted.GetString(),p_encrypted.GetLength(),m_method,buffer,&length,0,&type);
+  buffer[length] = 0;
+#ifdef _UNICODE
+  XString result;
+  bool bomfound(false);
+  TryConvertNarrowString(buffer,length,_T(""),result,bomfound);
+#else
+  XString result((LPCTSTR)buffer);
+#endif
   delete[] buffer;
   return result;
 }
 
+// Convert into a binary buffer for further processing
 bool
 Base64::Decrypt(XString p_encrypted,BYTE* p_buffer,int p_length)
 {
   if(p_encrypted.GetLength() == 0 || p_length <= 0)
   {
-    return XString();
+    return false;
   }
   DWORD length = 0;
   CryptStringToBinary(p_encrypted.GetString(),p_encrypted.GetLength(),m_method,NULL,&length,0,NULL);

@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2024 ir. W.E. Huisman
+// Copyright (c) 2014-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -39,10 +39,12 @@
 #include "XMLParserJSON.h"
 #include <utility>
 
+#ifdef _AFX
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
+#endif
 #endif
 
 #pragma region XTOR
@@ -2211,8 +2213,13 @@ SOAPMessage::SignBody()
 {
   Crypto md5(m_signingMethod);
   XString total = GetBodyPart();
-  XString sign = md5.Digest(total.GetString(),total.GetLength() * sizeof(TCHAR));
 
+#ifdef _UNICODE
+  AutoCSTR body(total);
+  XString sign = md5.Digest(body.cstr(),body.size());
+#else
+  XString sign = md5.Digest(total.GetString(),total.GetLength());
+#endif
   if(!md5.GetError().IsEmpty())
   {
     sign = md5.GetError();

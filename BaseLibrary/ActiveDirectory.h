@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////////
 //
-// SourceFile: GenerateGUID.cpp
+// SourceFile: ActiveDirectory.h
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
@@ -25,44 +25,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 //
-#include "pch.h"
-#include "GenerateGUID.h"
-#include <combaseapi.h>
+#pragma once
 
-#ifdef _AFX
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-#endif
-
-// Caller **MUST** do the COM+ (un)initialize with
-// CoInitialize
-// CoUninitialize
-
-_Check_return_ WINOLEAPI CoCreateGuid(_Out_ GUID* pguid);
-
-XString GenerateGUID()
-{
-#ifdef _UNICODE
-  RPC_WSTR guidStr = nullptr;
-#else
-  RPC_CSTR guidStr = nullptr;
-#endif
-  GUID*    pguid   = nullptr;
-  XString  result;
-  
-  pguid = new GUID; 
-  // COM+ Initialize is already done
-  if(SUCCEEDED(CoCreateGuid(pguid)))
-  {
-    // Convert the GUID to a string
-    if(UuidToString(pguid,&guidStr) == RPC_S_OK)
-    {
-      result = reinterpret_cast<TCHAR*>(guidStr);
-    }
-  }
-  delete pguid;
-  return result;
-}
+// Gets the users email address from the AD
+// If not connected to the AD, it will retrieve the primary MS-Office mail address
+XString GetUserMailaddress();     // Current user email address according to the ADSI
+XString GetADOrganization();      // Getting the organization name according to the AD
+XString GetUserLogincode();       // Returns <domain>\<usercode>
+XString GetUserPrincipalName();   // Returns <user>@organisation.com (mostly!)

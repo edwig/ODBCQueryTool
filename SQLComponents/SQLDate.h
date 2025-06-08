@@ -156,8 +156,6 @@ private:
   // Correction factor is MJD (2,400,000.5) + 0.5 (17 nov 1858 instead of 16 nov 12:00 hours)
   const long JULIAN_DAY_MODIFIED  = 2400001;
 
-  // Check if acceptable input to be converted to a date
-  bool AcceptableDateString(const XString& p_date);
   // Calculate m_mjd from a date
   bool SetMJD();
   // Calculate MJD back to a date

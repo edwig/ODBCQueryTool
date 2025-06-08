@@ -93,6 +93,9 @@ public:
   // Supports functions at the place of table columns in create/alter index statement
   bool    GetRDBMSSupportsFunctionalIndexes() const override;
 
+  // Support for "as" in alias statements (FROM clause)
+  bool    GetRDBMSSupportsAsInAlias() const override;
+
   // Gets the maximum length of an SQL statement
   unsigned long GetRDBMSMaxStatementLength() const override;
 

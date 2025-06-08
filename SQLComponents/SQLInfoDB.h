@@ -149,6 +149,9 @@ public:
   // Supports functions at the place of table columns in create/alter index statement
   virtual bool GetRDBMSSupportsFunctionalIndexes() const = 0;
 
+  // Support for "as" in alias statements (FROM clause)
+  virtual bool GetRDBMSSupportsAsInAlias() const = 0;
+
   // Gets the maximum length of an SQL statement
   virtual unsigned long GetRDBMSMaxStatementLength() const = 0;
 

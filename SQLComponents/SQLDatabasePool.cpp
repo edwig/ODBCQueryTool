@@ -27,6 +27,8 @@
 #include "SQLComponents.h"
 #include "SQLDatabasePool.h"
 #include "SQLDatabase.h"
+#include <AutoCritical.h>
+#include <ServiceReporting.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -37,21 +39,6 @@ static char THIS_FILE[] = __FILE__;
 namespace SQLComponents
 {
 
-class AutoCritSec
-{
-public:
-  explicit AutoCritSec(CRITICAL_SECTION* section) : m_section(section)
-  {
-    EnterCriticalSection(m_section);
-  }
-  ~AutoCritSec()
-  {
-    LeaveCriticalSection(m_section);
-  }
-private:
-  CRITICAL_SECTION* m_section;
-};
-
 //////////////////////////////////////////////////////////////////////////
 //
 // DATABASE POOL
@@ -61,7 +48,6 @@ private:
 SQLDatabasePool::SQLDatabasePool()
 {
   InitializeCriticalSection(&m_lock);
-  m_isopen = true;
 }
 
 SQLDatabasePool::~SQLDatabasePool()
@@ -72,7 +58,7 @@ SQLDatabasePool::~SQLDatabasePool()
 
 //////////////////////////////////////////////////////////////////////////
 //
-// PUBLIEK
+// PUBLIC
 // All functions have an auto lock on the stack!
 //
 //////////////////////////////////////////////////////////////////////////
@@ -91,7 +77,9 @@ SQLDatabasePool::GetDatabase(const XString& p_connectionName)
   // Check whether we are already open
   if(m_isopen == false)
   {
-    throw StdException(_T("INTERNAL ERROR: Database pool called after closure of the pool."));
+    XString msg(_T("INTERNAL ERROR: Database pool called - before open/after closure - of the pool."));
+    SvcReportErrorEvent(0,false,_T(__FUNCTION__),msg);
+    throw StdException(msg);
   }
   return GetDatabaseInternally(m_freeDatabases,name);
 }
@@ -111,8 +99,13 @@ SQLDatabasePool::GiveUp(SQLDatabase* p_database)
   // CHeck whether we are already/still open
   if(m_isopen == false)
   {
-    throw StdException(_T("INTERNAL ERROR: Database pool called after closure of the pool."));
+    XString msg(_T("INTERNAL ERROR: Database pool called - before open/after closure - of the pool."));
+    SvcReportErrorEvent(0,false,_T(__FUNCTION__),msg);
+    throw StdException(msg);
   }
+
+  // Remove the log context from the database
+  p_database->RegisterLogContext(0,nullptr,nullptr,NULL);
 
   // Grab our connection name
   XString name = p_database->GetConnectionName();
@@ -154,7 +147,14 @@ SQLDatabasePool::ReadConnections(XString p_filename /*=""*/,bool p_reset /*=fals
   // Lock the pool
   AutoCritSec lock(&m_lock);
 
-  return m_connections.LoadConnectionsFile(p_filename,p_reset);
+  if(m_connections.LoadConnectionsFile(p_filename,p_reset))
+  {
+    if(m_connections.GetConnectionsCount() > 0)
+    {
+      return (m_isopen = true);
+    }
+  }
+  return false;
 }
 
 // Set current max databases allowed
@@ -288,6 +288,28 @@ SQLDatabasePool::AddParameterRebind(int p_sqlType,int p_cppType)
   m_rebindParameters[p_sqlType] = p_cppType;
 }
 
+bool
+SQLDatabasePool::AddConnection(XString p_name,XString p_datasource,XString p_username,XString p_password,XString p_options)
+{
+  bool added = m_connections.AddConnection(p_name,p_datasource,p_username,p_password,p_options);
+  if(!m_isopen && added)
+  {
+    m_isopen = true;
+  }
+  return added;
+}
+
+bool
+SQLDatabasePool::DelConnection(XString p_name)
+{
+  bool removed = m_connections.DelConnection(p_name);
+  if(m_isopen && removed && m_connections.GetConnectionsCount() == 0)
+  {
+    m_isopen = false;
+  }
+  return removed;
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // PRIVATE
@@ -379,6 +401,9 @@ SQLDatabasePool::GetDatabaseInternally(DbsPool& p_pool,XString& p_connectionName
   {
     OpenDatabase(dbs,p_connectionName);
   }
+
+  // Remove the log context from the database
+  dbs->RegisterLogContext(m_loggingLevel,m_logLevel,m_logPrinter,m_logContext);
 
   // This is the database to use
   return dbs;

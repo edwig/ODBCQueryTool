@@ -28,6 +28,7 @@
 #pragma once
 #include "SQLDatabase.h"
 #include "SQLDatabasePool.h"
+#include <XString.h>
 
 namespace SQLComponents
 {
@@ -54,7 +55,6 @@ public:
   {
     if(m_database && m_poolDbs)
     {
-      m_database->RegisterLogContext(0,nullptr,nullptr,NULL);
       m_pool.GiveUp(m_database);
     }
   }

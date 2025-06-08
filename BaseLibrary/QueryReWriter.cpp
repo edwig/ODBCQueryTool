@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2024 ir. W.E. Huisman
+// Copyright (c) 2014-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,10 +29,12 @@
 #include "QueryReWriter.h"
 #include "WiNFile.h"
 
+#ifdef _AFX
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
+#endif
 #endif
 
 // All tokens that must be recognized
@@ -407,7 +409,7 @@ QueryReWriter::ParseStatement(bool p_closingEscape /*= false*/)
     {
       if(p_closingEscape)
       {
-        m_output += "}";
+        m_output += _T("}");
       }
       break;
     }
@@ -432,7 +434,7 @@ QueryReWriter::PrintToken()
                               m_output += m_tokenString;
                               m_output += '\"';
                               break;
-    case Token::TK_COMM_SQL:  m_output += "--";
+    case Token::TK_COMM_SQL:  m_output += _T("--");
                               m_output += m_tokenString;
                               m_output += '\n';
                               break;

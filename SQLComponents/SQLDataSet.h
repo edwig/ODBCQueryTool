@@ -68,16 +68,22 @@ SQLParameter;
 
 typedef void (*LPFN_CALLBACK)(void*);
 
+#define MAX_BCD  _T("1E+300");
+#define MIN_BCD _T("-1E+300");
+
 class AggregateInfo
 {
 public:
-  AggregateInfo() { Init(); };
-  void    Init();
+  AggregateInfo() 
+  { 
+    m_min = MAX_BCD;
+    m_max = MIN_BCD;
+  };
 
-  double  m_sum;
-  double  m_max;
-  double  m_min;
-  double  m_mean;
+  bcd  m_sum;
+  bcd  m_max;
+  bcd  m_min;
+  bcd  m_mean;
 };
 
 class SQLDatabase;
@@ -147,6 +153,7 @@ public:
   // Forget just one record AND reset current cursor to first position
   bool         ForgetObject(int p_primary,              bool p_force = false); // Forget 1 record and primary is an INTEGER     (Fast!!)
   bool         ForgetObject(const VariantSet& p_primary,bool p_force = false); // Forget 1 record and primary is a compound key (Slower)
+  bool         ForgetRecord(SQLRecord* p_record,bool p_force);
 
   // SETTERS
 
@@ -172,9 +179,11 @@ public:
   virtual void SetFilter(const SQLFilter& p_filter);
   // Set GROUP BY 
   virtual void SetGroupBy(XString p_groupby);
-  virtual void AddGroupby(XString p_property);
+  virtual void AddGroupby(XString p_groupby);
   // Set ORDER BY
   virtual void SetOrderBy(XString p_orderby);
+  virtual void AddOrderBy(XString p_orderby);
+
   // Set HAVING
   virtual void SetHavings(SQLFilterSet* p_havings);
   // Set SQL-QUERY:  a new full query (Supersedes SetSelection, -Where, -groupby, -orderby and -having)
@@ -182,6 +191,8 @@ public:
   // Set primary key column name (for updates)
   virtual void SetPrimaryKeyColumn(XString p_name);
   virtual void SetPrimaryKeyColumn(WordList& p_list);
+  // Set if we whish to keep duplicates in the recordset
+  virtual void SetKeepDuplicates(bool p_keep);
 
   // Open will not take action if no columns selected
   void         SetStopIfNoColumns(bool p_stop);
@@ -248,6 +259,8 @@ public:
   // Getting the status
   bool         GetLockForUpdate();
   unsigned     GetLockWaitTime();
+  // Duplicates
+  bool         GetKeepDuplicates();
 
   // XML Saving and loading
   bool         XMLSave(XString p_filename,XString p_name,Encoding p_encoding = Encoding::UTF8);
@@ -285,7 +298,6 @@ protected:
   XString      MakePrimaryKey(const SQLRecord*  p_record);
   XString      MakePrimaryKey(const VariantSet& p_primary);
   // Forget about a record
-  bool         ForgetRecord(SQLRecord* p_record,bool p_force);
   void         ForgetPrimaryObject(const SQLRecord* p_record);
   // Init the high performance counter
   void         InitCounter();
@@ -325,6 +337,7 @@ protected:
   WordList     m_updateColumns;
   int          m_topRecords    { 0 };
   int          m_skipRecords   { 0 };
+  bool         m_keepDuplicates{ false };
   bool         m_stopNoColumns { false };
   bool         m_isolation     { false };
   bool         m_lockForUpdate { false };
@@ -536,13 +549,16 @@ SQLDataSet::GetLastInsertedSerial()
   return m_serial;
 }
 
-inline void
-AggregateInfo::Init()
+inline bool
+SQLDataSet::GetKeepDuplicates()
 {
-  m_sum  = 0.0;
-  m_max  = 0.0;
-  m_min  = 0.0;
-  m_mean = 0.0;
+  return m_keepDuplicates;
+}
+
+inline void 
+SQLDataSet::SetKeepDuplicates(bool p_keep)
+{
+  m_keepDuplicates = p_keep;
 }
 
 // End of namespace

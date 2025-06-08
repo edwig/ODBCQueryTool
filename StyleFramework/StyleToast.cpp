@@ -305,14 +305,22 @@ StyleToast* CreateToast(int      p_style
                        ,CString  p_text1
                        ,CString  p_text2    /* = ""   */
                        ,CString  p_text3    /* = ""   */
-                       ,unsigned p_timeout  /* = 3000 */)
+                       ,unsigned p_timeout  /* = 3000 */
+                       ,bool*    p_success  /* = nullptr*/)
 {
   CWnd* focuswin = CWnd::FromHandle(GetFocus());
   
   StyleToast* toast = new StyleToast(p_style,p_position,p_text1,p_text2,p_text3,p_timeout);
   g_toasts.m_toasts.push_back(toast);
 
-  toast->Create(MAKEINTRESOURCE(IDD_TOAST),CWnd::FromHandle(GetDesktopWindow()));
+  if(!toast->Create(MAKEINTRESOURCE(IDD_TOAST),CWnd::FromHandle(GetDesktopWindow())))
+  {
+    if(p_success)
+    {
+      *p_success = false;
+    }
+    return nullptr;
+  }
 
   CRect rect; // Total workarea on the desktop
   CRect size; // Size of the Toast window
@@ -386,6 +394,13 @@ StyleToast* CreateToast(int      p_style
   {
     focuswin->SetFocus();
   }
+
+  // Tell of our success
+  if(p_success)
+  {
+    *p_success = true;
+  }
+
   // Only return the toast if we are prepared to destroy it later
   return p_timeout > 0 ? nullptr : toast;
 }

@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2024 ir. W.E. Huisman
+// Copyright (c) 2014-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -168,11 +168,13 @@ class XMLDuration : public XMLTemporal
 {
 public:
   explicit XMLDuration(XString p_value);
+  explicit XMLDuration(SQL_INTERVAL_STRUCT* p_interval);
 private:
   bool ParseDuration(XString p_value);
   // Parsing/scanning one value of a XML duration string
   bool ScanDurationValue(XString& p_duraction,int& p_value,int& p_fraction,TCHAR& p_marker,bool& p_didTime);
   void Normalise();
+  void RecalculateString();
   void RecalculateValue();
 
   // The one and only interval

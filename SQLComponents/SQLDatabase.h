@@ -26,6 +26,7 @@
 #pragma once
 #include "SQLComponents.h"
 #include "SQLTransaction.h"
+#include <XString.h>
 #include <sql.h>
 #include <sqlext.h>
 #include <stack>

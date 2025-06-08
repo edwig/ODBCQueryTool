@@ -2,7 +2,7 @@
 //
 // SourceFile: XMLMessage.cpp
 //
-// Copyright (c) 2014-2024 ir. W.E. Huisman
+// Copyright (c) 2014-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,10 +29,12 @@
 #include "XMLRestriction.h"
 #include "Namespace.h"
 
+#ifdef _AFX
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
+#endif
 #endif
 
 // Defined in FileBuffer
@@ -260,6 +262,13 @@ XMLMessage::LoadFile(const XString& p_fileName)
     m_encoding = file.GetEncoding();
     m_sendBOM  = file.GetFoundBOM();
 
+    // No encoding in the file: presume it is a file from our OS
+    // XML is always UTF-8 by default
+    if(!m_sendBOM && m_encoding == Encoding::EN_ACP)
+    {
+      m_encoding = Encoding::UTF8;
+    }
+
     // Close the file
     if(!file.Close())
     {
@@ -369,7 +378,7 @@ XMLMessage::Print()
 
   if(m_condensed)
   {
-    message += "\n";
+    message += _T("\n");
   }
   return message;
 }

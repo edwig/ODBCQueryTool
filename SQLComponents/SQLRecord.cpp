@@ -400,7 +400,15 @@ SQLRecord::GetFieldBool(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
-    return GetField(m_dataSet->GetFieldNumber(p_name))->GetAsBoolean();
+    int field = m_dataSet->GetFieldNumber(p_name);
+    if(field >= 0)
+    {
+      SQLVariant* var = GetField(field);
+      if(var)
+      {
+        return var->GetAsBoolean();
+      }
+    }
   }
   return false;
 }
@@ -410,7 +418,15 @@ SQLRecord::GetFieldChar(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
-    return (char) GetField(m_dataSet->GetFieldNumber(p_name))->GetAsUShort();
+    int field = m_dataSet->GetFieldNumber(p_name);
+    if(field >= 0)
+    {
+      SQLVariant* var = GetField(field);
+      if(var)
+      {
+        return (char)var->GetAsUShort();
+      }
+    }
   }
   return 0;
 }
@@ -420,7 +436,15 @@ SQLRecord::GetFieldUnsignedChar(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
-    return (unsigned char) GetField(m_dataSet->GetFieldNumber(p_name))->GetAsUShort();
+    int field = m_dataSet->GetFieldNumber(p_name);
+    if(field >= 0)
+    {
+      SQLVariant* var = GetField(field);
+      if(var)
+      {
+        return (unsigned char)var->GetAsUShort();
+      }
+    }
   }
   return 0;
 }
@@ -430,7 +454,15 @@ SQLRecord::GetFieldShort(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
-    return GetField(m_dataSet->GetFieldNumber(p_name))->GetAsSShort();
+    int field = m_dataSet->GetFieldNumber(p_name);
+    if(field >= 0)
+    {
+      SQLVariant* var = GetField(field);
+      if(var)
+      {
+        return var->GetAsSShort();
+      }
+    }
   }
   return 0;
 }
@@ -440,7 +472,15 @@ SQLRecord::GetFieldUnsignedShort(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
-    return GetField(m_dataSet->GetFieldNumber(p_name))->GetAsUShort();
+    int field = m_dataSet->GetFieldNumber(p_name);
+    if(field >= 0)
+    {
+      SQLVariant* var = GetField(field);
+      if(var)
+      {
+        return var->GetAsUShort();
+      }
+    }
   }
   return 0;
 }
@@ -450,7 +490,15 @@ SQLRecord::GetFieldInteger(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
-    return GetField(m_dataSet->GetFieldNumber(p_name))->GetAsSLong();
+    int field = m_dataSet->GetFieldNumber(p_name);
+    if(field >= 0)
+    {
+      SQLVariant* var = GetField(field);
+      if(var)
+      {
+        return var->GetAsSLong();
+      }
+    }
   }
   return 0;
 }
@@ -460,7 +508,15 @@ SQLRecord::GetFieldUnsignedInteger(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
-    return GetField(m_dataSet->GetFieldNumber(p_name))->GetAsULong();
+    int field = m_dataSet->GetFieldNumber(p_name);
+    if(field >= 0)
+    {
+      SQLVariant* var = GetField(field);
+      if(var)
+      {
+        return var->GetAsULong();
+      }
+    }
   }
   return 0;
 }
@@ -470,7 +526,15 @@ SQLRecord::GetFieldFloat(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
-    return GetField(m_dataSet->GetFieldNumber(p_name))->GetAsFloat();
+    int field = m_dataSet->GetFieldNumber(p_name);
+    if(field >= 0)
+    {
+      SQLVariant* var = GetField(field);
+      if(var)
+      {
+        return var->GetAsFloat();
+      }
+    }
   }
   return 0;
 }
@@ -480,7 +544,15 @@ SQLRecord::GetFieldDouble(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
-    return GetField(m_dataSet->GetFieldNumber(p_name))->GetAsDouble();
+    int field = m_dataSet->GetFieldNumber(p_name);
+    if(field >= 0)
+    {
+      SQLVariant* var = GetField(field);
+      if(var)
+      {
+        return var->GetAsDouble();
+      }
+    }
   }
   return 0;
 }
@@ -490,7 +562,15 @@ SQLRecord::GetFieldInteger64(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
-    return GetField(m_dataSet->GetFieldNumber(p_name))->GetAsSBigInt();
+    int field = m_dataSet->GetFieldNumber(p_name);
+    if(field >= 0)
+    {
+      SQLVariant* var = GetField(field);
+      if(var)
+      {
+        return var->GetAsSBigInt();
+      }
+    }
   }
   return 0;
 }
@@ -500,7 +580,15 @@ SQLRecord::GetFieldUnsignedInt64(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
-    return GetField(m_dataSet->GetFieldNumber(p_name))->GetAsUBigInt();
+    int field = m_dataSet->GetFieldNumber(p_name);
+    if(field >= 0)
+    {
+      SQLVariant* var = GetField(field);
+      if(var)
+      {
+        return var->GetAsUBigInt();
+      }
+    }
   }
   return 0;
 }
@@ -510,7 +598,15 @@ SQLRecord::GetFieldSQLDate(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
-    return GetField(m_dataSet->GetFieldNumber(p_name))->GetAsSQLDate();
+    int field = m_dataSet->GetFieldNumber(p_name);
+    if(field >= 0)
+    {
+      SQLVariant* var = GetField(field);
+      if(var)
+      {
+        return var->GetAsSQLDate();
+      }
+    }
   }
   return SQLDate(0,0,0);
 }
@@ -520,7 +616,15 @@ SQLRecord::GetFieldSQLTime(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
-    return GetField(m_dataSet->GetFieldNumber(p_name))->GetAsSQLTime();
+    int field = m_dataSet->GetFieldNumber(p_name);
+    if(field >= 0)
+    {
+      SQLVariant* var = GetField(field);
+      if(var)
+      {
+        return var->GetAsSQLTime();
+      }
+    }
   }
   return SQLTime(0,0,0);
 }
@@ -530,7 +634,15 @@ SQLRecord::GetFieldSQLTimestamp(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
-    return GetField(m_dataSet->GetFieldNumber(p_name))->GetAsSQLTimestamp();
+    int field = m_dataSet->GetFieldNumber(p_name);
+    if(field >= 0)
+    {
+      SQLVariant* var = GetField(field);
+      if(var)
+      {
+        return var->GetAsSQLTimestamp();
+      }
+    }
   }
   return SQLTimestamp(0,0,0,0,0,0);
 }
@@ -540,7 +652,15 @@ SQLRecord::GetFieldSQLInterval(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
-    return GetField(m_dataSet->GetFieldNumber(p_name))->GetAsSQLInterval();
+    int field = m_dataSet->GetFieldNumber(p_name);
+    if(field >= 0)
+    {
+      SQLVariant* var = GetField(field);
+      if(var)
+      {
+        return var->GetAsSQLInterval();
+      }
+    }
   }
   return SQLInterval();
 }
@@ -550,7 +670,15 @@ SQLRecord::GetFieldSQLGuid(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
-    return GetField(m_dataSet->GetFieldNumber(p_name))->GetAsSQLGuid();
+    int field = m_dataSet->GetFieldNumber(p_name);
+    if(field >= 0)
+    {
+      SQLVariant* var = GetField(field);
+      if(var)
+      {
+        return var->GetAsSQLGuid();
+      }
+    }
   }
   return SQLGuid();
 }
@@ -561,7 +689,15 @@ SQLRecord::GetFieldXString(LPCTSTR p_name)
   XString string;
   if(m_dataSet)
   {
-    GetField(m_dataSet->GetFieldNumber(p_name))->GetAsString(string);
+    int field = m_dataSet->GetFieldNumber(p_name);
+    if(field >= 0)
+    {
+      SQLVariant* var = GetField(field);
+      if(var)
+      {
+        var->GetAsString(string);
+      }
+    }
   }
   return string;
 }
@@ -571,7 +707,15 @@ SQLRecord::GetFieldBcd(LPCTSTR p_name)
 {
   if(m_dataSet)
   {
-    GetField(m_dataSet->GetFieldNumber(p_name))->GetAsBCD();
+    int field = m_dataSet->GetFieldNumber(p_name);
+    if(field >= 0)
+    {
+      SQLVariant* var = GetField(field);
+      if(var)
+      {
+        return var->GetAsBCD();
+      }
+    }
   }
   return bcd();
 }

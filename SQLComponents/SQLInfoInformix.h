@@ -90,6 +90,9 @@ public:
   // Supports functions at the place of table columns in create/alter index statement
   bool    GetRDBMSSupportsFunctionalIndexes() const override;
 
+  // Support for "as" in alias statements (FROM clause)
+  bool    GetRDBMSSupportsAsInAlias() const override;
+
   // Database must commit DDL commands in a transaction
   bool GetRDBMSMustCommitDDL() const override;
 

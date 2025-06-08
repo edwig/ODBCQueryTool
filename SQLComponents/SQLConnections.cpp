@@ -27,6 +27,7 @@
 #include "SQLConnections.h"
 #include "XMLMessage.h"
 #include "SQLGetExePath.h"
+#include <Crypto.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -39,6 +40,7 @@ namespace SQLComponents
 
 SQLConnections::SQLConnections()
 {
+  m_cryptKey = _T("ReplaceWithYourPassword!");
 }
 
 void
@@ -215,6 +217,19 @@ SQLConnections::SaveConnectionsFile(XString p_filename /*=""*/)
   return msg.SaveFile(p_filename);
 }
 
+int
+SQLConnections::GetConnectionsCount()
+{
+  return (int)m_connections.size();
+}
+
+void
+SQLConnections::SetEncryptionKey(XString p_key)
+{
+  // Set the encryption key
+  m_cryptKey = p_key;
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // PRIVATE
@@ -224,69 +239,37 @@ SQLConnections::SaveConnectionsFile(XString p_filename /*=""*/)
 XString
 SQLConnections::PasswordScramble(XString p_password)
 {
-  XString scramble;
+  Crypto crypt;
 
-  // XOR scrambling if ASCII
-  for(int index = 0;index < p_password.GetLength(); ++index)
+  if(m_cryptKey.IsEmpty())
   {
-    int ch = p_password.GetAt(index);
-    if(ch < 128)
-    {
-      --ch;
-      ch ^= 0x7F;
-    }
-    scramble += (unsigned char)ch;
+    m_cryptKey = DEFAULT_ENCRYPTION_KEY;
   }
-
-  // Code to hexadecimal
-  XString coded;
-  for(int index = 0;index < scramble.GetLength(); ++index)
-  {
-    coded.AppendFormat(_T("%2.2X"),(int)scramble.GetAt(index));
-  }
+  XString password(p_password);
+  password.MakeReverse();
+  password += _T(":") + password + _T(":") ;
+  password += p_password + _T(":") + p_password;
 
   // Coded result of our password
-  return coded;
+  XString coded = crypt.Encryption(password,m_cryptKey);
+  return  coded;
 }
 
 XString
 SQLConnections::PasswordDecoding(XString p_scramble)
 {
-  XString coded;
-  int number = 0;
+  Crypto crypt;
 
-  // Hexadecimal to coded
-  for(int index = 0; index < p_scramble.GetLength();++index)
+  if(m_cryptKey.IsEmpty())
   {
-    int ch = p_scramble.GetAt(index);
-    if(ch <= '9') number += (ch - '0');
-    if(ch >= 'A') number += (ch - 'A' + 10);
-
-    if(index % 2)
-    {
-      coded += (unsigned char)number;
-      number = 0;
-    }
-    else
-    {
-      number *= 16;
-    }
+    m_cryptKey = DEFAULT_ENCRYPTION_KEY;
   }
+  XString decoded = crypt.Decryption(p_scramble,m_cryptKey);
+  decoded = decoded.Mid((decoded.GetLength() + 1) / 2);
+  decoded = decoded.Mid((decoded.GetLength() + 1) / 2);
 
-  // Coded back to ASCII
-  XString password;
-  for(int index = 0;index < coded.GetLength(); ++index)
-  {
-    int ch = coded.GetAt(index);
-    if(ch < 128)
-    {
-      ch ^= 0x7F;
-      ++ch;
-    }
-    password += (unsigned char)ch;
-  }
-
-  return password;
+  // Decoded result of our password
+  return decoded;
 }
 
 }

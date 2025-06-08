@@ -2,7 +2,7 @@
 //
 // SourceFile: XMLParser.cpp
 //
-// Copyright (c) 2014-2024 ir. W.E. Huisman
+// Copyright (c) 2014-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,10 +29,12 @@
 #include "ConvertWideString.h"
 #include "Namespace.h"
 
+#ifdef _AFX
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
+#endif
 #endif
 
 // Special entities, so we do not mess with the XML structures
@@ -107,7 +109,7 @@ XMLParser::PrintJsonString(const XString& p_string)
 
   for(int ind = 0; ind < p_string.GetLength(); ++ind)
   {
-    TCHAR ch = p_string.GetAt(ind);
+    TCHAR ch = (TCHAR) p_string.GetAt(ind);
     switch(ch)
     {
       case '\"':  *pointer++ = '\\';
@@ -203,6 +205,13 @@ XMLParser::ParseMessage(XString& p_message,WhiteSpace p_whiteSpace /*=PRESERVE_W
 
   // Conclusion of condensed level
   m_message->SetCondensed(m_spaces < m_elements);
+
+  // We believe what the header said :-)
+  int charset = CharsetToCodepage(m_encoding);
+  if(charset > 0 && charset != (int)m_message->GetEncoding())
+  {
+    m_message->SetEncoding((Encoding)charset);
+  }
 }
 
 // Parse from a beginning node

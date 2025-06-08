@@ -187,8 +187,8 @@ StyleTab::PreTranslateMessage(MSG* p_msg)
       return TRUE;
     }
   }
-  // Message not (yet) handled
-  return FALSE;
+  // Default handler
+  return CDialog::PreTranslateMessage(p_msg);
 }
 
 // Called only after the derived dialog calls "EnableTooltips()"

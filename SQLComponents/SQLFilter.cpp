@@ -208,8 +208,8 @@ SQLFilter::Reset()
   m_field2.Empty();
   m_expression.Empty();
   m_negate            = false;
-  m_openParenthesis   = false;
-  m_closeParenthesis  = false;
+  m_openParenthesis   = 0;
+  m_closeParenthesis  = 0;
   m_extract.m_extract = TS_EXT_NONE;
   m_operator          = OP_NOP;
   m_function          = FN_NOP;
@@ -239,9 +239,9 @@ SQLFilter::GetSQLFilter(SQLQuery& p_query)
   XString sql;
 
   // Add an extra parenthesis level
-  if(m_openParenthesis)
+  for(int ind = 0;ind < m_openParenthesis;++ind)
   {
-    sql = _T("(");
+    sql += _T("(");
   }
 
   // See if our own home-brewn expression on a filter without operators
@@ -290,9 +290,9 @@ SQLFilter::GetSQLFilter(SQLQuery& p_query)
     case OP_GreaterEqual: sql += _T(" >= ");         break;
     case OP_Smaller:      sql += _T(" < ");          break;
     case OP_SmallerEqual: sql += _T(" <= ");         break;
-    case OP_LikeBegin:    sql += _T(" LIKE '");      break;
-    case OP_LikeMiddle:   sql += _T(" LIKE '%");     break;
-    case OP_LikeEnd:      sql += _T(" LIKE '%");     break;
+    case OP_LikeBegin:    sql += _T(" LIKE ");       break;
+    case OP_LikeMiddle:   sql += _T(" LIKE ");       break;
+    case OP_LikeEnd:      sql += _T(" LIKE ");       break;
     case OP_IsNULL:       sql += _T(" IS NULL");     break;
     case OP_IsNotNULL:    sql += _T(" IS NOT NULL"); break;
     case OP_IN:           sql += _T(" IN (");        break;
@@ -307,7 +307,7 @@ SQLFilter::GetSQLFilter(SQLQuery& p_query)
      m_operator == OP_LikeMiddle ||
      m_operator == OP_LikeEnd    )
   {
-    ConstructLike(sql);
+    ConstructLike(sql,p_query);
   }
   else if(m_operator == OP_IN)
   {
@@ -336,7 +336,7 @@ SQLFilter::GetSQLFilter(SQLQuery& p_query)
   }
 
   // End an extra parenthesis level
-  if(m_closeParenthesis)
+  for(int ind = 0;ind < m_closeParenthesis;++ind)
   {
     sql += _T(")");
   }
@@ -455,7 +455,7 @@ SQLFilter::ConstructOperand(XString& p_sql,SQLQuery& p_query)
 
 // Constructing the LIKE clause
 void
-SQLFilter::ConstructLike(XString& p_sql)
+SQLFilter::ConstructLike(XString& p_sql,SQLQuery& p_query)
 {
   // Check that we have a value
   CheckValue();
@@ -469,11 +469,16 @@ SQLFilter::ConstructLike(XString& p_sql)
   // Get string without leading/trailing quote
   XString value;
   m_values[0]->GetAsString(value);
-  // Add as a LIKE string
-  p_sql += value;
 
-  // Eventually a closing '%'
-  p_sql += m_operator == OP_LikeEnd ? _T("'") : _T("%'");
+  // Add as a LIKE string
+  switch(m_operator)
+  {
+    case OP_LikeBegin:  value += _T("%");                   break;
+    case OP_LikeMiddle: value  = _T("%") + value + _T("%"); break; 
+    case OP_LikeEnd:    value  = _T("%") + value;           break;
+  }
+  p_sql += _T("?");
+  p_query.SetParameter(value);
 }
 
 // Constructing the IN clause

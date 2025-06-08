@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2024 ir. W.E. Huisman
+// Copyright (c) 2014-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -37,10 +37,12 @@
 #include <xutility>
 #include <string>
 
+#ifdef _AFX
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
+#endif
 #endif
 
 // All headers. Must be in sequence with HTTPCommand
@@ -1189,6 +1191,12 @@ HTTPMessage::SetMultiPartBuffer(MultiPartBuffer* p_buffer)
 // HTTPMessages can be stored elsewhere. Use the reference mechanism to add/drop references
 // With the drop of the last reference, the object WILL destroy itself
 
+long
+HTTPMessage::GetReferences()
+{
+  return m_references;
+}
+
 void
 HTTPMessage::AddReference()
 {
@@ -1207,6 +1215,7 @@ HTTPMessage::DropReference()
     }
     catch(StdException&)
     {
+      return true;
     }
   }
   return false;

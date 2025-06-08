@@ -4,7 +4,7 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2024 ir. W.E. Huisman
+// Copyright (c) 2014-2025 ir. W.E. Huisman
 // All rights reserved
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,7 +28,7 @@
 #pragma once
 #include <vector>
 
-// Max streaming serialize/deserialize limit
+// Max streaming serialize/de-serialize limit
 // Files bigger than this can only be putted/gotten by indirect file references
 // This is also the streaming limit for OData / REST interfaces
 #define STREAMING_LIMIT    (100*1024*1024)  // 100 Megabyte
