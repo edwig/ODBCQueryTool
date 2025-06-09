@@ -1483,10 +1483,11 @@ SQLInfoPostgreSQL::GetCATALOGTriggerExists(XString p_schema, XString p_tablename
   p_schema.MakeLower();
   p_tablename.MakeLower();
   p_triggername.MakeLower();
+
   XString sql = _T("SELECT COUNT(*)\n")
                 _T("  FROM information_schema.triggers\n")
-                _T(" WHERE event_object_schema = '") + p_schema + _T("'\n")
-                _T("   AND event_object_table  = '") + p_tablename + _T("'\n")
+                _T(" WHERE event_object_schema = '") + p_schema      + _T("'\n")
+                _T("   AND event_object_table  = '") + p_tablename   + _T("'\n")
                 _T("   AND trigger_name        = '") + p_triggername + _T("'");
   return sql;
 }
@@ -1855,35 +1856,101 @@ SQLInfoPostgreSQL::GetPSMProcedureExists(XString p_schema, XString p_procedure) 
 {
   p_schema.MakeLower();
   p_procedure.MakeLower();
-  return _T("SELECT count(*)\n")
-         _T("  FROM pg_proc\n")
-         _T(" WHERE proname = '") + p_procedure + _T("'\n;");
+  XString sql = _T("SELECT count(*)\n")
+                _T("  FROM information_schema.routines\n")
+                _T(" WHERE routine_name = '") + p_procedure + _T("'");
+  if(!p_schema.IsEmpty())
+  {
+    sql += _T("\n   AND specific_schema = '") + p_schema + _T("'");
+  }
+  return sql;
 }
 
 XString
-SQLInfoPostgreSQL::GetPSMProcedureList(XString& /*p_schema*/) const
+SQLInfoPostgreSQL::GetPSMProcedureList(XString& p_schema) const
 {
-  return _T("");
+  p_schema.MakeLower();
+  XString sql = _T("SELECT routine_catalog AS procedure_catalog\n")
+                _T("      ,routine_schema  AS procedure_schema\n")
+                _T("	    ,routine_name    AS procedure_name\n")
+                _T("	    ,(CASE routine_type\n")
+                _T("			    WHEN 'PROCEDURE' THEN 1\n")
+                _T("	        WHEN 'FUNCTION'  THEN 2\n")
+                _T("			    ELSE 3\n")
+                _T("	     END ) AS procedure_type\n")
+                _T("  FROM information_schema.routines");
+  if(!p_schema.IsEmpty())
+  {
+    sql += _T("\n WHERE routine_schema = '") + p_schema + _T("'");
+  }
+  sql += _T("\n ORDER BY routine_catalog")
+         _T("\n         ,routine_schema")
+         _T("\n         ,routine_name");
+  return sql;
 }
 
 XString
-SQLInfoPostgreSQL::GetPSMProcedureAttributes(XString& /*p_schema*/,XString& /*p_procedure*/) const
+SQLInfoPostgreSQL::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure) const
 {
-//   p_schema.MakeLower();
-//   p_procedure.MakeLower();
-// 
-//   XString sql = "SELECT TEXT from ALL_SOURCE "
-//                 "WHERE type = 'FUNCTION' "
-//                 "AND name  = '" + p_procedure + "'\n"
-//                 "AND owner = '" + p_schema    + "'";
-//   return sql;
-  return _T("");
+  p_schema.MakeLower();
+  p_procedure.MakeLower();
+  XString sql = _T("SELECT pro.routine_catalog AS procedure_catalog\n")
+                _T("      ,pro.routine_schema  AS procedure_schema\n")
+                _T("	    ,pro.routine_name    AS procedure_name\n")
+                _T("      ,(SELECT COUNT(*)\n")
+                _T("          FROM information_schema.parameters par\n")
+                _T("         WHERE par.specific_catalog = pro.specific_catalog\n")
+                _T("           AND par.specific_schema  = pro.specific_schema\n")
+                _T("           AND par.specific_name    = pro.specific_name\n")
+                _T("           AND par.parameter_mode = 'IN'\n")
+                _T("       ) AS input_parameters\n")
+                _T("      ,(SELECT COUNT(*)\n")
+                _T("          FROM information_schema.parameters par\n")
+                _T("         WHERE par.specific_catalog = pro.specific_catalog\n")
+                _T("           AND par.specific_schema  = pro.specific_schema\n")
+                _T("           AND par.specific_name    = pro.specific_name\n")
+                _T("           AND par.parameter_mode = 'OUT'\n")
+                _T("       ) AS output_parameters\n")
+                _T("      ,0   AS result_sets\n")
+                _T("      ,''  AS remarks\n")
+                _T("	    ,(CASE pro.routine_type\n")
+                _T("			    WHEN 'PROCEDURE' THEN 1\n")
+                _T("	        WHEN 'FUNCTION'  THEN 2\n")
+                _T("			    ELSE 3\n")
+                _T("	     END ) AS procedure_type\n")
+                _T("      ,'<@>' as source\n")
+                _T("  FROM information_schema.routines pro\n")
+                _T(" WHERE routine_schema = '") + p_schema    + _T("'\n");
+
+  // routine name
+  if(p_procedure.Find('%') >= 0)
+  {
+    sql += _T("   AND routine_name LIKE '") + p_procedure + _T("'\n");
+  }
+  else
+  {
+    sql += _T("   AND routine_name   = '") + p_procedure + _T("'\n");
+  }
+  // Sorting
+  sql += _T(" ORDER BY routine_catalog\n")
+         _T("         ,routine_schema\n")
+         _T("         ,routine_name");
+  return sql;
 }
 
 XString
-SQLInfoPostgreSQL::GetPSMProcedureSourcecode(XString /*p_schema*/, XString /*p_procedure*/) const
+SQLInfoPostgreSQL::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure) const
 {
-  return _T("");
+  p_schema.MakeLower();
+  p_procedure.MakeLower();
+
+  XString sql = _T("SELECT 0 as object_id\n")
+                _T("      ,0 as object_line\n")
+                _T("      ,routine_definition\n")
+                _T("  FROM information_schema.routines\n")
+                _T(" WHERE routine_schema = '") + p_schema    + _T("'\n")
+                _T("   AND routine_name   = '") + p_procedure + _T("'");
+  return sql;
 }
 
 XString
