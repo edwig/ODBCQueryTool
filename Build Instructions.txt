@@ -14,8 +14,8 @@ you need the following toolset:
     This tool can be downloaded from the following link
     https://nsis.sourceforge.io/Main_Page
 4)  NSIS installer for 64 bits
-    This tool is no longer developed, but can be downloaded from
-    https://web.archive.org/web/20160329184013/https://bitbucket.org/dgolub/nsis64
+    This version of NSIS is now maintained by "nigrutiu".
+    https://github.com/negrutiu/nsis/releases
 
 After installing all the tools, follow these steps:
 

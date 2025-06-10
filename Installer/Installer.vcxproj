@@ -150,12 +150,12 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <TargetName>Setup_OpenODBCQuerytool_3.4.4_64-Bits.exe</TargetName>
+    <TargetName>Setup_OpenODBCQuerytool_3.4.5_64-Bits.exe</TargetName>
     <OutDir>$(SolutionDir)bin_$(Configuration)$(Platform)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnicode|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <TargetName>Setup_OpenODBCQuerytool_3.4.4_64-Bits.exe</TargetName>
+    <TargetName>Setup_OpenODBCQuerytool_3.4.5_64-Bits.exe</TargetName>
     <OutDir>$(SolutionDir)bin_$(Configuration)$(Platform)\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -200,7 +200,7 @@
     <PreBuildEvent>
       <Message>Building the installer</Message>
       <Command>cd "$(SolutionDir)Installer\Installer_32Bits"
-"C:\Program Files (x86)\NSIS\makensis.exe" Installer_32Bits.nsi
+"C:\Program Files (x86)\NSIS\makensis.exe" /V4 Installer_32Bits.nsi
 </Command>
     </PreBuildEvent>
     <PostBuildEvent>
@@ -229,7 +229,7 @@ copy *.exe "$(OutDir)"</Command>
     <PreBuildEvent>
       <Message>Building the installer</Message>
       <Command>cd "$(SolutionDir)Installer\Installer_32Bits"
-"C:\Program Files (x86)\NSIS\makensis.exe" Installer_32BitsUnicode.nsi</Command>
+"C:\Program Files (x86)\NSIS\makensis.exe" /V4 Installer_32BitsUnicode.nsi</Command>
     </PreBuildEvent>
     <PostBuildEvent>
       <Command>cd "$(SolutionDir)Installer\Installer_32Bits"
@@ -280,7 +280,7 @@ copy *.exe "$(OutDir)"</Command>
     </Link>
     <PreBuildEvent>
       <Command>cd "$(SolutionDir)Installer\Installer_64Bits"
-"C:\Program Files\NSIS\makensis.exe" Installer_64Bits.nsi
+"C:\Program Files\NSIS\makensis.exe" /V4 Installer_64Bits.nsi
 </Command>
     </PreBuildEvent>
     <PreBuildEvent>
@@ -312,7 +312,7 @@ copy *.exe "$(OutDir)"
     </Link>
     <PreBuildEvent>
       <Command>cd "$(SolutionDir)Installer\Installer_64Bits"
-"C:\Program Files\NSIS\makensis.exe" Installer_64BitsUnicode.nsi</Command>
+"C:\Program Files\NSIS\makensis.exe" /V4 Installer_64BitsUnicode.nsi</Command>
     </PreBuildEvent>
     <PreBuildEvent>
       <Message>Building the installer</Message>
