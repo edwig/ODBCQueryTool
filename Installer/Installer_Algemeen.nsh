@@ -6,12 +6,12 @@
 ; Copyright (c) 2017-2024 ir. W.E. Huisman
 ; All rights reserved
 ;
-; Last change:       15-06-2024
-; Versionnumber:     3.4.3
+; Last change:       10-06-2025
+; Versionnumber:     3.4.5
 ;-------------------------------------------------------
  !define PRODUCT_NAME                         "OpenODBCQuerytool"
- !define PRODUCT_VERSION                      "3.4.4"
- !define PRODUCT_BUILDNUMBER                  "418"
+ !define PRODUCT_VERSION                      "3.4.5"
+ !define PRODUCT_BUILDNUMBER                  "424"
  !define PRODUCT_PUBLISHER                    "EDO"
  !define PRODUCT_WEB_SITE                     "https://sourceforge.net/projects/odbcquerytool"
  !define PRODUCT_DIR_REGKEY                   "Software\Microsoft\Windows\CurrentVersion\App Paths\${PRODUCT_NAME}"

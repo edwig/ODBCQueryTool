@@ -6,8 +6,8 @@
 ; Copyright (c) 2006-2024 ir. W.E. Huisman
 ; All rights reserved
 ;
-; Last change:       30-05-2024
-; Versionnumber:     3.4.2
+; Last change:       10-06-2025
+; Versionnumber:     3.4.5
 ;-------------------------------------------------------
  !define PRODUCT_BITNESS      "64-Bits"
  !define InputDir             "..\..\Bin_Releasex64\"

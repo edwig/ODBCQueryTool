@@ -22,6 +22,25 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes 3.4.5
+------------------
+Fix for querying decimal number fields after a CLOB/BLOB column
+Performance fix for retrieving columns after the last bound column
+Unicode and SQLDate fixes
+Fix for Firbird databases in getting procedures and procedure-parameters
+Fix for PostgreSQL databases in getting procedures and procedure-parameters
+For PostgreSQL databases it is now also possible to retrieve the procedure/function source text
+
+Releasenotes 3.4.4
+------------------
+A variable can now be assigned the value of another variable
+Added a build instructions manual
+Fixes for the bitmaps in the installers
+Minimal ms-access database for testing
+Support for procedures and functions wrapped in packages in the Oracle database. 
+ODBC Discovery now can extract information, sourcecode and parameters for these 
+procedures and functions
+
 Releasenotes 3.4.3
 ------------------
 The scripting :if command now has multiple operators: '=', '<>', '<', '>', '<=', '>='
