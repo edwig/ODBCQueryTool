@@ -604,7 +604,7 @@ SQLInfoInformix::GetCATALOGDefaultCollation() const
 
 // Get SQL to check if a table already exists in the database
 XString
-SQLInfoInformix::GetCATALOGTableExists(XString& p_schema,XString& p_tablename) const
+SQLInfoInformix::GetCATALOGTableExists(XString& p_schema,XString& p_tablename,bool /*p_quoted = false*/) const
 {
   p_schema.Empty(); // Do not bind as a parameter
   p_tablename.MakeLower();
@@ -615,20 +615,20 @@ SQLInfoInformix::GetCATALOGTableExists(XString& p_schema,XString& p_tablename) c
 }
 
 XString
-SQLInfoInformix::GetCATALOGTablesList(XString& p_schema,XString& p_pattern) const
+SQLInfoInformix::GetCATALOGTablesList(XString& p_schema,XString& p_pattern,bool /*p_quoted = false*/) const
 {
   return GetCATALOGTableAttributes(p_schema,p_pattern);
 }
 
 XString
-SQLInfoInformix::GetCATALOGTableAttributes(XString& /*p_schema*/,XString& /*p_tablename*/) const
+SQLInfoInformix::GetCATALOGTableAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,bool /*p_quoted = false*/) const
 {
   // Getting the temp table status
   return _T("");
 }
 
 XString
-SQLInfoInformix::GetCATALOGTableSynonyms(XString& p_schema,XString& p_tablename) const
+SQLInfoInformix::GetCATALOGTableSynonyms(XString& p_schema,XString& p_tablename,bool /*p_quoted = false*/) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
@@ -657,7 +657,7 @@ SQLInfoInformix::GetCATALOGTableSynonyms(XString& p_schema,XString& p_tablename)
 }
 
 XString
-SQLInfoInformix::GetCATALOGTableCatalog(XString& /*p_schema*/,XString& /*p_tablename*/) const
+SQLInfoInformix::GetCATALOGTableCatalog(XString& /*p_schema*/,XString& /*p_tablename*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
@@ -734,7 +734,7 @@ SQLInfoInformix::GetCATALOGTemptableDrop(XString /*p_schema*/,XString p_tablenam
 // ALL COLUMN FUNCTIONS
 
 XString 
-SQLInfoInformix::GetCATALOGColumnExists(XString /*p_schema*/,XString p_tablename,XString p_columnname) const
+SQLInfoInformix::GetCATALOGColumnExists(XString /*p_schema*/,XString p_tablename,XString p_columnname,bool /*p_quoted /*= false*/) const
 {
   p_tablename.MakeLower();
   p_columnname.MakeLower();
@@ -748,14 +748,14 @@ SQLInfoInformix::GetCATALOGColumnExists(XString /*p_schema*/,XString p_tablename
 }
 
 XString 
-SQLInfoInformix::GetCATALOGColumnList(XString& /*p_schema*/,XString& /*p_tablename*/) const
+SQLInfoInformix::GetCATALOGColumnList(XString& /*p_schema*/,XString& /*p_tablename*/,bool /*p_quoted /*= false*/) const
 {
   // Standard ODBC driver suffices
   return _T("");
 }
 
 XString 
-SQLInfoInformix::GetCATALOGColumnAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_columnname*/) const
+SQLInfoInformix::GetCATALOGColumnAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_columnname*/,bool /*p_quoted /*= false*/) const
 {
   // Standard ODBC driver suffices
   return _T("");
@@ -811,13 +811,13 @@ SQLInfoInformix::GetCATALOGColumnDrop(XString /*p_schema*/,XString p_tablename,X
 
 // All index functions
 XString
-SQLInfoInformix::GetCATALOGIndexExists(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_indexname*/) const
+SQLInfoInformix::GetCATALOGIndexExists(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_indexname*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoInformix::GetCATALOGIndexList(XString& p_schema,XString& p_tablename)   const
+SQLInfoInformix::GetCATALOGIndexList(XString& p_schema,XString& p_tablename,bool /*p_quoted = false*/) const
 {
   XString query;
   p_schema.Empty(); // Do not use
@@ -859,7 +859,7 @@ SQLInfoInformix::GetCATALOGIndexList(XString& p_schema,XString& p_tablename)   c
 }
 
 XString
-SQLInfoInformix::GetCATALOGIndexAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_indexname*/) const
+SQLInfoInformix::GetCATALOGIndexAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_indexname*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
@@ -926,7 +926,7 @@ SQLInfoInformix::GetCATALOGIndexFilter(MetaIndex& /*p_index*/) const
 // ALL PRIMARY KEY FUNCTIONS
 
 XString
-SQLInfoInformix::GetCATALOGPrimaryExists(XString /*p_schema*/,XString p_tablename) const
+SQLInfoInformix::GetCATALOGPrimaryExists(XString /*p_schema*/,XString p_tablename,bool /*p_quoted = false*/) const
 {
   p_tablename.MakeLower();
   XString query = _T("SELECT COUNT(*)\n"
@@ -939,7 +939,7 @@ SQLInfoInformix::GetCATALOGPrimaryExists(XString /*p_schema*/,XString p_tablenam
 }
 
 XString
-SQLInfoInformix::GetCATALOGPrimaryAttributes(XString& /*p_schema*/,XString& /*p_tablename*/) const
+SQLInfoInformix::GetCATALOGPrimaryAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,bool /*p_quoted = false*/) const
 {
 //   p_tablename.MakeLower();
 //   XString sql = "SELECT constrname\n"
@@ -997,7 +997,7 @@ SQLInfoInformix::GetCATALOGPrimaryDrop(XString /*p_schema*/,XString p_tablename,
 // ALL FOREIGN KEY FUNCTIONS
 
 XString
-SQLInfoInformix::GetCATALOGForeignExists(XString /*p_schema*/,XString p_tablename,XString p_constraintname) const
+SQLInfoInformix::GetCATALOGForeignExists(XString /*p_schema*/,XString p_tablename,XString p_constraintname,bool /*p_quoted = false*/) const
 {
   p_tablename.MakeLower();
   p_constraintname.MakeLower();
@@ -1017,7 +1017,7 @@ SQLInfoInformix::GetCATALOGForeignExists(XString /*p_schema*/,XString p_tablenam
 
 // Get all attributes in order of MetaForeign for ALL FK constraints
 XString
-SQLInfoInformix::GetCATALOGForeignList(XString& p_schema,XString& p_tablename,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
+SQLInfoInformix::GetCATALOGForeignList(XString& p_schema,XString& p_tablename,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/,bool /*p_quoted = false*/) const
 {
   XString constraint;
   return GetCATALOGForeignAttributes(p_schema,p_tablename,constraint,p_maxColumns);
@@ -1029,7 +1029,8 @@ SQLInfoInformix::GetCATALOGForeignAttributes(XString& p_schema
                                             ,XString& p_tablename
                                             ,XString& p_constraint
                                             ,bool     p_referenced /*= false*/
-                                            ,int      p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
+                                            ,int      p_maxColumns /*=SQLINFO_MAX_COLUMNS*/
+                                            ,bool   /*p_quoted       = false*/) const
 {
   XString query;
   p_schema.MakeLower();
@@ -1313,20 +1314,20 @@ SQLInfoInformix::GetCATALOGCheckDrop(XString  /*p_schema*/,XString  /*p_tablenam
 // ALL TRIGGER FUNCTIONS
 
 XString
-SQLInfoInformix::GetCATALOGTriggerExists(XString /*p_schema*/, XString /*p_tablename*/, XString /*p_triggername*/) const
+SQLInfoInformix::GetCATALOGTriggerExists(XString /*p_schema*/, XString /*p_tablename*/, XString /*p_triggername*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoInformix::GetCATALOGTriggerList(XString& p_schema,XString& p_tablename) const
+SQLInfoInformix::GetCATALOGTriggerList(XString& p_schema,XString& p_tablename,bool /*p_quoted = false*/) const
 {
   XString triggername;
   return GetCATALOGTriggerAttributes(p_schema,p_tablename,triggername);
 }
 
 XString
-SQLInfoInformix::GetCATALOGTriggerAttributes(XString& p_schema,XString& p_tablename,XString& p_triggername) const
+SQLInfoInformix::GetCATALOGTriggerAttributes(XString& p_schema,XString& p_tablename,XString& p_triggername,bool /*p_quoted = false*/) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
@@ -1386,7 +1387,7 @@ SQLInfoInformix::GetCATALOGTriggerDrop(XString /*p_schema*/, XString /*p_tablena
 // ALL SEQUENCE FUNCTIONS
 
 XString
-SQLInfoInformix::GetCATALOGSequenceExists(XString p_schema, XString p_sequence) const
+SQLInfoInformix::GetCATALOGSequenceExists(XString p_schema, XString p_sequence,bool /*p_quoted = false*/) const
 {
   p_schema.MakeLower();
   p_sequence.MakeLower();
@@ -1400,13 +1401,13 @@ SQLInfoInformix::GetCATALOGSequenceExists(XString p_schema, XString p_sequence) 
 }
 
 XString
-SQLInfoInformix::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern) const
+SQLInfoInformix::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern,bool p_quoted /*= false*/) const
 {
-  return GetCATALOGSequenceAttributes(p_schema,p_pattern);
+  return GetCATALOGSequenceAttributes(p_schema,p_pattern,p_quoted);
 }
 
 XString
-SQLInfoInformix::GetCATALOGSequenceAttributes(XString& p_schema,XString& p_sequence) const
+SQLInfoInformix::GetCATALOGSequenceAttributes(XString& p_schema,XString& p_sequence,bool /*p_quoted = false*/) const
 {
   p_schema.MakeLower();
   p_sequence.MakeLower();
@@ -1473,7 +1474,7 @@ SQLInfoInformix::GetCATALOGSequenceDrop(XString /*p_schema*/, XString p_sequence
 // ALL VIEW FUNCTIONS
 
 XString 
-SQLInfoInformix::GetCATALOGViewExists(XString& p_schema,XString& p_viewname) const
+SQLInfoInformix::GetCATALOGViewExists(XString& p_schema,XString& p_viewname,bool /*p_quoted = false*/) const
 {
   p_schema.Empty(); // do not bind as a parameter
   p_viewname.MakeLower();
@@ -1485,19 +1486,19 @@ SQLInfoInformix::GetCATALOGViewExists(XString& p_schema,XString& p_viewname) con
 }
 
 XString 
-SQLInfoInformix::GetCATALOGViewList(XString& /*p_schema*/,XString& /*p_pattern*/) const
+SQLInfoInformix::GetCATALOGViewList(XString& /*p_schema*/,XString& /*p_pattern*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString 
-SQLInfoInformix::GetCATALOGViewAttributes(XString& /*p_schema*/,XString& /*p_viewname*/) const
+SQLInfoInformix::GetCATALOGViewAttributes(XString& /*p_schema*/,XString& /*p_viewname*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoInformix::GetCATALOGViewText(XString& /*p_schema*/,XString& /*p_viewname*/) const
+SQLInfoInformix::GetCATALOGViewText(XString& /*p_schema*/,XString& /*p_viewname*/,bool /*p_quoted = false*/) const
 {
   // Cannot query this, Use ODBC functions
   return _T("");
@@ -1620,7 +1621,7 @@ SQLInfoInformix::GetCATALOGSynonymDrop(XString& /*p_schema*/,XString& /*p_synony
 //////////////////////////////////////////////////////////////////////////
 
 XString
-SQLInfoInformix::GetPSMProcedureExists(XString /*p_schema*/, XString p_procedure) const
+SQLInfoInformix::GetPSMProcedureExists(XString /*p_schema*/, XString p_procedure,bool /*p_quoted = false*/) const
 {
   p_procedure.MakeLower();
   return _T("select count(*)\n"
@@ -1635,7 +1636,7 @@ SQLInfoInformix::GetPSMProcedureList(XString& /*p_schema*/) const
 }
 
 XString
-SQLInfoInformix::GetPSMProcedureAttributes(XString& /*p_schema*/,XString& /*p_procedure*/) const
+SQLInfoInformix::GetPSMProcedureAttributes(XString& /*p_schema*/,XString& /*p_procedure*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 //   p_procedure.MakeLower();
@@ -1649,7 +1650,7 @@ SQLInfoInformix::GetPSMProcedureAttributes(XString& /*p_schema*/,XString& /*p_pr
 }
 
 XString
-SQLInfoInformix::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure) const
+SQLInfoInformix::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure,bool /*p_quoted = false*/) const
 {
   p_schema.MakeLower();
   p_procedure.MakeLower();
@@ -1708,21 +1709,21 @@ SQLInfoInformix::GetPSMProcedureDrop(XString /*p_schema*/, XString /*p_procedure
 }
 
 XString
-SQLInfoInformix::GetPSMProcedureErrors(XString /*p_schema*/,XString /*p_procedure*/) const
+SQLInfoInformix::GetPSMProcedureErrors(XString /*p_schema*/,XString /*p_procedure*/,bool /*p_quoted = false*/) const
 {
   // Informix does not support procedure errors
   return _T("");
 }
 
 XString
-SQLInfoInformix::GetPSMProcedurePrivilege(XString& /*p_schema*/,XString& /*p_procedure*/) const
+SQLInfoInformix::GetPSMProcedurePrivilege(XString& /*p_schema*/,XString& /*p_procedure*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 // And it's parameters
 XString
-SQLInfoInformix::GetPSMProcedureParameters(XString& p_schema,XString& p_procedure) const
+SQLInfoInformix::GetPSMProcedureParameters(XString& p_schema,XString& p_procedure,bool /*p_quoted = false*/) const
 {
   p_schema.MakeLower();
   p_procedure.MakeLower();

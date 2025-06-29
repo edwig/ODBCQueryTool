@@ -35,6 +35,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#pragma comment(lib,"odbccp32.lib")
+
 namespace SQLComponents
 {
 

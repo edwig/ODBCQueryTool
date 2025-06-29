@@ -102,7 +102,7 @@ protected:
   void      InsertNoInfo    (HTREEITEM p_item);
   void      RemoveNoInfo    (HTREEITEM p_item);
   CString   GetObjectType   (CString   p_type);
-  bool      IsSpecialNode   (CString&  p_name);
+  bool      IsSpecialNode   (CString&   p_name);
   void      SetItemCount    (HTREEITEM p_theItem,int p_size);
   bool      PresetTable     (HTREEITEM p_theItem);
   bool      PresetProcedure (HTREEITEM p_theItem,MProcedureMap& p_procedures);

@@ -142,12 +142,13 @@ ObjectTree::ClearTree()
 bool
 ObjectTree::IsSpecialNode(CString& p_name)
 {
-  // Find first word of the node name
-  int pos = p_name.Find(' ');
+  // The node name can contain the SQL comment field!
+  int pos = p_name.Find('(');
   if(pos > 0)
   {
     p_name = p_name.Left(pos);
   }
+  p_name = p_name.TrimRight();
 
   // See if it is a type node instead of a schema name
   if(p_name.Compare(_T("Tables"))     == 0)  return true;
@@ -565,14 +566,11 @@ ObjectTree::PresetTable(HTREEITEM p_theItem)
   table.Trim();
   schema.Trim();
   IsSpecialNode(table);
-  CString findtable(table);
   if(!IsSpecialNode(schema))
   {
-    findtable = schema + _T(".") + table;
     m_schema = schema;
+    m_table  = table;
   }
-  m_table  = table;
-
   return true;
 }
 

@@ -59,10 +59,11 @@ StyleToast* CreateToast(int      p_style
 class Toasts
 {
 public:
-  ~Toasts();
+  Toasts();
+ ~Toasts();
   std::vector<StyleToast*> m_toasts;
+  CRITICAL_SECTION m_lock;
 };
-
 
 class StyleToast : public CDialog
 {

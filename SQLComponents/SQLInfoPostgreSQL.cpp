@@ -589,7 +589,7 @@ SQLInfoPostgreSQL::GetCATALOGDefaultCollation() const
 
 // Get SQL to check if a table already exists in the database
 XString
-SQLInfoPostgreSQL::GetCATALOGTableExists(XString& p_schema,XString& p_tablename) const
+SQLInfoPostgreSQL::GetCATALOGTableExists(XString& p_schema,XString& p_tablename,bool /*p_quoted = false*/) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
@@ -603,13 +603,13 @@ SQLInfoPostgreSQL::GetCATALOGTableExists(XString& p_schema,XString& p_tablename)
 }
 
 XString
-SQLInfoPostgreSQL::GetCATALOGTablesList(XString& p_schema,XString& p_pattern) const
+SQLInfoPostgreSQL::GetCATALOGTablesList(XString& p_schema,XString& p_pattern,bool /*p_quoted = false*/) const
 {
   return GetCATALOGTableAttributes(p_schema,p_pattern);
 }
 
 XString
-SQLInfoPostgreSQL::GetCATALOGTableAttributes(XString& p_schema,XString& p_tablename) const
+SQLInfoPostgreSQL::GetCATALOGTableAttributes(XString& p_schema,XString& p_tablename,bool /*p_quoted = false*/) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
@@ -646,14 +646,14 @@ SQLInfoPostgreSQL::GetCATALOGTableAttributes(XString& p_schema,XString& p_tablen
 }
 
 XString
-SQLInfoPostgreSQL::GetCATALOGTableSynonyms(XString& /*p_schema*/,XString& /*p_tablename*/) const
+SQLInfoPostgreSQL::GetCATALOGTableSynonyms(XString& /*p_schema*/,XString& /*p_tablename*/,bool /*p_quoted = false*/) const
 {
   // PostgreSQL cannot do this
   return XString();
 }
 
 XString
-SQLInfoPostgreSQL::GetCATALOGTableCatalog(XString& p_schema,XString& p_tablename) const
+SQLInfoPostgreSQL::GetCATALOGTableCatalog(XString& p_schema,XString& p_tablename,bool /*p_quoted = false*/) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
@@ -776,7 +776,7 @@ SQLInfoPostgreSQL::GetCATALOGTemptableDrop(XString p_schema,XString p_tablename)
 // ALL COLUMN FUNCTIONS
 
 XString 
-SQLInfoPostgreSQL::GetCATALOGColumnExists(XString p_schema,XString p_tablename,XString p_columnname) const
+SQLInfoPostgreSQL::GetCATALOGColumnExists(XString p_schema,XString p_tablename,XString p_columnname,bool /*p_quoted /*= false*/) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
@@ -794,7 +794,7 @@ SQLInfoPostgreSQL::GetCATALOGColumnExists(XString p_schema,XString p_tablename,X
 }
 
 XString 
-SQLInfoPostgreSQL::GetCATALOGColumnList(XString& /*p_schema*/,XString& /*p_tablename*/) const
+SQLInfoPostgreSQL::GetCATALOGColumnList(XString& /*p_schema*/,XString& /*p_tablename*/,bool /*p_quoted /*= false*/) const
 {
   return _T("");
 //   p_schema.MakeLower();
@@ -876,7 +876,7 @@ SQLInfoPostgreSQL::GetCATALOGColumnList(XString& /*p_schema*/,XString& /*p_table
 }
 
 XString 
-SQLInfoPostgreSQL::GetCATALOGColumnAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_columnname*/) const
+SQLInfoPostgreSQL::GetCATALOGColumnAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_columnname*/,bool /*p_quoted /*= false*/) const
 {
   // Standard ODBC driver suffices
   return _T("");
@@ -948,13 +948,13 @@ SQLInfoPostgreSQL::GetCATALOGColumnDrop(XString p_schema,XString p_tablename,XSt
 
 // All index functions
 XString
-SQLInfoPostgreSQL::GetCATALOGIndexExists(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_indexname*/) const
+SQLInfoPostgreSQL::GetCATALOGIndexExists(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_indexname*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoPostgreSQL::GetCATALOGIndexList(XString& p_schema,XString& p_tablename) const
+SQLInfoPostgreSQL::GetCATALOGIndexList(XString& p_schema,XString& p_tablename,bool /*p_quoted = false*/) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
@@ -983,7 +983,7 @@ SQLInfoPostgreSQL::GetCATALOGIndexList(XString& p_schema,XString& p_tablename) c
 }
 
 XString
-SQLInfoPostgreSQL::GetCATALOGIndexAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_indexname*/) const
+SQLInfoPostgreSQL::GetCATALOGIndexAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_indexname*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
@@ -1050,7 +1050,7 @@ SQLInfoPostgreSQL::GetCATALOGIndexFilter(MetaIndex& /*p_index*/) const
 // ALL PRIMARY KEY FUNCTIONS
 
 XString
-SQLInfoPostgreSQL::GetCATALOGPrimaryExists(XString p_schema,XString p_tablename) const
+SQLInfoPostgreSQL::GetCATALOGPrimaryExists(XString p_schema,XString p_tablename,bool /*p_quoted = false*/) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
@@ -1068,7 +1068,7 @@ SQLInfoPostgreSQL::GetCATALOGPrimaryExists(XString p_schema,XString p_tablename)
 }
 
 XString
-SQLInfoPostgreSQL::GetCATALOGPrimaryAttributes(XString& /*p_schema*/,XString& /*p_tablename*/) const
+SQLInfoPostgreSQL::GetCATALOGPrimaryAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,bool /*p_quoted = false*/) const
 {
 //   p_schema.MakeLower();
 //   p_tablename.MakeLower();
@@ -1129,7 +1129,7 @@ SQLInfoPostgreSQL::GetCATALOGPrimaryDrop(XString p_schema,XString p_tablename,XS
 // ALL FOREIGN KEY FUNCTIONS
 
 XString
-SQLInfoPostgreSQL::GetCATALOGForeignExists(XString p_schema,XString p_tablename,XString p_constraintname) const
+SQLInfoPostgreSQL::GetCATALOGForeignExists(XString p_schema,XString p_tablename,XString p_constraintname,bool /*p_quoted = false*/) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
@@ -1153,14 +1153,14 @@ SQLInfoPostgreSQL::GetCATALOGForeignExists(XString p_schema,XString p_tablename,
 }
 
 XString
-SQLInfoPostgreSQL::GetCATALOGForeignList(XString& p_schema,XString& p_tablename,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
+SQLInfoPostgreSQL::GetCATALOGForeignList(XString& p_schema,XString& p_tablename,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/,bool p_quoted /*= false*/) const
 {
   XString constraint;
-  return GetCATALOGForeignAttributes(p_schema,p_tablename,constraint,p_maxColumns);
+  return GetCATALOGForeignAttributes(p_schema,p_tablename,constraint,p_maxColumns,p_quoted);
 }
 
 XString
-SQLInfoPostgreSQL::GetCATALOGForeignAttributes(XString& p_schema,XString& p_tablename,XString& p_constraint,bool p_referenced /*=false*/,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
+SQLInfoPostgreSQL::GetCATALOGForeignAttributes(XString& p_schema,XString& p_tablename,XString& p_constraint,bool p_referenced /*=false*/,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/,bool /*p_quoted = false*/) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
@@ -1478,7 +1478,7 @@ SQLInfoPostgreSQL::GetCATALOGCheckDrop(XString  /*p_schema*/,XString  /*p_tablen
 // ALL TRIGGER FUNCTIONS
 
 XString
-SQLInfoPostgreSQL::GetCATALOGTriggerExists(XString p_schema, XString p_tablename, XString p_triggername) const
+SQLInfoPostgreSQL::GetCATALOGTriggerExists(XString p_schema, XString p_tablename, XString p_triggername,bool /*p_quoted = false*/) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
@@ -1493,14 +1493,14 @@ SQLInfoPostgreSQL::GetCATALOGTriggerExists(XString p_schema, XString p_tablename
 }
 
 XString
-SQLInfoPostgreSQL::GetCATALOGTriggerList(XString& p_schema,XString& p_tablename) const
+SQLInfoPostgreSQL::GetCATALOGTriggerList(XString& p_schema,XString& p_tablename,bool p_quoted /*= false*/) const
 {
   XString triggername;
-  return GetCATALOGTriggerAttributes(p_schema,p_tablename,triggername);
+  return GetCATALOGTriggerAttributes(p_schema,p_tablename,triggername,p_quoted);
 }
 
 XString
-SQLInfoPostgreSQL::GetCATALOGTriggerAttributes(XString& p_schema,XString& p_tablename,XString& p_triggername) const
+SQLInfoPostgreSQL::GetCATALOGTriggerAttributes(XString& p_schema,XString& p_tablename,XString& p_triggername,bool /*p_quoted = false*/) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
@@ -1568,7 +1568,7 @@ SQLInfoPostgreSQL::GetCATALOGTriggerDrop(XString /*p_schema*/,XString /*p_tablen
 // ALL SEQUENCE FUNCTIONS
 
 XString
-SQLInfoPostgreSQL::GetCATALOGSequenceExists(XString p_schema, XString p_sequence) const
+SQLInfoPostgreSQL::GetCATALOGSequenceExists(XString p_schema, XString p_sequence,bool /*p_quoted = false*/) const
 {
   p_schema.MakeLower();
   p_sequence.MakeLower();
@@ -1581,7 +1581,7 @@ SQLInfoPostgreSQL::GetCATALOGSequenceExists(XString p_schema, XString p_sequence
 }
 
 XString
-SQLInfoPostgreSQL::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern) const
+SQLInfoPostgreSQL::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern,bool /*p_quoted = false*/) const
 {
   p_schema.MakeLower();
   p_pattern.MakeLower();
@@ -1616,7 +1616,7 @@ SQLInfoPostgreSQL::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern) 
 }
 
 XString
-SQLInfoPostgreSQL::GetCATALOGSequenceAttributes(XString& p_schema,XString& p_sequence) const
+SQLInfoPostgreSQL::GetCATALOGSequenceAttributes(XString& p_schema,XString& p_sequence,bool /*p_quoted = false*/) const
 {
   p_schema.MakeLower();
   p_sequence.MakeLower();
@@ -1676,7 +1676,7 @@ SQLInfoPostgreSQL::GetCATALOGSequenceDrop(XString p_schema, XString p_sequence) 
 // ALL VIEW FUNCTIONS
 
 XString 
-SQLInfoPostgreSQL::GetCATALOGViewExists(XString& p_schema,XString& p_viewname) const
+SQLInfoPostgreSQL::GetCATALOGViewExists(XString& p_schema,XString& p_viewname,bool /*p_quoted = false*/) const
 {
   p_schema.Empty();  // do not bind as parameter
   p_viewname.MakeLower();
@@ -1687,13 +1687,13 @@ SQLInfoPostgreSQL::GetCATALOGViewExists(XString& p_schema,XString& p_viewname) c
 }
 
 XString 
-SQLInfoPostgreSQL::GetCATALOGViewList(XString& p_schema,XString& p_pattern) const
+SQLInfoPostgreSQL::GetCATALOGViewList(XString& p_schema,XString& p_pattern,bool /*p_quoted = false*/) const
 {
   return GetCATALOGViewAttributes(p_schema,p_pattern);
 }
 
 XString 
-SQLInfoPostgreSQL::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewname) const
+SQLInfoPostgreSQL::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewname,bool /*p_quoted = false*/) const
 {
   p_schema.MakeLower();
   p_viewname.MakeLower();
@@ -1729,7 +1729,7 @@ SQLInfoPostgreSQL::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewnam
 }
 
 XString
-SQLInfoPostgreSQL::GetCATALOGViewText(XString& /*p_schema*/,XString& /*p_viewname*/) const
+SQLInfoPostgreSQL::GetCATALOGViewText(XString& /*p_schema*/,XString& /*p_viewname*/,bool /*p_quoted = false*/) const
 {
   // Cannot query this, Use ODBC functions
   return _T("");
@@ -1852,7 +1852,7 @@ SQLInfoPostgreSQL::GetCATALOGSynonymDrop(XString& /*p_schema*/,XString& /*p_syno
 //////////////////////////////////////////////////////////////////////////
 
 XString
-SQLInfoPostgreSQL::GetPSMProcedureExists(XString p_schema, XString p_procedure) const
+SQLInfoPostgreSQL::GetPSMProcedureExists(XString p_schema, XString p_procedure,bool /*p_quoted = false*/) const
 {
   p_schema.MakeLower();
   p_procedure.MakeLower();
@@ -1890,7 +1890,7 @@ SQLInfoPostgreSQL::GetPSMProcedureList(XString& p_schema) const
 }
 
 XString
-SQLInfoPostgreSQL::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure) const
+SQLInfoPostgreSQL::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure,bool /*p_quoted = false*/) const
 {
   p_schema.MakeLower();
   p_procedure.MakeLower();
@@ -1939,7 +1939,7 @@ SQLInfoPostgreSQL::GetPSMProcedureAttributes(XString& p_schema,XString& p_proced
 }
 
 XString
-SQLInfoPostgreSQL::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure) const
+SQLInfoPostgreSQL::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure,bool /*p_quoted = false*/) const
 {
   p_schema.MakeLower();
   p_procedure.MakeLower();
@@ -1966,20 +1966,20 @@ SQLInfoPostgreSQL::GetPSMProcedureDrop(XString /*p_schema*/, XString /*p_procedu
 }
 
 XString
-SQLInfoPostgreSQL::GetPSMProcedureErrors(XString /*p_schema*/,XString /*p_procedure*/) const
+SQLInfoPostgreSQL::GetPSMProcedureErrors(XString /*p_schema*/,XString /*p_procedure*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoPostgreSQL::GetPSMProcedurePrivilege(XString& /*p_schema*/,XString& /*p_procedure*/) const
+SQLInfoPostgreSQL::GetPSMProcedurePrivilege(XString& /*p_schema*/,XString& /*p_procedure*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 // And it's parameters
 XString
-SQLInfoPostgreSQL::GetPSMProcedureParameters(XString& p_schema,XString& p_procedure) const
+SQLInfoPostgreSQL::GetPSMProcedureParameters(XString& p_schema,XString& p_procedure,bool /*p_quoted = false*/) const
 {
   p_schema.MakeLower();
   p_procedure.MakeLower();

@@ -772,7 +772,7 @@ SQLInfoOracle::GetCATALOGDefaultCollation() const
 
 // Get SQL to check if a table already exists in the database
 XString
-SQLInfoOracle::GetCATALOGTableExists(XString& p_schema,XString& p_tablename) const
+SQLInfoOracle::GetCATALOGTableExists(XString& p_schema,XString& p_tablename,bool /*p_quoted = false*/) const
 {
   p_schema.MakeUpper();
   p_tablename.MakeUpper();
@@ -784,13 +784,13 @@ SQLInfoOracle::GetCATALOGTableExists(XString& p_schema,XString& p_tablename) con
 }
 
 XString
-SQLInfoOracle::GetCATALOGTablesList(XString& p_schema,XString& p_pattern) const
+SQLInfoOracle::GetCATALOGTablesList(XString& p_schema,XString& p_pattern,bool /*p_quoted = false*/) const
 {
   return GetCATALOGTableAttributes(p_schema,p_pattern);
 }
 
 XString
-SQLInfoOracle::GetCATALOGTableAttributes(XString& p_schema,XString& p_tablename) const
+SQLInfoOracle::GetCATALOGTableAttributes(XString& p_schema,XString& p_tablename,bool /*p_quoted = false*/) const
 {
   XString sql;
   p_schema.MakeUpper();
@@ -837,7 +837,7 @@ SQLInfoOracle::GetCATALOGTableAttributes(XString& p_schema,XString& p_tablename)
 }
 
 XString 
-SQLInfoOracle::GetCATALOGTableSynonyms(XString& p_schema,XString& p_tablename) const
+SQLInfoOracle::GetCATALOGTableSynonyms(XString& p_schema,XString& p_tablename,bool /*p_quoted = false*/) const
 {
   p_schema.MakeUpper();
   p_tablename.MakeUpper();
@@ -870,7 +870,7 @@ SQLInfoOracle::GetCATALOGTableSynonyms(XString& p_schema,XString& p_tablename) c
 }
 
 XString
-SQLInfoOracle::GetCATALOGTableCatalog(XString& p_schema,XString& p_tablename) const
+SQLInfoOracle::GetCATALOGTableCatalog(XString& p_schema,XString& p_tablename,bool /*p_quoted = false*/) const
 {
   p_schema.MakeUpper();
   p_tablename.MakeUpper();
@@ -997,7 +997,7 @@ SQLInfoOracle::GetCATALOGTemptableDrop(XString p_schema,XString p_tablename) con
 // ALL COLUMN FUNCTIONS
 
 XString 
-SQLInfoOracle::GetCATALOGColumnExists(XString p_schema,XString p_tablename,XString p_columnname) const
+SQLInfoOracle::GetCATALOGColumnExists(XString p_schema,XString p_tablename,XString p_columnname,bool /*p_quoted /*= false*/) const
 {
   p_schema.MakeUpper();
   p_tablename.MakeUpper();
@@ -1011,14 +1011,14 @@ SQLInfoOracle::GetCATALOGColumnExists(XString p_schema,XString p_tablename,XStri
 }
 
 XString 
-SQLInfoOracle::GetCATALOGColumnList(XString& /*p_schema*/,XString& /*p_tablename*/) const
+SQLInfoOracle::GetCATALOGColumnList(XString& /*p_schema*/,XString& /*p_tablename*/,bool /*p_quoted /*= false*/) const
 {
   // Standard ODBC driver suffices
   return _T("");
 }
 
 XString 
-SQLInfoOracle::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablename,XString& p_columnname) const
+SQLInfoOracle::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablename,XString& p_columnname,bool /*p_quoted /*= false*/) const
 {
   p_schema.MakeUpper();
   p_tablename.MakeUpper();
@@ -1208,13 +1208,13 @@ SQLInfoOracle::GetCATALOGColumnDrop(XString p_schema,XString p_tablename,XString
 
 // All index functions
 XString
-SQLInfoOracle::GetCATALOGIndexExists(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_indexname*/) const
+SQLInfoOracle::GetCATALOGIndexExists(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_indexname*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoOracle::GetCATALOGIndexList(XString& p_schema,XString& p_tablename)   const
+SQLInfoOracle::GetCATALOGIndexList(XString& p_schema,XString& p_tablename,bool /*p_quoted = false*/)   const
 {
   p_schema.MakeUpper();
   p_tablename.MakeUpper();
@@ -1242,7 +1242,7 @@ SQLInfoOracle::GetCATALOGIndexList(XString& p_schema,XString& p_tablename)   con
 }
 
 XString
-SQLInfoOracle::GetCATALOGIndexAttributes(XString& p_schema,XString& p_tablename,XString& p_indexname) const
+SQLInfoOracle::GetCATALOGIndexAttributes(XString& p_schema,XString& p_tablename,XString& p_indexname,bool /*p_quoted = false*/) const
 {
   XString query;
   p_schema.MakeUpper();
@@ -1416,7 +1416,7 @@ SQLInfoOracle::GetCATALOGIndexFilter(MetaIndex& p_index) const
 // ALL PRIMARY KEY FUNCTIONS
 
 XString
-SQLInfoOracle::GetCATALOGPrimaryExists(XString p_schema,XString p_tablename) const
+SQLInfoOracle::GetCATALOGPrimaryExists(XString p_schema,XString p_tablename,bool /*p_quoted = false*/) const
 {
   p_schema.MakeUpper();
   p_tablename.MakeUpper();
@@ -1433,7 +1433,7 @@ SQLInfoOracle::GetCATALOGPrimaryExists(XString p_schema,XString p_tablename) con
 }
 
 XString
-SQLInfoOracle::GetCATALOGPrimaryAttributes(XString& /*p_schema*/,XString& /*p_tablename*/) const
+SQLInfoOracle::GetCATALOGPrimaryAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,bool /*p_quoted = false*/) const
 {
   // To be implemented
   return _T("");
@@ -1479,7 +1479,7 @@ SQLInfoOracle::GetCATALOGPrimaryDrop(XString p_schema,XString p_tablename,XStrin
 // ALL FOREIGN KEY FUNCTIONS
 
 XString
-SQLInfoOracle::GetCATALOGForeignExists(XString p_schema,XString p_tablename,XString p_constraintname) const
+SQLInfoOracle::GetCATALOGForeignExists(XString p_schema,XString p_tablename,XString p_constraintname,bool /*p_quoted = false*/) const
 {
   p_schema.MakeUpper();
   p_tablename.MakeUpper();
@@ -1500,7 +1500,7 @@ SQLInfoOracle::GetCATALOGForeignExists(XString p_schema,XString p_tablename,XStr
 }
 
 XString
-SQLInfoOracle::GetCATALOGForeignList(XString& p_schema,XString& p_tablename,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/) const
+SQLInfoOracle::GetCATALOGForeignList(XString& p_schema,XString& p_tablename,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/,bool /*p_quoted = false*/) const
 {
   XString constraint;
   return GetCATALOGForeignAttributes(p_schema,p_tablename,constraint,p_maxColumns);
@@ -1511,7 +1511,8 @@ SQLInfoOracle::GetCATALOGForeignAttributes(XString& p_schema
                                           ,XString& p_tablename
                                           ,XString& p_constraint
                                           ,bool     p_referenced /*=false*/
-                                          ,int    /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
+                                          ,int    /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/
+                                          ,bool   /*p_quoted         = false*/) const
 {
   // Oracle catalog is in uppercase
   p_schema.MakeUpper();
@@ -1793,7 +1794,7 @@ SQLInfoOracle::GetCATALOGCheckDrop(XString  /*p_schema*/,XString  /*p_tablename*
 // ALL TRIGGER FUNCTIONS
 
 XString
-SQLInfoOracle::GetCATALOGTriggerExists(XString p_schema, XString p_tablename, XString p_triggername) const
+SQLInfoOracle::GetCATALOGTriggerExists(XString p_schema, XString p_tablename, XString p_triggername,bool /*p_quoted = false*/) const
 {
   p_schema.MakeUpper();
   p_tablename.MakeUpper();
@@ -1812,14 +1813,14 @@ SQLInfoOracle::GetCATALOGTriggerExists(XString p_schema, XString p_tablename, XS
 }
 
 XString
-SQLInfoOracle::GetCATALOGTriggerList(XString& p_schema,XString& p_tablename) const
+SQLInfoOracle::GetCATALOGTriggerList(XString& p_schema,XString& p_tablename,bool p_quoted /*= false*/) const
 {
   XString triggername;
-  return GetCATALOGTriggerAttributes(p_schema,p_tablename,triggername);
+  return GetCATALOGTriggerAttributes(p_schema,p_tablename,triggername,p_quoted);
 }
 
 XString
-SQLInfoOracle::GetCATALOGTriggerAttributes(XString& p_schema,XString& p_tablename,XString& p_triggername) const
+SQLInfoOracle::GetCATALOGTriggerAttributes(XString& p_schema,XString& p_tablename,XString& p_triggername,bool /*p_quoted = false*/) const
 {
   p_schema.MakeUpper();
   p_tablename.MakeUpper();
@@ -1932,7 +1933,7 @@ SQLInfoOracle::GetCATALOGTriggerDrop(XString /*p_schema*/, XString /*p_tablename
 // ALL SEQUENCE FUNCTIONS
 
 XString
-SQLInfoOracle::GetCATALOGSequenceExists(XString p_schema, XString p_sequence) const
+SQLInfoOracle::GetCATALOGSequenceExists(XString p_schema, XString p_sequence,bool /*p_quoted = false*/) const
 {
   p_schema.MakeUpper();
   p_sequence.MakeUpper();
@@ -1945,7 +1946,7 @@ SQLInfoOracle::GetCATALOGSequenceExists(XString p_schema, XString p_sequence) co
 }
 
 XString
-SQLInfoOracle::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern) const
+SQLInfoOracle::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern,bool /*p_quoted = false*/) const
 {
   p_schema.MakeUpper();
   p_pattern.MakeUpper();
@@ -1977,7 +1978,7 @@ SQLInfoOracle::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern) cons
 }
 
 XString
-SQLInfoOracle::GetCATALOGSequenceAttributes(XString& p_schema,XString& p_sequence) const
+SQLInfoOracle::GetCATALOGSequenceAttributes(XString& p_schema,XString& p_sequence,bool /*p_quoted = false*/) const
 {
   p_schema.MakeUpper();
   p_sequence.MakeUpper();
@@ -2042,7 +2043,7 @@ SQLInfoOracle::GetCATALOGSequenceDrop(XString p_schema, XString p_sequence) cons
 // ALL VIEW FUNCTIONS
 
 XString 
-SQLInfoOracle::GetCATALOGViewExists(XString& p_schema,XString& p_viewname) const
+SQLInfoOracle::GetCATALOGViewExists(XString& p_schema,XString& p_viewname,bool /*p_quoted = false*/) const
 {
   p_schema.MakeUpper();
   p_viewname.MakeUpper();
@@ -2054,13 +2055,13 @@ SQLInfoOracle::GetCATALOGViewExists(XString& p_schema,XString& p_viewname) const
 }
 
 XString 
-SQLInfoOracle::GetCATALOGViewList(XString& p_schema,XString& p_pattern) const
+SQLInfoOracle::GetCATALOGViewList(XString& p_schema,XString& p_pattern,bool /*p_quoted = false*/) const
 {
   return GetCATALOGViewAttributes(p_schema,p_pattern);
 }
 
 XString 
-SQLInfoOracle::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewname) const
+SQLInfoOracle::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewname,bool /*p_quoted = false*/) const
 {
   p_schema.MakeUpper();
   p_viewname.MakeUpper();
@@ -2106,7 +2107,7 @@ SQLInfoOracle::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewname) c
 }
 
 XString
-SQLInfoOracle::GetCATALOGViewText(XString& p_schema,XString& p_viewname) const
+SQLInfoOracle::GetCATALOGViewText(XString& p_schema,XString& p_viewname,bool /*p_quoted = false*/) const
 {
   p_schema.MakeUpper();
   p_viewname.MakeUpper();
@@ -2312,7 +2313,7 @@ SQLInfoOracle::GetCATALOGSynonymDrop(XString& /*p_schema*/,XString& /*p_synonym*
 //////////////////////////////////////////////////////////////////////////
 
 XString
-SQLInfoOracle::GetPSMProcedureExists(XString p_schema,XString p_procedure) const
+SQLInfoOracle::GetPSMProcedureExists(XString p_schema,XString p_procedure,bool /*p_quoted = false*/) const
 {
   p_schema.MakeUpper();
   p_procedure.MakeUpper();
@@ -2368,7 +2369,7 @@ SQLInfoOracle::GetPSMProcedureList(XString& p_schema) const
 }
 
 XString
-SQLInfoOracle::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure) const
+SQLInfoOracle::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure,bool /*p_quoted = false*/) const
 {
   p_procedure.MakeUpper();
   CString package;
@@ -2434,7 +2435,7 @@ SQLInfoOracle::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure)
 }
 
 XString
-SQLInfoOracle::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure) const
+SQLInfoOracle::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure,bool /*p_quoted = false*/) const
 {
   p_schema.MakeUpper();
   p_procedure.MakeUpper();
@@ -2470,7 +2471,7 @@ SQLInfoOracle::GetPSMProcedureDrop(XString /*p_schema*/, XString /*p_procedure*/
 }
 
 XString
-SQLInfoOracle::GetPSMProcedureErrors(XString p_schema,XString p_procedure) const
+SQLInfoOracle::GetPSMProcedureErrors(XString p_schema,XString p_procedure,bool /*p_quoted = false*/) const
 {
   XString query;
   XString errorText;
@@ -2518,14 +2519,14 @@ SQLInfoOracle::GetPSMProcedureErrors(XString p_schema,XString p_procedure) const
 }
 
 XString
-SQLInfoOracle::GetPSMProcedurePrivilege(XString& /*p_schema*/,XString& /*p_procedure*/) const
+SQLInfoOracle::GetPSMProcedurePrivilege(XString& /*p_schema*/,XString& /*p_procedure*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 // And it's parameters
 XString
-SQLInfoOracle::GetPSMProcedureParameters(XString& /*p_schema*/,XString& /*p_procedure*/) const
+SQLInfoOracle::GetPSMProcedureParameters(XString& /*p_schema*/,XString& /*p_procedure*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
