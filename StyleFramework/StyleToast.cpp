@@ -22,6 +22,32 @@
 #include "StyleUtilities.h"
 #include "StyleFonts.h"
 
+// Use automatic critical section
+class AutoLock
+{
+public:
+  explicit AutoLock(CRITICAL_SECTION* section): m_section(section)
+  {
+    EnterCriticalSection(m_section);
+  }
+  ~AutoLock()
+  {
+    LeaveCriticalSection(m_section);
+  }
+  void Unlock()
+  {
+    LeaveCriticalSection(m_section);
+  };
+  void Relock()
+  {
+    EnterCriticalSection(m_section);
+  };
+private:
+  CRITICAL_SECTION* m_section;
+};
+
+
+
 using namespace ThemeColor;
 
 StyleToast::StyleToast(int      p_style
@@ -243,17 +269,29 @@ StyleToast::PumpMessage()
 
 Toasts g_toasts;
 
+Toasts::Toasts()
+{
+  InitializeCriticalSection(&m_lock);
+}
+
 Toasts::~Toasts()
 {
-  for(auto& toast : m_toasts)
+  // Delete in lock scope
   {
-    delete toast;
+    AutoLock lock(&m_lock);
+    for(auto& toast : m_toasts)
+    {
+      delete toast;
+    }
+    m_toasts.clear();
   }
-  m_toasts.clear();
+  DeleteCriticalSection(&m_lock);
 }
 
 void DestroyToast(StyleToast* p_toast)
 {
+  AutoLock lock(&g_toasts.m_lock);
+
   std::vector<StyleToast*>::iterator it = g_toasts.m_toasts.begin();
   while(it != g_toasts.m_toasts.end())
   {
@@ -265,10 +303,14 @@ void DestroyToast(StyleToast* p_toast)
     }
     ++it;
   }
+  // Not found. Delete it anyway
+  delete p_toast;
 }
 
 static void MoreThanOne(int h,int& y,bool up)
 {
+  AutoLock lock(&g_toasts.m_lock);
+
   int size = (int) g_toasts.m_toasts.size();
   int num  = (size - 1) % TOAST_STACK;
 
@@ -306,12 +348,11 @@ StyleToast* CreateToast(int      p_style
                        ,CString  p_text2    /* = ""   */
                        ,CString  p_text3    /* = ""   */
                        ,unsigned p_timeout  /* = 3000 */
-                       ,bool*    p_success  /* = nullptr*/)
+                       ,bool*    p_success  /* = nullptr*/ )
 {
   CWnd* focuswin = CWnd::FromHandle(GetFocus());
   
   StyleToast* toast = new StyleToast(p_style,p_position,p_text1,p_text2,p_text3,p_timeout);
-  g_toasts.m_toasts.push_back(toast);
 
   if(!toast->Create(MAKEINTRESOURCE(IDD_TOAST),CWnd::FromHandle(GetDesktopWindow())))
   {
@@ -319,7 +360,14 @@ StyleToast* CreateToast(int      p_style
     {
       *p_success = false;
     }
+    delete toast;
     return nullptr;
+  }
+
+  // Add to the toasts
+  {
+    AutoLock lock(&g_toasts.m_lock);
+    g_toasts.m_toasts.push_back(toast);
   }
 
   CRect rect; // Total workarea on the desktop

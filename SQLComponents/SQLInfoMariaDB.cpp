@@ -718,20 +718,20 @@ SQLInfoMariaDB::GetCATALOGDefaultCollation() const
 
 // Get SQL to check if a table already exists in the database
 XString
-SQLInfoMariaDB::GetCATALOGTableExists(XString& /*p_schema*/,XString& /*p_tablename*/) const
+SQLInfoMariaDB::GetCATALOGTableExists(XString& /*p_schema*/,XString& /*p_tablename*/,bool /*p_quoted = false*/) const
 {
   // Still to do in MySQL
   return _T("");
 }
 
 XString
-SQLInfoMariaDB::GetCATALOGTablesList(XString& p_schema,XString& p_pattern) const
+SQLInfoMariaDB::GetCATALOGTablesList(XString& p_schema,XString& p_pattern,bool p_quoted /*= false*/) const
 {
-  return GetCATALOGTableAttributes(p_schema,p_pattern);
+  return GetCATALOGTableAttributes(p_schema,p_pattern,p_quoted);
 }
 
 XString
-SQLInfoMariaDB::GetCATALOGTableAttributes(XString& p_schema,XString& p_tablename) const
+SQLInfoMariaDB::GetCATALOGTableAttributes(XString& p_schema,XString& p_tablename,bool /*p_quoted = false*/) const
 {
   XString sql;
   sql = _T("SELECT table_catalog\n")
@@ -763,14 +763,14 @@ SQLInfoMariaDB::GetCATALOGTableAttributes(XString& p_schema,XString& p_tablename
 }
 
 XString
-SQLInfoMariaDB::GetCATALOGTableSynonyms(XString& /*p_schema*/,XString& /*p_tablename*/) const
+SQLInfoMariaDB::GetCATALOGTableSynonyms(XString& /*p_schema*/,XString& /*p_tablename*/,bool /*p_quoted = false*/) const
 {
   // MS-Access cannot do this
   return XString();
 }
 
 XString
-SQLInfoMariaDB::GetCATALOGTableCatalog(XString& p_schema,XString& p_tablename) const
+SQLInfoMariaDB::GetCATALOGTableCatalog(XString& p_schema,XString& p_tablename,bool /*p_quoted = false*/) const
 {
   p_schema.Empty(); // do not bind as a parameter
 
@@ -876,20 +876,20 @@ SQLInfoMariaDB::GetCATALOGTemptableDrop(XString /*p_schema*/,XString p_tablename
 // ALL COLUMN FUNCTIONS
 
 XString 
-SQLInfoMariaDB::GetCATALOGColumnExists(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_columnname*/) const
+SQLInfoMariaDB::GetCATALOGColumnExists(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_columnname*/,bool /*p_quoted /*= false*/) const
 {
   return _T("");
 }
 
 XString 
-SQLInfoMariaDB::GetCATALOGColumnList(XString& p_schema,XString& p_tablename) const
+SQLInfoMariaDB::GetCATALOGColumnList(XString& p_schema,XString& p_tablename,bool p_quoted /*= false*/) const
 {
   XString column;
-  return GetCATALOGColumnAttributes(p_schema,p_tablename,column);
+  return GetCATALOGColumnAttributes(p_schema,p_tablename,column,p_quoted);
 }
 
 XString
-SQLInfoMariaDB::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablename,XString& p_columnname) const
+SQLInfoMariaDB::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablename,XString& p_columnname,bool /*p_quoted /*= false*/) const
 {
   p_schema.MakeLower();
   p_tablename.MakeLower();
@@ -1068,7 +1068,7 @@ SQLInfoMariaDB::GetCATALOGColumnDrop(XString /*p_schema*/,XString p_tablename,XS
 
 // All index functions
 XString
-SQLInfoMariaDB::GetCATALOGIndexExists(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_indexname*/) const
+SQLInfoMariaDB::GetCATALOGIndexExists(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_indexname*/,bool /*p_quoted = false*/) const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLStatistics instead (see SQLInfo class)
@@ -1076,7 +1076,7 @@ SQLInfoMariaDB::GetCATALOGIndexExists(XString /*p_schema*/,XString /*p_tablename
 }
 
 XString
-SQLInfoMariaDB::GetCATALOGIndexList(XString& /*p_schema*/,XString& /*p_tablename*/) const
+SQLInfoMariaDB::GetCATALOGIndexList(XString& /*p_schema*/,XString& /*p_tablename*/,bool /*p_quoted = false*/) const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLStatistics instead (see SQLInfo class)
@@ -1084,7 +1084,7 @@ SQLInfoMariaDB::GetCATALOGIndexList(XString& /*p_schema*/,XString& /*p_tablename
 }
 
 XString
-SQLInfoMariaDB::GetCATALOGIndexAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_indexname*/) const
+SQLInfoMariaDB::GetCATALOGIndexAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_indexname*/,bool /*p_quoted = false*/) const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLStatistics instead (see SQLInfo class)
@@ -1152,14 +1152,14 @@ SQLInfoMariaDB::GetCATALOGIndexFilter(MetaIndex& /*p_index*/) const
 // ALL PRIMARY KEY FUNCTIONS
 
 XString
-SQLInfoMariaDB::GetCATALOGPrimaryExists(XString /*p_schema*/,XString /*p_tablename*/) const
+SQLInfoMariaDB::GetCATALOGPrimaryExists(XString /*p_schema*/,XString /*p_tablename*/,bool /*p_quoted = false*/) const
 {
   // To be implemented
   return _T("");
 }
 
 XString
-SQLInfoMariaDB::GetCATALOGPrimaryAttributes(XString& /*p_schema*/,XString& /*p_tablename*/) const
+SQLInfoMariaDB::GetCATALOGPrimaryAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,bool /*p_quoted = false*/) const
 {
   // To be implemented
   return _T("");
@@ -1203,7 +1203,7 @@ SQLInfoMariaDB::GetCATALOGPrimaryDrop(XString p_schema,XString p_tablename,XStri
 // ALL FOREIGN KEY FUNCTIONS
 
 XString
-SQLInfoMariaDB::GetCATALOGForeignExists(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_constraintname*/) const
+SQLInfoMariaDB::GetCATALOGForeignExists(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_constraintname*/,bool /*p_quoted = false*/) const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLForeignKeys instead (see SQLInfo class)
@@ -1211,7 +1211,7 @@ SQLInfoMariaDB::GetCATALOGForeignExists(XString /*p_schema*/,XString /*p_tablena
 }
 
 XString
-SQLInfoMariaDB::GetCATALOGForeignList(XString& /*p_schema*/,XString& /*p_tablename*/,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
+SQLInfoMariaDB::GetCATALOGForeignList(XString& /*p_schema*/,XString& /*p_tablename*/,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/,bool /*p_quoted = false*/) const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLForeignKeys instead (see SQLInfo class)
@@ -1219,7 +1219,7 @@ SQLInfoMariaDB::GetCATALOGForeignList(XString& /*p_schema*/,XString& /*p_tablena
 }
 
 XString
-SQLInfoMariaDB::GetCATALOGForeignAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_constraintname*/,bool /*p_referenced = false*/,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/) const
+SQLInfoMariaDB::GetCATALOGForeignAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_constraintname*/,bool /*p_referenced = false*/,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/,bool /*p_quoted = false*/) const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLForeignKeys instead (see SQLInfo class)
@@ -1438,20 +1438,20 @@ SQLInfoMariaDB::GetCATALOGCheckDrop(XString  /*p_schema*/,XString  /*p_tablename
 // ALL TRIGGER FUNCTIONS
 
 XString
-SQLInfoMariaDB::GetCATALOGTriggerExists(XString /*p_schema*/, XString /*p_tablename*/, XString /*p_triggername*/) const
+SQLInfoMariaDB::GetCATALOGTriggerExists(XString /*p_schema*/, XString /*p_tablename*/, XString /*p_triggername*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoMariaDB::GetCATALOGTriggerList(XString& p_schema,XString& p_tablename) const
+SQLInfoMariaDB::GetCATALOGTriggerList(XString& p_schema,XString& p_tablename,bool p_quoted /*= false*/) const
 {
   XString triggername;
-  return GetCATALOGTriggerAttributes(p_schema,p_tablename,triggername);
+  return GetCATALOGTriggerAttributes(p_schema,p_tablename,triggername,p_quoted);
 }
 
 XString
-SQLInfoMariaDB::GetCATALOGTriggerAttributes(XString& p_schema,XString& p_tablename,XString& p_triggername) const
+SQLInfoMariaDB::GetCATALOGTriggerAttributes(XString& p_schema,XString& p_tablename,XString& p_triggername,bool /*p_quoted = false*/) const
 {
   XString sql;
   sql = _T("SELECT event_object_catalog\n")
@@ -1514,7 +1514,7 @@ SQLInfoMariaDB::GetCATALOGTriggerDrop(XString /*p_schema*/, XString /*p_tablenam
 // ALL SEQUENCE FUNCTIONS
 
 XString
-SQLInfoMariaDB::GetCATALOGSequenceExists(XString p_schema, XString p_sequence) const
+SQLInfoMariaDB::GetCATALOGSequenceExists(XString p_schema, XString p_sequence,bool /*p_quoted = false*/) const
 {
   p_schema.Empty();
   p_sequence.MakeLower();
@@ -1529,7 +1529,7 @@ SQLInfoMariaDB::GetCATALOGSequenceExists(XString p_schema, XString p_sequence) c
 }
 
 XString
-SQLInfoMariaDB::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern) const
+SQLInfoMariaDB::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern,bool /*p_quoted = false*/) const
 {
   p_schema.MakeLower();
   p_pattern.MakeLower();
@@ -1561,7 +1561,7 @@ SQLInfoMariaDB::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern) con
 }
 
 XString
-SQLInfoMariaDB::GetCATALOGSequenceAttributes(XString& p_schema,XString& p_sequence) const
+SQLInfoMariaDB::GetCATALOGSequenceAttributes(XString& p_schema,XString& p_sequence,bool /*p_quoted = false*/) const
 {
   p_schema.MakeLower();
   p_sequence.MakeLower();
@@ -1627,19 +1627,19 @@ SQLInfoMariaDB::GetCATALOGSequenceDrop(XString /*p_schema*/,XString p_sequence) 
 // ALL VIEW FUNCTIONS
 
 XString 
-SQLInfoMariaDB::GetCATALOGViewExists(XString& /*p_schema*/,XString& /*p_viewname*/) const
+SQLInfoMariaDB::GetCATALOGViewExists(XString& /*p_schema*/,XString& /*p_viewname*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString 
-SQLInfoMariaDB::GetCATALOGViewList(XString& p_schema,XString& p_pattern) const
+SQLInfoMariaDB::GetCATALOGViewList(XString& p_schema,XString& p_pattern,bool /*p_quoted = false*/) const
 {
   return GetCATALOGViewAttributes(p_schema,p_pattern);
 }
 
 XString
-SQLInfoMariaDB::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewname) const
+SQLInfoMariaDB::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewname,bool /*p_quoted = false*/) const
 {
   XString sql;
   sql = _T("SELECT table_catalog\n")
@@ -1668,7 +1668,7 @@ SQLInfoMariaDB::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewname) 
 }
 
 XString
-SQLInfoMariaDB::GetCATALOGViewText(XString& /*p_schema*/,XString& /*p_viewname*/) const
+SQLInfoMariaDB::GetCATALOGViewText(XString& /*p_schema*/,XString& /*p_viewname*/,bool /*p_quoted = false*/) const
 {
   // Cannot query this, Use ODBC functions
   return _T("");
@@ -1803,7 +1803,7 @@ SQLInfoMariaDB::GetCATALOGSynonymDrop(XString& /*p_schema*/,XString& /*p_synonym
 //////////////////////////////////////////////////////////////////////////
 
 XString
-SQLInfoMariaDB::GetPSMProcedureExists(XString p_schema, XString p_procedure) const
+SQLInfoMariaDB::GetPSMProcedureExists(XString p_schema, XString p_procedure,bool /*p_quoted = false*/) const
 {
   XString sql;
   sql = _T("SELECT SELECT COUNT(*)\n")
@@ -1842,7 +1842,7 @@ SQLInfoMariaDB::GetPSMProcedureList(XString& p_schema) const
 }
 
 XString
-SQLInfoMariaDB::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure) const
+SQLInfoMariaDB::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure,bool /*p_quoted = false*/) const
 {
   XString sql;
   sql = _T("SELECT routine_catalog\n")
@@ -1890,7 +1890,7 @@ SQLInfoMariaDB::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure
 }
 
 XString
-SQLInfoMariaDB::GetPSMProcedureSourcecode(XString /*p_schema*/, XString /*p_procedure*/) const
+SQLInfoMariaDB::GetPSMProcedureSourcecode(XString /*p_schema*/, XString /*p_procedure*/,bool /*p_quoted = false*/) const
 {
   // Source-code already gotten with attributes
   return _T("");
@@ -1909,20 +1909,20 @@ SQLInfoMariaDB::GetPSMProcedureDrop(XString /*p_schema*/, XString /*p_procedure*
 }
 
 XString
-SQLInfoMariaDB::GetPSMProcedureErrors(XString /*p_schema*/,XString /*p_procedure*/) const
+SQLInfoMariaDB::GetPSMProcedureErrors(XString /*p_schema*/,XString /*p_procedure*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoMariaDB::GetPSMProcedurePrivilege(XString& /*p_schema*/,XString& /*p_procedure*/) const
+SQLInfoMariaDB::GetPSMProcedurePrivilege(XString& /*p_schema*/,XString& /*p_procedure*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 // And it's parameters
 XString
-SQLInfoMariaDB::GetPSMProcedureParameters(XString& p_schema,XString& p_procedure) const
+SQLInfoMariaDB::GetPSMProcedureParameters(XString& p_schema,XString& p_procedure,bool /*p_quoted = false*/) const
 {
   XString sql;
 

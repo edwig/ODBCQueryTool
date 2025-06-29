@@ -813,7 +813,7 @@ InfoTree::MakeTreeInfo()
 
   InsertItem(_T("Special characters: ") + m_info->GetSpecialCharacters(),        infoItemImpl);
   InsertItem(_T("Like escape char: ")   + m_info->GetLikeEscapeCharacter(),      infoItemImpl);
-  InsertItem(_T("Literal quote: ")      + m_info->GetIdentifierQuoteCharacter(), infoItemImpl);
+  InsertItem(_T("Quoted identifiers: ") + m_info->GetIdentifierQuoteCharacter(), infoItemImpl);
 
   sitem = _T("Collation sequence: ");
   sitem += m_info->GetCollationSequence();

@@ -56,7 +56,8 @@ StyleTab::OnInitDialog()
   CDialog::OnInitDialog();
   OnStyleChanged(0,0);
 
-  ASSERT(GetStyle() & WS_CHILD);
+  ASSERT(GetStyle()   & WS_CHILD);
+  ASSERT(GetExStyle() & WS_EX_CONTROLPARENT);
   return TRUE;
 }
 
@@ -186,6 +187,11 @@ StyleTab::PreTranslateMessage(MSG* p_msg)
     {
       return TRUE;
     }
+  }
+  if(p_msg->message >= WM_MOUSEFIRST &&
+     p_msg->message <= WM_MOUSELAST)
+  {
+    return FALSE;
   }
   // Default handler
   return CDialog::PreTranslateMessage(p_msg);

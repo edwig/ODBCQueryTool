@@ -36,6 +36,8 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#pragma comment(lib,"rpcrt4.lib")
+
 #ifdef UNICODE
 #define RPC_TSTR RPC_WSTR
 #else

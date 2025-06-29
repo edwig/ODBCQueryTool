@@ -327,11 +327,11 @@ public:
   virtual XString GetCATALOGDefaultCharsetNCV() const = 0;
   virtual XString GetCATALOGDefaultCollation() const = 0;
   // All table functions
-  virtual XString GetCATALOGTableExists       (XString& p_schema,XString& p_tablename) const = 0;
-  virtual XString GetCATALOGTablesList        (XString& p_schema,XString& p_pattern)   const = 0;
-  virtual XString GetCATALOGTableAttributes   (XString& p_schema,XString& p_tablename) const = 0;
-  virtual XString GetCATALOGTableSynonyms     (XString& p_schema,XString& p_tablename) const = 0;
-  virtual XString GetCATALOGTableCatalog      (XString& p_schema,XString& p_tablename) const = 0;
+  virtual XString GetCATALOGTableExists       (XString& p_schema,XString& p_tablename,bool p_quoted = false) const = 0;
+  virtual XString GetCATALOGTablesList        (XString& p_schema,XString& p_pattern,  bool p_quoted = false) const = 0;
+  virtual XString GetCATALOGTableAttributes   (XString& p_schema,XString& p_tablename,bool p_quoted = false) const = 0;
+  virtual XString GetCATALOGTableSynonyms     (XString& p_schema,XString& p_tablename,bool p_quoted = false) const = 0;
+  virtual XString GetCATALOGTableCatalog      (XString& p_schema,XString& p_tablename,bool p_quoted = false) const = 0;
   virtual XString GetCATALOGTableCreate       (MetaTable& p_table,MetaColumn& p_column) const = 0;
   virtual XString GetCATALOGTableCreatePostfix(MetaTable& p_table,MetaColumn& p_column) const = 0;
   virtual XString GetCATALOGTableRename       (XString  p_schema,XString  p_tablename,XString p_newname) const = 0;
@@ -341,29 +341,29 @@ public:
   virtual XString GetCATALOGTemptableIntoTemp (XString p_schema,XString p_tablename,XString p_select) const = 0;
   virtual XString GetCATALOGTemptableDrop     (XString p_schema,XString p_tablename) const = 0;
   // All column functions
-  virtual XString GetCATALOGColumnExists      (XString  p_schema,XString  p_tablename,XString  p_columnname) const = 0;
-  virtual XString GetCATALOGColumnList        (XString& p_schema,XString& p_tablename) const = 0;
-  virtual XString GetCATALOGColumnAttributes  (XString& p_schema,XString& p_tablename,XString& p_columnname) const = 0;
+  virtual XString GetCATALOGColumnExists      (XString  p_schema,XString  p_tablename,XString  p_columnname,bool p_quoted = false) const = 0;
+  virtual XString GetCATALOGColumnList        (XString& p_schema,XString& p_tablename,                      bool p_quoted = false) const = 0;
+  virtual XString GetCATALOGColumnAttributes  (XString& p_schema,XString& p_tablename,XString& p_columnname,bool p_quoted = false) const = 0;
   virtual XString GetCATALOGColumnCreate      (MetaColumn& p_column) const = 0;
   virtual XString GetCATALOGColumnAlter       (MetaColumn& p_column) const = 0;
   virtual XString GetCATALOGColumnRename      (XString  p_schema,XString  p_tablename,XString  p_columnname,XString p_newname,XString p_datatype) const = 0;
   virtual XString GetCATALOGColumnDrop        (XString  p_schema,XString  p_tablename,XString  p_columnname) const = 0;
   // All index functions
-  virtual XString GetCATALOGIndexExists       (XString  p_schema,XString  p_tablename,XString  p_indexname) const = 0;
-  virtual XString GetCATALOGIndexList         (XString& p_schema,XString& p_tablename)                      const = 0;
-  virtual XString GetCATALOGIndexAttributes   (XString& p_schema,XString& p_tablename,XString& p_indexname) const = 0;
+  virtual XString GetCATALOGIndexExists       (XString  p_schema,XString  p_tablename,XString  p_indexname,bool p_quoted = false) const = 0;
+  virtual XString GetCATALOGIndexList         (XString& p_schema,XString& p_tablename,                     bool p_quoted = false) const = 0;
+  virtual XString GetCATALOGIndexAttributes   (XString& p_schema,XString& p_tablename,XString& p_indexname,bool p_quoted = false) const = 0;
   virtual XString GetCATALOGIndexCreate       (MIndicesMap& p_index,bool p_duplicateNulls = false) const = 0;
   virtual XString GetCATALOGIndexDrop         (XString  p_schema,XString  p_tablename,XString  p_indexname) const = 0;
   virtual XString GetCATALOGIndexFilter       (MetaIndex& p_index) const = 0;
   // All primary key functions
-  virtual XString GetCATALOGPrimaryExists     (XString  p_schema,XString  p_tablename) const = 0;
-  virtual XString GetCATALOGPrimaryAttributes (XString& p_schema,XString& p_tablename) const = 0;
+  virtual XString GetCATALOGPrimaryExists     (XString  p_schema,XString  p_tablename,bool p_quoted = false) const = 0;
+  virtual XString GetCATALOGPrimaryAttributes (XString& p_schema,XString& p_tablename,bool p_quoted = false) const = 0;
   virtual XString GetCATALOGPrimaryCreate     (MPrimaryMap& p_primaries) const = 0;
   virtual XString GetCATALOGPrimaryDrop       (XString  p_schema,XString  p_tablename,XString p_constraintname) const = 0;
   // All foreign key functions
-  virtual XString GetCATALOGForeignExists     (XString  p_schema,XString  p_tablename,XString  p_constraintname) const = 0;
-  virtual XString GetCATALOGForeignList       (XString& p_schema,XString& p_tablename,int p_maxColumns = SQLINFO_MAX_COLUMNS) const = 0;
-  virtual XString GetCATALOGForeignAttributes (XString& p_schema,XString& p_tablename,XString& p_constraintname,bool p_referenced = false,int p_maxColumns = SQLINFO_MAX_COLUMNS) const = 0;
+  virtual XString GetCATALOGForeignExists     (XString  p_schema,XString  p_tablename,XString  p_constraintname,bool p_quoted = false) const = 0;
+  virtual XString GetCATALOGForeignList       (XString& p_schema,XString& p_tablename,int p_maxColumns = SQLINFO_MAX_COLUMNS,bool p_quoted = false) const = 0;
+  virtual XString GetCATALOGForeignAttributes (XString& p_schema,XString& p_tablename,XString& p_constraintname,bool p_referenced = false,int p_maxColumns = SQLINFO_MAX_COLUMNS,bool p_quoted = false) const = 0;
   virtual XString GetCATALOGForeignCreate     (MForeignMap& p_foreigns) const = 0;
   virtual XString GetCATALOGForeignAlter      (MForeignMap& p_original,MForeignMap& p_requested) const = 0;
   virtual XString GetCATALOGForeignDrop       (XString  p_schema,XString  p_tablename,XString  p_constraintname) const = 0;
@@ -380,22 +380,22 @@ public:
   virtual XString GetCATALOGCheckCreate       (XString  p_schema,XString  p_tablename,XString  p_constraint,XString p_condition) const = 0;
   virtual XString GetCATALOGCheckDrop         (XString  p_schema,XString  p_tablename,XString  p_constraint) const = 0;
   // All trigger functions
-  virtual XString GetCATALOGTriggerExists     (XString  p_schema,XString  p_tablename,XString  p_triggername) const = 0;
-  virtual XString GetCATALOGTriggerList       (XString& p_schema,XString& p_tablename) const = 0;
-  virtual XString GetCATALOGTriggerAttributes (XString& p_schema,XString& p_tablename,XString& p_triggername) const = 0;
+  virtual XString GetCATALOGTriggerExists     (XString  p_schema,XString  p_tablename,XString  p_triggername,bool p_quoted = false) const = 0;
+  virtual XString GetCATALOGTriggerList       (XString& p_schema,XString& p_tablename,                       bool p_quoted = false) const = 0;
+  virtual XString GetCATALOGTriggerAttributes (XString& p_schema,XString& p_tablename,XString& p_triggername,bool p_quoted = false) const = 0;
   virtual XString GetCATALOGTriggerCreate     (MetaTrigger& p_trigger) const = 0;
   virtual XString GetCATALOGTriggerDrop       (XString  p_schema,XString  p_tablename,XString  p_triggername) const = 0;
   // All sequence functions
-  virtual XString GetCATALOGSequenceExists    (XString  p_schema,XString  p_sequence) const = 0;
-  virtual XString GetCATALOGSequenceList      (XString& p_schema,XString& p_pattern)  const = 0;
-  virtual XString GetCATALOGSequenceAttributes(XString& p_schema,XString& p_sequence) const = 0;
+  virtual XString GetCATALOGSequenceExists    (XString  p_schema,XString  p_sequence,bool p_quoted = false) const = 0;
+  virtual XString GetCATALOGSequenceList      (XString& p_schema,XString& p_pattern, bool p_quoted = false) const = 0;
+  virtual XString GetCATALOGSequenceAttributes(XString& p_schema,XString& p_sequence,bool p_quoted = false) const = 0;
   virtual XString GetCATALOGSequenceCreate    (MetaSequence& p_sequence) const = 0;
   virtual XString GetCATALOGSequenceDrop      (XString  p_schema,XString  p_sequence) const = 0;
   // All view functions
-  virtual XString GetCATALOGViewExists        (XString& p_schema,XString& p_viewname) const = 0;
-  virtual XString GetCATALOGViewList          (XString& p_schema,XString& p_pattern)  const = 0;
-  virtual XString GetCATALOGViewAttributes    (XString& p_schema,XString& p_viewname) const = 0;
-  virtual XString GetCATALOGViewText          (XString& p_schema,XString& p_viewname) const = 0;
+  virtual XString GetCATALOGViewExists        (XString& p_schema,XString& p_viewname,bool p_quoted = false) const = 0;
+  virtual XString GetCATALOGViewList          (XString& p_schema,XString& p_pattern, bool p_quoted = false) const = 0;
+  virtual XString GetCATALOGViewAttributes    (XString& p_schema,XString& p_viewname,bool p_quoted = false) const = 0;
+  virtual XString GetCATALOGViewText          (XString& p_schema,XString& p_viewname,bool p_quoted = false) const = 0;
   virtual XString GetCATALOGViewCreate        (XString  p_schema,XString  p_viewname,XString p_contents,bool p_ifexists = true)   const = 0;
   virtual XString GetCATALOGViewRename        (XString  p_schema,XString  p_viewname,XString p_newname)    const = 0;
   virtual XString GetCATALOGViewDrop          (XString  p_schema,XString  p_viewname,XString& p_precursor) const = 0;
@@ -441,16 +441,16 @@ public:
   //////////////////////////////////////////////////////////////////////////
 
   // All procedure functions
-  virtual XString GetPSMProcedureExists    (XString  p_schema,XString  p_procedure) const = 0;
+  virtual XString GetPSMProcedureExists    (XString  p_schema,XString  p_procedure,bool p_quoted = false) const = 0;
   virtual XString GetPSMProcedureList      (XString& p_schema) const = 0;
-  virtual XString GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure) const = 0;
-  virtual XString GetPSMProcedureSourcecode(XString  p_schema,XString  p_procedure) const = 0;
+  virtual XString GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure,bool p_quoted = false) const = 0;
+  virtual XString GetPSMProcedureSourcecode(XString  p_schema,XString  p_procedure,bool p_quoted = false) const = 0;
   virtual XString GetPSMProcedureCreate    (MetaProcedure& p_procedure) const = 0;
   virtual XString GetPSMProcedureDrop      (XString  p_schema,XString  p_procedure,bool p_function = false) const = 0;
-  virtual XString GetPSMProcedureErrors    (XString  p_schema,XString  p_procedure) const = 0;
-  virtual XString GetPSMProcedurePrivilege (XString& p_schema,XString& p_procedure) const = 0;
+  virtual XString GetPSMProcedureErrors    (XString  p_schema,XString  p_procedure,bool p_quoted = false) const = 0;
+  virtual XString GetPSMProcedurePrivilege (XString& p_schema,XString& p_procedure,bool p_quoted = false) const = 0;
   // And it's parameters
-  virtual XString GetPSMProcedureParameters(XString& p_schema,XString& p_procedure) const = 0;
+  virtual XString GetPSMProcedureParameters(XString& p_schema,XString& p_procedure,bool p_quoted = false) const = 0;
 
   // All Language elements
   virtual XString GetPSMDeclaration(bool p_first,XString p_variable,int p_datatype,int p_precision = 0,int p_scale = 0,

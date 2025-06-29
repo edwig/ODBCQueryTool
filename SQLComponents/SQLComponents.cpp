@@ -28,6 +28,8 @@
 #include "ConvertWideString.h"
 #include "SQLMessage.h"
 
+#pragma comment(lib,"odbc32.lib")
+
 namespace SQLComponents
 {
   bool   g_SQLComponentsInitialized = false;
