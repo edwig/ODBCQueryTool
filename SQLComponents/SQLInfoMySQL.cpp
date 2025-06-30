@@ -197,6 +197,34 @@ SQLInfoMySQL::GetRDBMSMaxVarchar() const
   return 65535;
 }
 
+// Identifier rules differ per RDBMS
+bool
+SQLInfoMySQL::IsIdentifier(XString p_identifier) const
+{
+  // Cannot be empty and cannot exceed this amount of characters
+  if(p_identifier.GetLength() == 0 ||
+     p_identifier.GetLength() > (int)GetMaxIdentifierNameLength())
+  {
+    return false;
+  }
+  // Must start with one alpha char
+  if(!_istalpha(p_identifier.GetAt(0)))
+  {
+    return false;
+  }
+  for(int index = 0;index < p_identifier.GetLength();++index)
+  {
+    // Can be upper/lower alpha or a number
+    // MySQL does NOT allow an underscore!
+    TCHAR ch = p_identifier.GetAt(index);
+    if(!_istalnum(ch))
+    {
+      return false;
+    }
+  }
+  return true;
+}
+
 // KEYWORDS
 
 // Keyword for the current date and time

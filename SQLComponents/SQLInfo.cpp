@@ -176,6 +176,7 @@ SQLInfo::Init()
   m_maxSchemaName    = SQL_MAX_IDENTIFIER;
   m_maxColumnName    = SQL_MAX_IDENTIFIER;
   m_maxTableName     = SQL_MAX_IDENTIFIER;
+  m_maxIdentifier    = SQL_MAX_IDENTIFIER; 
 
   // Conversions
   m_conversionFuncs   = 0;
@@ -458,7 +459,8 @@ SQLInfo::GetInfo()
   m_sql_conformance     = GetInfoInteger(SQL_SQL_CONFORMANCE);
   m_odbc_conformance    = GetInfoInteger(SQL_ODBC_INTERFACE_CONFORMANCE);
   m_cli_conformance     = GetInfoInteger(SQL_STANDARD_CLI_CONFORMANCE);
-  m_maxColumnName        = GetInfoShortInteger(SQL_MAX_COLUMN_NAME_LEN);
+  m_maxColumnName       = GetInfoShortInteger(SQL_MAX_COLUMN_NAME_LEN);
+  m_maxIdentifier       = GetInfoShortInteger(SQL_MAX_IDENTIFIER_LEN);
   m_maxTableName        = GetInfoShortInteger(SQL_MAX_TABLE_NAME_LEN);
   m_maxSchemaName       = GetInfoShortInteger(SQL_MAX_SCHEMA_NAME_LEN);
   m_maxCatalogName      = GetInfoShortInteger(SQL_MAX_CATALOG_NAME_LEN);
@@ -2090,8 +2092,8 @@ SQLInfo::MakeInfoTableStatistics(MIndicesMap& p_statistics
         p_statistics.push_back(stat);
 
         if(p_keymap)
-            {
-              // Record the columns of the unique key
+        {
+          // Record the columns of the unique key
           MetaPrimary primary;
           primary.m_catalog         = szCatalogName;
           primary.m_schema          = szSchemaName;

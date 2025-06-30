@@ -201,6 +201,40 @@ SQLInfoMariaDB::GetRDBMSMaxVarchar() const
   return 65532;
 }
 
+// Identifier rules differ per RDBMS
+bool
+SQLInfoMariaDB::IsIdentifier(XString p_identifier) const
+{
+  // Cannot be empty and cannot exceed this amount of characters
+  if(p_identifier.GetLength() == 0 ||
+     p_identifier.GetLength() > (int)GetMaxIdentifierNameLength())
+  {
+    return false;
+  }
+  // EXTENSION: Can start with an alpha OR a numeric char
+  if(!_istalnum(p_identifier.GetAt(0)))
+  {
+    return false;
+  }
+  bool alphaSeen = false;
+  for(int index = 0;index < p_identifier.GetLength();++index)
+  {
+    // Can be upper/lower alpha or a number OR an underscore
+    // EXTENSION: Identifiers can contain the '$' sign
+    TCHAR ch = p_identifier.GetAt(index);
+    if(_istalpha(ch))
+    {
+      alphaSeen = true;
+    }
+    else if(!_istalnum(ch) && ch != '_' && ch != '$')
+    {
+      return false;
+    }
+  }
+  // EXTENSION: Must have at least 1 (one) alpha character
+  return alphaSeen;
+}
+
 // KEYWORDS
 
 // Keyword for the current date and time
