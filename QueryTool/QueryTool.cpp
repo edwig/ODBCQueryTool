@@ -1202,6 +1202,7 @@ QueryToolApp::SelectFirst100(CString& p_table)
     filename += _T("Select_");
     filename += p_table;
     filename += _T(".sql");
+    filename.Remove(_T('\"'));
 
     try
     {

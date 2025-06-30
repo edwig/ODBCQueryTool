@@ -1144,6 +1144,40 @@ SQLInfoDB::MakeInfoViewDefinition(XString& p_defintion,XString& p_errors,XString
   return result;
 }
 
+// Preparing identifiers for doing a query (quotations)
+XString 
+SQLInfoDB::QueryIdentifierQuotation(XString p_identifier)
+{
+  // Empty names are unaltered
+  if(p_identifier.IsEmpty())
+  {
+    return p_identifier;
+  }
+  if(!IsIdentifier(p_identifier))
+  {
+    return QuotedIdentifier(p_identifier);
+  }
+  int lowers = 0;
+  int uppers = 0;
+  // Count upper chars and lower chars
+  for(int index = 0;index < p_identifier.GetLength();++index)
+  {
+    TCHAR ch = p_identifier.GetAt(index);
+    if(_istlower(ch)) ++lowers;
+    if(_istupper(ch)) ++uppers;
+  }
+
+  // Quote if both upper and lower chars exist
+  // So all UPPERS and all LOWERS are left alone
+  if(lowers && uppers)
+  {
+    return QuotedIdentifier(p_identifier);
+  }
+
+  // Return unscathed (unquoted!)
+  return p_identifier;
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // PRIVATE
@@ -1191,6 +1225,33 @@ SQLInfoDB::ReadTablesFromQuery(SQLQuery& p_query,MTableMap& p_tables)
     p_tables.push_back(table);
   }
   return !p_tables.empty();
+}
+
+// Create quoted identifier
+XString
+SQLInfoDB::QuotedIdentifier(XString p_identifier)
+{
+  TCHAR prefix;
+  TCHAR postfix;
+  XString quote = GetIdentifierQuoteCharacter();
+  if(quote.GetLength() == 1)
+  {
+    // Pretty standard: \"
+    prefix = postfix = quote.GetAt(0);
+  }
+  else
+  {
+    // Some database types use: [Identifier]
+    prefix  = quote.GetAt(0);
+    postfix = quote.GetAt(1);
+  }
+
+  // Create quoted name
+  XString identifier(prefix);
+  identifier += p_identifier;
+  identifier += postfix;
+
+  return identifier;
 }
 
 // End of namespace

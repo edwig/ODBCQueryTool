@@ -308,11 +308,17 @@ ObjectTree::OnTableFirst(HTREEITEM p_theItem)
   {
     if(special == _T("Tables") || special == _T("Views"))
     {
-      if(theApp.GetDatabase().GetSQLInfoDB()->GetCatalogNameUsage() & SQL_CU_DML_STATEMENTS)
+      SQLInfoDB* info = theApp.GetDatabase().GetSQLInfoDB();
+
+      // Get quoted or unquoted names
+      table = info->QueryIdentifierQuotation(table);
+
+      if(info->GetSchemaNameUsage() & SQL_CU_DML_STATEMENTS)
       {
         if(!IsSpecialNode(schema))
         {
-          table = schema + _T(".") + table;
+          schema = info->QueryIdentifierQuotation(schema);
+          table  = schema + _T(".") + table;
         }
       }
       theApp.SelectFirst100(table);

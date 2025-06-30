@@ -291,6 +291,7 @@ public:
   SQLSMALLINT   GetMaxSchemaNameLength();
   SQLSMALLINT   GetMaxTableNameLength();
   SQLSMALLINT   GetMaxColumnNameLength();
+  SQLSMALLINT   GetMaxIdentifierNameLength() const;
   SQLSMALLINT   GetMaxColumnsInTable();
   // Booleans
   bool          GetColumnAliasAllowed();
@@ -431,6 +432,7 @@ protected:
   SQLSMALLINT  m_maxSchemaName;
   SQLSMALLINT  m_maxTableName;
   SQLSMALLINT  m_maxColumnName;
+  SQLSMALLINT  m_maxIdentifier;         // General maximum length of an identifier
   bool         m_accesibleProcedures;   // User can execute all returned names
   bool         m_accesibleTables;       // User can select from all returned names
   SQLSMALLINT  m_txn_cap;               // Capable of transactions
@@ -1089,6 +1091,12 @@ inline SQLSMALLINT
 SQLInfo::GetMaxColumnNameLength()
 {
   return m_maxColumnName;
+}
+
+inline SQLSMALLINT
+SQLInfo::GetMaxIdentifierNameLength() const
+{
+  return m_maxIdentifier;
 }
 
 inline SQLSMALLINT   

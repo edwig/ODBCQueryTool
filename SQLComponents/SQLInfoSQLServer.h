@@ -108,6 +108,9 @@ public:
   // Maximum for a VARCHAR to be handled without AT-EXEC data. Assume NVARCHAR is half that size!
   int GetRDBMSMaxVarchar() const override;
 
+  // Identifier rules differ per RDBMS
+  bool IsIdentifier(XString p_identifier) const override;
+
   //////////////////////////////////////////////////////////////////////////
   // KEYWORDS
 

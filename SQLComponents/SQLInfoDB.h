@@ -93,6 +93,9 @@ public:
   // Read extra source code for database that can only do it by an extra procedure
   virtual XString MakeInfoPSMSourcecode(XString p_schema, XString p_procedure);
 
+  // Preparing identifiers for doing a query (quotations)
+  virtual XString QueryIdentifierQuotation(XString p_identifier);
+
   // PURE VIRTUAL INTERFACE
 
   // RDBMS Uses INDENTITY or SEQUENCE interface
@@ -162,7 +165,10 @@ public:
   virtual void GetRDBMSNumericPrecisionScale(SQLULEN& p_precision,SQLSMALLINT& p_scale) const = 0;
 
   // Maximum for a VARCHAR to be handled without AT-EXEC data. Assume NVARCHAR is half that size!
-  virtual int GetRDBMSMaxVarchar() const = 0;
+  virtual int  GetRDBMSMaxVarchar() const = 0;
+
+  // Identifier rules differ per RDBMS
+  virtual bool IsIdentifier(XString p_identifier) const = 0;
 
   //////////////////////////////////////////////////////////////////////////
   // KEYWORDS
@@ -514,6 +520,8 @@ private:
   // Read a tables cursor from the database
   bool    ReadMetaTypesFromQuery(SQLQuery& p_query,MMetaMap&  p_objects,int p_type);
   bool    ReadTablesFromQuery   (SQLQuery& p_query,MTableMap& p_tables);
+  // Create quoted identifier
+  XString QuotedIdentifier(XString p_identifier);
 
   // All default granted users for GRANT statements
   XString m_grantedUsers;

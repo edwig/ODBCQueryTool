@@ -195,6 +195,31 @@ SQLInfoFirebird::GetRDBMSMaxVarchar() const
   return 32765;
 }
 
+// Identifier rules differ per RDBMS
+bool
+SQLInfoFirebird::IsIdentifier(XString p_identifier) const
+{
+  if(p_identifier.GetLength() == 0 ||  // Cannot be empty
+     p_identifier.GetLength() >= 64 )  // Cannot exceed 63 chars
+  {
+    return false;
+  }
+  // Must start with one alpha char
+  if(!_istalpha(p_identifier.GetAt(0)))
+  {
+    return false;
+  }
+  for(int index = 0;index < p_identifier.GetLength();++index)
+  {
+    // Can be upper/lower alpha or a number
+    if(!_istalnum(p_identifier.GetAt(index)))
+    {
+      return false;
+    }
+  }
+  return true;
+}
+
 // KEYWORDS
 
 // Keyword for the current date and time
