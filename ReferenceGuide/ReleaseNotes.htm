@@ -9,6 +9,19 @@
 </head>
 
 <body>
+    <h3>Releasenotes 3.5.0</h3>
+
+    <p>Quoted identifiers have been added to the system. OpenODBCQuerytool now understands the identifiers (tablenames,
+    viewnames, columns, indexes and such) that are stored in mixed case format. So "FullName" and "Fullname" are different
+    identifiers.</p>
+
+    <p>As a standard rule, all identifiers in one (1) case are understood to be non-quoted identifiers. These will not be
+    quoted, and standard nameing rules apply.</p>
+
+    <p>Per supported database platform the naming conventions are applied, beginning with Firebird. Stay tuned for next service
+    packs for other RDBMS'es that have case sensitive catalogs. By default lMS-SQLServer and PostgreSQL can handel mixed cases.
+    These work now out-of-the-box. Orace, Informix, MySQL and MariaDB need extra work in their respective InfoDB classes.</p>
+
     <h3>Releasenotes 3.4.5</h3>
 
     <p>Fix for querying decimal number fields after a CLOB/BLOB column</p>
@@ -111,7 +124,7 @@
     stored for the connection.</p>
 
     <p>Optionally you can leave out the user name and/or the password name if a datasource does not require these for security
-    reasons. An MS-Access database or the MS-Excel ODBC driver are examples of these.</p>
+    reasons. A MS-Access database or the MS-Excel ODBC driver are examples of these.</p>
 
     <p>There is a new button "Connection string" on the connection dialog, or you can use the 'Details' button to fill in a
     connection string to your liking.</p>
@@ -179,7 +192,7 @@
     <p>&nbsp;</p>
 
     <p>Added the QueryReWriter program. Can be configured to translate SQL Queries from on RDBMS to another. Use the config tab
-    to set your favourite setup. The program can be reached through tne new 'Tools' submenu.</p>
+    to set your favourite setup. The program can be reached through the new 'Tools' submenu.</p>
 
     <h3>Releasenotes 3.0.8</h3>
 

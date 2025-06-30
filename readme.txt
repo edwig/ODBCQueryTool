@@ -22,6 +22,18 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes 3.5.0
+------------------
+Quoted identifiers have been added to the system. OpenODBCQuerytool now understands the
+identifiers (tablenames, viewnames, columns, indexes and such) that are stored in mixed
+case format. So "FullName" and "Fullname" are different identifiers.
+As a standard rule, all identifiers in one (1) case are understood to be non-quoted identifiers.
+These will not be quoted, and standard nameing rules apply.
+Per supported database platform the naming conventions are applied, beginning with Firebird.
+Stay tuned for next service packs for other RDBMS'es that have case sensitive catalogs.
+By default lMS-SQLServer and PostgreSQL can handel mixed cases. These work now out-of-the-box.
+Orace, Informix, MySQL and MariaDB need extra work in their respective InfoDB classes.
+
 Releasenotes 3.4.5
 ------------------
 Fix for querying decimal number fields after a CLOB/BLOB column
