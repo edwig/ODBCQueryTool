@@ -42,6 +42,9 @@ namespace SQLComponents
 
 #define MAX_BUFFER       512
 
+// Much used quotation function
+#define QIQ QueryIdentifierQuotation
+
 typedef struct _TypeInfo
 {
   XString     m_type_name;                  // Datasource dependent type name. Use for CREATE TABLE
@@ -310,7 +313,7 @@ public:
   XString       GetCatalogNameSeparator();
   XString       GetSpecialCharacters();
   XString       GetLikeEscapeCharacter();
-  XString       GetIdentifierQuoteCharacter();
+  XString       GetIdentifierQuoteCharacter() const;
   XString       GetCollationSequence();
   // Function arrays
   SQLUSMALLINT* GetFunctionArrayV2();
@@ -1118,7 +1121,7 @@ SQLInfo::GetLikeEscapeCharacter()
 }
 
 inline XString       
-SQLInfo::GetIdentifierQuoteCharacter()
+SQLInfo::GetIdentifierQuoteCharacter() const
 {
   return m_identifierQuote;
 }

@@ -172,6 +172,14 @@ SQLInfoSQLServer::GetRDBMSSupportsAsInAlias() const
   return true;
 }
 
+// Foreign key DDL defines the index and cannot reuse already existing ones
+bool
+SQLInfoSQLServer::GetRDBMSForeignKeyDefinesIndex() const
+{
+  // No: you must EXPLICITLY create an index, independent from the foreign key creation.
+  return false;
+}
+
 // Gets the maximum length of an SQL statement
 unsigned long
 SQLInfoSQLServer::GetRDBMSMaxStatementLength() const
@@ -2663,7 +2671,7 @@ SQLInfoSQLServer::GetPSMProcedureExists(XString p_schema, XString p_procedure,bo
 }
 
 XString
-SQLInfoSQLServer::GetPSMProcedureList(XString& p_schema) const
+SQLInfoSQLServer::GetPSMProcedureList(XString& p_schema,XString /*p_procedure*/,bool /*p_quoted = false*/) const
 {
   XString query =
     _T("SELECT db_name() as catalog_name\n")

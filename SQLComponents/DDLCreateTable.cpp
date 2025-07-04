@@ -488,6 +488,17 @@ DDLCreateTable::GetIndexInfo()
     m_didIndices = !m_indices.empty();
   }
 
+  // In case the foreign key wants to create the index
+  // we cannot create it independently !!
+  if(m_info->GetRDBMSForeignKeyDefinesIndex() && !m_indices.empty())
+  {
+    m_foreigns.clear();
+    m_info->MakeInfoTableForeign(m_foreigns,errors,m_schema,m_tableName);
+    DeDuplicateFKIndexes();
+    m_foreigns.clear();
+    m_didForeigns = false;
+  }
+
   // Walk the list of indices
   MIndicesMap theIndex;
   for(auto& index : m_indices)
@@ -788,18 +799,8 @@ DDLCreateTable::ReplaceLengthPrecScale(TypeInfo*  p_type
 XString
 DDLCreateTable::FormatColumnName(XString p_column,int p_length)
 {
-  // Adhere to catalog storage
-  if(m_info->GetRDBMSIsCatalogUpper())
-  {
-    p_column.MakeUpper();
-  }
-  else
-  {
-    p_column.MakeLower();
-  }
-
   // Circumvent locally reserved words
-  if(m_target && m_target->GetRDBMSDatabaseType() == DatabaseType::RDBMS_SQLSERVER)
+  if(m_target && m_target->GetRDBMSDatabaseType() == DatabaseType::RDBMS_SQLSERVER && p_column.GetAt(0) != '[')
   {
     p_column = _T("[") + p_column + _T("]");
     p_length += 2;
@@ -808,6 +809,11 @@ DDLCreateTable::FormatColumnName(XString p_column,int p_length)
   {
     XString quote = m_info->GetKEYWORDReservedWordQuote();
     p_column = quote + p_column + quote;
+  }
+  else
+  {
+    // Possibly a quoted identifier
+    p_column = m_info->QueryIdentifierQuotation(p_column);
   }
 
   // Pretty-print adjust datatype
@@ -867,5 +873,94 @@ DDLCreateTable::IsStrictODBCPrivilege(XString p_privilege)
 
   return false;
 }
+
+int
+DDLCreateTable::DeDuplicateFKIndexes()
+{
+  // Index pointers in the index vector
+  int firstIndexCol = -1;
+  int lastIndexCol  = -1;
+  // Number of removed index columns
+  int removed = 0;
+
+  for(MForeignMap::iterator fk = m_foreigns.begin();fk != m_foreigns.end();++fk)
+  {
+    if(fk->m_keySequence == 1)
+    {
+      if(firstIndexCol >= 0)
+      {
+        // We arrived at a new FK set. Try to remove index from previous one
+        removed += RemoveIndex(firstIndexCol,lastIndexCol);
+      }
+      // New foreign key in the list, reset index counter
+      firstIndexCol = -1;
+      lastIndexCol  = -1;      
+    }
+    // Find matching index column at the first fk column
+    if(firstIndexCol < 0 && fk->m_keySequence == 1)
+    {
+      for(int ind = 0 ;ind < m_indices.size();++ind)
+      {
+        if(m_indices[ind].m_position == fk->m_keySequence &&
+           m_indices[ind].m_columnName.CompareNoCase(fk->m_fkColumnName)      == 0 &&
+           m_indices[ind].m_indexName .CompareNoCase(fk->m_foreignConstraint) == 0)
+        {
+          // Match found
+          firstIndexCol = ind;
+          lastIndexCol  = ind;
+          break;
+        }
+      }
+    }
+    else if(firstIndexCol >= 0 && fk->m_keySequence > 1)
+    {
+      // try next column
+      int next = lastIndexCol + 1;
+
+      if(next > m_indices.size() &&
+        (m_indices[next].m_position == fk->m_keySequence &&
+         m_indices[next].m_columnName.CompareNoCase(fk->m_fkColumnName)      == 0 &&
+         m_indices[next].m_indexName .CompareNoCase(fk->m_foreignConstraint) == 0))
+      {
+         // Matching foreign key with a index set
+        ++lastIndexCol;
+      }
+      else
+      {
+        // Index only partially matches the foreign key. Do not erase
+        firstIndexCol = -1;
+        lastIndexCol  = -1;
+      }
+    }
+  }
+
+  if(firstIndexCol >= 0)
+  {
+    // After processing everything, the last fk set matching an index is removed
+    removed += RemoveIndex(firstIndexCol,lastIndexCol);
+  }
+  return removed;
+}
+
+int
+DDLCreateTable::RemoveIndex(int p_first,int p_last)
+{
+  // Check that we have complete index set
+  if((p_last == (int)m_indices.size() - 1) || m_indices[p_last + 1].m_position == 1)
+  {
+    if(p_first == p_last)
+    {
+      m_indices.erase(m_indices.begin() + p_first);
+    }
+    else
+    {
+      m_indices.erase(m_indices.begin() + p_first,m_indices.begin() + p_last);
+    }
+   // Number of columns removed;
+    return (p_last - p_first + 1);
+  }
+  return 0;
+}
+
 
 };

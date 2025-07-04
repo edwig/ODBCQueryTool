@@ -163,6 +163,14 @@ SQLInfoAccess::GetRDBMSSupportsAsInAlias() const
   return true;
 }
 
+// Foreign key DDL defines the index and cannot reuse already existing ones
+bool
+SQLInfoAccess::GetRDBMSForeignKeyDefinesIndex() const
+{
+  // No: you must EXPLICITLY create an index, independent from the foreign key creation.
+  return false;
+}
+
 // Gets the maximum length of an SQL statement
 unsigned long 
 SQLInfoAccess::GetRDBMSMaxStatementLength() const
@@ -1286,7 +1294,7 @@ SQLInfoAccess::GetPSMProcedureExists(XString /*p_schema*/,XString /*p_procedure*
 }
   
 XString 
-SQLInfoAccess::GetPSMProcedureList(XString& /*p_schema*/) const
+SQLInfoAccess::GetPSMProcedureList(XString& /*p_schema*/,XString /*p_procedure*/,bool /*p_quoted = false*/) const
 {
   // MS-Access does not support PSM
   return XString();

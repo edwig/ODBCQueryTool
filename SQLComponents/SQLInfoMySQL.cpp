@@ -175,6 +175,14 @@ SQLInfoMySQL::GetRDBMSMaxStatementLength() const
   return 0;
 }
 
+// Foreign key DDL defines the index and cannot reuse already existing ones
+bool
+SQLInfoMySQL::GetRDBMSForeignKeyDefinesIndex() const
+{
+  // If the index exists the creation of the foreign key does NOT fail!!
+  return true;
+}
+
 // Database must commit DDL commands in a transaction
 bool
 SQLInfoMySQL::GetRDBMSMustCommitDDL() const
@@ -1500,7 +1508,7 @@ SQLInfoMySQL::GetPSMProcedureExists(XString p_schema, XString p_procedure,bool /
 }
 
 XString
-SQLInfoMySQL::GetPSMProcedureList(XString& p_schema) const
+SQLInfoMySQL::GetPSMProcedureList(XString& p_schema,XString /*p_procedure*/,bool /*p_quoted = false*/) const
 {
   XString sql;
   sql = _T("SELECT routine_catalog\n")

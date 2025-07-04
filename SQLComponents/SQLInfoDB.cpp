@@ -689,7 +689,7 @@ SQLInfoDB::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
 
   if(p_procedure.IsEmpty() || p_procedure.Compare(_T("%")) == 0)
   {
-    sql = GetPSMProcedureList(p_schema);
+    sql = GetPSMProcedureList(p_schema,p_procedure);
     p_procedure.Empty();
   }
   else
@@ -774,14 +774,23 @@ XString
 SQLInfoDB::MakeInfoPSMSourcecode(XString p_schema, XString p_procedure)
 {
   XString sourcecode;
-  XString sql = GetPSMProcedureSourcecode(p_schema,p_procedure);
+  XString sql = GetPSMProcedureSourcecode(p_schema,p_procedure,true);
   if(!sql.IsEmpty())
   {
-    SQLQuery query(m_database);
-    query.DoSQLStatement(sql);
-    while(query.GetRecord())
+    for(int ind = 0;ind < 2;++ind)
     {
-      sourcecode += query.GetColumn(3)->GetAsString();
+      SQLQuery query(m_database);
+      query.DoSQLStatement(sql);
+      while(query.GetRecord())
+      {
+        sourcecode += query.GetColumn(3)->GetAsString();
+      }
+      if(!sourcecode.IsEmpty())
+      {
+        return sourcecode;
+      }
+      // Try standard unquoted identifiers
+      sql = GetPSMProcedureSourcecode(p_schema,p_procedure);
     }
   }
   return sourcecode;
@@ -1146,7 +1155,7 @@ SQLInfoDB::MakeInfoViewDefinition(XString& p_defintion,XString& p_errors,XString
 
 // Preparing identifiers for doing a query (quotations)
 XString 
-SQLInfoDB::QueryIdentifierQuotation(XString p_identifier)
+SQLInfoDB::QueryIdentifierQuotation(XString p_identifier) const
 {
   // Empty names are unaltered
   if(p_identifier.IsEmpty())
@@ -1229,7 +1238,7 @@ SQLInfoDB::ReadTablesFromQuery(SQLQuery& p_query,MTableMap& p_tables)
 
 // Create quoted identifier
 XString
-SQLInfoDB::QuotedIdentifier(XString p_identifier)
+SQLInfoDB::QuotedIdentifier(XString p_identifier) const
 {
   TCHAR prefix;
   TCHAR postfix;

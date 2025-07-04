@@ -94,6 +94,8 @@ private:
   int     CalculateColumnLength(MColumnMap& p_columns);
   void    FindIndexFilter(MetaIndex& p_index);
   bool    IsStrictODBCPrivilege(XString p_privilege);
+  int     DeDuplicateFKIndexes();
+  int     RemoveIndex(int first,int last);
 
   // Private data for the DDL creation
   SQLInfoDB* m_info;

@@ -165,12 +165,20 @@ SQLInfoFirebird::GetRDBMSSupportsAsInAlias() const
   return true;
 }
 
+// Foreign key DDL defines the index and cannot reuse already existing ones
+bool
+SQLInfoFirebird::GetRDBMSForeignKeyDefinesIndex() const
+{
+  // If an index already exists, the foreign key definition will fail
+  return true;
+}
+
 // Gets the maximum length of an SQL statement
 unsigned long 
 SQLInfoFirebird::GetRDBMSMaxStatementLength() const
 {
-  // No Limit
-  return 0;
+  // Limit to a statement
+  return 32765;
 }
 
 // Database must commit DDL commands in a transaction
@@ -329,7 +337,7 @@ SQLInfoFirebird::GetKEYWORDInterval1MinuteAgo() const
 XString
 SQLInfoFirebird::GetKEYWORDStatementNVL(XString& p_test,XString& p_isnull) const
 {
-  return _T("{fn IFNULL(") + p_test + _T(",") + p_isnull + _T(")}");
+  return _T("COALESCE(") + p_test + _T(",") + p_isnull + _T(")");
 }
 
 // Gets the RDBMS definition of the datatype
@@ -471,20 +479,20 @@ SQLInfoFirebird::GetSQLNewSerial(XString p_table, XString p_sequence) const
   }
 
   // Select next value from a generator sequence
-  return _T("(next value for ") + sequence + _T(")");
+  return _T("(NEXT VALUE FOR ") + QIQ(sequence) + _T(")");
 }
 
 // Gets the construction / select for generating a new serial identity
 XString
 SQLInfoFirebird::GetSQLGenerateSerial(XString p_table) const
 {
-  return _T("SELECT (next value for ") + p_table + _T("_seq) FROM RDB$DATABASE");
+  return _T("SELECT (next value for ") + QIQ(p_table) + _T("_seq) FROM RDB$DATABASE");
 }
 
 XString
 SQLInfoFirebird::GetSQLGenerateSequence(XString p_sequence) const
 {
-  return _T("SELECT (next value for ") + p_sequence + _T(") FROM RDB$DATABASE");
+  return _T("SELECT (next value for ") + QIQ(p_sequence) + _T(") FROM RDB$DATABASE");
 }
 
 // Gets the construction / select for the resulting effective generated serial
@@ -658,7 +666,12 @@ SQLInfoFirebird::GetTempTablename(XString /*p_schema*/,XString p_tablename,bool 
 
 // Changes to parameters before binding to an ODBC HSTMT handle
 void
-SQLInfoFirebird::DoBindParameterFixup(SQLSMALLINT& /*p_dataType*/,SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*p_columnSize*/,SQLSMALLINT& /*p_scale*/,SQLLEN& /*p_bufferSize*/,SQLLEN* /*p_indicator*/) const
+SQLInfoFirebird::DoBindParameterFixup(SQLSMALLINT& /*p_dataType*/
+                                     ,SQLSMALLINT& /*p_sqlDatatype*/
+                                     ,SQLULEN&     /*p_columnSize*/
+                                     ,SQLSMALLINT& /*p_scale*/
+                                     ,SQLLEN&      /*p_bufferSize*/
+                                     ,SQLLEN*      /*p_indicator*/) const
 {
 }
 
@@ -817,27 +830,11 @@ SQLInfoFirebird::GetCATALOGTableAttributes(XString& p_schema,XString& p_tablenam
 }
 
 XString
-SQLInfoFirebird::GetCATALOGTableSynonyms(XString& p_schema,XString& p_tablename,bool p_quoted /*= false*/) const
+SQLInfoFirebird::GetCATALOGTableSynonyms(XString& /*p_schema*/,XString& /*p_tablename*/,bool /*p_quoted = false*/) const
 {
-  p_schema.Empty(); // Do not bind as parameter
-  XString sql = _T("SELECT CAST('' AS varchar(31))             AS table_catalog\n"
-                   "      ,trim(rdb$owner_name)                AS table_schema\n"
-                   "      ,trim(rdb$relation_name)             AS table_name\n"
-                   "      ,CAST('SYSTEM TABLE' as varchar(31)) AS table_type\n"
-                   "      ,rdb$description                     AS remarks\n"
-                   "      ,trim(rdb$owner_name) || '.' || trim(rdb$relation_name) AS full_name\n"
-                   "      ,cast('' as varchar(31))             AS storage_space\n"
-                   "  FROM rdb$relations");
-  if(!p_tablename.IsEmpty())
-  {
-    if(!p_quoted)
-    {
-      p_tablename.MakeUpper();
-    }
-    sql += _T("\n WHERE rdb$relation_name ");
-    sql += (p_tablename.Find(_T("%")) >= 0) ? _T("LIKE") : _T("=");
-    sql += _T(" ?");
-  }
+  // Firebird does not have/support SYNONYMS. So we select nothing!
+  XString sql = _T("SELECT * FROM rdb$database\n")
+                _T(" WHERE 0 = 1");
   return sql;
 }
 
@@ -876,7 +873,7 @@ SQLInfoFirebird::GetCATALOGTableCreate(MetaTable& p_table,MetaColumn& /*p_column
   {
     sql += _T("GLOBAL TEMPORARY ");
   }
-  sql += _T("TABLE ") + p_table.m_table;
+  sql += _T("TABLE ") + QIQ(p_table.m_table);
   return sql;
 }
 
@@ -895,9 +892,13 @@ SQLInfoFirebird::GetCATALOGTableRename(XString /*p_schema*/,XString /*p_oldName*
 }
 
 XString
-SQLInfoFirebird::GetCATALOGTableDrop(XString /*p_schema*/,XString p_tablename,bool /*p_ifExist = false*/,bool /*p_restrict = false*/,bool /*p_cascade = false*/) const
+SQLInfoFirebird::GetCATALOGTableDrop(XString /*p_schema*/
+                                    ,XString   p_tablename
+                                    ,bool    /*p_ifExist = false*/
+                                    ,bool    /*p_restrict = false*/
+                                    ,bool    /*p_cascade = false*/) const
 {
-  return _T("DROP TABLE ") + p_tablename;
+  return _T("DROP TABLE ") + QIQ(p_tablename);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -906,20 +907,20 @@ SQLInfoFirebird::GetCATALOGTableDrop(XString /*p_schema*/,XString p_tablename,bo
 XString 
 SQLInfoFirebird::GetCATALOGTemptableCreate(XString /*p_schema*/,XString p_tablename,XString p_select) const
 {
-  return _T("CREATE GLOBAL TEMPORARY TABLE ") + p_tablename + _T("\nAS ") + p_select +
+  return _T("CREATE GLOBAL TEMPORARY TABLE ") + QIQ(p_tablename) + _T("\nAS ") + p_select +
          _T("ON COMMIT PRESERVE ROWS");
 }
 
 XString 
 SQLInfoFirebird::GetCATALOGTemptableIntoTemp(XString /*p_schema*/,XString p_tablename,XString p_select) const
 {
-  return _T("INSERT INTO ") + p_tablename + _T("\n") + p_select;
+  return _T("INSERT INTO ") + QIQ(p_tablename) + _T("\n") + p_select;
 }
 
 XString 
 SQLInfoFirebird::GetCATALOGTemptableDrop(XString /*p_schema*/,XString p_tablename) const
 {
-  return _T("DROP TABLE ") + p_tablename;
+  return _T("DROP TABLE ") + QIQ(p_tablename);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1122,8 +1123,8 @@ SQLInfoFirebird::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablena
 
 XString SQLInfoFirebird::GetCATALOGColumnCreate(MetaColumn& p_column) const
 {
-  XString sql  = _T("ALTER TABLE ")  + p_column.m_table  + _T("\n")
-                 _T("  ADD COLUMN ") + p_column.m_column + _T(" ") + p_column.m_typename;
+  XString sql  = _T("ALTER TABLE ")  + QIQ(p_column.m_table)  + _T("\n")
+                 _T("  ADD COLUMN ") + QIQ(p_column.m_column) + _T(" ") + p_column.m_typename;
   p_column.GetPrecisionAndScale(sql);
   p_column.GetNullable(sql);
   return sql;
@@ -1133,8 +1134,8 @@ XString SQLInfoFirebird::GetCATALOGColumnAlter(MetaColumn& p_column) const
 {
   // The extra 'TYPE' keyword  is a-typical
   // The SET/DROP for the NULL is a-typical
-  XString sql  = _T("ALTER TABLE ")         + p_column.m_table  + _T("\n")
-                 _T("      MODIFY COLUMN ") + p_column.m_column + _T(" TYPE ") + p_column.m_typename;
+  XString sql  = _T("ALTER TABLE ")         + QIQ(p_column.m_table)  + _T("\n")
+                 _T("      MODIFY COLUMN ") + QIQ(p_column.m_column) + _T(" TYPE ") + p_column.m_typename;
   p_column.GetPrecisionAndScale(sql);
   if(p_column.m_nullable)
   {
@@ -1150,8 +1151,8 @@ XString SQLInfoFirebird::GetCATALOGColumnAlter(MetaColumn& p_column) const
 XString 
 SQLInfoFirebird::GetCATALOGColumnRename(XString /*p_schema*/,XString p_tablename,XString p_columnname,XString p_newname,XString /*p_datatype*/) const
 {
-  XString sql(_T("ALTER  TABLE ") + p_tablename  + _T("\n")
-              _T("      RENAME ") + p_columnname + _T(" TO ") + p_newname + "\n");
+  XString sql(_T("ALTER  TABLE ") + QIQ(p_tablename)  + _T("\n")
+              _T("      RENAME ") + QIQ(p_columnname) + _T(" TO ") + QIQ(p_newname) + "\n");
   return sql;
 }
 
@@ -1159,8 +1160,8 @@ SQLInfoFirebird::GetCATALOGColumnRename(XString /*p_schema*/,XString p_tablename
 XString 
 SQLInfoFirebird::GetCATALOGColumnDrop(XString /*p_schema*/,XString p_tablename,XString p_columnname) const
 {
-  XString sql(_T("ALTER TABLE ")  + p_tablename + _T("\n")
-              _T(" DROP COLUMN ") + p_columnname);
+  XString sql(_T("ALTER TABLE ")  + QIQ(p_tablename) + _T("\n")
+              _T(" DROP COLUMN ") + QIQ(p_columnname));
   return sql;
 }
 
@@ -1201,7 +1202,10 @@ SQLInfoFirebird::GetCATALOGIndexAttributes(XString& p_schema,XString& p_tablenam
   XString query = _T("SELECT CAST('' as varchar(31))     as index_catalog\n"
                      "      ,TRIM(tab.rdb$owner_name)    as index_schema\n"
                      "      ,TRIM(idx.rdb$relation_name) as index_table\n"
-                     "      ,idx.rdb$unique_flag         as index_unique\n"
+                     "      ,CASE idx.rdb$unique_flag\n"
+                     "            WHEN 0 THEN 1\n"
+                     "            WHEN 1 THEN 0\n"
+                     "            ELSE 1 END             as index_nonunique\n"
                      "      ,TRIM(idx.rdb$index_name)    as index_name\n"
                      "      ,1                           as index_type\n"
                      "      ,col.rdb$field_position + 1  as index_position\n"
@@ -1260,17 +1264,9 @@ SQLInfoFirebird::GetCATALOGIndexCreate(MIndicesMap& p_indices,bool /*p_duplicate
         query += _T("DESC ");
       }
       query += _T("INDEX ");
-      if(!index.m_schemaName.IsEmpty())
-      {
-        query += index.m_schemaName + _T(".");
-      }
-      query += index.m_indexName;
+      query += QIQ(index.m_indexName);
       query += _T(" ON ");
-      if(!index.m_schemaName.IsEmpty())
-      {
-        query += index.m_schemaName + _T(".");
-      }
-      query += index.m_tableName;
+      query += QIQ(index.m_tableName);
       query += _T("(");
     }
     else
@@ -1281,7 +1277,7 @@ SQLInfoFirebird::GetCATALOGIndexCreate(MIndicesMap& p_indices,bool /*p_duplicate
     {
       query.TrimRight(_T("("));
       query += _T(" COMPUTED BY ");
-      query += index.m_columnName;
+      query += QIQ(index.m_columnName);
       query.TrimRight(_T(")"));
     }
     else if(!index.m_filter.IsEmpty())
@@ -1290,7 +1286,7 @@ SQLInfoFirebird::GetCATALOGIndexCreate(MIndicesMap& p_indices,bool /*p_duplicate
     }
     else
     {
-      query += index.m_columnName;
+      query += QIQ(index.m_columnName);
     }
   }
   query += ")";
@@ -1300,7 +1296,7 @@ SQLInfoFirebird::GetCATALOGIndexCreate(MIndicesMap& p_indices,bool /*p_duplicate
 XString
 SQLInfoFirebird::GetCATALOGIndexDrop(XString /*p_schema*/,XString /*p_tablename*/,XString p_indexname) const
 {
-  XString sql = _T("DROP INDEX ") + p_indexname;
+  XString sql = _T("DROP INDEX ") + QIQ(p_indexname);
   return sql;
 }
 
@@ -1372,8 +1368,8 @@ SQLInfoFirebird::GetCATALOGPrimaryCreate(MPrimaryMap& p_primaries) const
       {
         query += prim.m_schema + _T(".");
       }
-      query += prim.m_table + _T("\n");
-      query += _T("  ADD CONSTRAINT ") + prim.m_constraintName + _T("\n");
+      query += QIQ(prim.m_table) + _T("\n");
+      query += _T("  ADD CONSTRAINT ") + QIQ(prim.m_constraintName) + _T("\n");
       query += _T("      PRIMARY KEY (");
 
     }
@@ -1381,7 +1377,7 @@ SQLInfoFirebird::GetCATALOGPrimaryCreate(MPrimaryMap& p_primaries) const
     {
       query += _T(",");
     }
-    query += prim.m_columnName;
+    query += QIQ(prim.m_columnName);
   }
   query += _T(")");
   return query;
@@ -1390,8 +1386,8 @@ SQLInfoFirebird::GetCATALOGPrimaryCreate(MPrimaryMap& p_primaries) const
 XString
 SQLInfoFirebird::GetCATALOGPrimaryDrop(XString /*p_schema*/,XString p_tablename,XString p_constraintname) const
 {
-  XString sql(_T("ALTER TABLE ") + p_tablename + _T("\n")
-              _T(" DROP CONSTRAINT ") + p_constraintname);
+  XString sql(_T("ALTER TABLE ")      + QIQ(p_tablename) + _T("\n")
+              _T(" DROP CONSTRAINT ") + QIQ(p_constraintname));
   return sql;
 }
 
@@ -1403,12 +1399,7 @@ SQLInfoFirebird::GetCATALOGForeignExists(XString /*p_schema*/,XString p_tablenam
 {
   XString tablename(p_tablename);
   XString constraint(p_constraintname);
-  if(p_quoted)
-  {
-    tablename  = _T("\"") + tablename  + _T("\"");
-    constraint = _T("\"") + constraint + _T("\"");
-  }
-  else
+  if(!p_quoted)
   {
     tablename.MakeUpper();
     constraint.MakeUpper();
@@ -1534,18 +1525,12 @@ SQLInfoFirebird::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
   // Construct the correct tablename
   XString table(foreign.m_fkTableName);
   XString primary(foreign.m_pkTableName);
-  if(!foreign.m_fkSchemaName.IsEmpty())
-  {
-    table = foreign.m_fkSchemaName + _T(".") + table;
-  }
-  if(!foreign.m_pkSchemaName.IsEmpty())
-  {
-    primary = foreign.m_pkSchemaName + _T(".") + primary;
-  }
+  table   = QIQ(table);
+  primary = QIQ(primary);
 
   // The base foreign key command
   XString query = _T("ALTER TABLE ") + table + _T("\n")
-                  _T("  ADD CONSTRAINT ") + foreign.m_foreignConstraint + _T("\n")
+                  _T("  ADD CONSTRAINT ") + QIQ(foreign.m_foreignConstraint) + _T("\n")
                   _T("      FOREIGN KEY (");
 
   // Add the foreign key columns
@@ -1553,7 +1538,7 @@ SQLInfoFirebird::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
   for(const auto& key : p_foreigns)
   {
     if(extra) query += _T(",");
-    query += key.m_fkColumnName;
+    query += QIQ(key.m_fkColumnName);
     extra  = true;
   }
 
@@ -1565,7 +1550,7 @@ SQLInfoFirebird::GetCATALOGForeignCreate(MForeignMap& p_foreigns) const
   for(const auto& key : p_foreigns)
   {
     if(extra) query += _T(",");
-    query += key.m_pkColumnName;
+    query += QIQ(key.m_pkColumnName);
     extra  = true;
   }
   query += _T(")");
@@ -1604,8 +1589,8 @@ SQLInfoFirebird::GetCATALOGForeignAlter(MForeignMap& /*p_original*/, MForeignMap
 XString
 SQLInfoFirebird::GetCATALOGForeignDrop(XString /*p_schema*/,XString p_tablename,XString p_constraintname) const
 {
-  XString sql(_T("ALTER TABLE ") + p_tablename + _T("\n")
-              _T(" DROP CONSTRAINT ") + p_constraintname);
+  XString sql(_T("ALTER TABLE ")      + QIQ(p_tablename) + _T("\n")
+              _T(" DROP CONSTRAINT ") + QIQ(p_constraintname));
   return sql;
 }
 
@@ -1712,9 +1697,9 @@ SQLInfoFirebird::GetCATALOGTriggerAttributes(XString& p_schema,XString& p_tablen
                  "      ,(SELECT trim(tab.rdb$owner_name)\n"
                  "          FROM rdb$relations tab\n"
                  "         WHERE tab.rdb$relation_name = trg.rdb$relation_name) AS schema_name\n"
-                 "      ,rdb$relation_name\n"
-                 "      ,rdb$trigger_name\n"
-                 "      ,rdb$description\n"
+                 "      ,TRIM(rdb$relation_name) as relation_name\n"
+                 "      ,TRIM(rdb$trigger_name)  as trigger_name\n"
+                 "      ,TRIM(rdb$description)   as description\n"
                  "      ,rdb$trigger_sequence\n"
                  "      ,CASE rdb$trigger_type\n"
                  "            WHEN    1 THEN true\n"
@@ -1774,12 +1759,110 @@ SQLInfoFirebird::GetCATALOGTriggerAttributes(XString& p_schema,XString& p_tablen
                  "       END AS trigger_rollback\n"
                  "      ,'' AS trigger_referencing\n"
                  "      ,CASE rdb$trigger_inactive\n"
-                 "            WHEN 0 THEN true\n"
-                 "                   ELSE false\n"
+                 "            WHEN 1 THEN false\n"
+                 "                   ELSE true\n"
                  "       END AS trigger_enabled\n"
-                 "      ,rdb$trigger_source\n"
+                 "      ,'CREATE OR ALTER TRIGGER \"' || TRIM(rdb$trigger_name) || '\"' || ASCII_CHAR(10) ||\n"
+                 "       CASE rdb$trigger_inactive\n"
+                 "          WHEN 0 THEN 'ACTIVE'\n"
+                 "          WHEN 1 THEN 'INACTIVE'\n"
+                 "                 ELSE ''\n"
+                 "        END || ASCII_CHAR(10) ||\n"
+                 "        CASE \n"
+                 "          -- Table-level triggers\n"
+                 "          WHEN rdb$trigger_type BETWEEN 1 AND 114 THEN\n"
+                 "            CASE rdb$trigger_type\n"
+                 "              WHEN   1 THEN 'BEFORE INSERT'\n"
+                 "              WHEN   2 THEN 'AFTER INSERT'\n"
+                 "              WHEN   3 THEN 'BEFORE UPDATE'\n"
+                 "              WHEN   4 THEN 'AFTER UPDATE'\n"
+                 "              WHEN   5 THEN 'BEFORE DELETE'\n"
+                 "              WHEN   6 THEN 'AFTER DELETE'\n"
+                 "              WHEN  17 THEN 'BEFORE INSERT OR UPDATE'\n"
+                 "              WHEN  18 THEN 'AFTER INSERT OR UPDATE'\n"
+                 "              WHEN  25 THEN 'BEFORE INSERT OR DELETE'\n"
+                 "              WHEN  26 THEN 'AFTER INSERT OR DELETE'\n"
+                 "              WHEN  27 THEN 'BEFORE UPDATE OR DELETE'\n"
+                 "              WHEN  28 THEN 'AFTER UPDATE OR DELETE'\n"
+                 "              WHEN 113 THEN 'BEFORE INSERT OR UPDATE OR DELETE'\n"
+                 "              WHEN 114 THEN 'AFTER INSERT OR UPDATE OR DELETE'\n"
+                 "            END || ' ON \"' || TRIM(rdb$relation_name) || '\"'\n"
+                 "          -- Database-level triggers\n"
+                 "          WHEN rdb$trigger_type BETWEEN 8192 AND 8196 THEN\n"
+                 "            CASE rdb$trigger_type\n"
+                 "              WHEN 8192 THEN 'ON CONNECT'\n"
+                 "              WHEN 8193 THEN 'ON DISCONNECT'\n"
+                 "              WHEN 8194 THEN 'ON TRANSACTION START'\n"
+                 "              WHEN 8195 THEN 'ON TRANSACTION COMMIT'\n"
+                 "              WHEN 8196 THEN 'ON TRANSACTION ROLLBACK'\n"
+                 "            END\n"
+                 "          -- DDL triggers\n"
+                 "          WHEN rdb$trigger_type > 0x4000 THEN\n"
+                 "            CASE\n"
+                 "              WHEN MOD(rdb$trigger_type,1) = 1 THEN 'AFTER '\n"
+                 "              ELSE 'BEFORE '\n"
+                 "            END ||\n"
+                 "            CASE (rdb$trigger_type - 0x4000)\n"
+                 "              WHEN 0x2 THEN 'CREATE TABLE'\n"
+                 "              WHEN 0x4 THEN 'ALTER TABLE'\n"
+                 "              WHEN 0x8 THEN 'DROP TABLE'\n"
+                 "              WHEN 0x10 THEN 'CREATE PROCEDURE'\n"
+                 "              WHEN 0x20 THEN 'ALTER PROCEDURE'\n"
+                 "              WHEN 0x40 THEN 'DROP PROCEDURE'\n"
+                 "              WHEN 0x80 THEN 'CREATE FUNCTION'\n"
+                 "              WHEN 0x100 THEN 'ALTER FUNCTION'\n"
+                 "              WHEN 0x200 THEN 'DROP FUNCTION'\n"
+                 "              WHEN 0x400 THEN 'CREATE TRIGGER'\n"
+                 "              WHEN 0x800 THEN 'ALTER TRIGGER'\n"
+                 "              WHEN 0x1000 THEN 'DROP TRIGGER'\n"
+                 "              WHEN 0x10000 THEN 'CREATE EXCEPTION'\n"
+                 "              WHEN 0x20000 THEN 'ALTER EXCEPTION'\n"
+                 "              WHEN 0x40000 THEN 'DROP EXCEPTION'\n"
+                 "              WHEN 0x80000 THEN 'CREATE VIEW'\n"
+                 "              WHEN 0x100000 THEN 'ALTER VIEW'\n"
+                 "              WHEN 0x200000 THEN 'DROP VIEW'\n"
+                 "              WHEN 0x400000 THEN 'CREATE DOMAIN'\n"
+                 "              WHEN 0x800000 THEN 'ALTER DOMAIN'\n"
+                 "              WHEN 0x1000000 THEN 'DROP DOMAIN'\n"
+                 "              WHEN 0x2000000 THEN 'CREATE ROLE'\n"
+                 "              WHEN 0x4000000 THEN 'ALTER ROLE'\n"
+                 "              WHEN 0x8000000 THEN 'DROP ROLE'\n"
+                 "              WHEN 0x10000000 THEN 'CREATE INDEX'\n"
+                 "              WHEN 0x20000000 THEN 'ALTER INDEX'\n"
+                 "              WHEN 0x40000000 THEN 'DROP INDEX'\n"
+                 "              WHEN 0x80000000 THEN 'CREATE SEQUENCE'\n"
+                 "              WHEN 0x100000000 THEN 'ALTER SEQUENCE'\n"
+                 "              WHEN 0x200000000 THEN 'DROP SEQUENCE'\n"
+                 "              WHEN 0x400000000 THEN 'CREATE USER'\n"
+                 "              WHEN 0x800000000 THEN 'ALTER USER'\n"
+                 "              WHEN 0x1000000000 THEN 'DROP USER'\n"
+                 "              WHEN 0x2000000000 THEN 'CREATE COLLATION'\n"
+                 "              WHEN 0x4000000000 THEN 'DROP COLLATION'\n"
+                 "              WHEN 0x8000000000 THEN 'ALTER CHARACTER SET'\n"
+                 "              WHEN 0x10000000000 THEN 'CREATE PACKAGE'\n"
+                 "              WHEN 0x20000000000 THEN 'ALTER PACKAGE'\n"
+                 "              WHEN 0x40000000000 THEN 'DROP PACKAGE'\n"
+                 "              WHEN 0x80000000000 THEN 'CREATE PACKAGE BODY'\n"
+                 "              WHEN 0x100000000000 THEN 'DROP PACKAGE BODY'\n"
+                 "              WHEN 0x200000000000 THEN 'CREATE MAPPING'\n"
+                 "              WHEN 0x400000000000 THEN 'ALTER MAPPING'\n"
+                 "              WHEN 0x800000000000 THEN 'DROP MAPPING'\n"
+                 "            END\n"
+                 "          ELSE\n"
+                 "            CASE rdb$trigger_type\n"
+                 "	             WHEN 0x7FFFFFFFFFFFDFFE THEN 'BEFORE ANY DDL STATEMENT'\n"
+                 "	             WHEN 0x7FFFFFFFFFFFDFFF THEN 'AFTER ANY DDL STATEMENT'\n"
+                 "                                         ELSE 'UNKNOWN DDL STATMENT'\n"
+                 "	        END\n"
+                 "       END || ASCII_CHAR(10) ||\n"
+                 "       CASE\n"
+                 "         WHEN rdb$trigger_sequence IS NOT NULL AND rdb$trigger_sequence > 0\n"
+                 "              THEN 'POSITION ' || rdb$trigger_sequence || ASCII_CHAR(10)\n"
+                 "              ELSE ''\n"
+                 "       END ||\n"
+                 "       rdb$trigger_source AS recreate_statement\n"
                  "  FROM rdb$triggers trg\n"
-                 " WHERE rdb$system_flag   = 0\n"));
+                 " WHERE (rdb$system_flag = 0 OR rdb$system_flag IS NULL)\n"));
 
   // Add tablename filter
   if(!p_tablename.IsEmpty())
@@ -1821,64 +1904,14 @@ SQLInfoFirebird::GetCATALOGTriggerAttributes(XString& p_schema,XString& p_tablen
 XString
 SQLInfoFirebird::GetCATALOGTriggerCreate(MetaTrigger& p_trigger) const
 {
-  XString sql;
-  sql.Format(_T("CREATE OR ALTER TRIGGER %s FOR %s\n")
-              ,p_trigger.m_triggerName.GetString()
-              ,p_trigger.m_tableName.GetString());
-
-  // Do the table level trigger
-  if(p_trigger.m_insert || p_trigger.m_update || p_trigger.m_delete)
-  {
-    sql += p_trigger.m_before ? _T("BEFORE ") : _T("AFTER ");
-    if(p_trigger.m_insert)
-    {
-      sql += _T("INSERT ");
-    }
-    if(p_trigger.m_update)
-    {
-      if(p_trigger.m_insert)
-      {
-        sql += _T("OR ");
-      }
-      sql += _T("UPDATE ");
-    }
-    if(p_trigger.m_delete)
-    {
-      if(p_trigger.m_insert || p_trigger.m_update)
-      {
-        sql += _T("OR ");
-      }
-      sql += _T("DELETE ");
-    }
-  }
-  else if(p_trigger.m_session)
-  {
-    sql += p_trigger.m_before ? _T("ON CONNECT") : _T("ON DISCONNECT");
-  }
-  else // transaction
-  {
-    sql += _T("ON TRANSACTION ");
-    if(p_trigger.m_before)
-    {
-      sql += _T("START");
-    }
-    else
-    {
-      sql += p_trigger.m_rollback ? _T("ROLLBACK") : _T("COMMIT");
-    }
-  }
-
-  // Now add the trigger PSM source
-  sql += _T("\n");
-  sql += p_trigger.m_source;
-
-  return sql;
+  // Now very simple as TriggerAttributes recreate the complete source!
+  return p_trigger.m_source;
 }
 
 XString
 SQLInfoFirebird::GetCATALOGTriggerDrop(XString /*p_schema*/, XString /*p_tablename*/, XString p_triggername) const
 {
-  XString sql(_T("DROP TRIGGER ") + p_triggername);
+  XString sql(_T("DROP TRIGGER ") + QIQ(p_triggername));
   return sql;
 }
 
@@ -1907,8 +1940,6 @@ SQLInfoFirebird::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern,boo
   {
     p_pattern.MakeUpper();
   }
-  p_pattern = _T("%") + p_pattern + _T("%");
-
   XString sql = _T("SELECT cast('' as varchar(31))  as catalog_name\n"
                    "      ,trim(rdb$owner_name)     as schema_name\n"
                    "      ,trim(rdb$generator_name) as sequence_name\n" 
@@ -1919,8 +1950,12 @@ SQLInfoFirebird::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern,boo
                    "      ,0  as cycle\n"
                    "      ,0  as ordering\n"
                    "  FROM rdb$generators\n"
-                   " WHERE rdb$system_flag    = 0\n"
-                   "   AND rdb$generator_name LIKE ?");
+                   " WHERE rdb$system_flag    = 0\n");
+  if(!p_pattern.IsEmpty())
+  {
+    p_pattern = _T("%") + p_pattern + _T("%");
+    sql += _T("   AND rdb$generator_name LIKE ?");
+  }
   return sql;
 }
 
@@ -1952,7 +1987,7 @@ SQLInfoFirebird::GetCATALOGSequenceCreate(MetaSequence& p_sequence) const
 {
   XString sql;
   sql.Format(_T("CREATE SEQUENCE %s START WITH %-12.0f")
-            ,p_sequence.m_sequenceName.GetString()
+            ,QIQ(p_sequence.m_sequenceName).GetString()
             ,p_sequence.m_currentValue);
   return sql;
 }
@@ -1960,7 +1995,7 @@ SQLInfoFirebird::GetCATALOGSequenceCreate(MetaSequence& p_sequence) const
 XString
 SQLInfoFirebird::GetCATALOGSequenceDrop(XString /*p_schema*/, XString p_sequence) const
 {
-  XString sql(_T("DROP SEQUENCE ") + p_sequence);
+  XString sql(_T("DROP SEQUENCE ") + QIQ(p_sequence));
   return sql;
 }
 
@@ -1968,11 +2003,13 @@ SQLInfoFirebird::GetCATALOGSequenceDrop(XString /*p_schema*/, XString p_sequence
 // ALL VIEW FUNCTIONS
 
 XString 
-SQLInfoFirebird::GetCATALOGViewExists(XString& p_schema,XString& p_viewname,bool /*p_quoted = false*/) const
+SQLInfoFirebird::GetCATALOGViewExists(XString& p_schema,XString& p_viewname,bool p_quoted /*= false*/) const
 {
   p_schema.Empty();  // Do not bind as a parameter
-  p_viewname.MakeUpper();
-
+  if(!p_quoted)
+  {
+    p_viewname.MakeUpper();
+  }
   XString sql = _T("SELECT count(*)\n"
                    "  FROM rdb$relations\n"
                    " WHERE rdb$relation_name = ?\n"
@@ -1987,10 +2024,23 @@ SQLInfoFirebird::GetCATALOGViewList(XString& p_schema,XString& p_pattern,bool p_
 }
 
 XString
-SQLInfoFirebird::GetCATALOGViewText(XString& /*p_schema*/,XString& /*p_viewname*/,bool /*p_quoted = false*/) const
+SQLInfoFirebird::GetCATALOGViewText(XString& p_schema,XString& p_viewname,bool p_quoted /*= false*/) const
 {
-  // Cannot query this, Use ODBC functions
-  return XString();
+  p_schema.Empty(); // do not bind as parameter
+  XString viewname(p_viewname);
+  if(p_quoted)
+  {
+    viewname = QIQ(viewname);
+  }
+  else
+  {
+    p_viewname.MakeUpper();
+  }
+  XString sql = _T("SELECT 'CREATE VIEW ") + viewname + _T(" AS\n' ||")
+                _T("       rdb$view_source\n")
+                _T("  FROM rdb$relations\n")
+                _T(" WHERE rdb$relation_name = '") + p_viewname + _T("'");
+  return sql;
 }
 
 XString
@@ -2023,7 +2073,7 @@ SQLInfoFirebird::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewname,
 XString 
 SQLInfoFirebird::GetCATALOGViewCreate(XString /*p_schema*/,XString p_viewname,XString p_contents,bool /*p_ifexists /*= true*/) const
 {
-  return _T("RECREATE VIEW ") + p_viewname + _T("\n") + p_contents;
+  return _T("RECREATE VIEW ") + QIQ(p_viewname) + _T("\n") + p_contents;
 }
 
 XString 
@@ -2035,8 +2085,11 @@ SQLInfoFirebird::GetCATALOGViewRename(XString /*p_schema*/,XString /*p_viewname*
 XString 
 SQLInfoFirebird::GetCATALOGViewDrop(XString /*p_schema*/,XString p_viewname,XString& p_precursor) const
 {
-  p_viewname.MakeUpper();
-
+  XString viewname = QIQ(p_viewname);
+  if(viewname.GetLength() > 0 && isalpha(viewname[0]))
+  {
+    p_viewname.MakeUpper();
+  }
   // Firebird cannot drop a view if dependencies from stored procedures or functions
   // still exist in the dependencies table. After Firebird 3.0 we need modification
   // rights on this system catalog table!!
@@ -2044,7 +2097,7 @@ SQLInfoFirebird::GetCATALOGViewDrop(XString /*p_schema*/,XString p_viewname,XStr
   p_precursor = _T("DELETE FROM rdb$dependencies\n")
                 _T(" WHERE rdb$depended_on_name = '") + p_viewname + _T("'\n")
                 _T("   AND rdb$depended_on_type = 0");
-  return _T("DROP VIEW ") + p_viewname;
+  return _T("DROP VIEW ") + viewname;
 }
 
 // All Privilege functions
@@ -2171,10 +2224,14 @@ SQLInfoFirebird::GetCATALOGSequencePrivilege(XString& /*p_schema*/,XString& /*p_
 }
 
 XString
-SQLInfoFirebird::GetCATALOGGrantPrivilege(XString /*p_schema*/,XString p_objectname,XString p_privilege,XString p_grantee,bool p_grantable)
+SQLInfoFirebird::GetCATALOGGrantPrivilege(XString /*p_schema*/
+                                         ,XString p_objectname
+                                         ,XString p_privilege
+                                         ,XString p_grantee
+                                         ,bool    p_grantable)
 {
   XString sql;
-  sql.Format(_T("GRANT %s ON %s TO %s"),p_privilege.GetString(),p_objectname.GetString(),p_grantee.GetString());
+  sql.Format(_T("GRANT %s ON %s TO %s"),p_privilege.GetString(),QIQ(p_objectname).GetString(),p_grantee.GetString());
   if (p_grantable)
   {
     sql += _T(" WITH GRANT OPTION");
@@ -2183,10 +2240,13 @@ SQLInfoFirebird::GetCATALOGGrantPrivilege(XString /*p_schema*/,XString p_objectn
 }
 
 XString 
-SQLInfoFirebird::GetCATALOGRevokePrivilege(XString /*p_schema*/,XString p_objectname,XString p_privilege,XString p_grantee)
+SQLInfoFirebird::GetCATALOGRevokePrivilege(XString /*p_schema*/
+                                          ,XString p_objectname
+                                          ,XString p_privilege
+                                          ,XString p_grantee)
 {
   XString sql;
-  sql.Format(_T("REVOKE %s ON %s FROM %s"),p_privilege.GetString(),p_objectname.GetString(),p_grantee.GetString());
+  sql.Format(_T("REVOKE %s ON %s FROM %s"),p_privilege.GetString(),QIQ(p_objectname).GetString(),p_grantee.GetString());
   return sql;
 }
 
@@ -2270,33 +2330,37 @@ SQLInfoFirebird::GetPSMProcedureExists(XString p_schema, XString p_procedure,boo
 }
 
 XString
-SQLInfoFirebird::GetPSMProcedureList(XString& p_schema) const
+SQLInfoFirebird::GetPSMProcedureList(XString& p_schema,XString p_procedure,bool p_quoted /*= false*/) const
 {
-  p_schema.MakeUpper();
+  p_schema.Empty();
+  if(!p_quoted)
+  {
+    p_procedure.MakeUpper();
+  }
   XString sql1(_T("SELECT '' as catalog_name\n")
                _T("      ,trim(rdb$owner_name) as schema_name\n")
                _T("      ,trim(rdb$procedure_name)\n")
-               _T("      ,1\n")
+               _T("      ,1\n")  // PROCEDURE
                _T("  FROM rdb$procedures pro\n")
                _T(" WHERE rdb$procedure_source IS NOT NULL\n"));
-  if(!p_schema.IsEmpty())
+  if(!p_procedure.IsEmpty())
   {
-    sql1 += _T("   AND pro.rdb$owner_name = '") + p_schema + _T("'\n");
+    sql1 += _T("   AND rdb$procedure_name ");
+    sql1 += (p_procedure.Find(_T("%")) >= 0) ? _T("LIKE") : _T("=");
+    sql1 += _T(" ?");
   }
-
   XString sql2(_T("SELECT '' as catalog_name\n")
                _T("      ,trim(rdb$owner_name) as schema_name\n")
                _T("      ,trim(rdb$function_name)\n")
-               _T("      ,2\n")
+               _T("      ,2\n")  // FUNCTION
                _T("  FROM rdb$functions fun\n")
                _T(" WHERE rdb$function_type IS NOT NULL\n"));
-
-  if(!p_schema.IsEmpty())
+  if(!p_procedure.IsEmpty())
   {
-    sql2 += _T("   AND fun.rdb$owner_name = '") + p_schema + _T("'\n");
+    sql2 += _T("   AND rdb$function_name \n");
+    sql2 += (p_procedure.Find(_T("%")) >= 0) ? _T("LIKE") : _T("=");
+    sql2 += _T(" ?");
   }
-
-  p_schema.Empty(); // Do not bind parameters
   return sql1 + _T(" UNION ALL\n") + sql2 + _T(" ORDER BY 1,2,3");
 }
 
@@ -2321,7 +2385,7 @@ SQLInfoFirebird::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedur
                _T("           AND par.rdb$parameter_type = 1) as result_sets\n")
                _T("      ,rdb$description\n")
                _T("      ,1 as procedure_type\n") // SQL_PROCEDURE
-               _T("      ,rdb$procedure_source as source\n")
+               _T("      ,'<@>'\n")
                _T("  FROM rdb$procedures pro\n")
                _T(" WHERE rdb$procedure_source IS NOT NULL\n"));
 
@@ -2342,7 +2406,7 @@ SQLInfoFirebird::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedur
                 _T("           AND arg.rdb$argument_position > 0) as result_sets\n")
                 _T("      ,rdb$description\n")
                 _T("      ,2 as procedure_type\n") // SQL_FUNCTION
-                _T("      ,rdb$function_source as source\n")
+                _T("      ,'<@>'\n")
                 _T("  FROM rdb$functions fun\n")
                 _T(" WHERE rdb$function_type IS NOT NULL\n"));
 
@@ -2360,23 +2424,196 @@ SQLInfoFirebird::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedur
   return sql1 + _T(" UNION ALL\n") + sql2 + _T(" ORDER BY 1,2,3");;
 }
 
+// Getting the sourcecode: 3th column yields the source
 XString
-SQLInfoFirebird::GetPSMProcedureSourcecode(XString /*p_schema*/, XString /*p_procedure*/,bool /*p_quoted = false*/) const
+SQLInfoFirebird::GetPSMProcedureSourcecode(XString p_schema,XString p_procedure,bool p_quoted /*= false*/) const
 {
-  // Source code already gotten with attributes
-  return XString();
+  p_schema.Empty();
+  if(!p_quoted)
+  {
+    p_procedure.MakeUpper();
+  }
+  // PROCEDURE en FUNCTION queries
+  XString sql = _T("SELECT -1 as pos1\n")
+                _T("      ,-1 AS pos2\n")
+                _T("      ,'CREATE OR ALTER PROCEDURE \"' || Trim(rdb$procedure_name) || '\"' || ASCII_CHAR(10) AS text\n")
+                _T("  FROM rdb$procedures\n")
+                _T(" WHERE rdb$procedure_name = '") + p_procedure + _T("'\n")
+                _T("UNION\n")
+                _T("SELECT rdb$parameter_number AS pos1\n")
+                _T("      ,rdb$parameter_number AS pos2\n")
+                _T("      ,CASE WHEN rdb$parameter_number = min_number THEN '(' ELSE ' ' END ||\n")
+                _T("       '\"' || Trim(rdb$parameter_name) || '\" ' ||\n")
+                _T("       CASE Trim(typ.rdb$type_name)\n")
+                _T("            WHEN 'SHORT'   THEN 'NUMERIC'\n")
+                _T("            WHEN 'LONG'    THEN 'NUMERIC'\n")
+                _T("            WHEN 'INT64'   THEN 'NUMERIC'\n")
+                _T("            WHEN 'TEXT'    THEN 'CHAR'\n")
+                _T("            WHEN 'VARYING' THEN 'VARCHAR'\n")
+                _T("           ELSE Trim(typ.rdb$type_name)\n")
+                _T("       END || \n")
+                _T("       CASE WHEN coalesce(fld.rdb$field_precision,fld.rdb$character_length,0) <> 0\n")
+                _T("                 THEN '(' || CAST(coalesce(fld.rdb$field_precision,fld.rdb$character_length) AS VARCHAR(12)) ||\n")
+                _T("       CASE WHEN coalesce(fld.rdb$field_scale,0) <> 0\n")
+                _T("                 THEN ',' || CAST(Abs(fld.rdb$field_scale)  AS VARCHAR(12)) || ')' ELSE ')' END\n")
+                _T("            ELSE '' END || \n")
+                _T("       CASE WHEN rdb$parameter_number = max_number THEN ')' ELSE ',' END ||\n") 
+                _T("       ASCII_CHAR(10) AS param_name\n")
+                _T("  FROM (SELECT par.rdb$parameter_name\n")
+                _T("              ,par.rdb$parameter_number\n")
+                _T("              ,par.rdb$field_source\n")
+                _T("              ,(SELECT Min(rdb$parameter_number)\n")
+                _T("                  FROM rdb$procedure_parameters pi\n")
+                _T("                 WHERE pi.rdb$procedure_name = '") + p_procedure + _T("'\n")
+                _T("                   AND pi.rdb$parameter_type = 0) AS min_number\n")
+                _T("              ,(SELECT Max(rdb$parameter_number)\n")
+                _T("                  FROM rdb$procedure_parameters pi\n")
+                _T("                 WHERE pi.rdb$procedure_name = '") + p_procedure + _T("'\n")
+                _T("                   AND pi.rdb$parameter_type = 0) AS max_number\n")
+                _T("          FROM rdb$procedure_parameters par\n")
+                _T("         WHERE rdb$procedure_name = '") + p_procedure + _T("'\n")
+                _T("           AND rdb$parameter_type = 0\n")
+                _T("         ORDER BY par.rdb$parameter_number)\n")
+                _T("      INNER JOIN rdb$fields fld ON  fld.rdb$field_name = rdb$field_source\n")
+                _T("      INNER JOIN rdb$types  typ ON(fld.rdb$field_type = typ.rdb$type\n")
+                _T("                               AND  typ.rdb$field_name = 'RDB$FIELD_TYPE')\n")
+                _T("UNION\n")
+                _T("SELECT rdb$parameter_number + 5000 AS pos1\n")
+                _T("      ,rdb$parameter_number + 5000 AS pos2\n")
+                _T("      ,Trim(CASE WHEN rdb$parameter_number = min_number THEN 'RETURNS' || ASCII_CHAR(10) || '(' ELSE '' END) ||\n")
+                _T("       '\"' || Trim(rdb$parameter_name) || '\" ' ||\n")
+                _T("       CASE Trim(typ.rdb$type_name)\n")
+                _T("            WHEN 'SHORT'   THEN 'NUMERIC'\n")
+                _T("            WHEN 'LONG'    THEN 'NUMERIC'\n")
+                _T("            WHEN 'INT64'   THEN 'NUMERIC'\n")
+                _T("            WHEN 'TEXT'    THEN 'CHAR'\n")
+                _T("            WHEN 'VARYING' THEN 'VARCHAR'\n")
+                _T("           ELSE Trim(typ.rdb$type_name)\n")
+                _T("       END ||\n")
+                _T("       CASE WHEN coalesce(fld.rdb$field_precision,fld.rdb$character_length,0) <> 0\n")
+                _T("                 THEN '(' || CAST(coalesce(fld.rdb$field_precision,fld.rdb$character_length) AS VARCHAR(12)) ||\n")
+                _T("       CASE WHEN coalesce(fld.rdb$field_scale,0) <> 0\n")
+                _T("                 THEN ',' || CAST(Abs(fld.rdb$field_scale)  AS VARCHAR(12)) || ')' ELSE ')' END\n")
+                _T("            ELSE '' END ||\n")
+                _T("       CASE WHEN rdb$parameter_number = max_number THEN ')' ELSE ',' END ||\n") 
+                _T("       ASCII_CHAR(10) AS param_name\n")
+                _T("  FROM (SELECT par.rdb$parameter_name\n")
+                _T("              ,par.rdb$parameter_number\n")
+                _T("              ,par.rdb$field_source\n")
+                _T("              ,(SELECT Min(rdb$parameter_number)\n")
+                _T("                  FROM rdb$procedure_parameters pi\n")
+                _T("                 WHERE pi.rdb$procedure_name = '") + p_procedure + _T("'\n")
+                _T("                   AND pi.rdb$parameter_type = 1) AS min_number\n")
+                _T("              ,(SELECT Max(rdb$parameter_number)\n")
+                _T("                  FROM rdb$procedure_parameters pi\n")
+                _T("                 WHERE pi.rdb$procedure_name = '") + p_procedure + _T("'\n")
+                _T("                   AND pi.rdb$parameter_type = 1) AS max_number\n")
+                _T("          FROM rdb$procedure_parameters par\n")
+                _T("         WHERE rdb$procedure_name = '") + p_procedure + _T("'\n")
+                _T("           AND rdb$parameter_type = 1\n")
+                _T("          ORDER BY par.rdb$parameter_number)\n")
+                _T("       INNER JOIN rdb$fields fld ON  fld.rdb$field_name = rdb$field_source\n")
+                _T("       INNER JOIN rdb$types  typ ON (fld.rdb$field_type = typ.rdb$type\n")
+                _T("                                AND  typ.rdb$field_name = 'RDB$FIELD_TYPE')\n")
+                _T("UNION\n")
+                _T("SELECT 10000 AS pos1\n")
+                _T("      ,10000 AS pos2\n")
+                _T("      ,'AS' || ASCII_CHAR(10) || \n")
+                _T("       rdb$procedure_source AS text\n")
+                _T("  FROM rdb$procedures\n")
+                _T(" WHERE rdb$procedure_name = '") + p_procedure + _T("'\n")
+                _T("UNION\n")
+                //
+                // FUNCTIONS
+                //
+                _T("SELECT -1 AS pos1\n")
+                _T("      ,-1 AS pos2\n")
+                _T("      ,'CREATE OR ALTER FUNCTION \"' || Trim(rdb$functions.rdb$function_name) || '\"' || ASCII_CHAR(10) AS text\n")
+                _T("  FROM rdb$functions\n")
+                _T(" WHERE rdb$function_name = '") + p_procedure + _T("'\n")
+                _T("UNION\n")
+                _T("SELECT rdb$argument_position AS pos1\n")
+                _T("      ,rdb$argument_position AS pos2\n")
+                _T("      ,CASE WHEN rdb$argument_position = min_number THEN '(' ELSE ' ' END ||\n")
+                _T("       '\"' || Trim(rdb$argument_name) || '\" ' ||\n")
+                _T("       CASE Trim(typ.rdb$type_name)\n")
+                _T("            WHEN 'SHORT'   THEN 'NUMERIC'\n")
+                _T("            WHEN 'LONG'    THEN 'NUMERIC'\n")
+                _T("            WHEN 'INT64'   THEN 'NUMERIC'\n")
+                _T("            WHEN 'TEXT'    THEN 'CHAR'\n")
+                _T("            WHEN 'VARYING' THEN 'VARCHAR'\n")
+                _T("           ELSE Trim(typ.rdb$type_name)\n")
+                _T("       END ||\n")
+                _T("       CASE WHEN coalesce(fld.rdb$field_precision,fld.rdb$character_length,0) <> 0\n")
+                _T("                 THEN '(' || CAST(coalesce(fld.rdb$field_precision,fld.rdb$character_length) AS VARCHAR(12)) ||\n")
+                _T("       CASE WHEN coalesce(fld.rdb$field_scale,0) <> 0\n")
+                _T("                 THEN ',' || CAST(Abs(fld.rdb$field_scale)  AS VARCHAR(12)) || ')' ELSE ')' END\n")
+                _T("            ELSE '' END ||\n")
+                _T("       CASE WHEN rdb$argument_position = max_number THEN ')' ELSE ',' END ||\n") 
+                _T("       ASCII_CHAR(10) AS param_name\n")
+                _T("  FROM (SELECT arg.rdb$argument_name\n")
+                _T("              ,arg.rdb$argument_position\n")
+                _T("              ,arg.rdb$field_source\n")
+                _T("              ,(SELECT Min(rdb$argument_position)\n")
+                _T("                  FROM rdb$function_arguments ai\n")
+                _T("                 WHERE rdb$function_name = '") + p_procedure + _T("'\n")
+                _T("                   AND ai.rdb$argument_position > 0) AS min_number\n")
+                _T("              ,(SELECT Max(rdb$argument_position)\n")
+                _T("                  FROM rdb$function_arguments ai\n")
+                _T("                 WHERE rdb$function_name = '") + p_procedure +_T("'\n")
+                _T("                   AND ai.rdb$argument_position > 0) AS max_number\n")
+                _T("         FROM rdb$function_arguments arg\n")
+                _T("        WHERE rdb$function_name = '") + p_procedure + _T("'\n")
+                _T("          AND rdb$argument_position > 0\n")
+                _T("        ORDER BY rdb$argument_position)\n")
+                _T("      INNER JOIN rdb$fields fld ON  fld.rdb$field_name = rdb$field_source\n")
+                _T("      INNER JOIN rdb$types  typ ON (fld.rdb$field_type = typ.rdb$type\n")
+                _T("                               AND  typ.rdb$field_name = 'RDB$FIELD_TYPE')\n")
+                _T("UNION\n")
+                _T("SELECT 5000 AS pos1\n")
+                _T("      ,5000 AS pos2\n")
+                _T("      ,'RETURNS ' ||\n")
+                _T("       CASE Trim(typ.rdb$type_name)\n")
+                _T("            WHEN 'SHORT'   THEN 'NUMERIC'\n")
+                _T("            WHEN 'LONG'    THEN 'NUMERIC'\n")
+                _T("            WHEN 'INT64'   THEN 'NUMERIC'\n")
+                _T("            WHEN 'TEXT'    THEN 'CHAR'\n")
+                _T("            WHEN 'VARYING' THEN 'VARCHAR'\n")
+                _T("           ELSE Trim(typ.rdb$type_name)\n")
+                _T("       END ||\n")
+                _T("       CASE WHEN coalesce(fld.rdb$field_precision,fld.rdb$character_length,0) <> 0\n")
+                _T("                 THEN '(' || CAST(coalesce(fld.rdb$field_precision,fld.rdb$character_length) AS VARCHAR(12)) ||\n")
+                _T("       CASE WHEN coalesce(fld.rdb$field_scale,0) <> 0\n")
+                _T("                 THEN ',' || CAST(Abs(fld.rdb$field_scale)  AS VARCHAR(12)) || ')' ELSE ')' END\n")
+                _T("            ELSE '' END ||\n") 
+                _T("       ASCII_CHAR(10) AS text\n")
+                _T("  FROM rdb$function_arguments arg\n")
+                _T("       INNER JOIN rdb$fields fld ON  fld.rdb$field_name = arg.rdb$field_source\n")
+                _T("       INNER JOIN rdb$types  typ ON (fld.rdb$field_type = typ.rdb$type\n")
+                _T("                                AND  typ.rdb$field_name = 'RDB$FIELD_TYPE')\n")
+                _T(" WHERE rdb$function_name = '") + p_procedure + _T("'\n")
+                _T("   AND arg.rdb$argument_position = 0\n")
+                _T("UNION\n")
+                _T("SELECT 10000 AS pos1\n")
+                _T("      ,10000 AS pos2\n")
+                _T("      ,'AS' || ASCII_CHAR(10) || rdb$function_source AS text\n")
+                _T("  FROM rdb$functions\n")
+                _T(" WHERE rdb$function_name = '") + p_procedure + _T("'\n")
+                _T(" ORDER BY 1\n");
+
+  return sql;
 }
 
 XString
-SQLInfoFirebird::GetPSMProcedureCreate(MetaProcedure& /*p_procedure*/) const
+SQLInfoFirebird::GetPSMProcedureCreate(MetaProcedure& p_procedure) const
 {
-  return XString();
+  return p_procedure.m_source;
 }
 
 XString
 SQLInfoFirebird::GetPSMProcedureDrop(XString /*p_schema*/, XString p_procedure,bool /*p_function /*=false*/) const
 {
-  XString sql(_T("DROP PROCEDURE ") + p_procedure);
+  XString sql(_T("DROP PROCEDURE ") + QIQ(p_procedure));
   return sql;
 }
 
@@ -2834,7 +3071,7 @@ SQLInfoFirebird::GetPSMExecute(XString p_procedure,MParameterMap& p_parameters) 
 {
   // EXECUTE PROCEDURE name[(:param[,:param …])] [RETURNING_VALUES:param[,:param …]];
   XString line;
-  line.Format(_T("EXECUTE PROCEDURE %s ("),p_procedure.GetString());
+  line.Format(_T("EXECUTE PROCEDURE %s ("),QIQ(p_procedure).GetString());
   bool doReturning = false;
   bool doMore = false;
 
@@ -2847,7 +3084,7 @@ SQLInfoFirebird::GetPSMExecute(XString p_procedure,MParameterMap& p_parameters) 
     // Append input and in/out parameters
     if(param.m_columnType == SQL_PARAM_INPUT || param.m_columnType == SQL_PARAM_INPUT_OUTPUT)
     {
-      line.AppendFormat(_T(":%s"),param.m_parameter.GetString());
+      line.AppendFormat(_T(":%s"),QIQ(param.m_parameter).GetString());
     }
     // See if we must do 'returning' clause
     if(param.m_columnType == SQL_PARAM_OUTPUT || param.m_columnType == SQL_PARAM_INPUT_OUTPUT)
@@ -2869,7 +3106,7 @@ SQLInfoFirebird::GetPSMExecute(XString p_procedure,MParameterMap& p_parameters) 
 
       if(param.m_columnType == SQL_PARAM_OUTPUT || param.m_columnType == SQL_PARAM_INPUT_OUTPUT)
       {
-        line.AppendFormat(_T(":%s"),param.m_parameter.GetString());
+        line.AppendFormat(_T(":%s"),QIQ(param.m_parameter).GetString());
       }
     }
   }
@@ -3133,7 +3370,7 @@ SQLInfoFirebird::ConstructSQLForFunctionCall(SQLQuery*      p_query
 {
   // Start with select from function
   XString sql = _T("SELECT ");
-  sql += p_function;
+  sql += QIQ(p_function);
 
   // Opening parenthesis
   sql += _T("(");

@@ -166,6 +166,14 @@ SQLInfoGenericODBC::GetRDBMSSupportsAsInAlias() const
   return true;
 }
 
+// Foreign key DDL defines the index and cannot reuse already existing ones
+bool
+SQLInfoGenericODBC::GetRDBMSForeignKeyDefinesIndex() const
+{
+  // Uncertain: but creating an index as well is a good idea!
+  return false;
+}
+
 // Gets the maximum length of an SQL statement
 unsigned long 
 SQLInfoGenericODBC::GetRDBMSMaxStatementLength() const
@@ -1387,7 +1395,7 @@ SQLInfoGenericODBC::GetPSMProcedureExists(XString /*p_schema*/, XString /*p_proc
 }
 
 XString
-SQLInfoGenericODBC::GetPSMProcedureList(XString& /*p_schema*/) const
+SQLInfoGenericODBC::GetPSMProcedureList(XString& /*p_schema*/,XString /*p_procedure*/,bool /*p_quoted = false*/) const
 {
   return XString();
 }
