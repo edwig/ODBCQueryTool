@@ -182,6 +182,14 @@ SQLInfoOracle::GetRDBMSSupportsAsInAlias() const
   return false;
 }
 
+// Foreign key DDL defines the index and cannot reuse already existing ones
+bool
+SQLInfoOracle::GetRDBMSForeignKeyDefinesIndex() const
+{
+  // No: you must EXPLICITLY create an index, independent from the foreign key creation.
+  return false;
+}
+
 // Gets the maximum length of an SQL statement
 unsigned long
 SQLInfoOracle::GetRDBMSMaxStatementLength() const
@@ -2353,7 +2361,7 @@ SQLInfoOracle::GetPSMProcedureExists(XString p_schema,XString p_procedure,bool /
 }
 
 XString
-SQLInfoOracle::GetPSMProcedureList(XString& p_schema) const
+SQLInfoOracle::GetPSMProcedureList(XString& p_schema,XString /*p_procedure*/,bool /*p_quoted = false*/) const
 {
   p_schema.MakeUpper();
   XString sql;

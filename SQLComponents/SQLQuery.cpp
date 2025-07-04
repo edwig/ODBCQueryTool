@@ -643,7 +643,8 @@ SQLQuery::DoSQLStatement(const XString& p_statement)
 
   // See if it is a 'SELECT' query
   m_isSelectQuery = false;
-  if(p_statement.Left(6).CompareNoCase(_T("select")) == 0)
+  if(p_statement.Left(6).CompareNoCase(_T("select")) == 0 ||
+     p_statement.Left(4).CompareNoCase(_T("with"))   == 0 )
   {
     m_isSelectQuery = true;
   }

@@ -88,6 +88,9 @@ public:
   // Support for "as" in alias statements (FROM clause)
   bool    GetRDBMSSupportsAsInAlias() const override;
 
+  // Foreign key DDL defines the index and cannot reuse already existing ones
+  bool    GetRDBMSForeignKeyDefinesIndex() const;
+
   // Gets the maximum length of an SQL statement
   unsigned long GetRDBMSMaxStatementLength() const override;
 
@@ -373,7 +376,7 @@ public:
 
   // All procedure functions
   XString GetPSMProcedureExists    (XString  p_schema,XString  p_procedure,bool p_quoted = false) const override;
-  XString GetPSMProcedureList      (XString& p_schema) const override;
+  XString GetPSMProcedureList      (XString& p_schema,XString  p_procedure,bool p_quoted = false) const override;
   XString GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure,bool p_quoted = false) const override;
   XString GetPSMProcedureSourcecode(XString  p_schema,XString  p_procedure,bool p_quoted = false) const override;
   XString GetPSMProcedureCreate    (MetaProcedure& p_procedure) const override;

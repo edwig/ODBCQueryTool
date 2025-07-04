@@ -122,6 +122,7 @@ SQLInfo::Init()
   m_supportsCatalogs    = false;
   m_catalogLocation     = 0;
   m_catalogUsage        = 0;
+  m_schemaUsage         = 0;
   m_datetimeLiterals    = 0;
   m_funcNumeric         = 0;
   m_funcString          = 0;

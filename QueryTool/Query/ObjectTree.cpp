@@ -282,14 +282,15 @@ ObjectTree::OnTableOrView(HTREEITEM p_theItem)
   special.Trim();
   if(IsSpecialNode(special))
   {
-    if(special == _T("Tables") || special == _T("Views"))
+    if(special == _T("Tables") || 
+       special == _T("Views")  ||
+       special == _T("Catalog"))
     {
       return true;
     }
   }
   return false;
 }
-
 
 // From pop-up menu
 void
@@ -306,7 +307,7 @@ ObjectTree::OnTableFirst(HTREEITEM p_theItem)
   special.Trim();
   if(IsSpecialNode(special))
   {
-    if(special == _T("Tables") || special == _T("Views"))
+    if(special == _T("Tables") || special == _T("Views") || special == _T("Catalog"))
     {
       SQLInfoDB* info = theApp.GetDatabase().GetSQLInfoDB();
 

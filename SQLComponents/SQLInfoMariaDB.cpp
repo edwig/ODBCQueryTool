@@ -171,6 +171,14 @@ SQLInfoMariaDB::GetRDBMSSupportsAsInAlias() const
   return true;
 }
 
+// Foreign key DDL defines the index and cannot reuse already existing ones
+bool
+SQLInfoMariaDB::GetRDBMSForeignKeyDefinesIndex() const
+{
+  // If the index exists the creation of the foreign key does NOT fail!!
+  return true;
+}
+
 // Gets the maximum length of an SQL statement
 unsigned long
 SQLInfoMariaDB::GetRDBMSMaxStatementLength() const
@@ -1854,7 +1862,7 @@ SQLInfoMariaDB::GetPSMProcedureExists(XString p_schema, XString p_procedure,bool
 }
 
 XString
-SQLInfoMariaDB::GetPSMProcedureList(XString& p_schema) const
+SQLInfoMariaDB::GetPSMProcedureList(XString& p_schema,XString /*p_procedure*/,bool /*p_quoted = false*/) const
 {
   XString sql;
   sql = _T("SELECT routine_catalog\n")

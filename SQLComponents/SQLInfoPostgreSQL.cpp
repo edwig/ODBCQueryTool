@@ -173,6 +173,14 @@ SQLInfoPostgreSQL::GetRDBMSSupportsAsInAlias() const
   return true;
 }
 
+// Foreign key DDL defines the index and cannot reuse already existing ones
+bool
+SQLInfoPostgreSQL::GetRDBMSForeignKeyDefinesIndex() const
+{
+  // No: you must EXPLICITLY create an index, independent from the foreign key creation.
+  return false;
+}
+
 // Gets the maximum length of an SQL statement
 unsigned long
 SQLInfoPostgreSQL::GetRDBMSMaxStatementLength() const
@@ -1894,7 +1902,7 @@ SQLInfoPostgreSQL::GetPSMProcedureExists(XString p_schema, XString p_procedure,b
 }
 
 XString
-SQLInfoPostgreSQL::GetPSMProcedureList(XString& p_schema) const
+SQLInfoPostgreSQL::GetPSMProcedureList(XString& p_schema,XString /*p_procedure*/,bool /*p_quoted = false*/) const
 {
   p_schema.MakeLower();
   XString sql = _T("SELECT routine_catalog AS procedure_catalog\n")

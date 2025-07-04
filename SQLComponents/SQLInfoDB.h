@@ -32,7 +32,7 @@
 //
 // DESIGN RULES FOR THE DBInfo interface
 // A)  Only SQL returned(not run)
-// B)  If table, also schema included
+// B)  If table, also schema included (if supported)
 // C)  Override van de SQL<schema> functions
 // D)  One action per SQL (no multiple constraints etc)
 //
@@ -94,7 +94,7 @@ public:
   virtual XString MakeInfoPSMSourcecode(XString p_schema, XString p_procedure);
 
   // Preparing identifiers for doing a query (quotations)
-  virtual XString QueryIdentifierQuotation(XString p_identifier);
+  virtual XString QueryIdentifierQuotation(XString p_identifier) const;
 
   // PURE VIRTUAL INTERFACE
 
@@ -154,6 +154,9 @@ public:
 
   // Support for "as" in alias statements (FROM clause)
   virtual bool GetRDBMSSupportsAsInAlias() const = 0;
+
+  // Foreign key DDL defines the index and cannot reuse already existing ones
+  virtual bool GetRDBMSForeignKeyDefinesIndex() const = 0;
 
   // Gets the maximum length of an SQL statement
   virtual unsigned long GetRDBMSMaxStatementLength() const = 0;
@@ -294,18 +297,24 @@ public:
 
   //////////////////////////////////////////////////////////////////////////
   //
-  //  SQLQuery service functions for tinkering with bindings and buffers
-  //
+  // DATATYPE FIXES
+  // SQLQuery service functions for tinkering with bindings and buffers
+  
 
   // Changes to parameters before binding to an ODBC HSTMT handle
-  virtual void DoBindParameterFixup(SQLSMALLINT& p_dataType,SQLSMALLINT& p_sqlDatatype,SQLULEN& p_columnSize,SQLSMALLINT& p_scale,SQLLEN& p_bufferSize,SQLLEN* p_indicator) const = 0;
+  virtual void DoBindParameterFixup(SQLSMALLINT& p_dataType
+                                   ,SQLSMALLINT& p_sqlDatatype
+                                   ,SQLULEN&     p_columnSize
+                                   ,SQLSMALLINT& p_scale
+                                   ,SQLLEN&      p_bufferSize
+                                   ,SQLLEN*      p_indicator) const = 0;
 
   //////////////////////////////////////////////////////////////////////////
   //
   // CATALOG
   // o GetCATALOG<Object[s]><Function>
   //   Objects
-  //   - Catalog
+  //   - Catalog general
   //   - Table
   //   - Column
   //   - Index
@@ -448,7 +457,7 @@ public:
 
   // All procedure functions
   virtual XString GetPSMProcedureExists    (XString  p_schema,XString  p_procedure,bool p_quoted = false) const = 0;
-  virtual XString GetPSMProcedureList      (XString& p_schema) const = 0;
+  virtual XString GetPSMProcedureList      (XString& p_schema,XString  p_procedure,bool p_quoted = false) const = 0;
   virtual XString GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure,bool p_quoted = false) const = 0;
   virtual XString GetPSMProcedureSourcecode(XString  p_schema,XString  p_procedure,bool p_quoted = false) const = 0;
   virtual XString GetPSMProcedureCreate    (MetaProcedure& p_procedure) const = 0;
@@ -521,7 +530,7 @@ private:
   bool    ReadMetaTypesFromQuery(SQLQuery& p_query,MMetaMap&  p_objects,int p_type);
   bool    ReadTablesFromQuery   (SQLQuery& p_query,MTableMap& p_tables);
   // Create quoted identifier
-  XString QuotedIdentifier(XString p_identifier);
+  XString QuotedIdentifier(XString p_identifier) const;
 
   // All default granted users for GRANT statements
   XString m_grantedUsers;
