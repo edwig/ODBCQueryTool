@@ -1052,10 +1052,10 @@ SQLInfoInformix::GetCATALOGForeignExists(XString /*p_schema*/,XString p_tablenam
 
 // Get all attributes in order of MetaForeign for ALL FK constraints
 XString
-SQLInfoInformix::GetCATALOGForeignList(XString& p_schema,XString& p_tablename,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/,bool /*p_quoted = false*/) const
+SQLInfoInformix::GetCATALOGForeignList(XString& p_schema,XString& p_tablename,bool /*p_quoted = false*/) const
 {
   XString constraint;
-  return GetCATALOGForeignAttributes(p_schema,p_tablename,constraint,p_maxColumns);
+  return GetCATALOGForeignAttributes(p_schema,p_tablename,constraint);
 }
 
 // Get all attributes in order of MetaForeign for 1 FK constraint
@@ -1064,7 +1064,6 @@ SQLInfoInformix::GetCATALOGForeignAttributes(XString& p_schema
                                             ,XString& p_tablename
                                             ,XString& p_constraint
                                             ,bool     p_referenced /*= false*/
-                                            ,int      p_maxColumns /*=SQLINFO_MAX_COLUMNS*/
                                             ,bool   /*p_quoted       = false*/) const
 {
   XString query;
@@ -1072,20 +1071,18 @@ SQLInfoInformix::GetCATALOGForeignAttributes(XString& p_schema
   p_tablename.MakeLower();
   p_constraint.MakeLower();
 
-  for(int ind = 1;ind <= p_maxColumns; ++ind)
+  for(int ind = 1;ind <= SQLINFO_MAX_COLUMNS; ++ind)
   {
     XString part;
     part.Format(_T("SELECT trim(DBINFO('dbname')) AS primary_catalog_name\n"
                    "      ,trim(pri.owner)        AS primary_schema_name\n"
                    "      ,trim(pri.tabname)      AS primary_table_name\n"
+                   "      ,trim(pcl.colname)      AS primary_column_name\n"
                    "      ,trim(DBINFO('dbname')) AS foreign_catalog_name\n"
                    "      ,trim(tab.owner)        AS foreign_schema_name\n"
                    "      ,trim(tab.tabname)      AS foreign_table_name\n"
-                   "      ,trim(pcn.constrname)   AS primary_key_constraint\n"
-                   "      ,trim(con.constrname)   AS foreign_key_constraint\n"
-                   "      ,%d                     AS key_sequence\n"
-                   "      ,trim(pcl.colname)      AS primary_column_name\n"
                    "      ,trim(col.colname)      AS foreign_column_name\n"
+                   "      ,%d                     AS key_sequence\n"
                    "      ,CASE WHEN ref.updrule = 'R' THEN 1\n"
                    "            WHEN ref.updrule = 'C' THEN 0\n"
                    "            WHEN ref.updrule = 'N' THEN 2\n"
@@ -1098,6 +1095,8 @@ SQLInfoInformix::GetCATALOGForeignAttributes(XString& p_schema
                    "            WHEN ref.delrule = 'D' THEN 4\n"
                    "            ELSE 0\n"
                    "       END  AS delete_rule\n"
+                   "      ,trim(con.constrname)   AS foreign_key_constraint\n"
+                   "      ,trim(pcn.constrname)   AS primary_key_constraint\n"
                    "      ,1    AS deferrable\n"
                    "      ,CASE WHEN ref.matchtype = 'N' THEN 0\n"
                    "            WHEN ref.matchtype = 'P' THEN 1\n"

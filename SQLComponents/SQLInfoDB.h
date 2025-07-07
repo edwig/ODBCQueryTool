@@ -93,9 +93,6 @@ public:
   // Read extra source code for database that can only do it by an extra procedure
   virtual XString MakeInfoPSMSourcecode(XString p_schema, XString p_procedure);
 
-  // Preparing identifiers for doing a query (quotations)
-  virtual XString QueryIdentifierQuotation(XString p_identifier) const;
-
   // PURE VIRTUAL INTERFACE
 
   // RDBMS Uses INDENTITY or SEQUENCE interface
@@ -169,9 +166,6 @@ public:
 
   // Maximum for a VARCHAR to be handled without AT-EXEC data. Assume NVARCHAR is half that size!
   virtual int  GetRDBMSMaxVarchar() const = 0;
-
-  // Identifier rules differ per RDBMS
-  virtual bool IsIdentifier(XString p_identifier) const = 0;
 
   //////////////////////////////////////////////////////////////////////////
   // KEYWORDS
@@ -377,8 +371,8 @@ public:
   virtual XString GetCATALOGPrimaryDrop       (XString  p_schema,XString  p_tablename,XString p_constraintname) const = 0;
   // All foreign key functions
   virtual XString GetCATALOGForeignExists     (XString  p_schema,XString  p_tablename,XString  p_constraintname,bool p_quoted = false) const = 0;
-  virtual XString GetCATALOGForeignList       (XString& p_schema,XString& p_tablename,int p_maxColumns = SQLINFO_MAX_COLUMNS,bool p_quoted = false) const = 0;
-  virtual XString GetCATALOGForeignAttributes (XString& p_schema,XString& p_tablename,XString& p_constraintname,bool p_referenced = false,int p_maxColumns = SQLINFO_MAX_COLUMNS,bool p_quoted = false) const = 0;
+  virtual XString GetCATALOGForeignList       (XString& p_schema,XString& p_tablename,bool p_quoted = false) const = 0;
+  virtual XString GetCATALOGForeignAttributes (XString& p_schema,XString& p_tablename,XString& p_constraintname,bool p_referenced = false,bool p_quoted = false) const = 0;
   virtual XString GetCATALOGForeignCreate     (MForeignMap& p_foreigns) const = 0;
   virtual XString GetCATALOGForeignAlter      (MForeignMap& p_original,MForeignMap& p_requested) const = 0;
   virtual XString GetCATALOGForeignDrop       (XString  p_schema,XString  p_tablename,XString  p_constraintname) const = 0;
@@ -529,8 +523,6 @@ private:
   // Read a tables cursor from the database
   bool    ReadMetaTypesFromQuery(SQLQuery& p_query,MMetaMap&  p_objects,int p_type);
   bool    ReadTablesFromQuery   (SQLQuery& p_query,MTableMap& p_tables);
-  // Create quoted identifier
-  XString QuotedIdentifier(XString p_identifier) const;
 
   // All default granted users for GRANT statements
   XString m_grantedUsers;

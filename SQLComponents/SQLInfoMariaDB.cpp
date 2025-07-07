@@ -1253,7 +1253,7 @@ SQLInfoMariaDB::GetCATALOGForeignExists(XString /*p_schema*/,XString /*p_tablena
 }
 
 XString
-SQLInfoMariaDB::GetCATALOGForeignList(XString& /*p_schema*/,XString& /*p_tablename*/,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/,bool /*p_quoted = false*/) const
+SQLInfoMariaDB::GetCATALOGForeignList(XString& /*p_schema*/,XString& /*p_tablename*/,bool /*p_quoted = false*/) const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLForeignKeys instead (see SQLInfo class)
@@ -1261,7 +1261,7 @@ SQLInfoMariaDB::GetCATALOGForeignList(XString& /*p_schema*/,XString& /*p_tablena
 }
 
 XString
-SQLInfoMariaDB::GetCATALOGForeignAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_constraintname*/,bool /*p_referenced = false*/,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/,bool /*p_quoted = false*/) const
+SQLInfoMariaDB::GetCATALOGForeignAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_constraintname*/,bool /*p_referenced = false*/,bool /*p_quoted = false*/) const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLForeignKeys instead (see SQLInfo class)
@@ -1862,7 +1862,7 @@ SQLInfoMariaDB::GetPSMProcedureExists(XString p_schema, XString p_procedure,bool
 }
 
 XString
-SQLInfoMariaDB::GetPSMProcedureList(XString& p_schema,XString /*p_procedure*/,bool /*p_quoted = false*/) const
+SQLInfoMariaDB::GetPSMProcedureList(XString& p_schema,XString p_procedure,bool /*p_quoted = false*/) const
 {
   XString sql;
   sql = _T("SELECT routine_catalog\n")
@@ -1874,9 +1874,15 @@ SQLInfoMariaDB::GetPSMProcedureList(XString& p_schema,XString /*p_procedure*/,bo
         _T("                             ELSE 3\n")
         _T("       end\n")
         _T("  FROM information_schema.routines fun\n");
-  if (!p_schema.IsEmpty())
+  if(!p_schema.IsEmpty())
   {
     sql += _T(" WHERE routine_schema = ?\n");
+  }
+  if(!p_procedure.IsEmpty())
+  {
+    sql += _T("   AND routine_name ");
+    sql += (p_procedure.Find(_T("%")) >= 0) ? _T("LIKE") : _T("=");
+    sql += _T("\n");
   }
   sql += _T(" ORDER BY 1,2,3");
 

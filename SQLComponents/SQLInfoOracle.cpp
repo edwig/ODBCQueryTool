@@ -1296,6 +1296,7 @@ SQLInfoOracle::GetCATALOGIndexAttributes(XString& p_schema,XString& p_tablename,
             _T("      ,ind.owner                        AS table_schema\n")
             _T("      ,ind.table_name                   AS table_name\n")
             _T("      ,NULL          AS non_unique\n")
+            _T("      ,NULL          AS drop_qualifier\n")
             _T("      ,NULL          AS index_name\n")
             _T("      ,0             AS index_type\n")  //-- SQL_TABLE_STAT
             _T("      ,NULL          AS ordinal_position\n")
@@ -1316,6 +1317,7 @@ SQLInfoOracle::GetCATALOGIndexAttributes(XString& p_schema,XString& p_tablename,
             _T("            WHEN 'UNIQUE' THEN 0\n")
             _T("                          ELSE 1\n")
             _T("       END                     AS non_unique\n")
+            _T("      ,NULL                    AS drop_qualifier\n")
             _T("      ,ind.index_name          AS index_name\n")
             _T("      ,3                       AS index_type\n")  //  -- SQL_INDEX_OTHER
             _T("      ,col.column_position     AS ordinal_position\n")
@@ -1535,10 +1537,10 @@ SQLInfoOracle::GetCATALOGForeignExists(XString p_schema,XString p_tablename,XStr
 }
 
 XString
-SQLInfoOracle::GetCATALOGForeignList(XString& p_schema,XString& p_tablename,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetCATALOGForeignList(XString& p_schema,XString& p_tablename,bool /*p_quoted = false*/) const
 {
   XString constraint;
-  return GetCATALOGForeignAttributes(p_schema,p_tablename,constraint,p_maxColumns);
+  return GetCATALOGForeignAttributes(p_schema,p_tablename,constraint);
 }
 
 XString
@@ -1546,7 +1548,6 @@ SQLInfoOracle::GetCATALOGForeignAttributes(XString& p_schema
                                           ,XString& p_tablename
                                           ,XString& p_constraint
                                           ,bool     p_referenced /*=false*/
-                                          ,int    /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/
                                           ,bool   /*p_quoted         = false*/) const
 {
   // Oracle catalog is in uppercase
@@ -1563,14 +1564,12 @@ SQLInfoOracle::GetCATALOGForeignAttributes(XString& p_schema
   XString query = _T("SELECT sys_context('USERENV','DB_NAME') AS primary_catalog_name\n")
                   _T("      ,pri.owner                        AS primary_schema_name\n")
                   _T("      ,pri.table_name                   AS primary_table_name\n")
+                  _T("      ,pky.column_name      AS primary_key_column\n")
                   _T("      ,sys_context('USERENV','DB_NAME') AS foreign_catalog_name\n")
                   _T("      ,con.owner            AS foreign_schema_name\n")
                   _T("      ,con.table_name       AS table_name\n")
-                  _T("      ,pri.constraint_name  AS primary_key_constraint\n")
-                  _T("      ,con.constraint_name  AS foreign_key_constraint\n")
-                  _T("      ,col.position         AS key_sequence\n")
-                  _T("      ,pky.column_name      AS primary_key_column\n")
                   _T("      ,col.column_name      AS foreign_key_column\n")
+                  _T("      ,col.position         AS key_sequence\n")
                   _T("      ,0                    AS update_rule\n")
                   _T("      ,CASE con.delete_rule WHEN 'RESTRICT'    THEN 1\n")
                   _T("                            WHEN 'CASCADE'     THEN 0\n")
@@ -1578,6 +1577,8 @@ SQLInfoOracle::GetCATALOGForeignAttributes(XString& p_schema
                   _T("                            WHEN 'SET DEFAULT' THEN 4\n")
                   _T("                            WHEN 'NO ACTION'   THEN 3\n")
                   _T("                            ELSE 0 END AS delete_rule\n")
+                  _T("      ,con.constraint_name  AS foreign_key_constraint\n")
+                  _T("      ,pri.constraint_name  AS primary_key_constraint\n")
                   _T("      ,CASE con.deferrable  WHEN 'NOT DEFERRABLE' THEN 0\n")
                   _T("                            WHEN 'DEFERRABLE'     THEN 1\n")
                   _T("                            ELSE 0 END AS DEFERRABLE\n")
@@ -2361,9 +2362,13 @@ SQLInfoOracle::GetPSMProcedureExists(XString p_schema,XString p_procedure,bool /
 }
 
 XString
-SQLInfoOracle::GetPSMProcedureList(XString& p_schema,XString /*p_procedure*/,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetPSMProcedureList(XString& p_schema,XString p_procedure,bool p_quoted /*= false*/) const
 {
-  p_schema.MakeUpper();
+  if(!p_quoted)
+  {
+    p_schema.MakeUpper();
+    p_procedure.MakeUpper();
+  }
   XString sql;
 
   sql  = _T("SELECT sys_context('USERENV','DB_NAME') AS procedure_catalog\n")
@@ -2375,6 +2380,12 @@ SQLInfoOracle::GetPSMProcedureList(XString& p_schema,XString /*p_procedure*/,boo
   if(!p_schema.IsEmpty())
   {
     sql += _T("   AND owner = '" + p_schema + "'\n");
+  }
+  if(!p_procedure.IsEmpty())
+  {
+    sql += _T("   AND object_name ");
+    sql += p_procedure.Find(_T("%")) >= 0 ? _T("LIKE '") : _T("= '");
+    sql += p_procedure + _T("'\n");
   }
   sql += _T("UNION\n")
          _T("SELECT sys_context('USERENV','DB_NAME')\n")
@@ -2388,6 +2399,12 @@ SQLInfoOracle::GetPSMProcedureList(XString& p_schema,XString /*p_procedure*/,boo
   {
     sql += _T("   AND owner = '" + p_schema + "'\n");
   }
+  if(!p_procedure.IsEmpty())
+  {
+    sql += _T("   AND object_name ");
+    sql += p_procedure.Find(_T("%")) >= 0 ? _T("LIKE '") : _T("= '");
+    sql += p_procedure + _T("'\n");
+  }
   sql += _T("UNION\n")
          _T("SELECT sys_context('USERENV','DB_NAME')\n")
          _T("      ,owner\n")
@@ -2398,6 +2415,12 @@ SQLInfoOracle::GetPSMProcedureList(XString& p_schema,XString /*p_procedure*/,boo
   if(!p_schema.IsEmpty())
   {
     sql += _T("   AND owner = ?\n");
+  }
+  if(!p_procedure.IsEmpty())
+  {
+    sql += _T("   AND object_name ");
+    sql += p_procedure.Find(_T("%")) >= 0 ? _T("LIKE") : _T("=");
+    sql += _T("?\n");
   }
   sql += _T(" ORDER BY 1,2,3");
   return sql;
@@ -2453,8 +2476,8 @@ SQLInfoOracle::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure,
   {
     sql += _T("   AND object_name = '" + package + "'\n");
     sql += _T("   AND procedure_name ");
-    sql += p_procedure.Find('%') >= 0 ? _T("LIKE") : _T("=");
-    sql += _T(" ?\n");
+    sql += package.Find('%') >= 0 ? _T("LIKE '") : _T("= '");
+    sql += package + _T("\n");
   }
   else if(!p_procedure.IsEmpty())
   {

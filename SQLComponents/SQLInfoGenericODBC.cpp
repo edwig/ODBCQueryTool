@@ -205,33 +205,6 @@ SQLInfoGenericODBC::GetRDBMSMaxVarchar() const
 
 #include <sql.h>
 
-// Identifier rules differ per RDBMS
-bool
-SQLInfoGenericODBC::IsIdentifier(XString p_identifier) const
-{
-  // Cannot be empty and cannot exceed this amount of characters
-  if(p_identifier.GetLength() == 0 ||
-     p_identifier.GetLength() > (int)GetMaxIdentifierNameLength())
-  {
-    return false;
-  }
-  // Must start with one alpha char
-  if(!_istalpha(p_identifier.GetAt(0)))
-  {
-    return false;
-  }
-  for(int index = 0;index < p_identifier.GetLength();++index)
-  {
-    // Can be upper/lower alpha or a number OR an underscore
-    TCHAR ch = p_identifier.GetAt(index);
-    if(!_istalnum(ch) && ch != '_')
-    {
-      return false;
-    }
-  }
-  return true;
-}
-
 // KEYWORDS
 
 // Keyword for the current date and time
@@ -931,7 +904,7 @@ SQLInfoGenericODBC::GetCATALOGForeignExists(XString /*p_schema*/,XString /*p_tab
 }
 
 XString
-SQLInfoGenericODBC::GetCATALOGForeignList(XString& /*p_schema*/,XString& /*p_tablename*/,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/,bool /*p_quoted = false*/) const
+SQLInfoGenericODBC::GetCATALOGForeignList(XString& /*p_schema*/,XString& /*p_tablename*/,bool /*p_quoted = false*/) const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLForeignKeys instead (see SQLInfo class)
@@ -939,7 +912,7 @@ SQLInfoGenericODBC::GetCATALOGForeignList(XString& /*p_schema*/,XString& /*p_tab
 }
 
 XString
-SQLInfoGenericODBC::GetCATALOGForeignAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_constraintname*/,bool /*p_referenced = false*/,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/,bool /*p_quoted = false*/) const
+SQLInfoGenericODBC::GetCATALOGForeignAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_constraintname*/,bool /*p_referenced = false*/,bool /*p_quoted = false*/) const
 {
   // Cannot be implemented for generic ODBC
   // Use SQLForeignKeys instead (see SQLInfo class)

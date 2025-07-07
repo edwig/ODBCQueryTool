@@ -1425,6 +1425,7 @@ SQLInfoSQLServer::GetCATALOGIndexAttributes(XString& p_schema,XString& p_tablena
                     _T("      ,s.name    AS schema_name\n")
                     _T("      ,t.name    AS table_name\n")
                     _T("      ,1         AS non_unique\n")
+                    _T("      ,''        AS drop_qualifier\n")
                     _T("      ,''        AS index_name\n")
                     _T("      ,0         AS type\n") // table_stats
                     _T("      ,0         AS ordinal_position\n")
@@ -1455,7 +1456,7 @@ SQLInfoSQLServer::GetCATALOGIndexAttributes(XString& p_schema,XString& p_tablena
                   _T("            WHEN 1 THEN 0\n")
                   _T("                   ELSE 1\n")
                   _T("       END       AS non_unique\n")
-//                "      ,s.name    AS index_qualifier\n"
+                  _T("      ,''        AS DROP_qualifier\n")
                   _T("      ,i.name    AS index_name\n")
                   _T("      ,1         AS TYPE\n")
                   _T("      ,x.index_column_id AS ordinal_position\n")
@@ -1715,10 +1716,10 @@ SQLInfoSQLServer::GetCATALOGForeignExists(XString p_schema,XString p_tablename,X
 }
 
 XString
-SQLInfoSQLServer::GetCATALOGForeignList(XString& p_schema,XString& p_tablename,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/,bool p_quoted /*= false*/) const
+SQLInfoSQLServer::GetCATALOGForeignList(XString& p_schema,XString& p_tablename,bool p_quoted /*= false*/) const
 {
   XString constraint;
-  return GetCATALOGForeignAttributes(p_schema,p_tablename,constraint,p_maxColumns,p_quoted);
+  return GetCATALOGForeignAttributes(p_schema,p_tablename,constraint,p_quoted);
 }
 
 XString
@@ -1726,7 +1727,6 @@ SQLInfoSQLServer::GetCATALOGForeignAttributes(XString& p_schema
                                              ,XString& p_tablename
                                              ,XString& p_constraint
                                              ,bool     p_referenced /*=false*/
-                                             ,int    /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/
                                              ,bool   /*p_quoted         = false*/) const
 {
   p_schema.MakeLower();
@@ -1735,16 +1735,16 @@ SQLInfoSQLServer::GetCATALOGForeignAttributes(XString& p_schema
   XString query = _T("SELECT db_name()         as primary_catalog_name\n")
                   _T("      ,sch.name          as primary_schema_name\n")
                   _T("      ,pri.name          as primary_table_name\n")
+                  _T("      ,pky.name          as primary_key_column\n")
                   _T("      ,db_name()         as foreign_catalog_name\n")
                   _T("      ,sch.name          as foreign_schema_name\n")
                   _T("      ,tab.name          as foreign_table_name\n")
-                  _T("      ,prk.name          as primary_key_constraint\n")
-                  _T("      ,fok.name          as foreign_key_constraint\n")
-                  _T("      ,fkc.constraint_column_id as key_sequence\n")
-                  _T("      ,pky.name          as primary_key_column\n")
                   _T("      ,col.name          as foreign_key_column\n")
+                  _T("      ,fkc.constraint_column_id as key_sequence\n")
                   _T("      ,fok.update_referential_action as update_rule\n")
                   _T("      ,fok.delete_referential_action as delete_rule\n")
+                  _T("      ,fok.name          as foreign_key_constraint\n")
+                  _T("      ,prk.name          as primary_key_constraint\n")
                   _T("      ,0                 as deferrable\n")
                   _T("      ,1                 as match_option\n")
                   _T("      ,0                 as initially_deferred\n")
@@ -2671,22 +2671,32 @@ SQLInfoSQLServer::GetPSMProcedureExists(XString p_schema, XString p_procedure,bo
 }
 
 XString
-SQLInfoSQLServer::GetPSMProcedureList(XString& p_schema,XString /*p_procedure*/,bool /*p_quoted = false*/) const
+SQLInfoSQLServer::GetPSMProcedureList(XString& p_schema,XString p_procedure,bool p_quoted /*= false*/) const
 {
-  XString query =
-    _T("SELECT db_name() as catalog_name\n")
-    _T("      ,s.name    as schema_name\n")
-    _T("      ,o.name    as procedure_name\n")
-    _T("      ,CASE o.type\n")
-    _T("            WHEN 'P' THEN 1\n")
-    _T("            ELSE 2\n")
-    _T("       END       as procedure_type\n")
-    _T("  FROM sys.objects o\n")
-    _T("       INNER JOIN sys.schemas s ON o.schema_id = s.schema_id\n")
-    _T(" WHERE type IN ('P','FN')\n");
+  if(!p_quoted)
+  {
+    p_schema.MakeLower();
+    p_procedure.MakeLower();
+  }
+  XString query = _T("SELECT db_name() as catalog_name\n")
+                  _T("      ,s.name    as schema_name\n")
+                  _T("      ,o.name    as procedure_name\n")
+                  _T("      ,CASE o.type\n")
+                  _T("            WHEN 'P' THEN 1\n")
+                  _T("            ELSE 2\n")
+                  _T("       END       as procedure_type\n")
+                  _T("  FROM sys.objects o\n")
+                  _T("       INNER JOIN sys.schemas s ON o.schema_id = s.schema_id\n")
+                  _T(" WHERE type IN ('P','FN')\n");
   if(!p_schema.IsEmpty())
   {
     query += _T("   AND s.name = ?\n");
+  }
+  if(!p_procedure.IsEmpty())
+  {
+    query += _T("   AND o.name ");
+    query += p_procedure.Find(_T("%")) >= 0 ? _T("LIKE") : _T("=");
+    query += _T("?\n");
   }
   query += _T(" ORDER BY 1,2,3");
   return query;

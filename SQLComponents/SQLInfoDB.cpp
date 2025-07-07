@@ -509,13 +509,12 @@ SQLInfoDB::MakeInfoTablePrimary(MPrimaryMap&  p_primaries
       {
         MetaPrimary prim;
 
-        prim.m_catalog        = (XString) qry[1];
-        prim.m_catalog        = qry.GetColumn(1)->GetAsString();
-        prim.m_schema         = qry.GetColumn(2)->GetAsString();
-        prim.m_table          = qry.GetColumn(3)->GetAsString();
-        prim.m_columnName     = qry.GetColumn(4)->GetAsString();
-        prim.m_columnPosition = qry.GetColumn(5)->GetAsSLong();
-        prim.m_constraintName = qry.GetColumn(6)->GetAsString();
+        prim.m_catalog        = (XString) qry[MetaPrimary_catalogname];
+        prim.m_schema         = (XString) qry[MetaPrimary_schemaname];
+        prim.m_table          = (XString) qry[MetaPrimary_tablename];
+        prim.m_columnName     = (XString) qry[MetaPrimary_columname];
+        prim.m_columnPosition = (long)    qry[MetaPrimary_keysequence];
+        prim.m_constraintName = (XString) qry[MetaPrimary_constraint];
 
         p_primaries.push_back(prim);
       }
@@ -564,25 +563,22 @@ SQLInfoDB::MakeInfoTableForeign(MForeignMap&  p_foreigns
       {
         MetaForeign foreign;
 
-        foreign.m_pkCatalogName     = (XString) query[1];
-        foreign.m_pkSchemaName      = (XString) query[2];
-        foreign.m_pkTableName       = (XString) query[3];
-        foreign.m_fkCatalogName     = (XString) query[4];
-        foreign.m_fkSchemaName      = (XString) query[5];
-        foreign.m_fkTableName       = (XString) query[6];
-
-        foreign.m_primaryConstraint = (XString) query[7];
-        foreign.m_foreignConstraint = (XString) query[8];
-
-        foreign.m_keySequence       = (int)     query[9];
-        foreign.m_pkColumnName      = (XString) query[10];
-        foreign.m_fkColumnName      = (XString) query[11];
-
-        foreign.m_updateRule        = (int)     query[12];
-        foreign.m_deleteRule        = (int)     query[13];
-        foreign.m_deferrable        = (int)     query[14];
+        foreign.m_pkCatalogName     = (XString) query[MetaForeign_pk_catalogname];
+        foreign.m_pkSchemaName      = (XString) query[MetaForeign_pk_schemaname];
+        foreign.m_pkTableName       = (XString) query[MetaForeign_pk_tablename];
+        foreign.m_pkColumnName      = (XString) query[MetaForeign_pk_columnname];
+        foreign.m_fkCatalogName     = (XString) query[MetaForeign_fk_catalogname];
+        foreign.m_fkSchemaName      = (XString) query[MetaForeign_fk_schemaname];
+        foreign.m_fkTableName       = (XString) query[MetaForeign_fk_tablename];
+        foreign.m_fkColumnName      = (XString) query[MetaForeign_fk_columname];
+        foreign.m_keySequence       = (int)     query[MetaForeign_keysequence];
+        foreign.m_updateRule        = (int)     query[MetaForeign_updaterule];
+        foreign.m_deleteRule        = (int)     query[MetaForeign_deleterule];
+        foreign.m_foreignConstraint = (XString) query[MetaForeign_fk_constraint];
+        foreign.m_primaryConstraint = (XString) query[MetaForeign_pk_constraint];
+        foreign.m_deferrable        = (int)     query[MetaForeign_deferrable];
+        // Extra info
         foreign.m_match             = (int)     query[15];
-
         foreign.m_initiallyDeferred = (int)     query[16];
         foreign.m_enabled           = (int)     query[17];
 
@@ -638,18 +634,19 @@ SQLInfoDB::MakeInfoTableStatistics(MIndicesMap& p_indices
         {
           MetaIndex index;
 
-          index.m_catalogName = (XString) query[1];
-          index.m_schemaName  = (XString) query[2];
-          index.m_tableName   = (XString) query[3];
-          index.m_nonunique   = (bool)    query[4];
-          index.m_indexName   = (XString) query[5];
-          index.m_indexType   = (int)     query[6];
-          index.m_position    = (int)     query[7];
-          index.m_columnName  = (XString) query[8];
-          index.m_ascending   = (XString) query[9];
-          index.m_cardinality = (int)     query[10];
-          index.m_pages       = (int)     query[11];
-          index.m_filter      = (XString) query[12];
+          index.m_catalogName   = (XString) query[MetaIndex_catalogname];
+          index.m_schemaName    = (XString) query[MetaIndex_schemaname];
+          index.m_tableName     = (XString) query[MetaIndex_tablename];
+          index.m_nonunique     = (bool)    query[MetaIndex_nonunique];
+          index.m_dropQualifier = (XString) query[MetaIndex_dropqualifier];
+          index.m_indexName     = (XString) query[MetaIndex_indexname];
+          index.m_indexType     = (int)     query[MetaIndex_type];
+          index.m_position      = (int)     query[MetaIndex_position];
+          index.m_columnName    = (XString) query[MetaIndex_columname];
+          index.m_ascending     = (XString) query[MetaIndex_ascending];
+          index.m_cardinality   = (int)     query[MetaIndex_cardinality];
+          index.m_pages         = (int)     query[MetaIndex_pages];
+          index.m_filter        = (XString) query[MetaIndex_filter];
 
           p_indices.push_back(index);
         }
@@ -689,8 +686,8 @@ SQLInfoDB::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
 
   if(p_procedure.IsEmpty() || p_procedure.Compare(_T("%")) == 0)
   {
-    sql = GetPSMProcedureList(p_schema,p_procedure);
-    p_procedure.Empty();
+    // We want a list only
+    sql = GetPSMProcedureList(p_schema,p_procedure,true);
   }
   else
   {
@@ -722,10 +719,10 @@ SQLInfoDB::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
         {
           MetaProcedure proc;
 
-          proc.m_catalogName   = qry.GetColumn(1)->GetAsString();
-          proc.m_schemaName    = qry.GetColumn(2)->GetAsString();
-          proc.m_procedureName = qry.GetColumn(3)->GetAsString();
-          proc.m_procedureType = qry.GetColumn(4)->GetAsSLong();
+          proc.m_catalogName   = (XString) qry[MetaProcedure_catalogname];
+          proc.m_schemaName    = (XString) qry[MetaProcedure_schemaname];
+          proc.m_procedureName = (XString) qry[MetaProcedure_procedurename];
+          proc.m_procedureType = (long)qry[4];
 
           p_procedures.push_back(proc);
         }
@@ -737,15 +734,15 @@ SQLInfoDB::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
         {
           MetaProcedure proc;
 
-          proc.m_catalogName      = qry.GetColumn(1)->GetAsString();
-          proc.m_schemaName       = qry.GetColumn(2)->GetAsString();
-          proc.m_procedureName    = qry.GetColumn(3)->GetAsString();
-          proc.m_inputParameters  = qry.GetColumn(4)->GetAsSLong();
-          proc.m_outputParameters = qry.GetColumn(5)->GetAsSLong();
-          proc.m_resultSets       = qry.GetColumn(6)->GetAsSLong();
-          proc.m_remarks          = qry.GetColumn(7)->GetAsString();
-          proc.m_procedureType    = qry.GetColumn(8)->GetAsSLong();
-          proc.m_source           = qry.GetColumn(9)->GetAsString();
+          proc.m_catalogName      = (XString) qry[MetaProcedure_catalogname];
+          proc.m_schemaName       = (XString) qry[MetaProcedure_schemaname];
+          proc.m_procedureName    = (XString) qry[MetaProcedure_procedurename];
+          proc.m_inputParameters  = (long)    qry[MetaProcedure_inputargumetns];
+          proc.m_outputParameters = (long)    qry[MetaProcedure_outputargumetns];
+          proc.m_resultSets       = (long)    qry[MetaProcedure_resultsets];
+          proc.m_remarks          = (XString) qry[MetaProcedure_remarks];
+          proc.m_procedureType    = (long)    qry[MetaProcedure_type];
+          proc.m_source           = (XString) qry[MetaProcedure_source];
 
           if(proc.m_source.IsEmpty() || proc.m_source.Compare(_T("<@>")) == 0)
           {
@@ -759,7 +756,14 @@ SQLInfoDB::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
         return true;
       }
       // Try standard identifier case
-      sql = GetPSMProcedureAttributes(p_schema,p_procedure);
+      if(p_procedure.IsEmpty() || p_procedure.Compare(_T("%")) == 0)
+      {
+        sql = GetPSMProcedureList(p_schema,p_procedure);
+      }
+      else
+      {
+        sql = GetPSMProcedureAttributes(p_schema,p_procedure);
+      }
     }
   }
   catch(StdException& er)
@@ -894,31 +898,31 @@ SQLInfoDB::MakeInfoTableTriggers(MTriggerMap& p_triggers
     {
       SQLQuery qry(m_database);
 
-      if(!p_schema.IsEmpty())    qry.SetParameter(p_schema);
+      if(!p_schema   .IsEmpty()) qry.SetParameter(p_schema);
       if(!p_tablename.IsEmpty()) qry.SetParameter(p_tablename);
-      if(!p_trigger.IsEmpty())   qry.SetParameter(p_trigger);
+      if(!p_trigger  .IsEmpty()) qry.SetParameter(p_trigger);
 
       qry.DoSQLStatement(sql);
       while(qry.GetRecord())
       {
         MetaTrigger trigger;
-        trigger.m_catalogName = qry.GetColumn(1)->GetAsString();
-        trigger.m_schemaName  = qry.GetColumn(2)->GetAsString();
-        trigger.m_tableName   = qry.GetColumn(3)->GetAsString();
-        trigger.m_triggerName = qry.GetColumn(4)->GetAsString();
-        trigger.m_remarks     = qry.GetColumn(5)->GetAsString();
-        trigger.m_position    = qry.GetColumn(6)->GetAsSLong();
-        trigger.m_before      = qry.GetColumn(7)->GetAsBoolean();
-        trigger.m_insert      = qry.GetColumn(8)->GetAsBoolean();
-        trigger.m_update      = qry.GetColumn(9)->GetAsBoolean();
-        trigger.m_delete      = qry.GetColumn(10)->GetAsBoolean();
-        trigger.m_select      = qry.GetColumn(11)->GetAsBoolean();
-        trigger.m_session     = qry.GetColumn(12)->GetAsBoolean();
-        trigger.m_transaction = qry.GetColumn(13)->GetAsBoolean();
-        trigger.m_rollback    = qry.GetColumn(14)->GetAsBoolean();
-        trigger.m_referencing = qry.GetColumn(15)->GetAsString();
-        trigger.m_enabled     = qry.GetColumn(16)->GetAsBoolean();
-        trigger.m_source      = qry.GetColumn(17)->GetAsString();
+        trigger.m_catalogName = (XString) qry[MetaTrigger_catalogname];
+        trigger.m_schemaName  = (XString) qry[MetaTrigger_schemaname];
+        trigger.m_tableName   = (XString) qry[MetaTrigger_tablename];
+        trigger.m_triggerName = (XString) qry[MetaTrigger_triggername];
+        trigger.m_remarks     = (XString) qry[MetaTrigger_remarks];
+        trigger.m_position    = (long)    qry[MetaTrigger_position];
+        trigger.m_before      = (bool)    qry[MetaTrigger_before];
+        trigger.m_insert      = (bool)    qry[MetaTrigger_insert];
+        trigger.m_update      = (bool)    qry[MetaTrigger_update];
+        trigger.m_delete      = (bool)    qry[MetaTrigger_delete];
+        trigger.m_select      = (bool)    qry[MetaTrigger_select];
+        trigger.m_session     = (bool)    qry[MetaTrigger_session];
+        trigger.m_transaction = (bool)    qry[MetaTrigger_transaction];
+        trigger.m_rollback    = (bool)    qry[MetaTrigger_rollback];
+        trigger.m_referencing = (XString) qry[MetaTrigger_referencing];
+        trigger.m_enabled     = (bool)    qry[MetaTrigger_enabled];
+        trigger.m_source      = (XString) qry[MetaTrigger_source];
 
         // Some RDBMS'es have extra trailing spaces in these fields
         trigger.m_triggerName.Trim();
@@ -1153,40 +1157,6 @@ SQLInfoDB::MakeInfoViewDefinition(XString& p_defintion,XString& p_errors,XString
   return result;
 }
 
-// Preparing identifiers for doing a query (quotations)
-XString 
-SQLInfoDB::QueryIdentifierQuotation(XString p_identifier) const
-{
-  // Empty names are unaltered
-  if(p_identifier.IsEmpty())
-  {
-    return p_identifier;
-  }
-  if(!IsIdentifier(p_identifier))
-  {
-    return QuotedIdentifier(p_identifier);
-  }
-  int lowers = 0;
-  int uppers = 0;
-  // Count upper chars and lower chars
-  for(int index = 0;index < p_identifier.GetLength();++index)
-  {
-    TCHAR ch = p_identifier.GetAt(index);
-    if(_istlower(ch)) ++lowers;
-    if(_istupper(ch)) ++uppers;
-  }
-
-  // Quote if both upper and lower chars exist
-  // So all UPPERS and all LOWERS are left alone
-  if(lowers && uppers)
-  {
-    return QuotedIdentifier(p_identifier);
-  }
-
-  // Return unscathed (unquoted!)
-  return p_identifier;
-}
-
 //////////////////////////////////////////////////////////////////////////
 //
 // PRIVATE
@@ -1234,33 +1204,6 @@ SQLInfoDB::ReadTablesFromQuery(SQLQuery& p_query,MTableMap& p_tables)
     p_tables.push_back(table);
   }
   return !p_tables.empty();
-}
-
-// Create quoted identifier
-XString
-SQLInfoDB::QuotedIdentifier(XString p_identifier) const
-{
-  TCHAR prefix;
-  TCHAR postfix;
-  XString quote = GetIdentifierQuoteCharacter();
-  if(quote.GetLength() == 1)
-  {
-    // Pretty standard: \"
-    prefix = postfix = quote.GetAt(0);
-  }
-  else
-  {
-    // Some database types use: [Identifier]
-    prefix  = quote.GetAt(0);
-    postfix = quote.GetAt(1);
-  }
-
-  // Create quoted name
-  XString identifier(prefix);
-  identifier += p_identifier;
-  identifier += postfix;
-
-  return identifier;
 }
 
 // End of namespace

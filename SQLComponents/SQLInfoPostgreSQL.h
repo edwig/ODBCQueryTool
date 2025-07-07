@@ -294,8 +294,8 @@ public:
   XString GetCATALOGPrimaryDrop      (XString  p_schema,XString  p_tablename,XString p_constraintname) const override;
     // All foreign key functions
   XString GetCATALOGForeignExists    (XString  p_schema,XString  p_tablename,XString  p_constraintname,bool p_quoted = false) const override;
-  XString GetCATALOGForeignList      (XString& p_schema,XString& p_tablename,int p_maxColumns = SQLINFO_MAX_COLUMNS,bool p_quoted = false) const override;
-  XString GetCATALOGForeignAttributes(XString& p_schema,XString& p_tablename,XString& p_constraintname,bool p_referenced = false,int p_maxColumns = SQLINFO_MAX_COLUMNS,bool p_quoted = false) const override;
+  XString GetCATALOGForeignList      (XString& p_schema,XString& p_tablename,bool p_quoted = false) const override;
+  XString GetCATALOGForeignAttributes(XString& p_schema,XString& p_tablename,XString& p_constraintname,bool p_referenced = false,bool p_quoted = false) const override;
   XString GetCATALOGForeignCreate    (MForeignMap& p_foreigns) const override;
   XString GetCATALOGForeignAlter     (MForeignMap& p_original,MForeignMap& p_requested) const override;
   XString GetCATALOGForeignDrop      (XString  p_schema,XString  p_tablename,XString  p_constraintname) const override;
