@@ -906,14 +906,14 @@ SQLInfoAccess::GetCATALOGForeignExists(XString /*p_schema*/,XString /*p_tablenam
 }
 
 XString 
-SQLInfoAccess::GetCATALOGForeignList(XString& /*p_schema*/,XString& /*p_tablename*/,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/,bool /*p_quoted = false*/) const
+SQLInfoAccess::GetCATALOGForeignList(XString& /*p_schema*/,XString& /*p_tablename*/,bool /*p_quoted = false*/) const
 { 
   // MS-Access cannot get this information, Use ODBC functions
   return XString();
 }
 
 XString 
-SQLInfoAccess::GetCATALOGForeignAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_constraintname*/,bool/* p_referenced = false*/,int /*p_maxColumns*/ /*=SQLINFO_MAX_COLUMNS*/,bool /*p_quoted = false*/) const
+SQLInfoAccess::GetCATALOGForeignAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_constraintname*/,bool/* p_referenced = false*/,bool /*p_quoted = false*/) const
 {
   // MS-Access cannot get this information, Use ODBC functions
   return XString();

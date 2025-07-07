@@ -141,38 +141,65 @@ MetaPrimary;
 
 using MPrimaryMap = std::vector<MetaPrimary>;
 
+// MetaPrimary fields
+#define MetaPrimary_catalogname   1
+#define MetaPrimary_schemaname    2
+#define MetaPrimary_tablename     3
+#define MetaPrimary_columname     4
+#define MetaPrimary_keysequence   5
+#define MetaPrimary_constraint    6
 
 // Results from "SQLForeignKeys"
 
 typedef struct _metaInfoForeign
 {
   // Primary table
-  XString   m_pkCatalogName;            // Primary key catalog name
-  XString   m_pkSchemaName;             // Primary key schema name
-  XString   m_pkTableName;              // Primary key table name
+  XString   m_pkCatalogName;            // 01 Primary key catalog name
+  XString   m_pkSchemaName;             // 02 Primary key schema name
+  XString   m_pkTableName;              // 03 Primary key table name
+  XString   m_pkColumnName;             // 04 Corresponding column in the primary key table
   // Foreign key table
-  XString   m_fkCatalogName;            // Foreign key catalog name
-  XString   m_fkSchemaName;             // Foreign key schema name
-  XString   m_fkTableName;              // Foreign key table name
-  // Constraints naming
-  XString   m_primaryConstraint;        // Name of the primary key constraint
-  XString   m_foreignConstraint;        // Name of the foreign key constraint
+  XString   m_fkCatalogName;            // 05 Foreign key catalog name
+  XString   m_fkSchemaName;             // 06 Foreign key schema name
+  XString   m_fkTableName;              // 07 Foreign key table name
+  XString   m_fkColumnName;             // 08 Corresponding column of the foreign key
   // The column
-  int       m_keySequence       { 0 };  // Ordinal sequence number
-  XString   m_pkColumnName;             // Corresponding column in the primary key table
-  XString   m_fkColumnName;             // Corresponding column of the foreign key
+  int       m_keySequence       { 0 };  // 09 Ordinal sequence number
   // Options of the foreign key
-  int       m_updateRule        { 0 };  // SQL_CASCADE(0) / SQL_NO_ACTION(3) / SQL_SET_NULL(2) / SQL_SET_DEFAULT(4) / SQL_RESTRICT(1)
-  int       m_deleteRule        { 0 };  // SQL_CASCADE(0) / SQL_NO_ACTION(3) / SQL_SET_NULL(2) / SQL_SET_DEFAULT(4) / SQL_RESTRICT(1)
-  int       m_deferrable        { 0 };  // SQL_INITIALLY_DEFERRED(5) / SQL_INITIALLY_IMMEDIATE(6) / SQL_NOT_DEFERRABLE(7)
-  int       m_match             { 0 };  // SQL_MATCH_FULL(0) / SQL_MATCH_PARTIAL(1) / SQL_MATCH_SIMPLE(2)
+  int       m_updateRule        { 0 };  // 10 SQL_CASCADE(0) / SQL_NO_ACTION(3) / SQL_SET_NULL(2) / SQL_SET_DEFAULT(4) / SQL_RESTRICT(1)
+  int       m_deleteRule        { 0 };  // 11 SQL_CASCADE(0) / SQL_NO_ACTION(3) / SQL_SET_NULL(2) / SQL_SET_DEFAULT(4) / SQL_RESTRICT(1)
+  // Constraints naming
+  XString   m_foreignConstraint;        // 12 Name of the foreign key constraint
+  XString   m_primaryConstraint;        // 13 Name of the primary key constraint
+  int       m_deferrable        { 0 };  // 14 SQL_INITIALLY_DEFERRED(5) / SQL_INITIALLY_IMMEDIATE(6) / SQL_NOT_DEFERRABLE(7)
   // Extra info by SQL
-  int       m_initiallyDeferred { 0 };  // 0=Immediate, 1=initially deferred
-  int       m_enabled           { 1 };  // 1=Disabled,  0=enabled
+  int       m_match             { 0 };  // 15 SQL_MATCH_FULL(0) / SQL_MATCH_PARTIAL(1) / SQL_MATCH_SIMPLE(2)
+  int       m_initiallyDeferred { 0 };  // 16 0=Immediate, 1=initially deferred
+  int       m_enabled           { 1 };  // 17 1=Disabled,  0=enabled
 }
 MetaForeign;
 
 using MForeignMap = std::vector<MetaForeign>;
+
+// MetaForeign fields
+#define MetaForeign_pk_catalogname  1
+#define MetaForeign_pk_schemaname   2
+#define MetaForeign_pk_tablename    3
+#define MetaForeign_pk_columnname   4
+#define MetaForeign_fk_catalogname  5
+#define MetaForeign_fk_schemaname   6
+#define MetaForeign_fk_tablename    7
+#define MetaForeign_fk_columname    8
+#define MetaForeign_keysequence     9
+#define MetaForeign_updaterule     10
+#define MetaForeign_deleterule     11
+#define MetaForeign_fk_constraint  12
+#define MetaForeign_pk_constraint  13
+#define MetaForeign_deferrable     14
+// Extra via SQL
+#define MetaForeign_matching       15
+#define MetaForeign_initdeferred   16
+#define MetaForeign_enabled        17
 
 // Results from "SQLStatistics"
 
@@ -182,18 +209,34 @@ typedef struct _metaInfoIndex
   XString   m_schemaName;               // 02 Schema owner
   XString   m_tableName;                // 03 Table name
   bool      m_nonunique   { true };     // 04 false = UNIQUE
-  XString   m_indexName;                // 05 Index name
-  int       m_indexType   { 0 };        // 06 SQL_TABLE_STAT / SQL_INDEX_CLUSTERED / SQL_INDEX_HASHED / SQL_INDEX_OTHER
-  int       m_position    { 0 };        // 07 Ordinal position (start at 1)
-  XString   m_columnName;               // 08 Column in the index
-  XString   m_ascending;                // 09 'A', 'D', '' = unknown
-  long      m_cardinality { 0 };        // 10 cardinality of index
-  long      m_pages       { 0 };        // 11 Pages of the index
-  XString   m_filter;                   // 12 filter or expression
+  XString   m_dropQualifier;            // 05 NULL=catalog, otherwise use in drop
+  XString   m_indexName;                // 06 Index name
+  int       m_indexType   { 0 };        // 07 SQL_TABLE_STAT / SQL_INDEX_CLUSTERED / SQL_INDEX_HASHED / SQL_INDEX_OTHER
+  int       m_position    { 0 };        // 08 Ordinal position (start at 1)
+  XString   m_columnName;               // 09 Column in the index
+  XString   m_ascending;                // 10 'A', 'D', '' = unknown
+  long      m_cardinality { 0 };        // 11 cardinality of index
+  long      m_pages       { 0 };        // 12 Pages of the index
+  XString   m_filter;                   // 13 filter or expression
 }
 MetaIndex;
 
 using MIndicesMap = std::vector<MetaIndex>;
+
+// MetaIndex fields
+#define MetaIndex_catalogname   1
+#define MetaIndex_schemaname    2
+#define MetaIndex_tablename     3
+#define MetaIndex_nonunique     4
+#define MetaIndex_dropqualifier 5
+#define MetaIndex_indexname     6
+#define MetaIndex_type          7
+#define MetaIndex_position      8
+#define MetaIndex_columname     9
+#define MetaIndex_ascending    10
+#define MetaIndex_cardinality  11
+#define MetaIndex_pages        12
+#define MetaIndex_filter       13
 
 // Results from "SQLSpecialColumns"
 
@@ -247,6 +290,17 @@ typedef struct _metaInfoProcedure
 MetaProcedure;
 
 using MProcedureMap = std::vector<MetaProcedure>;
+
+// MetaProcedure fields
+#define MetaProcedure_catalogname     1
+#define MetaProcedure_schemaname      2
+#define MetaProcedure_procedurename   3
+#define MetaProcedure_inputargumetns  4
+#define MetaProcedure_outputargumetns 5
+#define MetaProcedure_resultsets      6
+#define MetaProcedure_remarks         7
+#define MetaProcedure_type            8
+#define MetaProcedure_source          9
 
 // Results from "SQLProcedureColumns"
 
@@ -315,6 +369,25 @@ typedef struct _metaTrigger
 MetaTrigger;
 
 using MTriggerMap = std::vector<MetaTrigger>;
+
+// MetaTrigger fields
+#define MetaTrigger_catalogname     1
+#define MetaTrigger_schemaname      2
+#define MetaTrigger_tablename       3
+#define MetaTrigger_triggername     4
+#define MetaTrigger_remarks         5
+#define MetaTrigger_position        6
+#define MetaTrigger_before          7
+#define MetaTrigger_insert          8
+#define MetaTrigger_update          9
+#define MetaTrigger_delete         10
+#define MetaTrigger_select         11
+#define MetaTrigger_session        12
+#define MetaTrigger_transaction    13
+#define MetaTrigger_rollback       14
+#define MetaTrigger_referencing    15
+#define MetaTrigger_enabled        16
+#define MetaTrigger_source         17
 
 // Results for Sequences - By SQLInfoDB!
 

@@ -1206,6 +1206,7 @@ SQLInfoFirebird::GetCATALOGIndexAttributes(XString& p_schema,XString& p_tablenam
                      "            WHEN 0 THEN 1\n"
                      "            WHEN 1 THEN 0\n"
                      "            ELSE 1 END             as index_nonunique\n"
+                     "      ,CAST('' as varchar(31))     as drop_qualifier\n"
                      "      ,TRIM(idx.rdb$index_name)    as index_name\n"
                      "      ,1                           as index_type\n"
                      "      ,col.rdb$field_position + 1  as index_position\n"
@@ -1416,10 +1417,10 @@ SQLInfoFirebird::GetCATALOGForeignExists(XString /*p_schema*/,XString p_tablenam
 }
 
 XString
-SQLInfoFirebird::GetCATALOGForeignList(XString& p_schema,XString& p_tablename,int p_maxColumns /*=SQLINFO_MAX_COLUMNS*/,bool p_quoted /*= false*/) const
+SQLInfoFirebird::GetCATALOGForeignList(XString& p_schema,XString& p_tablename,bool p_quoted /*= false*/) const
 {
   XString constraint;
-  return GetCATALOGForeignAttributes(p_schema,p_tablename,constraint,p_maxColumns,p_quoted);
+  return GetCATALOGForeignAttributes(p_schema,p_tablename,constraint,p_quoted);
 }
 
 XString
@@ -1427,21 +1428,18 @@ SQLInfoFirebird::GetCATALOGForeignAttributes(XString& p_schema
                                             ,XString& p_tablename
                                             ,XString& p_constraint
                                             ,bool     p_referenced /*=false*/
-                                            ,int    /*p_maxColumns   =SQLINFO_MAX_COLUMNS*/
                                             ,bool     p_quoted     /*= false*/) const
 {
   XString query;
   query.Format(_T("SELECT trim(mon.mon$database_name)     AS primary_key_catalog\n"
                   "      ,'%s'                            AS primary_key_schema\n"
                   "      ,trim(idx.rdb$relation_name)     AS primary_key_table\n"
+                  "      ,trim(seg.rdb$field_name)        AS primary_key_column_name\n"
                   "      ,trim(mon.mon$database_name)     AS foreign_key_catalog\n"
                   "      ,'%s'                            AS foreign_key_schema\n"
                   "      ,trim(con.rdb$relation_name)     AS foreign_key_table\n"
-                  "      ,trim(ref.rdb$const_name_uq)     AS primary_key_constraint\n"
-                  "      ,trim(con.rdb$constraint_name)   AS foreign_key_constraint\n"
-                  "      ,seg.rdb$field_position + 1      AS key_sequence\n"
                   "      ,trim(psg.rdb$field_name)        AS foreign_key_column_name\n"
-                  "      ,trim(seg.rdb$field_name)        AS primary_key_column_name\n"
+                  "      ,seg.rdb$field_position + 1      AS key_sequence\n"
                   "      ,case ref.rdb$update_rule        WHEN 'RESTRICT'     THEN 1\n"
                   "                                       WHEN 'CASCADE'      THEN 0\n"
                   "                                       WHEN 'SET NULL'     THEN 2\n"
@@ -1456,6 +1454,8 @@ SQLInfoFirebird::GetCATALOGForeignAttributes(XString& p_schema
                   "                                       WHEN 'NO ACTION'    THEN 3\n"
                   "                                       ELSE 0\n"
                   "                                       END AS delete_rule\n"
+                  "      ,trim(con.rdb$constraint_name)   AS foreign_key_constraint\n"
+                  "      ,trim(ref.rdb$const_name_uq)     AS primary_key_constraint\n"
                   "      ,case con.rdb$deferrable         WHEN 'YES'  THEN 1 ELSE 0 END as deferrable\n"
                   "      ,case ref.rdb$match_option       WHEN 'FULL' THEN 1 ELSE 0 END as match_option\n"
                   "      ,case con.rdb$initially_deferred WHEN 'YES'  THEN 1 ELSE 0 END as initially_deferred\n"
