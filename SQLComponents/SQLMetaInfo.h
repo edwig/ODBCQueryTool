@@ -68,6 +68,15 @@ MetaTable;
 
 using MTableMap = std::vector<MetaTable>;
 
+#define MetaTable_catalogname    1
+#define MetaTable_schemaname     2
+#define MetaTable_tablename      3
+#define MetaTable_objecttype     4
+#define MetaTable_remarks        5
+#define MetaTable_fullname       6
+#define MetaTable_tablespace     7
+#define MetaTable_temporary      8
+
 // Results from "SQLColumns"
 
 typedef struct _metaInfoColumn
@@ -122,6 +131,25 @@ typedef struct _metaInfoColumn
 MetaColumn;
 
 using MColumnMap = std::vector<MetaColumn>;
+
+#define MetaColumn_catalogname      1
+#define MetaColumn_schemaname       2
+#define MetaColumn_tablename        3
+#define MetaColumn_columnname       4
+#define MetaColumn_datatype         5
+#define MetaColumn_typename         6
+#define MetaColumn_columnsize       7
+#define MetaColumn_bufferlength     8
+#define MetaColumn_decimaldigits    9
+#define MetaColumn_radix           10
+#define MetaColumn_nullable        11
+#define MetaColumn_remarks         12
+#define MetaColumn_default         13
+#define MetaColumn_datatype3       14
+#define MetaColumn_subdatatype     15
+#define MetaColumn_octetlength     16
+#define MetaColumn_position        17
+#define MeatColumn_isnullable      18
 
 // Results from "SQLPrimaryKeys" 
 
@@ -255,6 +283,36 @@ MetaSpecialColumn;
 
 using MSpecialsMap = std::vector<MetaSpecialColumn>;
 
+#define MetaSpecial_columname     1
+#define MetaSpecial_typename      2
+#define MetaSpecial_datatype      3
+#define MetaSpecial_columnsize    4
+#define MetaSpecial_buffersize    5
+#define MetaSpecial_decimaldigits 6
+#define MetaSpecial_scope         7
+#define MetaSpecail_pseudo        8
+
+// Check Constraints (NOT IN THE ODBC STANDARD (yet))
+
+typedef struct _metaCheckConstraints
+{
+  XString m_catalogName;                // Catalog of the constraint
+  XString m_schemaName;                 // Schema of the constraint
+  XString m_tableName;                  // Table/object of the constraint
+  XString m_costraintName;              // Constraint name in ADD/DROP
+  XString m_checkCondition;             // The condition (with or without 'CHECK')
+}
+MetaCheckConstraint;
+
+using MCheckConstraintMap = std::vector<MetaCheckConstraint>;
+
+// Column numbers
+#define MetaCheck_catalogname    1
+#define MetaCheck_schemaname     2
+#define MetaCheck_tablename      3
+#define MetaCheck_constraintname 4
+#define MetaCheck_condition      5
+
 // Results from "SQLTablePrivileges" 
 
 typedef struct _metaInfoPrivilege
@@ -271,6 +329,15 @@ typedef struct _metaInfoPrivilege
 MetaPrivilege;
 
 using MPrivilegeMap = std::vector<MetaPrivilege>;
+
+#define MetaPrivilege_catalogname     1
+#define MetaPrivilege_schemaname      2
+#define MetaPrivilege_tablename       3
+#define MetaPrivilege_columname       4
+#define MetaPrivilege_grantor         5
+#define MetaPrivilege_grantee         6
+#define MetaPrivilege_privilege       7
+#define MetaPrivilege_grantable       8
 
 // Results from "SQLProcedures"
 
@@ -331,6 +398,26 @@ typedef struct _metaParameter
 MetaParameter;
 
 using MParameterMap = std::vector<MetaParameter>;
+
+#define MetaParameter_catalogname       1
+#define MetaParameter_schemaname        2
+#define MetaParameter_procedurename     3
+#define MetaParameter_parametername     4
+#define MetaParameter_columntype        5
+#define MetaParameter_datatype          6
+#define MetaParameter_typename          7
+#define MetaParameter_columnsize        8
+#define MetaParameter_bufferlength      9
+#define MetaParameter_decimaldigits    10
+#define MetaParameter_radix            11
+#define MetaParameter_nullable         12
+#define MetaParameter_remarks          13
+#define MetaParameter_default          14
+#define MetaParameter_datatype3        15
+#define MetaParameter_subtype          16
+#define MetaParameter_octetlength      17
+#define MetaParameter_position         18
+#define MetaParameter_isnullable       19
 
 // Results for Meta objects in the catalog(s)
 
@@ -406,6 +493,40 @@ typedef struct _metaSequence
 MetaSequence;
 
 using MSequenceMap = std::vector<MetaSequence>;
+
+#define MetaSequence_catalogname     1
+#define MetaSequence_schemaname      2
+#define MetaSequence_sequencename    3
+#define MetaSequence_currentvalue    4
+#define MetaSequence_minmalvalue     5
+#define MetaSequence_increment       6
+#define MetaSequence_cache           7
+#define MetaSequence_cycle           8
+#define MetaSequence_order           9
+
+// Results for synonyms
+
+typedef struct _metaSynonym
+{
+  XString m_catalogName;        // Catalog name
+  XString m_schemaName;         // Schema name
+  XString m_synonymName;        // Synonym name
+  XString m_objectType;         // Object type ('SYNONYM' if found)
+  XString m_remarks;            // Comment ON
+  XString m_tablespace;         // Tablespace
+  int     m_temporary;          // 1 = temporary, 0 = permanent
+}
+MetaSynonym;
+
+using MSynonymMap = std::vector<MetaSynonym>;
+
+#define MetaSynonym_catalogname       1
+#define MetaSynonym_schemaname        2
+#define MetaSynonym_synonymname       3
+#define MetaSynonym_objecttype        4
+#define MetaSynonym_remarks           5
+#define MetaSynonym_tablespace        6
+#define MetaSynonym_temporary         7
 
 // Results for sessions - By SQLInfoDB!
 

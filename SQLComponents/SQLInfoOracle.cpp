@@ -37,6 +37,10 @@ static char THIS_FILE[] = __FILE__;
 namespace SQLComponents
 {
 
+// For Oracle the identifiers are transformed to UPPER case
+// as the system catalog is stored in this case setting.
+#define IdentifierCorrect(ident)   if(!p_quoted || !IsIdentifierMixedCase(ident)) ident.MakeUpper()
+
 // Constructor
 SQLInfoOracle::SQLInfoOracle(SQLDatabase* p_database)
               :SQLInfoDB(p_database)
@@ -611,6 +615,19 @@ SQLInfoOracle::GetPing() const
   return _T("SELECT current_timestamp FROM DUAL");
 }
 
+// Pre- and postfix statements for a bulk import
+XString
+SQLInfoOracle::GetBulkImportPrefix(XString /*p_schema*/,XString /*p_tablename*/,bool /*p_identity = true*/,bool /*p_constraints = true*/) const
+{
+  return _T("");
+}
+
+XString
+SQLInfoOracle::GetBulkImportPostfix(XString /*p_schema*/,XString /*p_tablename*/,bool /*p_identity = true*/,bool /*p_constraints = true*/) const
+{
+  return _T("");
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // SQL STRINGS
@@ -697,8 +714,8 @@ SQLInfoOracle::GetTempTablename(XString /*p_schema*/,XString p_tablename,bool /*
   return p_tablename;
 }
 
-// Changes to parameters before binding to an ODBC HSTMT handle
-void
+// Changes to parameters before binding to an ODBC HSTMT handle (returning the At-Exec status)
+bool
 SQLInfoOracle::DoBindParameterFixup(SQLSMALLINT& p_dataType,SQLSMALLINT& p_sqlDatatype,SQLULEN& /*p_columnSize*/,SQLSMALLINT& /*p_scale*/,SQLLEN& /*p_bufferSize*/,SQLLEN* /*p_indicator*/) const
 {
   // Oracle driver can only bind to SQL_DECIMAL
@@ -710,6 +727,7 @@ SQLInfoOracle::DoBindParameterFixup(SQLSMALLINT& p_dataType,SQLSMALLINT& p_sqlDa
   {
     p_sqlDatatype = SQL_NUMERIC;
   }
+  return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -807,10 +825,11 @@ SQLInfoOracle::GetCATALOGDefaultCollation() const
 
 // Get SQL to check if a table already exists in the database
 XString
-SQLInfoOracle::GetCATALOGTableExists(XString& p_schema,XString& p_tablename,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetCATALOGTableExists(XString& p_schema,XString& p_tablename,bool p_quoted /*= false*/) const
 {
-  p_schema.MakeUpper();
-  p_tablename.MakeUpper();
+  IdentifierCorrect(p_schema);
+  IdentifierCorrect(p_tablename);
+
   XString query = _T("SELECT COUNT(*)\n")
                   _T("  FROM all_tables\n")
                   _T(" WHERE owner      = ?\n")
@@ -819,42 +838,37 @@ SQLInfoOracle::GetCATALOGTableExists(XString& p_schema,XString& p_tablename,bool
 }
 
 XString
-SQLInfoOracle::GetCATALOGTablesList(XString& p_schema,XString& p_pattern,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetCATALOGTablesList(XString& p_schema,XString& p_pattern,bool p_quoted /*= false*/) const
 {
-  return GetCATALOGTableAttributes(p_schema,p_pattern);
+  return GetCATALOGTableAttributes(p_schema,p_pattern,p_quoted);
 }
 
 XString
-SQLInfoOracle::GetCATALOGTableAttributes(XString& p_schema,XString& p_tablename,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetCATALOGTableAttributes(XString& p_schema,XString& p_tablename,bool p_quoted /*= false*/) const
 {
-  XString sql;
-  p_schema.MakeUpper();
-  p_tablename.MakeUpper();
-
-  // TABLES
-  sql  = _T("SELECT sys_context('USERENV','DB_NAME') AS table_catalog\n")
-         _T("      ,tab.owner         AS table_schema\n")
-         _T("      ,tab.table_name    AS table_name\n")
-         _T("      ,CASE tab.TEMPORARY\n")
-         _T("            WHEN 'Y' THEN 'GLOBAL TEMPORARY'\n")
-         _T("            WHEN 'N' THEN 'TABLE'\n")
-         _T("                     ELSE 'UNKNOWN'\n")
-         _T("       END               AS object_type\n")
-         _T("      ,com.comments      AS remarks\n")
-         _T("      ,tab.tablespace_name\n")
-         _T("      ,CASE tab.TEMPORARY\n")
-         _T("            WHEN 'Y' THEN 1\n")
-         _T("            WHEN 'N' THEN 0\n")
-         _T("                     ELSE -1\n")
-         _T("       END AS temporary\n")
-         _T("  FROM all_tables tab LEFT OUTER JOIN all_tab_comments com\n")
-         _T("                      ON (com.owner      = tab.owner\n")
-         _T("                     AND  com.table_name = tab.table_name)\n")
-         _T(" WHERE com.table_type = 'TABLE'\n");
-
+  XString sql = _T("SELECT sys_context('USERENV','DB_NAME') AS table_catalog\n")
+                _T("      ,tab.owner         AS table_schema\n")
+                _T("      ,tab.table_name    AS table_name\n")
+                _T("      ,CASE tab.TEMPORARY\n")
+                _T("            WHEN 'Y' THEN 'GLOBAL TEMPORARY'\n")
+                _T("            WHEN 'N' THEN 'TABLE'\n")
+                _T("                     ELSE 'UNKNOWN'\n")
+                _T("       END               AS object_type\n")
+                _T("      ,com.comments      AS remarks\n")
+                _T("      ,tab.tablespace_name\n")
+                _T("      ,CASE tab.TEMPORARY\n")
+                _T("            WHEN 'Y' THEN 1\n")
+                _T("            WHEN 'N' THEN 0\n")
+                _T("                     ELSE -1\n")
+                _T("       END AS temporary\n")
+                _T("  FROM all_tables tab LEFT OUTER JOIN all_tab_comments com\n")
+                _T("                      ON (com.owner      = tab.owner\n")
+                _T("                     AND  com.table_name = tab.table_name)\n")
+                _T(" WHERE com.table_type = 'TABLE'\n");
 
   if(!p_schema.IsEmpty())
   {
+    IdentifierCorrect(p_schema);
     sql += _T("   AND tab.owner ");
     sql += p_schema.Find('%') >= 0 ? _T("LIKE") : _T("=");
     sql += _T(" ?\n");
@@ -862,6 +876,7 @@ SQLInfoOracle::GetCATALOGTableAttributes(XString& p_schema,XString& p_tablename,
 
   if(!p_tablename.IsEmpty())
   {
+    IdentifierCorrect(p_tablename);
     sql += _T("   AND tab.table_name ");
     sql += p_tablename.Find('%') >= 0 ? _T("LIKE") : _T("=");
     sql += _T(" ?\n");
@@ -872,11 +887,8 @@ SQLInfoOracle::GetCATALOGTableAttributes(XString& p_schema,XString& p_tablename,
 }
 
 XString 
-SQLInfoOracle::GetCATALOGTableSynonyms(XString& p_schema,XString& p_tablename,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetCATALOGTableSynonyms(XString& p_schema,XString& p_tablename,bool p_quoted /*= false*/) const
 {
-  p_schema.MakeUpper();
-  p_tablename.MakeUpper();
-
   XString sql = _T("SELECT sys_context('USERENV','DB_NAME') AS table_catalog\n")
                 _T("      ,table_owner  AS table_schema\n")
                 _T("      ,synonym_name AS table_name\n")
@@ -888,6 +900,7 @@ SQLInfoOracle::GetCATALOGTableSynonyms(XString& p_schema,XString& p_tablename,bo
 
   if(!p_schema.IsEmpty())
   {
+    IdentifierCorrect(p_schema);
     sql += _T(" WHERE table_owner ");
     sql += p_schema.Find('%') >= 0 ? _T("LIKE") : _T("=");
     sql += _T(" ?\n");
@@ -895,6 +908,7 @@ SQLInfoOracle::GetCATALOGTableSynonyms(XString& p_schema,XString& p_tablename,bo
 
   if(!p_tablename.IsEmpty())
   {
+    IdentifierCorrect(p_tablename);
     sql += p_schema.IsEmpty() ? _T(" WHERE ") : _T("   AND ");
     sql += _T("synonym_name ");
     sql += p_tablename.Find('%') >= 0 ? _T("LIKE") : _T("=");
@@ -905,11 +919,8 @@ SQLInfoOracle::GetCATALOGTableSynonyms(XString& p_schema,XString& p_tablename,bo
 }
 
 XString
-SQLInfoOracle::GetCATALOGTableCatalog(XString& p_schema,XString& p_tablename,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetCATALOGTableCatalog(XString& p_schema,XString& p_tablename,bool p_quoted /*= false*/) const
 {
-  p_schema.MakeUpper();
-  p_tablename.MakeUpper();
-
   XString sql = _T("SELECT sys_context('USERENV','DB_NAME') AS table_catalog\n")
                 _T("      ,obj.owner         AS table_schema\n")
                 _T("      ,obj.object_name   AS table_name\n")
@@ -926,6 +937,7 @@ SQLInfoOracle::GetCATALOGTableCatalog(XString& p_schema,XString& p_tablename,boo
 
   if(!p_schema.IsEmpty())
   {
+    IdentifierCorrect(p_schema);
     if(p_schema.Find('%') >= 0)
     {
       sql += _T("  AND obj.owner   LIKE ?\n");
@@ -935,9 +947,9 @@ SQLInfoOracle::GetCATALOGTableCatalog(XString& p_schema,XString& p_tablename,boo
       sql += _T("  AND obj.owner   = ?\n");
     }
   }
-
   if(!p_tablename.IsEmpty())
   {
+    IdentifierCorrect(p_tablename);
     if(p_tablename.Find('%') >= 0)
     {
       sql += _T("   AND obj.object_name LIKE ?\n");
@@ -1032,11 +1044,12 @@ SQLInfoOracle::GetCATALOGTemptableDrop(XString p_schema,XString p_tablename) con
 // ALL COLUMN FUNCTIONS
 
 XString 
-SQLInfoOracle::GetCATALOGColumnExists(XString p_schema,XString p_tablename,XString p_columnname,bool /*p_quoted /*= false*/) const
+SQLInfoOracle::GetCATALOGColumnExists(XString p_schema,XString p_tablename,XString p_columnname,bool p_quoted /*= false*/) const
 {
-  p_schema.MakeUpper();
-  p_tablename.MakeUpper();
-  p_columnname.MakeUpper();
+  IdentifierCorrect(p_schema);
+  IdentifierCorrect(p_tablename);
+  IdentifierCorrect(p_columnname);
+
   XString query = _T("SELECT COUNT(*)\n")
                  _T("  FROM all_tab_columns tab\n")
                  _T(" WHERE tab.table_name  = '") + p_tablename  + _T("'\n")
@@ -1046,19 +1059,15 @@ SQLInfoOracle::GetCATALOGColumnExists(XString p_schema,XString p_tablename,XStri
 }
 
 XString 
-SQLInfoOracle::GetCATALOGColumnList(XString& /*p_schema*/,XString& /*p_tablename*/,bool /*p_quoted /*= false*/) const
+SQLInfoOracle::GetCATALOGColumnList(XString& p_schema,XString& p_tablename,bool p_quoted /*= false*/) const
 {
-  // Standard ODBC driver suffices
-  return _T("");
+  XString column;
+  return GetCATALOGColumnAttributes(p_schema,p_tablename,column,p_quoted);
 }
 
 XString 
-SQLInfoOracle::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablename,XString& p_columnname,bool /*p_quoted /*= false*/) const
+SQLInfoOracle::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablename,XString& p_columnname,bool p_quoted /*= false*/) const
 {
-  p_schema.MakeUpper();
-  p_tablename.MakeUpper();
-  p_columnname.MakeUpper();
-
   XString sql = _T("SELECT sys_context('USERENV','DB_NAME') AS col_catalog\n")
                 _T("      ,col.owner                        AS col_owner\n")
                 _T("      ,col.table_name                   AS col_table\n")
@@ -1178,15 +1187,18 @@ SQLInfoOracle::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablename
 
   if(!p_schema.IsEmpty())
   {
+    IdentifierCorrect(p_schema);
     sql.AppendFormat(_T(" WHERE col.owner      = '%s'\n"),p_schema.GetString());
   }
   if(!p_tablename.IsEmpty())
   {
+    IdentifierCorrect(p_tablename);
     sql += p_schema.IsEmpty() ? _T(" WHERE ") : _T("   AND ");
     sql.AppendFormat(_T("col.table_name = '%s'\n"),p_tablename.GetString());
   }
   if(!p_columnname.IsEmpty())
   {
+    IdentifierCorrect(p_columnname);
     sql += p_schema.IsEmpty() && p_tablename.IsEmpty() ? _T(" WHERE ") : _T("   AND ");
     sql.AppendFormat(_T("col.column_name = '%s'\n"),p_columnname.GetString());
   }
@@ -1249,10 +1261,10 @@ SQLInfoOracle::GetCATALOGIndexExists(XString /*p_schema*/,XString /*p_tablename*
 }
 
 XString
-SQLInfoOracle::GetCATALOGIndexList(XString& p_schema,XString& p_tablename,bool /*p_quoted = false*/)   const
+SQLInfoOracle::GetCATALOGIndexList(XString& p_schema,XString& p_tablename,bool p_quoted /*= false*/)   const
 {
-  p_schema.MakeUpper();
-  p_tablename.MakeUpper();
+  IdentifierCorrect(p_schema);
+  IdentifierCorrect(p_tablename);
 
   // Query runs on the 'all_' variant, so owner name must be taken into account
   // for performance reasons on the system table
@@ -1277,12 +1289,9 @@ SQLInfoOracle::GetCATALOGIndexList(XString& p_schema,XString& p_tablename,bool /
 }
 
 XString
-SQLInfoOracle::GetCATALOGIndexAttributes(XString& p_schema,XString& p_tablename,XString& p_indexname,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetCATALOGIndexAttributes(XString& p_schema,XString& p_tablename,XString& p_indexname,bool p_quoted /*= false*/) const
 {
   XString query;
-  p_schema.MakeUpper();
-  p_tablename.MakeUpper();
-  p_indexname.MakeUpper();
   bool tablestatistics = false;
 
   // BEWARE: These two SQL queries cannot be joined in a UNION select
@@ -1337,6 +1346,7 @@ SQLInfoOracle::GetCATALOGIndexAttributes(XString& p_schema,XString& p_tablename,
   }
   if(!p_schema.IsEmpty())
   {
+    IdentifierCorrect(p_schema);
     if(tablestatistics)
     {
       query += _T(" WHERE ind.owner = ?\n");
@@ -1348,11 +1358,13 @@ SQLInfoOracle::GetCATALOGIndexAttributes(XString& p_schema,XString& p_tablename,
   }
   if(!p_tablename.IsEmpty())
   {
+    IdentifierCorrect(p_tablename);
     query += p_schema.IsEmpty() ? _T(" WHERE ") : _T("   AND ");
     query += _T("ind.table_name = ?\n");
   }
   if(!p_indexname.IsEmpty())
   {
+    IdentifierCorrect(p_indexname);
     query += p_schema.IsEmpty() && p_tablename.IsEmpty() ? _T(" WHERE ") : _T("   AND ");
     query += _T("ind.index_name = ?\n");
   }
@@ -1424,6 +1436,15 @@ SQLInfoOracle::GetCATALOGIndexFilter(MetaIndex& p_index) const
 {
   XString expression;
   XString sql;
+
+  bool p_quoted(true);
+  XString schema(p_index.m_schemaName);
+  XString table (p_index.m_tableName);
+  XString index (p_index.m_indexName);
+  IdentifierCorrect(schema);
+  IdentifierCorrect(table);
+  IdentifierCorrect(index);
+
   sql.Format(_T("SELECT column_expression\n")
              _T("  FROM all_ind_expressions\n")
              _T(" WHERE index_owner = '") + p_index.m_schemaName + _T("'\n")
@@ -1453,10 +1474,10 @@ SQLInfoOracle::GetCATALOGIndexFilter(MetaIndex& p_index) const
 // ALL PRIMARY KEY FUNCTIONS
 
 XString
-SQLInfoOracle::GetCATALOGPrimaryExists(XString p_schema,XString p_tablename,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetCATALOGPrimaryExists(XString p_schema,XString p_tablename,bool p_quoted /*= false*/) const
 {
-  p_schema.MakeUpper();
-  p_tablename.MakeUpper();
+  IdentifierCorrect(p_schema);
+  IdentifierCorrect(p_tablename);
 
   XString query = _T("SELECT c.constraint_name\n")
                   _T("      ,c.index_name\n")
@@ -1516,11 +1537,11 @@ SQLInfoOracle::GetCATALOGPrimaryDrop(XString p_schema,XString p_tablename,XStrin
 // ALL FOREIGN KEY FUNCTIONS
 
 XString
-SQLInfoOracle::GetCATALOGForeignExists(XString p_schema,XString p_tablename,XString p_constraintname,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetCATALOGForeignExists(XString p_schema,XString p_tablename,XString p_constraintname,bool p_quoted /*= false*/) const
 {
-  p_schema.MakeUpper();
-  p_tablename.MakeUpper();
-  p_constraintname.MakeUpper();
+  IdentifierCorrect(p_schema);
+  IdentifierCorrect(p_tablename);
+  IdentifierCorrect(p_constraintname);
 
   XString sql;
   sql.Format(_T("SELECT COUNT(*)\n")
@@ -1537,10 +1558,10 @@ SQLInfoOracle::GetCATALOGForeignExists(XString p_schema,XString p_tablename,XStr
 }
 
 XString
-SQLInfoOracle::GetCATALOGForeignList(XString& p_schema,XString& p_tablename,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetCATALOGForeignList(XString& p_schema,XString& p_tablename,bool p_quoted /*= false*/) const
 {
   XString constraint;
-  return GetCATALOGForeignAttributes(p_schema,p_tablename,constraint);
+  return GetCATALOGForeignAttributes(p_schema,p_tablename,constraint,p_quoted);
 }
 
 XString
@@ -1548,13 +1569,8 @@ SQLInfoOracle::GetCATALOGForeignAttributes(XString& p_schema
                                           ,XString& p_tablename
                                           ,XString& p_constraint
                                           ,bool     p_referenced /*=false*/
-                                          ,bool   /*p_quoted         = false*/) const
+                                          ,bool     p_quoted     /*=false*/) const
 {
-  // Oracle catalog is in uppercase
-  p_schema.MakeUpper();
-  p_tablename.MakeUpper();
-  p_constraint.MakeUpper();
-
   // Minimal requirements of the catalog
   if(p_schema.IsEmpty() || p_tablename.IsEmpty())
   {
@@ -1605,6 +1621,7 @@ SQLInfoOracle::GetCATALOGForeignAttributes(XString& p_schema
   // Optionally add our filters
   if(!p_schema.IsEmpty())
   {
+    IdentifierCorrect(p_schema);
     if(p_referenced)
     {
       query += _T("   AND pri.owner           = ?\n");
@@ -1616,6 +1633,7 @@ SQLInfoOracle::GetCATALOGForeignAttributes(XString& p_schema
   }
   if(!p_tablename.IsEmpty())
   {
+    IdentifierCorrect(p_tablename);
     if(p_referenced)
     {
       query += _T("   AND pri.table_name      = ?\n");
@@ -1628,6 +1646,7 @@ SQLInfoOracle::GetCATALOGForeignAttributes(XString& p_schema
   }
   if(!p_constraint.IsEmpty())
   {
+    IdentifierCorrect(p_constraint);
     if(p_referenced)
     {
       query += _T("   AND pri.constraint_name = ?\n");
@@ -1797,19 +1816,19 @@ SQLInfoOracle::GetCATALOGDefaultDrop(XString /*p_schema*/,XString /*p_tablename*
 // All check constraints
 
 XString
-SQLInfoOracle::GetCATALOGCheckExists(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/) const
+SQLInfoOracle::GetCATALOGCheckExists(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoOracle::GetCATALOGCheckList(XString  /*p_schema*/,XString  /*p_tablename*/) const
+SQLInfoOracle::GetCATALOGCheckList(XString  /*p_schema*/,XString  /*p_tablename*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoOracle::GetCATALOGCheckAttributes(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/) const
+SQLInfoOracle::GetCATALOGCheckAttributes(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
@@ -1830,11 +1849,11 @@ SQLInfoOracle::GetCATALOGCheckDrop(XString  /*p_schema*/,XString  /*p_tablename*
 // ALL TRIGGER FUNCTIONS
 
 XString
-SQLInfoOracle::GetCATALOGTriggerExists(XString p_schema, XString p_tablename, XString p_triggername,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetCATALOGTriggerExists(XString p_schema, XString p_tablename, XString p_triggername,bool p_quoted /*= false*/) const
 {
-  p_schema.MakeUpper();
-  p_tablename.MakeUpper();
-  p_triggername.MakeUpper();
+  IdentifierCorrect(p_schema);
+  IdentifierCorrect(p_tablename);
+  IdentifierCorrect(p_triggername);
 
   XString sql;
   sql.Format(_T("SELECT COUNT(*)\n")
@@ -1856,12 +1875,8 @@ SQLInfoOracle::GetCATALOGTriggerList(XString& p_schema,XString& p_tablename,bool
 }
 
 XString
-SQLInfoOracle::GetCATALOGTriggerAttributes(XString& p_schema,XString& p_tablename,XString& p_triggername,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetCATALOGTriggerAttributes(XString& p_schema,XString& p_tablename,XString& p_triggername,bool p_quoted /*= false*/) const
 {
-  p_schema.MakeUpper();
-  p_tablename.MakeUpper();
-  p_triggername.MakeUpper();
-
   XString sql = _T("SELECT sys_context('USERENV','DB_NAME')  AS catalog_name\n")
                 _T("      ,owner                             AS schema_name\n")
                 _T("      ,table_name\n")
@@ -1886,10 +1901,12 @@ SQLInfoOracle::GetCATALOGTriggerAttributes(XString& p_schema,XString& p_tablenam
                 _T("  FROM all_triggers\n");
   if(!p_schema.IsEmpty())
   {
+    IdentifierCorrect(p_schema);
     sql += _T(" WHERE table_owner = ?\n");
   }
   if(!p_tablename.IsEmpty())
   {
+    IdentifierCorrect(p_tablename);
     sql += p_schema.IsEmpty() ? _T(" WHERE ") : _T("   AND ");
     sql += _T("table_name ");
     sql += p_tablename.Find('%') > 0 ? _T("LIKE") : _T("=");
@@ -1897,6 +1914,7 @@ SQLInfoOracle::GetCATALOGTriggerAttributes(XString& p_schema,XString& p_tablenam
   } 
   if(!p_triggername.IsEmpty())
   {
+    IdentifierCorrect(p_triggername);
     sql += p_schema.IsEmpty() && p_tablename.IsEmpty() ? _T(" WHERE ") : _T("   AND ");
     sql += _T("trigger_name ");
     sql += p_triggername.Find('%') > 0 ? _T("LIKE") : _T("=");
@@ -1969,10 +1987,10 @@ SQLInfoOracle::GetCATALOGTriggerDrop(XString /*p_schema*/, XString /*p_tablename
 // ALL SEQUENCE FUNCTIONS
 
 XString
-SQLInfoOracle::GetCATALOGSequenceExists(XString p_schema, XString p_sequence,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetCATALOGSequenceExists(XString p_schema, XString p_sequence,bool p_quoted /*= false*/) const
 {
-  p_schema.MakeUpper();
-  p_sequence.MakeUpper();
+  IdentifierCorrect(p_schema);
+  IdentifierCorrect(p_sequence);
 
   XString sql = _T("SELECT COUNT(*)\n")
                 _T("  FROM all_sequences\n")
@@ -1982,10 +2000,8 @@ SQLInfoOracle::GetCATALOGSequenceExists(XString p_schema, XString p_sequence,boo
 }
 
 XString
-SQLInfoOracle::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern,bool p_quoted /*= false*/) const
 {
-  p_schema.MakeUpper();
-  p_pattern.MakeUpper();
   if(!p_pattern.IsEmpty() && p_pattern != _T("%"))
   {
     p_pattern = _T("%") + p_pattern + _T("%");
@@ -2002,10 +2018,12 @@ SQLInfoOracle::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern,bool 
                 _T("  FROM all_sequences\n");
   if (!p_schema.IsEmpty())
   {
+    IdentifierCorrect(p_schema);
     sql += _T(" WHERE sequence_owner = ?\n");
   }
   if (!p_pattern.IsEmpty())
   {
+    IdentifierCorrect(p_pattern);
     sql += p_schema.IsEmpty() ? _T(" WHERE ") : _T("   AND ");
     sql += _T("sequence_name  LIKE ?\n");
   }
@@ -2014,11 +2032,8 @@ SQLInfoOracle::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern,bool 
 }
 
 XString
-SQLInfoOracle::GetCATALOGSequenceAttributes(XString& p_schema,XString& p_sequence,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetCATALOGSequenceAttributes(XString& p_schema,XString& p_sequence,bool p_quoted /*= false*/) const
 {
-  p_schema.MakeUpper();
-  p_sequence.MakeUpper();
-
   XString sql = _T("SELECT ''              AS catalog_name\n")
                 _T("      ,sequence_owner  AS schema_name\n")
                 _T("      ,sequence_name\n")
@@ -2031,10 +2046,12 @@ SQLInfoOracle::GetCATALOGSequenceAttributes(XString& p_schema,XString& p_sequenc
                 _T("  FROM all_sequences\n");
   if(!p_schema.IsEmpty())
   {
+    IdentifierCorrect(p_schema);
     sql += _T(" WHERE sequence_owner = ?\n");
   }
   if(!p_sequence.IsEmpty())
   {
+    IdentifierCorrect(p_sequence);
     sql += p_schema.IsEmpty() ? _T(" WHERE ") : _T("   AND ");
     sql += _T("sequence_name  = ?\n");
   }
@@ -2079,10 +2096,11 @@ SQLInfoOracle::GetCATALOGSequenceDrop(XString p_schema, XString p_sequence) cons
 // ALL VIEW FUNCTIONS
 
 XString 
-SQLInfoOracle::GetCATALOGViewExists(XString& p_schema,XString& p_viewname,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetCATALOGViewExists(XString& p_schema,XString& p_viewname,bool p_quoted /*= false*/) const
 {
-  p_schema.MakeUpper();
-  p_viewname.MakeUpper();
+  IdentifierCorrect(p_viewname);
+  IdentifierCorrect(p_schema);
+
   XString sql(_T("SELECT COUNT(*)\n")
               _T("  FROM all_views\n")
               _T(" WHERE owner     = ?\n")
@@ -2091,17 +2109,14 @@ SQLInfoOracle::GetCATALOGViewExists(XString& p_schema,XString& p_viewname,bool /
 }
 
 XString 
-SQLInfoOracle::GetCATALOGViewList(XString& p_schema,XString& p_pattern,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetCATALOGViewList(XString& p_schema,XString& p_pattern,bool p_quoted /*= false*/) const
 {
-  return GetCATALOGViewAttributes(p_schema,p_pattern);
+  return GetCATALOGViewAttributes(p_schema,p_pattern,p_quoted);
 }
 
 XString 
-SQLInfoOracle::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewname,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewname,bool p_quoted /*= false*/) const
 {
-  p_schema.MakeUpper();
-  p_viewname.MakeUpper();
-
   // VIEWS
   XString sql = _T("SELECT sys_context('USERENV','DB_NAME') AS table_catalog\n")
                 _T("      ,viw.owner         AS table_schema\n")
@@ -2116,6 +2131,7 @@ SQLInfoOracle::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewname,bo
                 _T(" WHERE com.table_type = 'VIEW'\n");
   if(!p_schema.IsEmpty())
   {
+    IdentifierCorrect(p_schema);
     if(p_schema.Find('%') >= 0)
     {
       sql += _T("  AND viw.owner   LIKE ?\n");
@@ -2128,6 +2144,7 @@ SQLInfoOracle::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewname,bo
 
   if(!p_viewname.IsEmpty())
   {
+    IdentifierCorrect(p_viewname);
     if(p_viewname.Find('%') >= 0)
     {
       sql += _T("   AND viw.view_name   LIKE ?\n");
@@ -2137,16 +2154,15 @@ SQLInfoOracle::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewname,bo
       sql += _T("   AND viw.view_name   = ?\n");
     }
   }
-
   sql += _T(" ORDER BY 1,2,3");
   return sql;
 }
 
 XString
-SQLInfoOracle::GetCATALOGViewText(XString& p_schema,XString& p_viewname,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetCATALOGViewText(XString& p_schema,XString& p_viewname,bool p_quoted /*= false*/) const
 {
-  p_schema.MakeUpper();
-  p_viewname.MakeUpper();
+  IdentifierCorrect(p_schema);
+  IdentifierCorrect(p_viewname);
 
   // BEWARE works from Oracle 19 onwards
   XString sql = _T("SELECT text\n")
@@ -2179,8 +2195,9 @@ SQLInfoOracle::GetCATALOGViewDrop(XString p_schema,XString p_viewname,XString& p
 XString
 SQLInfoOracle::GetCATALOGTablePrivileges(XString& p_schema,XString& p_tablename) const
 {
-  p_schema.MakeUpper();
-  p_tablename.MakeUpper();
+  bool p_quoted(true);
+  IdentifierCorrect(p_schema);
+  IdentifierCorrect(p_tablename);
   bool pattern = p_tablename.Find('%') > 0;
 
   XString sql = _T("SELECT sys_context('USERENV','DB_NAME') AS table_catalog\n")
@@ -2231,9 +2248,10 @@ SQLInfoOracle::GetCATALOGTablePrivileges(XString& p_schema,XString& p_tablename)
 XString 
 SQLInfoOracle::GetCATALOGColumnPrivileges(XString& p_schema,XString& p_tablename,XString& p_columnname) const
 {
-  p_schema.MakeUpper();
-  p_tablename.MakeUpper();
-  p_columnname.MakeUpper();
+  bool p_quoted(true);
+  IdentifierCorrect(p_schema);
+  IdentifierCorrect(p_tablename);
+  IdentifierCorrect(p_columnname);
 
   XString sql = _T("SELECT sys_context('USERENV','DB_NAME') AS table_catalog\n")
                 _T("      ,pri.table_schema\n")
@@ -2271,10 +2289,20 @@ SQLInfoOracle::GetCATALOGSequencePrivilege(XString& /*p_schema*/,XString& /*p_se
 }
 
 XString 
-SQLInfoOracle::GetCATALOGGrantPrivilege(XString p_schema,XString p_objectname,XString p_privilege,XString p_grantee,bool p_grantable)
+SQLInfoOracle::GetCATALOGGrantPrivilege(XString p_schema,XString p_objectname,XString p_subObject,XString p_privilege,XString p_grantee,bool p_grantable)
 {
   XString sql;
-  sql.Format(_T("GRANT %s ON %s.%s TO %s"),p_privilege.GetString(),p_schema.GetString(),p_objectname.GetString(),p_grantee.GetString());
+  sql.Format(_T("GRANT %s"),p_privilege.GetString());
+  if(!p_subObject.IsEmpty())
+  {
+    sql.AppendFormat(_T("(%s)"),QIQ(p_subObject).GetString());
+  }
+  sql += _T(" ON ");
+  if(!p_schema.IsEmpty())
+  {
+    sql.AppendFormat(_T("%s."),QIQ(p_schema).GetString());
+  }
+  sql.AppendFormat(_T("%s TO %s"),QIQ(p_objectname).GetString(),QIQ(p_grantee).GetString());
   if(p_grantable)
   {
     sql += _T(" WITH GRANT OPTION");
@@ -2283,10 +2311,20 @@ SQLInfoOracle::GetCATALOGGrantPrivilege(XString p_schema,XString p_objectname,XS
 }
 
 XString 
-SQLInfoOracle::GetCATALOGRevokePrivilege(XString p_schema,XString p_objectname,XString p_privilege,XString p_grantee)
+SQLInfoOracle::GetCATALOGRevokePrivilege(XString p_schema,XString p_objectname,XString p_subObject,XString p_privilege,XString p_grantee)
 {
   XString sql;
-  sql.Format(_T("REVOKE %s ON %s.%s FROM %s"),p_privilege.GetString(),p_schema.GetString(),p_objectname.GetString(),p_grantee.GetString());
+  sql.Format(_T("GRANT %s"),p_privilege.GetString());
+  if(!p_subObject.IsEmpty())
+  {
+    sql.AppendFormat(_T("(%s)"),QIQ(p_subObject).GetString());
+  }
+  sql += _T(" ON ");
+  if(!p_schema.IsEmpty())
+  {
+    sql.AppendFormat(_T("%s."),QIQ(p_schema).GetString());
+  }
+  sql.AppendFormat(_T("%s TO %s"),QIQ(p_objectname).GetString(),QIQ(p_grantee).GetString());
   return sql;
 }
 
@@ -2349,10 +2387,11 @@ SQLInfoOracle::GetCATALOGSynonymDrop(XString& /*p_schema*/,XString& /*p_synonym*
 //////////////////////////////////////////////////////////////////////////
 
 XString
-SQLInfoOracle::GetPSMProcedureExists(XString p_schema,XString p_procedure,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetPSMProcedureExists(XString p_schema,XString p_procedure,bool p_quoted /*= false*/) const
 {
-  p_schema.MakeUpper();
-  p_procedure.MakeUpper();
+  IdentifierCorrect(p_schema);
+  IdentifierCorrect(p_procedure);
+
   return _T("SELECT COUNT(*)\n")
          _T("  FROM all_procedures\n")
          _T(" WHERE object_type IN ('PACKAGE','PROCEDURE','FUNCTION')\n")
@@ -2364,13 +2403,10 @@ SQLInfoOracle::GetPSMProcedureExists(XString p_schema,XString p_procedure,bool /
 XString
 SQLInfoOracle::GetPSMProcedureList(XString& p_schema,XString p_procedure,bool p_quoted /*= false*/) const
 {
-  if(!p_quoted)
-  {
-    p_schema.MakeUpper();
-    p_procedure.MakeUpper();
-  }
-  XString sql;
+  IdentifierCorrect(p_schema);
+  IdentifierCorrect(p_procedure);
 
+  XString sql;
   sql  = _T("SELECT sys_context('USERENV','DB_NAME') AS procedure_catalog\n")
          _T("      ,owner       as procedure_schema\n")
          _T("      ,object_name as procedure_name\n")
@@ -2427,7 +2463,7 @@ SQLInfoOracle::GetPSMProcedureList(XString& p_schema,XString p_procedure,bool p_
 }
 
 XString
-SQLInfoOracle::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure,bool p_quoted /*= false*/) const
 {
   p_procedure.MakeUpper();
   CString package;
@@ -2470,10 +2506,12 @@ SQLInfoOracle::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure,
         _T(" WHERE object_type IN ('PACKAGE','PROCEDURE','FUNCTION')\n");
   if(!p_schema.IsEmpty())
   {
+    IdentifierCorrect(p_schema);
     sql += _T("   AND owner = ?\n");
   }
   if(!package.IsEmpty())
   {
+    IdentifierCorrect(package);
     sql += _T("   AND object_name = '" + package + "'\n");
     sql += _T("   AND procedure_name ");
     sql += package.Find('%') >= 0 ? _T("LIKE '") : _T("= '");
@@ -2481,6 +2519,7 @@ SQLInfoOracle::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure,
   }
   else if(!p_procedure.IsEmpty())
   {
+    IdentifierCorrect(p_procedure);
     sql += _T("   AND ( object_name ");
     sql += p_procedure.Find('%') >= 0 ? _T("LIKE '") : _T("= '");
     sql += p_procedure + _T("'\n");
@@ -2493,10 +2532,8 @@ SQLInfoOracle::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure,
 }
 
 XString
-SQLInfoOracle::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure,bool p_quoted /*= false*/) const
 {
-  p_schema.MakeUpper();
-  p_procedure.MakeUpper();
   XString sql;
 
   sql = _T("SELECT 0 as object_id\n")
@@ -2505,10 +2542,12 @@ SQLInfoOracle::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure,b
         _T("  FROM all_source\n");
   if(!p_schema.IsEmpty())
   {
+    IdentifierCorrect(p_schema);
     sql += _T(" WHERE owner = '") + p_schema + _T("'\n");
   }
   if(!p_procedure.IsEmpty())
   {
+    IdentifierCorrect(p_procedure);
     sql += p_schema.IsEmpty() ? _T(" WHERE ") : _T("   AND ");
     sql += _T(" name  = '") + p_procedure + _T("'\n");
   }
@@ -2529,12 +2568,12 @@ SQLInfoOracle::GetPSMProcedureDrop(XString /*p_schema*/, XString /*p_procedure*/
 }
 
 XString
-SQLInfoOracle::GetPSMProcedureErrors(XString p_schema,XString p_procedure,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetPSMProcedureErrors(XString p_schema,XString p_procedure,bool p_quoted /*= false*/) const
 {
   XString query;
   XString errorText;
-  p_schema.MakeUpper();
-  p_procedure.MakeUpper();
+  IdentifierCorrect(p_schema);
+  IdentifierCorrect(p_procedure);
   query = _T("SELECT line\n")
           _T("      ,position\n")
           _T("      ,text\n")

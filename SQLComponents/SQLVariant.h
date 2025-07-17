@@ -104,6 +104,7 @@ public:
    bool    IsDecimalType() const;
    bool    IsIntervalType() const;
    bool    IsDateTimeType() const;
+   bool    IsBinaryType() const;
 
    // GETTERS
    int     GetDataType() const;
@@ -166,13 +167,6 @@ public:
    unsigned char        GetAsUTinyInt() const;
    SQLBIGINT            GetAsSBigInt() const;
    SQLUBIGINT           GetAsUBigInt() const;
-   const SQL_NUMERIC_STRUCT*  GetAsNumeric() const;
-   const SQLGUID*             GetAsGUID() const;
-   const DATE_STRUCT*         GetAsDate() const;
-   const TIME_STRUCT*         GetAsTime() const;
-   const TIMESTAMP_STRUCT*    GetAsTimestamp() const;
-   const XString              GetAsEuropeanTimestamp() const;
-   const SQL_INTERVAL_STRUCT* GetAsInterval() const;
    // Access per complex type
    XString              GetAsSQLString() const;
    SQLDate              GetAsSQLDate() const;
@@ -181,6 +175,13 @@ public:
    SQLInterval          GetAsSQLInterval() const;
    SQLGuid              GetAsSQLGuid() const;
    bcd                  GetAsBCD() const;
+   const SQL_NUMERIC_STRUCT*  GetAsNumeric() const;
+   const SQLGUID*             GetAsGUID() const;
+   const DATE_STRUCT*         GetAsDate() const;
+   const TIME_STRUCT*         GetAsTime() const;
+   const TIMESTAMP_STRUCT*    GetAsTimestamp() const;
+   const XString              GetAsEuropeanTimestamp() const;
+   const SQL_INTERVAL_STRUCT* GetAsInterval() const;
 
    // SET VALUE PER TYPE
    void                 Set(LPCTSTR       p_string,bool p_wide = false);

@@ -201,6 +201,10 @@ public:
   // Query to perform a keep alive ping
   XString GetPing() const override;
 
+  // Pre- and postfix statements for a bulk import
+  XString GetBulkImportPrefix (XString p_schema,XString p_tablename,bool p_identity = true,bool p_constraints = true) const;
+  XString GetBulkImportPostfix(XString p_schema,XString p_tablename,bool p_identity = true,bool p_constraints = true) const;
+
   //////////////////////////////////////////////////////////////////////////
   // SQL STRINGS
 
@@ -228,8 +232,8 @@ public:
   // Get the name of a temp table (local temporary or global temporary)
   XString GetTempTablename(XString p_schema,XString p_tablename,bool p_local) const override;
 
-  // Changes to parameters before binding to an ODBC HSTMT handle
-  void DoBindParameterFixup(SQLSMALLINT& p_dataType,SQLSMALLINT& p_sqlDatatype,SQLULEN& p_columnSize,SQLSMALLINT& p_scale,SQLLEN& p_bufferSize,SQLLEN* p_indicator) const override;
+  // Changes to parameters before binding to an ODBC HSTMT handle (returning the At-Exec status)
+  bool DoBindParameterFixup(SQLSMALLINT& p_dataType,SQLSMALLINT& p_sqlDatatype,SQLULEN& p_columnSize,SQLSMALLINT& p_scale,SQLLEN& p_bufferSize,SQLLEN* p_indicator) const override;
 
   //////////////////////////////////////////////////////////////////////////
   //
@@ -311,9 +315,9 @@ public:
   XString GetCATALOGDefaultCreate    (XString  p_schema,XString  p_tablename,XString  p_constraint,XString p_column,XString p_code) const override;
   XString GetCATALOGDefaultDrop      (XString  p_schema,XString  p_tablename,XString  p_constraint) const override;
   // All check constraints
-  XString GetCATALOGCheckExists      (XString  p_schema,XString  p_tablename,XString  p_constraint) const override;
-  XString GetCATALOGCheckList        (XString  p_schema,XString  p_tablename) const override;
-  XString GetCATALOGCheckAttributes  (XString  p_schema,XString  p_tablename,XString  p_constraint) const override;
+  XString GetCATALOGCheckExists      (XString  p_schema,XString  p_tablename,XString  p_constraint,bool p_quoted = false) const override;
+  XString GetCATALOGCheckList        (XString  p_schema,XString  p_tablename                      ,bool p_quoted = false) const override;
+  XString GetCATALOGCheckAttributes  (XString  p_schema,XString  p_tablename,XString  p_constraint,bool p_quoted = false) const override;
   XString GetCATALOGCheckCreate      (XString  p_schema,XString  p_tablename,XString  p_constraint,XString p_condition) const override;
   XString GetCATALOGCheckDrop        (XString  p_schema,XString  p_tablename,XString  p_constraint) const override;
   // All trigger functions
@@ -340,8 +344,8 @@ public:
   XString GetCATALOGTablePrivileges  (XString& p_schema,XString& p_tablename) const override;
   XString GetCATALOGColumnPrivileges (XString& p_schema,XString& p_tablename,XString& p_columnname) const override;
   XString GetCATALOGSequencePrivilege(XString& p_schema,XString& p_sequence) const override;
-  XString GetCATALOGGrantPrivilege   (XString  p_schema,XString  p_objectname,XString p_privilege,XString p_grantee,bool p_grantable) override;
-  XString GetCATALOGRevokePrivilege  (XString  p_schema,XString  p_objectname,XString p_privilege,XString p_grantee) override;
+  XString GetCATALOGGrantPrivilege   (XString  p_schema,XString  p_objectname,XString p_subObject,XString p_privilege,XString p_grantee,bool p_grantable) override;
+  XString GetCATALOGRevokePrivilege  (XString  p_schema,XString  p_objectname,XString p_subObject,XString p_privilege,XString p_grantee) override;
   // All Synonym functions
   XString GetCATALOGSynonymList      (XString& p_schema,XString& p_pattern) const override;
   XString GetCATALOGSynonymAttributes(XString& p_schema,XString& p_synonym) const override;
