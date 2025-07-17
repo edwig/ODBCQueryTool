@@ -360,9 +360,9 @@ DDLCreateTable::GetColumnInfo()
                                     ,column.m_decimalDigits);
     }
     // optional default value
-    if(!column.m_default.IsEmpty() && 
-        column.m_default.CompareNoCase(_T("null")) &&
-        column.m_default.Compare(_T("''")) &&
+    if(!column.m_default.IsEmpty()                      && 
+        column.m_default.CompareNoCase(_T("TRUNCATED")) &&
+        column.m_default.Compare(_T("''"))              &&
         column.m_default.Compare(_T("0")))
     {
       line += _T(" DEFAULT ");
@@ -682,6 +682,7 @@ DDLCreateTable::GetAccessInfo(bool p_strict /*=false*/)
     m_didPrivileges = !m_access.empty();
   }
 
+  XString subObject;
   bool strict = p_strict || m_info->GetPreferODBC();
 
   // Print all privileges
@@ -689,8 +690,8 @@ DDLCreateTable::GetAccessInfo(bool p_strict /*=false*/)
   {
     if(!strict || IsStrictODBCPrivilege(priv.m_privilege))
     {
-      line = m_target ? m_target->GetCATALOGGrantPrivilege(priv.m_schemaName,priv.m_tableName,priv.m_privilege,priv.m_grantee,priv.m_grantable)
-                      :   m_info->GetCATALOGGrantPrivilege(priv.m_schemaName,priv.m_tableName,priv.m_privilege,priv.m_grantee,priv.m_grantable);
+      line = m_target ? m_target->GetCATALOGGrantPrivilege(priv.m_schemaName,priv.m_tableName,subObject,priv.m_privilege,priv.m_grantee,priv.m_grantable)
+                      :   m_info->GetCATALOGGrantPrivilege(priv.m_schemaName,priv.m_tableName,subObject,priv.m_privilege,priv.m_grantee,priv.m_grantable);
       if(!line.IsEmpty())
       {
         StashTheLine(line);
@@ -765,8 +766,11 @@ DDLCreateTable::ReplaceLengthPrecScale(TypeInfo*  p_type
   // Replace as strings
   if(p_length > 0)
   {
-    params.Replace(_T("max length"),length);    // ORACLE DOES THIS!!
-    params.Replace(_T("length"),    length);
+    // ODBC's create_params should report "length" for single length datatypes
+    // But the various RDBMS drivers have variations on this
+    params.Replace(_T("max. length"),length);    // PostgreSQL DOES THIS!!
+    params.Replace(_T("max length"), length);    // Oracle     DOES THIS!!
+    params.Replace(_T("length"),     length);    // SQLServer  DOES THIS!!
   }
   else if(p_type->m_type_name.CompareNoCase(_T("varchar")) == 0)
   {

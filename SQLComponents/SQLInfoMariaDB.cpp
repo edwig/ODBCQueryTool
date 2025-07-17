@@ -622,6 +622,19 @@ SQLInfoMariaDB::GetPing() const
   return _T("SELECT current_timestamp");
 }
 
+// Pre- and postfix statements for a bulk import
+XString
+SQLInfoMariaDB::GetBulkImportPrefix(XString /*p_schema*/,XString /*p_tablename*/,bool /*p_identity = true*/,bool /*p_constraints = true*/) const
+{
+  return _T("");
+}
+
+XString
+SQLInfoMariaDB::GetBulkImportPostfix(XString /*p_schema*/,XString /*p_tablename*/,bool /*p_identity = true*/,bool /*p_constraints = true*/) const
+{
+  return _T("");
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // SQL STRINGS
@@ -699,10 +712,11 @@ SQLInfoMariaDB::GetTempTablename(XString /*p_schema*/,XString p_tablename,bool /
   return p_tablename;
 }
 
-// Changes to parameters before binding to an ODBC HSTMT handle
-void
+// Changes to parameters before binding to an ODBC HSTMT handle (returning the At-Exec status)
+bool
 SQLInfoMariaDB::DoBindParameterFixup(SQLSMALLINT& /*p_dataType*/,SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*p_columnSize*/,SQLSMALLINT& /*p_scale*/,SQLLEN& /*p_bufferSize*/,SQLLEN* /*p_indicator*/) const
 {
+  return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1447,19 +1461,19 @@ SQLInfoMariaDB::GetCATALOGDefaultDrop(XString /*p_schema*/,XString /*p_tablename
 // All check constraints
 
 XString
-SQLInfoMariaDB::GetCATALOGCheckExists(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/) const
+SQLInfoMariaDB::GetCATALOGCheckExists(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoMariaDB::GetCATALOGCheckList(XString  /*p_schema*/,XString  /*p_tablename*/) const
+SQLInfoMariaDB::GetCATALOGCheckList(XString  /*p_schema*/,XString  /*p_tablename*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoMariaDB::GetCATALOGCheckAttributes(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/) const
+SQLInfoMariaDB::GetCATALOGCheckAttributes(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
@@ -1755,34 +1769,42 @@ SQLInfoMariaDB::GetCATALOGSequencePrivilege(XString& /*p_schema*/,XString& /*p_s
 }
 
 XString 
-SQLInfoMariaDB::GetCATALOGGrantPrivilege(XString /*p_schema*/,XString p_objectname,XString p_privilege,XString p_grantee,bool p_grantable)
+SQLInfoMariaDB::GetCATALOGGrantPrivilege(XString p_schema,XString p_objectname,XString p_subObject,XString p_privilege,XString p_grantee,bool p_grantable)
 {
   XString sql;
-  p_grantee.MakeLower();
-
-  // MariaDB does not know the concept of "PUBLIC"
-  if(p_grantee.Compare(_T("public")))
+  sql.Format(_T("GRANT %s"),p_privilege.GetString());
+  if(!p_subObject.IsEmpty())
   {
-    sql.Format(_T("GRANT %s ON %s TO %s"), p_privilege.GetString(), p_objectname.GetString(), p_grantee.GetString());
-    if (p_grantable)
-    {
-      sql += _T(" WITH GRANT OPTION");
-    }
+    sql.AppendFormat(_T("(%s)"),QIQ(p_subObject).GetString());
+  }
+  sql += _T(" ON ");
+  if(!p_schema.IsEmpty())
+  {
+    sql.AppendFormat(_T("%s."),QIQ(p_schema).GetString());
+  }
+  sql.AppendFormat(_T("%s TO %s"),QIQ(p_objectname).GetString(),QIQ(p_grantee).GetString());
+  if(p_grantable)
+  {
+    sql += _T(" WITH GRANT OPTION");
   }
   return sql;
 }
 
 XString 
-SQLInfoMariaDB::GetCATALOGRevokePrivilege(XString /*p_schema*/,XString p_objectname,XString p_privilege,XString p_grantee)
+SQLInfoMariaDB::GetCATALOGRevokePrivilege(XString p_schema,XString p_objectname,XString p_subObject,XString p_privilege,XString p_grantee)
 {
   XString sql;
-  p_grantee.MakeLower();
-
-  // MariaDB does not know the concept of "PUBLIC"
-  if(p_grantee.Compare(_T("public")))
+  sql.Format(_T("REVOKE %s"),p_privilege.GetString());
+  if(!p_subObject.IsEmpty())
   {
-    sql.Format(_T("REVOKE %s ON %s FROM %s"), p_privilege.GetString(), p_objectname.GetString(), p_grantee.GetString());
+    sql.AppendFormat(_T("(%s)"),QIQ(p_subObject).GetString());
   }
+  sql += _T(" ON ");
+  if(!p_schema.IsEmpty())
+  {
+    sql.AppendFormat(_T("%s."),QIQ(p_schema).GetString());
+  }
+  sql.AppendFormat(_T("%s FROM %s"),QIQ(p_objectname).GetString(),QIQ(p_grantee).GetString());
   return sql;
 }
 

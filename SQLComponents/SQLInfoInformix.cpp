@@ -497,6 +497,19 @@ SQLInfoInformix::GetPing() const
          _T(" WHERE tabid = 1");
 }
 
+// Pre- and postfix statements for a bulk import
+XString
+SQLInfoInformix::GetBulkImportPrefix(XString /*p_schema*/,XString /*p_tablename*/,bool /*p_identity = true*/,bool /*p_constraints = true*/) const
+{
+  return _T("");
+}
+
+XString
+SQLInfoInformix::GetBulkImportPostfix(XString /*p_schema*/,XString /*p_tablename*/,bool /*p_identity = true*/,bool /*p_constraints = true*/) const
+{
+  return _T("");
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // SQL STRINGS
@@ -578,10 +591,11 @@ SQLInfoInformix::GetTempTablename(XString /*p_schema*/,XString p_tablename,bool 
   return p_tablename;
 }
 
-// Changes to parameters before binding to an ODBC HSTMT handle
-void
+// Changes to parameters before binding to an ODBC HSTMT handle (returning the At-Exec status)
+bool
 SQLInfoInformix::DoBindParameterFixup(SQLSMALLINT& /*p_dataType*/,SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*p_columnSize*/,SQLSMALLINT& /*p_scale*/,SQLLEN& /*p_bufferSize*/,SQLLEN* /*p_indicator*/) const
 {
+  return false;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1315,19 +1329,19 @@ SQLInfoInformix::GetCATALOGDefaultDrop(XString /*p_schema*/,XString /*p_tablenam
 // All check constraints
 
 XString
-SQLInfoInformix::GetCATALOGCheckExists(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/) const
+SQLInfoInformix::GetCATALOGCheckExists(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoInformix::GetCATALOGCheckList(XString  /*p_schema*/,XString  /*p_tablename*/) const
+SQLInfoInformix::GetCATALOGCheckList(XString  /*p_schema*/,XString  /*p_tablename*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoInformix::GetCATALOGCheckAttributes(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/) const
+SQLInfoInformix::GetCATALOGCheckAttributes(XString  /*p_schema*/,XString  /*p_tablename*/,XString  /*p_constraint*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
@@ -1577,10 +1591,15 @@ SQLInfoInformix::GetCATALOGSequencePrivilege(XString& /*p_schema*/,XString& /*p_
 }
 
 XString 
-SQLInfoInformix::GetCATALOGGrantPrivilege(XString /*p_schema*/,XString p_objectname,XString p_privilege,XString p_grantee,bool p_grantable)
+SQLInfoInformix::GetCATALOGGrantPrivilege(XString /*p_schema*/,XString p_objectname,XString p_subObject,XString p_privilege,XString p_grantee,bool p_grantable)
 {
   XString sql;
-  sql.Format(_T("GRANT %s ON %s TO %s"),p_privilege.GetString(),p_objectname.GetString(),p_grantee.GetString());
+  sql.Format(_T("GRANT %s"),p_privilege.GetString());
+  if(!p_subObject.IsEmpty())
+  {
+    sql.AppendFormat(_T("(%s)"),QIQ(p_subObject).GetString());
+  }
+  sql.AppendFormat(_T(" ON %s TO %s"),QIQ(p_objectname).GetString(),QIQ(p_grantee).GetString());
   if(p_grantable)
   {
     sql += _T(" WITH GRANT OPTION");
@@ -1589,10 +1608,15 @@ SQLInfoInformix::GetCATALOGGrantPrivilege(XString /*p_schema*/,XString p_objectn
 }
 
 XString
-SQLInfoInformix::GetCATALOGRevokePrivilege(XString /*p_schema*/,XString p_objectname,XString p_privilege,XString p_grantee)
+SQLInfoInformix::GetCATALOGRevokePrivilege(XString /*p_schema*/,XString p_objectname,XString p_subObject,XString p_privilege,XString p_grantee)
 {
   XString sql;
-  sql.Format(_T("REVOKE %s ON %s FROM %s"),p_privilege.GetString(),p_objectname.GetString(),p_grantee.GetString());
+  sql.Format(_T("REVOKE %s"),p_privilege.GetString());
+  if(!p_subObject.IsEmpty())
+  {
+    sql.AppendFormat(_T("(%s)"),QIQ(p_subObject).GetString());
+  }
+  sql.AppendFormat(_T(" ON %s FROM %s"),QIQ(p_objectname).GetString(),QIQ(p_grantee).GetString());
   return sql;
 }
 

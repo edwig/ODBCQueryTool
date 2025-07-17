@@ -24,7 +24,6 @@
 // Version number: See SQLComponents.h
 //
 #include "StdAfx.h"
-#include "SQLComponents.h"
 #include "SQLVariant.h"
 #include "SQLDataType.h"
 #include "SQLVariantTrim.h"
@@ -32,19 +31,13 @@
 #include "SQLTime.h"
 #include "SQLTimestamp.h"
 #include "SQLGuid.h"
-#include "bcd.h"
-#include <math.h>
-#include <float.h>
-#include <limits.h>
-#include <string>
+#include <bcd.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
-
-using std::string;
 
 namespace SQLComponents
 {
@@ -587,6 +580,22 @@ SQLVariant::IsDateTimeType() const
   }
 }
 
+bool
+SQLVariant::IsBinaryType() const
+{
+  if(m_datatype == SQL_C_BINARY)
+  {
+    return true;
+  }
+  switch(m_sqlDatatype)
+  {
+    case SQL_BINARY:
+    case SQL_VARBINARY:
+    case SQL_LONGVARBINARY: return true;
+    default:                return false;
+  }
+}
+
 void
 SQLVariant::Reset()
 {
@@ -731,6 +740,19 @@ SQLVariant::SetFromBinaryStreamData(int   p_type
   // Depends on datatype
   if(p_type == SQL_C_CHAR || p_type == SQL_C_WCHAR || p_type == SQL_C_BINARY)
   {
+    int detected = p_length;
+    if(p_type == SQL_C_CHAR)
+    {
+      detected = (int) strlen((char*)p_data);
+    }
+    if(p_type == SQL_C_WCHAR)
+    {
+       detected = (int)wcslen((wchar_t*)p_data) * 2;
+    }
+    if(detected < p_length)
+    {
+      p_length = detected;
+    }
     // Allocated buffer types
     m_binaryLength = p_length;
     m_indicator    = p_isnull ? SQL_NULL_DATA : p_length;
@@ -2244,7 +2266,7 @@ SQLVariant::GetAsSQLString() const
 // Some databases (Oracle) need to know the size of the data member
 // for an AT_EXEC operation beforehand in the indicator
 void
-SQLVariant::SetSizeIndicator(bool p_realSize,bool p_binary)
+SQLVariant::SetSizeIndicator(bool p_realSize,bool p_binary /* = false */)
 {
   __int64 size = (__int64) GetDataSize();
   if(size > 0 && p_realSize)
@@ -2260,7 +2282,7 @@ SQLVariant::SetSizeIndicator(bool p_realSize,bool p_binary)
     }
     else
     {
-      // Simply the AT_EXEC indicator
+      // Simply the AT_EXEC   indicator
       m_indicator = SQL_DATA_AT_EXEC;
     }
   }

@@ -460,7 +460,7 @@ ObjectTree::FindTables(HTREEITEM p_theItem)
     case _T('V'): info->MakeInfoTableView    (tables,errors,schema,table); break;
     case _T('C'): info->MakeInfoTableCatalog (tables,errors,schema,table); break;
     case _T('S'): info->MakeInfoTableSynonyms(tables,errors,schema,table); break;
-    default:  info->MakeInfoTableObject  (tables,errors,schema,table); break;
+    default:      info->MakeInfoTableObject  (tables,errors,schema,table); break;
   }
 
   if(!errors.IsEmpty())
