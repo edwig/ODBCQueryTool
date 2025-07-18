@@ -776,8 +776,7 @@ SQLInfoOracle::GetCATALOGMetaTypes(int p_type) const
                               _T("                   ELSE SubStr(db_link, 1, InStr(db_link, '.') - 1)\n")
                               _T("       END\n")
                               _T("      ,db_link\n")
-                              _T("  FROM dba_db_links\n")
-                              _T(" WHERE owner <> 'SYS'");
+                              _T("  FROM user_db_links\n");
                         break;
     case META_SCHEMAS:  sql = _T("SELECT DISTINCT username\n")
                               _T("      ,'' AS remarks\n")
@@ -855,6 +854,7 @@ SQLInfoOracle::GetCATALOGTableAttributes(XString& p_schema,XString& p_tablename,
                 _T("                     ELSE 'UNKNOWN'\n")
                 _T("       END               AS object_type\n")
                 _T("      ,com.comments      AS remarks\n")
+                _T("      ,tab.owner || '.' || tab.table_name AS fullname\n")
                 _T("      ,tab.tablespace_name\n")
                 _T("      ,CASE tab.TEMPORARY\n")
                 _T("            WHEN 'Y' THEN 1\n")
@@ -894,6 +894,7 @@ SQLInfoOracle::GetCATALOGTableSynonyms(XString& p_schema,XString& p_tablename,bo
                 _T("      ,synonym_name AS table_name\n")
                 _T("      ,'SYNONYM'    AS object_type\n")
                 _T("      ,''           AS remarks\n")
+                _T("      ,table_owner || '.' || synonym_name AS fullname\n")
                 _T("      ,''           AS tablespace_name\n")
                 _T("      ,0            AS temporary\n")
                 _T("  FROM all_synonyms syn\n");
@@ -926,6 +927,7 @@ SQLInfoOracle::GetCATALOGTableCatalog(XString& p_schema,XString& p_tablename,boo
                 _T("      ,obj.object_name   AS table_name\n")
                 _T("      ,'SYSTEM TABLE'    AS object_type\n")
                 _T("      ,com.comments      AS remarks\n")
+                _T("      ,obj.owner || '.' || obj.object_name AS fullname\n")
                 _T("      ,''                AS tablespace_name\n")
                 _T("      ,0                 AS temporary\n")
                 _T("  FROM all_objects obj LEFT OUTER JOIN all_tab_comments com\n")
@@ -1368,7 +1370,7 @@ SQLInfoOracle::GetCATALOGIndexAttributes(XString& p_schema,XString& p_tablename,
     query += p_schema.IsEmpty() && p_tablename.IsEmpty() ? _T(" WHERE ") : _T("   AND ");
     query += _T("ind.index_name = ?\n");
   }
-  query += _T(" ORDER BY 1,2,3,5,7");
+  query += _T(" ORDER BY 1,2,3,6,8");
   return query;
 }
 
@@ -1571,12 +1573,6 @@ SQLInfoOracle::GetCATALOGForeignAttributes(XString& p_schema
                                           ,bool     p_referenced /*=false*/
                                           ,bool     p_quoted     /*=false*/) const
 {
-  // Minimal requirements of the catalog
-  if(p_schema.IsEmpty() || p_tablename.IsEmpty())
-  {
-    throw StdException(_T("Cannot get table references without schema/tablename"));
-  }
-
   XString query = _T("SELECT sys_context('USERENV','DB_NAME') AS primary_catalog_name\n")
                   _T("      ,pri.owner                        AS primary_schema_name\n")
                   _T("      ,pri.table_name                   AS primary_table_name\n")
@@ -2221,7 +2217,8 @@ SQLInfoOracle::GetCATALOGTablePrivileges(XString& p_schema,XString& p_tablename)
   }
 
   // Add owner privileges in the form of a union with the mapping
-  if(!pattern)
+  // But not for exporting/importing of schema's
+  if(!pattern && !m_filterPKFK)
   {
     // Add owner privileges in the form of a union with the mapping
     if(!p_schema.IsEmpty() && !p_tablename.IsEmpty())

@@ -149,7 +149,7 @@ using MColumnMap = std::vector<MetaColumn>;
 #define MetaColumn_subdatatype     15
 #define MetaColumn_octetlength     16
 #define MetaColumn_position        17
-#define MeatColumn_isnullable      18
+#define MetaColumn_isnullable      18
 
 // Results from "SQLPrimaryKeys" 
 
@@ -498,7 +498,7 @@ using MSequenceMap = std::vector<MetaSequence>;
 #define MetaSequence_schemaname      2
 #define MetaSequence_sequencename    3
 #define MetaSequence_currentvalue    4
-#define MetaSequence_minmalvalue     5
+#define MetaSequence_minimalvalue    5
 #define MetaSequence_increment       6
 #define MetaSequence_cache           7
 #define MetaSequence_cycle           8

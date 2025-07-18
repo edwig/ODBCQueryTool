@@ -449,24 +449,24 @@ SQLInfoDB::MakeInfoTableColumns(MColumnMap& p_columns
       {
         MetaColumn column;
 
-        column.m_catalog        = (XString)  qry[1];
-        column.m_schema         = (XString)  qry[2];
-        column.m_table          = (XString)  qry[3];
-        column.m_column         = (XString)  qry[4];
-        column.m_datatype       = (int)      qry[5];
-        column.m_typename       = (XString)  qry[6];
-        column.m_columnSize     = (unsigned) qry[7];
-        column.m_bufferLength   = (INT64)    qry[8];
-        column.m_decimalDigits  = (int)      qry[9];
-        column.m_numRadix       = (int)      qry[10];
-        column.m_nullable       = (int)      qry[11];
-        column.m_remarks        = (XString)  qry[12];
-        column.m_default        = (XString)  qry[13];
-        column.m_datatype3      = (int)      qry[14];
-        column.m_sub_datatype   = (int)      qry[15];
-        column.m_octet_length   = (INT64)    qry[16];
-        column.m_position       = (int)      qry[17];
-        column.m_isNullable     = (XString)  qry[18];
+        column.m_catalog        = (XString)  qry[MetaColumn_catalogname];
+        column.m_schema         = (XString)  qry[MetaColumn_schemaname];
+        column.m_table          = (XString)  qry[MetaColumn_tablename];
+        column.m_column         = (XString)  qry[MetaColumn_columnname];
+        column.m_datatype       = (int)      qry[MetaColumn_datatype];
+        column.m_typename       = (XString)  qry[MetaColumn_typename];
+        column.m_columnSize     = (unsigned) qry[MetaColumn_columnsize];
+        column.m_bufferLength   = (INT64)    qry[MetaColumn_bufferlength];
+        column.m_decimalDigits  = (int)      qry[MetaColumn_decimaldigits];
+        column.m_numRadix       = (int)      qry[MetaColumn_radix];
+        column.m_nullable       = (int)      qry[MetaColumn_nullable];
+        column.m_remarks        = (XString)  qry[MetaColumn_remarks];
+        column.m_default        = (XString)  qry[MetaColumn_default];
+        column.m_datatype3      = (int)      qry[MetaColumn_datatype3];
+        column.m_sub_datatype   = (int)      qry[MetaColumn_subdatatype];
+        column.m_octet_length   = (INT64)    qry[MetaColumn_octetlength];
+        column.m_position       = (int)      qry[MetaColumn_position];
+        column.m_isNullable     = (XString)  qry[MetaColumn_isnullable];
 
         column.m_catalog    = column.m_catalog.Trim();
         column.m_table      = column.m_table.Trim();
@@ -590,9 +590,9 @@ SQLInfoDB::MakeInfoTableForeign(MForeignMap&  p_foreigns
         foreign.m_primaryConstraint = (XString) query[MetaForeign_pk_constraint];
         foreign.m_deferrable        = (int)     query[MetaForeign_deferrable];
         // Extra info
-        foreign.m_match             = (int)     query[15];
-        foreign.m_initiallyDeferred = (int)     query[16];
-        foreign.m_enabled           = (int)     query[17];
+        foreign.m_match             = (int)     query[MetaForeign_matching];
+        foreign.m_initiallyDeferred = (int)     query[MetaForeign_initdeferred];
+        foreign.m_enabled           = (int)     query[MetaForeign_enabled];
 
         p_foreigns.push_back(foreign);
       }
@@ -799,6 +799,7 @@ SQLInfoDB::MakeInfoPSMSourcecode(XString p_schema, XString p_procedure)
       query.DoSQLStatement(sql);
       while(query.GetRecord())
       {
+        // Actual source text is in the third column
         sourcecode += query.GetColumn(3)->GetAsString();
       }
       if(!sourcecode.IsEmpty())
@@ -839,25 +840,25 @@ SQLInfoDB::MakeInfoPSMParameters(MParameterMap& p_parameters
       {
         MetaParameter param;
 
-        param.m_catalog       = qry.GetColumn(1)->GetAsString();
-        param.m_schema        = qry.GetColumn(2)->GetAsString();
-        param.m_procedure     = qry.GetColumn(3)->GetAsString();
-        param.m_parameter     = qry.GetColumn(4)->GetAsString();
-        param.m_columnType    = qry.GetColumn(5)->GetAsSLong();
-        param.m_datatype      = qry.GetColumn(6)->GetAsSLong();
-        param.m_typeName      = qry.GetColumn(7)->GetAsString();
-        param.m_columnSize    = qry.GetColumn(8)->GetAsSLong();
-        param.m_bufferLength  = qry.GetColumn(9)->GetAsSLong();
-        param.m_decimalDigits = qry.GetColumn(10)->GetAsSLong();
-        param.m_numRadix      = qry.GetColumn(11)->GetAsSLong();
-        param.m_nullable      = qry.GetColumn(12)->GetAsSLong();
-        param.m_remarks       = qry.GetColumn(13)->GetAsString();
-        param.m_default       = qry.GetColumn(14)->GetAsString();
-        param.m_datatype3     = qry.GetColumn(15)->GetAsSLong();
-        param.m_subType       = qry.GetColumn(16)->GetAsSLong();
-        param.m_octetLength   = qry.GetColumn(17)->GetAsSLong();
-        param.m_position      = qry.GetColumn(18)->GetAsSLong();
-        param.m_isNullable    = qry.GetColumn(19)->GetAsString();
+        param.m_catalog       = (XString) qry[MetaParameter_catalogname];
+        param.m_schema        = (XString) qry[MetaParameter_schemaname];
+        param.m_procedure     = (XString) qry[MetaParameter_procedurename];
+        param.m_parameter     = (XString) qry[MetaParameter_parametername];
+        param.m_columnType    = (long)    qry[MetaParameter_columntype];
+        param.m_datatype      = (long)    qry[MetaParameter_datatype];
+        param.m_typeName      = (XString) qry[MetaParameter_typename];
+        param.m_columnSize    = (long)    qry[MetaParameter_columnsize];
+        param.m_bufferLength  = (long)    qry[MetaParameter_bufferlength];
+        param.m_decimalDigits = (long)    qry[MetaParameter_decimaldigits];
+        param.m_numRadix      = (long)    qry[MetaParameter_radix];
+        param.m_nullable      = (long)    qry[MetaParameter_nullable];
+        param.m_remarks       = (XString) qry[MetaParameter_remarks];
+        param.m_default       = (XString) qry[MetaParameter_default];
+        param.m_datatype3     = (long)    qry[MetaParameter_datatype3];
+        param.m_subType       = (long)    qry[MetaParameter_subtype];
+        param.m_octetLength   = (long)    qry[MetaParameter_octetlength];
+        param.m_position      = (long)    qry[MetaParameter_position];
+        param.m_isNullable    = (XString) qry[MetaParameter_isnullable];
         // Trimming
         param.m_typeName = param.m_typeName.Trim();
 
@@ -989,15 +990,15 @@ SQLInfoDB::MakeInfoTableSequences(MSequenceMap& p_sequences,XString& p_errors,XS
       {
         MetaSequence sequence;
 
-        sequence.m_catalogName  = qry.GetColumn(1)->GetAsString();
-        sequence.m_schemaName   = qry.GetColumn(2)->GetAsString();
-        sequence.m_sequenceName = qry.GetColumn(3)->GetAsString();
-        sequence.m_currentValue = qry.GetColumn(4)->GetAsDouble();
-        sequence.m_minimalValue = qry.GetColumn(5)->GetAsDouble();
-        sequence.m_increment    = qry.GetColumn(6)->GetAsSLong();
-        sequence.m_cache        = qry.GetColumn(7)->GetAsSLong();
-        sequence.m_cycle        = qry.GetColumn(8)->GetAsBoolean();
-        sequence.m_order        = qry.GetColumn(9)->GetAsBoolean();
+        sequence.m_catalogName  = (XString) qry[MetaSequence_catalogname];
+        sequence.m_schemaName   = (XString) qry[MetaSequence_schemaname];
+        sequence.m_sequenceName = (XString) qry[MetaSequence_sequencename];
+        sequence.m_currentValue = (double)  qry[MetaSequence_currentvalue];
+        sequence.m_minimalValue = (double)  qry[MetaSequence_minimalvalue];
+        sequence.m_increment    = (long)    qry[MetaSequence_increment];
+        sequence.m_cache        = (long)    qry[MetaSequence_cache];
+        sequence.m_cycle        = (bool)    qry[MetaSequence_cycle];
+        sequence.m_order        = (bool)    qry[MetaSequence_order];
 
         if(sequence.m_increment == 0)
         {
@@ -1149,6 +1150,7 @@ SQLInfoDB::MakeInfoViewDefinition(XString& p_defintion,XString& p_errors,XString
         query.DoSQLStatement(sql);
         while(query.GetRecord())
         {
+          // View definition is the only column retrieved
           p_defintion += query.GetColumn(1)->GetAsString();
           result = true;
         }

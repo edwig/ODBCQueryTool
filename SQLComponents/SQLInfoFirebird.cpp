@@ -2229,32 +2229,8 @@ SQLInfoFirebird::GetCATALOGTablePrivileges(XString& p_schema,XString& p_tablenam
 XString 
 SQLInfoFirebird::GetCATALOGColumnPrivileges(XString& p_schema,XString& p_tablename,XString& p_columnname) const
 {
-  XString col = _T("SELECT (SELECT trim(mon$database_name) FROM mon$database) as catalog_name\n")
-                _T("      ,trim(rel .rdb$owner_name)    as table_schema\n")
-                _T("      ,trim(priv.rdb$relation_name) as table_name\n")
-                _T("      ,trim(priv.rdb$field_name)    as column_name\n")
-                _T("      ,CASE\n")
-                _T("            WHEN priv.rdb$user = priv.rdb$grantor THEN trim('_SYSTEM')\n")
-                _T("            ELSE trim(priv.rdb$grantor)\n")
-                _T("       END as grantor\n")
-                _T("      ,trim(priv.rdb$user)          as grantee\n")
-                _T("      ,trim(CASE priv.rdb$privilege\n")
-                _T("                 WHEN 'I' THEN 'INSERT'\n")
-                _T("                 WHEN 'S' THEN 'SELECT'\n")
-                _T("                 WHEN 'U' THEN 'UPDATE'\n")
-                _T("                 WHEN 'D' THEN 'DELETE'\n")
-                _T("                 WHEN 'R' THEN 'REFERENCES'\n")
-                _T("       END) AS privilege\n")
-                _T("      ,CASE priv.rdb$grant_option\n")
-                _T("           WHEN  0 THEN 'NO'\n")
-                _T("           WHEN  1 THEN 'YES'\n")
-                _T("           ELSE 'NO'\n")
-                _T("       END as grantable\n")
-                _T("  FROM rdb$user_privileges priv\n")
-                _T("       inner join rdb$relations rel ON priv.rdb$relation_name = rel.rdb$relation_name\n")
-                _T(" WHERE NOT priv.rdb$field_name IS NULL\n");
-
-  XString tab = _T("SELECT (SELECT trim(mon$database_name) FROM mon$database) as catalog_name\n")
+  bool p_quoted(true);
+  XString sql = _T("SELECT (SELECT trim(mon$database_name) FROM mon$database) as catalog_name\n")
                 _T("      ,trim(rel .rdb$owner_name)    as table_schema\n")
                 _T("      ,trim(priv.rdb$relation_name) as table_name\n")
                 _T("      ,trim(fld .rdb$field_name)    as column_name\n")
@@ -2278,28 +2254,26 @@ SQLInfoFirebird::GetCATALOGColumnPrivileges(XString& p_schema,XString& p_tablena
                 _T("  FROM rdb$user_privileges priv\n")
                 _T("       inner join rdb$relations       rel ON priv.rdb$relation_name = rel.rdb$relation_name\n")
                 _T("       inner join rdb$relation_fields fld ON fld .rdb$relation_name = rel.rdb$relation_name\n")
-                _T(" WHERE priv.rdb$field_name IS NULL\n");
+                _T("                                         AND priv.rdb$field_name    = fld.rdb$field_name\n")
+                _T(" WHERE 1 = 1\n");
 
   // Add the filters
   if(!p_schema.IsEmpty())
   {
-    if(!IsIdentifierMixedCase(p_schema)) p_schema.MakeUpper();
-    col += _T("   AND rel.rdb$owner_name = '") + p_schema + _T("'\n");
-    tab += _T("   AND rel.rdb$owner_name = '") + p_schema + _T("'\n");
+    IdentifierCorrect(p_schema);
+    sql += _T("   AND rel.rdb$owner_name = '") + p_schema + _T("'\n");
   }
   if(!p_tablename.IsEmpty())
   {
-    if(!IsIdentifierMixedCase(p_tablename)) p_tablename.MakeUpper();
-    col += _T("   AND priv.rdb$relation_name = '") + p_tablename + _T("'\n");
-    tab += _T("   AND priv.rdb$relation_name = '") + p_tablename + _T("'\n");
+    IdentifierCorrect(p_tablename);
+    sql += _T("   AND priv.rdb$relation_name = '") + p_tablename + _T("'\n");
   }
   if(!p_columnname.IsEmpty())
   {
-    if(!IsIdentifierMixedCase(p_columnname)) p_columnname.MakeUpper();
-    col += _T("   AND priv.rdb$field_name = ") + p_columnname + _T("'\n");
+    IdentifierCorrect(p_columnname);
+    sql += _T("   AND priv.rdb$field_name = ") + p_columnname + _T("'\n");
   }
   // Add together and order the results
-  XString sql = col + _T("UNION ALL\n") + tab;
   sql += _T(" ORDER BY 1,2,6,7,3,4,5");
 
   return sql;
