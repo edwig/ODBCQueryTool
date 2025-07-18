@@ -143,7 +143,8 @@ protected:
 
   CString   ForeignRuleToString(int p_rule);
   CString   DeferrableToString(int p_defer);
-  bool      ShowSourcecode(CString p_schema, CString p_procedure);
+  bool      ShowSourcecodeTrigger(CString p_schema, CString p_trigger);
+  bool      ShowSourcecodeModule (CString p_schema, CString p_procedure);
 
   // Data
   CString     m_filter;

@@ -1107,7 +1107,7 @@ ObjectTree::FindSourcecode(HTREEITEM p_theItem)
   if (PresetProcedure(p_theItem,procedures))
   {
     // For triggers it's the first node
-    if(ShowSourcecode(m_schema,m_procedure))
+    if(ShowSourcecodeTrigger(m_schema,m_procedure))
     {
       return;
     }
@@ -1116,22 +1116,50 @@ ObjectTree::FindSourcecode(HTREEITEM p_theItem)
     HTREEITEM par = GetParentItem(p_theItem);
     if(PresetProcedure(par,procedures))
     {
-      if(ShowSourcecode(m_schema,m_procedure))
+      if(ShowSourcecodeModule(m_schema,m_procedure))
       {
         return;
       }
     }
-    // For tables, it's even a node deeper
+    // For trigger under tables, it's even a node deeper
     par = GetParentItem(par);
     if(PresetProcedure(par,procedures))
     {
-      ShowSourcecode(m_schema,tableproc);
+      ShowSourcecodeTrigger(m_schema,tableproc);
     }
   }
 }
 
 bool
-ObjectTree::ShowSourcecode(CString p_schema, CString p_procedure)
+ObjectTree::ShowSourcecodeTrigger(CString p_schema,CString p_trigger)
+{
+  CString errors;
+  CString object;
+  CString source;
+  MTriggerMap triggers;
+  QueryToolApp* app = (QueryToolApp*)AfxGetApp();
+  SQLInfoDB* info = app->GetDatabase().GetSQLInfoDB();
+
+  if(info->MakeInfoTableTriggers(triggers,errors,m_schema,object,p_trigger))
+  {
+    source = info->GetCATALOGTriggerCreate(triggers[0]);
+  }
+  else
+  {
+    source.Format(_T("Internal error reading trigger source of %s.%s\n"),m_schema.GetString(),p_trigger.GetString());
+    return false;
+  }
+  // Prepare for MFC edit control
+  source.Replace(_T("\n"),_T("\r\n"));
+
+  // Show in source code popup
+  CNativeSQLDlg dlg(this,source,_T("Persistent Stored Module"));
+  dlg.DoModal();
+  return true;
+}
+
+bool
+ObjectTree::ShowSourcecodeModule(CString p_schema, CString p_procedure)
 {
   CString name = p_schema + _T(".") + p_procedure;
   SourceList::iterator it = m_source.find(name);
