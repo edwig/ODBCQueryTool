@@ -666,6 +666,14 @@ SQLDatabase::RealDatabaseName()
   bool  result = false;
 
   XString databaseName;
+
+  if(GetSQLInfoDB())
+  {
+    // Get the SQLInfo<Database> implementation's name
+    databaseName = m_info->GetRDBMSPhysicalDatabaseName();
+    m_namingMethod = _T("Physical database name");
+  }
+
   // ODBC 1.x method. Database name.
   buffer = databaseName.GetBuffer(SQL_MAX_OPTION_STRING_LENGTH);
   SQLGetInfo(m_hdbc, SQL_DATABASE_NAME, buffer, SQL_MAX_OPTION_STRING_LENGTH, &len);
@@ -680,15 +688,6 @@ SQLDatabase::RealDatabaseName()
     SQLGetConnectAttr(m_hdbc,SQL_CURRENT_QUALIFIER,buffer,SQL_MAX_OPTION_STRING_LENGTH,&length);
     databaseName.ReleaseBuffer();
     m_namingMethod = _T("ODBC current qualifier");
-  }
-  if(databaseName.IsEmpty())
-  {
-    if(GetSQLInfoDB())
-    {
-      // Get the SQLInfo<Database> implementation's name
-      databaseName   = m_info->GetRDBMSPhysicalDatabaseName();
-      m_namingMethod = _T("Physical database name");
-    }
   }
   if(databaseName.IsEmpty())
   {

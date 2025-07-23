@@ -1485,6 +1485,35 @@ SQLInfoMySQL::GetCATALOGSynonymDrop(XString& /*p_schema*/,XString& /*p_synonym*/
   return _T("");
 }
 
+// For ALL objects
+XString
+SQLInfoMySQL::GetCATALOGCommentCreate(XString p_schema,XString p_object,XString p_name,XString p_subObject,XString p_remark) const
+{
+  XString sql;
+  if(!p_object.IsEmpty() && !p_name.IsEmpty() && !p_remark.IsEmpty())
+  {
+    sql.Format(_T("COMMENT ON %s "),p_object.GetString());
+    if(!p_schema.IsEmpty())
+    {
+      sql += QIQ(p_schema) + _T(".");
+    }
+    sql += QIQ(p_name);
+    if(!p_subObject.IsEmpty())
+    {
+      sql += _T(".") + QIQ(p_subObject);
+    }
+    if(p_remark.CompareNoCase(_T("NULL")))
+    {
+      sql.AppendFormat(_T(" IS '%s'"),p_remark.GetString());
+    }
+    else
+    {
+      sql += _T(" IS NULL");
+    }
+  }
+  return sql;
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // SQL/PSM PERSISTENT STORED MODULES 

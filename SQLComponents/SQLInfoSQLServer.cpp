@@ -2305,6 +2305,7 @@ SQLInfoSQLServer::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern,bo
                 _T("      ,cache_size AS CACHE\n")
                 _T("      ,is_cycling\n")
                 _T("      ,0 ordering\n")
+                _T("      ,'' as remarks\n")
                 _T("  FROM sys.sequences seq\n")
                 _T("      ,sys.schemas   sch\n")
                 _T(" WHERE sch.schema_id = seq.schema_id\n");
@@ -2334,6 +2335,7 @@ SQLInfoSQLServer::GetCATALOGSequenceAttributes(XString& p_schema,XString& p_sequ
                 _T("      ,cache_size AS CACHE\n")
                 _T("      ,is_cycling\n")
                 _T("      ,0 ordering\n")
+                _T("      ,'' as remarks\n")
                 _T("  FROM sys.sequences seq\n")
                 _T("      ,sys.schemas   sch\n")
                 _T(" WHERE sch.schema_id = seq.schema_id\n");
@@ -2682,6 +2684,35 @@ XString
 SQLInfoSQLServer::GetCATALOGSynonymDrop(XString& p_schema,XString& p_synonym,bool /*p_private = true*/) const
 {
   XString sql = _T("DROP SYNONYM ") + QIQ(p_schema) + _T(".") + QIQ(p_synonym);
+  return sql;
+}
+
+// For ALL objects
+XString
+SQLInfoSQLServer::GetCATALOGCommentCreate(XString p_schema,XString p_object,XString p_name,XString p_subObject,XString p_remark) const
+{
+  XString sql;
+  if(!p_object.IsEmpty() && !p_name.IsEmpty() && !p_remark.IsEmpty())
+  {
+    sql.Format(_T("COMMENT ON %s "),p_object.GetString());
+    if(!p_schema.IsEmpty())
+    {
+      sql += QIQ(p_schema) + _T(".");
+    }
+    sql += QIQ(p_name);
+    if(!p_subObject.IsEmpty())
+    {
+      sql += _T(".") + QIQ(p_subObject);
+    }
+    if(p_remark.CompareNoCase(_T("NULL")))
+    {
+      sql.AppendFormat(_T(" IS '%s'"),p_remark.GetString());
+    }
+    else
+    {
+      sql += _T(" IS NULL");
+    }
+  }
   return sql;
 }
 

@@ -53,6 +53,7 @@ public:
                             ,bool p_sequences
                             ,bool p_access);
   DDLS    GetViewStatements(XString p_viewname);
+  DDLS    GetCommentStatements();
 
   // Internal delivery of all table information
   void    SetTableInfoTable    (const MTableMap&     p_info);
@@ -96,6 +97,7 @@ private:
   bool    IsStrictODBCPrivilege(XString p_privilege);
   int     DeDuplicateFKIndexes();
   int     RemoveIndex(int first,int last);
+  void    RecordRemarksAsComment(XString p_object,XString p_name,XString p_subObject,XString p_remarks);
 
   // Private data for the DDL creation
   SQLInfoDB* m_info;
@@ -104,6 +106,7 @@ private:
   XString    m_tableName;
   XString    m_indexTablespace;
   DDLS       m_statements;
+  DDLS       m_comments;
   XString    m_createDDL;
   // Various options for generation the tables
   bool       m_indexDuplicateNulls { false };     // Duplicate NULL in indices allowed

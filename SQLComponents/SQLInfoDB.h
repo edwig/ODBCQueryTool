@@ -429,6 +429,8 @@ public:
   virtual XString GetCATALOGSynonymAttributes (XString& p_schema,XString& p_synonym) const = 0;
   virtual XString GetCATALOGSynonymCreate     (XString& p_schema,XString& p_synonym,XString p_forObject,bool p_private = true) const = 0;
   virtual XString GetCATALOGSynonymDrop       (XString& p_schema,XString& p_synonym,bool p_private = true) const = 0;
+  // For ALL objects
+  virtual XString GetCATALOGCommentCreate     (XString p_schema,XString p_object,XString p_name,XString p_subObject,XString p_remark) const = 0;
 
   //////////////////////////////////////////////////////////////////////////
   //

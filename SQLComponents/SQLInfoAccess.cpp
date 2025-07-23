@@ -1281,6 +1281,13 @@ SQLInfoAccess::GetCATALOGSynonymDrop(XString& /*p_schema*/,XString& /*p_synonym*
   return XString();
 }
 
+// For ALL objects
+XString 
+SQLInfoAccess::GetCATALOGCommentCreate(XString /*p_schema*/,XString /*p_object*/,XString /*p_name*/,XString /*p_subObject*/,XString /*p_remark*/) const
+{
+  return XString();
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // SQL/PSM PERSISTENT STORED MODULES 

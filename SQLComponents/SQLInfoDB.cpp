@@ -999,6 +999,7 @@ SQLInfoDB::MakeInfoTableSequences(MSequenceMap& p_sequences,XString& p_errors,XS
         sequence.m_cache        = (long)    qry[MetaSequence_cache];
         sequence.m_cycle        = (bool)    qry[MetaSequence_cycle];
         sequence.m_order        = (bool)    qry[MetaSequence_order];
+        sequence.m_remarks      = (XString) qry[MetaSequence_remarks];
 
         if(sequence.m_increment == 0)
         {

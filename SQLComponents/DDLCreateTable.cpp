@@ -113,6 +113,12 @@ DDLCreateTable::GetViewStatements(XString p_viewname)
   return m_statements;
 }
 
+DDLS
+DDLCreateTable::GetCommentStatements()
+{
+  return m_comments;
+}
+
 bool
 DDLCreateTable::SaveDDL(XString p_filename)
 {
@@ -305,6 +311,9 @@ DDLCreateTable::GetTableInfo()
   ddl += m_info->GetCATALOGTableCreate(table,column);
   ddl += _T("\n");
 
+  // Record remarks
+  RecordRemarksAsComment(_T("TABLE"),table.m_table,_T(""),table.m_remarks);
+
   m_createDDL = ddl;
 }
 
@@ -385,6 +394,7 @@ DDLCreateTable::GetColumnInfo()
     {
       line += _T(" -- ") + column.m_remarks;
     }
+    RecordRemarksAsComment(_T("COLUMN"),m_tableName,column.m_column,column.m_remarks);
 
     // Stash the line
     m_createDDL += line + _T("\n");
@@ -459,6 +469,7 @@ DDLCreateTable::GetViewInfo()
   {
     ddl = _T("-- ") + table.m_remarks;
   }
+  RecordRemarksAsComment(_T("VIEW"),m_tableName,_T(""),table.m_remarks);
 
   XString definition;
   if(m_info->MakeInfoViewDefinition(definition,errors,m_schema,m_tableName))
@@ -632,6 +643,7 @@ DDLCreateTable::GetTriggerInfo()
   {
     XString line = m_info->GetCATALOGTriggerCreate(trigger);
     StashTheLine(line);
+    RecordRemarksAsComment(_T("TRIGGER"),trigger.m_triggerName,_T(""),trigger.m_remarks);
   }
 }
 
@@ -661,6 +673,7 @@ DDLCreateTable::GetSequenceInfo()
     line = m_target ? m_target->GetCATALOGSequenceCreate(seq)
                     :   m_info->GetCATALOGSequenceCreate(seq);
     StashTheLine(line);
+    RecordRemarksAsComment(_T("SEQUENCE"),seq.m_sequenceName,_T(""),seq.m_remarks);
   }
 }
 
@@ -966,5 +979,14 @@ DDLCreateTable::RemoveIndex(int p_first,int p_last)
   return 0;
 }
 
+void
+DDLCreateTable::RecordRemarksAsComment(XString p_object,XString p_name,XString p_subObject,XString p_remarks)
+{
+  if(!p_object.IsEmpty() && !p_name.IsEmpty() && !p_remarks.IsEmpty())
+  {
+    XString sql = m_info->GetCATALOGCommentCreate(m_schema,p_object,p_name,p_subObject,p_remarks);
+    m_comments.push_back(sql);
+  }
+}
 
 };

@@ -346,6 +346,8 @@ public:
   XString GetCATALOGSynonymAttributes(XString& p_schema,XString& p_synonym) const override;
   XString GetCATALOGSynonymCreate    (XString& p_schema,XString& p_synonym,XString p_forObject,bool p_private = true) const override;
   XString GetCATALOGSynonymDrop      (XString& p_schema,XString& p_synonym,bool p_private = true) const override;
+  // For ALL objects
+  XString GetCATALOGCommentCreate(XString p_schema,XString p_object,XString p_name,XString p_subObject,XString p_remark) const;
 
   //////////////////////////////////////////////////////////////////////////
   //
@@ -447,10 +449,10 @@ public:
   SQLVariant* DoSQLCallNamedParameters(SQLQuery* p_query,XString& p_schema,XString& p_procedure,bool p_function = true) override;
 
 private:
-  void DetectOracleMode();
+  void DetectOracleMode() const;
 
   // Since version 10.3 MariaDB can be set to Oracle mode
-  bool m_oracleMode{ false };
+  mutable bool m_oracleMode{ false };
 };
 
 // End of namespace
