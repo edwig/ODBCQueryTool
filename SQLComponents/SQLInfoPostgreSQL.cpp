@@ -1598,10 +1598,10 @@ SQLInfoPostgreSQL::GetCATALOGTriggerAttributes(XString& p_schema,XString& p_tabl
 }
 
 XString
-SQLInfoPostgreSQL::GetCATALOGTriggerCreate(MetaTrigger& /*p_trigger*/) const
+SQLInfoPostgreSQL::GetCATALOGTriggerCreate(MetaTrigger& p_trigger) const
 {
   // Already retrieved by TriggerAttributes!
-  return _T("");
+  return p_trigger.m_source;
 }
 
 XString
@@ -1655,6 +1655,7 @@ SQLInfoPostgreSQL::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern,b
                 _T("                      else 0\n")
                 _T("       end             AS cycle\n")
                 _T("      ,0               AS ordering\n")
+                _T("      ,''              AS remarks\n")
                 _T("  FROM information_schema.sequences\n");
   if(!p_schema.IsEmpty())
   {
@@ -1685,6 +1686,7 @@ SQLInfoPostgreSQL::GetCATALOGSequenceAttributes(XString& p_schema,XString& p_seq
                 _T("                      else 0\n")
                 _T("       end                AS cycle\n")
                 _T("      ,0                  AS ordering\n")
+                _T("      ,''                 AS remarks\n")
                 _T("  FROM information_schema.sequences\n");
   if(!p_schema.IsEmpty())
   {
@@ -1919,6 +1921,35 @@ SQLInfoPostgreSQL::GetCATALOGSynonymDrop(XString& /*p_schema*/,XString& /*p_syno
 {
   // Not implemented yet
   return _T("");
+}
+
+// For ALL objects
+XString
+SQLInfoPostgreSQL::GetCATALOGCommentCreate(XString p_schema,XString p_object,XString p_name,XString p_subObject,XString p_remark) const
+{
+  XString sql;
+  if(!p_object.IsEmpty() && !p_name.IsEmpty() && !p_remark.IsEmpty())
+  {
+    sql.Format(_T("COMMENT ON %s "),p_object.GetString());
+    if(!p_schema.IsEmpty())
+    {
+      sql += QIQ(p_schema) + _T(".");
+    }
+    sql += QIQ(p_name);
+    if(!p_subObject.IsEmpty())
+    {
+      sql += _T(".") + QIQ(p_subObject);
+    }
+    if(p_remark.CompareNoCase(_T("NULL")))
+    {
+      sql.AppendFormat(_T(" IS '%s'"),p_remark.GetString());
+    }
+    else
+    {
+      sql += _T(" IS NULL");
+    }
+  }
+  return sql;
 }
 
 //////////////////////////////////////////////////////////////////////////

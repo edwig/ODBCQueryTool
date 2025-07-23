@@ -1468,6 +1468,7 @@ SQLInfoInformix::GetCATALOGSequenceAttributes(XString& p_schema,XString& p_seque
                    "      ,seq.cache     as cache\n"
                    "      ,seq.cycle     as cycle\n"
                    "      ,seq.order     as ordering\n"
+                   "      ,''            as remarks\n"
                    "  FROM syssequences seq\n"
                    "      ,systables    tab\n"
                    " WHERE tab.tabid   = seq.tabid\n"
@@ -1647,6 +1648,35 @@ SQLInfoInformix::GetCATALOGSynonymDrop(XString& /*p_schema*/,XString& /*p_synony
 {
   // Not implemented yet
   return _T("");
+}
+
+// For ALL objects
+XString
+SQLInfoInformix::GetCATALOGCommentCreate(XString p_schema,XString p_object,XString p_name,XString p_subObject,XString p_remark) const
+{
+  XString sql;
+  if(!p_object.IsEmpty() && !p_name.IsEmpty() && !p_remark.IsEmpty())
+  {
+    sql.Format(_T("COMMENT ON %s "),p_object.GetString());
+    if(!p_schema.IsEmpty())
+    {
+      sql += QIQ(p_schema) + _T(".");
+    }
+    sql += QIQ(p_name);
+    if(!p_subObject.IsEmpty())
+    {
+      sql += _T(".") + QIQ(p_subObject);
+    }
+    if(p_remark.CompareNoCase(_T("NULL")))
+    {
+      sql.AppendFormat(_T(" IS '%s'"),p_remark.GetString());
+    }
+    else
+    {
+      sql += _T(" IS NULL");
+    }
+  }
+  return sql;
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -2008,6 +2008,7 @@ SQLInfoFirebird::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern,boo
                    "      ,0  as cache\n"
                    "      ,0  as cycle\n"
                    "      ,0  as ordering\n"
+                   "      ,rdb$description as remarks\n"
                    "  FROM rdb$generators\n"
                    " WHERE rdb$system_flag    = 0\n");
   if(!p_schema.IsEmpty())
@@ -2038,6 +2039,7 @@ SQLInfoFirebird::GetCATALOGSequenceAttributes(XString& p_schema,XString& p_seque
                    "      ,0  as cache\n"
                    "      ,0  as cycle\n"
                    "      ,0  as ordering\n"
+                   "      ,gen.rdb$description as remarks\n"
                    "  FROM rdb$generators gen\n"
                    "      ,mon$database   dbs\n"
                    " WHERE gen.rdb$system_flag = 0\n");
@@ -2351,6 +2353,31 @@ SQLInfoFirebird::GetCATALOGSynonymDrop(XString& /*p_schema*/,XString& /*p_synony
 {
   // Not implemented yet
   return XString();
+}
+
+// For ALL objects
+XString
+SQLInfoFirebird::GetCATALOGCommentCreate(XString /*p_schema*/,XString p_object,XString p_name,XString p_subObject,XString p_remark) const
+{
+  XString sql;
+  if(!p_object.IsEmpty() && !p_name.IsEmpty() && !p_remark.IsEmpty())
+  {
+    sql.Format(_T("COMMENT ON %s "),p_object.GetString());
+    sql += QIQ(p_name);
+    if(!p_subObject.IsEmpty())
+    {
+      sql += _T(".") + QIQ(p_subObject);
+    }
+    if(p_remark.CompareNoCase(_T("NULL")))
+    {
+      sql.AppendFormat(_T(" IS '%s'"),p_remark.GetString());
+    }
+    else
+    {
+      sql += _T(" IS NULL");
+    }
+  }
+  return sql;
 }
 
 //////////////////////////////////////////////////////////////////////////

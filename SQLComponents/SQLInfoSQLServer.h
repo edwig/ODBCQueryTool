@@ -358,6 +358,8 @@ public:
   XString GetCATALOGSynonymAttributes(XString& p_schema,XString& p_synonym) const override;
   XString GetCATALOGSynonymCreate    (XString& p_schema,XString& p_synonym,XString p_forObject,bool p_private = true) const override;
   XString GetCATALOGSynonymDrop      (XString& p_schema,XString& p_synonym,bool p_private = true) const override;
+  // For ALL objects
+  XString GetCATALOGCommentCreate(XString p_schema,XString p_object,XString p_name,XString p_subObject,XString p_remark) const;
 
   //////////////////////////////////////////////////////////////////////////
   //

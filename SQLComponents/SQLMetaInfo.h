@@ -489,6 +489,7 @@ typedef struct _metaSequence
   long      m_cache         { 0 };      // Caching in the database
   bool      m_cycle         { false };  // Cycling of sets
   bool      m_order         { true  };  // In-order over multiple machines
+  XString   m_remarks;
 }
 MetaSequence;
 
@@ -503,6 +504,7 @@ using MSequenceMap = std::vector<MetaSequence>;
 #define MetaSequence_cache           7
 #define MetaSequence_cycle           8
 #define MetaSequence_order           9
+#define MetaSequence_remarks        10
 
 // Results for synonyms
 
