@@ -30,7 +30,7 @@
 #include <sql.h>
 #include <sqlext.h>
 #include <map>
-#include <list>
+#include <set>
 
 namespace SQLComponents
 {
@@ -70,7 +70,7 @@ typedef struct _TypeInfo
 TypeInfo;
 
 typedef std::map<XString,TypeInfo*> DataTypeMap;
-typedef std::list<XString>          WordList;
+typedef std::set<XString>           KeyWordList;
 
 class SQLInfo 
 {
@@ -200,8 +200,8 @@ public:
 
   SQLSMALLINT   GetDatabaseFileUsage();
   // mappings
-  WordList&     GetODBCKeywords();
-  WordList&     GetRDBMSKeywords();
+  KeyWordList&  GetODBCKeywords();
+  KeyWordList&  GetRDBMSKeywords();
   DataTypeMap&  GetDataTypeMap();
   XString       GetDriverName();
   // type conversions
@@ -375,8 +375,8 @@ protected:
   HSTMT        m_hstmt;                // Statement handle for info of tables/procedures
   RETCODE      m_retCode;              // Generic return code from ::SQL function
 
-  WordList     m_ODBCKeywords;         // Stationary ODBC keywords
-  WordList     m_RDBMSkeywords;        // Keywords  reported by the RDBMS
+  KeyWordList  m_ODBCKeywords;         // Stationary ODBC keywords
+  KeyWordList  m_RDBMSkeywords;        // Keywords  reported by the RDBMS
   DataTypeMap  m_dataTypes;            // Datatypes reported by the RDBMS
 
   // CONFORMANCE TO THE SQL-LANGUAGE
@@ -585,13 +585,13 @@ SQLInfo::SetAttributeFileDSNSave(XString p_fileDSN)
   m_fileDSNSave = p_fileDSN;
 }
 
-inline WordList& 
+inline KeyWordList& 
 SQLInfo::GetODBCKeywords()
 {
   return m_ODBCKeywords;
 }
 
-inline WordList&
+inline KeyWordList&
 SQLInfo::GetRDBMSKeywords()
 {
   return m_RDBMSkeywords;

@@ -242,7 +242,7 @@ SQLInfo::InfoMessageBox(XString p_message,UINT p_type /*= MB_OK*/)
 bool
 SQLInfo::AddSQLWord(XString sql)
 {
-  for(WordList::iterator it = m_ODBCKeywords.begin(); it != m_ODBCKeywords.end(); ++it)
+  for(KeyWordList::iterator it = m_ODBCKeywords.begin(); it != m_ODBCKeywords.end(); ++it)
   {
     if(sql.CompareNoCase(*it) == 0)
     {
@@ -250,7 +250,7 @@ SQLInfo::AddSQLWord(XString sql)
       return false;
     }
   }
-  m_ODBCKeywords.push_back(sql);
+  m_ODBCKeywords.insert(sql);
   return true;
 }
 
@@ -392,7 +392,7 @@ SQLInfo::GetInfo()
       if (*pb == ',')
       {
         *pw = '\0';
-        m_ODBCKeywords.push_back(woord);
+        m_ODBCKeywords.insert(woord);
         pw = woord;
       }
       else
@@ -401,7 +401,7 @@ SQLInfo::GetInfo()
       }
     }
     *pw = '\0';
-    m_ODBCKeywords.push_back(woord);
+    m_ODBCKeywords.insert(woord);
   }
   // KEYWORDS reported by the RDBMS
   if(SQLGetInfo(m_hdbc, SQL_KEYWORDS, buffer, 5120 * sizeof(TCHAR),&len) == SQL_SUCCESS)
@@ -413,7 +413,7 @@ SQLInfo::GetInfo()
       if (*pb == ',')
       {
         *pw = '\0';
-        m_RDBMSkeywords.push_back(woord);
+        m_RDBMSkeywords.insert(woord);
         pw = woord;
       }
       else
@@ -422,11 +422,11 @@ SQLInfo::GetInfo()
       }
     }
     *pw = '\0';
-    m_RDBMSkeywords.push_back(woord);
+    m_RDBMSkeywords.insert(woord);
   }   
   else
   {
-    m_RDBMSkeywords.push_back(_T("(No information)"));
+    m_RDBMSkeywords.insert(_T("(No information)"));
   }
   // STRINGS
   m_manager_version     = GetInfoString(SQL_DM_VER);
@@ -3134,6 +3134,22 @@ SQLInfo::QueryIdentifierQuotation(XString p_identifier) const
   // Quote if both upper and lower chars exist
   // So all UPPERS and all LOWERS are left alone
   if(IsIdentifierMixedCase(p_identifier))
+  {
+    return QuotedIdentifier(p_identifier);
+  }
+
+  // ODBC should not use this identifier
+  XString search(p_identifier);
+  search.MakeUpper();
+  KeyWordList::iterator it = m_ODBCKeywords.find(search);
+  if(it != m_ODBCKeywords.end())
+  {
+    return QuotedIdentifier(p_identifier);
+  }
+
+  // This RDBMS should not use this identifier
+  it = m_RDBMSkeywords.find(search);
+  if(it != m_RDBMSkeywords.end())
   {
     return QuotedIdentifier(p_identifier);
   }
