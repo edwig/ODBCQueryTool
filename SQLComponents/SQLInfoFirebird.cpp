@@ -2129,6 +2129,7 @@ SQLInfoFirebird::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewname,
                    "      ,rel.rdb$description   AS remarks\n"
                    "      ,trim(rel.rdb$owner_name) || '.' || trim(rel.rdb$relation_name) AS full_name\n"
                    "      ,cast('' as varchar(31))      as storage_space\n"
+                   "      ,0                            as temporary\n"
                    "  FROM rdb$relations rel\n"
                    "      ,mon$database  dbs\n"
                    " WHERE rel.rdb$relation_type = 1\n"
