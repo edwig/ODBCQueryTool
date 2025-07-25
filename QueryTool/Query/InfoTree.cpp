@@ -162,8 +162,7 @@ InfoTree::MakeTreeInfo()
   InsertItem(sitem,infoItemDriver);
 
   // ODBC SQL reserved words (static compile time)
-  WordList& listODBC = m_info->GetODBCKeywords();
-  listODBC.sort();
+  KeyWordList& listODBC = m_info->GetODBCKeywords();
   HTREEITEM odbcres = InsertItem(_T("ODBC SQL reserved words"), infoItemDriver);
   for(auto& word : listODBC)
   {
@@ -924,8 +923,7 @@ InfoTree::MakeTreeInfo()
   // RDBMS SQL gereserveerde woorden
   HTREEITEM words = InsertItem(_T("RDBMS SQL Reserved words"),infoItemImpl);
   didInfo =  false;
-  WordList& RDBMSkeywords = m_info->GetRDBMSKeywords();
-  RDBMSkeywords.sort();
+  KeyWordList& RDBMSkeywords = m_info->GetRDBMSKeywords();
   for(auto& word : RDBMSkeywords)
   {
     if(!word.IsEmpty()) 
