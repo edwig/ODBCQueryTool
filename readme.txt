@@ -22,6 +22,17 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes 3.5.1
+------------------
+Various fixes for the discovery of databases with quoted identifiers. 
+(Firebird, MariaDB, Oracle, SQL-Server, PostgreSQL). 
+For most ODBC drivers only the SQLTables and SQLColumns work correctly.
+Other functions such as the discovery of SQLPrimaryKeys, SQLForeignKeys,
+SQLStatistics, SQLProcedures do not work for case senstive identifiers.
+
+Also various fixes for the Info tree, so that we can now see the compelete 
+view, trigger, function and stored procedure source.
+
 Releasenotes 3.5.0
 ------------------
 Quoted identifiers have been added to the system. OpenODBCQuerytool now understands the
