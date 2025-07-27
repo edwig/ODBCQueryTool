@@ -1032,7 +1032,7 @@ SQLInfoMySQL::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablename,
                   _T("            when 'decimal'    then (numeric_precision + 2)\n")
                   _T("            else  character_octet_length\n")
                   _T("       end  as buffer_length\n")
-                  _T("      ,Nvl(numeric_scale,datetime_precision) AS decimal_digits\n")
+                  _T("      ,ifnull(numeric_scale,datetime_precision) AS decimal_digits\n")
                   _T("      ,if(character_octet_length is not null,null,10) as num_prec_radix\n")
                   _T("      ,if(data_type='timestamp',1,if(is_nullable='YES',1,if(extra='auto_increment',1,0))) as nullable\n")
                   _T("      ,column_comment     as remarks\n")
@@ -2323,6 +2323,9 @@ SQLInfoMySQL::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure,b
   return sql;
 }
 
+// SQL is almost the same as MariaDB with two extensions
+// 'READS SQL DATA' - must always be specified
+// 'GROUP BY'       - always has two extra columns
 XString
 SQLInfoMySQL::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure,bool p_quoted /*= false*/) const
 {
@@ -2334,7 +2337,8 @@ SQLInfoMySQL::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure,bo
                    "              CONCAT(p.parameter_mode,' ',p.parameter_name,' ',p.dtd_identifier)\n"
                    "              ORDER BY p.ordinal_position\n"
                    "              SEPARATOR ','),''),\n"
-                   "       ')',CHAR(10),IFNULL(CONCAT('RETURNS ',r.dtd_identifier,CHAR(10)),''),r.routine_definition) AS source\n"
+                   "       ')',CHAR(10),IFNULL(CONCAT('RETURNS ',r.dtd_identifier,CHAR(10)),''),\n"
+                   "       'READS SQL DATA',CHAR(10),r.routine_definition) AS source\n"
                    "  FROM information_schema.routines r\n"
                    "       LEFT OUTER JOIN information_schema.parameters p ON r.specific_name  = p.specific_name\n"
                    "                                                      AND r.routine_schema = p.specific_schema\n");
@@ -2351,7 +2355,9 @@ SQLInfoMySQL::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure,bo
   }
   sql += _T(" GROUP BY r.routine_schema\n"
             "         ,r.routine_name\n"
-            "         ,r.routine_type\n");
+            "         ,r.routine_type\n"
+            "         ,r.dtd_identifier\n"
+            "         ,r.routine_definition");
   return sql;
 }
 
