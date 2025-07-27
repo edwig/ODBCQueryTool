@@ -25,15 +25,15 @@
 
 // General text version
 #define ODBCQUERYTOOL_VERSION   _T("3.5.1")
-#define ODBCQUERYTOOL_BUILD     _T("464")
+#define ODBCQUERYTOOL_BUILD     _T("466")
 #define ODBCQUERYTOOL_COPYRIGHT _T("Copyright (c) Edwig Huisman 2004-2025")
 
 // For the resource files
 #define QT_RES_VERSION 3
 #define QT_RES_MAJOR   5
 #define QT_RES_MINOR   1
-#define QT_RES_BUILD   464
-#define QT_RES_FILE    _T("3,5,1,464")
+#define QT_RES_BUILD   466
+#define QT_RES_FILE    _T("3,5,1,466")
 
 // For the registry and the theme framework
 #define PRODUCT_REGISTRY _T("EDO\\ODBCQueryTool")
