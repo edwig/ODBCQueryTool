@@ -576,8 +576,8 @@ ObjectTree::PresetTable(HTREEITEM p_theItem)
   if(!IsSpecialNode(schema))
   {
     m_schema = schema;
-    m_table  = table;
   }
+  m_table = table;
   return true;
 }
 
@@ -596,8 +596,8 @@ ObjectTree::PresetProcedure(HTREEITEM p_theItem,MProcedureMap& p_procedures)
   if(!IsSpecialNode(schema))
   {
     findproc = schema + _T(".") + procedure;
+    m_schema = schema;
   }
-  m_schema    = schema;
   m_procedure = procedure;
 
   return true;
