@@ -63,13 +63,21 @@ namespace OpenEditor
         {
             int spaces   = to - new_tabs * tab_spacing;
             int tabs     = new_tabs - cur_tabs;
-            buff.Append(_T("\t"),tabs);
-            buff.Append(_T(" "),spaces);
-
+            for(int ind = 0;ind < tabs;++ind)
+            {
+              buff.Append(_T("\t"),1);
+            }
+            for(int ind = 0;ind < spaces;++ind)
+            {
+              buff.Append(_T(" "),1);
+            }
         }
         else
         {
-          buff.Append(_T(" "),(to - from));
+          for(int ind = 0;ind < (to - from); ++ind)
+          {
+            buff.Append(_T(" "),1);
+          }
         }
     }
 
@@ -813,7 +821,10 @@ void EditContext::DeleteBlock (bool putSelInUndo)
                   }
                   else
                   {
-                    space.Append(_T(" "),sel.start.column - sel.end.column);
+                    for(int ind = 0;ind < (sel.start.column - sel.end.column);++ind)
+                    {
+                      space.Append(_T(" "),1);
+                    }
                   }
 //                   space.resize(sel.end.column > sel.start.column
 //                                ? sel.end.column - sel.start.column
@@ -1036,11 +1047,14 @@ bool EditContext::ExpandTemplate (int index)
             CString line;
             CString result;
             CString indent('\n');
-            indent.Append(_T(" "),sqr.start.column);
-
+            for(int ind = 0;ind < sqr.start.column;++ind)
+            {
+              indent.Append(_T(" "),1);
+            }
             if (getLine(io, line, with_CR))
-                result += line;
-
+            {
+              result += line;
+            }
             while (getLine(io, line, with_CR))
             {
               if(!line.IsEmpty())
