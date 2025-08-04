@@ -827,6 +827,43 @@ SQLInfoOracle::GetCATALOGDefaultCollation() const
   return XString();
 }
 
+// All user defined compound data types
+XString
+SQLInfoOracle::GetCATALOGTypeExists(XString& /*p_schema*/,XString& /*p_typename*/,bool /*p_quoted = false*/) const
+{
+  return XString();
+}
+
+XString
+SQLInfoOracle::GetCATALOGTypeList(XString& /*p_schema*/,XString& /*p_pattern*/,bool /*p_quoted = false*/) const
+{
+  return XString();
+}
+
+XString
+SQLInfoOracle::GetCATALOGTypeAttributes(XString& /*p_schema*/,XString& /*p_typename*/,bool /*p_quoted = false*/) const
+{
+  return XString();
+}
+
+XString
+SQLInfoOracle::GetCATALOGTypeSource(XString& /*p_schema*/,XString& /*p_typename*/,bool /*p_quoted = false*/) const
+{
+  return XString();
+}
+
+XString
+SQLInfoOracle::GetCATALOGTypeCreate(MUserTypeMap& /*p_type*/) const
+{
+  return XString();
+}
+
+XString
+SQLInfoOracle::GetCATALOGTypeDrop(XString /*p_schema*/,XString /*p_typename*/) const
+{
+  return XString();
+}
+
 // Get SQL to check if a table already exists in the database
 XString
 SQLInfoOracle::GetCATALOGTableExists(XString& p_schema,XString& p_tablename,bool p_quoted /*= false*/) const

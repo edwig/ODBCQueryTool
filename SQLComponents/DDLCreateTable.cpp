@@ -916,7 +916,7 @@ DDLCreateTable::DeDuplicateFKIndexes()
     // Find matching index column at the first fk column
     if(firstIndexCol < 0 && fk->m_keySequence == 1)
     {
-      for(int ind = 0 ;ind < m_indices.size();++ind)
+      for(int ind = 0 ;ind < (int)m_indices.size();++ind)
       {
         if(m_indices[ind].m_position == fk->m_keySequence &&
            m_indices[ind].m_columnName.CompareNoCase(fk->m_fkColumnName)      == 0 &&
@@ -934,7 +934,7 @@ DDLCreateTable::DeDuplicateFKIndexes()
       // try next column
       int next = lastIndexCol + 1;
 
-      if(next > m_indices.size() &&
+      if(next > (int)m_indices.size() &&
         (m_indices[next].m_position == fk->m_keySequence &&
          m_indices[next].m_columnName.CompareNoCase(fk->m_fkColumnName)      == 0 &&
          m_indices[next].m_indexName .CompareNoCase(fk->m_foreignConstraint) == 0))

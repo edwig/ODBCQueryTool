@@ -640,6 +640,216 @@ SQLInfoPostgreSQL::GetCATALOGDefaultCollation() const
   return _T("ucs_basic");
 }
 
+// All user defined compound data types
+XString
+SQLInfoPostgreSQL::GetCATALOGTypeExists(XString& p_schema,XString& p_typename,bool p_quoted /*= false*/) const
+{
+  XString sql(_T("SELECT COUNT(*)\n"
+                 "  FROM pg_type t\n"
+                 "        JOIN pg_class c ON t.typrelid = c.oid\n"
+                 "  WHERE n.nspname NOT IN ('pg_catalog', 'information_schema')\n"));
+  if(!p_schema.IsEmpty())
+  {
+    IdentifierCorrect(p_schema);
+    sql += _T("    AND n.nspname = ?\n");
+  }
+  IdentifierCorrect(p_typename);
+  sql += _T("    AND t.typname = ?");
+  return sql;
+}
+
+XString
+SQLInfoPostgreSQL::GetCATALOGTypeList(XString& p_schema,XString& p_pattern,bool p_quoted /*= false*/) const
+{
+  return GetCATALOGTypeAttributes(p_schema,p_pattern,p_quoted);
+}
+
+XString
+SQLInfoPostgreSQL::GetCATALOGTypeAttributes(XString& p_schema,XString& p_typename,bool p_quoted /*= false*/) const
+{
+  XString sql1(_T("SELECT current_catalog as catalogname\n"
+                  "      ,n.nspname    as schemaname\n"
+                  "      ,t.typname    as typename\n"
+                  "      ,'C'          as typeusage\n"
+                  "      ,a.attnum     as ordinal\n"
+                  "      ,a.attname    as attribute\n"
+                  "      ,pg_catalog.format_type(a.atttypid, a.atttypmod) as datatype\n"
+                  "      ,t.typnotnull as notnull\n"
+                  "      ,''           as defaultvalue"
+                  "      ,''           as domaincheck\n"
+                  "      ,''           as remarks\n"
+                  "      ,'<@>'        as source\n"
+                  "  FROM pg_type t\n"
+                  "       JOIN pg_class     c ON c.oid = t.typrelid\n"
+                  "       JOIN pg_namespace n ON n.oid = c.relnamespace\n"
+                  "       JOIN pg_attribute a ON c.oid = a.attrelid\n"
+                  " WHERE t.typtype     = 'c'\n"
+                  "   AND c.relkind     = 'c'\n"
+                  "   AND a.attnum      > 0 \n"
+                  "   AND NOT a.attisdropped\n"
+                  "   AND n.nspname NOT IN ('pg_catalog','information_schema')\n"));
+
+  XString sql2(_T("SELECT current_catalog as catalogname\n"
+                  "      ,n.nspname       as schemaname\n"
+                  "   	  ,t.typname       as typename\n"
+                  "      ,'E'             as typeusage\n"
+                  "      ,e.enumsortorder as ordinal\n"
+                  "      ,e.enumlabel     as attribute\n"
+                  "      ,''              as datatype\n"
+                  "      ,false           as notnull\n"
+                  "      ,''              as defaultvalue\n"
+                  "      ,''              as domaincheck\n"
+                  "      ,''              as remarks\n"
+                  "      ,'<@>'           as source\n"
+                  "  FROM pg_type t\n"
+                  "       JOIN pg_enum      e ON t.oid = e.enumtypid\n"
+                  "       JOIN pg_namespace n ON n.oid = t.typnamespace\n"
+                  " WHERE t.typtype     = 'e'\n"
+                  "   AND n.nspname NOT IN ('pg_catalog', 'information_schema')\n"));
+
+  XString sql3(_T("SELECT current_catalog as catalogname\n"
+                  "      ,n.nspname       as schemaname\n"
+                  "      ,t.typname       as typename\n"
+                  "      ,'D'             as typeusage\n"
+                  "      ,1               as ordinal\n"
+                  "      ,''              as attribute\n"
+                  "      ,pg_catalog.format_type(t.typbasetype, t.typtypmod) as datatype\n"
+                  "      ,t.typnotnull    as notnull\n"
+                  "      ,t.typdefault    as defaultvalue\n"
+                  "      ,cc.checks       as domaincheck\n"
+                  "      ,''              as remarks\n"
+                  "      ,'<@>'           as source\n"
+                  "  FROM pg_catalog.pg_type t\n"
+                  "       INNER JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace\n"
+                  "       LEFT OUTER JOIN (\n"
+                  "                  SELECT r.contypid, string_agg(pg_get_constraintdef(r.oid, true), ' AND ') AS checks\n"
+                  "                    FROM pg_catalog.pg_constraint r\n"
+                  "                   WHERE r.contype = 'c'\n"
+                  "                   GROUP BY r.contypid\n"
+                  "                 ) cc ON cc.contypid = t.oid\n"
+                  " WHERE t.typtype = 'd'\n"
+                  "   AND n.nspname NOT IN ('pg_catalog', 'information_schema')\n"));
+  if(!p_schema.IsEmpty())
+  {
+    IdentifierCorrect(p_schema);
+    sql1 += _T("   AND n.nspname = '") + p_schema + _T("'\n");
+    sql2 += _T("   AND n.nspname = '") + p_schema + _T("'\n");
+    sql3 += _T("   AND n.nspname = ?\n");
+  }
+  if(!p_typename.IsEmpty())
+  {
+    IdentifierCorrect(p_typename);
+    sql1 += _T("   AND t.typname ");
+    sql1 += p_typename.Find(_T("%")) >= 0 ? _T("LIKE") : _T("=");
+    sql1 += _T("'") + p_typename + _T("'\n");
+    sql2 += _T("   AND t.typname ");
+    sql2 += p_typename.Find(_T("%")) >= 0 ? _T("LIKE") : _T("=");
+    sql2 += _T("'") + p_typename + _T("'\n");
+    sql3 += _T("   AND t.typname ");
+    sql3 += p_typename.Find(_T("%")) >= 0 ? _T("LIKE") : _T("=");
+    sql3 += _T(" ?\n");
+  }
+  XString sql = sql1 + _T("UNION ALL\n") + 
+                sql2 + _T("UNION ALL\n") + 
+                sql3;
+  sql += _T(" ORDER by 1,2,3,5");
+  return sql;
+}
+
+XString
+SQLInfoPostgreSQL::GetCATALOGTypeSource(XString& p_schema,XString& p_typename,bool p_quoted /*= false*/) const
+{
+  // Composite types
+  XString sql1(_T("SELECT 'CREATE TYPE \"' || n.nspname || '\".\"' || t.typname || '\" AS(' ||\n"
+                  "       string_agg(a.attname || ' ' || pg_catalog.format_type(a.atttypid, a.atttypmod), ', ') ||\n"
+                  "       ');' AS create_composite_statement\n"
+                  "  FROM pg_type t\n"
+                  "       JOIN pg_class     c ON t.typrelid     = c.oid\n"
+                  "       JOIN pg_namespace n ON c.relnamespace = n.oid\n"
+                  "       JOIN pg_attribute a ON a.attrelid     = c.oid\n"
+                  " WHERE t.typtype = 'c'\n"
+                  "   AND c.relkind = 'c'\n"
+                  "   AND a.attnum  > 0 \n"
+                  "   AND NOT a.attisdropped\n"
+                  "   AND n.nspname NOT IN ('pg_catalog','information_schema')\n"));
+
+  // Enumeration types
+  XString sql2(_T("SELECT 'CREATE TYPE \"' || n.nspname || '\".\"' || t.typname || '\" AS ENUM (' ||\n"
+                  "       string_agg(quote_literal(e.enumlabel), ', ') || ');' AS create_enum_statement\n"
+                  "  FROM pg_type t\n"
+                  "       JOIN pg_enum      e ON t.oid = e.enumtypid\n"
+                  "       JOIN pg_namespace n ON t.typnamespace = n.oid\n"
+                  " WHERE t.typtype = 'e'\n"
+                  "   AND n.nspname NOT IN ('pg_catalog','information_schema')\n"));
+  // Domein check types
+  XString sql3(_T("SELECT 'CREATE DOMAIN \"' || n.nspname || '\".\"' || t.typname || '\" AS ' ||\n"
+                  "       pg_catalog.format_type(t.typbasetype, t.typtypmod)  ||\n"
+                  "       CASE WHEN t.typnotnull THEN ' NOT NULL' ELSE '' END ||\n"
+                  "       CASE WHEN t.typdefault IS NOT NULL THEN ' DEFAULT ' || t.typdefault ELSE '' END ||\n"
+                  "       CASE\n"
+                  "          WHEN cc.checks IS NOT NULL THEN ' ' || cc.checks\n"
+                  "          ELSE ''\n"
+                  "       END ||\n"
+                  "       ';' AS create_domain_statement\n"
+                  "  FROM pg_catalog.pg_type t\n"
+                  "       INNER JOIN pg_catalog.pg_namespace n ON n.oid = t.typnamespace\n"
+                  "       LEFT OUTER JOIN (\n"
+                  "                  SELECT r.contypid, string_agg(pg_get_constraintdef(r.oid, true), ' AND ') AS checks\n"
+                  "                    FROM pg_catalog.pg_constraint r\n"
+                  "                   WHERE r.contype = 'c'\n"
+                  "                   GROUP BY r.contypid\n"
+                  "                 ) cc ON cc.contypid = t.oid\n"
+                  "  WHERE t.typtype = 'd'\n"
+                  "   AND n.nspname NOT IN ('pg_catalog', 'information_schema')\n"));
+
+  if(!p_schema.IsEmpty())
+  {
+    IdentifierCorrect(p_schema);
+    sql1 += _T("   AND n.nspname = '") + p_schema + _T("'\n");
+    sql2 += _T("   AND n.nspname = '") + p_schema + _T("'\n");
+    sql3 += _T("   AND n.nspname = '") + p_schema + _T("'\n");
+  }
+  IdentifierCorrect(p_typename);
+  sql1 += _T("   AND t.typname = '") + p_typename + _T("'\n");
+  sql2 += _T("   AND t.typname = '") + p_typename + _T("'\n");
+  sql3 += _T("   AND t.typname = '") + p_typename + _T("'\n");
+
+  // GROUP/ORDER
+  sql1 += _T(" GROUP BY n.nspname, t.typname\n");
+  sql2 += _T(" GROUP BY n.nspname, t.typname\n");
+  sql3 += _T(" GROUP BY n.nspname, t.typname,t.typbasetype,t.typtypmod,t.typnotnull,t.typdefault,cc.checks");
+
+  XString sql = sql1 + _T("UNION ALL\n") +
+                sql2 + _T("UNION ALL\n") +
+                sql3;
+  return sql;
+}
+
+XString
+SQLInfoPostgreSQL::GetCATALOGTypeCreate(MUserTypeMap& p_type) const
+{
+  for(auto& type : p_type)
+  {
+    if(!type.m_source.IsEmpty() && type.m_source.Compare(_T("<@>")))
+    {
+      return type.m_source;
+    }
+  }
+  return XString();
+}
+
+XString
+SQLInfoPostgreSQL::GetCATALOGTypeDrop(XString p_schema,XString p_typename) const
+{
+  XString sql(_T("DROP TYPE IF EXISTS "));
+  if(!p_schema.IsEmpty())
+  {
+    sql += QIQ(p_schema) + _T(".");
+  }
+  sql += QIQ(p_typename);
+  return sql;
+}
+
 // Get SQL to check if a table already exists in the database
 XString
 SQLInfoPostgreSQL::GetCATALOGTableExists(XString& p_schema,XString& p_tablename,bool p_quoted /*= false*/) const

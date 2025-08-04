@@ -135,8 +135,8 @@ protected:
   virtual bool MakeInfoColumnPrivileges(MPrivilegeMap& p_privileges,XString& p_errors,XString p_schema,XString p_tablename,XString p_columnname = _T(""));
 
 public:
-  virtual bool MakeInfoTableSpecials  (MSpecialsMap&  p_specials,  XString& p_errors,XString p_schema,XString p_tablename);
-  virtual bool MakeInfoMetaTypes      (MMetaMap&      p_objects,   XString& p_errors,int p_type);
+  virtual bool MakeInfoTableSpecials   (MSpecialsMap&  p_specials,  XString& p_errors,XString p_schema,XString p_tablename);
+  virtual bool MakeInfoMetaTypes       (MMetaMap&      p_objects,   XString& p_errors,int p_type);
 
   // Meta pointer to SQLGet<META> functions
   SQLTCHAR* GetMetaPointer(SQLTCHAR* p_buffer,bool p_meta);

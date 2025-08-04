@@ -262,6 +262,13 @@ public:
   XString GetCATALOGDefaultCharset() const override;
   XString GetCATALOGDefaultCharsetNCV() const override;
   XString GetCATALOGDefaultCollation() const override;
+  // All user defined compound data types
+  XString GetCATALOGTypeExists        (XString& p_schema,XString& p_typename,bool p_quoted = false) const;
+  XString GetCATALOGTypeList          (XString& p_schema,XString& p_pattern, bool p_quoted = false) const;
+  XString GetCATALOGTypeAttributes    (XString& p_schema,XString& p_typename,bool p_quoted = false) const;
+  XString GetCATALOGTypeSource        (XString& p_schema,XString& p_typename,bool p_quoted = false) const;
+  XString GetCATALOGTypeCreate        (MUserTypeMap& p_type) const;
+  XString GetCATALOGTypeDrop          (XString  p_schema,XString  p_typename) const;
   // All table functions
   XString GetCATALOGTableExists       (XString& p_schema,XString& p_tablename,bool p_quoted = false) const override;
   XString GetCATALOGTablesList        (XString& p_schema,XString& p_pattern,  bool p_quoted = false) const override;

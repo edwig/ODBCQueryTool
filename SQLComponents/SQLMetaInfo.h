@@ -530,6 +530,40 @@ using MSynonymMap = std::vector<MetaSynonym>;
 #define MetaSynonym_tablespace        6
 #define MetaSynonym_temporary         7
 
+// Results for datatypes
+
+typedef struct _metaUserType
+{
+  XString m_catalogName; // Catalog name
+  XString m_schemaName;  // Schema name
+  XString m_typeName;    // Type name
+  XString m_usage;       // 'C'= 'Composite', 'E'= 'Enum', 'D'= 'Domain-check'
+  long    m_ordinal;     // Ordinal sequence within the datatype (1-based) (for 'C' and 'E')
+  XString m_attribute;   // attribute name or enumerator value !!
+  XString m_datatype;    // datatype for attribute
+  bool    m_notnull;     // notnull  for attribute
+  XString m_default;     // default  for domain
+  XString m_domaincheck; // check()  for domain
+  XString m_remarks;     // Comment ON
+  XString m_source;      // Source for reconstruction
+}
+MetaUserType;
+
+using MUserTypeMap = std::vector<MetaUserType>;
+
+#define MetaType_catalogname          1
+#define MetaType_schemaname           2
+#define MetaType_typename             3
+#define MetaType_usage                4
+#define MetaType_ordinal              5
+#define MetaType_attribute            6
+#define MetaType_datatype             7
+#define MetaType_notnull              8
+#define MetaType_default              9
+#define MetaType_domaincheck         10
+#define MetaType_remarks             11
+#define MetaType_source              12
+
 // Results for sessions - By SQLInfoDB!
 
 typedef struct _metaSession

@@ -1298,12 +1298,12 @@ SQLInfo::MakeObjectName(SQLTCHAR* search_catalog
 {
   XString objectName;
 
-  if(strlen(reinterpret_cast<char*>(search_schema)))
+  if(search_schema && strlen(reinterpret_cast<char*>(search_schema)))
   {
     objectName += XString(search_schema);
     objectName += _T(".");
   }
-  if(strlen(reinterpret_cast<char*>(search_table)))
+  if(search_table && strlen(reinterpret_cast<char*>(search_table)))
   {
     objectName += XString(search_table);
   }
@@ -1407,12 +1407,12 @@ SQLInfo::PrepareIdentifierForFunction(CString& p_identifier,bool p_meta)
                              // e.g. MS-SQLServer / MS-Access / mySQL
       default:               if(m_METADATA_ID_unsupported && (m_METADATA_ID_errorseen == false))
                              {
-                               InfoMessageBox(_T("Cannot guarantee to find object '" + p_identifier + "' for one of the following reasons:\r\n"
-                                                 "- The usage of SQL_ATTR_METADATA_ID is not supported on the statement level\r\n"
-                                                 "- The usage of SQL_ATTR_METADATA_ID is not supported on the connection level\r\n"
-                                                 "- SQLInfo of catalog identifiers is not simply SQL_IC_UPPER or SQL_IC_LOWER\r\n"
-                                                 "  and the catalog is not treated in a case-insensitive way.")
-                                             ,MB_OK);
+//                                InfoMessageBox(_T("Cannot guarantee to find object '" + p_identifier + "' for one of the following reasons:\r\n"
+//                                                  "- The usage of SQL_ATTR_METADATA_ID is not supported on the statement level\r\n"
+//                                                  "- The usage of SQL_ATTR_METADATA_ID is not supported on the connection level\r\n"
+//                                                  "- SQLInfo of catalog identifiers is not simply SQL_IC_UPPER or SQL_IC_LOWER\r\n"
+//                                                  "  and the catalog is not treated in a case-insensitive way.")
+//                                              ,MB_OK);
                                m_METADATA_ID_errorseen = true;
                              }
                              break;
@@ -1464,7 +1464,6 @@ SQLInfo::MakeInfoTableTable(MTableMap& p_tables
     return false;
   }
 
-
   // Get a statement handle for metadata use
   CloseStatement();
   bool meta = p_tablename.Find('%') < 0;
@@ -1487,9 +1486,8 @@ SQLInfo::MakeInfoTableTable(MTableMap& p_tables
   //   owner means we must provide a NULL pointer
   // - If the driver cannot search on this type of META-object the pointer MUST be NULL
 
-  _TUCHAR empty[2] = _T("");
-  SQLTCHAR* catalog = empty;
-  SQLTCHAR* schema  = empty;
+  SQLTCHAR* catalog = nullptr;
+  SQLTCHAR* schema  = nullptr;
   if(m_catalogUsage & SQL_CU_TABLE_DEFINITION)
   {
     catalog = GetMetaPointer(szCatalogName,meta);
@@ -1635,9 +1633,8 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns
   _tcscpy_s(reinterpret_cast<TCHAR*>(szColumnName),SQL_MAX_BUFFER,p_columnname.GetString());
 
   // - If the driver cannot search on this type of META-object the pointer MUST be NULL
-  _TUCHAR empty[2] = _T("");
-  SQLTCHAR* catalog = empty;
-  SQLTCHAR* schema  = empty;
+  SQLTCHAR* catalog = nullptr;
+  SQLTCHAR* schema  = nullptr;
   if(m_catalogUsage & SQL_CU_TABLE_DEFINITION)
   {
     catalog = GetMetaPointer(szCatalogName,meta);
@@ -1793,9 +1790,8 @@ SQLInfo::MakeInfoTablePrimary(MPrimaryMap& p_primaries,XString& p_errors,XString
   _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName), SQL_MAX_IDENTIFIER,p_schema.GetString());
   _tcscpy_s(reinterpret_cast<TCHAR*>(szTableName),  SQL_MAX_IDENTIFIER,p_tablename.GetString());
 
-  SQLTCHAR empty[2] = { _T("") };
-  SQLTCHAR* catalog = empty;
-  SQLTCHAR* schema  = empty;
+  SQLTCHAR* catalog = nullptr;
+  SQLTCHAR* schema  = nullptr;
   if(m_catalogUsage & SQL_CU_TABLE_DEFINITION)
   {
     catalog = GetMetaPointer(szCatalogName,meta);
@@ -2082,9 +2078,8 @@ SQLInfo::MakeInfoTableStatistics(MIndicesMap& p_statistics
   _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
   _tcscpy_s(reinterpret_cast<TCHAR*>(szTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
 
-  _TUCHAR empty[2] = _T("");
-  SQLTCHAR* catalog = empty;
-  SQLTCHAR* schema  = empty;
+  SQLTCHAR* catalog = nullptr;
+  SQLTCHAR* schema  = nullptr;
   if(m_catalogUsage & SQL_CU_TABLE_DEFINITION)
   {
     catalog = GetMetaPointer(szCatalogName,meta);
@@ -2223,9 +2218,8 @@ SQLInfo::MakeInfoTableSpecials(MSpecialsMap& p_specials
   _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
   _tcscpy_s(reinterpret_cast<TCHAR*>(szTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
 
-  _TUCHAR empty[2] = _T("");
-  SQLTCHAR* catalog = empty;
-  SQLTCHAR* schema  = empty;
+  SQLTCHAR* catalog = nullptr;
+  SQLTCHAR* schema  = nullptr;
   if(m_catalogUsage & SQL_CU_TABLE_DEFINITION)
   {
     catalog = GetMetaPointer(szCatalogName,meta);
@@ -2342,9 +2336,8 @@ SQLInfo::MakeInfoTablePrivileges(MPrivilegeMap& p_privileges
   _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
   _tcscpy_s(reinterpret_cast<TCHAR*>(szTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
 
-  _TUCHAR empty[2] = _T("");
-  SQLTCHAR* catalog = empty;
-  SQLTCHAR* schema  = empty;
+  SQLTCHAR* catalog = nullptr;
+  SQLTCHAR* schema  = nullptr;
   if(m_catalogUsage & SQL_CU_TABLE_DEFINITION)
   {
     catalog = GetMetaPointer(szCatalogName,meta);
@@ -2469,9 +2462,8 @@ SQLInfo::MakeInfoColumnPrivileges(MPrivilegeMap&  p_privileges
   _tcscpy_s(reinterpret_cast<TCHAR*>(szTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
   _tcscpy_s(reinterpret_cast<TCHAR*>(szColumnName), SQL_MAX_BUFFER,p_columnname.GetString());
 
-  _TUCHAR empty[2] = _T("");
-  SQLTCHAR* catalog = empty;
-  SQLTCHAR* schema  = empty;
+  SQLTCHAR* catalog = nullptr;
+  SQLTCHAR* schema  = nullptr;
   if(m_catalogUsage & SQL_CU_TABLE_DEFINITION)
   {
     catalog = GetMetaPointer(szCatalogName,meta);
@@ -2597,9 +2589,8 @@ SQLInfo::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
   _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName),   SQL_MAX_BUFFER,p_schema.GetString());
   _tcscpy_s(reinterpret_cast<TCHAR*>(szProcedureName),SQL_MAX_BUFFER,p_procedure.GetString());
 
-  _TUCHAR empty[2] = _T("");
-  SQLTCHAR* catalog = empty;
-  SQLTCHAR* schema  = empty;
+  SQLTCHAR* catalog = nullptr;
+  SQLTCHAR* schema  = nullptr;
   if(m_catalogUsage & SQL_CU_TABLE_DEFINITION)
   {
     catalog = GetMetaPointer(szCatalogName,meta);
@@ -2748,9 +2739,8 @@ SQLInfo::MakeInfoPSMParameters(MParameterMap& p_parameters
   _tcscpy_s(reinterpret_cast<TCHAR*>(szProcedureName),SQL_MAX_BUFFER,p_procedure.GetString());
   szColumnName[0] = 0;
 
-  _TUCHAR empty[2] = _T("");
-  SQLTCHAR* catalog = empty;
-  SQLTCHAR* schema  = empty;
+  SQLTCHAR* catalog = nullptr;
+  SQLTCHAR* schema  = nullptr;
   if(m_catalogUsage & SQL_CU_TABLE_DEFINITION)
   {
     catalog = GetMetaPointer(szCatalogName,meta);
@@ -2956,9 +2946,8 @@ SQLInfo::MakeInfoMetaTypes(MMetaMap& p_objects,XString& p_errors,int p_type)
     case META_TABLES:   _tcscpy_s(reinterpret_cast<TCHAR*>(search_type),   META_SEARCH_LEN,_T(SQL_ALL_TABLE_TYPES));  break;
     default: return false;
   }
-  _TUCHAR empty[2] = _T("");
-  SQLTCHAR* catalog = empty;
-  SQLTCHAR* schema  = empty;
+  SQLTCHAR* catalog = nullptr;
+  SQLTCHAR* schema  = nullptr;
   if(m_catalogUsage & SQL_CU_TABLE_DEFINITION)
   {
     catalog = GetMetaPointer(szCatalogName,meta);
