@@ -1096,8 +1096,11 @@ void PlsSqlAnalyzer::PutToken (const Token& token)
 void SyntaxNode::DbgPrintNode ()
 {
 	CString indent;
-	indent.Append(_T(">"),GetLevel());
 
+  for(int ind = 0;ind < GetLevel(); ++ind)
+  {
+	  indent.Append(_T(">"));
+  }
 	if (GetTokens().size())
 		TRACE("%4d%s%s\n", GetTokens().begin()->line + 1,  indent.GetString(), GetDebugString());
 	else
@@ -1107,9 +1110,11 @@ void SyntaxNode::DbgPrintNode ()
         node->DbgPrintNode();
 
 	//@EH
-	//indent.clear();
-	indent.Append(_T("<") ,GetLevel());
-
+	indent.Empty();
+  for(int ind = 0;ind < GetLevel();++ind)
+  {
+	  indent.Append(_T("<"));
+  }
 	if (m_tokens.size())
 		TRACE("%4d%s%s\n", GetTokens().rbegin()->line + 1,  indent.GetString(), GetDebugString());
 	else
