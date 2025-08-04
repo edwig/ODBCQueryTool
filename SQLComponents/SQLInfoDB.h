@@ -90,6 +90,7 @@ public:
   virtual bool    MakeInfoTablePrivileges (MPrivilegeMap& p_privileges,XString& p_errors,XString p_schema,XString p_tablename) override;
   virtual bool    MakeInfoColumnPrivileges(MPrivilegeMap& p_privileges,XString& p_errors,XString p_schema,XString p_tablename,XString p_columnname = _T("")) override;
   virtual bool    MakeInfoViewDefinition  (XString&       p_defintion, XString& p_errors,XString p_schema,XString p_viewname);
+  virtual bool    MakeInfoUserTypes       (MUserTypeMap&  p_usertypes, XString& p_errors,XString p_schema,XString p_usertype);
 
   // Procedures
   virtual bool    MakeInfoPSMProcedures(MProcedureMap& p_procedures,XString& p_errors,XString p_schema,XString p_procedure) override;
@@ -317,6 +318,7 @@ public:
   // o GetCATALOG<Object[s]><Function>
   //   Objects
   //   - Catalog general
+  //   - Data-types
   //   - Table
   //   - Column
   //   - Index
@@ -340,11 +342,18 @@ public:
   //
   //////////////////////////////////////////////////////////////////////////
 
-  // Meta info about meta types
+  // Meta info about meta types (table, view, alias, synonym, system-table etc)
   virtual XString GetCATALOGMetaTypes(int p_type) const = 0;
   virtual XString GetCATALOGDefaultCharset()    const = 0;
   virtual XString GetCATALOGDefaultCharsetNCV() const = 0;
   virtual XString GetCATALOGDefaultCollation()  const = 0;
+  // All user defined compound data types
+  virtual XString GetCATALOGTypeExists        (XString& p_schema,XString& p_typename,bool p_quoted = false) const = 0;
+  virtual XString GetCATALOGTypeList          (XString& p_schema,XString& p_pattern, bool p_quoted = false) const = 0;
+  virtual XString GetCATALOGTypeAttributes    (XString& p_schema,XString& p_typename,bool p_quoted = false) const = 0;
+  virtual XString GetCATALOGTypeSource        (XString& p_schema,XString& p_typename,bool p_quoted = false) const = 0;
+  virtual XString GetCATALOGTypeCreate        (MUserTypeMap& p_type) const = 0;
+  virtual XString GetCATALOGTypeDrop          (XString  p_schema,XString  p_typename) const = 0;
   // All table functions
   virtual XString GetCATALOGTableExists       (XString& p_schema,XString& p_tablename,bool p_quoted = false) const = 0;
   virtual XString GetCATALOGTablesList        (XString& p_schema,XString& p_pattern,  bool p_quoted = false) const = 0;

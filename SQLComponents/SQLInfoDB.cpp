@@ -1223,5 +1223,77 @@ SQLInfoDB::ReadTablesFromQuery(SQLQuery& p_query,MTableMap& p_tables)
   return !p_tables.empty();
 }
 
+// Getting all the user defined datatypes
+bool
+SQLInfoDB::MakeInfoUserTypes(MUserTypeMap& p_usertypes
+                            ,XString&      p_errors
+                            ,XString       p_schema
+                            ,XString       p_usertype)
+{
+  bool sgotten(false);
+  XString sql = GetCATALOGTypeAttributes(p_schema,p_usertype,true);
+  if(sql.IsEmpty())
+  {
+    // No user-types to be gotten from this RDBMS
+    return false;
+  }
+  try
+  {
+    for(int ind = 0;ind < 2;++ind)
+    {
+      SQLQuery qry(m_database);
+
+      if(!p_schema.IsEmpty())   qry.SetParameter(p_schema);
+      if(!p_usertype.IsEmpty()) qry.SetParameter(p_usertype);
+
+      qry.DoSQLStatement(sql);
+      while(qry.GetRecord())
+      {
+        MetaUserType type;
+        type.m_catalogName = (XString) qry[MetaType_catalogname];
+        type.m_schemaName  = (XString) qry[MetaType_schemaname];
+        type.m_typeName    = (XString) qry[MetaType_typename];
+        type.m_usage       = (XString) qry[MetaType_usage];
+        type.m_ordinal     = (long)    qry[MetaType_ordinal];
+        type.m_attribute   = (XString) qry[MetaType_attribute];
+        type.m_datatype    = (XString) qry[MetaType_datatype];
+        type.m_notnull     = (long)    qry[MetaType_notnull];
+        type.m_default     = (XString) qry[MetaType_default];
+        type.m_domaincheck = (XString) qry[MetaType_domaincheck];
+        type.m_remarks     = (XString) qry[MetaType_remarks];
+        type.m_source      = (XString) qry[MetaType_source];
+
+        if(type.m_source.Compare(_T("<@>")) == 0 && !sgotten)
+        {
+          XString source = GetCATALOGTypeSource(p_schema,p_usertype,ind == 0 ? true : false);
+          if(!source.IsEmpty())
+          {
+            SQLQuery qry2(m_database);
+            qry2.DoSQLStatement(source);
+            if(qry2.GetRecord())
+            {
+              type.m_source = (XString) qry2[1];
+              sgotten = true;
+            }
+          }
+        }
+        p_usertypes.push_back(type);
+      }
+    }
+    if(!p_usertypes.empty())
+    {
+      return true;
+    }
+    // Try standard catalog identifiers
+    sql = GetCATALOGTypeAttributes(p_schema,p_usertype);
+  }
+  catch(StdException& er)
+  {
+    ReThrowSafeException(er);
+    p_errors += er.GetErrorMessage();
+  }
+  return false;
+}
+
 // End of namespace
 }

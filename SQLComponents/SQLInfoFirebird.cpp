@@ -787,6 +787,190 @@ SQLInfoFirebird::GetCATALOGDefaultCollation() const
   return GetCATALOGDefaultCharset();
 }
 
+// All user defined compound data types
+XString
+SQLInfoFirebird::GetCATALOGTypeExists(XString& p_schema,XString& p_typename,bool p_quoted /*= false*/) const
+{
+  XString sql(_T("SELECT COUNT(*)\n"
+                 "  FROM rdb$fields fld\n"
+                 " WHERE rdb$validation_source IS NOT NULL\n"));
+  if(!p_schema.IsEmpty())
+  {
+    IdentifierCorrect(p_schema);
+    sql += _T("   AND fld.rdb$owner_name = ?\n");
+  }
+  IdentifierCorrect(p_typename);
+  sql += _T("   AND fld.rdb$field_name = ?");
+  return sql;
+}
+
+XString
+SQLInfoFirebird::GetCATALOGTypeList(XString& p_schema,XString& p_pattern,bool p_quoted /*= false*/) const
+{
+  XString sql(_T("SELECT Trim(dbs.mon$database_name) AS catalog_name\n"
+                 "      ,Trim(fld.rdb$owner_name)    AS schema_name\n"
+                 "      ,Trim(fld.rdb$field_name)    AS type_name\n"
+                 "      ,'D'                         AS typeusage\n"
+                 "      ,1                           AS ordinal\n"
+                 "  FROM mon$database dbs\n"
+                 "      ,rdb$fields fld\n"
+                 " WHERE rdb$validation_source IS NOT NULL\n"));
+  if(!p_schema.IsEmpty())
+  {
+    IdentifierCorrect(p_schema);
+    sql += _T("   AND fld.rdb$owner_name = ?\n");
+  }
+  if(!p_pattern.IsEmpty())
+  {
+    IdentifierCorrect(p_pattern);
+    sql += _T("   AND fld.rdb$field_name ");
+    sql += p_pattern.Find(_T('%')) >= 0 ? _T("LIKE") : _T("=");
+    sql += _T(" ?\n");
+  }
+  sql += _T(" ORDER by 1,2,3");
+  return sql;
+}
+
+XString
+SQLInfoFirebird::GetCATALOGTypeAttributes(XString& p_schema,XString& p_typename,bool p_quoted /*= false*/) const
+{
+  XString sql(_T("SELECT Trim(dbs.mon$database_name) AS catalog_name\n"
+                 "      ,Trim(fld.rdb$owner_name)    AS schema_name\n"
+                 "      ,Trim(fld.rdb$field_name)    AS type_name\n"
+                 "      ,'D'                         AS typeusage\n"
+                 "      ,1                           AS ordinal\n"
+                 "      ,''                          AS attributename\n"
+                 "      ,CASE fld.rdb$field_type\n"
+                 "            WHEN 7  THEN 'SMALLINT'\n"
+                 "            WHEN 8  THEN 'INTEGER'\n"
+                 "            WHEN 9  THEN 'QUAD'\n"
+                 "            WHEN 10 THEN 'FLOAT'\n"
+                 "            WHEN 11 THEN 'D_FLOAT'\n"
+                 "            WHEN 12 THEN 'DATE'\n"
+                 "            WHEN 13 THEN 'TIME'\n"
+                 "            WHEN 14 THEN 'CHAR'\n"
+                 "            WHEN 16 THEN CASE fld.rdb$field_sub_type\n"
+                 "                              WHEN 0 THEN 'BIGINT'\n"
+                 "                              WHEN 1 THEN 'NUMERIC'\n"
+                 "                              WHEN 2 THEN 'DECIMAL'\n"
+                 "                                     ELSE 'BIGINT'\n"
+                 "                         END\n"
+                 "            WHEN 23 THEN 'BOOLEAN'\n"
+                 "            WHEN 27 THEN 'DOUBLE PRECISION'\n"
+                 "            WHEN 35 THEN 'TIMESTAMP'\n"
+                 "            WHEN 37 THEN 'VARCHAR'\n"
+                 "            WHEN 40 THEN 'CSTRING'\n"
+                 "            WHEN 261 THEN CASE fld.rdb$field_sub_type\n"
+                 "                               WHEN 0 THEN 'BLOB SUB_TYPE 0'\n"
+                 "                               WHEN 1 THEN 'BLOB SUB_TYPE TEXT'\n"
+                 "                                      ELSE 'BLOB'\n"
+                 "                          END\n"
+                 "                     ELSE 'UNKNOWN'\n"
+                 "       END ||\n"
+                 "       CASE WHEN rdb$field_type = 16 AND rdb$field_sub_type IN (1,2)\n"
+                 "            THEN '(' || rdb$field_precision || ',' || (rdb$field_scale * -1) || ')'\n"
+                 "            ELSE '' END ||\n"
+                 "       CASE WHEN fld.rdb$field_type IN (14,37,40)\n"
+                 "            THEN '(' || rdb$field_length || ')'\n"
+                 "            ELSE ''\n"
+                 "       END\n"
+                 "      ,rdb$null_flag               AS notnullable\n"
+                 "      ,rdb$default_source          AS defaultvalue\n"
+                 "      ,rdb$validation_source       AS domaincheck\n"
+                 "      ,rdb$description             AS remarks\n"
+                 "      ,'<@>'                       AS source\n"
+                 "  FROM mon$database dbs\n"
+                 "      ,rdb$fields fld\n"
+                 " WHERE rdb$validation_source IS NOT NULL\n"));
+  if(!p_schema.IsEmpty())
+  {
+    IdentifierCorrect(p_schema);
+    sql += _T("   AND fld.rdb$owner_name = ?\n");
+  }
+  if(!p_typename.IsEmpty())
+  {
+    IdentifierCorrect(p_typename);
+    sql += _T("   AND fld.rdb$field_name ");
+    sql += p_typename.Find(_T('%')) >= 0 ? _T("LIKE") : _T("=");
+    sql += _T(" ?\n");
+  }
+  sql += _T(" ORDER by 1,2,3,5");
+  return sql;
+}
+
+XString
+SQLInfoFirebird::GetCATALOGTypeSource(XString& p_schema,XString& p_typename,bool p_quoted /*= false*/) const
+{
+  XString sql(_T("SELECT 'CREATE DOMAIN \"' || Trim(fld.rdb$field_name) || '\" AS ' ||\n"
+                 "       CASE fld.rdb$field_type\n"
+                 "            WHEN 7  THEN 'SMALLINT'\n"
+                 "            WHEN 8  THEN 'INTEGER'\n"
+                 "            WHEN 9  THEN 'QUAD'\n"
+                 "            WHEN 10 THEN 'FLOAT'\n"
+                 "            WHEN 11 THEN 'D_FLOAT'\n"
+                 "            WHEN 12 THEN 'DATE'\n"
+                 "            WHEN 13 THEN 'TIME'\n"
+                 "            WHEN 14 THEN 'CHAR'\n"
+                 "            WHEN 16 THEN CASE fld.rdb$field_sub_type\n"
+                 "                              WHEN 0 THEN 'BIGINT'\n"
+                 "                              WHEN 1 THEN 'NUMERIC'\n"
+                 "                              WHEN 2 THEN 'DECIMAL'\n"
+                 "                                     ELSE 'BIGINT'\n"
+                 "                         END\n"
+                 "            WHEN 23 THEN 'BOOLEAN'\n"
+                 "            WHEN 27 THEN 'DOUBLE PRECISION'\n"
+                 "            WHEN 35 THEN 'TIMESTAMP'\n"
+                 "            WHEN 37 THEN 'VARCHAR'\n"
+                 "            WHEN 40 THEN 'CSTRING'\n"
+                 "            WHEN 261 THEN CASE fld.rdb$field_sub_type\n"
+                 "                               WHEN 0 THEN 'BLOB SUB_TYPE 0'\n"
+                 "                               WHEN 1 THEN 'BLOB SUB_TYPE TEXT'\n"
+                 "                                      ELSE 'BLOB'\n"
+                 "                          END\n"
+                 "                     ELSE 'UNKNOWN'\n"
+                 "       END ||\n"
+                 "       CASE WHEN rdb$field_type = 16 AND rdb$field_sub_type IN (1,2)\n"
+                 "            THEN '(' || rdb$field_precision || ',' || (rdb$field_scale * -1) || ')'\n"
+                 "            ELSE '' END ||\n"
+                 "       CASE WHEN fld.rdb$field_type IN (14,37,40)\n"
+                 "            THEN '(' || rdb$field_length || ')'\n"
+                 "            ELSE ''\n"
+                 "       END ||\n"
+                 "       COALESCE(' ' || rdb$default_source,'') || ' ' ||\n"
+                 "       CASE rdb$null_flag\n"
+                 "            WHEN 1 THEN 'NOT NULL '\n"
+                 "            ELSE ''\n"
+                 "       END || rdb$validation_source AS source\n"
+                 "  FROM rdb$fields fld\n"));
+  if(!p_schema.IsEmpty())
+  {
+    IdentifierCorrect(p_schema);
+    sql += _T(" WHERE fld.rdb$owner_name = '") + p_schema + _T("'\n");
+  }
+  IdentifierCorrect(p_typename);
+  sql += p_schema.IsEmpty() ? _T(" WHERE ") : _T("   AND ");
+  sql += _T("fld.rdb$field_name = '") + p_typename + _T("'");
+  return sql;
+}
+
+XString
+SQLInfoFirebird::GetCATALOGTypeCreate(MUserTypeMap& p_type) const
+{
+  if(!p_type.empty())
+  {
+    return p_type[0].m_source;
+  }
+  return XString();
+}
+
+XString
+SQLInfoFirebird::GetCATALOGTypeDrop(XString /*p_schema*/,XString p_typename) const
+{
+  XString sql(_T("DROP DOMAIN "));
+  sql += QIQ(p_typename);
+  return sql;
+}
+
 // Get SQL to check if a table already exists in the database
 XString
 SQLInfoFirebird::GetCATALOGTableExists(XString& p_schema,XString& p_tablename,bool p_quoted /*= false*/) const
@@ -2363,6 +2547,11 @@ SQLInfoFirebird::GetCATALOGCommentCreate(XString /*p_schema*/,XString p_object,X
   XString sql;
   if(!p_object.IsEmpty() && !p_name.IsEmpty() && !p_remark.IsEmpty())
   {
+    // User types in Firebird are DOMAIN's
+    if(p_object.CompareNoCase(_T("TYPE")) == 0)
+    {
+      p_object = _T("DOMAIN");
+    }
     sql.Format(_T("COMMENT ON %s "),p_object.GetString());
     sql += QIQ(p_name);
     if(!p_subObject.IsEmpty())

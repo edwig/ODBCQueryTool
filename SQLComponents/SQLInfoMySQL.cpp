@@ -323,9 +323,9 @@ SQLInfoMySQL::GetKEYWORDParameterPrefix() const
 // Get select part to add new record identity to a table
 // Can be special column like 'OID' or a sequence select
 XString
-SQLInfoMySQL::GetKEYWORDIdentityString(XString& p_tablename,XString p_postfix /*= "_seq"*/) const
+SQLInfoMySQL::GetKEYWORDIdentityString(XString& /*p_tablename*/,XString /*p_postfix /*= "_seq"*/) const
 {
-  return p_tablename + p_postfix + _T(".nextval");
+  return _T("0");
 }
 
 // Gets the UPPER function
@@ -339,14 +339,14 @@ SQLInfoMySQL::GetKEYWORDUpper(XString& p_expression) const
 XString
 SQLInfoMySQL::GetKEYWORDInterval1MinuteAgo() const
 {
-  return _T("ERROR");
+  return _T("TIMESTAMPADD(MINUTE,-1,CURRENT_TIMESTAMP)");
 }
 
 // Gets the Not-NULL-Value statement of the database
 XString
 SQLInfoMySQL::GetKEYWORDStatementNVL(XString& p_test,XString& p_isnull) const
 {
-  return _T("{fn IFNULL(") + p_test + _T(",") + p_isnull + _T(")}");
+  return _T("IFNULL(") + p_test + _T(",") + p_isnull + _T(")");
 }
 
 // Gets the RDBMS definition of the datatype
@@ -732,6 +732,43 @@ XString
 SQLInfoMySQL::GetCATALOGDefaultCollation() const
 {
   return _T("latin1_swedish_ci");
+}
+
+// All user defined compound data types
+XString
+SQLInfoMySQL::GetCATALOGTypeExists(XString& /*p_schema*/,XString& /*p_typename*/,bool /*p_quoted = false*/) const
+{
+  return XString();
+}
+
+XString
+SQLInfoMySQL::GetCATALOGTypeList(XString& /*p_schema*/,XString& /*p_pattern*/,bool /*p_quoted = false*/) const
+{
+  return XString();
+}
+
+XString
+SQLInfoMySQL::GetCATALOGTypeAttributes(XString& /*p_schema*/,XString& /*p_typename*/,bool /*p_quoted = false*/) const
+{
+  return XString();
+}
+
+XString
+SQLInfoMySQL::GetCATALOGTypeSource(XString& /*p_schema*/,XString& /*p_typename*/,bool /*p_quoted = false*/) const
+{
+  return XString();
+}
+
+XString
+SQLInfoMySQL::GetCATALOGTypeCreate(MUserTypeMap& /*p_type*/) const
+{
+  return XString();
+}
+
+XString
+SQLInfoMySQL::GetCATALOGTypeDrop(XString /*p_schema*/,XString /*p_typename*/) const
+{
+  return XString();
 }
 
 // Get SQL to check if a table already exists in the database
@@ -1808,120 +1845,38 @@ SQLInfoMySQL::GetCATALOGTriggerDrop(XString /*p_schema*/, XString /*p_tablename*
 // ALL SEQUENCE FUNCTIONS
 
 XString
-SQLInfoMySQL::GetCATALOGSequenceExists(XString p_schema, XString p_sequence,bool p_quoted /*= false*/) const
+SQLInfoMySQL::GetCATALOGSequenceExists(XString /*p_schema*/,XString /*p_sequence*/,bool /*p_quoted /*= false*/) const
 {
-  IdentifierCorrect(p_sequence);
-  XString sql = _T("SELECT COUNT(*)\n")
-                _T("  FROM information_schema.tables tab\n")
-                _T(" WHERE tab.table_type = 'SEQUENCE'\n")
-                _T("   AND sequence_name  = '");
-  sql += p_sequence;
-  sql += _T("\'");
-  if(!p_schema.IsEmpty())
-  {
-    IdentifierCorrect(p_schema);
-    sql += _T("\n   AND table_schema = '");
-    sql += p_schema;
-    sql += _T("\'");
-  }
-  return sql;
+  // MySQL does NOT support SEQUENCE
+  return _T("");
 }
 
 XString
-SQLInfoMySQL::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern,bool p_quoted /*= false*/) const
+SQLInfoMySQL::GetCATALOGSequenceList(XString& /*p_schema*/,XString& /*p_pattern*/,bool /*p_quoted /*= false*/) const
 {
-  if(!p_pattern.IsEmpty() && p_pattern.Find('%') < 0)
-  {
-    p_pattern = _T("%") + p_pattern + _T("%");
-  }
-
-  XString sql = _T("SELECT tab.table_catalog as catalog_name\n")
-                _T("      ,tab.table_schema  as schema_name\n")
-                _T("      ,tab.table_name    as sequence_name\n")
-                _T("      ,0 AS current_value\n")
-                _T("      ,0 AS minimal_value\n")
-                _T("      ,0 AS seq_increment\n")
-                _T("      ,0 AS cache\n")
-                _T("      ,0 AS cycle\n")
-                _T("      ,0 AS ordering\n")
-                _T("      ,'' AS remarks\n")
-                _T("  FROM information_schema.tables tab\n")
-                _T(" WHERE tab.table_type = 'SEQUENCE'");
-  if(!p_schema.IsEmpty())
-  {
-    IdentifierCorrect(p_schema);
-    sql += _T("\n   AND table_schema = ?");
-  }
-  if(!p_pattern.IsEmpty())
-  {
-    IdentifierCorrect(p_pattern);
-    sql += _T("\n   AND table_name LIKE ?");
-  }
-  return sql;
+  // MySQL does NOT support SEQUENCE
+  return _T("");
 }
 
 XString
-SQLInfoMySQL::GetCATALOGSequenceAttributes(XString& p_schema,XString& p_sequence,bool p_quoted /*= false*/) const
+SQLInfoMySQL::GetCATALOGSequenceAttributes(XString& /*p_schema*/,XString& /*p_sequence*/,bool /*p_quoted /*= false*/) const
 {
-  XString table;
-  if(!p_schema.IsEmpty())
-  {
-    table = p_schema + _T(".");
-  }
-  table += p_sequence;
-
-  XString sql = _T("SELECT tab.table_catalog   AS catalog_name\n")
-                _T("      ,tab.table_schema    AS schema_name\n")
-                _T("      ,tab.table_name      AS sequence_name\n")
-                _T("      ,seq.start_value     AS current_value\n")
-                _T("      ,seq.minimum_value   AS minimal_value\n")
-                _T("      ,seq.increment       AS seq_increment\n")
-                _T("      ,seq.cache_size      AS cache\n")
-                _T("      ,seq.cycle_option    AS cycle\n")
-                _T("      ,0                   AS ordering\n")
-                _T("      ,''                  AS remarks\n")
-                _T("  FROM information_schema.tables as tab\n")
-                _T("      ,") + table + _T(" as seq\n")
-                _T(" WHERE tab.table_type = 'SEQUENCE'");
-  if(!p_schema.IsEmpty())
-  {
-    IdentifierCorrect(p_schema);
-    sql += _T("\n   AND tab.table_schema = ?");
-  }
-  if(!p_sequence.IsEmpty())
-  {
-    IdentifierCorrect(p_sequence);
-    sql += _T("\n   AND tab.table_name  = ?");
-  }
-  return sql;
+  // MySQL does NOT support SEQUENCE
+  return _T("");
 }
 
 XString
-SQLInfoMySQL::GetCATALOGSequenceCreate(MetaSequence& p_sequence) const
+SQLInfoMySQL::GetCATALOGSequenceCreate(MetaSequence& /*p_sequence*/) const
 {
-  XString sql(_T("CREATE OR REPLACE SEQUENCE "));
-
-  sql += QIQ(p_sequence.m_sequenceName);
-  sql.AppendFormat(_T("\n START WITH %-12.0f"), p_sequence.m_currentValue);
-  sql.AppendFormat(_T("\n INCREMENT BY %d"),    p_sequence.m_increment);
-
-  sql += p_sequence.m_cycle ? _T("\n CYCLE") : _T("\n NOCYCLE");
-  if (p_sequence.m_cache > 0)
-  {
-    sql.AppendFormat(_T("\n CACHE %d"),p_sequence.m_cache);
-  }
-  else
-  {
-    sql += _T("\n NOCACHE");
-  }
-  return sql;
+  // MySQL does NOT support SEQUENCE
+  return _T("");
 }
 
 XString
-SQLInfoMySQL::GetCATALOGSequenceDrop(XString /*p_schema*/, XString p_sequence) const
+SQLInfoMySQL::GetCATALOGSequenceDrop(XString /*p_schema*/, XString /*p_sequence*/) const
 {
-  XString sql(_T("DROP SEQUENCE ") + QIQ(p_sequence));
-  return  sql;
+  // MySQL does NOT support SEQUENCE
+  return _T("");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -2033,6 +1988,7 @@ SQLInfoMySQL::GetCATALOGViewDrop(XString /*p_schema*/,XString p_viewname,XString
 }
 
 // All Privilege functions
+
 XString
 SQLInfoMySQL::GetCATALOGTablePrivileges(XString& p_schema,XString& p_tablename) const
 {

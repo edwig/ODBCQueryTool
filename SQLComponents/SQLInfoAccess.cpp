@@ -607,6 +607,43 @@ SQLInfoAccess::GetCATALOGDefaultCollation() const
   return _T("-");
 }
 
+// All user defined compound data types
+XString 
+SQLInfoAccess::GetCATALOGTypeExists(XString& /*p_schema*/,XString& /*p_typename*/,bool /*p_quoted = false*/) const
+{
+  return XString();
+}
+
+XString
+SQLInfoAccess::GetCATALOGTypeList(XString& /*p_schema*/,XString& /*p_pattern*/,bool /*p_quoted = false*/) const
+{
+  return XString();
+}
+
+XString
+SQLInfoAccess::GetCATALOGTypeAttributes(XString& /*p_schema*/,XString& /*p_typename*/,bool /*p_quoted = false*/) const
+{
+  return XString();
+}
+
+XString
+SQLInfoAccess::GetCATALOGTypeSource(XString& /*p_schema*/,XString& /*p_typename*/,bool /*p_quoted = false*/) const
+{
+  return XString();
+}
+
+XString
+SQLInfoAccess::GetCATALOGTypeCreate(MUserTypeMap& /*p_type*/) const
+{
+  return XString();
+}
+
+XString
+SQLInfoAccess::GetCATALOGTypeDrop(XString /*p_schema*/,XString /*p_typename*/) const
+{
+  return XString();
+}
+
 // Get SQL to check if a table already exists in the database
 XString
 SQLInfoAccess::GetCATALOGTableExists(XString& /*p_schema*/,XString& /*p_tablename*/,bool /*p_quoted = false*/) const
