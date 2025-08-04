@@ -903,7 +903,7 @@ COEDocument::OnWatchedFileChanged ()
             prompt += !IsModified() ? _T("?") : _T(" and lose the changes made in the editor?");
 
             if ((m_settings.GetFileReloadChanges() && !IsModified())
-            || AfxMessageBox(prompt, 
+            || ::MessageBox(theApp.m_pMainWnd->GetSafeHwnd(),prompt,_T("Changed"),
                 !IsModified() ? MB_YESNO|MB_ICONQUESTION : MB_YESNO|MB_ICONEXCLAMATION) == IDYES)
             {
                 vector<COEditorView*> viewsToScroll;
