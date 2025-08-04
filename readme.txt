@@ -22,6 +22,13 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes 3.5.2
+------------------
+Fixes for the MS-Access Jet databaase engine. Discovery of table and columns was broken
+Fixes for opnening a extra line in the editor by going a line down. Inserting of spaces
+before the text was essentially broken. This makes editting queries a lot better experience.
+Fixes for table discovery of a named table in Firebird.
+
 Releasenotes 3.5.1
 ------------------
 Various fixes for the discovery of databases with quoted identifiers. 
