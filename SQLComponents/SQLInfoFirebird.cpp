@@ -274,7 +274,7 @@ XString
 SQLInfoFirebird::GetKEYWORDParameterDefaultNULL() const
 {
   // Standard, no definition defines the NULL state
-  return XString();
+  return _T("");
 }
 
 // Parameter is for INPUT and OUTPUT in parameter list
@@ -282,14 +282,14 @@ XString
 SQLInfoFirebird::GetKEYWORDParameterINOUT() const
 {
   // Firebird works with the "RETURNS" list !
-  return XString();
+  return _T("");
 }
 
 // Parameter is for OUTPUT only in parameter list
 XString
 SQLInfoFirebird::GetKEYWORDParameterOUT() const
 {
-  return XString();
+  return _T("");
 }
 
 // Get datatype of the IDENTITY primary key in a Network database
@@ -469,7 +469,7 @@ SQLInfoFirebird::GetKEYWORDCurrentUser() const
 XString
 SQLInfoFirebird::GetSQLDefaultSchema(XString /*p_user*/,XString /*p_schema*/) const
 {
-  return XString();
+  return _T("");
 }
 
 // Gets the construction for inline generating a key within an INSERT statement
@@ -538,7 +538,7 @@ XString
 SQLInfoFirebird::GetSQLLockTable(XString /*p_schema*/, XString /*p_tablename*/, bool /*p_exclusive*/,int /*p_waittime*/) const
 {
   // Firebird does NOT have a LOCK-TABLE statement
-  return XString();
+  return _T("");
 }
 
 // Get query to optimize the table statistics
@@ -546,7 +546,7 @@ XString
 SQLInfoFirebird::GetSQLOptimizeTable(XString /*p_schema*/, XString /*p_tablename*/) const
 {
   // Firebird has no SQL for this, it uses the "GFIX.EXE -sweep <database>" tool
-  return XString();
+  return _T("");
 }
 
 // Transform query to select top <n> rows
@@ -960,7 +960,7 @@ SQLInfoFirebird::GetCATALOGTypeCreate(MUserTypeMap& p_type) const
   {
     return p_type[0].m_source;
   }
-  return XString();
+  return _T("");
 }
 
 XString
@@ -975,16 +975,16 @@ SQLInfoFirebird::GetCATALOGTypeDrop(XString /*p_schema*/,XString p_typename) con
 XString
 SQLInfoFirebird::GetCATALOGTableExists(XString& p_schema,XString& p_tablename,bool p_quoted /*= false*/) const
 {
-  IdentifierCorrect(p_schema);
-  IdentifierCorrect(p_tablename);
   XString query = _T("SELECT COUNT(*)\n"
-                     "  FROM rdb$relations rel\n");
+                     "  FROM rdb$relations rel\n"
+                     " WHERE rel.rdb$relation_type IN (0,2,3,4,5)\n");
   if(!p_schema.IsEmpty())
   {
-    query += _T(" WHERE rel.rdb$owner_name = ?\n");
+    IdentifierCorrect(p_schema);
+    query += _T(" AND rel.rdb$owner_name = ?\n");
   }
-  query += p_schema.IsEmpty() ? _T(" WHERE ") : _T("   AND ");
-  query += _T("rel.rdb$relation_name = ?");
+  IdentifierCorrect(p_tablename);
+  query += _T(" AND rel.rdb$relation_name = ?");
 
   return query;
 }
@@ -995,7 +995,7 @@ SQLInfoFirebird::GetCATALOGTablesList(XString& p_schema,XString& p_pattern,bool 
   return GetCATALOGTableAttributes(p_schema,p_pattern,p_quoted);
 }
 
-// Attributes can fill in 'm_temporary' 
+// Attributes of a table
 XString
 SQLInfoFirebird::GetCATALOGTableAttributes(XString& p_schema,XString& p_tablename,bool p_quoted /*= false*/) const
 {
@@ -1013,14 +1013,14 @@ SQLInfoFirebird::GetCATALOGTableAttributes(XString& p_schema,XString& p_tablenam
                    "      ,TRIM(rel.rdb$owner_name) || '.' || TRIM(rel.rdb$relation_name) AS full_name\n"
                    "      ,cast('' as varchar(31)) as storage_space\n"
                    "      ,CASE rel.rdb$relation_type\n"
-                   "            WHEN 4 THEN 1\n"
-                   "            WHEN 5 THEN 1\n"
+                   "            WHEN 4 THEN 1\n"  // 4 = GTT (preserve rows)
+                   "            WHEN 5 THEN 1\n"  // 5 = GTT (delete rows)
                    "                   ELSE 0\n"
                    "       END  AS temporary_table\n"
                    "  FROM rdb$relations rel\n"
                    "      ,mon$database  dbs"
                    " WHERE rel.rdb$system_flag = 0\n"
-                   "   AND rel.rdb$relation_type IN (0,2,4,5)\n");
+                   "   AND rel.rdb$relation_type IN (0,2,3,4,5)\n");
   if(!p_schema.IsEmpty())
   {
     IdentifierCorrect(p_schema);
@@ -1054,10 +1054,15 @@ SQLInfoFirebird::GetCATALOGTableCatalog(XString& p_schema,XString& p_tablename,b
                    "      ,CAST('SYSTEM TABLE' as varchar(31)) AS table_type\n"
                    "      ,rel.rdb$description                 AS remarks\n"
                    "      ,trim(rel.rdb$owner_name) || '.' || trim(rel.rdb$relation_name) AS full_name\n"
-                   "      ,cast('' as varchar(31)) as storage_space\n"
+                   "      ,cast('' as varchar(31))             as storage_space\n"
+                   "      ,CASE rdb$relation_type\n"
+                   "            WHEN 4 THEN 1\n"  // 4 = GTT (preserve rows)
+                   "            WHEN 5 THEN 1\n"  // 5 = GTT (delete rows)
+                   "            ELSE 0\n"
+                   "       END  as temporary\n"
                    "  FROM rdb$relations rel\n"
                    "      ,mon$database  dbs\n"
-                   " WHERE rel.rdb$relation_type IN (0,3)\n"
+                   " WHERE rel.rdb$relation_type IN (0,2,3,4,5)\n"  // 1 = view
                    "   AND rel.rdb$system_flag = 1\n");
   if(!p_schema.IsEmpty())
   {
@@ -1097,7 +1102,7 @@ SQLInfoFirebird::GetCATALOGTableRename(XString /*p_schema*/,XString /*p_oldName*
 {
   // Not supported by Firebird
   // Changing database table names is not supported by this database type
-  return XString();
+  return _T("");
 }
 
 XString
@@ -1163,16 +1168,8 @@ SQLInfoFirebird::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablena
            "      ,trim(col.rdb$relation_name) as table_name\n"            // 3  - VARCHAR NOT NULL
            "      ,trim(col.rdb$field_name)    as column_name\n"           // 4  - VARCHAR NOT NULL
            "      ,CASE fld.rdb$field_type\n"
-           "            WHEN 7  THEN CASE fld.rdb$field_sub_type\n"
-           "                              WHEN 1 THEN 2\n"
-           "                              WHEN 2 THEN 2\n"
-           "                                     ELSE 5\n"
-           "                              END\n"
-           "            WHEN 8  THEN CASE fld.rdb$field_sub_type\n"
-           "                              WHEN 1 THEN 2\n"
-           "                              WHEN 2 THEN 2\n"
-           "                                     ELSE 4\n"
-           "                              END\n"
+           "            WHEN 7  THEN 5\n"
+           "            WHEN 8  THEN 4\n"
            "            WHEN 10 THEN 7\n"
            "            WHEN 12 THEN 10\n"
            "            WHEN 13 THEN 13\n"
@@ -1194,16 +1191,8 @@ SQLInfoFirebird::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablena
            "                     ELSE 0\n"
            "       END                           as data_type\n"	          // 5  - SMALLINT NOT NULL
            "      ,CASE fld.rdb$field_type\n"
-           "            WHEN 7  THEN CASE fld.rdb$field_sub_type\n"
-           "                              WHEN 1 THEN 'NUMERIC'\n"
-           "                              WHEN 2 THEN 'DECIMAL'\n"
-           "                                     ELSE 'SMALLINT'\n"
-           "                              END\n"
-           "            WHEN 8  THEN CASE fld.rdb$field_sub_type\n"
-           "                              WHEN 1 THEN 'NUMERIC'\n"
-           "                              WHEN 2 THEN 'DECIMAL'\n"
-           "                                     ELSE 'INTEGER'\n"
-           "                              END\n"
+           "            WHEN 7  THEN 'SMALLINT'\n"
+           "            WHEN 8  THEN 'INTEGER'\n"
            "            WHEN 10 THEN 'FLOAT'\n"
            "            WHEN 12 THEN 'DATE'\n"
            "            WHEN 13 THEN 'TIME'\n"
@@ -1225,16 +1214,8 @@ SQLInfoFirebird::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablena
            "                     ELSE 'UNKNOWN'\n"
            "       END                                        as type_name\n"		// 6  - VARCHAR NOT NULL
            "      ,CASE fld.rdb$field_type\n"
-           "            WHEN 7  THEN CASE fld.rdb$field_sub_type\n"
-           "                              WHEN 1 THEN fld.rdb$field_precision\n"
-           "                              WHEN 2 THEN fld.rdb$field_precision\n"
-           "                                     ELSE 5\n"
-           "                              END\n"
-           "            WHEN 8  THEN CASE fld.rdb$field_sub_type\n"
-           "                              WHEN 1 THEN fld.rdb$field_precision\n"
-           "                              WHEN 2 THEN fld.rdb$field_precision\n"
-           "                                     ELSE 11\n"
-           "                              END\n"
+           "            WHEN 7  THEN 5\n"
+           "            WHEN 8  THEN 11\n"
            "            WHEN 10 THEN 12\n"
            "            WHEN 12 THEN 10\n"
            "            WHEN 13 THEN 13\n"
@@ -1260,16 +1241,8 @@ SQLInfoFirebird::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablena
            "      ,trim(col.rdb$description)                  as remarks\n"                  // 12 - VARCHAR
            "      ,trim(col.rdb$default_source)               as column_def\n"               // 13 - VARCHAR
            "      ,CASE fld.rdb$field_type\n"
-           "            WHEN 7  THEN CASE fld.rdb$field_sub_type\n"
-           "                              WHEN 1 THEN 2\n"
-           "                              WHEN 2 THEN 2\n"
-           "                                     ELSE 5\n"
-           "                              END\n"
-           "            WHEN 8  THEN CASE fld.rdb$field_sub_type\n"
-           "                              WHEN 1 THEN 2\n"
-           "                              WHEN 2 THEN 2\n"
-           "                                     ELSE 4\n"
-           "                              END\n"
+           "            WHEN 7  THEN 5\n"
+           "            WHEN 8  THEN 4\n"
            "            WHEN 10 THEN 7\n"
            "            WHEN 12 THEN 9\n"
            "            WHEN 13 THEN 10\n"
@@ -1397,7 +1370,7 @@ SQLInfoFirebird::GetCATALOGIndexAttributes(XString& p_schema,XString& p_tablenam
   // No table statistics (YET)
   if(p_indexname.Compare(_T("0")) == 0)
   {
-    return XString();
+    return _T("");
   }
   XString query = _T("SELECT TRIM(dbs.mon$database_name) as index_catalog\n"
                      "      ,TRIM(tab.rdb$owner_name)    as index_schema\n"
@@ -1509,7 +1482,7 @@ SQLInfoFirebird::GetCATALOGIndexDrop(XString /*p_schema*/,XString /*p_tablename*
 XString
 SQLInfoFirebird::GetCATALOGIndexFilter(MetaIndex& /*p_index*/) const
 {
-  return "";
+  return _T("");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -1793,31 +1766,31 @@ SQLInfoFirebird::GetCATALOGForeignDrop(XString /*p_schema*/,XString p_tablename,
 XString
 SQLInfoFirebird::GetCATALOGDefaultExists(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_column*/) const
 {
-  return XString();
+  return _T("");
 }
 
 XString
 SQLInfoFirebird::GetCATALOGDefaultList(XString& /*p_schema*/,XString& /*p_tablename*/) const
 {
-  return XString();
+  return _T("");
 }
 
 XString
 SQLInfoFirebird::GetCATALOGDefaultAttributes(XString& /*p_schema*/,XString& /*p_tablename*/,XString& /*p_column*/) const
 {
-  return XString();
+  return _T("");
 }
 
 XString
 SQLInfoFirebird::GetCATALOGDefaultCreate(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_constraint*/,XString /*p_column*/,XString /*p_code*/) const
 {
-  return XString();
+  return _T("");
 }
 
 XString
 SQLInfoFirebird::GetCATALOGDefaultDrop(XString /*p_schema*/,XString /*p_tablename*/,XString /*p_constraint*/) const
 {
-  return XString();
+  return _T("");
 }
 
 /////////////////////////
@@ -2342,7 +2315,7 @@ SQLInfoFirebird::GetCATALOGViewCreate(XString /*p_schema*/,XString p_viewname,XS
 XString 
 SQLInfoFirebird::GetCATALOGViewRename(XString /*p_schema*/,XString /*p_viewname*/,XString /*p_newname*/)    const
 {
-  return XString();
+  return _T("");
 }
 
 XString 
@@ -2469,7 +2442,7 @@ SQLInfoFirebird::GetCATALOGColumnPrivileges(XString& p_schema,XString& p_tablena
 XString
 SQLInfoFirebird::GetCATALOGSequencePrivilege(XString& /*p_schema*/,XString& /*p_sequence*/) const
 {
-  return XString();
+  return _T("");
 }
 
 XString
@@ -2515,29 +2488,29 @@ SQLInfoFirebird::GetCATALOGRevokePrivilege(XString /*p_schema*/
 XString
 SQLInfoFirebird::GetCATALOGSynonymList(XString& /*p_schema*/,XString& /*p_pattern*/) const
 {
-  // Not implemented yet
-  return XString();
+  // Firebird does not implement SYNONYM
+  return _T("");
 }
 
 XString
 SQLInfoFirebird::GetCATALOGSynonymAttributes(XString& /*p_schema*/,XString& /*p_synonym*/) const
 {
-  // Not implemented yet
-  return XString();
+  // Firebird does not implement SYNONYM
+  return _T("");
 }
 
 XString
 SQLInfoFirebird::GetCATALOGSynonymCreate(XString& /*p_schema*/,XString& /*p_synonym*/,XString /*p_forObject*/,bool /*p_private = true*/) const
 {
-  // Not implemented yet
-  return XString();
+  // Firebird does not implement SYNONYM
+  return _T("");
 }
 
 XString
 SQLInfoFirebird::GetCATALOGSynonymDrop(XString& /*p_schema*/,XString& /*p_synonym*/,bool /*p_private = true*/) const
 {
-  // Not implemented yet
-  return XString();
+  // Firebird does not implement SYNONYM
+  return _T("");
 }
 
 // For ALL objects
@@ -2920,13 +2893,13 @@ XString
 SQLInfoFirebird::GetPSMProcedureErrors(XString /*p_schema*/,XString /*p_procedure*/,bool /*p_quoted = false*/) const
 {
   // Firebird does not support procedure errors
-  return XString();
+  return _T("");
 }
 
 XString
 SQLInfoFirebird::GetPSMProcedurePrivilege(XString& /*p_schema*/,XString& /*p_procedure*/,bool /*p_quoted = false*/) const
 {
-  return XString();
+  return _T("");
 }
 
 // And it's parameters
@@ -3547,7 +3520,7 @@ XString
 SQLInfoFirebird::GetSESSIONConstraintsImmediate() const
 {
   // Firebird constraints are always active
-  return XString();
+  return _T("");
 }
 
 //////////////////////////////////////////////////////////////////////////
