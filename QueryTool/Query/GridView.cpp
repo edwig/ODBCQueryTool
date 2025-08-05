@@ -558,16 +558,18 @@ CGridView::GotoQueryNextPage()
 void
 CGridView::GotoQueryEnd()
 {
-  int rows = m_pGridCtrl->GetRowCount();
-  int row  = (rows >= 1) ? rows - 1 : 0;
-  int col;
-  MCCellID cell = m_pGridCtrl->GetFocusCell();
-
   // Detect query to read in
   if(m_editorView->LinesFetchedSoFar())
   {
     m_editorView->ReadRestOfQuery();
   }
+
+  // Goto end
+  int rows = m_pGridCtrl->GetRowCount();
+  int row  = (rows >= 1) ? rows - 1 : 0;
+  int col;
+  MCCellID cell = m_pGridCtrl->GetFocusCell();
+
   col = (cell.col == -1) ? 0 : cell.col;
   m_pGridCtrl->SetFocusCell(row,col);
   cell = m_pGridCtrl->GetFocusCell();
