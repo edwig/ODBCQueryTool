@@ -1488,6 +1488,7 @@ void MCGridCtrl::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* /*pScrollBar*/)
         break;
         
     case SB_PAGEDOWN:
+        TRACE("SB_PAGEDOWN %d:%d\n",scrollPos,m_nVScrollMax);
         if (scrollPos < m_nVScrollMax)
         {
             rect.top = GetFixedRowHeight();
@@ -1525,7 +1526,9 @@ void MCGridCtrl::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* /*pScrollBar*/)
     case SB_THUMBPOSITION:
     case SB_THUMBTRACK:
         {
-          SetScrollPos32(SB_VERT, GetScrollPos32(SB_VERT, TRUE));
+          int pos = GetScrollPos32(SB_VERT,TRUE);
+          SetScrollPos32(SB_VERT,pos);
+
           m_idTopLeftCell.row = -1;
           MCCellID idNewTopLeft = GetTopleftNonFixedCell();
 
@@ -1534,12 +1537,24 @@ void MCGridCtrl::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* /*pScrollBar*/)
           {
             if(m_view)
             {
-              m_view->ReadRestOfQuery();
-              return;
+              if(m_view->ReadRestOfQuery())
+              {
+                return;
+              }
             }
           }
+          if(pos > (m_nVScrollMax - rect.Height()))
+          {
+            int rows = GetRowCount();
+            int row = (rows >= 1) ? rows - 1 : 0;
+            MCCellID cell = GetFocusCell();
+            cell.row = row;
+            cell.col = cell.col >= 0 ? cell.col : 0;
+            EnsureVisible(cell);
+            idNewTopLeft = GetTopleftNonFixedCell();
+          }
           // Repaint?         
-          if (idNewTopLeft != idTopLeft)
+          if(idNewTopLeft != idTopLeft)
           {
               rect.top = GetFixedRowHeight();
               InvalidateRect(rect);
@@ -3213,15 +3228,15 @@ void MCGridCtrl::ResetScrollBars()
     SCROLLINFO si;
     si.cbSize = sizeof(SCROLLINFO);
     si.fMask = SIF_PAGE | SIF_RANGE;
-    si.nPage = (m_nHScrollMax>0)? VisibleRect.Width() : 0;
-    si.nMin = 0;
-    si.nMax = m_nHScrollMax;
+    si.nPage = (m_nHScrollMax>0) ? VisibleRect.Width() : 0;
+    si.nMin  = 0;
+    si.nMax  = m_nHScrollMax;
     SetScrollInfo(SB_HORZ, &si, TRUE);
 
-    si.fMask |= SIF_DISABLENOSCROLL;
-    si.nPage = (m_nVScrollMax>0)? VisibleRect.Height() : 0;
-    si.nMin = 0;
-    si.nMax = m_nVScrollMax;
+    si.fMask = SIF_PAGE | SIF_RANGE | SIF_DISABLENOSCROLL;
+    si.nPage = (m_nVScrollMax>0) ? VisibleRect.Height() : 0;
+    si.nMin  = 0;
+    si.nMax  = m_nVScrollMax;
     SetScrollInfo(SB_VERT, &si, TRUE);
 }
 
