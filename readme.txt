@@ -22,23 +22,33 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes 3.5.3
+------------------
+- When an external editor did change one of the files we are working on, the Querytool prompts
+  whether we want to reload this page. This question had to be answered three times. This
+  redundancy has been eliminated.
+- Fix for navigating to the last lines in the query output view. When scrolling by pulling
+  the vertical scroll bars with the mouse, some of the last lines in the grid where not 
+  accessible. This is fixed by testing for the 'last page' of results.
+- The scripting statement ":if" has been expanded to be able to skip the next SQL statement,
+  so that the script can decide wheter or not to execute it. See the example in the help page.
+
 Releasenotes 3.5.2
 ------------------
-Fixes for the MS-Access Jet databaase engine. Discovery of table and columns was broken
-Fixes for opnening a extra line in the editor by going a line down. Inserting of spaces
-before the text was essentially broken. This makes editting queries a lot better experience.
-Fixes for table discovery of a named table in Firebird.
+- Fixes for the MS-Access Jet databaase engine. Discovery of table and columns was broken
+- Fixes for opnening a extra line in the editor by going a line down. Inserting of spaces
+  before the text was essentially broken. This makes editting queries a lot better experience.
+- Fixes for table discovery of a named table in Firebird.
 
 Releasenotes 3.5.1
 ------------------
-Various fixes for the discovery of databases with quoted identifiers. 
-(Firebird, MariaDB, Oracle, SQL-Server, PostgreSQL). 
-For most ODBC drivers only the SQLTables and SQLColumns work correctly.
-Other functions such as the discovery of SQLPrimaryKeys, SQLForeignKeys,
-SQLStatistics, SQLProcedures do not work for case senstive identifiers.
-
-Also various fixes for the Info tree, so that we can now see the compelete 
-view, trigger, function and stored procedure source.
+- Various fixes for the discovery of databases with quoted identifiers. 
+  (Firebird, MariaDB, Oracle, SQL-Server, PostgreSQL). 
+- For most ODBC drivers only the SQLTables and SQLColumns work correctly.
+  Other functions such as the discovery of SQLPrimaryKeys, SQLForeignKeys,
+  SQLStatistics, SQLProcedures do not work for case senstive identifiers.
+- Also various fixes for the Info tree, so that we can now see the compelete 
+  view, trigger, function and stored procedure source.
 
 Releasenotes 3.5.0
 ------------------
