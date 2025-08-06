@@ -717,7 +717,7 @@ COEditorView::ExecuteQuery(int      p_line
       m_scriptOutput->Write(CString(_T("SQL prevented by :IF statement\n")));
     }
     m_scriptCompare = true;
-    return;
+    return true;
   }
   if(p_odbcCommand.GetLength() > 5)
   {
@@ -1671,6 +1671,10 @@ COEditorView::ScriptCommandVariable(int p_line,int p_varNum,CString p_tail)
             m_scriptOutput->Format(_T(":PARAM variable%d [%s]\n"),p_varNum,word.GetString());
           }
         }
+        else
+        {
+          error += _T("No parameter type found.");
+        }
       }
       // Now do the data type
       int dataType = SQLDataType::FindDatatype((TCHAR*)(LPCTSTR)p_tail.GetString());
@@ -1680,8 +1684,12 @@ COEditorView::ScriptCommandVariable(int p_line,int p_varNum,CString p_tail)
         if(m_scriptOutput && m_scriptOutput->GetIsOpen())
         {
           m_scriptOutput->Format(_T(":DTYPE variable%d [%s]\n"),p_varNum,p_tail.GetString());
+          result = true;
         }
-        result = true;
+        else
+        {
+          error += _T("No datatype found.");
+        }
       }
     }
   }

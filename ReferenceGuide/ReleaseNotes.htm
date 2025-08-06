@@ -9,6 +9,18 @@
 </head>
 
 <body>
+    <h3>Releasenotes 3.5.3</h3>
+
+    <p>When an external editor did change one of the files we are working on, the Querytool prompts whether we want to reload
+    this page. This question had to be answered three times. This redundancy has been eliminated.</p>
+
+    <p>Fix for navigating to the last lines in the query output view. When scrolling by pulling the vertical scroll bars with
+    the mouse, some of the last lines in the grid where not accessible. This is fixed by testing for the 'last page' of
+    results.</p>
+
+    <p>The scripting statement ":if" has been expanded to be able to skip the next SQL statement, so that the script can decide
+    wheter or not to execute it. See the example in the help page.</p>
+
     <h3>Releasenotes 3.5.2</h3>
 
     <p>Fixes for the MS-Access Jet databaase engine. Discovery of table and columns was broken</p>
