@@ -708,6 +708,17 @@ COEditorView::ExecuteQuery(int      p_line
     AfxMessageBox(_T("No query to execute"),MB_OK | MB_ICONEXCLAMATION);
     return false;
   }
+  // See if the last IF statement prevents us from executing this SQL statement
+  // So that scripting can decide whether or not to query this statement
+  if(m_scriptCompare == false)
+  {
+    if(m_scriptOutput && m_scriptOutput->GetIsOpen())
+    {
+      m_scriptOutput->Write(CString(_T("SQL prevented by :IF statement\n")));
+    }
+    m_scriptCompare = true;
+    return;
+  }
   if(p_odbcCommand.GetLength() > 5)
   {
     if(p_odbcCommand.Left(6).CompareNoCase(_T("SELECT")) == 0 ||
@@ -1290,7 +1301,7 @@ COEditorView::ScriptCommand(int p_line,CString &odbcCommand)
       else if(word == _T("atexec"))     return ScriptCommandAtExec   (p_line,tail);
       else if(word == _T("repeat"))     return ScriptCommandRepeat   (p_line,tail);
       else if(word == _T("exit"))       return ScriptCommandExit     (p_line,tail);
-//    else if(word == "endrepeat")  return ScriptCommandEndRepeat(p_line,tail);
+//    else if(word == _T("endrepeat"))  return ScriptCommandEndRepeat(p_line,tail);
       else if(word.Left(8) == _T("variable"))
       {
          int varNum = _ttoi(word.Mid(8));
@@ -1562,11 +1573,12 @@ COEditorView::ScriptCommandIf(int p_line,CString command)
         m_ifLast = true;
         if(m_scriptOutput && m_scriptOutput->GetIsOpen())
         {
-          m_scriptOutput->Format(_T(":IF variable%d [%s] %s [%s]\n")
+          m_scriptOutput->Format(_T(":IF variable%d [%s] %s [%s] -> [%s]\n")
                                  ,numVar
                                  ,value.GetString()
                                  ,operatorText.GetString()
-                                 ,command.GetString());
+                                 ,command.GetString()
+                                 ,m_scriptCompare ? _T("TRUE") : _T("FALSE"));
         }
         result = true;
       }

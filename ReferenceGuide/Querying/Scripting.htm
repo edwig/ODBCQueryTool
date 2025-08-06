@@ -429,8 +429,8 @@
     <h2>The 'if' command</h2>
 
     <p>This very limited 'if'&nbsp;command is for testing of a result value. If it does meet the expected value. If the
-    condition holds, the next scripting command will be executed. This makes it possible to report the missing of an expected
-    value in the output file. Example:</p>
+    condition holds, the next scripting command or the next SQL command will be executed. This makes it possible to report the
+    missing of an expected value in the output file. Example:</p>
 
     <p><font face="Courier New">:if variable4 &lt;&gt; 123;</font></p>
 
@@ -439,7 +439,13 @@
     <p>Of course, when the variable has the desired value, the next command will be skipped.</p>
 
     <p>The 'if' command can have various operators, as long as the left side is a variable and the right side is a text.
-    Operatoros that you can use are: '=', '&lt;&gt;', '&lt;', '&gt;', '&lt;=' and '&gt;='.</p>
+    Operators that you can use are: '=', '&lt;&gt;', '&lt;', '&gt;', '&lt;=' and '&gt;='.</p>
+
+    <p>Another use is the skipping of an SQL command in the script. Example:</p>
+
+    <p><font face="Courier New">:if variable5 = 'LAST'</font></p>
+
+    <p><font face="Courier New">INSERT INTO logtable(text) values ('Last line of the test reached');</font></p>
 
     <h2>The 'rebind' command</h2>
 
@@ -460,7 +466,7 @@
     <h2>The 'atexec' command for outbound traffic</h2>
 
     <p>To bind the variable at input time to perform piece-by-piece insertion of the data in 'at-exec' time of the SQLExecute
-    command, we need to set the 'atexec' attribute of a variable. Alsoo we must provide the size of each piece. We do that with
+    command, we need to set the 'atexec' attribute of a variable. Also we must provide the size of each piece. We do that with
     the 'atexec' command. eg:</p>
 
     <p><font face="Courier New">:atexec variable1 300;</font></p>
@@ -481,7 +487,7 @@
 
     <p><font face="Courier New">:select on;</font></p>
 
-    <p>than the FIRST line of the grid will alsoo be selected into the variable array. First field will be variable1 and so
+    <p>than the FIRST line of the grid will also be selected into the variable array. First field will be variable1 and so
     on.<br>
     You can turn this feature off with the ":select off;" command.<br></p>
 
@@ -512,7 +518,7 @@
                 </td>
 
                 <td>
-                    <p>The log records of the ODBC recordset, written in CSV (comma seperated valeus) format</p>
+                    <p>The log records of the ODBC recordset, written in CSV (comma seperated values) format</p>
                 </td>
             </tr>
 
