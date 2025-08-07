@@ -952,39 +952,228 @@ SQLInfoSQLServer::GetCATALOGDefaultCollation() const
 
 // All user defined compound data types
 XString
-SQLInfoSQLServer::GetCATALOGTypeExists(XString& /*p_schema*/,XString& /*p_typename*/,bool /*p_quoted = false*/) const
+SQLInfoSQLServer::GetCATALOGTypeExists(XString& p_schema,XString& p_typename,bool p_quoted /*= false*/) const
 {
+  XString sql(_T("SELECT COUNT(*)\n"
+                 "  FROM sys.types t\n"
+                 "       JOIN sys.schemas s ON s.schema_id = t.schema_id\n"
+                 " WHERE t.is_user_defined = 1\n"));
+  if(!p_schema.IsEmpty())
+  {
+    IdentifierCorrect(p_schema);
+    sql += _T("   AND s.name = ?\n");
+  }
+  IdentifierCorrect(p_typename);
+  sql += _T("   AND t.name = ?");
+  return sql;
+}
+
+XString
+SQLInfoSQLServer::GetCATALOGTypeList(XString& p_schema,XString& p_pattern,bool p_quoted /*= false*/) const
+{
+  XString sql(_T("SELECT db_name() AS catalogname\n"
+                 "      ,s.name    AS schemaname\n"
+                 "      ,t.name    AS typename\n"
+                 "      ,CASE t.is_table_type\n"
+                 "            WHEN 0 THEN 'D'\n"
+                 "            WHEN 1 THEN 'C'\n"
+                 "            ELSE ''\n"
+                 "       END       AS typeusage\n"
+                 "      ,1         AS ordinal\n"
+                 "      ,''        AS attribute\n"
+                 "      ,bt.name   AS datatype\n"
+                 "      ,CASE WHEN t.is_nullable = 1 THEN 0 ELSE 1 END AS notnullable\n"
+                 "      ,''        AS defaultvalue\n"
+                 "      ,''        AS domaincheck\n"
+                 "      ,CASE e.name\n"
+                 "            WHEN N'MS_Description' THEN CAST (e.value AS VARCHAR(4000))\n"
+                 "            ELSE ''\n"
+                 "       END  AS remarks\n"
+                 "      ,'<@>'     AS source\n"
+                 "  FROM sys.types t\n"
+                 "       JOIN sys.schemas s ON s.schema_id = t.schema_id\n"
+                 "       LEFT OUTER JOIN sys.types  bt ON t.system_type_id = bt.user_type_id\n"
+                 "                                    AND bt.is_user_defined = 0\n"
+                 "       LEFT OUTER JOIN sys.extended_properties e ON\n"
+                 "                     ((e.major_id  = t.user_type_id OR e.major_id IS null)\n"
+                 "                  AND e.minor_id  = 0)\n"
+                 " WHERE t.is_user_defined = 1\n"));
+  if(!p_schema.IsEmpty())
+  {
+    IdentifierCorrect(p_schema);
+    sql += _T("   AND s.name = ?\n");
+  }
+  if(!p_pattern.IsEmpty())
+  {
+    IdentifierCorrect(p_pattern);
+    sql += _T("   AND t.name ");
+    sql += p_pattern.Find(_T('%')) < 0 ? _T(" = ?\n") : _T(" LIKE ?\n");
+  }
+  sql += _T("ORDER BY 1,2,3,4");
   return XString();
 }
 
 XString
-SQLInfoSQLServer::GetCATALOGTypeList(XString& /*p_schema*/,XString& /*p_pattern*/,bool /*p_quoted = false*/) const
+SQLInfoSQLServer::GetCATALOGTypeAttributes(XString& p_schema,XString& p_typename,bool p_quoted /*= false*/) const
 {
-  return XString();
+  // Domain types
+  XString sql1(_T("SELECT db_name() AS catalogname\n"
+                  "      ,s.name    AS schemaname\n"
+                  "      ,t.name    AS typename\n"
+                  "      ,'D'       AS typeusage\n"
+                  "      ,1         AS ordinal\n"
+                  "      ,''        AS attribute\n"
+                  "      ,bt.name +\n"
+                  "       CASE\n"
+                  "          WHEN bt.name IN ('nvarchar', 'nchar', 'varchar', 'char', 'binary', 'varbinary')\n"
+                  "               THEN '(' + CASE WHEN t.max_length = -1 THEN 'MAX' ELSE CAST(t.max_length AS VARCHAR) END + ')'\n"
+                  "          WHEN bt.name IN ('decimal', 'numeric')\n"
+                  "               THEN '(' + CAST(t.precision AS VARCHAR) + ',' + CAST(t.scale AS VARCHAR) + ')'\n"
+                  "          ELSE ''\n"
+                  "       END AS datatype\n"
+                  "      ,CASE WHEN t.is_nullable = 1 THEN 0 ELSE 1 END AS notnullable\n"
+                  "      ,''        AS defaultvalue\n"
+                  "      ,''        AS domaincheck\n"
+                  "      ,CASE e.name\n"
+                  "            WHEN N'MS_Description' THEN CAST (e.value AS VARCHAR(4000))\n"
+                  "            ELSE ''\n"
+                  "       END  AS remarks\n"
+                  "      ,'<@>'     AS source\n"
+                  "  FROM sys.types t\n"
+                  "       JOIN sys.schemas s ON s.schema_id = t.schema_id\n"
+                  "       JOIN sys.types  bt ON t.system_type_id = bt.user_type_id AND bt.is_user_defined = 0\n"
+                  "       LEFT OUTER JOIN sys.extended_properties e ON\n"
+                  "                     ((e.major_id  = t.user_type_id OR e.major_id IS null)\n"
+                  "                  AND e.minor_id  = 0)\n"
+                  " WHERE t.is_user_defined = 1\n"
+                  "   AND t.is_table_type   = 0\n"));
+  // Compound types
+  XString sql2(_T("SELECT db_name()   AS catalogname\n"
+                  "      ,s.name      AS schemaname\n"
+                  "      ,tt.name     AS typename\n"
+                  "      ,'C'         AS typeusage\n"
+                  "      ,c.column_id AS ordinal\n"
+                  "      ,c.name      AS attribute\n"
+                  "      ,ty.name +\n"
+                  "       CASE\n"
+                  "           WHEN ty.name IN ('nvarchar', 'nchar', 'varchar', 'char', 'binary', 'varbinary')\n"
+                  "                THEN '(' + CASE WHEN c.max_length = -1 THEN 'MAX' ELSE CAST(c.max_length AS VARCHAR) END + ')'\n"
+                  "           WHEN ty.name IN ('decimal', 'numeric')\n"
+                  "                THEN '(' + CAST(c.precision AS VARCHAR) + ',' + CAST(c.scale AS VARCHAR) + ')'\n"
+                  "           ELSE ''\n"
+                  "       END AS datatype\n"
+                  "      ,CASE WHEN c.is_nullable = 0 THEN 1 ELSE 0 END AS notnull\n"
+                  "      ,''         AS defaultvalue\n"
+                  "      ,''         AS domaincheck\n"
+                  "      ,CASE e.name\n"
+                  "            WHEN N'MS_Description' THEN CAST (e.value AS VARCHAR(4000))\n"
+                  "            ELSE ''\n"
+                  "       END  AS remarks\n"
+                  "      ,'<@>'      AS source\n"
+                  "  FROM sys.table_types tt\n"
+                  "       JOIN sys.schemas s ON s.schema_id = tt.schema_id\n"
+                  "       JOIN sys.columns c ON tt.type_table_object_id = c.object_id\n"
+                  "       JOIN sys.types  ty ON c.user_type_id = ty.user_type_id\n"
+                  "       LEFT OUTER JOIN sys.extended_properties e ON\n"
+                  "                     ((e.major_id  = tt.user_type_id OR e.major_id IS null)\n"
+                  "                   AND e.minor_id  = c.column_id)\n"
+                  " WHERE tt.is_user_defined = 1\n"));
+  if(!p_schema.IsEmpty())
+  {
+    IdentifierCorrect(p_schema);
+    sql1 += _T("   AND s.name = '") + p_schema + _T("'\n");
+    sql2 += _T("   AND s.name = ?\n");
+  }
+  if(!p_typename.IsEmpty())
+  {
+    IdentifierCorrect(p_typename);
+    sql1 += _T("   AND t.name = '") + p_typename + _T("'\n");
+    sql2 += _T("   AND t.name = ?\n");
+  }
+  XString sql = sql1 + _T("UNION ALL\n") + sql2 + _T(" ORDER BY 1,2,3,5");
+  return sql;
 }
 
 XString
-SQLInfoSQLServer::GetCATALOGTypeAttributes(XString& /*p_schema*/,XString& /*p_typename*/,bool /*p_quoted = false*/) const
+SQLInfoSQLServer::GetCATALOGTypeSource(XString& p_schema,XString& p_typename,bool p_quoted /*= false*/) const
 {
-  return XString();
+  XString sql1(_T("SELECT t.name\n"
+                  "      ,1 AS line\n"
+                  "      ,'CREATE TYPE [' + s.name + '].[' + t.name + '] FROM ' +\n"
+                  "       bt.name +\n"
+                  "       CASE\n"
+                  "          WHEN bt.name IN ('nvarchar', 'nchar', 'varchar', 'char', 'binary', 'varbinary')\n"
+                  "               THEN '(' + CASE WHEN t.max_length = -1 THEN 'MAX' ELSE CAST(t.max_length AS VARCHAR) END + ')'\n"
+                  "          WHEN bt.name IN ('decimal', 'numeric')\n"
+                  "               THEN '(' + CAST(t.precision AS VARCHAR) + ',' + CAST(t.scale AS VARCHAR) + ')'\n"
+                  "          ELSE ''\n"
+                  "       END +\n"
+                  "       CASE WHEN t.is_nullable = 0 THEN ' NOT NULL' ELSE ' NULL' END AS [CreateTypeStatement]\n"
+                  "  FROM sys.types t\n"
+                  "       JOIN sys.schemas s ON s.schema_id = t.schema_id\n"
+                  "       JOIN sys.types  bt ON t.system_type_id = bt.user_type_id AND bt.is_user_defined = 0\n"
+                  " WHERE t.is_user_defined = 1\n"
+                  "   AND t.is_table_type   = 0\n"));
+  XString sql2(_T("SELECT tt.name\n"
+                  "      ,1 AS line\n"
+                  "      ,'CREATE TYPE [' + s.name + '].[' + tt.name + '] AS TABLE (' + CHAR(13) +\n"
+                  "       STRING_AGG(\n"
+                  "           '    [' + c.name + '] ' +\n"
+                  "           ty.name +\n"
+                  "           CASE\n"
+                  "               WHEN ty.name IN ('nvarchar', 'nchar', 'varchar', 'char', 'binary', 'varbinary')\n"
+                  "                   THEN '(' + CASE WHEN c.max_length = -1 THEN 'MAX' ELSE CAST(c.max_length AS VARCHAR) END + ')'\n"
+                  "               WHEN ty.name IN ('decimal', 'numeric')\n"
+                  "                   THEN '(' + CAST(c.precision AS VARCHAR) + ',' + CAST(c.scale AS VARCHAR) + ')'\n"
+                  "               ELSE ''\n"
+                  "           END +\n"
+                  "           CASE WHEN c.is_nullable = 0 THEN ' NOT NULL' ELSE ' NULL' END,\n"
+                  "           ',' + CHAR(13)\n"
+                  "       ) + CHAR(13) + ')' AS [CreateTableTypeStatement]\n"
+                  "  FROM sys.table_types tt\n"
+                  "       JOIN sys.schemas s ON s.schema_id = tt.schema_id\n"
+                  "       JOIN sys.columns c ON tt.type_table_object_id = c.object_id\n"
+                  "       JOIN sys.types ty ON c.user_type_id = ty.user_type_id\n"
+                  " WHERE tt.is_user_defined = 1\n"));
+  if(!p_schema.IsEmpty())
+  {
+    IdentifierCorrect(p_schema);
+    sql1 += _T("   AND s.name = '") + p_schema + _T("'\n");
+    sql2 += _T("   AND s.name = ?\n");
+  }
+  if(!p_typename.IsEmpty())
+  {
+    IdentifierCorrect(p_typename);
+    sql1 += _T("   AND t.name = '") + p_typename + _T("'\n");
+    sql2 += _T("   AND t.name = ?\n");
+  }
+  XString sql = sql1 + _T("UNION ALL\n") + sql2;
+  sql += _T(" GROUP BY s.name\n"
+            "        ,tt.name\n"
+            " ORDER BY name,line");
+  return sql;
 }
 
 XString
-SQLInfoSQLServer::GetCATALOGTypeSource(XString& /*p_schema*/,XString& /*p_typename*/,bool /*p_quoted = false*/) const
+SQLInfoSQLServer::GetCATALOGTypeCreate(MUserTypeMap& p_types) const
 {
-  return XString();
+  if(!p_types.empty() && p_types[0].m_source.Compare(_T("<@>")))
+  {
+    return p_types[0].m_source;
+  }
+  return _T("");
 }
 
 XString
-SQLInfoSQLServer::GetCATALOGTypeCreate(MUserTypeMap& /*p_type*/) const
+SQLInfoSQLServer::GetCATALOGTypeDrop(XString p_schema,XString p_typename) const
 {
-  return XString();
-}
-
-XString
-SQLInfoSQLServer::GetCATALOGTypeDrop(XString /*p_schema*/,XString /*p_typename*/) const
-{
-  return XString();
+  XString sql(_T(" DROP TYPE "));
+  if(!p_schema.IsEmpty())
+  {
+    sql += QIQ(p_schema) + _T(".");
+  }
+  sql += QIQ(p_typename);
+  return sql;
 }
 
 // Get SQL to check if a table already exists in the database
@@ -2728,27 +2917,22 @@ SQLInfoSQLServer::GetCATALOGSynonymDrop(XString& p_schema,XString& p_synonym,boo
 XString
 SQLInfoSQLServer::GetCATALOGCommentCreate(XString p_schema,XString p_object,XString p_name,XString p_subObject,XString p_remark) const
 {
-  XString sql;
-  if(!p_object.IsEmpty() && !p_name.IsEmpty() && !p_remark.IsEmpty())
+  XString sql(_T("EXEC sp_addextendedproperty\n"));
+  if(p_remark.IsEmpty())
   {
-    sql.Format(_T("COMMENT ON %s "),p_object.GetString());
-    if(!p_schema.IsEmpty())
+    sql = _T("EXEC sp_dropextendedproperty\n");
+  }
+  sql += _T("  @name = N'MS_Description',\n");
+  if(!p_remark.IsEmpty())
     {
-      sql += QIQ(p_schema) + _T(".");
+    sql += _T("  @value = N'") + p_remark + _T("',\n");
     }
-    sql += QIQ(p_name);
+  p_object.MakeUpper();
+  sql += _T("  @level0type = N'SCHEMA', @level0name = N'")               + QIQ(p_schema) + _T("',\n");
+  sql += _T("  @level1type = N'") + p_object + _T("', @level1name = N'") + QIQ(p_name)   + _T("',\n");
     if(!p_subObject.IsEmpty())
     {
-      sql += _T(".") + QIQ(p_subObject);
-    }
-    if(p_remark.CompareNoCase(_T("NULL")))
-    {
-      sql.AppendFormat(_T(" IS '%s'"),p_remark.GetString());
-    }
-    else
-    {
-      sql += _T(" IS NULL");
-    }
+    sql += _T("  @level2type = N'COLUMN', @level2name = N'") + QIQ(p_subObject) + _T("'");
   }
   return sql;
 }

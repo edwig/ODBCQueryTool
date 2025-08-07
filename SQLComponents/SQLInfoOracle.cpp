@@ -829,39 +829,142 @@ SQLInfoOracle::GetCATALOGDefaultCollation() const
 
 // All user defined compound data types
 XString
-SQLInfoOracle::GetCATALOGTypeExists(XString& /*p_schema*/,XString& /*p_typename*/,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetCATALOGTypeExists(XString& p_schema,XString& p_typename,bool p_quoted /*= false*/) const
 {
-  return XString();
+  XString sql(_T("SELECT COUNT(*)\n"
+                 "  FROM all_types t\n"
+                 " WHERE t.persistable = 'YES'\n"));
+  if(!p_schema.IsEmpty())
+  {
+    IdentifierCorrect(p_schema);
+    sql += _T("   AND t.owner       = ?\n");
+  }
+  IdentifierCorrect(p_typename);
+  sql += _T("   AND t.type_name  = ?");
+  return sql;
 }
 
 XString
-SQLInfoOracle::GetCATALOGTypeList(XString& /*p_schema*/,XString& /*p_pattern*/,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetCATALOGTypeList(XString& p_schema,XString& p_pattern,bool p_quoted /*= false*/) const
 {
-  return XString();
+  return GetCATALOGTypeAttributes(p_schema,p_pattern,p_quoted);
 }
 
 XString
-SQLInfoOracle::GetCATALOGTypeAttributes(XString& /*p_schema*/,XString& /*p_typename*/,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetCATALOGTypeAttributes(XString& p_schema,XString& p_typename,bool p_quoted /*= false*/) const
 {
-  return XString();
+  XString sql1(_T("SELECT sys_context('USERENV','DB_NAME') AS type_catalog\n"
+                  "      ,t.owner    AS type_schema\n"
+                  "      ,t.type_name\n"
+                  "      ,'D'       AS type_usage\n"
+                  "      ,1         AS ordinal\n"
+                  "      ,''        AS attribute\n"
+                  "      ,'VARRAY'  AS datatype\n"
+                  "      ,0         AS notnull\n"
+                  "      ,''        AS defaultvalue\n"
+                  "      ,''        AS domaincheck\n"
+                  "      ,''        AS remarks\n"
+                  "      ,'<@>'     AS source\n"
+                  "  FROM all_types t\n"
+                  " WHERE NOT EXISTS\n"
+                  "     ( SELECT 1\n"
+                  "         FROM all_type_attrs att\n"
+                  "        WHERE t.owner     = att.owner\n"
+                  "          AND t.type_name = att.type_name)\n"
+                  "   AND t.typecode    = 'COLLECTION'\n"
+                  "   AND t.persistable = 'YES'\n"));
+  XString sql2(_T("SELECT sys_context('USERENV','DB_NAME') AS type_catalog\n"
+                  "      ,t.owner         AS type_schema\n"
+                  "      ,t.type_name     AS type_name\n"
+                  "      ,'C'             AS type_usage\n"
+                  "      ,att.attr_no     AS ordinal\n"
+                  "      ,att.attr_name   AS attribute\n"
+                  "      ,att.attr_type_name ||\n"
+                  "       CASE Nvl(att.Length,0)\n"
+                  "            WHEN 0 THEN\n"
+                  "                   CASE Nvl(att.precision,0)\n"
+                  "                        WHEN 0 THEN ''\n"
+                  "                        ELSE '(' || to_char(att.precision) || ',' || To_Char(att.scale) || ')'\n"
+                  "                   END\n"
+                  "            ELSE '(' || To_Char(att.Length) || ')'\n"
+                  "       END  AS datatype\n"
+                  "      ,0               AS notnull\n"
+                  "      ,''              AS defaultvalue\n"
+                  "      ,''              AS domaincheck\n"
+                  "      ,''              AS remarks\n"
+                  "      ,'<@>'           AS source\n"
+                  "  FROM all_types t\n"
+                  "       INNER JOIN all_type_attrs att ON (t.owner = att.owner\n"
+                  "                                     AND t.type_name = att.type_name)\n"
+                  " WHERE t.persistable = 'YES'\n"));
+
+  if(!p_schema.IsEmpty())
+  {
+    IdentifierCorrect(p_schema);
+    sql1 += _T("   AND t.owner       = '") + p_schema + _T("'\n");
+    sql2 += _T("   AND t.owner       = ?\n");
+  }
+  if(!p_typename.IsEmpty())
+  {
+    IdentifierCorrect(p_typename);
+    sql1 += _T("   AND t.type_name ");
+    sql1 += p_typename.Find(_T("%")) < 0 ? _T("= '") : _T("LIKE '");
+    sql1 += p_typename;
+    sql1 += _T("'\n");
+
+    sql2 += _T("   AND t.type_name ");
+    sql2 += p_typename.Find(_T("%")) < 0 ? _T("=") : _T("LIKE");
+    sql2 += _T(" ?\n");
+  }
+  XString sql = sql1 + _T("UNION ALL\n") + sql2 + _T("ORDER BY 1,2,3,5");
+  return sql;
 }
 
 XString
-SQLInfoOracle::GetCATALOGTypeSource(XString& /*p_schema*/,XString& /*p_typename*/,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetCATALOGTypeSource(XString& p_schema,XString& p_typename,bool p_quoted /*= false*/) const
 {
-  return XString();
+  XString sql(_T("SELECT name\n"
+                 "      ,line\n"
+                 "      ,text\n"
+                 "  FROM all_source\n"
+                 " WHERE type  = 'TYPE'\n"));
+  if(!p_schema.IsEmpty())
+  {
+    IdentifierCorrect(p_schema);
+    sql += _T("   AND owner = '") + p_schema + _T("'\n");
+  }
+  if(!p_typename)
+  {
+    IdentifierCorrect(p_typename);
+    sql += _T("   AND name  = '")  + p_typename + _T("'\n");
+
+  }
+  sql += _T(" ORDER BY 1,2");
+  return sql;
 }
 
 XString
-SQLInfoOracle::GetCATALOGTypeCreate(MUserTypeMap& /*p_type*/) const
+SQLInfoOracle::GetCATALOGTypeCreate(MUserTypeMap& p_types) const
 {
-  return XString();
+  XString sql;
+  if(!p_types.empty() && p_types[0].m_source.Compare(_T("<@>")))
+  {
+    sql = _T("CREATE OR REPLACE ");
+    sql += p_types[0].m_source;
+  }
+  return sql;
 }
 
 XString
-SQLInfoOracle::GetCATALOGTypeDrop(XString /*p_schema*/,XString /*p_typename*/) const
+SQLInfoOracle::GetCATALOGTypeDrop(XString p_schema,XString p_typename) const
 {
-  return XString();
+  XString sql(_T("DROP TYPE "));
+  if(!p_schema.IsEmpty())
+  {
+    sql += QIQ(p_schema) + _T(".");
+  }
+  sql += QIQ(p_typename);
+  return sql;
 }
 
 // Get SQL to check if a table already exists in the database

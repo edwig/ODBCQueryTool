@@ -760,7 +760,9 @@ XString
 SQLInfoPostgreSQL::GetCATALOGTypeSource(XString& p_schema,XString& p_typename,bool p_quoted /*= false*/) const
 {
   // Composite types
-  XString sql1(_T("SELECT 'CREATE TYPE \"' || n.nspname || '\".\"' || t.typname || '\" AS(' ||\n"
+  XString sql1(_T("SELECT 1 as object\n"
+                  "      ,1 as line\n"
+                  "      ,'CREATE TYPE \"' || n.nspname || '\".\"' || t.typname || '\" AS(' ||\n"
                   "       string_agg(a.attname || ' ' || pg_catalog.format_type(a.atttypid, a.atttypmod), ', ') ||\n"
                   "       ');' AS create_composite_statement\n"
                   "  FROM pg_type t\n"
@@ -774,7 +776,9 @@ SQLInfoPostgreSQL::GetCATALOGTypeSource(XString& p_schema,XString& p_typename,bo
                   "   AND n.nspname NOT IN ('pg_catalog','information_schema')\n"));
 
   // Enumeration types
-  XString sql2(_T("SELECT 'CREATE TYPE \"' || n.nspname || '\".\"' || t.typname || '\" AS ENUM (' ||\n"
+  XString sql2(_T("SELECT 1 as object\n"
+                  "      ,1 as line\n"
+                  "      ,'CREATE TYPE \"' || n.nspname || '\".\"' || t.typname || '\" AS ENUM (' ||\n"
                   "       string_agg(quote_literal(e.enumlabel), ', ') || ');' AS create_enum_statement\n"
                   "  FROM pg_type t\n"
                   "       JOIN pg_enum      e ON t.oid = e.enumtypid\n"
@@ -782,7 +786,9 @@ SQLInfoPostgreSQL::GetCATALOGTypeSource(XString& p_schema,XString& p_typename,bo
                   " WHERE t.typtype = 'e'\n"
                   "   AND n.nspname NOT IN ('pg_catalog','information_schema')\n"));
   // Domein check types
-  XString sql3(_T("SELECT 'CREATE DOMAIN \"' || n.nspname || '\".\"' || t.typname || '\" AS ' ||\n"
+  XString sql3(_T("SELECT 1 as object\n"
+                  "      ,1 as line\n"
+                  "      ,'CREATE DOMAIN \"' || n.nspname || '\".\"' || t.typname || '\" AS ' ||\n"
                   "       pg_catalog.format_type(t.typbasetype, t.typtypmod)  ||\n"
                   "       CASE WHEN t.typnotnull THEN ' NOT NULL' ELSE '' END ||\n"
                   "       CASE WHEN t.typdefault IS NOT NULL THEN ' DEFAULT ' || t.typdefault ELSE '' END ||\n"
