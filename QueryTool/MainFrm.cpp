@@ -875,8 +875,15 @@ CMainFrame::OnTimer(UINT_PTR nIDEvent)
 {
   if(nIDEvent == 1)
   {
-    QueryToolApp* app = dynamic_cast<QueryToolApp*> (AfxGetApp());
-    app->GetDatabase().Ping();
+	  try
+    {
+			QueryToolApp* app = dynamic_cast<QueryToolApp*> (AfxGetApp());
+			app->GetDatabase().Ping();
+		}
+		catch(...)
+		{
+			// Ping went wrong!
+		}
   }
 }
 

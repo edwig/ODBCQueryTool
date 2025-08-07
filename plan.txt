@@ -1,5 +1,8 @@
 Yet to implement:
 =================
+- High: Use database pool for connection pooling.
+        ping -> Use different database for MS-SQLServer
+
 - medium: Goto next/previous error
 - medium: Completed on-line help file
 - low: Properties of the query results grid

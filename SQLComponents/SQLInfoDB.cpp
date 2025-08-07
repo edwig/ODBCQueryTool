@@ -1272,7 +1272,8 @@ SQLInfoDB::MakeInfoUserTypes(MUserTypeMap& p_usertypes
             qry2.DoSQLStatement(source);
             if(qry2.GetRecord())
             {
-              type.m_source = (XString) qry2[1];
+              // Source text is always on the third column line
+              type.m_source = (XString) qry2[3];
               sgotten = true;
             }
           }
