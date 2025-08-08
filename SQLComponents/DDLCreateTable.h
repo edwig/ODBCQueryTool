@@ -102,6 +102,7 @@ private:
   // Private data for the DDL creation
   SQLInfoDB* m_info;
   SQLInfoDB* m_target;
+  XString    m_catalog;
   XString    m_schema;
   XString    m_tableName;
   XString    m_indexTablespace;

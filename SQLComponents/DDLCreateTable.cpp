@@ -55,6 +55,11 @@ DDLCreateTable::GetTableDDL(XString p_tableName)
   return ddl;
 }
 
+// Find the statemenst that make up the defintion of the table
+// Input can be:
+// 1) A simple tablename (if the database does not support schema's)
+// 2) The combination of "schemaname.tablename"
+//
 DDLS
 DDLCreateTable::GetTableStatements(XString p_tableName)
 {
@@ -283,7 +288,7 @@ DDLCreateTable::GetTableInfo()
   {
     // Find table info
     m_tables.clear();
-    if(!m_info->MakeInfoTableTable(m_tables,errors,m_schema,m_tableName) || m_tables.empty())
+    if(!m_info->MakeInfoTableTable(m_tables,errors,m_catalog,m_schema,m_tableName) || m_tables.empty())
     {
       throw StdException(XString(_T("Cannot find table: ")) + m_tableName + _T(" : ") + errors);
     }
@@ -327,7 +332,7 @@ DDLCreateTable::GetColumnInfo()
   {
     // Find column info
     m_columns.clear();
-    if(!m_info->MakeInfoTableColumns(m_columns,errors,m_schema,m_tableName) || m_columns.empty())
+    if(!m_info->MakeInfoTableColumns(m_columns,errors,m_catalog,m_schema,m_tableName) || m_columns.empty())
     {
       throw StdException(XString(_T("Cannot find columns for table: ")) + m_tableName + _T(" : ") + errors);
     }
@@ -447,7 +452,7 @@ DDLCreateTable::GetViewInfo()
   {
     // Find table info
     m_tables.clear();
-    if(!m_info->MakeInfoTableView(m_tables,errors,m_schema,m_tableName) || m_tables.empty())
+    if(!m_info->MakeInfoTableView(m_tables,errors,m_catalog,m_schema,m_tableName) || m_tables.empty())
     {
       throw StdException(XString(_T("Cannot find view: ")) + m_tableName + _T(" : ") + errors);
     }
@@ -472,7 +477,7 @@ DDLCreateTable::GetViewInfo()
   RecordRemarksAsComment(_T("VIEW"),m_tableName,_T(""),table.m_remarks);
 
   XString definition;
-  if(m_info->MakeInfoViewDefinition(definition,errors,m_schema,m_tableName))
+  if(m_info->MakeInfoViewDefinition(definition,errors,m_catalog,m_schema,m_tableName))
   {
     // Do our DDL part
     ddl += m_info->GetCATALOGViewCreate(m_schema,table.m_table,definition,m_dropIfExists);
@@ -491,7 +496,7 @@ DDLCreateTable::GetIndexInfo()
   {
     // Find column info
     m_indices.clear();
-    m_info->MakeInfoTableStatistics(m_indices,errors,m_schema,m_tableName,nullptr);
+    m_info->MakeInfoTableStatistics(m_indices,errors,m_catalog,m_schema,m_tableName,nullptr);
     if(!errors.IsEmpty())
     {
       throw StdException(XString(_T("Cannot find indices for table: ")) + m_tableName + _T(" : ") + errors);
@@ -504,7 +509,7 @@ DDLCreateTable::GetIndexInfo()
   if(m_info->GetRDBMSForeignKeyDefinesIndex() && !m_indices.empty())
   {
     m_foreigns.clear();
-    m_info->MakeInfoTableForeign(m_foreigns,errors,m_schema,m_tableName);
+    m_info->MakeInfoTableForeign(m_foreigns,errors,m_catalog,m_schema,m_tableName);
     DeDuplicateFKIndexes();
     m_foreigns.clear();
     m_didForeigns = false;
@@ -558,7 +563,7 @@ DDLCreateTable::GetPrimaryKeyInfo()
   {
     // Find column info
     m_primaries.clear();
-    m_info->MakeInfoTablePrimary(m_primaries,errors,m_schema,m_tableName);
+    m_info->MakeInfoTablePrimary(m_primaries,errors,m_catalog,m_schema,m_tableName);
     if(!errors.IsEmpty())
     {
       throw StdException(XString(_T("Cannot find the primary key for table: ")) + m_tableName + _T(" : ") + errors);
@@ -584,7 +589,7 @@ DDLCreateTable::GetForeignKeyInfo()
   {
     // Find column info
     m_foreigns.clear();
-    m_info->MakeInfoTableForeign(m_foreigns,errors,m_schema,m_tableName);
+    m_info->MakeInfoTableForeign(m_foreigns,errors,m_catalog,m_schema,m_tableName);
     if(!errors.IsEmpty())
     {
       throw StdException(XString(_T("Cannot find the foreign keys for table: ")) + m_tableName + _T(" : ") + errors);
@@ -630,7 +635,7 @@ DDLCreateTable::GetTriggerInfo()
   if(m_didTriggers)
   {
     m_triggers.clear();
-    m_info->MakeInfoTableTriggers(m_triggers,errors,m_schema,m_tableName);
+    m_info->MakeInfoTableTriggers(m_triggers,errors,m_catalog,m_schema,m_tableName);
     if(!errors.IsEmpty())
     {
       throw StdException(XString(_T("Cannot find the triggers for table: ")) + m_tableName + _T(" : ") + errors);
@@ -656,7 +661,7 @@ DDLCreateTable::GetSequenceInfo()
   if(!m_didSequence)
   {
     m_sequences.clear();
-    m_info->MakeInfoTableSequences(m_sequences,errors,m_schema,m_tableName);
+    m_info->MakeInfoTableSequences(m_sequences,errors,m_catalog,m_schema,m_tableName);
     if(!errors.IsEmpty())
     {
       throw StdException(XString(_T("Cannot find the sequences for table: ")) + m_tableName + _T(" : ") + errors);
@@ -687,7 +692,7 @@ DDLCreateTable::GetAccessInfo(bool p_strict /*=false*/)
   {
     // Find column info
     m_access.clear();
-    m_info->MakeInfoTablePrivileges(m_access,errors,m_schema,m_tableName);
+    m_info->MakeInfoTablePrivileges(m_access,errors,m_catalog,m_schema,m_tableName);
     if(!errors.IsEmpty())
     {
       throw StdException(XString(_T("Cannot find the privileges for table: ")) + m_tableName + _T(" : ") + errors);
@@ -719,17 +724,31 @@ DDLCreateTable::GetAccessInfo(bool p_strict /*=false*/)
 //
 //////////////////////////////////////////////////////////////////////////
 
+// Three posibilities
+// 1) "tablename"
+// 2) "schema.table"
+// 3) "catalog.schema.table"
 bool
 DDLCreateTable::FindSchemaName(XString p_tableName)
 {
   int pos = p_tableName.Find('.');
-  if (pos > 0)
+  if(pos < 0)
   {
-    m_schema    = p_tableName.Left(pos);
-    m_tableName = p_tableName.Mid(pos + 1);
+    m_tableName = p_tableName;
+  }
+  // Two part name
+  m_schema    = p_tableName.Left(pos);
+  m_tableName = p_tableName.Mid(pos + 1);
+
+  pos = p_tableName.Find('.');
+  if(pos < 0)
+  {
     return true;
   }
-  m_tableName = p_tableName;
+  // Three part name
+  m_catalog   = m_schema;
+  m_schema    = m_tableName.Left(pos);
+  m_tableName = m_tableName.Mid(pos + 1);
   return false;
 }
 

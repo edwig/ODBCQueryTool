@@ -55,9 +55,10 @@ SQLInfoDB::~SQLInfoDB()
 // Can be 'TABLE', 'VIEW', 'ALIAS', 'SYNONYM', 'SYSTEM TABLE' etc
 bool    
 SQLInfoDB::MakeInfoTableObject(MTableMap& p_tables
-                              ,XString&  p_errors
-                              ,XString   p_schema
-                              ,XString   p_tablename)
+                              ,XString&   p_errors
+                              ,XString    p_catalog
+                              ,XString    p_schema
+                              ,XString    p_tablename)
 {
   // Clear the results
   p_tables.clear();
@@ -71,7 +72,7 @@ SQLInfoDB::MakeInfoTableObject(MTableMap& p_tables
   if(sql1.IsEmpty() || sql2.IsEmpty() || sql3.IsEmpty() || sql4.IsEmpty() || m_preferODBC)
   {
     // Ask ODBC to find all object types (empty search argument)
-    return SQLInfo::MakeInfoTableTable(p_tables,p_errors,p_schema,p_tablename,"");
+    return SQLInfo::MakeInfoTableTable(p_tables,p_errors,p_catalog,p_schema,p_tablename,_T(""));
   }
 
   try
@@ -245,6 +246,7 @@ SQLInfoDB::MakeInfoDefaultCollation(XString& p_default)
 bool
 SQLInfoDB::MakeInfoTableTable(MTableMap& p_tables
                              ,XString&   p_errors
+                             ,XString    p_catalog
                              ,XString    p_schema
                              ,XString    p_tablename)
 {
@@ -252,7 +254,7 @@ SQLInfoDB::MakeInfoTableTable(MTableMap& p_tables
   if(sql.IsEmpty() || m_preferODBC)
   {
     // Ask ODBC driver to find tables
-    return SQLInfo::MakeInfoTableTable(p_tables,p_errors,p_schema,p_tablename,"TABLE");
+    return SQLInfo::MakeInfoTableTable(p_tables,p_errors,p_catalog,p_schema,p_tablename,"TABLE");
   }
 
   try
@@ -296,6 +298,7 @@ SQLInfoDB::MakeInfoTableTable(MTableMap& p_tables
 bool    
 SQLInfoDB::MakeInfoTableView(MTableMap& p_tables
                             ,XString&   p_errors
+                            ,XString    p_catalog
                             ,XString    p_schema
                             ,XString    p_tablename)
 {
@@ -304,7 +307,7 @@ SQLInfoDB::MakeInfoTableView(MTableMap& p_tables
   if(sql.IsEmpty() || m_preferODBC)
   {
     // Ask ODBC driver to find views
-    return SQLInfo::MakeInfoTableTable(p_tables,p_errors,p_schema,p_tablename,"VIEW");
+    return SQLInfo::MakeInfoTableTable(p_tables,p_errors,p_catalog,p_schema,p_tablename,_T("VIEW"));
   }
 
   try
@@ -336,6 +339,7 @@ SQLInfoDB::MakeInfoTableView(MTableMap& p_tables
 bool    
 SQLInfoDB::MakeInfoTableSynonyms(MTableMap& p_tables
                                 ,XString&   p_errors
+                                ,XString    p_catalog
                                 ,XString    p_schema
                                 ,XString    p_tablename)
 {
@@ -343,11 +347,11 @@ SQLInfoDB::MakeInfoTableSynonyms(MTableMap& p_tables
   if(sql.IsEmpty() || m_preferODBC)
   {
     // Ask ODBC driver to find synonyms
-    bool result = SQLInfo::MakeInfoTableTable(p_tables,p_errors,p_schema,p_tablename,"SYNONYM");
+    bool result = SQLInfo::MakeInfoTableTable(p_tables,p_errors,p_catalog,p_schema,p_tablename,_T("SYNONYM"));
     if(!result)
     {
       // Second guess: some RDBMS'es have aliases instead of synonyms
-      result = SQLInfo::MakeInfoTableTable(p_tables,p_errors,p_schema,p_tablename,"ALIAS");
+      result = SQLInfo::MakeInfoTableTable(p_tables,p_errors,p_catalog,p_schema,p_tablename,_T("ALIAS"));
     }
     return result;
   }
@@ -381,6 +385,7 @@ SQLInfoDB::MakeInfoTableSynonyms(MTableMap& p_tables
 bool    
 SQLInfoDB::MakeInfoTableCatalog(MTableMap&  p_tables
                                ,XString&    p_errors
+                               ,XString     p_catalog
                                ,XString     p_schema
                                ,XString     p_tablename)
 {
@@ -391,7 +396,7 @@ SQLInfoDB::MakeInfoTableCatalog(MTableMap&  p_tables
     p_schema    = _T("%");
     p_tablename = _T("%");
     // Ask ODBC driver to find system tables
-    return SQLInfo::MakeInfoTableTable(p_tables,p_errors,p_schema,p_tablename,_T("SYSTEM TABLE"));
+    return SQLInfo::MakeInfoTableTable(p_tables,p_errors,p_catalog,p_schema,p_tablename,_T("SYSTEM TABLE"));
   }
 
   try
@@ -423,6 +428,7 @@ SQLInfoDB::MakeInfoTableCatalog(MTableMap&  p_tables
 bool    
 SQLInfoDB::MakeInfoTableColumns(MColumnMap& p_columns
                                ,XString&    p_errors
+                               ,XString     p_catalog
                                ,XString     p_schema
                                ,XString     p_tablename
                                ,XString     p_columnname /*=""*/)
@@ -431,7 +437,7 @@ SQLInfoDB::MakeInfoTableColumns(MColumnMap& p_columns
   XString sql = GetCATALOGColumnAttributes(p_schema,p_tablename,p_columnname,true);
   if(sql.IsEmpty() || m_preferODBC)
   {
-    return SQLInfo::MakeInfoTableColumns(p_columns,p_errors,p_schema,p_tablename,p_columnname);
+    return SQLInfo::MakeInfoTableColumns(p_columns,p_errors,p_catalog,p_schema,p_tablename,p_columnname);
   }
   try
   {
@@ -497,6 +503,7 @@ SQLInfoDB::MakeInfoTableColumns(MColumnMap& p_columns
 bool    
 SQLInfoDB::MakeInfoTablePrimary(MPrimaryMap&  p_primaries
                                ,XString&      p_errors
+                               ,XString       p_catalog
                                ,XString       p_schema
                                ,XString       p_tablename)
 {
@@ -504,7 +511,7 @@ SQLInfoDB::MakeInfoTablePrimary(MPrimaryMap&  p_primaries
   XString sql = GetCATALOGPrimaryAttributes(p_schema,p_tablename,true);
   if(sql.IsEmpty() || m_preferODBC)
   {
-    return SQLInfo::MakeInfoTablePrimary(p_primaries,p_errors,p_schema,p_tablename);
+    return SQLInfo::MakeInfoTablePrimary(p_primaries,p_errors,p_catalog,p_schema,p_tablename);
   }
 
   try
@@ -549,6 +556,7 @@ SQLInfoDB::MakeInfoTablePrimary(MPrimaryMap&  p_primaries
 bool    
 SQLInfoDB::MakeInfoTableForeign(MForeignMap&  p_foreigns
                                ,XString&      p_errors
+                               ,XString       p_catalog
                                ,XString       p_schema
                                ,XString       p_tablename
                                ,bool          p_referenced /* = false */) 
@@ -558,7 +566,7 @@ SQLInfoDB::MakeInfoTableForeign(MForeignMap&  p_foreigns
   XString sql = GetCATALOGForeignAttributes(p_schema,p_tablename,constraint,p_referenced,true);
   if(sql.IsEmpty() || m_preferODBC)
   {
-    return SQLInfo::MakeInfoTableForeign(p_foreigns,p_errors,p_schema,p_tablename,p_referenced);
+    return SQLInfo::MakeInfoTableForeign(p_foreigns,p_errors,p_catalog,p_schema,p_tablename,p_referenced);
   }
   try
   {
@@ -615,6 +623,7 @@ SQLInfoDB::MakeInfoTableForeign(MForeignMap&  p_foreigns
 bool
 SQLInfoDB::MakeInfoTableStatistics(MIndicesMap& p_indices
                                   ,XString&     p_errors
+                                  ,XString      p_catalog
                                   ,XString      p_schema
                                   ,XString      p_tablename
                                   ,MPrimaryMap* p_keymap
@@ -627,7 +636,7 @@ SQLInfoDB::MakeInfoTableStatistics(MIndicesMap& p_indices
   XString sql2 = GetCATALOGIndexAttributes(p_schema,p_tablename,column,true);   // Table statistics
   if(sql1.IsEmpty() || m_preferODBC)
   {
-    return SQLInfo::MakeInfoTableStatistics(p_indices,p_errors,p_schema,p_tablename,p_keymap,p_all);
+    return SQLInfo::MakeInfoTableStatistics(p_indices,p_errors,p_catalog,p_schema,p_tablename,p_keymap,p_all);
   }
   try
   {
@@ -691,6 +700,7 @@ SQLInfoDB::MakeInfoTableStatistics(MIndicesMap& p_indices
 bool    
 SQLInfoDB::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
                                 ,XString&        p_errors
+                                ,XString         p_catalog
                                 ,XString         p_schema
                                 ,XString         p_procedure)
 {
@@ -710,7 +720,7 @@ SQLInfoDB::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
   // Let ODBC handle the call
   if(sql.IsEmpty() || m_preferODBC)
   {
-    return SQLInfo::MakeInfoPSMProcedures(p_procedures,p_errors,p_schema,p_procedure);
+    return SQLInfo::MakeInfoPSMProcedures(p_procedures,p_errors,p_catalog,p_schema,p_procedure);
   }
 
   try
@@ -758,7 +768,7 @@ SQLInfoDB::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
 
           if(proc.m_source.IsEmpty() || proc.m_source.Compare(_T("<@>")) == 0)
           {
-            proc.m_source = MakeInfoPSMSourcecode(proc.m_schemaName, proc.m_procedureName);
+            proc.m_source = MakeInfoPSMSourcecode(p_catalog,proc.m_schemaName,proc.m_procedureName);
           }
           p_procedures.push_back(proc);
         }
@@ -787,7 +797,7 @@ SQLInfoDB::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
 }
 
 XString
-SQLInfoDB::MakeInfoPSMSourcecode(XString p_schema, XString p_procedure)
+SQLInfoDB::MakeInfoPSMSourcecode(XString /*p_catalog*/,XString p_schema, XString p_procedure)
 {
   XString sourcecode;
   XString sql = GetPSMProcedureSourcecode(p_schema,p_procedure,true);
@@ -816,6 +826,7 @@ SQLInfoDB::MakeInfoPSMSourcecode(XString p_schema, XString p_procedure)
 bool    
 SQLInfoDB::MakeInfoPSMParameters(MParameterMap& p_parameters
                                 ,XString&       p_errors
+                                ,XString        p_catalog
                                 ,XString        p_schema
                                 ,XString        p_procedure)
 {
@@ -824,7 +835,7 @@ SQLInfoDB::MakeInfoPSMParameters(MParameterMap& p_parameters
   if(sql.IsEmpty() || m_preferODBC)
   {
     // No SQL, let ODBC handle the parameters
-    return SQLInfo::MakeInfoPSMParameters(p_parameters,p_errors,p_schema,p_procedure);
+    return SQLInfo::MakeInfoPSMParameters(p_parameters,p_errors,p_catalog,p_schema,p_procedure);
   }
   try
   {
@@ -885,9 +896,10 @@ SQLInfoDB::MakeInfoPSMParameters(MParameterMap& p_parameters
 bool
 SQLInfoDB::MakeInfoTableTriggers(MTriggerMap& p_triggers
                                 ,XString& p_errors
-                                ,XString p_schema
-                                ,XString p_tablename /*= ""*/
-                                ,XString p_trigger   /*= ""*/)
+                                ,XString  p_catalog
+                                ,XString  p_schema
+                                ,XString  p_tablename /*= ""*/
+                                ,XString  p_trigger   /*= ""*/)
 {
   // Getting the database dependent SQL string
   XString sql;
@@ -945,7 +957,7 @@ SQLInfoDB::MakeInfoTableTriggers(MTriggerMap& p_triggers
 
         if(trigger.m_source.Compare(_T("<@>")) == 0)
         {
-          trigger.m_source = MakeInfoPSMSourcecode(trigger.m_schemaName,trigger.m_triggerName);
+          trigger.m_source = MakeInfoPSMSourcecode(p_catalog,trigger.m_schemaName,trigger.m_triggerName);
         }
         p_triggers.push_back(trigger);
       }
@@ -966,7 +978,11 @@ SQLInfoDB::MakeInfoTableTriggers(MTriggerMap& p_triggers
 }
 
 bool 
-SQLInfoDB::MakeInfoTableSequences(MSequenceMap& p_sequences,XString& p_errors,XString p_schema,XString p_tablename)
+SQLInfoDB::MakeInfoTableSequences(MSequenceMap& p_sequences
+                                 ,XString&      p_errors
+                                 ,XString     /*p_catalog*/
+                                 ,XString       p_schema
+                                 ,XString       p_tablename)
 {
   // Getting the database dependent SQL string (quoted identifiers first)
   XString sql = GetCATALOGSequenceList(p_schema,p_tablename,true);
@@ -1051,12 +1067,16 @@ SQLInfoDB::MakeInfoTableSequences(MSequenceMap& p_sequences,XString& p_errors,XS
 }
 
 bool    
-SQLInfoDB::MakeInfoTablePrivileges(MPrivilegeMap& p_privileges,XString& p_errors,XString p_schema,XString p_tablename)
+SQLInfoDB::MakeInfoTablePrivileges(MPrivilegeMap& p_privileges
+                                  ,XString&       p_errors
+                                  ,XString        p_catalog
+                                  ,XString        p_schema
+                                  ,XString        p_tablename)
 {
   XString sql = GetCATALOGTablePrivileges(p_schema,p_tablename);   // Table privileges query
   if(sql.IsEmpty() || m_preferODBC)
   {
-    return SQLInfo::MakeInfoTablePrivileges(p_privileges,p_errors,p_schema,p_tablename);
+    return SQLInfo::MakeInfoTablePrivileges(p_privileges,p_errors,p_catalog,p_schema,p_tablename);
   }
 
   try
@@ -1092,12 +1112,17 @@ SQLInfoDB::MakeInfoTablePrivileges(MPrivilegeMap& p_privileges,XString& p_errors
 }
 
 bool
-SQLInfoDB::MakeInfoColumnPrivileges(MPrivilegeMap& p_privileges,XString& p_errors,XString p_schema,XString p_tablename,XString p_columnname /*= ""*/)
+SQLInfoDB::MakeInfoColumnPrivileges(MPrivilegeMap& p_privileges
+                                   ,XString&       p_errors
+                                   ,XString        p_catalog
+                                   ,XString        p_schema
+                                   ,XString        p_tablename
+                                   ,XString        p_columnname /*= ""*/)
 {
   XString sql = GetCATALOGColumnPrivileges(p_schema,p_tablename,p_columnname);   // Column privileges query
   if(sql.IsEmpty() || m_preferODBC)
   {
-    return SQLInfo::MakeInfoColumnPrivileges(p_privileges,p_errors,p_schema,p_tablename,p_columnname);
+    return SQLInfo::MakeInfoColumnPrivileges(p_privileges,p_errors,p_catalog,p_schema,p_tablename,p_columnname);
   }
 
   try
@@ -1135,7 +1160,11 @@ SQLInfoDB::MakeInfoColumnPrivileges(MPrivilegeMap& p_privileges,XString& p_error
 }
 
 bool    
-SQLInfoDB::MakeInfoViewDefinition(XString& p_defintion,XString& p_errors,XString p_schema,XString p_viewname)
+SQLInfoDB::MakeInfoViewDefinition(XString& p_defintion
+                                 ,XString& p_errors
+                                 ,XString  /*p_catalog*/
+                                 ,XString  p_schema
+                                 ,XString  p_viewname)
 {
   bool result = false;
   // Try quoted identifiers first
@@ -1227,6 +1256,7 @@ SQLInfoDB::ReadTablesFromQuery(SQLQuery& p_query,MTableMap& p_tables)
 bool
 SQLInfoDB::MakeInfoUserTypes(MUserTypeMap& p_usertypes
                             ,XString&      p_errors
+                            ,XString       /*p_catalog*/
                             ,XString       p_schema
                             ,XString       p_usertype)
 {
