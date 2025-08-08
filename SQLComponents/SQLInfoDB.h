@@ -75,28 +75,28 @@ public:
   virtual bool    MakeInfoDefaultCharsetNC(XString&       p_default);
   virtual bool    MakeInfoDefaultCollation(XString&       p_default);
   // Tables
-  virtual bool    MakeInfoTableObject     (MTableMap&     p_tables,    XString& p_errors,XString p_schema,XString p_tablename);  // Not known which type!
-  virtual bool    MakeInfoTableTable      (MTableMap&     p_tables,    XString& p_errors,XString p_schema,XString p_tablename);  // TABLE   only
-  virtual bool    MakeInfoTableView       (MTableMap&     p_tables,    XString& p_errors,XString p_schema,XString p_tablename);  // VIEW    only
-  virtual bool    MakeInfoTableSynonyms   (MTableMap&     p_tables,    XString& p_errors,XString p_schema,XString p_tablename);  // SYNONYM only
-  virtual bool    MakeInfoTableCatalog    (MTableMap&     p_tables,    XString& p_errors,XString p_schema,XString p_tablename);  // CATALOG only
+  virtual bool    MakeInfoTableObject     (MTableMap&     p_tables,    XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename);  // Not known which type!
+  virtual bool    MakeInfoTableTable      (MTableMap&     p_tables,    XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename);  // TABLE   only
+  virtual bool    MakeInfoTableView       (MTableMap&     p_tables,    XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename);  // VIEW    only
+  virtual bool    MakeInfoTableSynonyms   (MTableMap&     p_tables,    XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename);  // SYNONYM only
+  virtual bool    MakeInfoTableCatalog    (MTableMap&     p_tables,    XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename);  // CATALOG only
   // Attributes of a table
-  virtual bool    MakeInfoTableColumns    (MColumnMap&    p_columns,   XString& p_errors,XString p_schema,XString p_tablename,XString p_columnname = _T("")) override;
-  virtual bool    MakeInfoTablePrimary    (MPrimaryMap&   p_primary,   XString& p_errors,XString p_schema,XString p_tablename)                          override;
-  virtual bool    MakeInfoTableForeign    (MForeignMap&   p_foreigns,  XString& p_errors,XString p_schema,XString p_tablename,bool p_referenced   = false) override;
-  virtual bool    MakeInfoTableStatistics (MIndicesMap&   p_indices,   XString& p_errors,XString p_schema,XString p_tablename,MPrimaryMap* p_keymap,bool p_all = true) override;
-  virtual bool    MakeInfoTableTriggers   (MTriggerMap&   p_triggers,  XString& p_errors,XString p_schema,XString p_tablename,XString p_trigger   = _T(""));
-  virtual bool    MakeInfoTableSequences  (MSequenceMap&  p_sequences, XString& p_errors,XString p_schema,XString p_tablename);
-  virtual bool    MakeInfoTablePrivileges (MPrivilegeMap& p_privileges,XString& p_errors,XString p_schema,XString p_tablename) override;
-  virtual bool    MakeInfoColumnPrivileges(MPrivilegeMap& p_privileges,XString& p_errors,XString p_schema,XString p_tablename,XString p_columnname = _T("")) override;
-  virtual bool    MakeInfoViewDefinition  (XString&       p_defintion, XString& p_errors,XString p_schema,XString p_viewname);
-  virtual bool    MakeInfoUserTypes       (MUserTypeMap&  p_usertypes, XString& p_errors,XString p_schema,XString p_usertype);
+  virtual bool    MakeInfoTableColumns    (MColumnMap&    p_columns,   XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename,XString p_columnname = _T("")) override;
+  virtual bool    MakeInfoTablePrimary    (MPrimaryMap&   p_primary,   XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename)                               override;
+  virtual bool    MakeInfoTableForeign    (MForeignMap&   p_foreigns,  XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename,bool p_referenced   = false)   override;
+  virtual bool    MakeInfoTableStatistics (MIndicesMap&   p_indices,   XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename,MPrimaryMap* p_keymap,bool p_all = true) override;
+  virtual bool    MakeInfoTableTriggers   (MTriggerMap&   p_triggers,  XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename,XString p_trigger   = _T(""));
+  virtual bool    MakeInfoTableSequences  (MSequenceMap&  p_sequences, XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename);
+  virtual bool    MakeInfoTablePrivileges (MPrivilegeMap& p_privileges,XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename) override;
+  virtual bool    MakeInfoColumnPrivileges(MPrivilegeMap& p_privileges,XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename,XString p_columnname = _T("")) override;
+  virtual bool    MakeInfoViewDefinition  (XString&       p_defintion, XString& p_errors,XString p_catalog,XString p_schema,XString p_viewname);
+  virtual bool    MakeInfoUserTypes       (MUserTypeMap&  p_usertypes, XString& p_errors,XString p_catalog,XString p_schema,XString p_usertype);
 
   // Procedures
-  virtual bool    MakeInfoPSMProcedures(MProcedureMap& p_procedures,XString& p_errors,XString p_schema,XString p_procedure) override;
-  virtual bool    MakeInfoPSMParameters(MParameterMap& p_parameters,XString& p_errors,XString p_schema,XString p_procedure) override;
+  virtual bool    MakeInfoPSMProcedures(MProcedureMap& p_procedures,XString& p_errors,XString p_catalog,XString p_schema,XString p_procedure) override;
+  virtual bool    MakeInfoPSMParameters(MParameterMap& p_parameters,XString& p_errors,XString p_catalog,XString p_schema,XString p_procedure) override;
   // Read extra source code for database that can only do it by an extra procedure
-  virtual XString MakeInfoPSMSourcecode(XString p_schema, XString p_procedure);
+  virtual XString MakeInfoPSMSourcecode(XString p_catalog,XString p_schema, XString p_procedure);
 
   // PURE VIRTUAL INTERFACE
 

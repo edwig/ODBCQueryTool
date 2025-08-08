@@ -480,6 +480,7 @@ int
 SQLMigrate::ReadTableStructures(XString p_owner,XString p_pattern,SQLDatabase* p_database)
 {
   XString errors;
+  XString catalog;
 
   // Set status line of current step
   m_log.SetStatus(_T("Read source object structures"));
@@ -491,12 +492,12 @@ SQLMigrate::ReadTableStructures(XString p_owner,XString p_pattern,SQLDatabase* p
     if(m_params.v_do_views)
     {
       m_log.WriteLog(_T("To migrate          : ALL VIEWS"));
-      p_database->GetSQLInfoDB()->MakeInfoTableView(m_tables,errors,p_owner,p_pattern);
+      p_database->GetSQLInfoDB()->MakeInfoTableView(m_tables,errors,catalog,p_owner,p_pattern);
     }
     else
     {
       m_log.WriteLog(_T("To migrate          : ALL TABLES"));
-      p_database->GetSQLInfoDB()->MakeInfoTableTable(m_tables,errors,p_owner,p_pattern);
+      p_database->GetSQLInfoDB()->MakeInfoTableTable(m_tables,errors,catalog,p_owner,p_pattern);
       RemoveTemporaries();
     }
   }
@@ -505,12 +506,12 @@ SQLMigrate::ReadTableStructures(XString p_owner,XString p_pattern,SQLDatabase* p
     if(m_params.v_do_views)
     {
       m_log.WriteLog(_T("To migrate          : Selection from source database"));
-      p_database->GetSQLInfoDB()->MakeInfoTableView(m_tables,errors,p_owner,p_pattern);
+      p_database->GetSQLInfoDB()->MakeInfoTableView(m_tables,errors,catalog,p_owner,p_pattern);
     }
     else
     {
       m_log.WriteLog(_T("To migrate          : Selection from source database"));
-      p_database->GetSQLInfoDB()->MakeInfoTableTable(m_tables,errors,p_owner,p_pattern);
+      p_database->GetSQLInfoDB()->MakeInfoTableTable(m_tables,errors,catalog,p_owner,p_pattern);
       RemoveTemporaries();
     }
   }
@@ -1360,10 +1361,11 @@ SQLMigrate::MakeSelectStatement(XString& p_tabel,XString& p_user)
 {
   XString    statement(_T("SELECT "));
   MColumnMap columns;
+  XString    catalog;
   XString    schema;
   XString    errors;
 
-  m_databaseSource->GetSQLInfoDB()->MakeInfoTableColumns(columns,errors,p_user,p_tabel);
+  m_databaseSource->GetSQLInfoDB()->MakeInfoTableColumns(columns,errors,catalog,p_user,p_tabel);
   columns = SortColumnsBySize(columns);
   for(unsigned int regel = 0; regel < columns.size(); ++regel)
   {
@@ -1407,6 +1409,7 @@ SQLMigrate::MakeInsertStatement(XString& p_tabel,XString& p_user,XString& p_doel
   XString    data;
   XString    statement(_T("INSERT INTO "));
   MColumnMap columns;
+  XString    catalog;
   XString    schema;
   XString    errors;
   SQLInfoDB* target = m_databaseTarget->GetSQLInfoDB();
@@ -1414,7 +1417,7 @@ SQLMigrate::MakeInsertStatement(XString& p_tabel,XString& p_user,XString& p_doel
   statement += target->GetSQLDDLIdentifier(p_doel_user) + _T(".");
   statement += target->GetSQLDDLIdentifier(p_tabel) + _T(" (");
 
-  m_databaseSource->GetSQLInfoDB()->MakeInfoTableColumns(columns,errors,p_user,p_tabel);
+  m_databaseSource->GetSQLInfoDB()->MakeInfoTableColumns(columns,errors,catalog,p_user,p_tabel);
   columns = SortColumnsBySize(columns);
   for(unsigned int regel = 0; regel < columns.size(); ++regel)
   {
@@ -1545,10 +1548,11 @@ SQLMigrate::FillTablesViaData(bool p_process)
 
       // Get the columns
       XString    errors;
+      XString    catalog;
       XString    schema;
       MColumnMap columns;
 
-      m_databaseSource->GetSQLInfoDB()->MakeInfoTableColumns(columns,errors,m_params.v_source_schema,table);
+      m_databaseSource->GetSQLInfoDB()->MakeInfoTableColumns(columns,errors,catalog,m_params.v_source_schema,table);
       columns = SortColumnsBySize(columns);
 
       totalrows = CountTableContents(m_params.v_source_user,table);
