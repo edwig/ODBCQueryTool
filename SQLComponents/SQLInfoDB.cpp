@@ -1260,7 +1260,6 @@ SQLInfoDB::MakeInfoUserTypes(MUserTypeMap& p_usertypes
                             ,XString       p_schema
                             ,XString       p_usertype)
 {
-  bool sgotten(false);
   XString sql = GetCATALOGTypeAttributes(p_schema,p_usertype,true);
   if(sql.IsEmpty())
   {
@@ -1293,9 +1292,9 @@ SQLInfoDB::MakeInfoUserTypes(MUserTypeMap& p_usertypes
         type.m_remarks     = (XString) qry[MetaType_remarks];
         type.m_source      = (XString) qry[MetaType_source];
 
-        if(type.m_source.Compare(_T("<@>")) == 0 && !sgotten)
+        if(type.m_source.Compare(_T("<@>")) == 0 && type.m_ordinal == 1)
         {
-          XString source = GetCATALOGTypeSource(p_schema,p_usertype,ind == 0 ? true : false);
+          XString source = GetCATALOGTypeSource(p_schema,type.m_typeName,ind == 0 ? true : false);
           if(!source.IsEmpty())
           {
             SQLQuery qry2(m_database);
@@ -1304,19 +1303,18 @@ SQLInfoDB::MakeInfoUserTypes(MUserTypeMap& p_usertypes
             {
               // Source text is always on the third column line
               type.m_source = (XString) qry2[3];
-              sgotten = true;
             }
           }
         }
         p_usertypes.push_back(type);
       }
+      if(!p_usertypes.empty())
+      {
+        return true;
+      }
+      // Try standard catalog identifiers
+      sql = GetCATALOGTypeAttributes(p_schema,p_usertype);
     }
-    if(!p_usertypes.empty())
-    {
-      return true;
-    }
-    // Try standard catalog identifiers
-    sql = GetCATALOGTypeAttributes(p_schema,p_usertype);
   }
   catch(StdException& er)
   {

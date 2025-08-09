@@ -42,6 +42,7 @@ typedef enum treeTypes
  ,TREE_SEQUENCES
  ,TREE_TRIGGERS
  ,TREE_SOURCECODE
+ ,TREE_USERTYPE
 }
 TreeTypes;
 
@@ -68,6 +69,7 @@ typedef enum objectImage
  ,IMG_INDEX
  ,IMG_SEQUENCE
  ,IMG_SOURCE
+ ,IMG_USERTYPE
 }
 ObjectImage;
 
@@ -95,6 +97,7 @@ public:
 private:
   ObjectImage TypeToImage(CString p_type);
   void      TriggerToTree(MetaTrigger& trigger,HTREEITEM trigItem);
+  void      UserTypeToTree(MUserTypeMap& types,HTREEITEM typeItem,unsigned p_index);
 
 protected:
   DECLARE_MESSAGE_MAP();
@@ -121,6 +124,7 @@ protected:
   void      FindTabSequences(HTREEITEM p_theItem);
   void      FindPrivileges  (HTREEITEM p_theItem);
   void      FindSequences   (HTREEITEM p_theItem);
+  void      FindUserTypes   (HTREEITEM p_theItem);
   void      FindTriggers    (HTREEITEM p_theItem);
   void      FindProcedures  (HTREEITEM p_theItem);
   void      FindParameters  (HTREEITEM p_theItem);
@@ -145,6 +149,9 @@ protected:
   CString   DeferrableToString(int p_defer);
   bool      ShowSourcecodeTrigger(CString p_schema, CString p_trigger);
   bool      ShowSourcecodeModule (CString p_schema, CString p_procedure);
+  bool      ShowSourcecodeUserType(CString p_schema,CString p_typename);
+  void      UserColumnsToTree    (MUserTypeMap& p_types,HTREEITEM p_item,unsigned p_index);
+  void      UserEnumeratorsToTree(MUserTypeMap& p_types,HTREEITEM p_item,unsigned p_index);
 
   // Data
   CString     m_filter;
