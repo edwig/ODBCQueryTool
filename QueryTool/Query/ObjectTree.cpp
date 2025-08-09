@@ -104,6 +104,7 @@ ObjectTree::ClearTree()
   HTREEITEM tables     = InsertItem(_T("Tables"),    root,TREE_TABLES);
   HTREEITEM views      = InsertItem(_T("Views"),     root,TREE_TABLES);
   HTREEITEM sequences  = InsertItem(_T("Sequences"), root,TREE_SEQUENCES);
+  HTREEITEM usertypes  = InsertItem(_T("UserTypes"), root,TREE_USERTYPE);
   HTREEITEM catalogs   = InsertItem(_T("Catalog"),   root,TREE_TABLES);
   HTREEITEM synonyms   = InsertItem(_T("Synonyms"),  root,TREE_TABLES);
   HTREEITEM triggers   = InsertItem(_T("Triggers"),  root,TREE_TRIGGERS);
@@ -113,6 +114,7 @@ ObjectTree::ClearTree()
   SetItemImage(tables,    IMG_TABLES,     IMG_TABLES);
   SetItemImage(views,     IMG_VIEWS,      IMG_VIEWS);
   SetItemImage(sequences, IMG_SEQUENCE,   IMG_SEQUENCE);
+  SetItemImage(usertypes, IMG_USERTYPE,   IMG_USERTYPE);
   SetItemImage(catalogs,  IMG_CATALOGS,   IMG_CATALOGS);
   SetItemImage(synonyms,  IMG_SYNONYMS,   IMG_SYNONYMS);
   SetItemImage(triggers,  IMG_TRIGGER,    IMG_TRIGGER);
@@ -122,6 +124,7 @@ ObjectTree::ClearTree()
   InsertNoInfo(tables);
   InsertNoInfo(views);
   InsertNoInfo(sequences);
+  InsertNoInfo(usertypes);
   InsertNoInfo(catalogs);
   InsertNoInfo(synonyms);
   InsertNoInfo(triggers);
@@ -154,6 +157,7 @@ ObjectTree::IsSpecialNode(CString& p_name)
   if(p_name.Compare(_T("Tables"))     == 0)  return true;
   if(p_name.Compare(_T("Views"))      == 0)  return true;
   if(p_name.Compare(_T("Sequences"))  == 0)  return true;
+  if(p_name.Compare(_T("UserTypes"))  == 0)  return true;
   if(p_name.Compare(_T("Catalog"))    == 0)  return true;
   if(p_name.Compare(_T("Synonyms"))   == 0)  return true;
   if(p_name.Compare(_T("Triggers"))   == 0)  return true;
@@ -167,6 +171,7 @@ ObjectTree::TypeToImage(CString p_type)
 {
   if(p_type == _T("T")) return IMG_TABLE;
   if(p_type == _T("V")) return IMG_VIEW;
+  if(p_type == _T("U")) return IMG_USERTYPE;
   if(p_type == _T("C")) return IMG_CATALOG;
   if(p_type == _T("S")) return IMG_SYNONYM;
   if(p_type == _T("R")) return IMG_TRIGGER;
@@ -374,6 +379,7 @@ ObjectTree::DispatchTreeAction(DWORD_PTR p_action,HTREEITEM theItem)
     case TREE_PRIVILEGES:   FindPrivileges(theItem);      break;
     case TREE_COLPRIVILEGES:FindColumnPrivileges(theItem);break;
     case TREE_SEQUENCES:    FindSequences(theItem);       break;
+    case TREE_USERTYPE:     FindUserTypes(theItem);       break;
     case TREE_TRIGGERS:     FindTriggers(theItem);        break;
     case TREE_PROCEDURES:   FindProcedures(theItem);      break;
     case TREE_PARAMETERS:   FindParameters(theItem);      break;
@@ -883,6 +889,81 @@ ObjectTree::FindSequences(HTREEITEM p_theItem)
 }
 
 void
+ObjectTree::FindUserTypes(HTREEITEM p_theItem)
+{
+  QueryToolApp* app = (QueryToolApp*)AfxGetApp();
+  SQLInfoDB*   info = app->GetDatabase().GetSQLInfoDB();
+  HTREEITEM    schemaItem = NULL;
+  int          schemaCount = 0;
+  MUserTypeMap types;
+  CString      errors;
+  CString      lastSchema;
+
+  // Find filtered name
+  CString catalog;
+  CString schema;
+  CString type;
+  info->GetObjectName(m_filter,catalog,schema,type);
+
+  // Find relevant user types
+  info->MakeInfoUserTypes(types,errors,catalog,schema,type);
+  if(!errors.IsEmpty())
+  {
+    StyleMessageBox(this,errors,_T("Querytool"),MB_OK | MB_ICONERROR);
+    return;
+  }
+
+  // See if we have something
+  if(!types.empty())
+  {
+    RemoveNoInfo(p_theItem);
+  }
+
+  // Setting count of objects
+  SetItemCount(p_theItem,(int)types.size());
+
+  for(unsigned item = 0;item < (unsigned) types.size();++item)
+  {
+    MetaUserType* typ = &types[item];
+    if(typ->m_ordinal == 1)
+    {
+      HTREEITEM usertype = NULL;
+      CString schema = typ->m_schemaName;
+      CString object = typ->m_typeName;
+      schema.Trim();
+      object.Trim();
+
+      if(schema.IsEmpty())
+      {
+        // No schema found, just add the item
+        usertype = InsertItem(object,p_theItem);
+      }
+      else
+      {
+        if((schema.Compare(lastSchema) == 0) && schemaItem)
+        {
+          usertype = InsertItem(object,schemaItem);
+          SetItemCount(schemaItem,++schemaCount);
+        }
+        else
+        {
+          lastSchema = schema;
+          schemaItem = InsertItem(schema,p_theItem);
+          usertype   = InsertItem(object,schemaItem);
+          schemaCount = 1;
+          SetItemCount(schemaItem,schemaCount);
+          SetItemImage(schemaItem,IMG_SCHEMA,IMG_SCHEMA);
+        }
+      }
+      SetItemImage(usertype,IMG_USERTYPE,IMG_USERTYPE);
+
+      // Set in the tree
+      UserTypeToTree(types,usertype,item);
+    }
+  }
+}
+
+void
 ObjectTree::FindTriggers(HTREEITEM p_theItem)
 {
   QueryToolApp* app = (QueryToolApp*)AfxGetApp();
@@ -1132,11 +1213,19 @@ ObjectTree::FindSourcecode(HTREEITEM p_theItem)
         return;
       }
     }
+    // For user types
+    if(ShowSourcecodeUserType(m_schema,tableproc))
+    {
+      return;
+    }
     // For trigger under tables, it's even a node deeper
     par = GetParentItem(par);
     if(PresetProcedure(par,procedures))
     {
-      ShowSourcecodeTrigger(m_schema,tableproc);
+      if(ShowSourcecodeTrigger(m_schema,tableproc))
+      {
+        return;
+      }
     }
   }
 }
@@ -1191,6 +1280,26 @@ ObjectTree::ShowSourcecodeModule(CString p_schema, CString p_procedure)
 
     // Show in source code popup
     CNativeSQLDlg dlg(this,source,_T("Persistent Stored Module"));
+    dlg.DoModal();
+    return true;
+  }
+  return false;
+}
+
+bool
+ObjectTree::ShowSourcecodeUserType(CString p_schema,CString p_typename)
+{
+  CString name = p_schema + _T(".") + p_typename;
+  SourceList::iterator it = m_source.find(name);
+  if(it != m_source.end())
+  {
+    CString source = it->second;
+
+    // Prepare for MFC edit control
+    source.Replace(_T("\n"),_T("\r\n"));
+
+    // Show in source code popup
+    CNativeSQLDlg dlg(this,source,_T("User defined type"));
     dlg.DoModal();
     return true;
   }
@@ -1595,6 +1704,139 @@ ObjectTree::TriggersToTree(MTriggerMap& p_triggers,HTREEITEM p_item)
     SetItemImage(trigItem,IMG_TRIGGER,IMG_TRIGGER);
     TriggerToTree(trigger,trigItem);
   }
+}
+
+void
+ObjectTree::UserTypeToTree(MUserTypeMap& p_types,HTREEITEM p_item,unsigned p_index)
+{
+  // Get the main item (ordinal = 1)
+  MetaUserType* type = &p_types[p_index];
+  CString line;
+
+  CString usageText;
+  TCHAR usage = type->m_usage[0];
+  switch(usage)
+  {
+    case 'D': usageText = _T("Domain value type"); break;
+    case 'C': usageText = _T("Composite type");    break;
+    case 'E': usageText = _T("Enumerator type");   break;
+  }
+
+  // Type of user-type
+  line = _T("UserType is a: ") + usageText;
+  HTREEITEM item = InsertItem(line,p_item);
+  SetItemImage(item,IMG_USERTYPE,IMG_USERTYPE);
+
+  // Remarks
+  line = _T("Comment on type is: ") + type->m_remarks;
+  item = InsertItem(line,p_item);
+  SetItemImage(item,IMG_USERTYPE,IMG_USERTYPE);
+
+  if(usage == 'D')
+  {
+    // Datatype
+    line = _T("Domain base datatype: ") + type->m_datatype;
+    item = InsertItem(line,p_item);
+    SetItemImage(item,IMG_USERTYPE,IMG_USERTYPE);
+    // NOT NULL
+    line.Format(_T("Domain forces not-null: %s"),type->m_notnull ? _T("true") : _T("false"));
+    item = InsertItem(line,p_item);
+    SetItemImage(item,IMG_USERTYPE,IMG_USERTYPE);
+    // DEFAULT
+    line = _T("Domain default value: ") + type->m_default;
+    item = InsertItem(line,p_item);
+    SetItemImage(item,IMG_USERTYPE,IMG_USERTYPE);
+    // CHECK
+    line = _T("Domain check value: ") + type->m_domaincheck;
+    item = InsertItem(line,p_item);
+    SetItemImage(item,IMG_USERTYPE,IMG_USERTYPE);
+  }
+  else
+  {
+    line.Format(_T("Usertype %s"),(usage == 'C') ? _T("COLUMNS") : _T("ENUMERATOR VALUES"));
+    item = InsertItem(line,p_item);
+    SetItemImage(item,IMG_USERTYPE,IMG_USERTYPE);
+
+    if(usage == 'C')
+    {
+      UserColumnsToTree(p_types,item,p_index);
+    }
+    if(usage == 'E')
+    {
+      UserEnumeratorsToTree(p_types,item,p_index);
+    }
+  }
+  // Source
+  CString name = type->m_schemaName + _T(".") + type->m_typeName;
+  m_source.insert(std::make_pair(name,type->m_source));
+  line.Format(_T("SQL Source: %d characters"),type->m_source.GetLength());
+  item = InsertItem(line,p_item,TREE_SOURCECODE);
+  SetItemImage(item,IMG_SOURCE,IMG_SOURCE);
+}
+
+void
+ObjectTree::UserColumnsToTree(MUserTypeMap& p_types,HTREEITEM p_item,unsigned p_index)
+{
+  bool next(true);
+  MetaUserType* type = &p_types[p_index];
+  CString line;
+
+  do 
+  {
+    // Attribute
+    HTREEITEM colitem = InsertItem(type->m_attribute,p_item);
+    SetItemImage(colitem,IMG_COLUMN,IMG_COLUMN);
+    // Datatype
+    line = _T("Domain base datatype: ") + type->m_datatype;
+    HTREEITEM item = InsertItem(line,colitem);
+    // NOT NULL
+    line.Format(_T("Domain forces not-null: %s"),type->m_notnull ? _T("true") : _T("false"));
+    item = InsertItem(line,colitem);
+    // DEFAULT
+    line = _T("Domain default value: ") + type->m_default;
+    item = InsertItem(line,colitem);
+    // CHECK
+    line = _T("Domain check value: ") + type->m_domaincheck;
+    item = InsertItem(line,colitem);
+
+    // Last item in the collection reached
+    if(p_index == unsigned (p_types.size() - 1))
+    {
+      break;
+    }
+    type = &p_types[++p_index];
+    if(type->m_ordinal == 1)
+    {
+      next = false;
+    }
+  } 
+  while(next);
+}
+
+void
+ObjectTree::UserEnumeratorsToTree(MUserTypeMap& p_types,HTREEITEM p_item,unsigned p_index)
+{
+  bool next(true);
+  MetaUserType* type = &p_types[p_index];
+  CString line;
+
+  do 
+  {
+    line = _T("Enum: ") + type->m_attribute;
+    InsertItem(line,p_item);
+
+    // Last item in the collection reached
+    if(p_index == unsigned(p_types.size() - 1))
+    {
+      break;
+    }
+    type = &p_types[++p_index];
+    if(type->m_ordinal == 1)
+    {
+      next = false;
+    }
+  } 
+  while(next);
 }
 
 void
