@@ -1293,6 +1293,7 @@ SQLInfoSQLServer::GetCATALOGTableSynonyms(XString& p_schema,XString& p_tablename
                   _T("            WHEN N'MS_Description' THEN CAST (e.value AS VARCHAR(Max))\n")
                   _T("            ELSE ''\n")
                   _T("       END  AS remarks\n")
+                  _T("      ,s.name + '.' + o.name AS fullname")
                   _T("      ,null AS tablespace\n")
                   _T("      ,0    AS temporary\n")
                   _T("  FROM sys.objects o\n")
