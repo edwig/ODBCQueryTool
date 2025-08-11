@@ -95,7 +95,7 @@ public:
   bool      OnTableOrView(HTREEITEM p_item);
 
 private:
-  ObjectImage TypeToImage(CString p_type);
+  ObjectImage TypeToImage(TCHAR p_type);
   void      TriggerToTree(MetaTrigger& trigger,HTREEITEM trigItem);
   void      UserTypeToTree(MUserTypeMap& types,HTREEITEM typeItem,unsigned p_index);
 
@@ -110,7 +110,7 @@ protected:
   bool      PresetTable     (HTREEITEM p_theItem);
   bool      PresetProcedure (HTREEITEM p_theItem,MProcedureMap& p_procedures);
   void      FindTables      (HTREEITEM p_theItem);
-  void      PrepareTable    (HTREEITEM p_theItem);
+  void      PrepareTable    (HTREEITEM p_theItem,TCHAR p_type);
 
   void      DispatchTreeAction(DWORD_PTR p_action, HTREEITEM p_theItem);
 

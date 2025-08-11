@@ -167,15 +167,15 @@ ObjectTree::IsSpecialNode(CString& p_name)
 }
 
 ObjectImage
-ObjectTree::TypeToImage(CString p_type)
+ObjectTree::TypeToImage(TCHAR p_type)
 {
-  if(p_type == _T("T")) return IMG_TABLE;
-  if(p_type == _T("V")) return IMG_VIEW;
-  if(p_type == _T("U")) return IMG_USERTYPE;
-  if(p_type == _T("C")) return IMG_CATALOG;
-  if(p_type == _T("S")) return IMG_SYNONYM;
-  if(p_type == _T("R")) return IMG_TRIGGER;
-  if(p_type == _T("P")) return IMG_PROCEDURE;
+  if(p_type == 'T') return IMG_TABLE;
+  if(p_type == 'V') return IMG_VIEW;
+  if(p_type == 'U') return IMG_USERTYPE;
+  if(p_type == 'C') return IMG_CATALOG;
+  if(p_type == 'S') return IMG_SYNONYM;
+  if(p_type == 'R') return IMG_TRIGGER;
+  if(p_type == 'P') return IMG_PROCEDURE;
 
   return IMG_TABLES;
 }
@@ -364,10 +364,14 @@ ObjectTree::DispatchTreeAction(DWORD_PTR p_action,HTREEITEM theItem)
     toast = CreateToast(STYLE_TOAST_WARNING,STYLE_POS_MIDMIDDLE,_T("JUST A MOMENT!"),_T("Populating the object tree!"),_T(""),0);
   }
 
+  CString text = GetItemText(theItem);
+  CString type = GetObjectType(text);
+  TCHAR   tt   = type.GetAt(0);
+
   switch(p_action)
   {
     case TREE_TABLES:       FindTables(theItem);          break;
-    case TREE_TABLE:        PrepareTable(theItem);        break;
+    case TREE_TABLE:        PrepareTable(theItem,tt);     break;
     case TREE_COLUMNS:      FindColumns(theItem);         break;
     case TREE_PRIMARY:      FindPrimary(theItem);         break;
     case TREE_FOREIGN:      FindForeign(theItem);         break;
@@ -523,46 +527,53 @@ ObjectTree::FindTables(HTREEITEM p_theItem)
         SetItemImage(schemaItem,IMG_SCHEMA,IMG_SCHEMA);
       }
     }
-    ObjectImage image = TypeToImage(type);
+    ObjectImage image = TypeToImage(type.GetAt(0));
     SetItemImage(table,image,image);
-    PrepareTable(table);
+    PrepareTable(table,type.GetAt(0));
   }
 }
 
 // Add what we can find in a table
 void
-ObjectTree::PrepareTable(HTREEITEM p_theItem)
+ObjectTree::PrepareTable(HTREEITEM p_theItem,TCHAR p_type)
 {
-  HTREEITEM columns    = InsertItem(_T("Columns"),          p_theItem,TREE_COLUMNS);
-  HTREEITEM primary    = InsertItem(_T("Primary key"),      p_theItem,TREE_PRIMARY);
-  HTREEITEM foreigns   = InsertItem(_T("Foreign keys"),     p_theItem,TREE_FOREIGN);
-  HTREEITEM indices    = InsertItem(_T("Statistics"),       p_theItem,TREE_STATISTICS);
-  HTREEITEM specials   = InsertItem(_T("Special columns"),  p_theItem,TREE_SPECIALS);
-  HTREEITEM referenced = InsertItem(_T("Referenced by"),    p_theItem,TREE_REFERENCEDBY);
-  HTREEITEM triggers   = InsertItem(_T("Triggers"),         p_theItem,TREE_TABTRIGGERS);
-  HTREEITEM sequences  = InsertItem(_T("Sequences"),        p_theItem,TREE_TABSEQUENCES);
+  HTREEITEM columns = InsertItem(_T("Columns"),p_theItem,TREE_COLUMNS);
+  SetItemImage(columns,IMG_COLUMN,IMG_COLUMN);
+  InsertNoInfo(columns);
+
+  if(p_type != 'V')
+  {
+    HTREEITEM primary    = InsertItem(_T("Primary key"),      p_theItem,TREE_PRIMARY);
+    HTREEITEM foreigns   = InsertItem(_T("Foreign keys"),     p_theItem,TREE_FOREIGN);
+    HTREEITEM indices    = InsertItem(_T("Statistics"),       p_theItem,TREE_STATISTICS);
+    HTREEITEM specials   = InsertItem(_T("Special columns"),  p_theItem,TREE_SPECIALS);
+    HTREEITEM referenced = InsertItem(_T("Referenced by"),    p_theItem,TREE_REFERENCEDBY);
+    HTREEITEM triggers   = InsertItem(_T("Triggers"),         p_theItem,TREE_TABTRIGGERS);
+    HTREEITEM sequences  = InsertItem(_T("Sequences"),        p_theItem,TREE_TABSEQUENCES);
+
+    SetItemImage(primary,   IMG_PRIMARY, IMG_PRIMARY);
+    SetItemImage(foreigns,  IMG_FOREIGN, IMG_FOREIGN);
+    SetItemImage(indices,   IMG_INDEX,   IMG_INDEX);
+    SetItemImage(specials,  IMG_COLUMN,  IMG_COLUMN);
+    SetItemImage(referenced,IMG_FOREIGN, IMG_FOREIGN);
+    SetItemImage(triggers,  IMG_TRIGGER, IMG_TRIGGER);
+    SetItemImage(sequences, IMG_SEQUENCE,IMG_SEQUENCE);
+
+    InsertNoInfo(primary);
+    InsertNoInfo(foreigns);
+    InsertNoInfo(indices);
+    InsertNoInfo(specials);
+    InsertNoInfo(referenced);
+    InsertNoInfo(triggers);
+    InsertNoInfo(sequences);
+  }
+
   HTREEITEM tabaccess  = InsertItem(_T("Table privileges"), p_theItem,TREE_PRIVILEGES);
   HTREEITEM colaccess  = InsertItem(_T("Column privileges"),p_theItem,TREE_COLPRIVILEGES);
 
-  SetItemImage(columns,   IMG_COLUMN,  IMG_COLUMN);
-  SetItemImage(primary,   IMG_PRIMARY, IMG_PRIMARY);
-  SetItemImage(foreigns,  IMG_FOREIGN, IMG_FOREIGN);
-  SetItemImage(indices,   IMG_INDEX,   IMG_INDEX);
-  SetItemImage(specials,  IMG_COLUMN,  IMG_COLUMN);
-  SetItemImage(referenced,IMG_FOREIGN, IMG_FOREIGN);
-  SetItemImage(triggers,  IMG_TRIGGER, IMG_TRIGGER);
-  SetItemImage(sequences, IMG_SEQUENCE,IMG_SEQUENCE);
-  SetItemImage(tabaccess, IMG_ACCESS,  IMG_ACCESS);
-  SetItemImage(colaccess, IMG_ACCESS,  IMG_ACCESS);
+  SetItemImage(tabaccess,IMG_ACCESS,IMG_ACCESS);
+  SetItemImage(colaccess,IMG_ACCESS,IMG_ACCESS);
 
-  InsertNoInfo(columns);
-  InsertNoInfo(primary);
-  InsertNoInfo(foreigns);
-  InsertNoInfo(indices);
-  InsertNoInfo(specials);
-  InsertNoInfo(referenced);
-  InsertNoInfo(triggers);
-  InsertNoInfo(sequences);
   InsertNoInfo(tabaccess);
   InsertNoInfo(colaccess);
 }
@@ -919,14 +930,14 @@ ObjectTree::FindUserTypes(HTREEITEM p_theItem)
     RemoveNoInfo(p_theItem);
   }
 
-  // Setting count of objects
-  SetItemCount(p_theItem,(int)types.size());
-
+  int numberOfTypes = 0;
   for(unsigned item = 0;item < (unsigned) types.size();++item)
   {
     MetaUserType* typ = &types[item];
     if(typ->m_ordinal == 1)
     {
+      ++numberOfTypes;
+
       HTREEITEM usertype = NULL;
       CString schema = typ->m_schemaName;
       CString object = typ->m_typeName;
@@ -961,6 +972,8 @@ ObjectTree::FindUserTypes(HTREEITEM p_theItem)
       UserTypeToTree(types,usertype,item);
     }
   }
+  // Setting count of objects
+  SetItemCount(p_theItem,numberOfTypes);
 }
 
 void
