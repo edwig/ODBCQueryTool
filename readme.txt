@@ -22,6 +22,19 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes 3.5.4
+------------------
+- The return type variable in the scripting documentation has been mis-named 'RESULT',
+  instead of 'RETURN'. In this case, the documentation has been updated to reflect the 
+  correct state of the program
+- NEW: The discovered user datatypes are now displayed in the ODBC object tree, under a 
+  new node "UserTypes". There are in total three different types of user types:
+  o  Enumerator of values 
+  o  Domein type (datatype + constraints on that datatype) 
+  o  Compound type: a number of columns and datatypes 
+  The user types have been implemented for the following RDBMS types: Firebird, Oracle,
+  PostgreSQL and MS-SQLServer
+
 Releasenotes 3.5.3
 ------------------
 - When an external editor did change one of the files we are working on, the Querytool prompts
