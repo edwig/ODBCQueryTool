@@ -3012,7 +3012,7 @@ SQLInfoFirebird::GetPSMProcedureParameters(XString& p_schema,XString& p_procedur
                     "       END                                         as sql_data_type\n"
                     "      ,CAST(0 AS SMALLINT)                         as sql_datetime_sub\n"
                     "      ,fld.rdb$field_length / rdb$character_length as char_octet_length\n"
-                    "      ,par.rdb$parameter_number + par.rdb$parameter_type + 1 as ordinal_position\n"
+                    "      ,par.rdb$parameter_number + 1 as ordinal_position\n"
                     "      ,CASE (coalesce(par.rdb$null_flag,0,0)-1)*-1\n"
                     "            WHEN 0 THEN 'NO'\n"
                     "            WHEN 1 THEN 'YES'\n"
