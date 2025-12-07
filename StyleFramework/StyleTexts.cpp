@@ -301,6 +301,21 @@ g_fxtext[] =
  ,{ StyleLanguage::SL_DUTCH,   TXT_CANCEL_WIZARD, _T("Wilt u deze wizard verlaten?")          }
  ,{ StyleLanguage::SL_GERMAN,  TXT_CANCEL_WIZARD, _T("Möchten Sie den Assistenten beenden?")  }
  ,{ StyleLanguage::SL_FRENCH,  TXT_CANCEL_WIZARD, _T("Voulez-vous quitter l'assistant ?")     }
+
+ ,{ StyleLanguage::SL_ENGLISH, TXT_TOAST_TOOMUCH, _T("More than 25 toasts")             }
+ ,{ StyleLanguage::SL_DUTCH,   TXT_TOAST_TOOMUCH, _T("Meer dan 25 meldingen")           }
+ ,{ StyleLanguage::SL_GERMAN,  TXT_TOAST_TOOMUCH, _T("Mehr als 25 Benachrichtigungen")  }
+ ,{ StyleLanguage::SL_FRENCH,  TXT_TOAST_TOOMUCH, _T("Plus de 25 notifications")        }
+
+ ,{ StyleLanguage::SL_ENGLISH, TXT_TOAST_WAITTODIE, _T("Wait until all toasts die out...")                              }
+ ,{ StyleLanguage::SL_DUTCH,   TXT_TOAST_WAITTODIE, _T("Wacht totdat alle meldingen zijn verdwenen...")                 }
+ ,{ StyleLanguage::SL_GERMAN,  TXT_TOAST_WAITTODIE, _T("Warten Sie, bis alle Benachrichtigungen sind verschwunden...")  }
+ ,{ StyleLanguage::SL_FRENCH,  TXT_TOAST_WAITTODIE, _T("Attendez que toutes les notifications disparaissent...")        }
+
+ ,{ StyleLanguage::SL_ENGLISH, TXT_TOAST_FALLBACK, _T("Application message")          }
+ ,{ StyleLanguage::SL_DUTCH,   TXT_TOAST_FALLBACK, _T("Applicatie melding")           }
+ ,{ StyleLanguage::SL_GERMAN,  TXT_TOAST_FALLBACK, _T("Bewerbungsbenachrichtigung")   }
+ ,{ StyleLanguage::SL_FRENCH,  TXT_TOAST_FALLBACK, _T("Notification de candidature")  }
 };
 
 static void LoadFXTexts()

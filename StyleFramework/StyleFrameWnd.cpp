@@ -52,8 +52,11 @@ BEGIN_MESSAGE_MAP(StyleFrameWnd, CFrameWndEx)
   ON_WM_NCLBUTTONDBLCLK()
   ON_WM_SETTINGCHANGE()
   ON_WM_NCACTIVATE()
-  ON_MESSAGE(WM_GRAYSCREEN,OnGrayScreen)
-  ON_MESSAGE(WM_NCMOUSELEAVE,OnNcMouseLeave)
+  ON_MESSAGE(WM_GRAYSCREEN,           OnGrayScreen)
+  ON_MESSAGE(WM_NCMOUSELEAVE,         OnNcMouseLeave)
+  ON_MESSAGE(WM_GETDPISCALEDSIZE,     OnGetDpiScaledSize)
+  ON_MESSAGE(WM_DPICHANGED,           OnDpiChanged)
+  ON_MESSAGE(WM_DISPLAYCHANGE,        OnDisplayChange)
   ON_REGISTERED_MESSAGE(ThemeColor::g_msg_changed,OnStyleChanged)
 END_MESSAGE_MAP()
 
@@ -65,7 +68,7 @@ StyleFrameWnd::PreCreateWindow(CREATESTRUCT& cs)
              WS_SIZEBOX | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_OVERLAPPED;
   cs.dwExStyle |= WS_EX_WINDOWEDGE | WS_EX_APPWINDOW;
 
-  if (!CFrameWndEx::PreCreateWindow(cs))
+  if(!CFrameWndEx::PreCreateWindow(cs))
   {
     return FALSE;
   }
@@ -80,7 +83,139 @@ StyleFrameWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
 
   m_grayScreen.CreateEx(0,AfxRegisterWndClass(0),_T(""),WS_POPUP,CRect(0,0,0,0),this,0);
 
-  return CFrameWndEx::OnCreate(lpCreateStruct);
+  int ret = CFrameWndEx::OnCreate(lpCreateStruct);
+
+  // Getting the DPI
+  GetDpi(GetSafeHwnd(),m_dpi_x,m_dpi_y);
+
+  return ret;
+}
+
+// Get the DPI scaled size for all child windows
+// Called before resizing the dialog itself and the DPI change
+LRESULT
+StyleFrameWnd::OnGetDpiScaledSize(WPARAM wParam,LPARAM lParam)
+{
+  SendMessageToAllChildWindows(WM_GETDPISCALEDSIZE,wParam,lParam);
+  // Do the default resizing
+  return 0;
+}
+
+static int   g_dpi_x = USER_DEFAULT_SCREEN_DPI;
+static int   g_dpi_y = USER_DEFAULT_SCREEN_DPI;
+static CWnd* g_resize_wnd(nullptr);
+
+LRESULT
+StyleFrameWnd::OnDpiChanged(WPARAM wParam,LPARAM /*lParam*/)
+{
+  g_resize_wnd = this;
+
+  // The new DPI
+  g_dpi_x = m_dpi_x;
+  g_dpi_y = m_dpi_y;
+  m_dpi_x = HIWORD(wParam);
+  m_dpi_y = LOWORD(wParam);
+
+  // Check if anything has changed
+  if(m_dpi_x == g_dpi_x && m_dpi_y == g_dpi_y)
+  {
+    // No change
+    return 0;
+  }
+
+  // Current monitor configuration
+  g_styling.RefreshMonitors();
+
+  // Set the new window size/position as suggested by the system
+  CRect wrect;
+  GetWindowRect(wrect);
+
+  wrect.right = wrect.left + ::MulDiv(wrect.Width(),m_dpi_x,g_dpi_x);
+  wrect.bottom = wrect.top + ::MulDiv(wrect.Height(),m_dpi_x,g_dpi_y);
+
+  ::SetWindowPos(m_hWnd,
+                 nullptr,
+                 wrect.left,
+                 wrect.top,
+                 wrect.Width(),
+                 wrect.Height(),
+                 SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOREDRAW);
+
+  // Notify all child windows after parent has changed DPI
+  // So that we can handle different fonts etc.
+  NotifyMonitorToAllChilds();
+
+  // Move and resize the status bar (if any)
+  RepositionBars(AFX_IDW_CONTROLBAR_FIRST,AFX_IDW_CONTROLBAR_LAST,0);
+
+  // Now redraw everything
+  Invalidate(TRUE);
+  OnNcPaint();
+
+  return 0;
+}
+
+// A change of monitors could have happened
+// or a change in the display rate (width/height) could have been performed
+LRESULT
+StyleFrameWnd::OnDisplayChange(WPARAM wParam,LPARAM lParam)
+{
+  // Current monitor configuration
+  g_styling.RefreshMonitors();
+
+  NotifyMonitorToAllChilds();
+
+  // Move to original monitor if needed
+  return 0;
+}
+
+// After a DPI change or a change in monitors or monitor settings
+void
+StyleFrameWnd::NotifyMonitorToAllChilds()
+{
+  // Take the HMONITOR for the new monitor
+  const  StyleMonitor* mon = g_styling.GetMonitor(GetSafeHwnd());
+  if(!mon)
+  {
+    return;
+  }
+  HMONITOR newMonitor = mon->GetMonitor();
+
+  // Notify all child windows after parent has changed DPI
+  // So that we can handle different fonts etc.
+  CFont* font = GetSFXFont(newMonitor,StyleFontType::DialogFont);
+  if(font)
+  {
+    SendMessageToAllChildWindows(WM_SETFONT,(WPARAM)font->GetSafeHandle(),(LPARAM)TRUE);
+
+    // Update all menubars in the system
+    LOGFONT lf;
+    GetObject(font->GetSafeHandle(),sizeof(lf),&lf);
+    CMFCMenuBar::SetMenuFont(&lf);
+  }
+  // Let Style controls 'do-their-thing'
+  SendMessageToAllChildWindows(WM_DPICHANGED_AFTERPARENT,0,(LPARAM)newMonitor);
+}
+
+void
+StyleFrameWnd::SendMessageToAllChildWindows(UINT MessageId,WPARAM wParam,LPARAM lParam)
+{
+  SMessage sMessage;
+  sMessage.MessageId = MessageId;
+  sMessage.wParam = wParam;
+  sMessage.lParam = lParam;
+
+  if(GetSafeHwnd())
+  {
+    ::EnumChildWindows(m_hWnd,
+                       [](HWND p_wnd,LPARAM lParam) -> BOOL
+    {
+      PSMessage psMessage = (PSMessage)lParam;
+      ::SendMessage(p_wnd,psMessage->MessageId,psMessage->wParam,psMessage->lParam);
+      return TRUE;
+    },
+                       (LPARAM)&sMessage);
+  }
 }
 
 BOOL StyleFrameWnd::PreTranslateMessage(MSG* message)
@@ -143,7 +278,18 @@ StyleFrameWnd::SetSysMenu(UINT p_menuResource)
   {
     m_menu.DestroyMenu();
   }
-  return m_menu.LoadMenu(m_sysmenu);
+  BOOL ret = m_menu.LoadMenu(m_sysmenu);
+
+  CFont* font = GetSFXFont(GetSafeHwnd(),StyleFontType::DialogFont);
+  if(font)
+  {
+    // Update all menubars in the system
+    LOGFONT lf;
+    GetObject(font->GetSafeHandle(),sizeof(lf),&lf);
+    CMFCMenuBar::SetMenuFont(&lf);
+  }
+
+  return ret;
 }
 
 void
@@ -487,6 +633,8 @@ void StyleFrameWnd::OnSize(UINT nType, int cx, int cy)
     m_windowRectLocal.OffsetRect(-m_windowRectLocal.left, -m_windowRectLocal.top);
 
     int border = 0;
+    int caption = WINCAPTIONHEIGHT(m_hWnd);
+
     if ((GetStyle() & WS_MAXIMIZE) != 0)
     {
       // Bij een volledig scherm gebruikt het OS deze marge buiten beeld!!
@@ -499,15 +647,15 @@ void StyleFrameWnd::OnSize(UINT nType, int cx, int cy)
     }
     else
     {
-      border = MARGIN;
+      border = MARGIN(m_hWnd);
     }
 
-    m_closeRect.SetRect(m_windowRectLocal.right - border -     WINCAPTIONHEIGHT, m_windowRectLocal.top, m_windowRectLocal.right - border,                        m_windowRectLocal.top + WINCAPTIONHEIGHT);
-    m_maxRect  .SetRect(m_windowRectLocal.right - border - 2 * WINCAPTIONHEIGHT, m_windowRectLocal.top, m_windowRectLocal.right - border -     WINCAPTIONHEIGHT, m_windowRectLocal.top + WINCAPTIONHEIGHT);
-    m_minRect  .SetRect(m_windowRectLocal.right - border - 3 * WINCAPTIONHEIGHT, m_windowRectLocal.top, m_windowRectLocal.right - border - 2 * WINCAPTIONHEIGHT, m_windowRectLocal.top + WINCAPTIONHEIGHT);
-    m_sysRect  .SetRect(m_windowRectLocal.left  + border,                        m_windowRectLocal.top, m_windowRectLocal.left  + border +     WINCAPTIONHEIGHT, m_windowRectLocal.top + WINCAPTIONHEIGHT);
+    m_closeRect.SetRect(m_windowRectLocal.right - border -     caption, m_windowRectLocal.top, m_windowRectLocal.right - border,               m_windowRectLocal.top + caption);
+    m_maxRect  .SetRect(m_windowRectLocal.right - border - 2 * caption, m_windowRectLocal.top, m_windowRectLocal.right - border -     caption, m_windowRectLocal.top + caption);
+    m_minRect  .SetRect(m_windowRectLocal.right - border - 3 * caption, m_windowRectLocal.top, m_windowRectLocal.right - border - 2 * caption, m_windowRectLocal.top + caption);
+    m_sysRect  .SetRect(m_windowRectLocal.left  + border,               m_windowRectLocal.top, m_windowRectLocal.left  + border +     caption, m_windowRectLocal.top + caption);
 
-    m_dragRect   .SetRect(m_windowRectLocal.left, m_windowRectLocal.top,m_windowRectLocal.right - border - 3 * WINCAPTIONHEIGHT, m_windowRectLocal.top + WINCAPTIONHEIGHT);
+    m_dragRect   .SetRect(m_windowRectLocal.left, m_windowRectLocal.top,m_windowRectLocal.right - border - 3 * caption, m_windowRectLocal.top + caption);
     m_captionRect.SetRect(m_sysRect.right,m_dragRect.top, m_minRect.left, m_dragRect.bottom);
 
     RedrawWindow(NULL,NULL,RDW_INVALIDATE|RDW_FRAME|RDW_ALLCHILDREN);
@@ -523,8 +671,8 @@ void StyleFrameWnd::OnSize(UINT nType, int cx, int cy)
 void 
 StyleFrameWnd::OnNcCalcSize(BOOL calcValidRects,NCCALCSIZE_PARAMS* p_params)
 {
-  int marge = MARGIN;
-  p_params->rgrc[0].top += WINCAPTIONHEIGHT;
+  int marge = MARGIN(m_hWnd);
+  p_params->rgrc[0].top += WINCAPTIONHEIGHT(m_hWnd);
 
   if(GetStyle() & WS_MAXIMIZE)
   {
@@ -572,7 +720,7 @@ StyleFrameWnd::OnNcPaint()
   {
     CRect r;
     COLORREF bkgnd = ThemeColor::GetColor(Colors::AccentColor1);
-    int width = MARGIN;
+    int width = MARGIN(m_hWnd);
 
     r.SetRect(m_windowRectLocal.left,         m_windowRectLocal.top,           m_windowRectLocal.right,       m_windowRectLocal.top + width);
     dc.FillSolidRect(r, bkgnd);
@@ -589,8 +737,10 @@ StyleFrameWnd::OnNcPaint()
 
   // title
   CRect titleRect(m_captionRect);
-  titleRect.left += WINCAPTIONHEIGHT / 3;
-  CFont* orgfont = dc.SelectObject(&STYLEFONTS.CaptionTextFont);
+  titleRect.left += WINCAPTIONHEIGHT(m_hWnd) / 3;
+
+  CFont* font = GetSFXFont(GetSafeHwnd(),StyleFontType::CaptionFont);
+  CFont* orgfont = dc.SelectObject(font);
   dc.SetTextColor(ColorWindowHeaderText);
   CString titel;
   GetWindowText(titel);
@@ -634,36 +784,38 @@ LRESULT StyleFrameWnd::OnNcHitTest(CPoint point)
 
   if (!(GetStyle() & WS_MAXIMIZE))
   {
+    const int margin = SIZEMARGIN(m_hWnd);
+
     window.OffsetRect(-window.left, -window.top);
-    if (point.x <= window.left + SIZEMARGIN)
+    if (point.x <= window.left + margin)
     {
-      if (point.y >= window.bottom - SIZEMARGIN)
+      if (point.y >= window.bottom - margin)
       {
         return HTBOTTOMLEFT;
       }
-      if (point.y <= window.top + SIZEMARGIN)
+      if (point.y <= window.top + margin)
       {
         return HTTOPLEFT;
       }
       return HTLEFT;
     }
-    if (point.x >= window.right - SIZEMARGIN)
+    if (point.x >= window.right - margin)
     {
-      if (point.y >= window.bottom - SIZEMARGIN)
+      if (point.y >= window.bottom - margin)
       {
         return HTBOTTOMRIGHT;
       }
-      if (point.y <= window.top + SIZEMARGIN)
+      if (point.y <= window.top + margin)
       {
         return HTTOPRIGHT;
       }
       return HTRIGHT;
     }
-    if (point.y >= window.bottom - SIZEMARGIN)
+    if (point.y >= window.bottom - margin)
     {
       return HTBOTTOM;
     }
-    if (point.y <= window.top + SIZEMARGIN)
+    if (point.y <= window.top + margin)
     {
       return HTTOP;
     }
@@ -708,47 +860,54 @@ void StyleFrameWnd::DrawButton(CDC* pDC, CRect rect, LRESULT type)
                                                        : ThemeColor::GetColor(Colors::ColorControlTextHover) 
                                                        : ColorWindowHeaderIcon);
   HGDIOBJ orgpen = pDC->SelectObject(pen);
+  int hpos3 = WS(GetSafeHwnd(),3);
+  int hpos4 = WS(GetSafeHwnd(),4);
+  int hpos5 = WS(GetSafeHwnd(),5);
+  int hpos6 = WS(GetSafeHwnd(),6);
+  int hpos7 = WS(GetSafeHwnd(),7);
 
-  switch(type) 
+  switch (type) 
   {
-    case HTMENU:      pDC->MoveTo(rect.CenterPoint().x - WS(7),rect.CenterPoint().y - WS(5));
-                      pDC->LineTo(rect.CenterPoint().x + WS(7),rect.CenterPoint().y - WS(5));
-                      pDC->MoveTo(rect.CenterPoint().x - WS(7),rect.CenterPoint().y);
-                      pDC->LineTo(rect.CenterPoint().x + WS(7),rect.CenterPoint().y);
-                      pDC->MoveTo(rect.CenterPoint().x - WS(7),rect.CenterPoint().y + WS(5));
-                      pDC->LineTo(rect.CenterPoint().x + WS(7),rect.CenterPoint().y + WS(5));
+    case HTMENU:      pDC->MoveTo(rect.CenterPoint().x - hpos7,rect.CenterPoint().y - hpos5);
+                      pDC->LineTo(rect.CenterPoint().x + hpos7,rect.CenterPoint().y - hpos5);
+                      pDC->MoveTo(rect.CenterPoint().x - hpos7,rect.CenterPoint().y);
+                      pDC->LineTo(rect.CenterPoint().x + hpos7,rect.CenterPoint().y);
+                      pDC->MoveTo(rect.CenterPoint().x - hpos7,rect.CenterPoint().y + hpos5);
+                      pDC->LineTo(rect.CenterPoint().x + hpos7,rect.CenterPoint().y + hpos5);
                       break;
-    case HTCLOSE:     pDC->MoveTo(rect.CenterPoint().x - WS(5), rect.CenterPoint().y - WS(5));
-                      pDC->LineTo(rect.CenterPoint().x + WS(6), rect.CenterPoint().y + WS(6));
-                      pDC->MoveTo(rect.CenterPoint().x + WS(5), rect.CenterPoint().y - WS(5));
-                      pDC->LineTo(rect.CenterPoint().x - WS(6), rect.CenterPoint().y + WS(6));
+    case HTCLOSE:     pDC->MoveTo(rect.CenterPoint().x - hpos5, rect.CenterPoint().y - hpos5);
+                      pDC->LineTo(rect.CenterPoint().x + hpos6, rect.CenterPoint().y + hpos6);
+                      pDC->MoveTo(rect.CenterPoint().x + hpos5, rect.CenterPoint().y - hpos5);
+                      pDC->LineTo(rect.CenterPoint().x - hpos6, rect.CenterPoint().y + hpos6);
                       break;
-    case HTMINBUTTON: pDC->MoveTo(rect.CenterPoint().x - WS(6), rect.CenterPoint().y + WS(6));
-                      pDC->LineTo(rect.CenterPoint().x + WS(6), rect.CenterPoint().y + WS(6));
+    
+    case HTMINBUTTON: pDC->MoveTo(rect.CenterPoint().x - hpos6, rect.CenterPoint().y + hpos6);
+                      pDC->LineTo(rect.CenterPoint().x + hpos6, rect.CenterPoint().y + hpos6);
                       break;
+
     case HTMAXBUTTON: if ((GetStyle() & WS_MAXIMIZE) != 0)
                       {
-                        // 'Front' window
-                        pDC->MoveTo(rect.CenterPoint().x - WS(6), rect.CenterPoint().y - WS(3));
-                        pDC->LineTo(rect.CenterPoint().x + WS(4), rect.CenterPoint().y - WS(3));
-                        pDC->LineTo(rect.CenterPoint().x + WS(4), rect.CenterPoint().y + WS(7));
-                        pDC->LineTo(rect.CenterPoint().x - WS(6), rect.CenterPoint().y + WS(7));
-                        pDC->LineTo(rect.CenterPoint().x - WS(6), rect.CenterPoint().y - WS(3));
+                        // 'front' window
+                        pDC->MoveTo(rect.CenterPoint().x - hpos5, rect.CenterPoint().y - hpos3);
+                        pDC->LineTo(rect.CenterPoint().x + hpos4, rect.CenterPoint().y - hpos3);
+                        pDC->LineTo(rect.CenterPoint().x + hpos4, rect.CenterPoint().y + hpos7);
+                        pDC->LineTo(rect.CenterPoint().x - hpos5, rect.CenterPoint().y + hpos7);
+                        pDC->LineTo(rect.CenterPoint().x - hpos5, rect.CenterPoint().y - hpos3);
 
-                        // 'Behind' window
-                        pDC->MoveTo(rect.CenterPoint().x - WS(3), rect.CenterPoint().y - WS(4));
-                        pDC->LineTo(rect.CenterPoint().x - WS(3), rect.CenterPoint().y - WS(6));
-                        pDC->LineTo(rect.CenterPoint().x + WS(7), rect.CenterPoint().y - WS(6));
-                        pDC->LineTo(rect.CenterPoint().x + WS(7), rect.CenterPoint().y + WS(4));
-                        pDC->LineTo(rect.CenterPoint().x + WS(4), rect.CenterPoint().y + WS(4));
+                        // 'behind' window
+                        pDC->MoveTo(rect.CenterPoint().x - hpos3, rect.CenterPoint().y - hpos4);
+                        pDC->LineTo(rect.CenterPoint().x - hpos3, rect.CenterPoint().y - hpos5);
+                        pDC->LineTo(rect.CenterPoint().x + hpos7, rect.CenterPoint().y - hpos5);
+                        pDC->LineTo(rect.CenterPoint().x + hpos7, rect.CenterPoint().y + hpos4);
+                        pDC->LineTo(rect.CenterPoint().x + hpos4, rect.CenterPoint().y + hpos4);
                       }
                       else
                       {
-                        pDC->MoveTo(rect.CenterPoint().x - WS(5), rect.CenterPoint().y - WS(5));
-                        pDC->LineTo(rect.CenterPoint().x + WS(6), rect.CenterPoint().y - WS(5));
-                        pDC->LineTo(rect.CenterPoint().x + WS(6), rect.CenterPoint().y + WS(6));
-                        pDC->LineTo(rect.CenterPoint().x - WS(5), rect.CenterPoint().y + WS(6));
-                        pDC->LineTo(rect.CenterPoint().x - WS(5), rect.CenterPoint().y - WS(5));
+                        pDC->MoveTo(rect.CenterPoint().x - hpos5, rect.CenterPoint().y - hpos5);
+                        pDC->LineTo(rect.CenterPoint().x + hpos6, rect.CenterPoint().y - hpos5);
+                        pDC->LineTo(rect.CenterPoint().x + hpos6, rect.CenterPoint().y + hpos6);
+                        pDC->LineTo(rect.CenterPoint().x - hpos5, rect.CenterPoint().y + hpos6);
+                        pDC->LineTo(rect.CenterPoint().x - hpos5, rect.CenterPoint().y - hpos5);
                       }
                       break;
   }

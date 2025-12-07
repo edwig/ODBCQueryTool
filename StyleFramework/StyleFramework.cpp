@@ -28,89 +28,104 @@ StylingFramework::StylingFramework()
     throw CString(_T("SFX can only be initialized once!"));
   }
   m_instance = this;
-  SFXCalculateDPI();
+
+  // Support for StyleRichEdit
+  LoadLibrary(_T("Riched32.dll"));
+
+  // Getting all monitors and fonts
+  m_monitors.DiscoverAllMonitors();
 }
 
+// Getting all monitors and fonts
 void
-StylingFramework::SFXCalculateDPI()
+StylingFramework::RefreshMonitors()
 {
-  HDC screen = GetDC(0);
-  int dpiX = GetDeviceCaps(screen,LOGPIXELSX);
-  int dpiY = GetDeviceCaps(screen,LOGPIXELSY);
-
-  m_factor_x = MulDiv(100,dpiX,96);
-  m_factor_y = MulDiv(100,dpiY,96);
-
-  STYLEFONTS.SetFactor(m_factor_y);
-
-  ReleaseDC(0,screen);
+  m_monitors.ReDiscoverMonitors();
 }
 
-bool
-StylingFramework::SetSizeFactorX(int p_factor)
+const StyleMonitor* 
+StylingFramework::GetMonitor(HWND p_hwnd) const
 {
-  if(p_factor > 50 && p_factor < 1000)
+  HMONITOR hMonitor = ::MonitorFromWindow(p_hwnd,MONITOR_DEFAULTTONEAREST);
+  if(hMonitor)
   {
-    m_factor_x = p_factor;
-    return true;
+    return GetMonitor(hMonitor);
   }
-  return false;
+  return nullptr;
 }
 
-bool
-StylingFramework::SetSizeFactorY(int p_factor)
+const StyleMonitor*
+StylingFramework::GetMonitor(HMONITOR p_monitor) const
 {
-  if(p_factor > 50 && p_factor < 1000)
+  return m_monitors.GetMonitor(p_monitor);
+}
+
+const StyleMonitor*
+StylingFramework::GetMonitor(int p_dpi_x,int p_dpi_y) const
+{
+  return m_monitors.GetMonitor(p_dpi_x,p_dpi_y);
+}
+
+const StyleMonitor* 
+StylingFramework::GetMonitor(CString p_name) const
+{
+  return m_monitors.GetMonitor(p_name);
+}
+
+const StyleMonitor* 
+StylingFramework::GetPrimaryMonitor() const
+{
+  return m_monitors.GetPrimaryMonitor();
+}
+
+int GetSFXSizeFactor(HWND p_hwnd)
+{
+  const StyleMonitor* monitor = g_styling.GetMonitor(p_hwnd);
+  if(!monitor)
   {
-    m_factor_y = p_factor;
-    return STYLEFONTS.SetFactor(p_factor);
+    return 100;
   }
-  return false;
+  int dpi_x;
+  int dpi_y;
+  monitor->GetDPI(dpi_x,dpi_y);
+  return (dpi_y * 100) / USER_DEFAULT_SCREEN_DPI;
 }
 
-int
-StylingFramework::GetSizeFactorX()
+int GetSFXSizeFactor(HMONITOR p_monitor)
 {
-  return m_factor_x;
-}
-
-int
-StylingFramework::GetSizeFactorY()
-{
-  return m_factor_y;
-}
-
-// Setting the size factor
-// To be called in your main program or InitInstance **BEFORE** you create any dialog or window
-bool 
-SetSFXSizeFactor(int p_factorX,int p_factorY)
-{
-  if(g_styling.SetSizeFactorX(p_factorY) && g_styling.SetSizeFactorY(p_factorY))
+  const StyleMonitor* monitor = g_styling.GetMonitor(p_monitor);
+  if(!monitor)
   {
-    return true;
+    return 100;
   }
-  return false;
+  int dpi_x;
+  int dpi_y;
+  monitor->GetDPI(dpi_x,dpi_y);
+  return (dpi_y * 100) / USER_DEFAULT_SCREEN_DPI;
 }
 
-int GetSFXSizeFactor()
+// Global function to get the correct font for a window
+// based on its monitor
+CFont*
+GetSFXFont(HWND p_hwnd,StyleFontType p_type)
 {
-  return g_styling.GetSizeFactorY();
+  const StyleMonitor* monitor = g_styling.GetMonitor(p_hwnd);
+  if(monitor)
+  {
+    StyleFonts& fonts = const_cast<StyleFonts&>(monitor->GetFonts());
+    return fonts.GetFont(p_type);
+  }
+  return nullptr;
 }
 
-void
-SFXResizeByFactor(CRect& p_rect)
+CFont* 
+GetSFXFont(HMONITOR hm,StyleFontType p_type)
 {
-  p_rect.top    = (p_rect.top    * g_styling.GetSizeFactorY()) / 100;
-  p_rect.bottom = (p_rect.bottom * g_styling.GetSizeFactorY()) / 100;
-  p_rect.left   = (p_rect.left   * g_styling.GetSizeFactorX()) / 100;
-  p_rect.right  = (p_rect.right  * g_styling.GetSizeFactorX()) / 100;
-}
-
-void 
-SFXResizeByFactor(int& p_x,int& p_y,int& p_w,int& p_h)
-{
-  p_x = (p_x * g_styling.GetSizeFactorX()) / 100;
-  p_y = (p_y * g_styling.GetSizeFactorY()) / 100;
-  p_w = (p_w * g_styling.GetSizeFactorX()) / 100;
-  p_h = (p_h * g_styling.GetSizeFactorY()) / 100;
+  const StyleMonitor* monitor = g_styling.GetMonitor(hm);
+  if(monitor)
+  {
+    StyleFonts& fonts = const_cast<StyleFonts&>(monitor->GetFonts());
+    return fonts.GetFont(p_type);
+  }
+  return nullptr;
 }

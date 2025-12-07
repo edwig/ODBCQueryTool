@@ -56,6 +56,10 @@ BEGIN_MESSAGE_MAP(StyleListBox, CListBox)
   ON_WM_DESTROY()
   ON_WM_ERASEBKGND()
   ON_WM_HSCROLL()
+  ON_WM_VSCROLL()
+  ON_MESSAGE(WM_DPICHANGED_AFTERPARENT,OnDpiChanged)
+  ON_MESSAGE(LB_GETITEMHEIGHT,         OnItemHeight)
+  ON_MESSAGE(LB_GETITEMRECT,           OnItemRect)
 END_MESSAGE_MAP()
 
 void 
@@ -65,8 +69,6 @@ StyleListBox::PreSubclassWindow()
   int style = GetStyle();
   ASSERT((style & LBS_OWNERDRAWVARIABLE) == 0);
   ASSERT((style & LBS_MULTICOLUMN)       == 0);
-
-  ScaleControl(this);
 
   if(m_directInit)
   {
@@ -83,9 +85,9 @@ StyleListBox::InitSkin(int p_borderSize /*=1*/,int p_clientBias /*=0*/)
 {
   if(m_skin == nullptr)
   {
-    SetFont(&STYLEFONTS.DialogTextFont);
-    int height = LISTBOX_ITEMHEIGTH;
-    SetItemHeight(0,(height * GetSFXSizeFactor()) / 100);
+    CFont* font = GetSFXFont(GetSafeHwnd(),StyleFontType::DialogFont);
+    SetFont(font);
+    SetItemHeight(0,WS(GetSafeHwnd(),LISTBOX_ITEMHEIGTH));
 
     m_skin = SkinWndScroll(this,p_borderSize,p_clientBias);
   }
@@ -107,6 +109,38 @@ void
 StyleListBox::SetDirectInit(bool p_init)
 {
   m_directInit = p_init;
+}
+
+LRESULT
+StyleListBox::OnItemHeight(WPARAM /*wParam*/,LPARAM /*lParam*/)
+{
+  return WS(GetSafeHwnd(),LISTBOX_ITEMHEIGTH);
+}
+
+LRESULT
+StyleListBox::OnItemRect(WPARAM wParam,LPARAM lParam)
+{
+  int   index = static_cast<int>(wParam);
+  CRect* rect = reinterpret_cast<CRect*>(lParam);
+
+  int itemHeight = WS(GetSafeHwnd(),LISTBOX_ITEMHEIGTH);
+  int topIndex   = GetTopIndex();
+
+  CRect client;
+  GetClientRect(&client);
+
+  if(index < topIndex || index > (topIndex + (client.Height() / itemHeight)))
+  {
+    // Item is not visible
+    rect->SetRectEmpty();
+    return 0;
+  }
+  rect->top    = (index - topIndex) * itemHeight;
+  rect->bottom = rect->top + itemHeight - 1;
+  rect->right  = client.Width() - 1;
+  rect->left   = client.left + 1;
+
+  return 1;
 }
 
 void
@@ -149,6 +183,13 @@ void
 StyleListBox::OnHScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
 {
   CListBox::OnHScroll(nSBCode,nPos,pScrollBar);
+  Invalidate();
+}
+
+void
+StyleListBox::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar)
+{
+  CListBox::OnVScroll(nSBCode, nPos, pScrollBar);
   Invalidate();
 }
 
@@ -280,7 +321,6 @@ StyleListBox::MeasureItem(LPMEASUREITEMSTRUCT p_measureItemStruct)
 void 
 StyleListBox::DrawItem(LPDRAWITEMSTRUCT p_drawItemStruct)
 {
-  // TODO: Add your code to draw the specified item
   ASSERT(p_drawItemStruct->CtlType == ODT_LISTBOX);
 
   // Getting a DC
@@ -445,13 +485,16 @@ StyleListBox::AdjustHorizontalExtent()
   CFont* o = dc.SelectObject(f);
 
   m_width = 0;
+  int dpi = ::GetDpiForWindow(GetSafeHwnd());
+  int extra = 3 * ::GetSystemMetricsForDpi(SM_CXBORDER,dpi);
+
   for(int i = 0; i < CListBox::GetCount(); i++)
   {
     /* scan strings */
     CString s;
     GetText(i,s);
     CSize sz = dc.GetTextExtent(s);
-    sz.cx += 3 * ::GetSystemMetrics(SM_CXBORDER);
+    sz.cx += extra;
     if(sz.cx > m_width)
     {
       m_width = sz.cx;
@@ -767,7 +810,8 @@ StyleListBox::UpdateWidth(LPCTSTR p_string)
 
   // Find our extent
   CSize sz = dc.GetTextExtent(p_string,len);
-  sz.cx += 3 * ::GetSystemMetrics(SM_CXBORDER);
+  int dpi = ::GetDpiForWindow(GetSafeHwnd());
+  sz.cx += 3 * ::GetSystemMetricsForDpi(SM_CXBORDER,dpi);
   if(sz.cx > m_width)
   {
     // Extend the max horizontal scroll bar width
@@ -856,7 +900,9 @@ StyleListBox::Internal_Paint(CDC* p_cdc)
   int    items = GetCount();
   int    style = GetStyle();
   CRect  clientrect;
-  RECT   focusRect = { -1,-1,-1,-1 };
+  CRect  linerect;
+  int    focusItem  = -1;
+  int    lastBottom = 0;
 
   // Special case! Do not paint
   if(style & LBS_NOREDRAW)
@@ -871,14 +917,14 @@ StyleListBox::Internal_Paint(CDC* p_cdc)
   GetScrollInfo(SB_HORZ,&info);
   if(info.nPos > 0)
   {
-    int shift = info.nPos + ::GetSystemMetrics(SM_CXHSCROLL);
+    int dpi = ::GetDpiForWindow(GetSafeHwnd());
+    int shift = info.nPos + ::GetSystemMetricsForDpi(SM_CXHSCROLL,dpi);
     SetWindowOrgEx(p_cdc->GetSafeHdc(),shift,0,nullptr);
     clientrect.right += shift;
   }
   CRect itemrect(clientrect);
 
   // Should get the brush from the parent normally
-  // hbrush = (HBRUSH)SendMessageW(GetParent()->GetSafeHwnd(),WM_CTLCOLORLISTBOX,(WPARAM)p_cdc->GetSafeHdc(),(LPARAM)GetSafeHwnd());
   CBrush brush;
   brush.CreateSolidBrush(ThemeColor::GetColor(Colors::ColorCtrlBackground));
   HBRUSH oldBrush = (HBRUSH) p_cdc->SelectObject(brush);
@@ -898,42 +944,36 @@ StyleListBox::Internal_Paint(CDC* p_cdc)
 
   for(int index = top_item; index < items; index++)
   {
-    itemrect.bottom = itemrect.top + item_height;
-
     /* keep the focus rect, to paint the focus item after */
-    if (index == focus_item)
+    if(index == focus_item)
     {
-      focusRect = itemrect;
+      focusItem = index;
     }
-    Internal_PaintItem(p_cdc,&itemrect,index,ODA_DRAWENTIRE,TRUE);
-    itemrect.top = itemrect.bottom;
-
-    if(itemrect.top >= clientrect.Height())
+    OnItemRect((WPARAM)index,(LPARAM)&itemrect);
+    if(itemrect.IsRectNull())
     {
       break;
     }
+    Internal_PaintItem(p_cdc,&itemrect,index,ODA_DRAWENTIRE,TRUE);
+    lastBottom = itemrect.bottom;
   }
 
   /* Paint the focus item now */
-  if(focusRect.top != focusRect.bottom && focus_item >= 0)
+  if(focusItem >= 0)
   {
-    Internal_PaintItem(p_cdc,&focusRect, focus_item, ODA_FOCUS, FALSE);
+    RECT   focusRect = {-1,-1,-1,-1};
+    if(OnItemRect((WPARAM)focusItem,(LPARAM) & focusRect))
+    {
+      Internal_PaintItem(p_cdc,&focusRect,focus_item,ODA_FOCUS,FALSE);
+    }
   }
 
   /* Clear the remainder of the client area */
   p_cdc->SelectObject(brush);
-  if (itemrect.top < clientrect.Height())
+  if(lastBottom < clientrect.Height())
   {
-    itemrect.bottom = clientrect.bottom;
-    p_cdc->ExtTextOut(0, 0, ETO_OPAQUE | ETO_CLIPPED,&itemrect, NULL, 0, NULL);
-  }
-  if(itemrect.right < clientrect.Width())
-  {
-    itemrect.left   = itemrect.right;
-    itemrect.right  = clientrect.right;
-    itemrect.top    = 0;
-    itemrect.bottom = clientrect.bottom;
-    p_cdc->ExtTextOut(0, 0, ETO_OPAQUE | ETO_CLIPPED,&itemrect, NULL, 0, NULL);
+    clientrect.top = lastBottom + 1;
+    p_cdc->ExtTextOut(0, 0, ETO_OPAQUE | ETO_CLIPPED,&clientrect, NULL, 0, NULL);
   }
 
   // Reset old values in DC
@@ -1029,15 +1069,27 @@ StyleListBox::SetFontName(CString p_fontName,int p_fontSize,BYTE p_language)
 }
 
 void
-StyleListBox::ResetFont()
+StyleListBox::ResetFont(HMONITOR p_monitor /*= nullptr*/)
 {
-  LOGFONT  lgFont;
+  // Getting the font scaling factor
+  int dpi = USER_DEFAULT_SCREEN_DPI;
+  if(p_monitor)
+  {
+    const StyleMonitor* mon = g_styling.GetMonitor(p_monitor);
+    mon->GetDPI(dpi,dpi);
+  }
+  else
+  {
+    const StyleMonitor* mon = g_styling.GetMonitor(GetSafeHwnd());
+    mon->GetDPI(dpi,dpi);
+  }
 
+  LOGFONT lgFont;
   lgFont.lfCharSet        = m_language;
   lgFont.lfClipPrecision  = 0;
   lgFont.lfEscapement     = 0;
   _tcscpy_s(lgFont.lfFaceName,LF_FACESIZE,m_fontName);
-  lgFont.lfHeight         = m_fontSize;
+  lgFont.lfHeight         = -MulDiv((m_fontSize / 10),dpi,72);
   lgFont.lfItalic         = m_italic;
   lgFont.lfOrientation    = 0;
   lgFont.lfOutPrecision   = 0;
@@ -1046,21 +1098,27 @@ StyleListBox::ResetFont()
   lgFont.lfStrikeOut      = 0;
   lgFont.lfUnderline      = m_underLine;
   lgFont.lfWidth          = 0;
-  lgFont.lfWeight         = m_bold ? FW_BOLD : FW_MEDIUM;
+  lgFont.lfWeight         = m_bold ? FW_BOLD : FW_NORMAL;
 
   // Create new font or remove old object from it
-  if(m_font)
+  if(m_font.m_hObject)
   {
-    if(m_font->m_hObject)
-    {
-      m_font->DeleteObject();
-    }
-  }
-  else
-  {
-    m_font = new CFont();
+    m_font.DeleteObject();
   }
   // Create new font and set it to this control
-  m_font->CreatePointFontIndirect(&lgFont);
-  SetFont(m_font);
+  m_font.CreateFontIndirect(&lgFont);
+  SetFont(&m_font);
+}
+
+// wParam = new DPI, lParam = HMONITOR
+LRESULT
+StyleListBox::OnDpiChanged(WPARAM wParam,LPARAM lParam)
+{
+  HMONITOR monitor = reinterpret_cast<HMONITOR>(lParam);
+  if(monitor)
+  {
+    ResetFont(monitor);
+    SetItemHeight(0,(LISTBOX_ITEMHEIGTH * GetSFXSizeFactor(monitor)) / 100);
+  }
+  return 0;
 }

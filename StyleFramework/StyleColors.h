@@ -160,8 +160,9 @@ namespace ThemeColor
   // Message that styles have changed
   extern UINT g_msg_changed;
 
-  constexpr unsigned NO_OF_THEMES = (int)Themes::ThemeMax;
-  constexpr unsigned NO_OF_COLORS = (int)Colors::ColorMax;
+  constexpr unsigned NO_OF_THEMES  = (int)Themes::ThemeMax;
+  constexpr unsigned NO_OF_COLORS  = (int)Colors::ColorMax;
+  constexpr unsigned NO_OF_FACTORS = 4; // 100%, 125%, 150%, 200%
   extern LPCTSTR     theme_names [NO_OF_THEMES];
   extern const int   theme_colors[NO_OF_COLORS][NO_OF_THEMES];
   extern Themes     _theme;
@@ -170,7 +171,9 @@ namespace ThemeColor
   extern void     SetTheme(Themes pTheme);
   extern int      GetColor(Colors p_color);
   extern COLORREF NoWhite(COLORREF color);
-  extern HBITMAP  GetScrollbarBitmap();
+  extern int      GetSkinScrollWidth    (HWND p_hwnd,HMONITOR p_monitor = nullptr);
+  extern int      GetBitmapScalingFactor(HWND p_hwnd,HMONITOR p_monitor = nullptr);
+  extern HBITMAP  GetScrollbarBitmap    (HWND p_hwnd,HMONITOR p_monitor = nullptr);
   extern COLORREF HalfTone(COLORREF color,double p_factor = 0.5);
 }
 

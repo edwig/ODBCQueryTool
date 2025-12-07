@@ -40,12 +40,6 @@ BEGIN_MESSAGE_MAP(StyleStatic,CStatic)
   ON_WM_LBUTTONDOWN()
 END_MESSAGE_MAP()
 
-void
-StyleStatic::PreSubclassWindow()
-{
-  ScaleControl(this);
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // StyleStatic message handlers
 
@@ -54,7 +48,7 @@ StyleStatic::SetLeftOffset(int p_offset)
 {
   if(p_offset > 0)
   {
-    m_leftOffset = WS(p_offset);
+    m_leftOffset = WS(GetSafeHwnd(),p_offset);
   }
 }
 
@@ -126,14 +120,22 @@ StyleStatic::OnPaint()
   pDC->SetTextColor(textcolor);
 
   // Paint the text
-  int fontheight = STANDARDFONTSIZE;
-  CFont* org = pDC->SelectObject(&STYLEFONTS.DialogTextFont);
+  CFont* font = GetSFXFont(GetSafeHwnd(),StyleFontType::DialogFont);
+  CFont* org = pDC->SelectObject(font);
   
-  // Use left offset
-  rect.left += m_leftOffset;
-
+  UINT styles = DT_VCENTER | DT_NOPREFIX | DT_WORDBREAK | DT_EXPANDTABS;
+  if(GetExStyle() & WS_EX_RIGHT)
+  {
+    styles |= DT_RIGHT;
+  }
+  else
+  {
+    // Use left offset
+    rect.left += m_leftOffset;
+    styles |= DT_LEFT;
+  }
   // Print the text
-  pDC->DrawText(text,&rect,DT_LEFT | DT_VCENTER | DT_NOPREFIX | DT_WORDBREAK | DT_EXPANDTABS);
+  pDC->DrawText(text,&rect,styles);
 
   // Restore originals
   pDC->SelectObject(org);

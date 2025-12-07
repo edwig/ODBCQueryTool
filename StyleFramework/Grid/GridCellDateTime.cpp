@@ -48,10 +48,11 @@ CGridCellDateTime::~CGridCellDateTime()
 {
 }
 
-CSize CGridCellDateTime::GetCellExtent(CDC* pDC)
+CSize CGridCellDateTime::GetCellExtent(CDC* pDC,HWND p_hwnd)
 {    
-  CSize sizeScroll (GetSystemMetrics(SM_CXVSCROLL), GetSystemMetrics(SM_CYHSCROLL));	
-  CSize sizeCell (CGridCell::GetCellExtent(pDC));	
+  int dpi = ::GetDpiForWindow(p_hwnd);
+  CSize sizeScroll (GetSystemMetricsForDpi(SM_CXVSCROLL,dpi),GetSystemMetricsForDpi(SM_CYHSCROLL,dpi));	
+  CSize sizeCell (CGridCell::GetCellExtent(pDC,p_hwnd));	
   sizeCell.cx += sizeScroll.cx;	
   sizeCell.cy = max(sizeCell.cy,sizeScroll.cy);	
   return sizeCell;

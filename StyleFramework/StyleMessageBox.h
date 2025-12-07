@@ -17,8 +17,8 @@
 // For license: See the file "LICENSE.txt" in the root folder
 //
 #pragma once
-#include "StyleDialogCA.h"
 #include "StyleButton.h"
+#include "StyleEdit.h"
 #include "StyleCheckbox.h"
 #include "resource.h"
 
@@ -35,7 +35,7 @@ INT_PTR StyleMessageBox(CWnd* p_parent,LPCTSTR p_message,LPCTSTR p_title,long   
 INT_PTR StyleMessageBox(CWnd* p_parent,LPCTSTR p_message,LPCTSTR p_title,LPCTSTR p_labels       , bool* p_doNotShowAgain = nullptr,bool p_foreground = false);
 
 
-class MessageDialog : public StyleDialogCA
+class MessageDialog : public StyleDialog
 {
 public:
   // Create by means of text label styles
@@ -43,13 +43,15 @@ public:
                ,LPCTSTR  p_title
                ,LPCTSTR  p_message
                ,LPCTSTR  p_labels
-               ,bool*    p_doNotShowAgain = nullptr);
+               ,bool*    p_doNotShowAgain = nullptr
+               ,bool     p_foreground     = false);
   // Create by means of standard MB_* styles
   MessageDialog(CWnd*    p_parent
                ,LPCTSTR  p_title
                ,LPCTSTR  p_message
                ,int      p_styles
-               ,bool*    p_doNotShowAgain = nullptr);
+               ,bool*    p_doNotShowAgain = nullptr
+               ,bool     p_foreground     = false);
   // Destructor
   ~MessageDialog();
 
@@ -93,19 +95,13 @@ private:
 
   // Initialization of the dialog
   virtual BOOL    OnInitDialog() override;
-  // Override of the message loop
-  virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam) override;
   // Override of the pre-translate of the MS-Windows message
   virtual BOOL    PreTranslateMessage(MSG* pMsg) override;
 
   // To do when a timer goes off
   void OnTimer(UINT_PTR nIDEvent);
-  // Initialize button controls
-  void InitButtons();
   // Reset the buttons
   void ResetButtons();
-  // Split labels strings and styles
-  void SplitLabelTextAndStyles(CString& p_labels);
   // Suppress this message, always ID_OK
   void SuppressFromNowOn();
   // Flash our application and message box
@@ -113,9 +109,38 @@ private:
   // Go to the Next/Previous control on the message box
   void GotoControl(int p_direction);
 
+  // Initialisation after CTOR
+  void    InitButtons();
+  CString InitCorrectLabels(CString p_labels);
+  CString InitCorrectLabels(int p_styles);
+  void    InitStyle(int p_styles);
+  void    InitStyle(CString& p_labels);
+  CString InitOriginalLabels(CString p_labels);
+  void    InitCleanOriginalLabels();
+  void    InitDefaultButton(int p_styles);
+  void    InitForeground(int p_styles);
+  CString InitForeground(CString p_labels);
+  void    InitSplitLabelTextAndStyles(CString& p_labels);
+
+  // Creating the MessageDialog
+  void CreateTextArea(CRect& p_textRect);
+  void CreateMakeTextArea(CRect& p_textRect);
+  void CreateAdjustLongTitle(CRect& p_textRect);
+  void CreateButtons(CRect& p_textRect);
+  void CreateMakeTheButtons(CRect& p_textRect
+                           ,CSize  p_tsize
+                           ,int&   p_buttonTop
+                           ,int&   p_buttonWidth
+                           ,int&   p_buttonHeight
+                           ,int&   p_buttonBegin
+                           ,int&   p_totalWidth);
+  void CreateDoNotRepeat(CRect& p_window,CSize p_tsize,int p_buttonBegin,int p_buttonTop,int p_buttonHeight);
+  void CreateSetForeground();
+  BOOL InitFocus();
+
   // DATA
   CFont*        m_font;                       // Font we use for the message
-  CEdit         m_edit;                       // Edit box with the message
+  StyleEdit     m_edit;                       // Edit box with the message
   CString       m_title;                      // Title of the dialog
   CString       m_message;                    // The message we want to show
   int           m_styles;                     // Signal styles

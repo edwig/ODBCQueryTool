@@ -17,6 +17,7 @@
 // For license: See the file "LICENSE.txt" in the root folder
 //
 #include "stdafx.h"
+#include "StyleEdit.h"
 #include <winuser.h>
 
 #ifdef _DEBUG
@@ -43,16 +44,15 @@ BEGIN_MESSAGE_MAP(StyleEdit,CEdit)
   ON_WM_LBUTTONUP()
   ON_WM_NCCALCSIZE()
   ON_WM_DROPFILES()
-  ON_MESSAGE(WM_MOUSEHOVER,           OnMouseHover)
-  ON_MESSAGE(WM_MOUSELEAVE,           OnMouseLeave)
-  ON_MESSAGE(WM_LBUTTONDBLCLK,        OnDoubleClick)
-  ON_CONTROL_REFLECT_EX(EN_KILLFOCUS, OnKillFocus)
-  ON_CONTROL_REFLECT_EX(EN_SETFOCUS,  OnSetfocus)
+  ON_MESSAGE(WM_MOUSEHOVER,             OnMouseHover)
+  ON_MESSAGE(WM_MOUSELEAVE,             OnMouseLeave)
+  ON_MESSAGE(WM_LBUTTONDBLCLK,          OnDoubleClick)
+  ON_CONTROL_REFLECT_EX(EN_KILLFOCUS,   OnKillFocus)
+  ON_CONTROL_REFLECT_EX(EN_SETFOCUS,    OnSetfocus)
+  ON_MESSAGE(WM_DPICHANGED_AFTERPARENT, OnDpiChangedAfter)
   ON_WM_CTLCOLOR_REFLECT()
-
 // BEWARE: Not activated
 // ON_WM_WINDOWPOSCHANGED()
-
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -67,11 +67,6 @@ StyleEdit::StyleEdit()
 
 StyleEdit::~StyleEdit()
 {
-  if(m_font)
-  {
-    delete m_font;
-    m_font = nullptr;
-  }
   // Strange but true: Only way to destroy this window
   OnNcDestroy();
 
@@ -82,8 +77,6 @@ StyleEdit::~StyleEdit()
 void
 StyleEdit::PreSubclassWindow()
 {
-  ScaleControl(this);
-
   if(m_directInit)
   {
     InitSkin();
@@ -125,7 +118,7 @@ StyleEdit::InitSkin(bool p_force /*=false*/)
       m_borderSize = STYLE_SINGLELN_BORDER;
     }
   }
-  SetFont(&STYLEFONTS.DialogTextFont);
+  ResetFont();
   if(p_force || (style & ES_MULTILINE))
   {
     SkinWndScroll(this,border ? m_borderSize : 0);
@@ -876,14 +869,14 @@ StyleEdit::DrawPasswordEye()
 
   // Take a colored pen
   CPen pen;
-  pen.CreatePen(PS_SOLID,EDIT_EYE_WEIGHT,color);
+  pen.CreatePen(PS_SOLID,WS(GetSafeHwnd(),EDIT_EYE_WEIGHT) ,color);
   CPen* oldpen = dc->SelectObject(&pen);
 
   // Draw the eyebrow
   dc->Arc(left,top,right,bottom,startx,starty,endx,endy);
 
   // Size of the eye circle
-  int inner = EDIT_INNER_EYE;
+  int inner = WS(GetSafeHwnd(),EDIT_INNER_EYE);
   left   += inner;
   right  -= inner;
   top    += inner;
@@ -1143,7 +1136,7 @@ StyleEdit::OnDoubleClick(WPARAM wParam, LPARAM lParam)
   GetWindowText(text);
 
   StyleCalendar cal(this,text,bottom,left);
-  cal.RegisterFont(m_font);
+  cal.RegisterFont(&m_font);
 
   if(cal.DoModal() == IDOK)
   {
@@ -1231,15 +1224,27 @@ StyleEdit::CtlColor(CDC* pDC, UINT nCtlColor)
 }
 
 void 
-StyleEdit::ResetFont()
+StyleEdit::ResetFont(HMONITOR p_monitor /*= nullptr*/)
 {
-  LOGFONT  lgFont;
+  // Getting the font scaling factor
+  int dpi = USER_DEFAULT_SCREEN_DPI;
+  if(p_monitor)
+  {
+    const StyleMonitor* mon = g_styling.GetMonitor(p_monitor);
+    mon->GetDPI(dpi,dpi);
+  }
+  else
+  {
+    const StyleMonitor* mon = g_styling.GetMonitor(GetSafeHwnd());
+    mon->GetDPI(dpi,dpi);
+  }
 
+  LOGFONT lgFont;
   lgFont.lfCharSet        = m_language;
   lgFont.lfClipPrecision  = 0;
   lgFont.lfEscapement     = 0;
   _tcscpy_s(lgFont.lfFaceName,LF_FACESIZE,m_fontName);
-  lgFont.lfHeight         = m_fontSize;
+  lgFont.lfHeight         = -MulDiv((m_fontSize / 10),dpi,72);
   lgFont.lfItalic         = m_italic;
   lgFont.lfOrientation    = 0;
   lgFont.lfOutPrecision   = 0;
@@ -1248,23 +1253,16 @@ StyleEdit::ResetFont()
   lgFont.lfStrikeOut      = 0;
   lgFont.lfUnderline      = m_underLine;
   lgFont.lfWidth          = 0;
-  lgFont.lfWeight         = m_bold ? FW_BOLD : FW_MEDIUM;
+  lgFont.lfWeight         = m_bold ? FW_BOLD : FW_NORMAL;
 
   // Create new font or remove old object from it
-  if(m_font)
+  if(m_font.m_hObject)
   {
-    if(m_font->m_hObject)
-    {
-      m_font->DeleteObject();
-    }
-  }
-  else
-  {
-    m_font = new CFont();
+    m_font.DeleteObject();
   }
   // Create new font and set it to this control
-  m_font->CreatePointFontIndirect(&lgFont);
-  SetFont(m_font);
+  m_font.CreateFontIndirect(&lgFont);
+  SetFont(&m_font);
 }
 
 void 
@@ -1397,6 +1395,19 @@ StyleEdit::OnSize(UINT nType, int cx, int cy)
   {
     Invalidate();
   }
+}
+
+// wParam = new DPI, lParam = HMONITOR
+LRESULT
+StyleEdit::OnDpiChangedAfter(WPARAM wParam,LPARAM lParam)
+{
+  HMONITOR monitor = reinterpret_cast<HMONITOR>(lParam);
+  if(monitor == nullptr)
+  {
+    return 0;
+  }
+  ResetFont(monitor);
+  return 0;
 }
 
 void
@@ -1563,6 +1574,29 @@ void WINAPI DDX_Control(CDataExchange* pDX,int nIDC,StyleEdit& p_editControl,CSt
     }
   }
 }
+
+void WINAPI DDX_Control(CDataExchange* pDX,int nIDC,StyleEdit& p_editControl,stdstring& p_text)
+{
+  CString text;
+  CEdit& edit = reinterpret_cast<CEdit&>(p_editControl);
+  DDX_Control(pDX, nIDC, edit);
+  p_editControl.SetInitCorrectly();
+  if (pDX->m_bSaveAndValidate)
+  {
+    p_editControl.GetWindowText(text);
+    p_text = (LPCTSTR) text.GetString();
+  }
+  else
+  {
+    text = p_text.c_str();
+    p_editControl.SetWindowText(text);
+    if (p_editControl.GetIsPassword())
+    {
+      p_editControl.SetPassword(true);
+    }
+  }
+}
+
 
 void WINAPI DDX_Control(CDataExchange* pDX,int nIDC,StyleEdit& p_editControl,int& p_number)
 {

@@ -36,10 +36,10 @@
 
 // ConfigDlg dialog
 
-IMPLEMENT_DYNAMIC(ConfigDlg, StyleDialog)
+IMPLEMENT_DYNAMIC(ConfigDlg, StyleTab)
 
 ConfigDlg::ConfigDlg(CWnd* pParent /*=nullptr*/)
-	        :StyleDialog(IDD_CONFIG, pParent)
+	        :StyleTab(IDD_CONFIG, pParent)
           ,m_strings(0)
 {
 }
@@ -51,7 +51,7 @@ ConfigDlg::~ConfigDlg()
 void 
 ConfigDlg::DoDataExchange(CDataExchange* pDX)
 {
-	StyleDialog::DoDataExchange(pDX);
+	StyleTab::DoDataExchange(pDX);
 
   DDX_Control(pDX,IDC_CONFIG,     m_editConfig,   m_config);
   DDX_Control(pDX,IDC_BUTT_CONFIG,m_buttonConfig);
@@ -69,7 +69,7 @@ ConfigDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 
-BEGIN_MESSAGE_MAP(ConfigDlg, StyleDialog)
+BEGIN_MESSAGE_MAP(ConfigDlg, StyleTab)
   ON_EN_KILLFOCUS (IDC_CONFIG,      &ConfigDlg::OnEnChangeConfig)
   ON_BN_CLICKED   (IDC_BUTT_CONFIG, &ConfigDlg::OnBnClickedButtConfig)
   ON_EN_KILLFOCUS (IDC_PURPOSE,     &ConfigDlg::OnEnChangePurpose)
@@ -82,7 +82,7 @@ END_MESSAGE_MAP()
 BOOL
 ConfigDlg::OnInitDialog()
 {
-  StyleDialog::OnInitDialog();
+  StyleTab::OnInitDialog();
 
   InitCombos();
   InitGrid();
@@ -101,7 +101,7 @@ ConfigDlg::OnInitDialog()
 void
 ConfigDlg::SetupDynamicLayout()
 {
-  StyleDialog::SetupDynamicLayout();
+  StyleTab::SetupDynamicLayout();
 
   CMFCDynamicLayout& manager = *GetDynamicLayout();
 #ifdef _DEBUG

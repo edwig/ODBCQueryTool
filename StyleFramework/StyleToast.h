@@ -29,6 +29,10 @@
 #define TOAST_STACK   4  // Maximum toasts to stack on the screen
 #define TOAST_LINE   12  // 12 pixels for the stepper line
 
+#define TOAST_MAX_PARALLEL   20
+#define TOAST_MINIMUM_TIME 3000
+#define TOAST_DEFAULT_TIME 5000
+
 // Styles of the toast message
 #define STYLE_TOAST_MESSAGE   1
 #define STYLE_TOAST_WARNING   2
@@ -53,7 +57,7 @@ StyleToast* CreateToast(int      p_style
                        ,CString  p_text1
                        ,CString  p_text2   = _T("")
                        ,CString  p_text3   = _T("")
-                       ,unsigned p_timeout = 3000
+                       ,unsigned p_timeout = TOAST_DEFAULT_TIME
                        ,bool*    p_success = nullptr);
 
 class Toasts
@@ -73,7 +77,7 @@ public:
             ,CString  p_text1
             ,CString  p_text2   = _T("")
             ,CString  p_text3   = _T("")
-            ,unsigned p_timeout = 3000);
+            ,unsigned p_timeout = TOAST_DEFAULT_TIME);
   virtual ~StyleToast();
 
   virtual void DoDataExchange(CDataExchange* pDX) override;
@@ -94,7 +98,6 @@ protected:
   DECLARE_MESSAGE_MAP()
 
 private:
-  CWnd*       m_creator;
   int         m_style;
   int         m_position;
   CString     m_text1;
@@ -105,5 +108,9 @@ private:
   DWORD       m_background;
   DWORD       m_foreground;
   DWORD       m_dimmedback;
+
+  UINT_PTR    m_killTimer;
+  UINT_PTR    m_stepTimer;
+
   StyleStaticToast m_showText;
 };

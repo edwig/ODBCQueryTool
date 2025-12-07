@@ -71,22 +71,71 @@ IDB_SCROLLBAR7          BITMAP                  "res\\ScrollBar7.bmp"
 
 IDB_SCROLLBAR8          BITMAP                  "res\\ScrollBar8.bmp"
 
+IDB_SCROLLBAR1_125      BITMAP                  "res\\ScrollBar1_125.bmp"
+
+IDB_SCROLLBAR1_150      BITMAP                  "res\\ScrollBar1_150.bmp"
+
+IDB_SCROLLBAR1_200      BITMAP                  "res\\ScrollBar1_200.bmp"
+
+IDB_SCROLLBAR2_125      BITMAP                  "res\\ScrollBar2_125.bmp"
+
+IDB_SCROLLBAR2_150      BITMAP                  "res\\ScrollBar2_150.bmp"
+
+IDB_SCROLLBAR2_200      BITMAP                  "res\\ScrollBar2_200.bmp"
+
+IDB_SCROLLBAR3_125      BITMAP                  "res\\ScrollBar3_125.bmp"
+
+IDB_SCROLLBAR3_150      BITMAP                  "res\\ScrollBar3_150.bmp"
+
+IDB_SCROLLBAR3_200      BITMAP                  "res\\ScrollBar3_200.bmp"
+
+IDB_SCROLLBAR4_125      BITMAP                  "res\\ScrollBar4_125.bmp"
+
+IDB_SCROLLBAR4_150      BITMAP                  "res\\ScrollBar4_150.bmp"
+
+IDB_SCROLLBAR4_200      BITMAP                  "res\\ScrollBar4_200.bmp"
+
+IDB_SCROLLBAR5_125      BITMAP                  "res\\ScrollBar5_125.bmp"
+
+IDB_SCROLLBAR5_150      BITMAP                  "res\\ScrollBar5_150.bmp"
+
+IDB_SCROLLBAR5_200      BITMAP                  "res\\ScrollBar5_200.bmp"
+
+IDB_SCROLLBAR6_125      BITMAP                  "res\\ScrollBar6_125.bmp"
+
+IDB_SCROLLBAR6_150      BITMAP                  "res\\ScrollBar6_150.bmp"
+
+IDB_SCROLLBAR6_200      BITMAP                  "res\\ScrollBar6_200.bmp"
+
+IDB_SCROLLBAR7_125      BITMAP                  "res\\ScrollBar7_125.bmp"
+
+IDB_SCROLLBAR7_150      BITMAP                  "res\\ScrollBar7_150.bmp"
+
+IDB_SCROLLBAR7_200      BITMAP                  "res\\ScrollBar7_200.bmp"
+
+IDB_SCROLLBAR8_125      BITMAP                  "res\\ScrollBar8_125.bmp"
+
+IDB_SCROLLBAR8_150      BITMAP                  "res\\ScrollBar8_150.bmp"
+
+IDB_SCROLLBAR8_200      BITMAP                  "res\\ScrollBar8_200.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
 //
 
-IDD_BOODSCHAP DIALOGEX 0, 0, 287, 113
+IDD_BOODSCHAP DIALOGEX 0, 0, 393, 113
 STYLE DS_SETFONT | DS_CENTER | WS_POPUP
-FONT 8, "MS Sans Serif", 0, 0, 0x0
+EXSTYLE WS_EX_CONTROLPARENT
+FONT 10, "Verdana", 400, 0, 0x0
 BEGIN
-    EDITTEXT        IDC_BOODSCHAP,0,0,264,112,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
+    EDITTEXT        IDC_BOODSCHAP,4,7,384,99,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
 END
 
 IDD_CALENDAR DIALOGEX 0, 0, 96, 95
 STYLE DS_SETFONT | WS_POPUP
-FONT 10, "Verdana", 400, 0, 0x0
+FONT 12, "Verdana", 400, 0, 0x0
 BEGIN
     CONTROL         "",IDC_MONTH,"SysMonthCal32",MCS_WEEKNUMBERS | WS_TABSTOP,-1,-2,96,81
 END

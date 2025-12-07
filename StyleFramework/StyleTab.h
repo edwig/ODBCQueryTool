@@ -44,20 +44,27 @@ protected:
   void RegisterTooltip(CWnd& p_wnd,         LPCTSTR p_text);
   void RegisterTooltip(StyleComboBox& p_wnd,LPCTSTR p_text);
 
+  void SendMessageToAllChildWindows(UINT MessageId,WPARAM wParam,LPARAM lParam);
+
 private:
-  bool      m_error     { false  };
+  bool      m_error     { false };
   bool      m_canResize { false };
   CRect     m_originalSize;
   ToolTips  m_tooltips;
   CBrush    m_defaultBrush;
+  int       m_dpi_x     { 0     };
+  int       m_dpi_y     { 0     };
   
   DECLARE_MESSAGE_MAP();
 
   afx_msg INT_PTR OnToolHitTest(CPoint point,TOOLINFO* pTI) const;
   afx_msg BOOL    OnToolTipNotify(UINT id,NMHDR* pNMHDR,LRESULT* pResult);
   afx_msg BOOL    OnEraseBkgnd(CDC* pDC);
-  afx_msg LPARAM  OnCtlColorStatic (WPARAM wParam,LPARAM lParam);
-  afx_msg LPARAM  OnCtlColorListBox(WPARAM wParam,LPARAM lParam);
+  afx_msg LPARAM  OnCtlColorStatic  (WPARAM wParam,LPARAM lParam);
+  afx_msg LPARAM  OnCtlColorListBox (WPARAM wParam,LPARAM lParam);
+  afx_msg LRESULT OnDpiChangedBefore(WPARAM wParam,LPARAM lParam);
+  afx_msg LRESULT OnDpiChangedAfter (WPARAM wParam,LPARAM lParam);
+  afx_msg LRESULT OnDpiChanged      (WPARAM wParam,LPARAM lParam);
   afx_msg HBRUSH  OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor);
   afx_msg LRESULT OnStyleChanged(WPARAM,LPARAM);
   afx_msg void    OnCancel();

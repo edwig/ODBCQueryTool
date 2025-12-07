@@ -45,8 +45,6 @@ public:
   DECLARE_MESSAGE_MAP()
 
 private:
-  virtual void PreSubclassWindow() override;
-
   // Members
   CWnd* m_field;
   bool  m_radioButton;

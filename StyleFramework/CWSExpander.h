@@ -25,8 +25,9 @@
 class CWSExpander
 {
 public:
-  CWSExpander(CDC* pDC,CRect rect,bool pClipRgn = true) 
-              :m_pDC(pDC)
+  CWSExpander(HWND p_hwnd,CDC* pDC,CRect rect,bool pClipRgn = true) 
+              :m_hwnd(p_hwnd)
+              ,m_pDC(pDC)
               ,m_rect(rect)
               ,m_ClipRgn(pClipRgn)
   {
@@ -35,8 +36,9 @@ public:
   void DrawIcon(HICON hicon,COLORREF pBackgroundColor,COLORREF color = COLORREF_NULL)
   {
     CBrush br(color == COLORREF_NULL ? RGB(0,0,0) : color);
+    int iconsize = WS(m_hwnd,16);
 
-    if(WS(16) == 16)
+    if(iconsize == 16)
     {
       m_pDC->DrawState(CPoint(m_rect.left - (16 - m_rect.Width()) / 2,m_rect.top - (16 - m_rect.Height()) / 2),CSize(16,16),hicon,DST_ICON | DSS_MONO,&br);
     }
@@ -58,12 +60,13 @@ public:
         m_pDC->SelectClipRgn(&clip);
       }
       m_pDC->SetStretchBltMode(HALFTONE);
-      m_pDC->StretchBlt(m_rect.left - (WS(16) - m_rect.Width()) / 2,m_rect.top - (WS(16) - m_rect.Height()) / 2,WS(16),WS(16),&dc,0,0,16,16,SRCCOPY);
+      m_pDC->StretchBlt(m_rect.left - (iconsize - m_rect.Width()) / 2,m_rect.top - (iconsize - m_rect.Height()) / 2,iconsize,iconsize,&dc,0,0,16,16,SRCCOPY);
       m_pDC->RestoreDC(save);
     }
   }
 
 private:
+  HWND  m_hwnd;
   CDC*  m_pDC;
   CRect m_rect;
   bool  m_ClipRgn;

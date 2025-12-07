@@ -19,12 +19,16 @@
 #include "stdafx.h"
 #include "StyleUtilities.h"
 #include <afxglobals.h>
+#include <shellscalingapi.h>
+#include <VersionHelpers.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+#pragma comment(lib,"shcore.lib")
 
 CString EverythingBefore(CString p_string,CString p_tag)
 {
@@ -149,7 +153,8 @@ RepositionFrameWnd(CWnd* p_wnd,bool p_isFrame /*=true*/)
 
   if(p_isFrame)
   {
-    int extra = 2 * GetSystemMetrics(SM_CYFRAME);
+    int dpi = ::GetDpiForWindow(p_wnd->GetSafeHwnd());
+    int extra = 2 * GetSystemMetricsForDpi(SM_CYFRAME,dpi);
     rect.InflateRect(extra,extra);
   }
 
@@ -193,34 +198,6 @@ MinimalFrameWnd(CWnd* p_wnd)
   }
 }
 
-int GetSFXSizeFactor();
-void SFXResizeByFactor(CRect& p_rect);
-
-// Scale a control to the SFXSizeFactor
-void
-ScaleControl(CWnd* p_wnd)
-{
-  // See if we must do scaling
-  if(GetSFXSizeFactor() == 100)
-  {
-    return;
-  }
-
-  CRect rect;
-  p_wnd->GetWindowRect(rect);
-
-  CWnd* parent = p_wnd->GetParent();
-  if(parent)
-  {
-    parent->ScreenToClient(rect);
-  }
-  SFXResizeByFactor(rect);
-  // p_wnd->MoveWindow(rect);
-  SetWindowPos(p_wnd->GetSafeHwnd(),p_wnd->GetSafeHwnd()
-              ,rect.left,rect.top,rect.Width(),rect.Height()
-              ,SWP_NOZORDER|SWP_NOACTIVATE);
-}
-
 CString StyleGetStringFromClipboard(HWND p_wnd /*=NULL*/)
 {
 #ifdef UNICODE
@@ -248,55 +225,171 @@ CString StyleGetStringFromClipboard(HWND p_wnd /*=NULL*/)
 bool StylePutStringToClipboard(CString p_string,HWND p_wnd /*=NULL*/,bool p_append /*=false*/)
 {
   bool result = false;
-  HGLOBAL memory = 0L;
 #ifdef UNICODE
   UINT format = CF_UNICODETEXT;
 #else
   UINT format = CF_TEXT;
 #endif
 
-  try
+  if(!p_append)
   {
-    if(!p_append)
-    {
-      OpenClipboard(p_wnd);
-      EmptyClipboard();
-      CloseClipboard();
-    }
+    OpenClipboard(p_wnd);
+    EmptyClipboard();
+    CloseClipboard();
+  }
 
-    if(OpenClipboard(p_wnd))
+  if(OpenClipboard(p_wnd))
+  {
+    // Put the text in a global GMEM_MOVABLE memory handle
+    size_t size = ((size_t) p_string.GetLength() + 1) * sizeof(TCHAR);
+    HGLOBAL memory = GlobalAlloc(GHND,size);
+    if(memory)
     {
-      // Put the text in a global GMEM_MOVABLE memory handle
-      size_t size = ((size_t) p_string.GetLength() + 1) * sizeof(TCHAR);
-      memory = GlobalAlloc(GHND,size);
-      if(memory)
+      void* data = GlobalLock(memory);
+      if(data)
       {
-        void* data = GlobalLock(memory);
-        if(data)
-        {
-          _tcsncpy_s((LPTSTR) data,size,(LPCTSTR) p_string.GetString(),size);
-        }
-        else
-        {
-          GlobalFree(memory);
-          return false;
-        }
-
-        // Set the text on the clipboard
-        // and transfer ownership of the memory segment
-        SetClipboardData(format,memory);
-        result = true;
+        _tcsncpy_s((LPTSTR) data,size,(LPCTSTR) p_string.GetString(),size);
       }
-      CloseClipboard();
+      else
+      {
+        GlobalFree(memory);
+        return false;
+      }
+
+      // Set the text on the clipboard
+      // and transfer ownership of the memory segment
+      SetClipboardData(format,memory);
+      GlobalUnlock(memory);
+      result = true;
     }
-  }
-  catch(...)
-  {
-    StyleMessageBox(CWnd::FromHandle(p_wnd),_T("Error copying data to the clipboard"),_T("CLIPBOARD"),MB_OK | MB_ICONERROR);
-  }
-  if(memory)
-  {
-    GlobalUnlock(memory);
+    CloseClipboard();
   }
   return result;
+}
+
+// Getting the DPI for the DPI_AWARE_PER_MONITOR_V2
+bool GetDpi(HWND hWnd,int& p_dpi_x,int& p_dpi_y)
+{
+   bool v81 = IsWindows8Point1OrGreater();
+   bool v10 = IsWindows10OrGreater();
+   if (v81 || v10)
+   {
+      HMONITOR hMonitor = ::MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST);
+      return GetDpiMonitor(hMonitor,p_dpi_x,p_dpi_y);
+   }
+   else
+   {
+      HDC hDC  = ::GetDC(hWnd);
+      INT xdpi = ::GetDeviceCaps(hDC, LOGPIXELSX);
+      INT ydpi = ::GetDeviceCaps(hDC, LOGPIXELSY);
+      ::ReleaseDC(NULL, hDC);
+      p_dpi_x = static_cast<int>(xdpi);
+      p_dpi_y = static_cast<int>(ydpi);
+      return true;
+   }
+}
+
+bool GetDpiMonitor(HMONITOR hMonitor,int& p_dpi_x,int& p_dpi_y)
+{
+  UINT xdpi, ydpi;
+  LRESULT success = ::GetDpiForMonitor(hMonitor,MDT_EFFECTIVE_DPI,&xdpi,&ydpi);
+  if(success == S_OK)
+  {
+    p_dpi_x = static_cast<int>(xdpi);
+    p_dpi_y = static_cast<int>(ydpi);
+    return true;
+  }
+  p_dpi_x = USER_DEFAULT_SCREEN_DPI;
+  p_dpi_y = USER_DEFAULT_SCREEN_DPI;
+  return false;
+}
+
+// Saving and restoring the window on a multi-monitor setup
+void StyleSaveWindowPosition(CWnd* p_wnd)
+{
+  CWinApp* app = AfxGetApp();
+  const StyleMonitor* monitor = g_styling.GetMonitor(p_wnd->GetSafeHwnd());
+  if(!monitor)
+  {
+    return;
+  }
+  // Save the name of the monitor
+  const CString name = monitor->GetName();
+  app->WriteProfileString(_T("Monitor"),_T("Name"),  name);
+  app->WriteProfileInt   (_T("Monitor"),_T("Width"), monitor->GetWidth());
+  app->WriteProfileInt   (_T("Monitor"),_T("Height"),monitor->GetHeight());
+
+  // Save the window position relative to the monitor
+  CRect monRect = monitor->GetRect();
+  CRect winRect;
+  p_wnd->GetWindowRect(&winRect);
+
+  int left = winRect.left - monRect.left;
+  int top  = winRect.top  - monRect.top;
+  app->WriteProfileInt(_T("Window"),_T("Left"),  left);
+  app->WriteProfileInt(_T("Window"),_T("Top"),   top);
+  app->WriteProfileInt(_T("Window"),_T("Width"), winRect.Width());
+  app->WriteProfileInt(_T("Window"),_T("Height"),winRect.Height());
+}
+
+// We should at least be able to see a minimum amount of pixels
+// so we will not be obscured by a task bar in a different position
+#define MINIMUM_VISIBLE 80
+
+void
+StyleRestoreWindowPosition(CWnd* p_wnd)
+{
+  CWinApp* app = AfxGetApp();
+  CString name = app->GetProfileString(_T("Monitor"),_T("Name"),_T(""));
+  if(name.IsEmpty())
+  {
+    return;
+  }
+  int width  = app->GetProfileInt(_T("Monitor"),_T("Width"), -1);
+  int height = app->GetProfileInt(_T("Monitor"),_T("Height"),-1);
+
+  const StyleMonitor* monitor = g_styling.GetMonitor(name);
+  if(!monitor)
+  {
+    return;
+  }
+  // Getting the saved position
+  int top  = app->GetProfileInt(_T("Window"),_T("Top"), -1);
+  int left = app->GetProfileInt(_T("Window"),_T("Left"),-1);
+  if(top == -1 && left == -1)
+  {
+    return;
+  }
+
+  // See if we would still be visible on that monitor after the move!
+  if(!((left < (monitor->GetWidth()  - MINIMUM_VISIBLE)) &&
+       (top  < (monitor->GetHeight() - MINIMUM_VISIBLE))))
+  {
+    return;
+  }
+
+  // Getting the relative monitor position
+  CRect rect = monitor->GetRect();
+  rect.left += left;
+  rect.top  += top;
+
+  // Move our window to this position
+  CRect winrect;
+  p_wnd->GetWindowRect(&winrect);
+  ::SetWindowPos(p_wnd->GetSafeHwnd(),nullptr
+                ,rect.left,rect.top,winrect.Width(),winrect.Height()
+                ,SWP_NOZORDER | SWP_NOACTIVATE);
+
+  // See if monitor not changed and we can resize the application
+  if((width != monitor->GetWidth()) || (height != monitor->GetHeight()))
+  {
+    return;
+  }
+
+  // Getting the stored window size
+  int winWidth  = app->GetProfileInt(_T("Window"),_T("Width"), -1);
+  int winHeight = app->GetProfileInt(_T("Window"),_T("Height"),-1);
+
+  // Resize to original size
+  p_wnd->MoveWindow(rect.left,rect.top,winWidth,winHeight);
 }

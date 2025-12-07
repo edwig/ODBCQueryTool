@@ -102,23 +102,57 @@ Themes ThemeColor::GetTheme()
   return _theme;
 }
 
-static HBITMAP g_scrollbars[NO_OF_THEMES] = { NULL };
+// Scrollbar bitmaps for all themes and scaling factors
+static HBITMAP g_scrollbars[NO_OF_FACTORS][NO_OF_THEMES] = { nullptr };
 
-HBITMAP  
-ThemeColor::GetScrollbarBitmap()
+static void LoadBitmaps()
 {
-  if(g_scrollbars[0] == nullptr)
+  for(int factor = 0; factor < NO_OF_FACTORS; ++factor)
   {
-    for (int index = 0; index < NO_OF_THEMES; ++index)
+    for(int index = 0; index < NO_OF_THEMES; ++index)
     {
       CBitmap bmp;
-      bmp.LoadBitmap(IDB_SCROLLBAR1 + index);
-      BITMAP bm;
-      bmp.GetBitmap(&bm);
-      g_scrollbars[index] = (HBITMAP)bmp.Detach();
+      bmp.LoadBitmap(IDB_SCROLLBAR1 + index + (factor * NO_OF_THEMES));
+      g_scrollbars[factor][index] = (HBITMAP)bmp.Detach();
     }
   }
-  return g_scrollbars[(int)ThemeColor::_theme];
+}
+
+int
+ThemeColor::GetSkinScrollWidth(HWND p_hwnd,HMONITOR p_monitor /*=nullptr*/)
+{
+  int factor = p_monitor ? GetSFXSizeFactor(p_monitor) : GetSFXSizeFactor(p_hwnd);
+
+       if(factor < 113) factor = 13; // 100%
+  else if(factor < 137) factor = 16; // 125%
+  else if(factor < 175) factor = 20; // 150%
+  else                  factor = 26; // 200%
+
+  return factor;
+}
+
+int
+ThemeColor::GetBitmapScalingFactor(HWND p_hwnd,HMONITOR p_monitor /*= nullptr*/)
+{
+  int factor = p_monitor ? GetSFXSizeFactor(p_monitor) : GetSFXSizeFactor(p_hwnd);
+
+       if(factor < 113) factor = 0; // 100%
+  else if(factor < 137) factor = 1; // 125%
+  else if(factor < 175) factor = 2; // 150%
+  else                  factor = 3; // 200%
+
+  return factor;
+}
+
+HBITMAP  
+ThemeColor::GetScrollbarBitmap(HWND p_hwnd,HMONITOR p_monitor /*= nullptr*/)
+{
+  if(g_scrollbars[0][0] == nullptr)
+  {
+    LoadBitmaps();
+  }
+  int factor = GetBitmapScalingFactor(p_hwnd,p_monitor);
+  return g_scrollbars[factor][(int)ThemeColor::_theme];
 }
 
 COLORREF

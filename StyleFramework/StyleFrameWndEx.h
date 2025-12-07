@@ -40,6 +40,7 @@ public:
 
 protected:
   // AFX Messages
+  afx_msg void    OnDestroy();
   afx_msg int     OnCreate(LPCREATESTRUCT lpCreateStruct);
   afx_msg LRESULT OnGrayScreen(WPARAM wParam,LPARAM lParam);
   afx_msg void    OnNcLButtonDblClk(UINT nFlags, CPoint point);
@@ -55,6 +56,9 @@ protected:
   afx_msg LRESULT OnStyleChanged(WPARAM wParam,LPARAM lParam);
   afx_msg void    OnSettingChange(UINT uFlags,LPCTSTR lpszSection);
   afx_msg BOOL    OnNcActivate(BOOL bActive);
+  afx_msg LRESULT OnGetDpiScaledSize(WPARAM wParam,LPARAM lParam);
+  afx_msg LRESULT OnDpiChanged(WPARAM wParam,LPARAM lParam);
+  afx_msg LRESULT OnDisplayChange(WPARAM wParam,LPARAM lParam);
 
   // Standard handlers for a command menu
   afx_msg void    OnStyleLime();
@@ -75,13 +79,15 @@ protected:
   // Perform a sub-menu on the bar
   void  MenuFromPoint(CPoint p_point);
   int   MenuHitTest(CPoint p_point);
+  void  SendMessageToAllChildWindows(UINT MessageId,WPARAM wParam,LPARAM lParam);
+  void  NotifyMonitorToAllChilds();
 
   // Move hovers and is currently down
   LRESULT   m_curhit{ HTNOWHERE };
   bool      m_down  { false     };
   bool      m_dtsize{ false     };
   // Elementary sizes
-  int       m_menuItemWidth = { MENUITEMWIDTH };
+  int       m_menuItemWidth   { 0 };
   // Rectangles
   CRect     m_windowRectLocal { 0,0,0,0 };    // Local window rectangle
   CRect     m_minRect         { 0,0,0,0 };    // Minimize button rectangle
@@ -97,6 +103,10 @@ protected:
   CString   m_tooltips [MENUCOUNT];
   int       m_selectedMenu  { -1 };
   bool      m_menuFocus  { false };
+  bool      m_saveMonitor{ false };
+  int       m_dpi_x      { 0     };
+  int       m_dpi_y      { 0     };
+
   // Tooltips 
   CToolTipCtrl m_menuTooltip;
   GrayWindow   m_grayScreen;

@@ -44,7 +44,8 @@ StyleFormView::~StyleFormView()
 void
 StyleFormView::Init(int p_borderSize /*=0*/)
 {
-  SetFont(&STYLEFONTS.DialogTextFont);
+  CFont* font = GetSFXFont(GetSafeHwnd(),StyleFontType::DialogFont);
+  SetFont(font);
   SkinScrollWnd* skin = SkinWndScroll(this, p_borderSize);
   skin->SetScrollbarBias(1);
 }

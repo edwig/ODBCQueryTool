@@ -1,0 +1,4 @@
+2025-12-05 17:25:31 
+2025-12-05 17:25:31 STOPPED WITH ERROR!
+2025-12-05 17:25:31 Cannot convert anything other than views, if views are selected
+

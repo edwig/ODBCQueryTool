@@ -77,3 +77,6 @@ CString GetStyleText(int p_id,               StyleLanguage p_language = StyleLan
 #define TXT_BOOLEAN_FALSE    31
 #define TXT_WIZARD           32
 #define TXT_CANCEL_WIZARD    33
+#define TXT_TOAST_TOOMUCH    34
+#define TXT_TOAST_WAITTODIE  35
+#define TXT_TOAST_FALLBACK   36

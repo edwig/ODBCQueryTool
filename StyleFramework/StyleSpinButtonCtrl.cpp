@@ -40,12 +40,6 @@ StyleSpinButtonCtrl::~StyleSpinButtonCtrl()
 {
 }
 
-void
-StyleSpinButtonCtrl::PreSubclassWindow()
-{
-  ScaleControl(this);
-}
-
 // Sets the up-down control's buddy window.
 CWnd* 
 StyleSpinButtonCtrl::SetBuddy(StyleEdit* p_buddy)

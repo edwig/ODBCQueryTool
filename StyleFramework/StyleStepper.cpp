@@ -42,11 +42,6 @@ StyleStepper::StyleStepper(CWnd*   p_parentWnd  /*= nullptr     */
   m_textPrior = _T("Previous");
   m_textNext  = _T("Next");
   m_textReady = _T("Ready");
-
-  LOGFONT lf = StyleFonts::MakeLOGFONTFromString(_T("Verdana;28;800"));
-  LOGFONT tf = StyleFonts::MakeLOGFONTFromString(_T("Verdana;14;800"));
-  m_stepFont .CreateFontIndirect(&lf);
-  m_titleFont.CreateFontIndirect(&tf);
 }
 
 StyleStepper::~StyleStepper()
@@ -64,9 +59,10 @@ void StyleStepper::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(StyleStepper,StyleDialog)
   ON_WM_SIZE()
   ON_WM_PAINT()
-  ON_BN_CLICKED(IDC_PRIOR,&StyleStepper::OnBnClickedPrior)
-  ON_BN_CLICKED(IDC_NEXT, &StyleStepper::OnBnClickedNext)
-  ON_COMMAND(IDCANCEL,    &StyleStepper::OnCancel)
+  ON_BN_CLICKED(IDC_PRIOR, &StyleStepper::OnBnClickedPrior)
+  ON_BN_CLICKED(IDC_NEXT,  &StyleStepper::OnBnClickedNext)
+  ON_COMMAND(IDCANCEL,     &StyleStepper::OnCancel)
+  ON_MESSAGE(WM_DPICHANGED,&StyleStepper::OnDpiChanged)
 END_MESSAGE_MAP()
 
 BOOL
@@ -74,6 +70,8 @@ StyleStepper::OnInitDialog()
 {
   StyleDialog::OnInitDialog();
   SetCaption(m_caption);
+
+  InitFonts();
 
   // Check if we really have a wizard!
   if(m_pages.empty())
@@ -121,6 +119,21 @@ StyleStepper::SetupDynamicLayout()
 }
 
 void
+StyleStepper::InitFonts()
+{
+  extern StylingFramework g_styling;
+  const StyleMonitor* monitor = g_styling.GetMonitor(m_hWnd);
+  if(monitor)
+  {
+    StyleFonts& fonts = const_cast<StyleFonts&>(monitor->GetFonts());
+    LOGFONT lf = fonts.MakeLOGFONTFromString(_T("Verdana;28;800"));
+    LOGFONT tf = fonts.MakeLOGFONTFromString(_T("Verdana;14;800"));
+    m_stepFont.CreateFontIndirect(&lf);
+    m_titleFont.CreateFontIndirect(&tf);
+  }
+}
+
+void
 StyleStepper::AdjustSteperSize()
 {
   // Get minimal size of the stepper
@@ -141,9 +154,9 @@ StyleStepper::AdjustSteperSize()
   // Recalculate new positions
   if(m_pages.size() > 1)
   {
-    miny += STEPPER_TOP;
+    miny += WS(GetSafeHwnd(),STEPPER_TOP);
   }
-  miny += STEPPER_BOTTOM;
+  miny += WS(GetSafeHwnd(),STEPPER_BOTTOM);
   int newright  = winrect.left + minx + (winrect.Width()  - clientrect.Width());
   int newbottom = winrect.top  + miny + (winrect.Height() - clientrect.Height());
 
@@ -192,7 +205,7 @@ StyleStepper::MoveButton(StyleButton& p_button,int x,int y)
   int w = rect.Width();
   int h = rect.Height();
 
-  rect.left   = rect.left - parent.left - x - 7;
+  rect.left   = rect.left - parent.left - x - WS(GetSafeHwnd(),7);
   rect.right  = rect.left + w;
   rect.top    = rect.top  - parent.top  - y - (STEPPER_BOTTOM / 2);
   rect.bottom = rect.top  + h;
@@ -299,9 +312,9 @@ StyleStepper::OnSize(UINT p_type,int cx,int cy)
 void
 StyleStepper::ResizePages(int cx,int cy)
 {
-  int top = m_pages.size() > 1 ? STEPPER_TOP : 0;
+  int top = m_pages.size() > 1 ? WS(GetSafeHwnd(),STEPPER_TOP) : 0;
   // Where we expect to see our pages
-  CRect pagerect(0,top,cx,cy - STEPPER_BOTTOM);
+  CRect pagerect(0,top,cx,cy - WS(GetSafeHwnd(),STEPPER_BOTTOM));
   for(size_t index = 0;index < m_pages.size();++index)
   {
     if(m_pages[index].m_page->GetSafeHwnd())
@@ -403,6 +416,17 @@ StyleStepper::OnPaint()
   }
 }
 
+LRESULT 
+StyleStepper::OnDpiChanged(WPARAM wParam,LPARAM lParam)
+{
+  StyleDialog::OnDpiChanged(wParam,lParam);
+  if(!m_pages.empty() && m_pages[0].m_page->GetSafeHwnd())
+  {
+    DisplayPage();
+  }
+  return TRUE;
+}
+
 void
 StyleStepper::ClearStepperArea()
 {
@@ -416,7 +440,7 @@ StyleStepper::ClearStepperArea()
   CRect client;
   GetClientRect(&client);
 
-  client.bottom =  client.top + STEPPER_TOP;
+  client.bottom =  client.top + WS(GetSafeHwnd(),STEPPER_TOP);
   COLORREF oldBack = dc->SetBkColor(ThemeColor::GetColor(Colors::ColorWindowFrame));
   dc->ExtTextOut(0,0,ETO_OPAQUE,client,_T(""),0);
 
@@ -432,9 +456,9 @@ StyleStepper::Draw()
   GetClientRect(&client);
 
   int count  = (int) m_pages.size();
-  int margin = STEPPER_MARGIN;
-  int middle = STEPPER_TOP / 2;
-  int radius = (STEPPER_TOP - (2 * STEPPER_MARGIN)) / 2;
+  int margin =  WS(GetSafeHwnd(),STEPPER_MARGIN);
+  int middle =  WS(GetSafeHwnd(),STEPPER_TOP / 2);
+  int radius = (WS(GetSafeHwnd(),STEPPER_TOP) - (2 * margin)) / 2;
   int xpos   = margin + radius;
   int dx     = (client.Width() - (2 * margin) - (2 * radius)) / (count - 1);
 
@@ -448,7 +472,7 @@ StyleStepper::Draw()
   pen.CreatePen(PS_NULL,0,RGB(0,0,0));
   CPen*   oldPen   = dc->SelectObject(&pen);
   CBrush* oldBrush = dc->SelectObject(&brush1);
-  int     halfhigh = STEPPER_LINEWIDTH / 2;
+  int     halfhigh = WS(GetSafeHwnd(),STEPPER_LINEWIDTH) / 2;
 
   for(int page = 0;page < (count - 1); ++page)
   {
@@ -457,7 +481,8 @@ StyleStepper::Draw()
       // Draw lines in GRAY color for unfinished pages
       dc->SelectObject(&brush2);
     }
-    CRect line(xpos + radius + STEPPER_SPLIT,middle - halfhigh,xpos + dx - radius - STEPPER_SPLIT,middle + halfhigh);
+    int split = WS(GetSafeHwnd(),STEPPER_SPLIT);
+    CRect line(xpos + radius + split,middle - halfhigh,xpos + dx - radius - split,middle + halfhigh);
     dc->Rectangle(line);
     xpos += dx;
   }
@@ -500,7 +525,7 @@ StyleStepper::Draw()
   {
     dc->SetTextColor(color1);
     dc->SetBkColor(ThemeColor::GetColor(Colors::ColorWindowFrame));
-    CRect txtrect(xpos,middle + radius,xpos + 2 * radius,middle + radius + STEPPER_MARGIN);
+    CRect txtrect(xpos,middle + radius,xpos + 2 * radius,middle + radius + margin);
     dc->SetTextAlign(TA_CENTER);
     dc->ExtTextOut(txtrect.left + radius,txtrect.top,ETO_OPAQUE,&txtrect,m_pages[page].m_title,nullptr);
     xpos += dx;

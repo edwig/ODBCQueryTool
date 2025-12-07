@@ -26,7 +26,7 @@
 
 // QueryDlg dialog
 
-class QueryDlg : public StyleDialog
+class QueryDlg : public StyleTab
 {
 	DECLARE_DYNAMIC(QueryDlg)
 

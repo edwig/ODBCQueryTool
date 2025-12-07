@@ -16,22 +16,51 @@
 #define IDI_CANCEL                      135
 #define IDI_REMOVE                      136
 #define IDI_SAVE                        137
-#define IDB_SCROLLBAR1                  138
-#define IDB_SCROLLBAR2                  139
-#define IDB_SCROLLBAR3                  140
-#define IDB_SCROLLBAR4                  141
-#define IDB_SCROLLBAR5                  142
-#define IDB_SCROLLBAR6                  143
-#define IDB_SCROLLBAR7                  144
-#define IDB_SCROLLBAR8                  145
-#define IDD_CALENDAR                    146
-#define IDI_CALENDAR                    147
-#define IDD_STEPPER                     148
-#define IDC_PRIOR                       149
-#define IDC_NEXT                        150
-#define IDI_PRIOR                       151
-#define IDI_NEXT                        152
-#define IDR_MELDINGEN                   180
+
+#define IDD_CALENDAR                    138
+#define IDI_CALENDAR                    139
+#define IDD_STEPPER                     140
+#define IDC_PRIOR                       141
+#define IDC_NEXT                        142
+#define IDI_PRIOR                       143
+#define IDI_NEXT                        144
+
+#define IDB_SCROLLBAR1                  150
+#define IDB_SCROLLBAR2                  151
+#define IDB_SCROLLBAR3                  152
+#define IDB_SCROLLBAR4                  153
+#define IDB_SCROLLBAR5                  154
+#define IDB_SCROLLBAR6                  155
+#define IDB_SCROLLBAR7                  156
+#define IDB_SCROLLBAR8                  157
+
+#define IDB_SCROLLBAR1_125              158
+#define IDB_SCROLLBAR2_125              159
+#define IDB_SCROLLBAR3_125              160
+#define IDB_SCROLLBAR4_125              161
+#define IDB_SCROLLBAR5_125              162
+#define IDB_SCROLLBAR6_125              163
+#define IDB_SCROLLBAR7_125              164
+#define IDB_SCROLLBAR8_125              165
+
+#define IDB_SCROLLBAR1_150              166
+#define IDB_SCROLLBAR2_150              167
+#define IDB_SCROLLBAR3_150              168
+#define IDB_SCROLLBAR4_150              169
+#define IDB_SCROLLBAR5_150              170
+#define IDB_SCROLLBAR6_150              171
+#define IDB_SCROLLBAR7_150              172
+#define IDB_SCROLLBAR8_150              173
+
+#define IDB_SCROLLBAR1_200              174
+#define IDB_SCROLLBAR2_200              175
+#define IDB_SCROLLBAR3_200              176
+#define IDB_SCROLLBAR4_200              177
+#define IDB_SCROLLBAR5_200              178
+#define IDB_SCROLLBAR6_200              179
+#define IDB_SCROLLBAR7_200              180
+#define IDB_SCROLLBAR8_200              181
+
 #define IDD_EXPORT                      200
 #define IDD_MIGRATE_WIZARD              201
 #define IDS_ABOUTBOX                    202

@@ -42,12 +42,6 @@ BEGIN_MESSAGE_MAP(StyleGroupBox,CWnd)
   ON_WM_PAINT()
 END_MESSAGE_MAP()
 
-void
-StyleGroupBox::PreSubclassWindow()
-{
-  ScaleControl(this);
-}
-
 static HRGN SetControlClipping(HDC hdc, const RECT* rect)
 {
   RECT rc = *rect;
@@ -84,7 +78,8 @@ StyleGroupBox::Internal_Paint(CDC* p_dc)
   // Text of the label
   CString text;
   GetWindowText(text);
-  HFONT oldfont = (HFONT)p_dc->SelectObject(&STYLEFONTS.DialogTextFont);
+  CFont* font = GetSFXFont(GetSafeHwnd(),StyleFontType::DialogFont);
+  HFONT oldfont = (HFONT)p_dc->SelectObject(font);
 
   /* GroupBox acts like static control, so it sends CTLCOLORSTATIC */
   CWnd* parent = GetParent();

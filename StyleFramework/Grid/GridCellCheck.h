@@ -37,13 +37,13 @@ public:
   void SetCenter(bool p_center = true);
 
   // Operations
-	virtual CSize GetCellExtent(CDC* pDC);
+	virtual CSize GetCellExtent(CDC* pDC,HWND p_hwnd);
   virtual void OnClick( CPoint PointCellRelative);
-  virtual BOOL GetTextRect( LPRECT pRect);
+  virtual BOOL GetTextRect( LPRECT pRect,HWND p_hwnd);
 
 protected:
-  virtual BOOL Draw(CDC* pDC, int nRow, int nCol, CRect rect, BOOL bEraseBkgnd = TRUE);
-  CRect GetCheckPlacement();
+  virtual BOOL Draw(HWND p_hwnd,CDC* pDC, int nRow, int nCol, CRect rect, BOOL bEraseBkgnd = TRUE);
+  CRect GetCheckPlacement(HWND p_hwnd);
   // Data
   BOOL  m_bChecked;
   CRect m_Rect;

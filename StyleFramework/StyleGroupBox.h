@@ -28,7 +28,6 @@ public:
   virtual ~StyleGroupBox();
 
 private:
-  virtual void PreSubclassWindow() override;
   void Internal_Paint(CDC* p_dc);
 
   DECLARE_MESSAGE_MAP()

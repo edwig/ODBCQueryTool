@@ -43,7 +43,7 @@ CGridURLCell::~CGridURLCell()
 {
 }
 
-BOOL CGridURLCell::Draw(CDC* pDC, int nRow, int nCol, CRect rect, BOOL bEraseBkgnd)
+BOOL CGridURLCell::Draw(HWND p_hwnd,CDC* pDC, int nRow, int nCol, CRect rect, BOOL bEraseBkgnd)
 {
 	// If URL is present then change text color
 	if(HasUrl(GetText()))
@@ -53,7 +53,7 @@ BOOL CGridURLCell::Draw(CDC* pDC, int nRow, int nCol, CRect rect, BOOL bEraseBkg
   // Good a place as any to store the bounds of the rect
   m_Rect = rect;
 
-  return CGridCell::Draw(pDC, nRow, nCol, rect, bEraseBkgnd);
+  return CGridCell::Draw(p_hwnd,pDC,nRow,nCol,rect,bEraseBkgnd);
 }
 
 #pragma warning(disable:4100)

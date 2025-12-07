@@ -17,7 +17,9 @@
 // For license: See the file "LICENSE.txt" in the root folder
 //
 #pragma once
+#include <vector>
 #include <map>
+#include <afxdialogex.h>
 
 class StyleComboBox;
 class AutoBlockActivation;
@@ -32,7 +34,15 @@ typedef struct
 } 
 SMessage, *PSMessage;
 
-class StyleDialog : public CDialog
+using ControlPlanes = std::vector<CWnd*>;
+
+//////////////////////////////////////////////////////////////////////
+//
+// StyleDialog class
+//
+/////////////////////////////////////////////////////////////////////
+
+class StyleDialog : public CDialogEx
 {
   DECLARE_DYNAMIC(StyleDialog)
 
@@ -50,14 +60,17 @@ public:
              ,bool  p_caption   = true
              ,bool  p_sysmenu   = false
              ,bool  p_status    = false);
+  virtual ~StyleDialog() override;
 
   virtual INT_PTR DoModal() override;
   virtual INT_PTR DoModal(bool p_showGrayscreen);
   virtual BOOL    OnInitDialog() override;
   virtual BOOL    InitFirstFocus();
+  virtual void    PostInitDialog();
   virtual bool    OnClosing();
   virtual void    SetupDynamicLayout();
   virtual void    OnDroppedFile(UINT p_id,UINT p_index,LPCTSTR p_fileName);
+  virtual bool    AddControlPlane(CWnd* p_dialog);
 
   void    ReDrawFrame();
   void    ShowSysMenu     (bool p_sysmenu     = true);
@@ -66,6 +79,7 @@ public:
   void    ShowCloseButton (bool p_closeButton = true);
   void    ShowGripper     (bool p_gripper     = true);
   void    SetCanResize    (bool p_resize      = true);
+  void    SetSaveMonitor  (bool p_save        = true);
   void    SetWindowText(LPCTSTR lpstString);
   BOOL    SetSysMenu(UINT p_menuResource);
   void    SetAboutBoxAndIcon(int p_command,int p_menutitle);
@@ -73,6 +87,7 @@ public:
   void    SetTheme(ThemeColor::Themes p_theme);
   void    LoadStyleTheme();
   CWnd*   GetNextDlgTabItem(CWnd* p_control, BOOL p_previous = FALSE) const;
+  bool    GetSaveMonitor() { return m_saveMonitor; }
 
   void    RegisterTooltip(int p_ID,            LPCTSTR p_text);
   void    RegisterTooltip(CWnd& p_wnd,         LPCTSTR p_text);
@@ -89,8 +104,8 @@ protected:
   void    ReDrawButton(LRESULT type);
   void    DrawButton(CDC* pDC,CRect rect,LRESULT type);
   void    PositionButtons();
-  void    Button(CDC* pDC, CRect rect, LRESULT type, BUTTONSTATE state = BS_NORMAL, bool max = true);
   void    SendMessageToAllChildWindows(UINT MessageId,WPARAM wParam,LPARAM lParam);
+  void    NotifyMonitorToAllChilds(bool p_beforeParent = false);
   void    PerformMenu();
   void    InitStatusBar();
   void    EraseGripper();
@@ -99,10 +114,15 @@ protected:
 
   // Message handlers
   afx_msg int     OnCreate(LPCREATESTRUCT p_create);
+  afx_msg void    OnDestroy();
   afx_msg BOOL    OnEraseBkgnd(CDC* pDC);
   afx_msg HBRUSH  OnCtlColor(CDC* pDC,CWnd* pWnd,UINT nCtlColor);
-  afx_msg LPARAM  OnCtlColorStatic (WPARAM wParam,LPARAM lParam);
-  afx_msg LPARAM  OnCtlColorListBox(WPARAM wParam,LPARAM lParam);
+  afx_msg LPARAM  OnCtlColorStatic  (WPARAM wParam,LPARAM lParam);
+  afx_msg LPARAM  OnCtlColorListBox (WPARAM wParam,LPARAM lParam);
+  afx_msg LRESULT OnDpiChanged      (WPARAM wParam,LPARAM lParam);
+  afx_msg LRESULT OnGetDpiScaledSize(WPARAM wParam,LPARAM lParam);
+  afx_msg LRESULT OnDisplayChange   (WPARAM wParam,LPARAM lParam);
+  afx_msg LRESULT OnStyleChanged    (WPARAM wParam,LPARAM lParam);
   afx_msg void    OnNcMouseMove(UINT nFlags, CPoint point);
   afx_msg void    OnNcLButtonDown(UINT nFlags, CPoint point);
   afx_msg void    OnNcRButtonUp(UINT nFlags, CPoint point);
@@ -116,7 +136,6 @@ protected:
   afx_msg void    OnActivate(UINT nState,CWnd* pWndOther,BOOL bMinimized);
   afx_msg void    OnActivateApp(BOOL bActive,DWORD dwThreadID);
   afx_msg void    OnCancel() override;
-  afx_msg LRESULT OnStyleChanged(WPARAM wParam,LPARAM lParam);
   afx_msg void    OnSettingChange(UINT uFlags,LPCTSTR lpszSection);
   afx_msg BOOL    OnToolTipNotify(UINT id,NMHDR* pNMHDR,LRESULT* pResult);
   afx_msg HCURSOR OnQueryDragIcon();
@@ -147,7 +166,7 @@ protected:
   CRect     m_captionRect { 0,0,0,0 };
   // Original window size
   CRect     m_originalSize{ 0,0,0,0 };
-  // caption bar 
+  // Booleans
   bool      m_caption     { true  };
   bool      m_closeButton { true  };
   bool      m_mnuButton   { false };
@@ -157,14 +176,18 @@ protected:
   bool      m_hasGripper  { false };
   bool      m_hasStatus   { false };
   bool      m_canActivate { true  };
+  bool      m_saveMonitor { false };
   LRESULT   m_curhit      { HTNOWHERE };
   UINT      m_sysmenu     { NULL  };
+  int       m_dpi_x       { 0     };
+  int       m_dpi_y       { 0     };
   // Objects
-  CMenu      m_menu;
-  HICON      m_hIcon;
-  CStatusBar m_statusBar;
-  CBrush     m_defaultBrush;
-  ToolTips   m_tooltips;
+  CMenu         m_menu;
+  HICON         m_hIcon;
+  CStatusBar    m_statusBar;
+  ControlPlanes m_controlPlanes;
+  CBrush        m_defaultBrush;
+  ToolTips      m_tooltips;
 };
 
 class AutoBlockActivation

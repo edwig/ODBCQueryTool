@@ -56,6 +56,7 @@ protected:
 
   // Implementation
 protected:
+  void      SetFontsAndSize();
   HINSTANCE GotoURL(LPCTSTR url, int showcmd);
   void      ReportError(int nError);
   LONG      GetRegKey(HKEY key, LPCTSTR subkey, LPTSTR retdata);
@@ -88,6 +89,7 @@ protected:
 	afx_msg void    OnTimer(UINT_PTR nIDEvent);
 	afx_msg BOOL    OnEraseBkgnd(CDC* pDC);
   afx_msg void    OnClicked();
+  afx_msg LRESULT OnDpiChanged(WPARAM wParam,LPARAM lParam);
 
   DECLARE_MESSAGE_MAP()
 };
