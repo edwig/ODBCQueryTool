@@ -5858,12 +5858,6 @@ CGridCtrl::EnsureVisible(CCellID& p_cell,bool p_ingrid /*=false*/)
   EnsureVisible(p_cell.row, p_cell.col,p_ingrid); 
 }
 
-void
-CGridCtrl::EnsureVisible(CCellID& p_cell,bool p_ingrid /*=false*/)
-{ 
-  EnsureVisible(p_cell.row, p_cell.col,p_ingrid); 
-}
-
 // EnsureVisible supplied by Roelf Werkman
 void 
 CGridCtrl::EnsureVisible(int nRow, int nCol,bool p_ingrid /*=false*/)
