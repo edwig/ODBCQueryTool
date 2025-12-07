@@ -393,3 +393,83 @@ StyleRestoreWindowPosition(CWnd* p_wnd)
   // Resize to original size
   p_wnd->MoveWindow(rect.left,rect.top,winWidth,winHeight);
 }
+
+CString StyleGetStringFromClipboard(HWND p_wnd /*=NULL*/)
+{
+#ifdef UNICODE
+  UINT format = CF_UNICODETEXT;
+#else
+  UINT format = CF_TEXT;
+#endif
+
+  CString string;
+  if(OpenClipboard(p_wnd))
+  {
+    HANDLE glob = GetClipboardData(format);
+    if(glob)
+    {
+      LPCTSTR text = (LPCTSTR) GlobalLock(glob);
+      string = text;
+      GlobalUnlock(glob);
+
+    }
+    CloseClipboard();
+  }
+  return string;
+}
+
+bool StylePutStringToClipboard(CString p_string,HWND p_wnd /*=NULL*/,bool p_append /*=false*/)
+{
+  bool result = false;
+  HGLOBAL memory = 0L;
+#ifdef UNICODE
+  UINT format = CF_UNICODETEXT;
+#else
+  UINT format = CF_TEXT;
+#endif
+
+  try
+  {
+    if(!p_append)
+    {
+      OpenClipboard(p_wnd);
+      EmptyClipboard();
+      CloseClipboard();
+    }
+
+    if(OpenClipboard(p_wnd))
+    {
+      // Put the text in a global GMEM_MOVABLE memory handle
+      size_t size = ((size_t) p_string.GetLength() + 1) * sizeof(TCHAR);
+      memory = GlobalAlloc(GHND,size);
+      if(memory)
+      {
+        void* data = GlobalLock(memory);
+        if(data)
+        {
+          _tcsncpy_s((LPTSTR) data,size,(LPCTSTR) p_string.GetString(),size);
+        }
+        else
+        {
+          GlobalFree(memory);
+          return false;
+        }
+
+        // Set the text on the clipboard
+        // and transfer ownership of the memory segment
+        SetClipboardData(format,memory);
+        result = true;
+      }
+      CloseClipboard();
+    }
+  }
+  catch(...)
+  {
+    StyleMessageBox(CWnd::FromHandle(p_wnd),_T("Error copying data to the clipboard"),_T("CLIPBOARD"),MB_OK | MB_ICONERROR);
+  }
+  if(memory)
+  {
+    GlobalUnlock(memory);
+  }
+  return result;
+}
