@@ -25,38 +25,40 @@
 #define EditFontName  _T("Courier New")   // Standard edit font
 
 // By defining static values, the screen size scaling of MS-Windows 10 works correctly (again)
-#define DIALOOGFONTSIZE    10 // MulDiv(10, 96, StyleFonts::logpixelsy())
-#define STANDARDFONTSIZE   10 // MulDiv(10, 96, StyleFonts::logpixelsy())
-#define ERRORFONTSIZE      12 // MulDiv(12, 96, StyleFonts::logpixelsy())
-#define CAPTIONTEXTSIZE    18 // MulDiv(18, 96, StyleFonts::logpixelsy())
+#define DIALOOGFONTSIZE    10
+#define STANDARDFONTSIZE   10
+#define ERRORFONTSIZE      12
+#define CAPTIONTEXTSIZE    18
 
-#define LISTBOX_ITEMHEIGTH 16 // For StyleListBox
-
-#define CaptionFontString       StyleFontName + CString(";") + IntegerToString(CAPTIONTEXTSIZE)    + CString(";") + IntegerToString(FW_BOLD)
-#define DialogFontString        StyleFontName + CString(";") + IntegerToString(STANDARDFONTSIZE)   + CString(";") + IntegerToString(FW_NORMAL)
-#define DialogFontBoldString    StyleFontName + CString(";") + IntegerToString(STANDARDFONTSIZE)   + CString(";") + IntegerToString(FW_HEAVY)
-#define EditorFontString        EditFontName  + CString(";") + IntegerToString(STANDARDFONTSIZE)   + CString(";") + IntegerToString(FW_NORMAL)
-#define ErrorFontString         StyleFontName + CString(";") + IntegerToString(ERRORFONTSIZE)      + CString(";") + IntegerToString(FW_BOLD) 
+enum class StyleFontType
+{
+  CaptionFont,
+  DialogFont,
+  DialogFontBold, 
+  EditorFont,
+  ErrorFont
+};
 
 class StyleFonts
 {
 public:
   StyleFonts();
-  bool SetFactor(int p_factor);
-  int  GetFactor();
 
-  static int logpixelsy();
-  static LOGFONT MakeLOGFONTFromString(CString fontstring);
+  void    Init(int p_dpi_y);
+  int     GetFactor();
+  CFont*  GetFont(StyleFontType p_type);
+  LOGFONT MakeLOGFONTFromString(CString fontstring);
 
+private:
+  void    ReCreateFonts();
+
+  // 100 % by 96 dots per inch (DPI)
+  int   m_dpi    { USER_DEFAULT_SCREEN_DPI };
+  int   m_factor { 100 };
+  // All the fonts
   CFont CaptionTextFont;
   CFont DialogTextFont;
   CFont DialogTextFontBold;
   CFont EditorTextFont;
   CFont ErrorTextFont;
-private:
-  void  ReCreateFonts();
-
-  int   m_factor = 100;
 };
-
-extern StyleFonts STYLEFONTS;

@@ -41,10 +41,10 @@ SELECT length(name) as name_length
 
 // QueryDlg dialog
 
-IMPLEMENT_DYNAMIC(QueryDlg, StyleDialog)
+IMPLEMENT_DYNAMIC(QueryDlg, StyleTab)
 
 QueryDlg::QueryDlg(CWnd* pParent /*=nullptr*/)
-	       :StyleDialog(IDD_QUERIES, pParent)
+	       :StyleTab(IDD_QUERIES, pParent)
 {
 }
 
@@ -55,14 +55,14 @@ QueryDlg::~QueryDlg()
 void 
 QueryDlg::DoDataExchange(CDataExchange* pDX)
 {
-	StyleDialog::DoDataExchange(pDX);
+	StyleTab::DoDataExchange(pDX);
 
   DDX_Control(pDX,IDC_QUERY,    m_editQuery,m_query);
   DDX_Control(pDX,IDC_GO,       m_buttonGO);
   DDX_Control(pDX,IDC_REWRITTEN,m_editResult,m_result);
 }
 
-BEGIN_MESSAGE_MAP(QueryDlg, StyleDialog)
+BEGIN_MESSAGE_MAP(QueryDlg, StyleTab)
   ON_EN_CHANGE   (IDC_QUERY,     &QueryDlg::OnEnChangeQuery)
   ON_EN_KILLFOCUS(IDC_QUERY,     &QueryDlg::OnEnChangeQuery)
   ON_BN_CLICKED  (IDC_GO,        &QueryDlg::OnBnClickedGo)
@@ -72,7 +72,7 @@ END_MESSAGE_MAP()
 BOOL
 QueryDlg::OnInitDialog()
 {
-  StyleDialog::OnInitDialog();
+  StyleTab::OnInitDialog();
 
   m_buttonGO.SetIconImage(IDI_GO);
   SetCanResize();
@@ -85,7 +85,7 @@ QueryDlg::OnInitDialog()
 void
 QueryDlg::SetupDynamicLayout()
 {
-  StyleDialog::SetupDynamicLayout();
+  StyleTab::SetupDynamicLayout();
 
   CMFCDynamicLayout& manager = *GetDynamicLayout();
 #ifdef _DEBUG

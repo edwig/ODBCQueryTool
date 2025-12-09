@@ -33,6 +33,12 @@ public:
 
   virtual void OnDrawItem(CDC* pDC,int iItem,CRect rect,BOOL bIsPressed,BOOL bIsHighlighted) override;
   virtual void OnFillBackground(CDC* pDC) override;
+
+  DECLARE_MESSAGE_MAP()
+
+  afx_msg LRESULT OnDpiChanged(WPARAM wParam,LPARAM lParam);
+  afx_msg LRESULT OnLayout(WPARAM wParam,LPARAM lParam);
+
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -71,10 +77,12 @@ protected:
   virtual LRESULT WindowProc(UINT message,WPARAM wParam,LPARAM lParam) override;
   virtual void    PreSubclassWindow() override;
 
-  afx_msg void OnPaint();
-  afx_msg void OnSize(UINT nType,int cx,int cy);
-  afx_msg BOOL OnEraseBkgnd(CDC* pDC);
-  afx_msg void OnShowWindow(BOOL bShow, UINT nStatus);
+  afx_msg void    OnPaint();
+  afx_msg void    OnSize(UINT nType,int cx,int cy);
+  afx_msg BOOL    OnEraseBkgnd(CDC* pDC);
+  afx_msg void    OnShowWindow(BOOL bShow, UINT nStatus);
+  afx_msg LRESULT OnDpiChanged(WPARAM wParam,LPARAM lParam);
+
   DECLARE_MESSAGE_MAP()
 };
 

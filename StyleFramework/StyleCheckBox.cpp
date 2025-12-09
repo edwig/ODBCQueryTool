@@ -17,6 +17,7 @@
 // For license: See the file "LICENSE.txt" in the root folder
 //
 #include "stdafx.h"
+#include "StyleMacros.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -44,12 +45,6 @@ StyleCheckbox::StyleCheckbox(bool p_mutable,bool p_radio,CWnd* p_field)
 StyleCheckbox::~StyleCheckbox()
 {
   DestroyWindow();
-}
-
-void
-StyleCheckbox::PreSubclassWindow()
-{
-  ScaleControl(this);
 }
 
 void
@@ -211,9 +206,16 @@ StyleCheckbox::Draw(CWnd* p_wnd
 
     if ((p_state & BST_CHECKED) != 0)
     {
-      p_dc->MoveTo(mark.CenterPoint().x - WS(6), mark.CenterPoint().y - WS(1));
-      p_dc->LineTo(mark.CenterPoint().x - WS(2), mark.CenterPoint().y + WS(3));
-      p_dc->LineTo(mark.CenterPoint().x + WS(5), mark.CenterPoint().y - WS(4));
+      // Draw the check mark
+      int xs = WS(p_wnd->GetSafeHwnd(),6);
+      int ys = WS(p_wnd->GetSafeHwnd(),1);
+      int xm = WS(p_wnd->GetSafeHwnd(),2);
+      int ym = WS(p_wnd->GetSafeHwnd(),3);
+      int xe = WS(p_wnd->GetSafeHwnd(),5);
+      int ye = WS(p_wnd->GetSafeHwnd(),4);
+      p_dc->MoveTo(mark.CenterPoint().x - xs, mark.CenterPoint().y - ys);
+      p_dc->LineTo(mark.CenterPoint().x - xm, mark.CenterPoint().y + ym);
+      p_dc->LineTo(mark.CenterPoint().x + xe, mark.CenterPoint().y - ye);
     }
     else if ((p_state & BST_INDETERMINATE) != 0)
     {
@@ -229,14 +231,16 @@ StyleCheckbox::Draw(CWnd* p_wnd
     p_wnd->GetWindowText(text);
     if(!text.IsEmpty())
     {
+      CFont* font = GetSFXFont(p_wnd->GetSafeHwnd(),StyleFontType::DialogFont);
+
       CPen pen;
       pen.CreatePen(PS_SOLID,1,textcolor);
       p_dc->SelectObject(pen);
       p_dc->SetBkColor(ThemeColor::GetColor(Colors::ColorWindowFrame));
-      p_dc->SelectObject(STYLEFONTS.DialogTextFont);
+      p_dc->SelectObject(font);
       p_dc->SetTextColor(textcolor);
-      int margin = (28 * GetSFXSizeFactor()) / 100;
-      p_rect.left += margin;
+      int factor = GetSFXSizeFactor(p_wnd->GetSafeHwnd());
+      p_rect.left += 28 * factor / 100;
       p_dc->DrawText(text,&p_rect,DT_VCENTER | DT_SINGLELINE);
     }
   }

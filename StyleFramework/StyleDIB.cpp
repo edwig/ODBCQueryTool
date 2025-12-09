@@ -13,7 +13,8 @@
 //             |___/           |___/                                                       
 //
 //
-// Author: ir. W.E. Huisman
+// Author: B.P. Nebbeling
+//         W.E. Huisman
 // For license: See the file "LICENSE.txt" in the root folder
 //
 #include "stdafx.h"
@@ -51,9 +52,10 @@ StyleDIB::~StyleDIB()
 /////////////////////////////////////////////////////////////////////////////
 // Private functions
 
-static BOOL IsWinDIB(BITMAPINFOHEADER* pBIH)
+static BOOL
+IsWinDIB(BITMAPINFOHEADER* pBIH)
 {
-  if (((BITMAPCOREHEADER*)pBIH)->bcSize == sizeof(BITMAPCOREHEADER))
+  if(((BITMAPCOREHEADER*)pBIH)->bcSize == sizeof(BITMAPCOREHEADER))
   {
     return FALSE;
   }
@@ -63,16 +65,23 @@ static BOOL IsWinDIB(BITMAPINFOHEADER* pBIH)
 static int 
 NumDIBColorEntries(BITMAPINFO* pBmpInfo)
 {
-  BITMAPINFOHEADER* pBIH;
-  BITMAPCOREHEADER* pBCH;
-  int iColors, iBitCount;
+  BITMAPINFOHEADER* pBIH = nullptr;
+  BITMAPCOREHEADER* pBCH = nullptr;
+  int iColors   = 0;
+  int iBitCount = 0;
+
+  // We must have a header
+  if(!pBmpInfo)
+  {
+    return 0;
+  }
 
   pBIH = &(pBmpInfo->bmiHeader);
   pBCH = (BITMAPCOREHEADER*)pBIH;
 
   // Start off by assuming the color table size from
   // the bit-per-pixel field.
-  if (IsWinDIB(pBIH))
+  if(IsWinDIB(pBIH))
   {
     iBitCount = pBIH->biBitCount;
   }
@@ -107,9 +116,9 @@ NumDIBColorEntries(BITMAPINFO* pBmpInfo)
     case 8:   iMax = 256;      break;
     default:  iMax = 0;        break;
   }
-  if (iMax)
+  if(iMax)
   {
-    if (iColors > iMax)
+    if(iColors > iMax)
     {
       TRACE("Invalid color count");
       iColors = iMax;
@@ -118,12 +127,12 @@ NumDIBColorEntries(BITMAPINFO* pBmpInfo)
   return iColors;
 }
 
-
 /////////////////////////////////////////////////////////////////////////////
 // StyleDIB commands
 
 // Create a new empty 8bpp DIB with a 256 entry color table.
-BOOL StyleDIB::Create(int iWidth, int iHeight)
+BOOL
+StyleDIB::Create(int iWidth, int iHeight)
 {
   // Delete any existing stuff.
   if (m_pBMI != NULL) ::free(m_pBMI);
@@ -178,14 +187,23 @@ BOOL StyleDIB::Create(int iWidth, int iHeight)
 
 // Create a StyleDIB structure from existing header and bits. The DIB
 // won't delete the bits and makes a copy of the header.
-BOOL StyleDIB::Create(BITMAPINFO* pBMI, BYTE* pBits)
+BOOL
+StyleDIB::Create(BITMAPINFO* pBMI, BYTE* pBits)
 {
-  if (m_pBMI != NULL) ::free(m_pBMI);
-  m_pBMI = (BITMAPINFO*)malloc(sizeof(BITMAPINFOHEADER) + 256 * sizeof(RGBQUAD));
+  if(m_pBMI != NULL)
+  {
+    ::free(m_pBMI);
+  }
+  m_pBMI = (BITMAPINFO*)malloc(sizeof(BITMAPINFOHEADER) + (NumDIBColorEntries(pBMI) * sizeof(RGBQUAD)));
+  if(!m_pBMI)
+  {
+    TRACE("Out of memory for DIB header");
+    return FALSE;
+  }
   // Note: This will probably fail for < 256 color headers.
-  memcpy(m_pBMI, pBMI, sizeof(BITMAPINFOHEADER) +  NumDIBColorEntries(pBMI) * sizeof(RGBQUAD));
+  memcpy(m_pBMI, pBMI, sizeof(BITMAPINFOHEADER) +  (NumDIBColorEntries(pBMI) * sizeof(RGBQUAD)));
 
-  if (m_bMyBits && (m_pBits != NULL))
+  if(m_bMyBits && (m_pBits != NULL))
   {
     ::free(m_pBits);
   }
@@ -195,7 +213,8 @@ BOOL StyleDIB::Create(BITMAPINFO* pBMI, BYTE* pBits)
 }
 
 // Load a DIB from an open file.
-BOOL StyleDIB::Load(CFile* fp)
+BOOL
+StyleDIB::Load(CFile* fp)
 {
   BOOL bIsPM = FALSE;
   BITMAPINFO* pBmpInfo = NULL;
@@ -370,7 +389,8 @@ $abort: // Something went wrong.
 
 // Load a DIB from a disk file. If no file name is given, show
 // an Open File dialog to get one.
-BOOL StyleDIB::Load(LPCTSTR pszFileName)
+BOOL
+StyleDIB::Load(LPCTSTR pszFileName)
 {
   // Try to open the file for read access.
   CFile file;
@@ -385,7 +405,8 @@ BOOL StyleDIB::Load(LPCTSTR pszFileName)
 }
 
 // Load a DIB from a DIB resource id.
-BOOL StyleDIB::LoadBitmap(WORD wResid)
+BOOL
+StyleDIB::LoadBitmap(WORD wResid)
 {
   HINSTANCE hInst = AfxGetResourceHandle();
   HRSRC hrsrc = ::FindResource(hInst, MAKEINTRESOURCE(wResid), RT_BITMAP);
@@ -404,14 +425,25 @@ BOOL StyleDIB::LoadBitmap(WORD wResid)
   BYTE* pRes = (BYTE*)LockResource(hg);
   int iSize = ::SizeofResource(hInst, hrsrc);
 
-  // Mark the resource pages as read/write so the mmioOpen
-  // won't fail
+  // Mark the resource pages as read/write so the mmioOpen won't fail
   DWORD dwOldProt;
-  /* BOOL b = */::VirtualProtect(pRes,iSize,PAGE_READWRITE,&dwOldProt);
-  //BITMAPINFO* bm = (BITMAPINFO*)pRes;
-  CSize size;
+  ::VirtualProtect(pRes,iSize,PAGE_READWRITE,&dwOldProt);
 
-  return FALSE;
+  BITMAPINFOHEADER* pInfoHdr = (BITMAPINFOHEADER*)(pRes);
+  if(pInfoHdr->biSize != sizeof(BITMAPINFOHEADER))
+  {
+    CString error   = GetStyleText(TXT_ERROR);
+    CString message = GetStyleText(TXT_NO_BITMAP);
+    StyleMessageBox(nullptr,message,error,MB_OK | MB_ICONERROR);
+    return FALSE;
+  }
+  BYTE* pBits = pRes + sizeof(BITMAPINFOHEADER);
+  if(pInfoHdr->biBitCount <= 8)
+  {
+    pBits += NumDIBColorEntries((BITMAPINFO*)pInfoHdr) * sizeof(RGBQUAD);
+  }
+  // Note: not required to unlock or free the resource in Win32
+  return Create((BITMAPINFO*)pInfoHdr,pBits);
 }
 
 // Load a DIB from a DIB resource id.
@@ -465,24 +497,26 @@ BOOL StyleDIB::Load(WORD wResid)
 }
 
 // Draw the DIB to a given DC.
-void StyleDIB::Draw(CDC* pDC, int x, int y)
+void
+StyleDIB::Draw(CDC* pDC, int x, int y,DWORD p_rop /*= SRCCOPY*/)
 {
   ::StretchDIBits(pDC->GetSafeHdc(),
-    x,                        // Destination x
-    y,                        // Destination y
-    DibWidth(),               // Destination width
-    DibHeight(),              // Destination height
-    0,                        // Source x
-    0,                        // Source y
-    DibWidth(),               // Source width
-    DibHeight(),              // Source height
-    GetBitsAddress(),         // Pointer to bits
-    GetBitmapInfoAddress(),   // BITMAPINFO
-    DIB_RGB_COLORS,           // Options
-    SRCCOPY);                 // Raster operation code (ROP)
+                  x,                        // Destination x
+                  y,                        // Destination y
+                  DibWidth(),               // Destination width
+                  DibHeight(),              // Destination height
+                  0,                        // Source x
+                  0,                        // Source y
+                  DibWidth(),               // Source width
+                  DibHeight(),              // Source height
+                  GetBitsAddress(),         // Pointer to bits
+                  GetBitmapInfoAddress(),   // BITMAPINFO
+                  DIB_RGB_COLORS,           // Options
+                  p_rop);                   // Raster operation code (ROP)
 }
 
-void StyleDIB::Draw(CDC* pDC, int x, int y, int w, int h)
+void
+StyleDIB::Draw(CDC* pDC, int x, int y, int w, int h,DWORD p_rop /*= SRCCOPY*/)
 {
   ::StretchDIBits(pDC->GetSafeHdc(),
                   x,                        // Destination x
@@ -496,10 +530,11 @@ void StyleDIB::Draw(CDC* pDC, int x, int y, int w, int h)
                   GetBitsAddress(),         // Pointer to bits
                   GetBitmapInfoAddress(),   // BITMAPINFO
                   DIB_RGB_COLORS,           // Options
-                  SRCCOPY);                 // Raster operation code (ROP)
+                  p_rop);                   // Raster operation code (ROP)
 }
 
-void StyleDIB::Draw(CDC* pDC, int x, int y, int w, int h, int sx, int sy, int sw, int sh)
+void
+StyleDIB::Draw(CDC* pDC, int x, int y, int w, int h, int sx, int sy, int sw, int sh,DWORD p_rop /*= SRCCOPY*/)
 {
   ::StretchDIBits(pDC->GetSafeHdc(),
                   x,                        // Destination x
@@ -513,18 +548,23 @@ void StyleDIB::Draw(CDC* pDC, int x, int y, int w, int h, int sx, int sy, int sw
                   GetBitsAddress(),         // Pointer to bits
                   GetBitmapInfoAddress(),   // BITMAPINFO
                   DIB_RGB_COLORS,           // Options
-                  SRCCOPY);                 // Raster operation code (ROP)
+                  p_rop);                   // Raster operation code (ROP)
 }
 
-
 // Get the number of color table entries.
-int StyleDIB::GetNumClrEntries()
+int 
+StyleDIB::GetNumClrEntries()
 {
-  return NumDIBColorEntries(m_pBMI);
+  if(m_pBMI)
+  { 
+    return NumDIBColorEntries(m_pBMI);
+  }
+  return 0;
 }
 
 // NOTE: This assumes all StyleDIB objects have 256 color table entries.
-BOOL StyleDIB::MapColorsToPalette(CPalette* pPal)
+BOOL
+StyleDIB::MapColorsToPalette(CPalette* pPal)
 {
   if (!pPal)
   {
@@ -590,21 +630,22 @@ void* StyleDIB::GetPixelAddress(int x, int y)
 }
 
 // Get the bounding rectangle.
-void StyleDIB::GetRect(CRect* pRect)
+void
+StyleDIB::GetRect(CRect* pRect)
 {
-  pRect->top = 0;
-  pRect->left = 0;
+  pRect->top    = 0;
+  pRect->left   = 0;
   pRect->bottom = DibHeight();
-  pRect->right = DibWidth();
+  pRect->right  = DibWidth();
 }
 
 // Copy a rectangle of the DIB to another DIB.
 // Note: We only support 8bpp DIBs here.
 void StyleDIB::CopyBits(StyleDIB* pdibDest,
-                    int xd, int yd,
-                    int w,  int h,
-                    int xs, int ys,
-                    COLORREF clrTrans)
+                        int xd, int yd,
+                        int w,  int h,
+                        int xs, int ys,
+                        COLORREF clrTrans)
 {
   // Test for silly cases.
   if (w == 0 || h == 0) return;
@@ -666,7 +707,8 @@ void StyleDIB::CopyBits(StyleDIB* pdibDest,
 // Save a DIB to a disk file.
 // This is somewhat simplistic because we only deal with 256 color DIBs
 // and we always write a 256 color table.
-BOOL StyleDIB::Save(CFile* fp)
+BOOL
+StyleDIB::Save(CFile* fp)
 {
   BITMAPFILEHEADER bfh;
 
@@ -728,7 +770,8 @@ BOOL StyleDIB::Save(CFile* fp)
 
 // Save a DIB to a disk file. If no file name is given, show
 // a File Save dialog to get one.
-BOOL StyleDIB::Save(LPCTSTR pszFileName)
+BOOL
+StyleDIB::Save(LPCTSTR pszFileName)
 {
   // Try to open the file for write access.
   CFile file;
@@ -814,4 +857,31 @@ StyleDIB::DibBitCount()
     return (m_pBMI->bmiHeader.biBitCount);
   }
   return 0;
+}
+
+BITMAPINFOHEADER*
+StyleDIB::GetBitmapHeaderAdress()
+{
+  return &(m_pBMI->bmiHeader);
+}
+
+// Pointer to bitmap info
+BITMAPINFO*
+StyleDIB::GetBitmapInfoAddress()
+{
+  return m_pBMI;
+}
+
+// Pointer to the bits
+void*
+StyleDIB::GetBitsAddress()
+{
+  return m_pBits;
+}
+
+RGBQUAD*
+StyleDIB::GetClrTabAddress()
+{
+  // Pointer to color table
+  return reinterpret_cast<LPRGBQUAD>(reinterpret_cast<BYTE*>(m_pBMI) + sizeof(BITMAPINFOHEADER));
 }

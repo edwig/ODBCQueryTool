@@ -42,6 +42,8 @@ protected:
   void  ReDrawButton(LRESULT type);
   void  DrawButton(CDC* pDC, CRect rect, LRESULT type);
   void  SetWindowText(LPCTSTR lpstString);
+  void  SendMessageToAllChildWindows(UINT MessageId,WPARAM wParam,LPARAM lParam);
+  void  NotifyMonitorToAllChilds();
   // Perform a sub-menu on the bar
   void  PerformMenu();
 
@@ -61,6 +63,9 @@ protected:
   afx_msg LRESULT OnStyleChanged(WPARAM wParam,LPARAM lParam);
   afx_msg void    OnSettingChange(UINT uFlags, LPCTSTR lpszSection);
   afx_msg BOOL    OnNcActivate(BOOL bActive);
+  afx_msg LRESULT OnGetDpiScaledSize(WPARAM wParam,LPARAM lParam);
+  afx_msg LRESULT OnDpiChanged      (WPARAM wParam,LPARAM lParam);
+  afx_msg LRESULT OnDisplayChange   (WPARAM wParam,LPARAM lParam);
 
   // Standard handlers for a command menu
   afx_msg void    OnStyleLime();
@@ -87,6 +92,8 @@ protected:
   CRect     m_closeRect       { 0,0,0,0 };    // Close button rectangle
   CRect     m_dragRect        { 0,0,0,0 };    // Rectangle for dragging
   CRect     m_captionRect     { 0,0,0,0 };    // Rectangle of the caption
+  int       m_dpi_x           { 0 };
+  int       m_dpi_y           { 0 };
   // Tooltips 
   CToolTipCtrl m_menuTooltip;
   GrayWindow   m_grayScreen;

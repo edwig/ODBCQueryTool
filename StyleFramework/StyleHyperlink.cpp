@@ -56,32 +56,33 @@ BEGIN_MESSAGE_MAP(StyleHyperLink, CStatic)
   ON_WM_SETCURSOR()
   ON_WM_MOUSEMOVE()
   ON_WM_TIMER()
-  ON_CONTROL_REFLECT(STN_CLICKED,OnClicked)
   ON_WM_ERASEBKGND()
   ON_WM_CTLCOLOR_REFLECT()
+  ON_CONTROL_REFLECT(STN_CLICKED,      OnClicked)
+  ON_MESSAGE(WM_DPICHANGED_AFTERPARENT,OnDpiChanged)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
 // StyleHyperLink overrides
 
-BOOL StyleHyperLink::DestroyWindow() 
+BOOL
+StyleHyperLink::DestroyWindow() 
 {
   KillTimer(m_nTimerID);
 	
 	return CStatic::DestroyWindow();
 }
 
-BOOL StyleHyperLink::PreTranslateMessage(MSG* pMsg) 
+BOOL
+StyleHyperLink::PreTranslateMessage(MSG* pMsg) 
 {
   m_ToolTip.RelayEvent(pMsg);
   return CStatic::PreTranslateMessage(pMsg);
 }
 
-void StyleHyperLink::PreSubclassWindow() 
+void 
+StyleHyperLink::SetFontsAndSize() 
 {
-  ScaleControl(this);
-  SetFont(&STYLEFONTS.DialogTextFont);
-
   // We want to get mouse clicks via STN_CLICKED
   DWORD dwStyle = GetStyle();
   ::SetWindowLong(GetSafeHwnd(),GWL_STYLE,dwStyle | SS_NOTIFY);
@@ -116,6 +117,10 @@ void StyleHyperLink::PreSubclassWindow()
 	}
 	ASSERT(pFont->GetSafeHandle());
 
+  // Reset the fonts
+  m_StdFont.DeleteObject();
+  m_UnderlineFont.DeleteObject();
+
   // Create the underline font
   LOGFONT lf;
   pFont->GetLogFont(&lf);
@@ -126,12 +131,21 @@ void StyleHyperLink::PreSubclassWindow()
   PositionWindow();        // Adjust size of window to fit URL if necessary
   SetDefaultCursor();      // Try and load up a "hand" cursor
   SetUnderline();
+}
+
+void 
+StyleHyperLink::PreSubclassWindow()
+{
+  CFont* font = GetSFXFont(GetSafeHwnd(),StyleFontType::DialogFont);
+  SetFont(font);
+
+  SetFontsAndSize();
 
   // Create the tooltip
   CRect rect; 
   GetClientRect(rect);
   m_ToolTip.Create(this);
-  m_ToolTip.AddTool(this, m_strURL, rect, TOOLTIP_ID);
+  m_ToolTip.AddTool(this,m_strURL,rect,TOOLTIP_ID);
 
   CStatic::PreSubclassWindow();
 }
@@ -155,10 +169,29 @@ StyleHyperLink::SetTipText(LPCTSTR p_tipText)
   }
 }
 
+// wParam = new DPI, lParam = HMONITOR
+LRESULT
+StyleHyperLink::OnDpiChanged(WPARAM wParam,LPARAM lParam)
+{
+  HMONITOR monitor = reinterpret_cast<HMONITOR>(lParam);
+  if(monitor)
+  {
+    CFont* font = GetSFXFont(monitor,StyleFontType::DialogFont);
+    if(font)
+    {
+      SetFont(font);
+      SetFontsAndSize();
+      Invalidate();
+    }
+  }
+  return 0;
+}
+
 /////////////////////////////////////////////////////////////////////////////
 // StyleHyperLink message handlers
 
-void StyleHyperLink::OnClicked()
+void
+StyleHyperLink::OnClicked()
 {
   m_bOverControl = FALSE;
 	int result = (INT64)GotoURL(m_strURL, SW_SHOW) & 0xFFFF;
@@ -213,7 +246,8 @@ void StyleHyperLink::OnMouseMove(UINT nFlags, CPoint point)
   CStatic::OnMouseMove(nFlags, point);
 }
 
-void StyleHyperLink::OnTimer(UINT_PTR nIDEvent) 
+void
+StyleHyperLink::OnTimer(UINT_PTR nIDEvent) 
 {
   CPoint p(GetMessagePos());
   ScreenToClient(&p);
@@ -236,7 +270,8 @@ void StyleHyperLink::OnTimer(UINT_PTR nIDEvent)
 	CStatic::OnTimer(nIDEvent);
 }
 
-BOOL StyleHyperLink::OnSetCursor(CWnd* /*pWnd*/, UINT /*nHitTest*/, UINT /*message*/) 
+BOOL
+StyleHyperLink::OnSetCursor(CWnd* /*pWnd*/, UINT /*nHitTest*/, UINT /*message*/) 
 {
   if (m_hLinkCursor)
   {
@@ -246,7 +281,8 @@ BOOL StyleHyperLink::OnSetCursor(CWnd* /*pWnd*/, UINT /*nHitTest*/, UINT /*messa
   return FALSE;
 }
 
-BOOL StyleHyperLink::OnEraseBkgnd(CDC* pDC) 
+BOOL
+StyleHyperLink::OnEraseBkgnd(CDC* pDC) 
 {
   CRect rect;
   GetClientRect(rect);
@@ -258,7 +294,8 @@ BOOL StyleHyperLink::OnEraseBkgnd(CDC* pDC)
 /////////////////////////////////////////////////////////////////////////////
 // StyleHyperLink operations
 
-void StyleHyperLink::SetURL(CString strURL)
+void
+StyleHyperLink::SetURL(CString strURL)
 {
   m_strURL = strURL;
 
@@ -269,13 +306,15 @@ void StyleHyperLink::SetURL(CString strURL)
   }
 }
 
-CString StyleHyperLink::GetURL() const
+CString
+StyleHyperLink::GetURL() const
 { 
   return m_strURL;   
 }
 
-void StyleHyperLink::SetColours(COLORREF crLinkColour, COLORREF crVisitedColour,
-                            COLORREF crHoverColour /* = -1 */) 
+void
+StyleHyperLink::SetColours(COLORREF crLinkColour, COLORREF crVisitedColour,
+                           COLORREF crHoverColour /* = -1 */) 
 { 
   m_crLinkColour    = crLinkColour; 
   m_crVisitedColour = crVisitedColour;
@@ -420,7 +459,7 @@ void StyleHyperLink::PositionWindow()
   ReleaseDC(pDC);
 
   // Adjust for window borders
-  Extent.cx += WndRect.Width() - ClientRect.Width(); 
+  Extent.cx += WndRect.Width()  - ClientRect.Width(); 
   Extent.cy += WndRect.Height() - ClientRect.Height(); 
 
   // Get the text justification via the window style

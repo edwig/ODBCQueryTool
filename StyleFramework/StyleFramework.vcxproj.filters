@@ -19,6 +19,9 @@
     <Filter Include="Grid\Header Files">
       <UniqueIdentifier>{59b22038-9771-41f7-8a8f-0e2ae48ba7a2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\ScrollBars">
+      <UniqueIdentifier>{d33b2439-7d1a-408d-bbcb-25d5755fac2d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GrayWindow.h">
@@ -100,9 +103,6 @@
       <Filter>Grid\Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StyleGridCtrl.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StyleDialogCA.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StyleDialog.h">
@@ -195,6 +195,12 @@
     <ClInclude Include="StyleStepper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="StyleMonitor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StyleRichEdit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GrayWindow.cpp">
@@ -264,9 +270,6 @@
       <Filter>Grid</Filter>
     </ClCompile>
     <ClCompile Include="StyleGridCtrl.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="StyleDialogCA.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StyleDialog.cpp">
@@ -350,6 +353,12 @@
     <ClCompile Include="StyleStepper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="StyleMonitor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="StyleRichEdit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="StyleFramework.rc">
@@ -377,24 +386,6 @@
     <Image Include="res\MyFrame.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\ScrollBar1.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\ScrollBar2.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\ScrollBar3.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\ScrollBar4.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\ScrollBar5.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\ScrollBar6.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
     <Image Include="Icons\80_Calender.ico">
       <Filter>Resource Files</Filter>
     </Image>
@@ -404,8 +395,107 @@
     <Image Include="Icons\73_map-openen.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="res\ScrollBar7.bmp">
+    <Image Include="Icons\40_LeftSingle.ico">
       <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Icons\43_RightSingle.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\ScrollBar1.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar1_125.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar1_150.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar1_200.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar2.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar2_125.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar2_150.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar2_200.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar3.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar3_125.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar3_150.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar3_200.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar4.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar4_125.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar4_150.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar4_200.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar5.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar5_125.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar5_150.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar5_200.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar6.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar6_125.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar6_150.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar6_200.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar7.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar7_125.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar7_150.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar7_200.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar8.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar8_125.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar8_150.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
+    </Image>
+    <Image Include="res\ScrollBar8_200.bmp">
+      <Filter>Resource Files\ScrollBars</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>

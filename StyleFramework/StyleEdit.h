@@ -17,13 +17,24 @@
 // For license: See the file "LICENSE.txt" in the root folder
 //
 #pragma once
+#include <string>
+
+#ifndef stdstring
+#ifdef _UNICODE
+#define stdstring std::wstring
+#pragma message("XString is now defined as std::wstring")
+#else
+#define stdstring std::string
+#pragma message("XString is now defined as std::string")
+#endif
+#endif
 
 /////////////////////////////////////////////////////////////////////////////
 // CSG_TextEdit window
 
 // Password eye: Number of DLU's the inner eye is within the eyebrow
-#define   EDIT_INNER_EYE  WS(5)
-#define   EDIT_EYE_WEIGHT WS(2)
+#define   EDIT_INNER_EYE  5
+#define   EDIT_EYE_WEIGHT 2
 
 // The password character
 #define   EDIT_PASSWORD_CHAR _T('•')
@@ -138,6 +149,7 @@ protected:
   afx_msg void    OnShowWindow(BOOL bShow, UINT nStatus);
   afx_msg BOOL    OnKillFocus();
   afx_msg BOOL    OnSetfocus();
+  afx_msg LRESULT OnDpiChangedAfter (WPARAM wParam,LPARAM lParam);
   afx_msg void    OnLButtonDown(UINT   nFlags,CPoint point);
   afx_msg void    OnLButtonUp  (UINT   nFlags,CPoint point);
   afx_msg LRESULT OnDoubleClick(WPARAM wParam,LPARAM lParam);
@@ -162,7 +174,7 @@ protected:
 
 private:
   void     ResetEditColors();
-  void     ResetFont();
+  void     ResetFont(HMONITOR p_monitor = nullptr);
   void     CreateBackgroundBrush(DWORD p_color);
   void     CreateBackgroundEmptyBrush(DWORD p_color);
   void     DrawPasswordEye();
@@ -195,7 +207,7 @@ private:
   bool     m_bold         { false };                    // Use bold font
   bool     m_underLine    { false };                    // Use underlined font
   CString  m_fontName     { STYLE_DEFAULT_FONT };       // Name of font to use
-  CFont*   m_font         { nullptr };                  // Pointer to font structure
+  CFont    m_font;                                      // Font for the edit control
   BYTE     m_language     { DEFAULT_CHARSET };          // Default language
   // Colors
   COLORREF m_colorText            { FRAME_DEFAULT_COLOR };
@@ -294,6 +306,7 @@ StyleEdit::GetIsComboBox()
 
 void WINAPI DDX_Control(CDataExchange* pDX,int nIDC,StyleEdit& p_editControl);
 void WINAPI DDX_Control(CDataExchange* pDX,int nIDC,StyleEdit& p_editControl,CString& p_text);
+void WINAPI DDX_Control(CDataExchange* pDX,int nIDC,StyleEdit& p_editControl,stdstring& p_text);
 void WINAPI DDX_Control(CDataExchange* pDX,int nIDC,StyleEdit& p_editControl,int& p_number);
 void WINAPI DDX_Control(CDataExchange* pDX,int nIDC,StyleEdit& p_editControl,double& p_number);
 

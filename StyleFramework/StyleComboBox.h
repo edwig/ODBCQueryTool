@@ -26,6 +26,7 @@
 #define COMBO_DEFAULT_DROPWIDTH   100  // Number of pixels
 #define COMBO_DEFAULT_RESERVED   1000  // Number of items allocated
 #define COMBO_KEYBOARD_CACHE     2000  // 2000 ms keyboard cache
+#define COMBO_EDIT_HEIGHT_EXTRA     4  // Extra height for edit control
 
 class SCBTextEdit;
 class SCBListBox;
@@ -180,6 +181,7 @@ protected:
   bool         m_typebuffer         { false };                      // type buffer for combo list
   bool         m_focus              { false };                      // Has the keyboard focus
   bool         m_error              { false };                      // Control is in error state
+  bool         m_firstShow          { true  };                      // First time showing the list
   ItemStore    m_items;                                             // Set/GetDataItem storage
   COLORREF     m_frameColor         { RGB(0,0,0) };                 // Color of the outer rim of the combobox
   COLORREF     m_arrowColor         { RGB(0,0,0) };                 // Color of the combobox arrow
@@ -230,6 +232,7 @@ protected:
   afx_msg LRESULT OnShowDropDown          (WPARAM wParam,LPARAM lParam);
   afx_msg LRESULT OnGetText               (WPARAM wParam,LPARAM lParam);
   afx_msg LRESULT OnGetTextLength         (WPARAM wParam,LPARAM lParam);
+  afx_msg LRESULT OnDpiChanged            (WPARAM wParam,LPARAM lParam);
 
 public:
   afx_msg void    OnCloseup(bool p_force = false);

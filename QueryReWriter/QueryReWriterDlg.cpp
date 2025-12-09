@@ -155,6 +155,8 @@ QueryReWriterDlg::OnInitDialog()
   InitConfig();
   SetCanResize();
 
+  PostInitDialog();
+
   UpdateData(FALSE);
   m_tabs.SetFocus();
 	return FALSE;  // return TRUE  unless you set the focus to a control

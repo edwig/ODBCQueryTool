@@ -33,10 +33,13 @@ IMPLEMENT_DYNAMIC(StyleTab,CDialog);
 BEGIN_MESSAGE_MAP(StyleTab,CDialog)
   ON_WM_ERASEBKGND()
   ON_WM_CTLCOLOR()
-  ON_REGISTERED_MESSAGE(g_msg_changed,OnStyleChanged)
-  ON_NOTIFY_EX(TTN_NEEDTEXT,0,  OnToolTipNotify)
-  ON_MESSAGE(WM_CTLCOLORSTATIC, OnCtlColorStatic)
-  ON_MESSAGE(WM_CTLCOLORLISTBOX,OnCtlColorListBox)
+  ON_REGISTERED_MESSAGE(g_msg_changed,  OnStyleChanged)
+  ON_NOTIFY_EX(TTN_NEEDTEXT,0,          OnToolTipNotify)
+  ON_MESSAGE(WM_CTLCOLORSTATIC,         OnCtlColorStatic)
+  ON_MESSAGE(WM_CTLCOLORLISTBOX,        OnCtlColorListBox)
+  ON_MESSAGE(WM_DPICHANGED_BEFOREPARENT,OnDpiChangedBefore)
+  ON_MESSAGE(WM_DPICHANGED,             OnDpiChanged)
+  ON_MESSAGE(WM_DPICHANGED_AFTERPARENT, OnDpiChangedAfter)
 END_MESSAGE_MAP()
 
 StyleTab::StyleTab(UINT  p_IDTemplate,CWnd* p_parentWnd)
@@ -57,7 +60,8 @@ StyleTab::OnInitDialog()
   OnStyleChanged(0,0);
 
   ASSERT(GetStyle()   & WS_CHILD);
-  ASSERT(GetExStyle() & WS_EX_CONTROLPARENT);
+
+  GetDpi(GetSafeHwnd(),m_dpi_x,m_dpi_y);
   return TRUE;
 }
 
@@ -214,7 +218,7 @@ StyleTab::OnToolHitTest(CPoint point,TOOLINFO* pTI) const
       combo->GetWindowRect(&comboRect);
       CRect dialogRect;
       GetWindowRect(&dialogRect);
-      comboRect.OffsetRect(-dialogRect.left,-(dialogRect.top + WINDOWCAPTIONHEIGHT));
+      comboRect.OffsetRect(-dialogRect.left,-(dialogRect.top + WINDOWCAPTIONHEIGHT(m_hWnd)));
       comboRect.right -= comboRect.Height();
       if(comboRect.PtInRect(point))
       {
@@ -352,6 +356,91 @@ StyleTab::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
   return CDialog::OnCtlColor(pDC,pWnd,nCtlColor);
 }
 
+static int   g_dpi_x = USER_DEFAULT_SCREEN_DPI;
+static int   g_dpi_y = USER_DEFAULT_SCREEN_DPI;
+
+LRESULT
+StyleTab::OnDpiChangedBefore(WPARAM wParam,LPARAM lParam)
+{
+  if(wParam == 0 && lParam == 0)
+  {
+    // Default system message
+    return 0;
+  }
+
+  // Save old DPI
+  g_dpi_x = m_dpi_x;
+  g_dpi_y = m_dpi_y;
+  // The new DPI
+  m_dpi_x = HIWORD(wParam);
+  m_dpi_y = LOWORD(wParam);
+
+  // Remove the invalid layout manager
+  auto manager = GetDynamicLayout();
+  m_canResize  = (manager != nullptr);
+  if(manager)
+  {
+    m_pDynamicLayout = nullptr;
+    delete manager;
+  }
+
+  // We must catch this message, otherwise we crash in the default WindowProc handler !!
+  return 0;
+}
+
+// A change in DPI has happened
+LRESULT
+StyleTab::OnDpiChanged(WPARAM wParam,LPARAM lParam)
+{
+  // Now redraw everything
+  Invalidate(TRUE);
+  OnNcPaint();
+  return 0;
+}
+
+// wParam = new DPI, lParam = HMONITOR
+LRESULT
+StyleTab::OnDpiChangedAfter(WPARAM wParam,LPARAM lParam)
+{
+  if(wParam == 0 && lParam == 0)
+  {
+    // Default system message
+    return 0;
+  }
+
+  // Create a new dynamic layout manager for the new DPI
+  if(m_canResize)
+  {
+    // Scale the original size
+    m_originalSize.right  = m_originalSize.left + ::MulDiv(m_originalSize.Width(), m_dpi_x,g_dpi_x);
+    m_originalSize.bottom = m_originalSize.top  + ::MulDiv(m_originalSize.Height(),m_dpi_y,g_dpi_y);
+
+    SetCanResize(true);
+  }
+  return 0;
+}
+
+void
+StyleTab::SendMessageToAllChildWindows(UINT MessageId,WPARAM wParam,LPARAM lParam)
+{
+  SMessage sMessage;
+  sMessage.MessageId = MessageId;
+  sMessage.wParam = wParam;
+  sMessage.lParam = lParam;
+
+  if(GetSafeHwnd())
+  {
+    ::EnumChildWindows(m_hWnd,
+                      [](HWND p_wnd,LPARAM lParam) -> BOOL
+                      {
+                        PSMessage psMessage = (PSMessage)lParam;
+                        ::SendMessage(p_wnd,psMessage->MessageId,psMessage->wParam,psMessage->lParam);
+                        return TRUE;
+                      },
+                      (LPARAM)&sMessage);
+  }
+}
+  
 void
 StyleTab::OnCancel()
 {

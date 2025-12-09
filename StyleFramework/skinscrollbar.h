@@ -19,6 +19,9 @@
 //
 #pragma once
 
+#define THUMB_BORDER	  3
+#define THUMB_MINSIZE	  (THUMB_BORDER*2)
+
 class SkinScrollBar : public CScrollBar
 {
 // Construction
@@ -27,12 +30,11 @@ public:
   virtual ~SkinScrollBar();
 
   void DrawArrow(UINT uArrow, int nState);
-  void SetBitmapSize();
+  void SetBitmapSize(HMONITOR p_monitor = nullptr);
   BOOL IsVertical();
   
   HBITMAP	        m_hBitmap;
   int             m_nWidth;
-  int             m_nFrmHeight;
   int             m_nHeight;
 
   SCROLLINFO      m_si;
@@ -64,6 +66,7 @@ protected:
   afx_msg void    OnLButtonUp(UINT nFlags, CPoint point);
   afx_msg void    OnTimer(UINT_PTR nIDEvent);
   afx_msg LRESULT OnMouseLeave(WPARAM wparam, LPARAM lparam);
+  afx_msg LRESULT OnDpiChangedBefore(WPARAM wParam,LPARAM lParam);
 
   DECLARE_MESSAGE_MAP()
 };

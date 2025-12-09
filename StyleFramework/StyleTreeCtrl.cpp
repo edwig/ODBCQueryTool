@@ -52,8 +52,6 @@ END_MESSAGE_MAP()
 void
 StyleTreeCtrl::PreSubclassWindow()
 {
-  ScaleControl(this);
-
   if(m_directInit)
   {
     InitSkin();
@@ -66,7 +64,8 @@ StyleTreeCtrl::InitSkin()
   // Tree control must have a client edge
   // otherwise the original scrollbars will show through when resizing!
   ModifyStyleEx(0, WS_EX_CLIENTEDGE);
-  SetFont(&STYLEFONTS.DialogTextFont);
+  CFont* font = GetSFXFont(GetSafeHwnd(),StyleFontType::DialogFont);
+  SetFont(font);
   SkinScrollWnd* skin = SkinWndScroll(this,TREECONTROL_BORDER,TREECONTROL_CLIENT_BIAS);
   skin->SetScrollbarBias(TREECONTROL_SCROLL_BIAS);
 }

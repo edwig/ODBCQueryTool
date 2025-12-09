@@ -27,7 +27,6 @@ class StyleStaticToast : public CStatic
 public:
   StyleStaticToast();
   virtual ~StyleStaticToast();
-  virtual void PreSubclassWindow() override;
 
 	void SetLeftOffset(int p_offset);
 	void SetExtraText1(CString p_text);

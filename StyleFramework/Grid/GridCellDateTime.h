@@ -22,7 +22,7 @@ public:
 	CGridCellDateTime();
 	CGridCellDateTime(DWORD dwStyle);
 	virtual ~CGridCellDateTime();
-    virtual CSize GetCellExtent(CDC* pDC);
+    virtual CSize GetCellExtent(CDC* pDC,HWND p_hwnd);
 
   // editing cells
 public:

@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////
+a////////////////////////////////////////////////////////////////////////
 //
 // File: StyleStaticToast.cpp
 // Function: Styling frame for a static control
@@ -49,12 +49,6 @@ BEGIN_MESSAGE_MAP(StyleStaticToast, CStatic)
   ON_WM_LBUTTONDOWN()
 END_MESSAGE_MAP()
 
-void
-StyleStaticToast::PreSubclassWindow()
-{
-  ScaleControl(this);
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // StyleStaticToast message handlers
 
@@ -72,7 +66,7 @@ HBRUSH StyleStaticToast::CtlColor(CDC* pDC, UINT nCtlColor)
 void 
 StyleStaticToast::SetLeftOffset(int p_offset)
 {
-  m_leftOffset = WS(p_offset);
+  m_leftOffset = WS(GetSafeHwnd(),p_offset);
 }
 
 void 
@@ -112,7 +106,7 @@ StyleStaticToast::GetPosition(int p_height)
   int space = p_height / (lines + 1);
 
   // Middle minus half a textline
-  return space - (WS(20) / 2);
+  return space - (WS(GetSafeHwnd(),20) / 2);
 }
 
 void
@@ -144,8 +138,11 @@ StyleStaticToast::OnPaint()
 	pDC->FillSolidRect(&rect, m_colorBackground);
 
 	// Paint the text
-	int fontheight = 2 * STANDARDFONTSIZE;
-	CFont* org = pDC->SelectObject(&STYLEFONTS.DialogTextFontBold);
+	int fontheight = ((2 * STANDARDFONTSIZE) * GetSFXSizeFactor(GetSafeHwnd())) / 100;
+
+  CFont* boldfont = GetSFXFont(GetSafeHwnd(),StyleFontType::DialogFontBold);
+
+	CFont* org = pDC->SelectObject(boldfont);
 	pDC->SetTextColor(m_colorText);
 	rect.left += m_leftOffset;
 	rect.top  += GetPosition(rect.Height());
@@ -155,7 +152,8 @@ StyleStaticToast::OnPaint()
 
 	if(m_text1.GetLength())
 	{
-		pDC->SelectObject(&STYLEFONTS.DialogTextFont);
+    CFont* font = GetSFXFont(GetSafeHwnd(),StyleFontType::DialogFont);
+		pDC->SelectObject(font);
 		rect.top    += fontheight;
 		rect.bottom += fontheight;
     pDC->DrawText(m_text1,&rect,DT_LEFT | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);

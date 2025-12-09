@@ -28,7 +28,7 @@
 
 // ConfigDlg dialog
 
-class ConfigDlg : public StyleDialog
+class ConfigDlg : public StyleTab
 {
 	DECLARE_DYNAMIC(ConfigDlg)
 

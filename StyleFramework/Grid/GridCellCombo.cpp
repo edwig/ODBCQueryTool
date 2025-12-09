@@ -174,10 +174,12 @@ CGridCellCombo::GetEditWnd() const
 }
 
 CSize
-CGridCellCombo::GetCellExtent(CDC* pDC)
+CGridCellCombo::GetCellExtent(CDC* pDC,HWND p_hwnd)
 {    
-  CSize sizeScroll (GetSystemMetrics(SM_CXVSCROLL), GetSystemMetrics(SM_CYHSCROLL));    
-  CSize sizeCell (CGridCell::GetCellExtent(pDC));    
+  int dpi = ::GetDpiForWindow(p_hwnd);
+  CSize sizeScroll(GetSystemMetricsForDpi(SM_CXVSCROLL,dpi)
+                  ,GetSystemMetricsForDpi(SM_CYHSCROLL,dpi));    
+  CSize sizeCell(CGridCell::GetCellExtent(pDC,p_hwnd));
   sizeCell.cx += sizeScroll.cx;    
   sizeCell.cy = max(sizeCell.cy,sizeScroll.cy);    
   return sizeCell;
@@ -239,7 +241,7 @@ CGridCellCombo::EndEdit()
 
 // Override draw so that when the cell is selected, a drop arrow is shown in the RHS.
 BOOL
-CGridCellCombo::Draw(CDC* pDC, int nRow, int nCol, CRect rect,  BOOL bEraseBkgnd /*=TRUE*/)
+CGridCellCombo::Draw(HWND p_hwnd,CDC* pDC, int nRow, int nCol, CRect rect,  BOOL bEraseBkgnd /*=TRUE*/)
 {
   // Cell selected?
   if(GetGrid()->IsCellEditable(nRow,nCol))
@@ -259,7 +261,7 @@ CGridCellCombo::Draw(CDC* pDC, int nRow, int nCol, CRect rect,  BOOL bEraseBkgnd
       }
       else
       {
-        DrawComboButton(pDC,ScrollRect);
+        DrawComboButton(p_hwnd,pDC,ScrollRect);
       }
 
       // Adjust the remaining space in the cell
@@ -279,7 +281,7 @@ CGridCellCombo::Draw(CDC* pDC, int nRow, int nCol, CRect rect,  BOOL bEraseBkgnd
     SetText(_T(""));
   }
   // drop through and complete the cell drawing using the base class' method
-  BOOL bResult = CGridCell::Draw(pDC, nRow, nCol, rect,  bEraseBkgnd);
+  BOOL bResult = CGridCell::Draw(p_hwnd,pDC,nRow,nCol,rect,bEraseBkgnd);
 
   if(IsEditing())
   {
@@ -289,7 +291,7 @@ CGridCellCombo::Draw(CDC* pDC, int nRow, int nCol, CRect rect,  BOOL bEraseBkgnd
 }
 
 void
-CGridCellCombo::DrawComboButton(CDC* pDC,CRect p_rect)
+CGridCellCombo::DrawComboButton(HWND p_hwnd,CDC* pDC,CRect p_rect)
 {
   // Find the frame color
   COLORREF color = ThemeColor::GetColor(Colors::AccentColor1);
@@ -308,11 +310,13 @@ CGridCellCombo::DrawComboButton(CDC* pDC,CRect p_rect)
   but.CenterPoint();
 
   POINT points[3];
-  points[0].x = but.CenterPoint().x - WS(4);
+  int spacing = WS(p_hwnd,4);
+  int extra   = WS(p_hwnd,2);
+  points[0].x = but.CenterPoint().x - spacing;
   points[0].y = but.CenterPoint().y - 1;
   points[1].x = but.CenterPoint().x + 1;
-  points[1].y = but.CenterPoint().y + WS(4);
-  points[2].x = but.CenterPoint().x + WS(4) + 2;
+  points[1].y = but.CenterPoint().y + spacing;
+  points[2].x = but.CenterPoint().x + spacing + extra;
   points[2].y = but.CenterPoint().y - 1;
 
   CBrush brush(background);

@@ -117,7 +117,7 @@ CGridCellBase* CGridCellBase::GetDefaultCell() const
 // color schemes.  Also removed printing references as that's now done
 // by PrintCell() and fixed the sort marker so that it doesn't draw out
 // of bounds.
-BOOL CGridCellBase::Draw(CDC* pDC, int nRow, int nCol, CRect rect,  BOOL bEraseBkgnd /*=TRUE*/)
+BOOL CGridCellBase::Draw(HWND p_hwnd,CDC* pDC, int nRow, int nCol, CRect rect,  BOOL bEraseBkgnd /*=TRUE*/)
 {
   // Note - all through this function we totally brutalise 'rect'. Do not
   // depend on it's value being that which was passed in.
@@ -610,7 +610,7 @@ CSize CGridCellBase::GetTextExtent(LPCTSTR szText, CDC* pDC /*= NULL*/)
 }
 
 
-CSize CGridCellBase::GetCellExtent(CDC* pDC)
+CSize CGridCellBase::GetCellExtent(CDC* pDC,HWND p_hwnd)
 {
   CSize size = GetTextExtent(GetText(), pDC);
   CSize ImageSize(0,0);

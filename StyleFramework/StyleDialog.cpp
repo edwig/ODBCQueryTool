@@ -21,6 +21,8 @@
 //
 #include "stdafx.h"
 #include "RegistryManager.h"
+#include "StyleUtilities.h"
+#include <ShellScalingApi.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -35,14 +37,14 @@ static UINT auIDStatusBar[] =
   ID_SEPARATOR
 };
 
-IMPLEMENT_DYNAMIC(StyleDialog,CDialog);
+IMPLEMENT_DYNAMIC(StyleDialog,CDialogEx);
 
 StyleDialog::StyleDialog(UINT  p_IDTemplate
                         ,CWnd* p_parentWnd
                         ,bool  p_caption
                         ,bool  p_sysmenu
                         ,bool  p_status) 
-            :CDialog(p_IDTemplate, p_parentWnd)
+            :CDialogEx(p_IDTemplate, p_parentWnd)
             ,m_caption(p_caption)
             ,m_mnuButton(p_sysmenu)
             ,m_hasStatus(p_status)
@@ -58,10 +60,21 @@ StyleDialog::StyleDialog(UINT  p_IDTemplate
   // Set default background brush
   m_defaultBrush.DeleteObject();
   m_defaultBrush.CreateSolidBrush(ThemeColor::GetColor(Colors::ColorWindowFrame));
+
+  // See if we must preserve our position
+  if(p_parentWnd == nullptr)
+  {
+    m_saveMonitor = true;
+  }
 }
 
-BEGIN_MESSAGE_MAP(StyleDialog,CDialog)
+StyleDialog::~StyleDialog()
+{
+}
+
+BEGIN_MESSAGE_MAP(StyleDialog,CDialogEx)
   ON_WM_CREATE()
+  ON_WM_DESTROY()
   ON_WM_ERASEBKGND()
   ON_WM_CTLCOLOR()
   ON_WM_NCMOUSEMOVE()
@@ -84,6 +97,9 @@ BEGIN_MESSAGE_MAP(StyleDialog,CDialog)
   ON_NOTIFY_EX(TTN_NEEDTEXT,0,        OnToolTipNotify)
   ON_MESSAGE(WM_CTLCOLORSTATIC,       OnCtlColorStatic)
   ON_MESSAGE(WM_CTLCOLORLISTBOX,      OnCtlColorListBox)
+  ON_MESSAGE(WM_GETDPISCALEDSIZE,     OnGetDpiScaledSize)
+  ON_MESSAGE(WM_DPICHANGED,           OnDpiChanged)
+  ON_MESSAGE(WM_DISPLAYCHANGE,        OnDisplayChange)
 END_MESSAGE_MAP()
 
 BOOL
@@ -94,16 +110,18 @@ StyleDialog::OnInitDialog()
   SetLayeredWindowAttributes(ColorWindowTransparent, 0, LWA_COLORKEY);
 
   // Make room for the shadow border
+  int border = WINDOWSHADOWBORDER(m_hWnd);
   CRect window;
   GetWindowRect(window);
   SetWindowPos(nullptr
               ,0,0
-              ,window.Width()  + WINDOWSHADOWBORDER
-              ,window.Height() + WINDOWSHADOWBORDER
+              ,window.Width()  + border
+              ,window.Height() + border
               ,SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
 
+
   // Standard OnInitDialog
-  CDialog::OnInitDialog();
+  CDialogEx::OnInitDialog();
 
   // Create status bar
   if(m_hasStatus)
@@ -113,19 +131,39 @@ StyleDialog::OnInitDialog()
   return InitFirstFocus();
 }
 
+// In order to be working correctly:
+// call "SetCanResize()" prior to "PostInitDialog()"
+// in all your applications
+void
+StyleDialog::PostInitDialog()
+{
+  if(m_saveMonitor)
+  {
+    StyleRestoreWindowPosition(this);
+  }
+}
+
 int
 StyleDialog::OnCreate(LPCREATESTRUCT p_create)
 {
   p_create->dwExStyle |= WS_EX_CONTROLPARENT;
 
-  int res = CDialog::OnCreate(p_create);
+  int res = CDialogEx::OnCreate(p_create);
 
-  CRect rect;
-  GetWindowRect(&rect);
-  SFXResizeByFactor(rect);
-  MoveWindow(&rect);
-
+  // Getting the DPI
+  GetDpi(GetSafeHwnd(),m_dpi_x,m_dpi_y);
   return res;
+}
+
+void
+StyleDialog::OnDestroy()
+{
+  // Save window position on the monitor
+  if(m_saveMonitor)
+  {
+    StyleSaveWindowPosition(this);
+  }
+  CDialogEx::OnDestroy();
 }
 
 void
@@ -133,7 +171,8 @@ StyleDialog::InitStatusBar()
 {
   if(m_statusBar.Create(this,WS_CHILD|WS_VISIBLE|CBRS_BOTTOM|CBRS_GRIPPER|SBARS_SIZEGRIP))
   {
-    m_statusBar.SetFont(&STYLEFONTS.DialogTextFont);
+    CFont* font = GetSFXFont(GetSafeHwnd(),StyleFontType::DialogFont);
+    m_statusBar.SetFont(font);
     m_statusBar.SetIndicators(auIDStatusBar,sizeof(auIDStatusBar) / sizeof(UINT));
     m_statusBar.SetWindowText(_T(""));
     m_statusBar.SetPaneStyle(0, SBPS_STRETCH|SBPS_NOBORDERS);
@@ -238,7 +277,7 @@ INT_PTR
 StyleDialog::DoModal()
 {
   AutoStyleGrayScreen grayscreen;
-  return CDialog::DoModal();
+  return CDialogEx::DoModal();
 }
 
 INT_PTR 
@@ -247,18 +286,27 @@ StyleDialog::DoModal(bool p_showGrayScreen)
   if(p_showGrayScreen)
   {
     AutoStyleGrayScreen grayscreen;
+    return CDialogEx::DoModal();
   }
-  return CDialog::DoModal();
+  return CDialogEx::DoModal();
 }
 
 BOOL 
 StyleDialog::PreTranslateMessage(MSG* p_msg)
 {
-  if(!PreTranslateMenu(p_msg))
+  if(PreTranslateMenu(p_msg))
   {
-    return CDialog::PreTranslateMessage(p_msg);
+    return TRUE;
   }
-  return TRUE;
+
+  for(auto& wnd : m_controlPlanes)
+  {
+    if(wnd->GetSafeHwnd() && wnd->IsDialogMessage(p_msg))
+    {
+      return TRUE;
+    }
+  }
+  return CDialogEx::PreTranslateMessage(p_msg);
 }
 
 // Process the menu items.
@@ -333,8 +381,10 @@ StyleDialog::SetCanResize(bool p_resize)
     // Do not bother: it's already 'ON'
     return;
   }
-  GetWindowRect(m_originalSize);
-
+  if(m_originalSize.Width() == 0 && m_originalSize.Height() == 0)
+  {
+    GetWindowRect(m_originalSize);
+  }
   if(p_resize)
   {
     SetupDynamicLayout();
@@ -343,6 +393,12 @@ StyleDialog::SetCanResize(bool p_resize)
   {
     EnableDynamicLayout(FALSE);
   }
+}
+
+void
+StyleDialog::SetSaveMonitor(bool p_save /*= true*/)
+{
+  m_saveMonitor = p_save;
 }
 
 void 
@@ -465,7 +521,7 @@ StyleDialog::OnToolHitTest(CPoint point,TOOLINFO* pTI) const
       combo->GetWindowRect(&comboRect);
       CRect dialogRect;
       GetWindowRect(&dialogRect);
-      comboRect.OffsetRect(-dialogRect.left,- (dialogRect.top + WINDOWCAPTIONHEIGHT));
+      comboRect.OffsetRect(-dialogRect.left,- (dialogRect.top + WINDOWCAPTIONHEIGHT(m_hWnd)));
       comboRect.right -= comboRect.Height();
       if(comboRect.PtInRect(point))
       {
@@ -520,6 +576,17 @@ StyleDialog::RegisterTooltip(StyleComboBox& p_wnd,LPCTSTR p_text)
   }
 }
 
+bool
+StyleDialog::AddControlPlane(CWnd* p_dialog)
+{
+  if(GetExStyle() & WS_EX_CONTROLPARENT)
+  {
+    m_controlPlanes.push_back(p_dialog);
+    return true;
+  }
+  return false;
+}
+
 BOOL
 StyleDialog::OnToolTipNotify(UINT id,NMHDR* pNMHDR,LRESULT* pResult)
 {
@@ -569,13 +636,6 @@ StyleDialog::LoadStyleTheme()
   }
 }
 
-BOOL CALLBACK EnumChildProc(HWND hwnd,LPARAM lParam)
-{
-  PSMessage psMessage = (PSMessage) lParam;
-  SendMessage(hwnd,psMessage->MessageId,psMessage->wParam,psMessage->lParam);
-  return TRUE;
-}
-
 void 
 StyleDialog::SendMessageToAllChildWindows(UINT MessageId,WPARAM wParam,LPARAM lParam)
 {
@@ -586,7 +646,14 @@ StyleDialog::SendMessageToAllChildWindows(UINT MessageId,WPARAM wParam,LPARAM lP
 
   if(GetSafeHwnd())
   {
-    EnumChildWindows(GetSafeHwnd(),EnumChildProc,(LPARAM)&sMessage);
+    ::EnumChildWindows(m_hWnd,
+                       [](HWND p_wnd,LPARAM lParam) -> BOOL
+                       {
+                          PSMessage psMessage = (PSMessage)lParam;
+                          ::SendMessage(p_wnd,psMessage->MessageId,psMessage->wParam,psMessage->lParam);
+                         return TRUE;
+                       },
+                       (LPARAM)&sMessage);
   }
 }
 
@@ -699,7 +766,7 @@ StyleDialog::OnActivate(UINT nState,CWnd* pWndOther,BOOL bMinimized)
   {
     if(nState == WA_ACTIVE || nState == WA_CLICKACTIVE)
     {
-      CDialog::OnActivate(nState,pWndOther,bMinimized);
+      CDialogEx::OnActivate(nState,pWndOther,bMinimized);
       ReDrawFrame();
     }
   }
@@ -708,7 +775,7 @@ StyleDialog::OnActivate(UINT nState,CWnd* pWndOther,BOOL bMinimized)
 void
 StyleDialog::OnActivateApp(BOOL bActive,DWORD dwThreadID)
 {
-  CDialog::OnActivateApp(bActive,dwThreadID);
+  CDialogEx::OnActivateApp(bActive,dwThreadID);
   if(bActive)
   {
     ReDrawFrame();
@@ -720,11 +787,11 @@ StyleDialog::OnNcMouseMove(UINT nFlags, CPoint point)
 {
   if ((GetStyle() & WS_POPUP) == 0)
   {
-    CDialog::OnNcMouseMove(nFlags, point);
+    CDialogEx::OnNcMouseMove(nFlags, point);
   }
   else
   {
-    CDialog::OnNcMouseMove(nFlags,point);
+    CDialogEx::OnNcMouseMove(nFlags,point);
 
     if(m_curhit != (LRESULT)nFlags)
     {
@@ -774,7 +841,7 @@ StyleDialog::OnNcRButtonUp(UINT nFlags,CPoint point)
 {
   if(!m_mnuButton)
   {
-    CDialog::OnNcRButtonUp(nFlags,point);
+    CDialogEx::OnNcRButtonUp(nFlags,point);
     return;
   }
   // Implement our system menu
@@ -814,9 +881,10 @@ StyleDialog::OnNcLButtonDown(UINT nFlags, CPoint point)
 {
   if((GetStyle() & WS_POPUP) == 0)
   {
-    CDialog::OnNcLButtonDown(nFlags, point);
+    CDialogEx::OnNcLButtonDown(nFlags, point);
     return;
   }
+  int oldDpi = m_dpi_x;
 
   // Remove gripper. We could resize the dialog
   EraseGripper();
@@ -889,7 +957,7 @@ StyleDialog::OnNcLButtonDown(UINT nFlags, CPoint point)
     {
       if(GetStyle() & WS_MAXIMIZE)
       {
-        return;
+        goto ready;
       }
 
       SetWindowPos(&CWnd::wndTop,0,0,0,0,SWP_NOSIZE|SWP_NOMOVE|SWP_SHOWWINDOW|SWP_NOSENDCHANGING|SWP_DRAWFRAME);
@@ -911,7 +979,7 @@ StyleDialog::OnNcLButtonDown(UINT nFlags, CPoint point)
           lastpoint = cursor;
         }
       }
-      return;
+      goto ready;
     }
     break;
 
@@ -926,7 +994,7 @@ StyleDialog::OnNcLButtonDown(UINT nFlags, CPoint point)
     {
       if(!m_canResize || (GetStyle() & WS_MAXIMIZE))
       {
-        return;
+        goto ready;
       }
       CPoint lastpoint(point);
       CRect window;
@@ -972,6 +1040,12 @@ StyleDialog::OnNcLButtonDown(UINT nFlags, CPoint point)
       break;
     }
   }
+ready:
+  // In case we changed DPI while moving/resizing redraw the frame
+  if(m_dpi_x != oldDpi)
+  {
+    OnNcPaint();
+  }
 }
 
 void
@@ -987,7 +1061,7 @@ StyleDialog::OnNcLButtonDblClk(UINT nFlags, CPoint point)
   }
   else
   {
-    CDialog::OnNcLButtonDblClk(nFlags,point);
+    CDialogEx::OnNcLButtonDblClk(nFlags,point);
   }
 }
 
@@ -1050,13 +1124,13 @@ StyleDialog::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
                           }
                           break;
   }
-  return CDialog::OnCtlColor(pDC,pWnd,nCtlColor);
+  return CDialogEx::OnCtlColor(pDC,pWnd,nCtlColor);
 }
 
 void 
 StyleDialog::SetWindowText(LPCTSTR lpstString)
 {
-  CDialog::SetWindowText(lpstString);
+  CDialogEx::SetWindowText(lpstString);
   ReDrawFrame();
 }
 
@@ -1070,16 +1144,205 @@ StyleDialog::OnSettingChange(UINT uFlags,LPCTSTR lpszSection)
   }
 }
 
+// Get the DPI scaled size for all child windows
+// Called before resizing the dialog itself and the DPI change
+LRESULT
+StyleDialog::OnGetDpiScaledSize(WPARAM wParam,LPARAM lParam)
+{
+  SendMessageToAllChildWindows(WM_GETDPISCALEDSIZE,wParam,lParam);
+  // Do the default resizing
+  return 0;
+}
+
+static int   g_dpi_x = USER_DEFAULT_SCREEN_DPI;
+static int   g_dpi_y = USER_DEFAULT_SCREEN_DPI;
+static CWnd* g_resize_wnd(nullptr);
+
+// A change in DPI has happened
+LRESULT
+StyleDialog::OnDpiChanged(WPARAM wParam,LPARAM lParam)
+{
+  g_resize_wnd = this;
+
+  // Save the old DPI
+  g_dpi_x = m_dpi_x;
+  g_dpi_y = m_dpi_y;
+  // The new DPI
+  m_dpi_x = HIWORD(wParam);
+  m_dpi_y = LOWORD(wParam);
+
+  // Check if anything has changed
+  if(m_dpi_x == g_dpi_x && m_dpi_y == g_dpi_y)
+  {
+    // No change
+    return 0;
+  }
+
+  // Remove the invalid layout manager
+  auto manager = GetDynamicLayout();
+  bool layoutEnabled(manager != nullptr);
+  if(manager)
+  {
+    m_pDynamicLayout = nullptr;
+    delete manager;
+  }
+
+  // Current monitor configuration
+  g_styling.RefreshMonitors();
+
+  // Set the new window size/position as suggested by the system
+  CRect wrect;
+  GetWindowRect(wrect);
+
+  wrect.right  = wrect.left + ::MulDiv(wrect.Width(), m_dpi_x,g_dpi_x);
+  wrect.bottom = wrect.top  + ::MulDiv(wrect.Height(),m_dpi_x,g_dpi_y);
+
+  ::SetWindowPos(m_hWnd,
+                 nullptr,
+                 wrect.left,
+                 wrect.top,
+                 wrect.Width(),
+                 wrect.Height(),
+                 SWP_NOZORDER | SWP_NOACTIVATE);
+
+  // Notify all child windows that we are about to change DPI
+  NotifyMonitorToAllChilds(true);
+
+  // Scale child windows using newDpi and oldDpi (the previous DPI)
+  ::EnumChildWindows( m_hWnd,
+                      [](HWND hWnd,LPARAM lParam) -> BOOL
+                      {
+                        const int dpi_x = HIWORD(lParam);
+                        const int dpi_y = LOWORD(lParam);
+
+                        // Getting child and parent
+                        // Do not handle CXSF and limiter windows.
+                        CWnd* child  = CWnd::FromHandle(hWnd);
+                        CWnd* parent = child->GetParent();
+                        if(parent != g_resize_wnd)
+                        {
+                          return TRUE;
+                        }
+                        // Getting the child window rectangle
+                        CRect rcChild;
+                        child->GetWindowRect(rcChild);
+
+                        // Getting the parent window to calc displacement
+                        CRect rcParent;
+                        parent->GetWindowRect(rcParent);
+
+                        // Creating the target rectangle
+                        CRect rcTarget;
+                        rcTarget.left   = rcChild.left   - rcParent.left;
+                        rcTarget.top    = rcChild.top    - rcParent.top;
+                        rcTarget.right  = rcChild.right  - rcParent.left;
+                        rcTarget.bottom = rcChild.bottom - rcParent.top;
+
+                        // Correct for StyleDialog
+                        int caption = WINDOWCAPTIONHEIGHT(g_resize_wnd->GetSafeHwnd());
+                        int sborder = WINDOWSHADOWBORDER (g_resize_wnd->GetSafeHwnd()) * 2;
+                        rcTarget.top    -= caption;
+                        rcTarget.bottom -= caption;
+                        rcTarget.left   -= sborder;
+                        rcTarget.right  -= sborder;
+
+                        // Now scale the target rectangle
+                        rcTarget.left   = ::MulDiv(rcTarget.left,  dpi_x,g_dpi_x);
+                        rcTarget.top    = ::MulDiv(rcTarget.top,   dpi_y,g_dpi_y);
+                        rcTarget.right  = ::MulDiv(rcTarget.right, dpi_x,g_dpi_x);
+                        rcTarget.bottom = ::MulDiv(rcTarget.bottom,dpi_y,g_dpi_y);
+
+                        child->MoveWindow(rcTarget);
+                        return TRUE;
+                      },
+                      (LPARAM)wParam);
+
+  // Notify all child windows after parent has changed DPI
+  // So that we can handle different fonts etc.
+  NotifyMonitorToAllChilds();
+
+  // Move and resize the status bar (if any)
+  if(::IsWindow(m_statusBar.GetSafeHwnd()))
+  {
+    RepositionBars(AFX_IDW_CONTROLBAR_FIRST,AFX_IDW_CONTROLBAR_LAST,0);
+  }
+
+  // Propagate the DPI change to all child windows
+  SendMessageToAllChildWindows(WM_DPICHANGED,wParam,lParam);
+
+  // Now redraw everything
+  Invalidate(TRUE);
+  OnNcPaint();
+
+  // Create a new dynamic layout manager for the new DPI
+  if(layoutEnabled)
+  {
+    // Scale the original size
+    m_originalSize.right  = m_originalSize.left + ::MulDiv(m_originalSize.Width(), m_dpi_x,g_dpi_x);
+    m_originalSize.bottom = m_originalSize.top  + ::MulDiv(m_originalSize.Height(),m_dpi_y,g_dpi_y);
+
+    SetCanResize(true);
+  }
+  return 0;
+}
+
+// A change of monitors could have happened
+// or a change in the display rate (width/height) could have been performed
+LRESULT
+StyleDialog::OnDisplayChange(WPARAM wParam,LPARAM lParam)
+{
+  // Current monitor configuration
+  g_styling.RefreshMonitors();
+
+  // Mainly to set new font sizes
+  NotifyMonitorToAllChilds();
+
+  // Move to original monitor if needed
+  return 0;
+}
+
+// After a DPI change or a change in monitors or monitor settings
+void
+StyleDialog::NotifyMonitorToAllChilds(bool p_beforeParent /*= false*/)
+{
+  // Take the HMONITOR for the new monitor
+  const  StyleMonitor* mon = g_styling.GetMonitor(GetSafeHwnd());
+  if(!mon)
+  {
+    return;
+  }
+  HMONITOR newMonitor = mon->GetMonitor();
+
+  if(p_beforeParent)
+  {
+    // Notify all child windows before parent has changed DPI
+    // So that we can prepare for the change
+    SendMessageToAllChildWindows(WM_DPICHANGED_BEFOREPARENT,m_dpi_x,(LPARAM)newMonitor);
+  }
+  else
+  {
+    // Notify all child windows after parent has changed DPI
+    // So that we can handle different fonts etc.
+    CFont* font = GetSFXFont(newMonitor,StyleFontType::DialogFont);
+    if(font)
+    {
+      SendMessageToAllChildWindows(WM_SETFONT,(WPARAM)font->GetSafeHandle(),(LPARAM)TRUE);
+    }
+    // Let Style controls 'do-their-thing'
+    SendMessageToAllChildWindows(WM_DPICHANGED_AFTERPARENT,m_dpi_x,(LPARAM)newMonitor);
+  }
+}
+
 void 
 StyleDialog::OnSize(UINT nType, int cx, int cy)
 {
   if ((GetStyle() & WS_POPUP) == 0)
   {
-    CDialog::OnSize(nType, cx, cy);
+    CDialogEx::OnSize(nType, cx, cy);
   }
   else
   {
-    CDialog::OnSize(nType,cx,cy);
+    CDialogEx::OnSize(nType,cx,cy);
 
     if(nType == SIZE_MAXIMIZED && ((GetStyle() & WS_MAXIMIZE) != 0) && !m_dtsize)
     {
@@ -1097,6 +1360,7 @@ StyleDialog::OnSize(UINT nType, int cx, int cy)
     {
       RepositionBars(AFX_IDW_CONTROLBAR_FIRST,AFX_IDW_CONTROLBAR_LAST,0);
     }
+    OnNcPaint();
   }
 
   if(m_canResize)
@@ -1116,29 +1380,32 @@ StyleDialog::PositionButtons()
   GetWindowRect(window);
   window.OffsetRect(-window.left, -window.top);
 
+  int border  = WINDOWSHADOWBORDER(m_hWnd);
+  int caption = WINDOWCAPTIONHEIGHT(m_hWnd);
+
   if(m_caption)
   {
-    m_captionRect.SetRect(0, 0, window.Width() - WINDOWSHADOWBORDER, WINDOWCAPTIONHEIGHT);
+    m_captionRect.SetRect(0, 0, window.Width() - border, caption);
 
     int index = 1;
     if(m_closeButton)
     {
-      m_closeRect.SetRect(window.Width() - WINDOWSHADOWBORDER - index * WINDOWCAPTIONHEIGHT, 0, window.Width() - WINDOWSHADOWBORDER, WINDOWCAPTIONHEIGHT);
+      m_closeRect.SetRect(window.Width() - border - index * caption, 0, window.Width() - border, caption);
       ++index;
     }
     if(m_maxButton)
     {
-      m_maxRect.SetRect(window.Width() - WINDOWSHADOWBORDER - index * WINDOWCAPTIONHEIGHT, 0, window.Width() - WINDOWSHADOWBORDER - (index - 1) * WINDOWCAPTIONHEIGHT, WINDOWCAPTIONHEIGHT);
+      m_maxRect.SetRect(window.Width() - border - index * caption, 0, window.Width() - border - (index - 1) * caption, caption);
       ++index;
     }
     if(m_minButton)
     {
-      m_minRect.SetRect(window.Width() - WINDOWSHADOWBORDER - index * WINDOWCAPTIONHEIGHT, 0, window.Width() - WINDOWSHADOWBORDER - (index - 1) * WINDOWCAPTIONHEIGHT, WINDOWCAPTIONHEIGHT);
+      m_minRect.SetRect(window.Width() - border - index * caption, 0, window.Width() - border - (index - 1) * caption, caption);
       ++index;
     }
     if(m_mnuButton)
     {
-      m_sysRect.SetRect(0,0,WINDOWCAPTIONHEIGHT,WINDOWCAPTIONHEIGHT);
+      m_sysRect.SetRect(0,0,caption,caption);
     }
   }
   else
@@ -1156,19 +1423,22 @@ StyleDialog::OnNcCalcSize(BOOL calcValidRects, NCCALCSIZE_PARAMS *params)
 {
   if ((GetStyle() & WS_POPUP) == 0)
   {
-    CDialog::OnNcCalcSize(calcValidRects, params);
+    CDialogEx::OnNcCalcSize(calcValidRects, params);
   }
   else
   {
-    CDialog::OnNcCalcSize(calcValidRects, params);
+    CDialogEx::OnNcCalcSize(calcValidRects, params);
 
     if (m_caption)
     {
-      // Derived from CDialog
-      params->rgrc[0].left   += SIZEMARGIN - 1;
-      params->rgrc[0].top    += WINDOWCAPTIONHEIGHT;
-      params->rgrc[0].bottom -= SIZEMARGIN - 1 + WINDOWSHADOWBORDER;
-      params->rgrc[0].right  -= SIZEMARGIN - 1 + WINDOWSHADOWBORDER;
+      int border  = WINDOWSHADOWBORDER(m_hWnd);
+      int caption = WINDOWCAPTIONHEIGHT(m_hWnd);
+      int margin  = SIZEMARGIN(m_hWnd);
+      // Derived from CDialogEx
+      params->rgrc[0].left   += margin - 1;
+      params->rgrc[0].top    += caption;
+      params->rgrc[0].bottom -= margin - 1 + border;
+      params->rgrc[0].right  -= margin - 1 + border;
     }
   }
 }
@@ -1184,7 +1454,7 @@ StyleDialog::OnNcPaint()
 {
   if ((GetStyle() & WS_POPUP) == 0)
   {
-    CDialog::OnNcPaint();
+    CDialogEx::OnNcPaint();
   }
   else
   {
@@ -1195,27 +1465,33 @@ StyleDialog::OnNcPaint()
 
     if(m_caption)
     {
+      int border  = WINDOWSHADOWBORDER(m_hWnd);
+      int caption = WINDOWCAPTIONHEIGHT(m_hWnd);
+      int margin  = SIZEMARGIN(m_hWnd);
+
       // Shadow frame    
-      dc.FillSolidRect(CRect(window.right - WINDOWSHADOWBORDER,   window.top,                         window.right,                        window.top + 2 * WINDOWSHADOWBORDER), ColorWindowTransparent);
-      dc.FillSolidRect(CRect(window.right - WINDOWSHADOWBORDER,   window.top + 2 * WINDOWSHADOWBORDER,window.right,                        window.bottom), ColorWindowGrayFrame);
-      dc.FillSolidRect(CRect(window.left,                         window.bottom -  WINDOWSHADOWBORDER,window.left + 2 * WINDOWSHADOWBORDER,window.bottom), ColorWindowTransparent);
-      dc.FillSolidRect(CRect(window.left + 2 * WINDOWSHADOWBORDER,window.bottom -  WINDOWSHADOWBORDER,window.right    - WINDOWSHADOWBORDER,window.bottom), ColorWindowGrayFrame);
+      dc.FillSolidRect(CRect(window.right - border,   window.top,             window.right,            window.top + 2 * border), ColorWindowTransparent);
+      dc.FillSolidRect(CRect(window.right - border,   window.top + 2 * border,window.right,            window.bottom), ColorWindowGrayFrame);
+      dc.FillSolidRect(CRect(window.left,             window.bottom -  border,window.left + 2 * border,window.bottom), ColorWindowTransparent);
+      dc.FillSolidRect(CRect(window.left + 2 * border,window.bottom -  border,window.right    - border,window.bottom), ColorWindowGrayFrame);
 
       // caption bar
-      CRect caption(m_captionRect);
-      dc.FillSolidRect(caption, m_error ? ColorWindowFrameError : ThemeColor::GetColor(Colors::AccentColor1));
+      CRect captionrc(m_captionRect);
+      dc.FillSolidRect(captionrc, m_error ? ColorWindowFrameError : ThemeColor::GetColor(Colors::AccentColor1));
 
       // title
       dc.SetTextColor(m_error ? ColorWindowFrameTextError : ColorWindowHeaderText);
-      caption.right -= WINDOWCAPTIONHEIGHT;
-      caption.right -= m_maxButton ? WINDOWCAPTIONHEIGHT : 0;
-      caption.right -= m_minButton ? WINDOWCAPTIONHEIGHT : 0;
-      caption.left  += m_mnuButton   ? WINDOWCAPTIONHEIGHT : 0;
-      caption.DeflateRect(5, 0);
+      captionrc.right -= caption;
+      captionrc.right -= m_maxButton ? caption : 0;
+      captionrc.right -= m_minButton ? caption : 0;
+      captionrc.left  += m_mnuButton ? caption : 0;
+      captionrc.DeflateRect(5, 0);
       CString titel;
       GetWindowText(titel);
-      dc.SelectObject(STYLEFONTS.DialogTextFontBold.m_hObject);
-      dc.DrawText(titel, caption, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+
+      CFont* font = GetSFXFont(GetSafeHwnd(),StyleFontType::DialogFontBold);
+      dc.SelectObject(font);
+      dc.DrawText(titel, captionrc, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
 
       // System menu button
       if (m_mnuButton)
@@ -1241,20 +1517,20 @@ StyleDialog::OnNcPaint()
       CPen pen;
       pen.CreatePen(PS_SOLID, 1, m_error ? ColorWindowFrameError : ColorWindowGrayFrame);
       HGDIOBJ orgpen = dc.SelectObject(pen);
-      dc.MoveTo(window.right- WINDOWSHADOWBORDER-1, window.top    + WINDOWCAPTIONHEIGHT);
-      dc.LineTo(window.right- WINDOWSHADOWBORDER-1, window.bottom - WINDOWSHADOWBORDER-1);
-      dc.LineTo(window.left, window.bottom - WINDOWSHADOWBORDER-1);
-      dc.LineTo(window.left, window.top    + WINDOWCAPTIONHEIGHT-1);
+      dc.MoveTo(window.right- border-1, window.top    + caption);
+      dc.LineTo(window.right- border-1, window.bottom - border - 1);
+      dc.LineTo(window.left, window.bottom - border  - 1);
+      dc.LineTo(window.left, window.top    + caption - 1);
       dc.SelectObject(orgpen);
 
       CRect r;
       int back = ThemeColor::GetColor(Colors::ColorWindowFrame);
 
-      r.SetRect(window.left + 1, window.top + WINDOWCAPTIONHEIGHT, window.left + SIZEMARGIN, window.bottom - WINDOWSHADOWBORDER-1);
+      r.SetRect(window.left + 1, window.top + caption, window.left + margin, window.bottom - border -1);
       dc.FillSolidRect(r, back);
-      r.SetRect(window.left + SIZEMARGIN, window.bottom - WINDOWSHADOWBORDER- SIZEMARGIN, window.right - WINDOWSHADOWBORDER- 1, window.bottom - WINDOWSHADOWBORDER - 1);
+      r.SetRect(window.left + margin, window.bottom - border - margin, window.right - border - 1, window.bottom - border - 1);
       dc.FillSolidRect(r, back);
-      r.SetRect(window.right - WINDOWSHADOWBORDER-SIZEMARGIN, window.top + WINDOWCAPTIONHEIGHT, window.right - WINDOWSHADOWBORDER- 1, window.bottom - WINDOWSHADOWBORDER-SIZEMARGIN);
+      r.SetRect(window.right - border - margin, window.top + caption, window.right - border - 1, window.bottom - border - margin);
       dc.FillSolidRect(r, back);
     }
     else
@@ -1271,7 +1547,7 @@ StyleDialog::OnNcHitTest(CPoint point)
 {
   if((GetStyle() & WS_POPUP) == 0)
   {
-    return CDialog::OnNcHitTest(point);
+    return CDialogEx::OnNcHitTest(point);
   }
 
   CRect window;
@@ -1297,37 +1573,38 @@ StyleDialog::OnNcHitTest(CPoint point)
 
   if(!(GetStyle() & WS_MAXIMIZE))
   {
+    int margin = SIZEMARGIN(m_hWnd);
 
     window.OffsetRect(-window.left, -window.top);
-    if(point.x <= window.left + SIZEMARGIN)
+    if(point.x <= window.left + margin)
     {
-      if(point.y >= window.bottom - SIZEMARGIN)
+      if(point.y >= window.bottom - margin)
       {
         return HTBOTTOMLEFT;
       }
-      if(point.y <= window.top + SIZEMARGIN)
+      if(point.y <= window.top + margin)
       {
         return HTTOPLEFT;
       }
       return HTLEFT;
     }
-    if(point.x >= window.right - SIZEMARGIN)
+    if(point.x >= window.right - margin)
     {
-      if(point.y >= window.bottom - SIZEMARGIN)
+      if(point.y >= window.bottom - margin)
       {
         return HTBOTTOMRIGHT;
       }
-      if(point.y <= window.top + SIZEMARGIN)
+      if(point.y <= window.top + margin)
       {
         return HTTOPRIGHT;
       }
       return HTRIGHT;
     }
-    if(point.y >= window.bottom - SIZEMARGIN)
+    if(point.y >= window.bottom - margin)
     {
       return HTBOTTOM;
     }
-    if(point.y <= window.top + SIZEMARGIN)
+    if(point.y <= window.top + margin)
     {
       return HTTOP;
     }
@@ -1371,117 +1648,54 @@ StyleDialog::DrawButton(CDC* pDC, CRect rect, LRESULT type)
                                                        : ThemeColor::GetColor(Colors::ColorControlTextHover)
                                                        : ColorWindowHeaderIcon);
   HGDIOBJ orgpen = pDC->SelectObject(pen);
+  int hpos3 = WS(GetSafeHwnd(),3);
+  int hpos4 = WS(GetSafeHwnd(),4);
+  int hpos5 = WS(GetSafeHwnd(),5);
+  int hpos6 = WS(GetSafeHwnd(),6);
+  int hpos7 = WS(GetSafeHwnd(),7);
 
   switch (type) 
   {
-    case HTMENU:      pDC->MoveTo(rect.CenterPoint().x - WS(7),rect.CenterPoint().y - WS(5));
-                      pDC->LineTo(rect.CenterPoint().x + WS(7),rect.CenterPoint().y - WS(5));
-                      pDC->MoveTo(rect.CenterPoint().x - WS(7),rect.CenterPoint().y);
-                      pDC->LineTo(rect.CenterPoint().x + WS(7),rect.CenterPoint().y);
-                      pDC->MoveTo(rect.CenterPoint().x - WS(7),rect.CenterPoint().y + WS(5));
-                      pDC->LineTo(rect.CenterPoint().x + WS(7),rect.CenterPoint().y + WS(5));
+    case HTMENU:      pDC->MoveTo(rect.CenterPoint().x - hpos7,rect.CenterPoint().y - hpos5);
+                      pDC->LineTo(rect.CenterPoint().x + hpos7,rect.CenterPoint().y - hpos5);
+                      pDC->MoveTo(rect.CenterPoint().x - hpos7,rect.CenterPoint().y);
+                      pDC->LineTo(rect.CenterPoint().x + hpos7,rect.CenterPoint().y);
+                      pDC->MoveTo(rect.CenterPoint().x - hpos7,rect.CenterPoint().y + hpos5);
+                      pDC->LineTo(rect.CenterPoint().x + hpos7,rect.CenterPoint().y + hpos5);
                       break;
-    case HTCLOSE:     pDC->MoveTo(rect.CenterPoint().x - WS(5), rect.CenterPoint().y - WS(5));
-                      pDC->LineTo(rect.CenterPoint().x + WS(6), rect.CenterPoint().y + WS(6));
-                      pDC->MoveTo(rect.CenterPoint().x + WS(5), rect.CenterPoint().y - WS(5));
-                      pDC->LineTo(rect.CenterPoint().x - WS(6), rect.CenterPoint().y + WS(6));
+    case HTCLOSE:     pDC->MoveTo(rect.CenterPoint().x - hpos5, rect.CenterPoint().y - hpos5);
+                      pDC->LineTo(rect.CenterPoint().x + hpos6, rect.CenterPoint().y + hpos6);
+                      pDC->MoveTo(rect.CenterPoint().x + hpos5, rect.CenterPoint().y - hpos5);
+                      pDC->LineTo(rect.CenterPoint().x - hpos6, rect.CenterPoint().y + hpos6);
                       break;
     
-    case HTMINBUTTON: pDC->MoveTo(rect.CenterPoint().x - WS(6), rect.CenterPoint().y + WS(6));
-                      pDC->LineTo(rect.CenterPoint().x + WS(6), rect.CenterPoint().y + WS(6));
+    case HTMINBUTTON: pDC->MoveTo(rect.CenterPoint().x - hpos6, rect.CenterPoint().y + hpos6);
+                      pDC->LineTo(rect.CenterPoint().x + hpos6, rect.CenterPoint().y + hpos6);
                       break;
 
     case HTMAXBUTTON: if ((GetStyle() & WS_MAXIMIZE) != 0)
                       {
                         // 'front' window
-                        pDC->MoveTo(rect.CenterPoint().x - WS(6), rect.CenterPoint().y - WS(3));
-                        pDC->LineTo(rect.CenterPoint().x + WS(4), rect.CenterPoint().y - WS(3));
-                        pDC->LineTo(rect.CenterPoint().x + WS(4), rect.CenterPoint().y + WS(7));
-                        pDC->LineTo(rect.CenterPoint().x - WS(6), rect.CenterPoint().y + WS(7));
-                        pDC->LineTo(rect.CenterPoint().x - WS(6), rect.CenterPoint().y - WS(3));
+                        pDC->MoveTo(rect.CenterPoint().x - hpos5, rect.CenterPoint().y - hpos3);
+                        pDC->LineTo(rect.CenterPoint().x + hpos4, rect.CenterPoint().y - hpos3);
+                        pDC->LineTo(rect.CenterPoint().x + hpos4, rect.CenterPoint().y + hpos7);
+                        pDC->LineTo(rect.CenterPoint().x - hpos5, rect.CenterPoint().y + hpos7);
+                        pDC->LineTo(rect.CenterPoint().x - hpos5, rect.CenterPoint().y - hpos3);
 
                         // 'behind' window
-                        pDC->MoveTo(rect.CenterPoint().x - WS(3), rect.CenterPoint().y - WS(4));
-                        pDC->LineTo(rect.CenterPoint().x - WS(3), rect.CenterPoint().y - WS(6));
-                        pDC->LineTo(rect.CenterPoint().x + WS(7), rect.CenterPoint().y - WS(6));
-                        pDC->LineTo(rect.CenterPoint().x + WS(7), rect.CenterPoint().y + WS(4));
-                        pDC->LineTo(rect.CenterPoint().x + WS(4), rect.CenterPoint().y + WS(4));
+                        pDC->MoveTo(rect.CenterPoint().x - hpos3, rect.CenterPoint().y - hpos4);
+                        pDC->LineTo(rect.CenterPoint().x - hpos3, rect.CenterPoint().y - hpos5);
+                        pDC->LineTo(rect.CenterPoint().x + hpos7, rect.CenterPoint().y - hpos5);
+                        pDC->LineTo(rect.CenterPoint().x + hpos7, rect.CenterPoint().y + hpos4);
+                        pDC->LineTo(rect.CenterPoint().x + hpos4, rect.CenterPoint().y + hpos4);
                       }
                       else
                       {
-                        pDC->MoveTo(rect.CenterPoint().x - WS(5), rect.CenterPoint().y - WS(5));
-                        pDC->LineTo(rect.CenterPoint().x + WS(6), rect.CenterPoint().y - WS(5));
-                        pDC->LineTo(rect.CenterPoint().x + WS(6), rect.CenterPoint().y + WS(6));
-                        pDC->LineTo(rect.CenterPoint().x - WS(5), rect.CenterPoint().y + WS(6));
-                        pDC->LineTo(rect.CenterPoint().x - WS(5), rect.CenterPoint().y - WS(5));
-                      }
-                      break;
-  }
-  pDC->SelectObject(orgpen);
-}
-
-void 
-StyleDialog::Button(CDC* pDC, CRect rect, LRESULT type,StyleDialog::BUTTONSTATE state, bool max)
-{
-  CPen pen;
-
-  switch (state) 
-  {
-    case BS_NORMAL:   // Fall through
-    case BS_DISABLED: pDC->FillSolidRect(rect, ColorWindowHeader);
-                      pen.CreatePen(PS_SOLID,1,ColorWindowHeaderIcon);
-                      break;
-    case BS_HOVER:    pDC->FillSolidRect(rect, ThemeColor::GetColor(Colors::ColorControlHover));
-                      pen.CreatePen(PS_SOLID,1,ThemeColor::GetColor(Colors::ColorControlTextHover));
-                      break;
-    case BS_PRESSED:  pDC->FillSolidRect(rect, ThemeColor::GetColor(Colors::ColorControlPressed));
-                      pen.CreatePen(PS_SOLID,1,ThemeColor::GetColor(Colors::ColorControlTextPressed));
-                      break;
-    default:          assert(false);
-                      return;
-  }
-  HGDIOBJ orgpen = pDC->SelectObject(pen);
-
-  switch(type) 
-  {
-    case HTMENU:      pDC->MoveTo(rect.CenterPoint().x - WS(7),rect.CenterPoint().y - WS(5));
-                      pDC->LineTo(rect.CenterPoint().x + WS(7),rect.CenterPoint().y - WS(5));
-                      pDC->MoveTo(rect.CenterPoint().x - WS(7),rect.CenterPoint().y);
-                      pDC->LineTo(rect.CenterPoint().x + WS(7),rect.CenterPoint().y);
-                      pDC->MoveTo(rect.CenterPoint().x - WS(7),rect.CenterPoint().y + WS(5));
-                      pDC->LineTo(rect.CenterPoint().x + WS(7),rect.CenterPoint().y + WS(5));
-                      break;
-    case HTCLOSE:     pDC->MoveTo(rect.CenterPoint().x - WS(5), rect.CenterPoint().y - WS(5));
-                      pDC->LineTo(rect.CenterPoint().x + WS(6), rect.CenterPoint().y + WS(6));
-                      pDC->MoveTo(rect.CenterPoint().x + WS(5), rect.CenterPoint().y - WS(5));
-                      pDC->LineTo(rect.CenterPoint().x - WS(6), rect.CenterPoint().y + WS(6));
-                      break;
-    case HTMINBUTTON: pDC->MoveTo(rect.CenterPoint().x - WS(6), rect.CenterPoint().y + WS(6));
-                      pDC->LineTo(rect.CenterPoint().x + WS(6), rect.CenterPoint().y + WS(6));
-                      break;
-    case HTMAXBUTTON: if(max)
-                      {
-                        // 'Front' window
-                        pDC->MoveTo(rect.CenterPoint().x - WS(6), rect.CenterPoint().y - WS(3));
-                        pDC->LineTo(rect.CenterPoint().x + WS(4), rect.CenterPoint().y - WS(3));
-                        pDC->LineTo(rect.CenterPoint().x + WS(4), rect.CenterPoint().y + WS(7));
-                        pDC->LineTo(rect.CenterPoint().x - WS(6), rect.CenterPoint().y + WS(7));
-                        pDC->LineTo(rect.CenterPoint().x - WS(6), rect.CenterPoint().y - WS(3));
-
-                        // 'Behind' window
-                        pDC->MoveTo(rect.CenterPoint().x - WS(3), rect.CenterPoint().y - WS(4));
-                        pDC->LineTo(rect.CenterPoint().x - WS(3), rect.CenterPoint().y - WS(6));
-                        pDC->LineTo(rect.CenterPoint().x + WS(7), rect.CenterPoint().y - WS(6));
-                        pDC->LineTo(rect.CenterPoint().x + WS(7), rect.CenterPoint().y + WS(4));
-                        pDC->LineTo(rect.CenterPoint().x + WS(4), rect.CenterPoint().y + WS(4));
-                      }
-                      else
-                      {
-                        pDC->MoveTo(rect.CenterPoint().x - WS(5), rect.CenterPoint().y - WS(5));
-                        pDC->LineTo(rect.CenterPoint().x + WS(6), rect.CenterPoint().y - WS(5));
-                        pDC->LineTo(rect.CenterPoint().x + WS(6), rect.CenterPoint().y + WS(6));
-                        pDC->LineTo(rect.CenterPoint().x - WS(5), rect.CenterPoint().y + WS(6));
-                        pDC->LineTo(rect.CenterPoint().x - WS(5), rect.CenterPoint().y - WS(5));
+                        pDC->MoveTo(rect.CenterPoint().x - hpos5, rect.CenterPoint().y - hpos5);
+                        pDC->LineTo(rect.CenterPoint().x + hpos6, rect.CenterPoint().y - hpos5);
+                        pDC->LineTo(rect.CenterPoint().x + hpos6, rect.CenterPoint().y + hpos6);
+                        pDC->LineTo(rect.CenterPoint().x - hpos5, rect.CenterPoint().y + hpos6);
+                        pDC->LineTo(rect.CenterPoint().x - hpos5, rect.CenterPoint().y - hpos5);
                       }
                       break;
   }
@@ -1498,8 +1712,9 @@ StyleDialog::OnPaint()
     SendMessage(WM_ICONERASEBKGND,reinterpret_cast<WPARAM>(dc.GetSafeHdc()),0);
 
     // Center icon in client rectangle
-    int cxIcon = GetSystemMetrics(SM_CXICON);
-    int cyIcon = GetSystemMetrics(SM_CYICON);
+    int dpi = ::GetDpiForWindow(GetSafeHwnd());
+    int cxIcon = GetSystemMetricsForDpi(SM_CXICON,dpi);
+    int cyIcon = GetSystemMetricsForDpi(SM_CYICON,dpi);
     CRect rect;
     GetClientRect(&rect);
     int x = (rect.Width()  - cxIcon + 1) / 2;
@@ -1510,15 +1725,16 @@ StyleDialog::OnPaint()
     return;
   }
 
-  CDialog::OnPaint();
+  CDialogEx::OnPaint();
 
   if(m_canResize && (m_hasGripper || (GetParent() == nullptr) && (GetStyle() & WS_MAXIMIZE) == 0))
   {
     CDC* pDC = GetDC();
     CRect rect;
     GetClientRect(rect);
-    rect.left = rect.right  - ::GetSystemMetrics(SM_CXHSCROLL);
-    rect.top  = rect.bottom - ::GetSystemMetrics(SM_CYVSCROLL);
+    int dpi = ::GetDpiForWindow(GetSafeHwnd());
+    rect.left = rect.right  - ::GetSystemMetricsForDpi(SM_CXHSCROLL,dpi);
+    rect.top  = rect.bottom - ::GetSystemMetricsForDpi(SM_CYVSCROLL,dpi);
     pDC->DrawFrameControl(rect,DFC_SCROLL,DFCS_SCROLLSIZEGRIP);
     ReleaseDC(pDC);
   }
@@ -1533,8 +1749,9 @@ StyleDialog::EraseGripper()
     CDC* pDC = GetDC();
     CRect rect;
     GetClientRect(rect);
-    rect.left = rect.right - ::GetSystemMetrics(SM_CXHSCROLL);
-    rect.top = rect.bottom - ::GetSystemMetrics(SM_CYVSCROLL);
+    int dpi = ::GetDpiForWindow(GetSafeHwnd());
+    rect.left = rect.right - ::GetSystemMetricsForDpi(SM_CXHSCROLL,dpi);
+    rect.top = rect.bottom - ::GetSystemMetricsForDpi(SM_CYVSCROLL,dpi);
     pDC->FillRect(rect,&m_defaultBrush);
     ReleaseDC(pDC);
   }
@@ -1562,7 +1779,7 @@ StyleDialog::OnCancel()
   {
     return;
   }
-  CDialog::OnCancel();
+  CDialogEx::OnCancel();
 }
 
 // Try overridden OnClosing before closing the dialog.
@@ -1573,6 +1790,6 @@ StyleDialog::OnOK()
   {
     return;
   }
-  CDialog::OnOK();
+  CDialogEx::OnOK();
 }
 

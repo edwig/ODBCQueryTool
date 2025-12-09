@@ -94,6 +94,9 @@
 //                          - WS_EX_CLIENTEDGE style now implicit
 //
 //                          [ Only the latest version and major version changes will be shown ]
+//
+//          2.24       13 Jul 2002 - Chris Maunder
+//                          - Optimised OnDraw for invisible cells.
 ////
 //          2.25       13 Mar 2004 - Chris Maunder
 //                                 - Minor changes so it will compile in VS.NET (inc. Whidbey)
@@ -122,7 +125,7 @@
 #include "GridCtrl.h"
 #include <algorithm>
 #include <VersionHelpers.h>
-#include "..\StyleColors.h"
+#include "..\StyleFramework.h"
 
 // OLE stuff for clipboard operations
 #include <afxadv.h>            // For CSharedFile
@@ -254,8 +257,8 @@ CGridCtrl::CGridCtrl(int nRows, int nCols, int nFixedRows, int nFixedCols)
 
   m_bAscending          = TRUE;       // sorting stuff
   m_nSortColumn         = -1;
-	m_pfnCompare		      = NULL;
-	m_pfnVirtualCompare   = NULL;
+  m_pfnCompare		      = NULL;
+  m_pfnVirtualCompare   = NULL;
   m_nAutoSizeColumnStyle = GVS_BOTH;  // Autosize grid using header and data info
 
   m_nTimerID            = 0;          // For drag-selection
@@ -299,7 +302,7 @@ CGridCtrl::CGridCtrl(int nRows, int nCols, int nFixedRows, int nFixedCols)
 
 CGridCtrl::~CGridCtrl()
 {
-	m_InDestructor = true;
+  m_InDestructor = true;
   DeleteAllItems();
 
   if(m_bTitleTips && ::IsWindow(m_TitleTip.GetSafeHwnd()))
@@ -322,7 +325,6 @@ CGridCtrl::~CGridCtrl()
 BOOL CGridCtrl::RegisterWindowClass()
 {
   WNDCLASS wndcls;
-  //HINSTANCE hInst = AfxGetInstanceHandle();
   HINSTANCE hInst = AfxGetResourceHandle();
 
   if(!(::GetClassInfo(hInst,GRIDCTRL_CLASSNAME, &wndcls)))
@@ -372,17 +374,17 @@ BOOL CGridCtrl::Initialise()
     ModifyStyleEx(0,WS_EX_CLIENTEDGE);
   }
 
-	// Kludge: Make sure the client edge shows
-	// This is so horrible it makes my eyes water.
-	CRect rect;
-	GetWindowRect(rect);
-	CWnd* pParent = GetParent();
+  // Kludge: Make sure the client edge shows
+  // This is so horrible it makes my eyes water.
+  CRect rect;
+  GetWindowRect(rect);
+  CWnd* pParent = GetParent();
   if(pParent != NULL)
   {
     pParent->ScreenToClient(rect);
   }
-	rect.InflateRect(1,1);	MoveWindow(rect);
-	rect.DeflateRect(1,1);  MoveWindow(rect);
+  rect.InflateRect(1,1);	MoveWindow(rect);
+  rect.DeflateRect(1,1);  MoveWindow(rect);
  
   bInProcedure = FALSE;
   return TRUE;
@@ -602,6 +604,7 @@ BEGIN_MESSAGE_MAP(CGridCtrl, CWnd)
   ON_MESSAGE(WM_IME_CHAR, OnImeChar)
   ON_NOTIFY(GVN_ENDLABELEDIT, IDC_INPLACE_CONTROL, OnEndInPlaceEdit)
   ON_CONTROL_REFLECT_EX(CBN_KILLFOCUS,OnComboKillFocus)
+  ON_MESSAGE(WM_DPICHANGED_AFTERPARENT,OnDpiChanged)
 END_MESSAGE_MAP()
 
 /////////////////////////////////////////////////////////////////////////////
@@ -1225,7 +1228,6 @@ void CGridCtrl::OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
   }
   else
   {
-    // OnEditCell(m_idCurrentCell.row,m_idCurrentCell.col,CPoint(-1,-1),nChar);
     CWnd::OnKeyDown(nChar,nRepCnt,nFlags);
     return;
   }
@@ -1336,7 +1338,6 @@ void CGridCtrl::OnSysKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags)
 // Instant editing of cells when keys are pressed
 void CGridCtrl::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
 {
-  // EFW - BUG FIX
   if (!IsCTRLpressed() && m_MouseMode == MOUSE_NOTHING && nChar != VK_ESCAPE)
   {
     if(!m_bHandleTabKey || (m_bHandleTabKey && nChar != VK_TAB))
@@ -1345,14 +1346,12 @@ void CGridCtrl::OnChar(UINT nChar, UINT nRepCnt, UINT nFlags)
       return;
     }
   }
-
   CWnd::OnChar(nChar, nRepCnt, nFlags);
 }
 
 // Added by KiteFly
 LRESULT CGridCtrl::OnImeChar(WPARAM wCharCode, LPARAM)
 {
-  // EFW - BUG FIX
   if(!IsCTRLpressed() && m_MouseMode == MOUSE_NOTHING && wCharCode != VK_ESCAPE)
   {
     OnEditCell(m_idCurrentCell.row,m_idCurrentCell.col,CPoint(-1,-1),(UINT)wCharCode);
@@ -1385,8 +1384,7 @@ void CGridCtrl::OnEndInPlaceEdit(NMHDR* pNMHDR, LRESULT* pResult)
     case VK_NEXT:
     case VK_PRIOR:
     case VK_HOME:
-    case VK_END:
-                  OnKeyDown((UINT)pgvItem->lParam, 0, 0);
+    case VK_END:  OnKeyDown((UINT)pgvItem->lParam, 0, 0);
                   OnEditCell(m_idCurrentCell.row,m_idCurrentCell.col,CPoint(-1,-1),0); //(UINT)pgvItem->lParam);
   }
   InvalidateCellRect(CCellID(pgvItem->row,pgvItem->col));
@@ -1494,6 +1492,8 @@ void CGridCtrl::OnHScroll(UINT nSBCode, UINT /*nPos*/, CScrollBar* /*pScrollBar*
         
     case SB_RIGHT:        if (scrollPos < m_nHScrollMax)
                           {
+                            SetScrollPos32(SB_HORZ, m_nHScrollMax);
+                            Invalidate();
                           }
                           break;
     default:              break;
@@ -1582,9 +1582,21 @@ void CGridCtrl::OnVScroll(UINT nSBCode, UINT /*nPos*/, CScrollBar* /*pScrollBar*
         
     case SB_THUMBPOSITION:
     case SB_THUMBTRACK:   {
-                            SetScrollPos32(SB_VERT, GetScrollPos32(SB_VERT, TRUE));
+                            int pos = GetScrollPos32(SB_VERT,TRUE);
+                            SetScrollPos32(SB_VERT,pos);
                             m_idTopLeftCell.row = -1;
                             CCellID idNewTopLeft = GetTopleftNonFixedCell();
+                            if(pos > (m_nVScrollMax - rect.Height()))
+                            {
+                              int rows = GetRowCount();
+                              int row = (rows >= 1) ? rows - 1 : 0;
+                              CCellID cell = GetFocusCell();
+                              cell.row = row;
+                              cell.col = cell.col >= 0 ? cell.col : 0;
+                              EnsureVisible(cell);
+                              idNewTopLeft = GetTopleftNonFixedCell();
+                            }
+                            // Repaint?         
                             if (idNewTopLeft != idTopLeft)
                             {
                               rect.top = GetFixedRowHeight();
@@ -1675,7 +1687,7 @@ void CGridCtrl::OnDraw(CDC* pDC)
       if (pCell)
     	{
 		    pCell->SetCoords(row,col);
-        pCell->Draw(pDC, row, col, rect, FALSE);
+        pCell->Draw(GetSafeHwnd(),pDC, row, col, rect, FALSE);
 	    }
     }
   }
@@ -1715,7 +1727,7 @@ void CGridCtrl::OnDraw(CDC* pDC)
       if(pCell)
     	{
 		    pCell->SetCoords(row,col);
-        pCell->Draw(pDC, row, col, rect, FALSE);
+        pCell->Draw(GetSafeHwnd(),pDC,row,col,rect,FALSE);
 	    }
     }
   }
@@ -1748,7 +1760,7 @@ void CGridCtrl::OnDraw(CDC* pDC)
       if (pCell)
 			{
 				pCell->SetCoords(row,col);
-        pCell->Draw(pDC, row, col, rect, FALSE);
+        pCell->Draw(GetSafeHwnd(),pDC,row,col,rect,FALSE);
 			}
     }
   }
@@ -1782,7 +1794,7 @@ void CGridCtrl::OnDraw(CDC* pDC)
       if (pCell)
 			{
 				pCell->SetCoords(row,col);
-        pCell->Draw(pDC, row, col, rect, FALSE);
+        pCell->Draw(GetSafeHwnd(),pDC,row,col,rect,FALSE);
 			}
     }
   }
@@ -1919,7 +1931,7 @@ BOOL CGridCtrl::RedrawCell(int nRow, int nCol, CDC* pDC /* = NULL */)
       CGridCellBase* pCell = GetCell(nRow, nCol);
       if(pCell)
       {
-        bResult = pCell->Draw(pDC,nRow,nCol,rect,TRUE);
+        bResult = pCell->Draw(GetSafeHwnd(),pDC,nRow,nCol,rect,TRUE);
       }
     }
     else
@@ -1927,7 +1939,7 @@ BOOL CGridCtrl::RedrawCell(int nRow, int nCol, CDC* pDC /* = NULL */)
       CGridCellBase* pCell = GetCell(nRow, nCol);
       if(pCell)
       {
-        bResult = pCell->Draw(pDC,nRow,nCol,rect,TRUE);
+        bResult = pCell->Draw(GetSafeHwnd(),pDC,nRow,nCol,rect,TRUE);
       }
       // Since we have erased the background, we will need to redraw the gridlines
       CPen pen;
@@ -2484,9 +2496,6 @@ COleDataSource* CGridCtrl::CopyTextFromGrid()
       pCell = GetCell(row, col);
       if (pCell &&(pCell->GetState() & GVIS_SELECTED))
       {
-        // if (!pCell->GetText())
-        //    str += _T(" ");
-        // else 
         str += pCell->GetText();
       }
       if(col != Selection.GetMaxCol())
@@ -2966,15 +2975,11 @@ void CGridCtrl::OnEditSelectAll()
 void CGridCtrl::OnUpdateEditCopy(CCmdUI* pCmdUI)
 {
 	pCmdUI->Enable(GetSelectedCount() > 0); // - Thomas Haase 
-  //CCellRange Selection = GetSelectedCellRange();
-  //pCmdUI->Enable(Selection.Count() && IsValid(Selection));
 }
 
 void CGridCtrl::OnUpdateEditCut(CCmdUI* pCmdUI)
 {
 	pCmdUI->Enable(IsEditable() && GetSelectedCount() > 0); // - Thomas Haase 
-  //CCellRange Selection = GetSelectedCellRange();
-  //pCmdUI->Enable(IsEditable() && Selection.Count() && IsValid(Selection));
 }
 
 void CGridCtrl::OnUpdateEditPaste(CCmdUI* pCmdUI)
@@ -3060,7 +3065,9 @@ CCellID CGridCtrl::GetCellFromPt(CPoint point, BOOL bAllowFixedCellCheck /*=TRUE
   int fixedColWidth = GetFixedColumnWidth();
 
   if (point.x < 0 || (!bAllowFixedCellCheck && point.x < fixedColWidth)) // not in window
+  {
       cellID.col = -1;
+  }
   else if (point.x < fixedColWidth) // in fixed col
   {
     int xpos = 0;
@@ -3074,7 +3081,6 @@ CCellID CGridCtrl::GetCellFromPt(CPoint point, BOOL bAllowFixedCellCheck /*=TRUE
       }
 		  col++;
     }
-
     cellID.col = col;
   }
   else    // in non-fixed col
@@ -3090,7 +3096,6 @@ CCellID CGridCtrl::GetCellFromPt(CPoint point, BOOL bAllowFixedCellCheck /*=TRUE
       }
 	    col++;
     }
-
     if(col >= GetColumnCount())
     {
       cellID.col = -1;
@@ -3104,7 +3109,9 @@ CCellID CGridCtrl::GetCellFromPt(CPoint point, BOOL bAllowFixedCellCheck /*=TRUE
   // calculate row index
   int fixedRowHeight = GetFixedRowHeight();
   if (point.y < 0 || (!bAllowFixedCellCheck && point.y < fixedRowHeight)) // not in window
+  {
       cellID.row = -1;
+  }
   else if (point.y < fixedRowHeight) // in fixed col
   {
     int ypos = 0;
@@ -3133,7 +3140,6 @@ CCellID CGridCtrl::GetCellFromPt(CPoint point, BOOL bAllowFixedCellCheck /*=TRUE
       }
 	    row++;
     }
-
     if(row >= GetRowCount())
     {
       cellID.row = -1;
@@ -3166,7 +3172,6 @@ CCellID CGridCtrl::GetTopleftNonFixedCell(BOOL bForceRecalculation /*=FALSE*/)
   {
     nRight += GetColumnWidth(m_idTopLeftCell.col++);
   }
-
   m_idTopLeftCell.row = m_nFixedRows;
   int nTop = 0;
   while(nTop < nVertScroll && m_idTopLeftCell.row < (GetRowCount() - 1))
@@ -3181,13 +3186,13 @@ CCellID CGridCtrl::GetTopleftNonFixedCell(BOOL bForceRecalculation /*=FALSE*/)
 CCellRange CGridCtrl::GetVisibleNonFixedCellRange(LPRECT pRect /*=NULL*/, 
                                                   BOOL bForceRecalculation /*=FALSE*/)
 {
-  int i;
   CRect rect;
   GetClientRect(rect);
 
   CCellID idTopLeft = GetTopleftNonFixedCell(bForceRecalculation);
 
   // calc bottom
+  int i = 0;
   int bottom = GetFixedRowHeight();
   for (i = idTopLeft.row; i < GetRowCount(); i++)
   {
@@ -3429,13 +3434,15 @@ void CGridCtrl::ResetScrollBars()
   {
     return;
   }
+
+  int dpi = ::GetDpiForWindow(GetSafeHwnd());
   if(IsVisibleVScroll())
   {
-    rect.right += GetSystemMetrics(SM_CXVSCROLL) + GetSystemMetrics(SM_CXBORDER);
+    rect.right += GetSystemMetricsForDpi(SM_CXVSCROLL,dpi) + GetSystemMetricsForDpi(SM_CXBORDER,dpi);
   }
   if(IsVisibleHScroll())
   {
-    rect.bottom += GetSystemMetrics(SM_CYHSCROLL) + GetSystemMetrics(SM_CYBORDER);
+    rect.bottom += GetSystemMetricsForDpi(SM_CYHSCROLL,dpi) + GetSystemMetricsForDpi(SM_CYBORDER,dpi);
   }
   rect.left += GetFixedColumnWidth();
   rect.top += GetFixedRowHeight();
@@ -3459,18 +3466,20 @@ void CGridCtrl::ResetScrollBars()
   //      IsVisibleHScroll(), IsVisibleVScroll());
 
   // If vertical scroll bar, horizontal space is reduced
+  dpi = ::GetDpiForWindow(GetSafeHwnd());
+
   if(VisibleRect.Height() < VirtualRect.Height())
   {
-    VisibleRect.right -= ::GetSystemMetrics(SM_CXVSCROLL);
+    VisibleRect.right -= ::GetSystemMetricsForDpi(SM_CXVSCROLL,dpi);
   }
   // If horz scroll bar, vert space is reduced
   if(VisibleRect.Width() < VirtualRect.Width())
   {
-    VisibleRect.bottom -= ::GetSystemMetrics(SM_CYHSCROLL);
+    VisibleRect.bottom -= ::GetSystemMetricsForDpi(SM_CYHSCROLL,dpi);
   }
   // Recheck vertical scroll bar
   //if (VisibleRect.Height() < VirtualRect.Height())
-  // VisibleRect.right -= ::GetSystemMetrics(SM_CXVSCROLL);
+  // VisibleRect.right -= ::GetSystemMetricsForDpi(SM_CXVSCROLL,dpi);
     
   if (VisibleRect.Height() < VirtualRect.Height())
   {
@@ -3496,20 +3505,6 @@ void CGridCtrl::ResetScrollBars()
 
   ASSERT(m_nVScrollMax < INT_MAX && m_nHScrollMax < INT_MAX); // This should be fine
 
-  /* Old code - CJM
-  SCROLLINFO si;
-  si.cbSize = sizeof(SCROLLINFO);
-  si.fMask = SIF_PAGE;
-  si.nPage = (m_nHScrollMax>0)? VisibleRect.Width() : 0;
-  SetScrollInfo(SB_HORZ, &si, FALSE); 
-  si.nPage = (m_nVScrollMax>0)? VisibleRect.Height() : 0;
-  SetScrollInfo(SB_VERT, &si, FALSE);
-
-  SetScrollRange(SB_VERT, 0, m_nVScrollMax, TRUE);
-  SetScrollRange(SB_HORZ, 0, m_nHScrollMax, TRUE);
-  */
-
-  // New code - Paul Runstedler 
   SCROLLINFO si;
   si.cbSize = sizeof(SCROLLINFO);
   si.fMask = SIF_PAGE | SIF_RANGE;
@@ -3518,7 +3513,7 @@ void CGridCtrl::ResetScrollBars()
   si.nMax = m_nHScrollMax;
   SetScrollInfo(SB_HORZ, &si, TRUE);
 
-  si.fMask |= SIF_DISABLENOSCROLL;
+  si.fMask = SIF_PAGE | SIF_RANGE | SIF_DISABLENOSCROLL;
   si.nPage = (m_nVScrollMax>0)? VisibleRect.Height() : 0;
   si.nMin = 0;
   si.nMax = m_nVScrollMax;
@@ -3556,7 +3551,8 @@ BOOL CGridCtrl::GetCellOrigin(int nRow,int nCol,LPPOINT p)
     }
   }
   else
-  {                                        // is a scrollable data column
+  { 
+    // is a scrollable data column
     for(i = 0; i < m_nFixedCols; i++)
     {
       p->x += GetColumnWidth(i);
@@ -3576,7 +3572,8 @@ BOOL CGridCtrl::GetCellOrigin(int nRow,int nCol,LPPOINT p)
     }
   }
   else 
-  {                                        // is a scrollable data row
+  {
+  	// is a scrollable data row
     for(i = 0; i < m_nFixedRows; i++)
     {
       p->y += GetRowHeight(i);
@@ -3684,10 +3681,24 @@ LRESULT CGridCtrl::OnSetFont(WPARAM hFont, LPARAM /*lParam */)
 
 LRESULT CGridCtrl::OnGetFont(WPARAM /*wParam*/, LPARAM /*lParam*/)
 {
-  //LOGFONT    lf;
-  //m_cellDefault.GetFontObject()->GetLogFont(&lf);
-
   return (LRESULT) m_cellDefault.GetFontObject()->GetSafeHandle();
+}
+
+// wParam = new DPI, lParam = HMONITOR
+LRESULT
+CGridCtrl::OnDpiChanged(WPARAM wParam,LPARAM lParam)
+{
+  HMONITOR monitor = reinterpret_cast<HMONITOR>(lParam);
+  if(monitor)
+  {
+    CFont* font = GetSFXFont(monitor,StyleFontType::DialogFont);
+    if(font)
+    {
+      SetFont(font);
+    }
+    RecalculateRowHeights();
+  }
+  return 0;
 }
 
 BOOL CGridCtrl::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
@@ -3712,7 +3723,9 @@ BOOL CGridCtrl::OnSetCursor(CWnd* pWnd, UINT nHitTest, UINT message)
                                       {
                                           CGridCellBase* pCell = GetCell(cell.row, cell.col);
                                           if (pCell)
+                                          {
                                               return pCell->OnSetCursor();
+                                          }
                                       }
                                   }
                                   SetCursor(AfxGetApp()->LoadStandardCursor(IDC_ARROW));
@@ -3961,6 +3974,17 @@ BOOL CGridCtrl::SetRowCount(int nRows)
   Refresh();
 
   return bResult;
+}
+
+void
+CGridCtrl::RecalculateRowHeights()
+{
+  for(int row = 0; row < m_nRows; ++row)
+  {
+    m_arRowHeights[row] = m_cellDefault.GetHeight();
+  }
+  ResetScrollBars();
+  Refresh();
 }
 
 BOOL CGridCtrl::SetColumnCount(int nCols)
@@ -5346,7 +5370,7 @@ BOOL CGridCtrl::AutoSizeColumn(int nCol, UINT nAutoSizeStyle /*=GVS_DEFAULT*/,
     CGridCellBase* pCell = GetCell(nRow, nCol);
     if(pCell)
     {
-      size = pCell->GetCellExtent(pDC);
+      size = pCell->GetCellExtent(pDC,GetSafeHwnd());
     }
     if(size.cx > nWidth)
     {
@@ -5398,7 +5422,7 @@ BOOL CGridCtrl::AutoSizeRow(int nRow, BOOL bResetScroll /*=TRUE*/)
     CGridCellBase* pCell = GetCell(nRow, nCol);
     if(pCell)
     {
-      size = pCell->GetCellExtent(pDC);
+      size = pCell->GetCellExtent(pDC,GetSafeHwnd());
     }
     if(size.cy > nHeight)
     {
@@ -5495,7 +5519,7 @@ void CGridCtrl::AutoSize(UINT nAutoSizeStyle /*=GVS_DEFAULT*/)
           CGridCellBase* pCell = GetCell(nRow, nCol);
           if(pCell)
           {
-            size = pCell->GetCellExtent(pDC);
+            size = pCell->GetCellExtent(pDC,GetSafeHwnd());
           }
           if(size.cx > (int)m_arColWidths[nCol])
           {
@@ -5624,7 +5648,7 @@ void CGridCtrl::ExpandLastColumn()
   if (nDifference > 0)
   {
     //if (GetVirtualHeight() > rect.Height())
-    //    nDifference -= GetSystemMetrics(SM_CXVSCROLL);
+    //    nDifference -= GetSystemMetricsForDpi(SM_CXVSCROLL,dpi);
 
     m_arColWidths[ nLastColumn ] += nDifference;
     Refresh();
@@ -6260,7 +6284,7 @@ void CGridCtrl::OnMouseMove(UINT /*nFlags*/,CPoint point)
             szTipText = GetTitleTip(tipnum);
             if(tipnum >= 0 && szTipText && szTipText[0])
             {
-              TRACE("Title tip: %s\n",szTipText);
+              ATLTRACE(_T("Title tip: %s\n"),szTipText);
               GetCellRect(idCurrentCell.row,idCurrentCell.col,TextRect);
               pCell->GetTipTextRect(TextRect);
               GetCellRect(idCurrentCell.row, idCurrentCell.col, CellRect);

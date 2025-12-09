@@ -205,6 +205,12 @@ copy $(SolutionDir)\Data\*.*  $(OutDir)\Data\</Command>
     <PreBuildEvent>
       <Message>Copy settings files</Message>
     </PreBuildEvent>
+    <Manifest>
+      <AdditionalManifestFiles>$(ProjectDir)res\Manifest.xml</AdditionalManifestFiles>
+    </Manifest>
+    <Manifest>
+      <EnableDpiAwareness>false</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugUnicode|Win32'">
     <ClCompile>
@@ -239,6 +245,12 @@ copy $(SolutionDir)\Data\*.*  $(OutDir)\Data\</Command>
     <PreBuildEvent>
       <Message>Copy settings files</Message>
     </PreBuildEvent>
+    <Manifest>
+      <AdditionalManifestFiles>$(ProjectDir)res\Manifest.xml</AdditionalManifestFiles>
+    </Manifest>
+    <Manifest>
+      <EnableDpiAwareness>false</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -273,6 +285,7 @@ copy $(SolutionDir)\Data\*.*  $(OutDir)\Data\</Command>
     </PreBuildEvent>
     <Manifest>
       <EnableDpiAwareness>false</EnableDpiAwareness>
+      <AdditionalManifestFiles>$(ProjectDir)res\Manifest.xml</AdditionalManifestFiles>
     </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='DebugUnicode|x64'">
@@ -308,6 +321,7 @@ copy $(SolutionDir)\Data\*.*  $(OutDir)\Data\</Command>
     </PreBuildEvent>
     <Manifest>
       <EnableDpiAwareness>false</EnableDpiAwareness>
+      <AdditionalManifestFiles>$(ProjectDir)res\Manifest.xml</AdditionalManifestFiles>
     </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -347,6 +361,12 @@ copy $(SolutionDir)\Data\*.*  $(OutDir)\Data\</Command>
     <PreBuildEvent>
       <Message>Copy settings files</Message>
     </PreBuildEvent>
+    <Manifest>
+      <AdditionalManifestFiles>$(ProjectDir)res\Manifest.xml</AdditionalManifestFiles>
+    </Manifest>
+    <Manifest>
+      <EnableDpiAwareness>false</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnicode|Win32'">
     <ClCompile>
@@ -385,6 +405,12 @@ copy $(SolutionDir)\Data\*.*  $(OutDir)\Data\</Command>
     <PreBuildEvent>
       <Message>Copy settings files</Message>
     </PreBuildEvent>
+    <Manifest>
+      <AdditionalManifestFiles>$(ProjectDir)res\Manifest.xml</AdditionalManifestFiles>
+    </Manifest>
+    <Manifest>
+      <EnableDpiAwareness>false</EnableDpiAwareness>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -426,6 +452,50 @@ copy $(SolutionDir)\Data\*.*  $(OutDir)\Data\</Command>
     </PreBuildEvent>
     <Manifest>
       <EnableDpiAwareness>false</EnableDpiAwareness>
+      <AdditionalManifestFiles>$(ProjectDir)res\Manifest.xml</AdditionalManifestFiles>
+    </Manifest>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnicode|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>false</SDLCheck>
+      <PreprocessorDefinitions>_WINDOWS;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <AdditionalIncludeDirectories>$(SolutionDir)BaseLibrary\;$(SolutionDir)QueryTool;$(SolutionDir)QueryTool\OpenEditor\Include;$(SolutionDir)SQLComponents;$(SolutionDir)QueryTool\Common;$(SolutionDir)QueryTool\GridControl;$(SolutionDir)QueryTool\Query;$(SolutionDir)StyleFramework;$(SolutionDir)StyleFramework\Grid;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>rpcrt4.lib;crypt32.lib;shlwapi.lib;odbc32.lib;</AdditionalDependencies>
+    </Link>
+    <Midl>
+      <MkTypLibCompatible>false</MkTypLibCompatible>
+      <ValidateAllParameters>true</ValidateAllParameters>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0409</Culture>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <PreBuildEvent>
+      <Command>mkdir $(OutDir)Data
+copy $(SolutionDir)\Data\*.*  $(OutDir)\Data\</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>Copy settings files</Message>
+    </PreBuildEvent>
+    <Manifest>
+      <EnableDpiAwareness>false</EnableDpiAwareness>
+      <AdditionalManifestFiles>$(ProjectDir)res\Manifest.xml</AdditionalManifestFiles>
     </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnicode|x64'">

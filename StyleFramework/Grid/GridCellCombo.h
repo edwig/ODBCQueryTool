@@ -36,7 +36,7 @@ public:
 public:
   virtual BOOL  Edit(int nRow, int nCol, CRect rect, CPoint point, UINT nID, UINT nChar) override;
   virtual void  EndEdit() override;
-  virtual CSize GetCellExtent(CDC* pDC) override;
+  virtual CSize GetCellExtent(CDC* pDC,HWND p_hwnd) override;
   virtual CWnd* GetEditWnd() const override;
 
 // CGridCellCombo specific calls
@@ -47,8 +47,8 @@ public:
   void  SetLastChar(UINT p_last)  { m_nLastChar = p_last; }
 
 protected:
-  virtual BOOL Draw(CDC* pDC, int nRow, int nCol, CRect rect, BOOL bEraseBkgnd = TRUE) override;
-          void DrawComboButton(CDC* pDC,CRect p_rect);
+  virtual BOOL Draw(HWND p_hwnd,CDC* pDC, int nRow, int nCol, CRect rect, BOOL bEraseBkgnd = TRUE) override;
+          void DrawComboButton(HWND p_hwnd,CDC* pDC,CRect p_rect);
           bool CreateNewComboBox(int p_row,int p_col,CRect p_rect,UINT p_id,UINT p_char);
 
   CStringArray m_Strings;

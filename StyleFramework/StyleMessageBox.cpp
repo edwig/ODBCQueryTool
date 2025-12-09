@@ -25,12 +25,11 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-const int    OFFSET               =   8;    // Spaces between controls and texts
-const int    EXTRA_LINESPACING    =  14;    // Extra space for "Do not show again" check box 
-const int    ID_OFFSET            =  10;    // Keep away from IDOK / IDCANCEL
-const double ButtonWidthFactor    =   8;    // With of a button in "W"-letters
-const int    FOREGROUND_TIMER     = 100;    // Timer (higher then number of labels)
-const int    FOREGROUND_INTERVAL  = 1000;   // Timer 1000ms back in the foreground
+#define OFFSET                   8     // Spaces between controls and texts
+#define ID_OFFSET               10     // Keep away from IDOK / IDCANCEL
+#define ButtonWidthFactor        8     // With of a button in number of "W"-letters
+#define FOREGROUND_TIMER       100     // Timer (higher then number of labels)
+#define FOREGROUND_INTERVAL   1000     // Timer 1000ms back in the foreground
 
 static void SuppressMessage(CString p_message);
 static bool IsSuppressableMessage(CString p_message);
@@ -46,11 +45,7 @@ StyleMessageBox(CWnd*   p_parent
                ,bool    p_foreground     /*= false   */)
 {
   HWND wnd = GetFocus();
-  MessageDialog dlg(p_parent,p_title,p_message,p_styles,p_doNotShowAgain);
-  if(p_foreground)
-  {
-    dlg.SetForeground();
-  }
+  MessageDialog dlg(p_parent,p_title,p_message,p_styles,p_doNotShowAgain,p_foreground);
   INT_PTR result = dlg.GetResultID(dlg.DoModal());
   if(wnd)
   {
@@ -68,11 +63,7 @@ StyleMessageBox(CWnd*   p_parent
                ,bool    p_foreground     /*= false   */)
 {
   HWND wnd = GetFocus();
-  MessageDialog dlg(p_parent,p_title,p_message,p_labels,p_doNotShowAgain);
-  if(p_foreground)
-  {
-    dlg.SetForeground();
-  }
+  MessageDialog dlg(p_parent,p_title,p_message,p_labels,p_doNotShowAgain,p_foreground);
   INT_PTR result = dlg.GetResultID(dlg.DoModal());
   if(wnd)
   {
@@ -87,8 +78,9 @@ MessageDialog::MessageDialog(CWnd*    p_parent
                             ,LPCTSTR  p_title
                             ,LPCTSTR  p_message
                             ,LPCTSTR  p_labels
-                            ,bool*    p_doNotShowAgain /*= NULL*/)
-              :StyleDialogCA(IDD_BOODSCHAP, p_parent)
+                            ,bool*    p_doNotShowAgain /*= NULL*/
+                            ,bool     p_foreground     /*= false*/)
+              :StyleDialog(IDD_BOODSCHAP, p_parent)
               ,m_title(p_title)
               ,m_message(p_message)
               ,m_styles(MB_STRINGS)
@@ -96,269 +88,62 @@ MessageDialog::MessageDialog(CWnd*    p_parent
               ,m_image(nullptr)
               ,m_icon(NULL)
               ,m_def_done(false)
-              ,m_foreground(false)
               ,m_suppress(NULL)
               ,m_suppressable(false)
               ,m_notAgain(false)
               ,m_font(NULL)
               ,m_notAgainPtr(p_doNotShowAgain)
+              ,m_foreground(p_foreground)
 {
   InitButtons();
 
-  CString rest(p_labels);
-  // See if we must be forced into the foreground
-  if(rest.GetLength() >= 2 && rest.Left(2) == "! ")
-  {
-    m_foreground = true;
-    rest = rest.Mid(2);
-  }
+  // Replace all occurrences of \n for \r\n
+  m_message.Replace(_T("\r\n"),_T("\n"));
+  m_message.Replace(_T("\n"),_T("\r\n"));
 
-  // Walk the labels string
-  int spatiePos = 0;
-  for (int i = 0; i < MAX_LABELS; ++i)
-  {
-    spatiePos = rest.Find(' ');
-    if(spatiePos > 0)
-    {
-      m_originalLabel[i] = EverythingBefore(rest," "); 
-      rest = EverythingAfter(rest," "); 
-    }
-    else
-    {
-      m_originalLabel[i] = rest;
-      rest.Empty();
-    }
+  CString rest   = InitForeground(p_labels);
+  CString labels = InitOriginalLabels(rest);
 
-    // find timer information
-    const CString tag = _T("_#timer");
-    int pos = FindNoCase(m_originalLabel[i],tag);
-    if (pos >= 0)
-    {
-      int begin = m_originalLabel[i].Find(_T("["), pos + tag.GetLength());
-      if (begin < 0)
-      {
-        begin = m_originalLabel[i].Find(_T("("), pos + tag.GetLength());
-        m_labelcountdown[i] = begin >= 0;
-      }
-      if (begin >= 0)
-      {
-        int end = m_originalLabel[i].Find(m_labelcountdown[i] ? _T(")") : _T("]"), begin + 1);
-        if (end >= 0)
-        {
-          m_labeltimers[i] = _ttoi(m_originalLabel[i].Mid(pos+tag.GetLength()+1, end - begin- 1));
-          m_originalLabel[i].Delete(pos, end-pos+1);
-        }
-      }
-    }
-  }
-
-  // Labels without timer information
-  CString labels;
-  for (int i = 0; i < MAX_LABELS; ++i)
-  {
-    if (m_originalLabel[i].IsEmpty())
-    {
-      break;
-    }
-    if (i > 0)
-    {
-      labels += " ";
-    }
-    labels += m_originalLabel[i];
-  }
-
-  for (int i = 0; i < MAX_LABELS; ++i)
-  {
-    if (m_originalLabel[i].IsEmpty())
-    {
-      break;
-    }
-
-    m_originalLabel[i].Replace(_T("_"),_T(" "));
-    rest.TrimLeft();
-    if (m_originalLabel[i].Find('$') > 0)
-    {
-      m_originalLabel[i] = EverythingBefore(m_originalLabel[i],_T("$"));
-    }
-    TCHAR exception = m_originalLabel[i].GetAt(0);
-    if(exception == '!' || exception == '#' ||
-       exception == '.' || exception == '?' ||
-       exception == '*' )
-    {
-      m_originalLabel[i] = m_originalLabel[i].Mid(1);
-    }
-    int posAmpersand = m_originalLabel[i].Find(_T("&"));
-    while (posAmpersand >= 0)
-    {
-      m_originalLabel[i].Delete(posAmpersand);
-      posAmpersand = m_originalLabel[i].Find(_T("&"));
-    }
-    if (m_originalLabel[i].GetAt(0) == '@')
-    {
-      m_originalLabel[i] = m_originalLabel[i].Mid(1);
-    }
-  }
-
-  // Find signal icon on the first label
-  int signal = 0;
-  if (labels.GetAt(0) == '!') 
-  {
-    signal  = MB_ICONEXCLAMATION;
-    m_image = IDI_EXCLAMATION;
-    m_icon  = LoadIcon(nullptr,m_image);
-  }
-  else if (labels.GetAt(0) == '?') 
-  {
-    signal  = MB_ICONQUESTION;
-    m_image = IDI_QUESTION;
-    m_icon  = LoadIcon(nullptr,m_image);
-  }
-  else if (labels.GetAt(0) == '.') 
-  {
-    m_error = true;
-    signal  = MB_ICONHAND;
-    m_image = IDI_HAND;
-    m_icon  = LoadIcon(nullptr,m_image);
-  }
-  else if (labels.GetAt(0) == '#') 
-  {
-    signal = MB_ICONASTERISK;
-    m_suppressable = true;
-    m_image = IDI_ASTERISK;
-    m_icon  = LoadIcon(nullptr,m_image);
-  }
-  else if(labels.GetAt(0) == '*')
-  {
-    signal = MB_ICONERROR;
-    m_suppressable = true;
-    m_image = IDI_SHIELD;
-    m_icon  = LoadIcon(nullptr,m_image);
-  }
-  else
-  {
-    m_suppressable = true;
-  }
-
-  if (m_image)
-  {
-    // Remove the '!?.#' chars from the label
-    labels = labels.Mid(1);
-    // Give the correct beep
-    MessageBeep(signal);
-  }
+  InitCleanOriginalLabels();
+  InitStyle(labels);
 
   // Optimize the labels for styles
-  if(labels == GetStyleText(TXT_S_OK_CANCEL))     // "ok cancel"
-  {
-    labels = GetStyleText(TXT_OK_CANCEL);         // "ok cancel$can"
-  }
-  if(labels == GetStyleText(TXT_S_ABORT_RETRY))   // "abort retry ignore"
-  {
-    labels = GetStyleText(TXT_ABORT_RETRY);       // "abort$can retry$ok ignore$rem"
-  }
-  if(labels == GetStyleText(TXT_S_YES_NO))        // "yes no"
-  {
-    labels = GetStyleText(TXT_S_YES_NO);          // "yes$ok no$can"
-  }
-  if(labels == GetStyleText(TXT_S_YES_NO_CANCEL)) // "yes no cancel"
-  {
-    labels = GetStyleText(TXT_YES_NO_CANCEL);     // "yes$ok no$can cancel$rem"
-  }
-  if(labels == GetStyleText(TXT_S_RETRY_CANCEL))  // "retry cancel"
-  {
-    labels = GetStyleText(TXT_RETRY_CANCEL);      // "retry$ok cancel$can";
-  }
-  SplitLabelTextAndStyles(labels);
+  labels = InitCorrectLabels(labels);
+  InitSplitLabelTextAndStyles(labels);
 }
 
 MessageDialog::MessageDialog(CWnd*   p_parent
                             ,LPCTSTR p_title
                             ,LPCTSTR p_message
                             ,int     p_styles
-                            ,bool*   p_doNotShowAgain /*= NULL*/)
-              :StyleDialogCA(IDD_BOODSCHAP,p_parent)
+                            ,bool*   p_doNotShowAgain /*= NULL*/
+                            ,bool    p_foreground     /*= false*/)
+              :StyleDialog(IDD_BOODSCHAP,p_parent)
               ,m_title(p_title)
               ,m_message(p_message)
               ,m_default(0)
               ,m_image(nullptr)
               ,m_icon(NULL)
               ,m_def_done(false)
-              ,m_foreground(false)
               ,m_styles(p_styles)
               ,m_suppress(NULL)
               ,m_suppressable(false)
               ,m_notAgain(false)
               ,m_font(NULL)
               ,m_notAgainPtr(p_doNotShowAgain)
+              ,m_foreground(p_foreground)
 {
   InitButtons();
 
-  CString labels;
-  if ((p_styles & MB_TYPEMASK) == MB_OK)
-  {
-    labels = GetStyleText(TXT_OK); // "ok"
-  }
-  if ((p_styles & MB_TYPEMASK) == MB_OKCANCEL)
-  {
-    labels = GetStyleText(TXT_OK_CANCEL); // "ok cancel$can"
-  }
-  if ((p_styles & MB_TYPEMASK) == MB_ABORTRETRYIGNORE)
-  {
-    labels = GetStyleText(TXT_ABORT_RETRY); // "abort$can retry$ok ignore$rem"
-  }
-  if ((p_styles & MB_TYPEMASK) == MB_YESNO)
-  {
-    labels = GetStyleText(TXT_YES_NO); // "yes$ok no$can"
-  }
-  if ((p_styles & MB_TYPEMASK) == MB_YESNOCANCEL)
-  {
-    labels = GetStyleText(TXT_YES_NO_CANCEL); // "yes$ok no$can cancel$rem"
-  }
-  if ((p_styles & MB_TYPEMASK) == MB_RETRYCANCEL)
-  {
-    labels = GetStyleText(TXT_RETRY_CANCEL); // "retry$ok cancel$can"
-  }
+  // Replace all occurrences of \n for \r\n
+  m_message.Replace(_T("\r\n"),_T("\n"));
+  m_message.Replace(_T("\n"),_T("\r\n"));
 
-  int style = p_styles & MB_ICONMASK;
-  if (style)
-  {
-    // (MB_ICONHAND | MB_ICONQUESTION | MB_ICONEXCLAMATION | MB_ICONASTERISK)
-    if(style == MB_ICONASTERISK)     m_image = IDI_ASTERISK;
-    if(style == MB_ICONEXCLAMATION)  m_image = IDI_EXCLAMATION;
-    if(style == MB_ICONQUESTION)     m_image = IDI_QUESTION;
-    if(style == MB_USERICON)         m_image = IDI_SHIELD;
-    if(style == MB_ICONHAND)
-    {
-      m_error = true;
-      m_image = IDI_HAND;
-    }
-    if(m_image)
-    {
-      m_icon = LoadIcon(nullptr, m_image);
-    }
-		m_suppressable = style == MB_ICONASTERISK;
-    // Give correct beep by style
-    MessageBeep(style);
-  }
-  else
-  {
-    m_suppressable = true;
-  }
-
-  // Set different default button?
-  if (p_styles & MB_DEFMASK)
-  {
-    if ((p_styles & MB_DEFMASK) == MB_DEFBUTTON1) m_default = ID_OFFSET + 0;
-    if ((p_styles & MB_DEFMASK) == MB_DEFBUTTON2) m_default = ID_OFFSET + 1;
-    if ((p_styles & MB_DEFMASK) == MB_DEFBUTTON3) m_default = ID_OFFSET + 2;
-  }
-
-  if (p_styles & MB_SETFOREGROUND)
-  {
-    m_foreground = true;
-  }
-
-  SplitLabelTextAndStyles(labels);
+  CString labels = InitCorrectLabels(p_styles);
+  InitStyle(p_styles);
+  InitDefaultButton(p_styles);
+  InitForeground(p_styles);
+  InitSplitLabelTextAndStyles(labels);
 }
 
 // Destructor
@@ -368,18 +153,11 @@ MessageDialog::~MessageDialog()
   ResetButtons();
 }
 
-BEGIN_MESSAGE_MAP(MessageDialog,StyleDialogCA)
-  ON_WM_PAINT()
-  ON_BN_CLICKED(ID_SUPPRESS,OnDoNotShowAgain)
-  ON_WM_TIMER()
-END_MESSAGE_MAP()
-
-void MessageDialog::DoDataExchange(CDataExchange* pDX)
-{
-  StyleDialogCA::DoDataExchange(pDX);
-
-  DDX_Control(pDX,IDC_BOODSCHAP,m_edit);
-}
+//////////////////////////////////////////////////////////////////////////
+//
+// Initialisation
+//
+//////////////////////////////////////////////////////////////////////////
 
 // Init buttons
 void
@@ -394,142 +172,276 @@ MessageDialog::InitButtons()
   }
 }
 
-// Reset the button controls
+CString
+MessageDialog::InitCorrectLabels(CString p_labels)
+{
+  if(p_labels == GetStyleText(TXT_S_OK_CANCEL))     // "ok cancel"
+  {
+    p_labels = GetStyleText(TXT_OK_CANCEL);         // "ok cancel$can"
+  }
+  if(p_labels == GetStyleText(TXT_S_ABORT_RETRY))   // "abort retry ignore"
+  {
+    p_labels = GetStyleText(TXT_ABORT_RETRY);       // "abort$can retry$ok ignore$rem"
+  }
+  if(p_labels == GetStyleText(TXT_S_YES_NO))        // "yes no"
+  {
+    p_labels = GetStyleText(TXT_S_YES_NO);          // "yes$ok no$can"
+  }
+  if(p_labels == GetStyleText(TXT_S_YES_NO_CANCEL)) // "yes no cancel"
+  {
+    p_labels = GetStyleText(TXT_YES_NO_CANCEL);     // "yes$ok no$can cancel$rem"
+  }
+  if(p_labels == GetStyleText(TXT_S_RETRY_CANCEL))  // "retry cancel"
+  {
+    p_labels = GetStyleText(TXT_RETRY_CANCEL);      // "retry$ok cancel$can";
+  }
+  return p_labels;
+}
+
+CString
+MessageDialog::InitCorrectLabels(int p_styles)
+{
+  CString labels;
+  if((p_styles & MB_TYPEMASK) == MB_OK)
+  {
+    labels = GetStyleText(TXT_OK);                // "ok"
+  }
+  if((p_styles & MB_TYPEMASK) == MB_OKCANCEL)
+  {
+    labels = GetStyleText(TXT_OK_CANCEL);         // "ok cancel$can"
+  }
+  if((p_styles & MB_TYPEMASK) == MB_ABORTRETRYIGNORE)
+  {
+    labels = GetStyleText(TXT_ABORT_RETRY);       // "abort$can retry$ok ignore$rem"
+  }
+  if((p_styles & MB_TYPEMASK) == MB_YESNO)
+  {
+    labels = GetStyleText(TXT_YES_NO);            // "yes$ok no$can"
+  }
+  if((p_styles & MB_TYPEMASK) == MB_YESNOCANCEL)
+  {
+    labels = GetStyleText(TXT_YES_NO_CANCEL);     // "yes$ok no$can cancel$rem"
+  }
+  if((p_styles & MB_TYPEMASK) == MB_RETRYCANCEL)
+  {
+    labels = GetStyleText(TXT_RETRY_CANCEL);      // "retry$ok cancel$can"
+  }
+  return labels;
+}
+
 void
-MessageDialog::ResetButtons()
+MessageDialog::InitStyle(int p_styles)
 {
-  for (int i = 0; i < MAX_LABELS; ++i)
+  int style = p_styles & MB_ICONMASK;
+  if(style)
   {
-    delete m_button[i];
-    m_button[i] = nullptr;
-  }
-  if (m_suppress)
-  {
-    delete m_suppress;
-    m_suppress = nullptr;
-  }
-}
-
-BOOL
-MessageDialog::PreTranslateMessage(MSG* pMsg)
-{
-  switch (pMsg->message)
-  {
-    case WM_KEYDOWN:
-    case WM_SYSKEYDOWN:
-      if(pMsg->wParam == VK_RETURN || pMsg->wParam == VK_SPACE)
-      {
-        if(StyleButton* button = dynamic_cast<StyleButton*>(GetFocus()))
-        { 
-          EndDialog(button->GetDlgCtrlID());
-        }
-        return TRUE;
-      }
-      if(pMsg->wParam == VK_LEFT)
-      {
-        if(StyleButton* button = dynamic_cast<StyleButton*>(GetFocus()))
-        {
-          GotoControl(-1);
-          return TRUE;
-        }
-      }
-      if(pMsg->wParam == VK_RIGHT)
-      {
-        if(StyleButton* button = dynamic_cast<StyleButton*>(GetFocus()))
-        {
-          GotoControl(1);
-          return TRUE;
-        }
-      }
-      for (int i = 0; i < MAX_LABELS; ++i)
-      {
-        int ch = tolower((int)pMsg->wParam);
-
-        // Find the label that begins with this character
-        if(!m_label[i].IsEmpty() && (m_button[i]->GetStyle() & WS_DISABLED) == 0)
-        {
-          if(tolower(m_label[i].GetAt(0)) == ch)
-          {
-            EndDialog(i + ID_OFFSET);
-            return TRUE;
-          }
-        }
-      }
-      break;
-  }
-  return StyleDialogCA::PreTranslateMessage(pMsg);
-}
-
-// Window procedure with our own error handling
-LRESULT 
-MessageDialog::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
-{
-  try
-  {
-    return StyleDialogCA::WindowProc(message, wParam, lParam);
-  }
-  catch (CString& er)
-  {
-    AfxMessageBox(er,MB_OK | MB_ICONERROR);
-    return 0;
-  }
-}
-
-// Go to the Next/Previous control on the message box
-void 
-MessageDialog::GotoControl(int p_direction)
-{
-  // Are we on the text of the message dialog
-  bool onText = (&m_edit == reinterpret_cast<CEdit*>(GetFocus()));
-  int focusButton = 0;
-
-  // Count the number of buttons
-  int maxButton = 0;
-  for(int ind = 0; ind < MAX_LABELS; ++ind)
-  {
-    if(!m_label[ind].IsEmpty())
+    // (MB_ICONHAND | MB_ICONQUESTION | MB_ICONEXCLAMATION | MB_ICONASTERISK)
+    if(style == MB_ICONASTERISK)     m_image = IDI_ASTERISK;
+    if(style == MB_ICONEXCLAMATION)  m_image = IDI_EXCLAMATION;
+    if(style == MB_ICONQUESTION)     m_image = IDI_QUESTION;
+    if(style == MB_USERICON)         m_image = IDI_SHIELD;
+    if(style == MB_ICONHAND)
     {
-      ++maxButton;
+      m_error = true;
+      m_image = IDI_HAND;
     }
-    else break;
-  }
-
-  if(onText)
-  {
-    if(p_direction > 0)
+    if(m_image)
     {
-      // We are on the text and go to the first button
-      focusButton = 0;
+      m_icon = LoadIcon(nullptr,m_image);
+    }
+    m_suppressable = style == MB_ICONASTERISK;
+    // Give correct beep by style
+    MessageBeep(style);
+  }
+  else
+  {
+    m_suppressable = true;
+  }
+}
+
+void 
+MessageDialog::InitDefaultButton(int p_styles)
+{
+  // Set different default button?
+  int style = p_styles & MB_DEFMASK;
+  if(style)
+  {
+    if(style == MB_DEFBUTTON1) m_default = ID_OFFSET + 0;
+    if(style == MB_DEFBUTTON2) m_default = ID_OFFSET + 1;
+    if(style == MB_DEFBUTTON3) m_default = ID_OFFSET + 2;
+  }
+}
+
+// Split the labels string into the original labels 
+// and separate the timing information
+CString
+MessageDialog::InitOriginalLabels(CString p_labels)
+{
+  // Walk the labels string
+  int spatiePos = 0;
+  for(int i = 0; i < MAX_LABELS; ++i)
+  {
+    spatiePos = p_labels.Find(' ');
+    if(spatiePos > 0)
+    {
+      m_originalLabel[i] = EverythingBefore(p_labels,_T(" "));
+      p_labels = EverythingAfter(p_labels,_T(" "));
     }
     else
     {
-      focusButton = maxButton - 1;
+      m_originalLabel[i] = p_labels;
+      p_labels.Empty();
     }
-  }
-  else
-  {
-    for(int ind = 0; ind < maxButton; ++ind)
+
+    // find timer information
+    const CString tag = _T("_#timer");
+    int pos = FindNoCase(m_originalLabel[i],tag);
+    if(pos >= 0)
     {
-      StyleButton* button = reinterpret_cast<StyleButton*>(GetFocus());
-      if(m_button[ind] == button)
+      int begin = m_originalLabel[i].Find(_T("["),pos + tag.GetLength());
+      if(begin < 0)
       {
-        if(button->GetStyle() & BS_DEFPUSHBUTTON)
+        begin = m_originalLabel[i].Find(_T("("),pos + tag.GetLength());
+        m_labelcountdown[i] = begin >= 0;
+      }
+      if(begin >= 0)
+      {
+        int end = m_originalLabel[i].Find(m_labelcountdown[i] ? _T(")") : _T("]"),begin + 1);
+        if(end >= 0)
         {
-          button->ModifyStyle(BS_DEFPUSHBUTTON,0);
+          m_labeltimers[i] = _ttoi(m_originalLabel[i].Mid(pos + tag.GetLength() + 1,end - begin - 1));
+          m_originalLabel[i].Delete(pos,end - pos + 1);
         }
-        focusButton = ind + p_direction;
-        break;
       }
     }
   }
 
-  if(focusButton < 0 || focusButton == maxButton)
+  // Labels without timer information
+  CString labels;
+  for(int i = 0; i < MAX_LABELS; ++i)
   {
-    m_edit.SetFocus();
+    if(m_originalLabel[i].IsEmpty())
+    {
+      break;
+    }
+    if(i > 0)
+    {
+      labels += _T(" ");
+    }
+    labels += m_originalLabel[i];
+  }
+  return labels;
+}
+
+void
+MessageDialog::InitCleanOriginalLabels()
+{
+  for(int i = 0; i < MAX_LABELS; ++i)
+  {
+    if(m_originalLabel[i].IsEmpty())
+    {
+      break;
+    }
+
+    m_originalLabel[i].Replace(_T("_"),_T(" "));
+    if(m_originalLabel[i].Find('$') > 0)
+    {
+      m_originalLabel[i] = EverythingBefore(m_originalLabel[i],_T("$"));
+    }
+    TCHAR exception = m_originalLabel[i].GetAt(0);
+    if(exception == '!' || exception == '#' ||
+       exception == '.' || exception == '?' ||
+       exception == '*')
+    {
+      m_originalLabel[i] = m_originalLabel[i].Mid(1);
+    }
+    int posAmpersand = m_originalLabel[i].Find(_T("&"));
+    while(posAmpersand >= 0)
+    {
+      m_originalLabel[i].Delete(posAmpersand);
+      posAmpersand = m_originalLabel[i].Find(_T("&"));
+    }
+    if(m_originalLabel[i].GetAt(0) == '@')
+    {
+      m_originalLabel[i] = m_originalLabel[i].Mid(1);
+    }
+  }
+}
+
+void
+MessageDialog::InitStyle(CString& p_labels)
+{
+  // Find signal icon on the first label
+  int signal = 0;
+  p_labels.TrimLeft();
+  TCHAR style = p_labels.GetAt(0);
+
+  if(style == '!')
+  {
+    signal  = MB_ICONEXCLAMATION;
+    m_image = IDI_EXCLAMATION;
+    m_icon  = LoadIcon(nullptr,m_image);
+  }
+  else if(style == '?')
+  {
+    signal  = MB_ICONQUESTION;
+    m_image = IDI_QUESTION;
+    m_icon  = LoadIcon(nullptr,m_image);
+  }
+  else if(style == '.')
+  {
+    m_error = true;
+    signal  = MB_ICONHAND;
+    m_image = IDI_HAND;
+    m_icon  = LoadIcon(nullptr,m_image);
+  }
+  else if(style == '#')
+  {
+    signal  = MB_ICONASTERISK;
+    m_suppressable = true;
+    m_image = IDI_ASTERISK;
+    m_icon  = LoadIcon(nullptr,m_image);
+  }
+  else if(style == '*')
+  {
+    signal  = MB_ICONERROR;
+    m_suppressable = true;
+    m_image = IDI_SHIELD;
+    m_icon  = LoadIcon(nullptr,m_image);
   }
   else
   {
-    m_button[focusButton]->SetFocus();
+    m_suppressable = true;
+  }
+
+  if(m_image)
+  {
+    // Remove the '!?.#' chars from the label
+    p_labels = p_labels.Mid(1);
+    // Give the correct beep
+    MessageBeep(signal);
+  }
+}
+
+CString
+MessageDialog::InitForeground(CString p_labels)
+{
+  // See if we must be forced into the foreground
+  if(p_labels.GetLength() >= 2 && p_labels.Left(2) == "! ")
+  {
+    m_foreground = true;
+    p_labels = p_labels.Mid(2);
+  }
+  return p_labels;
+}
+
+
+void 
+MessageDialog::InitForeground(int p_styles)
+{
+  if(p_styles & MB_SETFOREGROUND)
+  {
+    m_foreground = true;
   }
 }
 
@@ -540,7 +452,7 @@ MessageDialog::GotoControl(int p_direction)
 // "buttontext$ab" -> label = "buttontext" style = "ab"
 //
 void
-MessageDialog::SplitLabelTextAndStyles(CString& p_labels)
+MessageDialog::InitSplitLabelTextAndStyles(CString& p_labels)
 {
   // Reset everything
   for (int i = 0; i < MAX_LABELS; ++i)
@@ -632,6 +544,579 @@ MessageDialog::SplitLabelTextAndStyles(CString& p_labels)
   }
 }
 
+// Reset the button controls
+void
+MessageDialog::ResetButtons()
+{
+  for(int i = 0; i < MAX_LABELS; ++i)
+  {
+    delete m_button[i];
+    m_button[i] = nullptr;
+  }
+  if(m_suppress)
+  {
+    delete m_suppress;
+    m_suppress = nullptr;
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Standard CDialog handling
+//
+//////////////////////////////////////////////////////////////////////////
+
+BEGIN_MESSAGE_MAP(MessageDialog,StyleDialog)
+  ON_WM_PAINT()
+  ON_BN_CLICKED(ID_SUPPRESS,OnDoNotShowAgain)
+  ON_WM_TIMER()
+END_MESSAGE_MAP()
+
+void MessageDialog::DoDataExchange(CDataExchange* pDX)
+{
+  StyleDialog::DoDataExchange(pDX);
+
+  DDX_Control(pDX,IDC_BOODSCHAP,m_edit,m_message);
+}
+
+// Calculate whole message box and start it
+BOOL
+MessageDialog::OnInitDialog()
+{
+  StyleDialog::OnInitDialog();
+
+  SetWindowText(m_title);
+  ShowCloseButton(false);
+
+  // MB_ICONERROR message -> Red error font, otherwise normal dialog font
+  m_font = GetSFXFont(GetSafeHwnd(),(m_image == IDI_SHIELD) ? StyleFontType::ErrorFont : StyleFontType::DialogFont);
+  // Tell it to the text area
+  m_edit.SetFont(m_font);
+
+  // The position of the text area
+  CRect textRect(0,0,0,0);
+  CreateTextArea(textRect);
+
+  // Making the buttons and resize
+  CreateButtons(textRect);
+
+  // Bring to foreground?
+  CreateSetForeground();
+
+  // Never meddle with the last positions
+  // IN case we are the last dialog the application uses
+  SetSaveMonitor(false);
+
+  // Set focus on the default button (if any)
+  return InitFocus();
+}
+
+// Override for a suppressible message
+INT_PTR
+MessageDialog::DoModal()
+{
+  if(m_suppressable)
+  {
+    if(IsSuppressableMessage(m_message))
+    {
+      m_edit.SetInitCorrectly();
+      return IDOK;
+    }
+  }
+
+  // Request attention if we are not in the foreground
+  CWnd* w = GetForegroundWindow();
+  bool bFlash = true;
+  while(w)
+  {
+    if(w == AfxGetMainWnd())
+    {
+      bFlash = false;
+      break;
+    }
+    w = w->GetParent();
+  }
+
+  // Check parent
+  if(!m_pParentWnd)
+  {
+    m_pParentWnd = AfxGetMainWnd();
+  }
+  if(m_pParentWnd && m_pParentWnd->GetSafeHwnd() && !m_pParentWnd->IsWindowVisible() && bFlash)
+  {
+    m_pParentWnd->FlashWindowEx(FLASHW_TRAY,3,0);
+  }
+
+  // Show dialog by parent's DoModal
+  INT_PTR res = StyleDialog::DoModal();
+
+  if(m_notAgainPtr != NULL)
+  {
+    *m_notAgainPtr = m_notAgain;
+  }
+  // Ready
+  return res;
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Creating the MessageDialog window
+//
+//////////////////////////////////////////////////////////////////////////
+
+BOOL
+MessageDialog::InitFocus()
+{
+  // Set focus on the default button (if any)
+  if(CWnd* defwin = GetDlgItem(m_default))
+  {
+    defwin->SetFocus();
+    return FALSE;
+  }
+  return TRUE;
+}
+
+void 
+MessageDialog::CreateTextArea(CRect& p_textRect)
+{
+  // Calculate the size of the text area
+  CreateMakeTextArea(p_textRect);
+
+  // See to it that a very long title will be visible
+  CreateAdjustLongTitle(p_textRect);
+
+  // Place the edit control and the text
+  m_edit.SetWindowText(m_message);
+  m_edit.SetWindowPos(nullptr
+                      ,p_textRect.left
+                      ,p_textRect.top
+                      ,p_textRect.Width()
+                      ,p_textRect.Height()
+                      ,SWP_NOZORDER | SWP_NOACTIVATE);
+}
+
+void
+MessageDialog::CreateMakeTextArea(CRect& p_textRect)
+{
+  int offset = WS(GetSafeHwnd(),OFFSET);
+  CClientDC dc(&m_edit);
+
+  const StyleMonitor* monitor = g_styling.GetMonitor(GetSafeHwnd());
+  int monitorHeight = monitor->GetHeight();
+  int monitorWidth  = monitor->GetWidth();
+
+  p_textRect.right = (monitorWidth * 90) / 100;
+  dc.DrawText(m_message,&p_textRect,DT_CALCRECT | DT_LEFT | DT_NOPREFIX | DT_WORDBREAK | DT_EDITCONTROL);
+
+  // The internal margins of the edit control need to be added to the text part
+  // so the edit control will become big enough to show margins itself
+  CRect margins;
+  m_edit.GetRect(margins);
+  p_textRect.right  += margins.left * 2;
+  p_textRect.bottom += margins.top  * 2;
+
+  // If it gets to high, constraint it and use an extra scroll bar
+  int maxHeight = (monitorHeight * 80) / 100;
+  if (p_textRect.bottom > maxHeight)
+  {
+    m_edit.ModifyStyle(0,WS_VSCROLL);
+    p_textRect.bottom = maxHeight;
+    p_textRect.right +=  WS(GetSafeHwnd(),THUMB_BORDER);
+  }
+
+  // Add fixed offsets 
+  p_textRect.OffsetRect(offset,offset);
+
+  // Information pictograph
+  if(m_image)
+  {
+    // Extra space at the left side of 32 pixels for the icon
+    int extra = WS(GetSafeHwnd(),32);
+    p_textRect.OffsetRect(extra + offset,0);
+    if(p_textRect.bottom < extra)
+    {
+      // Still to do: vertically centering
+      p_textRect.bottom = extra + offset;
+    }
+  }
+}
+
+void
+MessageDialog::CreateAdjustLongTitle(CRect& p_textRect)
+{
+  const StyleMonitor* monitor = g_styling.GetMonitor(GetSafeHwnd());
+  int monitorWidth = monitor->GetWidth();
+
+  CClientDC dc(&m_edit);
+  CFont* font = GetSFXFont(GetSafeHwnd(),StyleFontType::CaptionFont);
+  HGDIOBJ obj = dc.SelectObject(font);
+  CSize size  = dc.GetTextExtent(CString(m_title));
+  dc.SelectObject(obj);
+  if(size.cx > (monitorWidth * 90) / 100)
+  {
+    size.cx = (monitorWidth * 90) / 100;
+  }
+  if(size.cx > p_textRect.Width())
+  {
+    p_textRect.right = p_textRect.left + size.cx;
+  }
+}
+
+void
+MessageDialog::CreateButtons(CRect& p_textRect)
+{
+  // Making the buttons
+  // For the width we use the size of a "W"
+  // and for the height the 'real' font-height
+  CClientDC dc(&m_edit);
+  CSize tsize      = dc.GetTextExtent("W");
+  int offset       = WS(GetSafeHwnd(),OFFSET);
+  int buttonTop    = p_textRect.bottom + offset;
+  int buttonWidth  = (int) (ButtonWidthFactor * tsize.cx);
+  int buttonHeight = tsize.cy + (offset * 3)/2;
+  int buttonBegin  = offset;
+  int totalWidth   = offset;
+
+  CreateMakeTheButtons(p_textRect,tsize,buttonTop,buttonWidth,buttonHeight,buttonBegin,totalWidth);
+
+  // Recalculate the window size
+  int border = WINDOWSHADOWBORDER(m_hWnd);
+  CRect rect(0, 0, totalWidth + offset + border, buttonTop + offset + buttonHeight + border);
+  if(m_suppressable || (m_notAgainPtr != NULL))
+  {
+    // Extra checkbox "Do not repeat" under the buttons
+    CreateDoNotRepeat(rect,tsize,buttonBegin,buttonTop,buttonHeight);
+  }
+
+  int caption = WINDOWCAPTIONHEIGHT(m_hWnd);
+  rect.bottom += caption;
+
+  // Total window resize and placement
+  AdjustWindowRect(rect,GetStyle(),false);
+  MoveWindow(rect);
+  CenterWindow();
+}
+
+void 
+MessageDialog::CreateMakeTheButtons(CRect&  p_textRect
+                                   ,CSize   p_tsize
+                                   ,int&    p_buttonTop
+                                   ,int&    p_buttonWidth
+                                   ,int&    p_buttonHeight
+                                   ,int&    p_buttonBegin
+                                   ,int&    p_totalWidth)
+{
+  int offset = WS(GetSafeHwnd(),OFFSET);
+
+  // Calculate the width of all buttons together
+  for(int i = 0; i < MAX_LABELS; ++i)
+  {
+    if(!m_label[i].IsEmpty())
+    {
+      if(p_totalWidth > offset) 
+      {
+        p_totalWidth += offset;
+      }
+      m_width[i] = p_buttonWidth;
+      int breedte = m_label[i].GetLength() * p_tsize.cx + 2 * offset;
+      if (breedte > p_buttonWidth)
+      {
+        m_width[i] = breedte;
+      }
+      p_totalWidth += m_width[i];
+    }
+  }
+  // Calculate the beginning of the buttons
+  // If the text is wider than the buttons, use the text width for the button
+  if (p_textRect.right > p_totalWidth)
+  {
+    p_buttonBegin += p_textRect.right - p_totalWidth;
+    p_totalWidth   = p_textRect.right;
+  }
+  // Create the buttons
+  long buttonStyle = BS_PUSHBUTTON | WS_TABSTOP | BS_NOTIFY | WS_CHILD | WS_VISIBLE | BS_ICON;
+  for (int i = 0; i < MAX_LABELS; ++i)
+  {
+    CString sButtonTekst = m_label[i];
+    if (!sButtonTekst.IsEmpty())
+    {
+      DWORD style = buttonStyle;
+      int ID = i + ID_OFFSET;
+      if (i == 0)
+      {
+        style |= WS_GROUP;
+      }
+      if (m_default - ID_OFFSET == i)
+      {
+        style |= BS_DEFPUSHBUTTON;
+				SetDefID(ID);
+      }
+      // Set an accelerator on the first char of the label, in case of no accelerator
+      if (!Contains(sButtonTekst,_T("&")))
+      {
+        sButtonTekst = _T("&") + sButtonTekst;
+      }
+      else
+      {
+        // Remove all cases of a '&' from the original string
+        int posAmpersand = m_label[i].Find(_T("&"));
+        while (posAmpersand >= 0)
+        {
+          m_label[i].Delete(posAmpersand);
+          posAmpersand = m_label[i].Find(_T("&"));
+        }
+      }
+      
+      if(m_labeltimers[i] > 0)
+      {
+        style |= WS_DISABLED;
+        SetTimer(i, m_labelcountdown[i] ? 1000 : m_labeltimers[i] * 1000, NULL);
+        if (m_labelcountdown[i])
+        {
+          sButtonTekst.AppendFormat(_T("(%d)"),m_labeltimers[i]);
+        }
+      }
+
+      p_buttonWidth = m_width[i];
+      CRect rect(p_buttonBegin,p_buttonTop,p_buttonBegin + p_buttonWidth,p_buttonTop + p_buttonHeight);
+      m_button[i]  = new StyleButton(m_style[i], m_error);
+      m_button[i]->Create(sButtonTekst, // Label text
+                          style,        // MS-Windows window style
+                          rect,         // Rectangle
+                          this,         // My parent
+                          ID            // CtrlID of this button
+                          );
+      m_button[i]->SetFont(m_font);
+      // For the next button
+      p_buttonBegin += p_buttonWidth + offset;
+    }
+  }
+}
+
+void
+MessageDialog::CreateDoNotRepeat(CRect& p_window,CSize p_tsize,int p_buttonBegin,int p_buttonTop,int p_buttonHeight)
+{
+  int offset = WS(GetSafeHwnd(),OFFSET);
+  int hcb = (p_tsize.cy + (offset * 3)/2);
+  p_window.bottom += hcb;
+  p_window.bottom += offset;
+
+  // Make the check box
+  int top       = p_buttonTop + p_buttonHeight + 2 * offset;
+  m_line.left   = offset;
+  m_line.top    = top - offset;
+  m_line.right  = p_buttonBegin - offset;
+  m_line.bottom = m_line.top;
+
+  CRect brect(offset,top + hcb - WS(GetSafeHwnd(),24),offset + WS(GetSafeHwnd(),176),top + hcb - WS(GetSafeHwnd(),6));
+  m_suppress = new StyleCheckbox();
+  // Beware: Text must be very small, so it will always fit into the message box and be readable
+  m_suppress->Create(GetStyleText(TXT_NO_REPEAT),  // "Do not repeat"
+                     WS_TABSTOP | BS_AUTOCHECKBOX | BS_NOTIFY | WS_CHILD | WS_VISIBLE,
+                     brect,
+                     this,
+                     ID_SUPPRESS);
+}
+
+void
+MessageDialog::CreateSetForeground()
+{
+  // Set ourselves in the foreground
+  if(m_foreground)
+  {
+    SetForegroundWindow();
+    SetWindowPos(&CWnd::wndTopMost,0,0,0,0,SWP_NOMOVE | SWP_NOSIZE);
+    SetTimer(FOREGROUND_TIMER,FOREGROUND_INTERVAL,nullptr);
+    FlashMessageBox();
+  }
+}
+
+//////////////////////////////////////////////////////////////////////////
+//
+// Message Handling
+//
+//////////////////////////////////////////////////////////////////////////
+
+void
+MessageDialog::OnTimer(UINT_PTR nIDEvent)
+{
+  // Once in a while we go back to the foreground
+  // Specially if multiple programs want to be there !!
+  if(nIDEvent == FOREGROUND_TIMER)
+  {
+    SetWindowPos(&CWnd::wndTopMost,0,0,0,0,SWP_NOMOVE | SWP_NOSIZE);
+    return;
+  }
+
+  // Do the label timers
+  if (m_labelcountdown[nIDEvent])
+  {
+    CString sButtonTekst = m_label[nIDEvent];
+    if (!Contains(sButtonTekst,_T("&")))
+    {
+      sButtonTekst = _T("&") + sButtonTekst;
+    }
+    else
+    {
+      int posAmpersand = m_label[nIDEvent].Find(_T("&"));
+      while (posAmpersand >= 0)
+      {
+        m_label[nIDEvent].Delete(posAmpersand);
+        posAmpersand = m_label[nIDEvent].Find(_T("&"));
+      }
+    }
+
+    if (--m_labeltimers[nIDEvent] > 0)
+    {
+      sButtonTekst.AppendFormat(_T("(%d)"),m_labeltimers[nIDEvent]);
+      SetTimer(nIDEvent, 1000, NULL);
+      m_button[nIDEvent]->SetWindowText(sButtonTekst);
+      return;
+    }
+    m_button[nIDEvent]->SetWindowText(sButtonTekst);
+  }
+
+  m_button[nIDEvent]->EnableWindow();
+  if (m_button[nIDEvent] == GetDlgItem(m_default))
+  {
+    m_button[nIDEvent]->SetFocus();
+  }
+}
+
+void
+MessageDialog::OnPaint()
+{
+  if(GetUpdateRect(NULL,FALSE))
+  {
+    CPaintDC dc(this);
+
+    // We must draw the signal icon
+    if(m_image)
+    {
+      int offset = WS(GetSafeHwnd(),OFFSET);
+      dc.DrawIcon(offset,offset,m_icon);
+    }
+
+    // Drawing a line above the checkbox
+    // Checkbox will draw itself!
+    if(m_suppressable || (m_notAgainPtr != NULL))
+    {
+      dc.DrawEdge(m_line,EDGE_ETCHED,BF_TOP);
+    }
+  }
+}
+
+void
+MessageDialog::OnCancel()
+{
+  // Ignore the ESC key from a StyleMesageBox
+}
+
+BOOL
+MessageDialog::PreTranslateMessage(MSG* pMsg)
+{
+  if(pMsg->message == WM_KEYDOWN || pMsg->message == WM_SYSKEYDOWN)
+  {
+    if(pMsg->wParam == VK_RETURN || pMsg->wParam == VK_SPACE)
+    {
+      if(StyleButton* button = dynamic_cast<StyleButton*>(GetFocus()))
+      { 
+        EndDialog(button->GetDlgCtrlID());
+      }
+      return TRUE;
+    }
+    if(pMsg->wParam == VK_LEFT)
+    {
+      if(StyleButton* button = dynamic_cast<StyleButton*>(GetFocus()))
+      {
+        GotoControl(-1);
+        return TRUE;
+      }
+    }
+    if(pMsg->wParam == VK_RIGHT)
+    {
+      if(StyleButton* button = dynamic_cast<StyleButton*>(GetFocus()))
+      {
+        GotoControl(1);
+        return TRUE;
+      }
+    }
+    for (int i = 0; i < MAX_LABELS; ++i)
+    {
+      int ch = tolower((int)pMsg->wParam);
+
+      // Find the label that begins with this character
+      if(!m_label[i].IsEmpty() && (m_button[i]->GetStyle() & WS_DISABLED) == 0)
+      {
+        if(tolower(m_label[i].GetAt(0)) == ch)
+        {
+          EndDialog(i + ID_OFFSET);
+          return TRUE;
+        }
+      }
+    }
+  }
+  return StyleDialog::PreTranslateMessage(pMsg);
+}
+
+// Go to the Next/Previous control on the message box
+void 
+MessageDialog::GotoControl(int p_direction)
+{
+  // Are we on the text of the message dialog
+  bool onText = (&m_edit == reinterpret_cast<CEdit*>(GetFocus()));
+  int focusButton = 0;
+
+  // Count the number of buttons
+  int maxButton = 0;
+  for(int ind = 0; ind < MAX_LABELS; ++ind)
+  {
+    if(!m_label[ind].IsEmpty())
+    {
+      ++maxButton;
+    }
+    else break;
+  }
+
+  if(onText)
+  {
+    if(p_direction > 0)
+    {
+      // We are on the text and go to the first button
+      focusButton = 0;
+    }
+    else
+    {
+      focusButton = maxButton - 1;
+    }
+  }
+  else
+  {
+    for(int ind = 0; ind < maxButton; ++ind)
+    {
+      StyleButton* button = reinterpret_cast<StyleButton*>(GetFocus());
+      if(m_button[ind] == button)
+      {
+        if(button->GetStyle() & BS_DEFPUSHBUTTON)
+        {
+          button->ModifyStyle(BS_DEFPUSHBUTTON,0);
+        }
+        focusButton = ind + p_direction;
+        break;
+      }
+    }
+  }
+
+  if(focusButton < 0 || focusButton == maxButton)
+  {
+    m_edit.SetFocus();
+  }
+  else
+  {
+    m_button[focusButton]->SetFocus();
+  }
+}
+
 // Translate button ID of the result
 // IDCANCEL = ESC key
 // ID       = ID of the control
@@ -687,7 +1172,7 @@ MessageDialog::GetOriginalResult(int p_id)
 INT_PTR
 MessageDialog::GetResultID(INT_PTR p_id)
 {
-  switch (m_styles & 0x0f)
+  switch(m_styles & 0x0f)
   {
     case MB_OK:               if (p_id == (ID_OFFSET + 0))  return IDOK;
                               break;
@@ -711,7 +1196,7 @@ MessageDialog::GetResultID(INT_PTR p_id)
     case MB_STRINGS:          return (p_id - ID_OFFSET);
                               break;
   }
-  if (p_id == IDCANCEL)
+  if(p_id == IDCANCEL)
   {
     return p_id;
   }
@@ -722,11 +1207,13 @@ MessageDialog::GetResultID(INT_PTR p_id)
 CString
 MessageDialog::GetStandardPositive()
 {
+  CString ok = GetStyleText(TXT_OK);
+
   for (int i = 0; i < MAX_LABELS; ++i)
   {
     if (!m_style[i].IsEmpty())
     {
-      if (m_style[i].CompareNoCase(_T("ok")) == 0)
+      if (m_style[i].CompareNoCase(ok) == 0)
       {
         return m_label[i];
       }
@@ -738,11 +1225,14 @@ MessageDialog::GetStandardPositive()
 CString
 MessageDialog::GetStandardNegative()
 {
+  CString cancel = GetStyleText(TXT_S_OK_CANCEL);
+  cancel = EverythingAfter(cancel,_T(" "));
+
   for (int i = 0; i < MAX_LABELS; ++i)
   {
     if (!m_style[i].IsEmpty())
     {
-      if (m_style[i].CompareNoCase(_T("an")) == 0)
+      if (m_style[i].CompareNoCase(cancel) == 0)
       {
         return m_label[i];
       }
@@ -754,11 +1244,13 @@ MessageDialog::GetStandardNegative()
 int
 MessageDialog::GetStandardPositiveID()
 {
+  CString ok = GetStyleText(TXT_OK);
+
   for (int i = 0; i < MAX_LABELS; ++i)
   {
     if (!m_style[i].IsEmpty())
     {
-      if (m_style[i].CompareNoCase(_T("ok")) == 0)
+      if (m_style[i].CompareNoCase(ok) == 0)
       {
         return i + ID_OFFSET;
       }
@@ -770,307 +1262,20 @@ MessageDialog::GetStandardPositiveID()
 int
 MessageDialog::GetStandardNegativeID()
 {
+  CString cancel = GetStyleText(TXT_S_OK_CANCEL);
+  cancel = EverythingAfter(cancel,_T(" "));
+
   for (int i = 0; i < MAX_LABELS; ++i)
   {
     if (!m_style[i].IsEmpty())
     {
-      if (m_style[i].CompareNoCase(_T("an")) == 0)
+      if (m_style[i].CompareNoCase(cancel) == 0)
       {
         return i + ID_OFFSET;
       }
     }
   }
   return 0;
-}
-
-//////////////////////////////////////////////////////////////////////////
-//
-// PRIVATE METHODS
-//
-//////////////////////////////////////////////////////////////////////////
-
-void
-MessageDialog::OnTimer(UINT_PTR nIDEvent)
-{
-  // Once in a while we go back to the foreground
-  // Specially if multiple programs want to be there !!
-  if(nIDEvent == FOREGROUND_TIMER)
-  {
-    SetWindowPos(&CWnd::wndTopMost,0,0,0,0,SWP_NOMOVE | SWP_NOSIZE);
-    return;
-  }
-
-  // Do the label timers
-  if (m_labelcountdown[nIDEvent])
-  {
-    CString sButtonTekst = m_label[nIDEvent];
-    if (!Contains(sButtonTekst,_T("&")))
-    {
-      sButtonTekst = _T("&") + sButtonTekst;
-    }
-    else
-    {
-      int posAmpersand = m_label[nIDEvent].Find(_T("&"));
-      while (posAmpersand >= 0)
-      {
-        m_label[nIDEvent].Delete(posAmpersand);
-        posAmpersand = m_label[nIDEvent].Find(_T("&"));
-      }
-    }
-
-    if (--m_labeltimers[nIDEvent] > 0)
-    {
-      sButtonTekst.AppendFormat(_T("(%d)"),m_labeltimers[nIDEvent]);
-      SetTimer(nIDEvent, 1000, NULL);
-      m_button[nIDEvent]->SetWindowText(sButtonTekst);
-      return;
-    }
-    m_button[nIDEvent]->SetWindowText(sButtonTekst);
-  }
-
-  m_button[nIDEvent]->EnableWindow();
-  if (m_button[nIDEvent] == GetDlgItem(m_default))
-  {
-    m_button[nIDEvent]->SetFocus();
-  }
-}
-
-// Calculate whole message box and start it
-BOOL
-MessageDialog::OnInitDialog()
-{
-  StyleDialogCA::OnInitDialog();
-
-  ShowCloseButton(false);
-
-  // MB_ICONERROR message?
-  m_font = (m_image == IDI_SHIELD) ? &STYLEFONTS.ErrorTextFont : &STYLEFONTS.DialogTextFont;
-  SetWindowText(m_title); 
-
-  // Grab control and put font on it
-  CEdit* edit = (CEdit*)GetDlgItem(IDC_BOODSCHAP);
-  edit->SetFont(m_font);
-  
-  // GetDC will **NOT** get you a dc with the right font
-  // So we select the correct font here to do the calculations
-  CClientDC dc(edit);
-  dc.SelectObject(m_font);
-
-  // Getting the text
-  CString text = m_message;
-
-  // Replace all occurrences of \n for \r\n
-  text.Replace(_T("\r\n"), _T("\n"));
-  text.Replace(_T("\n"), _T("\r\n"));
-
-  // Getting width and height
-  CRect tekstRect = CRect(0, 0, 0, 0);
-  tekstRect.right = GetSystemMetrics(SM_CXSCREEN) * 90 / 100;
-  dc.DrawText(text,&tekstRect,DT_CALCRECT | DT_LEFT | DT_NOPREFIX | DT_WORDBREAK | DT_EDITCONTROL);
-
-  // The internal margins of the edit control need to be added to the text part
-  // so the edit control will become big enough to show margins itself
-  CRect margins;
-  edit->GetRect(margins);
-  tekstRect.OffsetRect(0, WINDOWCAPTIONHEIGHT);
-  tekstRect.right  += margins.left * 2;
-  tekstRect.bottom += margins.top * 2;
-
-  // If it gets to high, constraint it and use an extra scroll bar
-  int maxHeight = (GetSystemMetrics(SM_CYSCREEN) * 80) / 100;
-  if (tekstRect.bottom > maxHeight)
-  {
-    edit->ModifyStyle(0, WS_VSCROLL);
-    tekstRect.bottom = maxHeight;
-    tekstRect.right += GetSystemMetrics(SM_CXHTHUMB);
-  }
-
-  // Add fixed offsets 
-  tekstRect.OffsetRect(OFFSET,OFFSET);
-
-  // Information pictograph
-  if (m_image)
-  {
-    // Extra space at the left side of 32 pixels for the icon
-    tekstRect.OffsetRect(32 + OFFSET,0);
-    if (tekstRect.bottom - WINDOWCAPTIONHEIGHT < 32)
-    {
-      // Still to do: vertically centering
-      tekstRect.bottom = WINDOWCAPTIONHEIGHT + 32 + OFFSET;
-    }
-  }
-
-  // Place the edit control and the text
-  edit->MoveWindow(tekstRect);
-  edit->SetWindowText(text);
-
-  // See to it that a very long title will be visible
-  NONCLIENTMETRICS ncm;
-  ncm.cbSize = sizeof(ncm);
-  if (SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(ncm), &ncm, 0))
-  {
-    CFont fnt;
-    fnt.CreateFontIndirect(&ncm.lfCaptionFont);
-    HGDIOBJ obj = dc.SelectObject(fnt);
-    CSize size = dc.GetTextExtent(CString(m_title));
-    dc.SelectObject(obj);
-    DeleteObject(fnt);
-    if (size.cx > (GetSystemMetrics(SM_CXSCREEN) * 90) / 100)
-    {
-      size.cx = (GetSystemMetrics(SM_CXSCREEN) * 90) / 100;
-    }
-    if (size.cx > tekstRect.Width())
-    {
-      tekstRect.right = tekstRect.left + size.cx;
-    }
-  }
-
-  // Making the buttons
-  // For the width we use the size of a "W"
-  // and for the height the 'real' font-height
-  CSize tsize = dc.GetTextExtent("W");
-
-  int buttonTop    = tekstRect.bottom + OFFSET;
-  int buttonWidth  = (int) (ButtonWidthFactor * tsize.cx) + (3 * OFFSET);
-  int buttonHeight = tsize.cy + (2 * GetSystemMetrics(SM_CYFIXEDFRAME));
-  int totalWidth   = OFFSET;
-
-  // Consider the widths
-  int layout = 0; 
-  if (!layout)
-  {
-    buttonWidth -= (3 * OFFSET);
-  }
-  // Calculate the width of all buttons together
-  for (int i = 0; i < MAX_LABELS; ++i)
-  {
-    if (!m_label[i].IsEmpty())
-    {
-      if (totalWidth > OFFSET) 
-      {
-        totalWidth += OFFSET;
-      }
-      m_width[i] = buttonWidth;
-      {
-        int breedte = (((m_label[i].GetLength() * tsize.cx) * 2) / 3) + (3 * OFFSET);
-        if (breedte > buttonWidth)
-        {
-          m_width[i] = breedte;
-        }
-      }
-      totalWidth += m_width[i];
-    }
-  }
-  // Calculate the beginning of the buttons
-  // If the text is wider than the buttons, use the text width for the button
-  int buttonBegin = OFFSET;
-  if (tekstRect.right > totalWidth)
-  {
-    buttonBegin += tekstRect.right - totalWidth;
-    totalWidth   = tekstRect.right;
-  }
-  // Create the buttons
-  long buttonStyle = BS_PUSHBUTTON | WS_TABSTOP | BS_NOTIFY | WS_CHILD | WS_VISIBLE | BS_ICON;
-  for (int i = 0; i < MAX_LABELS; ++i)
-  {
-    CString sButtonTekst = m_label[i];
-    if (!sButtonTekst.IsEmpty())
-    {
-      DWORD style = buttonStyle;
-      int ID = i + ID_OFFSET;
-      if (i == 0)
-      {
-        style |= WS_GROUP;
-      }
-      if (m_default - ID_OFFSET == i)
-      {
-        style |= BS_DEFPUSHBUTTON;
-				SetDefID(ID);
-      }
-      // Set an accelerator on the first char of the label, in case of no accelerator
-      if (!Contains(sButtonTekst,_T("&")))
-      {
-        sButtonTekst = _T("&") + sButtonTekst;
-      }
-      else
-      {
-        // Remove all cases of a '&' from the original string
-        int posAmpersand = m_label[i].Find(_T("&"));
-        while (posAmpersand >= 0)
-        {
-          m_label[i].Delete(posAmpersand);
-          posAmpersand = m_label[i].Find(_T("&"));
-        }
-      }
-      
-      if (m_labeltimers[i] > 0)
-      {
-        style |= WS_DISABLED;
-        SetTimer(i, m_labelcountdown[i] ? 1000 : m_labeltimers[i] * 1000, NULL);
-        if (m_labelcountdown[i])
-        {
-          sButtonTekst.AppendFormat(_T("(%d)"),m_labeltimers[i]);
-        }
-      }
-
-      buttonWidth = m_width[i];
-      CRect rect(buttonBegin, buttonTop, buttonBegin + buttonWidth, buttonTop + buttonHeight);
-      m_button[i]  = new StyleButton(m_style[i], m_error);
-      m_button[i]->Create(sButtonTekst, // Label text
-                          style,        // MS-Windows window style
-                          rect,         // Rectangle
-                          this,         // My parent
-                          ID            // CtrlID of this button
-                          );
-      m_button[i]->SetFont(m_font);
-      // For the next button
-      buttonBegin += buttonWidth + OFFSET;
-    }
-  }
-  // Recalculate the window size
-  CRect rect(0, 0, totalWidth + OFFSET + WINDOWSHADOWBORDER, buttonTop + OFFSET + buttonHeight + WINDOWSHADOWBORDER);
-  if (m_suppressable || (m_notAgainPtr != NULL))
-  {
-    int hcb = (tsize.cy + 2*GetSystemMetrics(SM_CYFIXEDFRAME));
-    rect.bottom += hcb;
-    rect.bottom += OFFSET;
-
-    // Make the check box
-    int top = buttonTop + buttonHeight + 2 * OFFSET;
-    m_line.left   = OFFSET;
-    m_line.top    = top - OFFSET;
-    m_line.right  = buttonBegin - OFFSET;
-    m_line.bottom = m_line.top;
-
-    CRect brect(OFFSET,top+hcb-24, OFFSET+ 16 + 160,top +hcb-6);
-    m_suppress = new StyleCheckbox();
-    // Beware: Text must be very small, so it will always fit into the message box and be readable
-    m_suppress->Create( GetStyleText(TXT_NO_REPEAT),  // "Do not repeat"
-                        WS_TABSTOP | BS_AUTOCHECKBOX | BS_NOTIFY | WS_CHILD | WS_VISIBLE,
-                        brect,
-                        this,
-                        ID_SUPPRESS);
-  }
-  AdjustWindowRect(rect, GetStyle(), false);
-
-  MoveWindow(rect);
-  CenterWindow();
-
-  // Set ourselves in the foreground
-  if(m_foreground)
-  {
-    SetForegroundWindow();
-    SetWindowPos(&CWnd::wndTopMost,0,0,0,0,SWP_NOMOVE | SWP_NOSIZE);
-    SetTimer(FOREGROUND_TIMER,FOREGROUND_INTERVAL,nullptr);
-    FlashMessageBox();
-  }
-  // Set focus on the default button
-  if (CWnd* defwin = GetDlgItem(m_default))
-  {
-    defwin->SetFocus();
-    return FALSE;
-  }
-  return TRUE;
 }
 
 // Flash our application and message box
@@ -1081,84 +1286,10 @@ MessageDialog::FlashMessageBox()
   flash.cbSize = sizeof(FLASHWINFO);
   flash.hwnd      = GetSafeHwnd();
   flash.dwFlags   = FLASHW_ALL;
-  flash.uCount    = 6;
+  flash.uCount    = 8;
   flash.dwTimeout = 250;
 
   ::FlashWindowEx(&flash);
-}
-
-void
-MessageDialog::OnPaint()
-{
-  if (GetUpdateRect(NULL, FALSE))
-  {
-    CPaintDC dc(this);
-
-    // We must draw the signal icon
-    if(m_image)
-    {
-      dc.DrawIcon(OFFSET,WINDOWCAPTIONHEIGHT + OFFSET,m_icon);
-    }
-
-    // Drawing a line above the checkbox
-    // Checkbox will draw itself!
-    if (m_suppressable || (m_notAgainPtr != NULL))
-    {
-      dc.DrawEdge(m_line, EDGE_ETCHED, BF_TOP);
-    }
-  }
-}
-
-void
-MessageDialog::OnCancel()
-{
-  // Ignore the ESC key from a StyleMesageBox
-}
-
-// Override for a suppressible message
-INT_PTR
-MessageDialog::DoModal()
-{
-  if (m_suppressable)
-  {
-    if (IsSuppressableMessage(m_message))
-    {
-      return IDOK;
-    }
-  }
-
-  // Request attention if we are not in the foreground
-  CWnd *w = GetForegroundWindow();
-  bool bFlash = true;
-  while (w)
-  {
-    if (w == AfxGetMainWnd())
-    {
-      bFlash = false;
-      break;
-    }
-    w = w->GetParent();
-  }
-
-  // Check parent
-  if (!m_pParentWnd)
-  {
-    m_pParentWnd = AfxGetMainWnd();
-  }
-  if(m_pParentWnd && m_pParentWnd->GetSafeHwnd() && !m_pParentWnd->IsWindowVisible() && bFlash)
-  {
-    m_pParentWnd->FlashWindowEx(FLASHW_TRAY,3,0);
-  }
-
-  // Show dialog by parent's DoModal
-  INT_PTR res = StyleDialogCA::DoModal();
-
-  if (m_notAgainPtr != NULL)
-  {
-    *m_notAgainPtr = m_notAgain;
-  }
-  // Ready
-  return res;
 }
 
 // We push this button

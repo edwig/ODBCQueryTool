@@ -52,23 +52,25 @@ CGridCellCheck::CGridCellCheck() : CGridCell()
   //m_Rect.IsRectNull();
 }
 
-CSize CGridCellCheck::GetCellExtent(CDC* pDC)
+CSize CGridCellCheck::GetCellExtent(CDC* pDC,HWND p_hwnd)
 {
   // Using SM_CXHSCROLL as a guide to the size of the checkbox
-  int nWidth = GetSystemMetrics(SM_CXHSCROLL) + 2*GetMargin();	
-  CSize	cellSize = CGridCell::GetCellExtent(pDC);	
+  int dpi    = ::GetDpiForWindow(p_hwnd);
+  int nWidth = GetSystemMetricsForDpi(SM_CXHSCROLL,dpi) + 2*GetMargin();	
+  CSize	cellSize = CGridCell::GetCellExtent(pDC,p_hwnd);	
   cellSize.cx += nWidth;	
   cellSize.cy = max (cellSize.cy, nWidth);	
   return  cellSize;
 }
 
 // i/o:  i=dims of cell rect; o=dims of text rect
-BOOL CGridCellCheck::GetTextRect( LPRECT pRect)
+BOOL CGridCellCheck::GetTextRect(LPRECT pRect,HWND p_hwnd)
 {
   BOOL bResult = CGridCell::GetTextRect(pRect);
   if (bResult)
   {
-    int nWidth = GetSystemMetrics(SM_CXHSCROLL) + 2*GetMargin();
+    int dpi = ::GetDpiForWindow(p_hwnd);
+    int nWidth = GetSystemMetricsForDpi(SM_CXHSCROLL,dpi) + 2*GetMargin();
     pRect->left += nWidth;
     if (pRect->left > pRect->right)
     {
@@ -91,7 +93,7 @@ void CGridCellCheck::OnClick(CPoint PointCellRelative)
   }
 	// GetCheckPlacement returns the checkbox dimensions in client coordinates. Only check/
 	// uncheck if the user clicked in the box
-	if (GetCheckPlacement().PtInRect(PointCellRelative))
+	if(GetCheckPlacement(GetGrid()->GetSafeHwnd()).PtInRect(PointCellRelative))
 	{
 		m_bChecked = !m_bChecked;
 		GetGrid()->InvalidateRect(m_Rect);
@@ -130,27 +132,28 @@ void CGridCellCheck::SetCenter(bool p_center /*= true*/)
 //////////////////////////////////////////////////////////////////////
 
 // Override draw so that when the cell is selected, a drop arrow is shown in the RHS.
-BOOL CGridCellCheck::Draw(CDC* pDC, int nRow, int nCol, CRect rect, BOOL bEraseBkgnd /*=TRUE*/)
+BOOL CGridCellCheck::Draw(HWND p_hwnd,CDC* pDC, int nRow, int nCol, CRect rect, BOOL bEraseBkgnd /*=TRUE*/)
 {
-  BOOL bResult = CGridCell::Draw(pDC, nRow, nCol, rect, bEraseBkgnd);
+  BOOL bResult = CGridCell::Draw(p_hwnd,pDC, nRow, nCol, rect, bEraseBkgnd);
 
   // Store the cell's dimensions for later
   m_Rect = rect;
 
-  CRect CheckRect = GetCheckPlacement();
+  CRect CheckRect = GetCheckPlacement(GetGrid()->GetSafeHwnd());
   rect.left = CheckRect.right;
 
   // Do the draw 
   // pDC->DrawFrameControl(GetCheckPlacement(), DFC_BUTTON, (m_bChecked) ? DFCS_BUTTONCHECK | DFCS_CHECKED : DFCS_BUTTONCHECK);
 
-  StyleCheckbox::Draw(nullptr,pDC,GetCheckPlacement(),BS_CHECKBOX,m_bChecked ? BST_CHECKED : BST_UNCHECKED,false);
+  StyleCheckbox::Draw(nullptr,pDC,GetCheckPlacement(GetGrid()->GetSafeHwnd()),BS_CHECKBOX,m_bChecked ? BST_CHECKED : BST_UNCHECKED,false);
   return bResult;
 }
 
 // Returns the dimensions and placement of the checkbox in client coordinates.
-CRect CGridCellCheck::GetCheckPlacement()
+CRect CGridCellCheck::GetCheckPlacement(HWND p_hwnd)
 {
-	int nWidth   = GetSystemMetrics(SM_CXHSCROLL);
+  int dpi = ::GetDpiForWindow(p_hwnd);
+	int nWidth   = GetSystemMetricsForDpi(SM_CXHSCROLL,dpi);
 	CRect place  = m_Rect + CSize(GetMargin(), GetMargin());
   place.right  = place.left + nWidth;
   place.bottom = place.top  + nWidth;

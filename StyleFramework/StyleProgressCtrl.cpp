@@ -39,12 +39,6 @@ StyleProgressCtrl::~StyleProgressCtrl()
   DestroyWindow();
 }
 
-void
-StyleProgressCtrl::PreSubclassWindow()
-{
-  ScaleControl(this);
-}
-
 // Generic creator
 BOOL 
 StyleProgressCtrl::Create(_In_ DWORD dwStyle, _In_ const RECT& rect, _In_ CWnd* pParentWnd, _In_ UINT nID)
@@ -420,7 +414,8 @@ StyleProgressCtrl::OnDrawProgress()
     int percentage = m_upper ? ((m_position * 100) / m_upper) : 0;
     showing.Format(_T("%d %%"),percentage);
     int mode = dc->SetBkMode(TRANSPARENT);
-    dc->SelectObject(&STYLEFONTS.DialogTextFont);
+    CFont* font = GetSFXFont(GetSafeHwnd(),StyleFontType::DialogFont);
+    dc->SelectObject(font);
     dc->SetTextColor(ThemeColor::GetColor(Colors::ColorEditText));
     dc->DrawText(showing,&rcItem,DT_CENTER|DT_VCENTER|DT_SINGLELINE|DT_NOPREFIX);
     dc->SetBkMode(mode);

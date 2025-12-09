@@ -53,7 +53,6 @@ protected:
   CString       m_config;
   StyleEdit     m_editConfig;
   StyleTabCtrl  m_tabs;
-
   QueryDlg*     m_page1;
   ConfigDlg*    m_page2;
 

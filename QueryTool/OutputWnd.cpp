@@ -101,7 +101,7 @@ void
 COutputWnd::InitGridEmpty(COutputList& p_list)
 {
 	p_list.InitSkin();
-  p_list.SetFont(&STYLEFONTS.EditorTextFont);
+  p_list.SetFont(GetSFXFont(GetSafeHwnd(),StyleFontType::EditorFont));
 
   // Set standard
   p_list.SetEditable(FALSE);
