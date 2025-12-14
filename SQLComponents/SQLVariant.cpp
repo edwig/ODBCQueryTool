@@ -216,9 +216,10 @@ SQLVariant::SQLVariant(const SQLGUID* p_guid)
 SQLVariant::SQLVariant(const void* p_binary,size_t p_size)
 {
   Init();
-  m_datatype    = SQL_C_BINARY;
-  m_sqlDatatype = SQL_BINARY;
-  m_indicator   = 0;
+  m_datatype     = SQL_C_BINARY;
+  m_sqlDatatype  = SQL_BINARY;
+  m_indicator    = 0;
+  m_binaryLength = (int) p_size;
   m_data.m_dataBINARY = new BYTE[(size_t)p_size + 1];
   memcpy(m_data.m_dataBINARY,p_binary,p_size);
 }
@@ -505,6 +506,17 @@ SQLVariant::IsEmpty() const
 }
 
 bool
+SQLVariant::IsStringType() const
+{
+  switch(m_datatype)
+  {
+    case SQL_C_CHAR:  // Fall through
+    case SQL_C_WCHAR: return true;
+    default:          return false;
+  }
+}
+
+bool
 SQLVariant::IsNumericType() const
 {
   switch(m_datatype)
@@ -593,6 +605,24 @@ SQLVariant::IsBinaryType() const
     case SQL_VARBINARY:
     case SQL_LONGVARBINARY: return true;
     default:                return false;
+  }
+}
+
+bool
+SQLVariant::IsFixedLengthType() const
+{
+  switch(m_sqlDatatype)
+  {
+    case SQL_CHAR:
+    case SQL_VARCHAR:
+    case SQL_WCHAR:
+    case SQL_WVARCHAR:
+    case SQL_LONGVARCHAR:
+    case SQL_WLONGVARCHAR:
+    case SQL_BINARY:
+    case SQL_VARBINARY:
+    case SQL_LONGVARBINARY: return false;
+    default:                return true;
   }
 }
 
@@ -3190,7 +3220,7 @@ SQLVariant::BinaryToString(unsigned char* buffer,int buflen) const
   }
   BYTE* colPointer = reinterpret_cast<BYTE*>(m_data.m_dataBINARY);
   SQLLEN dataLen = m_binaryLength;
-  if(m_indicator >= 0 && m_indicator < m_binaryLength)
+  if(m_indicator > 0 && m_indicator < m_binaryLength)
   {
     dataLen = m_indicator;
   }

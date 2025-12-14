@@ -855,7 +855,7 @@ SQLInfoDB::MakeInfoPSMParameters(MParameterMap& p_parameters
         param.m_schema        = (XString) qry[MetaParameter_schemaname];
         param.m_procedure     = (XString) qry[MetaParameter_procedurename];
         param.m_parameter     = (XString) qry[MetaParameter_parametername];
-        param.m_columnType    = (long)    qry[MetaParameter_columntype];
+        param.m_columnType    = (SQLParamType) (int) qry[MetaParameter_columntype];
         param.m_datatype      = (long)    qry[MetaParameter_datatype];
         param.m_typeName      = (XString) qry[MetaParameter_typename];
         param.m_columnSize    = (long)    qry[MetaParameter_columnsize];
@@ -871,7 +871,9 @@ SQLInfoDB::MakeInfoPSMParameters(MParameterMap& p_parameters
         param.m_position      = (long)    qry[MetaParameter_position];
         param.m_isNullable    = (XString) qry[MetaParameter_isnullable];
         // Trimming
-        param.m_typeName = param.m_typeName.Trim();
+        param.m_default    = param.m_default.Trim();
+        param.m_typeName   = param.m_typeName.Trim();
+        param.m_isNullable = param.m_isNullable.Trim();
 
         p_parameters.push_back(param);
       }

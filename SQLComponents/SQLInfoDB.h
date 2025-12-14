@@ -143,6 +143,9 @@ public:
   // Supports the ODBC call procedure with named parameters
   virtual bool GetRDBMSSupportsODBCCallNamedParameters() const = 0;
 
+  // Supports the ODBC call procedure with named parameters
+  virtual bool GetRDBMSSupportsNamedParameters() const = 0;
+
   // If the database does not support the datatype TIME, it can be implemented as a DECIMAL
   // BEWARE BOOL INVERTED!!
   virtual bool GetRDBMSSupportsDatatypeTime() const = 0;
@@ -171,6 +174,9 @@ public:
 
   // Maximum for a VARCHAR to be handled without AT-EXEC data. Assume NVARCHAR is half that size!
   virtual int  GetRDBMSMaxVarchar() const = 0;
+
+  // Return parameters from a PSM procedure module can be a result set (SUSPEND)
+  virtual bool GetRDBMSResultSetFromPSM() const = 0;
 
   //////////////////////////////////////////////////////////////////////////
   // KEYWORDS
@@ -305,7 +311,8 @@ public:
   
 
   // Changes to parameters before binding to an ODBC HSTMT handle (returning the At-Exec status)
-  virtual bool DoBindParameterFixup(SQLSMALLINT& p_dataType
+  virtual bool DoBindParameterFixup(SQLVariant*  p_var
+                                   ,SQLSMALLINT& p_dataType
                                    ,SQLSMALLINT& p_sqlDatatype
                                    ,SQLULEN&     p_columnSize
                                    ,SQLSMALLINT& p_scale

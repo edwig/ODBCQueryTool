@@ -133,6 +133,13 @@ SQLInfoAccess::GetRDBMSSupportsODBCCallNamedParameters() const
   return false;
 }
 
+// Supports the ODBC call procedure with named parameters
+bool
+SQLInfoAccess::GetRDBMSSupportsNamedParameters() const
+{
+  return false;
+}
+
 // If the database does not support the datatype TIME, it can be implemented as a DECIMAL
 bool
 SQLInfoAccess::GetRDBMSSupportsDatatypeTime() const
@@ -225,6 +232,13 @@ SQLInfoAccess::IsIdentifier(XString p_identifier) const
     }
   }
   return true;
+}
+
+// Return parameters from a PSM procedure module can be a result set (SUSPEND)
+bool 
+SQLInfoAccess::GetRDBMSResultSetFromPSM() const
+{
+  return false;
 }
 
 // KEYWORDS
@@ -549,7 +563,7 @@ SQLInfoAccess::GetTempTablename(XString /*p_schema*/,XString p_tablename,bool /*
 
 // Changes to parameters before binding to an ODBC HSTMT handle (returning the At-Exec status)
 bool
-SQLInfoAccess::DoBindParameterFixup(SQLSMALLINT& /*p_dataType*/,SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*p_columnSize*/,SQLSMALLINT& /*p_scale*/,SQLLEN& /*p_bufferSize*/,SQLLEN* /*p_indicator*/) const
+SQLInfoAccess::DoBindParameterFixup(SQLVariant* /*p_var */,SQLSMALLINT& /*p_dataType*/,SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*p_columnSize*/,SQLSMALLINT& /*p_scale*/,SQLLEN& /*p_bufferSize*/,SQLLEN* /*p_indicator*/) const
 {
   return false;
 }
@@ -851,7 +865,7 @@ SQLInfoAccess::GetCATALOGIndexCreate(MIndicesMap& p_indices,bool /*p_duplicateNu
       {
         query += _T("UNIQUE ");
       }
-      if(index.m_ascending != "A")
+      if(index.m_ascending != _T("A"))
       {
         query += _T("DESC ");
       }

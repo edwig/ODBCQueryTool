@@ -49,6 +49,7 @@ SQLTransaction::SQLTransaction(SQLDatabase* p_database
                ,m_lock      (p_database,INFINITE)
                ,m_name      (p_name)
                ,m_active    (false)
+               ,m_readonly  (false)
                ,m_hdbc      (NULL)
 {
   // No spaces allowed in the name on any RDBMS platform
@@ -58,13 +59,20 @@ SQLTransaction::SQLTransaction(SQLDatabase* p_database
   {
     Start(p_name, p_isSubTransaction);
   }
+  // Override from database. 
+  // In a read-only database all transactions are read-only
+  if(p_database && p_database->GetReadOnly())
+  {
+    m_readonly = true;
+  }
 }
 
-SQLTransaction::SQLTransaction(HDBC p_hdbc,bool p_startImmediate)
+SQLTransaction::SQLTransaction(HDBC p_hdbc,bool p_startImmediate,bool p_readOnly)
                :m_hdbc(p_hdbc)
                ,m_database(NULL)
                ,m_lock(NULL,INFINITE)
                ,m_active(false)
+               ,m_readonly(p_readOnly)
 {
   if(p_startImmediate)
   {
@@ -137,7 +145,7 @@ SQLTransaction::Commit()
   }
 
   // We are no longer started/active, so we do nothing else after destruction
-  // so commit's are not tried double on the database
+  // so commits are not tried double on the database
   // NOTE: Savepoints must remain till after the commits for the database
   m_active = false;
   
@@ -145,12 +153,19 @@ SQLTransaction::Commit()
   // automatically do a rollback
   if(m_database)
   {
-    m_database->CommitTransaction(this);
+    if(m_readonly || m_database->GetReadOnly())
+    {
+      m_database->RollbackTransaction(this);
+    }
+    else
+    {
+      m_database->CommitTransaction(this);
+    }
   }
   else
   {
-    // Do the commit straight away
-    SQLRETURN ret = SqlEndTran(SQL_HANDLE_DBC,m_hdbc,SQL_COMMIT);
+    // Do the commit straight away, or a rollback on a read-only database
+    SQLRETURN ret = SqlEndTran(SQL_HANDLE_DBC,m_hdbc,m_readonly ? SQL_ROLLBACK : SQL_COMMIT);
     if(!SQL_SUCCEEDED(ret))
     {
       // Throw something, so we reach the catch block
@@ -166,8 +181,8 @@ SQLTransaction::Commit()
     }
   }
   // Cleanup after use
-  m_name      = "";
-  m_savepoint = "";
+  m_name.Empty();
+  m_savepoint.Empty();
 }
 
 void 
@@ -203,15 +218,13 @@ SQLTransaction::Rollback()
       ATLTRACE("Error setting autocommit mode to 'on', after committed transaction [%s]\n",m_name.GetString());
     }
   }
+  AfterRollback();
 }
 
+// Can be overridden. We do nothing here
 void 
 SQLTransaction::AfterRollback()
 {
-  // After closing the transaction by a rollback
-  m_active    = false;
-  m_name      = _T("");
-  m_savepoint = _T("");
 }
 
 // Setting a transaction in a deferred state

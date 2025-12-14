@@ -40,7 +40,9 @@ public:
                  LPCTSTR      p_name,
                  bool         p_startImmediate   = true, 
                  bool         p_isSubTransaction = false);
-  SQLTransaction(HDBC p_hdbc, bool p_startImmediate);
+  SQLTransaction(HDBC p_hdbc
+                ,bool p_startImmediate
+                ,bool p_readonly = false);
 
   // Destructor will rollback at an open transaction
  ~SQLTransaction();
@@ -61,6 +63,11 @@ public:
   // Setting a transaction in an immediate state
   // So that the constraints (uptil now) get checked immediately
   bool    SetTransactionImmediate();
+  // Setting a transaction in the readonly state (or not)
+  // Returning the previous state
+  bool    SetReadOnly(bool p_readnonly);
+  // To do after a rollback.
+  virtual void AfterRollback();
 
   // GETTERS
 
@@ -72,11 +79,11 @@ public:
   SQLDatabase* GetDatabase() const;
   // Is the transaction (still) active
   bool    IsActive() const;
+  // Is the transaction readonly?
+  bool    IsReadOnly() const;
 
 private:
-  // To do after a rollback. Only SQLDatabase may call this method
   friend class SQLDatabase;
-  void    AfterRollback();
   void    SetSavepoint(XString p_savepoint);
 
 private:
@@ -85,6 +92,7 @@ private:
   XString       m_name;
   XString       m_savepoint;
   bool          m_active;
+  bool          m_readonly;
   // Lock database for multi-access from other threads
   // For as long as the current transaction takes
   Locker<SQLDatabase> m_lock;
@@ -118,6 +126,20 @@ inline void
 SQLTransaction::SetSavepoint(XString p_savepoint)
 {
   m_savepoint = p_savepoint;
+}
+
+inline bool
+SQLTransaction::SetReadOnly(bool p_readonly)
+{
+  bool previous = m_readonly;
+  m_readonly = p_readonly;
+  return previous;
+}
+
+inline bool
+SQLTransaction::IsReadOnly() const
+{
+  return m_readonly;
 }
 
 // End of namespace

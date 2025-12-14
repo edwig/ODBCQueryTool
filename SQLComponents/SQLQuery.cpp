@@ -43,13 +43,19 @@ static char THIS_FILE[] = __FILE__;
 namespace SQLComponents
 {
 
+// Name mapping of code-page names is case insensitive
+bool NoCaseCompare::operator()(const XString& p_left,const XString& p_right) const
+{
+  return (p_left.CompareNoCase(p_right) < 0);
+}
+
 // CTOR: To be later connected to a database
 // by calling Init() seperatly
 SQLQuery::SQLQuery()
          :m_lock(NULL,INFINITE)
-         ,m_database(NULL)
+         ,m_database(nullptr)
 {
-  Init((SQLDatabase*)NULL);
+  Init((SQLDatabase*)nullptr);
 }
 
 // CTOR: After this we're good to go
@@ -83,13 +89,13 @@ void
 SQLQuery::Init(SQLDatabase* p_database)
 {
   m_database         = p_database;
-  m_hstmt            = 0;
+  m_hstmt            = nullptr;
   m_retCode          = SQL_SUCCESS;
   m_numColumns       = -1;
   m_rows             = 0;
   m_fetchIndex       = 0;
-  m_rebindParameters = NULL;
-  m_rebindColumns    = NULL;
+  m_rebindParameters = nullptr;
+  m_rebindColumns    = nullptr;
   m_hasLongColumns   = 0;
   m_bufferSize       = 0;
   m_prepareDone      = false;
@@ -99,8 +105,9 @@ SQLQuery::Init(SQLDatabase* p_database)
   m_maxColumnLength  = -1;
   m_isSelectQuery    = false;
   m_noscan           = false;
+  m_stringTruncation = false;
   m_speedThreshold   = QUERY_TOO_LONG;
-  m_connection       = NULL;
+  m_connection       = nullptr;
   m_concurrency      = SQL_CONCUR_READ_ONLY;
   m_lengthOption     = LOption::LO_LEN_ZERO;
 }
@@ -108,7 +115,7 @@ SQLQuery::Init(SQLDatabase* p_database)
 void
 SQLQuery::Init(HDBC p_connection)
 {
-  Init((SQLDatabase*)NULL);
+  Init((SQLDatabase*)nullptr);
   m_connection = p_connection;
 }
 
@@ -189,7 +196,7 @@ SQLQuery::ResetParameters()
   // Clear parameter map
   for(const auto& parm : m_parameters)
   {
-    delete parm.second;
+    delete parm.second.m_value;
   }
   m_parameters.clear();
   m_nameMap.clear();
@@ -370,19 +377,48 @@ SQLQuery::ReportQuerySpeed(LARGE_INTEGER p_start)
 // Private and hidden setting of the parameter
 // The p_param is **NOT** copied, but stored and owned by the SQLQuery
 void
-SQLQuery::InternalSetParameter(int p_num,SQLVariant* p_param,SQLParamType p_type /*=P_SQL_PARAM_INPUT*/)
+SQLQuery::InternalSetParameter(int          p_num
+                              ,SQLVariant*  p_value
+                              ,SQLParamType p_type /* = P_SQL_PARAM_INPUT */
+                              ,XString      p_name /* = _T("") */)
 {
-  p_param->SetColumnNumber(p_num);
-  p_param->SetParameterType(p_type);
-  VarMap::iterator it = m_parameters.find(p_num);
-  if(it == m_parameters.end())
+  SQLParameter* found = nullptr;
+
+  // Record in the variant
+  p_value->SetColumnNumber(p_num);
+  p_value->SetParameterType(p_type);
+
+  // Find an already existing parameter
+  ParameterMap::iterator it = m_parameters.find(p_num);
+  while(it != m_parameters.end())
   {
-    m_parameters.insert(std::make_pair(p_num,p_param));
+    if(it->second.m_type == p_type)
+    {
+      found = &it->second;
+      break;
+    }
+    ++it;
+  }
+
+  if(found == nullptr)
+  {
+    SQLParameter param;
+    param.m_number = p_num;
+    param.m_type   = p_type;
+    param.m_value  = p_value;
+    param.m_name   = p_name;
+    // Keep it
+    m_parameters.insert(std::make_pair(p_num,param));
   }
   else
   {
-    SQLVariant* var = it->second;
-    it->second = p_param;
+    // Change the value of the parameter only
+    SQLVariant* var = found->m_value;
+    found->m_value  = p_value;
+    if(!p_name.IsEmpty())
+    {
+      found->m_name = p_name;
+    }
     delete var;
   }
 }
@@ -391,87 +427,102 @@ SQLQuery::InternalSetParameter(int p_num,SQLVariant* p_param,SQLParamType p_type
 void 
 SQLQuery::SetParameterMaxSize(int p_num,unsigned p_maxSize)
 {
-  MaxSizeMap::iterator it = m_paramMaxSizes.find(p_num);
-  if(it == m_paramMaxSizes.end())
+  ParameterMap::iterator it = m_parameters.find(p_num);
+  if(it == m_parameters.end())
   {
-    m_paramMaxSizes.insert(std::make_pair(p_num,p_maxSize));
+    SQLParameter param;
+    param.m_number  = p_num;
+    param.m_maxSize = p_maxSize;
+    m_parameters.insert(std::make_pair(p_num,param));
   }
   else
   {
-    it->second = p_maxSize;
+    it->second.m_maxSize = p_maxSize;
+  }
+  if(p_maxSize > 0)
+  {
+    m_stringTruncation = true;
   }
 }
 
 // Setting a parameter. Copies the SQLVariant!!
 SQLVariant* 
-SQLQuery::SetParameter(int p_num,SQLVariant* p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameter(int p_num,SQLVariant* p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/,XString p_name /*= _T("")*/)
 {
   SQLVariant* var = new SQLVariant(p_param);
-  InternalSetParameter(p_num,var,p_type);
+  InternalSetParameter(p_num,var,p_type,p_name);
   return var;
 }
 
 SQLVariant* 
-SQLQuery::SetParameter(int p_num,int p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameter(int p_num,int p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/,XString p_name /*= _T("")*/)
 {
   SQLVariant* var = new SQLVariant(p_param);
-  InternalSetParameter(p_num,var,p_type);
+  InternalSetParameter(p_num,var,p_type,p_name);
   return var;
 }
 
 SQLVariant*
-SQLQuery::SetParameterUL(int p_num,unsigned int p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameterUL(int p_num,unsigned int p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/,XString p_name /*= _T("")*/)
 {
   SQLVariant *var = new SQLVariant(p_param);
-  InternalSetParameter(p_num,var,p_type);
+  InternalSetParameter(p_num,var,p_type,p_name);
   return var;
 }
 
 SQLVariant*
-SQLQuery::SetParameter(int p_num,LPCTSTR p_param,bool p_wide /*= false*/,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameter(int p_num,LPCTSTR p_param,bool p_wide /*= false*/,SQLParamType p_type /*=SQL_PARAM_INPUT*/,XString p_name /*= _T("")*/)
 {
   SQLVariant* var = new SQLVariant(p_param,p_wide);
-  InternalSetParameter(p_num,var,p_type);
+  InternalSetParameter(p_num,var,p_type,p_name);
   return var;
 }
 
 SQLVariant*
-SQLQuery::SetParameter(int p_num,XString& p_param,bool p_wide /*= false*/,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameter(int p_num,XString p_param,bool p_wide /*= false*/,SQLParamType p_type /*=SQL_PARAM_INPUT*/,XString p_name /*= _T("")*/)
 {
   SQLVariant* var = new SQLVariant(p_param,p_wide);
-  InternalSetParameter(p_num,var,p_type);
+  InternalSetParameter(p_num,var,p_type,p_name);
   return var;
 }
 
 SQLVariant*
-SQLQuery::SetParameter(int p_num,SQLDate& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameter(int p_num,SQLDate& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/,XString p_name /*= _T("")*/)
 {
   SQLVariant* var = new SQLVariant(&p_param);
-  InternalSetParameter(p_num,var,p_type);
+  InternalSetParameter(p_num,var,p_type,p_name);
   return var;
 }
 
 SQLVariant*
-SQLQuery::SetParameter(int p_num,SQLTime& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameter(int p_num,SQLTime& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/,XString p_name /*= _T("")*/)
 {
   SQLVariant* var = new SQLVariant(&p_param);
-  InternalSetParameter(p_num,var,p_type);
+  InternalSetParameter(p_num,var,p_type,p_name);
   return var;
 }
 
 SQLVariant*
-SQLQuery::SetParameter(int p_num,SQLTimestamp& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameter(int p_num,SQLTimestamp& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/,XString p_name /*= _T("")*/)
 {
   SQLVariant* var = new SQLVariant(&p_param);
-  InternalSetParameter(p_num,var,p_type);
+  InternalSetParameter(p_num,var,p_type,p_name);
   return var;
 }
 
 SQLVariant*
-SQLQuery::SetParameter(int p_num,const bcd& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameter(int p_num,SQLInterval& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/,XString p_name /*= _T("")*/)
 {
   SQLVariant* var = new SQLVariant(&p_param);
-  InternalSetParameter(p_num,var,p_type);
+  InternalSetParameter(p_num,var,p_type,p_name);
+  return var;
+}
+
+SQLVariant*
+SQLQuery::SetParameter(int p_num,const bcd& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/,XString p_name /*= _T("")*/)
+{
+  SQLVariant* var = new SQLVariant(&p_param);
+  InternalSetParameter(p_num,var,p_type,p_name);
   return var;
 }
 
@@ -481,118 +532,120 @@ SQLQuery::SetParameter(int p_num,const bcd& p_param,SQLParamType p_type /*=SQL_P
 
 // Setting a parameter. Copies the SQLVariant!!
 SQLVariant*
-SQLQuery::SetParameter(SQLVariant* p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameter(SQLVariant* p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/,XString p_name /*= _T("")*/)
 {
   int size = (int) m_parameters.size() + 1;
   SQLVariant* var = new SQLVariant(p_param);
-  InternalSetParameter(size,var,p_type);
+  InternalSetParameter(size,var,p_type,p_name);
   return var;
 }
 
 SQLVariant*
-SQLQuery::SetParameter(int p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameter(int p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/,XString p_name /*= _T("")*/)
 {
   int size = (int)m_parameters.size() + 1;
   SQLVariant* var = new SQLVariant(p_param);
-  InternalSetParameter(size,var,p_type);
+  InternalSetParameter(size,var,p_type,p_name);
   return var;
 }
 
 SQLVariant*
-SQLQuery::SetParameterUL(unsigned int p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameterUL(unsigned int p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/,XString p_name /*= _T("")*/)
 {
   int size = (int)m_parameters.size() + 1;
   SQLVariant *var = new SQLVariant(p_param);
-  InternalSetParameter(size,var,p_type);
+  InternalSetParameter(size,var,p_type,p_name);
   return var;
 }
 
 SQLVariant*
-SQLQuery::SetParameter(LPCTSTR p_param,bool p_wide /*= false*/,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameter(LPCTSTR p_param,bool p_wide /*= false*/,SQLParamType p_type /*=SQL_PARAM_INPUT*/,XString p_name /*= _T("")*/)
 {
   int size = (int)m_parameters.size() + 1;
   SQLVariant* var = new SQLVariant(p_param,p_wide);
-  InternalSetParameter(size,var,p_type);
+  InternalSetParameter(size,var,p_type,p_name);
   return var;
 }
 
 SQLVariant*
-SQLQuery::SetParameter(XString& p_param,bool p_wide /*= false*/,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameter(XString p_param,bool p_wide /*= false*/,SQLParamType p_type /*=SQL_PARAM_INPUT*/,XString p_name /*= _T("")*/)
 {
   int size = (int)m_parameters.size() + 1;
   SQLVariant* var = new SQLVariant(p_param,p_wide);
-  InternalSetParameter(size,var,p_type);
+  InternalSetParameter(size,var,p_type,p_name);
   return var;
 }
 
 SQLVariant*
-SQLQuery::SetParameter(SQLDate& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameter(SQLDate& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/,XString p_name /*= _T("")*/)
 {
   int size = (int)m_parameters.size() + 1;
   SQLVariant* var = new SQLVariant(&p_param);
-  InternalSetParameter(size,var,p_type);
+  InternalSetParameter(size,var,p_type,p_name);
   return var;
 }
 
 SQLVariant*
-SQLQuery::SetParameter(SQLTime& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameter(SQLTime& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/,XString p_name /*= _T("")*/)
 {
   int size = (int)m_parameters.size() + 1;
   SQLVariant* var = new SQLVariant(&p_param);
-  InternalSetParameter(size,var,p_type);
+  InternalSetParameter(size,var,p_type,p_name);
   return var;
 }
 
 SQLVariant*
-SQLQuery::SetParameter(SQLTimestamp& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameter(SQLTimestamp& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/,XString p_name /*= _T("")*/)
 {
   int size = (int)m_parameters.size() + 1;
   SQLVariant* var = new SQLVariant(&p_param);
-  InternalSetParameter(size,var,p_type);
+  InternalSetParameter(size,var,p_type,p_name);
   return var;
 }
 
 SQLVariant*
-SQLQuery::SetParameter(const bcd& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/)
+SQLQuery::SetParameter(SQLInterval& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/,XString p_name /*= _T("")*/)
 {
   int size = (int)m_parameters.size() + 1;
   SQLVariant* var = new SQLVariant(&p_param);
-  InternalSetParameter(size,var,p_type);
+  InternalSetParameter(size,var,p_type,p_name);
+  return var;
+}
+
+SQLVariant*
+SQLQuery::SetParameter(const bcd& p_param,SQLParamType p_type /*=SQL_PARAM_INPUT*/,XString p_name /*= _T("")*/)
+{
+  int size = (int)m_parameters.size() + 1;
+  SQLVariant* var = new SQLVariant(&p_param);
+  InternalSetParameter(size,var,p_type,p_name);
   return var;
 }
 
 // Named parameters for DoSQLCall()
 bool
-SQLQuery::SetParameterName(int p_param,XString p_name)
+SQLQuery::SetParameterName(int p_param,XString p_name,SQLParamType p_type /*= P_SQL_PARAM_INPUT*/)
 {
-  SQLVariant* var = GetParameter(p_param);
+  SQLVariant* var = GetParameter(p_param,p_type);
   if(var)
   {
     var->SetColumnNumber(p_param);
-    // Keep as name in the names map
-    // Number map cannot be used (double delete!)
-    if(m_database)
+    // Keep as name in the parameter map
+    ParameterMap::iterator it = m_parameters.find(p_param);
+    if(it != m_parameters.end())
     {
-      p_name = m_database->GetSQLInfoDB()->GetKEYWORDParameterPrefix() + p_name;
+      it->second.m_name = p_name;
+      return true;
     }
-    m_nameMap[p_name] = var;
-    return true;
   }
   return false;
 }
 
 // Set parameters from another SQLQuery
 void
-SQLQuery::SetParameters(VarMap* p_map)
+SQLQuery::SetParameters(ParameterMap& p_map)
 {
-  if(p_map)
-  {
-    m_parameters = *p_map;
-  }
-  else
-  {
-    m_parameters.clear();
-  }
+  ResetParameters();
+  m_parameters = p_map;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -667,7 +720,7 @@ SQLQuery::DoSQLStatement(const XString& p_statement)
   if(m_database && m_database->WilLog())
   {
     logging = true;
-    XString log = "[Database query]\n" + statement;
+    XString log = _T("[Database query]\n") + statement;
     m_database->LogPrint(log);
   }
 
@@ -755,7 +808,7 @@ SQLQuery::DoSQLStatementScalar(const XString& p_statement)
   {
     return GetColumn(1);
   }
-  return NULL;
+  return nullptr;
 }
 
 SQLVariant* 
@@ -1000,7 +1053,7 @@ SQLQuery::BindParameters()
   }
 
   // See if we must truncate input CHAR parameters
-  if(!m_paramMaxSizes.empty())
+  if(m_stringTruncation)
   {
     TruncateInputParameters();
   }
@@ -1019,7 +1072,7 @@ SQLQuery::BindParameters()
   {
     // Getting the variant for the parameter for a column
     SQLINTEGER  icol = parameter.first + extra;
-    SQLVariant* var  = parameter.second;
+    SQLVariant* var  = parameter.second.m_value;
 
     // Getting the info from the variable
     SQLSMALLINT scale       = (SQLSMALLINT)var->GetNumericScale();
@@ -1035,7 +1088,7 @@ SQLQuery::BindParameters()
     sqlDatatype = RebindParameter(sqlDatatype);
 
     // Fix max length parameters for some database types
-    if(m_database->GetSQLInfoDB()->DoBindParameterFixup(dataType,sqlDatatype,columnSize,scale,bufferSize,indicator))
+    if(m_database->GetSQLInfoDB()->DoBindParameterFixup(var,dataType,sqlDatatype,columnSize,scale,bufferSize,indicator))
     {
       var->SetAtExec(true);
     }
@@ -1058,6 +1111,14 @@ SQLQuery::BindParameters()
       var->SetParameterType(SQLParamType::P_SQL_PARAM_INPUT);
     }
 
+    // Output parameters that are retrieved in the output result set
+    // are not bound on the input execution.
+    if(paramType == SQL_PARAM_OUTPUT && 
+       m_database->GetSQLInfoDB()->GetRDBMSResultSetFromPSM())
+    {
+      continue;
+    }
+
     // Log what we bind here
     if(logging)
     {
@@ -1071,7 +1132,7 @@ SQLQuery::BindParameters()
 //     TRACE("Col size   : %d\n", columnSize);
 //     TRACE("Scale      : %d\n", scale);
 //     TRACE("DataPointer: %p\n", dataPointer);
-//     TRACE("Buffersize : %d\n", bufferSize);
+//     TRACE("BufferSize : %d\n", bufferSize);
 //     TRACE("Indicator  : %d\n", (int)*indicator);
 //     TRACE("DATA       : %s\n", var->GetAsString().GetString());
 
@@ -1108,16 +1169,13 @@ SQLQuery::TruncateInputParameters()
 {
   for(auto& param : m_parameters)
   {
-    SQLVariant* parm = param.second;
-
-    // If CHAR/VARCHAR column does not support more than this amount of characters
-    if(((parm->GetDataType() == SQL_C_CHAR ) || (parm->GetDataType() == SQL_C_WCHAR)) &&
-         parm->GetParameterType() == P_SQL_PARAM_INPUT)
+    if(param.second.m_maxSize)
     {
-      MaxSizeMap::iterator ms = m_paramMaxSizes.find(param.first);
-      if (ms != m_paramMaxSizes.end())
+      SQLVariant* parm = param.second.m_value;
+      // If CHAR/VARCHAR column does not support more than this amount of characters
+      if(parm->IsStringType() && parm->GetParameterType() == P_SQL_PARAM_INPUT)
       {
-        parm->TruncateSpace(ms->second);
+        parm->TruncateSpace(param.second.m_maxSize);
       }
     }
   }
@@ -1168,7 +1226,15 @@ SQLQuery::BindColumns()
   SQLSMALLINT dataType  = 0;
   SQLTCHAR    colName[SQL_MAX_IDENTIFIER + 1];
   unsigned short icol;
+  SQLInfoDB*  info = nullptr;
 
+  // Getting the info
+  if(m_database)
+  {
+    info = m_database->GetSQLInfoDB();
+  }
+
+  // RDBMS defined maximum column length
   GetMaxColumnLength();
 
   // Prepare for at-exec buffering. If not set, use the default of 32K
@@ -1242,9 +1308,9 @@ SQLQuery::BindColumns()
     if(type == SQL_C_NUMERIC)
     {
       SQL_NUMERIC_STRUCT* numeric = const_cast<SQL_NUMERIC_STRUCT*>(var->GetAsNumeric());
-      if (m_database)
+      if(info)
       {
-        m_database->GetSQLInfoDB()->GetRDBMSNumericPrecisionScale(precision,scale);
+        info->GetRDBMSNumericPrecisionScale(precision,scale);
       }
       numeric->precision = (SQLCHAR)  precision;
       numeric->scale     = (SQLSCHAR) scale;
@@ -1252,7 +1318,10 @@ SQLQuery::BindColumns()
 
     // Keep the new variable under name and column number
     XString columnName(colName);
-    columnName.MakeLower();
+    if(info && info->IsIdentifierMixedCase(colName) == false)
+    {
+      columnName.MakeLower();
+    }
     m_numMap .insert(std::make_pair(icol,var));
     m_nameMap.insert(std::make_pair(columnName,var));
 
@@ -1265,7 +1334,7 @@ SQLQuery::BindColumns()
 //     TRACE("- ATEXEC   : %d\n",atexec);
   }
 
-  // See which SQLGetData extentsions are reported by the ODBC driver
+  // See which SQLGetData extensions are reported by the ODBC driver
   SQLUINTEGER extensions = m_database ? m_database->GetSQLInfoDB()->GetGetDataExtensions() : 0;
 
   // NOW WE HAVE ALL INFORMATION
@@ -1334,7 +1403,7 @@ void
 SQLQuery::BindColumnNumeric(SQLSMALLINT p_column,const SQLVariant* p_var,int p_type)
 {
   // Row descriptor for RESULT rows or PARAMeter rows
-  SQLHDESC rowdesc = NULL;
+  SQLHDESC rowdesc = nullptr;
 
   // Is it for a result set, or for a binded parameter?
   SQLINTEGER attribute = (p_type == SQL_RESULT_COL) ? SQL_ATTR_APP_ROW_DESC : SQL_ATTR_APP_PARAM_DESC;
@@ -1396,10 +1465,10 @@ SQLQuery::ProvideAtExecData()
 
     if(m_retCode == SQL_NEED_DATA)
     {
-      VarMap::iterator it = m_parameters.find((int)parameter);
+      ParameterMap::iterator it = m_parameters.find((int)parameter);
       if(it != m_parameters.end())
       {
-        const SQLVariant* var  = it->second;
+        const SQLVariant* var  = it->second.m_value;
         SQLPOINTER data  = const_cast<SQLPOINTER>(var->GetDataPointer());
         SQLINTEGER size  = var->GetDataSize();
         SQLINTEGER piece = var->GetBinaryPieceSize();
@@ -1478,11 +1547,11 @@ SQLQuery::GetMaxColumnLength()
 {
   if(m_maxColumnLength < 0)
   {
-  m_retCode = SqlGetStmtAttr(m_hstmt,SQL_ATTR_MAX_LENGTH,&m_maxColumnLength,sizeof(int),NULL);
-  if(!SQL_SUCCEEDED(m_retCode))
-  {
-    m_maxColumnLength = 0;
-  }
+    m_retCode = SqlGetStmtAttr(m_hstmt,SQL_ATTR_MAX_LENGTH,&m_maxColumnLength,sizeof(int),nullptr);
+    if(!SQL_SUCCEEDED(m_retCode))
+    {
+      m_maxColumnLength = 0;
+    }
     if(m_database)
     {
       int internal = m_database->GetSQLInfoDB()->GetRDBMSMaxVarchar();
@@ -1614,14 +1683,18 @@ SQLQuery::GetRecord()
 int
 SQLQuery::RetrieveAtExecData()
 {
-  // See which SQLGetData extentsions are reported by the ODBC driver
+  // See which SQLGetData extensions are reported by the ODBC driver
   SQLUINTEGER extensions = m_database ? m_database->GetSQLInfoDB()->GetGetDataExtensions() : 0;
 
-  for(int col = m_hasLongColumns; col <= m_numColumns; ++col)
+  for(SQLUSMALLINT col = (SQLUSMALLINT) m_hasLongColumns; col <= m_numColumns; ++col)
   { 
-    SQLLEN actualLength = 0L;
-    SQLVariant* var = m_numMap[col];
-    int datatype = var->GetDataType();
+    SQLLEN actualLength   = 0L;
+    SQLVariant*  var      = m_numMap[col];
+    SQLUSMALLINT datatype = (SQLUSMALLINT) var->GetDataType();
+    // To prevent stack corruption in the Oracle ODBC driver, we must provide a datapointer
+    // and at least two extra pointers on the stack, otherwise we cannot retrieve the
+    // actualLength parameter for the data.
+    // SQLPOINTER datapointer[3] = { 0L };
 
     // See how to get the data. If we may retrieve any column, it will be bound
     // and thus already gotten by the SQLFetch. 
@@ -1632,10 +1705,11 @@ SQLQuery::RetrieveAtExecData()
     }
     // Retrieve actual length of this instance of the column
     m_retCode = SqlGetData(m_hstmt
-                          ,(SQLUSMALLINT) col
-                          ,(SQLSMALLINT)  datatype
-                          ,(SQLPOINTER)   &actualLength  // Some drivers need this!
-                          ,(SQLINTEGER)   0  // Request the actual length of this field
+                          ,col
+                          ,datatype
+                          // ,&datapointer[0]   // Some drivers need this!
+                          ,(SQLPOINTER)var->GetDataPointer()
+                          ,0                 // Request the actual length of this field
                           ,&actualLength);
     if(!SQL_SUCCEEDED(m_retCode))
     {
@@ -1658,6 +1732,12 @@ SQLQuery::RetrieveAtExecData()
       // we take this length into account including the SQL_LEN_DATA_AT_EXEC_OFFSET
       actualLength = -actualLength; 
     }
+    // Everything already gotten in the first try
+    if(var->IsFixedLengthType() && IsFixedLengthType(datatype))
+    {
+      continue;
+    }
+
     // Get extra overhead space for a zero-terminator
     actualLength += (datatype == SQL_C_CHAR || datatype == SQL_C_WCHAR) ? 2 : 0;
     // Reserve space in the SQLVariant for this data (same datatype)
@@ -1665,11 +1745,11 @@ SQLQuery::RetrieveAtExecData()
 
     // Now go get it
     m_retCode = SqlGetData(m_hstmt
-                          ,(SQLUSMALLINT) col
-                          ,(SQLUSMALLINT) datatype
-                          ,(SQLPOINTER)   var->GetDataPointer()
-                          ,(SQLINTEGER)   actualLength
-                          ,               var->GetIndicatorPointer());
+                          ,col
+                          ,datatype
+                          ,(SQLPOINTER)var->GetDataPointer()
+                          ,actualLength
+                          ,var->GetIndicatorPointer());
     if(!SQL_SUCCEEDED(m_retCode) && m_retCode != SQL_NO_DATA)
     {
       // SQL_ERROR / SQL_NO_DATA / SQL_STILL_EXECUTING / SQL_INVALID_HANDLE
@@ -1678,6 +1758,27 @@ SQLQuery::RetrieveAtExecData()
   }
   return SQL_SUCCESS;
 }
+
+// Fixed length for SQLGetData
+bool
+SQLQuery::IsFixedLengthType(int p_datatype) const
+{
+  switch(p_datatype)
+  {
+    case SQL_CHAR:
+    case SQL_VARCHAR:
+    case SQL_WCHAR:
+    case SQL_WVARCHAR:
+    case SQL_LONGVARCHAR:
+    case SQL_WLONGVARCHAR:
+    case SQL_BINARY:
+    case SQL_VARBINARY:
+    case SQL_LONGVARBINARY: return false;
+    default:                return true;
+  }
+}
+
+
 
 void
 SQLQuery::DoCancelQuery()
@@ -1708,7 +1809,7 @@ SQLQuery::GetColumn(int icol)
     return it->second;
   }
   m_retCode = SQL_ERROR;
-  return NULL;
+  return nullptr;
 }
 
 int
@@ -1720,7 +1821,7 @@ SQLQuery::GetColumnType(int icol)
     return it->second->GetDataType();
   }
   m_retCode = SQL_ERROR;
-  return NULL;
+  return 0;
 }
 
 // See if column is NULL value
@@ -1782,7 +1883,7 @@ SQLQuery::GetLastError(XString p_prefix /*=""*/)
     return;
   }
   // Fall back in case we don't have a database pointer
-  while(1)
+  while(true)
   {
     SQLINTEGER  nativeError = 0;
     SQLTCHAR    SqlState[SQL_SQLSTATE_SIZE + 1];
@@ -2080,22 +2181,26 @@ SQLQuery::DoSQLCall(XString p_schema,XString p_procedure,bool p_hasReturn /*=fal
   }
 
   // See if we ask for a call with named parameters
-  if(!m_nameMap.empty())
+  if(GetAllParametersAreNamed() && m_database->GetSQLInfoDB()->GetRDBMSSupportsNamedParameters())
   {
     if(m_database->GetSQLInfoDB()->GetRDBMSSupportsODBCCallNamedParameters())
     {
+      // Named parameters by "SQLSetDescField"
       return DoSQLCallODBCNamedParameters(p_schema,p_procedure,p_hasReturn);
     }
+    // Named parameters by self generated syntax code
     return m_database->GetSQLInfoDB()->DoSQLCallNamedParameters(this,p_schema,p_procedure,p_hasReturn);
   }
 
-  // Is we support standard ODBC, do that call
+  // If we support standard ODBC {fn} escapeses, do that call
   if(m_database->GetSQLInfoDB()->GetRDBMSSupportsODBCCallEscapes())
   {
+    // Call with {fn <name>(param [,...]} escape syntax
     return DoSQLCallODBCEscape(p_schema,p_procedure,p_hasReturn);
   }
 
   // Let the database implementation take care of it
+  // Different syntax and logic (e.g. derived table select)
   return m_database->GetSQLInfoDB()->DoSQLCall(this,p_schema,p_procedure);
 }
 
@@ -2151,13 +2256,18 @@ SQLQuery::DoSQLCallODBCNamedParameters(XString& p_schema,const XString& p_proced
   while(found)
   {
     XString name;
-    found = GetColumnName(index,name);
-    if(found)
+    ParameterMap::iterator it = m_parameters.find(index);
+    if(it != m_parameters.end())
     {
+      name = it->second.m_name;
       // Bind name to the parameter in the IPD
       SQLSetDescField(hIPD,(SQLSMALLINT)field,SQL_DESC_NAME,(SQLPOINTER)name.GetString(),SQL_NTS);
       ++index;
       ++field;
+    }
+    else
+    {
+      found = false;
     }
   }
 
@@ -2178,6 +2288,23 @@ SQLQuery::DoSQLCallODBCNamedParameters(XString& p_schema,const XString& p_proced
 
   // Return the return-parameter (if any)
   return GetParameter(0);
+}
+
+// All parameters have names, so named calls can be made
+bool
+SQLQuery::GetAllParametersAreNamed()
+{
+  for(auto& param : m_parameters)
+  {
+    if(param.first > 0)
+    {
+      if(param.second.m_name.IsEmpty())
+      {
+        return false;
+      }
+    }
+  }
+  return true;
 }
 
 // Construct the SQL for a function/procedure call with binding markers
@@ -2235,12 +2362,13 @@ SQLQuery::LimitOutputParameters()
 {
   for(auto& param : m_parameters)
   {
-    int type = param.second->GetParameterType();
+    int type = param.second.m_type;
     if(type == P_SQL_PARAM_OUTPUT || type == P_SQL_PARAM_INPUT_OUTPUT)
     {
-      if((param.second->GetDataType() == SQL_C_CHAR) || (param.second->GetDataType() == SQL_C_WCHAR))
+      SQLVariant* var = param.second.m_value;
+      if((var->GetDataType() == SQL_C_CHAR) || (var->GetDataType() == SQL_C_WCHAR))
       {
-        param.second->ShrinkSpace();
+        var->ShrinkSpace();
       }
     }
   }
@@ -2248,12 +2376,71 @@ SQLQuery::LimitOutputParameters()
 
 // Getting the result parameter value
 SQLVariant* 
-SQLQuery::GetParameter(int p_num)
+SQLQuery::GetParameter(int p_num,SQLParamType p_type /*= P_SQL_PARAM_INPUT*/)
 {
-  VarMap::iterator it = m_parameters.find(p_num);
-  if(it != m_parameters.end())
+  ParameterMap::iterator it = m_parameters.find(p_num);
+  while(it != m_parameters.end())
   {
-    return it->second;
+    if(it->second.m_type == p_type)
+    {
+      return it->second.m_value;
+    }
+    ++it;
+  }
+  return nullptr;
+}
+
+SQLParameter* 
+SQLQuery::GetInputParameter(int p_num)
+{
+  ParameterMap::iterator it = m_parameters.find(p_num);
+  while(it != m_parameters.end())
+  {
+    if(it->second.m_type == SQLParamType::P_SQL_PARAM_INPUT ||
+       it->second.m_type == SQLParamType::P_SQL_PARAM_INPUT_OUTPUT)
+    {
+      return &it->second;
+    }
+    ++it;
+    if(it != m_parameters.end() && it->first != p_num)
+    {
+      break;
+    }
+  }
+  return nullptr;
+}
+
+SQLParameter* 
+SQLQuery::GetOutputParameter(int p_num)
+{
+  ParameterMap::iterator it = m_parameters.find(p_num);
+  while(it != m_parameters.end())
+  {
+    if(it->second.m_type == SQLParamType::P_SQL_PARAM_OUTPUT ||
+       it->second.m_type == SQLParamType::P_SQL_PARAM_INPUT_OUTPUT)
+    {
+      return &it->second;
+    }
+    ++it;
+    if(it != m_parameters.end() && it->first != p_num)
+    {
+      break;
+    }
+  }
+  return nullptr;
+}
+
+SQLParameter* 
+SQLQuery::GetOutputParameter(XString p_name)
+{
+  for(auto& param : m_parameters)
+  {
+    if((param.second.m_type == SQLParamType::P_SQL_PARAM_OUTPUT ||
+        param.second.m_type == SQLParamType::P_SQL_PARAM_INPUT_OUTPUT) &&
+        param.second.m_name.CompareNoCase(p_name) == 0)
+    {
+      return &param.second;
+    }
   }
   return nullptr;
 }
@@ -2270,6 +2457,110 @@ HSTMT
 SQLQuery::GetStatementHandle() const
 {
   return m_hstmt;
+}
+
+// Set the rebind map for datatypes (prior to executing SQL)
+// Simply registers a std::map<int,int> to rebind types
+void
+SQLQuery::SetRebindMap(RebindMap* p_map)
+{
+  m_rebindColumns = p_map;
+}
+
+XString
+SQLQuery::GetCursorName()
+{
+  return m_cursorName;
+}
+
+void
+SQLQuery::SetMaxRows(int p_maxrows)
+{
+  m_maxRows = p_maxrows;
+}
+
+bool
+SQLQuery::IsOk() const
+{
+  return SQL_SUCCEEDED(m_retCode);
+}
+
+int
+SQLQuery::GetNumberOfColumns() const
+{
+  return (int)m_numMap.size();
+}
+
+XString
+SQLQuery::GetError()
+{
+  return m_lastError;
+}
+
+ColNumMap*
+SQLQuery::GetBoundedColumns()
+{
+  return &m_numMap;
+}
+
+void
+SQLQuery::SetSpeedThreshold(double p_seconds)
+{
+  m_speedThreshold = p_seconds;
+}
+
+SQLVariant&
+SQLQuery::operator[](int p_index)
+{
+  return *GetColumn(p_index);
+}
+
+SQLDatabase*
+SQLQuery::GetDatabase()
+{
+  return m_database;
+}
+
+void
+SQLQuery::SetNoScan(bool p_noscan)
+{
+  m_noscan = p_noscan;
+}
+
+bool
+SQLQuery::GetNoScan() const
+{
+  return m_noscan;
+}
+
+void
+SQLQuery::SetFetchPolicy(bool p_policy)
+{
+  m_hasLongColumns = 0;
+  if(p_policy)
+  {
+    m_hasLongColumns = 1;
+  }
+}
+
+LOption
+SQLQuery::GetLengthOption() const
+{
+  return m_lengthOption;
+}
+
+// Setting the length option
+void
+SQLQuery::SetLengthOption(LOption p_option /*= LOption::LO_LEN_ZERO*/)
+{
+  m_lengthOption = p_option;
+}
+
+// Getting the complete parameter map
+ParameterMap&
+SQLQuery::GetParameterMap()
+{
+  return m_parameters;
 }
 
 // End of namespace

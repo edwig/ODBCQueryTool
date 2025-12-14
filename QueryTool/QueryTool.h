@@ -28,8 +28,11 @@
 #include <SQLDatabase.h>
 #include <SQLTransaction.h>
 #include <SQLQuery.h>
+#include <map>
 
 using namespace SQLComponents;
+
+typedef std::map<int,SQLVariant*> VarMap;
 
 // QueryToolApp:
 // See QueryTool.cpp for the implementation of this class

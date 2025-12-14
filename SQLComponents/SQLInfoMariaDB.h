@@ -59,6 +59,9 @@ public:
   // Identifier rules differ per RDBMS
   bool IsIdentifier(XString p_identifier) const override;
 
+  // Return parameters from a PSM procedure module can be a result set (SUSPEND)
+  bool GetRDBMSResultSetFromPSM() const override;
+
   // KEYWORDS
 
   // Get the concatenation operator

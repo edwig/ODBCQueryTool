@@ -103,7 +103,8 @@ SQLConnections::AddConnection(XString p_name
                              ,XString p_datasource
                              ,XString p_username
                              ,XString p_password
-                             ,XString p_options)
+                             ,XString p_options
+                             ,XString p_targetSchema /* = ""*/)
 {
   // See if it is a double registration
   const SQLConnection* fnd = GetConnection(p_name);
@@ -119,6 +120,7 @@ SQLConnections::AddConnection(XString p_name
   connect.m_username   = p_username;
   connect.m_password   = p_password;
   connect.m_options    = p_options;
+  connect.m_targetSchema = p_targetSchema;
 
   // Keep this connection
   p_name.MakeLower();
@@ -169,11 +171,12 @@ SQLConnections::LoadConnectionsFile(XString p_filename /*=""*/,bool p_reset /*=f
   while(conn)
   {
     SQLConnection connect;
-    connect.m_name       = msg.GetElement(conn,_T("Name"));
-    connect.m_datasource = msg.GetElement(conn,_T("DSN"));
-    connect.m_username   = msg.GetElement(conn,_T("User"));
-    connect.m_options    = msg.GetElement(conn,_T("Options"));
-    connect.m_password   = PasswordDecoding(msg.GetElement(conn,_T("Password")));
+    connect.m_name         = msg.GetElement(conn,_T("Name"));
+    connect.m_datasource   = msg.GetElement(conn,_T("DSN"));
+    connect.m_targetSchema = msg.GetElement(conn,_T("Target"));
+    connect.m_username     = msg.GetElement(conn,_T("User"));
+    connect.m_options      = msg.GetElement(conn,_T("Options"));
+    connect.m_password     = PasswordDecoding(msg.GetElement(conn,_T("Password")));
 
     XString name(connect.m_name);
     name.MakeLower();
@@ -208,6 +211,7 @@ SQLConnections::SaveConnectionsFile(XString p_filename /*=""*/)
 
     msg.AddElement(conn,_T("Name"),     XDT_String,connect.second.m_name);
     msg.AddElement(conn,_T("DSN"),      XDT_String,connect.second.m_datasource);
+    msg.AddElement(conn,_T("Target"),   XDT_String,connect.second.m_targetSchema);
     msg.AddElement(conn,_T("User"),     XDT_String,connect.second.m_username);
     msg.AddElement(conn,_T("Options"),  XDT_String,connect.second.m_options);
     msg.AddElement(conn,_T("Password"), XDT_String,PasswordScramble(connect.second.m_password));

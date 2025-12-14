@@ -2,8 +2,8 @@
 //
 // File: SQLMigrate.h
 //
-// Copyright (c) 1998-2022 ir. W.E. Huisman
-// All rights reserved
+// Written by: ir. W.E. Huisman between 1998-2025 
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -32,9 +32,12 @@
 #include "SQLMetaInfo.h"
 #include "DDLCreateTable.h"
 #include <vector>
+#include <map>
 
 namespace SQLComponents
 {
+
+typedef std::map<int,SQLVariant*> VarMap;
 
 class SQLMigrate  
 {
@@ -61,16 +64,15 @@ private:
   void     CreateTables();
   void     CreateViews();
   void     FillTablesViaPump();
+  void     FillTablesViaSlowPump();
   void     FillTablesViaData(bool p_process);
   void     TruncateTables();
   int      FindColumn(MColumnMap& p_columns,XString p_name);
+  XString  FormatColumnName(SQLInfoDB* p_info,XString p_column);
 
   void     OrderTableColumns(DDLCreateTable& p_create);
   void     FixupTableColumns(DDLCreateTable& p_create);
   void     FixupTableIndices(DDLCreateTable& p_create);
-
-  int*     ResetAtExecParameters(VarMap* p_columns);
-  void     RestoreAtExecParameters(int* p_columns,VarMap* p_parameters);
 
   // Statements
   XString  MakeSelectStatement    (XString& p_tabel,XString& p_user);
@@ -81,6 +83,8 @@ private:
   long     CountTableContents     (XString  p_owner,XString& tabel);
   void     CommitDDL(SQLQuery& p_query,SQLInfoDB* p_info);
   void     DatatypeExceptions(RebindMap& p_map);
+  void     SetExecParameters(ParameterMap& p_params,VarMap* p_columns);
+  void     SetExecParameters(SQLQuery& p_target,VarMap* p_columns);
 
   // Record missing records
   void     LogMissingRecord(SQLQuery& p_query,XString& p_error);

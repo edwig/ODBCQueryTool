@@ -355,14 +355,17 @@ SQLFilter::MatchRecord(SQLRecord* p_record)
   {
     throw StdException(_T("Cannot match a filter internally on an expression!"));
   }
-
+  XString fieldName(m_field);
+  if(ispunct(m_field.GetAt(0)) && ispunct(fieldName.GetAt(fieldName.GetLength()-1)))
+  {
+    fieldName = fieldName.Mid(1,fieldName.GetLength() - 2);
+  }
   // Getting the left hand operand
-  SQLVariant* field = p_record->GetField(m_field);
+  SQLVariant* field = p_record->GetField(fieldName);
   if(!field)
   {
     return false;
   }
-
   // Using the operator
   switch(m_operator)
   {

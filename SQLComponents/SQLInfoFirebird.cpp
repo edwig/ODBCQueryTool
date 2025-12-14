@@ -45,6 +45,9 @@ namespace SQLComponents
 SQLInfoFirebird::SQLInfoFirebird(SQLDatabase* p_database)
                 :SQLInfoDB(p_database)
 {
+  m_RDBMSkeywords.insert(_T("PARAMETER"));
+  m_RDBMSkeywords.insert(_T("TIMESTAMP"));
+  m_RDBMSkeywords.insert(_T("BOOLEAN"));
 }
 
 // Destructor. Does nothing
@@ -139,6 +142,13 @@ SQLInfoFirebird::GetRDBMSSupportsODBCCallNamedParameters() const
   return false;
 }
 
+// Supports the ODBC call procedure with named parameters
+bool
+SQLInfoFirebird::GetRDBMSSupportsNamedParameters() const
+{
+  return false;
+}
+
 // If the database does not support the datatype TIME, it can be implemented as a DECIMAL
 bool
 SQLInfoFirebird::GetRDBMSSupportsDatatypeTime() const
@@ -159,7 +169,7 @@ SQLInfoFirebird::GetRDBMSSupportsDatatypeInterval() const
 bool
 SQLInfoFirebird::GetRDBMSSupportsFunctionalIndexes() const
 {
-  return false;
+  return true;
 }
 
 // Support for "as" in alias statements (FROM clause)
@@ -212,8 +222,9 @@ bool
 SQLInfoFirebird::IsIdentifier(XString p_identifier) const
 {
   if(p_identifier.GetLength() == 0 ||  // Cannot be empty
-     p_identifier.GetLength() >= 64 )  // Cannot exceed 63 chars
+     p_identifier.GetLength() >= 63 )  // Cannot exceed 63 chars (version 4.0)
   {
+    // But beware: version 3.0 has identifiers of 31 characters
     return false;
   }
   // Must start with one alpha char
@@ -223,12 +234,21 @@ SQLInfoFirebird::IsIdentifier(XString p_identifier) const
   }
   for(int index = 0;index < p_identifier.GetLength();++index)
   {
-    // Can be upper/lower alpha or a number
-    if(!_istalnum(p_identifier.GetAt(index)))
+    // Can be upper/lower alpha or a number, an underscore or a dollar sign
+    // because catalog identifiers can contain "rdb$...." names
+    TCHAR ch = p_identifier.GetAt(index);
+    if(!_istalnum(ch) && ch != _T('_') && ch != _T('$'))
     {
       return false;
     }
   }
+  return true;
+}
+
+// Return parameters from a PSM procedure module can be a result set (SUSPEND)
+bool
+SQLInfoFirebird::GetRDBMSResultSetFromPSM() const
+{
   return true;
 }
 
@@ -352,12 +372,21 @@ SQLInfoFirebird::GetKEYWORDDataType(MetaColumn* p_column)
   switch(p_column->m_datatype)
   {
     case SQL_CHAR:                      // fall through
+    case SQL_WCHAR:                     type = _T("CHAR");
+                                        if(p_column->m_columnSize > GetRDBMSMaxVarchar() + 2)
+                                        {
+                                          p_column->m_columnSize = GetRDBMSMaxVarchar() + 2;
+                                        }
+                                        break;
     case SQL_VARCHAR:                   // fall through
-    case SQL_WCHAR:                     // fall through
     case SQL_WVARCHAR:                  type = _T("VARCHAR");
+                                        if(p_column->m_columnSize > GetRDBMSMaxVarchar())
+                                        {
+                                          p_column->m_columnSize = GetRDBMSMaxVarchar();
+                                        }
                                         break;
     case SQL_LONGVARCHAR:               // fall through
-    case SQL_WLONGVARCHAR:              type = _T("VARCHAR");  // CLOB -> VARCHAR
+    case SQL_WLONGVARCHAR:              type = _T("BLOB SUB_TYPE TEXT");
                                         break;
     case SQL_INTEGER:                   type = _T("INTEGER");
                                         break;
@@ -394,10 +423,10 @@ SQLInfoFirebird::GetKEYWORDDataType(MetaColumn* p_column)
                                             p_column->m_decimalDigits = p_column->m_columnSize - 1;
                                           }
                                           // Preserve scale!
-                                          if(p_column->m_decimalDigits == 0)
-                                          {
-                                            p_column->m_decimalDigits = -1;
-                                          }
+//                                           if(p_column->m_decimalDigits == 0)
+//                                           {
+//                                             p_column->m_decimalDigits = -1;
+//                                           }
                                         }
                                         break;
     //case SQL_DATE:
@@ -413,9 +442,10 @@ SQLInfoFirebird::GetKEYWORDDataType(MetaColumn* p_column)
                                         p_column->m_columnSize    = 0;
                                         p_column->m_decimalDigits = 0;
                                         break;
-    case SQL_BINARY:                    type = _T("BLOB");          break;
-    case SQL_VARBINARY:                 type = _T("BLOB");          break;
-    case SQL_LONGVARBINARY:             type = _T("BLOB");          break;
+    case SQL_BINARY:                    // fall through
+    case SQL_VARBINARY:                 // fall through
+    case SQL_LONGVARBINARY:             type = _T("BLOB SUB_TYPE 0");
+                                        break;
     case SQL_GUID:                      // fall through
     case SQL_INTERVAL_YEAR:             // fall through
     case SQL_INTERVAL_YEAR_TO_MONTH:    // fall through
@@ -683,13 +713,46 @@ SQLInfoFirebird::GetTempTablename(XString /*p_schema*/,XString p_tablename,bool 
 
 // Changes to parameters before binding to an ODBC HSTMT handle  (returning the At-Exec status)
 bool
-SQLInfoFirebird::DoBindParameterFixup(SQLSMALLINT& /*p_dataType*/
-                                     ,SQLSMALLINT& /*p_sqlDatatype*/
+SQLInfoFirebird::DoBindParameterFixup(SQLVariant*    p_var
+                                     ,SQLSMALLINT&   p_dataType
+                                     ,SQLSMALLINT&   p_sqlDatatype
                                      ,SQLULEN&     /*p_columnSize*/
-                                     ,SQLSMALLINT& /*p_scale*/
-                                     ,SQLLEN&      /*p_bufferSize*/
-                                     ,SQLLEN*      /*p_indicator*/) const
+                                     ,SQLSMALLINT&   p_scale
+                                     ,SQLLEN&        p_bufferSize
+                                     ,SQLLEN*        p_indicator) const
 {
+  // BLOB SUB_TYPE 0 (RAW DATA) should be mutated as SQL_VARBINARY and with a length indicator
+  if(p_sqlDatatype == SQL_BINARY)
+  {
+    p_sqlDatatype = SQL_VARBINARY;
+    *p_indicator  = p_bufferSize;
+  }
+
+  // Binding a NUMERIC to a different datatype does only work for a very limited range of values (< 32K)
+  // And a column defined as a general NUMERIC without a standard precision or scale will be generated as
+  // an INTEGER in Firebird. So binding it as an INTEGER will work for a much larger range of values.
+  // But we must convert the parameter ourselves before using it.
+  if(p_dataType    == SQL_NUMERIC && 
+     p_sqlDatatype == SQL_NUMERIC && 
+     p_bufferSize  == sizeof(SQL_NUMERIC_STRUCT) &&
+     p_scale       == 16)
+  {
+    try
+    {
+      // Try to convert to int: can throw if out of integer range
+      int number    = p_var->GetAsBCD().AsLong();
+      p_sqlDatatype = SQL_INTEGER;
+      p_dataType    = SQL_C_SLONG;
+      p_scale       = 0;
+      p_bufferSize  = sizeof(int);
+      p_var->Set(number);
+    }
+    catch(StdException& /*ex*/)
+    {
+      // Doesn't fit into an INTEGER
+      // So keep fingers crossed and proceed
+    }
+  }
   return false;
 }
 
@@ -1429,6 +1492,8 @@ XString
 SQLInfoFirebird::GetCATALOGIndexCreate(MIndicesMap& p_indices,bool /*p_duplicateNulls /*= false*/) const
 {
   XString query;
+  bool doFilter(false);
+
   for(auto& index : p_indices)
   {
     if(index.m_position == 1)
@@ -1451,25 +1516,36 @@ SQLInfoFirebird::GetCATALOGIndexCreate(MIndicesMap& p_indices,bool /*p_duplicate
     }
     else
     {
-      query += _T(",");
+      // Multiple column filtering works on VARCHAR fields only
+      query += doFilter ? _T("||") : _T(",");
     }
     if(index.m_columnName.Left(1) == _T("("))
     {
-      query.TrimRight(_T("("));
-      query += _T(" COMPUTED BY ");
+      if(index.m_position == 1)
+      {
+        query.TrimRight(_T("("));
+        query += _T(" COMPUTED BY ");
+      }
       query += QIQ(index.m_columnName);
       query.TrimRight(_T(")"));
+      doFilter = true;
     }
     else if(!index.m_filter.IsEmpty())
     {
+      if(index.m_position == 1)
+      {
+        query.TrimRight(_T("("));
+        query += _T(" COMPUTED BY (");
+      }
       query += index.m_filter;
+      doFilter = true;
     }
     else
     {
       query += QIQ(index.m_columnName);
     }
   }
-  query += ")";
+  query += _T(")");
   return query;
 }
 
@@ -2303,7 +2379,7 @@ SQLInfoFirebird::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewname,
     IdentifierCorrect(p_viewname);
     sql += _T("\n AND rel.rdb$relation_name ");
     sql += (p_viewname.Find(_T("%")) >= 0) ? _T("LIKE") : _T("=");
-    sql += " ?";
+    sql += _T(" ?");
   }
   return sql;
 }
@@ -3204,7 +3280,7 @@ SQLInfoFirebird::GetPSMDeclaration(bool    /*p_first*/
   {
     line += _T(" TYPE OF ") + p_domain;
   }
-  else if(!p_asColumn)
+  else if(!p_asColumn.IsEmpty())
   {
     line += _T(" TYPE OF COLUMN ") + p_asColumn;
   }
@@ -3533,27 +3609,25 @@ SQLInfoFirebird::DoSQLCallProcedure(SQLQuery* p_query,const XString& p_procedure
   if(query.GetRecord())
   {
     // Processing the result
-    int type     = 0;
-    int setIndex = -1;
+    int setIndex = 0;
     for(int resIndex = 1;resIndex <= query.GetNumberOfColumns();++resIndex)
     {
       // Getting the next result from the result set
       SQLVariant* result = query.GetColumn(resIndex);
 
       // Finding the next OUTPUT parameter in the original query call
-      do
+      SQLParameter* target = p_query->GetOutputParameter(++setIndex);
+      if(target == nullptr)
       {
-        const SQLVariant* target = p_query->GetParameter(++setIndex);
-        if(target == nullptr)
-        {
-          throw StdException(_T("Wrong number of output parameters for procedure call"));
-        }
-        type = target->GetParameterType();
+        throw StdException(_T("Wrong number of output parameters for procedure call"));
       }
-      while(type != SQL_PARAM_OUTPUT && type != SQL_PARAM_INPUT_OUTPUT);
-
       // Storing the result;
-      p_query->SetParameter(setIndex,result);
+      SQLVariant* old = target->m_value;
+      target->m_value = new SQLVariant(result);
+      if(old)
+      {
+        delete old;
+      }
     }
     // Returning the first return column as the result of the procedure
     return true;
@@ -3630,7 +3704,7 @@ SQLInfoFirebird::ConstructSQLForProcedureCall(SQLQuery*      p_query
 {
   // Start with select form
   XString sql = _T("SELECT * FROM ");
-  sql += p_procedure;
+  sql += QIQ(p_procedure);
 
   // Opening parenthesis
   sql += _T("(");
@@ -3638,23 +3712,24 @@ SQLInfoFirebird::ConstructSQLForProcedureCall(SQLQuery*      p_query
   // Build list of markers
   int ind = 1;
   int res = 1;
+  bool delimiter(false);
   while(true)
   {
     // Try get the next parameter
-    var* parameter = p_query->GetParameter(ind);
+    SQLParameter* parameter = p_query->GetInputParameter(ind);
     if(parameter == nullptr) break;
 
-    // Input parameters ONLY!!
-    int type = parameter->GetParameterType();
-    if(type == SQL_PARAM_INPUT)
+    // Add marker
+    if(delimiter)
     {
-      // Add marker
-      if(ind > 1) sql += _T(",");
-      sql += _T("?");
-
-      // Add the parameter with the result counter!
-      p_thecall->SetParameter(res++,parameter);
+      sql += _T(",");
     }
+    sql += _T("?");
+    delimiter = true;
+
+    // Add the parameter with the result counter!
+    p_thecall->SetParameter(res++,parameter->m_value);
+
     // Next parameter
     ++ind;
   }

@@ -76,6 +76,9 @@ public:
   // Supports the ODBC call procedure with named parameters
   bool    GetRDBMSSupportsODBCCallNamedParameters() const;
 
+  // Supports the ODBC call procedure with named parameters
+  bool    GetRDBMSSupportsNamedParameters() const;
+
   // If the database does not support the datatype TIME, it can be implemented as a DECIMAL
   bool    GetRDBMSSupportsDatatypeTime() const override;
 
@@ -105,6 +108,9 @@ public:
 
   // Identifier rules differ per RDBMS
   bool IsIdentifier(XString p_identifier) const override;
+
+  // Return parameters from a PSM procedure module can be a result set (SUSPEND)
+  bool GetRDBMSResultSetFromPSM() const override;
 
   // KEYWORDS
 
@@ -231,7 +237,7 @@ public:
   XString GetTempTablename(XString p_schema,XString p_tablename,bool p_local) const override;
 
   // Changes to parameters before binding to an ODBC HSTMT handle (returning the At-Exec status)
-  bool DoBindParameterFixup(SQLSMALLINT& p_dataType,SQLSMALLINT& p_sqlDatatype,SQLULEN& p_columnSize,SQLSMALLINT& p_scale,SQLLEN& p_bufferSize,SQLLEN* p_indicator) const override;
+  bool DoBindParameterFixup(SQLVariant* p_var,SQLSMALLINT& p_dataType,SQLSMALLINT& p_sqlDatatype,SQLULEN& p_columnSize,SQLSMALLINT& p_scale,SQLLEN& p_bufferSize,SQLLEN* p_indicator) const override;
 
   //////////////////////////////////////////////////////////////////////////
   //

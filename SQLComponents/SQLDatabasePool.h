@@ -44,7 +44,6 @@ namespace SQLComponents
 typedef std::deque<SQLDatabase*>     DbsList;
 typedef std::map<XString,DbsList*>   DbsPool;
 
-
 class SQLDatabasePool
 {
 public:
@@ -52,45 +51,65 @@ public:
  ~SQLDatabasePool();
 
   // Get or make a database for this connection
-  SQLDatabase*    GetDatabase(const XString& p_connectionName);
+  virtual SQLDatabase*    GetDatabase(const XString& p_connectionName);
   // Get the connection by name
-  SQLConnection*  GetConnection(const XString& p_connectionName);
-  SQLConnection*  GetConnection(const int p_index);
-  // Return current number of connections
-  unsigned        GetConnections();
-  // Return current number of maximum databases
-  unsigned        GetMaxDatabases();
-  // Get the number of free databases
-  unsigned        GetFreeDatabases();
-  // List with current connections (meant for logging purposes only)
-  void            GetListOfConnections(XString& p_list);
-
-    // Return a database connection to the pool
-  void            GiveUp(SQLDatabase* p_database);
-  // Clean-up all database connections
-  void            CloseAll();
-  // Cleanup: To be called in the cleanup process of the program
-  void            Cleanup(bool p_aggressive = false);
-  // Set current max databases allowed
-  void            SetMaxDatabases(unsigned p_maximum);
+  virtual SQLConnection*  GetConnection(const XString& p_connectionName);
+  virtual SQLConnection*  GetConnection(const int p_index);
+  // Return a database connection to the pool
+  virtual void            GiveUp(SQLDatabase* p_database);
   // Read all database definitions from 'database.xml'
-  bool            ReadConnections(XString p_filename = _T(""),bool p_reset = false);
-
+  virtual bool            ReadConnections(XString p_filename = _T(""),bool p_reset = false);
   // Add a column rebind for this database session: No bounds checking!
-  void            AddColumnRebind(int p_sqlType, int p_cppType);
+  virtual void            AddColumnRebind(int p_sqlType,int p_cppType);
   // Add a parameter rebind for this database session: No bounds checking!
-  void            AddParameterRebind(int p_sqlType, int p_cppType);
+  virtual void            AddParameterRebind(int p_sqlType,int p_cppType);
   // Adding / Deleting connections to the connections list
-  bool            AddConnection(XString p_name,XString p_datasource,XString p_username,XString p_password,XString p_options);
-  bool            DelConnection(XString p_name);
+  virtual bool            AddConnection(XString p_name,XString p_datasource,XString p_username,XString p_password,XString p_options);
+  virtual bool            DelConnection(XString p_name);
 
+  // GETTERS
+
+  // Return current number of connections
+  unsigned GetConnections() const;
+  // Return current number of maximum databases
+  unsigned GetMaxDatabases() const;
+  // Get the number of free databases
+  unsigned GetFreeDatabases() const;
+  // List with current connections (meant for logging purposes only)
+  void     GetListOfConnections(XString& p_list) const;
+  // Get the current ODBC discovery for new connections
+  bool     GetPreferODBCDiscover() const;
+  // Get the use of identifier quotation
+  bool     GetUseIdentifierQuotation() const;
+  // New databases read-write or read-only
+  bool     GetReadOnly() const;
+
+  // SETTERS
+
+  // Standard log level of new database connections
+  void     SetLoggingActivation(int p_loglevel);
+  // Encryption key of the connections file
+  void     SetEncryptionKey(XString p_key);
+  // Set current max databases allowed
+  void     SetMaxDatabases(unsigned p_maximum);
+  // Set preference for ODBC discovery of database objects
+  void     SetPreferODBCDiscovery(bool p_discover);
+  // Set the use of identifier quotation
+  void     SetUseIdentifierQuotation(bool p_use);
+  // New databases are created read-write or read-only
+  void     SetReadOnly(bool p_readonly);
+
+  // FUNCTIONS
+
+  // Clean-up all database connections
+  void     CloseAll();
+  // Cleanup: To be called in the cleanup process of the program
+  void     Cleanup(bool p_aggressive = false);
   // Support of logging functions (for all databases in the pool)
-  void            RegisterLogContext(int p_level, LOGLEVEL p_loglevel, LOGPRINT p_logprinter, void* p_logContext);
-  void            LogPrint(LPCTSTR p_text);
-  int             LogLevel();
-  bool            WilLog();
-  void            SetLoggingActivation(int p_loglevel);
-  void            SetEncryptionKey(XString p_key);
+  void     RegisterLogContext(int p_level, LOGLEVEL p_loglevel, LOGPRINT p_logprinter, void* p_logContext);
+  void     LogPrint(LPCTSTR p_text) const;
+  int      LogLevel();
+  bool     WilLog();
 
 private:
   // Get OR make a logged in database connection
@@ -110,11 +129,13 @@ private:
   // Add our rebind mappings to a newly opened database
   void         AddRebindsToDatabase(SQLDatabase* p_database);
 
-
   // Data
   bool            m_isopen          { false };          // If database pool is currently open for business
   unsigned        m_maxDatabases    { MIN_DATABASES };  // Maximum number of concurrently open database
   unsigned        m_openConnections { 0 };              // Currently open connections
+  bool            m_preferODBC      { true  };          // Prefer standard ODBC discovery functions over SQL
+  bool            m_useQuotation    { true  };          // Prefer to use the identifier quotation mechanisms
+  bool            m_readOnly        { false };          // New databases are created read-write or read-only
   SQLConnections  m_connections;                        // Connection names out of "database.xml"
   DbsPool         m_allDatabases;                       // List with lists of all databases
   DbsPool         m_freeDatabases;                      // List with lists of currently unused databases
@@ -131,7 +152,7 @@ private:
   RebindMap       m_rebindColumns;                      // Rebinding of result columns for SQLBindCol
 
   // Thread synchronization
-  CRITICAL_SECTION m_lock;
+  mutable CRITICAL_SECTION m_lock;
 };
 
 inline void
@@ -144,6 +165,36 @@ inline void
 SQLDatabasePool::SetEncryptionKey(XString p_key)
 {
   m_connections.SetEncryptionKey(p_key);
+}
+
+inline bool
+SQLDatabasePool::GetPreferODBCDiscover() const
+{
+  return m_preferODBC;
+}
+
+inline bool
+SQLDatabasePool::GetReadOnly() const
+{
+  return m_readOnly;
+}
+
+inline bool
+SQLDatabasePool::GetUseIdentifierQuotation() const
+{
+  return m_useQuotation;
+}
+
+inline void
+SQLDatabasePool::SetUseIdentifierQuotation(bool p_use)
+{
+  m_useQuotation = p_use;
+}
+
+inline void
+SQLDatabasePool::SetPreferODBCDiscovery(bool p_discover)
+{
+  m_preferODBC = p_discover;
 }
 
 }

@@ -41,6 +41,8 @@ enum class PKStatus
  ,PK_Unknown          // Is created, but not returned by service or PSM
 };
 
+class SQLInfODB;
+
 class SQLPrimaryKey
 {
 public:
@@ -65,7 +67,7 @@ public:
   XString     GetPrimaryFields();
   XString     GetPrimaryValue();
   int         GetOptimizedObject();
-  XString     GetCondition();
+  XString     GetCondition(SQLInfoDB* p_info = nullptr);
 
   // Functions
   void        AddField(XString p_field,SQLVariant& p_value);

@@ -2,8 +2,8 @@
 //
 // File: SQLMigrateDialog.h
 //
-// Copyright (c) 1998-2022 ir. W.E. Huisman
-// All rights reserved
+// Written by: ir. W.E. Huisman between 1998-2025 
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -136,6 +136,7 @@ public:
   StyleCheckbox     m_check_do_triggers;
   StyleCheckbox     m_check_do_access;
 
+  StyleButton       m_buttonSave;
   StyleButton       m_buttonExport;
   StyleButton       m_buttonClose;
 
@@ -177,6 +178,7 @@ protected:
   afx_msg void OnEnKillfocusSourceUser();
   afx_msg void OnEnKillfocusTargetUser();
   afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
+  afx_msg void OnSave();
   afx_msg void OnMigrate();
   afx_msg void OnCancel();
 

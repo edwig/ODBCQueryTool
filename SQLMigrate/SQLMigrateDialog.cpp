@@ -2,8 +2,8 @@
 //
 // File: SQLMigrateDialog.cpp
 //
-// Copyright (c) 1998-2022 ir. W.E. Huisman
-// All rights reserved
+// Written by: ir. W.E. Huisman between 1998-2025 
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -140,6 +140,7 @@ SQLMigrateDialog::DoDataExchange(CDataExchange* pDX)
   DDX_Check   (pDX, IDC_DO_TRIGGERS,     m_do_triggers);
   DDX_Check   (pDX, IDC_DO_ACCESS,       m_do_access);
 
+  DDX_Control (pDX, IDC_SAVE,            m_buttonSave);
   DDX_Control (pDX, IDC_EXPORT,          m_buttonExport);
   DDX_Control (pDX, IDC_CLOSE,           m_buttonClose);
 }
@@ -154,6 +155,7 @@ BEGIN_MESSAGE_MAP(SQLMigrateDialog, StyleDialog)
   ON_CBN_CLOSEUP  (IDC_DIRECT_MIGRATION,OnDirectMigration)
   ON_BN_CLICKED   (IDC_ALLTABLES,       OnAllTables)
   ON_BN_CLICKED   (IDC_TOLOGFILE,       OnToLogfile)
+  ON_BN_CLICKED   (IDC_SAVE,            OnSave)
   ON_BN_CLICKED   (IDC_EXPORT,          OnMigrate) 
   ON_BN_CLICKED   (IDC_CLOSE,           OnClosingButton)
   ON_COMMAND      (ID_APP_ABOUT,        OnAboutBox)
@@ -321,7 +323,7 @@ SQLMigrateDialog::SetComboBoxes()
   // Getting datasources and adding to the combo boxes
   DSMap sources;
   SQLDatabase database;
-  database.GetDataSources(sources);
+  database.GetDataSources(sources,SQL_FETCH_FIRST_SYSTEM);
 
   for(auto& datasource : sources)
   {
@@ -329,7 +331,8 @@ SQLMigrateDialog::SetComboBoxes()
     m_comboTargetDSN.AddString(datasource.m_datasource);
   }
 
-  m_comboDirectMigration.AddString(_T("Direct datapump migration"));
+  m_comboDirectMigration.AddString(_T("FAST datapump migration"));
+  m_comboDirectMigration.AddString(_T("SAFE datapump migration"));
   m_comboDirectMigration.AddString(_T("SELECT/INSERT migration"));
   m_comboDirectMigration.AddString(_T("Write to scripts"));
 }
@@ -686,12 +689,6 @@ SQLMigrateDialog::OnQueryDragIcon()
   return (HCURSOR) m_hIcon;
 }
 
-void
-SQLMigrateDialog::OnClosingButton()
-{
-  OnClosing();
-}
-
 bool
 SQLMigrateDialog::OnClosing() 
 {
@@ -763,6 +760,15 @@ SQLMigrateDialog::OnDirectMigration()
     m_parameters.v_direct = MigrateType::DataPump;
 
     m_editDropscript  .EnableWindow(FALSE);
+    m_editCreatescript.EnableWindow(FALSE);
+    // enable target database
+    m_comboTargetDSN.EnableWindow(TRUE);
+  }
+  else if(m_directMigration == MigrateType::SlowDataPump)
+  {
+    m_parameters.v_direct = MigrateType::SlowDataPump;
+
+    m_editDropscript.EnableWindow(FALSE);
     m_editCreatescript.EnableWindow(FALSE);
     // enable target database
     m_comboTargetDSN.EnableWindow(TRUE);
@@ -979,6 +985,13 @@ SQLMigrateDialog::HandleMessages()
 }
 
 void
+SQLMigrateDialog::OnSave()
+{
+  SaveProfile();
+  StyleMessageBox(this,_T("Your migration settings have been saved to disk."),SQL_MIGRATE,MB_OK);
+}
+
+void
 SQLMigrateDialog::OnCancel()
 {
   if(StyleMessageBox(this,_T("Do you want to close the program?"),SQL_MIGRATE,MB_YESNO|MB_DEFBUTTON2|MB_ICONQUESTION) == IDYES)
@@ -986,3 +999,10 @@ SQLMigrateDialog::OnCancel()
     StyleDialog::OnCancel();
   }
 }
+
+void
+SQLMigrateDialog::OnClosingButton()
+{
+  OnClosing();
+}
+

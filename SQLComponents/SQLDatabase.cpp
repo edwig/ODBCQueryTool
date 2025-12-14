@@ -929,7 +929,7 @@ SQLDatabase::FreeSQLHandle(HSTMT* p_statementHandle,UWORD p_option)
   {
     // Call the correct deallocator
     // Will otherwise not free the cursor on the database
-    ret = SQLFreeStmt(*p_statementHandle,p_option);
+    ret = SqlFreeStmt(*p_statementHandle,p_option);
     // On success, remove the handle, if the option was to drop it
     if(ret == SQL_SUCCESS && p_option == SQL_DROP)
     {
@@ -1198,159 +1198,172 @@ SQLDatabase::Check(INT nRetCode)
 //////////////////////////////////////////////////////////////////////////
 
 XString
-SQLDatabase::StartTransaction(SQLTransaction* p_transaction, bool p_startSubtransaction)
+SQLDatabase::StartTransaction(const SQLTransaction* p_transaction, bool p_startSubtransaction)
 {
   XString transName;
 
-  if(m_canDoTransactions != SQL_TC_NONE)
+  // See if we do transactions at all!
+  if(m_canDoTransactions == SQL_TC_NONE)
   {
-    // If no transaction active yet, we must turn of autocommit
-    if(m_transactions.size() == 0)
+    return p_transaction->GetName();
+  }
+
+  // If no transaction active yet, we must turn of autocommit
+  if(m_transactions.size() == 0)
+  {
+    try
+    {
+      if(m_rdbmsType != RDBMS_ACCESS && m_rdbmsType != RDBMS_SQLSERVER)
+      {
+        SetConnectAttr(SQL_ATTR_AUTOCOMMIT,SQL_AUTOCOMMIT_OFF,SQL_IS_UINTEGER);
+      }
+    }
+    catch(StdException& error)
+    {
+      ReThrowSafeException(error);
+      XString message;
+      message.Format(_T("Error at starting transaction [%s] : %s"),p_transaction->GetName().GetString(),error.GetErrorMessage().GetString());
+      throw StdException(message);
+    }
+  }
+
+  // If asked so, start a sub-transaction if there was a transaction
+  // otherwise this still is NOT a sub-transaction!
+  if((m_readOnly == false) && (m_transactions.size() > 0 || p_startSubtransaction))
+  {
+    // Get transaction name and add the 'Auto Save Point'
+    transName = p_transaction->GetName();
+    transName.AppendFormat(_T("ASP%d"),static_cast<int>(m_transactions.size()));
+
+    // Set savepoint
+    XString startSubtrans = GetSQLInfoDB()->GetSQLStartSubTransaction(transName);
+    if(!startSubtrans.IsEmpty())
     {
       try
       {
-        if(m_rdbmsType != RDBMS_ACCESS && m_rdbmsType != RDBMS_SQLSERVER)
-        {
-          SetConnectAttr(SQL_ATTR_AUTOCOMMIT,SQL_AUTOCOMMIT_OFF,SQL_IS_UINTEGER);
-        }
+        SQLQuery rs(this);
+        rs.DoSQLStatement(startSubtrans);
+        LogPrint("Start sub-transaction: " + transName);
       }
-      catch(StdException& error)
+      catch(StdException& err)
       {
-        ReThrowSafeException(error);
+        ReThrowSafeException(err);
         XString message;
-        message.Format(_T("Error at starting transaction [%s] : %s"),p_transaction->GetName().GetString(),error.GetErrorMessage().GetString());
+        message.Format(_T("Error starting sub-transaction [%s] : %s")
+                      ,transName.GetString()
+                      ,err.GetErrorMessage().GetString());
         throw StdException(message);
       }
     }
-
-    // If asked so, start a sub-transaction if there was a transaction
-    // otherwise this still is NOT a sub-transaction!
-    if(m_transactions.size() > 0 || p_startSubtransaction)
-    {
-      // Get transaction name and add the 'Auto Save Point'
-      transName = p_transaction->GetName();
-      transName.AppendFormat(_T("ASP%d"),static_cast<int>(m_transactions.size()));
-
-      // Set savepoint
-      XString startSubtrans = GetSQLInfoDB()->GetSQLStartSubTransaction(transName);
-      if(!startSubtrans.IsEmpty())
-      {
-        try
-        {
-          SQLQuery rs(this);
-          rs.DoSQLStatement(startSubtrans);
-          // TRACE("Start transaction: %s\n",startSubtrans.GetString());
-        }
-        catch(StdException& err)
-        {
-          ReThrowSafeException(err);
-          XString message;
-          message.Format(_T("Error starting sub-transaction [%s:%s] : %s")
-                        ,p_transaction->GetName().GetString()
-                        ,transName.GetString()
-                        ,err.GetErrorMessage().GetString());
-          throw StdException(message);
-        }
-      }
-    }
   }
+
   // Add the transaction on the transaction stack
-  m_transactions.push(p_transaction);
+  m_transactions.push(const_cast<SQLTransaction*>(p_transaction));
 
   // return the transaction's name
   return transName;
 }
 
 void 
-SQLDatabase::CommitTransaction(SQLTransaction* p_transaction)
+SQLDatabase::CommitTransaction(const SQLTransaction* p_transaction)
 {
-  if(m_canDoTransactions != SQL_TC_NONE)
+  // See if we do transactions at all!
+  if((m_canDoTransactions == SQL_TC_NONE) || (p_transaction == nullptr))
   {
-    // Check that this transaction is the top-of-the-stack transaction
-    if(GetTransaction() != p_transaction)
+    return;
+  }
+
+  // Check that this transaction is the top-of-the-stack transaction
+  if(GetTransaction() != p_transaction)
+  {
+    // Note: If this exception is indeed reached it means that
+    // a transaction lower on the stack is now being committed
+    // This is clearly not what we want, and points to an error
+    // in our application's logic in the calling code.
+    XString message;
+    message.Format(_T("Error at commit: transaction [%s] is not the current transaction"),p_transaction->GetName().GetString());
+    throw StdException(message);
+  }
+
+  // Only the last transaction will really be committed
+  if(m_transactions.size() == 1)
+  {
+    // Try to commit this transaction
+    // As this may lead to exceptions and violations 
+    // we do this in a try - catch block
+    try
     {
-      // Note: If this exception is indeed reached it means that
-      // a transaction lower on the stack is now being committed
-      // This is clearly not what we want, and points to an error
-      // in our application's logic in the calling code.
+      // Do the commit
+      if(!Check(SqlEndTran(SQL_HANDLE_DBC, m_hdbc, SQL_COMMIT)))
+      {
+        // Throw something, so we reach the catch block
+        throw StdException(_T("ODBC Commit failed"));
+      }
+      // Re-engage the autocommit mode. If it goes wrong we
+      // will automatically reach the catch block
+      if(m_rdbmsType != RDBMS_ACCESS && m_rdbmsType != RDBMS_SQLSERVER)
+      {
+        SetConnectAttr(SQL_ATTR_AUTOCOMMIT,SQL_AUTOCOMMIT_ON,SQL_IS_UINTEGER);
+      }
+    }
+    catch(StdException& ex) 
+    {
+      ReThrowSafeException(ex);
+      // Get the error information
+      XString error = GetErrorString();
+
+      // do the rollback of the transaction
+      RollbackTransaction(p_transaction);
+
+      // Throw an exception with the error info of the failed commit
       XString message;
-      message.Format(_T("Error at commit: transaction [%s] is not the current transaction"),p_transaction->GetName().GetString());
+      message.Format(_T("Error in commit of transaction [%s] : %s. ODBC Error: %s")
+                    ,p_transaction->GetName().GetString()
+                    ,ex.GetErrorMessage().GetString()
+                    ,error.GetString());
       throw StdException(message);
     }
-
-    // Only the last transaction will really be committed
-    if(m_transactions.size() == 1)
+  }
+  else if(m_readOnly == false)
+  {
+    // It's a sub transaction
+    // If the database is capable: Do the commit of the sub transaction
+    // Otherwise: do nothing and wait for the outer transaction to commit the whole in-one-go
+    XString startSubtrans = GetSQLInfoDB()->GetSQLCommitSubTransaction(p_transaction->GetSavePoint());
+    if(!startSubtrans.IsEmpty())
     {
-      // Try to commit this transaction
-      // As this may lead to exceptions and violations 
-      // we do this in a try - catch block
       try
       {
-        // Do the commit
-        if(!Check(SqlEndTran(SQL_HANDLE_DBC, m_hdbc, SQL_COMMIT)))
-        {
-          // Throw something, so we reach the catch block
-          throw StdException(0);
-        }
-        // Re-engage the autocommit mode. If it goes wrong we
-        // will automatically reach the catch block
-        if(m_rdbmsType != RDBMS_ACCESS && m_rdbmsType != RDBMS_SQLSERVER)
-        {
-          SetConnectAttr(SQL_ATTR_AUTOCOMMIT,SQL_AUTOCOMMIT_ON,SQL_IS_UINTEGER);
-        }
+        SQLQuery rs(this);
+        rs.DoSQLStatement(startSubtrans);
+        LogPrint(_T("Commit sub-transaction: ") + p_transaction->GetName());
       }
-      catch(StdException& ex) 
+      catch(StdException& error)
       {
-        ReThrowSafeException(ex);
-        // Get the error information
-        XString error = GetErrorString();
-
-        // do the rollback of the transaction
-        RollbackTransaction(p_transaction);
-
-        // Throw an exception with the error info of the failed commit
+        ReThrowSafeException(error);
         XString message;
-        message.Format(_T("Error in commit of transaction [%s] : %s. OS Error: %s")
+        message.Format(_T("Error in commit of sub-transaction [%s:%s] : %s")
                       ,p_transaction->GetName().GetString()
-                      ,ex.GetErrorMessage().GetString()
-                      ,error.GetString());
+                      ,p_transaction->GetSavePoint().GetString()
+                      ,error.GetErrorMessage().GetString());
         throw StdException(message);
       }
     }
-    else
-    {
-      // It's a sub transaction
-      // If the database is capable: Do the commit of the sub transaction
-      // Otherwise: do nothing and wait for the outer transaction to commit the whole in-one-go
-      XString startSubtrans = GetSQLInfoDB()->GetSQLCommitSubTransaction(p_transaction->GetSavePoint());
-      if(!startSubtrans.IsEmpty())
-      {
-        try
-        {
-          SQLQuery rs(this);
-          rs.DoSQLStatement(startSubtrans);
-          TRACE("Commit transaction: %s\n",startSubtrans.GetString());
-        }
-        catch(StdException& error)
-        {
-          ReThrowSafeException(error);
-          XString message;
-          message.Format(_T("Error in commit of sub-transaction [%s:%s] : %s")
-                        ,p_transaction->GetName().GetString()
-                        ,p_transaction->GetSavePoint().GetString()
-                        ,error.GetErrorMessage().GetString());
-          throw StdException(message);
-        }
-      }
-    }
   }
+
   // Remove transaction from the stack
   m_transactions.pop();
 }
 
 void 
-SQLDatabase::RollbackTransaction(SQLTransaction* p_transaction)
+SQLDatabase::RollbackTransaction(const SQLTransaction* p_transaction)
 {
+  // See if we do transactions at all!
+  if((m_canDoTransactions == SQL_TC_NONE) || (p_transaction == nullptr))
+  {
+    return;
+  }
+
   // Check that it is the top-of-the-stack transaction
   if(GetTransaction() != p_transaction)
   {
@@ -1359,91 +1372,63 @@ SQLDatabase::RollbackTransaction(SQLTransaction* p_transaction)
     throw StdException(message);
   }
 
-  // Look for the first savepoint on the stack
-  // Beware: the transaction is always removed from the stack
-  // even if the rollback may fail.
-  // So we cannot try to rollback or commit it again
-  TransactionStack transactions;
-  while(m_transactions.size())
+  // Remove the transaction from the stack
+  m_transactions.pop();
+
+  // Rollback the transaction
+  if(p_transaction->GetSavePoint().IsEmpty())
   {
-    // Get the top of the stack
-    p_transaction = m_transactions.top();
-    m_transactions.pop();
-
-    // Save if for later use
-    transactions.push(p_transaction);
-
-    // See if it is a savepoint
-    if(!p_transaction->GetSavePoint().IsEmpty())
+    // It's the main transaction
+    try
     {
-      // We will do a rollback to this savepoint
-      break;
+      // Do the rollback
+      if(!Check(SqlEndTran(SQL_HANDLE_DBC,m_hdbc,SQL_ROLLBACK)))
+      {
+        // Throw something, so we reach the catch block
+        throw StdException(_T("ODBC rollback failed"));
+      }
+      // Re-engage the autocommit mode, will throw in case of an error
+      if(m_rdbmsType != RDBMS_ACCESS && m_rdbmsType != RDBMS_SQLSERVER)
+      {
+        SetConnectAttr(SQL_ATTR_AUTOCOMMIT,SQL_AUTOCOMMIT_ON,SQL_IS_UINTEGER);
+      }
+    }
+    catch(StdException& ex)
+    {
+      ReThrowSafeException(ex);
+      // Throw an exception with error info at a failed rollback1
+      XString message;
+      XString error = GetErrorString();
+      message.Format(_T("Error at rollback of transaction [%s] : %s. OS Error: %s")
+                      ,p_transaction->GetName().GetString()
+                      ,ex.GetErrorMessage().GetString()
+                      ,error.GetString());
+      throw StdException(message);
     }
   }
-
-  if(m_canDoTransactions != SQL_TC_NONE)
+  else if(m_readOnly == false)
   {
-    // Rollback the transaction
-    if(p_transaction->GetSavePoint().IsEmpty())
+    // It is a sub-transaction
+    XString startSubtrans = m_info->GetSQLRollbackSubTransaction(p_transaction->GetSavePoint());
+    if(!startSubtrans.IsEmpty())
     {
-      // It's the main transaction
       try
       {
-        // Do the rollback
-        if(!Check(SqlEndTran(SQL_HANDLE_DBC, m_hdbc, SQL_ROLLBACK)))
-        {
-          // Throw something, so we reach the catch block
-          throw StdException(0);
-        }
-        // Re-engage the autocommit mode, will throw in case of an error
-        if(m_rdbmsType != RDBMS_ACCESS && m_rdbmsType != RDBMS_SQLSERVER)
-        {
-          SetConnectAttr(SQL_ATTR_AUTOCOMMIT,SQL_AUTOCOMMIT_ON,SQL_IS_UINTEGER);
-        }
+        SQLQuery rs(this);
+        rs.DoSQLStatement(startSubtrans);
+        LogPrint(_T("Rollback transaction: ") + p_transaction->GetSavePoint());
       }
-      catch(StdException& ex)
+      catch(StdException& error)
       {
-        ReThrowSafeException(ex);
-        // Throw an exception with error info at a failed rollback1
+        ReThrowSafeException(error);
         XString message;
-        XString error = GetErrorString();
-        message.Format(_T("Error at rollback of transaction [%s] : %s. OS Error: %s")
-                       ,p_transaction->GetName().GetString()
-                       ,ex.GetErrorMessage().GetString()
-                       ,error.GetString());
+        message.Format(_T("Error in rolling back sub-transaction [%s:%s] : %s")
+                      ,p_transaction->GetName().GetString()
+                      ,p_transaction->GetSavePoint().GetString()
+                      ,error.GetErrorMessage().GetString());
         throw StdException(message);
       }
     }
-    else
-    {
-      // It is a sub-transaction
-      XString startSubtrans = m_info->GetSQLRollbackSubTransaction(p_transaction->GetSavePoint());
-      if(!startSubtrans.IsEmpty())
-      {
-        try
-        {
-          SQLQuery rs(this);
-          rs.DoSQLStatement(startSubtrans);
-          TRACE("Rollback transaction: %s\n",startSubtrans.GetString());
-        }
-        catch(StdException& error)
-        {
-          ReThrowSafeException(error);
-          XString message;
-          message.Format(_T("Error in rolling back sub-transaction [%s:%s] : %s")
-                        ,p_transaction->GetName().GetString()
-                        ,p_transaction->GetSavePoint().GetString()
-                        ,error.GetErrorMessage().GetString());
-          throw StdException(message);
-        }
-      }
-    }
-  }
-  // Notify all rolled back transactions
-  while(transactions.size())
-  {
-    transactions.top()->AfterRollback();
-    transactions.pop();
   }
 }
 
@@ -1451,7 +1436,7 @@ SQLTransaction*
 SQLDatabase::GetTransaction()
 {
   // return the current top-of-the-stack transaction
-  return m_transactions.size() ? m_transactions.top() : 0;
+  return m_transactions.size() ? m_transactions.top() : nullptr;
 }
 
 // Before closing the database, close transactions
@@ -1466,6 +1451,11 @@ SQLDatabase::CloseAllTransactions()
     // Commit last SELECT in multi-version databases
     // Otherwise we gat an error at the disconnect of de HDBC
     ret = SqlEndTran(SQL_HANDLE_DBC,m_hdbc,SQL_COMMIT);
+
+    while(!m_transactions.empty())
+    {
+      m_transactions.pop();
+    }
   }
   else
   {

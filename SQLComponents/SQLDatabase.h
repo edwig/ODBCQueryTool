@@ -214,9 +214,9 @@ public:
   bool           ODBCNativeSQL(XString& p_sql);
 
   // TRANSACTION SUPPORT
-  XString         StartTransaction   (SQLTransaction* p_transaction, bool startSubtransactie);
-  void            CommitTransaction  (SQLTransaction* p_transaction);
-  void            RollbackTransaction(SQLTransaction* p_transaction);
+  XString         StartTransaction   (const SQLTransaction* p_transaction, bool startSubtransactie);
+  void            CommitTransaction  (const SQLTransaction* p_transaction);
+  void            RollbackTransaction(const SQLTransaction* p_transaction);
   SQLTransaction* GetTransaction();
 
   // Get the name of a special ODBC driver

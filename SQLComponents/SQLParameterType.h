@@ -25,16 +25,36 @@
 //
 #pragma once
 #include "SQLComponents.h"
+#include <map>
+
+namespace SQLComponents
+{
+
+class SQLVariant;
 
 // Type of parameter for queries and persistent-stored-modules
 typedef enum _param_type
 {
-   P_SQL_PARAM_TYPE_UNKNOWN = 0
-  ,P_SQL_PARAM_INPUT        = 1
-  ,P_SQL_PARAM_INPUT_OUTPUT = 2
-  ,P_SQL_RESULT_COL         = 3
-  ,P_SQL_PARAM_OUTPUT       = 4
-  ,P_SQL_RETURN_VALUE       = 5
+  P_SQL_PARAM_TYPE_UNKNOWN = 0
+ ,P_SQL_PARAM_INPUT        = 1
+ ,P_SQL_PARAM_INPUT_OUTPUT = 2
+ ,P_SQL_RESULT_COL         = 3
+ ,P_SQL_PARAM_OUTPUT       = 4
+ ,P_SQL_RETURN_VALUE       = 5
 }
 SQLParamType;
 
+typedef struct _sqlParameter
+{
+  int          m_number  { 0 };
+  XString      m_name;
+  SQLParamType m_type    { P_SQL_PARAM_TYPE_UNKNOWN };
+  unsigned     m_maxSize { 0 };
+  SQLVariant*  m_value   { nullptr };
+}
+SQLParameter;
+
+typedef std::multimap<int,SQLParameter> ParameterMap;
+
+// End of namespace
+}

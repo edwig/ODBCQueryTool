@@ -401,6 +401,16 @@
       <EnableDpiAwareness>false</EnableDpiAwareness>
     </Manifest>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseUnicode|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(SolutionDir)BaseLibrary\;$(SolutionDir)SQLComponents\;$(SolutionDir)StyleFramework\;$(SolutionDir)StyleFramework\Grid\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+    </ClCompile>
+    <Link>
+      <AdditionalLibraryDirectories>$(SolutionDir)lib\</AdditionalLibraryDirectories>
+    </Link>
+  </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ConfigDlg.h" />
     <ClInclude Include="framework.h" />

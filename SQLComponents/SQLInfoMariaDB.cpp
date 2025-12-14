@@ -135,6 +135,13 @@ SQLInfoMariaDB::IsIdentifier(XString p_identifier) const
   return alphaSeen;
 }
 
+// Return parameters from a PSM procedure module can be a result set (SUSPEND)
+bool
+SQLInfoMariaDB::GetRDBMSResultSetFromPSM() const
+{
+  return false;
+}
+
 // KEYWORDS
 
 

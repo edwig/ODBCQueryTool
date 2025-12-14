@@ -33,6 +33,7 @@ typedef struct _connection
 {
   XString m_name;
   XString m_datasource;
+  XString m_targetSchema;
   XString m_username;
   XString m_password;
   XString m_options;
@@ -61,7 +62,12 @@ public:
   // SETTERS
   void        Reset();
   void        SetEncryptionKey(XString p_key);
-  bool        AddConnection(XString p_name,XString p_datasource,XString p_username,XString p_password,XString p_options);
+  bool        AddConnection(XString p_name
+                           ,XString p_datasource
+                           ,XString p_username
+                           ,XString p_password
+                           ,XString p_options
+                           ,XString p_targetSchema = _T(""));
   bool        DelConnection(XString p_name);
 
 private:

@@ -65,14 +65,17 @@ public:
   // Database can defer constraints until the end of a transaction
   bool    GetRDBMSSupportsDeferredConstraints() const override;
 
-  // Database has ORDER BY with an expression, e.g. ORDER BY UPPER(columnname)
+  // Database has ORDER BY with an expression, e.g. ORDER BY UPPER(column-name)
   bool    GetRDBMSSupportsOrderByExpression() const override;
 
   // Supports the ODBC escape sequence {[?=] CALL procedure (?,?,?)}
   bool    GetRDBMSSupportsODBCCallEscapes() const override;
 
   // Supports the ODBC call procedure with named parameters
-  bool    GetRDBMSSupportsODBCCallNamedParameters() const;
+  bool    GetRDBMSSupportsODBCCallNamedParameters() const override;
+
+  // Supports the ODBC call procedure with named parameters
+  bool    GetRDBMSSupportsNamedParameters() const;
 
   // If the database does not support the datatype TIME, it can be implemented as a DECIMAL
   bool    GetRDBMSSupportsDatatypeTime() const override;
@@ -87,22 +90,25 @@ public:
   bool    GetRDBMSSupportsAsInAlias() const override;
 
   // Foreign key DDL defines the index and cannot reuse already existing ones
-  bool    GetRDBMSForeignKeyDefinesIndex() const;
+  bool    GetRDBMSForeignKeyDefinesIndex() const override;
 
   // Gets the maximum length of an SQL statement
   unsigned long GetRDBMSMaxStatementLength() const override;
 
   // Database must commit DDL commands in a transaction
-  bool GetRDBMSMustCommitDDL() const override;
+  bool    GetRDBMSMustCommitDDL() const override;
 
   // Correct maximum precision,scale for a NUMERIC datatype
-  void GetRDBMSNumericPrecisionScale(SQLULEN& p_precision, SQLSMALLINT& p_scale) const override;
+  void    GetRDBMSNumericPrecisionScale(SQLULEN& p_precision, SQLSMALLINT& p_scale) const override;
 
   // Maximum for a VARCHAR to be handled without AT-EXEC data. Assume NVARCHAR is half that size!
-  int GetRDBMSMaxVarchar() const override;
+  int     GetRDBMSMaxVarchar() const override;
 
   // Identifier rules differ per RDBMS
-  bool IsIdentifier(XString p_identifier) const override;
+  bool    IsIdentifier(XString p_identifier) const override;
+
+  // Return parameters from a PSM procedure module can be a result set (SUSPEND)
+  bool GetRDBMSResultSetFromPSM() const override;
 
   // KEYWORDS
 
@@ -173,7 +179,7 @@ public:
   // Gets the construction / select for the resulting effective generated serial
   XString GetSQLEffectiveSerial(XString p_identity) const override;
 
-  // Gets the subtransaction commands
+  // Gets the sub-transaction commands
   XString GetSQLStartSubTransaction   (XString p_savepointName) const override;
   XString GetSQLCommitSubTransaction  (XString p_savepointName) const override;
   XString GetSQLRollbackSubTransaction(XString p_savepointName) const override;
@@ -229,7 +235,13 @@ public:
   XString GetTempTablename(XString p_schema,XString p_tablename,bool p_local) const override;
 
   // Changes to parameters before binding to an ODBC HSTMT handle (returning the At-Exec status)
-  bool DoBindParameterFixup(SQLSMALLINT& p_dataType,SQLSMALLINT& p_sqlDatatype,SQLULEN& p_columnSize,SQLSMALLINT& p_scale,SQLLEN& p_bufferSize,SQLLEN* p_indicator) const override;
+  bool    DoBindParameterFixup(SQLVariant*  p_var
+                              ,SQLSMALLINT& p_dataType
+                              ,SQLSMALLINT& p_sqlDatatype
+                              ,SQLULEN&     p_columnSize
+                              ,SQLSMALLINT& p_scale
+                              ,SQLLEN&      p_bufferSize
+                              ,SQLLEN*      p_indicator) const override;
 
   //////////////////////////////////////////////////////////////////////////
   //
@@ -259,14 +271,14 @@ public:
 
   // Meta info about meta types
   XString GetCATALOGMetaTypes(int p_type) const override;
-  XString GetCATALOGDefaultCharset() const override;
-  XString GetCATALOGDefaultCharsetNCV() const override;
-  XString GetCATALOGDefaultCollation() const override;
+  XString GetCATALOGDefaultCharset()      const override;
+  XString GetCATALOGDefaultCharsetNCV()   const override;
+  XString GetCATALOGDefaultCollation()    const override;
   // All user defined compound data types
-  XString GetCATALOGTypeExists        (XString& p_schema,XString& p_typename,bool p_quoted = false) const;
-  XString GetCATALOGTypeList          (XString& p_schema,XString& p_pattern, bool p_quoted = false) const;
-  XString GetCATALOGTypeAttributes    (XString& p_schema,XString& p_typename,bool p_quoted = false) const;
-  XString GetCATALOGTypeSource        (XString& p_schema,XString& p_typename,bool p_quoted = false) const;
+  XString GetCATALOGTypeExists        (XString& p_schema,XString& p_typename,bool p_quoted = false) const override;
+  XString GetCATALOGTypeList          (XString& p_schema,XString& p_pattern, bool p_quoted = false) const override;
+  XString GetCATALOGTypeAttributes    (XString& p_schema,XString& p_typename,bool p_quoted = false) const override;
+  XString GetCATALOGTypeSource        (XString& p_schema,XString& p_typename,bool p_quoted = false) const override;
   XString GetCATALOGTypeCreate        (MUserTypeMap& p_type) const;
   XString GetCATALOGTypeDrop          (XString  p_schema,XString  p_typename) const;
   // All table functions
@@ -354,7 +366,7 @@ public:
   XString GetCATALOGSynonymCreate    (XString& p_schema,XString& p_synonym,XString p_forObject,bool p_private = true) const override;
   XString GetCATALOGSynonymDrop      (XString& p_schema,XString& p_synonym,bool p_private = true) const override;
   // For ALL objects
-  XString GetCATALOGCommentCreate(XString p_schema,XString p_object,XString p_name,XString p_subObject,XString p_remark) const;
+  XString GetCATALOGCommentCreate(XString p_schema,XString p_object,XString p_name,XString p_subObject,XString p_remark) const override;
 
   //////////////////////////////////////////////////////////////////////////
   //
@@ -392,10 +404,10 @@ public:
   XString GetPSMProcedureSourcecode(XString  p_schema,XString  p_procedure,bool p_quoted = false) const override;
   XString GetPSMProcedureCreate    (MetaProcedure& p_procedure) const override;
   XString GetPSMProcedureDrop      (XString  p_schema,XString  p_procedure,bool p_function = false) const override;
-  XString GetPSMProcedureErrors    (XString  p_schema,XString  p_procedure,bool p_quoted = false) const override;
-  XString GetPSMProcedurePrivilege (XString& p_schema,XString& p_procedure,bool p_quoted = false) const override;
+  XString GetPSMProcedureErrors    (XString  p_schema,XString  p_procedure,bool p_quoted   = false) const override;
+  XString GetPSMProcedurePrivilege (XString& p_schema,XString& p_procedure,bool p_quoted   = false) const override;
   // And it's parameters
-  XString GetPSMProcedureParameters(XString& p_schema,XString& p_procedure,bool p_quoted = false) const override;
+  XString GetPSMProcedureParameters(XString& p_schema,XString& p_procedure,bool p_quoted   = false) const override;
 
   // All Language elements
   XString GetPSMDeclaration(bool p_first,XString p_variable,int p_datatype,int p_precision = 0,int p_scale = 0,

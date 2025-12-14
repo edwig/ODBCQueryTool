@@ -2,8 +2,8 @@
 //
 // File: SQLMigrateApp.h
 //
-// Copyright (c) 1998-2022 ir. W.E. Huisman
-// All rights reserved
+// Written by: ir. W.E. Huisman between 1998-2025 
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 

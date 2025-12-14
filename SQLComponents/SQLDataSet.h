@@ -29,6 +29,8 @@
 #include "SQLVariant.h"
 #include "SQLFilter.h"
 #include "XMLMessage.h"
+#include "SQLQuery.h"
+#include <bcd.h>
 #include <vector>
 
 namespace SQLComponents
@@ -52,32 +54,21 @@ namespace SQLComponents
 #define DATASET_TYPENAME  7
 #define NUM_DATASET_NAMES 8
 
-// Default waittime for a record lock (seconds!)
+// Default wait time for a record lock (seconds!)
 #define DEFAULT_LOCK_TIMEOUT  15
 
 // Names for saving datasets to XML in various languages
 extern LPCTSTR dataset_names[LN_NUMLANG][NUM_DATASET_NAMES];
 
-// Parameter for the query
-typedef struct _sql_parameter
-{
-  XString    m_name;
-  SQLVariant m_value;
-}
-SQLParameter;
-
 typedef void (*LPFN_CALLBACK)(void*);
-
-#define MAX_BCD  _T("1E+300");
-#define MIN_BCD _T("-1E+300");
 
 class AggregateInfo
 {
 public:
   AggregateInfo() 
   { 
-    m_min = MAX_BCD;
-    m_max = MIN_BCD;
+    m_min = bcd::MIN_BCD();
+    m_max = bcd::MAX_BCD();
   };
 
   bcd  m_sum;
@@ -302,6 +293,8 @@ protected:
   // Init the high performance counter
   void         InitCounter();
   ULONG64      GetCounter();
+  // Forget our parameters
+  void         ResetParameters();
 
   // WRITEBACK OPERATIONS
 

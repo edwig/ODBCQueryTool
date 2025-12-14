@@ -141,6 +141,13 @@ SQLInfoMySQL::GetRDBMSSupportsODBCCallNamedParameters() const
   return true;
 }
 
+// Supports the ODBC call procedure with named parameters
+bool
+SQLInfoMySQL::GetRDBMSSupportsNamedParameters() const
+{
+  return true;
+}
+
 // If the database does not support the datatype TIME, it can be implemented as a DECIMAL
 bool
 SQLInfoMySQL::GetRDBMSSupportsDatatypeTime() const
@@ -235,6 +242,13 @@ SQLInfoMySQL::IsIdentifier(XString p_identifier) const
     }
   }
   return true;
+}
+
+// Return parameters from a PSM procedure module can be a result set (SUSPEND)
+bool
+SQLInfoMySQL::GetRDBMSResultSetFromPSM() const
+{
+  return false;
 }
 
 // KEYWORDS
@@ -676,7 +690,7 @@ SQLInfoMySQL::GetTempTablename(XString /*p_schema*/,XString p_tablename,bool /*p
 
 // Changes to parameters before binding to an ODBC HSTMT handle (returning the At-Exec status)
 bool
-SQLInfoMySQL::DoBindParameterFixup(SQLSMALLINT& /*p_dataType*/,SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*p_columnSize*/,SQLSMALLINT& /*p_scale*/,SQLLEN& /*p_bufferSize*/,SQLLEN* /*p_indicator*/) const
+SQLInfoMySQL::DoBindParameterFixup(SQLVariant* /*p_var*/,SQLSMALLINT& /*p_dataType*/,SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*p_columnSize*/,SQLSMALLINT& /*p_scale*/,SQLLEN& /*p_bufferSize*/,SQLLEN* /*p_indicator*/) const
 {
   return false;
 }
@@ -979,7 +993,6 @@ SQLInfoMySQL::GetCATALOGColumnList(XString& p_schema,XString& p_tablename,bool p
 XString 
 SQLInfoMySQL::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablename,XString& p_columnname,bool p_quoted /*= false*/) const
 {
-  IdentifierCorrect(p_tablename);
   XString query = _T("SELECT table_catalog  AS table_cat\n")
                   _T("      ,table_schema   AS table_schem\n")
                   _T("      ,table_name\n")
@@ -1089,17 +1102,26 @@ SQLInfoMySQL::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablename,
                   _T("      ,character_octet_length\n")
                   _T("      ,ordinal_position\n")
                   _T("      ,if(data_type = 'timestamp','YES',if(is_nullable = 'YES','YES',if(extra = 'auto_increment','YES','NO'))) as is_nullable\n")
-                  _T("  FROM information_schema.columns\n")
-                  _T(" WHERE table_name   = '") + p_tablename + _T("'\n");
+                  _T("  FROM information_schema.columns\n");
+  bool doWhere(true);
   if(!p_schema.IsEmpty())
   {
     IdentifierCorrect(p_schema);
-    query += _T("   AND table_schema = '") + p_schema + _T("'\n");
+    query += _T(" WHERE table_schema = ?\n");
+    doWhere = false;
+  }
+  if(!p_tablename.IsEmpty())
+  {
+    IdentifierCorrect(p_tablename);
+    query += doWhere ? _T(" WHERE ") : _T("   AND ");
+    query += _T(" table_name = ?\n");
+    doWhere = false;
   }
   if(!p_columnname.IsEmpty())
   {
     IdentifierCorrect(p_columnname);
-    query += _T("   AND column_name = '") + p_columnname + _T("'\n");
+    query += doWhere ? _T(" WHERE ") : _T("   AND ");
+    query += _T(" column_name = ?\n");
   }
   query += _T(" ORDER BY ordinal_position ASC");
   return query;

@@ -100,11 +100,13 @@ public:
    // STATUS
    bool    IsNULL() const;
    bool    IsEmpty() const;
+   bool    IsStringType() const;
    bool    IsNumericType() const;
    bool    IsDecimalType() const;
    bool    IsIntervalType() const;
    bool    IsDateTimeType() const;
    bool    IsBinaryType() const;
+   bool    IsFixedLengthType() const;
 
    // GETTERS
    int     GetDataType() const;

@@ -22,6 +22,14 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes 3.5.5
+------------------
+-  Reworked the SQLMigrate application to be (again) able to convert an Oracle
+   database to Firebird.
+-  Added a 'Slow datapump' method to the SQLMigrate program for those drivers
+   that cannot do the tight SQLExecute loop multiple times (Firebird).
+-  Added a 'Save' button in SQLMigrate to save the settings before running.
+
 Releasenotes 3.5.4
 ------------------
 - The return type variable in the scripting documentation has been mis-named 'RESULT',

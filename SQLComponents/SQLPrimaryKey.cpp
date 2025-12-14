@@ -26,6 +26,7 @@
 #include "stdafx.h"
 #include "SQLComponents.h"
 #include "SQLPrimaryKey.h"
+#include "SQLInfoDB.h"
 #include <algorithm>
 
 #ifdef _DEBUG
@@ -172,12 +173,12 @@ SQLPrimaryKey::GetOptimizedObject()
 }
 
 XString
-SQLPrimaryKey::GetCondition()
+SQLPrimaryKey::GetCondition(SQLInfoDB* p_info /*=nullptr*/)
 {
   XString condition;
   XString key;
 
-  WordList::iterator it = m_fields.begin();
+  WordList::iterator   it = m_fields.begin();
   VariantSet::iterator vl = m_values.begin();
   while (it != m_fields.end() && vl != m_values.end())
   {
@@ -187,7 +188,8 @@ SQLPrimaryKey::GetCondition()
     }
 
     (*vl)->GetAsString(key);
-    condition += *it;
+    XString field = *it;
+    condition += p_info ? p_info->QueryIdentifierQuotation(field) : field;
     condition += _T(" = ");
     if((*vl)->IsNumericType())
     {

@@ -2,8 +2,8 @@
 //
 // File: SQLMigrate.cpp
 //
-// Copyright (c) 1998-2022 ir. W.E. Huisman
-// All rights reserved
+// Written by: ir. W.E. Huisman between 1998-2025 
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -130,6 +130,9 @@ SQLMigrate::Migrate()
           case MigrateType::DataPump:     // HIGH PERFORMANCE DATAPUMP 
                                           FillTablesViaPump(); 
                                           break;
+          case MigrateType::SlowDataPump: // LOW PERFORMANCE DATAPUMP for broken drivers
+                                          FillTablesViaSlowPump();
+                                          break;
           case MigrateType::SelectInsert: // Fill database via SELECT/INSERT (Works always, but slower)
                                           FillTablesViaData(true);
                                           break;
@@ -213,7 +216,9 @@ SQLMigrate::CheckMigrateParameters()
   }
 
 
-  if(m_params.v_direct == MigrateType::DataPump || m_params.v_direct == MigrateType::SelectInsert) 
+  if(m_params.v_direct == MigrateType::DataPump     || 
+     m_params.v_direct == MigrateType::SlowDataPump ||
+     m_params.v_direct == MigrateType::SelectInsert ) 
   {  
     // Check target database
     if(m_params.v_target_dsn ==_T(""))
@@ -307,8 +312,9 @@ SQLMigrate::WriteMigrateParameters()
   m_log.WriteLog(_T(" "));
 
 
-  if(m_params.v_direct == MigrateType::DataPump || 
-     m_params.v_direct == MigrateType::SelectInsert)
+  if(m_params.v_direct == MigrateType::DataPump     || 
+     m_params.v_direct == MigrateType::SlowDataPump ||
+     m_params.v_direct == MigrateType::SelectInsert )
   {
     // Check target database
     if(!m_params.v_target_dsn.IsEmpty())
@@ -345,7 +351,8 @@ SQLMigrate::WriteMigrateParameters()
     // Ruler               "------------------- : "
     switch(m_params.v_direct)
     {
-      case MigrateType::DataPump:     m_log.WriteLog(_T("Direct migration    : DATAPUMP"));       break;
+      case MigrateType::DataPump:     m_log.WriteLog(_T("Direct migration    : FAST DATAPUMP"));       break;
+      case MigrateType::SlowDataPump: m_log.WriteLog(_T("Direct migration    : SAFE DATAPUMP"));  break;
       case MigrateType::SelectInsert: m_log.WriteLog(_T("Direct migration    : SELECT/INSERT"));  break;
       case MigrateType::SQLScripts:   m_log.WriteLog(_T("Direct migration    : SQL-Scripts"));    break;
     }
@@ -663,8 +670,9 @@ SQLMigrate::DropTables()
 
     // Process the statement
     m_log.WriteLog(statement);
-    if(m_directMigration == MigrateType::DataPump ||
-       m_directMigration == MigrateType::SelectInsert)
+    if(m_directMigration == MigrateType::DataPump     ||
+       m_directMigration == MigrateType::SlowDataPump ||
+       m_directMigration == MigrateType::SelectInsert )
     {
       try
       {
@@ -794,8 +802,9 @@ SQLMigrate::CreateTables()
     for(auto& statement : statements)
     {
       m_log.WriteLog(statement);
-      if(m_directMigration == MigrateType::DataPump ||
-         m_directMigration == MigrateType::SelectInsert)
+      if(m_directMigration == MigrateType::DataPump     ||
+         m_directMigration == MigrateType::SlowDataPump ||
+         m_directMigration == MigrateType::SelectInsert )
       {
         try
         {
@@ -833,6 +842,8 @@ const TCHAR* specials[]
   ,_T("h_geldig_tot")
   ,_T("h_gebruiker")
   ,_T("h_actief")
+  ,_T("naam")
+  ,_T("soort")
 };
 
 void
@@ -845,20 +856,21 @@ SQLMigrate::OrderTableColumns(DDLCreateTable& p_create)
   }
 
   // Order with largest columns on the end (CLOB's etc)
-  MColumnMap columns = SortColumnsBySize(p_create.m_columns);
+  MColumnMap sorted = SortColumnsBySize(p_create.m_columns);
 
   // Specials at the front in this order
+  MColumnMap columns;
   for(int index = 0; index < ((sizeof specials) / sizeof(const TCHAR*)); ++index)
   {
-    int num = FindColumn(p_create.m_columns,specials[index]);
+    int num = FindColumn(sorted,specials[index]);
     if(num >= 0)
     {
-      columns.push_back(p_create.m_columns[num]);
+      columns.push_back(sorted[num]);
     }
   }
 
   // Other columns in any order
-  for(auto& column : p_create.m_columns)
+  for(auto& column : sorted)
   {
     if(FindColumn(columns,column.m_column) < 0)
     {
@@ -1019,8 +1031,9 @@ SQLMigrate::CreateViews()
         statement.MakeLower();
       }
       m_log.WriteLog(statement);
-      if(m_directMigration == MigrateType::DataPump ||
-         m_directMigration == MigrateType::SelectInsert)
+      if(m_directMigration == MigrateType::DataPump     ||
+         m_directMigration == MigrateType::SlowDataPump ||
+         m_directMigration == MigrateType::SelectInsert )
       {
         try
         {
@@ -1098,8 +1111,9 @@ SQLMigrate::TruncateTables()
     XString statement = _T("DELETE FROM ") + table;
     // Process result
     m_log.WriteLog(statement);
-    if(m_directMigration == MigrateType::DataPump ||
-       m_directMigration == MigrateType::SelectInsert)
+    if(m_directMigration == MigrateType::DataPump     ||
+       m_directMigration == MigrateType::SlowDataPump ||
+       m_directMigration == MigrateType::SelectInsert )
     {
       try
       {
@@ -1185,7 +1199,6 @@ SQLMigrate::FillTablesViaPump()
         XString insert = MakeInsertStatement(table,m_params.v_source_schema,m_params.v_target_schema);
 
         SQLTransaction trans(m_databaseTarget,_T("Migration"));
-        int* columns(nullptr); // needed to reset at-exec
 
         // Prepare the query objects with the correct rebind mappings
         query1.SetRebindMap(&rebinds);
@@ -1215,19 +1228,12 @@ SQLMigrate::FillTablesViaPump()
                 query1.TruncateTimestamps();
               }
 
-              // Prepare columns to be used as parameters
-              // at-exec data is already gotten, so no at-exec bounding needed or possible
-              columns = ResetAtExecParameters(query1.GetBoundedColumns());
-
               // Bind output from query1 to the input of query2
-              query2.SetParameters((VarMap*) query1.GetBoundedColumns());
+              SetExecParameters(query2.GetParameterMap(),query1.GetBoundedColumns());
 
               // GO EXECUTE!
               // Execute the prepared statement, while re-binding the parameters
               query2.DoSQLExecute(true);
-
-              RestoreAtExecParameters(columns,query1.GetBoundedColumns());
-              columns = nullptr;
 
               if(m_params.v_truncate)
               {
@@ -1269,16 +1275,8 @@ SQLMigrate::FillTablesViaPump()
               m_log.WriteLog(_T(""));
             }
             ++m_params.v_errors;
-
-            // Any leftovers if we break out of the conversion
-            if(columns)
-            {
-              delete[] columns;
-              columns = nullptr;
-            }
           }
         }
-        query2.SetParameters(nullptr);
         trans.Commit();
 
         // End
@@ -1317,43 +1315,248 @@ SQLMigrate::FillTablesViaPump()
   }
 }
 
-// To be able to use the columns as input parameters
-// on the next database, reset the AtExec status
-// And store it in a array of integers
-int*
-SQLMigrate::ResetAtExecParameters(VarMap* p_columns)
+void
+SQLMigrate::FillTablesViaSlowPump()
 {
-  int  total = (int) p_columns->size() + 1;
-  int* columns = new int[total];
-  memset(columns,0,total * sizeof(int));
+  int  numTables = 0;
+  XString text;
 
-  for(auto& col : *p_columns)
+  m_log.WriteLog(_T(""));
+  m_log.WriteLog(_T("MIGRATING TABLE CONTENT TO TARGET DATABASE (SLOW PUMP)"));
+  m_log.WriteLog(_T("======================================================"));
+
+  // Current step
+  XString status;
+  status.Format(_T("Migrating the contents of %d tables"),(int)m_tables.size());
+  m_log.SetStatus(status);
+
+  // Create rebind mapping with known exceptions
+  RebindMap rebinds;
+  DatatypeExceptions(rebinds);
+
+  for(unsigned int ind = 0; ind < m_tables.size(); ++ind)
   {
-    SQLVariant* var = col.second;
+    XString table = m_tables[ind].m_table;
+    XString schema = m_params.v_target_schema;
+
+    long rows    = 0;
+    long totrows = 0;
+    int  missing = 0;
+
+    // Start processing
+    clock_t start = clock();
+    clock_t einde = 0;
+
+    try
+    {
+      text.Format(_T("Migrating table     : %s"),table.GetString());
+      m_log.WriteLog(text);
+
+      totrows = CountTableContents(schema,table);
+      text.Format(_T("Total number of rows: %ld"),totrows);
+      m_log.WriteLog(text);
+
+      if(totrows)
+      {
+        SQLQuery query1(m_databaseSource);
+        query1.SetFetchPolicy(true);
+
+        // Source->Target database datatype migration
+        XString select = MakeSelectStatement(table,m_params.v_source_schema);
+        XString insert = MakeInsertStatement(table,m_params.v_source_schema,m_params.v_target_schema);
+
+        SQLTransaction trans(m_databaseTarget,_T("Migration"));
+
+        // Prepare the query objects with the correct rebind mappings
+        query1.SetRebindMap(&rebinds);
+
+        // There we go!
+        query1.DoSQLStatement(select);
+
+        bool ready = false;
+        while(!ready)
+        {
+          try
+          {
+            if(query1.GetRecord())
+            {
+              if(m_params.v_truncate)
+              {
+                // Data field truncate
+                query1.TruncateCharFields();
+                // Most databases do not support TIMESTAMP fractions
+                query1.TruncateTimestamps();
+              }
+              SQLQuery query2(m_databaseTarget);
+              query2.SetRebindMap(&rebinds);
+
+              // Bind output from query1 to the input of query2
+              SetExecParameters(query2,query1.GetBoundedColumns());
+
+
+//               SQLVariant* oid = query1.GetColumn(17);
+//               TRACE("OID = %d\n",oid->GetAsSLong());
+//               CString test("TEST");
+//               LogMissingRecord(query1,test);
+//               int col = query1.GetColumnNumber("EI_OID");
+//               SQLVariant* eioid = query1.GetColumn(col);
+//               TRACE("EI_OID = %d\n",eioid->GetAsBCD().AsLong());
+
+              // GO EXECUTE!
+              // Execute the insert statement with these parameters
+              query2.DoSQLStatement(insert);
+
+              if(m_params.v_truncate)
+              {
+                // Reset the char data length to the original buffer length
+                query1.TruncateCharFieldsReset();
+              }
+              query2.ResetParameters();
+
+              // Increment rows and potentially show in the dialog
+              if(++rows % 10 == 0)
+              {
+                // Show progress (but not every row or we will flicker)
+                m_log.SetTableGauge(rows,totrows);
+              }
+              if(rows % m_params.v_logLines == 0)
+              {
+                // Show if requested in the log
+                text.Format(_T("Table: %s Rows: %ld [%6.2f %%]"),table.GetString(),rows,((double)rows / (double)totrows * 100.0));
+                m_log.WriteLog(text);
+              }
+            }
+            else
+            {
+              // Read past last record in the select
+              ready = true;
+            }
+          }
+          catch(StdException& ex)
+          {
+            // Show missing records for first 100 rows
+            if(++missing < 100)
+            {
+              XString error = ex.GetErrorMessage();
+              LogMissingRecord(query1,error);
+            }
+            else if(missing == 100)
+            {
+              m_log.WriteLog(_T(""));
+              m_log.WriteLog(_T("More than 100 missing records. Other records are not individually shown in the logfile!!"));
+              m_log.WriteLog(_T(""));
+            }
+            ++m_params.v_errors;
+          }
+        }
+        trans.Commit();
+
+        // End
+        m_log.SetTableGauge(rows,totrows);
+        text.Format(_T("Table: %s Rows: %ld [%6.2f %%]"),table.GetString(),rows,((double)rows / (double)totrows * 100.0));
+        m_log.WriteLog(text);
+      }
+    }
+    catch(StdException& ex)
+    {
+      m_log.WriteLog(_T("ERROR: Migration of table has failed"));
+      m_log.WriteLog(ex.GetErrorMessage());
+    }
+    catch(...)
+    {
+      m_log.WriteLog(_T("ERROR: Migration of table has failed"));
+      m_log.WriteLog(_T("Unknown error while migrating"));
+    }
+
+    // Show tables
+    m_log.SetTablesGauge(++numTables);
+    XString overgezet;
+    overgezet.Format(_T("Table [%s.%s] migrated with [%ld of %ld] rows"),m_params.v_source_user.GetString(),table.GetString(),rows,totrows);
+    m_log.WriteLog(overgezet);
+    // Extra missing records log
+    if(rows < totrows)
+    {
+      overgezet.Format(_T("MISSING: Table [%s.%s] missing rows: %d"),m_params.v_source_user.GetString(),table.GetString(),(totrows - rows));
+      m_log.WriteLog(overgezet);
+    }
+    // End in the logfile
+    einde = clock();
+    overgezet.Format(_T("Table [%s.%s] Total processing time: %.2f seconds"),m_params.v_source_user.GetString(),table.GetString(),(double)(einde - start) / CLOCKS_PER_SEC);
+    m_log.WriteLog(overgezet);
+  }
+}
+
+void
+SQLMigrate::SetExecParameters(ParameterMap& p_params,VarMap* p_columns)
+{
+  for(auto& column : *p_columns)
+  {
+    int index = column.first;
+    SQLVariant* var = column.second;
+    SQLVariant* nwv = nullptr;
+
+    ParameterMap::iterator it = p_params.find(index);
+    if(it == p_params.end())
+    {
+      SQLParameter param;
+      param.m_number  = index;
+      param.m_maxSize = 0;
+      param.m_type    = SQLParamType::P_SQL_PARAM_INPUT;
+      param.m_value   = new SQLVariant(var);
+
+      nwv = param.m_value;
+      p_params.insert(std::make_pair(index,param));
+    }
+    else
+    {
+      delete it->second.m_value;
+      nwv = new SQLVariant(var);
+      it->second.m_value = nwv;
+    }
+    nwv->SetColumnNumber(index);
+    nwv->SetParameterType(SQLParamType::P_SQL_PARAM_INPUT);
+    if(nwv->GetAtExec())
+    {
+       nwv->SetAtExec(false);
+      *nwv->GetIndicatorPointer() = SQL_NTS;
+    }
+  }
+}
+
+void
+SQLMigrate::SetExecParameters(SQLQuery& p_target,VarMap* p_columns)
+{
+  int index = 1;
+  for(auto& column : *p_columns)
+  {
+    SQLVariant* var = p_target.SetParameter(index++,column.second);
     if(var->GetAtExec())
     {
       var->SetAtExec(false);
       *var->GetIndicatorPointer() = SQL_NTS;
-      columns[col.first] = 1;
     }
   }
-  return columns;
 }
 
-// Restore the use of AtExec on the columns
-// to be able to get the next record from the source database
-// Inverse of the ResetAtExecParameters call
-void
-SQLMigrate::RestoreAtExecParameters(int* p_columns,VarMap* p_parameters)
+XString
+SQLMigrate::FormatColumnName(SQLInfoDB* p_info,XString p_column)
 {
-  for(auto& col : *p_parameters)
+  // Circumvent locally reserved words
+  if(p_info->GetRDBMSDatabaseType() == DatabaseType::RDBMS_SQLSERVER && p_column.GetAt(0) != '[')
   {
-    if(p_columns[col.first])
-    {
-      col.second->SetAtExec(true);
-    }
+    p_column = _T("[") + p_column + _T("]");
   }
-  delete[] p_columns;
+  else if(!p_info->IsCorrectName(p_column))
+  {
+    XString quote = p_info->GetKEYWORDReservedWordQuote();
+    p_column = quote + p_column + quote;
+  }
+  else
+  {
+    // Possibly a quoted identifier
+    p_column = p_info->QueryIdentifierQuotation(p_column);
+  }
+  return p_column;
 }
 
 XString
@@ -1364,8 +1567,9 @@ SQLMigrate::MakeSelectStatement(XString& p_tabel,XString& p_user)
   XString    catalog;
   XString    schema;
   XString    errors;
+  SQLInfoDB* source = m_databaseSource->GetSQLInfoDB();
 
-  m_databaseSource->GetSQLInfoDB()->MakeInfoTableColumns(columns,errors,catalog,p_user,p_tabel);
+  source->MakeInfoTableColumns(columns,errors,catalog,p_user,p_tabel);
   columns = SortColumnsBySize(columns);
   for(unsigned int regel = 0; regel < columns.size(); ++regel)
   {
@@ -1375,19 +1579,10 @@ SQLMigrate::MakeSelectStatement(XString& p_tabel,XString& p_user)
     {
       statement += _T(",");
     }
-    XString column = info->m_column;
-    if(m_databaseSource->GetSQLInfoDB()->GetRDBMSDatabaseType() == DatabaseType::RDBMS_SQLSERVER)
-    {
-      column.MakeLower();
-      statement.AppendFormat(_T("[%s]"),column.GetString());
-    }
-    else
-    {
-      statement += column;
-    }
+    statement += FormatColumnName(source,info->m_column);
   }
   statement += _T(" FROM ");
-  if(!p_user.IsEmpty())
+  if(!p_user.IsEmpty() && source->GetRDBMSUnderstandsSchemas())
   {
     statement += p_user + _T(".");
   }
@@ -1414,7 +1609,10 @@ SQLMigrate::MakeInsertStatement(XString& p_tabel,XString& p_user,XString& p_doel
   XString    errors;
   SQLInfoDB* target = m_databaseTarget->GetSQLInfoDB();
 
-  statement += target->GetSQLDDLIdentifier(p_doel_user) + _T(".");
+  if(!p_doel_user.IsEmpty() && target->GetRDBMSUnderstandsSchemas())
+  {
+    statement += target->GetSQLDDLIdentifier(p_doel_user) + _T(".");
+  }
   statement += target->GetSQLDDLIdentifier(p_tabel) + _T(" (");
 
   m_databaseSource->GetSQLInfoDB()->MakeInfoTableColumns(columns,errors,catalog,p_user,p_tabel);
@@ -1427,8 +1625,7 @@ SQLMigrate::MakeInsertStatement(XString& p_tabel,XString& p_user,XString& p_doel
       statement += _T(",");
       data      += _T(",");
     }
-    XString column = info->m_column;
-    statement += target->GetSQLDDLIdentifier(column);
+    statement +=  FormatColumnName(target,info->m_column);
     data      += _T("?");
   }
   statement += _T(") VALUES (") + data + _T(")");
@@ -1507,6 +1704,7 @@ void
 SQLMigrate::FillTablesViaData(bool p_process)
 {
   int numTables = 0;
+  int missing   = 0;
   XString comment(_T("-- "));
   XString header1(_T("TABLE CONTENTS MIGRATION TO INSERT SCRIPTS"));
   XString header2(_T("=========================================="));
@@ -1591,9 +1789,19 @@ SQLMigrate::FillTablesViaData(bool p_process)
           }
           catch(StdException& ex)
           {
-            XString error = ex.GetErrorMessage();
-            LogMissingRecord(query1,error);
-            m_log.WriteLog(insert);
+            // Show missing records for first 100 rows
+            if(++missing < 100)
+            {
+              XString error = ex.GetErrorMessage();
+              LogMissingRecord(query1,error);
+              m_log.WriteLog(insert);
+            }
+            else if(missing == 100)
+            {
+              m_log.WriteLog(_T(""));
+              m_log.WriteLog(_T("More than 100 missing records. Other records are not individually shown in the logfile!!"));
+              m_log.WriteLog(_T(""));
+            }
             ++m_params.v_errors;
           }
 
@@ -1648,7 +1856,7 @@ SQLMigrate::MakeInsertDataStatement(XString& p_table,XString& p_target_schema,SQ
   bool seperator = false;
   SQLInfoDB* target = m_databaseTarget->GetSQLInfoDB();
 
-  if(!p_target_schema.IsEmpty())
+  if(!p_target_schema.IsEmpty() && target->GetRDBMSUnderstandsSchemas())
   {
     statement += target->GetSQLDDLIdentifier(p_target_schema) + _T(".");
   }
@@ -1668,7 +1876,7 @@ SQLMigrate::MakeInsertDataStatement(XString& p_table,XString& p_target_schema,SQ
         statement += _T(",");
       }
       data      += datum;
-      statement += target->GetSQLDDLIdentifier(info->m_column);
+      statement += FormatColumnName(target,info->m_column);
       seperator  = true;
     }
   }

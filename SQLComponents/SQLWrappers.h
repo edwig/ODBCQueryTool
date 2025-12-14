@@ -34,7 +34,7 @@
 // access violations and other exceptions from ODBC drivers by catching them all
 //
 
-#define sql_catch(ex)    catch(StdException& ex) { ReThrowSafeException(ex); return SQL_ERROR; }
+#define sql_catch(ex)    catch(StdException& /*ex*/) { return SQL_ERROR; }
 
 namespace SQLComponents
 {

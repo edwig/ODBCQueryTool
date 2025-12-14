@@ -136,6 +136,13 @@ SQLInfoGenericODBC::GetRDBMSSupportsODBCCallNamedParameters() const
   return true;
 }
 
+// Supports the ODBC call procedure with named parameters
+bool
+SQLInfoGenericODBC::GetRDBMSSupportsNamedParameters() const
+{
+  return true;
+}
+
 // If the database does not support the datatype TIME, it can be implemented as a DECIMAL
 bool
 SQLInfoGenericODBC::GetRDBMSSupportsDatatypeTime() const
@@ -201,6 +208,13 @@ int
 SQLInfoGenericODBC::GetRDBMSMaxVarchar() const
 {
   return 1000;
+}
+
+// Return parameters from a PSM procedure module can be a result set (SUSPEND)
+bool
+SQLInfoGenericODBC::GetRDBMSResultSetFromPSM() const
+{
+  return false;
 }
 
 #include <sql.h>
@@ -539,7 +553,7 @@ SQLInfoGenericODBC::GetTempTablename(XString /*p_schema*/,XString p_tablename,bo
 
 // Changes to parameters before binding to an ODBC HSTMT handle (returning the At-Exec status)
 bool
-SQLInfoGenericODBC::DoBindParameterFixup(SQLSMALLINT& /*p_dataType*/,SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*p_columnSize*/,SQLSMALLINT& /*p_scale*/,SQLLEN& /*p_bufferSize*/,SQLLEN* /*p_indicator*/) const
+SQLInfoGenericODBC::DoBindParameterFixup(SQLVariant* /*p_var*/,SQLSMALLINT& /*p_dataType*/,SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*p_columnSize*/,SQLSMALLINT& /*p_scale*/,SQLLEN& /*p_bufferSize*/,SQLLEN* /*p_indicator*/) const
 {
   return false;
 }

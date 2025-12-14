@@ -321,9 +321,16 @@ public:
 
   // Get the catalog.schema.table from a user string
   void    GetObjectName(XString pattern,XString& p_catalog,XString& p_schema,XString& p_table);
+  // Using quotation for SQL identifiers
+  bool    GetUseIdentifierQuotation();
+  void    SetUseIdentifierQuotation(bool p_use = true);
   // Preparing identifiers for doing a query (quotations)
   XString QueryIdentifierQuotation(XString p_identifier) const;
   
+  // Identifier rules differ per RDBMS
+  virtual bool IsIdentifier         (XString p_identifier) const;
+  virtual bool IsIdentifierMixedCase(XString p_identifier) const;
+
 private:
   // SQLDatabase has access to attribute methods
   friend SQLDatabase;
@@ -356,9 +363,6 @@ protected:
                         ,SQLTCHAR* search_schema
                         ,SQLTCHAR* search_table
                         ,SQLTCHAR* search_type);
-  // Identifier rules differ per RDBMS
-  virtual bool IsIdentifier(XString p_identifier) const;
-  virtual bool IsIdentifierMixedCase(XString p_identifier) const;
   // Create quoted identifier
   XString QuotedIdentifier(XString p_identifier) const;
   // Prepare an identifier for an ODBC discovery function
@@ -513,6 +517,7 @@ protected:
   bool         m_metadataID;
   bool         m_METADATA_ID_unsupported;
   bool         m_METADATA_ID_errorseen;
+  bool         m_useIdentifierQuotation  { true };
   // ODBC supported functions
   bool         m_functions_use_3;
   SQLUSMALLINT m_ODBCFunctions_2[100];   // ODBC 1.x and 2.x standard is 100 int's
@@ -1243,6 +1248,18 @@ inline SQLUSMALLINT*
 SQLInfo::GetFunctionArrayV3()
 {
   return m_ODBCFunctions_3;
+}
+
+inline bool
+SQLInfo::GetUseIdentifierQuotation()
+{
+  return m_useIdentifierQuotation;
+}
+
+inline void
+SQLInfo::SetUseIdentifierQuotation(bool p_use /*= true*/)
+{
+  m_useIdentifierQuotation = p_use;
 }
 
 // End of namespace

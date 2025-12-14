@@ -2,8 +2,8 @@
 //
 // File: SQLInfoPostgreSQL.cpp
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -27,12 +27,6 @@
 #include "SQLComponents.h"
 #include "SQLInfoPostgreSQL.h"
 #include "SQLQuery.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 namespace SQLComponents
 {
@@ -147,6 +141,13 @@ SQLInfoPostgreSQL::GetRDBMSSupportsODBCCallNamedParameters() const
   return false;
 }
 
+// Supports the ODBC call procedure with named parameters
+bool
+SQLInfoPostgreSQL::GetRDBMSSupportsNamedParameters() const
+{
+  return false;
+}
+
 // If the database does not support the datatype TIME, it can be implemented as a DECIMAL
 bool
 SQLInfoPostgreSQL::GetRDBMSSupportsDatatypeTime() const
@@ -226,20 +227,27 @@ SQLInfoPostgreSQL::IsIdentifier(XString p_identifier) const
     return false;
   }
   // Must start with one alpha char
-  if(!_istalpha(p_identifier.GetAt(0)))
+  if(!_istalpha((TCHAR)p_identifier.GetAt(0)))
   {
     return false;
   }
   for(int index = 0;index < p_identifier.GetLength();++index)
   {
     // Can be upper/lower alpha or a number OR an underscore
-    TCHAR ch = p_identifier.GetAt(index);
+    TCHAR ch = (TCHAR) p_identifier.GetAt(index);
     if(!_istalnum(ch) && ch != '_')
     {
       return false;
     }
   }
   return true;
+}
+
+// Return parameters from a PSM procedure module can be a result set (SUSPEND)
+bool
+SQLInfoPostgreSQL::GetRDBMSResultSetFromPSM() const
+{
+  return false;
 }
 
 // KEYWORDS
@@ -480,10 +488,10 @@ SQLInfoPostgreSQL::GetSelectForUpdateTableClause(unsigned /*p_lockWaitTime*/) co
 XString
 SQLInfoPostgreSQL::GetSelectForUpdateTrailer(XString p_select,unsigned p_lockWaitTime) const
 {
-  XString sql = p_select + "\nFOR UPDATE";
+  XString sql = p_select + _T("\nFOR UPDATE");
   if(!p_lockWaitTime)
   {
-    sql += " SKIP LOCKED";
+    sql += _T(" SKIP LOCKED");
   }
   return sql;
 }
@@ -582,7 +590,7 @@ SQLInfoPostgreSQL::GetTempTablename(XString /*p_schema*/,XString p_tablename,boo
 
 // Changes to parameters before binding to an ODBC HSTMT handle (returning the At-Exec status)
 bool
-SQLInfoPostgreSQL::DoBindParameterFixup(SQLSMALLINT& /*p_dataType*/,SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*p_columnSize*/,SQLSMALLINT& /*p_scale*/,SQLLEN& /*p_bufferSize*/,SQLLEN* /*p_indicator*/) const
+SQLInfoPostgreSQL::DoBindParameterFixup(SQLVariant* /*p_var*/,SQLSMALLINT& /*p_dataType*/,SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*p_columnSize*/,SQLSMALLINT& /*p_scale*/,SQLLEN& /*p_bufferSize*/,SQLLEN* /*p_indicator*/) const
 {
   return false;
 }
@@ -1369,20 +1377,16 @@ SQLInfoPostgreSQL::GetCATALOGForeignExists(XString p_schema,XString p_tablename,
   IdentifierCorrect(p_tablename);
   IdentifierCorrect(p_constraintname);
 
-  XString sql;
-  sql.Format(_T("SELECT COUNT(*)\n")
-             _T("  FROM pg_constraint con\n")
-             _T("      ,pg_class      cla\n")
-             _T("      ,pg_namespace  sch\n")
-             _T(" WHERE con.contype      = 'f'\n")
-             _T("   AND con.conrelid     = cla.oid\n")
-             _T("   AND cla.relnamespace = sch.oid\n")
-             _T("   AND sch.nspname      = '") + p_schema + _T("'\n")
-             _T("   AND cla.relname      = '") + p_tablename + _T("'\n")
-             _T("   AND con.conname      = '") + p_constraintname + _T("'")
-            ,p_schema.GetString()
-            ,p_tablename.GetString()
-            ,p_constraintname.GetString());
+  XString sql(_T("SELECT COUNT(*)\n")
+              _T("  FROM pg_constraint con\n")
+              _T("      ,pg_class      cla\n")
+              _T("      ,pg_namespace  sch\n")
+              _T(" WHERE con.contype      = 'f'\n")
+              _T("   AND con.conrelid     = cla.oid\n")
+              _T("   AND cla.relnamespace = sch.oid\n")
+              _T("   AND sch.nspname      = '") + p_schema + _T("'\n")
+              _T("   AND cla.relname      = '") + p_tablename + _T("'\n")
+              _T("   AND con.conname      = '") + p_constraintname + _T("'"));
   return sql;
 }
 
@@ -2435,7 +2439,7 @@ SQLInfoPostgreSQL::GetPSMDeclaration(bool    /*p_first*/
       line += _T(" DEFAULT ") + p_default;
     }
   }
-  else if(!p_asColumn)
+  else if(!p_asColumn.IsEmpty())
   {
     line += p_asColumn + _T("%TYPE");
   }
@@ -2773,7 +2777,7 @@ SQLInfoPostgreSQL::GetCountReturnParameters(SQLQuery* p_query)
 XString
 SQLInfoPostgreSQL::ConstructSQLForProcedureCall(SQLQuery* p_query
                                                ,SQLQuery* p_thecall
-                                               ,XString&  p_schema
+                                               ,      XString& p_schema
                                                ,const XString& p_procedure)
 {
   // Start with select form

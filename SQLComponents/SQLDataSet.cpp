@@ -89,7 +89,7 @@ LPCTSTR dataset_names[LN_NUMLANG][NUM_DATASET_NAMES] =
 // The DATASET class
 
 SQLDataSet::SQLDataSet()
-           :m_database(NULL)
+           :m_database(nullptr)
 {
 }
 
@@ -184,11 +184,11 @@ SQLDataSet::Close()
   // Forget the data
   Forget(true);
   ResetFilters();
+  ResetParameters();
 
   // Forget all caches
   m_names.clear();
   m_types.clear();
-  m_parameters.clear();
   m_primaryKey.clear();
 
   // Forget the query
@@ -297,15 +297,25 @@ SQLDataSet::SetParameter(const XString& p_name,const SQLVariant& p_value)
     if(m_parameters[ind].m_name == p_name)
     {
       // Found it: set a new value
-      m_parameters[ind].m_value = p_value;
+      m_parameters[ind].m_value = new SQLVariant(p_value);
       return;
     }
   }
   // New parameter
   SQLParameter par;
   par.m_name   = p_name;
-  par.m_value  = p_value;
+  par.m_value  = new SQLVariant(p_value);
   m_parameters.push_back(par);
+}
+
+void
+SQLDataSet::ResetParameters()
+{
+  for(auto& parm : m_parameters)
+  {
+    delete parm.m_value;
+  }
+  m_parameters.clear();
 }
 
 void
@@ -368,7 +378,7 @@ SQLDataSet::GetParameter(const XString& p_name)
   {
     if(m_parameters[ind].m_name == p_name)
     {
-      return &(m_parameters[ind].m_value);
+      return m_parameters[ind].m_value;
     }
   }
   return NULL;
@@ -541,6 +551,7 @@ SQLDataSet::ParseQuery()
 XString
 SQLDataSet::ParseSelection(SQLQuery& p_query)
 {
+  SQLInfoDB* info = m_database ? m_database->GetSQLInfoDB() : nullptr;
   XString sql(_T("SELECT "));
   
   sql += m_selection.IsEmpty() ? XString(_T("*")) : m_selection;
@@ -554,9 +565,10 @@ SQLDataSet::ParseSelection(SQLQuery& p_query)
   {
     if(!m_primarySchema.IsEmpty())
     {
-      sql += m_primarySchema + _T(".");
+      sql += info ? info->QueryIdentifierQuotation(m_primarySchema) : m_primarySchema;
+      sql += _T(".");
     }
-    sql += m_primaryTableName;
+    sql += info ? info->QueryIdentifierQuotation(m_primaryTableName) : m_primaryTableName;
     if(!m_primaryAlias.IsEmpty())
     {
       sql += _T(" ");
@@ -573,15 +585,15 @@ SQLDataSet::ParseSelection(SQLQuery& p_query)
   for(it = m_parameters.begin();it != m_parameters.end(); ++it)
   {
     sql += (count++ == 0) ? _T("\n WHERE ") : _T("\n   AND ");
-    sql += it->m_name;
-    if(it->m_value.IsNULL())
+    sql += info ? info->QueryIdentifierQuotation(it->m_name) : it->m_name;
+    if(it->m_value->IsNULL())
     {
       sql += _T(" IS NULL");
     }
     else
     {
       sql += _T(" = ?");
-      p_query.SetParameter(++number,&(it->m_value));
+      p_query.SetParameter(++number,it->m_value);
     }
   }
 
@@ -603,10 +615,10 @@ SQLDataSet::ParseFilters(SQLQuery& p_query,XString p_sql)
   if(!condition.IsEmpty())
   {
     // Offset in the WHERE clause
-    query += whereFound ? _T("\n   AND ") : _T("\n WHERE ");
-    query += condition;
+    p_sql += whereFound ? _T("\n   AND ") : _T("\n WHERE ");
+    p_sql += condition;
   }
-  return query;
+  return p_sql;
 }
 
 // Construct the selection SQL for opening the dataset
@@ -1141,7 +1153,7 @@ SQLDataSet::CheckTypes(SQLQuery& p_query)
   }
 }
 
-// Check that all datatypes are the same
+// Check that all data types are the same
 SQLRecord*
 SQLDataSet::GetRecord(int p_recnum)
 {
@@ -1149,7 +1161,7 @@ SQLDataSet::GetRecord(int p_recnum)
   {
     return m_records[p_recnum];
   }
-  return NULL;
+  return nullptr;
 }
 
 // Find the object record of an integer primary key
@@ -1412,9 +1424,9 @@ void
 SQLDataSet::CancelMutation(int p_mutationID)
 {
   bool mutated = false; 
-  for(unsigned ind = 0;ind < m_records.size();++ind)
+  for(auto& record : m_records)
   {
-    if(m_records[ind]->CancelMutation(p_mutationID))
+    if(record->CancelMutation(p_mutationID))
     {
       mutated = true;
     }
@@ -1624,8 +1636,8 @@ SQLDataSet::Deletes(int p_mutationID)
         case MUT_MyMutation: sql = GetSQLDelete(&query,record);
                              query.DoSQLStatement(sql);
                              // Delete this record, continuing to the next
-//                              delete record;
-//                              it = m_records.erase(it);
+//                           delete record;
+//                           it = m_records.erase(it);
                              ForgetRecord(record,true);
                              ++deletes;
                              break;
@@ -1699,9 +1711,8 @@ SQLDataSet::Inserts(int p_mutationID)
   int total  = 0;
   int insert = 0;
 
-  for(it = m_records.begin();it != m_records.end();++it)
+  for(auto& record : m_records)
   {
-    SQLRecord* record = *it;
     if(record->GetStatus() & SQL_Record_Insert)
     {
       ++total;
@@ -1778,7 +1789,9 @@ SQLDataSet::GetSQLDelete(SQLQuery* p_query,const SQLRecord* p_record)
   // New set of parameters
   p_query->ResetParameters();
 
-  XString sql(_T("DELETE FROM ") + m_primaryTableName + _T("\n"));
+  XString table = m_database ? m_database->GetSQLInfoDB()->QueryIdentifierQuotation(m_primaryTableName) : m_primaryTableName;
+
+  XString sql(_T("DELETE FROM ") + table + _T("\n"));
   int parameter = 1;
   sql += GetWhereClause(p_query,p_record,parameter);
   return sql;
@@ -1788,7 +1801,9 @@ XString
 SQLDataSet::GetSQLUpdate(SQLQuery* p_query,const SQLRecord* p_record)
 {
   int parameter = 1;
-  XString sql(_T("UPDATE ") + m_primaryTableName + _T("\n"));
+  SQLInfoDB* info = m_database ? m_database->GetSQLInfoDB() : nullptr;
+  XString table = info ? info->QueryIdentifierQuotation(m_primaryTableName) : m_primaryTableName;
+  XString sql(_T("UPDATE ") + table + _T("\n"));
   WordList::iterator it;
 
   // New set of parameters
@@ -1820,7 +1835,7 @@ SQLDataSet::GetSQLUpdate(SQLQuery* p_query,const SQLRecord* p_record)
       SQLVariant* value = p_record->GetField(ind);
 
       sql += first ? _T("   SET ") : _T("      ,");
-      sql += m_names[ind];
+      sql += info ? info->QueryIdentifierQuotation(m_names[ind]) : m_names[ind];
       if(value->IsNULL())
       {
         sql += _T(" = NULL\n");
@@ -1843,7 +1858,9 @@ XString
 SQLDataSet::GetSQLInsert(SQLQuery* p_query,const SQLRecord* p_record)
 {
   int parameter = 1;
-  XString sql(_T("INSERT INTO ") + m_primaryTableName);
+  SQLInfoDB* info = m_database ? m_database->GetSQLInfoDB() : nullptr;
+  XString table = info ? info->QueryIdentifierQuotation(m_primaryTableName) : m_primaryTableName;
+  XString sql(_T("INSERT INTO ") + table);
 
   XString fields(_T("("));
   XString params(_T("("));
@@ -1857,7 +1874,8 @@ SQLDataSet::GetSQLInsert(SQLQuery* p_query,const SQLRecord* p_record)
     SQLVariant* value = p_record->GetField(ind);
     if((int)ind == p_record->GetGenerator() && value->IsEmpty())
     {
-      fields  += m_names[ind] + _T(",");
+      fields  += info ? info->QueryIdentifierQuotation(m_names[ind]) : m_names[ind];
+      fields  += _T(",");
       m_serial = m_database->GetSQL_GenerateSerial(m_primaryTableName,m_sequenceName);
       params  += m_serial;
       params  += _T(",");
@@ -1866,7 +1884,8 @@ SQLDataSet::GetSQLInsert(SQLQuery* p_query,const SQLRecord* p_record)
     {
       if(value->IsNULL() == false)
       {
-        fields += m_names[ind] + _T(",");
+        fields += info ? info->QueryIdentifierQuotation(m_names[ind]) : m_names[ind];
+        fields += _T(",");
         params += _T("?,");
         p_query->SetParameter(parameter++,value);
       }
@@ -1888,18 +1907,19 @@ SQLDataSet::GetSQLInsert(SQLQuery* p_query,const SQLRecord* p_record)
 XString
 SQLDataSet::GetWhereClause(SQLQuery* p_query,const SQLRecord* p_record,int& p_parameter)
 {
+  SQLInfoDB* info = m_database ? m_database->GetSQLInfoDB() : nullptr;
   XString sql(_T(" WHERE "));
 
   bool more = false;
-  for(unsigned ind = 0;ind < m_primaryKey.size();++ind)
+  for(auto& key : m_primaryKey)
   {
     if(more)
     {
       sql += _T("\n   AND ");
     }
     more = true;
-    int column = GetFieldNumber(m_primaryKey[ind]);
-    sql += m_primaryKey[ind];
+    int column = GetFieldNumber(key);
+    sql += info ? info->QueryIdentifierQuotation(key) : key;
     SQLVariant* value = p_record->GetField(column);
     if(value->IsNULL())
     {

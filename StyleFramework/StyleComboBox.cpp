@@ -2571,7 +2571,8 @@ void
 SCBListBox::OnSetFocus(CWnd* pOldWnd)
 {
   m_combo->OnSetFocus(pOldWnd);
-  if(pOldWnd != this && pOldWnd != m_combo &&
+  if(m_combo->GetSafeHwnd() &&
+     pOldWnd != this && pOldWnd != m_combo &&
      pOldWnd != m_combo->GetEditControl())
   {
     if(!m_combo->GetDroppedState() && m_combo->GetEditControl())
