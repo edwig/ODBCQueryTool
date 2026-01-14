@@ -479,8 +479,12 @@ DDLCreateTable::GetViewInfo()
   XString definition;
   if(m_info->MakeInfoViewDefinition(definition,errors,m_catalog,m_schema,m_tableName))
   {
+    // Getting the column information for the view
+    MColumnMap columns;
+    m_info->MakeInfoTableColumns(columns,errors,m_catalog,m_schema,m_tableName);
+
     // Do our DDL part
-    ddl += m_info->GetCATALOGViewCreate(m_schema,table.m_table,definition,m_dropIfExists);
+    ddl += m_info->GetCATALOGViewCreate(m_schema,table.m_table,columns,definition,m_dropIfExists);
     ddl += _T("\n");
   }
   StashTheLine(ddl);

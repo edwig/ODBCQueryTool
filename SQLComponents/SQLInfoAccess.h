@@ -347,7 +347,7 @@ public:
   XString GetCATALOGViewList          (XString& p_schema,XString& p_pattern, bool p_quoted = false) const override;
   XString GetCATALOGViewAttributes    (XString& p_schema,XString& p_viewname,bool p_quoted = false) const override;
   XString GetCATALOGViewText          (XString& p_schema,XString& p_viewname,bool p_quoted = false) const override;
-  XString GetCATALOGViewCreate        (XString  p_schema,XString  p_viewname,XString p_contents,bool p_ifexists = true)   const override;
+  XString GetCATALOGViewCreate        (XString  p_schema,XString  p_viewname,MColumnMap& p_columns,XString p_contents,bool p_ifexists = true)   const override;
   XString GetCATALOGViewRename        (XString  p_schema,XString  p_viewname,XString p_newname)    const override;
   XString GetCATALOGViewDrop          (XString  p_schema,XString  p_viewname,XString& p_precursor) const override;
   // All Privilege functions

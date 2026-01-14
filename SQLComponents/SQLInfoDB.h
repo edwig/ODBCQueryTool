@@ -431,7 +431,7 @@ public:
   virtual XString GetCATALOGViewList          (XString& p_schema,XString& p_pattern, bool p_quoted = false) const = 0;
   virtual XString GetCATALOGViewAttributes    (XString& p_schema,XString& p_viewname,bool p_quoted = false) const = 0;
   virtual XString GetCATALOGViewText          (XString& p_schema,XString& p_viewname,bool p_quoted = false) const = 0;
-  virtual XString GetCATALOGViewCreate        (XString  p_schema,XString  p_viewname,XString p_contents,bool p_ifexists = true)   const = 0;
+  virtual XString GetCATALOGViewCreate        (XString  p_schema,XString  p_viewname,MColumnMap& p_columns,XString p_contents,bool p_ifexists = true)   const = 0;
   virtual XString GetCATALOGViewRename        (XString  p_schema,XString  p_viewname,XString p_newname)    const = 0;
   virtual XString GetCATALOGViewDrop          (XString  p_schema,XString  p_viewname,XString& p_precursor) const = 0;
   // All Privilege functions

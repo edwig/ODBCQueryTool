@@ -1019,17 +1019,40 @@ SQLMigrate::CreateViews()
     create.SetInfoDB(target);
 
     // Do something with the statement
+    bool first = true;
     for(auto& statement : statements)
     {
-      bool first = true;
+      statement.Replace(_T("OR REPLACE "),_T(""));
+      statement.Replace(_T("OR ALTER "),  _T(""));
+
+      // Filter out the schemas
+      if(source->GetRDBMSUnderstandsSchemas() && !target->GetRDBMSUnderstandsSchemas())
+      {
+        XString remove = m_params.v_target_schema + _T(".");
+        statement.Replace(remove,_T(""));
+      }
+
+      // Handle the DUAL table
+      CString sourceSingle = source->GetSQLFromDualClause();
+      CString targetSingle = target->GetSQLFromDualClause();
+
+      // Set to the correct casing
       if(target->GetRDBMSIsCatalogUpper())
       {
         statement.MakeUpper();
+        sourceSingle.MakeUpper();
+        targetSingle.MakeUpper();
       }
       else
       {
         statement.MakeLower();
+        sourceSingle.MakeLower();
+        targetSingle.MakeLower();
       }
+
+      // Rewrite the single select
+      statement.Replace(sourceSingle,targetSingle);
+
       m_log.WriteLog(statement);
       if(m_directMigration == MigrateType::DataPump     ||
          m_directMigration == MigrateType::SlowDataPump ||

@@ -22,6 +22,12 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes 3.5.6
+------------------
+-  Discovery of functions in Firebird 4 and 5 work again
+-  Exporting and importing of views with SQLMigrate now honor the correct column
+   names if they differ from the column names in the select
+
 Releasenotes 3.5.5
 ------------------
 -  Reworked the SQLMigrate application to be (again) able to convert an Oracle

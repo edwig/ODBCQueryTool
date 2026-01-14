@@ -2385,9 +2385,24 @@ SQLInfoFirebird::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewname,
 }
 
 XString 
-SQLInfoFirebird::GetCATALOGViewCreate(XString /*p_schema*/,XString p_viewname,XString p_contents,bool /*p_ifexists /*= true*/) const
+SQLInfoFirebird::GetCATALOGViewCreate(XString /*p_schema*/,XString p_viewname,MColumnMap& p_columns,XString p_contents,bool /*p_ifexists /*= true*/) const
 {
-  return _T("RECREATE VIEW ") + QIQ(p_viewname) + _T("\n") + p_contents;
+  XString sql = _T("RECREATE VIEW ") + QIQ(p_viewname) + _T("\n(  ");
+
+  bool next(false);
+  for(auto& column : p_columns)
+  {
+    if(next)
+    {
+      sql += _T(" ,");
+    }
+    sql += column.m_column;
+    sql += _T("\n");
+    next = true;
+  }
+
+  sql += _T(")\nAS\n") + p_contents;
+  return sql;
 }
 
 XString 
@@ -2665,7 +2680,7 @@ SQLInfoFirebird::GetPSMProcedureExists(XString p_schema, XString p_procedure,boo
                    _T("  FROM rdb$functions\n")
                    _T(" WHERE rdb$function_name  = '") + p_procedure + _T("'\n")
                    + extra +
-                   _T("   AND rdb$function_type IS NOT NULL)\n")
+                   _T("   AND rdb$system_flag = 0)\n")
                    _T("     + (SELECT COUNT(*)\n")
                    _T("  FROM rdb$procedures\n")
                    _T(" WHERE rdb$procedure_name = '") + p_procedure + _T("'\n")
@@ -2691,7 +2706,8 @@ SQLInfoFirebird::GetPSMProcedureList(XString& p_schema,XString p_procedure,bool 
                _T("      ,trim(rdb$procedure_name)\n")
                _T("      ,1\n")  // PROCEDURE
                _T("  FROM rdb$procedures pro\n")
-               _T(" WHERE rdb$procedure_source IS NOT NULL\n"));
+               _T(" WHERE rdb$procedure_source IS NOT NULL\n")
+               _T("   AND rdb$system_flag = 0\n"));
   sql1 += extra;         
   if(!p_procedure.IsEmpty())
   {
@@ -2704,7 +2720,7 @@ SQLInfoFirebird::GetPSMProcedureList(XString& p_schema,XString p_procedure,bool 
                _T("      ,trim(rdb$function_name)\n")
                _T("      ,2\n")  // FUNCTION
                _T("  FROM rdb$functions fun\n")
-               _T(" WHERE rdb$function_type IS NOT NULL\n"));
+               _T(" WHERE rdb$system_flag = 0\n"));
   sql2 += extra;
   if(!p_procedure.IsEmpty())
   {
@@ -2760,7 +2776,7 @@ SQLInfoFirebird::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedur
                 _T("      ,'<@>'\n")
                 _T("  FROM rdb$functions fun\n")
                 _T("      ,mon$database  dbs\n")
-                _T(" WHERE rdb$function_type IS NOT NULL\n"));
+                _T(" WHERE rdb$system_flag = 0\n"));
   if(!p_schema.IsEmpty())
   {
     IdentifierCorrect(p_schema);

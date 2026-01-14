@@ -2688,14 +2688,29 @@ SQLInfoSQLServer::GetCATALOGViewText(XString& p_schema,XString& p_viewname,bool 
 }
 
 XString
-SQLInfoSQLServer::GetCATALOGViewCreate(XString p_schema,XString p_viewname,XString p_contents,bool p_ifexists /*= true*/) const
+SQLInfoSQLServer::GetCATALOGViewCreate(XString p_schema,XString p_viewname,MColumnMap& p_columns,XString p_contents,bool p_ifexists /*= true*/) const
 {
   XString sql(_T("CREATE "));
   if(p_ifexists)
   {
     sql += _T("OR ALTER ");
   }
-  sql += _T("VIEW ") + QIQ(p_schema) + _T(".") + QIQ(p_viewname) + _T("\n") + p_contents;
+  sql += _T("VIEW ") + QIQ(p_schema) + _T(".") + QIQ(p_viewname) + _T("\n(  ");
+  
+  bool next(false);
+  for(auto& column : p_columns)
+  {
+    if(next)
+    {
+      sql += _T(" ,");
+    }
+    sql += column.m_column;
+    sql += _T("\n");
+    next = true;
+  }
+  
+  sql += _T(")\nAS\n");
+  sql += p_contents;
   return sql;
 }
 

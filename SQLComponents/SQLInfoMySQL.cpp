@@ -1981,7 +1981,7 @@ SQLInfoMySQL::GetCATALOGViewText(XString& p_schema,XString& p_viewname,bool p_qu
 }
 
 XString
-SQLInfoMySQL::GetCATALOGViewCreate(XString /*p_schema*/,XString p_viewname,XString p_contents,bool p_ifexists /*= true*/) const
+SQLInfoMySQL::GetCATALOGViewCreate(XString /*p_schema*/,XString p_viewname,MColumnMap& p_columns,XString p_contents,bool p_ifexists /*= true*/) const
 {
   XString sql = _T("CREATE "); 
   if(p_ifexists)
@@ -1989,9 +1989,24 @@ SQLInfoMySQL::GetCATALOGViewCreate(XString /*p_schema*/,XString p_viewname,XStri
     sql += _T("OR REPLACE ");
   }
   sql += _T("VIEW ");
-  sql += QIQ(p_viewname) + _T(" AS\n") + p_contents;
+  sql += QIQ(p_viewname);
+  sql += _T("\n(  ");
 
+  bool next(false);
+  for(auto& column : p_columns)
+  {
+    if(next)
+    {
+      sql += _T(" ,");
+    }
+    sql += column.m_column;
+    sql += _T("\n");
+    next = true;
+  }
+
+  sql += _T(")\nAS\n") + p_contents;
   return sql;
+
 }
 
 XString 

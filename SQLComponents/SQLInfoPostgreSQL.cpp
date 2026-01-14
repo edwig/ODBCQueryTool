@@ -2037,9 +2037,25 @@ SQLInfoPostgreSQL::GetCATALOGViewText(XString& p_schema,XString& p_viewname,bool
 }
 
 XString
-SQLInfoPostgreSQL::GetCATALOGViewCreate(XString p_schema,XString p_viewname,XString p_contents,bool /*p_ifexists = true*/) const
+SQLInfoPostgreSQL::GetCATALOGViewCreate(XString p_schema,XString p_viewname,MColumnMap& p_columns,XString p_contents,bool /*p_ifexists = true*/) const
 {
-  return _T("CREATE OR REPLACE VIEW ") + QIQ(p_schema) + _T(".") + QIQ(p_viewname) + _T("\n") + p_contents;
+  XString sql = _T("CREATE OR REPLACE VIEW ") + QIQ(p_schema) + _T(".") + QIQ(p_viewname);
+  sql += _T("\n(  ");
+
+  bool next(false);
+  for(auto& column : p_columns)
+  {
+    if(next)
+    {
+      sql += _T(" ,");
+    }
+    sql += column.m_column;
+    sql += _T("\n");
+    next = true;
+  }
+  sql += _T(")\nAS\n") + p_contents;
+
+  return sql;
 }
 
 XString 
