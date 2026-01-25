@@ -781,6 +781,10 @@ SQLDatabase::SetAutoCommitMode(bool p_autoCommit)
   {
     return false;
   }
+  if(p_autoCommit && m_readOnly)
+  {
+    return false;
+  }
   // If we have a database type that can change the autocommit mode
   if(m_rdbmsType != RDBMS_ACCESS && m_rdbmsType != RDBMS_SQLSERVER)
   {
@@ -1294,16 +1298,19 @@ SQLDatabase::CommitTransaction(const SQLTransaction* p_transaction)
     try
     {
       // Do the commit
-      if(!Check(SqlEndTran(SQL_HANDLE_DBC, m_hdbc, SQL_COMMIT)))
+      if(!Check(SqlEndTran(SQL_HANDLE_DBC, m_hdbc,m_readOnly ? SQL_ROLLBACK : SQL_COMMIT)))
       {
         // Throw something, so we reach the catch block
         throw StdException(_T("ODBC Commit failed"));
       }
-      // Re-engage the autocommit mode. If it goes wrong we
-      // will automatically reach the catch block
-      if(m_rdbmsType != RDBMS_ACCESS && m_rdbmsType != RDBMS_SQLSERVER)
+      if(!m_readOnly)
       {
-        SetConnectAttr(SQL_ATTR_AUTOCOMMIT,SQL_AUTOCOMMIT_ON,SQL_IS_UINTEGER);
+        // Re-engage the autocommit mode. If it goes wrong we
+        // will automatically reach the catch block
+        if(m_rdbmsType != RDBMS_ACCESS && m_rdbmsType != RDBMS_SQLSERVER)
+        {
+          SetConnectAttr(SQL_ATTR_AUTOCOMMIT,SQL_AUTOCOMMIT_ON,SQL_IS_UINTEGER);
+        }
       }
     }
     catch(StdException& ex) 
@@ -1387,10 +1394,13 @@ SQLDatabase::RollbackTransaction(const SQLTransaction* p_transaction)
         // Throw something, so we reach the catch block
         throw StdException(_T("ODBC rollback failed"));
       }
-      // Re-engage the autocommit mode, will throw in case of an error
-      if(m_rdbmsType != RDBMS_ACCESS && m_rdbmsType != RDBMS_SQLSERVER)
+      if(!m_readOnly)
       {
-        SetConnectAttr(SQL_ATTR_AUTOCOMMIT,SQL_AUTOCOMMIT_ON,SQL_IS_UINTEGER);
+        // Re-engage the autocommit mode, will throw in case of an error
+        if(m_rdbmsType != RDBMS_ACCESS && m_rdbmsType != RDBMS_SQLSERVER)
+        {
+          SetConnectAttr(SQL_ATTR_AUTOCOMMIT,SQL_AUTOCOMMIT_ON,SQL_IS_UINTEGER);
+        }
       }
     }
     catch(StdException& ex)

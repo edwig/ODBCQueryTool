@@ -1234,30 +1234,46 @@ SQLInfoFirebird::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablena
            "      ,trim(col.rdb$field_name)    as column_name\n"           // 4  - VARCHAR NOT NULL
            "      ,CASE fld.rdb$field_type\n"
            "            WHEN 7  THEN 5\n"
-           "            WHEN 8  THEN 4\n"
+           "            WHEN 8  THEN CASE fld.rdb$field_sub_type\n"
+           "                              WHEN 1 THEN 2\n"   // SQL_NUMERIC
+           "                              WHEN 2 THEN 3\n"   // SQL_DECIMAL
+           "                                     ELSE 4\n"   // SQL_INTEGER
+           "                         END\n"
            "            WHEN 10 THEN 7\n"
            "            WHEN 12 THEN 10\n"
            "            WHEN 13 THEN 13\n"
            "            WHEN 14 THEN 1\n"
            "            WHEN 16 THEN CASE fld.rdb$field_sub_type\n"
-           "                              WHEN 1 THEN 2\n"
-           "                              WHEN 2 THEN 2\n"
-           "                                     ELSE -5\n"
+           "                              WHEN 1 THEN 2\n"   // SQL_NUMERIC
+           "                              WHEN 2 THEN 3\n"   // SQL_DECIMAL
+           "                                     ELSE -5\n"  // SQL_BIGINT
            "                         END\n"
            "            WHEN 23 THEN -7\n"
            "            WHEN 27 THEN 8\n"
-           "            WHEN 35 THEN 11\n"
+           "            WHEN 26 THEN CASE fld.rdb$field_sub_type\n"
+           "                              WHEN 1 THEN 2\n"   // SQL_NUMERIC
+           "                              WHEN 2 THEN 3\n"   // SQL_DECIMAL
+           "                                     ELSE -5\n"  // INT128, but use SQL_BIGINT instread
+           "                         END\n"
+           "            WHEN 27 THEN 6\n"   // SQL_FLOAT
+           "            WHEN 28 THEN 92\n"  // SQL_TYPE_TIME
+           "            WHEN 29 THEN 93\n"  // SQL_TYPE_TIMESTAMP
+           "            WHEN 35 THEN 11\n"  // SQL_TIMESTAMP
            "            WHEN 37 THEN 12\n"
            "            WHEN 261 THEN CASE fld.rdb$field_sub_type\n"
-           "                               WHEN 0 THEN -4\n"
-           "                               WHEN 1 THEN -1\n"
-           "                                      ELSE -10\n"
+           "                               WHEN 0 THEN 2\n"
+           "                               WHEN 1 THEN 3\n"
+           "                                      ELSE -5\n"   // INT128, but SQL_BIGINT used
            "                          END\n"
            "                     ELSE 0\n"
            "       END                           as data_type\n"	          // 5  - SMALLINT NOT NULL
            "      ,CASE fld.rdb$field_type\n"
-           "            WHEN 7  THEN 'SMALLINT'\n"
-           "            WHEN 8  THEN 'INTEGER'\n"
+           "            WHEN  7 THEN 'SMALLINT'\n"
+           "            WHEN  8 THEN CASE fld.rdb$field_sub_type\n"
+           "                              WHEN 1 THEN 'NUMERIC'\n"
+           "                              WHEN 2 THEN 'DECIMAL'\n"
+           "                                     ELSE 'INTEGER'\n"
+           "                         END\n"
            "            WHEN 10 THEN 'FLOAT'\n"
            "            WHEN 12 THEN 'DATE'\n"
            "            WHEN 13 THEN 'TIME'\n"
@@ -1268,32 +1284,54 @@ SQLInfoFirebird::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablena
            "                                     ELSE 'BIGINT'\n"
            "                         END\n"
            "            WHEN 23 THEN 'BOOLEAN'\n"
+           "            WHEN 24 THEN 'DECFLOAT(16)'\n"
+           "            WHEN 25 THEN 'DECFLOAT(34)'\n"
+           "            WHEN 26 THEN CASE fld.rdb$field_sub_type\n"
+           "                              WHEN 1 THEN 'NUMERIC'\n"
+           "                              WHEN 2 THEN 'DECIMAL'\n"
+           "                                     ELSE 'INT128'\n"
+           "                         END\n"
            "            WHEN 27 THEN 'DOUBLE PRECISION'\n"
+           "            WHEN 28 THEN 'TIME WITH TIMEZONE'\n"
+           "            WHEN 29 THEN 'TIMESTAMP WITH TIMEZONE'\n"
            "            WHEN 35 THEN 'TIMESTAMP'\n"
            "            WHEN 37 THEN 'VARCHAR'\n"
            "            WHEN 261 THEN CASE fld.rdb$field_sub_type\n"
            "                               WHEN 0 THEN 'BLOB SUB_TYPE 0'\n"
            "                               WHEN 1 THEN 'BLOB SUB_TYPE TEXT'\n"
-           "                                      ELSE 'BLOB'\n"
+           "                                      ELSE 'BLOB SUB_TYPE ' || CAST(fld.rdb$field_sub_type AS VARCHAR(2))\n"
            "                          END\n"
            "                     ELSE 'UNKNOWN'\n"
            "       END                                        as type_name\n"		// 6  - VARCHAR NOT NULL
            "      ,CASE fld.rdb$field_type\n"
            "            WHEN 7  THEN 5\n"
-           "            WHEN 8  THEN 11\n"
+           "            WHEN 8  THEN CASE fld.rdb$field_sub_type\n"
+           "                              WHEN 1 THEN fld.rdb$field_precision\n"
+           "                              WHEN 2 THEN fld.rdb$field_precision\n"
+           "                                     ELSE 11\n"
+           "                         END\n"
            "            WHEN 10 THEN 12\n"
            "            WHEN 12 THEN 10\n"
            "            WHEN 13 THEN 13\n"
-           "            WHEN 14 THEN fld.rdb$field_length\n"
+           "            WHEN 14 THEN rdb$character_length\n"
            "            WHEN 16 THEN CASE fld.rdb$field_sub_type\n"
            "                              WHEN 1 THEN fld.rdb$field_precision\n"
            "                              WHEN 2 THEN fld.rdb$field_precision\n"
            "                                     ELSE 22\n"
            "                         END\n"
            "            WHEN 23 THEN 1\n"
+           "            WHEN 24 THEN 20\n"
+           "            WHEN 25 THEN 40\n"
+           "            WHEN 26 THEN CASE fld.rdb$field_sub_type\n"
+           "                              WHEN 1 THEN fld.rdb$field_precision\n"
+           "                              WHEN 2 THEN fld.rdb$field_precision\n"
+           "                                     ELSE 44\n"
+           "                         END\n"
            "            WHEN 27 THEN 20\n"
+           "            WHEN 28 THEN 40\n"
+           "            WHEN 29 THEN 50\n"
            "            WHEN 35 THEN 26\n"
-           "            WHEN 37 THEN fld.rdb$field_length\n"
+           "            WHEN 37 THEN rdb$character_length\n"
            "            WHEN 261 THEN 2147483647\n"
            "       END                                        as column_size\n"              // 7  - INTEGER
            "      ,cast(fld.rdb$field_length as integer)      as buffer_length\n"            // 8  - INTEGER
@@ -1307,19 +1345,30 @@ SQLInfoFirebird::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablena
            "      ,trim(col.rdb$default_source)               as column_def\n"               // 13 - VARCHAR
            "      ,CASE fld.rdb$field_type\n"
            "            WHEN 7  THEN 5\n"
-           "            WHEN 8  THEN 4\n"
+           "            WHEN 8  THEN CASE fld.rdb$field_sub_type\n"
+           "                              WHEN 1 THEN 2\n"   // SQL_NUMERIC
+           "                              WHEN 2 THEN 3\n"   // SQL_DECIMAL
+           "                                     ELSE 4\n"   // SQL_INTEGER
+           "                         END\n"
            "            WHEN 10 THEN 7\n"
            "            WHEN 12 THEN 9\n"
            "            WHEN 13 THEN 10\n"
            "            WHEN 14 THEN 1\n"
            "            WHEN 16 THEN CASE fld.rdb$field_sub_type\n"
-           "                              WHEN 1 THEN 2\n"
-           "                              WHEN 2 THEN 2\n"
-           "                                     ELSE -5\n"
+           "                              WHEN 1 THEN 2\n"   // SQL_NUMERIC
+           "                              WHEN 2 THEN 3\n"   // SQL_DECIMAL
+           "                                     ELSE -5\n"  // SQL_BIGINT
            "                         END\n"
            "            WHEN 23 THEN -7\n"
-           "            WHEN 27 THEN 8\n"
-           "            WHEN 35 THEN 11\n"
+           "            WHEN 26 THEN CASE fld.rdb$field_sub_type\n"
+           "                              WHEN 1 THEN 2\n"   // SQL_NUMERIC
+           "                              WHEN 2 THEN 3\n"   // SQL_DECIMAL
+           "                                     ELSE -5\n"  // INT128, But use SQL_BIGINT instead
+           "                         END\n"
+           "            WHEN 27 THEN 6\n"   // SQL_FLOAT
+           "            WHEN 28 THEN 92\n"  // SQL_TYPE_TIME
+           "            WHEN 29 THEN 93\n"  // SQL_TYPE_TIMESTAMP
+           "            WHEN 35 THEN 11\n"  // SQL_TIMESTAMP
            "            WHEN 37 THEN 12\n"
            "            WHEN 261 THEN CASE fld.rdb$field_sub_type\n"
            "                               WHEN 0 THEN -4\n"
@@ -1328,8 +1377,8 @@ SQLInfoFirebird::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablena
            "                          END\n"
            "                     ELSE 0\n"
            "       END                                         as sql_data_type\n" 			    // 14 - SMALLINT NOT NULL
-           "      ,CAST(0 AS SMALLINT)                         as sql_datetime_sub\n"        // 15 - SMALLINT
-           "      ,fld.rdb$field_length / rdb$character_length as char_octet_length\n"    		// 16 - INTEGER
+           "      ,CAST(0 AS SMALLINT)                         as sql_datetime_sub\n"       // 15 - SMALLINT
+           "      ,fld.rdb$field_length                        as char_octet_length\n"    	// 16 - INTEGER
            "      ,col.rdb$field_position + 1                  as ordinal_position\n"				// 17 - INTEGER NOT NULL
            "      ,CASE coalesce(col.rdb$null_flag,0)\n"
            "            WHEN 0 THEN 'YES'\n"
