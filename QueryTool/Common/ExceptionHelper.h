@@ -32,7 +32,7 @@ namespace Common
 #endif//_AFX
 }
 
-#define _CHECK_AND_THROW_(x, msg)   if (!(x)) { _ASSERTE(0); throw StdException((msg)); }
+#define _CHECK_AND_THROW_(x, msg)   if (!(x)) { throw StdException((msg)); }
 
 #define DEFAULT_HANDLER(x)          Common::default_handler(x,_T(__FILE__), __LINE__);
 #define DEFAULT_HANDLER_ALL         Common::default_handler(  _T(__FILE__), __LINE__);

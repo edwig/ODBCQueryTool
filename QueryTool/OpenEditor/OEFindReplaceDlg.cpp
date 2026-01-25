@@ -64,22 +64,12 @@ CFindReplaceDlg::CFindReplaceDlg(BOOL replace, COEditorView* pView)
     toPrintableStr(m_pView->GetSearchText(), buff);
     m_SearchText = buff;
 
-    /*
-    bool backward, wholeWords, matchCase, regExpr, searchAll;
-    pView->GetSearchOption(backward, wholeWords, matchCase, regExpr, searchAll);
-
-    m_MatchCase      = matchCase;
-    m_MatchWholeWord = wholeWords;
-    m_AllWindows     = searchAll;
-    m_RegExp         = regExpr;
-    m_Direction      = backward ? 0 : 1;
-    */
     m_MatchCase      = AfxGetApp()->GetProfileInt(_T("Editor"), _T("SearchMatchCase"),      FALSE);
     m_MatchWholeWord = AfxGetApp()->GetProfileInt(_T("Editor"), _T("SearchMatchWholeWord"), FALSE);
     m_AllWindows     = AfxGetApp()->GetProfileInt(_T("Editor"), _T("SearchAllWindows"),     FALSE);
     m_RegExp         = AfxGetApp()->GetProfileInt(_T("Editor"), _T("SearchRegExp"),         FALSE);
-    // 26.05.2003 bug fix, Find/Replace dialog: a replace mode depends on a search direction
-    m_Direction      = m_ReplaceMode ? 1 : AfxGetApp()->GetProfileInt(_T("Editor"), _T("SearchDirection"), 1);
+    m_Direction      = m_ReplaceMode ? 1 : 
+                       AfxGetApp()->GetProfileInt(_T("Editor"), _T("SearchDirection"),      1);
         
     m_WhereReplace   = 1;
   }

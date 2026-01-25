@@ -113,7 +113,7 @@ namespace Common
                         }
                         else
                         {
-                          _ASSERTE(0);
+                          ch = from[1];
                         }
                     }
                 }

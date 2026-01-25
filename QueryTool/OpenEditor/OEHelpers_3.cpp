@@ -321,7 +321,8 @@ void Searcher::compileExpression () const
     if (!comp_ok)
     {
       CString text = _T("Regular expression error: ") + pattern;
-      _CHECK_AND_THROW_(0, text);
+      StyleMessageBox(nullptr,text,_T("ERROR"),MB_OK|MB_ICONERROR);
+      _CHECK_AND_THROW_(1, text);
     }
   }
 }
@@ -618,6 +619,10 @@ int  Searcher::DoBatch (Storage* _storage, LPCTSTR text, ESearchBatch mode, Squa
                               _T("Infinite cycle or the number of occurences is too much (> 100000)! ")
                               _T("You can try to repeat it again."));
         }
+    }
+    catch(StdException& ex)
+    {
+      StyleMessageBox(nullptr,ex.GetErrorMessage(),_T("ERROR"),MB_OK | MB_ICONERROR);
     }
     catch (...)
     {

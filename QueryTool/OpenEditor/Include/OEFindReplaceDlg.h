@@ -33,7 +33,7 @@ public:
   BOOL m_MatchCase;
   BOOL m_MatchWholeWord;
   BOOL m_AllWindows;
-  BOOL m_RegExp;
+  int  m_RegExp;
   BOOL m_BackslashExpressions;
   int  m_Direction;    // 0 - up, 1 - down
   int  m_WhereReplace; // 0 - in selection, 1 - in whole file
