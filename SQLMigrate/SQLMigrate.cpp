@@ -891,6 +891,12 @@ SQLMigrate::FixupTableColumns(DDLCreateTable& p_create)
 
   for(auto& column : p_create.m_columns)
   {
+    // Fix reserved namess
+    if(target->IsReservedWord(column.m_column))
+    {
+      column.m_column = target->QueryIdentifierQuotation(column.m_column);
+    }
+
     // Fix the datatype for the target database
     target->GetKEYWORDDataType(&column);
 
@@ -1286,15 +1292,18 @@ SQLMigrate::FillTablesViaPump()
           catch(StdException& ex)
           {
             // Show missing records for first 100 rows
-            if(++missing < 100)
+            if(++missing < MAX_MISSING_RECORDS)
             {
               XString error = ex.GetErrorMessage();
               LogMissingRecord(query1,error);
             }
-            else if(missing == 100)
+            else if(missing == MAX_MISSING_RECORDS)
             {
+              XString error;
+              error.Format(_T("More than %d missing records.Other records are not individually shown in the logfile!!"),MAX_MISSING_RECORDS);
+
               m_log.WriteLog(_T(""));
-              m_log.WriteLog(_T("More than 100 missing records. Other records are not individually shown in the logfile!!"));
+              m_log.WriteLog(error);
               m_log.WriteLog(_T(""));
             }
             ++m_params.v_errors;
@@ -1457,16 +1466,19 @@ SQLMigrate::FillTablesViaSlowPump()
           }
           catch(StdException& ex)
           {
-            // Show missing records for first 100 rows
-            if(++missing < 100)
+            // Show missing records for first x rows
+            if(++missing < MAX_MISSING_RECORDS)
             {
               XString error = ex.GetErrorMessage();
               LogMissingRecord(query1,error);
             }
-            else if(missing == 100)
+            else if(missing == MAX_MISSING_RECORDS)
             {
+              XString error;
+              error.Format(_T("More than %d missing records. Other records are not individually shown in the logfile!!"),MAX_MISSING_RECORDS);
+
               m_log.WriteLog(_T(""));
-              m_log.WriteLog(_T("More than 100 missing records. Other records are not individually shown in the logfile!!"));
+              m_log.WriteLog(error);
               m_log.WriteLog(_T(""));
             }
             ++m_params.v_errors;
@@ -1813,16 +1825,19 @@ SQLMigrate::FillTablesViaData(bool p_process)
           catch(StdException& ex)
           {
             // Show missing records for first 100 rows
-            if(++missing < 100)
+            if(++missing < MAX_MISSING_RECORDS)
             {
               XString error = ex.GetErrorMessage();
               LogMissingRecord(query1,error);
               m_log.WriteLog(insert);
             }
-            else if(missing == 100)
+            else if(missing == MAX_MISSING_RECORDS)
             {
+              XString error;
+              error.Format(_T("More than %d missing records. Other records are not individually shown in the logfile!!"),MAX_MISSING_RECORDS);
+
               m_log.WriteLog(_T(""));
-              m_log.WriteLog(_T("More than 100 missing records. Other records are not individually shown in the logfile!!"));
+              m_log.WriteLog(error);
               m_log.WriteLog(_T(""));
             }
             ++m_params.v_errors;

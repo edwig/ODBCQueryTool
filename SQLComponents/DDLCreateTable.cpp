@@ -849,7 +849,10 @@ DDLCreateTable::FormatColumnName(XString p_column,int p_length)
   else if(!m_info->IsCorrectName(p_column))
   {
     XString quote = m_info->GetKEYWORDReservedWordQuote();
-    p_column = quote + p_column + quote;
+    if(p_column.Left(1) != quote && p_column.Right(1) != quote)
+    {
+      p_column = quote + p_column + quote;
+    }
   }
   else
   {

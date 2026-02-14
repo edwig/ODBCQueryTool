@@ -39,6 +39,10 @@ namespace SQLComponents
 
 typedef std::map<int,SQLVariant*> VarMap;
 
+// The maximum of records that may be missing
+// before we skip reporting them in the logfiles
+#define MAX_MISSING_RECORDS 10
+
 class SQLMigrate  
 {
 public:

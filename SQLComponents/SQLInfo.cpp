@@ -222,10 +222,6 @@ SQLInfo::Init()
   m_canFindSchemas          = true;
   m_canFindTypes            = true;
 
-  // Empty all mappings
-  m_RDBMSkeywords.clear();
-  m_ODBCKeywords.clear();
-
   // Remove all datatypes info
   for(const auto& type : m_dataTypes)
   {
@@ -394,7 +390,10 @@ SQLInfo::GetInfo()
       if (*pb == ',')
       {
         *pw = '\0';
-        m_ODBCKeywords.insert(word);
+        if(m_ODBCKeywords.find(word) == m_ODBCKeywords.end())
+        {
+          m_ODBCKeywords.insert(word);
+        }
         pw = word;
       }
       else
@@ -415,7 +414,10 @@ SQLInfo::GetInfo()
       if (*pb == ',')
       {
         *pw = '\0';
-        m_RDBMSkeywords.insert(word);
+        if(m_RDBMSkeywords.find(word) == m_RDBMSkeywords.end())
+        {
+          m_RDBMSkeywords.insert(word);
+        }
         pw = word;
       }
       else

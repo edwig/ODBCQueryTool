@@ -48,6 +48,7 @@ SQLInfoFirebird::SQLInfoFirebird(SQLDatabase* p_database)
   m_RDBMSkeywords.insert(_T("PARAMETER"));
   m_RDBMSkeywords.insert(_T("TIMESTAMP"));
   m_RDBMSkeywords.insert(_T("BOOLEAN"));
+  m_RDBMSkeywords.insert(_T("POSITION"));
 }
 
 // Destructor. Does nothing
@@ -395,50 +396,66 @@ SQLInfoFirebird::GetKEYWORDDataType(MetaColumn* p_column)
                                         break;
     case SQL_BIGINT:                    type = _T("BIGINT");
                                         break;
+    case SQL_BIT:                       type = _T("BOOLEAN");
+                                        break;
+    case SQL_FLOAT:                     // Fall through
+    case SQL_REAL:                      // Fall through
+    case SQL_DOUBLE:                    // Fall through
     case SQL_NUMERIC:                   // fall through
-    case SQL_DECIMAL:                   // fall through
-    case SQL_FLOAT:                     // fall through
-    case SQL_REAL:                      // fall through
-    case SQL_DOUBLE:                    // fall through
-    case SQL_BIT:                       type = _T("NUMERIC");
-                                        if(p_column->m_columnSize == SQLNUM_MAX_PREC && p_column->m_decimalDigits == 0)
+    case SQL_DECIMAL:                   type = _T("DECIMAL");
+                                        p_column->m_datatype = SQL_DECIMAL;
+                                        if(p_column->m_decimalDigits == 0)
                                         {
-                                          type = _T("INTEGER");
-                                          p_column->m_columnSize    = 0;
-                                          p_column->m_decimalDigits = 0;
+                                          if(p_column->m_columnSize == SQLNUM_MAX_PREC)
+                                          {
+                                            // Standard 38,0 in other RDBMS -> integer intended!
+                                            type = _T("INTEGER");
+                                            p_column->m_columnSize    = 0;
+                                            p_column->m_datatype      = SQL_INTEGER;
+                                          }
+                                          else if(p_column->m_columnSize <= 4)
+                                          {
+                                            type = _T("SMALLINT");
+                                            p_column->m_columnSize    = 0;
+                                            p_column->m_datatype      = SQL_SMALLINT;
+                                          }
+                                          else if(p_column->m_columnSize <= 9)
+                                          {
+                                            type = _T("INTEGER");
+                                            p_column->m_columnSize    = 0;
+                                            p_column->m_datatype      = SQL_INTEGER;
+                                          }
+                                          else if(p_column->m_columnSize <= 18)
+                                          {
+                                            type = _T("BIGINT");
+                                            p_column->m_columnSize    = 0;
+                                            p_column->m_datatype      = SQL_BIGINT;
+                                          }
                                         }
-                                        else
+                                        // Firebird knows precisions up to 38
+                                        if(p_column->m_columnSize > SQLNUM_MAX_PREC)
                                         {
-                                          // Firebird knows precisions up to 18
-                                          if(p_column->m_columnSize > 18)
+                                          p_column->m_columnSize = SQLNUM_MAX_PREC;
+                                          if(p_column->m_decimalDigits == 16)
                                           {
-                                            p_column->m_columnSize = 18;
-                                            if(p_column->m_decimalDigits == 16)
-                                            {
-                                              p_column->m_decimalDigits = 2;
-                                            }
+                                            p_column->m_decimalDigits = 2;
                                           }
-                                          if(p_column->m_decimalDigits > p_column->m_columnSize)
-                                          {
-                                            p_column->m_decimalDigits = p_column->m_columnSize - 1;
-                                          }
-                                          // Preserve scale!
-//                                           if(p_column->m_decimalDigits == 0)
-//                                           {
-//                                             p_column->m_decimalDigits = -1;
-//                                           }
+                                        }
+                                        if(p_column->m_decimalDigits > p_column->m_columnSize)
+                                        {
+                                          p_column->m_decimalDigits = p_column->m_columnSize - 1;
                                         }
                                         break;
-    //case SQL_DATE:
-    case SQL_DATETIME:                  // fall through
-    case SQL_TYPE_DATE:                 // fall through
-    case SQL_TIMESTAMP:                 // fall through
-    case SQL_TYPE_TIMESTAMP:            type = _T("TIMESTAMP");
-                                        p_column->m_columnSize    = 0;
-                                        p_column->m_decimalDigits = 0;
+    case SQL_DATE:                      // SAME AS SQL_DATETIME:
+    case SQL_TYPE_DATE:                 type = _T("DATE");
                                         break;
     case SQL_TIME:                      // fall through
     case SQL_TYPE_TIME:                 type = _T("TIME");
+                                        p_column->m_columnSize    = 0;
+                                        p_column->m_decimalDigits = 0;
+                                        break;
+    case SQL_TIMESTAMP:                 // fall through
+    case SQL_TYPE_TIMESTAMP:            type = _T("TIMESTAMP");
                                         p_column->m_columnSize    = 0;
                                         p_column->m_decimalDigits = 0;
                                         break;
@@ -450,7 +467,7 @@ SQLInfoFirebird::GetKEYWORDDataType(MetaColumn* p_column)
     case SQL_INTERVAL_YEAR:             // fall through
     case SQL_INTERVAL_YEAR_TO_MONTH:    // fall through
     case SQL_INTERVAL_MONTH:            type = _T("VARCHAR");
-                                        p_column->m_columnSize    = 80;
+                                        p_column->m_columnSize    = 10;
                                         p_column->m_decimalDigits = 0;
                                         break;
     case SQL_INTERVAL_DAY:              // fall through
@@ -463,7 +480,7 @@ SQLInfoFirebird::GetKEYWORDDataType(MetaColumn* p_column)
     case SQL_INTERVAL_HOUR_TO_SECOND:   // fall through
     case SQL_INTERVAL_MINUTE_TO_SECOND: // fall through
     case SQL_INTERVAL_DAY_TO_SECOND:    type = _T("VARCHAR");
-                                        p_column->m_columnSize    = 80;
+                                        p_column->m_columnSize    = 22;
                                         p_column->m_decimalDigits = 0;
                                         break;
     case SQL_UNKNOWN_TYPE:              // fall through
