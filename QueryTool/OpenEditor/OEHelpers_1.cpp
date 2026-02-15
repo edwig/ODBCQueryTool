@@ -240,7 +240,7 @@ void LineTokenizer::GetCurrentSQLToken(LPCTSTR& str, int& pos, int& len,TCHAR& i
     return;
   }
   GetCurentWord(str, pos, len);
-  if(len == 1)
+  if(len >= 1)
   {
     if(*str == '\'' || *str == '\"')
     {
