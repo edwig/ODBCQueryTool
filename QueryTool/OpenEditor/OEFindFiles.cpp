@@ -234,8 +234,9 @@ COEFindFiles::GoFindInFile(CString fileName,StyleGridCtrl* grid)
   CString findThis   = m_whattofind;
   long    lineNumber = 0;
   RegExp  rex;
-  CString buffer;
-  WinFile file(fileName);
+  XString buffer;
+  XString filename = fileName;
+  WinFile file(filename);
 
   file.Open(winfile_read | open_trans_text);
   if(!file.GetIsOpen())
@@ -274,7 +275,7 @@ COEFindFiles::GoFindInFile(CString fileName,StyleGridCtrl* grid)
       {
         buffer.MakeUpper();
       }
-      res = (_tcsstr(buffer,findThis) != NULL);
+      res = (_tcsstr(buffer.GetString(),findThis) != NULL);
     }
     else
     {

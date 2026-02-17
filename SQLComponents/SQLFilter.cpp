@@ -2,8 +2,8 @@
 //
 // File: SQLFilter.cpp
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -27,12 +27,6 @@
 #include "SQLFilter.h"
 #include "SQLRecord.h"
 #include "SQLQuery.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 namespace SQLComponents
 {
@@ -64,7 +58,7 @@ SQLFilter::SQLFilter()
 
 // XTOR: Creates a new filter
 //       Used for filters without an operand, or more than one
-SQLFilter::SQLFilter(XString p_field,SQLOperator p_operator)
+SQLFilter::SQLFilter(const XString& p_field,SQLOperator p_operator)
           :m_field(p_field)
           ,m_operator(p_operator)
 {
@@ -72,31 +66,31 @@ SQLFilter::SQLFilter(XString p_field,SQLOperator p_operator)
 
 // XTOR: Creates a new filter
 //       Used for standard filters with one or more operands
-SQLFilter::SQLFilter(XString p_field,SQLOperator p_operator,SQLVariant* p_value)
+SQLFilter::SQLFilter(const XString& p_field,SQLOperator p_operator,const SQLVariant* p_value)
           :m_field(p_field)
           ,m_operator(p_operator)
 {
   if(p_value)
   {
-    m_values.push_back(new SQLVariant(p_value));
+    m_values.push_back(alloc_new SQLVariant(p_value));
   }
 }
 
 // XTOR from a single integer
-SQLFilter::SQLFilter(XString p_field,SQLOperator p_operator,int p_value)
+SQLFilter::SQLFilter(const XString& p_field,SQLOperator p_operator,const int p_value)
           :m_field(p_field)
           ,m_operator(p_operator)
 {
-  SQLVariant* val = new SQLVariant(p_value);
+  SQLVariant* val = alloc_new SQLVariant(p_value);
   m_values.push_back(val);
 }
 
 // XTOR from a single XString
-SQLFilter::SQLFilter(XString p_field,SQLOperator p_operator,XString p_value)
+SQLFilter::SQLFilter(const XString& p_field,SQLOperator p_operator,const XString& p_value)
           :m_field(p_field)
           ,m_operator(p_operator)
 {
-  SQLVariant* val = new SQLVariant(p_value);
+  SQLVariant* val = alloc_new SQLVariant(p_value);
   m_values.push_back(val);
 }
 
@@ -133,7 +127,7 @@ SQLFilter::~SQLFilter()
 
 // Adding a comparison field (if not yet set)
 bool
-SQLFilter::SetField(XString p_field)
+SQLFilter::SetField(const XString& p_field)
 {
   if(m_field.IsEmpty() && m_subfilters == nullptr)
   {
@@ -144,7 +138,7 @@ SQLFilter::SetField(XString p_field)
 }
 
 void
-SQLFilter::SetField2(XString p_field2)
+SQLFilter::SetField2(const XString& p_field2)
 {
   int pos = p_field2.Find('@');
   if(pos > 0)
@@ -194,7 +188,7 @@ SQLFilter::operator=(const SQLFilter& p_other)
 
   for(auto& variant : p_other.m_values)
   {
-    var* value = new SQLVariant(variant);
+    var* value = alloc_new SQLVariant(variant);
     m_values.push_back(value);
   }
   return *this;
@@ -389,7 +383,7 @@ SQLFilter::MatchRecord(SQLRecord* p_record)
 
 // Record the CAST AS information
 void
-SQLFilter::SetCastAs(XString p_datatype,int p_scale /*= 0*/,int p_precision /*= 0*/)
+SQLFilter::SetCastAs(const XString& p_datatype,int p_scale /*= 0*/,int p_precision /*= 0*/)
 {
   m_castType      = p_datatype;
   m_castScale     = p_scale;
@@ -906,7 +900,7 @@ SQLFilter::MatchBetween(const SQLVariant* p_field)
 
 // Translate a string from the message to an operator
 SQLOperator 
-StringToSQLOperator(XString p_oper)
+StringToSQLOperator(const XString& p_oper)
 {
   OperatorName* filter = operatornames;
 

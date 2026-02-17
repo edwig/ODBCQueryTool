@@ -207,7 +207,7 @@ bool GUICommandDictionary::BuildAcceleratorTable (const TCHAR* filename, HACCEL&
         g_dblKeyAccels.clear();
     }
 
-    CString buffer;
+    XString buffer;
     WinFile file(filename);
     if(!file.Open(winfile_read | open_trans_text))
     {
@@ -251,7 +251,8 @@ bool GUICommandDictionary::BuildAcceleratorTable (const TCHAR* filename, HACCEL&
       {
         if (findCommand(token, command_id))
         {
-          if (readAcceleratorSeq(buffer.Mid(pos),control,shift,alt,vk_key))
+          CString accel_desc = buffer.Mid(pos);
+          if (readAcceleratorSeq(accel_desc,control,shift,alt,vk_key))
           {
             accels[i].fVirt = FVIRTKEY
                             | (control ? FCONTROL : 0)

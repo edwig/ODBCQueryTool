@@ -2,8 +2,8 @@
 //
 // File: SQLDatabasePool.cpp
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -30,12 +30,6 @@
 #include "SQLInfoDB.h"
 #include <AutoCritical.h>
 #include <ServiceReporting.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 namespace SQLComponents
 {
@@ -290,7 +284,11 @@ SQLDatabasePool::AddParameterRebind(int p_sqlType,int p_cppType)
 }
 
 bool
-SQLDatabasePool::AddConnection(XString p_name,XString p_datasource,XString p_username,XString p_password,XString p_options)
+SQLDatabasePool::AddConnection(const XString& p_name
+                              ,const XString& p_datasource
+                              ,const XString& p_username
+                              ,const XString& p_password
+                              ,const XString& p_options)
 {
   bool added = m_connections.AddConnection(p_name,p_datasource,p_username,p_password,p_options);
   if(!m_isopen && added)
@@ -301,7 +299,7 @@ SQLDatabasePool::AddConnection(XString p_name,XString p_datasource,XString p_use
 }
 
 bool
-SQLDatabasePool::DelConnection(XString p_name)
+SQLDatabasePool::DelConnection(const XString& p_name)
 {
   bool removed = m_connections.DelConnection(p_name);
   if(m_isopen && removed && m_connections.GetConnectionsCount() == 0)
@@ -320,7 +318,7 @@ SQLDatabasePool::DelConnection(XString p_name)
 
 // Get OR make a logged in database connection
 SQLDatabase*
-SQLDatabasePool::GetDatabaseInternally(DbsPool& p_pool,XString& p_connectionName)
+SQLDatabasePool::GetDatabaseInternally(DbsPool& p_pool,const XString& p_connectionName)
 {
   DbsPool::iterator it;
   unsigned retry = CONN_RETRIES;
@@ -412,7 +410,7 @@ SQLDatabasePool::GetDatabaseInternally(DbsPool& p_pool,XString& p_connectionName
 
 // Return a connection to the pool
 void
-SQLDatabasePool::GiveUpInternally(SQLDatabase* p_database,XString& p_connectionName)
+SQLDatabasePool::GiveUpInternally(SQLDatabase* p_database,const XString& p_connectionName)
 {
   // Last time we had an action on this database
   p_database->SetLastActionTime();
@@ -422,7 +420,7 @@ SQLDatabasePool::GiveUpInternally(SQLDatabase* p_database,XString& p_connectionN
   if(it == m_freeDatabases.end())
   {
     // Create a new free list
-    DbsList* list = new DbsList();
+    DbsList* list = alloc_new DbsList();
     list->push_back(p_database);
     m_freeDatabases.insert(std::make_pair(p_connectionName,list));
     return;
@@ -510,10 +508,10 @@ SQLDatabasePool::CleanupInternally(bool p_aggressive)
 
 // Create a new database object
 SQLDatabase*
-SQLDatabasePool::MakeDatabase(XString p_connectionName)
+SQLDatabasePool::MakeDatabase(const XString& p_connectionName)
 {
   // Create the database
-  SQLDatabase* dbs = new SQLDatabase();
+  SQLDatabase* dbs = alloc_new SQLDatabase();
   dbs->SetConnectionName(p_connectionName);
 
   // Preset logging: derive it from the database pool
@@ -531,7 +529,7 @@ SQLDatabasePool::MakeDatabase(XString p_connectionName)
     DbsPool::iterator it = m_allDatabases.find(p_connectionName);
     if(it == m_allDatabases.end())
     {
-      DbsList* list = new DbsList();
+      DbsList* list = alloc_new DbsList();
       list->push_back(dbs);
       m_allDatabases.insert(std::make_pair(p_connectionName,list));
     }
@@ -557,7 +555,7 @@ SQLDatabasePool::MakeDatabase(XString p_connectionName)
 
 // Open the connection to the RDBMS server
 void
-SQLDatabasePool::OpenDatabase(SQLDatabase* p_dbs,XString& p_connectionName)
+SQLDatabasePool::OpenDatabase(SQLDatabase* p_dbs,const XString& p_connectionName)
 {
   // Find the database connection definition
   SQLConnection* conn = m_connections.GetConnection(p_connectionName);
@@ -572,7 +570,7 @@ SQLDatabasePool::OpenDatabase(SQLDatabase* p_dbs,XString& p_connectionName)
   if(conn)
   {
     // Try to open the database right 
-    // Throws if database cannot be openend
+    // Throws if database cannot be opened
     XString connString = m_connections.GetConnectionString(p_connectionName);
     p_dbs->Open(connString,m_readOnly);
     p_dbs->SetDatasource(conn->m_datasource);
@@ -722,23 +720,6 @@ SQLDatabasePool::AddRebindsToDatabase(SQLDatabase* p_database)
   for(const auto& rebind : m_rebindParameters)
   {
     p_database->AddParameterRebind(rebind.first,rebind.second);
-  }
-}
-
-// Change the read-only state of the pool and all databases
-// Does NOT change the state of already running transactions
-void
-SQLDatabasePool::SetReadOnly(bool p_readonly)
-{
-  m_readOnly = p_readonly;
-
-  AutoCritSec lock(&m_lock);
-  for(auto& pool : m_allDatabases)
-  {
-    for(auto& dbs : (*pool.second))
-    {
-      dbs->SetReadOnly(p_readonly);
-    }
   }
 }
 

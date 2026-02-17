@@ -2,8 +2,8 @@
 //
 // File: SQLRecord.h
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -55,15 +55,15 @@ public:
   int         GetStatus() const;
   int         GetNumberOfFields() const;
   SQLVariant* GetField(int p_num) const;
-  SQLVariant* GetField(XString p_name) const;
+  SQLVariant* GetField(const XString& p_name) const;
   int         GetGenerator() const;
   // Setting a generator column
   void        SetGenerator(int p_generator);
   // Adding a field to the record
   int         AddField(const SQLVariant* p_field,bool p_insert = false);
   // Setting different value without changing status
-  bool        SetField   (int     p_num, const SQLVariant* p_field,int p_mutationID = 0);
-  bool        SetField   (XString p_name,const SQLVariant* p_field,int p_mutationID = 0);
+  bool        SetField   (int            p_num, const SQLVariant* p_field,int p_mutationID = 0);
+  bool        SetField   (const XString& p_name,const SQLVariant* p_field,int p_mutationID = 0);
   // Setting different value AND changing record/set status
   void        ModifyField(int         p_num, const SQLVariant* p_field,int p_mutationID = 0);
   void        ModifyField(LPCTSTR p_name,const SQLVariant* p_field,int p_mutationID = 0);
@@ -114,7 +114,7 @@ public:
   bool        IsModified() const;
   // See if a field is modified
   bool        IsModified(int p_num) const;
-  bool        IsModified(XString p_name) const;
+  bool        IsModified(const XString& p_name) const;
   // Set the status of the record to 'Inserted'
   void        Inserted();
   // Set the status of the record to 'Deleted'

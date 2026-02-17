@@ -2,8 +2,8 @@
 //
 // File: SQLInterval.cpp
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -31,12 +31,6 @@
 #include "SQLDatabase.h"
 #include <math.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 namespace SQLComponents
 {
 
@@ -47,7 +41,7 @@ SQLInterval::SQLInterval()
 }
 
 // XTOR from a string
-SQLInterval::SQLInterval(SQLINTERVAL p_type,const XString p_string)
+SQLInterval::SQLInterval(SQLINTERVAL p_type,const XString& p_string)
 {
   ParseInterval(p_type,p_string);
 }
@@ -92,7 +86,7 @@ SQLInterval::SQLInterval(SQLINTERVAL p_type,int p_days,int p_hours,int p_minutes
 }
 
 // XTOR for a XML duration string
-SQLInterval::SQLInterval(XString p_duration)
+SQLInterval::SQLInterval(const XString& p_duration)
 {
   SetInterval(p_duration);
 }
@@ -109,7 +103,7 @@ SQLInterval::~SQLInterval()
 //////////////////////////////////////////////////////////////////////////
 
 bool
-SQLInterval::SetInterval(SQLINTERVAL p_type,const XString p_string)
+SQLInterval::SetInterval(SQLINTERVAL p_type,const XString& p_string)
 {
   ParseInterval(p_type,p_string);
   return Valid();
@@ -213,7 +207,7 @@ SQLInterval::SetInterval(SQLINTERVAL p_type,int p_days,int p_hours,int p_minutes
 }
 
 void
-SQLInterval::SetInterval(XString p_duration)
+SQLInterval::SetInterval(const XString& p_duration)
 {
   ParseInterval(p_duration);
 }
@@ -1054,7 +1048,7 @@ SQLInterval::ParseInterval(SQLINTERVAL p_type,const XString& p_string)
 // Parse an interval from a XML duration string
 // a la: http://www.w3.org/TR/2012/REC-xmlschema11-2-20120405/datatypes.html#duration
 bool
-SQLInterval::ParseInterval(XString p_duration)
+SQLInterval::ParseInterval(const XString& p_duration)
 {
   bool  negative    = false;
   bool  didTime     = false;
@@ -1069,22 +1063,23 @@ SQLInterval::ParseInterval(XString p_duration)
   SetNull();
 
   // Parse the negative sign
-  p_duration.Trim();
-  if(p_duration.Left(1) == _T("-"))
+  XString duration(p_duration);
+  duration.Trim();
+  if(duration.Left(1) == _T("-"))
   {
     negative = true;
-    p_duration = p_duration.Mid(1);
+    duration = duration.Mid(1);
   }
 
   // Must see a 'P' for period
-  if(p_duration.Left(1) != 'P')
+  if(duration.Left(1) != _T("P"))
   {
     return false; // Leave interval at NULL
   }
-  p_duration = p_duration.Mid(1);
+  duration = duration.Mid(1);
 
   // Scan year/month/day/hour/min/second/fraction values
-  while(ScanDurationValue(p_duration,value,fraction,marker,didTime))
+  while(ScanDurationValue(duration,value,fraction,marker,didTime))
   {
     switch(marker)
     {
@@ -1189,9 +1184,9 @@ SQLInterval::ScanDurationValue(XString& p_duration
   // Scan a number
   while(isdigit(p_duration.GetAt(0)))
   {
-    found = true;
-    p_value *= 10;
-    p_value += p_duration.GetAt(0) - '0';
+    found      = true;
+    p_value   *= 10;
+    p_value   += p_duration.GetAt(0) - '0';
     p_duration = p_duration.Mid(1);
   }
 
@@ -1213,7 +1208,7 @@ SQLInterval::ScanDurationValue(XString& p_duration
   // Scan a marker
   if(isalpha(p_duration.GetAt(0)))
   {
-    p_marker = p_duration.GetAt(0);
+    p_marker   = (TCHAR) p_duration.GetAt(0);
     p_duration = p_duration.Mid(1);
   }
 

@@ -743,7 +743,7 @@ MultConnectionsDlg::OnBnClicked_test()
     {
         SQLDatabase* database = NULL;
         CString      password = set->GetPassword();
-        CString      connectStr;
+        XString      connectStr;
 
         // Check for password
         password = password.GetLength() ? password : m_UserPassword;

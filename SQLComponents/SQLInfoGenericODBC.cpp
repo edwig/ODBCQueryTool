@@ -2,8 +2,8 @@
 //
 // File: SQLInfoGenericODBC.cpp
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -27,12 +27,6 @@
 #include "SQLComponents.h"
 #include "SQLInfoGenericODBC.h"
 #include "SQLQuery.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 namespace SQLComponents
 {
@@ -303,7 +297,7 @@ SQLInfoGenericODBC::GetKEYWORDParameterPrefix() const
 // Get select part to add new record identity to a table
 // Can be special column like 'OID' or a sequence select
 XString
-SQLInfoGenericODBC::GetKEYWORDIdentityString(XString& /*p_tablename*/,XString /*p_postfix*/ /*= "_seq"*/) const
+SQLInfoGenericODBC::GetKEYWORDIdentityString(const XString& /*p_tablename*/,const XString& /*p_postfix*/ /*= "_seq"*/) const
 {
   // Undetermined: return nothing
   return XString();
@@ -311,7 +305,7 @@ SQLInfoGenericODBC::GetKEYWORDIdentityString(XString& /*p_tablename*/,XString /*
 
 // Gets the UPPER function
 XString
-SQLInfoGenericODBC::GetKEYWORDUpper(XString& p_expression) const
+SQLInfoGenericODBC::GetKEYWORDUpper(const XString& p_expression) const
 {
   return _T("{fn UCASE(") + p_expression + _T(")}");
 }
@@ -326,7 +320,7 @@ SQLInfoGenericODBC::GetKEYWORDInterval1MinuteAgo() const
 
 // Gets the Not-NULL-Value statement of the database
 XString
-SQLInfoGenericODBC::GetKEYWORDStatementNVL(XString& p_test,XString& p_isnull) const
+SQLInfoGenericODBC::GetKEYWORDStatementNVL(const XString& p_test,const XString& p_isnull) const
 {
   return _T("{fn IFNULL(") + p_test + _T(",") + p_isnull + _T(")}");
 }
@@ -1743,14 +1737,14 @@ SQLInfoGenericODBC::GetSESSIONConstraintsImmediate() const
 
 // Calling a stored function or procedure if the RDBMS does not support ODBC call escapes
 SQLVariant*
-SQLInfoGenericODBC::DoSQLCall(SQLQuery* /*p_query*/,XString& /*p_schema*/,XString& /*p_procedure*/)
+SQLInfoGenericODBC::DoSQLCall(SQLQuery* /*p_query*/,const XString& /*p_schema*/,const XString& /*p_procedure*/)
 {
   return nullptr;
 }
 
 // Calling a stored function with named parameters, returning a value
 SQLVariant* 
-SQLInfoGenericODBC::DoSQLCallNamedParameters(SQLQuery* /*p_query*/,XString& /*p_schema*/,XString& /*p_procedure*/,bool /*p_function = true*/)
+SQLInfoGenericODBC::DoSQLCallNamedParameters(SQLQuery* /*p_query*/,const XString& /*p_schema*/,const XString& /*p_procedure*/,bool /*p_function = true*/)
 {
   return nullptr;
 }

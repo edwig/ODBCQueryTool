@@ -714,7 +714,7 @@ COEditorView::ExecuteQuery(int      p_line
   {
     if(m_scriptOutput && m_scriptOutput->GetIsOpen())
     {
-      m_scriptOutput->Write(CString(_T("SQL prevented by :IF statement\n")));
+      m_scriptOutput->Write(XString(_T("SQL prevented by :IF statement\n")));
     }
     m_scriptCompare = true;
     return true;
@@ -761,14 +761,14 @@ COEditorView::ExecuteQuery(int      p_line
       }
 
       // Prepare the query
-      m_query.DoSQLPrepare(p_odbcCommand);
+      m_query.DoSQLPrepare(XString(p_odbcCommand));
       WriteStatisticsLine(_T("0 =>"),_T("Query prepared: ") + partialCommand);
       // Go and execute
       m_query.DoSQLExecute();
     }
     else
     {
-      m_query.DoSQLStatement(p_odbcCommand);
+      m_query.DoSQLStatement(XString(p_odbcCommand));
     }
     WriteStatisticsLine(_T("1 =>"),(mustPrepare ? _T("Execute ready: ") : _T("Query ready: ")) + partialCommand);
     if(selectQuery)
@@ -782,7 +782,7 @@ COEditorView::ExecuteQuery(int      p_line
       UINT format = DT_SINGLELINE|DT_VCENTER|DT_WORDBREAK|DT_END_ELLIPSIS|DT_NOPREFIX|DT_EXPANDTABS;
       for(int k = 1; k <= m_query.GetNumberOfColumns();++k)
       {
-        CString colname;
+        XString colname;
         SQLVariant* var = m_query.GetColumn(k);
         SWORD type = var->GetDataType();
         format &= ~(DT_LEFT | DT_RIGHT);
@@ -833,7 +833,7 @@ COEditorView::ExecuteQuery(int      p_line
       row = m_query.GetNumberOfRows();
     }
     WriteStatisticsLine(_T("2 =>"),_T("Fetch ready: ") + partialCommand);
-    WriteOutputLine(p_line,row,partialCommand,m_query.GetError());
+    WriteOutputLine(p_line,row,partialCommand,m_query.GetError().GetString());
   }
   catch(TCHAR *errorText)
   {
@@ -864,7 +864,7 @@ COEditorView::ExecuteQuery(int      p_line
       AfxMessageBox(ex.GetErrorMessage(),MB_OK|MB_ICONERROR);
     }
     WriteStatisticsLine(_T("2 =>"), _T("Error: ") + partialCommand);
-    WriteOutputLine(p_line,m_query.GetNumberOfRows(),partialCommand,ex.GetErrorMessage());
+    WriteOutputLine(p_line,m_query.GetNumberOfRows(),partialCommand,ex.GetErrorMessage().GetString());
     panelWindow = QPW_OUTPUT_VIEW;
   }
   catch(...)
@@ -913,7 +913,6 @@ COEditorView::GetLineFromQuery(int row)
   {
     SQLVariant* var = m_query.GetColumn(k);
     SWORD type = var->GetDataType();
-    CString text;
 
     if(type == SQL_C_BINARY)
     {
@@ -922,13 +921,15 @@ COEditorView::GetLineFromQuery(int row)
       const void* binbuf = var->GetAsBinary();
       _tcsncpy_s((TCHAR*)buffer,len*2+1,(TCHAR*)binbuf,len*2);
       buffer[len * 2]  = 0;
-      text = (TCHAR*)buffer;
+      CString text((TCHAR*)buffer);
       m_gridView->InsertItem(row,k,text,DT_LEFT);
       free(buffer);
     }
     if(type == SQL_C_CHAR)
     {
-      var->GetAsString(text);
+      XString s;
+      var->GetAsString(s);
+      CString text(s);
       if(charsetTranslation)
       {
         TranslateText(text,charsetTranslation,charset);
@@ -939,7 +940,9 @@ COEditorView::GetLineFromQuery(int row)
     }
     else
     {
-	    var->GetAsString(text);
+      XString s;
+      var->GetAsString(s);
+      CString text(s);
       format &= ~(DT_LEFT | DT_RIGHT);
       format |= (type == SQL_CHAR || type == SQL_VARCHAR) ? DT_LEFT : DT_RIGHT;
       m_gridView->InsertItem(row,k,text,format,var->GetDataType());
@@ -980,7 +983,7 @@ COEditorView::ReadRestOfQuery()
 void
 COEditorView::TranslateText(CString& p_text,int p_translation,CString p_charset)
 {
-  CString source;
+  XString source;
 
   if(p_translation == 1)
   {
@@ -997,7 +1000,7 @@ COEditorView::TranslateText(CString& p_text,int p_translation,CString p_charset)
   {
     return;
   }
-  p_text = DecodeStringFromTheWire(p_text,source);
+  p_text = DecodeStringFromTheWire(XString(p_text),source);
 }
 
 // Write a line with info to the statistics view
@@ -1135,7 +1138,10 @@ COEditorView::CanEdit()
 
     if(!m_tableOne.IsEmpty())
     {
-      if(database.GetSQLInfoDB()->GetPrimaryKeyInfo(m_tableOne,m_primaryName,primaries))
+      XString table(m_tableOne);
+      XString primary(m_primaryName);
+
+      if(database.GetSQLInfoDB()->GetPrimaryKeyInfo(table,primary,primaries))
       {
         int ind = 0;
         for(auto& prim : primaries)
@@ -1241,7 +1247,7 @@ COEditorView::UpdateTable(int row,int col,CString text)
     text.Replace(_T("\'"),_T("\'\'"));
     text = CString(_T("'")) + text + _T("'");
   }
-  CString query = _T("UPDATE ") + m_tableOne + _T("\n") + 
+  XString query = _T("UPDATE ") + m_tableOne + _T("\n") + 
                   _T("   SET ") + column + _T(" = ") + text + _T("\n") +
                   _T(" WHERE ");
   CString searchCondition = UpdateCondition(row,column);
@@ -1333,7 +1339,9 @@ COEditorView::ScriptCommandPrint(int p_line,CString print)
       int  toprint = _ttoi(print.Right(1));
       if (toprint > 0 && toprint <= numVariables)
       {
-        variables[toprint]->GetAsString(print);
+        XString var;
+        variables[toprint]->GetAsString(var);
+        print = var;
       }
     }
     m_scriptOutput->Format(_T("%s\n"),print.GetString());
@@ -1369,8 +1377,8 @@ COEditorView::ScriptCommandFile(int p_line,CString file)
     {
       if(m_scriptOutput && m_scriptOutput->GetIsOpen())
       {
-        m_scriptOutput->Write(CString(_T("==================\n")));
-        m_scriptOutput->Write(CString(_T("ODBC Script closed\n\n\n")));
+        m_scriptOutput->Write(XString(_T("==================\n")));
+        m_scriptOutput->Write(XString(_T("ODBC Script closed\n\n\n")));
         m_scriptOutput->Close();
         delete m_scriptOutput;
         m_scriptOutput = nullptr;
@@ -1389,7 +1397,7 @@ COEditorView::ScriptCommandFile(int p_line,CString file)
       m_scriptOutput->Close();
       delete m_scriptOutput;
     }
-    m_scriptOutput = new WinFile(file);
+    m_scriptOutput = new WinFile(XString(file));
     m_scriptOutput->Open(winfilemode | open_trans_text,FAttributes::attrib_none,Encoding::UTF8);
     if(m_scriptOutput->GetIsOpen())
     {
@@ -1414,8 +1422,8 @@ COEditorView::ScriptCommandFile(int p_line,CString file)
   {
     if(m_scriptOutput && m_scriptOutput->GetIsOpen())
     {
-      m_scriptOutput->Write(CString(_T("==================\n")));
-      m_scriptOutput->Write(CString(_T("ODBC Script closed\n")));
+      m_scriptOutput->Write(XString(_T("==================\n")));
+      m_scriptOutput->Write(XString(_T("ODBC Script closed\n")));
       m_scriptOutput->Close();
       delete m_scriptOutput;
       m_scriptOutput = nullptr;
@@ -1559,7 +1567,7 @@ COEditorView::ScriptCommandIf(int p_line,CString command)
         command.TrimLeft ('\'');
         command.TrimRight('\'');
 
-        CString value;
+        XString value;
 		    var->GetAsString(value);
         switch(oper)
         {
@@ -1616,7 +1624,7 @@ COEditorView::ScriptCommandVariable(int p_line,int p_varNum,CString p_tail)
   {
     SQLVariant* var = it->second;
     bool assign = (p_tail.Left(1) == '=');
-    CString word;
+    XString word;
     if(assign)
     {
       word = p_tail.Mid(1).Trim();
@@ -1821,8 +1829,8 @@ COEditorView::ScriptCommandRepeat(int p_line,CString p_tail)
   if(m_scriptOutput && m_scriptOutput->GetIsOpen())
   {
     m_scriptOutput->Format(_T("%s\n\n"),line.GetString());
-    m_scriptOutput->Write(CString(_T("Date                  Miliseconds\n")));
-    m_scriptOutput->Write(CString(_T("-------------------   ---------------\n")));
+    m_scriptOutput->Write(XString(_T("Date                  Miliseconds\n")));
+    m_scriptOutput->Write(XString(_T("-------------------   ---------------\n")));
   }
   return result;
 }
@@ -1832,9 +1840,9 @@ COEditorView::ScriptCommandExit(int p_line, CString p_tail)
 {
   if(m_scriptOutput && m_scriptOutput->GetIsOpen())
   {
-    m_scriptOutput->Write(CString(_T("==================\n")));
-    m_scriptOutput->Write(CString(_T("Exiting QueryTool!\n")));
-    m_scriptOutput->Write(CString(_T("Goodbye!\n")));
+    m_scriptOutput->Write(XString(_T("==================\n")));
+    m_scriptOutput->Write(XString(_T("Exiting QueryTool!\n")));
+    m_scriptOutput->Write(XString(_T("Goodbye!\n")));
   }
   AfxGetApp()->m_pMainWnd->PostMessage(WM_QUIT,0,0);
   return true;
@@ -1861,13 +1869,13 @@ COEditorView::ScriptSelect(int p_line)
   int longest = 0;
   for(int k=1; k <= m_query.GetNumberOfColumns();++k)
   {
-    CString name;
-    CString result;
+    XString name;
+    XString result;
     m_query.GetColumnName(k,name);
 
     result.Format(_T(":COLUMN [%d] = [%s]\n"),k,name.GetString());
     m_scriptOutput->Write(result);
-    WriteOutputLine(p_line,1,result,_T(""));
+    WriteOutputLine(p_line,1,result.GetString(),_T(""));
 
     if(name.GetLength() > longest)
     {
@@ -1889,20 +1897,20 @@ COEditorView::ScriptSelect(int p_line,int p_longest,int p_row)
 
   for(int k = 1; k <= m_query.GetNumberOfColumns();++k)
   {
-    CString text;
+    XString text;
     SQLVariant* column = m_query.GetColumn(k);
     column->GetAsString(text);
 
-    CString name;
+    XString name;
     m_query.GetColumnName(k,name);
 
-    CString result;
+    XString result;
     result.Format(_T(":ROW [%d:%-*s] = [%s]\n"),p_row,p_longest,name.GetString(),text.GetString());
     if(m_scriptOutput && m_scriptOutput->GetIsOpen())
     {
       m_scriptOutput->Write(result);
     }
-    WriteOutputLine(p_line,1,result,_T(""));
+    WriteOutputLine(p_line,1,result.GetString(),_T(""));
 
     // Get the result in the variables array
     // so we can use the variables in the 'if' statement!

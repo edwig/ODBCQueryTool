@@ -2,8 +2,8 @@
 //
 // File: SQLInfo.cpp
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -33,12 +33,6 @@
 #include <sqlext.h>
 #include <atltrace.h>
 #include <map>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 namespace SQLComponents
 {
@@ -222,10 +216,6 @@ SQLInfo::Init()
   m_canFindSchemas          = true;
   m_canFindTypes            = true;
 
-  // Empty all mappings
-  m_RDBMSkeywords.clear();
-  m_ODBCKeywords.clear();
-
   // Remove all datatypes info
   for(const auto& type : m_dataTypes)
   {
@@ -235,14 +225,14 @@ SQLInfo::Init()
 }
 
 void
-SQLInfo::InfoMessageBox(XString p_message,UINT p_type /*= MB_OK*/)
+SQLInfo::InfoMessageBox(const XString& p_message,UINT p_type /*= MB_OK*/)
 {
   SQLMessage(NULL,p_message,_T("ODBC Driver info"),p_type);
 }
 
 // Add an ODBC SQL Keyword
 bool
-SQLInfo::AddSQLWord(XString sql)
+SQLInfo::AddSQLWord(const XString& sql)
 {
   for(KeyWordList::iterator it = m_ODBCKeywords.begin(); it != m_ODBCKeywords.end(); ++it)
   {
@@ -592,7 +582,7 @@ SQLInfo::ReadingDataTypes()
         }
         int num = 1;
         XString key;
-        TypeInfo* ti = new TypeInfo();
+        TypeInfo* ti = alloc_new TypeInfo();
         dataLen =0;
 
         // DATA SOURCE DEPENDENT TYPE NAME. USE FOR CREATE TABLE
@@ -733,7 +723,7 @@ SQLInfo::ReadingDataTypes()
 
 // Getting datatype info
 TypeInfo* 
-SQLInfo::GetTypeInfo(int p_sqlDatatype,XString p_typename /*=""*/) const
+SQLInfo::GetTypeInfo(int p_sqlDatatype,const XString& p_typename /*=""*/) const
 {
   TypeInfo* result = nullptr;
 
@@ -835,7 +825,7 @@ SQLInfo::GetAttributeInteger(LPCTSTR description,SQLINTEGER attrib)
 
 // Getting a general STRING connection attribute
 XString
-SQLInfo::GetAttributeString(XString description,SQLINTEGER attrib)
+SQLInfo::GetAttributeString(const XString& description,SQLINTEGER attrib)
 {
   SQLTCHAR   value[MAX_BUFFER + 1];
   SQLINTEGER cbMax = 0;
@@ -860,9 +850,9 @@ SQLInfo::GetAttributeString(XString description,SQLINTEGER attrib)
 
 // Setting an INTEGER attribute
 bool 
-SQLInfo::SetAttributeInteger(XString     description
-                            ,SQLINTEGER  attrib
-                            ,SQLUINTEGER value)
+SQLInfo::SetAttributeInteger(const XString& description
+                            ,SQLINTEGER     attrib
+                            ,SQLUINTEGER    value)
 {
   RETCODE nRetCode = SQL_ERROR;
   nRetCode = SqlSetConnectAttr(m_hdbc
@@ -883,9 +873,9 @@ SQLInfo::SetAttributeInteger(XString     description
 
 // Setting a STRING attribute
 bool 
-SQLInfo::SetAttributeString(XString    description
-                           ,SQLINTEGER attrib
-                           ,SQLTCHAR*  value)
+SQLInfo::SetAttributeString(const XString& description
+                           ,SQLINTEGER     attrib
+                           ,SQLTCHAR*      value)
 {
   RETCODE nRetCode = SQL_ERROR;
   nRetCode = SQLSetConnectAttr(m_hdbc
@@ -1021,7 +1011,7 @@ SQLInfo::SetAttributePacketSize(int p_packet)
 
 // Setting the ODBC Tracing file
 bool 
-SQLInfo::SetAttributeTraceFile(XString p_traceFile)
+SQLInfo::SetAttributeTraceFile(const XString& p_traceFile)
 {
   SQLTCHAR traceFile[512 + 1];
   SQLINTEGER cbMax = p_traceFile.GetLength();
@@ -1064,7 +1054,7 @@ SQLInfo::SetAttributeTransLevel(int p_txnlevel)
 
 // Setting the transaction library (with or without connection)
 bool
-SQLInfo::SetAttributeTranslib(XString p_transLib)
+SQLInfo::SetAttributeTranslib(const XString& p_transLib)
 {
   m_transLib = p_transLib;
   if(m_hdbc)
@@ -1094,7 +1084,7 @@ SQLInfo::SetAttributeTransoption(int p_transOption)
 
 // Is it a correct identifier (type 0=table,1=column)
 bool 
-SQLInfo::IsCorrectName(XString p_name,int p_type)
+SQLInfo::IsCorrectName(const XString& p_name,int p_type)
 {
   if(p_name.IsEmpty())
   {
@@ -1114,8 +1104,8 @@ SQLInfo::IsCorrectName(XString p_name,int p_type)
   // Must be an identifier, complying to ODBC rules
   for(int ind = 0;ind < p_name.GetLength(); ++ind)
   {
-    TCHAR ch = p_name.GetAt(ind);
-    if (ch == ' ' || ( !isalnum(ch) && ch != '_' && _tcschr(m_specialChars,ch) == NULL ))
+    TCHAR ch = (TCHAR) p_name.GetAt(ind);
+    if (ch == ' ' || ( !isalnum(ch) && ch != '_' && _tcschr(m_specialChars.GetString(),ch) == NULL ))
     {
       return false;
     }
@@ -1132,7 +1122,7 @@ SQLInfo::IsCorrectName(XString p_name,int p_type)
 
 // Is reserved word
 bool
-SQLInfo::IsReservedWord(XString p_name)
+SQLInfo::IsReservedWord(const XString& p_name)
 {
   // Cannot be in the ODBC keywords list
   for(auto& word : m_ODBCKeywords)
@@ -1239,7 +1229,7 @@ SQLInfo::CloseStatement()
 
 // Get the catalog.schema.table from a user string
 void
-SQLInfo::GetObjectName(XString  p_pattern
+SQLInfo::GetObjectName(const XString& p_pattern
                       ,XString& p_catalog
                       ,XString& p_schema
                       ,XString& p_table)
@@ -1387,7 +1377,7 @@ SQLInfo::ODBCDataType(int DataType)
 
 // Prepare an identifier for an ODBC discovery function
 void
-SQLInfo::PrepareIdentifierForFunction(CString& p_identifier,bool p_meta)
+SQLInfo::PrepareIdentifierForFunction(XString& p_identifier,bool p_meta)
 {
   if(m_METADATA_ID_unsupported || !p_meta)
   {
@@ -1437,12 +1427,12 @@ SQLInfo::PrepareIdentifierForFunction(CString& p_identifier,bool p_meta)
 //             SYNONYM
 //             <rdbms-defined>
 bool
-SQLInfo::MakeInfoTableTable(MTableMap& p_tables
-                           ,XString&   p_errors
-                           ,XString    p_catalog
-                           ,XString    p_schema
-                           ,XString    p_tablename
-                           ,XString    p_type)
+SQLInfo::MakeInfoTableTable(MTableMap&     p_tables
+                           ,      XString& p_errors
+                           ,const XString& p_catalog
+                           ,const XString& p_schema
+                           ,const XString& p_tablename
+                           ,const XString& p_type)
 {
   SQLTCHAR     szCatalogName [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbCatalogName = 0;
@@ -1472,14 +1462,18 @@ SQLInfo::MakeInfoTableTable(MTableMap& p_tables
   bool meta = p_tablename.Find('%') >= 0;
   meta = GetStatement(meta);
 
-  PrepareIdentifierForFunction(p_catalog,  meta);
-  PrepareIdentifierForFunction(p_schema,   meta);
-  PrepareIdentifierForFunction(p_tablename,meta);
+  XString xcatalog(p_catalog);
+  XString xschema (p_schema);
+  XString xtablename(p_tablename);
+
+  PrepareIdentifierForFunction(xcatalog,  meta);
+  PrepareIdentifierForFunction(xschema,   meta);
+  PrepareIdentifierForFunction(xtablename,meta);
 
   // Setting the search arguments
-  _tcscpy_s(reinterpret_cast<TCHAR*>(search_catalog),SQL_MAX_BUFFER,p_catalog);
-  _tcscpy_s(reinterpret_cast<TCHAR*>(search_schema), SQL_MAX_BUFFER,p_schema);
-  _tcscpy_s(reinterpret_cast<TCHAR*>(search_table),  SQL_MAX_BUFFER,p_tablename);
+  _tcscpy_s(reinterpret_cast<TCHAR*>(search_catalog),SQL_MAX_BUFFER,xcatalog);
+  _tcscpy_s(reinterpret_cast<TCHAR*>(search_schema), SQL_MAX_BUFFER,xschema);
+  _tcscpy_s(reinterpret_cast<TCHAR*>(search_table),  SQL_MAX_BUFFER,xtablename);
   _tcscpy_s(reinterpret_cast<TCHAR*>(search_type),   SQL_MAX_BUFFER,p_type);
 
   // Have care: Empty strings denotes a special case
@@ -1572,12 +1566,12 @@ SQLInfo::MakeInfoTableTable(MTableMap& p_tables
 // FIND all the columns of a table.
 // To work correctly, only columnname should optionally contain a search pattern.
 bool
-SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns
-                             ,XString&    p_errors
-                             ,XString     p_catalog
-                             ,XString     p_schema
-                             ,XString     p_tablename
-                             ,XString     p_columnname /*=_T("")*/)
+SQLInfo::MakeInfoTableColumns(MColumnMap&    p_columns
+                             ,      XString& p_errors
+                             ,const XString& p_catalog
+                             ,const XString& p_schema
+                             ,const XString& p_tablename
+                             ,const XString& p_columnname /*=_T("")*/)
 {
   SQLTCHAR     szCatalogName [SQL_MAX_BUFFER+1] = { 0 };
   SQLLEN       cbCatalogName = 0;
@@ -1627,15 +1621,20 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns
   bool meta = p_columnname.Find('%') >= 0;
   meta = GetStatement(meta);
 
-  PrepareIdentifierForFunction(p_catalog,   meta);
-  PrepareIdentifierForFunction(p_schema,    meta);
-  PrepareIdentifierForFunction(p_tablename, meta);
-  PrepareIdentifierForFunction(p_columnname,meta);
+  XString xcatalog(p_catalog);
+  XString xschema(p_schema);
+  XString xtablename(p_tablename);
+  XString xcolumnname(p_columnname);
 
-  _tcscpy_s(reinterpret_cast<TCHAR*>(szCatalogName),SQL_MAX_BUFFER,p_catalog.GetString());
-  _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
-  _tcscpy_s(reinterpret_cast<TCHAR*>(szTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
-  _tcscpy_s(reinterpret_cast<TCHAR*>(szColumnName), SQL_MAX_BUFFER,p_columnname.GetString());
+  PrepareIdentifierForFunction(xcatalog,   meta);
+  PrepareIdentifierForFunction(xschema,    meta);
+  PrepareIdentifierForFunction(xtablename, meta);
+  PrepareIdentifierForFunction(xcolumnname,meta);
+
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szCatalogName),SQL_MAX_BUFFER,xcatalog.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName), SQL_MAX_BUFFER,xschema.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szTableName),  SQL_MAX_BUFFER,xtablename.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szColumnName), SQL_MAX_BUFFER,xcolumnname.GetString());
 
   // - If the driver cannot search on this type of META-object the pointer MUST be NULL
   SQLTCHAR* catalog = nullptr;
@@ -1736,7 +1735,7 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns
          if(cbPrecision > 0 && Precision > 0)
          {
            theColumn.m_columnSize = Precision;                        // 7
-           if(cbScale > 0 && Scale >= 0)
+           if(cbScale > 0)
            {
              theColumn.m_decimalDigits = Scale;                       // 9
            }
@@ -1763,11 +1762,11 @@ SQLInfo::MakeInfoTableColumns(MColumnMap& p_columns
 }
 
 bool
-SQLInfo::MakeInfoTablePrimary(MPrimaryMap& p_primaries
-                             ,XString&     p_errors
-                             ,XString      p_catalog
-                             ,XString      p_schema
-                             ,XString p_tablename)
+SQLInfo::MakeInfoTablePrimary(MPrimaryMap&   p_primaries
+                             ,      XString& p_errors
+                             ,const XString& p_catalog
+                             ,const XString& p_schema
+                             ,const XString& p_tablename)
 {
   SQLTCHAR     szCatalogName [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbCatalogName = 0;
@@ -1792,13 +1791,17 @@ SQLInfo::MakeInfoTablePrimary(MPrimaryMap& p_primaries
   bool meta = p_tablename.Find('%') >= 0;
   meta = GetStatement(meta);
 
-  PrepareIdentifierForFunction(p_catalog,  meta);
-  PrepareIdentifierForFunction(p_schema,   meta);
-  PrepareIdentifierForFunction(p_tablename,meta);
+  XString xcatalog(p_catalog);
+  XString xschema(p_schema);
+  XString xtablename(p_tablename);
 
-  _tcscpy_s(reinterpret_cast<TCHAR*>(szCatalogName),SQL_MAX_IDENTIFIER,p_catalog.GetString());
-  _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName), SQL_MAX_IDENTIFIER,p_schema.GetString());
-  _tcscpy_s(reinterpret_cast<TCHAR*>(szTableName),  SQL_MAX_IDENTIFIER,p_tablename.GetString());
+  PrepareIdentifierForFunction(xcatalog,  meta);
+  PrepareIdentifierForFunction(xschema,   meta);
+  PrepareIdentifierForFunction(xtablename,meta);
+
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szCatalogName),SQL_MAX_IDENTIFIER,xcatalog.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName), SQL_MAX_IDENTIFIER,xschema.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szTableName),  SQL_MAX_IDENTIFIER,xtablename.GetString());
 
   SQLTCHAR* catalog = nullptr;
   SQLTCHAR* schema  = nullptr;
@@ -1875,12 +1878,12 @@ SQLInfo::MakeInfoTablePrimary(MPrimaryMap& p_primaries
 // In order to work properly, only the foreign keys of one (1) table
 // should be queried (foreign keys, or referenced tables)
 bool 
-SQLInfo::MakeInfoTableForeign(MForeignMap& p_foreigns
-                             ,XString&     p_errors
-                             ,XString      p_catalog
-                             ,XString      p_schema
-                             ,XString      p_tablename
-                             ,bool         p_referenced  /* = false */)
+SQLInfo::MakeInfoTableForeign(MForeignMap&   p_foreigns
+                             ,      XString& p_errors
+                             ,const XString& p_catalog
+                             ,const XString& p_schema
+                             ,const XString& p_tablename
+                             ,bool           p_referenced  /* = false */)
 {
   SQLTCHAR     szPKCatalogName [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbPKCatalogName = 0;
@@ -1920,15 +1923,19 @@ SQLInfo::MakeInfoTableForeign(MForeignMap& p_foreigns
   CloseStatement();
   bool meta = GetStatement(false);
 
-  PrepareIdentifierForFunction(p_catalog,  meta);
-  PrepareIdentifierForFunction(p_schema,   meta);
-  PrepareIdentifierForFunction(p_tablename,meta);
+  XString xcatalog(p_catalog);
+  XString xschema(p_schema);
+  XString xtablename(p_tablename);
+
+  PrepareIdentifierForFunction(xcatalog,  meta);
+  PrepareIdentifierForFunction(xschema,   meta);
+  PrepareIdentifierForFunction(xtablename,meta);
 
   if(p_referenced)
   {
-    _tcscpy_s(reinterpret_cast<TCHAR*>(szPKCatalogName),SQL_MAX_BUFFER,p_catalog.GetString());
-    _tcscpy_s(reinterpret_cast<TCHAR*>(szPKSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
-    _tcscpy_s(reinterpret_cast<TCHAR*>(szPKTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
+    _tcscpy_s(reinterpret_cast<TCHAR*>(szPKCatalogName),SQL_MAX_BUFFER,xcatalog.GetString());
+    _tcscpy_s(reinterpret_cast<TCHAR*>(szPKSchemaName), SQL_MAX_BUFFER,xschema.GetString());
+    _tcscpy_s(reinterpret_cast<TCHAR*>(szPKTableName),  SQL_MAX_BUFFER,xtablename.GetString());
     szFKCatalogName[0] = 0;
     szFKSchemaName [0] = 0;
     szFKTableName  [0] = 0;
@@ -1938,9 +1945,9 @@ SQLInfo::MakeInfoTableForeign(MForeignMap& p_foreigns
     szPKCatalogName[0] = 0;
     szPKSchemaName [0] = 0;
     szPKTableName  [0] = 0;
-    _tcscpy_s(reinterpret_cast<TCHAR*>(szFKCatalogName),SQL_MAX_BUFFER,p_catalog.GetString());
-    _tcscpy_s(reinterpret_cast<TCHAR*>(szFKSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
-    _tcscpy_s(reinterpret_cast<TCHAR*>(szFKTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
+    _tcscpy_s(reinterpret_cast<TCHAR*>(szFKCatalogName),SQL_MAX_BUFFER,xcatalog.GetString());
+    _tcscpy_s(reinterpret_cast<TCHAR*>(szFKSchemaName), SQL_MAX_BUFFER,xschema.GetString());
+    _tcscpy_s(reinterpret_cast<TCHAR*>(szFKTableName),  SQL_MAX_BUFFER,xtablename.GetString());
   }
   SQLTCHAR* PKcatalog = GetMetaPointer(szPKCatalogName,meta);
   SQLTCHAR* PKschema  = GetMetaPointer(szPKSchemaName, meta);
@@ -2040,13 +2047,13 @@ SQLInfo::MakeInfoTableForeign(MForeignMap& p_foreigns
 }
 
 bool 
-SQLInfo::MakeInfoTableStatistics(MIndicesMap& p_statistics
-                                ,XString&     p_errors
-                                ,XString      p_catalog
-                                ,XString      p_schema
-                                ,XString      p_tablename
-                                ,MPrimaryMap* p_keymap
-                                ,bool         p_all /*=true*/)
+SQLInfo::MakeInfoTableStatistics(MIndicesMap&   p_statistics
+                                ,      XString& p_errors
+                                ,const XString& p_catalog
+                                ,const XString& p_schema
+                                ,const XString& p_tablename
+                                ,MPrimaryMap*   p_keymap
+                                ,bool           p_all /*=true*/)
 {
   SQLTCHAR     szCatalogName [SQL_MAX_BUFFER + 1] = _T("");
   SQLLEN       cbCatalogName = 0;
@@ -2083,13 +2090,17 @@ SQLInfo::MakeInfoTableStatistics(MIndicesMap& p_statistics
   CloseStatement();
   bool meta = GetStatement(false);
 
-  PrepareIdentifierForFunction(p_catalog,  meta);
-  PrepareIdentifierForFunction(p_schema,   meta);
-  PrepareIdentifierForFunction(p_tablename,meta);
+  XString xcatalog(p_catalog);
+  XString xschema(p_schema);
+  XString xtablename(p_tablename);
 
-  _tcscpy_s(reinterpret_cast<TCHAR*>(szCatalogName),SQL_MAX_BUFFER,p_catalog.GetString());
-  _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
-  _tcscpy_s(reinterpret_cast<TCHAR*>(szTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
+  PrepareIdentifierForFunction(xcatalog,  meta);
+  PrepareIdentifierForFunction(xschema,   meta);
+  PrepareIdentifierForFunction(xtablename,meta);
+
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szCatalogName),SQL_MAX_BUFFER,xcatalog.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName), SQL_MAX_BUFFER,xschema.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szTableName),  SQL_MAX_BUFFER,xtablename.GetString());
 
   SQLTCHAR* catalog = nullptr;
   SQLTCHAR* schema  = nullptr;
@@ -2191,11 +2202,11 @@ SQLInfo::MakeInfoTableStatistics(MIndicesMap& p_statistics
 }
 
 bool 
-SQLInfo::MakeInfoTableSpecials(MSpecialsMap& p_specials
-                              ,XString&      p_errors
-                              ,XString       p_catalog
-                              ,XString       p_schema
-                              ,XString       p_tablename)
+SQLInfo::MakeInfoTableSpecials(MSpecialsMap&  p_specials
+                              ,      XString& p_errors
+                              ,const XString& p_catalog
+                              ,const XString& p_schema
+                              ,const XString& p_tablename)
 {
   SQLTCHAR     szCatalogName [SQL_MAX_BUFFER] = { 0 };
   SQLTCHAR     szSchemaName  [SQL_MAX_BUFFER] = { 0 };
@@ -2224,12 +2235,20 @@ SQLInfo::MakeInfoTableSpecials(MSpecialsMap& p_specials
     return false;
   }
   CloseStatement();
-  bool meta =p_tablename.Find('%') >= 0;
+  bool meta = p_tablename.Find('%') >= 0;
   meta = GetStatement(meta);
 
-  _tcscpy_s(reinterpret_cast<TCHAR*>(szCatalogName),SQL_MAX_BUFFER,p_catalog.GetString());
-  _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
-  _tcscpy_s(reinterpret_cast<TCHAR*>(szTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
+  XString xcatalog(p_catalog);
+  XString xschema(p_schema);
+  XString xtablename(p_tablename);
+
+  PrepareIdentifierForFunction(xcatalog,meta);
+  PrepareIdentifierForFunction(xschema,meta);
+  PrepareIdentifierForFunction(xtablename,meta);
+
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szCatalogName),SQL_MAX_BUFFER,xcatalog.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName), SQL_MAX_BUFFER,xschema.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szTableName),  SQL_MAX_BUFFER,xtablename.GetString());
 
   SQLTCHAR* catalog = nullptr;
   SQLTCHAR* schema  = nullptr;
@@ -2313,10 +2332,10 @@ SQLInfo::MakeInfoTableSpecials(MSpecialsMap& p_specials
 
 bool 
 SQLInfo::MakeInfoTablePrivileges(MPrivilegeMap& p_privileges
-                                ,XString&       p_errors
-                                ,XString        p_catalog
-                                ,XString        p_schema
-                                ,XString        p_tablename)
+                                ,      XString& p_errors
+                                ,const XString& p_catalog
+                                ,const XString& p_schema
+                                ,const XString& p_tablename)
 {
   SQLTCHAR     szCatalogName [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbCatalogName = 0;
@@ -2343,13 +2362,17 @@ SQLInfo::MakeInfoTablePrivileges(MPrivilegeMap& p_privileges
   bool meta = p_tablename.Find('%') >= 0;
   meta = GetStatement(meta);
 
-  PrepareIdentifierForFunction(p_catalog,  meta);
-  PrepareIdentifierForFunction(p_schema,   meta);
-  PrepareIdentifierForFunction(p_tablename,meta);
+  XString xcatalog(p_catalog);
+  XString xschema(p_schema);
+  XString xtablename(p_tablename);
 
-  _tcscpy_s(reinterpret_cast<TCHAR*>(szCatalogName),SQL_MAX_BUFFER,p_catalog.GetString());
-  _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
-  _tcscpy_s(reinterpret_cast<TCHAR*>(szTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
+  PrepareIdentifierForFunction(xcatalog,  meta);
+  PrepareIdentifierForFunction(xschema,   meta);
+  PrepareIdentifierForFunction(xtablename,meta);
+
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szCatalogName),SQL_MAX_BUFFER,xcatalog.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName), SQL_MAX_BUFFER,xschema.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szTableName),  SQL_MAX_BUFFER,xtablename.GetString());
 
   SQLTCHAR* catalog = nullptr;
   SQLTCHAR* schema  = nullptr;
@@ -2434,12 +2457,12 @@ SQLInfo::MakeInfoTablePrivileges(MPrivilegeMap& p_privileges
 }
 
 bool 
-SQLInfo::MakeInfoColumnPrivileges(MPrivilegeMap&  p_privileges
-                                 ,XString&        p_errors
-                                 ,XString         p_catalog
-                                 ,XString         p_schema
-                                 ,XString         p_tablename
-                                 ,XString         p_columnname /*= ""*/)
+SQLInfo::MakeInfoColumnPrivileges(MPrivilegeMap& p_privileges
+                                 ,      XString& p_errors
+                                 ,const XString& p_catalog
+                                 ,const XString& p_schema
+                                 ,const XString& p_tablename
+                                 ,const XString& p_columnname /*= ""*/)
 {
   SQLTCHAR     szCatalogName [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbCatalogName = 0;
@@ -2468,15 +2491,20 @@ SQLInfo::MakeInfoColumnPrivileges(MPrivilegeMap&  p_privileges
   bool meta = p_columnname.Find('%') >= 0;
   meta = GetStatement(meta);
 
-  PrepareIdentifierForFunction(p_catalog,   meta);
-  PrepareIdentifierForFunction(p_schema,    meta);
-  PrepareIdentifierForFunction(p_tablename, meta);
-  PrepareIdentifierForFunction(p_columnname,meta);
+  XString xcatalog(p_catalog);
+  XString xschema(p_schema);
+  XString xtablename(p_tablename);
+  XString xcolumnname(p_columnname);
 
-  _tcscpy_s(reinterpret_cast<TCHAR*>(szCatalogName),SQL_MAX_BUFFER,p_catalog.GetString());
-  _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName), SQL_MAX_BUFFER,p_schema.GetString());
-  _tcscpy_s(reinterpret_cast<TCHAR*>(szTableName),  SQL_MAX_BUFFER,p_tablename.GetString());
-  _tcscpy_s(reinterpret_cast<TCHAR*>(szColumnName), SQL_MAX_BUFFER,p_columnname.GetString());
+  PrepareIdentifierForFunction(xcatalog,   meta);
+  PrepareIdentifierForFunction(xschema,    meta);
+  PrepareIdentifierForFunction(xtablename, meta);
+  PrepareIdentifierForFunction(xcolumnname,meta);
+
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szCatalogName),SQL_MAX_BUFFER,xcatalog.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName), SQL_MAX_BUFFER,xschema.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szTableName),  SQL_MAX_BUFFER,xtablename.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szColumnName), SQL_MAX_BUFFER,xcolumnname.GetString());
 
   SQLTCHAR* catalog = nullptr;
   SQLTCHAR* schema  = nullptr;
@@ -2565,11 +2593,11 @@ SQLInfo::MakeInfoColumnPrivileges(MPrivilegeMap&  p_privileges
 }
 
 bool
-SQLInfo::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
-                              ,XString&        p_errors
-                              ,XString         p_catalog
-                              ,XString         p_schema
-                              ,XString         p_procedure)
+SQLInfo::MakeInfoPSMProcedures(MProcedureMap& p_procedures
+                              ,      XString& p_errors
+                              ,const XString& p_catalog
+                              ,const XString& p_schema
+                              ,const XString& p_procedure)
 {
   SQLTCHAR     szCatalogName     [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbCatalogName     = 0;
@@ -2598,14 +2626,18 @@ SQLInfo::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
   bool meta = p_procedure.Find('%') >= 0;
   meta = GetStatement(meta);
 
-  PrepareIdentifierForFunction(p_catalog,  meta);
-  PrepareIdentifierForFunction(p_schema,   meta);
-  PrepareIdentifierForFunction(p_procedure,meta);
+  XString xcatalog(p_catalog);
+  XString xschema(p_schema);
+  XString xprocedure(p_procedure);
+
+  PrepareIdentifierForFunction(xcatalog,  meta);
+  PrepareIdentifierForFunction(xschema,   meta);
+  PrepareIdentifierForFunction(xprocedure,meta);
 
   // Split name in a maximum of three parts
-  _tcscpy_s(reinterpret_cast<TCHAR*>(szCatalogName),  SQL_MAX_BUFFER,p_catalog.GetString());
-  _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName),   SQL_MAX_BUFFER,p_schema.GetString());
-  _tcscpy_s(reinterpret_cast<TCHAR*>(szProcedureName),SQL_MAX_BUFFER,p_procedure.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szCatalogName),  SQL_MAX_BUFFER,xcatalog.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName),   SQL_MAX_BUFFER,xschema.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szProcedureName),SQL_MAX_BUFFER,xprocedure.GetString());
 
   SQLTCHAR* catalog = nullptr;
   SQLTCHAR* schema  = nullptr;
@@ -2696,10 +2728,10 @@ SQLInfo::MakeInfoPSMProcedures(MProcedureMap&  p_procedures
 
 bool
 SQLInfo::MakeInfoPSMParameters(MParameterMap& p_parameters
-                              ,XString&       p_errors
-                              ,XString        p_catalog
-                              ,XString        p_schema
-                              ,XString        p_procedure)
+                              ,      XString& p_errors
+                              ,const XString& p_catalog
+                              ,const XString& p_schema
+                              ,const XString& p_procedure)
 {
   SQLTCHAR     szCatalogName     [SQL_MAX_BUFFER] = { 0 };
   SQLLEN       cbCatalogName     = 0;
@@ -2749,14 +2781,19 @@ SQLInfo::MakeInfoPSMParameters(MParameterMap& p_parameters
   CloseStatement();
   bool meta = GetStatement(false);
 
-  PrepareIdentifierForFunction(p_catalog,  meta);
-  PrepareIdentifierForFunction(p_schema,   meta);
-  PrepareIdentifierForFunction(p_procedure,meta);
+  XString xcatalog(p_catalog);
+  XString xschema(p_schema);
+  XString xprocedure(p_procedure);
+
+  PrepareIdentifierForFunction(xcatalog,  meta);
+  PrepareIdentifierForFunction(xschema,   meta);
+  PrepareIdentifierForFunction(xprocedure,meta);
+
 
   // Init search arguments
-  _tcscpy_s(reinterpret_cast<TCHAR*>(szCatalogName),  SQL_MAX_BUFFER,p_catalog.GetString());
-  _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName),   SQL_MAX_BUFFER,p_schema.GetString());
-  _tcscpy_s(reinterpret_cast<TCHAR*>(szProcedureName),SQL_MAX_BUFFER,p_procedure.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szCatalogName),  SQL_MAX_BUFFER,xcatalog.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szSchemaName),   SQL_MAX_BUFFER,xschema.GetString());
+  _tcscpy_s(reinterpret_cast<TCHAR*>(szProcedureName),SQL_MAX_BUFFER,xprocedure.GetString());
   szColumnName[0] = 0;
 
   SQLTCHAR* catalog = nullptr;
@@ -2860,7 +2897,7 @@ SQLInfo::MakeInfoPSMParameters(MParameterMap& p_parameters
 
 // Return the native SQL command from an ODBC-escaped command
 XString 
-SQLInfo::NativeSQL(HDBC hdbc,XString& sqlCommand)
+SQLInfo::NativeSQL(HDBC hdbc,const XString& sqlCommand)
 {
   // Check whether we can do this
   if(!SupportedFunction(SQL_API_SQLNATIVESQL))
@@ -2880,7 +2917,7 @@ SQLInfo::NativeSQL(HDBC hdbc,XString& sqlCommand)
 
   SQLINTEGER retLen = 0;
   SQLINTEGER buflen = sqlCommand.GetLength() * 4;
-  SQLTCHAR*  buffer = new SQLTCHAR[(size_t)buflen + 1];
+  SQLTCHAR*  buffer = alloc_new SQLTCHAR[(size_t)buflen + 1];
 
   // Perform the conversion call
   m_retCode = SqlNativeSql(hdbc
@@ -3076,7 +3113,7 @@ SQLInfo::MakeInfoMetaTypes(MMetaMap& p_objects,XString& p_errors,int p_type)
 // This is the ISO standard (alpha,alphanum(*)|'_')
 // Overrides per RDBMS applies!
 bool
-SQLInfo::IsIdentifier(XString p_identifier) const
+SQLInfo::IsIdentifier(const XString& p_identifier) const
 {
   // Cannot be empty and cannot exceed this amount of characters
   if(p_identifier.GetLength() == 0 ||
@@ -3085,14 +3122,14 @@ SQLInfo::IsIdentifier(XString p_identifier) const
     return false;
   }
   // Must start with one alpha char
-  if(!_istalpha(p_identifier.GetAt(0)))
+  if(!_istalpha((TCHAR)p_identifier.GetAt(0)))
   {
     return false;
   }
   for(int index = 0;index < p_identifier.GetLength();++index)
   {
     // Can be upper/lower alpha or a number OR an underscore
-    TCHAR ch = p_identifier.GetAt(index);
+    TCHAR ch = (TCHAR) p_identifier.GetAt(index);
     if(!_istalnum(ch) && ch != '_')
     {
       return false;
@@ -3102,14 +3139,14 @@ SQLInfo::IsIdentifier(XString p_identifier) const
 }
 
 bool 
-SQLInfo::IsIdentifierMixedCase(XString p_identifier) const
+SQLInfo::IsIdentifierMixedCase(const XString& p_identifier) const
 {
   int lowers = 0;
   int uppers = 0;
   // Count upper chars and lower chars
   for(int index = 0;index < p_identifier.GetLength();++index)
   {
-    TCHAR ch = p_identifier.GetAt(index);
+    TCHAR ch = (TCHAR) p_identifier.GetAt(index);
     if(_istlower(ch)) ++lowers;
     if(_istupper(ch)) ++uppers;
   }
@@ -3119,7 +3156,7 @@ SQLInfo::IsIdentifierMixedCase(XString p_identifier) const
 
 // Preparing identifiers for doing a query (quotations)
 XString
-SQLInfo::QueryIdentifierQuotation(XString p_identifier) const
+SQLInfo::QueryIdentifierQuotation(const XString& p_identifier) const
 {
   // See if we must do this
   if(!m_useIdentifierQuotation)
@@ -3141,7 +3178,7 @@ SQLInfo::QueryIdentifierQuotation(XString p_identifier) const
   // Count upper chars and lower chars
   for(int index = 0;index < p_identifier.GetLength();++index)
   {
-    TCHAR ch = p_identifier.GetAt(index);
+    TCHAR ch = (TCHAR) p_identifier.GetAt(index);
     if(_istlower(ch)) ++lowers;
     if(_istupper(ch)) ++uppers;
   }
@@ -3175,7 +3212,7 @@ SQLInfo::QueryIdentifierQuotation(XString p_identifier) const
 
 // Create quoted identifier
 XString
-SQLInfo::QuotedIdentifier(XString p_identifier) const
+SQLInfo::QuotedIdentifier(const XString& p_identifier) const
 {
   TCHAR prefix;
   TCHAR postfix;
@@ -3183,13 +3220,13 @@ SQLInfo::QuotedIdentifier(XString p_identifier) const
   if(quote.GetLength() == 1)
   {
     // Pretty standard: \"
-    prefix = postfix = quote.GetAt(0);
+    prefix = postfix = (TCHAR) quote.GetAt(0);
   }
   else
   {
     // Some database types use: [Identifier]
-    prefix = quote.GetAt(0);
-    postfix = quote.GetAt(1);
+    prefix  = (TCHAR) quote.GetAt(0);
+    postfix = (TCHAR) quote.GetAt(1);
   }
 
   // Create quoted name

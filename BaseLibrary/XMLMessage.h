@@ -2,8 +2,8 @@
 //
 // SourceFile: XMLMessage.h
 //
-// Copyright (c) 2014-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 2014-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files(the "Software"), to deal
@@ -83,7 +83,7 @@ using ushort        = unsigned short;
 class XMLAttribute
 {
 public:
-  XmlDataType  m_type { 0 };
+  XmlDataType  m_type { XmlDataType::XDT_Unknown };
   XString      m_namespace;
   XString      m_name;
   XString      m_value;
@@ -100,26 +100,27 @@ public:
   void            Reset();
 
   // GETTERS
-  XString         GetNamespace()    { return m_namespace;   };
-  XString         GetName()         { return m_name;        };
-  XmlDataType     GetType()         { return m_type;        };
-  XString         GetValue()        { return m_value;       };
-  XmlAttribMap&   GetAttributes()   { return m_attributes;  };
-  XmlElementMap&  GetChildren()     { return m_elements;    };
-  XMLElement*     GetParent()       { return m_parent;      };
-  XMLRestriction* GetRestriction()  { return m_restriction; };
+  XString         GetNamespace()    { return m_namespace;   }
+  XString         GetName()         { return m_name;        }
+  XmlDataType     GetType()         { return m_type;        }
+  XString         GetValue()        { return m_value;       }
+  XmlAttribMap&   GetAttributes()   { return m_attributes;  }
+  XmlElementMap&  GetChildren()     { return m_elements;    }
+  XMLElement*     GetParent()       { return m_parent;      }
+  XMLRestriction* GetRestriction()  { return m_restriction; }
 
   // TESTERS
   static bool     IsValidName(const XString& p_name);
   static XString  InvalidNameMessage(const XString& p_name);
 
   // SETTERS
-  void            SetParent(XMLElement* parent)  { m_parent    = parent;    };
-  void            SetNamespace(XString p_namesp) { m_namespace = p_namesp;  };
-  void            SetName(XString p_name);
-  void            SetType(XmlDataType p_type)    { m_type      = p_type;    };
-  void            SetValue(XString p_value)      { m_value     = p_value;   };
-  void            SetRestriction(XMLRestriction* p_restrict) { m_restriction = p_restrict; };
+  void            SetParent(XMLElement* parent)              { m_parent      = parent;     }
+  void            SetNamespace(const XString& p_namesp)      { m_namespace   = p_namesp;   }
+  void            SetName(const XString& p_name);
+  void            SetType(XmlDataType p_type)                { m_type        = p_type;     }
+  void            SetValue(const XString& p_value)           { m_value       = p_value;    }
+  void            SetRestriction(XMLRestriction* p_restrict) { m_restriction = p_restrict; }
+  void            SetTypeAttribute(XmlDataType p_extra);
 
   // REFERENCE SYSTEM
   void            AddReference();
@@ -129,7 +130,7 @@ private:
   // Our element node data
   XString         m_namespace;
   XString         m_name;
-  XmlDataType     m_type { 0 };
+  XmlDataType     m_type { XmlDataType::XDT_Unknown };
   XString         m_value;
   XmlAttribMap    m_attributes;
   XmlElementMap   m_elements;
@@ -150,18 +151,18 @@ public:
   // General XTOR
   XMLMessage();
   // XTOR from another message
-  explicit XMLMessage(XMLMessage* p_orig);
+  explicit XMLMessage(const XMLMessage* p_orig);
   // DTOR
   virtual ~XMLMessage();
 
   // Reset all internal structures
   virtual void    Reset();
   // Parse string XML to internal structures
-  virtual void    ParseMessage(XString& p_message, WhiteSpace p_whiteSpace = WhiteSpace::PRESERVE_WHITESPACE);
+  virtual void    ParseMessage(const XString& p_message, WhiteSpace p_whiteSpace = WhiteSpace::PRESERVE_WHITESPACE);
   // Parse string with specialized XML parser
   virtual void    ParseMessage(XMLParser* p_parser,XString& p_message,WhiteSpace p_whiteSpace = WhiteSpace::PRESERVE_WHITESPACE);
     // Parse from a beginning node
-  virtual void    ParseForNode(XMLElement* p_node, XString& p_message, WhiteSpace p_whiteSpace = WhiteSpace::PRESERVE_WHITESPACE);
+  virtual void    ParseForNode(XMLElement* p_node,const XString& p_message, WhiteSpace p_whiteSpace = WhiteSpace::PRESERVE_WHITESPACE);
   // Print the XML again
   virtual XString Print();
   // Print the XML header
@@ -192,95 +193,95 @@ public:
   Encoding        SetEncoding(Encoding p_encoding);
   void            SetSendBOM(bool p_bom);
   // Set the name of the root-node
-  void            SetRootNodeName(XString p_name);
+  void            SetRootNodeName(const XString& p_name);
   // Set condensed format (no spaces or newlines)
   void            SetCondensed(bool p_condens);
   void            SetPrintRestrictions(bool p_restrict);
   // Stylesheet info
-  void            SetStylesheetType(XString p_type);
-  void            SetStylesheet(XString p_sheet);
+  void            SetStylesheetType(const XString& p_type);
+  void            SetStylesheet(const XString& p_sheet);
   // Standalone XML
   void            SetStandalone(bool p_alone);
   // Setting an element
-  XMLElement*     SetElement(XString p_name, const XString& p_value);
-  XMLElement*     SetElement(XString p_name, LPCTSTR        p_value);
-  XMLElement*     SetElement(XString p_name, int            p_value);
-  XMLElement*     SetElement(XString p_name, bool           p_value);
-  XMLElement*     SetElement(XString p_name, double         p_value);
+  XMLElement*     SetElement(const XString& p_name, const XString& p_value);
+  XMLElement*     SetElement(const XString& p_name, LPCTSTR        p_value);
+  XMLElement*     SetElement(const XString& p_name, int            p_value);
+  XMLElement*     SetElement(const XString& p_name, bool           p_value);
+  XMLElement*     SetElement(const XString& p_name, double         p_value);
 
-  XMLElement*     SetElement(XMLElement* p_base, XString p_name, const XString& p_value);
-  XMLElement*     SetElement(XMLElement* p_base, XString p_name, LPCTSTR        p_value);
-  XMLElement*     SetElement(XMLElement* p_base, XString p_name, int            p_value);
-  XMLElement*     SetElement(XMLElement* p_base, XString p_name, bool           p_value);
-  XMLElement*     SetElement(XMLElement* p_base, XString p_name, double         p_value);
+//XMLElement*     SetElement(XMLElement* p_base,const XString& p_name, const XString& p_value);
+  XMLElement*     SetElement(XMLElement* p_base,const XString& p_name, LPCTSTR        p_value);
+  XMLElement*     SetElement(XMLElement* p_base,const XString& p_name, int            p_value);
+  XMLElement*     SetElement(XMLElement* p_base,const XString& p_name, bool           p_value);
+  XMLElement*     SetElement(XMLElement* p_base,const XString& p_name, double         p_value);
 
   // Special setters for elements
-  void            SetElementValue(XMLElement* p_elem, XmlDataType p_type, XString p_value);
-  void            SetElementOptions(XMLElement* p_elem, XmlDataType p_options);
-  void            SetElementNamespace(XMLElement* p_elem, XString p_namespace, XString p_contract, bool p_trailingSlash = false);
+  void            SetElementValue    (XMLElement* p_elem,const XString& p_value,XmlDataType p_type = XmlDataType::XDT_String);
+  void            SetElementOptions  (XMLElement* p_elem,XmlDataType p_options);
+  void            SetElementNamespace(XMLElement* p_elem,const XString& p_namespace,const XString& p_contract,bool p_trailingSlash = false);
 
   // General base setting of an element
-  XMLElement*     SetElement(XMLElement* p_base, XString p_name, XmlDataType p_type, XString p_value, bool p_front = false);
+  XMLElement*     SetElement(XMLElement* p_base,const XString& p_name,const XString& p_value = _T(""),XmlDataType p_type = XmlDataType::XDT_String,bool p_front = false);
   // General add an element (always adds, so multiple parameters of same name can be added)
-  XMLElement*     AddElement(XMLElement* p_base, XString p_name, XmlDataType p_type = XDT_String, XString p_value = _T(""), bool p_front = false);
+  XMLElement*     AddElement(XMLElement* p_base,const XString& p_name,const XString& p_value = _T(""),XmlDataType p_type = XmlDataType::XDT_String,bool p_front = false);
   // Set attribute of an element
-  XMLAttribute*   SetAttribute(XMLElement* p_elem, XString p_name, const XString& p_value);
-  XMLAttribute*   SetAttribute(XMLElement* p_elem, XString p_name, LPCTSTR        p_value);
-  XMLAttribute*   SetAttribute(XMLElement* p_elem, XString p_name, int            p_value);
-  XMLAttribute*   SetAttribute(XMLElement* p_elem, XString p_name, bool           p_value);
-  XMLAttribute*   SetAttribute(XMLElement* p_elem, XString p_name, double         p_value);
+  XMLAttribute*   SetAttribute(XMLElement* p_elem,const XString& p_name,const XString& p_value);
+  XMLAttribute*   SetAttribute(XMLElement* p_elem,const XString& p_name,LPCTSTR        p_value);
+  XMLAttribute*   SetAttribute(XMLElement* p_elem,const XString& p_name,int            p_value);
+  XMLAttribute*   SetAttribute(XMLElement* p_elem,const XString& p_name,bool           p_value);
+  XMLAttribute*   SetAttribute(XMLElement* p_elem,const XString& p_name,double         p_value);
 
   // GETTERS
   XString         GetRootNodeName();
   XmlError        GetInternalError();
   XString         GetInternalErrorString();
   Encoding        GetEncoding() const;
-  bool            GetCondensed();
+  bool            GetCondensed() const;
   bool            GetPrintRestrictions();
   bool            GetSendBOM() const;
-  XMLElement*     GetRoot();
+  XMLElement*     GetRoot() const;
   void            SetRoot(XMLElement* p_root);
-  XString         GetElement(XString p_name);
-  int             GetElementInteger(XString p_name);
-  bool            GetElementBoolean(XString p_name);
-  double          GetElementDouble(XString p_name);
-  XString         GetElement(XMLElement* p_elem, XString p_name);
-  int             GetElementInteger(XMLElement* p_elem, XString p_name);
-  bool            GetElementBoolean(XMLElement* p_elem, XString p_name);
-  double          GetElementDouble(XMLElement* p_elem, XString p_name);
+  XString         GetElement(const XString& p_name);
+  int             GetElementInteger(const XString& p_name);
+  bool            GetElementBoolean(const XString& p_name);
+  double          GetElementDouble(const XString& p_name);
+  XString         GetElement          (XMLElement* p_elem,const XString& p_name);
+  int             GetElementInteger   (XMLElement* p_elem,const XString& p_name);
+  bool            GetElementBoolean   (XMLElement* p_elem,const XString& p_name);
+  double          GetElementDouble    (XMLElement* p_elem,const XString& p_name);
   XMLElement*     GetElementFirstChild(XMLElement* p_elem);
-  XMLElement*     GetElementSibling(XMLElement* p_elem);
-  XString         GetAttribute(XMLElement* p_elem,XString p_attribName);
-  int             GetAttributeInteger(XMLElement* p_elem,XString p_attribName);
-  bool            GetAttributeBoolean(XMLElement* p_elem,XString p_attribName);
-  double          GetAttributeDouble(XMLElement* p_elem,XString p_attribName);
+  XMLElement*     GetElementSibling   (XMLElement* p_elem);
+  XString         GetAttribute        (XMLElement* p_elem,const XString& p_attribName) const;
+  int             GetAttributeInteger (XMLElement* p_elem,const XString& p_attribName) const;
+  bool            GetAttributeBoolean (XMLElement* p_elem,const XString& p_attribName) const;
+  double          GetAttributeDouble  (XMLElement* p_elem,const XString& p_attribName) const;
   XString         GetStylesheetType();
   XString         GetStylesheet();
 
   // FINDING
-  XMLElement*     FindElement(XString p_name, bool p_recurse = true);
-  XMLElement*     FindElement(XMLElement* p_base, XString p_name, bool p_recurse = true);
-  XMLElement*     FindElementWithAttribute(XMLElement* p_base
-                                          ,XString     p_elementName
-                                          ,XString     p_attribName
-                                          ,XString     p_attribValue = _T("")
-                                          ,bool        p_recurse     = true);
-  XMLAttribute*   FindAttribute(XMLElement* p_elem, XString p_attribName);
+  XMLElement*     FindElement(const XString& p_name, bool p_recurse = true) const;
+  XMLElement*     FindElement(XMLElement* p_base,const XString& p_name, bool p_recurse = true) const;
+  XMLElement*     FindElementWithAttribute(      XMLElement* p_base
+                                          ,const XString&    p_elementName
+                                          ,const XString&    p_attribName
+                                          ,const XString&    p_attribValue = _T("")
+                                          ,const bool        p_recurse     = true);
+  XMLAttribute*   FindAttribute(XMLElement* p_elem,const XString& p_attribName) const;
 
   // EXTRA OPERATIONS on element nodes
 
   // Delete element with this name (possibly the nth instance of this name) (base can be NULL)
-  bool            DeleteElement(XMLElement* p_base, XString p_name, int p_instance = 0);
+  bool            DeleteElement(XMLElement* p_base,const XString& p_name,int p_instance = 0);
   // Delete exactly this element (base can be NULL)
-  bool            DeleteElement(XMLElement* p_base, XMLElement* p_element);
+  bool            DeleteElement(XMLElement* p_base,XMLElement* p_element);
   // Delete exactly this attribute
-  bool            DeleteAttribute(XMLElement* p_element, XString p_attribName);
+  bool            DeleteAttribute(XMLElement* p_element,const XString& p_attribName);
   // Clean up (delete) elements if empty
   bool            CleanUpElement(XMLElement* p_element,bool p_recurse);
 
   // Finding an element by attribute value
-  XMLElement*     FindElementByAttribute(XString p_attribute, XString p_value);
-  XMLElement*     FindElementByAttribute(XMLElement* p_element, XString p_attribute, XString p_value);
+  XMLElement*     FindElementByAttribute(const XString& p_attribute,const XString& p_value);
+  XMLElement*     FindElementByAttribute(XMLElement* p_element,const XString& p_attribute,const XString& p_value);
 
   // XMLElements can be stored elsewhere. Use the reference mechanism to add/drop references
   // With the drop of the last reference, the object WILL destroy itself
@@ -317,7 +318,7 @@ protected:
 // XMLMessage
 
 inline XMLElement*
-XMLMessage::GetRoot()
+XMLMessage::GetRoot() const
 {
   return m_root;
 }
@@ -341,7 +342,7 @@ XMLMessage::GetInternalErrorString()
 }
 
 inline void
-XMLMessage::SetRootNodeName(XString p_name)
+XMLMessage::SetRootNodeName(const XString& p_name)
 {
   m_root->SetName(p_name);
 }
@@ -359,7 +360,7 @@ XMLMessage::GetEncoding() const
 }
 
 inline bool
-XMLMessage::GetCondensed()
+XMLMessage::GetCondensed() const
 {
   return m_condensed;
 }
@@ -401,13 +402,13 @@ XMLMessage::GetStylesheet()
 }
 
 inline void
-XMLMessage::SetStylesheetType(XString p_type)
+XMLMessage::SetStylesheetType(const XString& p_type)
 {
   m_stylesheetType = p_type;
 }
 
 inline void
-XMLMessage::SetStylesheet(XString p_sheet)
+XMLMessage::SetStylesheet(const XString& p_sheet)
 {
   m_stylesheet = p_sheet;
 }

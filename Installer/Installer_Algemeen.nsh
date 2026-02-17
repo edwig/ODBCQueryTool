@@ -3,26 +3,26 @@
 ; Project:      Open ODBC Querytool
 ; Auteurs:      Edo Huisman
 ;
-; Copyright (c) 2017-2025 ir. W.E. Huisman
+; Copyright (c) 2006-2026 ir. W.E. Huisman
 ; All rights reserved
 ;
-; Last change:       14-01-2026
-; Versionnumber:     3.5.6
+; Last change:       15-02-2026
+; Versionnumber:     3.6.0
 ;-------------------------------------------------------
  !define PRODUCT_NAME                         "OpenODBCQuerytool"
- !define PRODUCT_VERSION                      "3.5.6"
- !define PRODUCT_BUILDNUMBER                  "481"
+ !define PRODUCT_VERSION                      "3.6.0"
+ !define PRODUCT_BUILDNUMBER                  "503"
  !define PRODUCT_PUBLISHER                    "EDO"
  !define PRODUCT_WEB_SITE                     "https://sourceforge.net/projects/odbcquerytool"
  !define PRODUCT_DIR_REGKEY                   "Software\Microsoft\Windows\CurrentVersion\App Paths\${PRODUCT_NAME}"
  !define PRODUCT_UNINST_KEY                   "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
  !define PRODUCT_UNINST_ROOT_KEY              "HKLM"
  !define MUI_HEADERIMAGE
- !define MUI_HEADERIMAGE_BITMAP               "..\EDO.bmp"
+ !define MUI_HEADERIMAGE_BITMAP               "EDO.bmp"
  !define MUI_DIRECTORYPAGE_VERIFYONLEAVE
  
  ; map waar de bestanden zitten.
- !define InvoerMapData                        "..\..\Data"
+ !define InvoerMapData                        "..\Data"
 
 ;--------------------------------------------------------------------------------------------------------
  var currentVersion
@@ -33,6 +33,7 @@
  !include "FileFunc.nsh"
  !include x64.nsh
  !include WinMessages.nsh
+ 
  ;--------------------------------------------------------------------------------------------------------
  ;macro's
   
@@ -80,12 +81,12 @@
  !define MUI_UNICON "Query.ico"
  !define MUI_BGCOLOR F0F0F0
  !define MUI_HEADER_TRANSPARENT_TEXT
- !define MUI_WELCOMEFINISHPAGE_BITMAP "..\EdoCastle.bmp"
+ !define MUI_WELCOMEFINISHPAGE_BITMAP "EdoCastle.bmp"
  !define MUI_LICENSEPAGE_BGCOLOR /grey
  !define MUI_COMPONENTSPAGE_NODESC
  !define MUI_COMPONENTSPAGE_TEXT_COMPLIST "To be installed"
  !define MUI_FINISHPAGE_NOAUTOCLOSE
- !define MUI_UNWELCOMEFINISHPAGE_BITMAP "..\EdoCastle.bmp"
+ !define MUI_UNWELCOMEFINISHPAGE_BITMAP "EdoCastle.bmp"
  !define MUI_UNFINISHPAGE_NOAUTOCLOSE
  !define MUI_ABORTWARNING
  !define MUI_ABORTWARNING_TEXT "Do you wish to abort the installation of ${PRODUCT_NAME} ?"
@@ -107,7 +108,7 @@
  !insertmacro MUI_PAGE_WELCOME
 ;--------------------------------------------------------------------------------------------------------
 ; Directory page
- !insertmacro MUI_PAGE_LICENSE "..\..\license.txt"
+ !insertmacro MUI_PAGE_LICENSE "..\license.txt"
  !insertmacro MUI_PAGE_COMPONENTS
  !insertmacro MUI_PAGE_DIRECTORY
  !insertmacro MUI_PAGE_INSTFILES
@@ -191,6 +192,7 @@ SectionEnd
 ;
 Function .onInit
  ClearErrors
+ SetRegView 64
 
  ; Always install the programs
  IntOp $0 ${SF_RO} | ${SF_SELECTED}

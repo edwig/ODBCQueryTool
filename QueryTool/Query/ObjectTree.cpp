@@ -317,13 +317,13 @@ ObjectTree::OnTableFirst(HTREEITEM p_theItem)
       SQLInfoDB* info = theApp.GetDatabase().GetSQLInfoDB();
 
       // Get quoted or unquoted names
-      table = info->QueryIdentifierQuotation(table);
+      table = info->QueryIdentifierQuotation(table.GetString());
 
       if(info->GetSchemaNameUsage() & SQL_CU_DML_STATEMENTS)
       {
         if(!IsSpecialNode(schema))
         {
-          schema = info->QueryIdentifierQuotation(schema);
+          schema = info->QueryIdentifierQuotation(schema.GetString());
           table  = schema + _T(".") + table;
         }
       }
@@ -452,13 +452,13 @@ ObjectTree::FindTables(HTREEITEM p_theItem)
   CString text = GetItemText(p_theItem);
   CString type = GetObjectType(text);
 
-  CString catalog;
-  CString schema;
-  CString table;
-  info->GetObjectName(m_filter,catalog,schema,table);
+  XString catalog;
+  XString schema;
+  XString table;
+  info->GetObjectName(m_filter.GetString(),catalog,schema,table);
 
   MTableMap tables;
-  CString   errors;
+  XString   errors;
   CString   lastSchema;
   int       schemaCount = 0;
   HTREEITEM schemaItem  = 0;
@@ -475,7 +475,7 @@ ObjectTree::FindTables(HTREEITEM p_theItem)
 
   if(!errors.IsEmpty())
   {
-    InsertItem(errors,p_theItem);
+    InsertItem(errors.GetString(),p_theItem);
     return;
   }
 
@@ -628,10 +628,12 @@ ObjectTree::FindColumns(HTREEITEM p_theItem)
   {
     // Go find the columns
     MColumnMap columns;
-    CString    errors;
-    CString    catalog;
+    XString    errors;
+    XString    catalog;
+    XString    schema(m_schema);
+    XString    table(m_table);
     QueryToolApp* app = (QueryToolApp*)AfxGetApp();
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableColumns(columns,errors,catalog,m_schema,m_table);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableColumns(columns,errors,catalog,schema,table);
     ColumnListToTree(columns,p_theItem);
     AddErrorsToTree(errors,p_theItem);
   }
@@ -646,11 +648,12 @@ ObjectTree::FindPrimary(HTREEITEM p_theItem)
   {
     QueryToolApp* app = (QueryToolApp*)AfxGetApp();
     MPrimaryMap primaries;
-    CString     errors;
-    CString     catalog;
-
+    XString     errors;
+    XString     catalog;
+    XString     schema(m_schema);
+    XString     table(m_table);
     // Go find the primary key
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTablePrimary(primaries,errors,catalog,m_schema,m_table);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTablePrimary(primaries,errors,catalog,schema,table);
     PrimariesToTree(primaries,p_theItem);
     AddErrorsToTree(errors,p_theItem);
   }
@@ -665,11 +668,13 @@ ObjectTree::FindForeign(HTREEITEM p_theItem)
   {
     QueryToolApp* app = (QueryToolApp*)AfxGetApp();
     MForeignMap foreigns;
-    CString     errors;
-    CString     catalog;
+    XString     errors;
+    XString     catalog;
+    XString     schema(m_schema);
+    XString     table(m_table);
 
     // Go find the foreign keys
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableForeign(foreigns,errors,catalog,m_schema,m_table);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableForeign(foreigns,errors,catalog,schema,table);
     ForeignsToTree(foreigns,p_theItem);
     AddErrorsToTree(errors,p_theItem);
   }
@@ -684,11 +689,13 @@ ObjectTree::FindStatistics(HTREEITEM p_theItem)
   {
     QueryToolApp* app = (QueryToolApp*)AfxGetApp();
     MIndicesMap statistics;
-    CString errors;
-    CString catalog;
+    XString errors;
+    XString catalog;
+    XString schema(m_schema);
+    XString table(m_table);
 
     // Go find the indices and statistics
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableStatistics(statistics,errors,catalog,m_schema,m_table,nullptr);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableStatistics(statistics,errors,catalog,schema,table,nullptr);
     StatisticsToTree(statistics,p_theItem);
     AddErrorsToTree(errors,p_theItem);
   }
@@ -702,11 +709,13 @@ ObjectTree::FindSpecials(HTREEITEM p_theItem)
   {
     QueryToolApp* app = (QueryToolApp*)AfxGetApp();
     MSpecialsMap specials;
-    CString errors;
-    CString catalog;
+    XString errors;
+    XString catalog;
+    XString schema(m_schema);
+    XString table(m_table);
 
     // Go find the special columns
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableSpecials(specials,errors,catalog,m_schema,m_table);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableSpecials(specials,errors,catalog,schema,table);
     SpecialsToTree(specials,p_theItem);
     AddErrorsToTree(errors,p_theItem);
   }
@@ -721,11 +730,13 @@ ObjectTree::FindReferenced(HTREEITEM p_theItem)
   {
     QueryToolApp* app = (QueryToolApp*)AfxGetApp();
     MForeignMap foreigns;
-    CString     errors;
-    CString     catalog;
+    XString     errors;
+    XString     catalog;
+    XString     schema(m_schema);
+    XString     table(m_table);
 
     // Go find the referencing tables
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableForeign(foreigns,errors,catalog,m_schema,m_table,true);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableForeign(foreigns,errors,catalog,schema,table,true);
     ReferencedToTree(foreigns,p_theItem);
     AddErrorsToTree(errors,p_theItem);
   }
@@ -739,11 +750,13 @@ ObjectTree::FindTabTriggers(HTREEITEM p_theItem)
   {
     QueryToolApp* app = (QueryToolApp*)AfxGetApp();
     MTriggerMap triggers;
-    CString     errors;
-    CString     catalog;
+    XString     errors;
+    XString     catalog;
+    XString     schema(m_schema);
+    XString     table(m_table);
 
     // Go find the triggers
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableTriggers(triggers,errors,catalog,m_schema,m_table);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableTriggers(triggers,errors,catalog,schema,table);
     TriggersToTree(triggers,p_theItem);
     AddErrorsToTree(errors,p_theItem);
   }
@@ -758,11 +771,13 @@ ObjectTree::FindTabSequences(HTREEITEM p_theItem)
   {
     QueryToolApp* app = (QueryToolApp*)AfxGetApp();
     MSequenceMap sequences;
-    CString      errors;
-    CString     catalog;
+    XString      errors;
+    XString      catalog;
+    XString      schema(m_schema);
+    XString      table(m_table);
 
     // Go find the sequences
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableSequences(sequences,errors,catalog,m_schema,m_table + _T("%"));
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTableSequences(sequences,errors,catalog,schema,table + _T("%"));
     SequencesToTree(sequences,p_theItem);
     AddErrorsToTree(errors,p_theItem);
   }
@@ -776,11 +791,13 @@ ObjectTree::FindPrivileges(HTREEITEM p_theItem)
   {
     QueryToolApp* app = (QueryToolApp*)AfxGetApp();
     MPrivilegeMap privileges;
-    CString errors;
-    CString     catalog;
+    XString errors;
+    XString catalog;
+    XString schema(m_schema);
+    XString table(m_table);
 
     // Go find the privileges on the table
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoTablePrivileges(privileges,errors,catalog,m_schema,m_table);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoTablePrivileges(privileges,errors,catalog,schema,table);
     PrivilegesToTree(privileges,p_theItem);
     AddErrorsToTree(errors,p_theItem);
   }
@@ -794,11 +811,13 @@ ObjectTree::FindColumnPrivileges(HTREEITEM p_theItem)
   {
     QueryToolApp* app = (QueryToolApp*)AfxGetApp();
     MPrivilegeMap privileges;
-    CString errors;
-    CString     catalog;
+    XString errors;
+    XString catalog;
+    XString schema(m_schema);
+    XString table(m_table);
 
     // Go find the privileges on the table
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoColumnPrivileges(privileges,errors,catalog,m_schema,m_table);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoColumnPrivileges(privileges,errors,catalog,schema,table);
     ColumnPrivilegesToTree(privileges,p_theItem);
     AddErrorsToTree(errors,p_theItem);
   }
@@ -813,14 +832,14 @@ ObjectTree::FindSequences(HTREEITEM p_theItem)
   HTREEITEM    schemaItem  = NULL;
   int          schemaCount = 0;
   MSequenceMap sequences;
-  CString      errors;
+  XString      errors;
   CString      lastSchema;
 
   // Find filtered name
-  CString catalog;
-  CString schema;
-  CString table;
-  info->GetObjectName(m_filter,catalog,schema,table);
+  XString catalog;
+  XString schema;
+  XString table;
+  info->GetObjectName(m_filter.GetString(),catalog,schema,table);
 
   // Get relevant sequences
   info->MakeInfoTableSequences(sequences,errors,catalog,schema,table);
@@ -907,14 +926,14 @@ ObjectTree::FindUserTypes(HTREEITEM p_theItem)
   HTREEITEM    schemaItem = NULL;
   int          schemaCount = 0;
   MUserTypeMap types;
-  CString      errors;
+  XString      errors;
   CString      lastSchema;
 
   // Find filtered name
-  CString catalog;
-  CString schema;
-  CString type;
-  info->GetObjectName(m_filter,catalog,schema,type);
+  XString catalog;
+  XString schema;
+  XString type;
+  info->GetObjectName(m_filter.GetString(), catalog, schema, type);
 
   // Find relevant user types
   info->MakeInfoUserTypes(types,errors,catalog,schema,type);
@@ -984,14 +1003,14 @@ ObjectTree::FindTriggers(HTREEITEM p_theItem)
   HTREEITEM   schemaItem = NULL;
   int         schemaCount = 0;
   MTriggerMap triggers;
-  CString     errors;
+  XString     errors;
   CString     lastSchema;
 
   // Find filtered name
-  CString catalog;
-  CString schema;
-  CString table;
-  info->GetObjectName(m_filter,catalog,schema,table);
+  XString catalog;
+  XString schema;
+  XString table;
+  info->GetObjectName(m_filter.GetString(),catalog,schema,table);
 
   // Find relevant triggers
   info->MakeInfoTableTriggers(triggers,errors,schema,table,_T(""));
@@ -1054,16 +1073,16 @@ ObjectTree::FindProcedures(HTREEITEM p_theItem)
   QueryToolApp* app = (QueryToolApp*)AfxGetApp();
   SQLInfoDB* info = app->GetDatabase().GetSQLInfoDB();
   MProcedureMap procedures;
-  CString   errors;
+  XString   errors;
   CString   lastSchema;
   int       schemaCount = 0;
   HTREEITEM schemaItem  = NULL;
 
   // Find filtered name
-  CString catalog;
-  CString schema;
-  CString table;
-  info->GetObjectName(m_filter, catalog, schema, table);
+  XString catalog;
+  XString schema;
+  XString table;
+  info->GetObjectName(m_filter.GetString(), catalog, schema, table);
 
   try
   {
@@ -1138,10 +1157,12 @@ ObjectTree::FindParameters(HTREEITEM p_theItem)
     // Go find the procedures
     QueryToolApp* app = (QueryToolApp*)AfxGetApp();
     MProcedureMap procedures;
-    CString   errors;
-    CString     catalog;
+    XString errors;
+    XString catalog;
+    XString schema(m_schema);
+    XString procName(m_procedure);
 
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoPSMProcedures(procedures,errors,catalog,m_schema,m_procedure);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoPSMProcedures(procedures,errors,catalog,schema,procName);
     if(procedures.empty())
     {
       return;
@@ -1186,7 +1207,7 @@ ObjectTree::FindParameters(HTREEITEM p_theItem)
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
     // Source
-    CString name = procedure.m_schemaName + _T(".") + m_procedure;
+    CString name = CString(procedure.m_schemaName) + _T(".") + m_procedure;
     m_source.insert(std::make_pair(name, procedure.m_source));
     line.Format(_T("SQL Source: %d characters"), procedure.m_source.GetLength());
     item = InsertItem(line,info,TREE_SOURCECODE);
@@ -1194,7 +1215,7 @@ ObjectTree::FindParameters(HTREEITEM p_theItem)
 
     // Go find the parameters for the procedure
     MParameterMap parameters;
-    app->GetDatabase().GetSQLInfoDB()->MakeInfoPSMParameters(parameters,errors,catalog,procedure.m_schemaName,m_procedure);
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoPSMParameters(parameters,errors,catalog,procedure.m_schemaName,procName);
     ParametersToTree(parameters,param);
     AddErrorsToTree(errors,p_theItem);
 
@@ -1246,15 +1267,17 @@ ObjectTree::FindSourcecode(HTREEITEM p_theItem)
 bool
 ObjectTree::ShowSourcecodeTrigger(CString p_schema,CString p_trigger)
 {
-  CString errors;
-  CString object;
+  XString errors;
+  XString object;
   CString source;
-  CString catalog;
+  XString catalog;
+  XString schema(m_schema);
+  XString trigger(p_trigger);
   MTriggerMap triggers;
   QueryToolApp* app = (QueryToolApp*)AfxGetApp();
   SQLInfoDB* info = app->GetDatabase().GetSQLInfoDB();
 
-  if(info->MakeInfoTableTriggers(triggers,errors,catalog,m_schema,object,p_trigger))
+  if(info->MakeInfoTableTriggers(triggers,errors,catalog,schema,object,trigger))
   {
     source = info->GetCATALOGTriggerCreate(triggers[0]);
   }
@@ -1282,10 +1305,12 @@ ObjectTree::ShowSourcecodeModule(CString p_schema, CString p_procedure)
     CString source = it->second;
     if(source == _T("<@>") || source.IsEmpty())
     {
-      CString catalog;
+      XString catalog;
+      XString schema(p_schema);
+      XString procedure(p_procedure);
       QueryToolApp* app = (QueryToolApp*)AfxGetApp();
       SQLInfoDB* info = app->GetDatabase().GetSQLInfoDB();
-      source = info->MakeInfoPSMSourcecode(catalog,p_schema,p_procedure);
+      source = info->MakeInfoPSMSourcecode(catalog,schema,procedure);
     }
 
     // Prepare for MFC edit control
@@ -1411,7 +1436,7 @@ ObjectTree::PrimariesToTree(MPrimaryMap& p_primaries,HTREEITEM p_item)
   // Insert primary column names
   for(auto& prim : p_primaries)
   {
-    HTREEITEM colItem = InsertItem(prim.m_columnName,nameItem);
+    HTREEITEM colItem = InsertItem(prim.m_columnName.GetString(), nameItem);
     SetItemImage(colItem,IMG_COLUMN,IMG_COLUMN);
   }
 }
@@ -1713,7 +1738,7 @@ ObjectTree::TriggersToTree(MTriggerMap& p_triggers,HTREEITEM p_item)
   for(auto& trigger : p_triggers)
   {
     // Name of the trigger + position in firing (0 = no order)
-    HTREEITEM trigItem = InsertItem(trigger.m_triggerName,p_item);
+    HTREEITEM trigItem = InsertItem(trigger.m_triggerName.GetString(), p_item);
     SetItemImage(trigItem,IMG_TRIGGER,IMG_TRIGGER);
     TriggerToTree(trigger,trigItem);
   }
@@ -1797,7 +1822,7 @@ ObjectTree::UserColumnsToTree(MUserTypeMap& p_types,HTREEITEM p_item,unsigned p_
   do 
   {
     // Attribute
-    HTREEITEM colitem = InsertItem(type->m_attribute,p_item);
+    HTREEITEM colitem = InsertItem(type->m_attribute.GetString(),p_item);
     SetItemImage(colitem,IMG_COLUMN,IMG_COLUMN);
     // Datatype
     line = _T("Domain base datatype: ") + type->m_datatype;
@@ -2097,7 +2122,7 @@ ObjectTree::ParametersToTree(MParameterMap& p_parameters,HTREEITEM p_item)
 }
 
 void
-ObjectTree::AddErrorsToTree(CString p_errors,HTREEITEM p_theItem)
+ObjectTree::AddErrorsToTree(XString p_errors,HTREEITEM p_theItem)
 {
   if(!p_errors.IsEmpty())
   {

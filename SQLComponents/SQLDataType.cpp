@@ -2,8 +2,8 @@
 //
 // File: SQLDataType.cpp
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -26,8 +26,9 @@
 #include "stdafx.h"
 #include "SQLDataType.h"
 #include "SQLParameterType.h"
-#include "sql.h"
-#include "sqlext.h"
+#include <sql.h>
+#include <sqlext.h>
+#include <atlstr.h>
 
 namespace SQLComponents
 {
@@ -121,10 +122,10 @@ SQLDataType::SQLDataType(int p_sqlType)
 {
 }
 
-SQLDataType::SQLDataType(XString p_typeName)
+SQLDataType::SQLDataType(const XString& p_typeName)
             :m_typeName(p_typeName)
 {
-  m_sqlType  = FindDatatype(reinterpret_cast<LPTSTR>(const_cast<TCHAR*>(p_typeName.GetString())));
+  m_sqlType  = FindDatatype((LPCTSTR)p_typeName.GetString());
 }
 
 SQLDataType::SQLDataType(MetaColumn& p_column)
@@ -251,7 +252,7 @@ SQLDataType::GetisInterval()
 }
 
 /*static*/ int
-SQLDataType::FindDatatype(LPTSTR p_type)
+SQLDataType::FindDatatype(LPCTSTR p_type)
 {
   DataTypes* types = allTypes;
   while(types->name)
@@ -281,7 +282,7 @@ SQLDataType::FindDatatype(int p_type)
 }
 
 /*static*/ int
-SQLDataType::FindParamtype(LPTSTR p_type)
+SQLDataType::FindParamtype(LPCTSTR p_type)
 {
   DataTypes* param = allParams;
   while(param->name)
@@ -313,7 +314,7 @@ SQLDataType::FindParamtype(int p_type)
 // Find the extra SQL_XXX datatype for
 // variants of CHAR and BINARY
 /*static*/ int
-SQLDataType::FindSQLDatatype(LPTSTR p_type)
+SQLDataType::FindSQLDatatype(LPCTSTR p_type)
 {
   DataTypes* types = allOther;
   while(types->name)

@@ -117,7 +117,7 @@ QueryDlg::OnBnClickedGo()
   QueryReWriter* rewriter = theApp.GetQueryReWriter();
   if(rewriter)
   {
-    m_result = rewriter->Parse(m_query);
+    m_result = rewriter->Parse(m_query.GetString());
     UpdateData(FALSE);
   }
   else

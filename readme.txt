@@ -22,6 +22,22 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes 3.6.0
+------------------
+-  Upgraded to the newwest versions of the libraries (SQLComponents, BaseLibrary) that
+   are no longer using the MFC-library from Microsoft. By using ISO std::string makes the 
+   program more stable and faster
+-  Dropped the suport of 32-Bits versions. Only 64-Bits versions are now released. 
+   This is in line with the general trend of software development, where 64-Bits is the 
+   standard and 32-Bits is becoming obsolete.
+-  Fixed a bug in the parsing of the ODBC SQL to fix the parsing of double quoted strings
+   This was specially for the usage of the "ODBC Text driver" in order to be able
+   to do a: "SELECT * FROM "textfile.txt" or from a "*.csv" file. This is now working again.
+-  DEPRECATION WARNING: This will also be the last version of the ODBCQuerytool that supports 
+   the ANSI/MBCS coding. The next version will soly be Unicode 16. The ANSI/MBCS coding is 
+   becoming obsolete and the Unicode 16 version is more in line with internationalization 
+   and the general trend of software development
+
 Releasenotes 3.5.6
 ------------------
 -  Discovery of functions in Firebird 4 and 5 work again

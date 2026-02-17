@@ -28,12 +28,6 @@
 #include "SQLInfoOracle.h"
 #include "SQLQuery.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 namespace SQLComponents
 {
 
@@ -268,7 +262,7 @@ SQLInfoOracle::GetRDBMSMaxVarchar() const
 
 // Identifier rules differ per RDBMS
 bool
-SQLInfoOracle::IsIdentifier(XString p_identifier) const
+SQLInfoOracle::IsIdentifier(const XString& p_identifier) const
 {
   // Cannot be empty and cannot exceed this amount of characters
   if(p_identifier.GetLength() == 0 ||
@@ -383,14 +377,14 @@ SQLInfoOracle::GetKEYWORDParameterPrefix() const
 // Get select part to add new record identity to a table
 // Can be special column like 'OID' or a sequence select
 XString
-SQLInfoOracle::GetKEYWORDIdentityString(XString& p_tablename,XString p_postfix /*= "_seq"*/) const
+SQLInfoOracle::GetKEYWORDIdentityString(const XString& p_tablename,const XString& p_postfix /*= "_seq"*/) const
 {
   return p_tablename + p_postfix + _T(".nextval");
 }
 
 // Gets the UPPER function
 XString
-SQLInfoOracle::GetKEYWORDUpper(XString& p_expression) const
+SQLInfoOracle::GetKEYWORDUpper(const XString& p_expression) const
 {
   return _T("UPPER(") + p_expression + _T(")");
 }
@@ -404,7 +398,7 @@ SQLInfoOracle::GetKEYWORDInterval1MinuteAgo() const
 
 // Gets the Not-NULL-Value statement of the database
 XString
-SQLInfoOracle::GetKEYWORDStatementNVL(XString& p_test,XString& p_isnull) const
+SQLInfoOracle::GetKEYWORDStatementNVL(const XString& p_test,const XString& p_isnull) const
 {
   return XString(_T("NVL(")) + p_test + _T(",") + p_isnull + _T(")");
 }
@@ -2374,9 +2368,8 @@ SQLInfoOracle::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewname,bo
                 _T("      ,viw.view_name     AS table_name\n")
                 _T("      ,'VIEW'            AS object_type\n")
                 _T("      ,com.comments      AS remarks\n")
-                _T("      ,viw.owner || '.' || viw.view_name AS fullname")
                 _T("      ,''                AS tablespace_name\n")
-                _T("      ,0                 AS temporary\n")
+                _T("      ,0                 AS TEMPORARY\n")
                 _T("  FROM all_views viw LEFT OUTER JOIN all_tab_comments com\n")
                 _T("                     ON (viw.owner     = com.owner\n")
                 _T("                    AND  viw.view_name = com.table_name)\n")
@@ -3233,14 +3226,14 @@ SQLInfoOracle::GetSESSIONConstraintsImmediate() const
 
 // Calling a stored function or procedure if the RDBMS does not support ODBC call escapes
 SQLVariant*
-SQLInfoOracle::DoSQLCall(SQLQuery* /*p_query*/,XString& /*p_schema*/,XString& /*p_procedure*/)
+SQLInfoOracle::DoSQLCall(SQLQuery* /*p_query*/,const XString& /*p_schema*/,const XString& /*p_procedure*/)
 {
   return nullptr;
 }
 
 // Calling a stored function with named parameters, returning a value
 SQLVariant*
-SQLInfoOracle::DoSQLCallNamedParameters(SQLQuery* p_query,XString& p_schema,XString& p_procedure,bool p_function /*= true*/)
+SQLInfoOracle::DoSQLCallNamedParameters(SQLQuery* p_query,const XString& p_schema,const XString& p_procedure,bool p_function /*= true*/)
 {
   XString sql;
   

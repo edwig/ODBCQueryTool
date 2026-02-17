@@ -1132,7 +1132,8 @@ QueryToolApp::OpenDatabaseConnectie()
     {
       m_database.Close();
     }
-    m_database.Open(connectStr,m_safty);
+    XString connect(connectStr);
+    m_database.Open(connect,m_safty);
   }
   catch (CString& error)
   {
@@ -1197,7 +1198,7 @@ QueryToolApp::SelectFirst100(CString& p_table)
     directory.GetEnvironmentVariable(_T("TMP"));
     directory.TrimRight('\\');
     // Get a filename for the table
-    CString filename(directory);
+    XString filename(directory);
     filename += _T("\\");
     filename += _T("Select_");
     filename += p_table;
@@ -1206,7 +1207,7 @@ QueryToolApp::SelectFirst100(CString& p_table)
 
     try
     {
-      CString select(_T("SELECT * FROM "));
+      XString select(_T("SELECT * FROM "));
       select += p_table;
       select += _T(";\n");
 
@@ -1238,20 +1239,21 @@ QueryToolApp::TableDDL(CString& p_table)
     CWaitCursor take_a_deep_sigh;
 
     // Get the temp directory
-    CString directory;
+    XString directory;
+    XString table(p_table);
     directory.GetEnvironmentVariable(_T("TMP"));
     directory.TrimRight('\\');
     // Get a filename for the table
-    CString filename(directory);
+    XString filename(directory);
     filename += _T("\\");
     filename += _T("CreateTable_");
-    filename += p_table;
+    filename += table;
     filename += _T(".sql");
 
     try
     {
       DDLCreateTable create(m_database.GetSQLInfoDB());
-      create.GetTableDDL(p_table);
+      create.GetTableDDL(table);
       create.SaveDDL(filename);
       AfxGetApp()->OpenDocumentFile(filename);
     }
@@ -1267,10 +1269,10 @@ QueryToolApp::FindNativeSQL(CString& command)
 {
   if(DatabaseIsOpen())
   {
-    CString sql(command);
+    XString sql(command);
     if(GetDatabase().ODBCNativeSQL(sql))
     {
-      return sql;
+      return sql.GetString();
     }
   }
   return command;

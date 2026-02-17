@@ -41,7 +41,7 @@ const LanguagePtr LanguagesCollection::Find (const CString& name)
       }
     }
 
-    throw StdException(_T("Logic error: Language \"") + name + _T("\" not found."));
+    throw StdException(_T("Logic error: Language \"") + XString(name) + _T("\" not found."));
 }
 
 };//namespace OpenEditor

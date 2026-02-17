@@ -157,11 +157,11 @@ private:
   bool    m_connDead;         // Connection is dead (not Updatable)
   bool    m_tracing;          // Do tracing
   bool    m_tracingApply;     // Must reapply it
-  CString m_traceFile;        // File to trace to
+  XString m_traceFile;        // File to trace to
   bool    m_traceFileApply;   // Reapply tracing file
-  CString m_fileDSN;          // Login file DSN
+  XString m_fileDSN;          // Login file DSN
   bool    m_fileDSNApply;
-  CString m_fileDSNSave;      // Saved DSN file after success
+  XString m_fileDSNSave;      // Saved DSN file after success
   bool    m_fileDSNSaveApply; // Reapply
   CString m_strLoginTimeout;
   int     m_loginTimeout;     // Timeout at login (default = 15)
@@ -178,7 +178,7 @@ private:
   int     m_odbcCursorsApply; // Reapply
   int     m_txnLevel;         // Transaction isolation level
   bool    m_txnLevelApply;    // Reapply
-  CString m_transLib;         // Translation library
+  XString m_transLib;         // Translation library
   bool    m_transLibApply;    // Reapply
   CString m_strTransOption;
   int     m_transOption;      // Option at start of translation library

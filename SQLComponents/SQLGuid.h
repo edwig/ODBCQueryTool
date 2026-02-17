@@ -2,8 +2,8 @@
 //
 // File: SQLGuid.h
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -35,11 +35,11 @@ public:
   SQLGuid();
   SQLGuid(const SQLGuid& p_guid);
   explicit SQLGuid(const SQLGUID* p_guid);
-  explicit SQLGuid(const XString  p_string);
+  explicit SQLGuid(const XString& p_string);
 
   bool     New();
   // Set from external values
-  bool     Set(const XString  p_string);
+  bool     Set(const XString& p_string);
   bool     Set(const SQLGUID* p_guid);
 
   // Get the internals

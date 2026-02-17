@@ -2,8 +2,8 @@
 //
 // File: SQLDate.h
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -31,12 +31,6 @@
 #include <oleauto.h>
 #include <cmath>
 #include <ctime>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 namespace SQLComponents
 {
@@ -602,17 +596,18 @@ SQLDate::ShortDate(const XString& p_date,int& p_year,int& p_month,int& p_day)
 
 // Get the virtual date as in (+/- <number> <YEAR(S)/MONTH(S)/DAY(S)/WEEK(S)>)
 bool 
-SQLDate::GetVirtualDate(XString       p_sign,
-                        XString       p_extraTime,
-                        long          p_interval,
-                        DateStorage&  p_temp)
+SQLDate::GetVirtualDate(const XString& p_sign,
+                        const XString& p_extraTime,
+                        long           p_interval,
+                        DateStorage&   p_temp)
 {       
   SQLDate dt;
   SQLDate mom = SQLDate::Today();
 
   if(!p_sign.IsEmpty())
   {
-    p_extraTime.MakeUpper();
+    XString extraTime(p_extraTime);
+    extraTime.MakeUpper();
     if(p_sign != _T("-") && p_sign != _T("+"))
     {
       return false;
@@ -620,23 +615,23 @@ SQLDate::GetVirtualDate(XString       p_sign,
     int factor = (p_sign == _T("-")) ? -1 : 1;
     
     // Apply extra time
-    if(p_extraTime == g_dateNames[g_defaultLanguage][DN_DAY] || 
-       p_extraTime == g_dateNames[g_defaultLanguage][DN_DAYS] )
+    if(extraTime == g_dateNames[g_defaultLanguage][DN_DAY] || 
+       extraTime == g_dateNames[g_defaultLanguage][DN_DAYS] )
     {
       mom = mom.AddDays(factor * p_interval);   
     }
-    else if (p_extraTime == g_dateNames[g_defaultLanguage][DN_WEEK] || 
-             p_extraTime == g_dateNames[g_defaultLanguage][DN_WEEKS] )
+    else if (extraTime == g_dateNames[g_defaultLanguage][DN_WEEK] || 
+             extraTime == g_dateNames[g_defaultLanguage][DN_WEEKS] )
     {
       mom = mom.AddDays(factor * p_interval * 7);
     }
-    else if (p_extraTime == g_dateNames[g_defaultLanguage][DN_MONTH] || 
-             p_extraTime == g_dateNames[g_defaultLanguage][DN_MONTHS] )
+    else if (extraTime == g_dateNames[g_defaultLanguage][DN_MONTH] || 
+             extraTime == g_dateNames[g_defaultLanguage][DN_MONTHS] )
     {
       mom = mom.AddMonths(factor * p_interval);
     }
-    else if (p_extraTime == g_dateNames[g_defaultLanguage][DN_YEAR]  || 
-             p_extraTime == g_dateNames[g_defaultLanguage][DN_YEARS] )
+    else if (extraTime == g_dateNames[g_defaultLanguage][DN_YEAR]  || 
+             extraTime == g_dateNames[g_defaultLanguage][DN_YEARS] )
     {
       mom = mom.AddYears(factor * p_interval);
     }
@@ -801,26 +796,26 @@ SQLDate::SplitStrDate(const XString& p_strDate,
 
   for (int index = 0; index < intLength; index++)
   {
-    XString temp(p_strDate.GetAt(index),1);
+    XString temp((TCHAR)p_strDate.GetAt(index),1);
     if (temp.Compare(_T(" ")) != 0)
     {
       if ((p_strDate.GetAt(index) >= '0') && (p_strDate.GetAt(index) <= '9'))
       {
-        strIntrval += p_strDate.GetAt(index);
+        strIntrval += (TCHAR) p_strDate.GetAt(index);
         p_interval = _ttoi(strIntrval); 
       }
       else if (p_strDate.GetAt(index) == '+' || p_strDate.GetAt(index) == '-')
       {
-        p_sign += p_strDate.GetAt(index);
+        p_sign += (TCHAR) p_strDate.GetAt(index);
         blnFound = true;
       }
       else if (blnFound)
       {
-        p_extraTime += p_strDate.GetAt(index);
+        p_extraTime += (TCHAR) p_strDate.GetAt(index);
       }
       else
       {
-        p_currentDate += p_strDate.GetAt(index);
+        p_currentDate += (TCHAR) p_strDate.GetAt(index);
       }
     }
   }

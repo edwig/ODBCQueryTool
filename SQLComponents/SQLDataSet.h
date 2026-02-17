@@ -2,8 +2,8 @@
 //
 // File: SQLDataSet.h
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -92,7 +92,7 @@ class SQLDataSet
 {
 public:
   SQLDataSet();
-  explicit SQLDataSet(XString p_name,SQLDatabase* p_database = NULL);
+  explicit SQLDataSet(const XString& p_name,SQLDatabase* p_database = NULL);
   virtual ~SQLDataSet();
 
   // Perform query: Do SetQuery first
@@ -123,7 +123,7 @@ public:
   // Insert new record (Manually)
   SQLRecord*   InsertRecord();
   // Insert new field in new record (manually)
-  int          InsertField(XString p_name,const SQLVariant* p_value);
+  int          InsertField(const XString& p_name,const SQLVariant* p_value);
   // Calculate aggregate functions
   int          Aggregate(int p_num,AggregateInfo& p_info);
   // Cancel the mutations of this mutation ID
@@ -151,36 +151,36 @@ public:
   // Set database connection
   virtual void SetDatabase(SQLDatabase* p_database);
   // Set SELECT one or more columns to select
-  virtual void SetSelection(XString p_selection);
+  virtual void SetSelection(const XString& p_selection);
   // Set the isolated query status
   virtual void SetIsolation(bool p_isolation);
   // Set the lock-for-update / Waittime
   virtual void SetLockForUpdate(bool p_lock);
   virtual void SetLockWaitTime(unsigned p_seconds);
   // Set FROM selection of several tables (more than one!)
-  virtual void SetFromTables(XString p_from);
+  virtual void SetFromTables(const XString& p_from);
   // Set FROM  primary table (for updates)
-  virtual void SetPrimaryTable(XString p_schema, XString p_tableName, XString p_alias = _T(""));
+  virtual void SetPrimaryTable(const XString& p_schema,const XString& p_tableName,const XString& p_alias = _T(""));
   // Set WHERE condition by hand
-  virtual void SetWhereCondition(XString p_condition);
+  virtual void SetWhereCondition(const XString& p_condition);
   // Set WHERE filters for a query
   virtual void ResetFilters();
   virtual void SetFilters(SQLFilterSet* p_filters);
   // Add filter to current SQLFilterSet
   virtual void SetFilter(const SQLFilter& p_filter);
   // Set GROUP BY 
-  virtual void SetGroupBy(XString p_groupby);
-  virtual void AddGroupby(XString p_groupby);
+  virtual void SetGroupBy(const XString& p_groupby);
+  virtual void AddGroupby(const XString& p_groupby);
   // Set ORDER BY
-  virtual void SetOrderBy(XString p_orderby);
-  virtual void AddOrderBy(XString p_orderby);
+  virtual void SetOrderBy(const XString& p_orderby);
+  virtual void AddOrderBy(const XString& p_orderby);
 
   // Set HAVING
   virtual void SetHavings(SQLFilterSet* p_havings);
   // Set SQL-QUERY:  a new full query (Supersedes SetSelection, -Where, -groupby, -orderby and -having)
-  virtual void SetQuery(XString& p_query);
+  virtual void SetQuery(const XString& p_query);
   // Set primary key column name (for updates)
-  virtual void SetPrimaryKeyColumn(XString p_name);
+  virtual void SetPrimaryKeyColumn(const XString& p_name);
   virtual void SetPrimaryKeyColumn(WordList& p_list);
   // Set if we whish to keep duplicates in the recordset
   virtual void SetKeepDuplicates(bool p_keep);
@@ -227,7 +227,7 @@ public:
   // Get datatype of a field
   int          GetFieldType(int p_num);
   // Get a field number
-  int          GetFieldNumber(XString p_name);
+  int          GetFieldNumber(const XString& p_name);
   // Get a field from the current record
   SQLVariant*  GetCurrentField(int p_num);
   // Getting info about the primary key
@@ -254,8 +254,8 @@ public:
   bool         GetKeepDuplicates();
 
   // XML Saving and loading
-  bool         XMLSave(XString p_filename,XString p_name,Encoding p_encoding = Encoding::UTF8);
-  bool         XMLLoad(XString p_filename);
+  bool         XMLSave(const XString& p_filename,const XString& p_name,Encoding p_encoding = Encoding::UTF8);
+  bool         XMLLoad(const XString& p_filename);
   void         XMLSave(XMLMessage* p_msg,XMLElement* p_dataset);
   void         XMLLoad(XMLMessage* p_msg,XMLElement* p_dataset,const LONG* p_abort = nullptr);
 
@@ -373,7 +373,7 @@ SQLDataSet::IsOpen()
 }
 
 inline void
-SQLDataSet::SetPrimaryTable(XString p_schema,XString p_tableName,XString p_alias /*= ""*/)
+SQLDataSet::SetPrimaryTable(const XString& p_schema,const XString& p_tableName,const XString& p_alias /*= ""*/)
 {
   m_primarySchema    = p_schema;
   m_primaryTableName = p_tableName;
@@ -435,7 +435,7 @@ SQLDataSet::GetPrimaryAlias()
 }
 
 inline void
-SQLDataSet::SetPrimaryKeyColumn(XString p_name)
+SQLDataSet::SetPrimaryKeyColumn(const XString& p_name)
 {
   m_primaryKey.push_back(p_name);
 }

@@ -2,8 +2,8 @@
 //
 // File: SQLInfoFirebird.cpp
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -28,12 +28,6 @@
 #include "SQLInfoFirebird.h"
 #include "SQLQuery.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 namespace SQLComponents
 {
 
@@ -48,6 +42,7 @@ SQLInfoFirebird::SQLInfoFirebird(SQLDatabase* p_database)
   m_RDBMSkeywords.insert(_T("PARAMETER"));
   m_RDBMSkeywords.insert(_T("TIMESTAMP"));
   m_RDBMSkeywords.insert(_T("BOOLEAN"));
+  m_RDBMSkeywords.insert(_T("POSITION"));
 }
 
 // Destructor. Does nothing
@@ -219,7 +214,7 @@ SQLInfoFirebird::GetRDBMSMaxVarchar() const
 
 // Identifier rules differ per RDBMS
 bool
-SQLInfoFirebird::IsIdentifier(XString p_identifier) const
+SQLInfoFirebird::IsIdentifier(const XString& p_identifier) const
 {
   if(p_identifier.GetLength() == 0 ||  // Cannot be empty
      p_identifier.GetLength() >= 63 )  // Cannot exceed 63 chars (version 4.0)
@@ -228,7 +223,7 @@ SQLInfoFirebird::IsIdentifier(XString p_identifier) const
     return false;
   }
   // Must start with one alpha char
-  if(!_istalpha(p_identifier.GetAt(0)))
+  if(!_istalpha((TCHAR)p_identifier.GetAt(0)))
   {
     return false;
   }
@@ -236,7 +231,7 @@ SQLInfoFirebird::IsIdentifier(XString p_identifier) const
   {
     // Can be upper/lower alpha or a number, an underscore or a dollar sign
     // because catalog identifiers can contain "rdb$...." names
-    TCHAR ch = p_identifier.GetAt(index);
+    TCHAR ch = (TCHAR) p_identifier.GetAt(index);
     if(!_istalnum(ch) && ch != _T('_') && ch != _T('$'))
     {
       return false;
@@ -337,14 +332,14 @@ SQLInfoFirebird::GetKEYWORDParameterPrefix() const
 // Get select part to add new record identity to a table
 // Can be special column like 'OID' or a sequence select
 XString
-SQLInfoFirebird::GetKEYWORDIdentityString(XString& p_tablename,XString p_postfix /*= "_seq"*/) const
+SQLInfoFirebird::GetKEYWORDIdentityString(const XString& p_tablename,const XString& p_postfix /*= "_seq"*/) const
 {
   return _T("GEN_ID(") + p_tablename + p_postfix + _T(",1)");
 }
 
 // Gets the UPPER function
 XString
-SQLInfoFirebird::GetKEYWORDUpper(XString& p_expression) const
+SQLInfoFirebird::GetKEYWORDUpper(const XString& p_expression) const
 {
   return _T("UPPER(") + p_expression + _T(")");
 }
@@ -359,7 +354,7 @@ SQLInfoFirebird::GetKEYWORDInterval1MinuteAgo() const
 
 // Gets the Not-NULL-Value statement of the database
 XString
-SQLInfoFirebird::GetKEYWORDStatementNVL(XString& p_test,XString& p_isnull) const
+SQLInfoFirebird::GetKEYWORDStatementNVL(const XString& p_test,const XString& p_isnull) const
 {
   return _T("COALESCE(") + p_test + _T(",") + p_isnull + _T(")");
 }
@@ -395,50 +390,66 @@ SQLInfoFirebird::GetKEYWORDDataType(MetaColumn* p_column)
                                         break;
     case SQL_BIGINT:                    type = _T("BIGINT");
                                         break;
+    case SQL_BIT:                       type = _T("BOOLEAN");
+                                        break;
+    case SQL_FLOAT:                     // Fall through
+    case SQL_REAL:                      // Fall through
+    case SQL_DOUBLE:                    // Fall through
     case SQL_NUMERIC:                   // fall through
-    case SQL_DECIMAL:                   // fall through
-    case SQL_FLOAT:                     // fall through
-    case SQL_REAL:                      // fall through
-    case SQL_DOUBLE:                    // fall through
-    case SQL_BIT:                       type = _T("NUMERIC");
-                                        if(p_column->m_columnSize == SQLNUM_MAX_PREC && p_column->m_decimalDigits == 0)
+    case SQL_DECIMAL:                   type = _T("DECIMAL");
+                                        p_column->m_datatype = SQL_DECIMAL;
+                                        if(p_column->m_decimalDigits == 0)
                                         {
-                                          type = _T("INTEGER");
-                                          p_column->m_columnSize    = 0;
-                                          p_column->m_decimalDigits = 0;
+                                          if(p_column->m_columnSize == SQLNUM_MAX_PREC)
+                                          {
+                                            // Standard 38,0 in other RDBMS -> integer intended!
+                                            type = _T("INTEGER");
+                                            p_column->m_columnSize    = 0;
+                                            p_column->m_datatype      = SQL_INTEGER;
+                                          }
+                                          else if(p_column->m_columnSize <= 4)
+                                          {
+                                            type = _T("SMALLINT");
+                                            p_column->m_columnSize    = 0;
+                                            p_column->m_datatype      = SQL_SMALLINT;
+                                          }
+                                          else if(p_column->m_columnSize <= 9)
+                                          {
+                                            type = _T("INTEGER");
+                                            p_column->m_columnSize    = 0;
+                                            p_column->m_datatype      = SQL_INTEGER;
+                                          }
+                                          else if(p_column->m_columnSize <= 18)
+                                          {
+                                            type = _T("BIGINT");
+                                            p_column->m_columnSize    = 0;
+                                            p_column->m_datatype      = SQL_BIGINT;
+                                          }
                                         }
-                                        else
+                                        // Firebird knows precisions up to 38
+                                        if(p_column->m_columnSize > SQLNUM_MAX_PREC)
                                         {
-                                          // Firebird knows precisions up to 18
-                                          if(p_column->m_columnSize > 18)
+                                          p_column->m_columnSize = SQLNUM_MAX_PREC;
+                                          if(p_column->m_decimalDigits == 16)
                                           {
-                                            p_column->m_columnSize = 18;
-                                            if(p_column->m_decimalDigits == 16)
-                                            {
-                                              p_column->m_decimalDigits = 2;
-                                            }
+                                            p_column->m_decimalDigits = 2;
                                           }
-                                          if(p_column->m_decimalDigits > p_column->m_columnSize)
-                                          {
-                                            p_column->m_decimalDigits = p_column->m_columnSize - 1;
-                                          }
-                                          // Preserve scale!
-//                                           if(p_column->m_decimalDigits == 0)
-//                                           {
-//                                             p_column->m_decimalDigits = -1;
-//                                           }
+                                        }
+                                        if(p_column->m_decimalDigits > p_column->m_columnSize)
+                                        {
+                                          p_column->m_decimalDigits = p_column->m_columnSize - 1;
                                         }
                                         break;
-    //case SQL_DATE:
-    case SQL_DATETIME:                  // fall through
-    case SQL_TYPE_DATE:                 // fall through
-    case SQL_TIMESTAMP:                 // fall through
-    case SQL_TYPE_TIMESTAMP:            type = _T("TIMESTAMP");
-                                        p_column->m_columnSize    = 0;
-                                        p_column->m_decimalDigits = 0;
+    case SQL_DATE:                      // SAME AS SQL_DATETIME:
+    case SQL_TYPE_DATE:                 type = _T("DATE");
                                         break;
     case SQL_TIME:                      // fall through
     case SQL_TYPE_TIME:                 type = _T("TIME");
+                                        p_column->m_columnSize    = 0;
+                                        p_column->m_decimalDigits = 0;
+                                        break;
+    case SQL_TIMESTAMP:                 // fall through
+    case SQL_TYPE_TIMESTAMP:            type = _T("TIMESTAMP");
                                         p_column->m_columnSize    = 0;
                                         p_column->m_decimalDigits = 0;
                                         break;
@@ -450,7 +461,7 @@ SQLInfoFirebird::GetKEYWORDDataType(MetaColumn* p_column)
     case SQL_INTERVAL_YEAR:             // fall through
     case SQL_INTERVAL_YEAR_TO_MONTH:    // fall through
     case SQL_INTERVAL_MONTH:            type = _T("VARCHAR");
-                                        p_column->m_columnSize    = 80;
+                                        p_column->m_columnSize    = 10;
                                         p_column->m_decimalDigits = 0;
                                         break;
     case SQL_INTERVAL_DAY:              // fall through
@@ -463,7 +474,7 @@ SQLInfoFirebird::GetKEYWORDDataType(MetaColumn* p_column)
     case SQL_INTERVAL_HOUR_TO_SECOND:   // fall through
     case SQL_INTERVAL_MINUTE_TO_SECOND: // fall through
     case SQL_INTERVAL_DAY_TO_SECOND:    type = _T("VARCHAR");
-                                        p_column->m_columnSize    = 80;
+                                        p_column->m_columnSize    = 22;
                                         p_column->m_decimalDigits = 0;
                                         break;
     case SQL_UNKNOWN_TYPE:              // fall through
@@ -609,10 +620,10 @@ SQLInfoFirebird::GetSelectForUpdateTableClause(unsigned /*p_lockWaitTime*/) cons
 XString
 SQLInfoFirebird::GetSelectForUpdateTrailer(XString p_select,unsigned p_lockWaitTime) const
 {
-  XString sql = p_select + "\nFOR UPDATE";
+  XString sql = p_select + _T("\nFOR UPDATE");
   if(p_lockWaitTime)
   {
-    sql += "\nWITH LOCK";
+    sql += _T("\nWITH LOCK");
   }
   return sql;
 }
@@ -622,7 +633,7 @@ XString
 SQLInfoFirebird::GetPing() const
 {
   // Not implemented yet
-  return "SELECT CAST('now' AS timestamp) FROM rdb$database";
+  return _T("SELECT CAST('now' AS timestamp) FROM rdb$database");
 }
 
 // Pre- and postfix statements for a bulk import
@@ -1096,7 +1107,7 @@ SQLInfoFirebird::GetCATALOGTableAttributes(XString& p_schema,XString& p_tablenam
     IdentifierCorrect(p_tablename);
     sql += _T("   AND rel.rdb$relation_name ");
     sql += (p_tablename.Find(_T("%")) >= 0) ? _T("LIKE") : _T("=");
-    sql += " ?";
+    sql += _T(" ?");
   }
   return sql;
 }
@@ -2433,7 +2444,7 @@ SQLInfoFirebird::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewname,
   return sql;
 }
 
-XString 
+XString
 SQLInfoFirebird::GetCATALOGViewCreate(XString /*p_schema*/,XString p_viewname,MColumnMap& p_columns,XString p_contents,bool /*p_ifexists /*= true*/) const
 {
   XString sql = _T("RECREATE VIEW ") + QIQ(p_viewname) + _T("\n(  ");
@@ -3611,7 +3622,7 @@ SQLInfoFirebird::GetSESSIONConstraintsImmediate() const
 
 // Calling a stored function or procedure if the RDBMS does not support ODBC call escapes
 SQLVariant* 
-SQLInfoFirebird::DoSQLCall(SQLQuery* p_query,XString& /*p_schema*/,XString& p_procedure)
+SQLInfoFirebird::DoSQLCall(SQLQuery* p_query,const XString& /*p_schema*/,const XString& p_procedure)
 {
   bool result = false;
   int returns = GetCountReturnParameters(p_query);
@@ -3631,7 +3642,7 @@ SQLInfoFirebird::DoSQLCall(SQLQuery* p_query,XString& /*p_schema*/,XString& p_pr
 
 // Calling a stored function with named parameters, returning a value
 SQLVariant*
-SQLInfoFirebird::DoSQLCallNamedParameters(SQLQuery* /*p_query*/,XString& /*p_schema*/,XString& /*p_procedure*/,bool /*p_function = true*/)
+SQLInfoFirebird::DoSQLCallNamedParameters(SQLQuery* /*p_query*/,const XString& /*p_schema*/,const XString& /*p_procedure*/,bool /*p_function = true*/)
 {
   return nullptr;
 }
@@ -3688,7 +3699,7 @@ SQLInfoFirebird::DoSQLCallProcedure(SQLQuery* p_query,const XString& p_procedure
       }
       // Storing the result;
       SQLVariant* old = target->m_value;
-      target->m_value = new SQLVariant(result);
+      target->m_value = alloc_new SQLVariant(result);
       if(old)
       {
         delete old;

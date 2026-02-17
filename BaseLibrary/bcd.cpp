@@ -2,8 +2,8 @@
 //
 // SourceFile: bcd.cpp
 //
-// Copyright (c) 2014-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 2014-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files(the "Software"), to deal
@@ -50,13 +50,7 @@
 #include <locale.h>
 #include <winnls.h>
 
-#ifdef _AFX
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-#endif
+#pragma warning(disable:4702) // Error in detecting unreachable code
 
 // Theoretical maximum of numerical separators
 #define SEP_LEN 10
@@ -2745,12 +2739,12 @@ bcd::AsString(Format p_format /*=Bookkeeping*/,bool p_printPositive /*=false*/,i
   {
     if(p_printPositive)
     {
-      result = _T("+") + result;
+      result = XString(_T("+")) + result;
     }
   }
   else
   {
-    result = _T("-") + result;
+    result = XString(_T("-")) + result;
   }
 
   // Ready
@@ -4552,7 +4546,7 @@ end:
 
 // On overflow we set negative or positive infinity
 bcd
-bcd::SetInfinity(XString p_reason /*= ""*/) const
+bcd::SetInfinity(const XString& p_reason /*= ""*/) const
 {
   if(g_throwing)
   {

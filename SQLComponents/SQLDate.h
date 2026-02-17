@@ -2,8 +2,8 @@
 //
 // File: SQLDate.h
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -140,10 +140,10 @@ public:
   // Ook voor gebruik vanuit de interface (static aanroepen)
   bool CalculateDate(const XString& p_date);
   // Haal een extra virtuele datum op (+/- <getal> <JAAR/MAAND/DAG/WEEK>)
-  bool GetVirtualDate(XString       p_sign,
-                      XString       p_extraTime,
-                      long          p_interval,
-                      DateStorage&  p_temp);
+  bool GetVirtualDate(const XString& p_sign,
+                      const XString& p_extraTime,
+                      long           p_interval,
+                      DateStorage&   p_temp);
   static void SplitStrDate(const  XString& p_strDate,
                                   XString& p_currentDate,
                                   XString& p_sign,

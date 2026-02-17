@@ -2,8 +2,8 @@
 //
 // File: SQLGuid.cpp
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -29,12 +29,6 @@
 #include "SQLGuid.h"
 #include <guiddef.h>
 #include <combaseapi.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #pragma comment(lib,"rpcrt4.lib")
 
@@ -67,7 +61,7 @@ SQLGuid::SQLGuid(const SQLGUID* p_guid)
 }
 
 // XTOR from string
-SQLGuid::SQLGuid(const XString p_string)
+SQLGuid::SQLGuid(const XString& p_string)
 {
   Set(p_string);
 }
@@ -82,7 +76,7 @@ SQLGuid::New()
 
 // Set from an internal string
 bool
-SQLGuid::Set(const XString p_string)
+SQLGuid::Set(const XString& p_string)
 {
   m_initialized = false;
   if(UuidFromString(reinterpret_cast<RPC_TSTR>(const_cast<TCHAR*>(p_string.GetString())),&m_guid) == RPC_S_OK)

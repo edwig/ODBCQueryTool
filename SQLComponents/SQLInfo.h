@@ -2,8 +2,8 @@
 //
 // File: SQLInfo.h
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -87,20 +87,20 @@ public:
   void    GetInfo();
 
   // Add an ODBC SQL Keyword
-  bool    AddSQLWord(XString sql);
+  bool    AddSQLWord(const XString& sql);
   // Extra to be done on getting info 
   virtual void OnGetInfo(HDBC ,int ) {return;};
   // Is it a correct identifier (type 0=table,1=column)
-  bool    IsCorrectName(XString p_name,int p_type = 0);
+  bool    IsCorrectName(const XString& p_name,int p_type = 0);
   // Is reserved word
-  bool    IsReservedWord(XString p_name);
+  bool    IsReservedWord(const XString& p_name);
   // Can we start a transaction on the database
   bool    CanStartTransaction();
   // Returns the fact whether an API function is supported
   // by the ODBC driver, regardless of ODBC version
   bool    SupportedFunction(unsigned int api_function);
   // Return the native SQL command from an ODBC-escaped command
-  XString NativeSQL(HDBC hdbc,XString& sqlCommand);
+  XString NativeSQL(HDBC hdbc,const XString& sqlCommand);
   // AT_EXEC data provider needs length beforehand
   bool    NeedLongDataLen();
   // Character name of an SQL_XXX datatype
@@ -124,25 +124,25 @@ public:
   // GETTING ALL THE INFO FOR ONE PROCEDURE
   // GETTING ALL META TYPES
 protected:
-  virtual bool MakeInfoTableTable      (MTableMap&     p_tables,    XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename,XString p_type);
-  virtual bool MakeInfoTableColumns    (MColumnMap&    p_columns,   XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename,XString p_columnname = _T(""));
-  virtual bool MakeInfoTablePrimary    (MPrimaryMap&   p_primaries, XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename);
-  virtual bool MakeInfoPSMProcedures   (MProcedureMap& p_procedures,XString& p_errors,XString p_catalog,XString p_schema,XString p_procedure);
-  virtual bool MakeInfoPSMParameters   (MParameterMap& p_parameters,XString& p_errors,XString p_catalog,XString p_schema,XString p_procedure);
-  virtual bool MakeInfoTableForeign    (MForeignMap&   p_foreigns,  XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename,bool p_referenced = false);
-  virtual bool MakeInfoTableStatistics (MIndicesMap&   p_statistics,XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename,MPrimaryMap* p_keymap,bool p_all = true);
-  virtual bool MakeInfoTablePrivileges (MPrivilegeMap& p_privileges,XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename);
-  virtual bool MakeInfoColumnPrivileges(MPrivilegeMap& p_privileges,XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename,XString p_columnname = _T(""));
+  virtual bool MakeInfoTableTable      (MTableMap&     p_tables,    XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_tablename,const XString& p_type);
+  virtual bool MakeInfoTableColumns    (MColumnMap&    p_columns,   XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_tablename,const XString& p_columnname = _T(""));
+  virtual bool MakeInfoTablePrimary    (MPrimaryMap&   p_primaries, XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_tablename);
+  virtual bool MakeInfoPSMProcedures   (MProcedureMap& p_procedures,XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_procedure);
+  virtual bool MakeInfoPSMParameters   (MParameterMap& p_parameters,XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_procedure);
+  virtual bool MakeInfoTableForeign    (MForeignMap&   p_foreigns,  XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_tablename,bool p_referenced = false);
+  virtual bool MakeInfoTableStatistics (MIndicesMap&   p_statistics,XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_tablename,MPrimaryMap* p_keymap,bool p_all = true);
+  virtual bool MakeInfoTablePrivileges (MPrivilegeMap& p_privileges,XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_tablename);
+  virtual bool MakeInfoColumnPrivileges(MPrivilegeMap& p_privileges,XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_tablename,const XString& p_columnname = _T(""));
 
 public:
-  virtual bool MakeInfoTableSpecials   (MSpecialsMap&  p_specials,  XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename);
+  virtual bool MakeInfoTableSpecials   (MSpecialsMap&  p_specials,  XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_tablename);
   virtual bool MakeInfoMetaTypes       (MMetaMap&      p_objects,   XString& p_errors,int p_type);
 
   // Meta pointer to SQLGet<META> functions
   SQLTCHAR* GetMetaPointer(SQLTCHAR* p_buffer,bool p_meta);
 
   // Getting datatype info
-  TypeInfo* GetTypeInfo(int p_sqlDatatype,XString p_typename = _T("")) const;
+  TypeInfo* GetTypeInfo(int p_sqlDatatype,const XString& p_typename = _T("")) const;
 
   // CONNECTION ATTRIBUTES
 
@@ -175,14 +175,14 @@ public:
   int     GetAttributeConnTimeout();
 
   // Connection by File DSN
-  void    SetAttributeFileDSN    (XString p_fileDSN);
-  void    SetAttributeFileDSNSave(XString p_fileDSN);
+  void    SetAttributeFileDSN    (const XString& p_fileDSN);
+  void    SetAttributeFileDSNSave(const XString& p_fileDSN);
   // Set the using of ODBC cursors
   bool    SetAttributeOdbcCursors(int p_cursors);
   // Setting the optimal IP Packet size
   bool    SetAttributePacketSize(int p_packet);
    // Setting the ODBC Tracing file
-  bool    SetAttributeTraceFile(XString p_traceFile);
+  bool    SetAttributeTraceFile(const XString& p_traceFile);
   // Set tracing on or off
   bool    SetAttributeTracing(bool p_tracing);
   // Setting the automatic connection timeout (if supported)
@@ -192,7 +192,7 @@ public:
   // Setting the transaction isolation level
   bool    SetAttributeTransLevel(int p_txnlevel);
   // Setting the transaction library (with or without connection)
-  bool    SetAttributeTranslib(XString p_transLib);
+  bool    SetAttributeTranslib(const XString& p_transLib);
   // Setting the translation optioen (with or without connection)
   bool    SetAttributeTransoption(int p_transOption);
 
@@ -320,16 +320,16 @@ public:
   SQLUSMALLINT* GetFunctionArrayV3();
 
   // Get the catalog.schema.table from a user string
-  void    GetObjectName(XString pattern,XString& p_catalog,XString& p_schema,XString& p_table);
+  void    GetObjectName(const XString& pattern,XString& p_catalog,XString& p_schema,XString& p_table);
   // Using quotation for SQL identifiers
   bool    GetUseIdentifierQuotation();
   void    SetUseIdentifierQuotation(bool p_use = true);
   // Preparing identifiers for doing a query (quotations)
-  XString QueryIdentifierQuotation(XString p_identifier) const;
+  XString QueryIdentifierQuotation(const XString& p_identifier) const;
   
   // Identifier rules differ per RDBMS
-  virtual bool IsIdentifier         (XString p_identifier) const;
-  virtual bool IsIdentifierMixedCase(XString p_identifier) const;
+  virtual bool IsIdentifier         (const XString& p_identifier) const;
+  virtual bool IsIdentifierMixedCase(const XString& p_identifier) const;
 
 private:
   // SQLDatabase has access to attribute methods
@@ -351,11 +351,11 @@ private:
   // Getting a general INTEGER connection attribute
   int     GetAttributeInteger(LPCTSTR description,SQLINTEGER attrib);
   // Getting a general STRING connection attribute
-  XString GetAttributeString(XString description,SQLINTEGER attrib);
+  XString GetAttributeString(const XString& description,SQLINTEGER attrib);
   // Setting an INTEGER attribute
-  bool    SetAttributeInteger(XString description,SQLINTEGER  attrib,SQLUINTEGER value);
+  bool    SetAttributeInteger(const XString& description,SQLINTEGER  attrib,SQLUINTEGER value);
   // Setting a STRING attribute
-  bool    SetAttributeString(XString description,SQLINTEGER attrib,SQLTCHAR* value);
+  bool    SetAttributeString(const XString& description,SQLINTEGER attrib,SQLTCHAR* value);
 
 protected:
   // Reprint the catalog.schema.table combination
@@ -364,13 +364,13 @@ protected:
                         ,SQLTCHAR* search_table
                         ,SQLTCHAR* search_type);
   // Create quoted identifier
-  XString QuotedIdentifier(XString p_identifier) const;
+  XString QuotedIdentifier(const XString& p_identifier) const;
   // Prepare an identifier for an ODBC discovery function
-  void    PrepareIdentifierForFunction(CString& p_identifier,bool p_meta);
+  void    PrepareIdentifierForFunction(XString& p_identifier,bool p_meta);
 
   // All data types
   void    ReadingDataTypes();
-  void    InfoMessageBox(XString p_message,UINT p_type = MB_OK);
+  void    InfoMessageBox(const XString& p_message,UINT p_type = MB_OK);
 
 protected:
   bool         m_initDone;             // Already read in?
@@ -579,13 +579,13 @@ SQLInfo::GetAttributeFileDSNSave()
 }
 
 inline void
-SQLInfo::SetAttributeFileDSN(XString p_fileDSN)
+SQLInfo::SetAttributeFileDSN(const XString& p_fileDSN)
 {
   m_fileDSN = p_fileDSN;
 }
 
 inline void
-SQLInfo::SetAttributeFileDSNSave(XString p_fileDSN)
+SQLInfo::SetAttributeFileDSNSave(const XString& p_fileDSN)
 {
   m_fileDSNSave = p_fileDSN;
 }

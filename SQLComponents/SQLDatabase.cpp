@@ -2,8 +2,8 @@
 //
 // File: SQLDatabase.cpp
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -42,12 +42,6 @@
 #include "SQLTimestamp.h"
 #include "sqlncli.h"
 #include <time.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 namespace SQLComponents
 {
@@ -171,7 +165,7 @@ SQLDatabase::Reset()
 
 // Can be set once (1 time) by the DatabasePool
 void  
-SQLDatabase::SetDatasource(XString p_dsn)
+SQLDatabase::SetDatasource(const XString& p_dsn)
 {
   if(m_datasource.IsEmpty())
   {
@@ -181,7 +175,7 @@ SQLDatabase::SetDatasource(XString p_dsn)
 
 // Can be set once (1 time) by the DatabasePool
 void
-SQLDatabase::SetConnectionName(XString p_connectionName)
+SQLDatabase::SetConnectionName(const XString& p_connectionName)
 {
   if(m_connectionName.IsEmpty())
   {
@@ -191,7 +185,7 @@ SQLDatabase::SetConnectionName(XString p_connectionName)
 
 // Can be set once (1 time) by the DatabasePool
 void
-SQLDatabase::SetUserName(XString p_user)
+SQLDatabase::SetUserName(const XString& p_user)
 {
   if(m_username.IsEmpty())
   {
@@ -225,16 +219,17 @@ SQLDatabase::PastWaitingTime()
 
 // Add a general ODBC option for use in the connection string
 void
-SQLDatabase::AddConnectOption(XString p_keyword,XString p_value)
+SQLDatabase::AddConnectOption(const XString& p_keyword,const XString& p_value)
 {
   // Connection strings uses all uppercase
-  p_keyword.MakeUpper();
+  XString keyword(p_keyword);
+  keyword.MakeUpper();
   
   // Find option and add or replace
-  ODBCOptions::iterator it = m_options.find(p_keyword);
+  ODBCOptions::iterator it = m_options.find(keyword);
   if(it == m_options.end())
   {
-    m_options[p_keyword] = p_value;
+    m_options[keyword] = p_value;
   }
   else
   {
@@ -244,10 +239,10 @@ SQLDatabase::AddConnectOption(XString p_keyword,XString p_value)
 
 // Open the database (separate parameters)
 bool 
-SQLDatabase::Open(XString const& p_datasource
-                 ,XString const& p_username
-                 ,XString const& p_password
-                 ,XString        p_options  /* = ""    */
+SQLDatabase::Open(const XString& p_datasource
+                 ,const XString& p_username
+                 ,const XString& p_password
+                 ,const XString  p_options  /* = ""    */
                  ,bool           p_readOnly /* = false */)
 {
   // get the connect string
@@ -255,7 +250,7 @@ SQLDatabase::Open(XString const& p_datasource
   connect.Format(_T("DSN=%s;UID=%s;PWD=%s;"), p_datasource.GetString(), p_username.GetString(), p_password.GetString());
   if(!p_options.IsEmpty())
   {
-    connect += ";" + p_options;
+    connect += _T(";") + p_options;
   }
   // Add any options passed to 'AddConnectOption'  
   ODBCOptions::iterator it;
@@ -278,7 +273,7 @@ SQLDatabase::Open(XString const& p_datasource
 
 // Open the database (connect string)
 bool 
-SQLDatabase::Open(XString const& p_connectString,bool p_readOnly)
+SQLDatabase::Open(const XString& p_connectString,bool p_readOnly)
 {
   // Set lock on the stack
   Locker<SQLDatabase> lock(this,INFINITE);
@@ -324,7 +319,7 @@ SQLDatabase::Open(XString const& p_connectString,bool p_readOnly)
   // This contains all the database option settings from the ODBC Driver
   // Must be done before the Collect info for determining the database's name
   m_originalConnect = p_connectString;
-  m_completeConnect  = _T("ODBC;") + XString(szConnectOut);
+  m_completeConnect  = _T("ODBC;") + XString((LPCTSTR)szConnectOut);
 
   // Get all info options
   CollectInfo();
@@ -543,12 +538,12 @@ SQLDatabase::DatabaseNameFromDSN()
   if(pos >= 0)
   {
     pos += 4;
-    TCHAR sp = m_completeConnect.GetAt(pos);
+    TCHAR sp = (TCHAR)m_completeConnect.GetAt(pos);
     int number = 0;
     while(sp && sp != ';' && number++ < DS_IDENT_LEN)
     {
       m_dataIdent += sp;
-      sp = m_completeConnect.GetAt(++pos);
+      sp = (TCHAR)m_completeConnect.GetAt(++pos);
     }
   }
   else
@@ -622,15 +617,15 @@ SQLDatabase::GetSQLInfoDB()
   {
     switch(m_rdbmsType)
     {
-      case RDBMS_ORACLE:    m_info = new SQLInfoOracle     (this); break;
-      case RDBMS_INFORMIX:  m_info = new SQLInfoInformix   (this); break;
-      case RDBMS_ACCESS:    m_info = new SQLInfoAccess     (this); break;
-      case RDBMS_SQLSERVER: m_info = new SQLInfoSQLServer  (this); break;
-      case RDBMS_POSTGRESQL:m_info = new SQLInfoPostgreSQL (this); break;
-      case RDBMS_FIREBIRD:  m_info = new SQLInfoFirebird   (this); break;
-      case RDBMS_MYSQL:     m_info = new SQLInfoMySQL      (this); break;
-      case RDBMS_MARIADB:   m_info = new SQLInfoMariaDB    (this); break;
-      default:              m_info = new SQLInfoGenericODBC(this); break;
+      case RDBMS_ORACLE:    m_info = alloc_new SQLInfoOracle     (this); break;
+      case RDBMS_INFORMIX:  m_info = alloc_new SQLInfoInformix   (this); break;
+      case RDBMS_ACCESS:    m_info = alloc_new SQLInfoAccess     (this); break;
+      case RDBMS_SQLSERVER: m_info = alloc_new SQLInfoSQLServer  (this); break;
+      case RDBMS_POSTGRESQL:m_info = alloc_new SQLInfoPostgreSQL (this); break;
+      case RDBMS_FIREBIRD:  m_info = alloc_new SQLInfoFirebird   (this); break;
+      case RDBMS_MYSQL:     m_info = alloc_new SQLInfoMySQL      (this); break;
+      case RDBMS_MARIADB:   m_info = alloc_new SQLInfoMariaDB    (this); break;
+      default:              m_info = alloc_new SQLInfoGenericODBC(this); break;
     }
   }
   return m_info;
@@ -638,7 +633,7 @@ SQLDatabase::GetSQLInfoDB()
 
 // Setting the default database schema after login
 bool
-SQLDatabase::SetDefaultSchema(XString p_user,XString p_schema)
+SQLDatabase::SetDefaultSchema(const XString& p_user,const XString& p_schema)
 {
   XString sql = GetSQLInfoDB()->GetSQLDefaultSchema(p_user,p_schema);
   if(!sql.IsEmpty())
@@ -675,7 +670,7 @@ SQLDatabase::RealDatabaseName()
   }
 
   // ODBC 1.x method. Database name.
-  buffer = databaseName.GetBuffer(SQL_MAX_OPTION_STRING_LENGTH);
+  buffer = databaseName.GetBufferSetLength(SQL_MAX_OPTION_STRING_LENGTH);
   SQLGetInfo(m_hdbc, SQL_DATABASE_NAME, buffer, SQL_MAX_OPTION_STRING_LENGTH, &len);
   databaseName.ReleaseBuffer();
   m_namingMethod = _T("ODBC database name");
@@ -684,7 +679,7 @@ SQLDatabase::RealDatabaseName()
   {
     // After ODBC 2.0, SQL_DATABASE_NAME is replaced by current_qualifier
     long length = 0;
-    buffer = databaseName.GetBuffer(SQL_MAX_OPTION_STRING_LENGTH);
+    buffer = databaseName.GetBufferSetLength(SQL_MAX_OPTION_STRING_LENGTH);
     SQLGetConnectAttr(m_hdbc,SQL_CURRENT_QUALIFIER,buffer,SQL_MAX_OPTION_STRING_LENGTH,&length);
     databaseName.ReleaseBuffer();
     m_namingMethod = _T("ODBC current qualifier");
@@ -692,7 +687,7 @@ SQLDatabase::RealDatabaseName()
   if(databaseName.IsEmpty())
   {
     // Or else: try the server name
-    buffer = databaseName.GetBuffer(SQL_MAX_OPTION_STRING_LENGTH);
+    buffer = databaseName.GetBufferSetLength(SQL_MAX_OPTION_STRING_LENGTH);
     SQLGetInfo(m_hdbc,SQL_SERVER_NAME,buffer,SQL_MAX_OPTION_STRING_LENGTH,&len);
     databaseName.ReleaseBuffer();
     m_namingMethod = _T("ODBC server name");
@@ -785,6 +780,7 @@ SQLDatabase::SetAutoCommitMode(bool p_autoCommit)
   {
     return false;
   }
+
   // If we have a database type that can change the autocommit mode
   if(m_rdbmsType != RDBMS_ACCESS && m_rdbmsType != RDBMS_SQLSERVER)
   {
@@ -897,8 +893,8 @@ SQLDatabase::MakeStmtHandle()
   // Check the results
   if(!Check(res))
   {
-    XString fout;
-    fout.Format(_T("Error creating a statement handle: ") + GetErrorString());
+    XString fout(_T("Error creating a statement handle: "));
+    fout += GetErrorString();
     throw StdException(fout);
   }
   // return the statement
@@ -933,7 +929,7 @@ SQLDatabase::FreeSQLHandle(HSTMT* p_statementHandle,UWORD p_option)
   {
     // Call the correct deallocator
     // Will otherwise not free the cursor on the database
-    ret = SqlFreeStmt(*p_statementHandle,p_option);
+    ret = SQLFreeStmt(*p_statementHandle,p_option);
     // On success, remove the handle, if the option was to drop it
     if(ret == SQL_SUCCESS && p_option == SQL_DROP)
     {
@@ -1005,7 +1001,7 @@ SQLDatabase::ODBCNativeSQL(XString& p_sql)
   // Create a buffer that's 2 times the length
   // just to be sure for native constructions
   int len = p_sql.GetLength();
-  SQLTCHAR* buffer = new SQLTCHAR[(size_t)len * 2];
+  SQLTCHAR* buffer = alloc_new SQLTCHAR[(size_t)len * 2];
   SQLINTEGER lengte = 0;
   buffer[0] = 0;
 
@@ -1151,7 +1147,7 @@ SQLDatabase::GetErrorInfo(SQLSMALLINT p_type, SQLHANDLE p_handle, int& p_number,
     // Optional add a linefeed
     if(errors.GetLength())
     {
-      errors += "\n";
+      errors += _T("\n");
     }
     // Error at getting errors
     if(!Check(res))
@@ -1202,7 +1198,7 @@ SQLDatabase::Check(INT nRetCode)
 //////////////////////////////////////////////////////////////////////////
 
 XString
-SQLDatabase::StartTransaction(const SQLTransaction* p_transaction, bool p_startSubtransaction)
+SQLDatabase::StartTransaction(const SQLTransaction* p_transaction,bool p_startSubtransaction)
 {
   XString transName;
 
@@ -1247,15 +1243,15 @@ SQLDatabase::StartTransaction(const SQLTransaction* p_transaction, bool p_startS
       {
         SQLQuery rs(this);
         rs.DoSQLStatement(startSubtrans);
-        LogPrint("Start sub-transaction: " + transName);
+        LogPrint(_T("Start sub-transaction: ") + transName);
       }
       catch(StdException& err)
       {
         ReThrowSafeException(err);
         XString message;
         message.Format(_T("Error starting sub-transaction [%s] : %s")
-                      ,transName.GetString()
-                      ,err.GetErrorMessage().GetString());
+                       ,transName.GetString()
+                       ,err.GetErrorMessage().GetString());
         throw StdException(message);
       }
     }
@@ -1268,7 +1264,7 @@ SQLDatabase::StartTransaction(const SQLTransaction* p_transaction, bool p_startS
   return transName;
 }
 
-void 
+void
 SQLDatabase::CommitTransaction(const SQLTransaction* p_transaction)
 {
   // See if we do transactions at all!
@@ -1298,7 +1294,7 @@ SQLDatabase::CommitTransaction(const SQLTransaction* p_transaction)
     try
     {
       // Do the commit
-      if(!Check(SqlEndTran(SQL_HANDLE_DBC, m_hdbc,m_readOnly ? SQL_ROLLBACK : SQL_COMMIT)))
+      if(!Check(SqlEndTran(SQL_HANDLE_DBC,m_hdbc,m_readOnly ? SQL_ROLLBACK : SQL_COMMIT)))
       {
         // Throw something, so we reach the catch block
         throw StdException(_T("ODBC Commit failed"));
@@ -1309,11 +1305,11 @@ SQLDatabase::CommitTransaction(const SQLTransaction* p_transaction)
         // will automatically reach the catch block
         if(m_rdbmsType != RDBMS_ACCESS && m_rdbmsType != RDBMS_SQLSERVER)
         {
-          SetConnectAttr(SQL_ATTR_AUTOCOMMIT,SQL_AUTOCOMMIT_ON,SQL_IS_UINTEGER);
+          SetConnectAttr(SQL_ATTR_AUTOCOMMIT, SQL_AUTOCOMMIT_ON, SQL_IS_UINTEGER);
         }
       }
     }
-    catch(StdException& ex) 
+    catch(StdException& ex)
     {
       ReThrowSafeException(ex);
       // Get the error information
@@ -1325,9 +1321,9 @@ SQLDatabase::CommitTransaction(const SQLTransaction* p_transaction)
       // Throw an exception with the error info of the failed commit
       XString message;
       message.Format(_T("Error in commit of transaction [%s] : %s. ODBC Error: %s")
-                    ,p_transaction->GetName().GetString()
-                    ,ex.GetErrorMessage().GetString()
-                    ,error.GetString());
+                     ,p_transaction->GetName().GetString()
+                     ,ex.GetErrorMessage().GetString()
+                     ,error.GetString());
       throw StdException(message);
     }
   }
@@ -1350,9 +1346,9 @@ SQLDatabase::CommitTransaction(const SQLTransaction* p_transaction)
         ReThrowSafeException(error);
         XString message;
         message.Format(_T("Error in commit of sub-transaction [%s:%s] : %s")
-                      ,p_transaction->GetName().GetString()
-                      ,p_transaction->GetSavePoint().GetString()
-                      ,error.GetErrorMessage().GetString());
+                       ,p_transaction->GetName().GetString()
+                       ,p_transaction->GetSavePoint().GetString()
+                       ,error.GetErrorMessage().GetString());
         throw StdException(message);
       }
     }
@@ -1362,7 +1358,7 @@ SQLDatabase::CommitTransaction(const SQLTransaction* p_transaction)
   m_transactions.pop();
 }
 
-void 
+void
 SQLDatabase::RollbackTransaction(const SQLTransaction* p_transaction)
 {
   // See if we do transactions at all!
@@ -1410,9 +1406,9 @@ SQLDatabase::RollbackTransaction(const SQLTransaction* p_transaction)
       XString message;
       XString error = GetErrorString();
       message.Format(_T("Error at rollback of transaction [%s] : %s. OS Error: %s")
-                      ,p_transaction->GetName().GetString()
-                      ,ex.GetErrorMessage().GetString()
-                      ,error.GetString());
+                     ,p_transaction->GetName().GetString()
+                     ,ex.GetErrorMessage().GetString()
+                     ,error.GetString());
       throw StdException(message);
     }
   }
@@ -1433,9 +1429,9 @@ SQLDatabase::RollbackTransaction(const SQLTransaction* p_transaction)
         ReThrowSafeException(error);
         XString message;
         message.Format(_T("Error in rolling back sub-transaction [%s:%s] : %s")
-                      ,p_transaction->GetName().GetString()
-                      ,p_transaction->GetSavePoint().GetString()
-                      ,error.GetErrorMessage().GetString());
+                       ,p_transaction->GetName().GetString()
+                       ,p_transaction->GetSavePoint().GetString()
+                       ,error.GetErrorMessage().GetString());
         throw StdException(message);
       }
     }
@@ -1459,25 +1455,16 @@ SQLDatabase::CloseAllTransactions()
   if(m_transactions.empty())
   {
     // Commit last SELECT in multi-version databases
-    // Otherwise we gat an error at the disconnect of de HDBC
-    ret = SqlEndTran(SQL_HANDLE_DBC,m_hdbc,SQL_COMMIT);
-
-    while(!m_transactions.empty())
-    {
-      m_transactions.pop();
-    }
+    // Otherwise we get an error at the disconnect of the HDBC
+    ret = SqlEndTran(SQL_HANDLE_DBC,m_hdbc,m_readOnly ? SQL_ROLLBACK : SQL_COMMIT);
   }
   else
   {
-    // IF SO: rollback these transactions
-    ret = SqlEndTran(SQL_HANDLE_DBC,m_hdbc,SQL_ROLLBACK);
-
     // Notifying all transactions that we are done!
     // and clearing the transactions stack
     while(!m_transactions.empty())
     {
-      m_transactions.top()->AfterRollback();
-      m_transactions.pop();
+      m_transactions.top()->Rollback();
     }
   }
   if(Check(ret) == FALSE)
@@ -1535,7 +1522,7 @@ SQLDatabase::GetCurrentTimestampQualifier()
 }
 
 XString
-SQLDatabase::GetSQL_NewSerial(XString p_table,XString p_sequence)
+SQLDatabase::GetSQL_NewSerial(const XString& p_table,const XString& p_sequence)
 {
   XString sql;
   if(GetSQLInfoDB())
@@ -1546,7 +1533,7 @@ SQLDatabase::GetSQL_NewSerial(XString p_table,XString p_sequence)
 }
 
 XString 
-SQLDatabase::GetSQL_GenerateSerial(XString p_table,XString p_sequence /*=""*/)
+SQLDatabase::GetSQL_GenerateSerial(const XString& p_table,const XString& p_sequence /*=""*/)
 {
   XString query;
   if(GetSQLInfoDB())
@@ -1577,7 +1564,7 @@ SQLDatabase::GetSQL_GenerateSerial(XString p_table,XString p_sequence /*=""*/)
 }
 
 int 
-SQLDatabase::GetSQL_EffectiveSerial(XString p_oid_string)
+SQLDatabase::GetSQL_EffectiveSerial(const XString& p_oid_string)
 {
   XString query;
   if(GetSQLInfoDB())
@@ -1650,7 +1637,7 @@ SQLDatabase::GetInterval1MinuteAgo()
 }
 
 XString
-SQLDatabase::GetUpper(XString p_veld)
+SQLDatabase::GetUpper(const XString& p_veld)
 {
   if(GetSQLInfoDB())
   {
@@ -1660,7 +1647,7 @@ SQLDatabase::GetUpper(XString p_veld)
 }
 
 XString
-SQLDatabase::GetNVLStatement(XString p_test,XString p_isnull)
+SQLDatabase::GetNVLStatement(const XString& p_test,const XString& p_isnull)
 {
   if(GetSQLInfoDB())
   {
@@ -1784,7 +1771,7 @@ SQLDatabase::GetDataSources(DSMap& p_list,int p_type /*= SQL_FETCH_FIRST*/)
 // e.g. the Excel-ODBC driver and searches for a sub-capability
 // e.g. the first ".xls" or ".xlsx" capable driver
 XString
-SQLDatabase::GetSpecialDriver(XString p_base,XString p_extensie)
+SQLDatabase::GetSpecialDriver(const XString& p_base,const XString& p_extensie)
 {
   SQLTCHAR    driverDescription[250];
   SQLSMALLINT dLength = 0;
@@ -1810,7 +1797,7 @@ SQLDatabase::GetSpecialDriver(XString p_base,XString p_extensie)
        _tcsstr(reinterpret_cast<TCHAR*>(driverDescription),p_extensie) != 0 )
     {
       // Found !
-      return XString(driverDescription);
+      return XString((LPCTSTR)driverDescription);
     }
     // GET Next driver
     result = SqlDrivers(m_henv,SQL_FETCH_NEXT
@@ -1879,7 +1866,7 @@ SQLDatabase::WilLog()
 //////////////////////////////////////////////////////////////////////////
 
 void 
-SQLDatabase::SetSchema(XString p_schema)
+SQLDatabase::SetSchema(const XString& p_schema)
 {
   m_schemaName   = p_schema;
   m_schemaAction = p_schema.IsEmpty() ? SCHEMA_NO_ACTION : SCHEMA_REPLACE;
@@ -1952,7 +1939,7 @@ SQLDatabase::ReplaceMacros(XString& p_statement)
 }
 
 int
-SQLDatabase::FindQuotes(XString& p_statement,int p_lastpos)
+SQLDatabase::FindQuotes(const XString& p_statement,int p_lastpos)
 {
   int quotes = 0;
   for(int ind = 0; ind < p_lastpos; ++ind)
@@ -1966,7 +1953,7 @@ SQLDatabase::FindQuotes(XString& p_statement,int p_lastpos)
 }
 
 void
-SQLDatabase::ReplaceMacro(XString& p_statement,int p_pos,int p_length,XString p_replace)
+SQLDatabase::ReplaceMacro(XString& p_statement,int p_pos,int p_length,const XString& p_replace)
 {
   XString newStatement;
   // First part, before macro
@@ -1982,18 +1969,20 @@ SQLDatabase::ReplaceMacro(XString& p_statement,int p_pos,int p_length,XString p_
 
 // Add a macro replacement for SQL text
 void
-SQLDatabase::AddMacro(XString p_macro,XString p_replacement)
+SQLDatabase::AddMacro(const XString& p_macro,const XString& p_replacement)
 {
-  p_macro.MakeUpper();
-  m_macros[p_macro] = p_replacement;
+  XString macro(p_macro);
+  macro.MakeUpper();
+  m_macros[macro] = p_replacement;
 }
 
 // Remove macro
 void
-SQLDatabase::DeleteMacro(XString p_macro)
+SQLDatabase::DeleteMacro(const XString& p_macro)
 {
-  p_macro.MakeUpper();
-  Macros::iterator it = m_macros.find(p_macro);
+  XString macro(p_macro);
+  macro.MakeUpper();
+  Macros::iterator it = m_macros.find(macro);
   if(it != m_macros.end())
   {
     m_macros.erase(it);

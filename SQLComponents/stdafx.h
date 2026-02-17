@@ -10,15 +10,13 @@
 #define VC_EXTRALEAN            
 #endif
 
+// Exclude rarely-used stuff from Windows headers
+#define WIN32_LEAN_AND_MEAN
+
 // Using current OS SDK (Windows 8/10)
 #include "targetver.h"
-#include "framework.h"
-
 // Use default IO library 
 #include <stdio.h>
-
-// #include <afxext.h>             // MFC extensions
-// #include <afxcmn.h>             // MFC support for Windows Common Controls
 
 // Autolink to the base library
 #include <BaseLibrary.h>

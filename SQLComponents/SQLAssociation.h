@@ -2,8 +2,8 @@
 //
 // File: SQLAssociation.h
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -56,7 +56,7 @@ public:
   // SETTERS
   void SetMaster      (SQLDataSet* p_master)  { m_master = p_master; };
   void SetDetail      (SQLDataSet* p_detail)  { m_detail = p_detail; };
-  void SetAssociation (XString p_primaryColumn,XString p_foreignColumn,SQLVariant* p_value = NULL);
+  void SetAssociation (const XString& p_primaryColumn,const XString& p_foreignColumn,SQLVariant* p_value = NULL);
   void SetAssociation (int p_num,SQLVariant* p_value);  // For reuse of the association
 
   // GETTERS

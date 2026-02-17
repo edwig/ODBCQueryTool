@@ -48,25 +48,25 @@ public:
   enum { IDD = IDD_MIGRATE_WIZARD};
 
   // IN PARAMETERS
-  XString       m_sourceDSN;
-  XString       m_sourceUser;
-  XString       m_sourcePassword;
-  XString       m_sourceSchema;
+  CString       m_sourceDSN;
+  CString       m_sourceUser;
+  CString       m_sourcePassword;
+  CString       m_sourceSchema;
 
-  XString       m_sourceType;
+  CString       m_sourceType;
   
-  XString       m_targetDSN;
-  XString       m_targetUser;
-  XString       m_targetPassword;
-  XString       m_targetType;
-  XString       m_targetSchema;
+  CString       m_targetDSN;
+  CString       m_targetUser;
+  CString       m_targetPassword;
+  CString       m_targetType;
+  CString       m_targetSchema;
 
-  XString       m_tablespace;
-  XString       m_table;
+  CString       m_tablespace;
+  CString       m_table;
 
-  XString       m_directory;
-  XString       m_dropscript;
-  XString       m_createscript;
+  CString       m_directory;
+  CString       m_dropscript;
+  CString       m_createscript;
 
   BOOL          m_allTables;
   BOOL          m_do_tables;
@@ -81,13 +81,13 @@ public:
   BOOL          m_do_triggers;
   BOOL          m_do_access;
 
-  XString       m_where;
+  CString       m_where;
   MigrateType   m_directMigration;
 
-  XString       m_logPerRow;
-  XString       m_status;
-  XString       m_estimated;
-  XString       m_log;
+  CString       m_logPerRow;
+  CString       m_status;
+  CString       m_estimated;
+  CString       m_log;
   BOOL          m_toLogfile;
 
   // Controls
@@ -141,7 +141,7 @@ public:
   StyleButton       m_buttonClose;
 
   // Working objects
-  XString           m_iniFile;
+  CString           m_iniFile;
   clock_t           m_start;
   MigrateParameters m_parameters;
   Logging           m_logfile;

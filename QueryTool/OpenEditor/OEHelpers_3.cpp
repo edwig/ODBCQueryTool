@@ -320,9 +320,9 @@ void Searcher::compileExpression () const
 
     if (!comp_ok)
     {
-      CString text = _T("Regular expression error: ") + pattern;
+      XString text = _T("Regular expression error: ") + pattern;
       StyleMessageBox(nullptr,text,_T("ERROR"),MB_OK|MB_ICONERROR);
-      _CHECK_AND_THROW_(1, text);
+      _CHECK_AND_THROW_(1,text);
     }
   }
 }

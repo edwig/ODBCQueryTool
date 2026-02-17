@@ -61,19 +61,19 @@ Logging::SetTables(int num)
   m_tables = num;
 }
 
-void 
+void
 Logging::SetLogStatus(LogType status)
 {
   m_status = status;
 }
 
-void 
+void
 Logging::SetScript(XString p_script)
 {
   m_script = p_script;
 }
 
-void 
+void
 Logging::SetDropScript(XString p_script)
 {
   m_dropscript = p_script;
@@ -91,10 +91,10 @@ int
 Logging::Open(bool p_scripting)
 {
   // Always open standard logfile
-  m_flog = _tfsopen(m_logfile,_T("a+"),_SH_DENYWR);
-  if(m_flog == nullptr)
+  m_flog = _tfsopen(m_logfile, _T("a+"), _SH_DENYWR);
+  if (m_flog == nullptr)
   {
-    if(!m_flog)
+    if (!m_flog)
     {
       StyleMessageBox(nullptr
                      ,_T("No write access for file: ") FILENAME_LOGFILE
@@ -104,20 +104,20 @@ Logging::Open(bool p_scripting)
     }
   }
   // If we do scripting: open the script files
-  if(p_scripting)
+  if (p_scripting)
   {
-    m_fout  = _tfsopen(m_script,    _T("a+"),_SH_DENYWR);
-    m_fdrop = _tfsopen(m_dropscript,_T("a+"),_SH_DENYWR);
-    if(m_fout == nullptr || m_fdrop == nullptr)
+    m_fout = _tfsopen(m_script, _T("a+"), _SH_DENYWR);
+    m_fdrop = _tfsopen(m_dropscript, _T("a+"), _SH_DENYWR);
+    if (m_fout == nullptr || m_fdrop == nullptr)
     {
-      if(!m_fout)
+      if (!m_fout)
       {
         StyleMessageBox(nullptr
                        ,_T("No write access for file: ") FILENAME_OUTPUT
                        ,_T("No Access")
                        ,MB_OK | MB_ICONWARNING);
       }
-      if(!m_fdrop)
+      if (!m_fdrop)
       {
         StyleMessageBox(nullptr
                        ,_T("No write access for file: ") FILENAME_DROPFILE
@@ -133,19 +133,19 @@ Logging::Open(bool p_scripting)
 void
 Logging::Close()
 {
-  if(m_flog)  fclose(m_flog);
-  if(m_fout)  fclose(m_fout);
-  if(m_fdrop) fclose(m_fdrop);
+  if (m_flog)  fclose(m_flog);
+  if (m_fout)  fclose(m_fout);
+  if (m_fdrop) fclose(m_fdrop);
   m_flog = m_fout = m_fdrop = nullptr;
 }
 
-void 
+void
 Logging::SetDBType(bool p_source, XString p_type)
 {
   SQLMigrateApp* appl = (SQLMigrateApp*)AfxGetApp();
   SQLMigrateDialog* dlg = (SQLMigrateDialog*)(appl->m_pMainWnd);
 
-  if(dlg != nullptr && p_source)
+  if (dlg != nullptr && p_source)
   {
     dlg->SetSourceType(p_type);
   }
@@ -157,49 +157,55 @@ Logging::SetDBType(bool p_source, XString p_type)
   WriteLog(text);
 }
 
+void 
+Logging::WriteLog(LPCTSTR p_message)
+{
+  WriteLog(XString(p_message));
+}
+
 void
-Logging::WriteLog(XString message)
+Logging::WriteLog(XString p_message)
 {
 #ifdef DEBUG
 #if    DEBUG_DUMPING
   afxDump << message << "\n";
 #endif
 #endif
-  SQLMigrateApp* appl   = (SQLMigrateApp*)AfxGetApp();
+  SQLMigrateApp* appl = (SQLMigrateApp*)AfxGetApp();
   SQLMigrateDialog* dlg = (SQLMigrateDialog*)(appl->m_pMainWnd);
 
   bool tolog = true;
 
-  if(dlg != nullptr)
+  if (dlg != nullptr)
   {
-    dlg->AddLogLine(message);
+    dlg->AddLogLine(p_message);
     dlg->HandleMessages();
     // User added/removed selection?
     tolog = dlg->m_toLogfile;
   }
   // Write to logfile
-  if(tolog)
+  if (tolog)
   {
-    if(m_flog == nullptr)
+    if (m_flog == nullptr)
     {
-      m_flog = _tfsopen(m_logfile,_T("a"),_SH_DENYWR);
+      m_flog = _tfsopen(m_logfile, _T("a"), _SH_DENYWR);
     }
-    if(m_flog)
+    if (m_flog)
     {
       time_t deSeconde;
-      struct tm *nu;
+      struct tm* nu;
       time(&deSeconde);
       nu = localtime(&deSeconde);
       _ftprintf(m_flog,_T("%4.4d-%2.2d-%2.2d %2.2d:%2.2d:%2.2d ")
-              ,nu->tm_year + 1900
-              ,nu->tm_mon  + 1
-              ,nu->tm_mday
-              ,nu->tm_hour
-              ,nu->tm_min
-              ,nu->tm_sec);
+               ,nu->tm_year + 1900
+               ,nu->tm_mon  + 1
+               ,nu->tm_mday
+               ,nu->tm_hour
+               ,nu->tm_min
+               ,nu->tm_sec);
 
-      _fputts(message,m_flog);
-      _fputtc('\n',m_flog);
+      _fputts(p_message.c_str(), m_flog);
+      _fputtc('\n', m_flog);
     }
   }
 }
@@ -218,7 +224,7 @@ Logging::WriteOut(XString statement,bool p_delim /* = false*/)
   }
   if(m_fout)
   {
-    _fputts(statement,m_fout);
+    _fputts(statement.GetString(),m_fout);
     if(p_delim)
     {
       _fputtc(';', m_fout);
@@ -241,7 +247,7 @@ Logging::WriteDrop(XString statement,bool p_delim /*=false*/)
   }
   if(m_fdrop)
   {
-    _fputts(statement,m_fdrop);
+    _fputts(statement.GetString(),m_fdrop);
     if(p_delim)
     {
       _fputtc(';', m_fdrop);

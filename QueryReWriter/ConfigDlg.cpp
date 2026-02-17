@@ -156,10 +156,10 @@ ConfigDlg::SetConfigFile(CString p_file)
 bool
 ConfigDlg::ReadConfig()
 {
-  WinFile file(m_config);
+  WinFile file(m_config.GetString());
   if(file.Open(winfile_read))
   {
-    CString string;
+    XString string;
     while(file.Read(string))
     {
       // Empty line
@@ -192,7 +192,7 @@ ConfigDlg::ReadConfig()
       }
       if(string.GetAt(0) == '-')
       {
-        InsertRow(string);
+        InsertRow(string.GetString());
       }
     }
     file.Close();
@@ -216,10 +216,10 @@ ConfigDlg::WriteConfig()
     return true;
   }
 
-  WinFile file(m_config);
+  WinFile file(m_config.GetString());
   if(file.Open(winfile_write))
   {
-    CString string;
+    XString string;
     string = _T("# Configuration file for Query ReWriter application\n");
     file.Write(string);
     string = _T(":P:") + m_purpose + _T("\n");
@@ -291,7 +291,7 @@ ConfigDlg::InsertRow(CString p_string)
   CString keyword,schema,replace,function;
 
   std::vector<XString> values;
-  SplitString(p_string,values,'-');
+  SplitString(p_string.GetString(),values,'-');
   
   if(values.size() > 1) keyword  = values[1];
   if(values.size() > 2) schema   = values[2];
@@ -314,17 +314,17 @@ ConfigDlg::CreateReWriter()
   {
     return nullptr;
   }
-  QueryReWriter* rewriter = new QueryReWriter(m_schema);
+  QueryReWriter* rewriter = new QueryReWriter(m_schema.GetString());
   rewriter->SetOption((SROption)m_strings);
 
   for(int row = 1;row < m_grid.GetRowCount();++row)
   {
-    CString keyword  = m_grid.GetCell(row,1)->GetText();
-    CString schema   = m_grid.GetCell(row,2)->GetText();
-    CString replace  = m_grid.GetCell(row,3)->GetText();
-    CString function = m_grid.GetCell(row,4)->GetText();
+    XString keyword  = m_grid.GetCell(row,1)->GetText();
+    XString schema   = m_grid.GetCell(row,2)->GetText();
+    XString replace  = m_grid.GetCell(row,3)->GetText();
+    XString function = m_grid.GetCell(row,4)->GetText();
 
-    rewriter->AddSQLWord(keyword,replace,schema,Token::TK_EOS,StringToODBCEscape(function));
+    rewriter->AddSQLWord(keyword,replace,schema,Token::TK_EOS,StringToODBCEscape(function.GetString()));
   }
   return rewriter;
 }

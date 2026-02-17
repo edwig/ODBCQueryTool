@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -30,17 +30,11 @@
 #include "SQLDataSetXLS.h"
 #include <shellapi.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 namespace SQLComponents
 {
 
 // Open spreadsheet for reading and writing
-SQLDataSetXLS::SQLDataSetXLS(XString p_file, XString p_sheetOrSeperator, bool p_backup) 
+SQLDataSetXLS::SQLDataSetXLS(const XString& p_file,const XString& p_sheetOrSeperator, bool p_backup) 
               :m_file(p_file)
               ,m_workbook(NULL)
               ,m_xmlWorkbook(NULL)
@@ -66,14 +60,14 @@ SQLDataSetXLS::SQLDataSetXLS(XString p_file, XString p_sheetOrSeperator, bool p_
     m_excel     = true;
     m_sheetName = p_sheetOrSeperator;
     extensie    = tempString1;
-    m_workbook  = new BasicExcel();
+    m_workbook  = alloc_new BasicExcel();
   }
   if (tempString2 == _T(".xlsx"))
   {
     m_xmlExcel    = true;
     m_sheetName   = p_sheetOrSeperator;
     extensie      = tempString2;
-    m_xmlWorkbook = new BasicXmlExcel(p_file);
+    m_xmlWorkbook = alloc_new BasicXmlExcel(p_file);
     m_lastError   = m_xmlWorkbook->GetError();
   }
   else 
@@ -218,11 +212,11 @@ SQLDataSetXLS::Commit()
       ReThrowSafeException(er);
       m_lastError = er.GetErrorMessage();
     }
-    catch(CException& er)
+    catch(...)
     {
-      m_lastError = MessageFromException(er);
+      m_lastError = _T("Unknown error.");
     }
-    m_lastError += _T("Error writing file\n");
+    m_lastError += _T(" Error writing file\n");
     return false;
   }
 }
@@ -274,7 +268,7 @@ SQLDataSetXLS::AddRow(WordList& p_rowValues, long /*p_row*/, bool /*p_replace*/)
 
   while(cols-- && vals--)
   {
-    const SQLVariant* var = new SQLVariant(*it++); 
+    const SQLVariant* var = alloc_new SQLVariant(*it++); 
     record->AddField(var);
   }
   if(vals == 0 && cols > 0)
@@ -283,7 +277,7 @@ SQLDataSetXLS::AddRow(WordList& p_rowValues, long /*p_row*/, bool /*p_replace*/)
     // Append with empty values (strings)
     while(cols--)
     {
-      const SQLVariant* var = new SQLVariant("");
+      const SQLVariant* var = alloc_new SQLVariant("");
       record->AddField(var);
     }
   }
@@ -298,7 +292,7 @@ SQLDataSetXLS::AddRow(WordList& p_rowValues, long /*p_row*/, bool /*p_replace*/)
 // Default is read the next cell in next row. 
 // Set Auto to false if want to force column to be used as header name
 bool 
-SQLDataSetXLS::ReadCell (XString &p_cellValue, XString p_column, long p_row, bool p_name /*=true*/)
+SQLDataSetXLS::ReadCell(XString &p_cellValue,const XString& p_column, long p_row, bool p_name /*=true*/)
 {
   int columnIndex = CalculateColumnNumber(p_column,p_name);
   if(columnIndex == 0)
@@ -383,7 +377,7 @@ SQLDataSetXLS::DeleteSheet()
 
 // Clear entire Excel spreadsheet content. The sheet itself is not deleted
 bool 
-SQLDataSetXLS::DeleteSheet(XString p_sheetName)
+SQLDataSetXLS::DeleteSheet(const XString& p_sheetName)
 {
   if(m_excel) // If file is an Excel spreadsheet
   {
@@ -400,7 +394,7 @@ SQLDataSetXLS::DeleteSheet(XString p_sheetName)
 // Replace a cell into Excel spreadsheet using header row or column alphabet. 
 // Set name to true if want to force column to be used as header name
 bool 
-SQLDataSetXLS::SetCell(XString p_cellValue, XString p_column, long p_row, bool p_name /*=true*/)
+SQLDataSetXLS::SetCell(const XString& p_cellValue,const XString& p_column, long p_row, bool p_name /*=true*/)
 {
   int columnIndex = CalculateColumnNumber(p_column, p_name);
   if(columnIndex == 0)
@@ -416,7 +410,7 @@ SQLDataSetXLS::SetCell(XString p_cellValue, XString p_column, long p_row, bool p
 
 // Set a cell value into spreadsheet using column number, row number
 bool 
-SQLDataSetXLS::SetCell(XString p_cellValue, short p_column, long p_row)
+SQLDataSetXLS::SetCell(const XString& p_cellValue, short p_column, long p_row)
 {
   if (p_column == 0)
   {
@@ -547,7 +541,7 @@ SQLDataSetXLS::Open()
         for(int col = 0; col < cols; ++col)
         {
           LPCTSTR value = sheet->CellValue(row,col,buffer,10000);
-          SQLVariant* var = new SQLVariant(value);
+          SQLVariant* var = alloc_new SQLVariant(value);
           record->AddField(var);
           delete var;
         }
@@ -673,7 +667,7 @@ SQLDataSetXLS::Close()
 // A  -> 1
 // IV -> 255
 int 
-SQLDataSetXLS::CalculateColumnNumber(XString p_column, bool p_name /*=true*/)
+SQLDataSetXLS::CalculateColumnNumber(const XString& p_column, bool p_name /*=true*/)
 {
   if(p_name)
   {
@@ -690,19 +684,21 @@ SQLDataSetXLS::CalculateColumnNumber(XString p_column, bool p_name /*=true*/)
   }
   else
   {
-    int firstLetter, secondLetter;
-    p_column.MakeUpper();
+    XString column(p_column);
 
-    if (p_column.GetLength() == 1)
+    int firstLetter, secondLetter;
+    column.MakeUpper();
+
+    if(column.GetLength() == 1)
     {
-      firstLetter = p_column.GetAt(0);
+      firstLetter = column.GetAt(0);
       // 65 is A in ascii
       return (firstLetter - 65 + 1); 
     }
-    else if (p_column.GetLength() == 2)
+    else if (column.GetLength() == 2)
     {
-      firstLetter = p_column.GetAt(0);
-      secondLetter = p_column.GetAt(1);
+      firstLetter  = column.GetAt(0);
+      secondLetter = column.GetAt(1);
       // 65 is A in ascii
       return ((firstLetter - 65 + 1)*26 + (secondLetter - 65 + 1)); 
     }
@@ -889,7 +885,7 @@ SQLDataSetXLS::ReadString(FILE* p_file,XString& p_string)
 
 // Write an ASCII string to a file
 bool  
-SQLDataSetXLS::WriteString(FILE* p_file,XString& p_string,bool p_appendCRLF /*=false*/)
+SQLDataSetXLS::WriteString(FILE* p_file,const XString& p_string,bool p_appendCRLF /*=false*/)
 {
   _fputts(p_string.GetString(),p_file);
   if(p_appendCRLF)

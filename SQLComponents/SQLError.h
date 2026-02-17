@@ -2,8 +2,8 @@
 //
 // File: SQLError.h
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -45,8 +45,8 @@ public:
   SQLError();
  ~SQLError();
  
-  SQLState* GetSQLState(XString p_sqlState);
-  XString   GetSQLStateFormatted(XString p_sqlState);
+  SQLState* GetSQLState(const XString& p_sqlState);
+  XString   GetSQLStateFormatted(const XString& p_sqlState);
   SQLState* GetLastSQLState();
 private:
   SQLState* m_lastState;  

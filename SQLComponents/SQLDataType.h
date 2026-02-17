@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -37,7 +37,7 @@ class SQLDataType
 public:
   SQLDataType();
   explicit SQLDataType(int p_sqlType);
-  explicit SQLDataType(XString p_typeName);
+  explicit SQLDataType(const XString& p_typeName);
   explicit SQLDataType(MetaColumn& p_column);
 
   ~SQLDataType();
@@ -66,25 +66,25 @@ public:
   XString   GetAsEdmType();
 
   // SETTERS
-  void      SetTypeName(XString p_typeName)   { m_typeName      = p_typeName; }
-  void      SetSQLType(int p_type)            { m_sqlType       = p_type;     }
-  void      SetColumnSize(int p_size)         { m_columnSize    = p_size;     }
-  void      SetBufferSize(int p_size)         { m_bufferSize    = p_size;     }
-  void      SetDecimalDigits(int p_digits)    { m_decimalDigits = p_digits;   }
-  void      SetRadix(int p_radix)             { m_radix         = p_radix;    }
-  void      SetOctetLength(int p_size)        { m_octetLength   = p_size;     }
-  void      SetSubType(int p_type)            { m_subType       = p_type;     }
+  void      SetTypeName(const XString& p_typeName)  { m_typeName      = p_typeName; }
+  void      SetSQLType(int p_type)                  { m_sqlType       = p_type;     }
+  void      SetColumnSize(int p_size)               { m_columnSize    = p_size;     }
+  void      SetBufferSize(int p_size)               { m_bufferSize    = p_size;     }
+  void      SetDecimalDigits(int p_digits)          { m_decimalDigits = p_digits;   }
+  void      SetRadix(int p_radix)                   { m_radix         = p_radix;    }
+  void      SetOctetLength(int p_size)              { m_octetLength   = p_size;     }
+  void      SetSubType(int p_type)                  { m_subType       = p_type;     }
 
   // Datatype formatted according to a specific RDBMS dialect
   XString   TypeNameWithPrecisionScale(TypeInfo* p_type);
 
   // INFO about type names/values
-  static  int     FindDatatype   (LPTSTR p_type);
-  static  LPCTSTR FindDatatype   (int    p_type);
-  static  int     FindParamtype  (LPTSTR p_type);
-  static  LPCTSTR FindParamtype  (int    p_type);
-  static  int     FindSQLDatatype(LPTSTR p_type);
-  static  LPCTSTR FindSQLDatatype(int    p_type);
+  static  int     FindDatatype   (LPCTSTR p_type);
+  static  LPCTSTR FindDatatype   (int     p_type);
+  static  int     FindParamtype  (LPCTSTR p_type);
+  static  LPCTSTR FindParamtype  (int     p_type);
+  static  int     FindSQLDatatype(LPCTSTR p_type);
+  static  LPCTSTR FindSQLDatatype(int     p_type);
 
 private:
   XString m_typeName;

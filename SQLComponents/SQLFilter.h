@@ -2,8 +2,8 @@
 //
 // File: SQLFilter.h
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -43,7 +43,7 @@ class SQLFilterSet;
 typedef std::vector<SQLVariant*> VariantSet;
 
 // Translate a string from the message to an operator
-SQLOperator StringToSQLOperator(XString p_oper);
+SQLOperator StringToSQLOperator(const XString& p_oper);
 XString     SQLOperatorToString(SQLOperator p_oper);
 
 // THE FILTER CLASS
@@ -55,23 +55,23 @@ public:
   SQLFilter();
   SQLFilter(const SQLFilter& p_other);
   explicit SQLFilter(const SQLFilter* p_other);
-  explicit SQLFilter(XString p_field,SQLOperator p_operator);
-  explicit SQLFilter(XString p_field,SQLOperator p_operator,SQLVariant* p_value);
-  explicit SQLFilter(XString p_field,SQLOperator p_operator,int         p_value);
-  explicit SQLFilter(XString p_field,SQLOperator p_operator,XString     p_value);
+  explicit SQLFilter(const XString& p_field,SQLOperator p_operator);
+  explicit SQLFilter(const XString& p_field,SQLOperator p_operator,const SQLVariant* p_value);
+  explicit SQLFilter(const XString& p_field,SQLOperator p_operator,const int         p_value);
+  explicit SQLFilter(const XString& p_field,SQLOperator p_operator,const XString&    p_value);
   explicit SQLFilter(SQLOperator p_operator);
  ~SQLFilter();
 
   // BUILDING THE FILTER
 
   // Adding a comparison field (if not yet set)
-  bool        SetField(XString p_field);
+  bool        SetField(const XString& p_field);
   // Adding an operator (if not yet set)
   bool        SetOperator(SQLOperator p_oper);
   // Adding extra values for the IN or BETWEEN operators
   void        AddValue(const SQLVariant* p_value);
   // Adding an expression as replacement for concrete values
-  void        AddExpression(XString p_expression);
+  void        AddExpression(const XString& p_expression);
   // Negate the filter
   void        Negate();
   // Setting a parenthesis level
@@ -83,9 +83,9 @@ public:
   void        SetExtractPart  (SQLExtractPart       p_part);
   void        SetTimestampPart(SQLTimestampCalcPart p_part);
   // Set extra optional field
-  void        SetField2(XString p_field);
+  void        SetField2(const XString& p_field);
   // Set casting of the first field
-  void        SetCastAs(XString p_datatype,int p_scale = 0,int p_precision = 0);
+  void        SetCastAs(const XString& p_datatype,int p_scale = 0,int p_precision = 0);
 
   // OPERATIONS
 
@@ -197,12 +197,12 @@ SQLFilter::GetValue() const
 inline void
 SQLFilter::AddValue(const SQLVariant* p_value)
 {
-  SQLVariant* value = new SQLVariant(p_value);
+  SQLVariant* value = alloc_new SQLVariant(p_value);
   m_values.push_back(value);
 }
 
 inline void
-SQLFilter::AddExpression(XString p_expression)
+SQLFilter::AddExpression(const XString& p_expression)
 {
   m_expression = p_expression;
 }
@@ -296,13 +296,13 @@ public:
 
   void AddFilter(const SQLFilter* p_filter)
   {
-    SQLFilter* filter = new SQLFilter(p_filter);
+    SQLFilter* filter = alloc_new SQLFilter(p_filter);
     m_filters.push_back(filter);
   }
 
   void AddFilter(const SQLFilter& p_filter)
   {
-    SQLFilter* filter = new SQLFilter(p_filter);
+    SQLFilter* filter = alloc_new SQLFilter(p_filter);
     m_filters.push_back(filter);
   }
 

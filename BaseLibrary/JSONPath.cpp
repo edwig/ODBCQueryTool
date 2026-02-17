@@ -4,8 +4,8 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 2014-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files(the "Software"), to deal
@@ -28,20 +28,12 @@
 #include "pch.h"
 #include "JSONPath.h"
 
-#ifdef _AFX
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-#endif
-
 JSONPath::JSONPath(bool p_originOne /*= false*/)
 {
   m_origin = p_originOne ? 1 : 0;
 }
 
-JSONPath::JSONPath(JSONMessage* p_message,XString p_path,bool p_originOne /*= false*/)
+JSONPath::JSONPath(JSONMessage* p_message,const XString& p_path,bool p_originOne /*= false*/)
          :m_message(p_message)
          ,m_path(p_path)
 {
@@ -54,7 +46,7 @@ JSONPath::JSONPath(JSONMessage* p_message,XString p_path,bool p_originOne /*= fa
   Evaluate();
 }
 
-JSONPath::JSONPath(JSONMessage& p_message,XString p_path,bool p_originOne /*= false*/)
+JSONPath::JSONPath(JSONMessage& p_message,const XString& p_path,bool p_originOne /*= false*/)
          :m_message(&p_message)
          ,m_path(p_path)
 {
@@ -77,7 +69,7 @@ JSONPath::~JSONPath()
 }
 
 bool 
-JSONPath::SetPath(XString p_path) noexcept
+JSONPath::SetPath(const XString& p_path) noexcept
 {
   m_path = p_path;
   return Evaluate();
@@ -747,7 +739,7 @@ JSONPath::ParseLevel(XString& p_parsing)
             found = FindMatchingBracket(token,i);
             if(found < 0)
             {
-              m_errorInfo = _T("Could not parse index filter in JsonPath: ") + m_path;
+              m_errorInfo = XString(_T("Could not parse index filter in JsonPath: ")) + m_path;
               return false;
             }
           }
@@ -798,7 +790,7 @@ JSONPath::ParseLevel(XString& p_parsing)
         ProcessFilter(token);
         if(m_bracketStack.size() > 0)
         {
-          m_errorInfo.Format(_T("Missing ')' in filter: ") + token);
+          m_errorInfo.Format(XString(_T("Missing ')' in filter: ")) + token);
         }
         return false;
       }
@@ -989,7 +981,7 @@ JSONPath::HandleLogicalOr(XString p_token,int& p_pos)
       rightSide = p_token.Mid(p_pos,p_token.GetLength()).Trim();
 
       // Evaluate the part after the "||"
-      JSONPath path(m_message,_T("$") + m_rootWord + _T("[?(") + rightSide + _T(")]"));
+      JSONPath path(m_message,XString(_T("$")) + m_rootWord + _T("[?(") + rightSide + _T(")]"));
 
       // Result from path.m_reuslts only to be appended if not already present
       bool exist = false;
@@ -1079,7 +1071,7 @@ JSONPath::WithinQuotes(XString p_token,int p_pos,int p_charPos)
 int
 JSONPath::FindMatchingBracket(const XString& p_string, int p_bracketPos)
 {
-  TCHAR bracket = p_string[p_bracketPos];
+  TCHAR bracket = (TCHAR) p_string.GetAt(p_bracketPos);
   TCHAR match   = 0;
   bool  reverse = false;
 
@@ -1109,7 +1101,7 @@ JSONPath::FindMatchingBracket(const XString& p_string, int p_bracketPos)
   {
     for (int pos = p_bracketPos - 1, nest = 1; pos >= 0; --pos)
     {
-      TCHAR c = p_string[pos];
+      TCHAR c = (TCHAR) p_string.GetAt(pos);
       if (c == bracket)
       {
         ++nest;
@@ -1127,7 +1119,7 @@ JSONPath::FindMatchingBracket(const XString& p_string, int p_bracketPos)
   {
     for (int pos = p_bracketPos + 1, nest = 1, len = p_string.GetLength(); pos < len; ++pos)
     {
-      TCHAR c = p_string[pos];
+      TCHAR c = (TCHAR) p_string.GetAt(pos);
 
       // skip finding matching bracket if encased in single quotes
       if(c == '\'')

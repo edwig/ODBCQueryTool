@@ -2,8 +2,8 @@
 //
 // File: SQLRecord.cpp
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -30,12 +30,6 @@
 #include "SQLVariant.h"
 #include "SQLDate.h"
 #include "SQLGuid.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 namespace SQLComponents
 {
@@ -99,7 +93,7 @@ int
 SQLRecord::AddField(const SQLVariant* p_field
                    ,bool p_insert /*= false*/)
 {
-  SQLMutation* mut = new SQLMutation(p_field);
+  SQLMutation* mut = alloc_new SQLMutation(p_field);
   m_fields.push_back(mut);
 
   // Optionally it can be a newly inserted record
@@ -131,7 +125,7 @@ SQLRecord::SetField(int p_num,const SQLVariant* p_field,int p_mutationID /*=0*/)
 }
 
 bool
-SQLRecord::SetField(XString p_name,const SQLVariant* p_field,int p_mutationID /*=0*/)
+SQLRecord::SetField(const XString& p_name,const SQLVariant* p_field,int p_mutationID /*=0*/)
 {
   return SetField(m_dataSet->GetFieldNumber(p_name),p_field,p_mutationID);
 }
@@ -147,7 +141,7 @@ SQLRecord::GetField(int p_num) const
 }
 
 SQLVariant* 
-SQLRecord::GetField(XString p_name) const
+SQLRecord::GetField(const XString& p_name) const
 {
   if(m_dataSet)
   {
@@ -745,7 +739,7 @@ SQLRecord::IsModified(int p_num) const
 }
 
 bool
-SQLRecord::IsModified(XString p_name) const
+SQLRecord::IsModified(const XString& p_name) const
 {
   return IsModified(m_dataSet->GetFieldNumber(p_name));
 }
@@ -875,7 +869,7 @@ SQLRecord::XMLSave(XMLMessage* p_msg,XMLElement* p_base)
   XString typName = dataset_names[g_defaultLanguage][DATASET_TYPE];
   XString attName = dataset_names[g_defaultLanguage][DATASET_NAME];
 
-  XMLElement* p_elem = p_msg->AddElement(p_base,recName,XDT_String,"");
+  XMLElement* p_elem = p_msg->AddElement(p_base,recName,_T(""));
   if(p_elem)
   {
     for(unsigned int ind = 0; ind < m_fields.size(); ++ind)
@@ -884,7 +878,7 @@ SQLRecord::XMLSave(XMLMessage* p_msg,XMLElement* p_base)
       XString fieldName = m_dataSet->GetFieldName(ind);
       int type = var->GetDataType();
 
-      XMLElement* fld = p_msg->AddElement(p_elem,fldName,XDT_String,"");
+      XMLElement* fld = p_msg->AddElement(p_elem,fldName,_T(""));
       p_msg->SetAttribute(fld,idName, (int)ind);
       p_msg->SetAttribute(fld,typName,type);
       p_msg->SetAttribute(fld,attName,fieldName);

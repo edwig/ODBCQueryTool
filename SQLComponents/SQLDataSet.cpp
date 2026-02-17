@@ -2,8 +2,8 @@
 //
 // File: SQLDataSet.cpp
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -30,13 +30,8 @@
 #include "SQLQuery.h"
 #include "SQLVariantFormat.h"
 #include "SQLInfoDB.h"
+#include <time.h>
 #include <algorithm>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 namespace SQLComponents
 {
@@ -93,7 +88,7 @@ SQLDataSet::SQLDataSet()
 {
 }
 
-SQLDataSet::SQLDataSet(XString p_name,SQLDatabase* p_database /*=NULL*/)
+SQLDataSet::SQLDataSet(const XString& p_name,SQLDatabase* p_database /*=NULL*/)
            :m_name(p_name)
            ,m_database(p_database)
 {
@@ -297,14 +292,14 @@ SQLDataSet::SetParameter(const XString& p_name,const SQLVariant& p_value)
     if(m_parameters[ind].m_name == p_name)
     {
       // Found it: set a new value
-      m_parameters[ind].m_value = new SQLVariant(p_value);
+      m_parameters[ind].m_value = alloc_new SQLVariant(p_value);
       return;
     }
   }
   // New parameter
   SQLParameter par;
   par.m_name   = p_name;
-  par.m_value  = new SQLVariant(p_value);
+  par.m_value  = alloc_new SQLVariant(p_value);
   m_parameters.push_back(par);
 }
 
@@ -344,7 +339,7 @@ SQLDataSet::SetFilter(const SQLFilter& p_filter)
 {
   if(!m_filters)
   {
-    m_filters = new SQLFilterSet();
+    m_filters = alloc_new SQLFilterSet();
     m_ownFilters = true;
   }
   m_filters->AddFilter(p_filter);
@@ -403,7 +398,7 @@ SQLDataSet::GetSequenceName()
 }
 
 void
-SQLDataSet::SetQuery(XString& p_query)
+SQLDataSet::SetQuery(const XString& p_query)
 {
   // Setting the total query supersedes these
   m_selection.Empty();
@@ -419,56 +414,56 @@ SQLDataSet::SetQuery(XString& p_query)
 }
 
 void
-SQLDataSet::SetSelection(XString p_selection)
+SQLDataSet::SetSelection(const XString& p_selection)
 {
   m_query.Empty();
   m_selection = p_selection;
 }
 
 void
-SQLDataSet::SetFromTables(XString p_from)
+SQLDataSet::SetFromTables(const XString& p_from)
 {
   m_query.Empty();
   m_fromTables = p_from;
 }
 
 void
-SQLDataSet::SetWhereCondition(XString p_condition)
+SQLDataSet::SetWhereCondition(const XString& p_condition)
 {
   m_query.Empty();
   m_whereCondition = p_condition;
 }
 
 void
-SQLDataSet::SetGroupBy(XString p_groupby)
+SQLDataSet::SetGroupBy(const XString& p_groupby)
 {
   m_query.Empty();
   m_groupby = p_groupby;
 }
 
 void
-SQLDataSet::SetOrderBy(XString p_orderby)
+SQLDataSet::SetOrderBy(const XString& p_orderby)
 {
   m_query.Empty();
   m_orderby = p_orderby;
 }
 
 void
-SQLDataSet::AddGroupby(XString p_groupby)
+SQLDataSet::AddGroupby(const XString& p_groupby)
 {
   if(!m_groupby.IsEmpty())
   {
-    m_groupby += ", ";
+    m_groupby += _T(", ");
   }
   m_groupby += p_groupby;
 }
 
 void
-SQLDataSet::AddOrderBy(XString p_orderby)
+SQLDataSet::AddOrderBy(const XString& p_orderby)
 {
   if(!m_orderby.IsEmpty())
   {
-    m_orderby += ", ";
+    m_orderby += _T(", ");
   }
   m_orderby += p_orderby;
 }
@@ -522,14 +517,22 @@ SQLDataSet::ParseQuery()
     }
     if(c == '$' && !inAphos && !inQuote)
     {
+      ++pos;
       XString parNaam;
-      do 
+      while(true)
       {
-        c = m_query.GetAt(++pos);
-        parNaam += (char) c;
-      } 
-      while (isalnum(c) || c == '_');
-      parNaam = parNaam.Left(parNaam.GetLength() - 1);
+        if(pos < m_query.GetLength())
+        {
+          c = m_query.GetAt(pos);
+          if(isalnum(c) || c == _T('_'))
+          {
+            parNaam += (TCHAR)c;
+            ++pos;
+          }
+          else break;
+        }
+        else break;
+      }
       // Found parameter name
       SQLVariant* par = GetParameter(parNaam);
       if(par)
@@ -1002,7 +1005,7 @@ bool
 SQLDataSet::ReadRecordFromQuery(SQLQuery& p_query,bool p_modifiable,bool p_append /*=false*/)
 {
   // Make a new record
-  SQLRecord* record = new SQLRecord(this,p_modifiable);
+  SQLRecord* record = alloc_new SQLRecord(this,p_modifiable);
 
   // Get all the columns of the record
   int num = p_query.GetNumberOfColumns();
@@ -1288,7 +1291,7 @@ SQLDataSet::FindObjectFilter(bool p_primary /*=false*/)
 RecordSet* 
 SQLDataSet::FindRecordSet()
 {
-  RecordSet* records = new RecordSet();
+  RecordSet* records = alloc_new RecordSet();
 
   // Walk the chain of records
   for(auto& rec : m_records)
@@ -1336,7 +1339,7 @@ SQLDataSet::GetFieldType(int p_num)
 
 // Get a field number
 int
-SQLDataSet::GetFieldNumber(XString p_name)
+SQLDataSet::GetFieldNumber(const XString& p_name)
 {
   for(unsigned int ind = 0; ind < m_names.size(); ++ind)
   {
@@ -1368,7 +1371,7 @@ SQLDataSet::GetCurrentField(int p_num)
 SQLRecord* 
 SQLDataSet::InsertRecord()
 {
-  SQLRecord* record = new SQLRecord(this,true);
+  SQLRecord* record = alloc_new SQLRecord(this,true);
   m_records.push_back(record);
   m_current = (int)(m_records.size() - 1);
   m_status |= SQL_Insertions;
@@ -1378,7 +1381,7 @@ SQLDataSet::InsertRecord()
 
 // Insert new field in new record
 int
-SQLDataSet::InsertField(XString p_name,const SQLVariant* p_value)
+SQLDataSet::InsertField(const XString& p_name,const SQLVariant* p_value)
 {
   if(m_current >= 0 && m_current < (int)m_records.size())
   {
@@ -1941,7 +1944,7 @@ SQLDataSet::GetWhereClause(SQLQuery* p_query,const SQLRecord* p_record,int& p_pa
 //////////////////////////////////////////////////////////////////////////
 
 bool
-SQLDataSet::XMLSave(XString p_filename,XString p_name,Encoding p_encoding /*= Encoding::UTF8*/)
+SQLDataSet::XMLSave(const XString& p_filename,const XString& p_name,Encoding p_encoding /*= Encoding::UTF8*/)
 {
   XMLMessage msg;
   msg.SetRootNodeName(p_name);
@@ -1951,7 +1954,7 @@ SQLDataSet::XMLSave(XString p_filename,XString p_name,Encoding p_encoding /*= En
 }
 
 bool
-SQLDataSet::XMLLoad(XString p_filename)
+SQLDataSet::XMLLoad(const XString& p_filename)
 {
   XMLMessage msg;
   if(msg.LoadFile(p_filename))
@@ -1969,8 +1972,8 @@ SQLDataSet::XMLLoad(XString p_filename)
 void
 SQLDataSet::XMLSave(XMLMessage* p_msg,XMLElement* p_dataset)
 {
-                          p_msg->AddElement(p_dataset,dataset_names[g_defaultLanguage][DATASET_NAME],XDT_String,m_name);
-  XMLElement* structure = p_msg->AddElement(p_dataset,dataset_names[g_defaultLanguage][DATASET_STRUCTURE],XDT_String,"");
+                          p_msg->AddElement(p_dataset,dataset_names[g_defaultLanguage][DATASET_NAME],m_name);
+  XMLElement* structure = p_msg->AddElement(p_dataset,dataset_names[g_defaultLanguage][DATASET_STRUCTURE],_T(""));
   XString nameField = dataset_names[g_defaultLanguage][DATASET_FIELD];
 
   // Add record structure
@@ -1983,7 +1986,7 @@ SQLDataSet::XMLSave(XMLMessage* p_msg,XMLElement* p_dataset)
       const SQLVariant* var = record->GetField(ind);
       int type = var->GetDataType();
 
-      XMLElement* field = p_msg->AddElement(structure,nameField,XDT_String,fieldname);
+      XMLElement* field = p_msg->AddElement(structure,nameField,fieldname);
       p_msg->SetAttribute(field,dataset_names[g_defaultLanguage][DATASET_ID],(int)ind);
       p_msg->SetAttribute(field,dataset_names[g_defaultLanguage][DATASET_TYPE],type);
       p_msg->SetAttribute(field,dataset_names[g_defaultLanguage][DATASET_TYPENAME],SQLDataType::FindDatatype(type));
@@ -1997,7 +2000,7 @@ SQLDataSet::XMLSave(XMLMessage* p_msg,XMLElement* p_dataset)
       int type = m_types[ind];
       SQLVariant var;
 
-      XMLElement* field = p_msg->AddElement(structure,nameField,XDT_String,fieldname);
+      XMLElement* field = p_msg->AddElement(structure,nameField,fieldname);
       p_msg->SetAttribute(field,dataset_names[g_defaultLanguage][DATASET_ID],(int)ind);
       p_msg->SetAttribute(field,dataset_names[g_defaultLanguage][DATASET_TYPE],type);
       p_msg->SetAttribute(field,dataset_names[g_defaultLanguage][DATASET_TYPENAME],SQLDataType::FindDatatype(type));
@@ -2006,7 +2009,7 @@ SQLDataSet::XMLSave(XMLMessage* p_msg,XMLElement* p_dataset)
 
 
   // Add records of the dataset
-  XMLElement* records = p_msg->AddElement(p_dataset,dataset_names[g_defaultLanguage][DATASET_RECORDS],XDT_String,"");
+  XMLElement* records = p_msg->AddElement(p_dataset,dataset_names[g_defaultLanguage][DATASET_RECORDS],_T(""));
   for(unsigned int ind = 0;ind < m_records.size(); ++ind)
   {
     m_records[ind]->XMLSave(p_msg,records);

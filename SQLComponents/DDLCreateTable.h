@@ -2,8 +2,8 @@
 //
 // File: DDLCreateTable.h
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -40,10 +40,10 @@ public:
 
   // Request DDL for "table" or "schema.table" 
   // Where "table" can be of type: "TABLE" / "VIEW"
-  XString GetTableDDL(XString p_tableName);
-  bool    SaveDDL(XString p_filename);
-  DDLS    GetTableStatements(XString p_tablename);
-  DDLS    GetTableStatements(XString p_tableName
+  XString GetTableDDL(const XString& p_tableName);
+  bool    SaveDDL(const XString& p_filename);
+  DDLS    GetTableStatements(const XString& p_tablename);
+  DDLS    GetTableStatements(const XString& p_tableName
                             ,bool p_columns
                             ,bool p_options
                             ,bool p_indices
@@ -52,7 +52,7 @@ public:
                             ,bool p_triggers
                             ,bool p_sequences
                             ,bool p_access);
-  DDLS    GetViewStatements(XString p_viewname);
+  DDLS    GetViewStatements(const XString& p_viewname);
   DDLS    GetCommentStatements();
 
   // Internal delivery of all table information
@@ -67,9 +67,9 @@ public:
 
   // Setting of special members
   void    SetInfoDB(SQLInfoDB* p_info);
-  void    SetTablesSchema(XString p_schema);
-  void    SetTableTablespace(XString p_tablespace);
-  void    SetIndexTablespace(XString p_tablespace);
+  void    SetTablesSchema(const XString& p_schema);
+  void    SetTableTablespace(const XString& p_tablespace);
+  void    SetIndexTablespace(const XString& p_tablespace);
   void    SetOptionIndexDuplicateNulls(bool p_duplicate);
   void    SetOptionDropIfExists(bool p_drop);
 
@@ -88,16 +88,19 @@ private:
 
   // Service routines
 
-  bool    FindSchemaName(XString p_tableName);
-  void    StashTheLine(XString p_line);
+  bool    FindSchemaName(const XString& p_tableName);
+  void    StashTheLine(const XString& p_line);
   XString ReplaceLengthPrecScale(TypeInfo* p_type,int p_length,int p_precision,int p_scale);
-  XString FormatColumnName(XString p_column,int p_length);
+  XString FormatColumnName(XString& p_column,int p_length);
   int     CalculateColumnLength(MColumnMap& p_columns);
   void    FindIndexFilter(MetaIndex& p_index);
-  bool    IsStrictODBCPrivilege(XString p_privilege);
+  bool    IsStrictODBCPrivilege(const XString& p_privilege);
   int     DeDuplicateFKIndexes();
   int     RemoveIndex(int first,int last);
-  void    RecordRemarksAsComment(XString p_object,XString p_name,XString p_subObject,XString p_remarks);
+  void    RecordRemarksAsComment(const XString& p_object
+                                ,const XString& p_name
+                                ,const XString& p_subObject
+                                ,const XString& p_remarks);
 
   // Private data for the DDL creation
   SQLInfoDB* m_info;

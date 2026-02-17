@@ -2,8 +2,8 @@
 //
 // File: DDLCreateTable.cpp
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -26,12 +26,6 @@
 #include "StdAfx.h"
 #include "DDLCreateTable.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 namespace SQLComponents
 {
 
@@ -42,7 +36,7 @@ DDLCreateTable::DDLCreateTable(SQLInfoDB* p_info,SQLInfoDB* p_target /*=nullptr*
 }
 
 XString 
-DDLCreateTable::GetTableDDL(XString p_tableName)
+DDLCreateTable::GetTableDDL(const XString& p_tableName)
 {
   GetTableStatements(p_tableName);
 
@@ -61,7 +55,7 @@ DDLCreateTable::GetTableDDL(XString p_tableName)
 // 2) The combination of "schemaname.tablename"
 //
 DDLS
-DDLCreateTable::GetTableStatements(XString p_tableName)
+DDLCreateTable::GetTableStatements(const XString& p_tableName)
 {
   // Split schema name and table name
   FindSchemaName(p_tableName);
@@ -80,7 +74,7 @@ DDLCreateTable::GetTableStatements(XString p_tableName)
 }
 
 DDLS
-DDLCreateTable::GetTableStatements(XString p_tableName
+DDLCreateTable::GetTableStatements(const XString& p_tableName
                                   ,bool p_columns
                                   ,bool p_options
                                   ,bool p_indices
@@ -107,7 +101,7 @@ DDLCreateTable::GetTableStatements(XString p_tableName
 }
 
 DDLS    
-DDLCreateTable::GetViewStatements(XString p_viewname)
+DDLCreateTable::GetViewStatements(const XString& p_viewname)
 {
   // Split schema name and view name
   FindSchemaName(p_viewname);
@@ -125,7 +119,7 @@ DDLCreateTable::GetCommentStatements()
 }
 
 bool
-DDLCreateTable::SaveDDL(XString p_filename)
+DDLCreateTable::SaveDDL(const XString& p_filename)
 {
   WinFile file(p_filename);
   if(file.Open(winfile_write,FAttributes::attrib_none,Encoding::UTF8))
@@ -211,7 +205,7 @@ DDLCreateTable::SetInfoDB(SQLInfoDB* p_info)
 
 // Change the schema of the table
 void
-DDLCreateTable::SetTablesSchema(XString p_schema)
+DDLCreateTable::SetTablesSchema(const XString& p_schema)
 {
   for(auto& table : m_tables)
   {
@@ -249,7 +243,7 @@ DDLCreateTable::SetTablesSchema(XString p_schema)
 }
 
 void
-DDLCreateTable::SetTableTablespace(XString p_tablespace)
+DDLCreateTable::SetTableTablespace(const XString& p_tablespace)
 {
   for (auto& table : m_tables)
   {
@@ -258,7 +252,7 @@ DDLCreateTable::SetTableTablespace(XString p_tablespace)
 }
 
 void
-DDLCreateTable::SetIndexTablespace(XString p_tablespace)
+DDLCreateTable::SetIndexTablespace(const XString& p_tablespace)
 {
   m_indexTablespace = p_tablespace;
 }
@@ -733,7 +727,7 @@ DDLCreateTable::GetAccessInfo(bool p_strict /*=false*/)
 // 2) "schema.table"
 // 3) "catalog.schema.table"
 bool
-DDLCreateTable::FindSchemaName(XString p_tableName)
+DDLCreateTable::FindSchemaName(const XString& p_tableName)
 {
   int pos = p_tableName.Find('.');
   if(pos < 0)
@@ -758,7 +752,7 @@ DDLCreateTable::FindSchemaName(XString p_tableName)
 }
 
 void
-DDLCreateTable::StashTheLine(XString p_line)
+DDLCreateTable::StashTheLine(const XString& p_line)
 {
   // See if we have work to do
   if(p_line.IsEmpty())
@@ -838,7 +832,7 @@ DDLCreateTable::ReplaceLengthPrecScale(TypeInfo*  p_type
 }
 
 XString
-DDLCreateTable::FormatColumnName(XString p_column,int p_length)
+DDLCreateTable::FormatColumnName(XString& p_column,int p_length)
 {
   // Circumvent locally reserved words
   if(m_target && m_target->GetRDBMSDatabaseType() == DatabaseType::RDBMS_SQLSERVER && p_column.GetAt(0) != '[')
@@ -849,7 +843,10 @@ DDLCreateTable::FormatColumnName(XString p_column,int p_length)
   else if(!m_info->IsCorrectName(p_column))
   {
     XString quote = m_info->GetKEYWORDReservedWordQuote();
-    p_column = quote + p_column + quote;
+    if(p_column.Left(1) != quote && p_column.Right(1) != quote)
+    {
+      p_column = quote + p_column + quote;
+    }
   }
   else
   {
@@ -902,7 +899,7 @@ DDLCreateTable::FindIndexFilter(MetaIndex& p_index)
 }
 
 bool
-DDLCreateTable::IsStrictODBCPrivilege(XString p_privilege)
+DDLCreateTable::IsStrictODBCPrivilege(const XString& p_privilege)
 {
   if(p_privilege.CompareNoCase(_T("SELECT"))     == 0) return true;
   if(p_privilege.CompareNoCase(_T("INSERT"))     == 0) return true;
@@ -1004,7 +1001,10 @@ DDLCreateTable::RemoveIndex(int p_first,int p_last)
 }
 
 void
-DDLCreateTable::RecordRemarksAsComment(XString p_object,XString p_name,XString p_subObject,XString p_remarks)
+DDLCreateTable::RecordRemarksAsComment(const XString& p_object
+                                      ,const XString& p_name
+                                      ,const XString& p_subObject
+                                      ,const XString& p_remarks)
 {
   if(!p_object.IsEmpty() && !p_name.IsEmpty() && !p_remarks.IsEmpty())
   {

@@ -167,7 +167,7 @@ TemplatePtr TemplateCollection::Add (const CString& lang)
     }
     else
     {
-      throw StdException(_T("Logic error: Template \"") + lang + _T("\" already exist."));
+      throw StdException(_T("Logic error: Template \"") + XString(lang) + _T("\" already exist."));
     }
     return ptr;
 }
@@ -178,7 +178,7 @@ const TemplatePtr TemplateCollection::Find (const CString& lang) const
 
     if(it == m_templates.end())
     {
-      throw StdException(_T("Logic error: Template \"") + lang + _T("\" not found."));
+      throw StdException(_T("Logic error: Template \"") + XString(lang) + _T("\" not found."));
     }
     return it->second;
 }

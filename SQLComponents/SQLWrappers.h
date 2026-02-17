@@ -2,8 +2,8 @@
 //
 // File: SQLWrappers.h
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -34,7 +34,7 @@
 // access violations and other exceptions from ODBC drivers by catching them all
 //
 
-#define sql_catch(ex)    catch(StdException& /*ex*/) { return SQL_ERROR; }
+#define sql_catch(ex)    catch(StdException& ex) { ReThrowSafeException(ex); return SQL_ERROR; }
 
 namespace SQLComponents
 {

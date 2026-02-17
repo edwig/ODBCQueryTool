@@ -2,8 +2,8 @@
 //
 // File: SQLAssociation.cpp
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -27,12 +27,6 @@
 #include "SQLComponents.h"
 #include "SQLAssociation.h"
 #include "SQLFilter.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -85,11 +79,11 @@ SQLAssociation::FreeAssocs()
 // Create association mapping
 // and optionally the value to follow
 void 
-SQLAssociation::SetAssociation(XString     p_primaryColumn
-                              ,XString     p_foreignColumn
-                              ,SQLVariant* p_value /*= NULL*/)
+SQLAssociation::SetAssociation(const XString& p_primaryColumn
+                              ,const XString& p_foreignColumn
+                              ,SQLVariant*    p_value /*= NULL*/)
 {
-  PrimaryForeign* pf = new PrimaryForeign();
+  PrimaryForeign* pf = alloc_new PrimaryForeign();
   pf->m_primary = p_primaryColumn;
   pf->m_foreign = p_foreignColumn;
   pf->m_value   = p_value;
@@ -170,11 +164,11 @@ SQLAssociation::GetSQLCondition()
   }
   XString malias = m_master->GetPrimaryAlias();
   XString dalias = m_detail->GetPrimaryAlias();
-  if(!malias)
+  if(malias.IsEmpty())
   {
     malias = m_master->GetPrimaryTableName();
   }
-  if(!dalias)
+  if(dalias.IsEmpty())
   {
     dalias = m_detail->GetPrimaryTableName();
   }
@@ -194,7 +188,7 @@ SQLAssociation::GetSQLCondition()
     condition += malias + _T(".") + assoc->m_primary + _T(" = ") + dalias + _T(".") + assoc->m_foreign;
     multi = true;
   }
-  condition += ")";
+  condition += _T(")");
   return condition;
 }
 

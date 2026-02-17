@@ -2,8 +2,8 @@
 //
 // File: SQLDriverManager.cpp
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -28,12 +28,6 @@
 #include "StdException.h"
 #include <odbcinst.h>
 #include <sqlext.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 #pragma comment(lib,"odbccp32.lib")
 
@@ -143,7 +137,7 @@ SQLDriverManager::GetDataSources(DataSources& p_list,int p_type /*= SQL_FETCH_FI
 // e.g. the Excel-ODBC driver and searches for a sub-capability
 // e.g. the first ".xls" or ".xlsx" capable driver
 XString
-SQLDriverManager::GetSpecialDriver(XString p_base,XString p_extension)
+SQLDriverManager::GetSpecialDriver(const XString& p_base,const XString& p_extension)
 {
   SQLTCHAR    driverDescription[MAX_DRIVER_DESCRIPTION + 1];
   SQLSMALLINT dLength = 0;
@@ -157,8 +151,10 @@ SQLDriverManager::GetSpecialDriver(XString p_base,XString p_extension)
     MakeEnvironmentHandle();
   }
   ResetErrorState();
-  p_base.MakeLower();
-  p_extension.MakeLower();
+  XString base(p_base);
+  XString extension(p_extension);
+  base.MakeLower();
+  extension.MakeLower();
 
   // Get the names of the installed drivers 1 by 1.
   result = SQLDrivers(m_environment,SQL_FETCH_FIRST
@@ -171,8 +167,8 @@ SQLDriverManager::GetSpecialDriver(XString p_base,XString p_extension)
     // Most of the time there are multiple Excel drivers on the system
     XString description(driverDescription);
 
-    if(description.Find(p_base)      >= 0 || 
-       description.Find(p_extension) >= 0  )
+    if(description.Find(base)      >= 0 || 
+       description.Find(extension) >= 0  )
     {
       // Found a match
       return description;
@@ -183,7 +179,7 @@ SQLDriverManager::GetSpecialDriver(XString p_base,XString p_extension)
                        ,attribDescription,MAX_DRIVER_DESCRIPTION,&aLength);
   }
   // Nothing found
-  return XString("");
+  return XString();
 }
 
 // Show the MS-Windows ODBC management dialog window
@@ -278,7 +274,7 @@ SQLDriverManager::GetInstallerError()
       {
         if(!m_errorString.IsEmpty())
         {
-          m_errorString += "\n";
+          m_errorString += _T("\n");
         }
         m_errorString += errorMsg;
       }

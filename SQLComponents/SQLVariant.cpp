@@ -2,8 +2,8 @@
 //
 // File: SQLVariant.cpp
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -32,12 +32,6 @@
 #include "SQLTimestamp.h"
 #include "SQLGuid.h"
 #include <bcd.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 namespace SQLComponents
 {
@@ -220,7 +214,7 @@ SQLVariant::SQLVariant(const void* p_binary,size_t p_size)
   m_sqlDatatype  = SQL_BINARY;
   m_indicator    = 0;
   m_binaryLength = (int) p_size;
-  m_data.m_dataBINARY = new BYTE[(size_t)p_size + 1];
+  m_data.m_dataBINARY = alloc_new BYTE[(size_t)p_size + 1];
   memcpy(m_data.m_dataBINARY,p_binary,p_size);
 }
 
@@ -383,19 +377,19 @@ SQLVariant::ReserveSpace(int p_type,int p_space)
   if(p_type == SQL_C_CHAR)
   {
     m_binaryLength = p_space + 1;
-    m_data.m_dataCHAR = new char[(size_t)m_binaryLength];
+    m_data.m_dataCHAR = alloc_new char[(size_t)m_binaryLength];
     m_data.m_dataCHAR[0] = 0;
   }
   if(p_type == SQL_C_WCHAR)
   {
     m_binaryLength = (p_space + 1) * 2;
-    m_data.m_dataWCHAR = new wchar_t[(size_t) (p_space + 1)];
+    m_data.m_dataWCHAR = alloc_new wchar_t[(size_t) (p_space + 1)];
     m_data.m_dataWCHAR[0] = 0;
   }
   if(p_type == SQL_C_BINARY)
   {
     m_binaryLength = p_space + 1;
-    m_data.m_dataBINARY = new BYTE[(size_t)m_binaryLength];
+    m_data.m_dataBINARY = alloc_new BYTE[(size_t)m_binaryLength];
   }
   // Reserving space means, that the contents is reset to logical NULL
   // Only, leave the indicator in case of AT_EXEC_DATA so drivers will not get upset!
@@ -786,7 +780,7 @@ SQLVariant::SetFromBinaryStreamData(int   p_type
     // Allocated buffer types
     m_binaryLength = p_length;
     m_indicator    = p_isnull ? SQL_NULL_DATA : p_length;
-    m_data.m_dataBINARY = new BYTE[(size_t)m_binaryLength + 2];
+    m_data.m_dataBINARY = alloc_new BYTE[(size_t)m_binaryLength + 2];
     memcpy(m_data.m_dataBINARY,p_data,(size_t)p_length);
     (reinterpret_cast<BYTE*>(m_data.m_dataBINARY))[p_length] = 0;
   }
@@ -1152,7 +1146,11 @@ SQLVariant::GetAsBinary() const
     return (void*)m_data.m_dataWCHAR;
   }
   // Use GetDataPointer instead
-  return ThrowErrorDatatype(SQL_C_BINARY);
+  if(m_datatype)
+  {
+    ThrowErrorDatatype(SQL_C_BINARY);
+  }
+  return nullptr;
 }
 
 bool
@@ -1215,7 +1213,10 @@ SQLVariant::GetAsSShort() const
     case SQL_C_INTERVAL_MINUTE_TO_SECOND: // Fall through
     default:                              break;
   }
-  ThrowErrorDatatype(SQL_C_SHORT);
+  if(m_datatype)
+  {
+    ThrowErrorDatatype(SQL_C_SHORT);
+  }
   return 0;
 }
 
@@ -1274,7 +1275,10 @@ SQLVariant::GetAsUShort() const
     case SQL_C_INTERVAL_MINUTE_TO_SECOND: // Fall through
     default:                              break;
   }
-  ThrowErrorDatatype(SQL_C_USHORT);
+  if(m_datatype)
+  {
+    ThrowErrorDatatype(SQL_C_USHORT);
+  }
   return 0;
 }
 
@@ -1332,8 +1336,11 @@ SQLVariant::GetAsSLong() const
     case SQL_C_INTERVAL_MINUTE_TO_SECOND: // Fall through
     default:                              break;
   }
-  ThrowErrorDatatype(SQL_C_SLONG);
-  return 0L;
+  if(m_datatype)
+  {
+    ThrowErrorDatatype(SQL_C_SLONG);
+  }
+  return 0;
 }
 
 
@@ -1392,8 +1399,11 @@ SQLVariant::GetAsULong() const
     case SQL_C_INTERVAL_MINUTE_TO_SECOND: // Fall through
     default:                              break;
   }
-  ThrowErrorDatatype(SQL_C_ULONG);
-  return 0UL;
+  if(m_datatype)
+  {
+    ThrowErrorDatatype(SQL_C_ULONG);
+  }
+  return 0;
 }
 
 float
@@ -1450,7 +1460,10 @@ SQLVariant::GetAsFloat() const
     case SQL_C_INTERVAL_MINUTE_TO_SECOND: // Fall through
     default:                              break;
   }
-  ThrowErrorDatatype(SQL_C_FLOAT);
+  if(m_datatype)
+  {
+    ThrowErrorDatatype(SQL_C_FLOAT);
+  }
   return 0.0;
 }
 
@@ -1508,11 +1521,11 @@ SQLVariant::GetAsDouble() const
     case SQL_C_INTERVAL_MINUTE_TO_SECOND: // Fall through
     default:                              break;
   }
-  ThrowErrorDatatype(SQL_C_DOUBLE);
-  // We never come here, but this is to prevent 
-  // Warning C4715 not all control paths return a value
-  // In various versions of the MSC++ compiler
-  return NULL;
+  if(m_datatype)
+  {
+    ThrowErrorDatatype(SQL_C_DOUBLE);
+  }
+  return 0.0;
 }
 
 char
@@ -1570,11 +1583,11 @@ SQLVariant::GetAsBit() const
     case SQL_C_INTERVAL_MINUTE_TO_SECOND: // Fall through
     default:                              break;
   }
-  ThrowErrorDatatype(SQL_C_BIT);
-  // We never come here, but this is to prevent 
-  // Warning C4715 not all control paths return a value
-  // In various versions of the MSC++ compiler
-  return NULL;
+  if(m_datatype)
+  {
+    ThrowErrorDatatype(SQL_C_BIT);
+  }
+  return 0;
 }
 
 char
@@ -1632,11 +1645,11 @@ SQLVariant::GetAsSTinyInt() const
     case SQL_C_INTERVAL_MINUTE_TO_SECOND: // Fall through
     default:                              break;
   }
-  ThrowErrorDatatype(SQL_C_STINYINT);
-  // We never come here, but this is to prevent 
-  // Warning C4715 not all control paths return a value
-  // In various versions of the MSC++ compiler
-  return NULL;
+  if(m_datatype)
+  {
+    ThrowErrorDatatype(SQL_C_STINYINT);
+  }
+  return 0;
 }
 
 unsigned char
@@ -1693,11 +1706,11 @@ SQLVariant::GetAsUTinyInt() const
     case SQL_C_INTERVAL_MINUTE_TO_SECOND: // Fall through
     default:                              break;
   }
-  ThrowErrorDatatype(SQL_C_UTINYINT);
-  // We never come here, but this is to prevent 
-  // Warning C4715 not all control paths return a value
-  // In various versions of the MSC++ compiler
-  return NULL;
+  if(m_datatype)
+  {
+    ThrowErrorDatatype(SQL_C_UTINYINT);
+  }
+  return 0;
 }
 
 SQLBIGINT
@@ -1754,11 +1767,11 @@ SQLVariant::GetAsSBigInt() const
     case SQL_C_INTERVAL_MINUTE_TO_SECOND: // Fall through
     default:                              break;
   }
-  ThrowErrorDatatype(SQL_C_SBIGINT);
-  // We never come here, but this is to prevent 
-  // Warning C4715 not all control paths return a value
-  // In various versions of the MSC++ compiler
-  return NULL;
+  if(m_datatype)
+  {
+    ThrowErrorDatatype(SQL_C_SBIGINT);
+  }
+  return 0L;
 }
 
 SQLUBIGINT
@@ -1815,11 +1828,11 @@ SQLVariant::GetAsUBigInt() const
     case SQL_C_INTERVAL_MINUTE_TO_SECOND: // Fall through
     default:                              break;
   }
-  ThrowErrorDatatype(SQL_C_UBIGINT);
-  // We never come here, but this is to prevent 
-  // Warning C4715 not all control paths return a value
-  // In various versions of the MSC++ compiler
-  return NULL; 
+  if(m_datatype)
+  {
+    ThrowErrorDatatype(SQL_C_UBIGINT);
+  }
+  return 0;
 }
 
 __declspec(thread) static SQL_NUMERIC_STRUCT g_number;
@@ -1907,8 +1920,12 @@ SQLVariant::GetAsNumeric() const
                           break;
   }
   // Other datatypes cannot convert
-  ThrowErrorDatatype(SQL_C_NUMERIC);
-  return NULL;
+  if(m_datatype)
+  {
+    ThrowErrorDatatype(SQL_C_NUMERIC);
+  }
+  memset(&g_number,0,sizeof(SQL_NUMERIC_STRUCT));
+  return &g_number;
 }
 
 const SQLGUID*
@@ -1918,8 +1935,11 @@ SQLVariant::GetAsGUID() const
   {
     return &m_data.m_dataGUID;
   }
-  ThrowErrorDatatype(SQL_C_GUID);
-  return NULL;
+  if(m_datatype)
+  {
+    ThrowErrorDatatype(SQL_C_GUID);
+  }
+  return nullptr;
 }
 
 __declspec(thread) static DATE_STRUCT g_date;
@@ -1951,8 +1971,12 @@ SQLVariant::GetAsDate() const
     }
     return &g_date;
   }
-  ThrowErrorDatatype(SQL_C_DATE);
-  return NULL;
+  if(m_datatype)
+  {
+    ThrowErrorDatatype(SQL_C_DATE);
+  }
+  memset(&g_date,0,sizeof(SQL_DATE_STRUCT));
+  return &g_date;
 }
 
 __declspec(thread) static TIME_STRUCT g_time;
@@ -1984,8 +2008,12 @@ SQLVariant::GetAsTime() const
     }
     return &g_time;
   }
-  ThrowErrorDatatype(SQL_C_TIME);
-  return NULL;
+  if(m_datatype)
+  {
+    ThrowErrorDatatype(SQL_C_TIME);
+  }
+  memset(&g_time,0,sizeof(SQL_TIME_STRUCT));
+  return &g_time;
 }
 
 __declspec(thread) static TIMESTAMP_STRUCT g_timestamp;
@@ -1999,10 +2027,10 @@ SQLVariant::GetAsTimestamp() const
   }
   if(m_datatype == SQL_C_DATE || m_datatype == SQL_C_TYPE_DATE)
   {
-    ASSERT(m_data.m_dataTIMESTAMP.hour     == 0);
-    ASSERT(m_data.m_dataTIMESTAMP.minute   == 0);
-    ASSERT(m_data.m_dataTIMESTAMP.second   == 0);
-    ASSERT(m_data.m_dataTIMESTAMP.fraction == 0);
+    ATLASSERT(m_data.m_dataTIMESTAMP.hour     == 0);
+    ATLASSERT(m_data.m_dataTIMESTAMP.minute   == 0);
+    ATLASSERT(m_data.m_dataTIMESTAMP.second   == 0);
+    ATLASSERT(m_data.m_dataTIMESTAMP.fraction == 0);
     return &m_data.m_dataTIMESTAMP;
   }
   if(m_datatype == SQL_C_CHAR ||
@@ -2021,8 +2049,11 @@ SQLVariant::GetAsTimestamp() const
     }
     return &g_timestamp;
   }
-  ThrowErrorDatatype(SQL_C_TIMESTAMP);
-  return NULL;
+  if(m_datatype)
+  {
+    ThrowErrorDatatype(SQL_C_TIMESTAMP);
+  }
+  return nullptr;
 }
 
 // European timestamp has the day-month-year order
@@ -2076,8 +2107,11 @@ SQLVariant::GetAsInterval() const
   {
     return &m_data.m_dataINTERVAL;
   }
-  ThrowErrorDatatype(SQL_C_INTERVAL_DAY_TO_SECOND);
-  return NULL;
+  if(m_datatype)
+  {
+    ThrowErrorDatatype(SQL_C_INTERVAL_DAY_TO_SECOND);
+  }
+  return nullptr;
 }
 
 SQLDate
@@ -2228,10 +2262,10 @@ SQLVariant::GetAsBCD() const
     case SQL_C_INTERVAL_MINUTE_TO_SECOND: // Fall through
     default:                              break;
   }
-  ThrowErrorDatatype(SQL_C_NUMERIC);
-  // We never come here, but this is to prevent 
-  // Warning C4715 not all control paths return a value
-  // In various versions of the MSC++ compiler
+  if(m_datatype)
+  {
+    ThrowErrorDatatype(SQL_C_NUMERIC);
+  }
   return bcd(); 
 }
 
@@ -2443,7 +2477,7 @@ SQLVariant::SetData(int p_type,LPCTSTR p_data)
                                           { 
                                             // Getting the length of the translation buffer first
                                             int clength = ::WideCharToMultiByte(GetACP(),0,p_data,-1,NULL,0,NULL,NULL);
-                                            m_data.m_dataCHAR = new char[clength + 1];
+                                            m_data.m_dataCHAR = alloc_new char[clength + 1];
                                             int blength = ::WideCharToMultiByte(GetACP(),0,p_data,clength,(LPSTR)m_data.m_dataCHAR,clength,NULL,NULL);
                                             m_data.m_dataCHAR[clength] = 0;
                                             if(blength > 0 && blength < clength)
@@ -2455,7 +2489,7 @@ SQLVariant::SetData(int p_type,LPCTSTR p_data)
                                           }
 #else
                                           m_binaryLength = (int)(dataLen);
-                                          m_data.m_dataCHAR = new char[(size_t)m_binaryLength + 1];
+                                          m_data.m_dataCHAR = alloc_new char[(size_t)m_binaryLength + 1];
                                           strcpy_s(m_data.m_dataCHAR, (size_t)m_binaryLength + 1,p_data);
                                           m_indicator = dataLen > 0 ? SQL_NTS : SQL_NULL_DATA;
 #endif
@@ -2463,14 +2497,14 @@ SQLVariant::SetData(int p_type,LPCTSTR p_data)
     case SQL_C_WCHAR:
 #ifdef UNICODE
                                           m_binaryLength = (int)(dataLen * 2);
-                                          m_data.m_dataWCHAR = new TCHAR[(size_t)m_binaryLength + 1];
+                                          m_data.m_dataWCHAR = alloc_new TCHAR[(size_t)m_binaryLength + 1];
                                           _tcscpy_s(m_data.m_dataWCHAR,(size_t)m_binaryLength + 1,p_data);
                                           m_indicator = dataLen > 0 ? SQL_NTS : SQL_NULL_DATA;
 #else
                                           {
                                             // Getting the needed buffer space (in codepoints! Not bytes!!)
                                             int length = MultiByteToWideChar(GetACP(),0,p_data,-1,NULL,NULL);
-                                            m_data.m_dataWCHAR = new wchar_t[(size_t)length + 1];
+                                            m_data.m_dataWCHAR = alloc_new wchar_t[(size_t)length + 1];
                                             MultiByteToWideChar(GetACP(),0,p_data,-1,reinterpret_cast<LPWSTR>(m_data.m_dataWCHAR),length);
                                             m_data.m_dataWCHAR[length] = 0;
                                             m_binaryLength = 2 * length;
@@ -2480,7 +2514,7 @@ SQLVariant::SetData(int p_type,LPCTSTR p_data)
                                           break;
     case SQL_C_BINARY:                    m_binaryLength = (int)(dataLen / 2);
                                           m_indicator    = m_binaryLength > 0 ? m_binaryLength : SQL_NULL_DATA;
-                                          m_data.m_dataBINARY = new BYTE[(size_t)m_binaryLength + 2];
+                                          m_data.m_dataBINARY = alloc_new BYTE[(size_t)m_binaryLength + 2];
                                           StringToBinary((const char*)p_data);
                                           break;
     case SQL_C_SHORT:                     // Fall through
@@ -2763,7 +2797,7 @@ SQLVariant::SetFromRawDataPointer(void* p_pointer,int p_size /*= 0*/)
                                           { 
                                             // Getting the length of the translation buffer first
                                             int clength = ::WideCharToMultiByte(GetACP(),0,(wchar_t*)p_pointer,-1,NULL,0,NULL,NULL);
-                                            m_data.m_dataCHAR = new char[clength + 1];
+                                            m_data.m_dataCHAR = alloc_new char[clength + 1];
                                             int blength = ::WideCharToMultiByte(GetACP(),0,(wchar_t*)p_pointer,clength,(LPSTR)m_data.m_dataCHAR,clength,NULL,NULL);
                                             m_data.m_dataCHAR[clength] = 0;
                                             if(blength > 0 && blength < clength)
@@ -2776,7 +2810,7 @@ SQLVariant::SetFromRawDataPointer(void* p_pointer,int p_size /*= 0*/)
 
 #else
                                           m_binaryLength    = p_size;
-                                          m_data.m_dataCHAR = new char[(size_t)m_binaryLength + 1];
+                                          m_data.m_dataCHAR = alloc_new char[(size_t)m_binaryLength + 1];
                                           strcpy_s(m_data.m_dataCHAR,  (size_t)m_binaryLength + 1,reinterpret_cast<char*>(p_pointer));
                                           m_indicator = p_size > 0 ? SQL_NTS : SQL_NULL_DATA;
 #endif
@@ -2784,14 +2818,14 @@ SQLVariant::SetFromRawDataPointer(void* p_pointer,int p_size /*= 0*/)
     case SQL_C_WCHAR:
 #ifdef UNICODE
                                           m_binaryLength = (int)(p_size * 2);
-                                          m_data.m_dataWCHAR = new TCHAR[(size_t)p_size + 1];
+                                          m_data.m_dataWCHAR = alloc_new TCHAR[(size_t)p_size + 1];
                                           wcscpy_s(m_data.m_dataWCHAR,(size_t)p_size+ 1,(wchar_t*)p_pointer);
                                           m_indicator = p_size > 0 ? SQL_NTS : SQL_NULL_DATA;
 #else
                                           {
                                             // Getting the needed buffer space (in codepoints! Not bytes!!)
                                             int length = MultiByteToWideChar(GetACP(),0,(char*)p_pointer,-1,NULL,NULL);
-                                            m_data.m_dataWCHAR = new wchar_t[(size_t) length + 1];
+                                            m_data.m_dataWCHAR = alloc_new wchar_t[(size_t) length + 1];
                                             MultiByteToWideChar(GetACP(),0,(char*)p_pointer,-1,reinterpret_cast<LPWSTR>(m_data.m_dataWCHAR),length);
                                             m_data.m_dataWCHAR[length] = 0;
                                             m_binaryLength = 2 * length;
@@ -2801,7 +2835,7 @@ SQLVariant::SetFromRawDataPointer(void* p_pointer,int p_size /*= 0*/)
                                           break;
     case SQL_C_BINARY:                    m_binaryLength = p_size;
                                           m_indicator = m_binaryLength > 0 ? m_binaryLength : SQL_NULL_DATA;
-                                          m_data.m_dataBINARY = new BYTE[(size_t)m_binaryLength + 1];
+                                          m_data.m_dataBINARY = alloc_new BYTE[(size_t)m_binaryLength + 1];
                                           memcpy_s(m_data.m_dataBINARY,p_size,p_pointer,p_size);
                                           break;
     case SQL_C_SHORT:                     // Fall through
@@ -2878,7 +2912,7 @@ SQLVariant::Set(LPCTSTR p_string,bool p_wide /*=false*/)
 }
 
 void
-SQLVariant::Set(const XString p_string,bool p_wide /*=false*/)
+SQLVariant::Set(const XString& p_string,bool p_wide /*=false*/)
 {
   if(p_wide)
   {

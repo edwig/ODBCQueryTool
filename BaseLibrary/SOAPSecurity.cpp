@@ -4,8 +4,8 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 2014-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files(the "Software"), to deal
@@ -37,14 +37,6 @@
 #include "GenerateGUID.h"
 #include "Base64.h"
 #include "Crypto.h"
-
-#ifdef _AFX
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-#endif
 
 SOAPSecurity::SOAPSecurity()
 {
@@ -257,7 +249,7 @@ SOAPSecurity::SetAddSecurityHeader(SOAPMessage* p_message)
       return security;
     }
     // Add the security node to the SOAP header
-    return p_message->AddElement(header,_T("wsse:Security"),XDT_String,_T(""));
+    return p_message->AddElement(header,_T("wsse:Security"),_T(""));
   }
   return nullptr;
 }
@@ -273,7 +265,7 @@ SOAPSecurity::SetUsernameInMessage(SOAPMessage* p_message,XMLElement* p_secure)
       username->SetValue(m_username);
       return true;
     }
-    else if(p_message->AddElement(p_secure,_T("wsse:Username"),XDT_String,m_username))
+    else if(p_message->AddElement(p_secure,_T("wsse:Username"),m_username))
     {
       return true;
     }
@@ -293,7 +285,7 @@ SOAPSecurity::SetPasswordInMessage(SOAPMessage* p_message,XMLElement* p_secure,X
     }
     else
     {
-      password = p_message->AddElement(p_secure,_T("wsse:Password"),XDT_String,p_password);
+      password = p_message->AddElement(p_secure,_T("wsse:Password"),p_password);
     }
     if(password)
     {
@@ -316,7 +308,7 @@ SOAPSecurity::SetNonceInMessage(SOAPMessage* p_message,XMLElement* p_secure)
       nonce->SetValue(m_nonce);
       return true;
     }
-    else if(p_message->AddElement(p_secure,_T("wsse:Nonce"),XDT_String,m_nonce))
+    else if(p_message->AddElement(p_secure,_T("wsse:Nonce"),m_nonce))
     {
       return true;
     }
@@ -337,7 +329,7 @@ SOAPSecurity::SetCreatedInMessage(SOAPMessage* p_message,XMLElement* p_secure)
       stamp->SetValue(timestamp);
       return true;
     }
-    stamp = p_message->AddElement(p_secure,_T("wsu:Created"),XDT_String,timestamp);
+    stamp = p_message->AddElement(p_secure,_T("wsu:Created"),timestamp);
     if(stamp)
     {
       p_message->SetAttribute(stamp,_T("xmlns:wsu"),_T("http://schemas.xmlsoap.org/ws/2002/07/utility"));
@@ -368,7 +360,7 @@ SOAPSecurity::DigestPassword()
 }
 
 void
-SOAPSecurity::GenerateNonce(XString p_nonce)
+SOAPSecurity::GenerateNonce(const XString& p_nonce)
 {
   Base64 base;
   m_nonce = base.Encrypt(p_nonce);
@@ -376,7 +368,7 @@ SOAPSecurity::GenerateNonce(XString p_nonce)
 
 // Incoming control field
 XString 
-SOAPSecurity::FindHeaderField(SOAPMessage* p_message,XMLElement* p_secure,XString p_field)
+SOAPSecurity::FindHeaderField(SOAPMessage* p_message,XMLElement* p_secure,const XString& p_field)
 {
   XString value;
 
@@ -392,7 +384,7 @@ SOAPSecurity::FindHeaderField(SOAPMessage* p_message,XMLElement* p_secure,XStrin
 }
 
 XString 
-SOAPSecurity::DeBase64(XString p_field)
+SOAPSecurity::DeBase64(const XString& p_field)
 {
   Base64  base;
   return base.Decrypt(p_field);

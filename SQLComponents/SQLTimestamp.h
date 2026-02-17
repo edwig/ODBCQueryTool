@@ -2,8 +2,8 @@
 //
 // File: SQLTimestamp.h
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -191,8 +191,8 @@ private:
   // Calculates the number of days in a month
   int     DaysInMonth(int p_year,int p_month) const;
   // Calculates a timestamp from an interface string with extra operands
-  bool    GetVirtualMoment(XString        p_sign
-                          ,XString        p_extraTime
+  bool    GetVirtualMoment(const XString& p_sign
+                          ,const XString& p_extraTime
                           ,int            p_interval
                           ,StampStorage&  p_temp
                           ,bool           p_doTimes = true);

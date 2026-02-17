@@ -2,8 +2,8 @@
 //
 // File: SQLTime.cpp
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -34,12 +34,6 @@
 #include <sstream>
 #include <ctime>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 namespace SQLComponents
 {
 
@@ -50,7 +44,7 @@ SQLTime::SQLTime()
 }
 
 // Constructor from a string
-SQLTime::SQLTime(XString p_time)
+SQLTime::SQLTime(const XString& p_time)
 {
   ParseTime(p_time);
 }

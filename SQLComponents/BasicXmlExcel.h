@@ -92,7 +92,7 @@ typedef std::vector<XString>          Names;
 class BasicXmlWorksheet
 {
 public:
-  explicit BasicXmlWorksheet(BasicXmlExcel* p_workbook,XString p_sheetname);
+  explicit BasicXmlWorksheet(BasicXmlExcel* p_workbook,const XString& p_sheetname);
  ~BasicXmlWorksheet();
 
   // OPERATIONS
@@ -105,7 +105,7 @@ public:
   BasicXmlCell* GetCell     (int p_row,int p_col);
   XString       GetCellValue(int p_row,int p_col);
 private:
-  int           CalculateColumnNumber(XString p_column,XString p_row);
+  int           CalculateColumnNumber(const XString& p_column,const XString& p_row);
 
   BasicXmlExcel*  m_workbook;
   XString         m_sheetname;
@@ -120,7 +120,7 @@ typedef std::vector<BasicXmlWorksheet*> WorkSheets;
 class BasicXmlExcel
 {
 public:
-  explicit BasicXmlExcel(XString p_filename);
+  explicit BasicXmlExcel(const XString& p_filename);
  ~BasicXmlExcel();
 
   // OPERATIONS
@@ -128,12 +128,12 @@ public:
 
   // SETTERS
   void SetError(ZRESULT p_result);
-  void SetError(XString p_error);
+  void SetError(const XString& p_error);
 
   // GETTERS
   bool                GetSheetNames(Names& p_names);
   BasicXmlWorksheet*  GetWorksheet(int p_index);
-  BasicXmlWorksheet*  GetWorksheet(XString p_name);
+  BasicXmlWorksheet*  GetWorksheet(const XString& p_name);
   XString             GetSharedString(int p_string);
   XString             GetStyleCode(int id);
   XString             GetError();

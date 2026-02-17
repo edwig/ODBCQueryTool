@@ -31,12 +31,6 @@
 #include "BasicXmlExcel.h"
 #include <comutil.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 namespace SQLComponents
 {
 
@@ -121,7 +115,7 @@ BasicXmlCell::GetCellType()
 //////////////////////////////////////////////////////////////////////////
 
 // XTOR for the sheet
-BasicXmlWorksheet::BasicXmlWorksheet(BasicXmlExcel* p_workbook,XString p_sheetname)
+BasicXmlWorksheet::BasicXmlWorksheet(BasicXmlExcel* p_workbook,const XString& p_sheetname)
                   :m_workbook(p_workbook)
                   ,m_sheetname(p_sheetname)
                   ,m_maxCol(0)
@@ -170,7 +164,7 @@ BasicXmlWorksheet::GetCell(int p_row,int p_col)
     return it->second;
   }
   // Cell did not exist, make an empty cell
-  BasicXmlCell* cell = new BasicXmlCell(p_row,p_col);
+  BasicXmlCell* cell = alloc_new BasicXmlCell(p_row,p_col);
   m_cells.insert(std::make_pair(cellnum,cell));
   return cell;
 }
@@ -210,7 +204,7 @@ BasicXmlWorksheet::Load(XMLMessage& p_msg,XMLElement* p_root)
       // Find datatype
       bool isString = false;
       XString dataType = p_msg.GetAttribute(col,_T("t"));
-      if(dataType && dataType.GetAt(0) == 's')
+      if(!dataType.IsEmpty() && dataType.GetAt(0) == 's')
       {
         isString = true;
       }
@@ -223,15 +217,15 @@ BasicXmlWorksheet::Load(XMLMessage& p_msg,XMLElement* p_root)
         if(isString)
         {
           int stringNum = _ttoi(value);
-          cell = new BasicXmlCell(rowNumber,colNumber,stringNum,XCT_STRING);
+          cell = alloc_new BasicXmlCell(rowNumber,colNumber,stringNum,XCT_STRING);
         }
         else
         {
-          if(_tcschr(value,'.') != NULL)
+          if(_tcschr(value.GetString(),'.') != NULL)
           {
             // Floating point
             double fl = _ttof(value);
-            cell = new BasicXmlCell(rowNumber,colNumber,fl);
+            cell = alloc_new BasicXmlCell(rowNumber,colNumber,fl);
           }
           else
           {
@@ -240,7 +234,7 @@ BasicXmlWorksheet::Load(XMLMessage& p_msg,XMLElement* p_root)
             // It is a number, now still check if it is a date
             // // with the attribute we can get to the style reference
             dataType = p_msg.GetAttribute(col,_T("s"));
-            if(dataType && !dataType.IsEmpty())
+            if(!dataType.IsEmpty())
             {
               // If the value is in the style array with a date formatting, it is a date :-)
               XString formatCode =  m_workbook->GetStyleCode(_ttoi(dataType));
@@ -262,17 +256,17 @@ BasicXmlWorksheet::Load(XMLMessage& p_msg,XMLElement* p_root)
                   formatCode.Compare(_T("m/d/yyyy;@")) == 0
                 )
               {
-                cell = new BasicXmlCell(rowNumber, colNumber, intNum, XCT_DATE);
+                cell = alloc_new BasicXmlCell(rowNumber, colNumber, intNum, XCT_DATE);
               }
               else
               {
                 // Not a date after all, so we make an integer call :-(
-                cell = new BasicXmlCell(rowNumber, colNumber, intNum, XCT_INTEGER);
+                cell = alloc_new BasicXmlCell(rowNumber, colNumber, intNum, XCT_INTEGER);
               }
             }
             else
             {
-            	cell = new BasicXmlCell(rowNumber,colNumber,intNum,XCT_INTEGER);
+            	cell = alloc_new BasicXmlCell(rowNumber,colNumber,intNum,XCT_INTEGER);
           	}
         	}
         }
@@ -291,29 +285,30 @@ BasicXmlWorksheet::Load(XMLMessage& p_msg,XMLElement* p_root)
 // A  -> 1
 // IV -> 255
 int
-BasicXmlWorksheet::CalculateColumnNumber(XString p_column,XString p_row)
+BasicXmlWorksheet::CalculateColumnNumber(const XString& p_column,const XString& p_row)
 {
   int firstLetter, secondLetter;
+  XString column(p_column);
 
   // Strip rownumber from column name
-  p_column = p_column.Mid(0,p_column.GetLength() - p_row.GetLength());
-  p_column.MakeUpper();
+  column = column.Mid(0,column.GetLength() - p_row.GetLength());
+  column.MakeUpper();
 
-  if (p_column.GetLength() == 1)
+  if (column.GetLength() == 1)
   {
-    firstLetter = p_column.GetAt(0);
+    firstLetter = column.GetAt(0);
     // 65 is A in ascii
     return (firstLetter - 65 + 1); 
   }
-  else if (p_column.GetLength() == 2)
+  else if (column.GetLength() == 2)
   {
-    firstLetter = p_column.GetAt(0);
-    secondLetter = p_column.GetAt(1);
+    firstLetter  = column.GetAt(0);
+    secondLetter = column.GetAt(1);
     // 65 is A in ascii
     return ((firstLetter - 65 + 1)*26 + (secondLetter - 65 + 1)); 
   }
   XString error;
-  error.Format(_T("Invalid column alphabet name: %s"),p_column.GetString());
+  error.Format(_T("Invalid column alphabet name: %s"),column.GetString());
   m_workbook->SetError(error);
   return 0;	
 }
@@ -369,7 +364,7 @@ BasicXmlWorksheet::GetCellValue(int p_row,int p_col)
 //
 //////////////////////////////////////////////////////////////////////////
 
-BasicXmlExcel::BasicXmlExcel(XString p_filename)
+BasicXmlExcel::BasicXmlExcel(const XString& p_filename)
               :m_filename(p_filename)
 {
   m_namesRead = false;
@@ -438,7 +433,7 @@ BasicXmlExcel::GetWorksheet(int p_index)
 }
 
 BasicXmlWorksheet*
-BasicXmlExcel::GetWorksheet(XString p_name)
+BasicXmlExcel::GetWorksheet(const XString& p_name)
 {
   for(unsigned ind = 0;ind < m_worksheets.size();++ind)
   {
@@ -576,7 +571,7 @@ BasicXmlExcel::SetError(ZRESULT p_result)
 }
 
 void
-BasicXmlExcel::SetError(XString p_error)
+BasicXmlExcel::SetError(const XString& p_error)
 {
   if(m_error.IsEmpty())
   {
@@ -902,7 +897,7 @@ BasicXmlExcel::LoadWorksheets()
           return false;
         }
         // Make a new worksheet
-        BasicXmlWorksheet* sheet = new BasicXmlWorksheet(this,m_sheetnames[sheetnum]);
+        BasicXmlWorksheet* sheet = alloc_new BasicXmlWorksheet(this,m_sheetnames[sheetnum]);
         m_worksheets.push_back(sheet);
         
         // Load data in the worksheet

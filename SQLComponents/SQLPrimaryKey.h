@@ -2,8 +2,8 @@
 //
 // File: SQLPrimaryKey.h
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -70,7 +70,7 @@ public:
   XString     GetCondition(SQLInfoDB* p_info = nullptr);
 
   // Functions
-  void        AddField(XString p_field,SQLVariant& p_value);
+  void        AddField(const XString& p_field,SQLVariant& p_value);
   void        AddValue(SQLVariant* p_val,bool p_replace = false);
   // Operators
   SQLPrimaryKey& operator=(const SQLPrimaryKey& p_other);

@@ -2,8 +2,8 @@
 //
 // SourceFile: XMLParserJSON.cpp
 //
-// Copyright (c) 2014-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 2014-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files(the "Software"), to deal
@@ -27,14 +27,6 @@
 #include "XMLParserJSON.h"
 #include "SOAPMessage.h"
 #include "JSONMessage.h"
-
-#ifdef _AFX
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-#endif
 
 //////////////////////////////////////////////////////////////////////////
 //
@@ -105,7 +97,7 @@ XMLParserJSON::ParseMain(XMLElement* p_element,JSONvalue& p_value)
 }
 
 void
-XMLParserJSON::ParseLevel(XMLElement* p_element,JSONvalue& p_value,XString p_arrayName /*=""*/)
+XMLParserJSON::ParseLevel(XMLElement* p_element,JSONvalue& p_value,const XString& p_arrayName /*=""*/)
 {
   JSONobject* object  = nullptr;
   JSONarray*  array   = nullptr;
@@ -126,7 +118,7 @@ XMLParserJSON::ParseLevel(XMLElement* p_element,JSONvalue& p_value,XString p_arr
                                       {
                                         if(m_soap || m_rootFound)
                                         {
-                                          element = m_soap->AddElement(p_element,pair.m_name,XDT_String,_T(""));
+                                          element = m_soap->AddElement(p_element,pair.m_name,_T(""));
                                         }
                                         else
                                         {
@@ -141,7 +133,7 @@ XMLParserJSON::ParseLevel(XMLElement* p_element,JSONvalue& p_value,XString p_arr
     case JsonType::JDT_array:       array = &p_value.GetArray();
                                     for(auto& val : *array)
                                     {
-                                      element = m_soap->AddElement(p_element,p_arrayName,XDT_String,_T(""));
+                                      element = m_soap->AddElement(p_element,p_arrayName,_T(""));
                                       ParseLevel(element,val);
                                     }
                                     break;

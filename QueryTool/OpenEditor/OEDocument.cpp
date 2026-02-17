@@ -272,7 +272,7 @@ COEDocument::loadFile(LPCTSTR path,bool reload,bool external)
   WinFile file(path);
   if(file.Open(winfile_read | open_trans_text | (locking ? open_shared_read : open_shared_write)))
   {
-    CString line;
+    XString line;
     while(file.Read(line))
     {
       total += line;
@@ -283,7 +283,7 @@ COEDocument::loadFile(LPCTSTR path,bool reload,bool external)
     m_storage.SetSavedUndoPos();
     return;
   }
-  throw StdException(CString(locking ? _T("Cannot open file and lock it:\n") : _T("Cannot open file:\n")) + path);
+  throw StdException(XString(locking ? _T("Cannot open file and lock it:\n") : _T("Cannot open file:\n")) + path);
 }
 
 // void 
@@ -420,7 +420,7 @@ BOOL COEDocument::OnSaveDocument(LPCTSTR lpszPathName)
       for(int index = 0;index < lines; ++index)
       {
         m_storage.GetLine(index,line);
-        CString str(line);
+        XString str(line);
         str += _T("\n");
         if(!file.Write(str))
         {
@@ -457,7 +457,7 @@ BOOL COEDocument::OnSaveDocument(LPCTSTR lpszPathName)
     {
       m_storage.Clear();
     }
-    AfxMessageBox(CString(_T("Cannot save file.\n")) + x.GetErrorMessage(),MB_OK | MB_ICONSTOP);
+    AfxMessageBox(XString(_T("Cannot save file.\n")) + x.GetErrorMessage(),MB_OK | MB_ICONSTOP);
     return FALSE;
   }
   catch(...)

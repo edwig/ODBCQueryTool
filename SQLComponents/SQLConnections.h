@@ -2,8 +2,8 @@
 //
 // File: SQLConnections.h
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -50,29 +50,29 @@ public:
   SQLConnections();
 
   // File interface
-  bool        LoadConnectionsFile(XString p_filename = _T(""),bool p_reset = false);
-  bool        SaveConnectionsFile(XString p_filename = _T(""));
+  bool        LoadConnectionsFile(XString& p_filename,bool p_reset = false);
+  bool        SaveConnectionsFile(XString& p_filename);
 
   // GETTERS
-  SQLConnection*  GetConnection(XString p_name);
+  SQLConnection*  GetConnection(const XString& p_name);
   SQLConnection*  GetConnection(unsigned p_number);
-  XString         GetConnectionString(XString p_name);
+  XString         GetConnectionString(const XString& p_name);
   int             GetConnectionsCount();
 
   // SETTERS
   void        Reset();
-  void        SetEncryptionKey(XString p_key);
-  bool        AddConnection(XString p_name
-                           ,XString p_datasource
-                           ,XString p_username
-                           ,XString p_password
-                           ,XString p_options
-                           ,XString p_targetSchema = _T(""));
-  bool        DelConnection(XString p_name);
+  void        SetEncryptionKey(const XString& p_key);
+  bool        AddConnection(const XString& p_name
+                           ,const XString& p_datasource
+                           ,const XString& p_username
+                           ,const XString& p_password
+                           ,const XString& p_options
+                           ,const XString& p_targetSchema = _T(""));
+  bool        DelConnection(const XString& p_name);
 
 private:
-  XString     PasswordScramble(XString p_password);
-  XString     PasswordDecoding(XString p_scramble);
+  XString     PasswordScramble(const XString& p_password);
+  XString     PasswordDecoding(const XString& p_scramble);
 
   // All saved connections from "database.xml"
   ConnMap     m_connections;

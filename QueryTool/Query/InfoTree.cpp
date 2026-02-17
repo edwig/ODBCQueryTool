@@ -142,7 +142,7 @@ InfoTree::MakeTreeInfo()
   InsertItem(method,infoItemDB);
   InsertItem(user,  infoItemDB);
 
-  CString   errors;
+  XString   errors;
   MMetaMap  objects;
   HTREEITEM meta     = InsertItem(_T("Meta-objects in the database"),infoItemDB);
   HTREEITEM catalogs = InsertItem(_T("Catalogs"),meta);
@@ -303,7 +303,7 @@ InfoTree::MakeTreeInfo()
     default:                           sitem += _T("No information");       break;
   }
   InsertItem(sitem, infoItemCF);
-  InsertItem(CString(_T("X/Open CLI Year: ")) + m_info->GetCLIYear(), infoItemCF);
+  InsertItem(XString(_T("X/Open CLI Year: ")) + m_info->GetCLIYear(), infoItemCF);
 
   // SQL Support
   sitem = _T("Aggregate functions");
@@ -998,7 +998,7 @@ InfoTree::MakeTreeInfo()
 // }
 
 void
-InfoTree::MetaListToTree(MMetaMap& p_list,HTREEITEM p_item,CString& p_errors)
+InfoTree::MetaListToTree(MMetaMap& p_list,HTREEITEM p_item,XString& p_errors)
 {
   // Put all meta-objects in the tree
   for(auto& object : p_list)
@@ -1032,7 +1032,7 @@ InfoTree::ReportAllCapabilities(CString& filename)
 
   m_info->GetInfo();
 
-  WinFile file(filename);
+  WinFile file(filename.GetString());
 
 
   if(!file.Open(winfile_write | open_trans_text,FAttributes::attrib_none,Encoding::UTF8))
@@ -1040,14 +1040,14 @@ InfoTree::ReportAllCapabilities(CString& filename)
     AfxMessageBox(_T("Cannot open file for ODBC report: ") + filename);
     return;
   }
-  file.Write(CString(_T("ODBC Driver report\n")));
-  file.Write(CString(_T("==================\n\n")));
+  file.Write(XString(_T("ODBC Driver report\n")));
+  file.Write(XString(_T("==================\n\n")));
 
   HTREEITEM root  = GetRootItem();
   ReportCapabilities(root,0,file);
 
   // END OF REPORT
-  file.Write(CString(_T("\n*** End of report ***\n")));
+  file.Write(XString(_T("\n*** End of report ***\n")));
   file.Close();
 }
 
@@ -1507,7 +1507,7 @@ InfoTree::ReportCapabilities(HTREEITEM  p_branch
     // Print level to file
     for(int ind = 0; ind < p_level; ++ind)
     {
-      p_file.Write(CString(_T("    ")));
+      p_file.Write(XString(_T("    ")));
     }
     // Print our info
     p_file.Format(_T("%s\n"),GetItemText(branch).GetString());

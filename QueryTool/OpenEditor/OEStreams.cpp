@@ -200,14 +200,14 @@ FileInStream::FileInStream (LPCTSTR filename)
 {
   m_infile.SetEncoding(Encoding::UTF8);
   m_infile.Open(winfile_read | open_trans_text);
-  _CHECK_AND_THROW_(m_infile.GetIsOpen(),(CString(_T("Cannot open file \"")) + filename + _T("\" for reading.")));
+  _CHECK_AND_THROW_(m_infile.GetIsOpen(),(XString(_T("Cannot open file \"")) + filename + _T("\" for reading.")));
 }
 
 FileOutStream::FileOutStream(LPCTSTR filename)
               :m_outfile(filename)
 {
   m_outfile.Open(winfile_write | open_trans_text);
-  _CHECK_AND_THROW_(m_outfile.GetIsOpen(),(CString(_T("Cannot open file \"")) + filename + _T("\" for writing.")));
+  _CHECK_AND_THROW_(m_outfile.GetIsOpen(),(XString(_T("Cannot open file \"")) + filename + _T("\" for writing.")));
 }
 
 void 
@@ -230,7 +230,7 @@ void
 FileInStream::read(const CString& name,CString& val,bool p_skip /*= false*/)
 {
   CString _name;
-  CString inval;
+  XString inval;
 
   if(!m_last.IsEmpty())
   {
@@ -255,7 +255,7 @@ FileInStream::read(const CString& name,CString& val,bool p_skip /*= false*/)
   _ASSERTE(m_infile.GetLastError() == 0);
   m_last.Empty();
 
-  if(inval.Right(1) == '\n')
+  if(inval.Right(1) == _T("\n"))
   {
     inval.Truncate(inval.GetLength() - 1);
   }
@@ -272,7 +272,7 @@ void
 FileInStream::read(const CString& name,double& val,bool p_skip /*= false*/)
 {
   CString _name;
-  CString inval;
+  XString inval;
 
   m_infile.Read(inval,'=');
   _name = inval;
@@ -295,7 +295,7 @@ FileOutStream::write(const CString& name,long val)
 void 
 FileInStream::read(const CString& name,long& val,bool skip /*=false*/)
 {
-  CString inval;
+  XString inval;
   m_infile.Read(inval,'=');
 
   CString _name(inval);
@@ -309,7 +309,7 @@ FileInStream::read(const CString& name,long& val,bool skip /*=false*/)
 void 
 FileOutStream::write(const CString& name,unsigned long val)
 {
-  CString out;
+  XString out;
   out.Format(_T("%s=%Xd\n"),m_sectionKey.Format(name).GetString(),val);
   m_outfile.Write(out);
   // m_outfile << m_sectionKey.Format(name) << '=' << hex << val << dec << endl;
@@ -318,7 +318,7 @@ FileOutStream::write(const CString& name,unsigned long val)
 void 
 FileInStream::read(const CString& name,unsigned long& val,bool skip /*=false*/)
 {
-  CString inval;
+  XString inval;
   m_infile.Read(inval,'=');
   CString _name(inval);
   validateEntryName(name,_name);
@@ -337,7 +337,7 @@ FileOutStream::write(const CString& name,int val)
 void 
 FileInStream::read(const CString& name,int& val,bool skip /*=false*/)
 {
-  CString inval;
+  XString inval;
   _ASSERTE(m_infile.GetLastError() == 0);
 
   if(!m_last.IsEmpty())
@@ -367,7 +367,7 @@ FileInStream::read(const CString& name,int& val,bool skip /*=false*/)
 
 void FileOutStream::write (const CString& name, unsigned int val)
 {
-  CString out;
+  XString out;
   out.Format(_T("%s=%Xd\n"),m_sectionKey.Format(name).GetString(),val);
   m_outfile.Write(out);
 }
@@ -375,7 +375,7 @@ void FileOutStream::write (const CString& name, unsigned int val)
 void 
 FileInStream::read (const CString& name, unsigned int& val,bool /*p_skip = false*/)
 {
-  CString inval;
+  XString inval;
   m_infile.Read(inval,'=');
   CString _name(inval);
   validateEntryName(name,_name);
@@ -388,7 +388,7 @@ FileInStream::read (const CString& name, unsigned int& val,bool /*p_skip = false
 void 
 FileOutStream::write (const CString& name, bool val)
 {
-  CString out;
+  XString out;
   out.Format(_T("%s=%d\n"),m_sectionKey.Format(name).GetString(),(int)val);
   m_outfile.Write(out);
   //m_outfile << m_sectionKey.Format(name) << '=' << val << endl;
@@ -397,7 +397,7 @@ FileOutStream::write (const CString& name, bool val)
 void 
 FileInStream::read(const CString& name, bool& val,bool p_skip /*= false*/)
 {
-  CString inval;
+  XString inval;
 
   if(!m_last.IsEmpty())
   {
@@ -435,7 +435,7 @@ void FileInStream::validateEntryName(const CString& name,CString& entryName,bool
   {
     if(!p_skip)
     {
-      throw StdException(_T("Unexpected entry in stream: ") + entryName);
+      throw StdException(_T("Unexpected entry in stream: ") + XString(entryName));
     }
     return;
   }

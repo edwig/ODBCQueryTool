@@ -2,8 +2,8 @@
 //
 // File: SQLInfoInformix.cpp
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -27,12 +27,6 @@
 #include "SQLComponents.h"
 #include "SQLInfoInformix.h"
 #include "SQLQuery.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 namespace SQLComponents
 {
@@ -226,23 +220,23 @@ SQLInfoInformix::GetRDBMSMaxVarchar() const
 
 // Identifier rules differ per RDBMS
 bool
-SQLInfoInformix::IsIdentifier(XString p_identifier) const
+SQLInfoInformix::IsIdentifier(const XString& p_identifier) const
 {
   // Cannot be empty and cannot exceed this amount of characters
   if(p_identifier.GetLength() == 0 ||
-     p_identifier.GetLength() > (int)GetMaxIdentifierNameLength())
+     p_identifier.GetLength() > (int) GetMaxIdentifierNameLength())
   {
     return false;
   }
   // Must start with one alpha char OR AN UNDERSCORE
-  if(!_istalpha(p_identifier.GetAt(0)) && p_identifier.GetAt(0) != '_')
+  if(!_istalpha((TCHAR)p_identifier.GetAt(0)) && p_identifier.GetAt(0) != '_')
   {
     return false;
   }
   for(int index = 0;index < p_identifier.GetLength();++index)
   {
     // Can be upper/lower alpha or a number OR an underscore
-    TCHAR ch = p_identifier.GetAt(index);
+    TCHAR ch = (TCHAR) p_identifier.GetAt(index);
     if(!_istalnum(ch) && ch != '_')
     {
       return false;
@@ -341,7 +335,7 @@ SQLInfoInformix::GetKEYWORDParameterPrefix() const
 // Get select part to add new record identity to a table
 // Can be special column like 'OID' or a sequence select
 XString
-SQLInfoInformix::GetKEYWORDIdentityString(XString& /*p_tablename*/,XString /*p_postfix*/ /*= "_seq"*/) const
+SQLInfoInformix::GetKEYWORDIdentityString(const XString& /*p_tablename*/,const XString& /*p_postfix*/ /*= "_seq"*/) const
 {
   // Insert 0 for a SERIAL column
   return _T("0");
@@ -349,7 +343,7 @@ SQLInfoInformix::GetKEYWORDIdentityString(XString& /*p_tablename*/,XString /*p_p
 
 // Gets the UPPER function
 XString
-SQLInfoInformix::GetKEYWORDUpper(XString& p_expression) const
+SQLInfoInformix::GetKEYWORDUpper(const XString& p_expression) const
 {
   return _T("UPPER(") + p_expression + _T(")");
 }
@@ -363,7 +357,7 @@ SQLInfoInformix::GetKEYWORDInterval1MinuteAgo() const
 
 // Gets the Not-NULL-Value statement of the database
 XString
-SQLInfoInformix::GetKEYWORDStatementNVL(XString& p_test,XString& p_isnull) const
+SQLInfoInformix::GetKEYWORDStatementNVL(const XString& p_test,const XString& p_isnull) const
 {
   return XString(_T("NVL(")) + p_test + "," + p_isnull + _T(")");
 }
@@ -2309,14 +2303,14 @@ SQLInfoInformix::GetSESSIONConstraintsImmediate() const
 
 // Calling a stored function or procedure if the RDBMS does not support ODBC call escapes
 SQLVariant*
-SQLInfoInformix::DoSQLCall(SQLQuery* /*p_query*/,XString& /*p_schema*/,XString& /*p_procedure*/)
+SQLInfoInformix::DoSQLCall(SQLQuery* /*p_query*/,const XString& /*p_schema*/,const XString& /*p_procedure*/)
 {
   return nullptr;
 }
 
 // Calling a stored function with named parameters, returning a value
 SQLVariant*
-SQLInfoInformix::DoSQLCallNamedParameters(SQLQuery* /*p_query*/,XString& /*p_schema*/,XString& /*p_procedure*/,bool /*p_function = true*/)
+SQLInfoInformix::DoSQLCallNamedParameters(SQLQuery* /*p_query*/,const XString& /*p_schema*/,const XString& /*p_procedure*/,bool /*p_function = true*/)
 {
   return nullptr;
 }

@@ -2,8 +2,8 @@
 //
 // File: SQLTimestamp.cpp
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -33,12 +33,6 @@
 #include "SQLLanguage.h"
 #include <math.h>
 #include <ctime>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 namespace SQLComponents
 {
@@ -804,7 +798,7 @@ SQLTimestamp::ParseMoment(const XString& p_string)
     int frac = timeString.Find('.');
     if(frac >= 0)
     {
-      CString fraction = timeString.Mid(frac + 1);
+      XString fraction = timeString.Mid(frac + 1);
       while(fraction.GetLength() < 9) fraction += '0';
       if (fraction.GetLength() > 9) fraction = fraction.Left(9);
       m_fraction = _ttoi(fraction);
@@ -921,10 +915,10 @@ SQLTimestamp::AsXMLString(int p_precision /*=0*/) const
   return theStamp;
 }
 
-CString  
+XString  
 SQLTimestamp::AsXMLStringUTC(int p_precision /*=0*/) const
 {
-  CString theStamp;
+  XString theStamp;
   if(IsNull() == false)
   {
     SQLTimestamp stamp(*this);
@@ -938,15 +932,15 @@ SQLTimestamp::AsXMLStringUTC(int p_precision /*=0*/) const
       theStamp += PrintFraction(p_precision);
     }
     // Add 'Z' for Zulu-time (UTC)
-    theStamp += "Z";
+    theStamp += _T("Z");
   }
   return theStamp;
 }
 
-CString
+XString
 SQLTimestamp::AsXMLStringTZ(int p_precision /*=0*/) const
 {
-  CString theStamp;
+  XString theStamp;
   if (IsNull() == false)
   {
     theStamp.Format(_T("%04d-%02d-%02dT%02d:%02d:%02d")
@@ -1001,8 +995,8 @@ SQLTimestamp::AsTimeStampStruct(TIMESTAMP_STRUCT* p_struct) const
 }
 
 bool 
-SQLTimestamp::GetVirtualMoment(XString        p_sign
-                              ,XString        p_extraTime
+SQLTimestamp::GetVirtualMoment(const XString& p_sign
+                              ,const XString& p_extraTime
                               ,int            p_interval
                               ,StampStorage&  p_temp
                               ,bool           p_doTimes /*=true*/)
@@ -1016,48 +1010,49 @@ SQLTimestamp::GetVirtualMoment(XString        p_sign
     int factor = (p_sign == _T("+")) ? 1 : -1;
     if (p_sign == _T("+") || p_sign == _T("-"))
     {
-      p_extraTime.MakeUpper();
+      XString extraTime(p_extraTime);
+      extraTime.MakeUpper();
       if (p_extraTime == _T(""))
       {
         return false;
       }
       else if (p_doTimes &&
-              (p_extraTime == g_dateNames[g_defaultLanguage][DN_SEC]    || 
-               p_extraTime == g_dateNames[g_defaultLanguage][DN_SECOND] ||
-               p_extraTime == g_dateNames[g_defaultLanguage][DN_SECONDS]))
+              (extraTime == g_dateNames[g_defaultLanguage][DN_SEC]    || 
+               extraTime == g_dateNames[g_defaultLanguage][DN_SECOND] ||
+               extraTime == g_dateNames[g_defaultLanguage][DN_SECONDS]))
       {
         mom = mom.AddSeconds((INT64)factor * (INT64)p_interval);
       }
       else if (p_doTimes &&
-              (p_extraTime == g_dateNames[g_defaultLanguage][DN_MIN]    || 
-               p_extraTime == g_dateNames[g_defaultLanguage][DN_MINUTE] || 
-               p_extraTime == g_dateNames[g_defaultLanguage][DN_MINUTES]))
+              (extraTime == g_dateNames[g_defaultLanguage][DN_MIN]    || 
+               extraTime == g_dateNames[g_defaultLanguage][DN_MINUTE] || 
+               extraTime == g_dateNames[g_defaultLanguage][DN_MINUTES]))
       {
         mom = mom.AddMinutes(factor * p_interval);
       }
       else if (p_doTimes &&
-              (p_extraTime == g_dateNames[g_defaultLanguage][DN_HOUR] || 
-               p_extraTime == g_dateNames[g_defaultLanguage][DN_HOURS]))
+              (extraTime == g_dateNames[g_defaultLanguage][DN_HOUR] || 
+               extraTime == g_dateNames[g_defaultLanguage][DN_HOURS]))
       {
         mom = mom.AddHours(factor * p_interval);
       }
-      else if (p_extraTime == g_dateNames[g_defaultLanguage][DN_DAY]  || 
-               p_extraTime == g_dateNames[g_defaultLanguage][DN_DAYS]  )
+      else if (extraTime == g_dateNames[g_defaultLanguage][DN_DAY]  || 
+               extraTime == g_dateNames[g_defaultLanguage][DN_DAYS]  )
       {
         mom = mom.AddDays(factor * p_interval);
       }
-      else if (p_extraTime == g_dateNames[g_defaultLanguage][DN_WEEK] || 
-               p_extraTime == g_dateNames[g_defaultLanguage][DN_WEEKS] )
+      else if (extraTime == g_dateNames[g_defaultLanguage][DN_WEEK] || 
+               extraTime == g_dateNames[g_defaultLanguage][DN_WEEKS] )
       {
         mom = mom.AddDays(factor * 7 * p_interval);
       }
-      else if (p_extraTime == g_dateNames[g_defaultLanguage][DN_MONTH] || 
-               p_extraTime == g_dateNames[g_defaultLanguage][DN_MONTHS] )
+      else if (extraTime == g_dateNames[g_defaultLanguage][DN_MONTH] || 
+               extraTime == g_dateNames[g_defaultLanguage][DN_MONTHS] )
       {
         mom = mom.AddMonths(factor * p_interval);
       }
-      else if (p_extraTime == g_dateNames[g_defaultLanguage][DN_YEAR] || 
-               p_extraTime == g_dateNames[g_defaultLanguage][DN_YEARS] )
+      else if (extraTime == g_dateNames[g_defaultLanguage][DN_YEAR] || 
+               extraTime == g_dateNames[g_defaultLanguage][DN_YEARS] )
       {
         mom = mom.AddYears(factor * p_interval);
       }

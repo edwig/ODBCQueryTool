@@ -1667,7 +1667,7 @@ void COEditorView::DoCommentText (bool comment)
     }
     catch (const std::logic_error& x) // language not found
     {
-        AfxMessageBox(CString(_T("Cannot comment/uncomment the selection.\n")) + x.what());
+        AfxMessageBox(XString(_T("Cannot comment/uncomment the selection.\n")) + x.what());
         return;
     }
 }

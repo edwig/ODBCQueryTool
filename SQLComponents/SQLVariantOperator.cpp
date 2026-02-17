@@ -2,8 +2,8 @@
 //
 // File: SQLVariantOperator.cpp
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -31,12 +31,6 @@
 #include "SQLDate.h"
 #include "SQLGuid.h"
 #include "bcd.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 namespace SQLComponents
 {
@@ -114,12 +108,12 @@ SQLVariant::operator=(const SQLVariant& p_original)
   if(m_datatype == SQL_C_CHAR  || m_datatype == SQL_C_BINARY )
   {
     // Make a new buffer and copy it
-    m_data.m_dataBINARY = new unsigned char[(size_t)m_binaryLength + 1];
+    m_data.m_dataBINARY = alloc_new unsigned char[(size_t)m_binaryLength + 1];
     memcpy(m_data.m_dataBINARY,p_original.m_data.m_dataBINARY,(size_t)m_binaryLength + 1);
   }
   else if(m_datatype == SQL_C_WCHAR)
   {
-    m_data.m_dataWCHAR = new wchar_t[(size_t)m_binaryLength / 2 + 1];
+    m_data.m_dataWCHAR = alloc_new wchar_t[(size_t)m_binaryLength / 2 + 1];
     memcpy(m_data.m_dataWCHAR,p_original.m_data.m_dataWCHAR,m_binaryLength + 2);
   }
   else

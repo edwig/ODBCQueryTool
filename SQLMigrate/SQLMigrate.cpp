@@ -414,7 +414,7 @@ SQLMigrate::WriteMigrateParameters()
 bool
 SQLMigrate::MakeDatabaseConnections()
 {
-  CString text;
+  XString text;
 
   if(!m_databaseSource)  m_databaseSource = new SQLDatabase();
   if(!m_databaseTarget)  m_databaseTarget = new SQLDatabase();
@@ -691,7 +691,7 @@ SQLMigrate::DropTables()
     }
     else
     {
-      m_log.WriteDrop(statement,true);
+      m_log.WriteDrop(statement.GetString(),true);
     }
     // Record number of tables in gouge
     m_log.SetTablesGauge(++numTables);
@@ -823,7 +823,7 @@ SQLMigrate::CreateTables()
       else
       {
         statement.Replace(_T("\r"),_T(""));
-        m_log.WriteOut(statement,true);
+        m_log.WriteOut(statement.GetString(), true);
       }
     }
     // Show number of tables
@@ -1033,8 +1033,8 @@ SQLMigrate::CreateViews()
       }
 
       // Handle the DUAL table
-      CString sourceSingle = source->GetSQLFromDualClause();
-      CString targetSingle = target->GetSQLFromDualClause();
+      XString sourceSingle = source->GetSQLFromDualClause();
+      XString targetSingle = target->GetSQLFromDualClause();
 
       // Set to the correct casing
       if(target->GetRDBMSIsCatalogUpper())
@@ -1082,7 +1082,7 @@ SQLMigrate::CreateViews()
       else
       {
         statement.Replace(_T("\r"),_T(""));
-        m_log.WriteOut(statement,true);
+        m_log.WriteOut(statement.GetString(),true);
       }
       first = false;
     }
@@ -1158,7 +1158,7 @@ SQLMigrate::TruncateTables()
     }
     else
     {
-      m_log.WriteOut(statement,true);
+      m_log.WriteOut(statement.GetString(),true);
     }
     // Show number of tables
     m_log.SetTablesGauge(++numTables);
@@ -1764,7 +1764,7 @@ SQLMigrate::FillTablesViaData(bool p_process)
     try
     {
       m_log.WriteOut(_T(""));
-      m_log.WriteOut(_T("-- TABLE: ") + table);
+      m_log.WriteOut(XString(_T("-- TABLE: ")) + table.GetString());
       m_log.WriteOut(_T(""));
 
       // Get the columns
@@ -1806,7 +1806,7 @@ SQLMigrate::FillTablesViaData(bool p_process)
             }
             else
             {
-              m_log.WriteOut(insert, true);
+              m_log.WriteOut(insert.GetString(),true);
             }
             extra = 1;
           }

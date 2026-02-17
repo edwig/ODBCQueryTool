@@ -2,8 +2,8 @@
 //
 // File: SQLVariantFormat.cpp
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -35,12 +35,6 @@
 #include <bcd.h>
 #include <StringUtilities.h>
 #include <locale.h>
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 namespace SQLComponents
 {
@@ -110,7 +104,7 @@ SQLVariantFormat::StringInitCapital()
 {
   bool doCapital = true;
   int     length = m_format.GetLength();
-  LPCTSTR buffer = m_format.GetBuffer();
+  LPCTSTR buffer = m_format.GetString();
 
   for(int ind = 0; ind < length; ++ind)
   {
@@ -146,7 +140,7 @@ SQLVariantFormat::StringStartCapital()
 {
   bool doCapital = true;
   int     length = m_format.GetLength();
-  LPCTSTR buffer = m_format.GetBuffer();
+  LPCTSTR buffer = m_format.GetString();
 
   for(int ind = 0;ind < length; ++ind)
   {
@@ -252,11 +246,11 @@ SQLVariantFormat::RemoveValutaDollar(XString& p_string,bool p_enkelValuta)
 
 // Is string a (formatted) windows number?
 bool
-SQLVariantFormat::IsWinNumber(const XString p_string
-                             ,PTCHAR        p_decSeperator
-                             ,PTCHAR        p_thouSeperator
-                             ,PTCHAR        p_valuta
-                             ,XString*      p_newNumber)
+SQLVariantFormat::IsWinNumber(const XString& p_string
+                             ,PTCHAR         p_decSeperator
+                             ,PTCHAR         p_thouSeperator
+                             ,PTCHAR         p_valuta
+                             ,XString*       p_newNumber)
 {
   XString newNumber(_T("+"));
   bool isDecimal   = false;   // decimal separator found
@@ -299,7 +293,7 @@ SQLVariantFormat::IsWinNumber(const XString p_string
         return false;
       }
       isNumber = true;
-      newNumber += p_string.GetAt(stringPos++);
+      newNumber += (TCHAR) p_string.GetAt(stringPos++);
     }
     else if(p_string.GetAt(stringPos) == _T('-') ||
             p_string.GetAt(stringPos) == _T('+') )
@@ -311,7 +305,7 @@ SQLVariantFormat::IsWinNumber(const XString p_string
       isSign      = true;
       isSignAfter = isNumber;
       isNegative  = (p_string.GetAt(stringPos) == _T('-'));
-      newNumber.SetAt(0,p_string.GetAt(stringPos++));
+      newNumber.SetAt(0,(TCHAR)p_string.GetAt(stringPos++));
     }
     else if(DSLen > 0 && _tcsncmp(p_string.Mid(stringPos),p_decSeperator,DSLen) == 0)
     {
@@ -356,7 +350,7 @@ SQLVariantFormat::IsWinNumber(const XString p_string
   }
 
   // Eventually place extra 0 after a number ending in a decimal point
-  if(newNumber.Right(1) == _T('.'))
+  if(newNumber.Right(1) == _T("."))
   {
     newNumber += _T('0');
   }
@@ -368,7 +362,7 @@ SQLVariantFormat::IsWinNumber(const XString p_string
 }
 
 bcd
-SQLVariantFormat::StringDecimalValue(CString& p_error)
+SQLVariantFormat::StringDecimalValue(XString& p_error)
 {
   bcd result;
   ::InitValutaString();
@@ -422,7 +416,7 @@ SQLVariantFormat::StringDecimalValue(CString& p_error)
               catch(StdException& ex)
               {
                 p_error  = ex.GetErrorMessage();
-                p_error += " : ";
+                p_error += _T(" : ");
                 p_error += waarde;
                 result.Zero();
               }
@@ -453,7 +447,7 @@ SQLVariantFormat::SetCurrentDateAndTime()
   m_format.Replace(_T("T"),_T(" "));
 
   // Getting a new variant
-  m_variant = new SQLVariant(&stamp);
+  m_variant = alloc_new SQLVariant(&stamp);
   m_owner   = true;
 }
 
@@ -461,7 +455,7 @@ SQLVariantFormat::SetCurrentDateAndTime()
 // There can be various info before the time part, but not AFTER it
 // E.g. in most cases it has a date before it, so we can read from a timestamp string
 bool
-SQLVariantFormat::GetTimeFromStringVariant(const SQLVariant* p_variant,XString p_format,TIME_STRUCT* p_time)
+SQLVariantFormat::GetTimeFromStringVariant(const SQLVariant* p_variant,const XString& p_format,TIME_STRUCT* p_time)
 {
   ZeroMemory(p_time,sizeof(TIME_STRUCT));
   
@@ -522,7 +516,7 @@ SQLVariantFormat::GetTimeFromStringVariant(const SQLVariant* p_variant,XString p
 // Dates can have coded additions or subtractions
 // <date> [- | +] n [DAY | MONTH | YEAR]
 bool
-SQLVariantFormat::GetDateFromStringVariant(const SQLVariant* p_variant,XString p_format,DATE_STRUCT* p_date)
+SQLVariantFormat::GetDateFromStringVariant(const SQLVariant* p_variant,const XString& p_format,DATE_STRUCT* p_date)
 {
   ZeroMemory(p_date,sizeof(DATE_STRUCT));
 
@@ -588,7 +582,7 @@ SQLVariantFormat::GetDateFromStringVariant(const SQLVariant* p_variant,XString p
 // "@"          -> long  windows notation
 // "d MMMM yyyy <word> |H:mm:ss|"  -> Most expanded form
 int
-SQLVariantFormat::FormatDate(XString p_pattern)
+SQLVariantFormat::FormatDate(const XString& p_pattern)
 {
   TCHAR   buffer1[NUMBER_BUFFER_SIZE + 1] = _T("");
   TCHAR   buffer2[NUMBER_BUFFER_SIZE + 1] = _T("");
@@ -596,6 +590,8 @@ SQLVariantFormat::FormatDate(XString p_pattern)
   XString timeFormat;
   DWORD   opties = 0;
   bool    doTime = false;
+
+  XString pattern(p_pattern);
 
   // STEP 1: Check datatypes and contents of the variant for strings
   if(m_variant && (m_variant->GetDataType() != SQL_C_CHAR)
@@ -610,8 +606,8 @@ SQLVariantFormat::FormatDate(XString p_pattern)
   }
   else if(!m_format.IsEmpty())
   {
-    bool hasTime = p_pattern.Find('|') >= 0;
-    bool hasDate = p_pattern.Left(1) != '|' || p_pattern.Right(1) != '|';
+    bool hasTime = pattern.Find('|') >= 0;
+    bool hasDate = pattern.Left(1) != _T("|") || pattern.Right(1) != _T("|");
    
     DATE_STRUCT date;
     TIME_STRUCT time;
@@ -651,7 +647,7 @@ SQLVariantFormat::FormatDate(XString p_pattern)
       {
         delete m_variant;
       }
-      m_variant = new SQLVariant(&timestamp);
+      m_variant = alloc_new SQLVariant(&timestamp);
       m_owner=true;
     }
     else if(hasDate)
@@ -664,7 +660,7 @@ SQLVariantFormat::FormatDate(XString p_pattern)
       {
         delete m_variant;
       }
-      m_variant = new SQLVariant(&datestr);
+      m_variant = alloc_new SQLVariant(&datestr);
       m_owner=true;
     }
     else if(hasTime)
@@ -677,7 +673,7 @@ SQLVariantFormat::FormatDate(XString p_pattern)
         {
           delete m_variant;
         }
-        m_variant = new SQLVariant(&timestr);
+        m_variant = alloc_new SQLVariant(&timestr);
         m_owner=true;
     }
   }
@@ -689,37 +685,37 @@ SQLVariantFormat::FormatDate(XString p_pattern)
     return OK;
   }
   // STEP 3: Getting our options
-  doTime = p_pattern.Find('|') >= 0;
+  doTime = pattern.Find('|') >= 0;
 
-  if(p_pattern.IsEmpty())
+  if(pattern.IsEmpty())
   {
     opties = DATE_SHORTDATE;
   }
-  else if(p_pattern == _T("@"))
+  else if(pattern == _T("@"))
   {
     opties = DATE_LONGDATE;
-    p_pattern = "";
+    pattern = _T("");
   }
   else
   {
     // Prepare for an API call from German/Dutch/French
-    p_pattern.Replace(_T("jj"),_T("yy"));
-    p_pattern.Replace(_T("aa"),_T("yy"));
+    pattern.Replace(_T("jj"),_T("yy"));
+    pattern.Replace(_T("aa"),_T("yy"));
   }
   // STEP 4: Splitting of the patterns
-  if(!p_pattern.IsEmpty())
+  if(!pattern.IsEmpty())
   {
-    int pos1 = p_pattern.Find('|');
+    int pos1 = pattern.Find('|');
     if(pos1 >= 0)
     {
-      int pos2 = p_pattern.Find('|',pos1 + 1);
-      dateFormat = p_pattern.Left(pos1);
-      timeFormat = p_pattern.Mid(pos1+1, pos2 - pos1 - 1);
+      int pos2   = pattern.Find('|',pos1 + 1);
+      dateFormat = pattern.Left(pos1);
+      timeFormat = pattern.Mid(pos1+1, pos2 - pos1 - 1);
     }
     else
     {
       // date only
-      dateFormat = p_pattern;
+      dateFormat = pattern;
     }
   }
   // STEP 5: Processing the DATE part
@@ -739,7 +735,7 @@ SQLVariantFormat::FormatDate(XString p_pattern)
     str.wDay   = date->day;
     int buflen;
 
-    if((buflen = GetDateFormat(LOCALE_USER_DEFAULT,opties,&str,((opties != 0) ? nullptr : reinterpret_cast<LPCTSTR>(dateFormat.GetBuffer())),buffer1,NUMBER_BUFFER_SIZE)) < 0)
+    if((buflen = GetDateFormat(LOCALE_USER_DEFAULT,opties,&str,((opties != 0) ? nullptr : reinterpret_cast<LPCTSTR>(dateFormat.GetString())),buffer1,NUMBER_BUFFER_SIZE)) < 0)
     {
       buflen = 0;
     }
@@ -758,7 +754,7 @@ SQLVariantFormat::FormatDate(XString p_pattern)
     str.wMinute = time->minute;
     str.wSecond = time->second;
     int buflen;
-    if((buflen = GetTimeFormat(LOCALE_USER_DEFAULT,0,&str,(timeFormat.GetLength() > 0 ? reinterpret_cast<LPCTSTR>(timeFormat.GetBuffer()) : nullptr),buffer2,NUMBER_BUFFER_SIZE)) < 0)
+    if((buflen = GetTimeFormat(LOCALE_USER_DEFAULT,0,&str,(timeFormat.GetLength() > 0 ? reinterpret_cast<LPCTSTR>(timeFormat.GetString()) : nullptr),buffer2,NUMBER_BUFFER_SIZE)) < 0)
     {
       buflen = 0;
     }
@@ -784,7 +780,7 @@ SQLVariantFormat::FormatDate(XString p_pattern)
 //                nJ  -> n years (Dutch / German)
 //                nA  -> n years (French)
 int
-SQLVariantFormat::DateCalculate(char p_operator,XString p_argument)
+SQLVariantFormat::DateCalculate(char p_operator,const XString& p_argument)
 {
   int   number = 0;
   TCHAR numberType = 'D';
@@ -814,7 +810,7 @@ SQLVariantFormat::DateCalculate(char p_operator,XString p_argument)
     {
       delete m_variant;
     }
-    m_variant = new SQLVariant(&date);
+    m_variant = alloc_new SQLVariant(&date);
     m_owner   = true;
   }
   else
@@ -824,7 +820,7 @@ SQLVariantFormat::DateCalculate(char p_operator,XString p_argument)
     if(m_variant == nullptr)
     {
       DATE_STRUCT date = {0,0,0};
-      m_variant = new SQLVariant(&date);
+      m_variant = alloc_new SQLVariant(&date);
       m_owner   = true;
     }
     else
@@ -911,7 +907,7 @@ SQLVariantFormat::DateCalculate(char p_operator,XString p_argument)
 
 // Formatting of a number
 int
-SQLVariantFormat::FormatNumber(XString p_format,bool p_currency)
+SQLVariantFormat::FormatNumber(const XString& p_format,bool p_currency)
 {
   // Standard MS-Windows format
   XString number;
@@ -980,7 +976,7 @@ SQLVariantFormat::FormatVariantForSQL(SQLDatabase* p_database)
     if(toCdatatype == SQL_C_WCHAR)
     {
       // NATIONAL CHAR / NATIONAL VARCHAR
-      text = "N" + text;
+      text = _T("N") + text;
     }
   }
   else if(m_variant->IsNumericType())
@@ -1432,10 +1428,10 @@ SQLVariantFormat::FormatNumberTemplate(LPTSTR p_number,LPCTSTR p_numFormat,int p
       {
         if(groupCounter == groupSize)
         {
-          NewFormat = ',' + NewFormat;
+          NewFormat = _T(",") + NewFormat;
           groupCounter = 0;
         }
-        NewFormat = '#' + NewFormat;
+        NewFormat = _T("#") + NewFormat;
         groupCounter++;
       }
       else

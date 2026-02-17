@@ -2,8 +2,8 @@
 //
 // File: SQLGetExePath.h
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -26,12 +26,6 @@
 #include "stdafx.h"
 #include "SQLGetExePath.h"
 #include "SQLMessage.h"
-
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
 
 namespace SQLComponents
 {
@@ -92,7 +86,7 @@ SQLTerminateWithoutCleanup(int p_exitcode)
 
 // Check the renaming of the runtimer (EXE, DLL, or whatever)
 void
-SQLCheckExePath(XString p_runtimer)
+SQLCheckExePath(const XString& p_runtimer)
 {
   TCHAR drive    [_MAX_DRIVE];
   TCHAR directory[_MAX_DIR  ];

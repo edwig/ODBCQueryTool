@@ -249,8 +249,8 @@ SQLMigrateDialog::StartFromCommandLine()
       m_toLogfile = true;
       Logging log;
       log.Open(false);
-      log.WriteLog(_T("Absolute or relative pathname to SQLMigrate.ini is NOT correct!"));
-      log.WriteLog(_T("End of SQLMigrate."));
+      log.WriteLog(XString(_T("Absolute or relative pathname to SQLMigrate.ini is NOT correct!")));
+      log.WriteLog(XString(_T("End of SQLMigrate.")));
       log.Close();
       Closing(false);
       return false;
@@ -359,7 +359,7 @@ SQLMigrateDialog::OnSysCommand(UINT nID, LPARAM lParam)
 void
 SQLMigrateDialog::FindProfile()
 {
-  XString workingDir(_T(""));
+  CString workingDir(_T(""));
 
   if(m_iniFile.Left(2).Right(1) == _T(":") || m_iniFile.Left(1) == _T("\\"))
   {
@@ -606,8 +606,8 @@ SQLMigrateDialog::PerformMigration()
   // Show errors (if any)
   if(!error.IsEmpty())
   {
-    m_logfile.WriteLog(_T(""));
-    m_logfile.WriteLog(_T("STOPPED WITH ERROR!"));
+    m_logfile.WriteLog(XString(_T("")));
+    m_logfile.WriteLog(XString(_T("STOPPED WITH ERROR!")));
     m_logfile.WriteLog(error);
 
     if(m_commandLineMode == false)
@@ -640,7 +640,7 @@ SQLMigrateDialog::PostMigration()
     XString text(_T("The migration is complete"));
     if (m_commandLineMode)
     {
-      m_logfile.WriteLog(_T(""));
+      m_logfile.WriteLog(XString(_T("")));
       m_logfile.WriteLog(text);
     }
     else
@@ -707,7 +707,7 @@ void
 SQLMigrateDialog::OnDirectory()
 {
   MapDialog dlg;
-  if(dlg.Browse(GetSafeHwnd(),_T("Find working directory"),m_directory))
+  if(dlg.Browse(GetSafeHwnd(),_T("Find working directory"),m_directory.GetString()))
   {
     m_directory = dlg.GetPath();
     m_profile   = m_directory + _T("\\") + m_iniFile;

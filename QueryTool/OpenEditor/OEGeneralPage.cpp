@@ -66,8 +66,8 @@ void COEGeneralPage::DoDataExchange(CDataExchange* pDX)
     {
       if(m_comboKeymap.GetCount() == 0)
       {
-        CString in(m_keymapLayoutList);
-        std::vector<CString> list;
+        XString in(m_keymapLayoutList);
+        std::vector<XString> list;
         SplitString(in,list,';');
 
         for(auto& str : list)

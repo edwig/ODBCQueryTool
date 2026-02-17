@@ -423,7 +423,7 @@ ConnectionDlg::Connect()
   TCHAR buffer[1024];
   CWaitCursor take_a_deep_sigh;
 
-  CString connectStr;
+  XString connectStr;
 
   if(m_fileDSN.IsEmpty())
   {
@@ -729,8 +729,12 @@ ConnectionDlg::SetDataConnector(SQLDatabase* database,bool p_open /*=true*/)
 
   if(!m_database->IsOpen() && p_open)
   {
-    CString options;
-    m_database->Open(m_datasource,m_user,m_password,options,m_safty);
+    XString options;
+    XString datasource = m_datasource;
+    XString user       = m_user;
+    XString password   = m_password;
+
+    m_database->Open(datasource,user,password,options,m_safty);
     if(!m_database->IsOpen())
     {
       return false;

@@ -742,6 +742,7 @@ CGridView::ExportToExcelXLS()
   resultError.set_font(bold_font);
 
   // Print out the rows one by one
+  XString str;
   for (int y = 0; y < m_pGridCtrl->GetRowCount(); ++y)
   {
     for (int x = 0; x < m_pGridCtrl->GetColumnCount(); ++x)
@@ -797,21 +798,24 @@ CGridView::ExportToExcelXLS()
                               break;
 
           case SQL_C_DATE:
-          case SQL_C_TYPE_DATE: var.SetData(sqlType, text);
-                                var.GetAsString(text);
+          case SQL_C_TYPE_DATE: var.SetData(sqlType,text);
+                                var.GetAsString(str);
+                                text = str;
                                 cell->Set(text);
                                 cell->SetFormat(dateFormat);
                                 break;
           case SQL_C_TIME:
           case SQL_C_TYPE_TIME: var.SetData(sqlType, text);
-                                var.GetAsString(text);
+                                var.GetAsString(str);
+                                text = str;
                                 cell->Set(text);
                                 cell->SetFormat(timeFormat);
                                 break;
           case SQL_C_TIMESTAMP: 
           case SQL_C_TYPE_TIMESTAMP:  
                                 var.SetData(sqlType,text);
-                                var.GetAsString(text);
+                                var.GetAsString(str);
+                                text = str;
                                 cell->Set(text);
                                 cell->SetFormat(stampFormat);
                                 break;
@@ -893,7 +897,7 @@ CGridView::ExportToExcelSLK()
     return;
   }
   // Print the header wit formats
-  CString header(excel_header);
+  XString header(excel_header);
   file.Write(header);
 
   // Print out the rows one by one
@@ -914,7 +918,7 @@ CGridView::ExportToExcelSLK()
     }
   }
   // Print the ending flag
-  CString footer(excel_footer);
+  XString footer(excel_footer);
   file.Write(footer);
   // finally close the directory
   file.Close();
@@ -967,22 +971,22 @@ CGridView::ExportToHTML()
     return;
   }
   // Print the header wit formats
-  CString header(html_header);
+  XString header(html_header);
   file.Write(header);
 
   // HEADER
-  file.Write(CString(_T("<TR>")));
+  file.Write(XString(_T("<TR>")));
   for(int x = 1; x < m_pGridCtrl->GetColumnCount(); ++x)
   {
     file.Format(_T("<TH>%s</TH>"),m_pGridCtrl->GetItemText(0,x).GetString());
   }
-  file.Write(CString(_T("</TR>\n")));
+  file.Write(XString(_T("</TR>\n")));
   // BODY
   // Print out the rows one by one
   for(int y = 1; y < m_pGridCtrl->GetRowCount(); ++y)
   {
     // Print table header
-    file.Write(CString(_T("<TR>")));
+    file.Write(XString(_T("<TR>")));
     // Print table data
     for(int x = 1; x < m_pGridCtrl->GetColumnCount(); ++x)
     {
@@ -997,10 +1001,10 @@ CGridView::ExportToHTML()
         file.Format(_T("<TD>%s</TD>"),text.GetString());
       }
     }
-    file.Write(CString(_T("</TR>\n")));
+    file.Write(XString(_T("</TR>\n")));
   }
   // Print the ending flag
-  CString footer(html_footer);
+  XString footer(html_footer);
   file.Write(footer);
   // finally close the directory
   file.Close();
@@ -1062,18 +1066,18 @@ CGridView::ExportToTXT()
   {
     if(x > 1)
     {
-      file.Write(CString(_T(" ")));
+      file.Write(XString(_T(" ")));
     }
-    CString head = m_pGridCtrl->GetItemText(0,x);
+    XString head = m_pGridCtrl->GetItemText(0,x);
     file.Write(head);
     int w = colSize[x];
     int extra = w - head.GetLength();
     while(extra-- > 0)
     {
-      file.Write(CString(_T(" ")));
+      file.Write(XString(_T(" ")));
     }
   }
-  file.Write(CString(_T("\n\n")));
+  file.Write(XString(_T("\n\n")));
   // BODY
   // Print out the rows one by one
   for(int y = 1; y < m_pGridCtrl->GetRowCount(); ++y)
@@ -1083,19 +1087,19 @@ CGridView::ExportToTXT()
     {
       if(x > 1)
       {
-        file.Write(CString(_T(" ")));
+        file.Write(XString(_T(" ")));
       }
-      CString text = m_pGridCtrl->GetItemText(y,x);
+      XString text = m_pGridCtrl->GetItemText(y,x);
       file.Write(text);
 
       int w = colSize[x];
       int extra = w - text.GetLength();
       while(extra-- > 0)
       {
-        file.Write(CString(_T(" ")));
+        file.Write(XString(_T(" ")));
       }
     }
-    file.Write(CString(_T("\n")));
+    file.Write(XString(_T("\n")));
   }
   // final close the file
   file.Close();

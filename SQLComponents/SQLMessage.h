@@ -2,8 +2,8 @@
 //
 // File: SQLMessage.h
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -28,5 +28,5 @@
 namespace SQLComponents
 {
   // Message in the foreground or to the WMI Event log
-  INT_PTR SQLMessage(HWND p_wnd,XString p_message,XString p_title,int p_buttons);
+  INT_PTR SQLMessage(HWND p_wnd,const XString& p_message,const XString& p_title,int p_buttons);
 }

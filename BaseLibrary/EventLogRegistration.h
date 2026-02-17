@@ -4,8 +4,8 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 // 
-// Copyright (c) 2014-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 2014-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files(the "Software"), to deal
@@ -31,6 +31,6 @@
 // Defaulting to "Applications"
 extern LPCTSTR g_eventLogCategory;
 
-int    RegisterMessagesDllForService(XString p_serviceName,XString p_messageDLL,XString& p_error);
-bool UnRegisterMessagesDllForService(XString p_serviceName,XString& p_error);
-bool IsMessageDLLRegistered(XString p_serviceName);
+int    RegisterMessagesDllForService(const XString& p_serviceName,const XString& p_messageDLL,XString& p_error);
+bool UnRegisterMessagesDllForService(const XString& p_serviceName,XString& p_error);
+bool IsMessageDLLRegistered(const XString& p_serviceName);

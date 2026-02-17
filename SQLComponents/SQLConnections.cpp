@@ -2,8 +2,8 @@
 //
 // File: SQLConnections.cpp
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -29,12 +29,6 @@
 #include "SQLGetExePath.h"
 #include <Crypto.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 namespace SQLComponents
 {
 
@@ -50,10 +44,11 @@ SQLConnections::Reset()
 }
 
 SQLConnection*
-SQLConnections::GetConnection(XString p_name)
+SQLConnections::GetConnection(const XString& p_name)
 {
-  p_name.MakeLower();
-  ConnMap::iterator it = m_connections.find(p_name);
+  XString name(p_name);
+  name.MakeLower();
+  ConnMap::iterator it = m_connections.find(name);
   if(it != m_connections.end())
   {
     return &(it->second);
@@ -79,7 +74,7 @@ SQLConnections::GetConnection(unsigned p_number)
 }
 
 XString
-SQLConnections::GetConnectionString(XString p_name)
+SQLConnections::GetConnectionString(const XString& p_name)
 {
   SQLConnection* conn = GetConnection(p_name);
   if(conn == nullptr)
@@ -99,12 +94,12 @@ SQLConnections::GetConnectionString(XString p_name)
 }
 
 bool
-SQLConnections::AddConnection(XString p_name
-                             ,XString p_datasource
-                             ,XString p_username
-                             ,XString p_password
-                             ,XString p_options
-                             ,XString p_targetSchema /* = ""*/)
+SQLConnections::AddConnection(const XString& p_name
+                             ,const XString& p_datasource
+                             ,const XString& p_username
+                             ,const XString& p_password
+                             ,const XString& p_options
+                             ,const XString& p_targetSchema /* = ""*/)
 {
   // See if it is a double registration
   const SQLConnection* fnd = GetConnection(p_name);
@@ -115,24 +110,26 @@ SQLConnections::AddConnection(XString p_name
 
   // New connection
   SQLConnection connect;
-  connect.m_name       = p_name;
-  connect.m_datasource = p_datasource;
-  connect.m_username   = p_username;
-  connect.m_password   = p_password;
-  connect.m_options    = p_options;
+  connect.m_name         = p_name;
+  connect.m_datasource   = p_datasource;
+  connect.m_username     = p_username;
+  connect.m_password     = p_password;
+  connect.m_options      = p_options;
   connect.m_targetSchema = p_targetSchema;
 
   // Keep this connection
-  p_name.MakeLower();
-  m_connections.insert(std::make_pair(p_name,connect));
+  XString name(p_name);
+  name.MakeLower();
+  m_connections.insert(std::make_pair(name,connect));
   return true;
 }
 
 bool
-SQLConnections::DelConnection(XString p_name)
+SQLConnections::DelConnection(const XString& p_name)
 {
-  p_name.MakeLower();
-  ConnMap::iterator it = m_connections.find(p_name);
+  XString name(p_name);
+  name.MakeLower();
+  ConnMap::iterator it = m_connections.find(name);
   if(it != m_connections.end())
   {
     m_connections.erase(it);
@@ -142,14 +139,16 @@ SQLConnections::DelConnection(XString p_name)
 }
 
 bool
-SQLConnections::LoadConnectionsFile(XString p_filename /*=""*/,bool p_reset /*=false*/)
+SQLConnections::LoadConnectionsFile(XString& p_filename,bool p_reset /*=false*/)
 {
   if(p_filename.IsEmpty())
   {
     p_filename = _T("Database.xml");
   }
-  p_filename = SQLGetExePath() + p_filename;
-
+  if(p_filename.GetAt(1) != _T(':'))
+  {
+    p_filename = SQLGetExePath() + p_filename;
+  }
   XMLMessage msg;
   if(msg.LoadFile(p_filename) == false)
   {
@@ -194,27 +193,29 @@ SQLConnections::LoadConnectionsFile(XString p_filename /*=""*/,bool p_reset /*=f
 }
 
 bool
-SQLConnections::SaveConnectionsFile(XString p_filename /*=""*/)
+SQLConnections::SaveConnectionsFile(XString& p_filename)
 {
   if(p_filename.IsEmpty())
   {
     p_filename = _T("Database.xml");
   }
-  p_filename = SQLGetExePath() + p_filename;
-
+  if(p_filename.GetAt(1) != _T(':'))
+  {
+    p_filename = SQLGetExePath() + p_filename;
+  }
   XMLMessage msg;
   msg.SetRootNodeName(_T("Connections"));
   
   for(auto& connect : m_connections)
   {
-    XMLElement* conn = msg.AddElement(nullptr,_T("Connect"),XDT_String,_T(""));
+    XMLElement* conn = msg.AddElement(nullptr,_T("Connect"),_T(""));
 
-    msg.AddElement(conn,_T("Name"),     XDT_String,connect.second.m_name);
-    msg.AddElement(conn,_T("DSN"),      XDT_String,connect.second.m_datasource);
-    msg.AddElement(conn,_T("Target"),   XDT_String,connect.second.m_targetSchema);
-    msg.AddElement(conn,_T("User"),     XDT_String,connect.second.m_username);
-    msg.AddElement(conn,_T("Options"),  XDT_String,connect.second.m_options);
-    msg.AddElement(conn,_T("Password"), XDT_String,PasswordScramble(connect.second.m_password));
+    msg.AddElement(conn,_T("Name"),     connect.second.m_name);
+    msg.AddElement(conn,_T("DSN"),      connect.second.m_datasource);
+    msg.AddElement(conn,_T("Target"),   connect.second.m_targetSchema);
+    msg.AddElement(conn,_T("User"),     connect.second.m_username);
+    msg.AddElement(conn,_T("Options"),  connect.second.m_options);
+    msg.AddElement(conn,_T("Password"), PasswordScramble(connect.second.m_password));
   }
 
   // Save the file
@@ -228,7 +229,7 @@ SQLConnections::GetConnectionsCount()
 }
 
 void
-SQLConnections::SetEncryptionKey(XString p_key)
+SQLConnections::SetEncryptionKey(const XString& p_key)
 {
   // Set the encryption key
   m_cryptKey = p_key;
@@ -241,7 +242,7 @@ SQLConnections::SetEncryptionKey(XString p_key)
 //////////////////////////////////////////////////////////////////////////
 
 XString
-SQLConnections::PasswordScramble(XString p_password)
+SQLConnections::PasswordScramble(const XString& p_password)
 {
   Crypto crypt;
 
@@ -260,7 +261,7 @@ SQLConnections::PasswordScramble(XString p_password)
 }
 
 XString
-SQLConnections::PasswordDecoding(XString p_scramble)
+SQLConnections::PasswordDecoding(const XString& p_scramble)
 {
   Crypto crypt;
 

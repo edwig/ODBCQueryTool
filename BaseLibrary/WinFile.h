@@ -3,7 +3,9 @@
 // File: WinFile.h
 //
 // Everything :-) you can do with a Microsoft MS-Windows file (and faster!)
-// Author: W.E. Huisman
+//
+// Created: 2014-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files(the "Software"), to deal
@@ -144,7 +146,7 @@ public:
   // CTOR 
   WinFile();
   // CTOR from a filename
-  WinFile(XString p_filename);
+  WinFile(const XString& p_filename);
   // CTOR from another file pointer
   WinFile(WinFile& p_other);
   // DTOR
@@ -160,9 +162,9 @@ public:
   bool      DeleteFile();
   unsigned  DeleteDirectory(bool p_recursive = false);
   bool      DeleteToTrashcan(bool p_show = false, bool p_confirm = false);
-  bool      CopyFile(XString p_destination,FCopy p_how = winfile_copy);
-  bool      MoveFile(XString p_destination,FMove p_how = winfile_move);
-  bool      CreateTempFileName(XString p_pattern,XString p_extension = _T(""));
+  bool      CopyFile(const XString& p_destination,FCopy p_how = winfile_copy);
+  bool      MoveFile(const XString& p_destination,FMove p_how = winfile_move);
+  bool      CreateTempFileName(const XString& p_pattern,const XString& p_extension = _T(""));
   bool      GrantFullAccess();
   void      ForgetFile(); // BEWARE!
 
@@ -187,9 +189,9 @@ public:
   bool      Ungetch(uchar p_ch);  // only works in conjunction with "Getch()"
 
   // SETTERS
-  bool      SetFilename(XString p_filename);
-  bool      SetFilenameInFolder(int p_folder,XString p_filename);  // Use CSIDL_* names !
-  bool      SetFilenameFromResource(XString p_resource);
+  bool      SetFilename(const XString& p_filename);
+  bool      SetFilenameInFolder(int p_folder,const XString& p_filename);  // Use CSIDL_* names !
+  bool      SetFilenameFromResource(const XString& p_resource);
   bool      SetFileHandle(HANDLE p_handle);
   bool      SetFileAttribute(FAttributes p_attribute,bool p_set);
   bool      SetHidden(bool p_hidden);
@@ -263,9 +265,9 @@ public:
                               ,bool     p_local     = true    // Standard on your local session, otherwise global
                               ,bool     p_trycreate = false   // Create with m_filename if not exists
                               ,size_t   p_size      = 0);     // Size of memory if we create it
-  XString   LegalDirectoryName(XString  p_name,bool p_extensionAllowed = true);
+  XString   LegalDirectoryName(const XString& p_name,bool p_extensionAllowed = true);
   // Create a file name from an HTTP resource name
-  XString   FileNameFromResourceName(XString p_resource);
+  XString   FileNameFromResourceName(const XString& p_resource);
   // Reduce file path name for RE-BASE of directories, removing \..\ parts
   XString  ReduceDirectoryPath(XString& path);
   // Makes a relative pathname from an absolute one
@@ -310,20 +312,21 @@ public:
   // Convert a time_t value to a FILETIME
   static FILETIME ConvertTimetToFileTime(time_t p_time);
   // Translating UTF-8 / UTF-16-LE and UTF-16-BE in reading and writing
-  XString         TranslateInputBuffer(std::string& p_string);
+  XString         TranslateInputBuffer(std::string& p_string8,std::wstring& p_string16);
   std::string     TranslateOutputBuffer(const XString& p_string);
 
 private:
   // PRIVATE OPERATIONS
-  void      FilenameParts(XString p_fullpath,XString& p_drive,XString& p_directory,XString& p_filename,XString& p_extension);
-  XString   StripFileProtocol  (XString  p_fileref);
+  void      FilenameParts(const XString& p_fullpath,XString& p_drive,XString& p_directory,XString& p_filename,XString& p_extension);
+  XString   StripFileProtocol  (const XString& p_fileref);
   int       ResolveSpecialChars(XString& p_value);
-  int       EncodeSpecialChars(XString& p_value);
+  int       EncodeSpecialChars (XString& p_value);
   XString   GetBaseDirectory   (XString& p_path);
   // Page buffer cache functions
   uchar*    PageBuffer();
   void      PageBufferFree();
   int       PageBufferRead();
+  int       PageBufferReadCharacter();
   bool      PageBufferReadForeward(bool p_scanBom);
   bool      PageBufferWrite(uchar ch);
   bool      PageBufferFlush();

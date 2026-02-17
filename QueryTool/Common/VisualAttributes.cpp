@@ -187,7 +187,7 @@ const VisualAttribute& VisualAttributesSet::FindByName (LPCTSTR name) const
         }
     }
 
-    throw StdException(CString(_T("Out-of-range: Visual attribute \"")) + name + CString(_T("\" not found in set \"")) + m_name + CString(_T("\".")));
+    throw StdException(XString(_T("Out-of-range: Visual attribute \"")) + name + XString(_T("\" not found in set \"")) + m_name.GetString() + XString(_T("\".")));
 }
 
 }//namespace Common

@@ -2,8 +2,8 @@
 //
 // File: SQLGetExePath.h
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -31,6 +31,6 @@ namespace SQLComponents
 XString SQLGetExePath();
 XString SQLGetExeFile();
 HMODULE SQLGetModuleHandle();
-void    SQLCheckExePath(XString p_runtimer);
+void    SQLCheckExePath(const XString& p_runtimer);
 
 }

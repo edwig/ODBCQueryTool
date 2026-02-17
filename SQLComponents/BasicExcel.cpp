@@ -27,6 +27,7 @@
 // Version number: See SQLComponents.h
 //
 #include "ExcelFormat.h"
+#include <BaseLibrary.h>
 #include <comutil.h>
 #include <tchar.h>
 
@@ -329,7 +330,7 @@ bool Block::Create(const wchar_t* filename)
 {
   // Create new file
   size_t filenameLength = wcslen(filename);
-  char* name = new char[filenameLength+1];
+  char* name = alloc_new char[filenameLength+1];
   wcstombs(name, filename, filenameLength);
   name[filenameLength] = 0;
 
@@ -450,13 +451,13 @@ bool Block::Swap(SECT index1, SECT index2)
     if (index1 == index2)
       return true;
 
-    char* block1 = new char[blockSize_];
+    char* block1 = alloc_new char[blockSize_];
     if (!this->Read(index1, block1))
     {
       delete [] block1;
       return false;
     }
-    char* block2 = new char[blockSize_];
+    char* block2 = alloc_new char[blockSize_];
     if (!this->Read(index2, block2))
     {
       delete[] block1;
@@ -550,7 +551,7 @@ bool Block::Erase(SECT index)
     indexEnd_ -= 1;
 
     // Read entire file except the block to be deleted into memory.
-    char* buffer = new char[fileSize_];
+    char* buffer = alloc_new char[fileSize_];
     for(SECT i=0, j=0; i!=indexEnd_+1; ++i) 
     {
       file_.seekg(i*blockSize_);
@@ -585,7 +586,7 @@ bool Block::Erase(vector<SECT>& indices)
   // Read entire file except the blocks to be deleted into memory.
   ULONG maxIndices = (ULONG) indices.size();
   fileSize_ -= maxIndices*blockSize_;
-  char* buffer = new char[fileSize_];
+  char* buffer = alloc_new char[fileSize_];
   for(SECT i=0, k=0; i!=indexEnd_; ++i) 
   {
     file_.seekg(i*blockSize_);
@@ -838,14 +839,14 @@ bool CompoundFile::Create(const wchar_t* filename)
   SaveBAT();
 
   // Save properties
-  DirectoryEntry* root = new DirectoryEntry;
+  DirectoryEntry* root = alloc_new DirectoryEntry;
   wcscpy(root->name_, L"Root Entry");
   root->_mse = STGTY_ROOT;
   dirEntries_.push_back(root);
   SaveProperties();
 
   // Set property tree
-  propertyTrees_ = new PropertyTree;
+  propertyTrees_ = alloc_new PropertyTree;
   propertyTrees_->parent_ = 0;
   propertyTrees_->self_ = dirEntries_[0];
   propertyTrees_->index_ = 0;
@@ -868,7 +869,7 @@ bool CompoundFile::Open(const wchar_t* filename, ios_base::openmode mode)
   LoadBAT();
 
   // Load properties
-  propertyTrees_ = new PropertyTree;
+  propertyTrees_ = alloc_new PropertyTree;
   LoadProperties();
   currentDirectory_ = propertyTrees_;
 
@@ -966,7 +967,7 @@ int CompoundFile::ChangeDirectory(const wchar_t* path)
         break;
     }
 
-    wchar_t* directory = new wchar_t[npos-ipos+1];
+    wchar_t* directory = alloc_new wchar_t[npos-ipos+1];
     copy(path+ipos, path+npos, directory);
     directory[npos-ipos] = 0;
     currentDirectory_ = FindProperty(currentDirectory_, directory);
@@ -991,7 +992,7 @@ int CompoundFile::MakeDirectory(const wchar_t* path)
 // PROMISE: a file with the same name is present.
 {
   previousDirectories_.push_back(currentDirectory_);
-  DirectoryEntry* property = new DirectoryEntry;
+  DirectoryEntry* property = alloc_new DirectoryEntry;
   property->_mse = STGTY_STORAGE;
   int ret = MakeProperty(path, property);
   currentDirectory_ = previousDirectories_.back();
@@ -1009,7 +1010,7 @@ int CompoundFile::MakeFile(const wchar_t* path)
 // PROMISE: a directory with the same name is present.
 {
   previousDirectories_.push_back(currentDirectory_);
-  DirectoryEntry* property = new DirectoryEntry;
+  DirectoryEntry* property = alloc_new DirectoryEntry;
   property->_mse = STGTY_STREAM;
   int ret = MakeProperty(path, property);
   currentDirectory_ = previousDirectories_.back();
@@ -1053,7 +1054,7 @@ int CompoundFile::ReadFile(const wchar_t* path, char* data)
   char* buffer;
   if (wcscmp(path, L"\\") == 0)
   {
-    buffer = new char[DataSize(propertyTrees_->self_->_sectStart, true)];
+    buffer = alloc_new char[DataSize(propertyTrees_->self_->_sectStart, true)];
     ReadData(propertyTrees_->self_->_sectStart, buffer, true);
     copy(buffer, buffer+propertyTrees_->self_->_ulSize, data);
     delete[] buffer;
@@ -1068,13 +1069,13 @@ int CompoundFile::ReadFile(const wchar_t* path, char* data)
   if (property->self_->_ulSize >= 4096)
   {
     // Data stored in normal big blocks
-    buffer = new char[DataSize(property->self_->_sectStart, true)];
+    buffer = alloc_new char[DataSize(property->self_->_sectStart, true)];
     ReadData(property->self_->_sectStart, buffer, true);
   }
   else
   {
     // Data stored in small blocks
-    buffer = new char[DataSize(property->self_->_sectStart, false)];
+    buffer = alloc_new char[DataSize(property->self_->_sectStart, false)];
     ReadData(property->self_->_sectStart, buffer, false);
   }
   // Truncated the retrieved data to the actual file size.
@@ -1144,7 +1145,7 @@ int CompoundFile::WriteFile(const wchar_t* path, const vector<char>& data, ULONG
 bool CompoundFile::Create(const char* filename)
 {
   size_t filenameLength = strlen(filename);
-  wchar_t* wname = new wchar_t[filenameLength+1];
+  wchar_t* wname = alloc_new wchar_t[filenameLength+1];
   mbstowcs(wname, filename, filenameLength);
   wname[filenameLength] = 0;
   bool ret = Create(wname);
@@ -1155,7 +1156,7 @@ bool CompoundFile::Create(const char* filename)
 bool CompoundFile::Open(const char* filename, ios_base::openmode mode)
 {
   size_t filenameLength = strlen(filename);
-  wchar_t* wname = new wchar_t[filenameLength+1];
+  wchar_t* wname = alloc_new wchar_t[filenameLength+1];
   mbstowcs(wname, filename, filenameLength);
   wname[filenameLength] = 0;
   bool ret = Open(wname, mode);
@@ -1166,7 +1167,7 @@ bool CompoundFile::Open(const char* filename, ios_base::openmode mode)
 int CompoundFile::ChangeDirectory(const char* path)
 {
   size_t pathLength = strlen(path);
-  wchar_t* wpath = new wchar_t[pathLength+1];
+  wchar_t* wpath = alloc_new wchar_t[pathLength+1];
   mbstowcs(wpath, path, pathLength);
   wpath[pathLength] = 0;
   int ret = ChangeDirectory(wpath);
@@ -1177,7 +1178,7 @@ int CompoundFile::ChangeDirectory(const char* path)
 int CompoundFile::MakeDirectory(const char* path)
 {
   size_t pathLength = strlen(path);
-  wchar_t* wpath = new wchar_t[pathLength+1];
+  wchar_t* wpath = alloc_new wchar_t[pathLength+1];
   mbstowcs(wpath, path, pathLength);
   wpath[pathLength] = 0;
   int ret = MakeDirectory(wpath);
@@ -1188,7 +1189,7 @@ int CompoundFile::MakeDirectory(const char* path)
 int CompoundFile::MakeFile(const char* path)
 {
   size_t pathLength = strlen(path);
-  wchar_t* wpath = new wchar_t[pathLength+1];
+  wchar_t* wpath = alloc_new wchar_t[pathLength+1];
   mbstowcs(wpath, path, pathLength);
   wpath[pathLength] = 0;
   int ret = MakeFile(wpath);
@@ -1199,7 +1200,7 @@ int CompoundFile::MakeFile(const char* path)
 int CompoundFile::FileSize(const char* path, ULONG& size)
 {
   size_t pathLength = strlen(path);
-  wchar_t* wpath = new wchar_t[pathLength+1];
+  wchar_t* wpath = alloc_new wchar_t[pathLength+1];
   mbstowcs(wpath, path, pathLength);
   wpath[pathLength] = 0;
 
@@ -1211,7 +1212,7 @@ int CompoundFile::FileSize(const char* path, ULONG& size)
 int CompoundFile::ReadFile(const char* path, char* data)
 {
   size_t pathLength = strlen(path);
-  wchar_t* wpath = new wchar_t[pathLength+1];
+  wchar_t* wpath = alloc_new wchar_t[pathLength+1];
   mbstowcs(wpath, path, pathLength);
   wpath[pathLength] = 0;
   int ret = ReadFile(wpath, data);
@@ -1221,7 +1222,7 @@ int CompoundFile::ReadFile(const char* path, char* data)
 int CompoundFile::ReadFile(const char* path, vector<char>& data)
 {
   size_t pathLength = strlen(path);
-  wchar_t* wpath = new wchar_t[pathLength+1];
+  wchar_t* wpath = alloc_new wchar_t[pathLength+1];
   mbstowcs(wpath, path, pathLength);
   wpath[pathLength] = 0;
 
@@ -1233,7 +1234,7 @@ int CompoundFile::ReadFile(const char* path, vector<char>& data)
 int CompoundFile::WriteFile(const char* path, const char* data, ULONG size)
 {
   size_t pathLength = strlen(path);
-  wchar_t* wpath = new wchar_t[pathLength+1];
+  wchar_t* wpath = alloc_new wchar_t[pathLength+1];
   mbstowcs(wpath, path, pathLength);
   wpath[pathLength] = 0;
 
@@ -1245,7 +1246,7 @@ int CompoundFile::WriteFile(const char* path, const char* data, ULONG size)
 int CompoundFile::WriteFile(const char* path, const vector<char>& data, ULONG size)
 {
   size_t pathLength = strlen(path);
-  wchar_t* wpath = new wchar_t[pathLength+1];
+  wchar_t* wpath = alloc_new wchar_t[pathLength+1];
   mbstowcs(wpath, path, pathLength);
   wpath[pathLength] = 0;
 
@@ -1493,7 +1494,7 @@ void CompoundFile::SplitPath(const wchar_t* path,
 
   if (npos != 0) {
     // Get parent path if available
-    parentpath = new wchar_t[npos+1];
+    parentpath = alloc_new wchar_t[npos+1];
     copy(path, path+npos, parentpath);
     parentpath[npos] = 0;
     ++npos;
@@ -1503,7 +1504,7 @@ void CompoundFile::SplitPath(const wchar_t* path,
   if (npos==0 && pathLength>0 && path[0]==L'\\')
     ++npos;
 
-  propertyname = new wchar_t[pathLength-npos+1];
+  propertyname = alloc_new wchar_t[pathLength-npos+1];
   copy(path+npos, path+pathLength, propertyname);
   propertyname[pathLength-npos] = 0;
 }
@@ -1635,7 +1636,7 @@ ULONG CompoundFile::ReadData(SECT startIndex, char* data, bool isBig)
 //	size_t maxBlock = maxIndex / smallBlocksPerBigBlock +
 //                   (maxIndex % smallBlocksPerBigBlock ? 1 : 0)
 //  size_t totalBlocks = maxBlock - minBlock
-    char* buffer = new char[DataSize(dirEntries_[0]->_sectStart, true)];
+    char* buffer = alloc_new char[DataSize(dirEntries_[0]->_sectStart, true)];
     ReadData(dirEntries_[0]->_sectStart, buffer, true);
 
     ULONG maxIndices = (ULONG) indices.size();
@@ -2012,10 +2013,10 @@ void CompoundFile::FreeBlocks(vector<SECT>& indices, bool isBig)
     ULONG maxBlocks = dirEntries_[0]->_ulSize / header_.bigBlockSize_ +
                (dirEntries_[0]->_ulSize % header_.bigBlockSize_ ? 1 : 0);
     size_t size = maxBlocks * header_.bigBlockSize_;
-    char* data = new char[size];
+    char* data = alloc_new char[size];
     ReadData(dirEntries_[0]->_sectStart, data, true);
     size_t maxSmallBlocks = dirEntries_[0]->_ulSize / header_.smallBlockSize_;
-    char* newdata = new char[dirEntries_[0]->_ulSize-maxIndices*header_.smallBlockSize_];
+    char* newdata = alloc_new char[dirEntries_[0]->_ulSize-maxIndices*header_.smallBlockSize_];
     {for(size_t i=0, j=0; i<maxSmallBlocks; ++i) {
       if (find(indices.begin(), indices.end(), i) == indices.end()) {
         copy(data+i*header_.smallBlockSize_,
@@ -2071,7 +2072,7 @@ void CompoundFile::LoadProperties()
 {
   // Read properties' data from compound file.
   ULONG propertiesSize = DataSize(header_._sectDirStat, true);
-  char* buffer = new char[propertiesSize];
+  char* buffer = alloc_new char[propertiesSize];
   ReadData(header_._sectDirStat, buffer, true);
 
   // Split properties' data into individual property.
@@ -2086,7 +2087,7 @@ void CompoundFile::LoadProperties()
     for(size_t j=0; j<4; ++j)
     {
       // Read individual property
-      DirectoryEntry* property = new DirectoryEntry;
+      DirectoryEntry* property = alloc_new DirectoryEntry;
       property->Read(buffer+i*512+j*128);
       if (wcslen(property->name_) == 0)
       {
@@ -2118,7 +2119,7 @@ void CompoundFile::SaveProperties()
              (maxProperties % propertiesPerBlock ? 1 : 0);
   ULONG propertiesSize = maxBlocks*header_.bigBlockSize_;
 
-  char* buffer = new char[propertiesSize];
+  char* buffer = alloc_new char[propertiesSize];
   {for(size_t i=0; i<propertiesSize; ++i) buffer[i] = 0;}
   {for(size_t i=0; i<maxProperties; ++i)
   {
@@ -2310,7 +2311,7 @@ void CompoundFile::InsertPropertyTree(CompoundFile::PropertyTree* parentTree,
 // PROMISE: child property and all the its children previous property and next property
 // PROMISE: will be readjusted to accomodate the next property.
 {
-  PropertyTree* tree = new PropertyTree;
+  PropertyTree* tree = alloc_new PropertyTree;
   tree->parent_ = parentTree;
   tree->self_ = property;
   tree->index_ = index;
@@ -2643,13 +2644,13 @@ SmallString::SmallString(const SmallString& s) :
   if (s.name_)
   {
     size_t len = strlen(s.name_);
-    name_ = new char[len+1];
+    name_ = alloc_new char[len+1];
     strcpy_s(name_,len + 1,s.name_);
   }
   if (s.wname_)
   {
     size_t len = wcslen(s.wname_);
-    wname_ = new wchar_t[len+1];
+    wname_ = alloc_new wchar_t[len+1];
     wcscpy_s(wname_,len+1,s.wname_);
   }
 }
@@ -2667,14 +2668,14 @@ SmallString::operator=(const SmallString& s)
   if (s.name_) 
   {
     size_t len = strlen(s.name_);
-    name_ = new char[len+1];
+    name_ = alloc_new char[len+1];
     strcpy_s(name_,len+1,s.name_);
   }
 
   if (s.wname_) 
   {
     size_t len = wcslen(s.wname_);
-    wname_ = new wchar_t[len+1];
+    wname_ = alloc_new wchar_t[len+1];
     wcscpy_s(wname_,len+1,s.wname_);
   }
 
@@ -2685,7 +2686,7 @@ const SmallString& SmallString::operator=(const char* str)
   unicode_ = 0;
   Reset();
   size_t len = strlen(str);
-  name_ = new char[len+1];
+  name_ = alloc_new char[len+1];
   strcpy_s(name_,len + 1,str);
   return *this;
 }
@@ -2694,7 +2695,7 @@ const SmallString& SmallString::operator=(const wchar_t* str)
   unicode_ = 1;
   Reset();
   size_t len = wcslen(str);
-  wname_ = new wchar_t[len+1];
+  wname_ = alloc_new wchar_t[len+1];
   wcscpy(wname_, str);
   return *this;
 }
@@ -2714,13 +2715,13 @@ ULONG SmallString::Read(const char* data)
 
   if (!(unicode_ & 0x01)) { //MF compressed format of UTF16LE string?
     // ANSI string
-    name_ = new char[(size_t)stringSize+1];
+    name_ = alloc_new char[(size_t)stringSize+1];
     LittleEndian::ReadString(data, name_, 2, stringSize);
     name_[stringSize] = 0;
     bytesRead += stringSize;
   } else {
     // UNICODE
-    wname_ = new wchar_t[(size_t)stringSize+1];
+    wname_ = alloc_new wchar_t[(size_t)stringSize+1];
     LittleEndian::ReadString(data, wname_, 2, stringSize);
     wname_[stringSize] = 0;
     bytesRead += stringSize*2;
@@ -4465,13 +4466,13 @@ ULONG Worksheet::CellTable::RowBlock::CellBlock::Formula::String::Read(const cha
   LittleEndian::Read(data_, stringSize, 0, 2);
   LittleEndian::Read(data_, flag_, 2, 1);
 
-  wstr_ = new wchar_t[(size_t)stringSize+1];
+  wstr_ = alloc_new wchar_t[(size_t)stringSize+1];
   ULONG bytesRead = 7;
 
   if (flag_ == 0) 
   {
     // compressed UTF16LE string?
-	char* str = new char[(size_t)stringSize + 1];
+	char* str = alloc_new char[(size_t)stringSize + 1];
     LittleEndian::ReadString(data_, str, 3, stringSize);
     str[stringSize] = 0;
     mbstowcs(wstr_, str, stringSize);
@@ -4499,7 +4500,7 @@ ULONG Worksheet::CellTable::RowBlock::CellBlock::Formula::String::Write(char* da
   if (flag_ == 0) 
   {
 	  // compressed UTF16LE string?
-	  char* str = new char[(size_t)stringSize + 1];
+	  char* str = alloc_new char[(size_t)stringSize + 1];
     wcstombs(str, wstr_, stringSize);
     LittleEndian::WriteString(data_, str, 3, stringSize);
 	  delete [] str;
@@ -4630,35 +4631,35 @@ void Worksheet::CellTable::RowBlock::CellBlock::SetType(int type)
 
   switch(type_) {
     case CODE::BLANK:
-      _union.blank_ = new Blank;
+      _union.blank_ = alloc_new Blank;
       break;
 
     case CODE::MULBLANK:
-      _union.mulblank_ = new MulBlank;
+      _union.mulblank_ = alloc_new MulBlank;
       break;
 
     case CODE::BOOLERR:
-      _union.boolerr_ = new BoolErr;
+      _union.boolerr_ = alloc_new BoolErr;
       break;
 
     case CODE::LABELSST:
-      _union.labelsst_ = new LabelSST;
+      _union.labelsst_ = alloc_new LabelSST;
       break;
 
     case CODE::MULRK:
-      _union.mulrk_ = new MulRK;
+      _union.mulrk_ = alloc_new MulRK;
       break;
 
     case CODE::NUMBER:
-      _union.number_ = new Number;
+      _union.number_ = alloc_new Number;
       break;
 
     case CODE::RK:
-      _union.rk_ = new RK;
+      _union.rk_ = alloc_new RK;
       break;
 
     case CODE::FORMULA:
-      _union.formula_ = new Formula;
+      _union.formula_ = alloc_new Formula;
       break;
 
     default:
@@ -4950,7 +4951,7 @@ ULONG Worksheet::CellTable::RowBlock::Read(const char* data)
       case CODE::NUMBER:
       case CODE::RK:
       case CODE::FORMULA:
-        cellBlocks_.push_back(new CellBlock);
+        cellBlocks_.push_back(alloc_new CellBlock);
         if (cellBlocks_.size()%1000==0) cellBlocks_.reserve(cellBlocks_.size()+1000);
         bytesRead += cellBlocks_[cellBlocks_.size()-1]->Read(data+bytesRead);
         break;
@@ -5548,14 +5549,14 @@ BasicExcelWorksheet* BasicExcel::AddWorksheet(const char* name, int sheetIndex)
   if (sheetIndex == -1) {
     workbook_.boundSheets_.push_back(Workbook::BoundSheet());
     worksheets_.push_back(Worksheet());
-    yesheets_.push_back(new BasicExcelWorksheet(this, (int)worksheets_.size()-1));
+    yesheets_.push_back(alloc_new BasicExcelWorksheet(this, (int)worksheets_.size()-1));
     boundSheet = &(workbook_.boundSheets_.back());
     worksheet = &(worksheets_.back());
     yesheet = &*yesheets_.back();
   } else {
     boundSheet = &*(workbook_.boundSheets_.insert(workbook_.boundSheets_.begin()+sheetIndex, Workbook::BoundSheet()));
     worksheet = &*(worksheets_.insert(worksheets_.begin()+sheetIndex, Worksheet()));
-    yesheet = &**(yesheets_.insert(yesheets_.begin()+sheetIndex, new BasicExcelWorksheet(this, sheetIndex)));
+    yesheet = &**(yesheets_.insert(yesheets_.begin()+sheetIndex, alloc_new BasicExcelWorksheet(this, sheetIndex)));
     int maxSheets = (int) worksheets_.size();
 
     for(int i=sheetIndex+1; i<maxSheets; ++i)
@@ -5590,14 +5591,14 @@ BasicExcelWorksheet* BasicExcel::AddWorksheet(const wchar_t* name, int sheetInde
   if (sheetIndex == -1) {
     workbook_.boundSheets_.push_back(Workbook::BoundSheet());
     worksheets_.push_back(Worksheet());
-    yesheets_.push_back(new BasicExcelWorksheet(this, (int)worksheets_.size()-1));
+    yesheets_.push_back(alloc_new BasicExcelWorksheet(this, (int)worksheets_.size()-1));
     boundSheet = &(workbook_.boundSheets_.back());
     worksheet = &(worksheets_.back());
     yesheet = &*yesheets_.back();
   } else {
     boundSheet = &*(workbook_.boundSheets_.insert(workbook_.boundSheets_.begin()+sheetIndex, Workbook::BoundSheet()));
     worksheet = &*(worksheets_.insert(worksheets_.begin()+sheetIndex, Worksheet()));
-    yesheet = &**(yesheets_.insert(yesheets_.begin()+sheetIndex, new BasicExcelWorksheet(this, sheetIndex)));
+    yesheet = &**(yesheets_.insert(yesheets_.begin()+sheetIndex, alloc_new BasicExcelWorksheet(this, sheetIndex)));
     int maxSheets = (int) worksheets_.size();
 
     for(int i=sheetIndex+1; i<maxSheets; ++i)
@@ -6047,7 +6048,7 @@ void BasicExcel::UpdateYExcelWorksheet()
 
   for(int i=0; i<maxWorksheets; ++i) 
   {
-    yesheets_.push_back(new BasicExcelWorksheet(this, i));
+    yesheets_.push_back(alloc_new BasicExcelWorksheet(this, i));
 
     for(size_t j = 0; j < worksheets_[i].colinfos_.colinfo_.size(); ++j)
     {
@@ -6151,7 +6152,7 @@ void BasicExcel::UpdateWorksheets()
             }
 
             // Create new cellblock to store cell.
-            pCellBlocks->push_back(new Worksheet::CellTable::RowBlock::CellBlock);
+            pCellBlocks->push_back(alloc_new Worksheet::CellTable::RowBlock::CellBlock);
             if (pCellBlocks->size()%1000==0) pCellBlocks->reserve(pCellBlocks->size()+1000);
             pCell = &*(pCellBlocks->back());
 
@@ -7266,7 +7267,7 @@ void BasicExcelCell::SetWString(const wchar_t* str)
 void BasicExcelCell::SetFormula(const Worksheet::CellTable::RowBlock::CellBlock::Formula& f)
 {
   type_ = BasicExcelCell::FORMULA;
-  _pFormula = new Formula(f);
+  _pFormula = alloc_new Formula(f);
 }
 
 BasicExcelCell::Formula::Formula(const Worksheet::CellTable::RowBlock::CellBlock::Formula& f)
@@ -7325,7 +7326,7 @@ bool BasicExcelCell::get_formula(Worksheet::CellTable::RowBlock::CellBlock* pCel
 
     if (!_pFormula->wstr_.empty()) {
       size_t stringSize = _pFormula->wstr_.size();
-      wchar_t* wstr = new wchar_t[stringSize];
+      wchar_t* wstr = alloc_new wchar_t[stringSize];
       memcpy(wstr, &*_pFormula->wstr_.begin(), stringSize);
       pCell->_union.formula_->string_.wstr_ = wstr;
     } else
@@ -7371,7 +7372,7 @@ ostream& operator<<(ostream& os, const BasicExcelCell& cell)
     case BasicExcelCell::WSTRING:
       {
         size_t len = wcslen(cell.GetWString());
-        char* buffer = new char[len];
+        char* buffer = alloc_new char[len];
         wcstombs(buffer,cell.GetWString(),len);
         os << buffer;
         delete[] buffer;

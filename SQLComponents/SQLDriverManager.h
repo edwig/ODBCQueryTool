@@ -2,8 +2,8 @@
 //
 // File: SQLDriverManager.h
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -70,7 +70,7 @@ public:
   // Getting all the data sources in one list
   bool      GetDataSources(DataSources& p_list,int p_type = SQL_FETCH_FIRST);
   // Get a driver with special capabilities
-  XString   GetSpecialDriver(XString p_base,XString p_extension);
+  XString   GetSpecialDriver(const XString& p_base,const XString& p_extension);
   // Show the MS-Windows ODBC management dialog window
   bool      ODBCManagerDialog(HWND p_parent);
   // Return error information from the driver manager

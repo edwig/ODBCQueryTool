@@ -2,8 +2,8 @@
 //
 // File: SQLTransaction.cpp
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -32,12 +32,6 @@
 #include "SQLWrappers.h"
 #include <atltrace.h>
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 namespace SQLComponents
 {
 
@@ -57,7 +51,7 @@ SQLTransaction::SQLTransaction(SQLDatabase* p_database
   // If asked for, start it right away
   if(p_startImmediate)
   {
-    Start(p_name, p_isSubTransaction);
+    Start(p_name,p_isSubTransaction);
   }
   // Override from database. 
   // In a read-only database all transactions are read-only
@@ -67,12 +61,14 @@ SQLTransaction::SQLTransaction(SQLDatabase* p_database
   }
 }
 
-SQLTransaction::SQLTransaction(HDBC p_hdbc,bool p_startImmediate,bool p_readOnly)
+SQLTransaction::SQLTransaction(HDBC p_hdbc
+                              ,bool p_startImmediate
+                              ,bool p_readonly /* =false */)
                :m_hdbc(p_hdbc)
                ,m_database(NULL)
                ,m_lock(NULL,INFINITE)
                ,m_active(false)
-               ,m_readonly(p_readOnly)
+               ,m_readonly(p_readonly)
 {
   if(p_startImmediate)
   {
@@ -105,7 +101,7 @@ SQLTransaction::~SQLTransaction()
 }
 
 void 
-SQLTransaction::Start(XString p_name, bool p_startSubtransaction)
+SQLTransaction::Start(const XString& p_name, bool p_startSubtransaction)
 {
   // On transaction per instance
   if(m_active)
@@ -145,7 +141,7 @@ SQLTransaction::Commit()
   }
 
   // We are no longer started/active, so we do nothing else after destruction
-  // so commits are not tried double on the database
+  // so commit's are not tried double on the database
   // NOTE: Savepoints must remain till after the commits for the database
   m_active = false;
   
@@ -219,6 +215,9 @@ SQLTransaction::Rollback()
     }
   }
   AfterRollback();
+
+  // We are no longer active
+  m_active = false;
 }
 
 // Can be overridden. We do nothing here

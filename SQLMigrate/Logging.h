@@ -46,7 +46,8 @@ public:
  ~Logging();
   int  Open(bool p_scripting);
   void Close();
-  void WriteLog (XString message);
+  void WriteLog(XString p_message);
+  void WriteLog(LPCTSTR p_message);
   void WriteOut (XString statement,bool p_delim = false);
   void WriteDrop(XString statement,bool p_delim = false);
   void SetLogStatus(LogType status);

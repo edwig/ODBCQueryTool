@@ -4,8 +4,8 @@
 //
 // BaseLibrary: Indispensable general objects and functions
 //
-// Copyright (c) 2014-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 2014-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files(the "Software"), to deal
@@ -436,7 +436,7 @@ private:
   // INTERNALS
 
   // Set infinity for overflows
-  bcd     SetInfinity(XString p_reason = _T("")) const;
+  bcd     SetInfinity(const XString& p_reason = _T("")) const;
   // Sets one integer in this bcd number
   void    SetValueInt(const int p_value);
   // Sets one or two longs in this bcd number

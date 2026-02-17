@@ -2,8 +2,8 @@
 //
 // File: SQLInterval.h
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -50,13 +50,13 @@ public:
   SQLInterval(const SQLInterval& p_interval);
 
   // Interval constructed from a XML duration string
-  explicit SQLInterval(XString p_duration);
+  explicit SQLInterval(const XString& p_duration);
 
   // Interval constructed from an ODBC structure
   explicit SQLInterval(const SQL_INTERVAL_STRUCT* p_interval);
 
   // Interval constructed from a string
-  SQLInterval(SQLINTERVAL p_type,const XString p_string);
+  SQLInterval(SQLINTERVAL p_type,const XString& p_string);
 
   // Interval constructed from a database DECIMAL (Oracle etc)
   SQLInterval(SQLINTERVAL p_type,double p_databaseDouble);
@@ -76,7 +76,7 @@ public:
   // SETTERS
 
   // Setting an interval from a string
-  bool    SetInterval(SQLINTERVAL p_type,const XString p_string);
+  bool    SetInterval(SQLINTERVAL p_type,const XString& p_string);
   // Setting an interval from an internal value
   bool    SetInterval(SQLINTERVAL p_type,InterValue p_nanoseconds);
   // Setting an interval from an ODBC structure
@@ -92,7 +92,7 @@ public:
   // Try to set the interval type, depends on the internal values
   bool    SetIntervalType(SQLINTERVAL p_type);
   // Set from an XML duration string
-  void    SetInterval(XString p_duration);
+  void    SetInterval(const XString& p_duration);
 
   // GETTERS
 
@@ -169,7 +169,7 @@ private:
   // Parsing from a (database) string
   bool ParseInterval(SQLINTERVAL p_type,const XString& p_string);
   // Parsing from a XML duration string
-  bool ParseInterval(XString p_duration);
+  bool ParseInterval(const XString& p_duration);
   // Parsing/scanning one value of a XML duration string
   bool ScanDurationValue(XString& p_duraction,int& p_value,int& p_fraction,TCHAR& p_marker,bool& p_didTime);
 

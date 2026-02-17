@@ -2,8 +2,8 @@
 //
 // File: SQLTime.h
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -56,7 +56,7 @@ public:
   SQLTime();
   SQLTime(const SQLTime& p_time);
   explicit SQLTime(const SQLTimestamp& p_timestamp);
-  explicit SQLTime(XString p_time);
+  explicit SQLTime(const XString& p_time);
   explicit SQLTime(const int p_hours,const int p_minutes,const int p_seconds);
   explicit SQLTime(__int64 p_seconds);
   explicit SQLTime(const SQL_TIME_STRUCT* p_timestruct);

@@ -3,7 +3,7 @@
 // File: SQLComponentsVersion.h
 //
 // Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -26,7 +26,7 @@
 // General version, date and copyright
 // of the SQLComponents library
 
-#define SQL_COMPONENTS_VERSION   _T("2.3.5")
-#define SQL_COMPONENTS_BINVERSION 2,3,5,0
-#define SQL_COMPONENTS_DATE      _T("08-12-2025")
+#define SQL_COMPONENTS_VERSION   _T("3.0.0")
+#define SQL_COMPONENTS_BINVERSION 3,0,0,0
+#define SQL_COMPONENTS_DATE      _T("15-10-2025")
 #define SQL_COMPONENTS_COPYRIGHT _T("Copyright (c) 2002-2025 ir. W.E. Huisman")

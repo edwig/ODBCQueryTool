@@ -18,16 +18,10 @@
     <None Include="Installer_Algemeen.nsh">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="Installer_64bits\Installer_64Bits.nsi">
+    <None Include="Installer.nsi">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="Installer_32bits\Installer_32Bits.nsi">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="Installer_64bits\Installer_64BitsUnicode.nsi">
-      <Filter>Source Files</Filter>
-    </None>
-    <None Include="Installer_32bits\Installer_32BitsUnicode.nsi">
+    <None Include="InstallerUnicode.nsi">
       <Filter>Source Files</Filter>
     </None>
   </ItemGroup>

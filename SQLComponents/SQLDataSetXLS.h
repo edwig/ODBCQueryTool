@@ -1,7 +1,7 @@
 ////////////////////////////////////////////////////////////////////////
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -42,7 +42,7 @@ class SQLDataSetXLS : public SQLDataSet
 {
 public:
   // Open spreadsheet for reading and writing
-  SQLDataSetXLS(XString File, XString SheetOrSeparator, bool Backup = true); 
+  SQLDataSetXLS(const XString& File,const XString& SheetOrSeparator, bool Backup = true); 
   // Perform cleanup
  ~SQLDataSetXLS(); 
 
@@ -62,22 +62,22 @@ public:
   // Insert or replace a row into spreadsheet. Default is add new row. 
   bool AddRow(WordList &RowValues, long row = 0, bool replace = false); 
   // Read a cell from Excel spreadsheet using header row or column alphabet. 
-  bool ReadCell (XString &CellValue, XString column, long row, bool p_name = true); 
+  bool ReadCell (XString &CellValue,const XString& column, long row, bool p_name = true); 
   // Read a cell from spreadsheet using column number. Default is read the next cell in next row.
   bool ReadCell (XString &CellValue, short column, long row); 
   // Replace a cell into Excel spreadsheet using header row or column alphabet. 
   // Set name to true if want to force column to be used as header name
-  bool SetCell(XString CellValue, XString column, long row, bool p_name = true); 
+  bool SetCell(const XString& CellValue,const XString& column, long row, bool p_name = true); 
   // Set a cell value into spreadsheet using column number, row number
-  bool SetCell(XString CellValue, short column, long row); 
+  bool SetCell(const XString& CellValue, short column, long row); 
   // Clear text delimited file content
   bool DeleteSheet(); 
   // Clear entire Excel spreadsheet content. The sheet itself is not deleted
-  bool DeleteSheet(XString p_sheetName); 
+  bool DeleteSheet(const XString& p_sheetName); 
 
   // SETTERS
-  void    SetDelimiterLeft (XString p_delim);
-  void    SetDelimiterRight(XString p_delim);
+  void    SetDelimiterLeft (const XString& p_delim);
+  void    SetDelimiterRight(const XString& p_delim);
 
   // GETTERS
 
@@ -100,7 +100,7 @@ private:
   // Close and forget the spreadsheet
   virtual void Close() override;
   // Convert Excel column in alphabet into column number
-  int   CalculateColumnNumber(XString column, bool p_name = true); 
+  int   CalculateColumnNumber(const XString& column, bool p_name = true); 
   // Read a row from spreadsheet. Default is read the next row
   bool  SplitRow(XString& p_input,WordList &RowValues); 
   // Trim whitespace in between delimiters
@@ -108,7 +108,7 @@ private:
   // Read an ASCII string from a file
   bool  ReadString(FILE* p_file,XString& p_string);
   // Write an ASCII string to a file
-  bool  WriteString(FILE* p_file,XString& p_string,bool p_appendCRLF = false);
+  bool  WriteString(FILE* p_file,const XString& p_string,bool p_appendCRLF = false);
 
   BasicExcel*     m_workbook;    // Excel workbook instance
   BasicXmlExcel*  m_xmlWorkbook; // New OOXML Workbook
@@ -128,13 +128,13 @@ private:
 };
 
 inline void
-SQLDataSetXLS::SetDelimiterLeft(XString p_delim)
+SQLDataSetXLS::SetDelimiterLeft(const XString& p_delim)
 {
   m_delimLeft = p_delim;
 }
 
 inline void    
-SQLDataSetXLS::SetDelimiterRight(XString p_delim)
+SQLDataSetXLS::SetDelimiterRight(const XString& p_delim)
 {
   m_delimRight = p_delim;
 }

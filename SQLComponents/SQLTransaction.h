@@ -52,7 +52,7 @@ public:
   // independently. Whenever a subtransaction is off, the transaction will be linked to 
   // earlier transactions, and thus influence the complete behaviour,
   // until the last commit/rollback of the main transaction
-  void    Start(XString p_name,bool p_startSubtransaction = false);
+  void    Start(const XString& p_name,bool p_startSubtransaction = false);
   // Commit the transaction
   void    Commit();
   // Rollback the transaction
@@ -84,7 +84,7 @@ public:
 
 private:
   friend class SQLDatabase;
-  void    SetSavepoint(XString p_savepoint);
+  void    SetSavepoint(const XString& p_savepoint);
 
 private:
   SQLDatabase*  m_database;
@@ -123,7 +123,7 @@ SQLTransaction::GetName() const
 }
 
 inline void
-SQLTransaction::SetSavepoint(XString p_savepoint)
+SQLTransaction::SetSavepoint(const XString& p_savepoint)
 {
   m_savepoint = p_savepoint;
 }

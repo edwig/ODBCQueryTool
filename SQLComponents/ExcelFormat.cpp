@@ -15,12 +15,6 @@
 */
 #include "ExcelFormat.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
-#undef THIS_FILE
-static char THIS_FILE[] = __FILE__;
-#endif
-
 // Check on the AFX context!
 // You must compile this code with a project setting "NOT USING PRECOMPILED HEADERS" with "StdAfx.h"
 // Otherwise all your strings will leak memory

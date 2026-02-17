@@ -2,8 +2,8 @@
 //
 // File: Database.h
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -121,13 +121,13 @@ public:
   // OPEN/CLOSE CYCLE
   
   // Open the database on basis of datasource, user and password
-  bool           Open(XString const& p_datasource
-                     ,XString const& p_username
-                     ,XString const& p_password
-                     ,XString        p_options  = _T("")
+  bool           Open(const XString& p_datasource
+                     ,const XString& p_username
+                     ,const XString& p_password
+                     ,const XString  p_options  = _T("")
                      ,bool           p_readOnly = false);
   // Open the database on basis of a connect string only
-  bool           Open(XString const& p_connectString,bool p_readOnly = false);
+  bool           Open(const XString& p_connectString,bool p_readOnly = false);
 
   bool           IsOpen();       // Is the database open?
   void           Close();        // Close it for further use
@@ -145,9 +145,9 @@ public:
   // Setting the autocommit mode
   bool           SetAutoCommitMode(bool p_autoCommit);
   // Add a general ODBC option for use in the connection string
-  void           AddConnectOption(XString p_keyword,XString p_value);
+  void           AddConnectOption(const XString& p_keyword,const XString& p_value);
   // Setting the default database schema after login
-  bool           SetDefaultSchema(XString p_user,XString p_schema);
+  bool           SetDefaultSchema(const XString& p_user,const XString& p_schema);
 
   // GETTING/CONSTRUCTING the SQLInfo object
   SQLInfoDB*     GetSQLInfoDB();
@@ -157,14 +157,14 @@ public:
   // Do the Query text macro replacement
   void           ReplaceMacros(XString& p_statement);
   // Add a macro replacement for SQL text
-  void           AddMacro(XString p_macro,XString p_replacement);
+  void           AddMacro(const XString& p_macro,const XString& p_replacement);
   // Remove macro
-  void           DeleteMacro(XString p_macro);
+  void           DeleteMacro(const XString& p_macro);
 
   // DATABASE POOL METHODS
-  void           SetDatasource(XString p_dsn);
-  void           SetConnectionName(XString p_connectionName);
-  void           SetUserName(XString p_user);
+  void           SetDatasource(const XString& p_dsn);
+  void           SetConnectionName(const XString& p_connectionName);
+  void           SetUserName(const XString& p_user);
   void           SetPoolIdleMinutes(int p_minutes);
   void           SetLastActionTime();
   bool           PastWaitingTime();
@@ -220,7 +220,7 @@ public:
   SQLTransaction* GetTransaction();
 
   // Get the name of a special ODBC driver
-  XString        GetSpecialDriver(XString p_base,XString p_extensie);
+  XString        GetSpecialDriver(const XString& p_base,const XString& p_extensie);
   // Oracle results caching on/off switching
   void           SetOracleResultCacheMode(const XString& mode);
   // Get the available datasources in a list
@@ -234,15 +234,15 @@ public:
   XString        GetStrippedSQLTimeString(int p_hour,int p_minute,int p_second);
   XString        GetSQLDateString        (int p_day, int p_month, int p_year);
   XString        GetCurrentTimestampQualifier();
-  XString        GetSQL_NewSerial(XString p_table,XString p_sequence);
-  XString        GetSQL_GenerateSerial(XString p_table,XString p_sequence = _T(""));
-  int            GetSQL_EffectiveSerial(XString p_oid_string);
+  XString        GetSQL_NewSerial(const XString& p_table,const XString& p_sequence);
+  XString        GetSQL_GenerateSerial(const XString& p_table,const XString& p_sequence = _T(""));
+  int            GetSQL_EffectiveSerial(const XString& p_oid_string);
   XString        GetTimestampAsString(const SQLTimestamp& p_timestamp);
   XString        GetTimestampAsBoundString();
   XString        GetSQLDateTimeStrippedString(const SQLTimestamp& p_timestamp);
   XString        GetInterval1MinuteAgo();
-  XString        GetNVLStatement(XString p_test,XString p_isnull);
-  XString        GetUpper(XString p_veld);
+  XString        GetNVLStatement(const XString& p_test,const XString& p_isnull);
+  XString        GetUpper(const XString& p_veld);
 
   // Support of logging functions 
   void           RegisterLogContext(int p_level,LOGLEVEL p_loglevel,LOGPRINT p_logprinter,void* p_logContext);
@@ -252,7 +252,7 @@ public:
   void           SetLoggingActivation(int p_loglevel);
   
   // SCHEMA HANDLING
-  void           SetSchema(XString p_schema);
+  void           SetSchema(const XString& p_schema);
   void           SetSchemaAction(SchemaAction p_action);
   void           ParseSchema(XString& p_query);
 
@@ -285,9 +285,9 @@ protected:
   // Running the initializations for the session
   void           SetConnectionInitialisations();
   // Find number of quotes up to the last position
-  int            FindQuotes(XString& p_statement,int p_lastpos);
+  int            FindQuotes(const XString& p_statement,int p_lastpos);
   // Replace **ONE** macro in the statement text
-  void           ReplaceMacro(XString& p_statement,int p_pos,int p_length,XString p_replace);
+  void           ReplaceMacro(XString& p_statement,int p_pos,int p_length,const XString& p_replace);
 
   // HOW WE ARE CONNECTED TO A DATABASE
   XString           m_datasource;  // Datasource at login

@@ -2,8 +2,8 @@
 //
 // File: SQLInfoDB.h
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -57,7 +57,7 @@ public:
   // DB INTERFACE
 
   // Default list of granted users on a created object
-  void    SetGrantedUsers(XString p_users);
+  void    SetGrantedUsers(const XString& p_users);
   XString GetGrantedUsers() const;
   // We prefer the strict 'standard' ODBC drivers meta queries
   void    SetPreferODBC(bool p_prefer);
@@ -75,28 +75,28 @@ public:
   virtual bool    MakeInfoDefaultCharsetNC(XString&       p_default);
   virtual bool    MakeInfoDefaultCollation(XString&       p_default);
   // Tables
-  virtual bool    MakeInfoTableObject     (MTableMap&     p_tables,    XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename);  // Not known which type!
-  virtual bool    MakeInfoTableTable      (MTableMap&     p_tables,    XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename);  // TABLE   only
-  virtual bool    MakeInfoTableView       (MTableMap&     p_tables,    XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename);  // VIEW    only
-  virtual bool    MakeInfoTableSynonyms   (MTableMap&     p_tables,    XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename);  // SYNONYM only
-  virtual bool    MakeInfoTableCatalog    (MTableMap&     p_tables,    XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename);  // CATALOG only
+  virtual bool    MakeInfoTableObject     (MTableMap&     p_tables,    XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_tablename);  // Not known which type!
+  virtual bool    MakeInfoTableTable      (MTableMap&     p_tables,    XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_tablename);  // TABLE   only
+  virtual bool    MakeInfoTableView       (MTableMap&     p_tables,    XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_tablename);  // VIEW    only
+  virtual bool    MakeInfoTableSynonyms   (MTableMap&     p_tables,    XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_tablename);  // SYNONYM only
+  virtual bool    MakeInfoTableCatalog    (MTableMap&     p_tables,    XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_tablename);  // CATALOG only
   // Attributes of a table
-  virtual bool    MakeInfoTableColumns    (MColumnMap&    p_columns,   XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename,XString p_columnname = _T("")) override;
-  virtual bool    MakeInfoTablePrimary    (MPrimaryMap&   p_primary,   XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename)                               override;
-  virtual bool    MakeInfoTableForeign    (MForeignMap&   p_foreigns,  XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename,bool p_referenced   = false)   override;
-  virtual bool    MakeInfoTableStatistics (MIndicesMap&   p_indices,   XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename,MPrimaryMap* p_keymap,bool p_all = true) override;
-  virtual bool    MakeInfoTableTriggers   (MTriggerMap&   p_triggers,  XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename,XString p_trigger   = _T(""));
-  virtual bool    MakeInfoTableSequences  (MSequenceMap&  p_sequences, XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename);
-  virtual bool    MakeInfoTablePrivileges (MPrivilegeMap& p_privileges,XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename) override;
-  virtual bool    MakeInfoColumnPrivileges(MPrivilegeMap& p_privileges,XString& p_errors,XString p_catalog,XString p_schema,XString p_tablename,XString p_columnname = _T("")) override;
-  virtual bool    MakeInfoViewDefinition  (XString&       p_defintion, XString& p_errors,XString p_catalog,XString p_schema,XString p_viewname);
-  virtual bool    MakeInfoUserTypes       (MUserTypeMap&  p_usertypes, XString& p_errors,XString p_catalog,XString p_schema,XString p_usertype);
+  virtual bool    MakeInfoTableColumns    (MColumnMap&    p_columns,   XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_tablename,const XString& p_columnname = _T("")) override;
+  virtual bool    MakeInfoTablePrimary    (MPrimaryMap&   p_primary,   XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_tablename)                               override;
+  virtual bool    MakeInfoTableForeign    (MForeignMap&   p_foreigns,  XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_tablename,bool p_referenced   = false)   override;
+  virtual bool    MakeInfoTableStatistics (MIndicesMap&   p_indices,   XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_tablename,MPrimaryMap* p_keymap,bool p_all = true) override;
+  virtual bool    MakeInfoTableTriggers   (MTriggerMap&   p_triggers,  XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_tablename,const XString& p_trigger   = _T(""));
+  virtual bool    MakeInfoTableSequences  (MSequenceMap&  p_sequences, XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_tablename);
+  virtual bool    MakeInfoTablePrivileges (MPrivilegeMap& p_privileges,XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_tablename) override;
+  virtual bool    MakeInfoColumnPrivileges(MPrivilegeMap& p_privileges,XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_tablename,const XString& p_columnname = _T("")) override;
+  virtual bool    MakeInfoViewDefinition  (XString&       p_defintion, XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_viewname);
+  virtual bool    MakeInfoUserTypes       (MUserTypeMap&  p_usertypes, XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_usertype);
 
   // Procedures
-  virtual bool    MakeInfoPSMProcedures(MProcedureMap& p_procedures,XString& p_errors,XString p_catalog,XString p_schema,XString p_procedure) override;
-  virtual bool    MakeInfoPSMParameters(MParameterMap& p_parameters,XString& p_errors,XString p_catalog,XString p_schema,XString p_procedure) override;
+  virtual bool    MakeInfoPSMProcedures(MProcedureMap& p_procedures,XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_procedure) override;
+  virtual bool    MakeInfoPSMParameters(MParameterMap& p_parameters,XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_procedure) override;
   // Read extra source code for database that can only do it by an extra procedure
-  virtual XString MakeInfoPSMSourcecode(XString p_catalog,XString p_schema, XString p_procedure);
+  virtual XString MakeInfoPSMSourcecode(const XString& p_catalog,const XString& p_schema, const XString& p_procedure);
 
   // PURE VIRTUAL INTERFACE
 
@@ -216,16 +216,16 @@ public:
 
   // Get select part to add new record identity to a table
   // Can be special column like 'OID' or a sequence select
-  virtual XString GetKEYWORDIdentityString(XString& p_tablename,XString p_postfix = _T("_seq")) const = 0;
+  virtual XString GetKEYWORDIdentityString(const XString& p_tablename,const XString& p_postfix = _T("_seq")) const = 0;
 
   // Gets the UPPER function
-  virtual XString GetKEYWORDUpper(XString& p_expression) const = 0;
+  virtual XString GetKEYWORDUpper(const XString& p_expression) const = 0;
 
   // Gets the construction for 1 minute ago
   virtual XString GetKEYWORDInterval1MinuteAgo() const = 0;
 
   // Gets the Not-NULL-Value statement of the database
-  virtual XString GetKEYWORDStatementNVL(XString& p_test,XString& p_isnull) const = 0;
+  virtual XString GetKEYWORDStatementNVL(const XString& p_test,const XString& p_isnull) const = 0;
 
   // Gets the RDBMS definition of the datatype
   virtual XString GetKEYWORDDataType(MetaColumn* p_column) = 0;
@@ -431,7 +431,7 @@ public:
   virtual XString GetCATALOGViewList          (XString& p_schema,XString& p_pattern, bool p_quoted = false) const = 0;
   virtual XString GetCATALOGViewAttributes    (XString& p_schema,XString& p_viewname,bool p_quoted = false) const = 0;
   virtual XString GetCATALOGViewText          (XString& p_schema,XString& p_viewname,bool p_quoted = false) const = 0;
-  virtual XString GetCATALOGViewCreate        (XString  p_schema,XString  p_viewname,MColumnMap& p_columns,XString p_contents,bool p_ifexists = true)   const = 0;
+  virtual XString GetCATALOGViewCreate        (XString  p_schema,XString  p_viewname,MColumnMap& p_columns,XString p_contents,bool p_ifexists = true) const = 0;
   virtual XString GetCATALOGViewRename        (XString  p_schema,XString  p_viewname,XString p_newname)    const = 0;
   virtual XString GetCATALOGViewDrop          (XString  p_schema,XString  p_viewname,XString& p_precursor) const = 0;
   // All Privilege functions
@@ -543,9 +543,9 @@ public:
   //////////////////////////////////////////////////////////////////////////
 
   // Calling a stored function or procedure if the RDBMS does not support ODBC call escapes
-  virtual SQLVariant* DoSQLCall(SQLQuery* p_query,XString& p_schema,XString& p_procedure) = 0;
+  virtual SQLVariant* DoSQLCall(SQLQuery* p_query,const XString& p_schema,const XString& p_procedure) = 0;
   // Calling a stored function with named parameters, returning a value
-  virtual SQLVariant* DoSQLCallNamedParameters(SQLQuery* p_query,XString& p_schema,XString& p_procedure,bool p_function = true) = 0;
+  virtual SQLVariant* DoSQLCallNamedParameters(SQLQuery* p_query,const XString& p_schema,const XString& p_procedure,bool p_function = true) = 0;
   
 protected:
   // Read a tables cursor from the database
@@ -565,7 +565,7 @@ protected:
 };
 
 inline void    
-SQLInfoDB::SetGrantedUsers(XString p_users) 
+SQLInfoDB::SetGrantedUsers(const XString& p_users) 
 {
   m_grantedUsers = p_users;
 }

@@ -2,8 +2,8 @@
 //
 // File: SQLInfoOracle.h
 //
-// Copyright (c) 1998-2025 ir. W.E. Huisman
-// All rights reserved
+// Created: 1998-2025 ir. W.E. Huisman
+// MIT License
 //
 // Permission is hereby granted, free of charge, to any person obtaining a copy of 
 // this software and associated documentation files (the "Software"), 
@@ -109,7 +109,7 @@ public:
   int GetRDBMSMaxVarchar() const override;
 
   // Identifier rules differ per RDBMS
-  bool IsIdentifier(XString p_identifier) const override;
+  bool IsIdentifier(const XString& p_identifier) const override;
 
   // Return parameters from a PSM procedure module can be a result set (SUSPEND)
   bool GetRDBMSResultSetFromPSM() const override;
@@ -151,16 +151,16 @@ public:
 
   // Get select part to add new record identity to a table
   // Can be special column like 'OID' or a sequence select
-  XString GetKEYWORDIdentityString(XString& p_tablename,XString p_postfix = _T("_seq")) const override;
+  XString GetKEYWORDIdentityString(const XString& p_tablename,const XString& p_postfix = _T("_seq")) const override;
 
   // Gets the UPPER function
-  XString GetKEYWORDUpper(XString& p_expression) const override;
+  XString GetKEYWORDUpper(const XString& p_expression) const override;
 
   // Gets the construction for 1 minute ago
   XString GetKEYWORDInterval1MinuteAgo() const override;
 
   // Gets the Not-NULL-Value statement of the database
-  XString GetKEYWORDStatementNVL(XString& p_test,XString& p_isnull) const override;
+  XString GetKEYWORDStatementNVL(const XString& p_test,const XString& p_isnull) const override;
 
   // Gets the RDBMS definition of the datatype
   XString GetKEYWORDDataType(MetaColumn* p_column) override;
@@ -462,9 +462,9 @@ public:
   //////////////////////////////////////////////////////////////////////////
 
   // Calling a stored function or procedure if the RDBMS does not support ODBC call escapes
-  SQLVariant* DoSQLCall(SQLQuery* p_query,XString& p_schema,XString& p_procedure) override;
+  SQLVariant* DoSQLCall(SQLQuery* p_query,const XString& p_schema,const XString& p_procedure) override;
   // Calling a stored function with named parameters, returning a value
-  SQLVariant* DoSQLCallNamedParameters(SQLQuery* p_query,XString& p_schema,XString& p_procedure,bool p_function = true) override;
+  SQLVariant* DoSQLCallNamedParameters(SQLQuery* p_query,const XString& p_schema,const XString& p_procedure,bool p_function = true) override;
 };
 
 // End of namespace
