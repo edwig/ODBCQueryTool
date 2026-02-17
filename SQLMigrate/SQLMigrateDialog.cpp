@@ -198,6 +198,11 @@ SQLMigrateDialog::OnInitDialog()
   m_buttonDirectory.SetStyle(_T("dir"));
   m_buttonExport.SetStyle(_T("ok"));
   m_buttonClose.SetStyle(_T("can"));
+  // Set passwords
+  m_editSourcePassword.SetPassword();
+  m_editSourcePassword.UsePasswordEye();
+  m_editTargetPassword.SetPassword();
+  m_editTargetPassword.UsePasswordEye();
 
   // Set the defaults
   m_toLogfile           = 0;
@@ -280,6 +285,7 @@ SQLMigrateDialog::SetupDynamicLayout()
   manager.AddItem(IDC_PROGRESS1, manager.MoveNone(),manager.SizeHorizontal(100));
   manager.AddItem(IDC_PROGRESS2, manager.MoveNone(),manager.SizeHorizontal(100));
   manager.AddItem(IDC_LOG,       manager.MoveNone(),manager.SizeHorizontalAndVertical(100,100));
+  manager.AddItem(IDC_SAVE,      manager.MoveVertical(100),                 manager.SizeNone());
   manager.AddItem(IDC_CLOSE,     manager.MoveHorizontalAndVertical(100,100),manager.SizeNone());
   manager.AddItem(IDC_EXPORT,    manager.MoveHorizontalAndVertical(100,100),manager.SizeNone());
 

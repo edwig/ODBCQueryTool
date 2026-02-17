@@ -384,7 +384,10 @@ SQLInfo::GetInfo()
       if (*pb == ',')
       {
         *pw = '\0';
-        m_ODBCKeywords.insert(word);
+        if(m_ODBCKeywords.find(word) == m_ODBCKeywords.end())
+        {
+          m_ODBCKeywords.insert(word);
+        }
         pw = word;
       }
       else
@@ -405,7 +408,10 @@ SQLInfo::GetInfo()
       if (*pb == ',')
       {
         *pw = '\0';
-        m_RDBMSkeywords.insert(word);
+        if(m_RDBMSkeywords.find(word) == m_RDBMSkeywords.end())
+        {
+          m_RDBMSkeywords.insert(word);
+        }
         pw = word;
       }
       else
