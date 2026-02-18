@@ -108,7 +108,7 @@ protected:
   bool      IsSpecialNode   (CString&   p_name);
   void      SetItemCount    (HTREEITEM p_theItem,int p_size);
   bool      PresetTable     (HTREEITEM p_theItem);
-  bool      PresetProcedure (HTREEITEM p_theItem,MProcedureMap& p_procedures);
+  bool      PresetProcedure (HTREEITEM p_theItem);
   void      FindTables      (HTREEITEM p_theItem);
   void      PrepareTable    (HTREEITEM p_theItem,TCHAR p_type);
 

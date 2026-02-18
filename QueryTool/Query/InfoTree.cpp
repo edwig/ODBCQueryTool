@@ -158,7 +158,7 @@ InfoTree::MakeTreeInfo()
   MetaListToTree(objects,obtypes,errors);
 
   // ODBC DRIVER
-  sitem.Format(_T("ODBC Driver DLL: %s"),m_info->GetDriverName());
+  sitem.Format(_T("ODBC Driver DLL: %s"),m_info->GetDriverName().GetString());
   InsertItem(sitem,infoItemDriver);
 
   // ODBC SQL reserved words (static compile time)
@@ -190,7 +190,7 @@ InfoTree::MakeTreeInfo()
 
     sitem = _T("ODBC datatype name: ") + m_info->ODBCDataType(ti->m_data_type);
     InsertItem(sitem,type);
-    sitem.Format(_T("Maximum precision: %s"),InfoNumberToString(ti->m_precision));
+    sitem.Format(_T("Maximum precision: %s"),InfoNumberToString(ti->m_precision).GetString());
     InsertItem(sitem,type);
     sitem = _T("Literal data prefix: ") + ti->m_literal_prefix;
     InsertItem(sitem,type);
@@ -225,11 +225,11 @@ InfoTree::MakeTreeInfo()
     InsertItem(sitem,type);
     sitem = _T("Local type name for display: ") + ti->m_local_type_name;
     InsertItem(sitem,type);
-    sitem.Format(_T("Minimum scale: %s"),InfoNumberToString(ti->m_minimum_scale));
+    sitem.Format(_T("Minimum scale: %s"),InfoNumberToString(ti->m_minimum_scale).GetString());
     InsertItem(sitem,type);
-    sitem.Format(_T("Maximum scale: %s"),InfoNumberToString(ti->m_maximum_scale));
+    sitem.Format(_T("Maximum scale: %s"),InfoNumberToString(ti->m_maximum_scale).GetString());
     InsertItem(sitem,type);
-    sitem.Format(_T("Driver independent SQL datatype: %s"),m_info->ODBCDataType(ti->m_sqlDatatype));
+    sitem.Format(_T("Driver independent SQL datatype: %s"),m_info->ODBCDataType(ti->m_sqlDatatype).GetString());
     InsertItem(sitem,type);
     sitem.Format(_T("Subtype for temporal types: %d"),ti->m_sqlSubType);
     InsertItem(sitem,type);
@@ -587,7 +587,7 @@ InfoTree::MakeTreeInfo()
   DisplayBitfield(indx,indexOptions1,SQL_DI_DROP_INDEX,  _T("Drop index"));
   DisplayBitfield(indx,indexOptions2,SQL_IK_ASC,         _T("ASC ascending"));
   DisplayBitfield(indx,indexOptions2,SQL_IK_DESC,        _T("DESC descending"));
-  sitem.Format(_T("Maximum columns in an index: %s"),InfoNumberToString(maxColIndex));
+  sitem.Format(_T("Maximum columns in an index: %s"),InfoNumberToString(maxColIndex).GetString());
   InsertItem(sitem,indx);
 
   sitem = _T("Insert");
@@ -623,7 +623,7 @@ InfoTree::MakeTreeInfo()
   sitem = _T("Selected columns");
   HTREEITEM scols = InsertItem(sitem,select);
 
-  sitem.Format(_T("Maximum columns in a select: %s"),InfoNumberToString(m_info->GetMaxColumnsInSelect()));
+  sitem.Format(_T("Maximum columns in a select: %s"),InfoNumberToString(m_info->GetMaxColumnsInSelect()).GetString());
   InsertItem(sitem, scols);
 
   sitem.Format(_T("Column aliases in select allowed: %s"),m_info->GetColumnAliasAllowed() ? _T("Yes"):_T("No"));
@@ -661,7 +661,7 @@ InfoTree::MakeTreeInfo()
   }
   InsertItem(sitem,fromopt);
 
-  sitem.Format(_T("Maximum tables in FROM: %s"),InfoNumberToString(m_info->GetMaxTablesInSelect()));
+  sitem.Format(_T("Maximum tables in FROM: %s"),InfoNumberToString(m_info->GetMaxTablesInSelect()).GetString());
   InsertItem(sitem,fromopt);
 
   HTREEITEM oj = InsertItem(_T("Outer join support"),fromopt);
@@ -725,7 +725,7 @@ InfoTree::MakeTreeInfo()
   else
   {
     InsertItem(_T("GROUP BY supported"),gb);
-    sitem.Format(_T("Maximum columns in 'group by': %s"),InfoNumberToString(m_info->GetMaxColumnsInGroupBy()));
+    sitem.Format(_T("Maximum columns in 'group by': %s"),InfoNumberToString(m_info->GetMaxColumnsInGroupBy()).GetString());
     InsertItem(sitem,gb);
     DisplayBitfield(gb,groupBy,SQL_GB_GROUP_BY_EQUALS_SELECT,  _T("All non-aggregated columns"));
     DisplayBitfield(gb,groupBy,SQL_GB_GROUP_BY_CONTAINS_SELECT,_T("Non aggregated columns + extra"));
@@ -739,7 +739,7 @@ InfoTree::MakeTreeInfo()
   InsertItem(sitem, orderby);
   sitem.Format(_T("Expressions in the 'order by': %s"),m_info->GetExpressionsInOrderByAllowed() ? _T("Yes") : _T("No"));
   InsertItem(sitem, orderby);
-  sitem.Format(_T("Maximum columns in 'order by': %s"),InfoNumberToString(m_info->GetMaxColumnsInOrderBy()));
+  sitem.Format(_T("Maximum columns in 'order by': %s"),InfoNumberToString(m_info->GetMaxColumnsInOrderBy()).GetString());
   InsertItem(sitem,orderby);
 
   sitem = _T("UNION options");
@@ -1006,7 +1006,7 @@ InfoTree::MetaListToTree(MMetaMap& p_list,HTREEITEM p_item,XString& p_errors)
     CString line = object.m_objectName;
     if(!object.m_remarks.IsEmpty())
     {
-      line.AppendFormat(_T(" (%s)"),object.m_remarks);
+      line.AppendFormat(_T(" (%s)"),object.m_remarks.GetString());
     }
     InsertItem(line,p_item);
   }

@@ -186,7 +186,7 @@ MultConnectionsDlg::OnDblclk_list(NMHDR* hdr, LRESULT *pResult)
 }
 
 void
-MultConnectionsDlg::OnClick_list(NMHDR* hdr, LRESULT *pResult)
+MultConnectionsDlg::OnClick_list(NMHDR* /*hdr*/, LRESULT* /*pResult*/)
 {
   MCCellID cell = m_list.GetFocusCell();
   int index = cell.row;
@@ -252,7 +252,6 @@ MultConnectionsDlg::FillGridWithSettings()
   CString mPassword;
   CString mConnString;
   bool    mSafty   = 0;
-  int     mSave    = 0;
   int     maxTimes = 0;
 
   for(auto& setting : m_settings)
@@ -616,20 +615,20 @@ MultConnectionsDlg::ReadSettings()
 
       if(!password.IsEmpty())
       {
-        BYTE  buffer[1024];
+        BYTE  pwbuffer[1024];
         DWORD size = 1024;
         DWORD skip = 0;
         DWORD flags = 0;
-        if(CryptStringToBinary(password,password.GetLength(),CRYPT_STRING_BASE64,(BYTE*)buffer,&size,&skip,&flags))
+        if(CryptStringToBinary(password,password.GetLength(),CRYPT_STRING_BASE64,pwbuffer,&size,&skip,&flags))
         {
           if(flags == CRYPT_STRING_BASE64 && size < 1024)
           {
-            buffer[size] = 0;
+            pwbuffer[size] = 0;
           }
 #ifdef UNICODE
-          CString buff = ExplodeString(buffer,size);
+          CString buff = ExplodeString(pwbuffer,size);
 #else
-          CString buff(buffer);
+          CString buff(pwbuffer);
 #endif
           CCodeer cod;
           decodedPassword = cod.DeCodeerString(buff,user);
@@ -660,10 +659,8 @@ MultConnectionsDlg::ReadSettings()
 CString
 MultConnectionsDlg::ExplodeString(BYTE* buffer,int p_size)
 {
-  int index = 0;
   CString string;
   LPTSTR pnt = string.GetBufferSetLength(p_size);
-  LPTSTR org = pnt;
   while(*buffer)
   {
     _TUCHAR ch = (int) *buffer++;
@@ -780,15 +777,15 @@ MultConnectionsDlg::OnBnClicked_test()
         catch(...)
         {
           status.Format(_T("Cannot make connection with: %s as: %s")
-                        ,set->GetDatasource()
-                        ,set->GetUser());
+                        ,set->GetDatasource().GetString()
+                        ,set->GetUser().GetString());
           AfxMessageBox(status);
         }
         if(database && database->IsOpen())
         {
           status.Format(_T("Successful connection to: %s as: %s")
-                        ,set->GetDatasource()
-                        ,set->GetUser());
+                        ,set->GetDatasource().GetString()
+                        ,set->GetUser().GetString());
           AfxMessageBox(status);
           database->Close();
         }
@@ -823,7 +820,7 @@ MultConnectionsDlg::OnBnClicked_delete()
     if(set)
     {
       CString question;
-      question.Format(_T("Do you want to delete the datasource '%s' for user '%s'?"),source,user);
+      question.Format(_T("Do you want to delete the datasource '%s' for user '%s'?"),source.GetString(),user.GetString());
       if(StyleMessageBox(this,question,_T("ODBCQueryTool"),MB_YESNO|MB_TASKMODAL|MB_DEFBUTTON2) != IDYES)
       {
         // Then don't do it

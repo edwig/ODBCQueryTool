@@ -314,7 +314,7 @@ ObjectView::AddToTables(CString table)
 }
 
 void
-ObjectView::OnTableTree_RClick(NMHDR* pNMHDR, LRESULT* pResult)
+ObjectView::OnTableTree_RClick(NMHDR* /*pNMHDR*/, LRESULT* pResult)
 {
   CPoint point;
   ::GetCursorPos(&point);

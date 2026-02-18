@@ -238,7 +238,7 @@ bool GUICommandDictionary::BuildAcceleratorTable (const TCHAR* filename, HACCEL&
 
       while(pos < buffer.GetLength())
       {
-        ch = buffer.GetAt(pos++);
+        ch = (TCHAR) buffer.GetAt(pos++);
         if(isalnum(ch) || ch == '_' || ch == '.')
         {
           token += ch;
@@ -462,8 +462,7 @@ void GUICommandDictionary::AddAccelDescriptionToMenu (HMENU& hMenu)
         }
     }
 
-    DblKeyAccelVector::const_iterator it = g_dblKeyAccels.begin();
-    for (; it != g_dblKeyAccels.end(); it++)
+    for (DblKeyAccelVector::const_iterator it = g_dblKeyAccels.begin(); it != g_dblKeyAccels.end(); it++)
     {
         KeyToCmdMap::const_iterator it2 = it->m_keyToCmdMap.begin();
         for (; it2 != it->m_keyToCmdMap.end(); it2++)

@@ -121,7 +121,7 @@ BOOL CGridView::PreCreateWindow(CREATESTRUCT& cs)
 /////////////////////////////////////////////////////////////////////////////
 // CGridView drawing
 
-void CGridView::OnDraw(CDC* pDC)
+void CGridView::OnDraw(CDC* /*pDC*/)
 {
 	//COEDocument* pDoc = GetDocument();
 	//ASSERT_VALID(pDoc);
@@ -281,7 +281,7 @@ void CGridView::OnToggleReadonly()
   }
 }
 
-BOOL CGridView::OnEraseBkgnd(CDC* pDC) 
+BOOL CGridView::OnEraseBkgnd(CDC* /*pDC*/) 
 {
 	return TRUE;
 	//return CView::OnEraseBkgnd(pDC);
@@ -1123,7 +1123,7 @@ CGridView::ExportToTXT()
 // EDIT DATA IN THE GRID
 
 void
-CGridView::OnBeginEdit(NMHDR* pNMHDR, LRESULT* pResult)
+CGridView::OnBeginEdit(NMHDR* pNMHDR, LRESULT* /*pResult*/)
 {
   MG_NM_GRIDVIEW *cel = (MG_NM_GRIDVIEW*)pNMHDR;
   int col = cel->iColumn;
@@ -1140,7 +1140,7 @@ CGridView::OnBeginEdit(NMHDR* pNMHDR, LRESULT* pResult)
 }
 
 void
-CGridView::OnEndInPlaceEdit(NMHDR* pNMHDR, LRESULT* pResult)
+CGridView::OnEndInPlaceEdit(NMHDR* pNMHDR, LRESULT* /*pResult*/)
 {
   MG_NM_GRIDVIEW *cel = (MG_NM_GRIDVIEW*)pNMHDR;
   int col = cel->iColumn;

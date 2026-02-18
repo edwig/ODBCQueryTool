@@ -50,10 +50,13 @@ SetStatusText(LPCTSTR text, BOOL update)
     if(wnd && wnd->IsKindOf(RUNTIME_CLASS(CMFCStatusBar)))
     {
       CMFCStatusBar* status = reinterpret_cast<CMFCStatusBar*>(wnd);
-      wnd->SetWindowText(text);
-      if(update)
+      if(status)
       {
-        wnd->UpdateWindow();
+        wnd->SetWindowText(text);
+        if(update)
+        {
+          wnd->UpdateWindow();
+        }
       }
     }
   }

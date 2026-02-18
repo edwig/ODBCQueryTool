@@ -256,7 +256,7 @@ void COutputList::OnViewOutput()
 }
 
 void
-COutputList::OnFindFilesClicked(NMHDR* pNotifyStruct, LRESULT* result)
+COutputList::OnFindFilesClicked(NMHDR* /*pNotifyStruct*/,LRESULT* /*result*/)
 {
   int   maxrow = GetRowCount();
   CCellID cell = GetFocusCell();
@@ -287,9 +287,9 @@ COutputList::OnFindFilesClicked(NMHDR* pNotifyStruct, LRESULT* result)
       COEditorView* view = dynamic_cast<COEditorView*> (pView);
       if(view)
       {
-        OpenEditor::Position pos;
-        pos.line = lineNumber - 1;
-        view->MoveToAndCenter(pos);
+        OpenEditor::Position posline;
+        posline.line = lineNumber - 1;
+        view->MoveToAndCenter(posline);
         return;
       }
     }

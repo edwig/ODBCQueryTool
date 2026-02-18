@@ -217,7 +217,7 @@ ObjectTree::InsertItem(CString p_string,HTREEITEM p_item,int p_data /*=0*/)
 
 // Expanding a node, if not already done
 void 
-ObjectTree::OnItemExpanding(NMHDR* pNMHDR,LRESULT* pResult)
+ObjectTree::OnItemExpanding(NMHDR* pNMHDR,LRESULT* /*pResult*/)
 {
   // Guard against re-entrance in the UI thread
   if(m_busy)
@@ -248,7 +248,7 @@ ObjectTree::OnItemExpanding(NMHDR* pNMHDR,LRESULT* pResult)
 }
 
 void
-ObjectTree::OnItemDoubleClicked(NMHDR* pNMHDR, LRESULT* pResult)
+ObjectTree::OnItemDoubleClicked(NMHDR* /*pNMHDR*/, LRESULT* /*pResult*/)
 {
   // Guard against re-entrance in the UI thread
   if(m_busy)
@@ -455,6 +455,7 @@ ObjectTree::FindTables(HTREEITEM p_theItem)
   XString catalog;
   XString schema;
   XString table;
+
   info->GetObjectName(m_filter.GetString(),catalog,schema,table);
 
   MTableMap tables;
@@ -489,47 +490,50 @@ ObjectTree::FindTables(HTREEITEM p_theItem)
 
   for(auto& theTable : tables)
   {
-    HTREEITEM table = NULL;
-    CString schema = theTable.m_schema;
+    HTREEITEM tableitem = NULL;
+    CString schem  = theTable.m_schema;
     CString object = theTable.m_table;
     schema.Trim();
     object.Trim();
 
     if(!theTable.m_remarks.IsEmpty())
     {
-      object.AppendFormat(_T(" (%s)"),theTable.m_remarks);
+      object.AppendFormat(_T(" (%s)"),theTable.m_remarks.GetString());
     }
 
     if(theTable.m_objectType.Find(_T("TEMPORARY")) >= 0)
     {
-      object.AppendFormat(_T(" (%s)"),theTable.m_objectType);
+      object.AppendFormat(_T(" (%s)"),theTable.m_objectType.GetString());
     }
 
-    if(schema.IsEmpty())
+    if(schem.IsEmpty())
     {
       // No schema found, just add the item
-      table = InsertItem(object,p_theItem);
+      tableitem = InsertItem(object,p_theItem);
     }
     else
     {
-      if((schema.Compare(lastSchema) == 0) && schemaItem)
+      if((schem.Compare(lastSchema) == 0) && schemaItem)
       {
-        table = InsertItem(object,schemaItem);
+        tableitem = InsertItem(object,schemaItem);
         SetItemCount(schemaItem,++schemaCount);
       }
       else
       {
-        lastSchema  = schema;
-        schemaItem  = InsertItem(schema,p_theItem);
-        table       = InsertItem(object,schemaItem);
+        lastSchema  = schem;
+        schemaItem  = InsertItem(schem, p_theItem);
+        tableitem   = InsertItem(object,schemaItem);
         schemaCount = 1;
-        SetItemCount(schemaItem,schemaCount);
-        SetItemImage(schemaItem,IMG_SCHEMA,IMG_SCHEMA);
+        if(schemaItem)
+        {
+          SetItemCount(schemaItem,schemaCount);
+          SetItemImage(schemaItem,IMG_SCHEMA,IMG_SCHEMA);
+        }
       }
     }
     ObjectImage image = TypeToImage(type.GetAt(0));
-    SetItemImage(table,image,image);
-    PrepareTable(table,type.GetAt(0));
+    SetItemImage(tableitem,image,image);
+    PrepareTable(tableitem,type.GetAt(0));
   }
 }
 
@@ -600,7 +604,7 @@ ObjectTree::PresetTable(HTREEITEM p_theItem)
 
 // Before expanding a node, find the procedure again
 bool
-ObjectTree::PresetProcedure(HTREEITEM p_theItem,MProcedureMap& p_procedures)
+ObjectTree::PresetProcedure(HTREEITEM p_theItem)
 {
   HTREEITEM itemProcedure = GetParentItem(p_theItem);
   HTREEITEM itemSchema    = GetParentItem(itemProcedure);
@@ -861,31 +865,34 @@ ObjectTree::FindSequences(HTREEITEM p_theItem)
   for(auto& seq : sequences)
   {
     HTREEITEM sequence = NULL;
-    CString schema = seq.m_schemaName;
+    CString schem  = seq.m_schemaName;
     CString object = seq.m_sequenceName;
     schema.Trim();
     object.Trim();
 
-    if(schema.IsEmpty())
+    if(schem.IsEmpty())
     {
       // No schema found, just add the item
       sequence = InsertItem(object,p_theItem);
     }
     else
     {
-      if((schema.Compare(lastSchema) == 0) && schemaItem)
+      if((schem.Compare(lastSchema) == 0) && schemaItem)
       {
         sequence = InsertItem(object,schemaItem);
         SetItemCount(schemaItem,++schemaCount);
       }
       else
       {
-        lastSchema = schema;
-        schemaItem = InsertItem(schema,p_theItem);
+        lastSchema = schem;
+        schemaItem = InsertItem(schem ,p_theItem);
         sequence   = InsertItem(object,schemaItem);
         schemaCount = 1;
-        SetItemCount(schemaItem,schemaCount);
-        SetItemImage(schemaItem,IMG_SCHEMA,IMG_SCHEMA);
+        if(schemaItem)
+        {
+          SetItemCount(schemaItem,schemaCount);
+          SetItemImage(schemaItem,IMG_SCHEMA,IMG_SCHEMA);
+        }
       }
     }
     SetItemImage(sequence,IMG_SEQUENCE,IMG_SEQUENCE);
@@ -958,31 +965,34 @@ ObjectTree::FindUserTypes(HTREEITEM p_theItem)
       ++numberOfTypes;
 
       HTREEITEM usertype = NULL;
-      CString schema = typ->m_schemaName;
+      CString schem  = typ->m_schemaName;
       CString object = typ->m_typeName;
       schema.Trim();
       object.Trim();
 
-      if(schema.IsEmpty())
+      if(schem.IsEmpty())
       {
         // No schema found, just add the item
         usertype = InsertItem(object,p_theItem);
       }
       else
       {
-        if((schema.Compare(lastSchema) == 0) && schemaItem)
+        if((schem.Compare(lastSchema) == 0) && schemaItem)
         {
           usertype = InsertItem(object,schemaItem);
           SetItemCount(schemaItem,++schemaCount);
         }
         else
         {
-          lastSchema = schema;
-          schemaItem = InsertItem(schema,p_theItem);
+          lastSchema = schem;
+          schemaItem = InsertItem(schem ,p_theItem);
           usertype   = InsertItem(object,schemaItem);
           schemaCount = 1;
-          SetItemCount(schemaItem,schemaCount);
-          SetItemImage(schemaItem,IMG_SCHEMA,IMG_SCHEMA);
+          if(schemaItem)
+          {
+            SetItemCount(schemaItem,schemaCount);
+            SetItemImage(schemaItem,IMG_SCHEMA,IMG_SCHEMA);
+          }
         }
       }
       SetItemImage(usertype,IMG_USERTYPE,IMG_USERTYPE);
@@ -1032,31 +1042,34 @@ ObjectTree::FindTriggers(HTREEITEM p_theItem)
   for(auto& trig : triggers)
   {
     HTREEITEM trigger = NULL;
-    CString schema = trig.m_schemaName;
+    CString schem  = trig.m_schemaName;
     CString object = trig.m_triggerName;
     schema.Trim();
     object.Trim();
 
-    if(schema.IsEmpty())
+    if(schem.IsEmpty())
     {
       // No schema found, just add the item
       trigger = InsertItem(object,p_theItem);
     }
     else
     {
-      if((schema.Compare(lastSchema) == 0) && schemaItem)
+      if((schem.Compare(lastSchema) == 0) && schemaItem)
       {
         trigger = InsertItem(object,schemaItem);
         SetItemCount(schemaItem,++schemaCount);
       }
       else
       {
-        lastSchema = schema;
-        schemaItem = InsertItem(schema,p_theItem);
+        lastSchema = schem;
+        schemaItem = InsertItem(schem, p_theItem);
         trigger    = InsertItem(object,schemaItem);
         schemaCount = 1;
-        SetItemCount(schemaItem,schemaCount);
-        SetItemImage(schemaItem,IMG_SCHEMA,IMG_SCHEMA);
+        if(schemaItem)
+        {
+          SetItemCount(schemaItem,schemaCount);
+          SetItemImage(schemaItem,IMG_SCHEMA,IMG_SCHEMA);
+        }
       }
     }
     SetItemImage(trigger,IMG_TRIGGER,IMG_TRIGGER);
@@ -1106,31 +1119,34 @@ ObjectTree::FindProcedures(HTREEITEM p_theItem)
   for(auto& proc : procedures)
   {
     HTREEITEM procedure = NULL;
-    CString schema = proc.m_schemaName;
+    CString schem  = proc.m_schemaName;
     CString object = proc.m_procedureName;
     schema.Trim();
     object.Trim();
 
-    if(schema.IsEmpty())
+    if(schem.IsEmpty())
     {
       // No schema found, just add the item
       procedure = InsertItem(object,p_theItem);
     }
     else
     {
-      if((schema.Compare(lastSchema) == 0) && schemaItem)
+      if((schem.Compare(lastSchema) == 0) && schemaItem)
       {
         procedure = InsertItem(object,schemaItem);
         SetItemCount(schemaItem,++schemaCount);
       }
       else
       {
-        lastSchema  = schema;
-        schemaItem  = InsertItem(schema,p_theItem);
+        lastSchema  = schem;
+        schemaItem  = InsertItem(schem,p_theItem);
         procedure   = InsertItem(object,schemaItem);
         schemaCount = 1;
-        SetItemCount(schemaItem,schemaCount);
-        SetItemImage(schemaItem,IMG_SCHEMA,IMG_SCHEMA);
+        if(schemaItem)
+        {
+          SetItemCount(schemaItem,schemaCount);
+          SetItemImage(schemaItem,IMG_SCHEMA,IMG_SCHEMA);
+        }
       }
     }
     SetItemImage(procedure,IMG_PROCEDURE,IMG_PROCEDURE);
@@ -1151,8 +1167,7 @@ ObjectTree::FindProcedures(HTREEITEM p_theItem)
 void
 ObjectTree::FindParameters(HTREEITEM p_theItem)
 {
-  MProcedureMap procedures;
-  if(PresetProcedure(p_theItem,procedures))
+  if(PresetProcedure(p_theItem))
   {
     // Go find the procedures
     QueryToolApp* app = (QueryToolApp*)AfxGetApp();
@@ -1202,7 +1217,7 @@ ObjectTree::FindParameters(HTREEITEM p_theItem)
     item = InsertItem(line,info);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format(_T("Remarks: %s"),procedure.m_remarks);
+    line.Format(_T("Remarks: %s"),procedure.m_remarks.GetString());
     item = InsertItem(line,info);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
@@ -1229,8 +1244,7 @@ void
 ObjectTree::FindSourcecode(HTREEITEM p_theItem)
 {
   CString tableproc;
-  MProcedureMap procedures;
-  if (PresetProcedure(p_theItem,procedures))
+  if (PresetProcedure(p_theItem))
   {
     // For triggers it's the first node
     if(ShowSourcecodeTrigger(m_schema,m_procedure))
@@ -1240,7 +1254,7 @@ ObjectTree::FindSourcecode(HTREEITEM p_theItem)
     tableproc = m_procedure;
     // For procedures, it's a node deeper in the tree
     HTREEITEM par = GetParentItem(p_theItem);
-    if(PresetProcedure(par,procedures))
+    if(PresetProcedure(par))
     {
       if(ShowSourcecodeModule(m_schema,m_procedure))
       {
@@ -1254,7 +1268,7 @@ ObjectTree::FindSourcecode(HTREEITEM p_theItem)
     }
     // For trigger under tables, it's even a node deeper
     par = GetParentItem(par);
-    if(PresetProcedure(par,procedures))
+    if(PresetProcedure(par))
     {
       if(ShowSourcecodeTrigger(m_schema,tableproc))
       {
@@ -1265,7 +1279,7 @@ ObjectTree::FindSourcecode(HTREEITEM p_theItem)
 }
 
 bool
-ObjectTree::ShowSourcecodeTrigger(CString p_schema,CString p_trigger)
+ObjectTree::ShowSourcecodeTrigger(CString /*p_schema*/,CString p_trigger)
 {
   XString errors;
   XString object;
@@ -1355,20 +1369,20 @@ ObjectTree::ColumnDetailsToTree(MetaColumn& p_column,HTREEITEM p_item)
 {
   CString text;
 
-  text.Format(_T("Datatype SQL = %d\n"),      p_column.m_datatype);      InsertItem(text,p_item);
-  text.Format(_T("Name datatype = %s\n"),     p_column.m_typename);      InsertItem(text,p_item);
-  text.Format(_T("Column size = %d\n"),       p_column.m_columnSize);    InsertItem(text,p_item);
-  text.Format(_T("Buffer length = %u\n"),     p_column.m_bufferLength);  InsertItem(text,p_item);
-  text.Format(_T("Decimal digits = %d\n"),    p_column.m_decimalDigits); InsertItem(text,p_item);
-  text.Format(_T("radix = %d\n"),             p_column.m_numRadix);      InsertItem(text,p_item);
-  text.Format(_T("nullable = %d\n"),          p_column.m_nullable);      InsertItem(text,p_item);
-  text.Format(_T("remarks = %s\n"),           p_column.m_remarks);       InsertItem(text,p_item);
-  text.Format(_T("Default value = %s\n"),     p_column.m_default);       InsertItem(text,p_item);
-  text.Format(_T("Datatype version 3 = %d\n"),p_column.m_datatype3);     InsertItem(text,p_item);
-  text.Format(_T("Datatype sub = %d\n"),      p_column.m_sub_datatype);  InsertItem(text,p_item);
-  text.Format(_T("Octet length = %d\n"),      p_column.m_octet_length);  InsertItem(text,p_item);
-  text.Format(_T("Ordinal position = %d\n"),  p_column.m_position);      InsertItem(text,p_item);
-  text.Format(_T("Is nullable = %s\n"),       p_column.m_isNullable);    InsertItem(text,p_item);
+  text.Format(_T("Datatype SQL = %d\n"),      p_column.m_datatype);               InsertItem(text,p_item);
+  text.Format(_T("Name datatype = %s\n"),     p_column.m_typename.GetString());   InsertItem(text,p_item);
+  text.Format(_T("Column size = %d\n"),       p_column.m_columnSize);             InsertItem(text,p_item);
+  text.Format(_T("Buffer length = %u\n"),     p_column.m_bufferLength);           InsertItem(text,p_item);
+  text.Format(_T("Decimal digits = %d\n"),    p_column.m_decimalDigits);          InsertItem(text,p_item);
+  text.Format(_T("radix = %d\n"),             p_column.m_numRadix);               InsertItem(text,p_item);
+  text.Format(_T("nullable = %d\n"),          p_column.m_nullable);               InsertItem(text,p_item);
+  text.Format(_T("remarks = %s\n"),           p_column.m_remarks.GetString());    InsertItem(text,p_item);
+  text.Format(_T("Default value = %s\n"),     p_column.m_default.GetString());    InsertItem(text,p_item);
+  text.Format(_T("Datatype version 3 = %d\n"),p_column.m_datatype3);              InsertItem(text,p_item);
+  text.Format(_T("Datatype sub = %d\n"),      p_column.m_sub_datatype);           InsertItem(text,p_item);
+  text.Format(_T("Octet length = %d\n"),      p_column.m_octet_length);           InsertItem(text,p_item);
+  text.Format(_T("Ordinal position = %d\n"),  p_column.m_position);               InsertItem(text,p_item);
+  text.Format(_T("Is nullable = %s\n"),       p_column.m_isNullable.GetString()); InsertItem(text,p_item);
 }
 
 void
@@ -1408,7 +1422,7 @@ ObjectTree::ColumnListToTree(MColumnMap& p_columns,HTREEITEM p_item)
 
     if(!column.m_remarks.IsEmpty())
     {
-      line.AppendFormat(_T(" (%s)"),column.m_remarks);
+      line.AppendFormat(_T(" (%s)"),column.m_remarks.GetString());
     }
     HTREEITEM item = InsertItem(line,p_item);
     SetItemImage(item,IMG_COLUMN,IMG_COLUMN);
@@ -1514,13 +1528,13 @@ ObjectTree::ForeignsToTree(MForeignMap& p_foreigns,HTREEITEM p_item)
 
       // Primary key + columns
       line.Format(_T("Primary key: %s (%s)")
-                  ,foreign.m_pkTableName
-                  ,foreign.m_primaryConstraint);
+                  ,foreign.m_pkTableName.GetString()
+                  ,foreign.m_primaryConstraint.GetString());
       primkey = InsertItem(line,keyItem);
       SetItemImage(primkey,IMG_FOREIGN,IMG_FOREIGN);
     }
     // Add the columns
-    line.Format(_T("%s -> %s"),foreign.m_fkColumnName,foreign.m_pkColumnName);
+    line.Format(_T("%s -> %s"),foreign.m_fkColumnName.GetString(),foreign.m_pkColumnName.GetString());
     HTREEITEM col = InsertItem(line,primkey);
     SetItemImage(col,IMG_COLUMN,IMG_COLUMN);
   }
@@ -1569,12 +1583,12 @@ ObjectTree::ReferencedToTree(MForeignMap& p_foreigns,HTREEITEM p_item)
       SetItemImage(info,IMG_INFO,IMG_INFO);
 
       // Primary key + columns
-      line.Format(_T("Foreign key: %s"),foreign.m_foreignConstraint);
+      line.Format(_T("Foreign key: %s"),foreign.m_foreignConstraint.GetString());
       primkey = InsertItem(line,keyItem);
       SetItemImage(primkey,IMG_FOREIGN,IMG_FOREIGN);
     }
     // Add the columns
-    line.Format(_T("%s -> %s"),foreign.m_fkColumnName,foreign.m_pkColumnName);
+    line.Format(_T("%s -> %s"),foreign.m_fkColumnName.GetString(),foreign.m_pkColumnName.GetString());
     HTREEITEM col = InsertItem(line,primkey);
     SetItemImage(col,IMG_COLUMN,IMG_COLUMN);
   }
@@ -1609,7 +1623,7 @@ ObjectTree::StatisticsToTree(MIndicesMap& p_statistics,HTREEITEM p_item)
       else
       {
         // New index on a table
-        line.Format(_T("Index name: %s"),stat.m_indexName);
+        line.Format(_T("Index name: %s"),stat.m_indexName.GetString());
         if(stat.m_nonunique == false)
         {
           line += _T(" (Unique)");
@@ -1633,7 +1647,7 @@ ObjectTree::StatisticsToTree(MIndicesMap& p_statistics,HTREEITEM p_item)
       line.Format(_T("Data pages: %d"),stat.m_pages);
       item = InsertItem(line,next);
       SetItemImage(item,IMG_INDEX,IMG_INDEX);
-      line.Format(_T("Index filter: %s"),stat.m_filter);
+      line.Format(_T("Index filter: %s"),stat.m_filter.GetString());
       item = InsertItem(line,next);
       SetItemImage(item,IMG_INDEX,IMG_INDEX);
     }
@@ -1648,11 +1662,11 @@ ObjectTree::StatisticsToTree(MIndicesMap& p_statistics,HTREEITEM p_item)
       // Extra column on an index
       if(!stat.m_filter.IsEmpty())
       {
-        line.Format(_T("%d: %s"),stat.m_position,stat.m_filter);
+        line.Format(_T("%d: %s"),stat.m_position,stat.m_filter.GetString());
       }
       else
       {
-        line.Format(_T("%d: %s"),stat.m_position,stat.m_columnName);
+        line.Format(_T("%d: %s"),stat.m_position,stat.m_columnName.GetString());
       }
       line += (stat.m_ascending == _T("A")) ? _T(" (Ascending)") : _T(" (Descending)");
       HTREEITEM item = InsertItem(line,next);
@@ -1682,11 +1696,11 @@ ObjectTree::SpecialsToTree(MSpecialsMap& p_specials,HTREEITEM p_item)
     next = InsertItem(line,p_item);
     SetItemImage(next,IMG_COLUMN,IMG_COLUMN);
 
-    line.Format(_T("RDBMS Special type: %s"),special.m_typeName);
+    line.Format(_T("RDBMS Special type: %s"),special.m_typeName.GetString());
     HTREEITEM item  = InsertItem(line,next);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format(_T("ODBC data type: %s"),info->ODBCDataType(special.m_datatype));
+    line.Format(_T("ODBC data type: %s"),info->ODBCDataType(special.m_datatype).GetString());
     item = InsertItem(line,next);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
@@ -1930,7 +1944,7 @@ ObjectTree::TriggerToTree(MetaTrigger& p_trigger,HTREEITEM p_item)
   // Referencing statement (if any)
   if(!p_trigger.m_referencing.IsEmpty())
   {
-    line.Format(_T("Referencing: %s"),p_trigger.m_referencing);
+    line.Format(_T("Referencing: %s"),p_trigger.m_referencing.GetString());
     item = InsertItem(line,p_item);
     SetItemImage(item,IMG_TRIGGER,IMG_TRIGGER);
   }
@@ -1956,7 +1970,7 @@ ObjectTree::SequencesToTree(MSequenceMap& p_sequences,HTREEITEM p_item)
   for(auto& seq : p_sequences)
   {
     // The main sequence item
-    line.Format(_T("Sequence name: %s"),seq.m_sequenceName);
+    line.Format(_T("Sequence name: %s"),seq.m_sequenceName.GetString());
     HTREEITEM seqItem = InsertItem(line,p_item);
     SetItemImage(seqItem,IMG_SEQUENCE,IMG_SEQUENCE);
 
@@ -2002,9 +2016,9 @@ ObjectTree::PrivilegesToTree(MPrivilegeMap& p_privileges,HTREEITEM p_item)
   {
     CString line;
     line.Format(_T("%s was granted %s by %s")
-                ,priv.m_grantee
-                ,priv.m_privilege
-                ,priv.m_grantor);
+                ,priv.m_grantee.GetString()
+                ,priv.m_privilege.GetString()
+                ,priv.m_grantor.GetString());
     if(priv.m_grantable)
     {
       line += _T(" (With GRANT OPTION)");
@@ -2029,10 +2043,10 @@ ObjectTree::ColumnPrivilegesToTree(MPrivilegeMap& p_privileges,HTREEITEM p_item)
   {
     CString line;
     line.Format(_T("%s was granted %s on column %s by %s")
-                ,priv.m_grantee
-                ,priv.m_privilege
-                ,priv.m_columnName
-                ,priv.m_grantor);
+                ,priv.m_grantee.GetString()
+                ,priv.m_privilege.GetString()
+                ,priv.m_columnName.GetString()
+                ,priv.m_grantor.GetString());
     if(priv.m_grantable)
     {
       line += _T(" (With GRANT OPTION)");
@@ -2059,7 +2073,7 @@ ObjectTree::ParametersToTree(MParameterMap& p_parameters,HTREEITEM p_item)
   for(auto& param : p_parameters)
   {
     CString line;
-    line.Format(_T("%d: %s"),param.m_position,param.m_parameter);
+    line.Format(_T("%d: %s"),param.m_position,param.m_parameter.GetString());
     switch(param.m_nullable)
     {
       case SQL_NO_NULLS:         line += _T(" (NOT NULL)"); break;
@@ -2087,11 +2101,11 @@ ObjectTree::ParametersToTree(MParameterMap& p_parameters,HTREEITEM p_item)
     HTREEITEM item = InsertItem(line,paramItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format(_T("ODBC Datatype: %s"),info->ODBCDataType(param.m_datatype));
+    line.Format(_T("ODBC Datatype: %s"),info->ODBCDataType(param.m_datatype).GetString());
     item = InsertItem(line,paramItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format(_T("RDBMS Datatype: %s"),param.m_typeName);
+    line.Format(_T("RDBMS Datatype: %s"),param.m_typeName.GetString());
     item = InsertItem(line,paramItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
@@ -2111,11 +2125,11 @@ ObjectTree::ParametersToTree(MParameterMap& p_parameters,HTREEITEM p_item)
     item = InsertItem(line,paramItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format(_T("Default value: %s"),param.m_default);
+    line.Format(_T("Default value: %s"),param.m_default.GetString());
     item = InsertItem(line,paramItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
 
-    line.Format(_T("Comments: %s"),param.m_remarks);
+    line.Format(_T("Comments: %s"),param.m_remarks.GetString());
     item = InsertItem(line,paramItem);
     SetItemImage(item,IMG_INFO,IMG_INFO);
   }

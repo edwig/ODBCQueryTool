@@ -154,9 +154,9 @@ RegExp::set_escape(TCHAR /* escape */,TCHAR zero_one,TCHAR closure)
 }
 
 int
-RegExp::isfactor(TCHAR c)
+RegExp::isfactor(TCHAR ch)
 {
-	return (_tcschr(m_nfac_chars,c) == NULL ? TRUE : FALSE);
+	return (_tcschr(m_nfac_chars,ch) == NULL ? TRUE : FALSE);
 }
 
 
@@ -396,10 +396,10 @@ RegExp::parse_escape(void)
 }
 
 int
-RegExp::parse_closure(LPTSTR pat,TCHAR c)
+RegExp::parse_closure(LPTSTR pat,TCHAR ch)
 {
 	memmove(pat+2,pat,(_tcslen(pat)+1) * sizeof(TCHAR));
-	pat[0] = c;
+	pat[0] = ch;
 	int len = (int)_tcslen(pat + 2);
 	if(len > 255)
 	{
@@ -492,18 +492,18 @@ RegExp::str_match(LPTSTR s,LPTSTR re)
 LPTSTR 
 RegExp::re_match(LPTSTR s,LPTSTR pat)
 {
-	LPTSTR c = s;
+	LPTSTR ch = s;
 	
 	m_s_end = NULL;
-	while(*c != ENDSTR)
+	while(*ch != ENDSTR)
 	{
-		if(match_term((int)(c-s),c,pat) != FALSE)
+		if(match_term((int)(ch-s),ch,pat) != FALSE)
 		{
-			m_rstart  = (int)(c-s);
-			m_rlength = (int)(m_s_end - c);
-			return c;
+			m_rstart  = (int)(ch-s);
+			m_rlength = (int)(m_s_end - ch);
+			return ch;
 		}
-		++c;
+		++ch;
 	}
 	m_rstart = m_rlength = 0;
 	return NULL;
@@ -512,15 +512,15 @@ RegExp::re_match(LPTSTR s,LPTSTR pat)
 bool 
 RegExp::re_matchpos(TCHAR car,LPTSTR pat,int pos)
 {
-	TCHAR c[2];
-	c[0] = car;
-	c[1] = ENDSTR;
+	TCHAR ch[2];
+	ch[0] = car;
+	ch[1] = ENDSTR;
 
 	if (pos > 0)
 	{
 		pat = skip_term(pat,pos);
 	}
-	return match_term(pos,c,pat,1) != 0;
+	return match_term(pos,ch,pat,1) != 0;
 }
 
 int 
@@ -618,10 +618,10 @@ RegExp::match_term(int inx,LPTSTR s,LPTSTR pat,int aantalpos)
                 // Fall through
      case POS_CLO:	
                 {
-						      TCHAR clopat[MAXPAT];
-						      memset(clopat,0,MAXPAT * sizeof(TCHAR));
-						      _tcsncpy(clopat,pat+2,*(pat+1));
-						      return match_closure(inx,s,pat,clopat);
+						      TCHAR clopattern[MAXPAT];
+						      memset(clopattern,0,MAXPAT * sizeof(TCHAR));
+						      _tcsncpy(clopattern,pat+2,*(pat+1));
+						      return match_closure(inx,s,pat,clopattern);
 					      }
 			default:	return TRUE;	/* Cant't happen */
 		}
@@ -770,14 +770,14 @@ RegExp::match_closure(int inx,LPTSTR s,LPTSTR pat,LPTSTR clopat)
 }
 
 short 
-RegExp::match_cc1(TCHAR c,LPTSTR pat)
+RegExp::match_cc1(TCHAR ch,LPTSTR pat)
 {
 	register short x;
 	TCHAR cc1 = *pat++;
 
 	for(x=*pat;x>0;--x)
 	{
-		if(c==pat[x])
+		if(ch == pat[x])
 		{
 			return (cc1 == CCL);
 		}

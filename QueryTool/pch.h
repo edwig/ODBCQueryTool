@@ -10,6 +10,8 @@
 // add headers that you want to pre-compile here
 #include "framework.h"
 
+#define ODBCVER 0x0380
+
 #include <BaseLibrary.h>
 #include <StyleFrameWork.h>
 #include <SQLComponents.h>

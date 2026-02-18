@@ -535,4 +535,27 @@ void UndoNotification::Redo (UndoContext& cxt) const
     }
 }
 
+UndoInsert::UndoInsert(int line,int col,LPCTSTR str,int len)
+           :m_str(str,len) 
+{
+  m_position.line   = line;
+  m_position.column = col;
 }
+
+UndoOverwrite::UndoOverwrite(int line,int col,LPCTSTR orgStr,int orgLen,LPCTSTR newStr,int newLen)
+              :m_orgStr(orgStr,orgLen)
+              ,m_newStr(newStr,newLen) 
+{
+  m_position.line   = line; 
+  m_position.column = col;
+}
+
+UndoDelete::UndoDelete(int line,int col,LPCTSTR str,int len)
+           :m_str(str,len)
+{
+  m_position.line   = line;
+  m_position.column = col;
+}
+
+}
+

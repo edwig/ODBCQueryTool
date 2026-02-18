@@ -185,7 +185,7 @@ namespace Common
 
       if(!capacity() || len > capacity() || ref_counter(_buffer) > 1)
       {
-        reallocate((int) len,(int) capacity(),exact);
+        reallocate((unsigned short) len,(unsigned short) capacity(),exact);
       }
       memcpy(_buffer,str,(len + 1) * sizeof(TCHAR));
       set_length(len);
@@ -299,7 +299,7 @@ namespace Common
 
           if(capacity() && ref_counter(_buffer))
           {
-            reallocate((int) length()); // split
+            reallocate((unsigned short) length()); // split
           }
         }
         else  // erase from 0 pos

@@ -429,13 +429,13 @@ ConnectionDlg::Connect()
   {
     connectStr  = _T("DSN=");
     connectStr += m_datasource;
-    status.Format(_T("Trying to connect to: %s as %s"),m_datasource,m_user);
+    status.Format(_T("Trying to connect to: %s as %s"),m_datasource.GetString(),m_user.GetString());
   }
   else
   {
     connectStr  = _T("FILEDSN=");
     connectStr += m_fileDSN;
-    status.Format(_T("Trying to connect with FILEDSN=%s as %s"),m_fileDSN,m_user);
+    status.Format(_T("Trying to connect with FILEDSN=%s as %s"),m_fileDSN.GetString(),m_user.GetString());
   }
   connectStr += _T(";UID=");
   connectStr += m_user;

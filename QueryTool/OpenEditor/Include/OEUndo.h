@@ -344,15 +344,6 @@ namespace OpenEditor
     UndoBase::~UndoBase () 
         { _ASSERTE(!m_above && !m_below); }
     inline
-    UndoInsert::UndoInsert (int line, int col, LPCTSTR str, int len) 
-        : m_str(str, len) { m_position.line = line; m_position.column = col; }
-    inline
-    UndoOverwrite::UndoOverwrite (int line, int col, LPCTSTR orgStr, int orgLen, LPCTSTR newStr, int newLen) 
-        : m_orgStr(orgStr, orgLen), m_newStr(newStr, newLen) { m_position.line = line; m_position.column = col; }
-    inline
-    UndoDelete::UndoDelete (int line, int col, LPCTSTR str, int len) 
-        : m_str(str, len){ m_position.line = line; m_position.column = col; }
-    inline
     UndoInsertLine::UndoInsertLine (int line, LPCTSTR str, int len) 
         : m_str(str, len){ m_line = line; }
     inline

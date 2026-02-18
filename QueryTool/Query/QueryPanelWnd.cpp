@@ -130,7 +130,7 @@ static UINT BASED_CODE QueryIndicators[] =
 
 
 // FilePanelWnd message handlers
-BOOL CQueryPanelWnd::OnCreate(LPCREATESTRUCT lpCreateStruct)
+BOOL CQueryPanelWnd::OnCreate(LPCREATESTRUCT /*lpCreateStruct*/)
 {
   // Don't: Leads to multiple destruct of views
   //if (CView::OnCreate(lpCreateStruct) == -1)
@@ -308,7 +308,7 @@ void CQueryPanelWnd::OnOpenFiles_RClick (NMHDR* pNMHDR, LRESULT* pResult)
   }
 }
 
-void CQueryPanelWnd::OnDraw(CDC* pDC)
+void CQueryPanelWnd::OnDraw(CDC* /*pDC*/)
 {
 	// TODO: add draw code for native data here
 }

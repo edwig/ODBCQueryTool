@@ -887,7 +887,7 @@ QueryToolApp::OnDisconnect()
     {
       CString warning;
       warning.Format(_T("There is still a running transaction to database: %s.\r\n")
-                     _T("Loose your changes altogether and disconnect?"),GetDatasource());
+                     _T("Loose your changes altogether and disconnect?"),GetDatasource().GetString());
       if(AfxMessageBox(warning,MB_YESNO | MB_ICONEXCLAMATION) == IDNO)
       {
         return;
@@ -1296,7 +1296,7 @@ QueryToolApp::SaveAllModified()
   {
     CString warning;
     warning.Format(_T("There is still a running transaction to database: %s.\r\n")
-                   _T("Loose your changes altogether and disconnect?"), GetDatasource());
+                   _T("Loose your changes altogether and disconnect?"), GetDatasource().GetString());
     if (AfxMessageBox(warning, MB_YESNO | MB_ICONEXCLAMATION) == IDNO)
     {
       return FALSE;
@@ -1308,7 +1308,7 @@ QueryToolApp::SaveAllModified()
 }
 
 int
-QueryToolApp::DoMessageBox(LPCTSTR lpszPrompt, UINT nType, UINT nIDPrompt)
+QueryToolApp::DoMessageBox(LPCTSTR lpszPrompt, UINT nType, UINT /*nIDPrompt*/)
 {
   HWND hwnd = NULL;
   if (m_pMainWnd)
