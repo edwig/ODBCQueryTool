@@ -35,12 +35,14 @@ class SQLVariant;
 // Type of parameter for queries and persistent-stored-modules
 typedef enum _param_type
 {
-  P_SQL_PARAM_TYPE_UNKNOWN = 0
- ,P_SQL_PARAM_INPUT        = 1
- ,P_SQL_PARAM_INPUT_OUTPUT = 2
- ,P_SQL_RESULT_COL         = 3
- ,P_SQL_PARAM_OUTPUT       = 4
- ,P_SQL_RETURN_VALUE       = 5
+  P_SQL_PARAM_TYPE_UNKNOWN  = 0
+ ,P_SQL_PARAM_INPUT         = 1
+ ,P_SQL_PARAM_INPUT_OUTPUT  = 2
+ ,P_SQL_RESULT_COL          = 3
+ ,P_SQL_PARAM_OUTPUT        = 4
+ ,P_SQL_RETURN_VALUE        = 5
+ ,P_SQL_INPUT_OUTPUT_STREAM = 8
+ ,P_SQL_OUTPUT_STREAM       = 16
 }
 SQLParamType;
 
