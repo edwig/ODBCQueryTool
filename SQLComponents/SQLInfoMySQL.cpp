@@ -401,9 +401,9 @@ SQLInfoMySQL::GetKEYWORDDataType(MetaColumn* p_column)
                                           }
                                           else if(p_column->m_columnSize >= SQLNUM_MAX_PREC)
                                           {
-                                            // Unspecified DECIMAL FOUND.
-                                            // See to it that we get some decimals at least
-                                            p_column->m_decimalDigits = SQLNUM_MAX_PREC / 2;
+                                            type = _T("INTEGER");
+                                            p_column->m_columnSize = 0;
+                                            p_column->m_datatype   = SQL_INTEGER;
                                           }
                                         }
                                         break;
@@ -413,7 +413,15 @@ SQLInfoMySQL::GetKEYWORDDataType(MetaColumn* p_column)
     case SQL_SMALLINT:                  type = _T("SMALLINT");
                                         p_column->m_columnSize = 5;
                                         break;
-    case SQL_FLOAT:                     type = _T("FLOAT");         break;
+    case SQL_FLOAT:                     type = _T("FLOAT");
+                                        if(p_column->m_columnSize >= SQLNUM_MAX_PREC &&
+                                           p_column->m_decimalDigits == 0)
+                                        {
+                                          type = _T("BIGINT");
+                                          p_column->m_columnSize = 0;
+                                          p_column->m_datatype   = SQL_BIGINT;
+                                        }
+                                        break;
     case SQL_REAL:                      type = _T("REAL");          break;
     case SQL_DOUBLE:                    type = _T("DOUBLE");        break;
     //case SQL_DATE:
@@ -900,6 +908,10 @@ SQLInfoMySQL::GetCATALOGTableCreatePostfix(MetaTable& p_table,MetaColumn& /*p_co
   if(p_table.m_temporary)
   {
     sql += _T("ENGINE = MEMORY");
+  }
+  else
+  {
+    sql += _T("ENGINE = InnoDB");
   }
   return sql;
 }

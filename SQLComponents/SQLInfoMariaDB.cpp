@@ -429,6 +429,23 @@ SQLInfoMariaDB::GetCATALOGSequenceDrop(XString /*p_schema*/,XString p_sequence) 
   return  sql;
 }
 
+// All table functions
+XString 
+SQLInfoMariaDB::GetCATALOGTableCreatePostfix(MetaTable& p_table,MetaColumn& /*p_column*/) const
+{
+  XString sql;
+  if(p_table.m_temporary)
+  {
+    sql += _T("ENGINE = MEMORY");
+  }
+  else
+  {
+    sql += _T("ENGINE = InnoDB");
+  }
+  return sql;
+
+}
+
 //////////////////////////////////////////////////////////////////////////
 //
 // SQL/PSM PERSISTENT STORED MODULES 

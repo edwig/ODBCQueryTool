@@ -91,7 +91,7 @@ private:
   bool    FindSchemaName(const XString& p_tableName);
   void    StashTheLine(const XString& p_line);
   XString ReplaceLengthPrecScale(TypeInfo* p_type,int p_length,int p_precision,int p_scale);
-  XString FormatColumnName(XString& p_column,int p_length);
+  XString FormatColumnName(const XString& p_column,int p_length);
   int     CalculateColumnLength(MColumnMap& p_columns);
   void    FindIndexFilter(MetaIndex& p_index);
   bool    IsStrictODBCPrivilege(const XString& p_privilege);

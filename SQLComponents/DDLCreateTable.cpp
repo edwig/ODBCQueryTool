@@ -249,6 +249,7 @@ DDLCreateTable::SetTableTablespace(const XString& p_tablespace)
   {
     table.m_tablespace = p_tablespace;
   }
+  m_didOptions = false;
 }
 
 void
@@ -832,34 +833,35 @@ DDLCreateTable::ReplaceLengthPrecScale(TypeInfo*  p_type
 }
 
 XString
-DDLCreateTable::FormatColumnName(XString& p_column,int p_length)
+DDLCreateTable::FormatColumnName(const XString& p_column,int p_length)
 {
+  XString column(p_column);
   // Circumvent locally reserved words
   if(m_target && m_target->GetRDBMSDatabaseType() == DatabaseType::RDBMS_SQLSERVER && p_column.GetAt(0) != '[')
   {
-    p_column = _T("[") + p_column + _T("]");
+    column = _T("[") + p_column + _T("]");
     p_length += 2;
   }
   else if(!m_info->IsCorrectName(p_column))
   {
     XString quote = m_info->GetKEYWORDReservedWordQuote();
-    if(p_column.Left(1) != quote && p_column.Right(1) != quote)
+    if(column.Left(1) != quote && column.Right(1) != quote)
     {
-      p_column = quote + p_column + quote;
+      column = quote + column + quote;
     }
   }
   else
   {
     // Possibly a quoted identifier
-    p_column = m_info->QueryIdentifierQuotation(p_column);
+    column = m_info->QueryIdentifierQuotation(column);
   }
 
   // Pretty-print adjust datatype
-  while (p_column.GetLength() < p_length)
+  while (column.GetLength() < p_length)
   {
-    p_column += _T(" ");
+    column += _T(" ");
   }
-  return p_column;
+  return column;
 }
 
 int

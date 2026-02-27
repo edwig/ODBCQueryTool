@@ -2368,6 +2368,7 @@ SQLInfoOracle::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewname,bo
                 _T("      ,viw.view_name     AS table_name\n")
                 _T("      ,'VIEW'            AS object_type\n")
                 _T("      ,com.comments      AS remarks\n")
+                _T("      ,viw.owner || '.' || viw.view_name as fullname\n")
                 _T("      ,''                AS tablespace_name\n")
                 _T("      ,0                 AS TEMPORARY\n")
                 _T("  FROM all_views viw LEFT OUTER JOIN all_tab_comments com\n")

@@ -122,6 +122,9 @@ public:
   XString GetCATALOGSequenceCreate    (MetaSequence& p_sequence) const override;
   XString GetCATALOGSequenceDrop      (XString  p_schema,XString  p_sequence) const override;
   
+  // All table functions
+  XString GetCATALOGTableCreatePostfix(MetaTable& p_table,MetaColumn& p_column) const override;
+
   //////////////////////////////////////////////////////////////////////////
   //
   // SQL/PSM PERSISTENT STORED MODULES 
