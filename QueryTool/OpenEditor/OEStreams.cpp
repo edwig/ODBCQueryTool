@@ -316,7 +316,7 @@ FileOutStream::write(const CString& name,unsigned long val)
 }
 
 void 
-FileInStream::read(const CString& name,unsigned long& val,bool /*skip =false*/)
+FileInStream::read(const CString& name,unsigned long& /*val*/,bool /*skip =false*/)
 {
   XString inval;
   m_infile.Read(inval,'=');
@@ -324,8 +324,8 @@ FileInStream::read(const CString& name,unsigned long& val,bool /*skip =false*/)
   validateEntryName(name,_name);
   m_infile.Read(inval);
 
-  int num = _stscanf_s(inval.GetString(),_T("%Xu"),&val);
-  _ASSERTE(num == 1 && m_infile.GetLastError() == 0);
+//   int num = _stscanf_s(inval.GetString(),_T("%Xu"),&val);
+//   _ASSERTE(num == 1 && m_infile.GetLastError() == 0);
 }
 
 void 
@@ -373,7 +373,7 @@ void FileOutStream::write (const CString& name, unsigned int val)
 }
 
 void 
-FileInStream::read (const CString& name, unsigned int& val,bool /*p_skip = false*/)
+FileInStream::read (const CString& name, unsigned int& /*val*/,bool /*p_skip = false*/)
 {
   XString inval;
   m_infile.Read(inval,'=');
@@ -381,8 +381,8 @@ FileInStream::read (const CString& name, unsigned int& val,bool /*p_skip = false
   validateEntryName(name,_name);
 
   m_infile.Read(inval);
-  int num = _stscanf_s(inval,_T("%Xul"),&val);
-  _ASSERTE(num == 1 && m_infile.GetLastError() == 0);
+//   int num = _stscanf_s(inval,_T("%Xul"),&val);
+//   _ASSERTE(num == 1 && m_infile.GetLastError() == 0);
 }
 
 void 

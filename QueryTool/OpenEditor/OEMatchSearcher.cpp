@@ -425,9 +425,9 @@ bool MatchAnalyser::PutToken (const TokenInfo& tokenInfo, const CString& str)
         return putTokenBackward(tokenInfo, str);
 }
 
-bool MatchAnalyser::putToken (const TokenInfo& tokenInfo, const CString& str)
+bool MatchAnalyser::putToken (const TokenInfo& tokenInfo, const CString& /*str*/)
 {
-    TRACE1("MatchAnalyser::putToken: %s\n", str.GetString());
+    // TRACE1("MatchAnalyser::putToken: %s\n", str.GetString());
 
     LexemeInfo &top = m_stack.top();
     //const EPLSToken prevToken = top.LastToken();
@@ -596,9 +596,9 @@ bool MatchAnalyser::putToken (const TokenInfo& tokenInfo, const CString& str)
 // -//-
 //
 
-bool MatchAnalyser::putTokenBackward (const TokenInfo& tokenInfo, const CString& str)
+bool MatchAnalyser::putTokenBackward (const TokenInfo& tokenInfo, const CString& /*str*/)
 {
-    TRACE1("MatchAnalyser::putTokenBackward: %s\n", str.GetString());
+    // TRACE1("MatchAnalyser::putTokenBackward: %s\n", str.GetString());
 
     LexemeInfo &top = m_stack.top();
 
