@@ -23,7 +23,7 @@
 //
 // Version number: See SQLComponents.h
 //
-#include "stdafx.h"
+#include "pch.h"
 #include "SQLComponents.h"
 #include "SQLInfoMySQL.h"
 #include "SQLQuery.h"
@@ -470,14 +470,14 @@ SQLInfoMySQL::GetKEYWORDCurrentUser() const
 
 // Connects to a default schema in the database/instance
 XString
-SQLInfoMySQL::GetSQLDefaultSchema(XString /*p_user*/,XString p_schema) const
+SQLInfoMySQL::GetSQLDefaultSchema(const XString& /*p_user*/,const XString& p_schema) const
 {
   return _T("USE ") + p_schema;
 }
 
 // Gets the construction for inline generating a key within an INSERT statement
 XString
-SQLInfoMySQL::GetSQLNewSerial(XString /*p_table*/, XString /*p_sequence*/) const
+SQLInfoMySQL::GetSQLNewSerial(const XString& /*p_table*/,const XString& /*p_sequence*/) const
 {
   // Insert a zero in an IDENTITY column
   return _T("0");
@@ -485,14 +485,14 @@ SQLInfoMySQL::GetSQLNewSerial(XString /*p_table*/, XString /*p_sequence*/) const
 
 // Gets the construction / select for generating a new serial identity
 XString
-SQLInfoMySQL::GetSQLGenerateSerial(XString /*p_table*/) const
+SQLInfoMySQL::GetSQLGenerateSerial(const XString& /*p_table*/) const
 {
   // NO WAY OF KNOWNING THIS
   return _T("0");
 }
 
 XString
-SQLInfoMySQL::GetSQLGenerateSequence(XString /*p_sequence*/) const
+SQLInfoMySQL::GetSQLGenerateSequence(const XString& /*p_sequence*/) const
 {
   // Not supported
   return _T("");
@@ -500,7 +500,7 @@ SQLInfoMySQL::GetSQLGenerateSequence(XString /*p_sequence*/) const
 
 // Gets the construction / select for the resulting effective generated serial
 XString
-SQLInfoMySQL::GetSQLEffectiveSerial(XString p_identity) const
+SQLInfoMySQL::GetSQLEffectiveSerial(const XString& p_identity) const
 {
   // THIS IS MOST LIKELY NOT THE CORRECT VALUE.
   // NO WAY OF DETERMINING THIS
@@ -509,21 +509,21 @@ SQLInfoMySQL::GetSQLEffectiveSerial(XString p_identity) const
 
 // Gets the sub-transaction commands
 XString
-SQLInfoMySQL::GetSQLStartSubTransaction(XString /*p_savepointName*/) const
+SQLInfoMySQL::GetSQLStartSubTransaction(const XString& /*p_savepointName*/) const
 {
   // Generic ODBC does not known about sub transactions!
   return XString(_T(""));
 }
 
 XString
-SQLInfoMySQL::GetSQLCommitSubTransaction(XString /*p_savepointName*/) const
+SQLInfoMySQL::GetSQLCommitSubTransaction(const XString& /*p_savepointName*/) const
 {
   // Generic ODBC does not known about sub transactions!
   return XString(_T(""));
 }
 
 XString
-SQLInfoMySQL::GetSQLRollbackSubTransaction(XString /*p_savepointName*/) const
+SQLInfoMySQL::GetSQLRollbackSubTransaction(const XString& /*p_savepointName*/) const
 {
   // Generic ODBC does not known about sub transactions!
   return XString(_T(""));
@@ -539,7 +539,7 @@ SQLInfoMySQL::GetSQLFromDualClause() const
 
 // Get SQL to lock  a table 
 XString
-SQLInfoMySQL::GetSQLLockTable(XString /*p_schema*/,XString p_tablename,bool p_exclusive,int /*p_waittime*/) const
+SQLInfoMySQL::GetSQLLockTable(const XString& /*p_schema*/,const XString& p_tablename,bool p_exclusive,int /*p_waittime*/) const
 {
   // Standard ISO SQL Syntax
   XString query = _T("LOCK TABLE ") + p_tablename + _T(" IN ");
@@ -550,15 +550,16 @@ SQLInfoMySQL::GetSQLLockTable(XString /*p_schema*/,XString p_tablename,bool p_ex
 
 // Get query to optimize the table statistics
 XString
-SQLInfoMySQL::GetSQLOptimizeTable(XString /*p_schema*/, XString p_tablename) const
+SQLInfoMySQL::GetSQLOptimizeTable(const XString& /*p_schema*/,const XString& p_tablename) const
 {
   return _T("OPTIMIZE TABLE ") + QIQ(p_tablename) + _T(" NOWAIT");
 }
 
 // Transform query to select top <n> rows
 XString
-SQLInfoMySQL::GetSQLTopNRows(XString p_sql,int p_top,int p_skip /*= 0*/) const
+SQLInfoMySQL::GetSQLTopNRows(const XString& p_sql,int p_top,int p_skip /*= 0*/) const
 {
+  XString sql(p_sql);
   if(p_top > 0)
   {
     // MYSQL: " LIMIT <top> [ OFFSET <skip> ]
@@ -568,9 +569,9 @@ SQLInfoMySQL::GetSQLTopNRows(XString p_sql,int p_top,int p_skip /*= 0*/) const
     {
       limit.AppendFormat(_T(" OFFSET %d"),p_skip);
     }
-    p_sql += limit;
+    sql += limit;
   }
-  return p_sql;
+  return sql;
 }
 
 // Expand a SELECT with an 'FOR UPDATE' lock clause
@@ -581,7 +582,7 @@ SQLInfoMySQL::GetSelectForUpdateTableClause(unsigned /*p_lockWaitTime*/) const
 }
 
 XString
-SQLInfoMySQL::GetSelectForUpdateTrailer(XString p_select,unsigned /*p_lockWaitTime*/) const
+SQLInfoMySQL::GetSelectForUpdateTrailer(const XString& p_select,unsigned /*p_lockWaitTime*/) const
 {
   return p_select + "\nFOR UPDATE";
 }
@@ -596,13 +597,13 @@ SQLInfoMySQL::GetPing() const
 
 // Pre- and postfix statements for a bulk import
 XString
-SQLInfoMySQL::GetBulkImportPrefix(XString /*p_schema*/,XString /*p_tablename*/,bool /*p_identity = true*/,bool /*p_constraints = true*/) const
+SQLInfoMySQL::GetBulkImportPrefix(const XString& /*p_schema*/,const XString& /*p_tablename*/,bool /*p_identity = true*/,bool /*p_constraints = true*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoMySQL::GetBulkImportPostfix(XString /*p_schema*/,XString /*p_tablename*/,bool /*p_identity = true*/,bool /*p_constraints = true*/) const
+SQLInfoMySQL::GetBulkImportPostfix(const XString& /*p_schema*/,const XString& /*p_tablename*/,bool /*p_identity = true*/,bool /*p_constraints = true*/) const
 {
   return _T("");
 }
@@ -672,14 +673,14 @@ SQLInfoMySQL::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int 
 
 // Makes an catalog identifier string (possibly quoted on both sides)
 XString
-SQLInfoMySQL::GetSQLDDLIdentifier(XString p_identifier) const
+SQLInfoMySQL::GetSQLDDLIdentifier(const XString& p_identifier) const
 {
   return p_identifier;
 }
 
 // Get the name of a temp table (local temporary or global temporary)
 XString
-SQLInfoMySQL::GetTempTablename(XString /*p_schema*/,XString p_tablename,bool /*p_local*/) const
+SQLInfoMySQL::GetTempTablename(const XString& /*p_schema*/,const XString& p_tablename,bool /*p_local*/) const
 {
   return p_tablename;
 }
@@ -2217,8 +2218,40 @@ SQLInfoMySQL::GetCATALOGCommentCreate(XString /*p_schema*/,XString p_object,XStr
 //
 //////////////////////////////////////////////////////////////////////////
 
+// All package functions
 XString
-SQLInfoMySQL::GetPSMProcedureExists(XString p_schema, XString p_procedure,bool p_quoted /*= false*/) const
+SQLInfoMySQL::GetPMSPackageExists(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+{
+  return _T("");
+}
+
+XString
+SQLInfoMySQL::GetPMSPackageList(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+{
+  return _T("");
+}
+
+XString
+SQLInfoMySQL::GetPMSPackageListModules(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+{
+  return _T("");
+}
+
+XString
+SQLInfoMySQL::GetPMSPackageCreate(MetaPackage& /*p_package*/) const
+{
+  return _T("");
+}
+
+XString
+SQLInfoMySQL::GetPMSPackageDrop(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+{
+  return _T("");
+}
+
+
+XString
+SQLInfoMySQL::GetPSMProcedureExists(XString p_schema,XString& /*p_package*/,XString p_procedure,bool p_quoted /*= false*/) const
 {
   XString sql;
   sql = _T("SELECT SELECT COUNT(*)\n")
@@ -2237,7 +2270,7 @@ SQLInfoMySQL::GetPSMProcedureExists(XString p_schema, XString p_procedure,bool p
 }
 
 XString
-SQLInfoMySQL::GetPSMProcedureList(XString& p_schema,XString p_procedure,bool p_quoted /*= false*/) const
+SQLInfoMySQL::GetPSMProcedureList(XString& p_schema,XString& /*p_package*/,XString p_procedure,bool p_quoted /*= false*/) const
 {
   XString sql;
   sql = _T("SELECT routine_schema as catalog\n")
@@ -2267,7 +2300,7 @@ SQLInfoMySQL::GetPSMProcedureList(XString& p_schema,XString p_procedure,bool p_q
 }
 
 XString
-SQLInfoMySQL::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure,bool p_quoted /*= false*/) const
+SQLInfoMySQL::GetPSMProcedureAttributes(XString& p_schema,XString& /*p_package*/,XString& p_procedure,bool p_quoted /*= false*/) const
 {
   XString sql;
   sql = _T("SELECT routine_schema as catalog\n")
@@ -2320,7 +2353,7 @@ SQLInfoMySQL::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure,b
 // 'READS SQL DATA' - must always be specified
 // 'GROUP BY'       - always has two extra columns
 XString
-SQLInfoMySQL::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure,bool p_quoted /*= false*/) const
+SQLInfoMySQL::GetPSMProcedureSourcecode(XString p_schema,XString& /*p_package*/,XString p_procedure,bool p_quoted /*= false*/) const
 {
   XString sql = _T("SELECT 0 as type\n"
                    "      ,0 as line\n"
@@ -2362,7 +2395,7 @@ SQLInfoMySQL::GetPSMProcedureCreate(MetaProcedure& p_procedure) const
 }
 
 XString
-SQLInfoMySQL::GetPSMProcedureDrop(XString /*p_schema*/, XString p_procedure,bool p_function /*=false*/) const
+SQLInfoMySQL::GetPSMProcedureDrop(XString /*p_schema*/,XString& /*p_package*/,XString p_procedure,bool p_function /*=false*/) const
 {
   XString sql(_T("DROP "));
   sql += p_function ? _T("FUNCTION ") : _T("PROCEDURE ");
@@ -2371,20 +2404,20 @@ SQLInfoMySQL::GetPSMProcedureDrop(XString /*p_schema*/, XString p_procedure,bool
 }
 
 XString
-SQLInfoMySQL::GetPSMProcedureErrors(XString /*p_schema*/,XString /*p_procedure*/,bool /*p_quoted = false*/) const
+SQLInfoMySQL::GetPSMProcedureErrors(XString /*p_schema*/,XString& /*p_package*/,XString /*p_procedure*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoMySQL::GetPSMProcedurePrivilege(XString& /*p_schema*/,XString& /*p_procedure*/,bool /*p_quoted = false*/) const
+SQLInfoMySQL::GetPSMProcedurePrivilege(XString& /*p_schema*/,XString& /*p_package*/,XString& /*p_procedure*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 // And it's parameters
 XString
-SQLInfoMySQL::GetPSMProcedureParameters(XString& p_schema,XString& p_procedure,bool p_quoted /*= false*/) const
+SQLInfoMySQL::GetPSMProcedureParameters(XString& p_schema,XString& /*p_package*/,XString& p_procedure,bool p_quoted /*= false*/) const
 {
   XString sql;
 

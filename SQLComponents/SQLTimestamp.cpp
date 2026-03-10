@@ -23,7 +23,7 @@
 //
 // Version number: See SQLComponents.h
 //
-#include "StdAfx.h"
+#include "pch.h"
 #include "SQLComponents.h"
 #include "SQLTimestamp.h"
 #include "SQLTime.h"

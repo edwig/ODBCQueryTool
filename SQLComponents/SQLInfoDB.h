@@ -237,45 +237,45 @@ public:
   // SQL FOR SUB-PROCESSING
 
   // Connects to a default schema in the database/instance
-  virtual XString GetSQLDefaultSchema(XString p_user,XString p_schema) const = 0;
+  virtual XString GetSQLDefaultSchema(const XString& p_user,const XString& p_schema) const = 0;
 
   // Gets the construction for inline generating a key within an INSERT statement
-  virtual XString GetSQLNewSerial(XString p_table,XString p_sequence) const = 0;
+  virtual XString GetSQLNewSerial(const XString& p_table,const XString& p_sequence) const = 0;
 
   // Gets the construction / select for generating a new serial identity
-  virtual XString GetSQLGenerateSerial  (XString p_table)    const = 0;
-  virtual XString GetSQLGenerateSequence(XString p_sequence) const = 0;
+  virtual XString GetSQLGenerateSerial  (const XString& p_table)    const = 0;
+  virtual XString GetSQLGenerateSequence(const XString& p_sequence) const = 0;
 
   // Gets the construction / select for the resulting effective generated serial
-  virtual XString GetSQLEffectiveSerial(XString p_identity) const = 0;
+  virtual XString GetSQLEffectiveSerial(const XString& p_identity) const = 0;
 
   // Gets the sub-transaction commands
-  virtual XString GetSQLStartSubTransaction   (XString p_savepointName) const = 0;
-  virtual XString GetSQLCommitSubTransaction  (XString p_savepointName) const = 0;
-  virtual XString GetSQLRollbackSubTransaction(XString p_savepointName) const = 0;
+  virtual XString GetSQLStartSubTransaction   (const XString& p_savepointName) const = 0;
+  virtual XString GetSQLCommitSubTransaction  (const XString& p_savepointName) const = 0;
+  virtual XString GetSQLRollbackSubTransaction(const XString& p_savepointName) const = 0;
 
   // FROM-Part for a query to select only 1 (one) record
   virtual XString GetSQLFromDualClause() const = 0;
 
   // Get SQL to lock  a table 
-  virtual XString GetSQLLockTable(XString p_schema,XString p_tablename,bool p_exclusive,int p_waittime) const = 0;
+  virtual XString GetSQLLockTable(const XString& p_schema,const XString& p_tablename,bool p_exclusive,int p_waittime) const = 0;
 
   // Get query to optimize the table statistics
-  virtual XString GetSQLOptimizeTable(XString p_schema, XString p_tablename) const = 0;
+  virtual XString GetSQLOptimizeTable(const XString& p_schema,const XString& p_tablename) const = 0;
 
   // Transform query to select top <n> rows
-  virtual XString GetSQLTopNRows(XString p_sql,int p_top,int p_skip = 0) const = 0;
+  virtual XString GetSQLTopNRows(const XString& p_sql,int p_top,int p_skip = 0) const = 0;
 
   // Expand a SELECT with an 'FOR UPDATE' lock clause
   virtual XString GetSelectForUpdateTableClause(unsigned p_lockWaitTime) const = 0;
-  virtual XString GetSelectForUpdateTrailer(XString p_select,unsigned p_lockWaitTime) const = 0;
+  virtual XString GetSelectForUpdateTrailer(const XString& p_select,unsigned p_lockWaitTime) const = 0;
 
   // Query to perform a keep alive ping
   virtual XString GetPing() const = 0;
 
   // Pre- and postfix statements for a bulk import
-  virtual XString GetBulkImportPrefix (XString p_schema,XString p_tablename,bool p_identity = true,bool p_constraints = true) const = 0;
-  virtual XString GetBulkImportPostfix(XString p_schema,XString p_tablename,bool p_identity = true,bool p_constraints = true) const = 0;
+  virtual XString GetBulkImportPrefix (const XString& p_schema,const XString& p_tablename,bool p_identity = true,bool p_constraints = true) const = 0;
+  virtual XString GetBulkImportPostfix(const XString& p_schema,const XString& p_tablename,bool p_identity = true,bool p_constraints = true) const = 0;
 
   //////////////////////////////////////////////////////////////////////////
   // SQL STRINGS
@@ -299,10 +299,10 @@ public:
   virtual XString GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int p_hour,int p_minute,int p_second) const = 0;
 
   // Makes an catalog identifier string (possibly quoted on both sides)
-  virtual XString GetSQLDDLIdentifier(XString p_identifier) const = 0;
+  virtual XString GetSQLDDLIdentifier(const XString& p_identifier) const = 0;
 
   // Get the name of a temp table (local temporary or global temporary)
-  virtual XString GetTempTablename(XString p_schema,XString p_tablename,bool p_local) const = 0;
+  virtual XString GetTempTablename(const XString& p_schema,const XString& p_tablename,bool p_local) const = 0;
 
   //////////////////////////////////////////////////////////////////////////
   //
@@ -452,10 +452,16 @@ public:
   //
   // PSM = PERSISTENT STORED MODULES (Also called SPL, PL/SQL, Transact-SQL)
   //
-  // o GetPSM<Object[s]><Function>
-  //   -Procedures / Functions
-  //   - Exists      GetPSMProcedureExists
-  //   - List        GetPSMProcedureList
+  // o GetPSMPackage<Function>
+  //   - Exists     GetPSMPackageExists
+  //   - List       GetPSMPackageList
+  //   - ListModules
+  //   - Create
+  //   - Drop
+  // 
+  // o GetPSMProcedure<Function>
+  //   - Exists       GetPSMProcedureExists
+  //   - List         GetPSMProcedureList
   //   - Attributes
   //   - Create
   //   - Drop
@@ -477,21 +483,34 @@ public:
   //
   //////////////////////////////////////////////////////////////////////////
 
+  // All package functions
+  virtual XString GetPMSPackageExists      (XString& p_schema,XString& p_package,bool p_quoted = false) const = 0;
+  virtual XString GetPMSPackageList        (XString& p_schema,XString& p_package,bool p_quoted = false) const = 0;
+  virtual XString GetPMSPackageListModules (XString& p_schema,XString& p_package,bool p_quoted = false) const = 0;
+  virtual XString GetPMSPackageCreate      (MetaPackage& p_package) const = 0;
+  virtual XString GetPMSPackageDrop        (XString& p_schema,XString& p_package,bool p_quoted = false) const = 0;
+
   // All procedure functions
-  virtual XString GetPSMProcedureExists    (XString  p_schema,XString  p_procedure,bool p_quoted = false) const = 0;
-  virtual XString GetPSMProcedureList      (XString& p_schema,XString  p_procedure,bool p_quoted = false) const = 0;
-  virtual XString GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure,bool p_quoted = false) const = 0;
-  virtual XString GetPSMProcedureSourcecode(XString  p_schema,XString  p_procedure,bool p_quoted = false) const = 0;
+  virtual XString GetPSMProcedureExists    (XString  p_schema,XString& p_package,XString  p_procedure,bool p_quoted = false) const = 0;
+  virtual XString GetPSMProcedureList      (XString& p_schema,XString& p_package,XString  p_procedure,bool p_quoted = false) const = 0;
+  virtual XString GetPSMProcedureAttributes(XString& p_schema,XString& p_package,XString& p_procedure,bool p_quoted = false) const = 0;
+  virtual XString GetPSMProcedureSourcecode(XString  p_schema,XString& p_package,XString  p_procedure,bool p_quoted = false) const = 0;
   virtual XString GetPSMProcedureCreate    (MetaProcedure& p_procedure) const = 0;
-  virtual XString GetPSMProcedureDrop      (XString  p_schema,XString  p_procedure,bool p_function = false) const = 0;
-  virtual XString GetPSMProcedureErrors    (XString  p_schema,XString  p_procedure,bool p_quoted = false) const = 0;
-  virtual XString GetPSMProcedurePrivilege (XString& p_schema,XString& p_procedure,bool p_quoted = false) const = 0;
+  virtual XString GetPSMProcedureDrop      (XString  p_schema,XString& p_package,XString  p_procedure,bool p_function = false) const = 0;
+  virtual XString GetPSMProcedureErrors    (XString  p_schema,XString& p_package,XString  p_procedure,bool p_quoted = false) const = 0;
+  virtual XString GetPSMProcedurePrivilege (XString& p_schema,XString& p_package,XString& p_procedure,bool p_quoted = false) const = 0;
   // And it's parameters
-  virtual XString GetPSMProcedureParameters(XString& p_schema,XString& p_procedure,bool p_quoted = false) const = 0;
+  virtual XString GetPSMProcedureParameters(XString& p_schema,XString& p_package,XString& p_procedure,bool p_quoted = false) const = 0;
 
   // All Language elements
-  virtual XString GetPSMDeclaration(bool p_first,XString p_variable,int p_datatype,int p_precision = 0,int p_scale = 0,
-                                    XString p_default = _T(""),XString p_domain = _T(""),XString p_asColumn = _T("")) const = 0;
+  virtual XString GetPSMDeclaration(bool    p_first
+                                   ,XString p_variable
+                                   ,int     p_datatype
+                                   ,int     p_precision = 0
+                                   ,int     p_scale = 0
+                                   ,XString p_default  = _T("")
+                                   ,XString p_domain   = _T("")
+                                   ,XString p_asColumn = _T("")) const = 0;
   virtual XString GetPSMAssignment (XString p_variable,XString p_statement = _T("")) const = 0;
   virtual XString GetPSMIF         (XString p_condition) const = 0;
   virtual XString GetPSMIFElse     () const = 0;

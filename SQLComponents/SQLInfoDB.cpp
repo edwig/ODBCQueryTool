@@ -23,7 +23,7 @@
 //
 // Version number: See SQLComponents.h
 //
-#include "stdafx.h"
+#include "pch.h"
 #include "SQLComponents.h"
 #include "SQLInfoDB.h"
 #include "SQLQuery.h"
@@ -729,17 +729,18 @@ SQLInfoDB::MakeInfoPSMProcedures(MProcedureMap& p_procedures
 {
   XString schema(p_schema);
   XString procedure(p_procedure);
+  XString package;
   XString sql;
 
   if(p_procedure.IsEmpty() || p_procedure.Compare(_T("%")) == 0)
   {
     // We want a list only
-    sql = GetPSMProcedureList(schema,procedure,true);
+    sql = GetPSMProcedureList(schema,package,procedure,true);
   }
   else
   {
     // Try quoted identifier case
-    sql = GetPSMProcedureAttributes(schema,procedure,true);
+    sql = GetPSMProcedureAttributes(schema,package,procedure,true);
   }
 
   // Let ODBC handle the call
@@ -805,11 +806,11 @@ SQLInfoDB::MakeInfoPSMProcedures(MProcedureMap& p_procedures
       // Try standard identifier case
       if(p_procedure.IsEmpty() || p_procedure.Compare(_T("%")) == 0)
       {
-        sql = GetPSMProcedureList(schema,procedure);
+        sql = GetPSMProcedureList(schema,package,procedure);
       }
       else
       {
-        sql = GetPSMProcedureAttributes(schema,procedure);
+        sql = GetPSMProcedureAttributes(schema,package,procedure);
       }
     }
   }
@@ -825,7 +826,8 @@ XString
 SQLInfoDB::MakeInfoPSMSourcecode(const XString& /*p_catalog*/,const XString& p_schema,const XString& p_procedure)
 {
   XString sourcecode;
-  XString sql = GetPSMProcedureSourcecode(p_schema,p_procedure,true);
+  XString package;
+  XString sql = GetPSMProcedureSourcecode(p_schema,package,p_procedure,true);
   if(!sql.IsEmpty())
   {
     for(int ind = 0;ind < 2;++ind)
@@ -842,7 +844,7 @@ SQLInfoDB::MakeInfoPSMSourcecode(const XString& /*p_catalog*/,const XString& p_s
         return sourcecode;
       }
       // Try standard unquoted identifiers
-      sql = GetPSMProcedureSourcecode(p_schema,p_procedure);
+      sql = GetPSMProcedureSourcecode(p_schema,package,p_procedure);
     }
   }
   return sourcecode;
@@ -857,9 +859,10 @@ SQLInfoDB::MakeInfoPSMParameters(MParameterMap& p_parameters
 {
   XString schema(p_schema);
   XString procedure(p_procedure);
+  XString package;
 
   // Try quoted identifiers
-  XString sql = GetPSMProcedureParameters(schema,procedure,true);
+  XString sql = GetPSMProcedureParameters(schema,package,procedure,true);
   if(sql.IsEmpty() || m_preferODBC)
   {
     // No SQL, let ODBC handle the parameters
@@ -910,7 +913,7 @@ SQLInfoDB::MakeInfoPSMParameters(MParameterMap& p_parameters
         return true;
       }
       // Try standard identifiers
-      sql = GetPSMProcedureParameters(schema,procedure);
+      sql = GetPSMProcedureParameters(schema,package,procedure);
     }
   }
   catch(StdException& er)

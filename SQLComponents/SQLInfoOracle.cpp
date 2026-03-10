@@ -23,7 +23,7 @@
 //
 // Version number: See SQLComponents.h
 //
-#include "stdafx.h"
+#include "pch.h"
 #include "SQLComponents.h"
 #include "SQLInfoOracle.h"
 #include "SQLQuery.h"
@@ -482,14 +482,14 @@ SQLInfoOracle::GetKEYWORDCurrentUser() const
 
 // Connects to a default schema in the database/instance
 XString
-SQLInfoOracle::GetSQLDefaultSchema(XString /*p_user*/,XString p_schema) const
+SQLInfoOracle::GetSQLDefaultSchema(const XString& /*p_user*/,const XString& p_schema) const
 {
   return _T("ALTER SESSION SET CURRENT_SCHEMA = ") + p_schema;
 }
 
 // Gets the construction for inline generating a key within an INSERT statement
 XString
-SQLInfoOracle::GetSQLNewSerial(XString p_table, XString p_sequence) const
+SQLInfoOracle::GetSQLNewSerial(const XString& p_table,const XString& p_sequence) const
 {
   XString sequence(p_sequence);
   if (sequence.IsEmpty() && !p_table.IsEmpty())
@@ -503,20 +503,20 @@ SQLInfoOracle::GetSQLNewSerial(XString p_table, XString p_sequence) const
 
 // Gets the construction / select for generating a new serial identity
 XString
-SQLInfoOracle::GetSQLGenerateSerial(XString p_table) const
+SQLInfoOracle::GetSQLGenerateSerial(const XString& p_table) const
 {
   return _T("SELECT ") + p_table + _T("_seq.nextval FROM DUAL");
 }
 
 XString
-SQLInfoOracle::GetSQLGenerateSequence(XString p_sequence) const
+SQLInfoOracle::GetSQLGenerateSequence(const XString& p_sequence) const
 {
   return _T("SELECT ") + p_sequence + _T(".nextval FROM DUAL");
 }
 
 // Gets the construction / select for the resulting effective generated serial
 XString
-SQLInfoOracle::GetSQLEffectiveSerial(XString p_identity) const
+SQLInfoOracle::GetSQLEffectiveSerial(const XString& p_identity) const
 {
   // Just return it, it's the correct value
   return p_identity;
@@ -524,20 +524,20 @@ SQLInfoOracle::GetSQLEffectiveSerial(XString p_identity) const
 
 // Gets the sub transaction commands
 XString
-SQLInfoOracle::GetSQLStartSubTransaction(XString p_savepointName) const
+SQLInfoOracle::GetSQLStartSubTransaction(const XString& p_savepointName) const
 {
   return XString(_T("SAVEPOINT ")) + p_savepointName;
 }
 
 XString
-SQLInfoOracle::GetSQLCommitSubTransaction(XString /*p_savepointName*/) const
+SQLInfoOracle::GetSQLCommitSubTransaction(const XString& /*p_savepointName*/) const
 {
   // There is no savepoint commit in Oracle!!
   return _T("");
 }
 
 XString
-SQLInfoOracle::GetSQLRollbackSubTransaction(XString p_savepointName) const
+SQLInfoOracle::GetSQLRollbackSubTransaction(const XString& p_savepointName) const
 {
   return XString(_T("ROLLBACK TO ")) + p_savepointName;
 }
@@ -551,7 +551,7 @@ SQLInfoOracle::GetSQLFromDualClause() const
 
 // Get SQL to lock  a table 
 XString
-SQLInfoOracle::GetSQLLockTable(XString p_schema,XString p_tablename,bool p_exclusive,int /*p_waittime*/) const
+SQLInfoOracle::GetSQLLockTable(const XString& p_schema,const XString& p_tablename,bool p_exclusive,int /*p_waittime*/) const
 {
   XString query(_T("LOCK TABLE "));
   if(!p_schema.IsEmpty())
@@ -566,7 +566,7 @@ SQLInfoOracle::GetSQLLockTable(XString p_schema,XString p_tablename,bool p_exclu
 
 // Get query to optimize the table statistics
 XString
-SQLInfoOracle::GetSQLOptimizeTable(XString p_schema, XString p_tablename) const
+SQLInfoOracle::GetSQLOptimizeTable(const XString& p_schema,const XString& p_tablename) const
 {
   XString optim;
   // Optimize the table
@@ -577,8 +577,9 @@ SQLInfoOracle::GetSQLOptimizeTable(XString p_schema, XString p_tablename) const
 // Transform query to select top <n> rows:
 // Works from Oracle 12c and upward!!!
 XString
-SQLInfoOracle::GetSQLTopNRows(XString p_sql,int p_top,int p_skip /*= 0*/) const
+SQLInfoOracle::GetSQLTopNRows(const XString& p_sql,int p_top,int p_skip /*= 0*/) const
 {
+  XString sql(p_sql);
   if(p_top > 0)
   {
     XString limit;
@@ -593,9 +594,9 @@ SQLInfoOracle::GetSQLTopNRows(XString p_sql,int p_top,int p_skip /*= 0*/) const
     {
       limit.Format(_T("\n FETCH FIRST %d ROWS ONLY"),p_top);
     }
-    p_sql += limit;
+    sql += limit;
   }
-  return p_sql;
+  return sql;
 }
 
 // Expand a SELECT with an 'FOR UPDATE' lock clause
@@ -606,7 +607,7 @@ SQLInfoOracle::GetSelectForUpdateTableClause(unsigned /*p_lockWaitTime*/) const
 }
 
 XString
-SQLInfoOracle::GetSelectForUpdateTrailer(XString p_select,unsigned p_lockWaitTime) const
+SQLInfoOracle::GetSelectForUpdateTrailer(const XString& p_select,unsigned p_lockWaitTime) const
 {
   XString sql = p_select + _T("\nFOR UPDATE");
   if(p_lockWaitTime)
@@ -630,13 +631,13 @@ SQLInfoOracle::GetPing() const
 
 // Pre- and postfix statements for a bulk import
 XString
-SQLInfoOracle::GetBulkImportPrefix(XString /*p_schema*/,XString /*p_tablename*/,bool /*p_identity = true*/,bool /*p_constraints = true*/) const
+SQLInfoOracle::GetBulkImportPrefix(const XString& /*p_schema*/,const XString& /*p_tablename*/,bool /*p_identity = true*/,bool /*p_constraints = true*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoOracle::GetBulkImportPostfix(XString /*p_schema*/,XString /*p_tablename*/,bool /*p_identity = true*/,bool /*p_constraints = true*/) const
+SQLInfoOracle::GetBulkImportPostfix(const XString& /*p_schema*/,const XString& /*p_tablename*/,bool /*p_identity = true*/,bool /*p_constraints = true*/) const
 {
   return _T("");
 }
@@ -715,14 +716,14 @@ SQLInfoOracle::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,int
 
 // Makes an catalog identifier string (possibly quoted on both sides)
 XString
-SQLInfoOracle::GetSQLDDLIdentifier(XString p_identifier) const
+SQLInfoOracle::GetSQLDDLIdentifier(const XString& p_identifier) const
 {
   return p_identifier;
 }
 
 // Get the name of a temp table (local temporary or global temporary)
 XString
-SQLInfoOracle::GetTempTablename(XString /*p_schema*/,XString p_tablename,bool /*p_local*/) const
+SQLInfoOracle::GetTempTablename(const XString& /*p_schema*/,const XString& p_tablename,bool /*p_local*/) const
 {
   return p_tablename;
 }
@@ -2691,8 +2692,39 @@ SQLInfoOracle::GetCATALOGCommentCreate(XString p_schema,XString p_object,XString
 //
 //////////////////////////////////////////////////////////////////////////
 
+// All package functions
 XString
-SQLInfoOracle::GetPSMProcedureExists(XString p_schema,XString p_procedure,bool p_quoted /*= false*/) const
+SQLInfoOracle::GetPMSPackageExists(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+{
+  return _T("");
+}
+
+XString
+SQLInfoOracle::GetPMSPackageList(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+{
+  return _T("");
+}
+
+XString
+SQLInfoOracle::GetPMSPackageListModules(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+{
+  return _T("");
+}
+
+XString
+SQLInfoOracle::GetPMSPackageCreate(MetaPackage& /*p_package*/) const
+{
+  return _T("");
+}
+
+XString
+SQLInfoOracle::GetPMSPackageDrop(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+{
+  return _T("");
+}
+
+XString
+SQLInfoOracle::GetPSMProcedureExists(XString p_schema,XString& /*p_package*/,XString p_procedure,bool p_quoted /*= false*/) const
 {
   IdentifierCorrect(p_schema);
   IdentifierCorrect(p_procedure);
@@ -2706,7 +2738,7 @@ SQLInfoOracle::GetPSMProcedureExists(XString p_schema,XString p_procedure,bool p
 }
 
 XString
-SQLInfoOracle::GetPSMProcedureList(XString& p_schema,XString p_procedure,bool p_quoted /*= false*/) const
+SQLInfoOracle::GetPSMProcedureList(XString& p_schema,XString& /*p_package*/,XString p_procedure,bool p_quoted /*= false*/) const
 {
   IdentifierCorrect(p_schema);
   IdentifierCorrect(p_procedure);
@@ -2768,7 +2800,7 @@ SQLInfoOracle::GetPSMProcedureList(XString& p_schema,XString p_procedure,bool p_
 }
 
 XString
-SQLInfoOracle::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure,bool p_quoted /*= false*/) const
+SQLInfoOracle::GetPSMProcedureAttributes(XString& p_schema,XString& /*p_package*/,XString& p_procedure,bool p_quoted /*= false*/) const
 {
   XString package;
 
@@ -2836,7 +2868,7 @@ SQLInfoOracle::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure,
 }
 
 XString
-SQLInfoOracle::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure,bool p_quoted /*= false*/) const
+SQLInfoOracle::GetPSMProcedureSourcecode(XString p_schema,XString& /*p_package*/,XString p_procedure,bool p_quoted /*= false*/) const
 {
   XString sql;
 
@@ -2874,13 +2906,13 @@ SQLInfoOracle::GetPSMProcedureCreate(MetaProcedure& p_procedure) const
 }
 
 XString
-SQLInfoOracle::GetPSMProcedureDrop(XString /*p_schema*/, XString /*p_procedure*/,bool /*p_function /*=false*/) const
+SQLInfoOracle::GetPSMProcedureDrop(XString /*p_schema*/,XString& /*p_package*/,XString /*p_procedure*/,bool /*p_function /*=false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoOracle::GetPSMProcedureErrors(XString p_schema,XString p_procedure,bool p_quoted /*= false*/) const
+SQLInfoOracle::GetPSMProcedureErrors(XString p_schema,XString& /*p_package*/,XString p_procedure,bool p_quoted /*= false*/) const
 {
   XString query;
   XString errorText;
@@ -2928,14 +2960,14 @@ SQLInfoOracle::GetPSMProcedureErrors(XString p_schema,XString p_procedure,bool p
 }
 
 XString
-SQLInfoOracle::GetPSMProcedurePrivilege(XString& /*p_schema*/,XString& /*p_procedure*/,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetPSMProcedurePrivilege(XString& /*p_schema*/,XString& /*p_package*/,XString& /*p_procedure*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 // And it's parameters
 XString
-SQLInfoOracle::GetPSMProcedureParameters(XString& /*p_schema*/,XString& /*p_procedure*/,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetPSMProcedureParameters(XString& /*p_schema*/,XString& /*p_package*/,XString& /*p_procedure*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }

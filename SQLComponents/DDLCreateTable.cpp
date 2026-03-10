@@ -23,7 +23,7 @@
 //
 // Version number: See SQLComponents.h
 //
-#include "StdAfx.h"
+#include "pch.h"
 #include "DDLCreateTable.h"
 
 namespace SQLComponents

@@ -36,7 +36,7 @@
 #endif
 
 // Check on the AFX context!
-// You must compile this code with a project setting "NOT USING PRECOMPILED HEADERS" with "StdAfx.h"
+// You must compile this code with a project setting "NOT USING PRECOMPILED HEADERS" with "pch.h"
 // Otherwise all your strings will leak memory
 #ifdef AFXAPI
 #pragma error ("COMPILE-TIME-ERROR: BasicExcel cannot be compiled in the AFX context")

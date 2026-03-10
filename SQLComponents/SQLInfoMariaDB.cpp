@@ -23,7 +23,7 @@
 //
 // Version number: See SQLComponents.h
 //
-#include "stdafx.h"
+#include "pch.h"
 #include "SQLComponents.h"
 #include "SQLInfoMariaDB.h"
 #include "SQLQuery.h"
@@ -197,7 +197,7 @@ SQLInfoMariaDB::GetKEYWORDIdentityString(const XString& p_tablename,const XStrin
 
 // Gets the construction for inline generating a key within an INSERT statement
 XString
-SQLInfoMariaDB::GetSQLNewSerial(XString p_table, XString p_sequence) const
+SQLInfoMariaDB::GetSQLNewSerial(const XString& p_table,const XString& p_sequence) const
 {
   if(!m_oracleMode)
   {
@@ -215,7 +215,7 @@ SQLInfoMariaDB::GetSQLNewSerial(XString p_table, XString p_sequence) const
 
 // Gets the construction / select for generating a new serial identity
 XString
-SQLInfoMariaDB::GetSQLGenerateSerial(XString p_table) const
+SQLInfoMariaDB::GetSQLGenerateSerial(const XString& p_table) const
 {
   if (m_oracleMode)
   {
@@ -225,7 +225,7 @@ SQLInfoMariaDB::GetSQLGenerateSerial(XString p_table) const
 }
 
 XString
-SQLInfoMariaDB::GetSQLGenerateSequence(XString p_sequence) const
+SQLInfoMariaDB::GetSQLGenerateSequence(const XString& p_sequence) const
 {
   if(m_oracleMode)
   {
@@ -236,19 +236,19 @@ SQLInfoMariaDB::GetSQLGenerateSequence(XString p_sequence) const
 
 // Gets the sub-transaction commands
 XString
-SQLInfoMariaDB::GetSQLStartSubTransaction(XString p_savepointName) const
+SQLInfoMariaDB::GetSQLStartSubTransaction(const XString& p_savepointName) const
 {
   return XString(_T("SAVEPOINT ")) + p_savepointName;
 }
 
 XString
-SQLInfoMariaDB::GetSQLCommitSubTransaction(XString p_savepointName) const
+SQLInfoMariaDB::GetSQLCommitSubTransaction(const XString& p_savepointName) const
 {
   return XString(_T("RELEASE SAVEPOINT")) = p_savepointName;
 }
 
 XString
-SQLInfoMariaDB::GetSQLRollbackSubTransaction(XString p_savepointName) const
+SQLInfoMariaDB::GetSQLRollbackSubTransaction(const XString& p_savepointName) const
 {
   return XString(_T("ROLLBACK TO SAVEPOINT ")) + p_savepointName;
 }
@@ -480,7 +480,7 @@ SQLInfoMariaDB::GetCATALOGTableCreatePostfix(MetaTable& p_table,MetaColumn& /*p_
 // 'GROUP BY'       - two extra columns or not needed
 
 XString
-SQLInfoMariaDB::GetPSMProcedureSourcecode(XString p_schema, XString p_procedure,bool p_quoted /*= false*/) const
+SQLInfoMariaDB::GetPSMProcedureSourcecode(XString p_schema,XString& /*p_package*/,XString p_procedure,bool p_quoted /*= false*/) const
 {
   XString sql = _T("SELECT 0 as type\n"
                    "      ,0 as line\n"

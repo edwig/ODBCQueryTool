@@ -83,16 +83,16 @@ public:
   // SQL
 
   // Gets the construction for inline generating a key within an INSERT statement
-  XString GetSQLNewSerial(XString p_table, XString p_sequence) const override;
+  XString GetSQLNewSerial(const XString& p_table,const XString& p_sequence) const override;
 
   // Gets the construction / select for generating a new serial identity
-  XString GetSQLGenerateSerial(XString p_table) const override;
-  XString GetSQLGenerateSequence(XString p_sequence) const override;
+  XString GetSQLGenerateSerial(const XString& p_table) const override;
+  XString GetSQLGenerateSequence(const XString& p_sequence) const override;
 
   // Gets the sub-transaction commands
-  XString GetSQLStartSubTransaction   (XString p_savepointName) const override;
-  XString GetSQLCommitSubTransaction  (XString p_savepointName) const override;
-  XString GetSQLRollbackSubTransaction(XString p_savepointName) const override;
+  XString GetSQLStartSubTransaction   (const XString& p_savepointName) const override;
+  XString GetSQLCommitSubTransaction  (const XString& p_savepointName) const override;
+  XString GetSQLRollbackSubTransaction(const XString& p_savepointName) const override;
 
   // FROM-Part for a query to select only 1 (one) record / or empty!
   XString GetSQLFromDualClause() const override;
@@ -134,7 +134,7 @@ public:
   //////////////////////////////////////////////////////////////////////////
 
   // All procedure functions
-  XString GetPSMProcedureSourcecode(XString  p_schema,XString  p_procedure,bool p_quoted = false) const override;
+  XString GetPSMProcedureSourcecode(XString p_schema,XString& p_package,XString  p_procedure,bool p_quoted = false) const override;
 
   
 private:

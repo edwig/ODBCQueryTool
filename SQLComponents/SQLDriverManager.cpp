@@ -23,7 +23,7 @@
 //
 // Version number: See SQLComponents.h
 //
-#include "stdafx.h"
+#include "pch.h"
 #include "SQLDriverManager.h"
 #include "StdException.h"
 #include <odbcinst.h>

@@ -24,7 +24,7 @@
 // Version number: See SQLComponents.h
 //
 #pragma once
-#include "stdafx.h"
+#include "pch.h"
 #include "SQLComponents.h"
 #include "SQLGuid.h"
 #include <guiddef.h>

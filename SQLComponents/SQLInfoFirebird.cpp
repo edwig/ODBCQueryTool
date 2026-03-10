@@ -23,7 +23,7 @@
 //
 // Version number: See SQLComponents.h
 //
-#include "stdafx.h"
+#include "pch.h"
 #include "SQLComponents.h"
 #include "SQLInfoFirebird.h"
 #include "SQLQuery.h"
@@ -508,14 +508,14 @@ SQLInfoFirebird::GetKEYWORDCurrentUser() const
 
 // Connects to a default schema in the database/instance
 XString
-SQLInfoFirebird::GetSQLDefaultSchema(XString /*p_user*/,XString /*p_schema*/) const
+SQLInfoFirebird::GetSQLDefaultSchema(const XString& /*p_user*/,const XString& /*p_schema*/) const
 {
   return _T("");
 }
 
 // Gets the construction for inline generating a key within an INSERT statement
 XString
-SQLInfoFirebird::GetSQLNewSerial(XString p_table, XString p_sequence) const
+SQLInfoFirebird::GetSQLNewSerial(const XString& p_table,const XString& p_sequence) const
 {
   XString sequence(p_sequence);
   if (sequence.IsEmpty() && !p_table.IsEmpty())
@@ -529,20 +529,20 @@ SQLInfoFirebird::GetSQLNewSerial(XString p_table, XString p_sequence) const
 
 // Gets the construction / select for generating a new serial identity
 XString
-SQLInfoFirebird::GetSQLGenerateSerial(XString p_table) const
+SQLInfoFirebird::GetSQLGenerateSerial(const XString& p_table) const
 {
   return _T("SELECT (next value for ") + QIQ(p_table) + _T("_seq) FROM RDB$DATABASE");
 }
 
 XString
-SQLInfoFirebird::GetSQLGenerateSequence(XString p_sequence) const
+SQLInfoFirebird::GetSQLGenerateSequence(const XString& p_sequence) const
 {
   return _T("SELECT (next value for ") + QIQ(p_sequence) + _T(") FROM RDB$DATABASE");
 }
 
 // Gets the construction / select for the resulting effective generated serial
 XString
-SQLInfoFirebird::GetSQLEffectiveSerial(XString p_identity) const
+SQLInfoFirebird::GetSQLEffectiveSerial(const XString& p_identity) const
 {
   // Just return it, it's the correct value
   return p_identity;
@@ -550,19 +550,19 @@ SQLInfoFirebird::GetSQLEffectiveSerial(XString p_identity) const
 
 // Gets the sub-transaction commands
 XString
-SQLInfoFirebird::GetSQLStartSubTransaction(XString p_savepointName) const
+SQLInfoFirebird::GetSQLStartSubTransaction(const XString& p_savepointName) const
 {
   return XString(_T("SAVEPOINT ")) + p_savepointName;
 }
 
 XString
-SQLInfoFirebird::GetSQLCommitSubTransaction(XString p_savepointName) const
+SQLInfoFirebird::GetSQLCommitSubTransaction(const XString& p_savepointName) const
 {
   return XString(_T("COMMIT TRANSACTION ")) + p_savepointName;
 }
 
 XString
-SQLInfoFirebird::GetSQLRollbackSubTransaction(XString p_savepointName) const
+SQLInfoFirebird::GetSQLRollbackSubTransaction(const XString& p_savepointName) const
 {
   return XString(_T("ROLLBACK TO ")) + p_savepointName;
 }
@@ -576,7 +576,7 @@ SQLInfoFirebird::GetSQLFromDualClause() const
 
 // Get SQL to lock  a table 
 XString
-SQLInfoFirebird::GetSQLLockTable(XString /*p_schema*/, XString /*p_tablename*/, bool /*p_exclusive*/,int /*p_waittime*/) const
+SQLInfoFirebird::GetSQLLockTable(const XString& /*p_schema*/,const XString& /*p_tablename*/, bool /*p_exclusive*/,int /*p_waittime*/) const
 {
   // Firebird does NOT have a LOCK-TABLE statement
   return _T("");
@@ -584,7 +584,7 @@ SQLInfoFirebird::GetSQLLockTable(XString /*p_schema*/, XString /*p_tablename*/, 
 
 // Get query to optimize the table statistics
 XString
-SQLInfoFirebird::GetSQLOptimizeTable(XString /*p_schema*/, XString /*p_tablename*/) const
+SQLInfoFirebird::GetSQLOptimizeTable(const XString& /*p_schema*/,const XString& /*p_tablename*/) const
 {
   // Firebird has no SQL for this, it uses the "GFIX.EXE -sweep <database>" tool
   return _T("");
@@ -592,9 +592,10 @@ SQLInfoFirebird::GetSQLOptimizeTable(XString /*p_schema*/, XString /*p_tablename
 
 // Transform query to select top <n> rows
 XString
-SQLInfoFirebird::GetSQLTopNRows(XString p_sql,int p_top,int p_skip /*= 0*/) const
+SQLInfoFirebird::GetSQLTopNRows(const XString& p_sql,int p_top,int p_skip /*= 0*/) const
 {
-  if(p_top > 0 && p_sql.Find(_T("SELECT ")) == 0)
+  XString sql(p_sql);
+  if(p_top > 0 && sql.Find(_T("SELECT ")) == 0)
   {
     // FIREBIRD: SELECT FIRST <top> [ SKIP <skip> ] ....
     XString selectFirst;
@@ -605,9 +606,9 @@ SQLInfoFirebird::GetSQLTopNRows(XString p_sql,int p_top,int p_skip /*= 0*/) cons
       selectFirst.AppendFormat(_T("SKIP %d "),p_skip);
     }
 
-    p_sql.Replace(_T("SELECT "),selectFirst);
+    sql.Replace(_T("SELECT "),selectFirst);
   }
-  return p_sql;
+  return sql;
 }
 
 // Expand a SELECT with an 'FOR UPDATE' lock clause
@@ -618,7 +619,7 @@ SQLInfoFirebird::GetSelectForUpdateTableClause(unsigned /*p_lockWaitTime*/) cons
 }
 
 XString
-SQLInfoFirebird::GetSelectForUpdateTrailer(XString p_select,unsigned p_lockWaitTime) const
+SQLInfoFirebird::GetSelectForUpdateTrailer(const XString& p_select,unsigned p_lockWaitTime) const
 {
   XString sql = p_select + _T("\nFOR UPDATE");
   if(p_lockWaitTime)
@@ -638,13 +639,13 @@ SQLInfoFirebird::GetPing() const
 
 // Pre- and postfix statements for a bulk import
 XString
-SQLInfoFirebird::GetBulkImportPrefix(XString /*p_schema*/,XString /*p_tablename*/,bool /*p_identity = true*/,bool /*p_constraints = true*/) const
+SQLInfoFirebird::GetBulkImportPrefix(const XString& /*p_schema*/,const XString& /*p_tablename*/,bool /*p_identity = true*/,bool /*p_constraints = true*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoFirebird::GetBulkImportPostfix(XString /*p_schema*/,XString /*p_tablename*/,bool /*p_identity = true*/,bool /*p_constraints = true*/) const
+SQLInfoFirebird::GetBulkImportPostfix(const XString& /*p_schema*/,const XString& /*p_tablename*/,bool /*p_identity = true*/,bool /*p_constraints = true*/) const
 {
   return _T("");
 }
@@ -710,14 +711,14 @@ SQLInfoFirebird::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day,i
 
 // Makes an catalog identifier string (possibly quoted on both sides)
 XString
-SQLInfoFirebird::GetSQLDDLIdentifier(XString p_identifier) const
+SQLInfoFirebird::GetSQLDDLIdentifier(const XString& p_identifier) const
 {
   return p_identifier;
 }
 
 // Get the name of a temp table (local temporary or global temporary)
 XString
-SQLInfoFirebird::GetTempTablename(XString /*p_schema*/,XString p_tablename,bool /*p_local*/) const
+SQLInfoFirebird::GetTempTablename(const XString& /*p_schema*/,const XString& p_tablename,bool /*p_local*/) const
 {
   return p_tablename;
 }
@@ -2725,8 +2726,39 @@ SQLInfoFirebird::GetCATALOGCommentCreate(XString /*p_schema*/,XString p_object,X
 //
 //////////////////////////////////////////////////////////////////////////
 
+// All package functions
 XString
-SQLInfoFirebird::GetPSMProcedureExists(XString p_schema, XString p_procedure,bool p_quoted /*= false*/) const
+SQLInfoFirebird::GetPMSPackageExists(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+{
+  return _T("");
+}
+
+XString
+SQLInfoFirebird::GetPMSPackageList(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+{
+  return _T("");
+}
+
+XString
+SQLInfoFirebird::GetPMSPackageListModules(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+{
+  return _T("");
+}
+
+XString
+SQLInfoFirebird::GetPMSPackageCreate(MetaPackage& /*p_package*/) const
+{
+  return _T("");
+}
+
+XString
+SQLInfoFirebird::GetPMSPackageDrop(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+{
+  return _T("");
+}
+
+XString
+SQLInfoFirebird::GetPSMProcedureExists(XString p_schema,XString& /*p_package*/,XString p_procedure,bool p_quoted /*= false*/) const
 {
   IdentifierCorrect(p_procedure);
 
@@ -2751,7 +2783,7 @@ SQLInfoFirebird::GetPSMProcedureExists(XString p_schema, XString p_procedure,boo
 }
 
 XString
-SQLInfoFirebird::GetPSMProcedureList(XString& p_schema,XString p_procedure,bool p_quoted /*= false*/) const
+SQLInfoFirebird::GetPSMProcedureList(XString& p_schema,XString& /*p_package*/,XString p_procedure,bool p_quoted /*= false*/) const
 {
   IdentifierCorrect(p_schema);
   IdentifierCorrect(p_procedure);
@@ -2792,7 +2824,7 @@ SQLInfoFirebird::GetPSMProcedureList(XString& p_schema,XString p_procedure,bool 
 }
 
 XString
-SQLInfoFirebird::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure,bool p_quoted /*= false*/) const
+SQLInfoFirebird::GetPSMProcedureAttributes(XString& p_schema,XString& /*p_package*/,XString& p_procedure,bool p_quoted /*= false*/) const
 {
   XString sql1(_T("SELECT trim(dbs.mon$database_name) as catalog_name\n")
                _T("      ,trim(pro.rdb$owner_name) as schema_name\n")
@@ -2854,7 +2886,7 @@ SQLInfoFirebird::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedur
 
 // Getting the sourcecode: 3th column yields the source
 XString
-SQLInfoFirebird::GetPSMProcedureSourcecode(XString p_schema,XString p_procedure,bool p_quoted /*= false*/) const
+SQLInfoFirebird::GetPSMProcedureSourcecode(XString p_schema,XString& /*p_package*/,XString p_procedure,bool p_quoted /*= false*/) const
 {
   IdentifierCorrect(p_schema);
   IdentifierCorrect(p_procedure);
@@ -3037,28 +3069,28 @@ SQLInfoFirebird::GetPSMProcedureCreate(MetaProcedure& p_procedure) const
 }
 
 XString
-SQLInfoFirebird::GetPSMProcedureDrop(XString /*p_schema*/, XString p_procedure,bool /*p_function /*=false*/) const
+SQLInfoFirebird::GetPSMProcedureDrop(XString /*p_schema*/,XString& /*p_package*/,XString p_procedure,bool /*p_function /*=false*/) const
 {
   XString sql(_T("DROP PROCEDURE ") + QIQ(p_procedure));
   return sql;
 }
 
 XString
-SQLInfoFirebird::GetPSMProcedureErrors(XString /*p_schema*/,XString /*p_procedure*/,bool /*p_quoted = false*/) const
+SQLInfoFirebird::GetPSMProcedureErrors(XString /*p_schema*/,XString& /*p_package*/,XString /*p_procedure*/,bool /*p_quoted = false*/) const
 {
   // Firebird does not support procedure errors
   return _T("");
 }
 
 XString
-SQLInfoFirebird::GetPSMProcedurePrivilege(XString& /*p_schema*/,XString& /*p_procedure*/,bool /*p_quoted = false*/) const
+SQLInfoFirebird::GetPSMProcedurePrivilege(XString& /*p_schema*/,XString& /*p_package*/,XString& /*p_procedure*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 // And it's parameters
 XString
-SQLInfoFirebird::GetPSMProcedureParameters(XString& p_schema,XString& p_procedure,bool p_quoted /*= false*/) const
+SQLInfoFirebird::GetPSMProcedureParameters(XString& p_schema,XString& /*p_package*/,XString& p_procedure,bool p_quoted /*= false*/) const
 {
   XString sql1 = _T("SELECT TRIM(dbs.mon$database_name)  as catalog_name\n"
                     "      ,TRIM(pro.rdb$owner_name)     as schema_name\n"

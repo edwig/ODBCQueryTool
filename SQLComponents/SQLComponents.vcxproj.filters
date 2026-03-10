@@ -133,7 +133,7 @@
     <ClCompile Include="SQLLanguage.cpp">
       <Filter>Database</Filter>
     </ClCompile>
-    <ClCompile Include="stdafx.cpp">
+    <ClCompile Include="pch.cpp">
       <Filter>Configuration</Filter>
     </ClCompile>
     <ClCompile Include="SQLDataSetXLS.cpp">
@@ -321,7 +321,7 @@
     <ClInclude Include="SQLInfoMariaDB.h">
       <Filter>Headers Files</Filter>
     </ClInclude>
-    <ClInclude Include="stdafx.h">
+    <ClInclude Include="pch.h">
       <Filter>Configuration</Filter>
     </ClInclude>
     <ClInclude Include="targetver.h">

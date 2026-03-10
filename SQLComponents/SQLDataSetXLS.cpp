@@ -25,7 +25,7 @@
 // 
 // Version number: See SQLComponents.h
 //
-#include "stdafx.h"
+#include "pch.h"
 #include "SQLComponents.h"
 #include "SQLDataSetXLS.h"
 #include <shellapi.h>

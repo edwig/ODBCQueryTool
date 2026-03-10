@@ -340,12 +340,34 @@ using MPrivilegeMap = std::vector<MetaPrivilege>;
 #define MetaPrivilege_privilege       7
 #define MetaPrivilege_grantable       8
 
+// Results for Pacakges
+
+typedef struct _metaInfoPackage
+{
+  XString   m_catalogName;
+  XString   m_schemaName;
+  XString   m_packageName;
+  XString   m_remarks;
+  XString   m_source;
+}
+MetaPackage;
+
+using MPackageMap = std::vector<MetaPackage>;
+
+// MetaPackage fields
+#define MetaPackage_catalogname      1
+#define MetaPackage_schemaname       2
+#define MetaPacakge_packagename      3
+#define MetaPacakge_remarks          4
+#define MetaPackage_source           5
+
 // Results from "SQLProcedures"
 
 typedef struct _metaInfoProcedure
 {
   XString   m_catalogName;              // Catalog of the procedure / function
   XString   m_schemaName;               // Schema  of the procedure / function
+  XString   m_packageName;              // Name    of the package
   XString   m_procedureName;            // Name    of the procedure / function
   int       m_inputParameters   { 0 };  // Number  of input parameters
   int       m_outputParameters  { 0 };  // Number  of output parameters

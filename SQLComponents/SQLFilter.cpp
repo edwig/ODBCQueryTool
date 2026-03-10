@@ -23,7 +23,7 @@
 //
 // Version number: See SQLComponents.h
 //
-#include "stdafx.h"
+#include "pch.h"
 #include "SQLFilter.h"
 #include "SQLRecord.h"
 #include "SQLQuery.h"

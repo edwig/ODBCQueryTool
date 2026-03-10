@@ -23,7 +23,7 @@
 //
 // Version number: See SQLComponents.h
 //
-#include "stdafx.h"
+#include "pch.h"
 #include "SQLComponents.h"
 #include "SQLInfoPostgreSQL.h"
 #include "SQLQuery.h"
@@ -480,14 +480,14 @@ SQLInfoPostgreSQL::GetKEYWORDCurrentUser() const
 
 // Connects to a default schema in the database/instance
 XString
-SQLInfoPostgreSQL::GetSQLDefaultSchema(XString /*p_user*/,XString p_schema) const
+SQLInfoPostgreSQL::GetSQLDefaultSchema(const XString& /*p_user*/,const XString& p_schema) const
 {
   return _T("SET SEARCH_PATH TO ") + p_schema;
 }
 
 // Gets the construction for inline generating a key within an INSERT statement
 XString
-SQLInfoPostgreSQL::GetSQLNewSerial(XString p_table, XString p_sequence) const
+SQLInfoPostgreSQL::GetSQLNewSerial(const XString& p_table,const XString& p_sequence) const
 {
   XString sequence(p_sequence);
   if (sequence.IsEmpty() && !p_table.IsEmpty())
@@ -501,20 +501,20 @@ SQLInfoPostgreSQL::GetSQLNewSerial(XString p_table, XString p_sequence) const
 
 // Gets the construction / select for generating a new serial identity
 XString
-SQLInfoPostgreSQL::GetSQLGenerateSerial(XString p_table) const
+SQLInfoPostgreSQL::GetSQLGenerateSerial(const XString& p_table) const
 {
   return _T("SELECT ") + p_table + _T("_seq.nextval FROM DUAL");
 }
 
 XString
-SQLInfoPostgreSQL::GetSQLGenerateSequence(XString p_sequence) const
+SQLInfoPostgreSQL::GetSQLGenerateSequence(const XString& p_sequence) const
 {
   return _T("SELECT ") + p_sequence + _T(".nextval FROM DUAL");
 }
 
 // Gets the construction / select for the resulting effective generated serial
 XString
-SQLInfoPostgreSQL::GetSQLEffectiveSerial(XString p_identity) const
+SQLInfoPostgreSQL::GetSQLEffectiveSerial(const XString& p_identity) const
 {
   // Already the correct value
   return p_identity;
@@ -522,20 +522,20 @@ SQLInfoPostgreSQL::GetSQLEffectiveSerial(XString p_identity) const
 
 // Gets the sub transaction commands
 XString
-SQLInfoPostgreSQL::GetSQLStartSubTransaction(XString p_savepointName) const
+SQLInfoPostgreSQL::GetSQLStartSubTransaction(const XString& p_savepointName) const
 {
   return XString(_T("SAVEPOINT ")) + p_savepointName;
 }
 
 XString
-SQLInfoPostgreSQL::GetSQLCommitSubTransaction(XString /*p_savepointName*/) const
+SQLInfoPostgreSQL::GetSQLCommitSubTransaction(const XString& /*p_savepointName*/) const
 {
   // No commit for a sub transaction
   return XString(_T(""));
 }
 
 XString
-SQLInfoPostgreSQL::GetSQLRollbackSubTransaction(XString p_savepointName) const
+SQLInfoPostgreSQL::GetSQLRollbackSubTransaction(const XString& p_savepointName) const
 {
   return XString(_T("ROLLBACK TO SAVEPOINT ")) + p_savepointName;
 }
@@ -550,7 +550,7 @@ SQLInfoPostgreSQL::GetSQLFromDualClause() const
 
 // Get SQL to lock  a table 
 XString
-SQLInfoPostgreSQL::GetSQLLockTable(XString p_schema,XString p_tablename,bool p_exclusive,int /*p_waittime*/) const
+SQLInfoPostgreSQL::GetSQLLockTable(const XString& p_schema,const XString& p_tablename,bool p_exclusive,int /*p_waittime*/) const
 {
   XString query = _T("LOCK TABLE ") + p_schema + _T(".") + p_tablename + _T(" IN ");
   query += p_exclusive ? _T("EXCLUSIVE") : _T("SHARE");
@@ -560,7 +560,7 @@ SQLInfoPostgreSQL::GetSQLLockTable(XString p_schema,XString p_tablename,bool p_e
 
 // Get query to optimize the table statistics
 XString
-SQLInfoPostgreSQL::GetSQLOptimizeTable(XString p_schema, XString p_tablename) const
+SQLInfoPostgreSQL::GetSQLOptimizeTable(const XString& p_schema,const XString& p_tablename) const
 {
   XString optim = _T("VACUUM ANALYZE ") + p_schema + _T(".") + p_tablename;
   return optim;
@@ -568,17 +568,18 @@ SQLInfoPostgreSQL::GetSQLOptimizeTable(XString p_schema, XString p_tablename) co
 
 // Transform query to select top <n> rows
 XString
-SQLInfoPostgreSQL::GetSQLTopNRows(XString p_sql,int p_top,int p_skip /*= 0*/) const
+SQLInfoPostgreSQL::GetSQLTopNRows(const XString& p_sql,int p_top,int p_skip /*= 0*/) const
 {
+  XString sql(p_sql);
   if(p_top > 0)
   {
-    p_sql.AppendFormat(_T("\nLIMIT %d "),p_top);
+    sql.AppendFormat(_T("\nLIMIT %d "),p_top);
     if(p_skip > 0)
     {
-      p_sql.AppendFormat(_T(" OFFSET %d"),p_skip);
+      sql.AppendFormat(_T(" OFFSET %d"),p_skip);
     }
   }
-  return p_sql;
+  return sql;
 }
 
 // Expand a SELECT with an 'FOR UPDATE' lock clause
@@ -589,7 +590,7 @@ SQLInfoPostgreSQL::GetSelectForUpdateTableClause(unsigned /*p_lockWaitTime*/) co
 }
 
 XString
-SQLInfoPostgreSQL::GetSelectForUpdateTrailer(XString p_select,unsigned p_lockWaitTime) const
+SQLInfoPostgreSQL::GetSelectForUpdateTrailer(const XString& p_select,unsigned p_lockWaitTime) const
 {
   XString sql = p_select + _T("\nFOR UPDATE");
   if(!p_lockWaitTime)
@@ -609,13 +610,13 @@ SQLInfoPostgreSQL::GetPing() const
 
 // Pre- and postfix statements for a bulk import
 XString
-SQLInfoPostgreSQL::GetBulkImportPrefix(XString /*p_schema*/,XString /*p_tablename*/,bool /*p_identity = true*/,bool /*p_constraints = true*/) const
+SQLInfoPostgreSQL::GetBulkImportPrefix(const XString& /*p_schema*/,const XString& /*p_tablename*/,bool /*p_identity = true*/,bool /*p_constraints = true*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoPostgreSQL::GetBulkImportPostfix(XString /*p_schema*/,XString /*p_tablename*/,bool /*p_identity = true*/,bool /*p_constraints = true*/) const
+SQLInfoPostgreSQL::GetBulkImportPostfix(const XString& /*p_schema*/,const XString& /*p_tablename*/,bool /*p_identity = true*/,bool /*p_constraints = true*/) const
 {
   return _T("");
 }
@@ -679,14 +680,14 @@ SQLInfoPostgreSQL::GetSQLDateTimeStrippedString(int p_year,int p_month,int p_day
 
 // Makes an catalog identifier string (possibly quoted on both sides)
 XString
-SQLInfoPostgreSQL::GetSQLDDLIdentifier(XString p_identifier) const
+SQLInfoPostgreSQL::GetSQLDDLIdentifier(const XString& p_identifier) const
 {
   return p_identifier;
 }
 
 // Get the name of a temp table (local temporary or global temporary)
 XString
-SQLInfoPostgreSQL::GetTempTablename(XString /*p_schema*/,XString p_tablename,bool /*p_local*/) const
+SQLInfoPostgreSQL::GetTempTablename(const XString& /*p_schema*/,const XString& p_tablename,bool /*p_local*/) const
 {
   return p_tablename;
 }
@@ -2320,8 +2321,39 @@ SQLInfoPostgreSQL::GetCATALOGCommentCreate(XString p_schema,XString p_object,XSt
 //
 //////////////////////////////////////////////////////////////////////////
 
+// All package functions
 XString
-SQLInfoPostgreSQL::GetPSMProcedureExists(XString p_schema, XString p_procedure,bool p_quoted /*= false*/) const
+SQLInfoPostgreSQL::GetPMSPackageExists(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+{
+  return _T("");
+}
+
+XString
+SQLInfoPostgreSQL::GetPMSPackageList(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+{
+  return _T("");
+}
+
+XString
+SQLInfoPostgreSQL::GetPMSPackageListModules(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+{
+  return _T("");
+}
+
+XString
+SQLInfoPostgreSQL::GetPMSPackageCreate(MetaPackage& /*p_package*/) const
+{
+  return _T("");
+}
+
+XString
+SQLInfoPostgreSQL::GetPMSPackageDrop(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+{
+  return _T("");
+}
+
+XString
+SQLInfoPostgreSQL::GetPSMProcedureExists(XString p_schema,XString& /*p_package*/,XString p_procedure,bool p_quoted /*= false*/) const
 {
   IdentifierCorrect(p_procedure);
 
@@ -2337,7 +2369,7 @@ SQLInfoPostgreSQL::GetPSMProcedureExists(XString p_schema, XString p_procedure,b
 }
 
 XString
-SQLInfoPostgreSQL::GetPSMProcedureList(XString& p_schema,XString p_procedure,bool p_quoted /*= false*/) const
+SQLInfoPostgreSQL::GetPSMProcedureList(XString& p_schema,XString& /*p_package*/,XString p_procedure,bool p_quoted /*= false*/) const
 {
   XString sql = _T("SELECT current_database() as procedure_catalog\n")
                 _T("      ,ns.nspname         as procedure_schema\n")
@@ -2376,7 +2408,7 @@ SQLInfoPostgreSQL::GetPSMProcedureList(XString& p_schema,XString p_procedure,boo
 }
 
 XString
-SQLInfoPostgreSQL::GetPSMProcedureAttributes(XString& p_schema,XString& p_procedure,bool p_quoted /*= false*/) const
+SQLInfoPostgreSQL::GetPSMProcedureAttributes(XString& p_schema,XString& /*p_package*/,XString& p_procedure,bool p_quoted /*= false*/) const
 {
   XString sql = _T("SELECT current_database() as procedure_catalog\n")
                 _T("      ,ns.nspname         as procedure_schema\n")
@@ -2418,7 +2450,7 @@ SQLInfoPostgreSQL::GetPSMProcedureAttributes(XString& p_schema,XString& p_proced
 }
 
 XString
-SQLInfoPostgreSQL::GetPSMProcedureSourcecode(XString p_schema,XString p_procedure,bool p_quoted /*= false*/) const
+SQLInfoPostgreSQL::GetPSMProcedureSourcecode(XString p_schema,XString& /*p_package*/,XString p_procedure,bool p_quoted /*= false*/) const
 {
   XString sql = _T("SELECT 1 as type\n")
                 _T("      ,1 as line\n")
@@ -2446,7 +2478,7 @@ SQLInfoPostgreSQL::GetPSMProcedureCreate(MetaProcedure& p_procedure) const
 }
 
 XString
-SQLInfoPostgreSQL::GetPSMProcedureDrop(XString p_schema, XString p_procedure,bool p_function /*=false*/) const
+SQLInfoPostgreSQL::GetPSMProcedureDrop(XString p_schema,XString& /*p_package*/,XString p_procedure,bool p_function /*=false*/) const
 {
   XString sql(_T("DROP "));
   sql += p_function ? _T("FUNCTION ") : _T("PROCEDURE ");
@@ -2459,20 +2491,20 @@ SQLInfoPostgreSQL::GetPSMProcedureDrop(XString p_schema, XString p_procedure,boo
 }
 
 XString
-SQLInfoPostgreSQL::GetPSMProcedureErrors(XString /*p_schema*/,XString /*p_procedure*/,bool /*p_quoted = false*/) const
+SQLInfoPostgreSQL::GetPSMProcedureErrors(XString /*p_schema*/,XString& /*p_package*/,XString /*p_procedure*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoPostgreSQL::GetPSMProcedurePrivilege(XString& /*p_schema*/,XString& /*p_procedure*/,bool /*p_quoted = false*/) const
+SQLInfoPostgreSQL::GetPSMProcedurePrivilege(XString& /*p_schema*/,XString& /*p_package*/,XString& /*p_procedure*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 // And it's parameters
 XString
-SQLInfoPostgreSQL::GetPSMProcedureParameters(XString& p_schema,XString& p_procedure,bool p_quoted /*= false*/) const
+SQLInfoPostgreSQL::GetPSMProcedureParameters(XString& p_schema,XString& /*p_package*/,XString& p_procedure,bool p_quoted /*= false*/) const
 {
   XString sql;
   sql = _T("SELECT par.specific_catalog\n")

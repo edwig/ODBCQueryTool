@@ -23,7 +23,7 @@
 //
 // Version number: See SQLComponents.h
 //
-#include "stdafx.h"
+#include "pch.h"
 #include "SQLConnections.h"
 #include "XMLMessage.h"
 #include "SQLGetExePath.h"
