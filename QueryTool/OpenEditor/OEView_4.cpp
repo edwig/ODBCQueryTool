@@ -85,14 +85,19 @@ void COEditorView::DrawCursor (CPoint point, bool erase)
     {
         CClientDC dc(this);
 
-        if (m_DragAndDropData.bVisible)
-            dc.DrawFocusRect(&CRect(m_DragAndDropData.ptCaret, m_DragAndDropData.sCursor));
-
+        if(m_DragAndDropData.bVisible)
+        {
+          CRect focus(m_DragAndDropData.ptCaret,m_DragAndDropData.sCursor);
+          dc.DrawFocusRect(&focus);
+        }
         m_DragAndDropData.ptCaret = newPoint;
         m_DragAndDropData.bVisible = !erase && !((m_DragAndDropData.pSrcWnd == this) && CursorOnSelection(point));
 
-        if (m_DragAndDropData.bVisible)
-            dc.DrawFocusRect(&CRect(m_DragAndDropData.ptCaret, m_DragAndDropData.sCursor));
+        if(m_DragAndDropData.bVisible)
+        {
+          CRect focus(m_DragAndDropData.ptCaret,m_DragAndDropData.sCursor);
+          dc.DrawFocusRect(&focus);
+        }
     }
 }
 
@@ -103,9 +108,9 @@ void COEditorView::DrawCursor (CPoint point, bool erase)
       COEditorViewDataSource (COEditorView* pView)
       {
 #ifdef UNICODE
-        UINT format = CF_UNICODETEXT;
+        CLIPFORMAT format = CF_UNICODETEXT;
 #else
-        UINT format = CF_TEXT;
+        CLIPFORMAT format = CF_TEXT;
 #endif
         m_pView = pView;
         DelayRenderData(format);
@@ -114,9 +119,9 @@ void COEditorView::DrawCursor (CPoint point, bool erase)
       virtual BOOL OnRenderGlobalData (LPFORMATETC lpFormatEtc, HGLOBAL* phGlobal)
       {
 #ifdef UNICODE
-        UINT format = CF_UNICODETEXT;
+        CLIPFORMAT format = CF_UNICODETEXT;
 #else
-        UINT format = CF_TEXT;
+        CLIPFORMAT format = CF_TEXT;
 #endif
         if (lpFormatEtc->cfFormat == format)
         {
@@ -203,9 +208,9 @@ void COEditorView::OnDragLeave ()
 DROPEFFECT COEditorView::OnDragOver (COleDataObject* pDataObject, DWORD dwKeyState, CPoint point)
 {
 #ifdef UNICODE
-  UINT format = CF_UNICODETEXT;
+  CLIPFORMAT format = CF_UNICODETEXT;
 #else
-  UINT format = CF_TEXT;
+  CLIPFORMAT format = CF_TEXT;
 #endif
 
   DROPEFFECT de = DROPEFFECT_NONE;
@@ -304,9 +309,9 @@ DROPEFFECT COEditorView::OnDragOver (COleDataObject* pDataObject, DWORD dwKeySta
 BOOL COEditorView::OnDrop (COleDataObject* pDataObject, DROPEFFECT dropEffect, CPoint point) 
 {
 #ifdef UNICODE
-  UINT format = CF_UNICODETEXT;
+  CLIPFORMAT format = CF_UNICODETEXT;
 #else
-  UINT format = CF_TEXT;
+  CLIPFORMAT format = CF_TEXT;
 #endif
   
   m_bDragScrolling = FALSE;

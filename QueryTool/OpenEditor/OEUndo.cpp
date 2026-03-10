@@ -33,6 +33,9 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
+#pragma warning(push)
+#pragma warning(disable : 4315)
+
 namespace OpenEditor
 {
 #ifdef _DEBUG
@@ -559,3 +562,4 @@ UndoDelete::UndoDelete(int line,int col,LPCTSTR str,int len)
 
 }
 
+#pragma warning(pop)

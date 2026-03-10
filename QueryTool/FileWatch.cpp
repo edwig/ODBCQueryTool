@@ -236,7 +236,7 @@ void CFileWatch::RemoveFileToWatch (CFileWatchClient& client)
     m_folders.erase(sFolder);
   }
   client.m_suspendWatch = true;
-  TRACE("FileWatch: Suspend watch, File = %s\n", client.m_fileName.GetString());
+  // TRACE("FileWatch: Suspend watch, File = %s\n", client.m_fileName.GetString());
 
 	m_csDataLock.Unlock();
   if (m_folders.empty())

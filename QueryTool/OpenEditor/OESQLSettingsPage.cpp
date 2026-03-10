@@ -329,7 +329,7 @@ COESQLSettingsPage::OnBnClickedButFont()
 
   // Split current font registry in name and size
   CString fontName;
-  int     fontSize;
+  int     fontSize = 10;
   int pos = m_font.Find(';');
   if(pos)
   {

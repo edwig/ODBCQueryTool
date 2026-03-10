@@ -387,17 +387,11 @@ SQLInfoMySQL::GetKEYWORDDataType(MetaColumn* p_column)
                                             p_column->m_datatype  = SQL_SMALLINT;
                                             p_column->m_datatype3 = SQL_SMALLINT;
                                           }
-                                          else if(p_column->m_columnSize <= 9)
+                                          else if(p_column->m_columnSize <= 10)
                                           {
                                             type = _T("INTEGER");
                                             p_column->m_datatype  = SQL_INTEGER;
                                             p_column->m_datatype3 = SQL_INTEGER;
-                                          }
-                                          else if(p_column->m_columnSize <= 18)
-                                          {
-                                            type = _T("BIGINT");
-                                            p_column->m_datatype  = SQL_BIGINT;
-                                            p_column->m_datatype3 = SQL_BIGINT;
                                           }
                                           else if(p_column->m_columnSize >= SQLNUM_MAX_PREC)
                                           {

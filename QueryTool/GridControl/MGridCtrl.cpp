@@ -155,8 +155,6 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNCREATE(MCGridCtrl, CWnd)
 
-extern UINT GetMouseScrollLines();
-
 // Get the number of lines to scroll with each mouse wheel notch
 // Why doesn't windows give us this function???
 static UINT GetMouseScrollLines()
@@ -1494,7 +1492,7 @@ void MCGridCtrl::OnHScroll(UINT nSBCode, UINT /*nPos*/, CScrollBar* /*pScrollBar
 }
 
 // Handle vert scrollbar notifications
-void MCGridCtrl::OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* /*pScrollBar*/)
+void MCGridCtrl::OnVScroll(UINT nSBCode, UINT /*nPos*/, CScrollBar* /*pScrollBar*/)
 {
     EndEditing();
 
@@ -2465,9 +2463,9 @@ void MCGridCtrl::CutSelectedText()
 COleDataSource* MCGridCtrl::CopyTextFromGrid()
 {
 #ifdef UNICODE
-  UINT format = CF_UNICODETEXT;
+  CLIPFORMAT format = CF_UNICODETEXT;
 #else
-  UINT format = CF_TEXT;
+  CLIPFORMAT format = CF_TEXT;
 #endif
 
   MCCellRange Selection = GetSelectedCellRange();
@@ -2549,9 +2547,9 @@ BOOL MCGridCtrl::PasteTextToGrid(MCCellID        cell
                                 ,BOOL            bSelectPastedCells /*=TRUE*/)
 {
 #ifdef UNICODE
-  UINT format = CF_UNICODETEXT;
+  CLIPFORMAT format = CF_UNICODETEXT;
 #else
-  UINT format = CF_TEXT;
+  CLIPFORMAT format = CF_TEXT;
 #endif
 
   if(!IsValid(cell) || !IsCellEditable(cell) || !pDataObject->IsDataAvailable(CF_TEXT))
@@ -5384,9 +5382,8 @@ void MCGridCtrl::ExpandColumnsToFit(BOOL bExpandFixed /*=TRUE*/)
   GetClientRect(rect);
 
   int nFirstColumn = (bExpandFixed)? 0 : GetFixedColumnCount();
-  int col = 0;
   int nNumColumnsAffected = 0;
-  for (col = nFirstColumn; col < GetColumnCount(); col++)
+  for (int col = nFirstColumn; col < GetColumnCount(); col++)
   {
     if (m_arColWidths[col] > 0)
     {
@@ -5402,7 +5399,7 @@ void MCGridCtrl::ExpandColumnsToFit(BOOL bExpandFixed /*=TRUE*/)
   int nDifference = rect.Width() -(int) virtualWidth;
   int nColumnAdjustment = nDifference / nNumColumnsAffected;
 
-  for (col = nFirstColumn; col < GetColumnCount(); col++)
+  for (int col = nFirstColumn; col < GetColumnCount(); col++)
   {
     if (m_arColWidths[col] > 0)
     {
@@ -5498,9 +5495,8 @@ void MCGridCtrl::ExpandRowsToFit(BOOL bExpandFixed /*=TRUE*/)
   GetClientRect(rect);
     
   int nFirstRow = (bExpandFixed)? 0 : GetFixedRowCount();
-  int row = 0;
   int nNumRowsAffected = 0;
-  for (row = nFirstRow; row < GetRowCount(); row++)
+  for (int row = nFirstRow; row < GetRowCount(); row++)
   {
     if (m_arRowHeights[row] > 0)
     {
@@ -5516,7 +5512,7 @@ void MCGridCtrl::ExpandRowsToFit(BOOL bExpandFixed /*=TRUE*/)
   int nDifference = rect.Height() -(int) virtualHeight;
   int nRowAdjustment = nDifference / nNumRowsAffected;
     
-  for (row = nFirstRow; row < GetRowCount(); row++)
+  for (int row = nFirstRow; row < GetRowCount(); row++)
   {
     if (m_arRowHeights[row] > 0)
     {
@@ -6298,10 +6294,10 @@ void MCGridCtrl::OnLButtonDblClk(UINT nFlags, CPoint point)
 
     if (IsValid(cell))
     {
-      MCGridCellBase* pCell = GetCell(cell.row, cell.col);
-      if (pCell)
+      MCGridCellBase* vcell = GetCell(cell.row, cell.col);
+      if (vcell)
       {
-        pCell->OnDblClick(pointClickedRel);
+        vcell->OnDblClick(pointClickedRel);
       }
       SendMessageToParent(cell.row, cell.col, NM_DBLCLK);
     }

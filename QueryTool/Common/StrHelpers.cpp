@@ -170,7 +170,7 @@ namespace Common
         {
           for(; it != end; it++)
           {
-            fast_map[(int) toupper((*it).GetAt(0))] = true;
+            fast_map[(_TUCHAR) toupper((*it).GetAt(0))] = true;
           }
         }
 
@@ -179,8 +179,8 @@ namespace Common
 
         while (*chunk_end)
         {
-            if (m_casesensitive  && fast_map[(int)*chunk_end]
-            || (!m_casesensitive && fast_map[(int)toupper(*chunk_end)]))
+            if (m_casesensitive  && fast_map[(_TUCHAR)*chunk_end]
+            || (!m_casesensitive && fast_map[(_TUCHAR)toupper((_TUCHAR)*chunk_end)]))
             {
                 bool hit = false;
                 it = m_whatFind.begin();

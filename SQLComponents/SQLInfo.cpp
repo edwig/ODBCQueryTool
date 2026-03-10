@@ -273,7 +273,7 @@ SQLInfo::GetInfoString(SQLUSMALLINT info)
   SQLSMALLINT len  = 0;
   bool    overflow = false;
   XString answer;
-  char buffer[SQLGETINFO_TEXT_SIZE];
+  TCHAR buffer[SQLGETINFO_TEXT_SIZE];
 
   if(::SQLGetInfo(m_hdbc,info,buffer,SQLGETINFO_TEXT_SIZE,&len) == SQL_SUCCESS)
   {

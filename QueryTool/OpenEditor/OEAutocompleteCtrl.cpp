@@ -91,7 +91,7 @@ void COEAutocompleteCtrl::ShowControl (COEditorView* pEditor)
       message.Format(_T("Template [%s] is empty!")
                      _T("\n\nYou should populate it before using.")
                      _T("\n\nOn \"Text\" menu, click \"Permanent Settings\" item\t\nand choose \"Templates\" tab.")
-                    ,pEditor->GetSettings().GetName());
+                    ,pEditor->GetSettings().GetName().GetString());
       AfxMessageBox(message,MB_ICONEXCLAMATION);
       return;
     }

@@ -446,13 +446,19 @@ SQLDatabase::CollectInfo()
   SqlGetInfo(m_hdbc, SQL_DBMS_VER, szInfo2, sizeof(szInfo2),&nResult);
 
 
-  if ( m_DBName.CompareNoCase(szInfo1)   == 0 && 
-       m_DBVersion.CompareNoCase(szInfo2) == 0)
+  if(m_DBName.CompareNoCase(szInfo1)    == 0 && 
+     m_DBVersion.CompareNoCase(szInfo2) == 0)
   {
     LoadVersie = FALSE;
   }
   m_DBName   = szInfo1;
   m_DBVersion = szInfo2;
+
+  if(m_username.IsEmpty())
+  {
+    SqlGetInfo(m_hdbc,SQL_USER_NAME,szInfo1,sizeof(szInfo1),&nResult);
+    m_username = szInfo1;
+  }
 
   if (LoadVersie)
   {

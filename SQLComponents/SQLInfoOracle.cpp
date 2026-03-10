@@ -1254,9 +1254,10 @@ SQLInfoOracle::GetCATALOGColumnAttributes(XString& p_schema,XString& p_tablename
                 _T("            WHEN 'VARCHAR2'      THEN 12\n")
                 _T("            WHEN 'NCHAR'         THEN -8\n")
                 _T("            WHEN 'NVARCHAR'      THEN -9\n")
-                _T("            WHEN 'NUMBER'        THEN CASE data_scale\n")
-                _T("                                           WHEN 0   THEN 4\n")
-                _T("                                                    ELSE 2\n")
+                _T("            WHEN 'NUMBER'        THEN CASE \n")
+                _T("                                      WHEN data_scale = 0 and data_precision <= 10\n")
+                _T("                                      THEN 4\n")
+                _T("                                      ELSE 2\n")
                 _T("                                      END\n")
                 _T("            WHEN 'FLOAT'         THEN CASE data_precision\n")
                 _T("                                           WHEN 63  THEN 7\n")
@@ -2244,7 +2245,7 @@ SQLInfoOracle::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern,bool 
   {
     p_pattern = _T("%") + p_pattern + _T("%");
   }
-  XString sql = _T("SELECT ''              AS catalog_name\n")
+  XString sql = _T("SELECT sys_context('USERENV','DB_NAME') AS catalog_name\n")
                 _T("      ,sequence_owner  AS schema_name\n")
                 _T("      ,sequence_name\n")
                 _T("      ,last_number     AS current_value\n")
@@ -2273,7 +2274,7 @@ SQLInfoOracle::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern,bool 
 XString
 SQLInfoOracle::GetCATALOGSequenceAttributes(XString& p_schema,XString& p_sequence,bool p_quoted /*= false*/) const
 {
-  XString sql = _T("SELECT ''              AS catalog_name\n")
+  XString sql = _T("SELECT sys_context('USERENV','DB_NAME') AS catalog_name\n")
                 _T("      ,sequence_owner  AS schema_name\n")
                 _T("      ,sequence_name\n")
                 _T("      ,last_number     AS current_value\n")

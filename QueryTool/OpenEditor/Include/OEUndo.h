@@ -27,9 +27,6 @@
 #include <common/arg_shared.h>
 #include <OEHelpers.h>
 
-#pragma warning(push)
-#pragma warning(disable : 4244)
-
 namespace OpenEditor
 {
     using Common::FixedString;
@@ -371,7 +368,3 @@ namespace OpenEditor
     UndoNotification::UndoNotification (bool disabled) : m_disabled(disabled) {}
 
 }
-
-#pragma warning(pop)
-
-

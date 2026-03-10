@@ -763,8 +763,8 @@ void GeneralMatchSearcher::Find (EditContext& editor, bool select)
         balance = 0;
         
         fastmap.erase();
-        fastmap[startWith] = 1;
-        fastmap[searchFor] = -1;
+        fastmap[startWith] = (TCHAR)  1;
+        fastmap[searchFor] = (TCHAR) -1;
     }
     else // search for any
     {
@@ -773,8 +773,8 @@ void GeneralMatchSearcher::Find (EditContext& editor, bool select)
         balance = 1;
         for (int i(0); i < sizeof(openBraces)-1; i++)
         {
-            fastmap[openBraces[i]]  = 1;
-            fastmap[closeBraces[i]] = -1;
+            fastmap[openBraces[i]]  = (TCHAR)  1;
+            fastmap[closeBraces[i]] = (TCHAR) -1;
         }
     }
 

@@ -147,14 +147,17 @@ InfoTree::MakeTreeInfo()
   HTREEITEM meta     = InsertItem(_T("Meta-objects in the database"),infoItemDB);
   HTREEITEM catalogs = InsertItem(_T("Catalogs"),meta);
   m_info->MakeInfoMetaTypes(objects,errors,META_CATALOGS);
+  DeDuplicateOjbects(objects);
   MetaListToTree(objects,catalogs,errors);
 
   HTREEITEM schemas  = InsertItem(_T("Schemas"),meta);
   m_info->MakeInfoMetaTypes(objects,errors,META_SCHEMAS);
+  DeDuplicateOjbects(objects);
   MetaListToTree(objects,schemas,errors);
 
   HTREEITEM obtypes  = InsertItem(_T("Object types"),meta);
   m_info->MakeInfoMetaTypes(objects,errors,META_TABLES);
+  DeDuplicateOjbects(objects);
   MetaListToTree(objects,obtypes,errors);
 
   // ODBC DRIVER
@@ -770,10 +773,10 @@ InfoTree::MakeTreeInfo()
   sitem  = _T("RDBMS catalog support: ");
   sitem += m_info->GetSupportsCatalogs() ? _T("Yes") : _T("No");
   InsertItem(sitem,infoItemImpl);
-  InsertItem(_T("Term for a catalog: ")   + m_info->GetCatalogTerm(),   infoItemImpl);
-  InsertItem(_T("Term for a schema: ")    + m_info->GetSchemaTerm(),    infoItemImpl);
-  InsertItem(_T("Term for a table: ")     + m_info->GetTableTerm(),     infoItemImpl);
-  InsertItem(_T("Term for a procedure: ") + m_info->GetProcedureTerm(), infoItemImpl);
+  InsertItem(CString(_T("Term for a catalog: ")   + m_info->GetCatalogTerm()),   infoItemImpl);
+  InsertItem(CString(_T("Term for a schema: ")    + m_info->GetSchemaTerm()),    infoItemImpl);
+  InsertItem(CString(_T("Term for a table: ")     + m_info->GetTableTerm()),     infoItemImpl);
+  InsertItem(CString(_T("Term for a procedure: ") + m_info->GetProcedureTerm()), infoItemImpl);
   CString line(_T("Catalog identifiers: "));
   switch(m_info->GetIdentifierCase())
   {
@@ -810,9 +813,9 @@ InfoTree::MakeTreeInfo()
   sitem.Format(_T("Maximum number of columns in a table: %i"), m_info->GetMaxColumnsInTable());
   InsertItem(sitem, infoItemImpl);
 
-  InsertItem(_T("Special characters: ") + m_info->GetSpecialCharacters(),        infoItemImpl);
-  InsertItem(_T("Like escape char: ")   + m_info->GetLikeEscapeCharacter(),      infoItemImpl);
-  InsertItem(_T("Quoted identifiers: ") + m_info->GetIdentifierQuoteCharacter(), infoItemImpl);
+  InsertItem(CString(_T("Special characters: ") + m_info->GetSpecialCharacters()),        infoItemImpl);
+  InsertItem(CString(_T("Like escape char: ")   + m_info->GetLikeEscapeCharacter()),      infoItemImpl);
+  InsertItem(CString(_T("Quoted identifiers: ") + m_info->GetIdentifierQuoteCharacter()), infoItemImpl);
 
   sitem = _T("Collation sequence: ");
   sitem += m_info->GetCollationSequence();
@@ -964,38 +967,11 @@ InfoTree::MakeTreeInfo()
   DisplayBitfield(schviews,schemaViews,SQL_ISV_VIEWS,                  _T("VIEWS"));
 
   // VERSION NUMBERS
-  InsertItem(_T("ODBC Driver manager: ")   + m_info->GetVersionODBCManager(),   infoItemVersion);
-  InsertItem(_T("ODBC Database driver: ")  + m_info->GetVersionODBCDriver(),    infoItemVersion);
-  InsertItem(_T("ODBC Standard: ")         + m_info->GetVersionODBCStandard(),  infoItemVersion);
-  InsertItem(_T("RDBMS version: ")         + m_info->GetVersionRDBMS(),         infoItemVersion);
+  InsertItem(CString(_T("ODBC Driver manager: ")  + m_info->GetVersionODBCManager()), infoItemVersion);
+  InsertItem(CString(_T("ODBC Database driver: ") + m_info->GetVersionODBCDriver()),  infoItemVersion);
+  InsertItem(CString(_T("ODBC Standard: ")        + m_info->GetVersionODBCStandard()),infoItemVersion);
+  InsertItem(CString(_T("RDBMS version: ")        + m_info->GetVersionRDBMS()),       infoItemVersion);
 }
-
-// void
-// InfoTree::WordListToTree(WordList& p_list,HTREEITEM p_item)
-// {
-//   HTREEITEM item = p_item;
-//   HTREEITEM last = NULL;
-//   for(WordList::iterator it = p_list.begin(); it != p_list.end(); ++it)
-//   {
-//     CString line = *it;
-//     if(line == "+" && last)
-//     {
-//       // één inspringen
-//       item = last;
-//       continue;
-//     }
-//     if(line == "-")
-//     {
-//       // Reset to original
-//       item = p_item;
-//     }
-//     else
-//     {
-//       last = InsertItem(line,item);
-//     }
-//   }
-//   p_list.clear();
-// }
 
 void
 InfoTree::MetaListToTree(MMetaMap& p_list,HTREEITEM p_item,XString& p_errors)
@@ -1078,7 +1054,7 @@ CString
 InfoTree::InfoNumberToString(SQLINTEGER number)
 {
   CString num;
-  if(num == -1)
+  if(number == -1)
   {
     num = _T("(no info from driver)");
   }
@@ -1493,6 +1469,33 @@ InfoTree::MakeTreeInfoFunctions(HTREEITEM item)
     InsertItem(sitem,item);
     sitem = CString(ODBCFunctions_2[SQL_API_SQLTRANSACT]          ? _T("X") : _T("O")) + _T("SQLTransact");
     InsertItem(sitem,item);
+  }
+}
+
+// De-Duplicate the objects from a META query
+void 
+InfoTree::DeDuplicateOjbects(MMetaMap& p_objects)
+{
+  MMetaMap::iterator all = p_objects.begin();
+  while(all != p_objects.end())
+  {
+    XString name = all->m_objectName;
+    MMetaMap::iterator srch = all;
+    ++srch;
+    while(srch != p_objects.end())
+    {
+      if(srch->m_objectName.Compare(name) == 0)
+      {
+        srch = p_objects.erase(srch);
+        continue;
+      }
+      ++srch;
+    }
+    // Next item in the three
+    if(all != p_objects.end())
+    {
+      ++all;
+    }
   }
 }
 

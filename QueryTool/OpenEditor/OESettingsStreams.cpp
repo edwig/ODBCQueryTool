@@ -226,7 +226,7 @@ void SettingsManagerReader::operator >> (SettingsManager& mgr)
     for (int i(0); i < count; i++)
     {
         ClassSettingsPtr classSettingsPtr(new ClassSettings(mgr));
-        Stream::Section sect(m_in, i);
+        Stream::Section section(m_in, i);
         read(*classSettingsPtr);
         mgr.m_classSettingsVector.push_back(classSettingsPtr);
     }
@@ -307,7 +307,7 @@ void SettingsManagerWriter::write (const VisualAttributesSet& set_)
 
     for (int i(0); i < count; i++)
     {
-        Stream::Section sect(m_out, i);
+        Stream::Section section(m_out, i);
         write(set_[i]);
     }
 }
@@ -328,7 +328,7 @@ void SettingsManagerReader::read  (VisualAttributesSet& set_)
     for (int i(0); i < count; i++)
     {
         VisualAttribute attr;
-        Stream::Section sect(m_in, i);
+        Stream::Section section(m_in, i);
         read(attr);
         set_.Add(attr);
 

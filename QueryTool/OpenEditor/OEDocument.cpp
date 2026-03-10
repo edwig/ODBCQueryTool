@@ -915,8 +915,8 @@ COEDocument::OnWatchedFileChanged ()
                         CView* pView = GetNextView(pos);
                         if (pView && (pView->IsKindOf(RUNTIME_CLASS(COEditorView))))
                         {
-                            Position pos = ((COEditorView*)pView)->GetPosition();
-                            if (pos.line >= m_storage.GetLineCount()-1)
+                            Position pos2 = ((COEditorView*)pView)->GetPosition();
+                            if (pos2.line >= m_storage.GetLineCount()-1)
                                 viewsToScroll.push_back(((COEditorView*)pView));
                         }
                     }

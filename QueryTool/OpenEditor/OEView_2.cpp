@@ -129,6 +129,13 @@ void COEditorView::OnPaint ()
 		scr.start.column = max(0, (int)(dc.m_ps.rcPaint.left - m_Rulers[0].m_Indent) / m_Rulers[0].m_CharSize);
 		scr.end.column   = max(0, (int)(dc.m_ps.rcPaint.right - m_Rulers[0].m_Indent - 1) / m_Rulers[0].m_CharSize);
 	}
+  else
+  {
+    scr.coordinate[0] = 0;
+    scr.coordinate[1] = 0;
+    scr.coordinate[2] = 0;
+    scr.coordinate[3] = 0;
+  }
   if (dc.m_ps.rcPaint.left < m_Rulers[0].m_Indent)
   {
     CRect rc(dc.m_ps.rcPaint);

@@ -22,6 +22,14 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes 3.6.1
+------------------
+-  Small fixes for the "ODBC Report" for a RDBMS datasource. Some strings where missing, 
+   due to the ANSI to Unicode conversion.
+-  Better SQLMigrate path from Oracle to PostgreSQL.
+-  Various small bugfixes, found by the strict compiling under /W4/WX settings.
+
+
 Releasenotes 3.6.0
 ------------------
 -  Upgraded to the newwest versions of the libraries (SQLComponents, BaseLibrary) that

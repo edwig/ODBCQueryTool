@@ -230,7 +230,6 @@ COEFindFiles::GoFindInFile(CString fileName,StyleGridCtrl* grid)
 {
   // m_whole_word, m_match_case, m_use_regex, m_collapse
   bool    res   = false;
-  int     len   = 0;
   CString findThis   = m_whattofind;
   long    lineNumber = 0;
   RegExp  rex;

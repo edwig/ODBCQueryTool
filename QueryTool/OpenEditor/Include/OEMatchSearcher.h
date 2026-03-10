@@ -199,6 +199,7 @@ namespace OpenEditor
     {
     public:
         virtual void Find (EditContext&, bool select) = 0;
+        virtual ~MatchSearcherBase() = default;
     };
 
     class GeneralMatchSearcher : public MatchSearcherBase

@@ -726,8 +726,8 @@ SQLMigrate::CreateTables()
   // Try to get the optimal result
   SQLInfoDB* source = m_databaseSource->GetSQLInfoDB();
   SQLInfoDB* target = m_databaseTarget->GetSQLInfoDB();
-  source->SetPreferODBC(true);
-  target->SetPreferODBC(true);
+  source->SetPreferODBC(false);
+  target->SetPreferODBC(false);
 
   for(unsigned int ind = 0; ind < m_tables.size(); ++ind)
   {

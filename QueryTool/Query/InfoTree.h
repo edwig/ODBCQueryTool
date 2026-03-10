@@ -58,7 +58,8 @@ private:
   void MakeTreeInfoFunctions(HTREEITEM item);
 //void WordListToTree(WordList& p_list,HTREEITEM p_item);
   void MetaListToTree(MMetaMap& p_list,HTREEITEM p_item,XString& p_errors);
-
+  // De-Duplicate the objects from a META query
+  void DeDuplicateOjbects(MMetaMap& p_objects);
 
   // Printing the DBInfo tree to a report
   void ReportCapabilities(HTREEITEM  p_branch

@@ -240,7 +240,7 @@ bool EditContext::CapitalizeText  (const EditContext&, CString& str)
   {
     if(ind == 0 || !isalpha(str.GetAt(ind - 1)))
     {
-      str.SetAt(ind,toupper(str.GetAt(ind)));
+      str.SetAt(ind,(TCHAR)toupper(str.GetAt(ind)));
     }
   }
   return true;
@@ -252,11 +252,11 @@ bool EditContext::InvertCaseText  (const EditContext&, CString& str)
   {
     if(islower(str.GetAt(ind)))
     {
-      str.SetAt(ind,toupper(str.GetAt(ind)));
+      str.SetAt(ind,(TCHAR)toupper(str.GetAt(ind)));
     }
     else
     {
-      str.SetAt(ind,tolower(str.GetAt(ind)));
+      str.SetAt(ind,(TCHAR)tolower(str.GetAt(ind)));
     }
   }
   return true;

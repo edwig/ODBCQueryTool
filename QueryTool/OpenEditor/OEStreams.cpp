@@ -293,7 +293,7 @@ FileOutStream::write(const CString& name,long val)
 }
 
 void 
-FileInStream::read(const CString& name,long& val,bool skip /*=false*/)
+FileInStream::read(const CString& name,long& val,bool /*skip =false*/)
 {
   XString inval;
   m_infile.Read(inval,'=');
@@ -316,7 +316,7 @@ FileOutStream::write(const CString& name,unsigned long val)
 }
 
 void 
-FileInStream::read(const CString& name,unsigned long& val,bool skip /*=false*/)
+FileInStream::read(const CString& name,unsigned long& val,bool /*skip =false*/)
 {
   XString inval;
   m_infile.Read(inval,'=');

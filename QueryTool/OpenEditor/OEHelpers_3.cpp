@@ -484,33 +484,21 @@ bool Searcher::Replace (Storage* pStorage, LPCTSTR  text, int line, int start, i
         int _start, _end;
         // check the current selection
         // !!! it's possible to suppress double checking !!!
-        if (isMatched(str, start, len, pStorage->GetDelimiters(), _start, _end)
-        && _start == start && _end == end)
+        if (isMatched(str, start, len, pStorage->GetDelimiters(), _start, _end) &&
+            _start == start && 
+            _end   == end)
         {
             CString buff;
 
             if (m_bRegExpr)
             {
-                int len;
-                LPCTSTR str;
-                pStorage->GetLine(line, str, len);
+                int linelen;
+                LPCTSTR linestr;
+                pStorage->GetLine(line, linestr, linelen);
 
                 for (LPCTSTR ptr = text; *ptr; ptr++)
                 {
-                    if (*ptr == '\\' && ::isdigit(*(ptr+1)))
-                    {
-                        TCHAR _group[2] = { *(++ptr), 0 }; // 28/07/2002 bug fix, RegExp replace fails on \1...
-                        int group = _ttoi(_group);
-/*
-                        if (group < cnRegMatchSize
-                        && m_cxt->match[group].rm_so != -1 && m_cxt->match[group].rm_eo != -1)
-                        {
-                            _CHECK_AND_THROW_(m_cxt->match[group].rm_so < len && m_cxt->match[group].rm_eo <= len,
-                                              "Replace error: regular expression match group failure!");
-                            buff.append(str + m_cxt->match[group].rm_so, m_cxt->match[group].rm_eo - m_cxt->match[group].rm_so);
-                        }*/
-                    }
-                    else
+                    if(!(*ptr == '\\' && ::isdigit(*(ptr+1))))
                     {
                         buff += *ptr;
                     }

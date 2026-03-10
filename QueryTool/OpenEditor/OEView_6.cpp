@@ -40,13 +40,13 @@ bool COEditorView::PreNormalizeOnChar (NormalizeOnCharCxt& cxt,TCHAR ch)
 
     if (GetSettings().GetNormalizeKeywords())
     {
-        Position pos = GetPosition();
+        Position pos1 = GetPosition();
         HighlighterBase* phighlighter = &*m_highlighter;
         
         if (phighlighter 
         && IsSelectionEmpty()
         && (phighlighter->GetDelimiters()[ch])
-        && pos.line < GetLineCount())
+        && pos1.line < GetLineCount())
         {
             Position pos = GetPosition();
             LPCTSTR str;
@@ -119,15 +119,16 @@ bool COEditorView::IsNormalizeablePos (Position pos) const
 
         while (!tokenizer.Eol())
         {
-            int curPos, len;
-            LPCTSTR str;
+            int curPos, len2;
+            LPCTSTR str2;
 
-            tokenizer.GetCurentWord(str, curPos, len);
-            phighlighter->NextWord(str, len);
+            tokenizer.GetCurentWord(str2, curPos, len2);
+            phighlighter->NextWord(str2, len2);
 
-            if (curPos >= pos.column && pos.column < curPos + len)
-                return phighlighter->IsPlainText();
-
+            if(curPos >= pos.column && pos.column < curPos + len2)
+            {
+              return phighlighter->IsPlainText();
+            }
             tokenizer.Next();
         }
     }
@@ -164,14 +165,14 @@ bool COEditorView::NormalizeText (const EditContext& cxt, CString& _str)
         while (!tokenizer.Eol())
         {
             int pos, wlen;
-            LPCTSTR str;
+            LPCTSTR str2;
 
-            tokenizer.GetCurentWord(str, pos, wlen);
-            phighlighter->NextWord(str, wlen);
+            tokenizer.GetCurentWord(str2, pos, wlen);
+            phighlighter->NextWord(str2, wlen);
 
             // 16.03.2003 bug fix, keyword normalization fails in many cases
             if (((start <= pos && pos <= end) || (start <= (pos + wlen - 1) && (pos + wlen - 1) <= end))
-            && phighlighter->IsPlainText() && phighlighter->IsKeyword(str, wlen, keyword))
+            && phighlighter->IsPlainText() && phighlighter->IsKeyword(str2, wlen, keyword))
             {
                 _ASSERTE(wlen == static_cast<int>(keyword.GetLength()));
 

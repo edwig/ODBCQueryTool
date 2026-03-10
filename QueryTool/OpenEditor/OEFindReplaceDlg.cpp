@@ -389,8 +389,8 @@ void CFindReplaceDlg::SearchBatch (OpenEditor::ESearchBatch mode)
             }
             else // replace in selection
             {
-                Square blk;
-                m_pView->GetSelection(blk);
+                Square prvblk;
+                m_pView->GetSelection(prvblk);
                 Position pos = m_pView->GetPosition();
 
                 bool _backward = m_pView->IsBackwardSearch();
@@ -416,8 +416,8 @@ void CFindReplaceDlg::SearchBatch (OpenEditor::ESearchBatch mode)
                         int line = blk.start.line, start = blk.start.column, end = blk.start.column;
 
                         COEditorView::UndoGroup undoGroup(*m_pView);
-                        Position pos = m_pView->GetPosition();
-                        m_pView->PushInUndoStack(pos);
+                        Position npos = m_pView->GetPosition();
+                        m_pView->PushInUndoStack(npos);
 
                         while (m_pView->Find(pView, line, start, end) && pView == m_pView)
                         {
@@ -446,11 +446,13 @@ void CFindReplaceDlg::SearchBatch (OpenEditor::ESearchBatch mode)
 
                 m_pView->SetBackwardSearch(_backward);
                 m_pView->MoveTo(pos);
-                m_pView->SetSelection(blk);
+                m_pView->SetSelection(prvblk);
             }
 
-            if (mode == esbReplace && counter)
-                AdjustPosition();
+            if(mode == esbReplace && counter)
+            {
+              AdjustPosition();
+            }
         }
 
         TCHAR buff[100];

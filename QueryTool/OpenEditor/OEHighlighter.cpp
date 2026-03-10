@@ -112,10 +112,10 @@ CommonHighlighter::CommonHighlighter (LPCTSTR langName)
         }
         else
         {
-            m_symbolFastMap[toupper(ch)]= true;
-            m_symbolFastMap[tolower(ch)]= true;
-            m_lineCommentFastMap[toupper(ch)]= true;
-            m_lineCommentFastMap[tolower(ch)]= true;
+            m_symbolFastMap[(_TUCHAR)toupper(ch)]= true;
+            m_symbolFastMap[(_TUCHAR)tolower(ch)]= true;
+            m_lineCommentFastMap[(_TUCHAR)toupper(ch)]= true;
+            m_lineCommentFastMap[(_TUCHAR)tolower(ch)]= true;
         }
     }
 
@@ -131,10 +131,10 @@ CommonHighlighter::CommonHighlighter (LPCTSTR langName)
             }
             else
             {
-                m_symbolFastMap[toupper(ch)]= true;
-                m_symbolFastMap[tolower(ch)]= true;
-                m_lineCommentFastMap[toupper(ch)]= true;
-                m_lineCommentFastMap[tolower(ch)]= true;
+                m_symbolFastMap[(_TUCHAR)toupper(ch)]= true;
+                m_symbolFastMap[(_TUCHAR)tolower(ch)]= true;
+                m_lineCommentFastMap[(_TUCHAR)toupper(ch)]= true;
+                m_lineCommentFastMap[(_TUCHAR)tolower(ch)]= true;
             }
         }
 }

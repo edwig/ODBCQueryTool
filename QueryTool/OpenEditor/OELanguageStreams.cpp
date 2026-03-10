@@ -132,7 +132,7 @@ void LanguagesCollectionReader::operator >> (LanguagesCollection&)
 void LanguagesCollectionReader::read (Language& lang)
 {
     OESMS_READ_MEMBER(lang, name);
-    TRACE1("Loading Language=%s\n", lang.m_name.GetString());
+    // TRACE1("Loading Language=%s\n", lang.m_name.GetString());
 
     OESMS_READ_MEMBER(lang, delimiters);
     OESMS_READ_MEMBER(lang, caseSensiteve);

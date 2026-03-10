@@ -120,8 +120,8 @@ namespace OpenEditor
                 {
                   brace = braceSet[j];
                   brace.MakeUpper();
-                  fastmap[toupper(brace[0])] = true;
-                  fastmap[tolower(brace[0])] = true;
+                  fastmap[(_TUCHAR)toupper(brace[0])] = true;
+                  fastmap[(_TUCHAR)tolower(brace[0])] = true;
                 }
 
                 std::map<CString, MatchToken>::iterator it = fullmap.find(brace);

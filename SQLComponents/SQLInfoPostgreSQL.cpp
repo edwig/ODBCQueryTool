@@ -365,7 +365,110 @@ SQLInfoPostgreSQL::GetKEYWORDStatementNVL(const XString& p_test,const XString& p
 XString
 SQLInfoPostgreSQL::GetKEYWORDDataType(MetaColumn* p_column)
 {
-  return p_column->m_typename;
+  XString type;
+
+  switch(p_column->m_datatype)
+  {
+    case SQL_CHAR:                      type = _T("varchar");       break;
+    case SQL_VARCHAR:                   type = _T("varchar");       break;
+    case SQL_LONGVARCHAR:               type = _T("text");          break;
+    case SQL_WCHAR:                     type = _T("varchar");       break;   // TBF
+    case SQL_WVARCHAR:                  type = _T("varchar");       break;   // TBF
+    case SQL_WLONGVARCHAR:              type = _T("text");          break;   // TBF
+    case SQL_NUMERIC:                   // Fall through
+    case SQL_DECIMAL:                   type = _T("numeric");
+                                        if(p_column->m_decimalDigits == 0)
+                                        {
+                                          if(p_column->m_columnSize <= 2)
+                                          {
+                                            type = _T("int2");
+                                            p_column->m_datatype  = SQL_TINYINT;
+                                            p_column->m_datatype3 = SQL_TINYINT;
+                                          }
+                                          else if(p_column->m_columnSize <= 5)
+                                          {
+                                            type = _T("int2");
+                                            p_column->m_datatype  = SQL_SMALLINT;
+                                            p_column->m_datatype3 = SQL_SMALLINT;
+                                          }
+                                          else if(p_column->m_columnSize <= 10)
+                                          {
+                                            type = _T("int4");
+                                            p_column->m_datatype  = SQL_INTEGER;
+                                            p_column->m_datatype3 = SQL_INTEGER;
+                                          }
+                                          else if(p_column->m_columnSize >= SQLNUM_MAX_PREC)
+                                          {
+                                            type = _T("int4");
+                                            p_column->m_columnSize = 0;
+                                            p_column->m_datatype   = SQL_INTEGER;
+                                          }
+                                        }
+                                        break;
+    case SQL_INTEGER:                   type = _T("int4");
+                                        p_column->m_columnSize = 10;
+                                        break;
+    case SQL_SMALLINT:                  type = _T("int2");
+                                        p_column->m_columnSize = 5;
+                                        break;
+    case SQL_FLOAT:                     type = _T("float8");
+                                        p_column->m_columnSize = 17;
+                                        break;
+    case SQL_REAL:                      type = _T("float4");
+                                        p_column->m_columnSize = 9;
+                                        break;
+    case SQL_DOUBLE:                    type = _T("float8");
+                                        p_column->m_columnSize = 17;
+                                        break;
+    //case SQL_DATE:
+    case SQL_DATETIME:                  // Fall through
+    case SQL_TYPE_DATE:                 type = _T("date");
+                                        p_column->m_columnSize = 10;
+                                        break;
+    case SQL_TIME:                      // Fall through
+    case SQL_TYPE_TIME:                 type = _T("time");
+                                        p_column->m_columnSize = 8;
+                                        break;
+    case SQL_TIMESTAMP:                 // Fall through
+    case SQL_TYPE_TIMESTAMP:            type = _T("timestamptz");
+                                        p_column->m_columnSize = 26;
+                                        break;
+    case SQL_BINARY:                    type = _T("bytea");         break;
+    case SQL_VARBINARY:                 type = _T("bytea");         break;
+    case SQL_LONGVARBINARY:             type = _T("bytea");         break;
+    case SQL_BIGINT:                    type = _T("int8");
+                                        p_column->m_columnSize = 19;
+                                        break;
+    case SQL_TINYINT:                   type = _T("int2");
+                                        p_column->m_columnSize = 2;
+                                        break;
+    case SQL_BIT:                       type = _T("bool");
+                                        p_column->m_columnSize = 1;
+                                        break;
+    case SQL_GUID:                      type = _T("uuid");
+                                        p_column->m_columnSize    = 37;
+                                        p_column->m_decimalDigits = 0;
+                                        break;
+    case SQL_INTERVAL_YEAR:             // Fall through
+    case SQL_INTERVAL_MONTH:            // Fall through
+    case SQL_INTERVAL_DAY:              // Fall through
+    case SQL_INTERVAL_HOUR:             // Fall through
+    case SQL_INTERVAL_MINUTE:           // Fall through
+    case SQL_INTERVAL_SECOND:           // Fall through
+    case SQL_INTERVAL_YEAR_TO_MONTH:    // Fall through
+    case SQL_INTERVAL_DAY_TO_HOUR:      // Fall through
+    case SQL_INTERVAL_DAY_TO_MINUTE:    // Fall through
+    case SQL_INTERVAL_DAY_TO_SECOND:    // Fall through
+    case SQL_INTERVAL_HOUR_TO_MINUTE:   // Fall through
+    case SQL_INTERVAL_HOUR_TO_SECOND:   // Fall through
+    case SQL_INTERVAL_MINUTE_TO_SECOND: type = _T("varchar");
+                                        p_column->m_columnSize    = 40;
+                                        p_column->m_decimalDigits = 0;
+                                        break;
+    case SQL_UNKNOWN_TYPE:
+    default:                            type = _T("UNKNOWN ODBC DATA TYPE!");  break;
+  }
+  return p_column->m_typename = type;
 }
 
 // Gets the USER (current-user) keyword function

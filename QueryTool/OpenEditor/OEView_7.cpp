@@ -144,11 +144,8 @@ void
 COEditorView::OnScriptNative()
 {
   CString odbcCommand;
-  int endFileLine = GetLineCount();
-  int curLine = GetPosition().line;
   CWaitCursor take_a_deep_sigh;
 
-  int firstline = GetODBCCommand(curLine,endFileLine,odbcCommand);
   CString native = theApp.FindNativeSQL(odbcCommand);
 
   // Show the Native SQL in a dialog
@@ -345,7 +342,6 @@ COEditorView::GetODBCCommand(int& curLine
     return  curLine;
   }
   // No selected buffer. Try from current position to parse SQL text
-  int i = 0;
   int firstline = -1;
   m_tableOne = _T("");
   m_findPrimary = false;
@@ -451,7 +447,7 @@ COEditorView::GetODBCCommand(int& curLine
           odbcCommand.TrimLeft('\n');
           odbcCommand.TrimRight('\n');
         }
-        TRACE(_T("ODBC Ended command: %s\n"),odbcCommand.Left(255));
+        TRACE(_T("ODBC Ended command: %s\n"),odbcCommand.Left(255).GetString());
         // End of command found
         return firstline;
       }
@@ -505,7 +501,7 @@ COEditorView::GetODBCCommand(int& curLine
   {
     odbcCommand = multiLineCommand;
   }
-  TRACE(_T("ODBC Command: %s\n"),odbcCommand);
+  TRACE(_T("ODBC Command: %s\n"),odbcCommand.GetString());
   return firstline;
 }
 
@@ -670,14 +666,13 @@ bool
 COEditorView::ExecuteQuery(int      p_line
                           ,CString& p_odbcCommand
                           ,bool     p_batch   /* = false */
-                          ,WinFile* p_script  /* = NULL  */)
+                          ,WinFile* /*p_script*/  /* = NULL  */)
 {
   QueryToolApp *app         = dynamic_cast<QueryToolApp *> (AfxGetApp());
   SQLDatabase&   database   = app->GetDatabase();
   bool     selectQuery      = false;
   bool     preMatureStopped = false;
   int      panelWindow      = p_batch ? QPW_OUTPUT_VIEW : QPW_QUERY_VIEW;
-  UINT     defFormat        = DT_LEFT|DT_VCENTER|DT_WORDBREAK|DT_END_ELLIPSIS|DT_NOPREFIX|DT_EXPANDTABS;
   int      prefetchLines    = GetDocument()->GetSettings().GetSQLPrefetchLines();
   int      lengthOption     = GetDocument()->GetSettings().GetSQLLengthOption();
   VarMap&  variables        = theApp.GetVariables();
@@ -784,7 +779,7 @@ COEditorView::ExecuteQuery(int      p_line
       {
         XString colname;
         SQLVariant* var = m_query.GetColumn(k);
-        SWORD type = var->GetDataType();
+        SWORD type = (SWORD)var->GetDataType();
         format &= ~(DT_LEFT | DT_RIGHT);
         format |= (type == SQL_C_CHAR) ? DT_LEFT : DT_RIGHT;
         if(var->IsNumericType())
@@ -912,7 +907,7 @@ COEditorView::GetLineFromQuery(int row)
   for(int k = 1; k <= m_query.GetNumberOfColumns(); ++k)
   {
     SQLVariant* var = m_query.GetColumn(k);
-    SWORD type = var->GetDataType();
+    SWORD type = (SWORD)var->GetDataType();
 
     if(type == SQL_C_BINARY)
     {
@@ -1180,7 +1175,7 @@ COEditorView::UpdateCondition(int row,CString column)
     {
       // Oeps
       CString error;
-      error.Format(_T("Cannot update. The field \"%s\" belongs to the primary key \"%s\"!"),column,m_primaryName);
+      error.Format(_T("Cannot update. The field \"%s\" belongs to the primary key \"%s\"!"),column.GetString(),m_primaryName.GetString());
       AfxMessageBox(error);
       return _T("");
     }
@@ -1193,10 +1188,10 @@ COEditorView::UpdateCondition(int row,CString column)
     condition += _T(" = ");
     if(!info->m_queryPos)
     {
-      for(int xx=1; xx < m_gridView->GetColumnCount(); ++xx)
+      for(xx=1; xx < m_gridView->GetColumnCount(); ++xx)
       {
-        CString column = m_gridView->GetItemText(0,xx);
-        if(column.CompareNoCase(info->m_colName)==0)
+        CString gcolumn = m_gridView->GetItemText(0,xx);
+        if(gcolumn.CompareNoCase(info->m_colName)==0)
         {
           info->m_queryPos = xx;
           break;
@@ -1207,7 +1202,7 @@ COEditorView::UpdateCondition(int row,CString column)
     if(xx == 0)
     {
       CString error;
-      error.Format(_T("Cannot update, field \"%s\" of primary key \"%s\" is missing from your query!"),info->m_colName,m_primaryName);
+      error.Format(_T("Cannot update, field \"%s\" of primary key \"%s\" is missing from your query!"),info->m_colName.GetString(),m_primaryName.GetString());
       AfxMessageBox(error);
       return _T("");
     }
@@ -1217,7 +1212,7 @@ COEditorView::UpdateCondition(int row,CString column)
     {
       return _T("");
     }
-    SWORD type = var->GetDataType();
+    SWORD type = (SWORD) var->GetDataType();
     if(type == SQL_C_CHAR)
     {
       text.Replace(_T("\'"),_T("\'\'"));
@@ -1555,7 +1550,7 @@ COEditorView::ScriptCommandIf(int p_line,CString command)
     VarMap::iterator it = varMap.find(numVar);
     if(it != varMap.end())
     {
-      SQLVariant* var = it->second;
+      SQLVariant* mvar = it->second;
       CString operatorText;
 
       command.Trim();
@@ -1568,7 +1563,7 @@ COEditorView::ScriptCommandIf(int p_line,CString command)
         command.TrimRight('\'');
 
         XString value;
-		    var->GetAsString(value);
+		    mvar->GetAsString(value);
         switch(oper)
         {
           case 1: m_scriptCompare = (value.Compare(command) != 0); break;
@@ -1836,7 +1831,7 @@ COEditorView::ScriptCommandRepeat(int p_line,CString p_tail)
 }
 
 bool
-COEditorView::ScriptCommandExit(int p_line, CString p_tail)
+COEditorView::ScriptCommandExit(int /*p_line*/, CString /*p_tail*/)
 {
   if(m_scriptOutput && m_scriptOutput->GetIsOpen())
   {
@@ -1849,7 +1844,7 @@ COEditorView::ScriptCommandExit(int p_line, CString p_tail)
 }
 
 bool
-COEditorView::ScriptCommandEndRepeat(int p_line,CString p_tail)
+COEditorView::ScriptCommandEndRepeat(int /*p_line*/,CString /*p_tail*/)
 {
   // NOOP?
 //   m_interval = 0;
