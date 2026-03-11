@@ -1,1265 +1,1028 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-
-<html>
-<head>
-    <title>ReleaseNotes</title>
-    <meta content="text/html; charset=us-ascii" http-equiv="Content-Type">
-    <meta name="GENERATOR" content="AuthorDocumentation">
-    <link rel="Stylesheet" type="text/css" href="default.css">
-</head>
-
-<body>
-    <h3>Releasenotes 3.6.1</h3>
-    <p>Small fixes for the "ODBC Report" for a RDBMS datasource. Some strings where missing, due to the ANSI to Unicode conversion.</p>
-    <p>Better SQLMigrate path from Oracle to PostgreSQL.</p>
-    <p>Various small bugfixes, found by the strict compiling under /W4/WX settings.</p>
-
-    <h3>Releasenotes 3.6.0</h3>
-
-    <p>Upgraded to the newwest versions of the libraries (SQLComponents, BaseLibrary) that are no longer using the MFC-library
-    from Microsoft. By using ISO std::string makes the program more stable and faster.</p>
-
-    <p>Dropped the suport of 32-Bits versions. Only 64-Bits versions are now released. This is in line with the general trend
-    of software development, where 64-Bits is the standard and 32-Bits is becoming obsolete.</p>
-
-    <p>Fixed a bug in the parsing of the ODBC SQL to fix the parsing of double quoted strings This was specially for the usage
-    of the "ODBC Text driver" in order to be able to do a: "SELECT * FROM "textfile.txt" or from a "*.csv" file. This is now
-    working again.</p>
-
-    <p>DEPRECATION WARNING: This will also be the last version of the ODBCQuerytool that supports the ANSI/MBCS coding. The
-    next version will soly be Unicode 16. The ANSI/MBCS coding is becoming obsolete and the Unicode 16 version is more in line
-    with internationalization and the general trend of software development</p>
-
-    <h3>Releasenotes 3.5.6</h3>
-
-    <p>Discovery of functions in Firebird 4 and 5 work again.</p>
-
-    <p>Exporting and importing of views with SQLMigrate now honor the correct column names if they differ from the column names
-    in the select.</p>
-
-    <h3>Releasenotes 3.5.5</h3>
-
-    <p>Reworked the SQLMigrate application to be (again) able to convert an Oracle database to Firebird.</p>
-
-    <p>Added a 'Slow datapump' method to the SQLMigrate program for those drivers that cannot do the tight SQLExecute loop
-    multiple times (Firebird).</p>
-
-    <p>Added a 'Save' button in SQLMigrate to save the settings before running.</p>
-
-    <h3>Releasenotes 3.5.4</h3>
-
-    <p>The return type variable in the scripting documentation has been mis-named 'RESULT', instead of 'RETURN'. In this case,
-    the documentation has been updated to reflect the correct state of the program</p>
-
-    <p>NEW: The discovered user datatypes are now displayed in the ODBC object tree, under a new node "UserTypes". There are in
-    total three different types of user types:</p>
-
-    <ul>
-        <li>Enumerator of values</li>
-
-        <li>Domein type (datatype + constraints on that datatype)</li>
-
-        <li>Compound type: a number of columns and datatypes</li>
-    </ul>
-
-    <p>The user types have been implemented for the following RDBMS types: Firebird, Oracle, PostgreSQL and MS-SQLServer</p>
-
-    <h3>Releasenotes 3.5.3</h3>
-
-    <p>When an external editor did change one of the files we are working on, the Querytool prompts whether we want to reload
-    this page. This question had to be answered three times. This redundancy has been eliminated.</p>
-
-    <p>Fix for navigating to the last lines in the query output view. When scrolling by pulling the vertical scroll bars with
-    the mouse, some of the last lines in the grid where not accessible. This is fixed by testing for the 'last page' of
-    results.</p>
-
-    <p>The scripting statement ":if" has been expanded to be able to skip the next SQL statement, so that the script can decide
-    wheter or not to execute it. See the example in the help page.</p>
-
-    <h3>Releasenotes 3.5.2</h3>
-
-    <p>Fixes for the MS-Access Jet databaase engine. Discovery of table and columns was broken</p>
-
-    <p>Fixes for opnening a extra line in the editor by going a line down. Inserting of spaces before the text was essentially
-    broken. This makes editting queries a lot better experience.</p>
-
-    <p>Fixes for table discovery of a named table in Firebird.</p>
-
-    <h3>Releasenotes 3.5.1</h3>
-
-    <p>Various fixes for the discovery of databases with quoted identifiers. (Firebird, MariaDB, MySQL, Oracle, SQL-Server,
-    PostgreSQL). For most ODBC drivers only the SQLTables and SQLColumns work correctly. Other functions such as the discovery
-    of SQLPrimaryKeys, SQLForeignKeys, SQLStatistics, SQLProcedures do not work for case senstive identifiers.</p>
-
-    <p>Also various fixes for the Info tree, so that we can now see the compelete view, trigger, function and stored procedure
-    source.</p>
-
-    <h3>Releasenotes 3.5.0</h3>
-
-    <p>Quoted identifiers have been added to the system. OpenODBCQuerytool now understands the identifiers (tablenames,
-    viewnames, columns, indexes and such) that are stored in mixed case format. So "FullName" and "Fullname" are different
-    identifiers.</p>
-
-    <p>As a standard rule, all identifiers in one (1) case are understood to be non-quoted identifiers. These will not be
-    quoted, and standard nameing rules apply.</p>
-
-    <p>Per supported database platform the naming conventions are applied, beginning with Firebird. Stay tuned for next service
-    packs for other RDBMS'es that have case sensitive catalogs. By default lMS-SQLServer and PostgreSQL can handel mixed cases.
-    These work now out-of-the-box. Orace, Informix, MySQL and MariaDB need extra work in their respective InfoDB classes.</p>
-
-    <h3>Releasenotes 3.4.5</h3>
-
-    <p>Fix for querying decimal number fields after a CLOB/BLOB column</p>
-
-    <p>Performance fix for retrieving columns after the last bound column</p>
-
-    <p>Unicode and SQLDate fixes</p>
-
-    <p>Fix for Firbird databases in getting procedures and procedure-parameters</p>
-
-    <p>Fix for PostgreSQL databases in getting procedures and procedure-parameters</p>
-
-    <p>For PostgreSQL databases it is now also possible to retrieve the procedure/function source text</p>
-
-    <h3>Releasenotes 3.4.4</h3>
-
-    <p>Support for procedures and functions wrapped in packages in the Oracle database. ODBC Discovery now can extract
-    information, sourcecode and parameters for these procedures and functions</p>
-
-    <p>Bugfix for discovery of procedures in the Firebird database</p>
-
-    <p>A variable can now be assigned the value of another variable</p>
-
-    <p>Added a build instructions manual</p>
-
-    <p>Fixes for the bitmaps in the installers</p>
-
-    <p>Minimal ms-access database for testing</p>
-
-    <h3>Releasenotes 3.4.3</h3>
-
-    <p>The scripting :if command now has multiple operators: '=', '&lt;&gt;', '&lt;', '&gt;', '&lt;=', '&gt;='</p>
-
-    <p>The value of a variable can now be printed in the :print command to the output file.</p>
-
-    <p>A variable can be assigned the value of another variable with ":variable&lt;n&gt; = variable&lt;x&gt;;". Please not that
-    this will only work, if the two variables have the same datatype!</p>
-
-    <p>Fixed a bug in the variables dialog (See menu: Script/Variables)</p>
-
-    <h3>Releasenotes 3.4.2</h3>
-
-    <p>Updated the libraries to the latest version. After a half year of testing: fixing a lot of small Unicode bugs</p>
-
-    <p>Added the 'mustard' (yelow) and 'dark' themes</p>
-
-    <p>Fixed a bug in the object-discovery of the Firebird drivers. Columns of tables and procedure arguments are working
-    again</p>
-
-    <p>Fixed a bug in the installer. Check on 'not-yet-installed' added</p>
-
-    <h3>Releasenotes 3.4.1</h3>
-
-    <p>Fixed a bug getting the database "Ping" from Firebird. Also fixes a crash on that database after a few minutes.</p>
-
-    <h3>Releasenotes 3.4.0</h3>
-
-    <p>This version is dedicated to the conversion to Unicode 16. The Unicode versions are still in early development stages.
-    For production environments you are still encouraged to choose for the (old fashioned) ANSI/MBCS coding version.</p>
-
-    <p>You can make a choise from the following set of installers:</p>
-
-    <ul>
-        <li>32 Bits ANSI/MBCS coding</li>
-
-        <li>32 Bits Unicode version</li>
-
-        <li>64 Bits ANSI/MBCS coding</li>
-
-        <li>64 Bits Unicode version</li>
-    </ul>
-
-    <h3>Releasenotes 3.3.1</h3>
-
-    <p>It is now possible to override the character set from the database by using one of two methods:</p>
-
-    <ul>
-        <li>Reading the default character set from a system table (e.g. Firebird);</li>
-
-        <li>Choosing a character set directly from a list.</li>
-    </ul>
-
-    <p>&nbsp;</p>
-
-    <p>You can find this setting by navigating to the 'Text' menu, and then 'Permanent settings' and then to the 'SQL' tab.
-    There you will find the field 'Charset handling'. When choosing the third option ('Use charset translation') the combobox
-    for 'character set' will become active and you can choose a character set.</p>
-
-    <p>Most notabely you can use this setting for RDBMS types that are not directly supported such as for instance a 'SAP-Hana'
-    database. Or for database types where the ODBC driver does not correctly hands over the character buffer in UTF-16 form to
-    the MS-Windows operating system. Such as the Firebird ODBC driver 2.x</p>
-
-    <p><b>NOTE:</b>Do <u>NOT</u> forget to reset this general setting when connecting to a different database that does not
-    adhere correctly to the ODBC standard! As it will bite you as it did me!! :-(</p>
-
-    <h3>Releasenotes 3.3.0</h3>
-
-    <p>In this release the free 'odbc-connection-string' feature is implemented (at last). Connections can have the combination
-    of "datasource" / "user" / "password". Or a free connection string. In the latter case, only the 'datasource' name is
-    stored for the connection.</p>
-
-    <p>Optionally you can leave out the user name and/or the password name if a datasource does not require these for security
-    reasons. A MS-Access database or the MS-Excel ODBC driver are examples of these.</p>
-
-    <p>There is a new button "Connection string" on the connection dialog, or you can use the 'Details' button to fill in a
-    connection string to your liking.</p>
-
-    <h3>Releasenotes 3.2.4</h3>
-
-    <p>At-Exec data at the end of a SELECT, or no NUMERIC columns</p>
-
-    <h3>Releasenotes 3.2.3</h3>
-
-    <p>Fix for login dialog and the "production / development" switch</p>
-
-    <p>QueryRewriter no has knowledge of the 'UPDATE STATISTICS' statement</p>
-
-    <h3>Releasenotes 3.2.2</h3>
-
-    <p>Fix for decimals in NUMERIC/DECIMAL datatypes. Precision and scale are recalculated before syncing with the
-    database.</p>
-
-    <p>Fix for reading stored-procedures from MS SQL-Server databases.</p>
-
-    <p>Please note that the SQLMigrate tool has been removed from the SQLComponents library and now officially exists within
-    this project.</p>
-
-    <h3>Releasenotes 3.2.1</h3>
-
-    <p>Fix for removing old and stale settings from the roaming profile directory</p>
-
-    <h3>Releasenotes 3.2.0</h3>
-
-    <p>Adding in this release:</p>
-
-    <ul>
-        <li>SQLMigrate tool to migrate between RDBMS vendors</li>
-
-        <li>QueryReWrite tool to make queries versatile for more than 1 vendor</li>
-
-        <li>Upgrades of all major libaries (BaseLibrary, SQLComponents, StyleFramework)</li>
-
-        <li>Smaller improvements (SQL_NTS option for running queries)</li>
-    </ul>
-
-    <h3>Releasenotes 3.1.0</h3>
-
-    <p>Added toasts when (de-)populating the object tree of the QueryTool</p>
-
-    <p>Added the SQLMigrate program from the SQLComponents to the toolsset. The program can be reached through the new 'Tools'
-    submenu. This program makes it possible to migrate complete database sets from one database to another, even if it is of a
-    different vendor making. Real life situations that has been tested include conversions from the following:</p>
-
-    <ul>
-        <li>Informix -&gt; Oracle</li>
-
-        <li>Informix -&gt; PostgreSQL</li>
-
-        <li>Informix -&gt; Firebird</li>
-
-        <li>Oracle -&gt; SQL-Server</li>
-
-        <li>Oracle -&gt; MySQL &amp; MariaDB</li>
-
-        <li>SQL-Server -&gt; Oracle</li>
-    </ul>
-
-    <p>&nbsp;</p>
-
-    <p>Added the QueryReWriter program. Can be configured to translate SQL Queries from on RDBMS to another. Use the config tab
-    to set your favourite setup. The program can be reached through the new 'Tools' submenu.</p>
-
-    <h3>Releasenotes 3.0.8</h3>
-
-    <p>Various fixes for discovery of views, stored procedures in SQL-Server</p>
-
-    <p>Better filter combo box above the objects tree plus toasts</p>
-
-    <h3>Releasenotes 3.0.7</h3>
-
-    <p>Fixed discovery of stored-procedures, sql-text and parameters for MS SQL-Server</p>
-
-    <p>Added discovery of global/local temporary tables</p>
-
-    <h3>Releasenotes 3.0.6</h3>
-
-    <p>Fixed problem with the "Table DDL" command. Table create statements are generated again.</p>
-
-    <p>Fixed the problem with the F10 key (run current SQL command line). The program is now prevented from entering the
-    'Select main menu' state, after the pressing of this key. If you wish to use the main menu from the keyboard, use a single
-    ALT key to go there.</p>
-
-    <h3>Releasenotes 3.0.5</h3>
-
-    <p>Fixed a bug when changing the default font in the settings when installed in "C:\Progam Files\Edo" this is the default
-    location, so a lot of users will have this settup. The crash derived from the&nbsp; fact that there where no update rigths
-    on the settings files. ODBCQueryTool now makes a copy of the setup files to the roaming profile of the user and afterwards
-    works from this set of setting files. This also fixes the crash.</p>
-
-    <p>Fixes for the saving of a changed text file when closing the application. A crash in the dialog that asks for the fact
-    that the users wishes to save her/his work is solved.</p>
-
-    <p>Fixed unwanted/unneeded message in the installer that same version is already installed</p>
-
-    <p>Updates from support libraries to the latest versions (SQLComponents, StyleFramework, BaseLibrary)</p>
-
-    <h3>Releasenotes 3.0.4</h3>
-
-    <p>Added the ":exit;" script command</p>
-
-    <h3>Releasenotes 3.0.3</h3>
-
-    <p>Fixed a bug when setting a new font on the SQL results grid. Change the font and open a new document view to see the
-    result.</p>
-
-    <p>Dropped support for 32-Bits version. Only 64-Bits version now released</p>
-
-    <h3>Releasenotes 3.0.2</h3>
-
-    <p>Added a PayPal donate button in the help menu and on every 25th application start.</p>
-
-    <h3>Releasenotes 3.0.1</h3>
-
-    <p>Fixed a bug in the login dialog, when defining a new datasource connection.</p>
-
-    <h2>ALL NEW VERSION 3.0.0</h2>
-
-    <p>Version 3 is a complete rewrite of the main program frame. Instead of the WorkBook frame of the open editor, the
-    re-newed MFC framework is used.</p>
-
-    <h3>Releasenotes 2.5.1</h3>
-
-    <p>Fixed various bugs in the handling of the MariaDB database in Oracle mode. Prefer to turn OFF the "Strict ODBC" handling
-    in the general SQL settings for this database type, as the replacement SQL's work better for this database</p>
-
-    <p>Columns and other attributes of tables in other schema's can be discovered than just the currently active database
-    schema.</p>
-
-    <p>All database types are tested and some minor bugs in the handling of 'text' and 'longtext' columns have been fixed.</p>
-
-    <h3>Releasenotes 2.5.0</h3>
-
-    <p>Fixed a bug in the saving of the permanent file settings causing the application to crash after changing the file
-    settings (e.g. tabs and space inserts). See: Menu / Text / File settings &amp; information</p>
-
-    <p>Fixed a bug in the parameter binding of a query with the ":variable&lt;n&gt;" settings for a "?" binding in a query. See
-    the file "script_syntax.txt" for more details</p>
-
-    <p>Fixed a bug in the ":select on" command of tahe scripting syntax columnnames and row values are now correctly written to
-    the script output file,&nbsp;provided that you have used the ":file" command previously. See the file "script_syntax.txt"
-    for more details</p>
-
-    <h3>Releasenotes 2.4.0</h3>
-
-    <p>The source code of the SQLComponents are now replaced by a deployment ZIP file&nbsp;in the root directory of the
-    project. The ZIP contains the include directory&nbsp;of that component and the four library files.<br>
-    For a full explanation, see: <a href=
-    "https://github.com/edwig/SQLComponents">https://github.com/edwig/SQLComponents</a>.<br></p>
-
-    <p>Various discovery methods for the info tree have been improved in speed for the Oracle database. The methods are:<br>
-    &nbsp; - SQLColumns&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt; Discovery of all columns
-    of a table<br>
-    &nbsp; - SQLStatistics&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt; Discovery of all indices of a
-    table<br>
-    &nbsp; - SQLTablePrivileges&nbsp;&nbsp; -&gt; Discovery of all table privileges<br>
-    &nbsp; - SQLColumnPrivileges -&gt; Discovery of all column privileges (NEW !)<br></p>
-
-    <p>There is a new setting. See menu: "Text / Permanent settings / SQL Settings". A new checkbox is added "Prefer ODBC
-    Meta-SQL". These are the settings:<br>
-    off : If a meta-sql is present in SQLComponents, that one is used,&nbsp;otherwise the ODBC discovery is used;<br>
-    on&nbsp;: The ODBC discovery routines are always used.<br>
-    &nbsp;&nbsp;<br>
-    So now it is possible to switch between the on-board SQL meta queries or the&nbsp;ones provided by the standard ODBC driver
-    (even if they are slower an more incorrect). However: it is advisable to <strong>LEAVE the option in the OFF
-    position</strong> for performance sake.</p>
-
-    <p>Support for "MariaDB" (the fork of MySQL) has been added.</p>
-
-    <h3>Releasenotes 2.3.3</h3>
-
-    <p>Fixed a bug in the startup cycle on the first discovery queries. It turned out that there where a few tables for in
-    there that not all users have rights on to see (e.g. Oracle: "dba_db_links"). Similar bugs for Informix, Firebird,
-    PostgreSQL and SQLServer have been fixed.</p>
-
-    <p>Errors in SQL now turn up always with the erring SQL statement in them, so we can always see what went wrong.</p>
-
-    <h3>Releasenotes 2.3.2</h3>
-
-    <p>More fixes for exception handling from the integration of the new SQLComponents</p>
-
-    <p>Upgraded to Visual Studio 2019 and the latest Windows 10 SDK and standard libraries.</p>
-
-    <h3>Releasenotes 2.3.1</h3>
-
-    <p>Fixed an exception handling bug in the integration of the new SQLComponents into the ODBCQueryTool.</p>
-
-    <h3>Releasenotes 2.3.0</h3>
-
-    <p>Fixed performance bug in starting of Oracle 12 database. Knocked of 6 seconds of each login for meta info of tables and
-    catalogs.</p>
-
-    <p>Oracle databases now also display all linked catalogs in the driver page</p>
-
-    <p>Upgraded to the latest MS-Windows 10 SDK build (17763)</p>
-
-    <h3>Releasenotes 2.2.2</h3>
-
-    <p>The current version is now compileable in Visual Studio 2017 (fixed std::string throws).</p>
-
-    <p>As a new feature, you can now right-click on a table or view in the table-tree. You will find two new options here:</p>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas"><font size="2" face="Consolas"><font size="2" face=
-        "Consolas"><font face="Verdana">SELECT the first 100 rows of a table</font></font></font></font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas"><font size="2" face="Consolas"><font size="2" face=
-        "Consolas"><font face="Verdana">Create a DDL script for the table or view</font></font></font></font></font></li>
-    </ul>
-
-    <p>&nbsp;</p>
-
-    <p><font size="2" face="Consolas"><font size="2" face="Consolas"><font size="2" face="Consolas"><font size="2" face=
-    "Consolas">Also a few bugs have been fixed:</font></font></font></font></p>
-
-    <div style="MARGIN-LEFT: 2em">
-        <ol>
-            <li><font size="2" face="Consolas"><font size="2" face="Consolas"><font size="2" face="Consolas"><font size="2"
-            face="Consolas"><font face="Verdana">Fixed 'no error on F5 after end-of-file'
-            bug</font></font></font></font></font></li>
-
-            <li><font size="2" face="Consolas"><font size="2" face="Consolas"><font size="2" face="Consolas"><font size="2"
-            face="Consolas"><font face="Verdana">Fixed CTRL-F12 file error after
-            installation</font></font></font></font></font></li>
-        </ol>
-    </div>
-
-    <p>&nbsp;</p>
-
-    <h3>Releasenotes 2.2.1</h3>
-
-    <p><font size="2" face="Consolas"><font size="2" face="Consolas">It is now possible to login on a database without a
-    username/password combination. This is especially helpfull for a database without such requirements, e.g. MS-Access
-    or&nbsp; MS-Excel spreadsheet. But you will be prompted if you are sure at the creation of the connection in the connection
-    dialog.</font></font></p>
-
-    <h3>Releasenotes 2.2.0</h3>
-
-    <p><font size="2" face="Consolas"><font size="2" face="Consolas">This is a bug release as a result of testing on the Oracle
-    12.2c database</font></font></p>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Synonyms minimum and maximum fields have been changed
-        to 'double' instead of a 'long' because of the catalog changes in Oracle.</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">The performance of retrieving stored procedures and
-        functions has been improved. This was neccesary due to the changes in the Oracle catalog where the "all_source" did not
-        perform any more. All Oracle catalog tables are now changed from the 'all_*' tot the 'dba_*'
-        variant.</font></font></li>
-    </ul>
-
-    <h3>Releasenotes version 2.1.0</h3>
-
-    <p><font size="2" face="Consolas"><font size="2" face="Consolas">In this release much work has been done for the object
-    tree. The object tree is now fully functional with the folllowing objects</font></font></p>
-
-    <ul>
-        <li>
-            <font size="2" face="Consolas"><font size="2" face="Consolas">Tables</font></font>
-
-            <ul>
-                <li><font size="2" face="Consolas"><font size="2" face="Consolas">Table columns</font></font></li>
-
-                <li><font size="2" face="Consolas"><font size="2" face="Consolas">Primary and foreign keys</font></font></li>
-
-                <li><font size="2" face="Consolas"><font size="2" face="Consolas">Indices and table
-                statistics</font></font></li>
-
-                <li><font size="2" face="Consolas"><font size="2" face="Consolas">Special (unique) columns not visible as table
-                columns</font></font></li>
-
-                <li><font size="2" face="Consolas"><font size="2" face="Consolas">Other table referencing this
-                table</font></font></li>
-
-                <li><font size="2" face="Consolas"><font size="2" face="Consolas">Triggers for the table</font></font></li>
-
-                <li><font size="2" face="Consolas"><font size="2" face="Consolas">Sequences for the table</font></font></li>
-
-                <li><font size="2" face="Consolas"><font size="2" face="Consolas">Granted rights on the
-                table</font></font></li>
-            </ul>
-        </li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Views</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Catalog tables</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Synonyms</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Sequences</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Triggers</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Stored procedures</font></font></li>
-    </ul>
-
-    <p>&nbsp;</p>
-
-    <p><font size="2" face="Consolas"><font size="2" face="Consolas">Sequences, triggers and catalog tables are objects that
-    are not directly supported by ODBC. For these objects the tree will only fully function:</font></font></p>
-
-    <div style="MARGIN-LEFT: 2em">
-        <ol>
-            <li><font size="2" face="Consolas"><font size="2" face="Consolas">Firebird 3.x and higher</font></font></li>
-
-            <li><font size="2" face="Consolas"><font size="2" face="Consolas">PostgreSQL 9.x and higher</font></font></li>
-
-            <li><font size="2" face="Consolas"><font size="2" face="Consolas">MySQL 5.7 and higher</font></font></li>
-
-            <li><font size="2" face="Consolas"><font size="2" face="Consolas">Oracle 11.2 and higher</font></font></li>
-
-            <li><font size="2" face="Consolas"><font size="2" face="Consolas">IBM-Informix 12.x and higher</font></font></li>
-        </ol>
-    </div>
-
-    <p>&nbsp;</p>
-
-    <p><font size="2" face="Consolas"><font size="2" face="Consolas">For triggers and stored procedures: you can see the full
-    source code of the persistent-stored-module by double clicking on the 'S'ourcecode node under the trigger or stored
-    procedure.</font></font></p>
-
-    <h1><font size="2" face="Consolas"><font size="2" face="Consolas">Releasenotes version 2.0.0</font></font></h1>
-
-    <p><font size="2" face="Consolas"><font size="2" face="Consolas">This is the 10th year anniversary edition of the Open ODBC
-    Querytool!<br>
-    The following have been changed / extended:</font></font></p>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">The object tree was previously a tree with just one
-        table at the most.&nbsp;It is now a tree with tables, views, catalogs, and procedures you can expand any object at
-        will, the control will then try to&nbsp;read in extra information for you. Thusly&nbsp;reading the performance hit over
-        more than just one action.&nbsp;</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">See for the new description of the tree functionality
-        the rewritten page <a href="Querying/FindingTables.html">Finding tables</a></font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">The implmentation info tree (odbc options) has been
-        moved from the&nbsp;SQLComponents module to the ODBCQuerytool module (no functional changes).</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">The installer has been moved to the standard open
-        source NSIS installer</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">The SQLComponents library has been upgraded to
-        version 1.4.2</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Repaired the number format export in the XLS Excel
-        export.</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 1.5.1 (Build: 194)</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Broken transaction begin/commit/rollback
-        fixed</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 1.5.0 (Build: 192)</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Updated the Database directory to versie 1.3 of the
-        SQLComponents module on&nbsp;<a href=
-        "https://github.com/edwig/SQLComponents">https://github.com/edwig/SQLComponents</a></font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">It is now possible to correctly retrieve and update
-        DECIMAL/NUMBER fields&nbsp;in database types like MS-SQLServer. This was done by adding the bcd (Binary Coded Decimal)
-        data type to the library and effectivly converting between bcd's and SQL_NUMERIC_STRUCT.</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Fixed a bug in the spreadsheet export, where the
-        export could crash on&nbsp;an empty 33th row in the output grid. (In effect after each 32 rows)</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Extended the on-line help file with the following
-        subjects:<br>
-        &nbsp; - Finding a table and tableinfo<br>
-        &nbsp; - Scripting with SQL</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 1.4.4 (Build: 185)<br></font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Repaired the representation of the ODBC datatypes, as
-        reported by the driver<br>
-        The following where incorrect and repaired:</font></font></li>
-    </ul>
-
-    <p>&nbsp;</p>
-
-    <p><font size="2" face="Consolas"><font size="2" face="Consolas">&nbsp; SQLSMALLINT
-    m_money;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Money
-    (FIXED_PRECISION_SCALE) (TRUE,FALSE)<br>
-    &nbsp; SQLSMALLINT m_autoincrement;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Auto incrementable (TRUE,FALSE,NULL for
-    non-numeric)<br>
-    &nbsp; CString&nbsp;&nbsp;&nbsp;&nbsp; m_local_type_name;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Local type
-    name for display on UI's (not in DDL!)<br>
-    &nbsp; SQLSMALLINT m_minimum_scale;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;// Minimum scale of datatype. E.g. in seconds of
-    the TIMESTAMP<br>
-    &nbsp; SQLSMALLINT m_maximum_scale;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Maximum scale of datatype, otherwise use
-    column_size</font></font></p>
-
-    <p><font size="2" face="Consolas"><font size="2" face="Consolas">&nbsp;&nbsp;The following where added</font></font></p>
-
-    <p><font size="2" face="Consolas"><font size="2" face="Consolas">&nbsp; SQLSMALLINT
-    m_sqlDatatype;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Driver independent SQL datatype<br>
-    &nbsp; SQLSMALLINT m_sqlSubType;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // SQL subtype for TYPE_TIMESTAMP and
-    INTERVAL types<br>
-    &nbsp; SQLINTEGER&nbsp;
-    m_radix;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; //
-    Decimal radix (2,10 or NULL)<br>
-    &nbsp; SQLSMALLINT m_interval_precision; // Number of decimals in interval precision of leading type</font></font></p>
-
-    <p><font size="2" face="Consolas"><font size="2" face="Consolas">&nbsp; After this reparation, the ODBC types info tree
-    (left hand side) is now correct again.</font></font></p>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 1.4.3 (Build: 184)</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Fixed MARS: Multiple Active Record Sets.&nbsp;This is
-        a MS-SQLServer feature, needed to run more than one SQL statement, for instance a SQL Statement in an inner loop of
-        another recordset.&nbsp;This feature should be in the 'on' state BEFORE connecting to a database.</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 1.4.2 (Build: 183)</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Fixed parsing of SQL Found with F10/F11. The division
-        operator ('/')&nbsp;was mistaken for the end-of-the-statement marker. The ODBCQuerytool now can correctly parse SQL
-        scripts like:</font></font></li>
-    </ul>
-
-    <p><font size="2" face="Consolas"><font size="2" face="Consolas">&nbsp; SELECT (field_b - field_a) / field_c<br>
-    &nbsp;&nbsp;&nbsp; FROM table<br>
-    &nbsp; /<br>
-    &nbsp; SELECT (field_b - field_a) / field_c<br>
-    &nbsp;&nbsp;&nbsp; FROM table<br>
-    &nbsp; ;<br>
-    &nbsp; SELECT {fn DATE() } FROM dual<br>
-    &nbsp; /</font></font></p>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">As a result to this: ANY / marker at the first
-        position will be seen as an end-of-the-statement marker. So a 'real' calculation with the division&nbsp;operator must
-        not have the division operator in the first text column!&nbsp;Thanks to: Ibo Boekestijn, Manfred
-        Baumann.</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">NULL values are exported as '0' rather than an empty
-        string, whil exporting to an Excel spreadsheet. This is corrected. Numbers and dates are exported as empty strings when
-        NULL. Thanks to: Jerrad Pierce</font></font></li>
-    </ul><font size="2" face="Consolas"><font size="2" face="Consolas">Version 1.4.1 (Build: 182)</font></font>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Fixed a typo on the connection dialog "Safty" -&gt;
-        "Safety"</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Fixed a bug in the month of the date the connection
-        was saved. The month&nbsp;was off-by-one (januari = zero)</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Extended the functionality of the Excel spreadsheet
-        export.<br>
-        The images (OK and ERROR) are now being exported to Excel as:<br>
-        "0" on a green field -&gt; Means no error<br>
-        "1" on a red field&nbsp;&nbsp; &nbsp;-&gt; Means one error</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 1.4.0 (Build: 181)</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Added the possibility to send a bug report or a
-        feature request by email to the maintainers of the program.</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Fixed a bug in the connection dialog. The 'Test'
-        function was broken for all who use the standard 'OQT_SAVE_PASSWORD' setting to zero (No passwords saved). As the test
-        function uses the saved password's from the connection list.&nbsp;You can now type in a password above the 'Test'
-        button and use that as an override&nbsp;for the testing of the connection.&nbsp;Also fixed various bugs in the saving
-        of the password in the list, and changed the default deployment to 'SAVE_PASSWORD's so that everyone can again enjoy
-        the&nbsp;save connections, including passwords.</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">For paranoia organisations or persons, please
-        undefine 'OQT_SAVE_PASSWORD' in the following include header: 'OpenEditorApp.h' on line 41.</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Fixed a bug in the search-next / search-previous
-        functionality (F3 / SHIFT-F3). These functions where commented out, and not working, and sometimes threw errors or let
-        the whole application hang. The bugs are solved in this version.<br>
-        F3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -&gt; Find the next instance of the search string<br>
-        SHIFT-F3 -&gt; Finds the previous instance, but not if you are still on a found string!</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Updated the Database code to a higher version of the
-        SQLComponents module</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Source code ported to VisualStudio 2015.<br>
-        Various extra warnings point to better type conversions to be done.<br>
-        All code in the database module is updated for this version.<br>
-        Warnings in the Open-Editor disregarded for now: it's still working :-)</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Compiled against MS-Windows SDK 8.1<br>
-        Application tested against MDAC 2.8 for Windows 7.x, 8.x and Windows 10<br>
-        Alsoo tested on MS-Windows Server 2008 and 2012 platforms.<br>
-        Everything is working fine on these platforms.</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 1.3.0 (Build: 180)</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Added 'BasicExcel' code to the codebase to be able to
-        process&nbsp;spreadsheets in both reading and writing mode.</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Writing 'real' *.XLS files as an export from the data
-        grid. It's a replacement of the writing of the *.SYLK files.&nbsp;Writes headers in bold and background
-        colors.</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 1.2.1 (Build: 179)</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Fixed bugs in SQLPrimaryKey</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Fixed bugs in SQLForeignKey</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Fixed leaking of database cursors</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 1.2.0 (Build: 178)</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Port to Visual Studio 2013 (With MBCS option
-        pack!!)</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Higher stability of the SQL Query
-        results</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Support for the datatypes DATE, TIME,
-        TIMESTAMP</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Mutable SQLDataSet with autmatic
-        insert/update/delete</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">XML Export of the dataset -&gt; In order to be able
-        to export&nbsp;query results to XML. Can now be added to this program at last.</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Support for the following databases vendors:<br>
-        - Oracle&nbsp;<br>
-        - IBM Informix<br>
-        - Microsoft SQL-Server<br>
-        - Microsoft MS-Access<br>
-        - PostgreSQL<br>
-        - Firebird<br>
-        - Generic ODBC typed databases</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Plugin Database-part in directory "Database" in the
-        source tree</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">The database part of the program is now under the MIT
-        license</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 1.0.5&nbsp; (Build: 35)</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Resolved a issue for databases with fractions in the
-        second field of timestamp types. The fractions where not correctly calculated and&nbsp;concatenated to the
-        seconds-field without an intermediate '.' sign.&nbsp; All fractional parts are 1.000.000.000 part of a second (1
-        nanosecond)&nbsp;See the ODBC documentation from Microsoft for this.&nbsp;This means there is a another bug in the ODBC
-        driver from Oracle !!</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Port to Visual Studio 2010.</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 1.0.4. (Build: 34)</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Solution for some XP computers giving
-        streaming-errors at startup. Due to incorrect optimalisation settings in some source files in the project and a MSVCRT
-        dependency in the installer.</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">This is a servicepack for the retracted 1.0.3
-        version</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 1.0.3 (build: 33)</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Recurse to Windows Version 5.xx in
-        Stdafx.h&nbsp;because of support problems with Windows-XP (fonts and SHGetFolderPath) Tested on XP-Mode in 32 bits
-        mode, and works fine</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 1.0.2 (build: 32)</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">New routine to do the discovery of
-        %APPDATA%</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Fonts of connection dialog and query result grid can
-        be chosen. Misfits on some XP machines to fonts smaller than 4 px Make your choise at the menu "Text / Permanent
-        settings / Query setttings"</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 1.0.1 (build: 31)</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">use "#define OQT_SAVE_PASSWORD" to save passwords in
-        a build.</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Ini's with current connections will be saved
-        to&nbsp;<br>
-        "%APP_DATA%\EDO\OpenODBCQuerytool\ODBC_querytool.ini"<br>
-        Will work for Windows-XP / Vista / W7<br>
-        On Vista/W7 it will be saved in the roaming profile.</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Update on the helpfile. Slightly more documentation
-        :-)</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 1.0 (build: 30)</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Find Repaired for multilines</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Save-as feature crash after "CTRL-S" combination
-        fixed</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">SQL-Server features repaired. Querytool runs on 1
-        cursor only.</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Stable release after multi tests</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Stable release works for Oracle 9/10/11; IBM-Informix
-        9/11;&nbsp;SQL-Server 2005 and higher.</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">True 64Bits and 32Bits
-        implementations</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 0.78 (build: 29)</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Find&amp;Replace did crash in the find. Replace alsoo
-        didn't work as a&nbsp;result of the reworking in the regexp class. Both are fixed.</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Searching and replacing now works fine
-        again.</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 0.77 (build: 28)</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Fixed problem of empty query. If a query returns no
-        result, there was no header line in the output view pane. This is now solved. If a query returns no lines, the output
-        query view still shows the names of the queried fields.</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 0.76 (build: 27)</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Fixed problem in repeat script. Grids will no longer
-        grow, so measured times are linear to tested SQL commands.</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 0.75 (build: 26)</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">New feature: script elements to do performance
-        testing&nbsp;:repeat command to repeatedly perform the same SQL</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">New feature: command line /CONNECT feature. See
-        script_syntax.sql. Allows for scripts to run from the command line</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Fixed problem with DML under Informix 3.50 driver in
-        case of&nbsp;zero (0) affected rows in an insert/update/delete statement</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 0.74 (build: 25)</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Fixed problem in SQL-Server without MARS option.
-        Could not have more than one recordset open at any one time.</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Fixed problem with info discovery on combination of
-        databases. Now works fine for INFORMIX/ORACLE/MS-ACCESS/MS-SQLServer/Firebird/MySQL etc.</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 0.73 (Build: 24)</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Fixed alphanumeric sort of ODBC and RDBMS keywords in
-        the Info tree</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Saving of datasources and connections now works under
-        MS-Vista and also under non-local-adminstration accounts on Windows XP</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Weakly coded passwords are removed from the ini file
-        under production builds. Users must now always provide a password. C++ Programmers can re-enable this as a debug build
-        feature by defining the "OQT_SAVE_PASSWORD" macro in OpenEditorApp.h".&nbsp;But mind you: debug builds only. Not on
-        production builds!</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 0.72 (build: 23)</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Fixed: Object discovery did not work in MS-Access
-        (Jet engine 4.x) object names cannot be passed as a empty string to the ODBC driver but must be passed as NULL pointers
-        if SQL_ATTR_METADATA_ID does not work</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">New feature: Port and test to
-        MS-Vista.</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Added WideMessageBox for message-box redemption under
-        Vista!</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 0.71 (build: 22)</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">New feature to test SQLGetData for incoming piecewise
-        interface of large SQL_C_CHAR and SQL_C_BINARY fields</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 0.70 (build: 21)</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Fixed bug in freeing ODBC statement
-        handles</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Fixed bug in HDBC error handling</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Fixed bug in more than 32 digits fraction in
-        SQL_NUMERIC</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 0.69 (build: 20)</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Fixed memory bugs in HistoryLines</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Added script support for testing of ODBC drivers. See
-        "script_syntax.txt"</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Added the SQLVariant class to cache values from an
-        ODBC driver</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Rewrote the "Recordset.cpp" to use SQLVariant for
-        columns</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Fixed serveral minor bugs in DBInfo in the use of
-        SQLGetInfo</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Fixed recordset to use the SQLParamData/SQLPutData
-        for the SQL_AT_EXEC piecewise inserts.</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 0.68</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Fixed diverse SQL info functions (SQLTables
-        etc)</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 0.67</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Fixed the parsing of strings in SQL statements "" ''
-        -&gt; embedded quotes within strings, especially when spread over more than one (1) line. Such as in:<br>
-        INSERT INTO table1 values (23,'this is a long ''string with embedded''<br>
-        quotes in it<br>
-        ');</font></font></li>
-    </ul><font size="2" face="Consolas"><font size="2" face="Consolas">Version 0.66</font></font>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Changed workbookbar under query tekst windows<br>
-        -&gt; Bar replaced to the top of the documents<br>
-        -&gt; Bar is a now TabControl</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Fixed the bug that an update in the grid of the
-        primary key&nbsp;did not warn the user that it's illegal!! The user is not only warned, but the original value is
-        restored alsoo.</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 0.65</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Changed ODBC driver report to a full print of the
-        ODBC Info tree so the report looks the same as on screen. The tree-level is printed as 4 spaces instead of the
-        treeview's lines.</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 0.64</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Added: It is now posssible to edit the results grid
-        of a query if all parts of the primary key, or in the absence of a primary key of the first found unique key are
-        present, editted results wil be updated to the underlying table. This feature is alsoo nown as "The Marco Brattinga
-        option"</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">&nbsp;After each successful edit the name of the key
-        is reflected in the message zone.</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 0.63</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Added a text report on ODBC capabilities. Accesible
-        via the main menu under "Session / ODBC Report" after a successful login. (CTRL-Q, R)</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Added text report output from grid (extra button on
-        query-grid)</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Added: Meta types in the ODBC Info-tree under
-        'Database'.</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Added: Extra logon with details. See button "Detail"
-        at logon and&nbsp; the extra menu entry under 'Session / Session status"<br>
-        - Extra logon attributes ODBC standard specific<br>
-        - Extra logon attributes driver specific<br>
-        - ODBC tracing on/off<br>
-        - ODBC tracing file settings<br>
-        - ODBC Translation library and option<br>
-        - Transaction isolation<br>
-        - ODBC Cursor library<br>
-        - Quiet mode<br>
-        - Auto commit on/off<br>
-        - Dead-connection detection<br>
-        - Connection read-only settings<br>
-        - Metadata ID settings<br>
-        - Auto IPD for SQL Server<br>
-        - Network packet size<br>
-        - Connection timeout<br>
-        - Login timeout<br>
-        - Login via *.dsn file<br>
-        - Recording of succesful login via *.dsn file</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 0.62</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Help is on the way! A On-line CHM is beeing
-        written.</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Completed the SQLInfo tree. Added Type conversions /
-        All statement info. Take care: Some newer info (odbc 3.x) are unreliable on older databases&nbsp;(Informix/Oracle)
-        Obviously these databases can do grant/revoke but it&nbsp;is not reported!?</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Renamed the tab 'Table' to 'Object' because it alsoo
-        reports procedures and views</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Added 'Native SQL' command (F9) on a SQL statement
-        shows how the ODBC driver&nbsp;would translate '{' escape sequences to native database SQL. Alsoo on the main menu
-        under 'Script / Native SQL'.<br>
-        eg: "{fn LEFT (string,3)}" is translated "SUBSTR(string,1,3)" on Oracle,<br>
-        and "{fn RIGHT(string,3)}" is translated "SUBSTR(string, -3)"</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Added the capability to search for object types in
-        the object pane/tab syntax: "[&lt;Type&gt;:][&lt;Catalog&gt;.][&lt;Schema&gt;.][&lt;Table&gt;]"<br>
-        &lt;Type&gt; can be one of:<br>
-        - T : Search for a real table e.g: "T:persons"<br>
-        - V : Search for a real view&nbsp; e.g: "V:persons_with_contract"<br>
-        - C : Search for a catalog table : "C:syscolumns"<br>
-        - S : Search for a synonym&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : "S:persons_in_other_database"<br>
-        - A : Search for an alias&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : "A:persons_in_other_database"<br>
-        - A combination of the above&nbsp;&nbsp;&nbsp;&nbsp; : "TVS:clients"<br>
-        - nothing: searching for all types.<br>
-        &lt;Catalog&gt; can be one of:<br>
-        - A name of a catalog&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : "lin6rnd4.mdba.ibs_sc"<br>
-        - A search pattern&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :
-        "%.mdba.ibs_sc" (not supported on all databases)<br>
-        - nothing: Searching in the current catalog<br>
-        &lt;Schema&gt; can be one of<br>
-        - A name of an user or schema&nbsp;&nbsp;&nbsp; : "mdba.ibs_sc"<br>
-        - A search pattern&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; :
-        "%.ibs_sc"&nbsp; (not supported on all databases)<br>
-        - nothing: searching in the schema of the current logged in user in all schema's depending on the implementation of the
-        database driver.<br>
-        &lt;Table&gt; can be one of<br>
-        - A name of a table or view&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : "ibs_sc"<br>
-        - A search pattern&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : "mbs%"&nbsp;
-        (not supported on all databases)<br>
-        - ALL database must support the special search pattern "%"<br>
-        - A name of a procedure&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : "ibs_sc_ins_proc"<br>
-        - The special search pattern for ALL procedures "*"<br>
-        REMARK: Some databases allow more complex patterns like: "%.my%", meaning:&nbsp;all tables from all owners in the
-        database for which the names begins with 'my'. Databases allowing this are PostgreSQL and Firebird.</font></font></li>
-    </ul>
-
-    <p><font size="2" face="Consolas"><font size="2" face="Consolas">BEWARE: Although the ODBC standard states that drivers
-    must be able to search on table-types in a 'comma-separated way', this is mostly not the case. Most drivers can only search
-    on simple 'T'able and 'V'iew type only! Even though<br>
-    the returned capabilities indicate otherwise! (Oracle/Interbase/MSSQLServer)</font></font></p>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 0.61</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">bug 10: removed memory leak from display of datatypes
-        in PostgreSQL (duplicate names)</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">bug 11: Incorrect info (grant/revoke/drop)
-        corrected</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Improved datatype info</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Improved supported SQL info</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 0.60</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Implemented info on Procedures. Info for the
-        procedure and the procedure columns (parameters, output values, return values) are displayed in the object
-        tree</font></font></li>
-    </ul>
-
-    <p><font size="2" face="Consolas"><font size="2" face="Consolas">NB: This fails for some ODBC drivers.&nbsp;eg: Informix
-    does not support these functions, while SQLGetFunctions&nbsp;reports that it is supported.<br></font></font></p>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 0.59</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Added much more supported for ODBC tree and supported
-        features<br>
-        &nbsp; Namly info on<br>
-        &nbsp; - supported ODBC escape sequences and functions<br>
-        &nbsp; - supported create schema/table/view options<br>
-        &nbsp; - aggregate functions<br>
-        &nbsp; - outer join features<br>
-        &nbsp; - usage of the catalog naming methods</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Added status line info for long retreval of table
-        info</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Added object naming logic in the table discovery
-        window.&nbsp;End user can write something like "catalog.schema.table" and the application will use the ODBCGetInfo to
-        make a database specific qualifier. Informix =&gt; catalog:schema.table. racle&nbsp;=&gt; <a href=
-        "mailto:SCHEMA.TABLE@CATALOG">SCHEMA.TABLE@CATALOG</a></font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 0.58</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Added database naming method. For databases that do
-        not report their databasename correctly via the SQLGetInfo method, but by a rdbms specific method
-        (Oracle!)</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Added supported ODBC function calls in the ODBC
-        tree.<br>
-        - For the ODBC 1.x and 2.x support of SQLGetFunctions (array of 100 ints)<br>
-        - For the ODBC 3.x support of SQLGetFunctions (4000 bits)</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Added support for case-specific catalogs for
-        databases that do not correctly implement the SQL_ATTR_METADTA_ID method of SQLTables/SQLColumns etc. For these
-        databases (Firebird/InterBase) SQL_IDENTIFIER_CASE of SQLGetInfo is used to determine wheter the catalog stores in
-        Upper or Lower case. NB: There are two more methods (MIXED and SENSITIVE). If neither&nbsp;SQL_ATTR_METADATA_ID and
-        SQL_IDENTIFIER_CASE is supported to upper/lower than the extraction of metadata is a 'best guess' on basis of
-        user-input.</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 0.57</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Added a Table object-info window with ODBC info about
-        a table (Columns, Primary/Foreign keys, Columns, Indici, Referenced by other tables,&nbsp;special columns,
-        Statistics)</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Table can be queried by F12 from within a
-        script</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Added a file filter for the explorer tree. Filters
-        are extensions. e.g.: Fill in 'sql' and only *.sql files will be displayed in the tree</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 0.56</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">3: Fixed: Crash problem with empty 'last-login'
-        list</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">4: Fixed: Crash problem with scrolling in
-        'last-login' list</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">5: Fixed: Delete ODBC connection from connect list is
-        'strange' (needed refresh of list)</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">6: Fixed: Try to open a non-existing file must give
-        messagebox i.e. Exception thrown</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">7: Fixed: Bug in STL of
-        ConnectionDialog</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">8: Create a stored procedure does not work. This was
-        mainly because all text ran on one line it now parses all newlines correctly and preserves white
-        space.</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">9: Run ODBC SQL command from selected text does not
-        work. Selected text now has precedence over SQL text parsing. Works now alsoo in other database engines than Oracle
-        alone.</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">SQL Query terminator (default '/') on the properties
-        page 'Text / Permanent settings / SQL settings'</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">A query gets terminated with this terminator and then
-        executed.</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Added newer CLI conformance codes to "ODBC panel"
-        Oracle 8/9 now displays correctly!</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 0.55</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">2: Fixed: Script does not run beyond the fysical
-        screen!</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Statistics/Output cleaned on each run/run-next
-        cycle</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 0.54</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Max prefetch lines for grid on extra properties page
-        'Text / Permanent settings / SQL settings'</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 0.52</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">1: Fixed the ' Vincent' bug of an extra
-        space</font></font></li>
-    </ul>
-
-    <h3><font size="2" face="Consolas"><font size="2" face="Consolas">Version 0.50</font></font></h3>
-
-    <ul>
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Cloned the OpenEditor project</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Added ODBC database control</font></font></li>
-
-        <li><font size="2" face="Consolas"><font size="2" face="Consolas">Added everything needed for a query tool<br>
-        - Connection dialog<br>
-        - Connection toolbar<br>
-        - Chris Maunder Grid<br>
-        - Query result grid<br>
-        - Statistics result grid<br>
-        - Output results grid for batch processing<br>
-        - History results grid<br>
-        - Excel export<br>
-        - HTML export</font></font></li>
-    </ul>
-
-    <p>&nbsp;</p>
-</body>
-</html>
+<HTML><HEAD><TITLE>ReleaseNotes</TITLE>
+<META content="text/html; charset=us-ascii" http-equiv=Content-Type>
+<META name=GENERATOR content=AuthorDocumentation><LINK rel=Stylesheet 
+type=text/css href="default.css"></HEAD>
+<BODY>
+<H3>Releasenotes 3.6.1</H3>
+<P>Partly rewrite of the settings streams. This was done on behalf of reports of 
+corrupted settings after modifying some of them. The settings should be more 
+stable now. Please remove old (corrupted) settings files from the 
+"C:\USERS\<YOURACCOUNT>\AppData\Roaming\EDO\ODBCQueryTool" directory to 
+permanently get rid of this problem.</P>
+<P>Small fixes for the "ODBC Report" for a RDBMS datasource. Some strings where 
+missing, due to the ANSI to Unicode conversion.</P>
+<P>Better SQLMigrate path from Oracle to PostgreSQL.</P>
+<P>Various small bugfixes, found by the strict compiling under /W4/WX 
+settings.</P>
+<H3>Releasenotes 3.6.0</H3>
+<P>Upgraded to the newwest versions of the libraries (SQLComponents, 
+BaseLibrary) that are no longer using the MFC-library from Microsoft. By using 
+ISO std::string makes the program more stable and faster.</P>
+<P>Dropped the suport of 32-Bits versions. Only 64-Bits versions are now 
+released. This is in line with the general trend of software development, where 
+64-Bits is the standard and 32-Bits is becoming obsolete.</P>
+<P>Fixed a bug in the parsing of the ODBC SQL to fix the parsing of double 
+quoted strings This was specially for the usage of the "ODBC Text driver" in 
+order to be able to do a: "SELECT * FROM "textfile.txt" or from a "*.csv" file. 
+This is now working again.</P>
+<P>DEPRECATION WARNING: This will also be the last version of the ODBCQuerytool 
+that supports the ANSI/MBCS coding. The next version will soly be Unicode 16. 
+The ANSI/MBCS coding is becoming obsolete and the Unicode 16 version is more in 
+line with internationalization and the general trend of software development</P>
+<H3>Releasenotes 3.5.6</H3>
+<P>Discovery of functions in Firebird 4 and 5 work again.</P>
+<P>Exporting and importing of views with SQLMigrate now honor the correct column 
+names if they differ from the column names in the select.</P>
+<H3>Releasenotes 3.5.5</H3>
+<P>Reworked the SQLMigrate application to be (again) able to convert an Oracle 
+database to Firebird.</P>
+<P>Added a 'Slow datapump' method to the SQLMigrate program for those drivers 
+that cannot do the tight SQLExecute loop multiple times (Firebird).</P>
+<P>Added a 'Save' button in SQLMigrate to save the settings before running.</P>
+<H3>Releasenotes 3.5.4</H3>
+<P>The return type variable in the scripting documentation has been mis-named 
+'RESULT', instead of 'RETURN'. In this case, the documentation has been updated 
+to reflect the correct state of the program</P>
+<P>NEW: The discovered user datatypes are now displayed in the ODBC object tree, 
+under a new node "UserTypes". There are in total three different types of user 
+types:</P>
+<UL>
+  <LI>Enumerator of values 
+  <LI>Domein type (datatype + constraints on that datatype) 
+  <LI>Compound type: a number of columns and datatypes </LI></UL>
+<P>The user types have been implemented for the following RDBMS types: Firebird, 
+Oracle, PostgreSQL and MS-SQLServer</P>
+<H3>Releasenotes 3.5.3</H3>
+<P>When an external editor did change one of the files we are working on, the 
+Querytool prompts whether we want to reload this page. This question had to be 
+answered three times. This redundancy has been eliminated.</P>
+<P>Fix for navigating to the last lines in the query output view. When scrolling 
+by pulling the vertical scroll bars with the mouse, some of the last lines in 
+the grid where not accessible. This is fixed by testing for the 'last page' of 
+results.</P>
+<P>The scripting statement ":if" has been expanded to be able to skip the next 
+SQL statement, so that the script can decide wheter or not to execute it. See 
+the example in the help page.</P>
+<H3>Releasenotes 3.5.2</H3>
+<P>Fixes for the MS-Access Jet databaase engine. Discovery of table and columns 
+was broken</P>
+<P>Fixes for opnening a extra line in the editor by going a line down. Inserting 
+of spaces before the text was essentially broken. This makes editting queries a 
+lot better experience.</P>
+<P>Fixes for table discovery of a named table in Firebird.</P>
+<H3>Releasenotes 3.5.1</H3>
+<P>Various fixes for the discovery of databases with quoted identifiers. 
+(Firebird, MariaDB, MySQL, Oracle, SQL-Server, PostgreSQL). For most ODBC 
+drivers only the SQLTables and SQLColumns work correctly. Other functions such 
+as the discovery of SQLPrimaryKeys, SQLForeignKeys, SQLStatistics, SQLProcedures 
+do not work for case senstive identifiers.</P>
+<P>Also various fixes for the Info tree, so that we can now see the compelete 
+view, trigger, function and stored procedure source.</P>
+<H3>Releasenotes 3.5.0</H3>
+<P>Quoted identifiers have been added to the system. OpenODBCQuerytool now 
+understands the identifiers (tablenames, viewnames, columns, indexes and such) 
+that are stored in mixed case format. So "FullName" and "Fullname" are different 
+identifiers.</P>
+<P>As a standard rule, all identifiers in one (1) case are understood to be 
+non-quoted identifiers. These will not be quoted, and standard nameing rules 
+apply.</P>
+<P>Per supported database platform the naming conventions are applied, beginning 
+with Firebird. Stay tuned for next service packs for other RDBMS'es that have 
+case sensitive catalogs. By default lMS-SQLServer and PostgreSQL can handel 
+mixed cases. These work now out-of-the-box. Orace, Informix, MySQL and MariaDB 
+need extra work in their respective InfoDB classes.</P>
+<H3>Releasenotes 3.4.5</H3>
+<P>Fix for querying decimal number fields after a CLOB/BLOB column</P>
+<P>Performance fix for retrieving columns after the last bound column</P>
+<P>Unicode and SQLDate fixes</P>
+<P>Fix for Firbird databases in getting procedures and procedure-parameters</P>
+<P>Fix for PostgreSQL databases in getting procedures and 
+procedure-parameters</P>
+<P>For PostgreSQL databases it is now also possible to retrieve the 
+procedure/function source text</P>
+<H3>Releasenotes 3.4.4</H3>
+<P>Support for procedures and functions wrapped in packages in the Oracle 
+database. ODBC Discovery now can extract information, sourcecode and parameters 
+for these procedures and functions</P>
+<P>Bugfix for discovery of procedures in the Firebird database</P>
+<P>A variable can now be assigned the value of another variable</P>
+<P>Added a build instructions manual</P>
+<P>Fixes for the bitmaps in the installers</P>
+<P>Minimal ms-access database for testing</P>
+<H3>Releasenotes 3.4.3</H3>
+<P>The scripting :if command now has multiple operators: '=', '&lt;&gt;', 
+'&lt;', '&gt;', '&lt;=', '&gt;='</P>
+<P>The value of a variable can now be printed in the :print command to the 
+output file.</P>
+<P>A variable can be assigned the value of another variable with 
+":variable&lt;n&gt; = variable&lt;x&gt;;". Please not that this will only work, 
+if the two variables have the same datatype!</P>
+<P>Fixed a bug in the variables dialog (See menu: Script/Variables)</P>
+<H3>Releasenotes 3.4.2</H3>
+<P>Updated the libraries to the latest version. After a half year of testing: 
+fixing a lot of small Unicode bugs</P>
+<P>Added the 'mustard' (yelow) and 'dark' themes</P>
+<P>Fixed a bug in the object-discovery of the Firebird drivers. Columns of 
+tables and procedure arguments are working again</P>
+<P>Fixed a bug in the installer. Check on 'not-yet-installed' added</P>
+<H3>Releasenotes 3.4.1</H3>
+<P>Fixed a bug getting the database "Ping" from Firebird. Also fixes a crash on 
+that database after a few minutes.</P>
+<H3>Releasenotes 3.4.0</H3>
+<P>This version is dedicated to the conversion to Unicode 16. The Unicode 
+versions are still in early development stages. For production environments you 
+are still encouraged to choose for the (old fashioned) ANSI/MBCS coding 
+version.</P>
+<P>You can make a choise from the following set of installers:</P>
+<UL>
+  <LI>32 Bits ANSI/MBCS coding 
+  <LI>32 Bits Unicode version 
+  <LI>64 Bits ANSI/MBCS coding 
+  <LI>64 Bits Unicode version </LI></UL>
+<H3>Releasenotes 3.3.1</H3>
+<P>It is now possible to override the character set from the database by using 
+one of two methods:</P>
+<UL>
+  <LI>Reading the default character set from a system table (e.g. Firebird); 
+  <LI>Choosing a character set directly from a list. </LI></UL>
+<P>&nbsp;</P>
+<P>You can find this setting by navigating to the 'Text' menu, and then 
+'Permanent settings' and then to the 'SQL' tab. There you will find the field 
+'Charset handling'. When choosing the third option ('Use charset translation') 
+the combobox for 'character set' will become active and you can choose a 
+character set.</P>
+<P>Most notabely you can use this setting for RDBMS types that are not directly 
+supported such as for instance a 'SAP-Hana' database. Or for database types 
+where the ODBC driver does not correctly hands over the character buffer in 
+UTF-16 form to the MS-Windows operating system. Such as the Firebird ODBC driver 
+2.x</P>
+<P><B>NOTE:</B>Do <U>NOT</U> forget to reset this general setting when 
+connecting to a different database that does not adhere correctly to the ODBC 
+standard! As it will bite you as it did me!! :-(</P>
+<H3>Releasenotes 3.3.0</H3>
+<P>In this release the free 'odbc-connection-string' feature is implemented (at 
+last). Connections can have the combination of "datasource" / "user" / 
+"password". Or a free connection string. In the latter case, only the 
+'datasource' name is stored for the connection.</P>
+<P>Optionally you can leave out the user name and/or the password name if a 
+datasource does not require these for security reasons. A MS-Access database or 
+the MS-Excel ODBC driver are examples of these.</P>
+<P>There is a new button "Connection string" on the connection dialog, or you 
+can use the 'Details' button to fill in a connection string to your liking.</P>
+<H3>Releasenotes 3.2.4</H3>
+<P>At-Exec data at the end of a SELECT, or no NUMERIC columns</P>
+<H3>Releasenotes 3.2.3</H3>
+<P>Fix for login dialog and the "production / development" switch</P>
+<P>QueryRewriter no has knowledge of the 'UPDATE STATISTICS' statement</P>
+<H3>Releasenotes 3.2.2</H3>
+<P>Fix for decimals in NUMERIC/DECIMAL datatypes. Precision and scale are 
+recalculated before syncing with the database.</P>
+<P>Fix for reading stored-procedures from MS SQL-Server databases.</P>
+<P>Please note that the SQLMigrate tool has been removed from the SQLComponents 
+library and now officially exists within this project.</P>
+<H3>Releasenotes 3.2.1</H3>
+<P>Fix for removing old and stale settings from the roaming profile 
+directory</P>
+<H3>Releasenotes 3.2.0</H3>
+<P>Adding in this release:</P>
+<UL>
+  <LI>SQLMigrate tool to migrate between RDBMS vendors 
+  <LI>QueryReWrite tool to make queries versatile for more than 1 vendor 
+  <LI>Upgrades of all major libaries (BaseLibrary, SQLComponents, 
+  StyleFramework) 
+  <LI>Smaller improvements (SQL_NTS option for running queries) </LI></UL>
+<H3>Releasenotes 3.1.0</H3>
+<P>Added toasts when (de-)populating the object tree of the QueryTool</P>
+<P>Added the SQLMigrate program from the SQLComponents to the toolsset. The 
+program can be reached through the new 'Tools' submenu. This program makes it 
+possible to migrate complete database sets from one database to another, even if 
+it is of a different vendor making. Real life situations that has been tested 
+include conversions from the following:</P>
+<UL>
+  <LI>Informix -&gt; Oracle 
+  <LI>Informix -&gt; PostgreSQL 
+  <LI>Informix -&gt; Firebird 
+  <LI>Oracle -&gt; SQL-Server 
+  <LI>Oracle -&gt; MySQL &amp; MariaDB 
+  <LI>SQL-Server -&gt; Oracle </LI></UL>
+<P>&nbsp;</P>
+<P>Added the QueryReWriter program. Can be configured to translate SQL Queries 
+from on RDBMS to another. Use the config tab to set your favourite setup. The 
+program can be reached through the new 'Tools' submenu.</P>
+<H3>Releasenotes 3.0.8</H3>
+<P>Various fixes for discovery of views, stored procedures in SQL-Server</P>
+<P>Better filter combo box above the objects tree plus toasts</P>
+<H3>Releasenotes 3.0.7</H3>
+<P>Fixed discovery of stored-procedures, sql-text and parameters for MS 
+SQL-Server</P>
+<P>Added discovery of global/local temporary tables</P>
+<H3>Releasenotes 3.0.6</H3>
+<P>Fixed problem with the "Table DDL" command. Table create statements are 
+generated again.</P>
+<P>Fixed the problem with the F10 key (run current SQL command line). The 
+program is now prevented from entering the 'Select main menu' state, after the 
+pressing of this key. If you wish to use the main menu from the keyboard, use a 
+single ALT key to go there.</P>
+<H3>Releasenotes 3.0.5</H3>
+<P>Fixed a bug when changing the default font in the settings when installed in 
+"C:\Progam Files\Edo" this is the default location, so a lot of users will have 
+this settup. The crash derived from the&nbsp; fact that there where no update 
+rigths on the settings files. ODBCQueryTool now makes a copy of the setup files 
+to the roaming profile of the user and afterwards works from this set of setting 
+files. This also fixes the crash.</P>
+<P>Fixes for the saving of a changed text file when closing the application. A 
+crash in the dialog that asks for the fact that the users wishes to save her/his 
+work is solved.</P>
+<P>Fixed unwanted/unneeded message in the installer that same version is already 
+installed</P>
+<P>Updates from support libraries to the latest versions (SQLComponents, 
+StyleFramework, BaseLibrary)</P>
+<H3>Releasenotes 3.0.4</H3>
+<P>Added the ":exit;" script command</P>
+<H3>Releasenotes 3.0.3</H3>
+<P>Fixed a bug when setting a new font on the SQL results grid. Change the font 
+and open a new document view to see the result.</P>
+<P>Dropped support for 32-Bits version. Only 64-Bits version now released</P>
+<H3>Releasenotes 3.0.2</H3>
+<P>Added a PayPal donate button in the help menu and on every 25th application 
+start.</P>
+<H3>Releasenotes 3.0.1</H3>
+<P>Fixed a bug in the login dialog, when defining a new datasource 
+connection.</P>
+<H2>ALL NEW VERSION 3.0.0</H2>
+<P>Version 3 is a complete rewrite of the main program frame. Instead of the 
+WorkBook frame of the open editor, the re-newed MFC framework is used.</P>
+<H3>Releasenotes 2.5.1</H3>
+<P>Fixed various bugs in the handling of the MariaDB database in Oracle mode. 
+Prefer to turn OFF the "Strict ODBC" handling in the general SQL settings for 
+this database type, as the replacement SQL's work better for this database</P>
+<P>Columns and other attributes of tables in other schema's can be discovered 
+than just the currently active database schema.</P>
+<P>All database types are tested and some minor bugs in the handling of 'text' 
+and 'longtext' columns have been fixed.</P>
+<H3>Releasenotes 2.5.0</H3>
+<P>Fixed a bug in the saving of the permanent file settings causing the 
+application to crash after changing the file settings (e.g. tabs and space 
+inserts). See: Menu / Text / File settings &amp; information</P>
+<P>Fixed a bug in the parameter binding of a query with the ":variable&lt;n&gt;" 
+settings for a "?" binding in a query. See the file "script_syntax.txt" for more 
+details</P>
+<P>Fixed a bug in the ":select on" command of tahe scripting syntax columnnames 
+and row values are now correctly written to the script output 
+file,&nbsp;provided that you have used the ":file" command previously. See the 
+file "script_syntax.txt" for more details</P>
+<H3>Releasenotes 2.4.0</H3>
+<P>The source code of the SQLComponents are now replaced by a deployment ZIP 
+file&nbsp;in the root directory of the project. The ZIP contains the include 
+directory&nbsp;of that component and the four library files.<BR>For a full 
+explanation, see: <A 
+href="https://github.com/edwig/SQLComponents">https://github.com/edwig/SQLComponents</A>.<BR></P>
+<P>Various discovery methods for the info tree have been improved in speed for 
+the Oracle database. The methods are:<BR>&nbsp; - 
+SQLColumns&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt; 
+Discovery of all columns of a table<BR>&nbsp; - 
+SQLStatistics&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-&gt; 
+Discovery of all indices of a table<BR>&nbsp; - SQLTablePrivileges&nbsp;&nbsp; 
+-&gt; Discovery of all table privileges<BR>&nbsp; - SQLColumnPrivileges -&gt; 
+Discovery of all column privileges (NEW !)<BR></P>
+<P>There is a new setting. See menu: "Text / Permanent settings / SQL Settings". 
+A new checkbox is added "Prefer ODBC Meta-SQL". These are the settings:<BR>off : 
+If a meta-sql is present in SQLComponents, that one is used,&nbsp;otherwise the 
+ODBC discovery is used;<BR>on&nbsp;: The ODBC discovery routines are always 
+used.<BR>&nbsp;&nbsp;<BR>So now it is possible to switch between the on-board 
+SQL meta queries or the&nbsp;ones provided by the standard ODBC driver (even if 
+they are slower an more incorrect). However: it is advisable to <STRONG>LEAVE 
+the option in the OFF position</STRONG> for performance sake.</P>
+<P>Support for "MariaDB" (the fork of MySQL) has been added.</P>
+<H3>Releasenotes 2.3.3</H3>
+<P>Fixed a bug in the startup cycle on the first discovery queries. It turned 
+out that there where a few tables for in there that not all users have rights on 
+to see (e.g. Oracle: "dba_db_links"). Similar bugs for Informix, Firebird, 
+PostgreSQL and SQLServer have been fixed.</P>
+<P>Errors in SQL now turn up always with the erring SQL statement in them, so we 
+can always see what went wrong.</P>
+<H3>Releasenotes 2.3.2</H3>
+<P>More fixes for exception handling from the integration of the new 
+SQLComponents</P>
+<P>Upgraded to Visual Studio 2019 and the latest Windows 10 SDK and standard 
+libraries.</P>
+<H3>Releasenotes 2.3.1</H3>
+<P>Fixed an exception handling bug in the integration of the new SQLComponents 
+into the ODBCQueryTool.</P>
+<H3>Releasenotes 2.3.0</H3>
+<P>Fixed performance bug in starting of Oracle 12 database. Knocked of 6 seconds 
+of each login for meta info of tables and catalogs.</P>
+<P>Oracle databases now also display all linked catalogs in the driver page</P>
+<P>Upgraded to the latest MS-Windows 10 SDK build (17763)</P>
+<H3>Releasenotes 2.2.2</H3>
+<P>The current version is now compileable in Visual Studio 2017 (fixed 
+std::string throws).</P>
+<P>As a new feature, you can now right-click on a table or view in the 
+table-tree. You will find two new options here:</P>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas><FONT size=2 
+  face=Consolas><FONT size=2 face=Consolas><FONT face=Verdana>SELECT the first 
+  100 rows of a table</FONT></FONT></FONT></FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas><FONT size=2 
+  face=Consolas><FONT size=2 face=Consolas><FONT face=Verdana>Create a DDL 
+  script for the table or view</FONT></FONT></FONT></FONT></FONT> </LI></UL>
+<P>&nbsp;</P>
+<P><FONT size=2 face=Consolas><FONT size=2 face=Consolas><FONT size=2 
+face=Consolas><FONT size=2 face=Consolas>Also a few bugs have been 
+fixed:</FONT></FONT></FONT></FONT></P>
+<DIV style="MARGIN-LEFT: 2em">
+<OL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas><FONT size=2 
+  face=Consolas><FONT size=2 face=Consolas><FONT face=Verdana>Fixed 'no error on 
+  F5 after end-of-file' bug</FONT></FONT></FONT></FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas><FONT size=2 
+  face=Consolas><FONT size=2 face=Consolas><FONT face=Verdana>Fixed CTRL-F12 
+  file error after installation</FONT></FONT></FONT></FONT></FONT> 
+</LI></OL></DIV>
+<P>&nbsp;</P>
+<H3>Releasenotes 2.2.1</H3>
+<P><FONT size=2 face=Consolas><FONT size=2 face=Consolas>It is now possible to 
+login on a database without a username/password combination. This is especially 
+helpfull for a database without such requirements, e.g. MS-Access or&nbsp; 
+MS-Excel spreadsheet. But you will be prompted if you are sure at the creation 
+of the connection in the connection dialog.</FONT></FONT></P>
+<H3>Releasenotes 2.2.0</H3>
+<P><FONT size=2 face=Consolas><FONT size=2 face=Consolas>This is a bug release 
+as a result of testing on the Oracle 12.2c database</FONT></FONT></P>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Synonyms minimum and 
+  maximum fields have been changed to 'double' instead of a 'long' because of 
+  the catalog changes in Oracle.</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>The performance of 
+  retrieving stored procedures and functions has been improved. This was 
+  neccesary due to the changes in the Oracle catalog where the "all_source" did 
+  not perform any more. All Oracle catalog tables are now changed from the 
+  'all_*' tot the 'dba_*' variant.</FONT></FONT> </LI></UL>
+<H3>Releasenotes version 2.1.0</H3>
+<P><FONT size=2 face=Consolas><FONT size=2 face=Consolas>In this release much 
+work has been done for the object tree. The object tree is now fully functional 
+with the folllowing objects</FONT></FONT></P>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Tables</FONT></FONT> 
+
+  <UL>
+    <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Table 
+    columns</FONT></FONT> 
+    <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Primary and 
+    foreign keys</FONT></FONT> 
+    <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Indices and table 
+    statistics</FONT></FONT> 
+    <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Special (unique) 
+    columns not visible as table columns</FONT></FONT> 
+    <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Other table 
+    referencing this table</FONT></FONT> 
+    <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Triggers for the 
+    table</FONT></FONT> 
+    <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Sequences for the 
+    table</FONT></FONT> 
+    <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Granted rights on 
+    the table</FONT></FONT> </LI></UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Views</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Catalog 
+  tables</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 
+  face=Consolas>Synonyms</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 
+  face=Consolas>Sequences</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 
+  face=Consolas>Triggers</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Stored 
+  procedures</FONT></FONT> </LI></UL>
+<P>&nbsp;</P>
+<P><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Sequences, triggers and 
+catalog tables are objects that are not directly supported by ODBC. For these 
+objects the tree will only fully function:</FONT></FONT></P>
+<DIV style="MARGIN-LEFT: 2em">
+<OL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Firebird 3.x and 
+  higher</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>PostgreSQL 9.x and 
+  higher</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>MySQL 5.7 and 
+  higher</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Oracle 11.2 and 
+  higher</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>IBM-Informix 12.x 
+  and higher</FONT></FONT> </LI></OL></DIV>
+<P>&nbsp;</P>
+<P><FONT size=2 face=Consolas><FONT size=2 face=Consolas>For triggers and stored 
+procedures: you can see the full source code of the persistent-stored-module by 
+double clicking on the 'S'ourcecode node under the trigger or stored 
+procedure.</FONT></FONT></P>
+<H1><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Releasenotes version 
+2.0.0</FONT></FONT></H1>
+<P><FONT size=2 face=Consolas><FONT size=2 face=Consolas>This is the 10th year 
+anniversary edition of the Open ODBC Querytool!<BR>The following have been 
+changed / extended:</FONT></FONT></P>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>The object tree was 
+  previously a tree with just one table at the most.&nbsp;It is now a tree with 
+  tables, views, catalogs, and procedures you can expand any object at will, the 
+  control will then try to&nbsp;read in extra information for you. 
+  Thusly&nbsp;reading the performance hit over more than just one 
+  action.&nbsp;</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>See for the new 
+  description of the tree functionality the rewritten page <A 
+  href="Querying/FindingTables.html">Finding tables</A></FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>The implmentation 
+  info tree (odbc options) has been moved from the&nbsp;SQLComponents module to 
+  the ODBCQuerytool module (no functional changes).</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>The installer has 
+  been moved to the standard open source NSIS installer</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>The SQLComponents 
+  library has been upgraded to version 1.4.2</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Repaired the number 
+  format export in the XLS Excel export.</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 1.5.1 (Build: 
+194)</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Broken transaction 
+  begin/commit/rollback fixed</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 1.5.0 (Build: 
+192)</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Updated the Database 
+  directory to versie 1.3 of the SQLComponents module on&nbsp;<A 
+  href="https://github.com/edwig/SQLComponents">https://github.com/edwig/SQLComponents</A></FONT></FONT> 
+
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>It is now possible 
+  to correctly retrieve and update DECIMAL/NUMBER fields&nbsp;in database types 
+  like MS-SQLServer. This was done by adding the bcd (Binary Coded Decimal) data 
+  type to the library and effectivly converting between bcd's and 
+  SQL_NUMERIC_STRUCT.</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Fixed a bug in the 
+  spreadsheet export, where the export could crash on&nbsp;an empty 33th row in 
+  the output grid. (In effect after each 32 rows)</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Extended the on-line 
+  help file with the following subjects:<BR>&nbsp; - Finding a table and 
+  tableinfo<BR>&nbsp; - Scripting with SQL</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 1.4.4 (Build: 
+185)<BR></FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Repaired the 
+  representation of the ODBC datatypes, as reported by the driver<BR>The 
+  following where incorrect and repaired:</FONT></FONT> </LI></UL>
+<P>&nbsp;</P>
+<P><FONT size=2 face=Consolas><FONT size=2 face=Consolas>&nbsp; SQLSMALLINT 
+m_money;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+// Money (FIXED_PRECISION_SCALE) (TRUE,FALSE)<BR>&nbsp; SQLSMALLINT 
+m_autoincrement;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Auto incrementable 
+(TRUE,FALSE,NULL for non-numeric)<BR>&nbsp; CString&nbsp;&nbsp;&nbsp;&nbsp; 
+m_local_type_name;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Local type 
+name for display on UI's (not in DDL!)<BR>&nbsp; SQLSMALLINT 
+m_minimum_scale;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;// Minimum scale of 
+datatype. E.g. in seconds of the TIMESTAMP<BR>&nbsp; SQLSMALLINT 
+m_maximum_scale;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Maximum scale of datatype, 
+otherwise use column_size</FONT></FONT></P>
+<P><FONT size=2 face=Consolas><FONT size=2 face=Consolas>&nbsp;&nbsp;The 
+following where added</FONT></FONT></P>
+<P><FONT size=2 face=Consolas><FONT size=2 face=Consolas>&nbsp; SQLSMALLINT 
+m_sqlDatatype;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // Driver 
+independent SQL datatype<BR>&nbsp; SQLSMALLINT 
+m_sqlSubType;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; // SQL subtype for 
+TYPE_TIMESTAMP and INTERVAL types<BR>&nbsp; SQLINTEGER&nbsp; 
+m_radix;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+// Decimal radix (2,10 or NULL)<BR>&nbsp; SQLSMALLINT m_interval_precision; // 
+Number of decimals in interval precision of leading type</FONT></FONT></P>
+<P><FONT size=2 face=Consolas><FONT size=2 face=Consolas>&nbsp; After this 
+reparation, the ODBC types info tree (left hand side) is now correct 
+again.</FONT></FONT></P>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 1.4.3 (Build: 
+184)</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Fixed MARS: Multiple 
+  Active Record Sets.&nbsp;This is a MS-SQLServer feature, needed to run more 
+  than one SQL statement, for instance a SQL Statement in an inner loop of 
+  another recordset.&nbsp;This feature should be in the 'on' state BEFORE 
+  connecting to a database.</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 1.4.2 (Build: 
+183)</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Fixed parsing of SQL 
+  Found with F10/F11. The division operator ('/')&nbsp;was mistaken for the 
+  end-of-the-statement marker. The ODBCQuerytool now can correctly parse SQL 
+  scripts like:</FONT></FONT> </LI></UL>
+<P><FONT size=2 face=Consolas><FONT size=2 face=Consolas>&nbsp; SELECT (field_b 
+- field_a) / field_c<BR>&nbsp;&nbsp;&nbsp; FROM table<BR>&nbsp; /<BR>&nbsp; 
+SELECT (field_b - field_a) / field_c<BR>&nbsp;&nbsp;&nbsp; FROM table<BR>&nbsp; 
+;<BR>&nbsp; SELECT {fn DATE() } FROM dual<BR>&nbsp; /</FONT></FONT></P>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>As a result to this: 
+  ANY / marker at the first position will be seen as an end-of-the-statement 
+  marker. So a 'real' calculation with the division&nbsp;operator must not have 
+  the division operator in the first text column!&nbsp;Thanks to: Ibo 
+  Boekestijn, Manfred Baumann.</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>NULL values are 
+  exported as '0' rather than an empty string, whil exporting to an Excel 
+  spreadsheet. This is corrected. Numbers and dates are exported as empty 
+  strings when NULL. Thanks to: Jerrad Pierce</FONT></FONT> </LI></UL><FONT size=2 
+face=Consolas><FONT size=2 face=Consolas>Version 1.4.1 (Build: 
+182)</FONT></FONT> 
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Fixed a typo on the 
+  connection dialog "Safty" -&gt; "Safety"</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Fixed a bug in the 
+  month of the date the connection was saved. The month&nbsp;was off-by-one 
+  (januari = zero)</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Extended the 
+  functionality of the Excel spreadsheet export.<BR>The images (OK and ERROR) 
+  are now being exported to Excel as:<BR>"0" on a green field -&gt; Means no 
+  error<BR>"1" on a red field&nbsp;&nbsp; &nbsp;-&gt; Means one 
+  error</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 1.4.0 (Build: 
+181)</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Added the 
+  possibility to send a bug report or a feature request by email to the 
+  maintainers of the program.</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Fixed a bug in the 
+  connection dialog. The 'Test' function was broken for all who use the standard 
+  'OQT_SAVE_PASSWORD' setting to zero (No passwords saved). As the test function 
+  uses the saved password's from the connection list.&nbsp;You can now type in a 
+  password above the 'Test' button and use that as an override&nbsp;for the 
+  testing of the connection.&nbsp;Also fixed various bugs in the saving of the 
+  password in the list, and changed the default deployment to 'SAVE_PASSWORD's 
+  so that everyone can again enjoy the&nbsp;save connections, including 
+  passwords.</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>For paranoia 
+  organisations or persons, please undefine 'OQT_SAVE_PASSWORD' in the following 
+  include header: 'OpenEditorApp.h' on line 41.</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Fixed a bug in the 
+  search-next / search-previous functionality (F3 / SHIFT-F3). These functions 
+  where commented out, and not working, and sometimes threw errors or let the 
+  whole application hang. The bugs are solved in this 
+  version.<BR>F3&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+  -&gt; Find the next instance of the search string<BR>SHIFT-F3 -&gt; Finds the 
+  previous instance, but not if you are still on a found string!</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Updated the Database 
+  code to a higher version of the SQLComponents module</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Source code ported 
+  to VisualStudio 2015.<BR>Various extra warnings point to better type 
+  conversions to be done.<BR>All code in the database module is updated for this 
+  version.<BR>Warnings in the Open-Editor disregarded for now: it's still 
+  working :-)</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Compiled against 
+  MS-Windows SDK 8.1<BR>Application tested against MDAC 2.8 for Windows 7.x, 8.x 
+  and Windows 10<BR>Alsoo tested on MS-Windows Server 2008 and 2012 
+  platforms.<BR>Everything is working fine on these platforms.</FONT></FONT> 
+  </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 1.3.0 (Build: 
+180)</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Added 'BasicExcel' 
+  code to the codebase to be able to process&nbsp;spreadsheets in both reading 
+  and writing mode.</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Writing 'real' *.XLS 
+  files as an export from the data grid. It's a replacement of the writing of 
+  the *.SYLK files.&nbsp;Writes headers in bold and background 
+  colors.</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 1.2.1 (Build: 
+179)</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Fixed bugs in 
+  SQLPrimaryKey</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Fixed bugs in 
+  SQLForeignKey</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Fixed leaking of 
+  database cursors</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 1.2.0 (Build: 
+178)</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Port to Visual 
+  Studio 2013 (With MBCS option pack!!)</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Higher stability of 
+  the SQL Query results</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Support for the 
+  datatypes DATE, TIME, TIMESTAMP</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Mutable SQLDataSet 
+  with autmatic insert/update/delete</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>XML Export of the 
+  dataset -&gt; In order to be able to export&nbsp;query results to XML. Can now 
+  be added to this program at last.</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Support for the 
+  following databases vendors:<BR>- Oracle&nbsp;<BR>- IBM Informix<BR>- 
+  Microsoft SQL-Server<BR>- Microsoft MS-Access<BR>- PostgreSQL<BR>- 
+  Firebird<BR>- Generic ODBC typed databases</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Plugin Database-part 
+  in directory "Database" in the source tree</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>The database part of 
+  the program is now under the MIT license</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 1.0.5&nbsp; 
+(Build: 35)</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Resolved a issue for 
+  databases with fractions in the second field of timestamp types. The fractions 
+  where not correctly calculated and&nbsp;concatenated to the seconds-field 
+  without an intermediate '.' sign.&nbsp; All fractional parts are 1.000.000.000 
+  part of a second (1 nanosecond)&nbsp;See the ODBC documentation from Microsoft 
+  for this.&nbsp;This means there is a another bug in the ODBC driver from 
+  Oracle !!</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Port to Visual 
+  Studio 2010.</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 1.0.4. (Build: 
+34)</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Solution for some XP 
+  computers giving streaming-errors at startup. Due to incorrect optimalisation 
+  settings in some source files in the project and a MSVCRT dependency in the 
+  installer.</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>This is a 
+  servicepack for the retracted 1.0.3 version</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 1.0.3 (build: 
+33)</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Recurse to Windows 
+  Version 5.xx in Stdafx.h&nbsp;because of support problems with Windows-XP 
+  (fonts and SHGetFolderPath) Tested on XP-Mode in 32 bits mode, and works 
+  fine</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 1.0.2 (build: 
+32)</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>New routine to do 
+  the discovery of %APPDATA%</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Fonts of connection 
+  dialog and query result grid can be chosen. Misfits on some XP machines to 
+  fonts smaller than 4 px Make your choise at the menu "Text / Permanent 
+  settings / Query setttings"</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 1.0.1 (build: 
+31)</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>use "#define 
+  OQT_SAVE_PASSWORD" to save passwords in a build.</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Ini's with current 
+  connections will be saved 
+  to&nbsp;<BR>"%APP_DATA%\EDO\OpenODBCQuerytool\ODBC_querytool.ini"<BR>Will work 
+  for Windows-XP / Vista / W7<BR>On Vista/W7 it will be saved in the roaming 
+  profile.</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Update on the 
+  helpfile. Slightly more documentation :-)</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 1.0 (build: 
+30)</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Find Repaired for 
+  multilines</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Save-as feature 
+  crash after "CTRL-S" combination fixed</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>SQL-Server features 
+  repaired. Querytool runs on 1 cursor only.</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Stable release after 
+  multi tests</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Stable release works 
+  for Oracle 9/10/11; IBM-Informix 9/11;&nbsp;SQL-Server 2005 and 
+  higher.</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>True 64Bits and 
+  32Bits implementations</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 0.78 (build: 
+29)</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Find&amp;Replace did 
+  crash in the find. Replace alsoo didn't work as a&nbsp;result of the reworking 
+  in the regexp class. Both are fixed.</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Searching and 
+  replacing now works fine again.</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 0.77 (build: 
+28)</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Fixed problem of 
+  empty query. If a query returns no result, there was no header line in the 
+  output view pane. This is now solved. If a query returns no lines, the output 
+  query view still shows the names of the queried fields.</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 0.76 (build: 
+27)</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Fixed problem in 
+  repeat script. Grids will no longer grow, so measured times are linear to 
+  tested SQL commands.</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 0.75 (build: 
+26)</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>New feature: script 
+  elements to do performance testing&nbsp;:repeat command to repeatedly perform 
+  the same SQL</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>New feature: command 
+  line /CONNECT feature. See script_syntax.sql. Allows for scripts to run from 
+  the command line</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Fixed problem with 
+  DML under Informix 3.50 driver in case of&nbsp;zero (0) affected rows in an 
+  insert/update/delete statement</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 0.74 (build: 
+25)</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Fixed problem in 
+  SQL-Server without MARS option. Could not have more than one recordset open at 
+  any one time.</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Fixed problem with 
+  info discovery on combination of databases. Now works fine for 
+  INFORMIX/ORACLE/MS-ACCESS/MS-SQLServer/Firebird/MySQL etc.</FONT></FONT> 
+</LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 0.73 (Build: 
+24)</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Fixed alphanumeric 
+  sort of ODBC and RDBMS keywords in the Info tree</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Saving of 
+  datasources and connections now works under MS-Vista and also under 
+  non-local-adminstration accounts on Windows XP</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Weakly coded 
+  passwords are removed from the ini file under production builds. Users must 
+  now always provide a password. C++ Programmers can re-enable this as a debug 
+  build feature by defining the "OQT_SAVE_PASSWORD" macro in 
+  OpenEditorApp.h".&nbsp;But mind you: debug builds only. Not on production 
+  builds!</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 0.72 (build: 
+23)</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Fixed: Object 
+  discovery did not work in MS-Access (Jet engine 4.x) object names cannot be 
+  passed as a empty string to the ODBC driver but must be passed as NULL 
+  pointers if SQL_ATTR_METADATA_ID does not work</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>New feature: Port 
+  and test to MS-Vista.</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Added WideMessageBox 
+  for message-box redemption under Vista!</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 0.71 (build: 
+22)</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>New feature to test 
+  SQLGetData for incoming piecewise interface of large SQL_C_CHAR and 
+  SQL_C_BINARY fields</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 0.70 (build: 
+21)</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Fixed bug in freeing 
+  ODBC statement handles</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Fixed bug in HDBC 
+  error handling</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Fixed bug in more 
+  than 32 digits fraction in SQL_NUMERIC</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 0.69 (build: 
+20)</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Fixed memory bugs in 
+  HistoryLines</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Added script support 
+  for testing of ODBC drivers. See "script_syntax.txt"</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Added the SQLVariant 
+  class to cache values from an ODBC driver</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Rewrote the 
+  "Recordset.cpp" to use SQLVariant for columns</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Fixed serveral minor 
+  bugs in DBInfo in the use of SQLGetInfo</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Fixed recordset to 
+  use the SQLParamData/SQLPutData for the SQL_AT_EXEC piecewise 
+  inserts.</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 
+0.68</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Fixed diverse SQL 
+  info functions (SQLTables etc)</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 
+0.67</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Fixed the parsing of 
+  strings in SQL statements "" '' -&gt; embedded quotes within strings, 
+  especially when spread over more than one (1) line. Such as in:<BR>INSERT INTO 
+  table1 values (23,'this is a long ''string with embedded''<BR>quotes in 
+  it<BR>');</FONT></FONT> </LI></UL><FONT size=2 face=Consolas><FONT size=2 
+face=Consolas>Version 0.66</FONT></FONT> 
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Changed workbookbar 
+  under query tekst windows<BR>-&gt; Bar replaced to the top of the 
+  documents<BR>-&gt; Bar is a now TabControl</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Fixed the bug that 
+  an update in the grid of the primary key&nbsp;did not warn the user that it's 
+  illegal!! The user is not only warned, but the original value is restored 
+  alsoo.</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 
+0.65</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Changed ODBC driver 
+  report to a full print of the ODBC Info tree so the report looks the same as 
+  on screen. The tree-level is printed as 4 spaces instead of the treeview's 
+  lines.</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 
+0.64</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Added: It is now 
+  posssible to edit the results grid of a query if all parts of the primary key, 
+  or in the absence of a primary key of the first found unique key are present, 
+  editted results wil be updated to the underlying table. This feature is alsoo 
+  nown as "The Marco Brattinga option"</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>&nbsp;After each 
+  successful edit the name of the key is reflected in the message 
+  zone.</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 
+0.63</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Added a text report 
+  on ODBC capabilities. Accesible via the main menu under "Session / ODBC 
+  Report" after a successful login. (CTRL-Q, R)</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Added text report 
+  output from grid (extra button on query-grid)</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Added: Meta types in 
+  the ODBC Info-tree under 'Database'.</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Added: Extra logon 
+  with details. See button "Detail" at logon and&nbsp; the extra menu entry 
+  under 'Session / Session status"<BR>- Extra logon attributes ODBC standard 
+  specific<BR>- Extra logon attributes driver specific<BR>- ODBC tracing 
+  on/off<BR>- ODBC tracing file settings<BR>- ODBC Translation library and 
+  option<BR>- Transaction isolation<BR>- ODBC Cursor library<BR>- Quiet 
+  mode<BR>- Auto commit on/off<BR>- Dead-connection detection<BR>- Connection 
+  read-only settings<BR>- Metadata ID settings<BR>- Auto IPD for SQL Server<BR>- 
+  Network packet size<BR>- Connection timeout<BR>- Login timeout<BR>- Login via 
+  *.dsn file<BR>- Recording of succesful login via *.dsn file</FONT></FONT> 
+</LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 
+0.62</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Help is on the way! 
+  A On-line CHM is beeing written.</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Completed the 
+  SQLInfo tree. Added Type conversions / All statement info. Take care: Some 
+  newer info (odbc 3.x) are unreliable on older databases&nbsp;(Informix/Oracle) 
+  Obviously these databases can do grant/revoke but it&nbsp;is not 
+  reported!?</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Renamed the tab 
+  'Table' to 'Object' because it alsoo reports procedures and 
+  views</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Added 'Native SQL' 
+  command (F9) on a SQL statement shows how the ODBC driver&nbsp;would translate 
+  '{' escape sequences to native database SQL. Alsoo on the main menu under 
+  'Script / Native SQL'.<BR>eg: "{fn LEFT (string,3)}" is translated 
+  "SUBSTR(string,1,3)" on Oracle,<BR>and "{fn RIGHT(string,3)}" is translated 
+  "SUBSTR(string, -3)"</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Added the capability 
+  to search for object types in the object pane/tab syntax: 
+  "[&lt;Type&gt;:][&lt;Catalog&gt;.][&lt;Schema&gt;.][&lt;Table&gt;]"<BR>&lt;Type&gt; 
+  can be one of:<BR>- T : Search for a real table e.g: "T:persons"<BR>- V : 
+  Search for a real view&nbsp; e.g: "V:persons_with_contract"<BR>- C : Search 
+  for a catalog table : "C:syscolumns"<BR>- S : Search for a 
+  synonym&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : 
+  "S:persons_in_other_database"<BR>- A : Search for an 
+  alias&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : 
+  "A:persons_in_other_database"<BR>- A combination of the 
+  above&nbsp;&nbsp;&nbsp;&nbsp; : "TVS:clients"<BR>- nothing: searching for all 
+  types.<BR>&lt;Catalog&gt; can be one of:<BR>- A name of a 
+  catalog&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : 
+  "lin6rnd4.mdba.ibs_sc"<BR>- A search 
+  pattern&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+  : "%.mdba.ibs_sc" (not supported on all databases)<BR>- nothing: Searching in 
+  the current catalog<BR>&lt;Schema&gt; can be one of<BR>- A name of an user or 
+  schema&nbsp;&nbsp;&nbsp; : "mdba.ibs_sc"<BR>- A search 
+  pattern&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+  : "%.ibs_sc"&nbsp; (not supported on all databases)<BR>- nothing: searching in 
+  the schema of the current logged in user in all schema's depending on the 
+  implementation of the database driver.<BR>&lt;Table&gt; can be one of<BR>- A 
+  name of a table or view&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : "ibs_sc"<BR>- A search 
+  pattern&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+  : "mbs%"&nbsp; (not supported on all databases)<BR>- ALL database must support 
+  the special search pattern "%"<BR>- A name of a 
+  procedure&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; : 
+  "ibs_sc_ins_proc"<BR>- The special search pattern for ALL procedures 
+  "*"<BR>REMARK: Some databases allow more complex patterns like: "%.my%", 
+  meaning:&nbsp;all tables from all owners in the database for which the names 
+  begins with 'my'. Databases allowing this are PostgreSQL and 
+  Firebird.</FONT></FONT> </LI></UL>
+<P><FONT size=2 face=Consolas><FONT size=2 face=Consolas>BEWARE: Although the 
+ODBC standard states that drivers must be able to search on table-types in a 
+'comma-separated way', this is mostly not the case. Most drivers can only search 
+on simple 'T'able and 'V'iew type only! Even though<BR>the returned capabilities 
+indicate otherwise! (Oracle/Interbase/MSSQLServer)</FONT></FONT></P>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 
+0.61</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>bug 10: removed 
+  memory leak from display of datatypes in PostgreSQL (duplicate 
+  names)</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>bug 11: Incorrect 
+  info (grant/revoke/drop) corrected</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Improved datatype 
+  info</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Improved supported 
+  SQL info</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 
+0.60</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Implemented info on 
+  Procedures. Info for the procedure and the procedure columns (parameters, 
+  output values, return values) are displayed in the object tree</FONT></FONT> 
+  </LI></UL>
+<P><FONT size=2 face=Consolas><FONT size=2 face=Consolas>NB: This fails for some 
+ODBC drivers.&nbsp;eg: Informix does not support these functions, while 
+SQLGetFunctions&nbsp;reports that it is supported.<BR></FONT></FONT></P>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 
+0.59</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Added much more 
+  supported for ODBC tree and supported features<BR>&nbsp; Namly info 
+  on<BR>&nbsp; - supported ODBC escape sequences and functions<BR>&nbsp; - 
+  supported create schema/table/view options<BR>&nbsp; - aggregate 
+  functions<BR>&nbsp; - outer join features<BR>&nbsp; - usage of the catalog 
+  naming methods</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Added status line 
+  info for long retreval of table info</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Added object naming 
+  logic in the table discovery window.&nbsp;End user can write something like 
+  "catalog.schema.table" and the application will use the ODBCGetInfo to make a 
+  database specific qualifier. Informix =&gt; catalog:schema.table. 
+  racle&nbsp;=&gt; <A 
+  href="mailto:SCHEMA.TABLE@CATALOG">SCHEMA.TABLE@CATALOG</A></FONT></FONT> 
+</LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 
+0.58</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Added database 
+  naming method. For databases that do not report their databasename correctly 
+  via the SQLGetInfo method, but by a rdbms specific method 
+  (Oracle!)</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Added supported ODBC 
+  function calls in the ODBC tree.<BR>- For the ODBC 1.x and 2.x support of 
+  SQLGetFunctions (array of 100 ints)<BR>- For the ODBC 3.x support of 
+  SQLGetFunctions (4000 bits)</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Added support for 
+  case-specific catalogs for databases that do not correctly implement the 
+  SQL_ATTR_METADTA_ID method of SQLTables/SQLColumns etc. For these databases 
+  (Firebird/InterBase) SQL_IDENTIFIER_CASE of SQLGetInfo is used to determine 
+  wheter the catalog stores in Upper or Lower case. NB: There are two more 
+  methods (MIXED and SENSITIVE). If neither&nbsp;SQL_ATTR_METADATA_ID and 
+  SQL_IDENTIFIER_CASE is supported to upper/lower than the extraction of 
+  metadata is a 'best guess' on basis of user-input.</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 
+0.57</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Added a Table 
+  object-info window with ODBC info about a table (Columns, Primary/Foreign 
+  keys, Columns, Indici, Referenced by other tables,&nbsp;special columns, 
+  Statistics)</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Table can be queried 
+  by F12 from within a script</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Added a file filter 
+  for the explorer tree. Filters are extensions. e.g.: Fill in 'sql' and only 
+  *.sql files will be displayed in the tree</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 
+0.56</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>3: Fixed: Crash 
+  problem with empty 'last-login' list</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>4: Fixed: Crash 
+  problem with scrolling in 'last-login' list</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>5: Fixed: Delete 
+  ODBC connection from connect list is 'strange' (needed refresh of 
+  list)</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>6: Fixed: Try to 
+  open a non-existing file must give messagebox i.e. Exception 
+  thrown</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>7: Fixed: Bug in STL 
+  of ConnectionDialog</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>8: Create a stored 
+  procedure does not work. This was mainly because all text ran on one line it 
+  now parses all newlines correctly and preserves white space.</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>9: Run ODBC SQL 
+  command from selected text does not work. Selected text now has precedence 
+  over SQL text parsing. Works now alsoo in other database engines than Oracle 
+  alone.</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>SQL Query terminator 
+  (default '/') on the properties page 'Text / Permanent settings / SQL 
+  settings'</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>A query gets 
+  terminated with this terminator and then executed.</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Added newer CLI 
+  conformance codes to "ODBC panel" Oracle 8/9 now displays 
+  correctly!</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 
+0.55</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>2: Fixed: Script 
+  does not run beyond the fysical screen!</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Statistics/Output 
+  cleaned on each run/run-next cycle</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 
+0.54</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Max prefetch lines 
+  for grid on extra properties page 'Text / Permanent settings / SQL 
+  settings'</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 
+0.52</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>1: Fixed the ' 
+  Vincent' bug of an extra space</FONT></FONT> </LI></UL>
+<H3><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Version 
+0.50</FONT></FONT></H3>
+<UL>
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Cloned the 
+  OpenEditor project</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Added ODBC database 
+  control</FONT></FONT> 
+  <LI><FONT size=2 face=Consolas><FONT size=2 face=Consolas>Added everything 
+  needed for a query tool<BR>- Connection dialog<BR>- Connection toolbar<BR>- 
+  Chris Maunder Grid<BR>- Query result grid<BR>- Statistics result grid<BR>- 
+  Output results grid for batch processing<BR>- History results grid<BR>- Excel 
+  export<BR>- HTML export</FONT></FONT> </LI></UL>
+<P>&nbsp;</P></BODY></HTML>

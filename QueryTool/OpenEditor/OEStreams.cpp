@@ -34,36 +34,37 @@ static char THIS_FILE[] = __FILE__;
 namespace OpenEditor
 {
 
-Stream::Section::Section (Stream& stream, int section)
-: m_stream(stream)
+Stream::Section::Section (Stream& stream,int section)
+                :m_stream(stream)
 {
-    TCHAR buff[40];
-    m_length = m_stream.m_sectionKey.append(_itot(section, buff, 10));
+  TCHAR buff[40];
+  m_length = m_stream.m_sectionKey.append(_itot(section, buff, 10));
 }
 
-Stream::Section::Section (Stream& stream, LPCTSTR section)
-: m_stream(stream)
+Stream::Section::Section(Stream& stream,LPCTSTR section)
+       :m_stream(stream)
 {
-    m_length = m_stream.m_sectionKey.append(section);
+  m_length = m_stream.m_sectionKey.append(section);
 }
 
-Stream::Section::Section (Stream& stream, const CString& section)
-: m_stream(stream)
+Stream::Section::Section(Stream& stream,const CString& section)
+       :m_stream(stream)
 {
-    m_length = m_stream.m_sectionKey.append(section.GetString());
+  m_length = m_stream.m_sectionKey.append(section.GetString());
 }
 
-Stream::Section::~Section ()
+Stream::Section::~Section()
 {
-    m_stream.m_sectionKey.cut(m_length);
+  m_stream.m_sectionKey.cut(m_length);
 }
 
-Stream::StreamKey::StreamKey ()
+Stream::StreamKey::StreamKey()
 {
-    m_length = 0;
+  m_length = 0;
 }
 
-CString& Stream::StreamKey::Format (LPCTSTR property)
+CString& 
+Stream::StreamKey::Format(LPCTSTR property)
 {
   m_key.Truncate(m_length);
   if (m_length) m_key += '.';
@@ -71,124 +72,148 @@ CString& Stream::StreamKey::Format (LPCTSTR property)
   return m_key;
 }
 
-CString& Stream::StreamKey::Format (const CString& property)
+CString& 
+Stream::StreamKey::Format(const CString& property)
 {
-    return Format(property.GetString());
+  return Format(property.GetString());
 }
 
-int Stream::StreamKey::append (LPCTSTR section)
+int 
+Stream::StreamKey::append (LPCTSTR section)
 {
-    m_key.Truncate(m_length);
-    int length = m_length;
-    if (m_length) m_key += '.';
-    m_key += section;
-    m_length = (int)m_key.GetLength();
-    return length;
+  m_key.Truncate(m_length);
+  int length = m_length;
+  if(m_length)
+  {
+    m_key += '.';
+  }
+  m_key += section;
+  m_length = (int)m_key.GetLength();
+  return length;
 }
 
-void Stream::StreamKey::cut (int len)
+void 
+Stream::StreamKey::cut (int len)
 {
-    _ASSERTE(len >= 0);
-    m_length = len;
-    m_key.Truncate(m_length);
+  _ASSERTE(len >= 0);
+  m_length = len;
+  m_key.Truncate(m_length);
 }
 
 
 /////////////////////////////////////////////////////////////////////////////
 // 	InStream & OutStream
 
-void OutStream::write (const CString& section, const vector<CString>& _vector)
+void 
+OutStream::write(const CString& section, const vector<CString>& _vector)
 {
-    Section sect(*this, section);
+  Section sect(*this, section);
 
-    write(_T("Count"), (int)_vector.size());
+  write(_T("Count"), (int)_vector.size());
 
-    TCHAR buff[40];
-    std::vector<CString>::const_iterator it = _vector.begin();
-    for (int i(0); it != _vector.end(); it++, i++)
-        write(_itot(i, buff, 10), *it);
+  TCHAR buff[40];
+  std::vector<CString>::const_iterator it = _vector.begin();
+  for(int i(0); it != _vector.end(); it++,i++)
+  {
+    write(_itot(i,buff,10),*it);
+  }
 }
 
-void OutStream::write (const CString& section, const vector<vector<CString> >& vec_of_vec)
+void 
+OutStream::write (const CString& section, const vector<vector<CString> >& vec_of_vec)
 {
-    Section sect(*this, section);
+  Section sect(*this, section);
 
-    write(_T("Count"), (int)vec_of_vec.size());
+  write(_T("Count"), (int)vec_of_vec.size());
 
-    TCHAR buff[40];
-    std::vector<vector<CString> >::const_iterator it = vec_of_vec.begin();
-    for (int i(0); it != vec_of_vec.end(); it++, i++)
-        write(_itot(i, buff, 10), *it);
+  TCHAR buff[40];
+  std::vector<vector<CString> >::const_iterator it = vec_of_vec.begin();
+  for(int i(0); it != vec_of_vec.end(); it++,i++)
+  {
+    write(_itot(i,buff,10),*it);
+  }
 }
 
-void InStream::read (const CString& section, vector<CString>& _vector)
+void 
+InStream::read (const CString& section, vector<CString>& _vector)
 {
-    Section sect(*this, section);
+  Section sect(*this, section);
 
-    int count;
-    read(_T("count"), count);
-    _vector.resize(count);
+  int count;
+  read(_T("count"), count);
+  _vector.resize(count);
 
-    TCHAR buff[80];
-    for (int i(0); i < count; i++)
-        read(_itot(i, buff, 10), _vector.at(i));
+  TCHAR buff[80];
+  for(int i(0); i < count; i++)
+  {
+    read(_itot(i,buff,10),_vector.at(i));
+  }
 }
 
-void InStream::read (const CString& section, vector<vector<CString> >& vec_of_vec)
+void 
+InStream::read (const CString& section, vector<vector<CString> >& vec_of_vec)
 {
-    Section sect(*this, section);
+  Section sect(*this, section);
 
-    int count;
-    read(_T("count"), count);
-    vec_of_vec.resize(count);
+  int count;
+  read(_T("count"), count);
+  vec_of_vec.resize(count);
 
-    TCHAR buff[80];
-    for (int i(0); i < count; i++)
-        read(_itot(i, buff, 10), vec_of_vec.at(i));
+  TCHAR buff[80];
+  for(int i(0); i < count; i++)
+  {
+    read(_itot(i,buff,10),vec_of_vec.at(i));
+  }
 }
 
-void OutStream::write (const CString& section, const set<CString>& _set)
+void 
+OutStream::write (const CString& section, const set<CString>& _set)
 {
-    Section sect(*this, section);
+  Section sect(*this, section);
 
-    write(_T("Count"), (int)_set.size());
+  write(_T("Count"), (int)_set.size());
     
-    TCHAR buff[80];
-    std::set<CString>::const_iterator it = _set.begin();
-    for (int i(0); it != _set.end(); it++, i++)
-        write(_itot(i, buff, 10), *it);
+  TCHAR buff[80];
+  std::set<CString>::const_iterator it = _set.begin();
+  for(int i(0); it != _set.end(); it++,i++)
+  {
+    write(_itot(i,buff,10),*it);
+  }
 }
 
-void InStream::read (const CString& section, set<CString>& _set)
+void 
+InStream::read (const CString& section, set<CString>& _set)
 {
-    Section sect(*this, section);
+  Section sect(*this, section);
 
-    int count;
-    read(_T("Count"), count);
+  int count;
+  read(_T("Count"), count);
 
-    TCHAR buff[80];
-    for (int i(0); i < count; i++)
-    {
-        CString value;
-        read(_itot(i, buff, 10), value);
-        _set.insert(value);
-    }
+  TCHAR buff[80];
+  for (int i(0); i < count; i++)
+  {
+    CString value;
+    read(_itot(i, buff, 10), value);
+    _set.insert(value);
+  }
 }
 
-void OutStream::write (const CString& section, const pair<CString, CString>& _pair)
+void 
+OutStream::write (const CString& section, const pair<CString, CString>& _pair)
 {
-    Section sect(*this, section);
+  Section sect(*this, section);
 
-    write(_T("0"), _pair.first);
-    write(_T("1"), _pair.second);
+  write(_T("0"), _pair.first);
+  write(_T("1"), _pair.second);
 }
 
-void InStream::read (const CString& section, pair<CString, CString>& _pair)
+void 
+InStream::read (const CString& section, pair<CString, CString>& _pair)
 {
-    Section sect(*this, section);
+  Section sect(*this, section);
 
-    read(_T("0"), _pair.first);
-    read(_T("1"), _pair.second);
+  read(_T("0"), _pair.first);
+  read(_T("1"), _pair.second);
 }
 
 
@@ -218,7 +243,6 @@ FileOutStream::write(const CString& name,LPCTSTR _val)
   XString out;
   out.Format("%s=%s\n",m_sectionKey.Format(name).GetString(),val.GetString());
   m_outfile.Write(out);
-  // m_outfile << m_sectionKey.Format(name) << _T('=') << val << WinFile::endl;
 }
 
 void 
@@ -229,7 +253,6 @@ FileOutStream::write(const CString& name,const CString& _val)
   XString out;
   out.Format("%s=%s\n",m_sectionKey.Format(name).GetString(),val.GetString());
   m_outfile.Write(out);
-  // m_outfile << m_sectionKey.Format(name) << _T('=') << val << WinFile::endl;
 }
 
 void 
@@ -373,7 +396,8 @@ FileInStream::read(const CString& name,int& val,bool skip /*=false*/)
   _ASSERTE(m_infile.GetLastError() == 0);
 }
 
-void FileOutStream::write (const CString& name, unsigned int val)
+void 
+FileOutStream::write (const CString& name, unsigned int val)
 {
   XString out;
   out.Format(_T("%s=%X\n"),m_sectionKey.Format(name).GetString(),val);
@@ -434,7 +458,8 @@ FileInStream::read(const CString& name, bool& val,bool p_skip /*= false*/)
   _ASSERTE(m_infile.GetLastError() == 0);
 }
 
-void FileInStream::validateEntryName(const CString& name,CString& entryName,bool* p_skip)
+void 
+FileInStream::validateEntryName(const CString& name,CString& entryName,bool* p_skip)
 {
   if(entryName.Right(1) == _T("="))
   {

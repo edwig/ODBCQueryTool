@@ -24,11 +24,15 @@ LATEST HISTORY
 
 Releasenotes 3.6.1
 ------------------
+-  Partly rewrite of the settings streams. This was done on behalf of reports of 
+   corrupted settings after modifying some of them. The settings should be more 
+   stable now. Please remove old (corrupted) settings files from the 
+   "C:\USERS\<YOURACCOUNT>\AppData\Roaming\EDO\ODBCQueryTool" directory to 
+   permanently get rid of this problem.
 -  Small fixes for the "ODBC Report" for a RDBMS datasource. Some strings where missing, 
    due to the ANSI to Unicode conversion.
 -  Better SQLMigrate path from Oracle to PostgreSQL.
 -  Various small bugfixes, found by the strict compiling under /W4/WX settings.
-
 
 Releasenotes 3.6.0
 ------------------

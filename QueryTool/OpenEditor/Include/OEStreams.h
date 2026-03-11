@@ -115,13 +115,13 @@ namespace OpenEditor
       FileInStream (LPCTSTR filename);
 
     public:
-      virtual void read  (const CString&, CString&,bool p_skip = false);
-      virtual void read  (const CString&, double&,bool p_skip = false);
-      virtual void read  (const CString&, long&,bool p_skip = false);
-      virtual void read  (const CString&, unsigned long&,bool p_skip = false);
-      virtual void read  (const CString&, unsigned int&,bool p_skip = false);
-      virtual void read  (const CString&, int&, bool p_skip = false);
-      virtual void read  (const CString&, bool&,bool p_skip = false);
+      virtual void read  (const CString&, CString&,       bool p_skip = false);
+      virtual void read  (const CString&, double&,        bool p_skip = false);
+      virtual void read  (const CString&, long&,          bool p_skip = false);
+      virtual void read  (const CString&, unsigned long&, bool p_skip = false);
+      virtual void read  (const CString&, unsigned int&,  bool p_skip = false);
+      virtual void read  (const CString&, int&,           bool p_skip = false);
+      virtual void read  (const CString&, bool&,          bool p_skip = false);
 
     private:
       void validateEntryName (const CString&,CString&,bool* p_skip = nullptr);
