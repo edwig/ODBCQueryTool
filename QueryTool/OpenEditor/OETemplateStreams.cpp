@@ -84,7 +84,7 @@ void TemplateCollectionReader::operator >> (SettingsManager& mgr)
     m_in.read(_T("Version"), m_version);
 
     _CHECK_AND_THROW_(m_version >= 1010 && m_version <= TheTemplatesVersion, 
-                      _T("Unsupprorted templates version!"));
+                      _T("Unsupported templates version!"));
 
     int langCount = 0;
     m_in.read(_T("Languages"), langCount);

@@ -215,7 +215,10 @@ FileOutStream::write(const CString& name,LPCTSTR _val)
 {
   CString val;
   Common::to_printable_str(_val,val);
-  m_outfile << m_sectionKey.Format(name) << '=' << val << WinFile::endl;
+  XString out;
+  out.Format("%s=%s\n",m_sectionKey.Format(name).GetString(),val.GetString());
+  m_outfile.Write(out);
+  // m_outfile << m_sectionKey.Format(name) << _T('=') << val << WinFile::endl;
 }
 
 void 
@@ -223,7 +226,10 @@ FileOutStream::write(const CString& name,const CString& _val)
 {
   CString val;
   Common::to_printable_str(_val,val);
-  m_outfile << m_sectionKey.Format(name) << '=' << val << WinFile::endl;
+  XString out;
+  out.Format("%s=%s\n",m_sectionKey.Format(name).GetString(),val.GetString());
+  m_outfile.Write(out);
+  // m_outfile << m_sectionKey.Format(name) << _T('=') << val << WinFile::endl;
 }
 
 void 
@@ -242,7 +248,7 @@ FileInStream::read(const CString& name,CString& val,bool p_skip /*= false*/)
   }
   else
   {
-    m_infile.Read(inval,'=');
+    m_infile.Read(inval,_T('='));
     _name = inval;
     validateEntryName(name,_name,&p_skip);
     if(p_skip)
@@ -265,7 +271,7 @@ FileInStream::read(const CString& name,CString& val,bool p_skip /*= false*/)
 void 
 FileOutStream::write(const CString& name,double val)
 {
-  m_outfile << m_sectionKey.Format(name) << '=' << val << WinFile::endl;
+  m_outfile << m_sectionKey.Format(name) << _T('=') << val << WinFile::endl;
 }
 
 void 
@@ -274,7 +280,7 @@ FileInStream::read(const CString& name,double& val,bool p_skip /*= false*/)
   CString _name;
   XString inval;
 
-  m_infile.Read(inval,'=');
+  m_infile.Read(inval,_T('='));
   _name = inval;
   validateEntryName(name,_name,&p_skip);
   if(p_skip)
@@ -289,14 +295,14 @@ FileInStream::read(const CString& name,double& val,bool p_skip /*= false*/)
 void 
 FileOutStream::write(const CString& name,long val)
 {
-  m_outfile << m_sectionKey.Format(name) << '=' << val << WinFile::endl;
+  m_outfile << m_sectionKey.Format(name) << _T('=') << val << WinFile::endl;
 }
 
 void 
 FileInStream::read(const CString& name,long& val,bool /*skip =false*/)
 {
   XString inval;
-  m_infile.Read(inval,'=');
+  m_infile.Read(inval,_T('='));
 
   CString _name(inval);
   validateEntryName(name,_name);
@@ -312,14 +318,13 @@ FileOutStream::write(const CString& name,unsigned long val)
   XString out;
   out.Format(_T("%s=%X\n"),m_sectionKey.Format(name).GetString(),val);
   m_outfile.Write(out);
-  // m_outfile << m_sectionKey.Format(name) << '=' << hex << val << dec << endl;
 }
 
 void 
 FileInStream::read(const CString& name,unsigned long& val,bool /*skip =false*/)
 {
   XString inval;
-  m_infile.Read(inval,'=');
+  m_infile.Read(inval,_T('='));
   CString _name(inval);
   validateEntryName(name,_name);
   m_infile.Read(inval);
@@ -334,7 +339,7 @@ FileInStream::read(const CString& name,unsigned long& val,bool /*skip =false*/)
 void 
 FileOutStream::write(const CString& name,int val)
 {
-  m_outfile << m_sectionKey.Format(name) << '=' << val << WinFile::endl;
+  m_outfile << m_sectionKey.Format(name) << _T('=') << val << WinFile::endl;
 }
 
 void 
@@ -353,7 +358,7 @@ FileInStream::read(const CString& name,int& val,bool skip /*=false*/)
   }
   else
   {
-    m_infile.Read(inval,'=');
+    m_infile.Read(inval,_T('='));
     CString _name(inval);
     validateEntryName(name,_name,&skip);
     if(skip)
@@ -379,7 +384,7 @@ void
 FileInStream::read (const CString& name, unsigned int& val,bool /*p_skip = false*/)
 {
   XString inval;
-  m_infile.Read(inval,'=');
+  m_infile.Read(inval,_T('='));
   CString _name(inval);
   validateEntryName(name,_name);
 
@@ -397,7 +402,6 @@ FileOutStream::write (const CString& name, bool val)
   XString out;
   out.Format(_T("%s=%d\n"),m_sectionKey.Format(name).GetString(),(int)val);
   m_outfile.Write(out);
-  //m_outfile << m_sectionKey.Format(name) << '=' << val << endl;
 }
 
 void 
@@ -415,7 +419,7 @@ FileInStream::read(const CString& name, bool& val,bool p_skip /*= false*/)
   }
   else
   {
-    m_infile.Read(inval,'=');
+    m_infile.Read(inval,_T('='));
     CString _name(inval);
     validateEntryName(name,_name,&p_skip);
     if(p_skip)

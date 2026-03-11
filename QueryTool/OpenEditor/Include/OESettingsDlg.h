@@ -22,7 +22,6 @@ public:
 private:
   virtual BOOL OnInitDialog() override;
   virtual void DoDataExchange(CDataExchange* pDX) override;
-  virtual void SetupDynamicLayout() override;
 
   void InitTabs();
 
@@ -32,6 +31,7 @@ protected:
   DECLARE_MESSAGE_MAP()
 
   afx_msg void OnBnClickedOk();
+  afx_msg void OnTimer(UINT_PTR nIDEvent);
 
 private:
   SettingsManager&        m_settings;

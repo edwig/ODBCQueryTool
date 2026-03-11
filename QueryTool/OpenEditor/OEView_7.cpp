@@ -1604,7 +1604,7 @@ COEditorView::ScriptCommandVariable(int p_line,int p_varNum,CString p_tail)
   VarMap::iterator it = varMap.find(p_varNum);
   if(it == varMap.end())
   {
-    if(p_tail.Find('=') < 0)
+    if(p_tail.Find(_T('=')) < 0)
     {
       SQLVariant* var = new SQLVariant();
       varMap.insert(std::make_pair(p_varNum,var));
@@ -1618,7 +1618,7 @@ COEditorView::ScriptCommandVariable(int p_line,int p_varNum,CString p_tail)
   if(it != varMap.end())
   {
     SQLVariant* var = it->second;
-    bool assign = (p_tail.Left(1) == '=');
+    bool assign = (p_tail.Left(1) == _T('='));
     XString word;
     if(assign)
     {

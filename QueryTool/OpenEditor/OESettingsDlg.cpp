@@ -41,6 +41,7 @@ COESettingsDlg::DoDataExchange(CDataExchange* pDX)
 }
 
 BEGIN_MESSAGE_MAP(COESettingsDlg,StyleDialog)
+  ON_WM_TIMER()
   ON_BN_CLICKED(IDCANCEL,OnCancel)
   ON_BN_CLICKED(IDOK, &COESettingsDlg::OnBnClickedOk)
 END_MESSAGE_MAP()
@@ -49,28 +50,14 @@ BOOL
 COESettingsDlg::OnInitDialog()
 {
   StyleDialog::OnInitDialog();
-  SetWindowText(_T("Document info"));
+  SetWindowText(_T("Permanent settings"));
   ShowMinMaxButton(false,true);
 
   InitTabs();
 
-  SetCanResize();
+  m_tabs.SelectTab(1);
+  SetTimer(1,100,NULL);
   return InitFirstFocus();
-}
-
-void
-COESettingsDlg::SetupDynamicLayout()
-{
-  StyleDialog::SetupDynamicLayout();
-
-  CMFCDynamicLayout& manager = *GetDynamicLayout();
-#ifdef _DEBUG
-  manager.AssertValid();
-#endif
-
-  manager.AddItem(IDC_TAB, manager.MoveNone(),manager.SizeHorizontalAndVertical(100,100));
-  manager.AddItem(IDOK,    manager.MoveHorizontalAndVertical(100,100),manager.SizeNone());
-  manager.AddItem(IDCANCEL,manager.MoveHorizontalAndVertical(100,100),manager.SizeNone());
 }
 
 void
@@ -107,6 +94,16 @@ COESettingsDlg::InitTabs()
   m_tabs.InsertItem(8,m_page9,_T("Fonts"));
 
   m_tabs.Init();
+}
+
+void
+COESettingsDlg::OnTimer(UINT_PTR nIDEvent)
+{
+  if(nIDEvent)
+  {
+    m_tabs.SelectTab(0);
+    KillTimer(1);
+  }
 }
 
 void
