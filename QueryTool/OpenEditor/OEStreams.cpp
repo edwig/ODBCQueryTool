@@ -310,13 +310,13 @@ void
 FileOutStream::write(const CString& name,unsigned long val)
 {
   XString out;
-  out.Format(_T("%s=%Xd\n"),m_sectionKey.Format(name).GetString(),val);
+  out.Format(_T("%s=%X\n"),m_sectionKey.Format(name).GetString(),val);
   m_outfile.Write(out);
   // m_outfile << m_sectionKey.Format(name) << '=' << hex << val << dec << endl;
 }
 
 void 
-FileInStream::read(const CString& name,unsigned long& /*val*/,bool /*skip =false*/)
+FileInStream::read(const CString& name,unsigned long& val,bool /*skip =false*/)
 {
   XString inval;
   m_infile.Read(inval,'=');
@@ -324,8 +324,11 @@ FileInStream::read(const CString& name,unsigned long& /*val*/,bool /*skip =false
   validateEntryName(name,_name);
   m_infile.Read(inval);
 
-//   int num = _stscanf_s(inval.GetString(),_T("%Xu"),&val);
-//   _ASSERTE(num == 1 && m_infile.GetLastError() == 0);
+  int num = _stscanf_s(inval.GetString(),_T("%Xu"),&val);
+  if(num != 1 || m_infile.GetLastError())
+  {
+    throw StdException(_T("FileInStream: Error reading file stream."));
+  }
 }
 
 void 
@@ -368,12 +371,12 @@ FileInStream::read(const CString& name,int& val,bool skip /*=false*/)
 void FileOutStream::write (const CString& name, unsigned int val)
 {
   XString out;
-  out.Format(_T("%s=%Xd\n"),m_sectionKey.Format(name).GetString(),val);
+  out.Format(_T("%s=%X\n"),m_sectionKey.Format(name).GetString(),val);
   m_outfile.Write(out);
 }
 
 void 
-FileInStream::read (const CString& name, unsigned int& /*val*/,bool /*p_skip = false*/)
+FileInStream::read (const CString& name, unsigned int& val,bool /*p_skip = false*/)
 {
   XString inval;
   m_infile.Read(inval,'=');
@@ -381,8 +384,11 @@ FileInStream::read (const CString& name, unsigned int& /*val*/,bool /*p_skip = f
   validateEntryName(name,_name);
 
   m_infile.Read(inval);
-//   int num = _stscanf_s(inval,_T("%Xul"),&val);
-//   _ASSERTE(num == 1 && m_infile.GetLastError() == 0);
+  int num = _stscanf_s(inval,_T("%Xul"),&val);
+  if(num != 1 || m_infile.GetLastError())
+  {
+    throw StdException(_T("FileInStream::read. Error reading file stream."));
+  }
 }
 
 void 
