@@ -7,7 +7,7 @@
 ; All rights reserved
 ;
 ; Last change:       11-03-2026
-; Versionnumber:     3.6.1
+; Versionnumber:     3.6.2
 ;-------------------------------------------------------
  !define PRODUCT_BITNESS      "64-Bits"
  !define InputDir             "..\Bin_Releasex64\"

@@ -420,7 +420,7 @@ BOOL COEDocument::OnSaveDocument(LPCTSTR lpszPathName)
       for(int index = 0;index < lines; ++index)
       {
         m_storage.GetLine(index,line);
-        XString str(line);
+        XString str(line ? line : _T(""));
         str += _T("\n");
         if(!file.Write(str))
         {

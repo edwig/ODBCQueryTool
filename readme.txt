@@ -22,6 +22,10 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes 3.6.2
+------------------
+-  Fix for a crash while saving *.sql files
+
 Releasenotes 3.6.1
 ------------------
 -  Partly rewrite of the settings streams. This was done on behalf of reports of 
