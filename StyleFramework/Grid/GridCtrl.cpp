@@ -547,15 +547,14 @@ void CGridCtrl::SetLayer(int* pLayer)
   // coming from a previous GetLayer (ignored if not same number of column, or the same revision number)
 	if(pLayer[0] != LAYER_SIGNATURE) return;
 	if(pLayer[1] != GetColumnCount()) return;
-/*TRACE("  %d == %d \n",m_arColOrder[0],pLayer[2]);
-	TRACE("  %d == %d \n",m_arColOrder[1],pLayer[3]);
-	TRACE("  %d == %d \n",m_arColOrder[2],pLayer[4]);
-	TRACE("  %d == %d \n",m_arColWidths[0],pLayer[2+3]);
-	TRACE("  %d == %d \n",m_arColWidths[1],pLayer[3+3]);
-	TRACE("  %d == %d \n",m_arColWidths[2],pLayer[4+3]);
-	TRACE("  %d == %d \n",GetColumnCount(),3);
-
-	
+/*TRACE(_T("  %d == %d \n"),m_arColOrder[0],pLayer[2]);
+	TRACE(_T("  %d == %d \n"),m_arColOrder[1],pLayer[3]);
+	TRACE(_T("  %d == %d \n"),m_arColOrder[2],pLayer[4]);
+	TRACE(_T("  %d == %d \n"),m_arColWidths[0],pLayer[2+3]);
+	TRACE(_T("  %d == %d \n"),m_arColWidths[1],pLayer[3+3]);
+	TRACE(_T("  %d == %d \n"),m_arColWidths[2],pLayer[4+3]);
+	TRACE(_T("  %d == %d \n"),GetColumnCount(),3);
+  	
 	ASSERT(m_arColOrder[0]==pLayer[2]);
 	ASSERT(m_arColOrder[1]==pLayer[3]);
 	ASSERT(m_arColOrder[2]==pLayer[4]);
@@ -3609,7 +3608,7 @@ BOOL CGridCtrl::GetCellRect(int nRow, int nCol, LPRECT pRect)
   pRect->right  = CellOrigin.x + GetColumnWidth(nCol)-1;
   pRect->bottom = CellOrigin.y + GetRowHeight(nRow)-1;
 
-  //TRACE("Row %d, col %d: L %d, T %d, W %d, H %d:  %d,%d - %d,%d\n",
+  //TRACE(_T("Row %d, col %d: L %d, T %d, W %d, H %d:  %d,%d - %d,%d\n"),
   //      nRow,nCol, CellOrigin.x, CellOrigin.y, GetColumnWidth(nCol), GetRowHeight(nRow),
   //      pRect->left, pRect->top, pRect->right, pRect->bottom);
 

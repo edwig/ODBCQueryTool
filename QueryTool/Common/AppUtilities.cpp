@@ -293,7 +293,7 @@ bool AppGetFileAttrs (LPCTSTR  szPath
         ::CloseHandle(hFile);
 	}
 
-    TRACE("Common::AppGetFileAttrs failed for %s", szPath);
+  TRACE(_T("Common::AppGetFileAttrs failed for %s"), szPath);
 	return false;
 }
 

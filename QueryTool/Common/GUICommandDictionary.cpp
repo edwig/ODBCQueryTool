@@ -435,9 +435,9 @@ static void walk_menu (HMENU& hMenu, MenuItemVector& menuitems)
 void GUICommandDictionary::AddAccelDescriptionToMenu (HMENU& hMenu)
 {
     MenuItemVector menuitems;
-    // TRACE("Walk menu\n");
+    // TRACE(_T("Walk menu\n"));
     walk_menu(hMenu, menuitems);
-    // TRACE1("\tGUICommandDictionary::AddAccelDescriptionToMenu: number of menuitems is %d\n", menuitems.size());
+    // TRACE1(_T("\tGUICommandDictionary::AddAccelDescriptionToMenu: number of menuitems is %d\n"), menuitems.size());
 
     // allocate and get acceleration table by handle
     ACCEL AccelTable[MAX_MENU_ITEMS_NUMBER];
@@ -445,7 +445,7 @@ void GUICommandDictionary::AddAccelDescriptionToMenu (HMENU& hMenu)
     int size = CopyAcceleratorTable(g_accelTable, AccelTable, sizeof AccelTable/ sizeof AccelTable[0]);
 
     CmdToDescMap accelDesc;
-    // TRACE("\tGUICommandDictionary::AddAccelDescriptionToMenu: Walk accelerator table, size is %d\n", size);
+    // TRACE(_T("\tGUICommandDictionary::AddAccelDescriptionToMenu: Walk accelerator table, size is %d\n"), size);
     for (int i(0); i < size; i++)
     {
         CString desc;
@@ -477,7 +477,7 @@ void GUICommandDictionary::AddAccelDescriptionToMenu (HMENU& hMenu)
         }
     }
     {
-    //TRACE("Change menu labels\n");
+    //TRACE(_T("Change menu labels\n"));
     for (MenuItemVector::iterator it = menuitems.begin(); it != menuitems.end(); ++it)
     {
         MenuItem& menuitem = *it;

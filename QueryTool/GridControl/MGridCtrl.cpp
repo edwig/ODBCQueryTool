@@ -3498,7 +3498,7 @@ BOOL MCGridCtrl::GetCellRect(int nRow, int nCol, LPRECT pRect)
   pRect->right  = CellOrigin.x + GetColumnWidth(nCol)-1;
   pRect->bottom = CellOrigin.y + GetRowHeight(nRow)-1;
 
-  //TRACE("Row %d, col %d: L %d, T %d, W %d, H %d:  %d,%d - %d,%d\n",
+  //TRACE(_T("Row %d, col %d: L %d, T %d, W %d, H %d:  %d,%d - %d,%d\n"),
   //      nRow,nCol, CellOrigin.x, CellOrigin.y, GetColumnWidth(nCol), GetRowHeight(nRow),
   //      pRect->left, pRect->top, pRect->right, pRect->bottom);
 

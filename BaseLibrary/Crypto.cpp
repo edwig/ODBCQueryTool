@@ -259,7 +259,7 @@ Crypto::ImplementEncryption(const BYTE* p_input,int p_lengthINP,const BYTE* p_pa
 // #ifdef _DEBUG
 //     for(DWORD ind = 0; ind < dataLength; ++ind)
 //     {
-//       TRACE("RAW %X %c\n",pbConvert[ind],pbConvert[ind]);
+//       TRACE(_T("RAW %X %c\n"),pbConvert[ind],pbConvert[ind]);
 //     }
 // #endif
 
@@ -287,7 +287,7 @@ Crypto::ImplementEncryption(const BYTE* p_input,int p_lengthINP,const BYTE* p_pa
 // #ifdef _DEBUG
 //       for(DWORD ind = 0; ind < dataLength;++ind)
 //       {
-//         TRACE("ENCODED %X\n",pbConvert[ind]);
+//         TRACE(_T("ENCODED %X\n"),pbConvert[ind]);
 //       }
 // #endif
       if(!bFinal)
@@ -462,7 +462,7 @@ Crypto::ImplementDecryption(const BYTE* p_input,int p_lengthINP,const BYTE* p_pa
 // #ifdef _DEBUG
 //     for(DWORD ind = 0; ind < dataLen; ++ind)
 //     {
-//       TRACE("RAW %X\n",pbData[ind]);
+//       TRACE(_T("RAW %X\n"),pbData[ind]);
 //     }
 // #endif
     DWORD processed = dataLen;
@@ -488,7 +488,7 @@ Crypto::ImplementDecryption(const BYTE* p_input,int p_lengthINP,const BYTE* p_pa
 // #ifdef _DEBUG
 //       for(DWORD ind = 0; ind < dataLen;++ind)
 //       {
-//         TRACE("DECODED %X %c\n",pbData[ind],pbData[ind]);
+//         TRACE(_T("DECODED %X %c\n"),pbData[ind],pbData[ind]);
 //       }
 // #endif
       if(!bFinal)

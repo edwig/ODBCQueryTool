@@ -999,7 +999,7 @@ StyleListBox::Internal_PaintItem(CDC* p_cdc,const RECT* rect,INT index,UINT acti
     line_ptr = reinterpret_cast<ListBoxColorLine*>(GetItemDataPtr(index));
     if(!line_ptr || (line_ptr == (ListBoxColorLine*) LB_ERR) || line_ptr->m_magic != LIST_MAGIC)
     {
-      TRACE("called with an out of bounds index %d (Total: %d) in owner draw, Not good.\n",index,GetCount());
+      TRACE(_T("called with an out of bounds index %d (Total: %d) in owner draw, Not good.\n"),index,GetCount());
       return;
     }
   }
@@ -1017,7 +1017,7 @@ StyleListBox::Internal_PaintItem(CDC* p_cdc,const RECT* rect,INT index,UINT acti
     }
     else
     {
-      TRACE("called with an out of bounds index %d(%d) in owner draw, Not good.\n", index, nb_items);
+      TRACE(_T("called with an out of bounds index %d(%d) in owner draw, Not good.\n"), index, nb_items);
     }
     return;
   }
@@ -1033,7 +1033,7 @@ StyleListBox::Internal_PaintItem(CDC* p_cdc,const RECT* rect,INT index,UINT acti
   if (!enabled)     dis.itemState |= ODS_DISABLED;
   dis.itemData      = (ULONG_PTR) line_ptr;
   dis.rcItem        = *rect;
-  // TRACE("[%p]: drawitem %d (%s) action=%02x state=%02x rect=%s\n",GetSafeHwnd(),index,item_str, action, dis.itemState, DebugRect(rect));
+  // TRACE(_T("[%p]: drawitem %d (%s) action=%02x state=%02x rect=%s\n"),GetSafeHwnd(),index,item_str, action, dis.itemState, DebugRect(rect));
 
   // This is the reason we are here!
   // Standard MS-Windows sends this to the parent of the control so CMenu can have a go at it

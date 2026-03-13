@@ -1244,7 +1244,7 @@ SkinScrollWnd::OnDpiChangedAfter(WPARAM wParam,LPARAM lParam)
 
   if(!m_dpiRect.IsRectNull())
   {
-    TRACE("SkinScrollWnd::OnDpiChangedAfter: Scaling skinned control\n");
+    TRACE(_T("SkinScrollWnd::OnDpiChangedAfter: Scaling skinned control\n"));
 
     // Scale the cooridinates
     int newDpi_x = USER_DEFAULT_SCREEN_DPI;

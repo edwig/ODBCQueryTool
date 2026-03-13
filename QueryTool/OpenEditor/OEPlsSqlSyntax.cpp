@@ -126,9 +126,9 @@ bool SyntaxNode::FindToken (int line, int offset, const SyntaxNode*& node, int& 
 {
     if (m_tokens.size())
     {
-        TRACE("SyntaxNode::FindToken, Node=%s, line=%d, offset=%d\n", GetDebugString(), line, offset);
-        TRACE("\tm_tokens.begin()->line=%d, m_tokens.begin()->offset=%d\n", m_tokens.begin()->line, m_tokens.begin()->offset);
-        TRACE("\tm_tokens.rbegin()->line=%d, m_tokens.rbegin()->offset=%d\n", m_tokens.rbegin()->line, m_tokens.rbegin()->offset);
+        TRACE(_T("SyntaxNode::FindToken, Node=%s, line=%d, offset=%d\n"), GetDebugString(), line, offset);
+        TRACE(_T("\tm_tokens.begin()->line=%d, m_tokens.begin()->offset=%d\n"), m_tokens.begin()->line, m_tokens.begin()->offset);
+        TRACE(_T("\tm_tokens.rbegin()->line=%d, m_tokens.rbegin()->offset=%d\n"), m_tokens.rbegin()->line, m_tokens.rbegin()->offset);
 
         if ((m_tokens.begin()->line < line 
             || (m_tokens.begin()->line == line && m_tokens.begin()->offset <= offset))
@@ -957,7 +957,7 @@ void PlsSqlAnalyzer::OpenLexeme (SyntaxNode* node)
 {
     if (m_top)
     {
-        //TRACE("Open %s, level = %d, line = %d, col = %d\n", 
+        //TRACE(_T("Open %s, level = %d, line = %d, col = %d\n"), 
         //    node->GetDebugString(), m_top->GetLevel()+1,
         //    node->m_tokens.begin()->line+1, node->m_tokens.begin()->offset+1);
         m_top->AppendChild(node);
@@ -972,7 +972,7 @@ void PlsSqlAnalyzer::CloseLexeme ()
     
     if (m_top)
     {
-        //TRACE("Close %s, level = %d, line = %d, col = %d\n",
+        //TRACE(_T("Close %s, level = %d, line = %d, col = %d\n"),
         //    m_top->GetDebugString(), m_top->GetLevel(),
         //    m_top->m_tokens.begin()->line+1, m_top->m_tokens.begin()->offset+1);
 
@@ -989,7 +989,7 @@ void PlsSqlAnalyzer::ColapseAll (const Token& token)
 
     if (m_top)
     {
-        TRACE("ColapseAll, level = %d, line = %d, col = %d\n", 
+        TRACE(_T("ColapseAll, level = %d, line = %d, col = %d\n"),
             m_top->GetLevel(),token.line+1, token.offset+1);
 
         while (m_top->GetParent())
@@ -1012,7 +1012,7 @@ void PlsSqlAnalyzer::PutToken (const Token& token)
 
 		if (m_top->IsFailure()) //check parsing status
 		{
-            TRACE("FALURE: token = %s, line = %d, col = %d\n", Token::GetString(token), token.line+1, token.offset+1);
+            TRACE(_T("FALURE: token = %s, line = %d, col = %d\n"), Token::GetString(token), token.line+1, token.offset+1);
 			m_error = true;
 			return;
 		}
@@ -1101,25 +1101,32 @@ void SyntaxNode::DbgPrintNode ()
   {
 	  indent.Append(_T(">"));
   }
-	if (GetTokens().size())
-		TRACE("%4d%s%s\n", GetTokens().begin()->line + 1,  indent.GetString(), GetDebugString());
-	else
-		TRACE("%4d%s%s\n", -1, indent.GetString(), GetDebugString());
-
-	if (SyntaxNode* node = GetChild())
-        node->DbgPrintNode();
-
+  if (GetTokens().size())
+  {
+    TRACE(_T("%4d%s%s\n"), GetTokens().begin()->line + 1, indent.GetString(), GetDebugString());
+  }
+  else
+  {
+    TRACE(_T("%4d%s%s\n"), -1, indent.GetString(), GetDebugString());
+  }
+  if (SyntaxNode* node = GetChild())
+  {
+    node->DbgPrintNode();
+  }
 	//@EH
 	indent.Empty();
   for(int ind = 0;ind < GetLevel();++ind)
   {
 	  indent.Append(_T("<"));
   }
-	if (m_tokens.size())
-		TRACE("%4d%s%s\n", GetTokens().rbegin()->line + 1,  indent.GetString(), GetDebugString());
-	else
-		TRACE("%4d%s%s\n", -1, indent.GetString(), GetDebugString());
-
+  if (m_tokens.size())
+  {
+    TRACE(_T("%4d%s%s\n"), GetTokens().rbegin()->line + 1, indent.GetString(), GetDebugString());
+  }
+  else
+  {
+    TRACE(_T("%4d%s%s\n"), -1, indent.GetString(), GetDebugString());
+  }
   if(SyntaxNode* node = GetSibling())
   {
     node->DbgPrintNode();

@@ -129,7 +129,7 @@ void LexicalAnalyser::PutEOF (int line)
 
 bool LexicalAnalyser::PutLine (int line, LPCTSTR str, int length)
 {
-  //TRACE("PutLine: %4d:%s\n", line+1, string(str, length).c_str());
+  //TRACE(_T("PutLine: %4d:%s\n"), line+1, string(str, length).c_str());
 
   Token token;
 
@@ -277,7 +277,7 @@ bool LexicalAnalyser::PutLine (int line, LPCTSTR str, int length)
 
         if (m_sequenceOf == eNone)
         {
-//			TRACE("PutToken %s(%s)\n", get_token_keyword(token), buffer.c_str());
+//			TRACE(_T("PutToken %s(%s)\n"), get_token_keyword(token), buffer.c_str());
 			m_analyzer.PutToken(token);
         }
     }

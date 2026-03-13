@@ -97,7 +97,7 @@ END_MESSAGE_MAP()
 
 DROPEFFECT MCGridDropTarget::OnDragScroll(CWnd* pWnd, DWORD dwKeyState, CPoint /*point*/)
 {
-//    TRACE("In CGridDropTarget::OnDragScroll\n");
+//    TRACE(_T("In CGridDropTarget::OnDragScroll\n"));
     if (pWnd->GetSafeHwnd() == m_pGridCtrl->GetSafeHwnd())
     {
         if (dwKeyState & MK_CONTROL)
@@ -132,7 +132,7 @@ void MCGridDropTarget::OnDragLeave(CWnd* pWnd)
 DROPEFFECT MCGridDropTarget::OnDragOver(CWnd* pWnd, COleDataObject* pDataObject, 
                                        DWORD dwKeyState, CPoint point)
 {
-//    TRACE("In CGridDropTarget::OnDragOver\n");
+//    TRACE(_T("In CGridDropTarget::OnDragOver\n"));
     ASSERT(m_pGridCtrl);
 
     if (pWnd->GetSafeHwnd() == m_pGridCtrl->GetSafeHwnd())

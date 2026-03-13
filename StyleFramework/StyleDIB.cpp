@@ -120,7 +120,7 @@ NumDIBColorEntries(BITMAPINFO* pBmpInfo)
   {
     if(iColors > iMax)
     {
-      TRACE("Invalid color count");
+      TRACE(_T("Invalid color count"));
       iColors = iMax;
     }
   }
@@ -143,7 +143,7 @@ StyleDIB::Create(int iWidth, int iHeight)
     + 256 * sizeof(RGBQUAD));
   if (!m_pBMI)
   {
-    TRACE("Out of memory for DIB header");
+    TRACE(_T("Out of memory for DIB header"));
     return FALSE;
   }
   // Allocate memory for the bits (DWORD aligned).
@@ -151,7 +151,7 @@ StyleDIB::Create(int iWidth, int iHeight)
   m_pBits = (BYTE*)malloc(iBitsSize);
   if (!m_pBits)
   {
-    TRACE("Out of memory for DIB bits");
+    TRACE(_T("Out of memory for DIB bits"));
     ::free(m_pBMI);
     m_pBMI = NULL;
     return FALSE;
@@ -197,7 +197,7 @@ StyleDIB::Create(BITMAPINFO* pBMI, BYTE* pBits)
   m_pBMI = (BITMAPINFO*)malloc(sizeof(BITMAPINFOHEADER) + (NumDIBColorEntries(pBMI) * sizeof(RGBQUAD)));
   if(!m_pBMI)
   {
-    TRACE("Out of memory for DIB header");
+    TRACE(_T("Out of memory for DIB header"));
     return FALSE;
   }
   // Note: This will probably fail for < 256 color headers.
@@ -230,13 +230,13 @@ StyleDIB::Load(CFile* fp)
   iBytes = fp->Read(&BmpFileHdr, sizeof(BmpFileHdr));
   if (iBytes != sizeof(BmpFileHdr))
   {
-    TRACE("Failed to read file header");
+    TRACE(_T("Failed to read file header"));
     goto $abort;
   }
   // Check that we have the magic 'BM' at the start.
   if (BmpFileHdr.bfType != 0x4D42)
   {
-    TRACE("Not a bitmap file");
+    TRACE(_T("Not a bitmap file"));
     goto $abort;
   }
   // Make a wild guess that the file is in Windows DIB
@@ -246,7 +246,7 @@ StyleDIB::Load(CFile* fp)
   iBytes = fp->Read(&BmpInfoHdr, sizeof(BmpInfoHdr));
   if (iBytes != sizeof(BmpInfoHdr))
   {
-    TRACE("Failed to read BITMAPINFOHEADER");
+    TRACE(_T("Failed to read BITMAPINFOHEADER"));
     goto $abort;
   }
 
@@ -255,7 +255,7 @@ StyleDIB::Load(CFile* fp)
   {
     if (BmpInfoHdr.biSize != sizeof(BITMAPCOREHEADER))
     {
-      TRACE(" File is not Windows or PM DIB format");
+      TRACE(_T(" File is not Windows or PM DIB format"));
       goto $abort;
     }
     // Set a flag to convert PM file to Win format later.
@@ -268,7 +268,7 @@ StyleDIB::Load(CFile* fp)
     iBytes = fp->Read(&BmpCoreHdr, sizeof(BmpCoreHdr));
     if (iBytes != sizeof(BmpCoreHdr))
     {
-      TRACE("Failed to read BITMAPCOREHEADER");
+      TRACE(_T("Failed to read BITMAPCOREHEADER"));
       goto $abort;
     }
     BmpInfoHdr.biSize           = sizeof(BITMAPINFOHEADER);
@@ -302,7 +302,7 @@ StyleDIB::Load(CFile* fp)
   pBmpInfo = (LPBITMAPINFO)malloc(iBISize);
   if (!pBmpInfo)
   {
-    TRACE("Out of memory for DIB header");
+    TRACE(_T("Out of memory for DIB header"));
     goto $abort;
   }
 
@@ -316,7 +316,7 @@ StyleDIB::Load(CFile* fp)
     iBytes = fp->Read(((LPBYTE)pBmpInfo) + sizeof(BITMAPINFOHEADER),iColorTableSize);
     if (iBytes != iColorTableSize)
     {
-      TRACE("Failed to read color table");
+      TRACE(_T("Failed to read color table"));
       goto $abort;
     }
   }
@@ -333,7 +333,7 @@ StyleDIB::Load(CFile* fp)
       iBytes = fp->Read(&rgbt, sizeof(RGBTRIPLE));
       if (iBytes != sizeof(RGBTRIPLE))
       {
-        TRACE("Failed to read RGBTRIPLE");
+        TRACE(_T("Failed to read RGBTRIPLE"));
         goto $abort;
       }
       lpRGB->rgbBlue     = rgbt.rgbtBlue;
@@ -348,7 +348,7 @@ StyleDIB::Load(CFile* fp)
   pBits = (BYTE*)malloc(iBitsSize);
   if (!pBits)
   {
-    TRACE("Out of memory for DIB bits");
+    TRACE(_T("Out of memory for DIB bits"));
     goto $abort;
   }
   // Seek to the bits in the file.
@@ -358,7 +358,7 @@ StyleDIB::Load(CFile* fp)
   iBytes = fp->Read(pBits, iBitsSize);
   if (iBytes != iBitsSize)
   {
-    TRACE("Failed to read bits");
+    TRACE(_T("Failed to read bits"));
     goto $abort;
   }
   // Everything went OK.
@@ -396,7 +396,7 @@ StyleDIB::Load(LPCTSTR pszFileName)
   CFile file;
   if (!file.Open(pszFileName, CFile::modeRead | CFile::shareDenyWrite))
   {
-    TRACE("Failed to open file");
+    TRACE(_T("Failed to open file"));
     return FALSE;
   }
   BOOL bResult = Load(&file);
@@ -412,14 +412,14 @@ StyleDIB::LoadBitmap(WORD wResid)
   HRSRC hrsrc = ::FindResource(hInst, MAKEINTRESOURCE(wResid), RT_BITMAP);
   if (!hrsrc)
   {
-    TRACE("DIB resource not found");
+    TRACE(_T("DIB resource not found"));
     return FALSE;
   }
 
   HGLOBAL hg = LoadResource(hInst, hrsrc);
   if (!hg)
   {
-    TRACE("Failed to load DIB resource");
+    TRACE(_T("Failed to load DIB resource"));
     return FALSE;
   }
   BYTE* pRes = (BYTE*)LockResource(hg);
@@ -453,13 +453,13 @@ BOOL StyleDIB::Load(WORD wResid)
   HRSRC hrsrc = ::FindResource(hInst, MAKEINTRESOURCE(wResid), _T("DIB"));
   if (!hrsrc)
   {
-    TRACE("DIB resource not found");
+    TRACE(_T("DIB resource not found"));
     return FALSE;
   }
   HGLOBAL hg = LoadResource(hInst, hrsrc);
   if (!hg)
   {
-    TRACE("Failed to load DIB resource");
+    TRACE(_T("Failed to load DIB resource"));
     return FALSE;
   }
   BYTE* pRes = (BYTE*)LockResource(hg);
@@ -568,7 +568,7 @@ StyleDIB::MapColorsToPalette(CPalette* pPal)
 {
   if (!pPal)
   {
-    TRACE("No palette to map to");
+    TRACE(_T("No palette to map to"));
     return FALSE;
   }
   LPRGBQUAD pctThis = GetClrTabAddress();
@@ -621,7 +621,7 @@ void* StyleDIB::GetPixelAddress(int x, int y)
   // Make sure it's in range and if it isn't return zero.
   if ((x >= DibWidth()) || (y >= DibHeight()))
   {
-    TRACE("Attempt to get out of range pixel address");
+    TRACE(_T("Attempt to get out of range pixel address"));
     return NULL;
   }
   // Calculate the scan line storage width.
@@ -732,7 +732,7 @@ StyleDIB::Save(CFile* fp)
   }
     CATCH(CFileException, e)
   {
-    TRACE("Failed to write file header");
+    TRACE(_T("Failed to write file header"));
     return FALSE;
   }
   END_CATCH;
@@ -747,7 +747,7 @@ StyleDIB::Save(CFile* fp)
   }
   CATCH(CFileException, e)
   {
-    TRACE("Failed to write BITMAPINFO");
+    TRACE(_T("Failed to write BITMAPINFO"));
     return FALSE;
   }
   END_CATCH;
@@ -760,7 +760,7 @@ StyleDIB::Save(CFile* fp)
   }
   CATCH(CFileException, e)
   {
-    TRACE("Failed to write bits");
+    TRACE(_T("Failed to write bits"));
     return FALSE;
   }
   END_CATCH;

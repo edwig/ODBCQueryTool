@@ -173,7 +173,7 @@ SQLTransaction::Commit()
       // Not an error in all RDBMS'es. In MS-Access this is default behavior
       // So we log the error instead of throwing it. 
       // But as we do not have the database object to log it, we TRACE it :-(
-      ATLTRACE("Error setting autocommit mode to 'on', after committed transaction [%s]\n",m_name.GetString());
+      ATLTRACE(_T("Error setting autocommit mode to 'on', after committed transaction [%s]\n"),m_name.GetString());
     }
   }
   // Cleanup after use
@@ -211,7 +211,7 @@ SQLTransaction::Rollback()
       // Not an error in all RDBMS'es. In MS-Access this is default behavior
       // So we log the error instead of throwing it. 
       // But as we do not have the database object to log it, we TRACE it :-(
-      ATLTRACE("Error setting autocommit mode to 'on', after committed transaction [%s]\n",m_name.GetString());
+      ATLTRACE(_T("Error setting autocommit mode to 'on', after committed transaction [%s]\n"),m_name.GetString());
     }
   }
   AfterRollback();

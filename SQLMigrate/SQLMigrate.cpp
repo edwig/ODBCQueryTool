@@ -1427,12 +1427,12 @@ SQLMigrate::FillTablesViaSlowPump()
 
 
 //               SQLVariant* oid = query1.GetColumn(17);
-//               TRACE("OID = %d\n",oid->GetAsSLong());
+//               TRACE(_T("OID = %d\n"),oid->GetAsSLong());
 //               CString test("TEST");
 //               LogMissingRecord(query1,test);
 //               int col = query1.GetColumnNumber("EI_OID");
 //               SQLVariant* eioid = query1.GetColumn(col);
-//               TRACE("EI_OID = %d\n",eioid->GetAsBCD().AsLong());
+//               TRACE(_T("EI_OID = %d\n"),eioid->GetAsBCD().AsLong());
 
               // GO EXECUTE!
               // Execute the insert statement with these parameters

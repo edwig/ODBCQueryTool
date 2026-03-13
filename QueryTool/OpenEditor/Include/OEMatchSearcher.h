@@ -245,7 +245,7 @@ namespace OpenEditor
     inline
     MatchAnalyser::MatchAnalyser (const LexemeInfo& lexemeInfo, bool backward)
     {
-        TRACE("MatchAnalyser::MatchAnalyser\n");
+        TRACE(_T("MatchAnalyser::MatchAnalyser\n"));
         m_backward = backward;
         m_stack.push(lexemeInfo);
     }
@@ -261,7 +261,7 @@ namespace OpenEditor
     inline
     void MatchAnalyser::open (EPLSLexeme lexeme, const TokenInfo& tokenInfo)
     {
-        TRACE("MatchAnalyser::open %s\n", GetLexemeName(lexeme));
+        TRACE(_T("MatchAnalyser::open %s\n"), GetLexemeName(lexeme));
 
         LexemeInfo lexemeInfo;
         lexemeInfo.m_lexeme = lexeme;
@@ -273,7 +273,7 @@ namespace OpenEditor
     inline
     void MatchAnalyser::defer (const TokenInfo& tokenInfo)
     {
-        TRACE("MatchAnalyser::defer %s\n", GetLexemeName(m_stack.top().m_lexeme));
+        TRACE(_T("MatchAnalyser::defer %s\n"), GetLexemeName(m_stack.top().m_lexeme));
 
         m_stack.top().m_status = LexemeInfo::eDeferredClosing;
         m_stack.top().AddToken(tokenInfo);
@@ -282,7 +282,7 @@ namespace OpenEditor
     inline
     void MatchAnalyser::closeDeferred (const TokenInfo& tokenInfo)
     {
-        TRACE("MatchAnalyser::closeDeferred %s\n", GetLexemeName(m_stack.top().m_lexeme));
+        TRACE(_T("MatchAnalyser::closeDeferred %s\n"), GetLexemeName(m_stack.top().m_lexeme));
 
         if (!m_stack.top().IsDeferred())
             throw UnexpectedToken();
@@ -295,7 +295,7 @@ namespace OpenEditor
     inline
     void MatchAnalyser::closeAllDeferred (LexemeInfo& top)
     {
-        TRACE("MatchAnalyser::closeAllDeferred\n");
+        TRACE(_T("MatchAnalyser::closeAllDeferred\n"));
 
         while (top.IsDeferred() && m_stack.size() > 1)
         {
@@ -307,7 +307,7 @@ namespace OpenEditor
     inline
     void MatchAnalyser::closeDeferred ()
     {
-        TRACE("MatchAnalyser::closeDeferred %s\n", GetLexemeName(m_stack.top().m_lexeme));
+        TRACE(_T("MatchAnalyser::closeDeferred %s\n"), GetLexemeName(m_stack.top().m_lexeme));
 
         if (!m_stack.top().IsDeferred())
             throw UnexpectedToken();
@@ -319,7 +319,7 @@ namespace OpenEditor
     inline
     void MatchAnalyser::close (const TokenInfo& tokenInfo)
     {
-        TRACE("MatchAnalyser::close %s\n", GetLexemeName(m_stack.top().m_lexeme));
+        TRACE(_T("MatchAnalyser::close %s\n"), GetLexemeName(m_stack.top().m_lexeme));
 
         if (m_stack.top().m_status == LexemeInfo::eDeferredClosing)
         {

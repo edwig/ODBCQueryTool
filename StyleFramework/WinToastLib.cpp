@@ -240,7 +240,7 @@ namespace Util
   inline HRESULT defaultExecutablePath(_In_ WCHAR* path, _In_ DWORD nSize = MAX_PATH) 
   {
     DWORD written = GetModuleFileNameExW(GetCurrentProcess(), nullptr, path, nSize);
-    TRACE("Default executable path: %s\n",path);
+    TRACE(_T("Default executable path: %s\n"),path);
     return (written > 0) ? S_OK : E_FAIL;
   }
 
@@ -253,7 +253,7 @@ namespace Util
     {
       errno_t result = wcscat_s(path, nSize, DEFAULT_SHELL_LINKS_PATH);
       hr = (result == 0) ? S_OK : E_INVALIDARG;
-      TRACE("Default shell link path: %s\n",path);
+      TRACE(_T("Default shell link path: %s\n"),path);
     }
     return hr;
   }
@@ -266,7 +266,7 @@ namespace Util
       const std::wstring appLink(appname + DEFAULT_LINK_FORMAT);
       errno_t result = wcscat_s(path, nSize, appLink.c_str());
       hr = (result == 0) ? S_OK : E_INVALIDARG;
-      TRACE("Default shell link file path: %s\n",path);
+      TRACE(_T("Default shell link file path: %s\n"),path);
     }
     return hr;
   }
@@ -438,7 +438,7 @@ WinToast::WinToast()
 {
 	if (!isCompatible()) 
   {
-		TRACE("Warning: Your system is not compatible with this library!\n");
+		TRACE(_T("Warning: Your system is not compatible with this library!\n"));
 	}
 }
 
@@ -461,7 +461,7 @@ void WinToast::setAppName(_In_ const std::wstring& appName)
 void WinToast::setAppUserModelId(_In_ const std::wstring& aumi) 
 {
   _aumi = aumi;
-  TRACE("Default App User Model Id: %s\n",aumi.c_str());
+  TRACE(_T("Default App User Model Id: %s\n"),aumi.c_str());
 }
 
 bool WinToast::isCompatible() 
@@ -503,7 +503,7 @@ std::wstring WinToast::configureAUMI(_In_ const std::wstring &companyName,
 
   if (aumi.length() > SCHAR_MAX) 
   {
-    TRACE("Error: max size allowed for AUMI: 128 characters.\n");
+    TRACE(_T("Error: max size allowed for AUMI: 128 characters.\n"));
   }
   return aumi;
 }
@@ -531,13 +531,13 @@ enum WinToast::ShortcutResult WinToast::createShortcut()
 {
   if (_aumi.empty() || _appName.empty()) 
   {
-    TRACE("Error: App User Model Id or Appname is empty!\n");
+    TRACE(_T("Error: App User Model Id or Appname is empty!\n"));
     return SHORTCUT_MISSING_PARAMETERS;
   }
 
   if (!isCompatible()) 
   {
-    TRACE("Your OS is not compatible with this librar1y! =(\n");
+    TRACE(_T("Your OS is not compatible with this librar1y! =(\n"));
     return SHORTCUT_INCOMPATIBLE_OS;
   }
 
@@ -548,7 +548,7 @@ enum WinToast::ShortcutResult WinToast::createShortcut()
     {
       if (FAILED(initHr) && initHr != S_FALSE) 
       {
-        TRACE("Error on COM library initialization!\n");
+        TRACE(_T("Error on COM library initialization!\n"));
         return SHORTCUT_COM_INIT_FAILURE;
       }
       else 
@@ -575,7 +575,7 @@ bool WinToast::initialize(_Out_ WinToastError* error)
   if (!isCompatible()) 
   {
     setError(error, WinToastError::SystemNotSupported);
-    TRACE("Error: system not supported.\n");
+    TRACE(_T("Error: system not supported.\n"));
     return false;
   }
 
@@ -583,21 +583,21 @@ bool WinToast::initialize(_Out_ WinToastError* error)
   if (_aumi.empty() || _appName.empty()) 
   {
     setError(error, WinToastError::InvalidParameters);
-    TRACE("Error while initializing, did you set up a valid AUMI and App name?\n");
+    TRACE(_T("Error while initializing, did you set up a valid AUMI and App name?\n"));
     return false;
   }
 
   if (createShortcut() < 0) 
   {
     setError(error, WinToastError::ShellLinkNotCreated);
-    TRACE("Error while attaching the AUMI to the current proccess =(\n");
+    TRACE(_T("Error while attaching the AUMI to the current proccess =(\n"));
     return false;
   }
 
   if (FAILED(DllImporter::SetCurrentProcessExplicitAppUserModelID(_aumi.c_str()))) 
   {
     setError(error, WinToastError::InvalidAppUserModelID);
-    TRACE("Error while attaching the AUMI to the current proccess =(\n");
+    TRACE(_T("Error while attaching the AUMI to the current proccess =(\n"));
     return false;
   }
 
@@ -628,7 +628,7 @@ HRESULT	WinToast::validateShellLinkHelper(_Out_ bool& wasChanged)
   DWORD attr = GetFileAttributesW(path);
   if (attr >= 0xFFFFFFF) 
   {
-      TRACE("Error, shell link not found. Try to create a new one in: %s\n",path);
+      TRACE(_T("Error, shell link not found. Try to create a new one in: %s\n"),path);
       return E_FAIL;
   }
 
@@ -747,13 +747,13 @@ INT64 WinToast::ShowToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
   if (!isInitialized()) 
   {
     setError(error, WinToastError::NotInitialized);
-    TRACE("Error when launching the toast. WinToast is not initialized.\n");
+    TRACE(_T("Error when launching the toast. WinToast is not initialized.\n"));
     return id;
   }
   if (!handler) 
   {
     setError(error, WinToastError::InvalidHandler);
-    TRACE("Error when launching the toast. Handler cannot be nullptr.\n");
+    TRACE(_T("Error when launching the toast. Handler cannot be nullptr.\n"));
     return id;
   }
 
@@ -850,7 +850,7 @@ INT64 WinToast::ShowToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
           } 
           else 
           {
-            TRACE("Modern features (Actions/Sounds/Attributes) not supported in this os version\n");
+            TRACE(_T("Modern features (Actions/Sounds/Attributes) not supported in this os version\n"));
           }
 
           if (SUCCEEDED(hr)) 
@@ -894,7 +894,7 @@ INT64 WinToast::ShowToast(_In_ const WinToastTemplate& toast, _In_  IWinToastHan
                   {
                     id = guid.Data1;
                     _buffer.emplace(id, notify_data(notification, activatedToken, dismissedToken, failedToken));
-                    // TRACE("xml: %s\n",Util::AsString(xmlDocument));
+                    // TRACE(_T("xml: %s\n"),Util::AsString(xmlDocument));
                     hr = notifier->Show(notification.Get());
                     if (FAILED(hr)) 
                     {
@@ -929,7 +929,7 @@ bool WinToast::HideToast(_In_ INT64 id)
 {
   if (!isInitialized()) 
   {
-    TRACE("Error when hiding the toast. WinToast is not initialized.\n");
+    TRACE(_T("Error when hiding the toast. WinToast is not initialized.\n"));
     return false;
   }
 

@@ -85,29 +85,29 @@ HPFCounter::Stop()
   FILETIME userTime   = { 0, 0};
   GetThreadTimes(GetCurrentThread(),&creation,&exitTime,&kernelTime,&userTime);
 
-//   TRACE ("Thread times\n");
-//   TRACE ("- User   hi : %x\n",userTime.dwHighDateTime);
-//   TRACE ("- User   lo : %x\n",userTime.dwLowDateTime);
-//   TRACE ("- Kernel hi : %x\n",kernelTime.dwHighDateTime);
-//   TRACE ("- Kernel lo : %x\n\n",kernelTime.dwLowDateTime);
+//   TRACE (_T("Thread times\n"));
+//   TRACE (_T("- User   hi : %x\n"),userTime.dwHighDateTime);
+//   TRACE (_T("- User   lo : %x\n"),userTime.dwLowDateTime);
+//   TRACE (_T("- Kernel hi : %x\n"),kernelTime.dwHighDateTime);
+//   TRACE (_T("- Kernel lo : %x\n\n"),kernelTime.dwLowDateTime);
 
   // Calculate how much kernel time we just used since last time
   FILETIME slice = SubFiletimes(&kernelTime,&m_kernelTime);
   m_kernelTimeSlice = AddFiletimes(&m_kernelTimeSlice,&slice);
   m_kernelTime = kernelTime;
 
-//   TRACE("Kernel Slice times\n");
-//   TRACE ("- slice hi : %x\n",m_kernelTimeSlice.dwHighDateTime);
-//   TRACE ("- slice lo : %x\n",m_kernelTimeSlice.dwLowDateTime);
+//   TRACE(_T("Kernel Slice times\n"));
+//   TRACE(_T("- slice hi : %x\n"),m_kernelTimeSlice.dwHighDateTime);
+//   TRACE(_T("- slice lo : %x\n"),m_kernelTimeSlice.dwLowDateTime);
 
   // Calculate how much user time we just used since last time
   slice = SubFiletimes(&userTime,&m_userTime);
   m_userTimeSlice = AddFiletimes(&m_userTimeSlice,&slice);
   m_userTime = userTime;
 
-//   TRACE("User Slice times\n");
-//   TRACE ("- slice hi : %x\n",m_userTimeSlice.dwHighDateTime);
-//   TRACE ("- slice lo : %x\n",m_userTimeSlice.dwLowDateTime);
+//   TRACE(_T("User Slice times\n"));
+//   TRACE(_T("- slice hi : %x\n"),m_userTimeSlice.dwHighDateTime);
+//   TRACE(_T("- slice lo : %x\n"),m_userTimeSlice.dwLowDateTime);
 }
 
 // Reset the total time, requery the start

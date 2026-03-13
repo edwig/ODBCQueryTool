@@ -616,7 +616,7 @@ void EditContext::GetBlock (CString& str, const Square* sqr) const
                     str += _T("\r\n");
                     line2buff(pos.end.line, 0, pos.end.column, str);
                 }
-                TRACE("Copy Block reserved = %d, actual length = %d\n",  reserve, str.GetLength());
+                TRACE(_T("Copy Block reserved = %d, actual length = %d\n"),  reserve, str.GetLength());
 
                 if ((pos.end.line < nLines && pos.end.column > GetLineLength(pos.end.line))
                  || (pos.end.line >= nLines && pos.end.column > 0))

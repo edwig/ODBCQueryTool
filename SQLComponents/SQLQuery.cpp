@@ -1120,16 +1120,16 @@ SQLQuery::BindParameters()
       LogParameter(icol,var);
     }
 
-//     TRACE("COLUMN     : %d\n", icol);
-//     TRACE("ParamType  : %d\n", paramType);
-//     TRACE("Datatype   : %d\n", dataType);
-//     TRACE("SQLtype    : %d\n", sqlDatatype);
-//     TRACE("Col size   : %d\n", columnSize);
-//     TRACE("Scale      : %d\n", scale);
-//     TRACE("DataPointer: %p\n", dataPointer);
-//     TRACE("BufferSize : %d\n", bufferSize);
-//     TRACE("Indicator  : %d\n", (int)*indicator);
-//     TRACE("DATA       : %s\n", var->GetAsString().GetString());
+//     TRACE(_T("COLUMN     : %d\n"), icol);
+//     TRACE(_T("ParamType  : %d\n"), paramType);
+//     TRACE(_T("Datatype   : %d\n"), dataType);
+//     TRACE(_T("SQLtype    : %d\n"), sqlDatatype);
+//     TRACE(_T("Col size   : %d\n"), columnSize);
+//     TRACE(_T("Scale      : %d\n"), scale);
+//     TRACE(_T("DataPointer: %p\n"), dataPointer);
+//     TRACE(_T("BufferSize : %d\n"), bufferSize);
+//     TRACE(_T("Indicator  : %d\n"), (int)*indicator);
+//     TRACE(_T("DATA       : %s\n"), var->GetAsString().GetString());
 
     // Do the bindings
     m_retCode = SqlBindParameter(m_hstmt        // Statement handle
@@ -1320,13 +1320,13 @@ SQLQuery::BindColumns()
     m_numMap .insert(std::make_pair(icol,var));
     m_nameMap.insert(std::make_pair(columnName,var));
 
-//     TRACE("COLUMN\n");
-//     TRACE("- Number   : %d\n",icol);
-//     TRACE("- Name     : %s\n",colName);
-//     TRACE("- Datatype : %s\n",colName,var->FindDatatype(var->GetDataType()));
-//     TRACE("- Precision: %d\n",precision);
-//     TRACE("- Scale    : %d\n",scale);
-//     TRACE("- ATEXEC   : %d\n",atexec);
+//     TRACE(_T("COLUMN\n"));
+//     TRACE(_T("- Number   : %d\n"),icol);
+//     TRACE(_T("- Name     : %s\n"),colName);
+//     TRACE(_T("- Datatype : %s\n"),colName,var->FindDatatype(var->GetDataType()));
+//     TRACE(_T("- Precision: %d\n"),precision);
+//     TRACE(_T("- Scale    : %d\n"),scale);
+//     TRACE(_T("- ATEXEC   : %d\n"),atexec);
   }
 
   // See which SQLGetData extensions are reported by the ODBC driver

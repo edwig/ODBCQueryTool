@@ -847,7 +847,7 @@ void PlSqlMatchSearcher::Find (EditContext& editor, bool select)
         CString buff;
         editor.GetBlock(buff, &sqr);
 
-        TRACE("Start with: \"%s\"\n", buff.GetString());
+        TRACE(_T("Start with: \"%s\"\n"), buff.GetString());
 
         int length;
         LPCTSTR str;

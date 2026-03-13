@@ -22,6 +22,13 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes 3.x.x
+------------------
+-  Fixing the split-cursors for dragging the panels sideways and up/down.
+   In essence the cursor definition files (*.cur) where missing.
+-  The password field in the login dialog now has a password eye to view the 
+   currently entered password.
+
 Releasenotes 3.6.2
 ------------------
 -  Fix for a crash while saving *.sql files
