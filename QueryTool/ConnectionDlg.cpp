@@ -183,6 +183,7 @@ ConnectionDlg::OnInitDialog()
    {
      m_editPassword.SetPassword(true);
      m_editPassword.SetEmpty(true,_T("Password"));
+     m_editPassword.UsePasswordEye();
    }
 
    FillDatasource();

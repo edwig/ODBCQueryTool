@@ -1257,9 +1257,9 @@ QueryToolApp::TableDDL(CString& p_table)
       create.SaveDDL(filename);
       AfxGetApp()->OpenDocumentFile(filename);
     }
-    catch (CString& error)
+    catch(StdException& error)
     {
-      DoMessageBox(_T("Cannot create DDL for table: ") + p_table + _T("\n") + error, MB_OK | MB_ICONERROR, 0);
+      DoMessageBox(CString(_T("Cannot create DDL for table: ")) + p_table + _T("\n") + error.GetErrorMessage().GetString(),MB_OK | MB_ICONERROR, 0);
     }
   }
 }

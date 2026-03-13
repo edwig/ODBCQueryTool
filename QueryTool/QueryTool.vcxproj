@@ -529,6 +529,8 @@ copy $(SolutionDir)\Data\*.*  $(OutDir)\Data\</Command>
     <None Include="..\Data\ultraedit.keymap" />
     <None Include="QueryTool.reg" />
     <None Include="res\QueryTool.rc2" />
+    <None Include="res\splith.cur" />
+    <None Include="res\splitv.cur" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="QueryTool.rc">

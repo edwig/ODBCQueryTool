@@ -120,7 +120,7 @@ void CFileWatch::NotifyClients ()
 void CFileWatch::SuspendThread () 
 { 
 	m_csDataLock.Lock();
-  TRACE("FileWatch: SuspendThread\n");
+  TRACE(_T("FileWatch: SuspendThread\n"));
   if (m_pThread && !m_bStopWatch) 
   {
     m_pThread->SuspendThread(); 
@@ -131,7 +131,7 @@ void CFileWatch::SuspendThread ()
 void CFileWatch::ResumeThread () 
 { 
 	m_csDataLock.Lock();
-  TRACE("FileWatch: ResumeThread\n");
+  TRACE(_T("FileWatch: ResumeThread\n"));
   if (m_pThread) 
   {
     m_EventCheck.SetEvent();
@@ -150,7 +150,7 @@ void CFileWatch::StartThread ()
 		m_bStopWatch = false;
 		m_EventUpdate.SetEvent();
 		m_pThread = AfxBeginThread(Watch, NULL, THREAD_PRIORITY_LOWEST);
-    TRACE("FileWatch: thread started\n");
+    TRACE(_T("FileWatch: thread started\n"));
 	}
 }
 
@@ -179,8 +179,8 @@ void CFileWatch::AddFileToWatch (CFileWatchClient& client)
 	if (isFolder(client.m_fileName) || getFileAttrs(client.m_fileName, ftLastWriteTime, nFileSize))
 	{
     client.m_suspendWatch = false;
-		TRACE("FileWatch: Add File = %s\n", client.m_fileName.GetString());
-		TRACE("FileWatch: time=%I64d, size=%I64d\n", ftLastWriteTime, nFileSize);
+		TRACE(_T("FileWatch: Add File = %s\n"), client.m_fileName.GetString());
+		TRACE(_T("FileWatch: time=%I64d, size=%I64d\n"), ftLastWriteTime, nFileSize);
   		client.m_lastWriteTime = ftLastWriteTime;
         client.m_nFileSize = nFileSize;
 		// new directory to watch?
@@ -236,7 +236,7 @@ void CFileWatch::RemoveFileToWatch (CFileWatchClient& client)
     m_folders.erase(sFolder);
   }
   client.m_suspendWatch = true;
-  // TRACE("FileWatch: Suspend watch, File = %s\n", client.m_fileName.GetString());
+  // TRACE(_T("FileWatch: Suspend watch, File = %s\n"), client.m_fileName.GetString());
 
 	m_csDataLock.Unlock();
   if (m_folders.empty())
@@ -256,7 +256,7 @@ UINT CFileWatch::Watch (LPVOID)
 		// wait for event or notification
 		DWORD dwResult = WaitForMultipleObjects((DWORD)arHandle.GetSize(), arHandle.GetData(), FALSE, INFINITE);
 		m_csDataLock.Lock();
-		TRACE("FileWatch: Notification\n");
+		TRACE(_T("FileWatch: Notification\n"));
 
 		if (m_bStopWatch)
     {
@@ -265,7 +265,7 @@ UINT CFileWatch::Watch (LPVOID)
 		int nObject = dwResult - WAIT_OBJECT_0;
 		if (nObject == 0)
 		{
-			TRACE("FileWatch: Update\n");
+			TRACE(_T("FileWatch: Update\n"));
 			m_EventUpdate.ResetEvent();
 
 			// refresh list
@@ -279,7 +279,7 @@ UINT CFileWatch::Watch (LPVOID)
 		{
 		  if (nObject == 1)
 		  {
-			  TRACE("FileWatch: Check on Activation\n");
+			  TRACE(_T("FileWatch: Check on Activation\n"));
 			  m_EventCheck.ResetEvent();
       }
       std::map<CString, HANDLE>::const_iterator folderIt = m_folders.begin();
@@ -287,14 +287,14 @@ UINT CFileWatch::Watch (LPVOID)
       {
         if (nObject == 1 || folderIt->second == arHandle[nObject])
         {
-      	  TRACE("FileWatch: Notification Directory = %s\n", folderIt->first.GetString());
+      	  TRACE(_T("FileWatch: Notification Directory = %s\n"), folderIt->first.GetString());
 
           std::set<CFileWatchClient*>::const_iterator clientIt = m_clients.begin();
           for(; clientIt != m_clients.end(); clientIt++)
           {
             if (getFileFolder((*clientIt)->m_fileName) == folderIt->first)
             {
-					    TRACE("FileWatch: Folder File = %s\n", (*clientIt)->m_fileName.GetString());
+					    TRACE(_T("FileWatch: Folder File = %s\n"), (*clientIt)->m_fileName.GetString());
 					    __int64 ftLastWriteTime = 0, nFileSize = 0;
 					    if (isFolder((*clientIt)->m_fileName) 
                     || (!((*clientIt)->m_suspendWatch)
@@ -302,9 +302,9 @@ UINT CFileWatch::Watch (LPVOID)
                     && ((*clientIt)->m_lastWriteTime != ftLastWriteTime 
                         || ((*clientIt)->m_nFileSize!= nFileSize))))
 					    {
-						    TRACE("FileWatch: *Changed File = %s\n", (*clientIt)->m_fileName.GetString());
-                TRACE("FileWatch: oldval time=%I64d, size=%I64d\n", (*clientIt)->m_lastWriteTime, (*clientIt)->m_nFileSize);
-                TRACE("FileWatch: newval time=%I64d, size=%I64d\n", ftLastWriteTime, nFileSize);
+						    TRACE(_T("FileWatch: *Changed File = %s\n"), (*clientIt)->m_fileName.GetString());
+                TRACE(_T("FileWatch: oldval time=%I64d, size=%I64d\n"), (*clientIt)->m_lastWriteTime, (*clientIt)->m_nFileSize);
+                TRACE(_T("FileWatch: newval time=%I64d, size=%I64d\n"), ftLastWriteTime, nFileSize);
                 (*clientIt)->m_modified = true;
 					    }
             }
@@ -327,6 +327,6 @@ UINT CFileWatch::Watch (LPVOID)
 	m_pThread = NULL;
 	m_csDataLock.Unlock();
 
-  TRACE("FileWatch: Quit\n");
+  TRACE(_T("FileWatch: Quit\n"));
 	return 0;
 }

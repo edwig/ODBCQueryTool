@@ -118,6 +118,7 @@ MultConnectionsDlg::OnInitDialog()
   // Set password field
   m_boxUserPassword.SetPassword(true);
   m_boxUserPassword.SetEmpty(true,_T("Password"));
+  m_boxUserPassword.UsePasswordEye();
 
   // Fill the connection dialog
   InitGridEmpty();

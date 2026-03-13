@@ -706,6 +706,12 @@
     <None Include="QueryTool.reg">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="res\splith.cur">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="res\splitv.cur">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="QueryTool.rc">
