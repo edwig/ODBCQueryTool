@@ -24,6 +24,9 @@ LATEST HISTORY
 
 Releasenotes 3.x.x
 ------------------
+-  Creating view DDL from the right click menu on a view in the object tree. 
+   This is a very useful feature to quickly get the DDL of a view, 
+   which is not directly supported by ODBC.
 -  Fixing the split-cursors for dragging the panels sideways and up/down.
    In essence the cursor definition files (*.cur) where missing.
 -  The password field in the login dialog now has a password eye to view the 

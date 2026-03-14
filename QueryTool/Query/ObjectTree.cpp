@@ -346,9 +346,13 @@ ObjectTree::OnTableDDL(HTREEITEM p_theItem)
   special.Trim();
   if(IsSpecialNode(special))
   {
-    if(special == _T("Tables") || special == _T("Views"))
+    if(special == _T("Tables"))
     {
       theApp.TableDDL(table);
+    }
+    if (special == _T("Views"))
+    {
+      theApp.ViewDDL(table);
     }
   }
 }

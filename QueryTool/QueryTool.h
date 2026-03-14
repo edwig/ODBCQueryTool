@@ -65,6 +65,7 @@ public:
   void          SelectFirst100(CString& p_table);
   void          FindTable(CString& table);
   void          TableDDL(CString& p_table);
+  void          ViewDDL(CString& p_table);
   CString       FindNativeSQL(CString& command);
   void          ReportCapabilities();
   void          SetTitle(CString p_document);

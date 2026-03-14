@@ -1264,6 +1264,37 @@ QueryToolApp::TableDDL(CString& p_table)
   }
 }
 
+void
+QueryToolApp::ViewDDL(String& p_view)
+{
+  if (m_pMainWnd)
+  {
+    CWaitCursor take_a_deep_sigh;
+    // Get the temp directory
+    XString directory;
+    XString view(p_view);
+    directory.GetEnvironmentVariable(_T("TMP"));
+    directory.TrimRight('\\');
+    // Get a filename for the table
+    XString filename(directory);
+    filename += _T("\\");
+    filename += _T("CreateView_");
+    filename += view;
+    filename += _T(".sql");
+    try
+    {
+      DDLCreateTable create(m_database.GetSQLInfoDB());
+      create.GetViewStatements(view);
+      create.SaveDDL(filename);
+      AfxGetApp()->OpenDocumentFile(filename);
+    }
+    catch(StdException& error)
+    {
+      DoMessageBox(CString(_T("Cannot create DDL for view: ")) + p_view + _T("\n") + error.GetErrorMessage().GetString(),MB_OK | MB_ICONERROR, 0);
+    }
+  }
+}
+
 CString
 QueryToolApp::FindNativeSQL(CString& command)
 {
