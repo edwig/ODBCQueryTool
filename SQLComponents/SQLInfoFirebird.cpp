@@ -1108,8 +1108,9 @@ SQLInfoFirebird::GetCATALOGTableAttributes(XString& p_schema,XString& p_tablenam
     IdentifierCorrect(p_tablename);
     sql += _T("   AND rel.rdb$relation_name ");
     sql += (p_tablename.Find(_T("%")) >= 0) ? _T("LIKE") : _T("=");
-    sql += _T(" ?");
+    sql += _T(" ?\n");
   }
+  sql += _T(" ORDER BY 1,2,3");
   return sql;
 }
 
@@ -1151,8 +1152,9 @@ SQLInfoFirebird::GetCATALOGTableCatalog(XString& p_schema,XString& p_tablename,b
     IdentifierCorrect(p_tablename);
     sql += _T("   AND rel.rdb$relation_name ");
     sql += (p_tablename.Find(_T("%")) >= 0) ? _T("LIKE") : _T("=");
-    sql += _T(" ?");
+    sql += _T(" ?\n");
   }
+  sql += _T(" ORDER BY 1,2,3");
   return sql;
 }
 
@@ -1666,9 +1668,10 @@ SQLInfoFirebird::GetCATALOGPrimaryAttributes(XString& p_schema,XString& p_tablen
   if(!p_schema.IsEmpty())
   {
     IdentifierCorrect(p_schema);
-    sql += _T("   AND rel.rdb$owner_name      = ?");
+    sql += _T("   AND rel.rdb$owner_name      = ?\n");
   }
-  sql += _T("   AND rel.rdb$relation_name   = ?");
+  sql += _T("   AND rel.rdb$relation_name   = ?\n");
+  sql += _T(" ORDER BY ind.rdb$field_position");
   return sql;
 }
 
@@ -2316,8 +2319,9 @@ SQLInfoFirebird::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern,boo
   {
     IdentifierCorrect(p_pattern);
     p_pattern = _T("%") + p_pattern + _T("%");
-    sql += _T("   AND rdb$generator_name LIKE ?");
+    sql += _T("   AND rdb$generator_name LIKE ?\n");
   }
+  sql += _T(" ORDER BY 1,2,3");
   return sql;
 }
 
@@ -2344,7 +2348,8 @@ SQLInfoFirebird::GetCATALOGSequenceAttributes(XString& p_schema,XString& p_seque
     IdentifierCorrect(p_schema);
     sql += _T("   AND gen.rdb$owner_name = ?\n");
   }
-  sql += _T("   AND gen.rdb$generator_name = ?");
+  sql += _T("   AND gen.rdb$generator_name = ?\n");
+  sql += _T(" ORDER BY 1,2,3");
   return sql;
 }
 
@@ -2440,8 +2445,9 @@ SQLInfoFirebird::GetCATALOGViewAttributes(XString& p_schema,XString& p_viewname,
     IdentifierCorrect(p_viewname);
     sql += _T("\n AND rel.rdb$relation_name ");
     sql += (p_viewname.Find(_T("%")) >= 0) ? _T("LIKE") : _T("=");
-    sql += _T(" ?");
+    sql += _T(" ?\n");
   }
+  sql += _T(" ORDER BY 1,2,3");
   return sql;
 }
 
@@ -2753,8 +2759,9 @@ SQLInfoFirebird::GetPSMPackageList(XString& /*p_schema*/,XString& p_package,bool
                   _T(" WHERE rdb$system_flag = 0\n");
   if(!p_package.IsEmpty())
   {
-    query += _T("   AND rdb$package_name LIKE '") + p_package + _T("'");
+    query += _T("   AND rdb$package_name LIKE '") + p_package + _T("'\n");
   }
+  query += _T(" ORDER BY 1,2,3");
   return query;
 }
 
@@ -2777,7 +2784,8 @@ SQLInfoFirebird::GetPSMPackageListModules(XString& /*p_schema*/,XString& p_packa
                 _T("      ,'FUNCTION'\n")
                 _T("  FROM rdb$functions\n")
                 _T(" WHERE rdb$private_flag >= 0\n")
-                _T("   AND rdb$package_name = '") + p_package + _T("'");
+                _T("   AND rdb$package_name = '") + p_package + _T("'\n")
+                _T(" ORDER BY 1,2,3");
   return sql;
 }
 
