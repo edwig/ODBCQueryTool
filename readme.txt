@@ -31,6 +31,14 @@ Releasenotes 3.x.x
    In essence the cursor definition files (*.cur) where missing.
 -  The password field in the login dialog now has a password eye to view the 
    currently entered password.
+-  Fix for a crash when copying text to the MS-Windows clipboard. This was caused
+   by an incoreect handling of the clipboard data formats.
+-  Added packages to the object tree. This feature is no implemented for Firebird.
+   The package definition and the package body are shown as separate nodes in the tree.
+   The procedure and function names are shown as modules and are extended by the 
+   package name. So for instance "my_package.my_procedure" is the name of a procedure
+   in a package.
+   
 
 Releasenotes 3.6.2
 ------------------
