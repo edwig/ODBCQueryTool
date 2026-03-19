@@ -42,7 +42,11 @@ typedef enum treeTypes
  ,TREE_SEQUENCES
  ,TREE_TRIGGERS
  ,TREE_SOURCECODE
+ ,TREE_BODYSOURCE
  ,TREE_USERTYPE
+ ,TREE_PACKAGES
+ ,TREE_PACKAGEBODY
+ ,TREE_PACKAGEMODULES
 }
 TreeTypes;
 
@@ -70,6 +74,7 @@ typedef enum objectImage
  ,IMG_SEQUENCE
  ,IMG_SOURCE
  ,IMG_USERTYPE
+ ,IMG_PACKAGE
 }
 ObjectImage;
 
@@ -109,6 +114,7 @@ protected:
   void      SetItemCount    (HTREEITEM p_theItem,int p_size);
   bool      PresetTable     (HTREEITEM p_theItem);
   bool      PresetProcedure (HTREEITEM p_theItem);
+  bool      PresetPackage   (HTREEITEM p_theItem);
   void      FindTables      (HTREEITEM p_theItem);
   void      PrepareTable    (HTREEITEM p_theItem,TCHAR p_type);
 
@@ -126,10 +132,14 @@ protected:
   void      FindSequences   (HTREEITEM p_theItem);
   void      FindUserTypes   (HTREEITEM p_theItem);
   void      FindTriggers    (HTREEITEM p_theItem);
+  void      FindPackages    (HTREEITEM p_theItem);
   void      FindProcedures  (HTREEITEM p_theItem);
   void      FindParameters  (HTREEITEM p_theItem);
   void      FindSourcecode  (HTREEITEM p_theItem);
   void      FindColumnPrivileges(HTREEITEM p_theItem);
+  void      FindPackageBody     (HTREEITEM p_theItem);
+  void      FindPackageModules  (HTREEITEM p_theItem);
+  void      FindBodySource      (HTREEITEM p_theItem);
 
   void      ColumnListToTree(MColumnMap&    p_columns,   HTREEITEM p_item);
   void      PrimariesToTree (MPrimaryMap&   p_primaries, HTREEITEM p_item);
@@ -141,6 +151,8 @@ protected:
   void      SpecialsToTree  (MSpecialsMap&  p_specials,  HTREEITEM p_item);
   void      PrivilegesToTree(MPrivilegeMap& p_privileges,HTREEITEM p_item);
   void      ParametersToTree(MParameterMap& p_parameters,HTREEITEM p_item);
+  void      PackageToTree   (MetaPackage&   p_packages,  HTREEITEM p_item);
+  void      MembersToTree   (MPackMemberMap&p_members,   HTREEITEM p_item);
   void      ColumnPrivilegesToTree(MPrivilegeMap& p_privileges,HTREEITEM p_item);
   void      ColumnDetailsToTree(MetaColumn& p_column,    HTREEITEM p_item);
   void      AddErrorsToTree(XString p_errors,HTREEITEM p_theItem);
@@ -161,6 +173,7 @@ protected:
   CString     m_schema;
   CString     m_table;
   CString     m_procedure;
+  CString     m_package;
   // Expanding source code
   SourceList  m_source;
 public:

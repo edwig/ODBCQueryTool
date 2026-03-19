@@ -2323,31 +2323,37 @@ SQLInfoPostgreSQL::GetCATALOGCommentCreate(XString p_schema,XString p_object,XSt
 
 // All package functions
 XString
-SQLInfoPostgreSQL::GetPMSPackageExists(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+SQLInfoPostgreSQL::GetPSMPackageExists(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoPostgreSQL::GetPMSPackageList(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+SQLInfoPostgreSQL::GetPSMPackageList(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoPostgreSQL::GetPMSPackageListModules(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+SQLInfoPostgreSQL::GetPSMPackageListModules(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+{
+  return _T("");
+}
+
+XString 
+SQLInfoPostgreSQL::GetPSMPackageAttributes(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoPostgreSQL::GetPMSPackageCreate(MetaPackage& /*p_package*/) const
+SQLInfoPostgreSQL::GetPSMPackageCreate(MetaPackage& /*p_package*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoPostgreSQL::GetPMSPackageDrop(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+SQLInfoPostgreSQL::GetPSMPackageDrop(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }

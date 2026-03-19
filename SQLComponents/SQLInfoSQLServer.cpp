@@ -2990,31 +2990,37 @@ SQLInfoSQLServer::GetCATALOGCommentCreate(XString p_schema,XString p_object,XStr
 
 // All package functions
 XString
-SQLInfoSQLServer::GetPMSPackageExists(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+SQLInfoSQLServer::GetPSMPackageExists(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoSQLServer::GetPMSPackageList(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+SQLInfoSQLServer::GetPSMPackageList(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoSQLServer::GetPMSPackageListModules(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+SQLInfoSQLServer::GetPSMPackageListModules(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+{
+  return _T("");
+}
+
+XString 
+SQLInfoSQLServer::GetPSMPackageAttributes(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoSQLServer::GetPMSPackageCreate(MetaPackage& /*p_package*/) const
+SQLInfoSQLServer::GetPSMPackageCreate(MetaPackage& /*p_package*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoSQLServer::GetPMSPackageDrop(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+SQLInfoSQLServer::GetPSMPackageDrop(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }

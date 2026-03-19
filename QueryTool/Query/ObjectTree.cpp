@@ -42,7 +42,7 @@ void
 ObjectTree::CreateImageList()
 {
   // Create image list (16 x 16 in 32 bits depth, 10 images default, grow by 2)
-  m_imageList.Create(16,16,ILC_COLOR32,10,2);
+  m_imageList.Create(16,16,ILC_COLOR32,20,2);
 
   // Load bitmap from resources
   CBitmap bitmap;
@@ -108,6 +108,7 @@ ObjectTree::ClearTree()
   HTREEITEM catalogs   = InsertItem(_T("Catalog"),   root,TREE_TABLES);
   HTREEITEM synonyms   = InsertItem(_T("Synonyms"),  root,TREE_TABLES);
   HTREEITEM triggers   = InsertItem(_T("Triggers"),  root,TREE_TRIGGERS);
+  HTREEITEM packages   = InsertItem(_T("Packages"),  root,TREE_PACKAGES);
   HTREEITEM procedures = InsertItem(_T("Procedures"),root,TREE_PROCEDURES);
 
   // Setting images on all nodes
@@ -118,6 +119,7 @@ ObjectTree::ClearTree()
   SetItemImage(catalogs,  IMG_CATALOGS,   IMG_CATALOGS);
   SetItemImage(synonyms,  IMG_SYNONYMS,   IMG_SYNONYMS);
   SetItemImage(triggers,  IMG_TRIGGER,    IMG_TRIGGER);
+  SetItemImage(packages,  IMG_PACKAGE,    IMG_PACKAGE);
   SetItemImage(procedures,IMG_PROCEDURES, IMG_PROCEDURES);
 
   // Setting a no-info message on all nodes
@@ -128,6 +130,7 @@ ObjectTree::ClearTree()
   InsertNoInfo(catalogs);
   InsertNoInfo(synonyms);
   InsertNoInfo(triggers);
+  InsertNoInfo(packages);
   InsertNoInfo(procedures);
 
   // Free all trigger and procedure source code
@@ -161,6 +164,7 @@ ObjectTree::IsSpecialNode(CString& p_name)
   if(p_name.Compare(_T("Catalog"))    == 0)  return true;
   if(p_name.Compare(_T("Synonyms"))   == 0)  return true;
   if(p_name.Compare(_T("Triggers"))   == 0)  return true;
+  if(p_name.Compare(_T("Packages"))   == 0)  return true;
   if(p_name.Compare(_T("Procedures")) == 0)  return true;
 
   return false;
@@ -175,6 +179,7 @@ ObjectTree::TypeToImage(TCHAR p_type)
   if(p_type == 'C') return IMG_CATALOG;
   if(p_type == 'S') return IMG_SYNONYM;
   if(p_type == 'R') return IMG_TRIGGER;
+  if(p_type == 'A') return IMG_PACKAGE;
   if(p_type == 'P') return IMG_PROCEDURE;
 
   return IMG_TABLES;
@@ -363,7 +368,7 @@ ObjectTree::DispatchTreeAction(DWORD_PTR p_action,HTREEITEM theItem)
 {
   StyleToast* toast{nullptr};
 
-  if(p_action != TREE_SOURCECODE)
+  if(p_action != TREE_SOURCECODE && p_action != TREE_BODYSOURCE)
   {
     toast = CreateToast(STYLE_TOAST_WARNING,STYLE_POS_MIDMIDDLE,_T("JUST A MOMENT!"),_T("Populating the object tree!"),_T(""),0);
   }
@@ -374,29 +379,33 @@ ObjectTree::DispatchTreeAction(DWORD_PTR p_action,HTREEITEM theItem)
 
   switch(p_action)
   {
-    case TREE_TABLES:       FindTables(theItem);          break;
-    case TREE_TABLE:        PrepareTable(theItem,tt);     break;
-    case TREE_COLUMNS:      FindColumns(theItem);         break;
-    case TREE_PRIMARY:      FindPrimary(theItem);         break;
-    case TREE_FOREIGN:      FindForeign(theItem);         break;
-    case TREE_STATISTICS:   FindStatistics(theItem);      break;
-    case TREE_SPECIALS:     FindSpecials(theItem);        break;
-    case TREE_REFERENCEDBY: FindReferenced(theItem);      break;
-    case TREE_TABTRIGGERS:  FindTabTriggers(theItem);     break;
-    case TREE_TABSEQUENCES: FindTabSequences(theItem);    break;
-    case TREE_PRIVILEGES:   FindPrivileges(theItem);      break;
-    case TREE_COLPRIVILEGES:FindColumnPrivileges(theItem);break;
-    case TREE_SEQUENCES:    FindSequences(theItem);       break;
-    case TREE_USERTYPE:     FindUserTypes(theItem);       break;
-    case TREE_TRIGGERS:     FindTriggers(theItem);        break;
-    case TREE_PROCEDURES:   FindProcedures(theItem);      break;
-    case TREE_PARAMETERS:   FindParameters(theItem);      break;
-    case TREE_SOURCECODE:   FindSourcecode(theItem);      break;
-    default:                /* NOTHING */                 break;
+    case TREE_TABLES:         FindTables(theItem);          break;
+    case TREE_TABLE:          PrepareTable(theItem,tt);     break;
+    case TREE_COLUMNS:        FindColumns(theItem);         break;
+    case TREE_PRIMARY:        FindPrimary(theItem);         break;
+    case TREE_FOREIGN:        FindForeign(theItem);         break;
+    case TREE_STATISTICS:     FindStatistics(theItem);      break;
+    case TREE_SPECIALS:       FindSpecials(theItem);        break;
+    case TREE_REFERENCEDBY:   FindReferenced(theItem);      break;
+    case TREE_TABTRIGGERS:    FindTabTriggers(theItem);     break;
+    case TREE_TABSEQUENCES:   FindTabSequences(theItem);    break;
+    case TREE_PRIVILEGES:     FindPrivileges(theItem);      break;
+    case TREE_COLPRIVILEGES:  FindColumnPrivileges(theItem);break;
+    case TREE_SEQUENCES:      FindSequences(theItem);       break;
+    case TREE_USERTYPE:       FindUserTypes(theItem);       break;
+    case TREE_TRIGGERS:       FindTriggers(theItem);        break;
+    case TREE_PACKAGES:       FindPackages(theItem);        break;
+    case TREE_PROCEDURES:     FindProcedures(theItem);      break;
+    case TREE_PARAMETERS:     FindParameters(theItem);      break;
+    case TREE_SOURCECODE:     FindSourcecode(theItem);      break;
+    case TREE_PACKAGEBODY:    FindPackageBody(theItem);     break;
+    case TREE_PACKAGEMODULES: FindPackageModules(theItem);  break;
+    case TREE_BODYSOURCE:     FindBodySource(theItem);      break;
+    default:                  /* NOTHING */                 break;
   }
 
   // Resetting the item, so we do this only **ONCE**
-  if(p_action != TREE_SOURCECODE)
+  if(p_action != TREE_SOURCECODE && p_action != TREE_BODYSOURCE)
   {
     SetItemData(theItem,0);
     DestroyToast(toast);
@@ -624,6 +633,27 @@ ObjectTree::PresetProcedure(HTREEITEM p_theItem)
     m_schema = schema;
   }
   m_procedure = procedure;
+
+  return true;
+}
+
+bool
+ObjectTree::PresetPackage(HTREEITEM p_theItem)
+{
+  HTREEITEM itemPackage = GetParentItem(p_theItem);
+  HTREEITEM itemSchema  = GetParentItem(itemPackage);
+
+  CString package = GetItemText(itemPackage);
+  CString schema  = GetItemText(itemSchema);
+  package.Trim();
+  schema.Trim();
+  CString findpac(package);
+  if(!IsSpecialNode(schema))
+  {
+    findpac  = schema + _T(".") + package;
+    m_schema = schema;
+  }
+  m_package = package;
 
   return true;
 }
@@ -1083,6 +1113,146 @@ ObjectTree::FindTriggers(HTREEITEM p_theItem)
   }
 }
 
+void
+ObjectTree::FindPackages(HTREEITEM p_theItem)
+{
+  QueryToolApp* app = (QueryToolApp*)AfxGetApp();
+  SQLInfoDB*  info = app->GetDatabase().GetSQLInfoDB();
+  MPackageMap packages;
+  XString     errors;
+  CString     lastSchema;
+  int         schemaCount = 0;
+  HTREEITEM   schemaItem = NULL;
+
+  // Find filtered name
+  XString catalog;
+  XString schema;
+  XString packageName;
+  info->GetObjectName(m_filter.GetString(),catalog,schema,packageName);
+  if(packageName.IsEmpty())
+  {
+    packageName = _T("%");
+  }
+
+  try
+  {
+    // Go find the procedures
+    info->MakeInfoPSMPackages(packages,errors,catalog,schema,packageName);
+  }
+  catch (CString& er)
+  {
+    StyleMessageBox(this,er,_T("Querytool"),MB_OK | MB_ICONERROR);
+    return;
+  }
+  // See if we have something
+  if(!packages.empty())
+  {
+    RemoveNoInfo(p_theItem);
+  }
+
+  // Setting count of objects
+  SetItemCount(p_theItem,(int)packages.size());
+
+  for(auto& pac : packages)
+  {
+    HTREEITEM package = NULL;
+    CString schem  = pac.m_schemaName;
+    CString object = pac.m_packageName;
+    schema.Trim();
+    object.Trim();
+
+    if(schem.IsEmpty())
+    {
+      // No schema found, just add the item
+      package = InsertItem(object,p_theItem);
+    }
+    else
+    {
+      if((schem.Compare(lastSchema) == 0) && schemaItem)
+      {
+        package = InsertItem(object,schemaItem);
+        SetItemCount(schemaItem,++schemaCount);
+      }
+      else
+      {
+        lastSchema  = schem;
+        schemaItem  = InsertItem(schem,p_theItem);
+        package     = InsertItem(object,schemaItem);
+        schemaCount = 1;
+        if(schemaItem)
+        {
+          SetItemCount(schemaItem,schemaCount);
+          SetItemImage(schemaItem,IMG_SCHEMA,IMG_SCHEMA);
+        }
+      }
+    }
+    SetItemImage(package,IMG_PACKAGE,IMG_PACKAGE);
+
+    // Insert the info and parameters nodes
+    HTREEITEM definition = InsertItem(_T("Definition"),package,TREE_PACKAGEBODY);
+    HTREEITEM modules    = InsertItem(_T("Modules"),   package,TREE_PACKAGEMODULES);
+
+    SetItemImage(definition,IMG_INFO,      IMG_INFO);
+    SetItemImage(modules,   IMG_PROCEDURES,IMG_PROCEDURES);
+
+    InsertNoInfo(definition);
+    InsertNoInfo(modules);
+  }
+}
+
+void
+ObjectTree::FindPackageBody(HTREEITEM p_theItem)
+{
+  if(PresetPackage(p_theItem))
+  {
+    // Go find the procedures
+    QueryToolApp* app = (QueryToolApp*)AfxGetApp();
+    SQLInfoDB* info = app->GetDatabase().GetSQLInfoDB();
+    MPackageMap packages;
+    XString errors;
+    XString catalog;
+    XString schema(m_schema);
+    XString packageName(m_package);
+
+    try
+    {
+      // Go find the procedures
+      info->MakeInfoPSMPackages(packages,errors,catalog,schema,packageName);
+    }
+    catch (CString& er)
+    {
+      StyleMessageBox(this,er,_T("Querytool"),MB_OK | MB_ICONERROR);
+      return;
+    }
+    if(packages.size() == 1)
+    {
+      PackageToTree(packages[0], p_theItem);
+    }
+  }
+}
+
+void
+ObjectTree::FindPackageModules(HTREEITEM p_theItem)
+{
+  if(PresetPackage(p_theItem))
+  {
+    // Go find the procedures
+    QueryToolApp* app = (QueryToolApp*)AfxGetApp();
+    MPackMemberMap members;
+    XString errors;
+    XString catalog;
+    XString schema(m_schema);
+    XString packageName(m_package);
+
+    app->GetDatabase().GetSQLInfoDB()->MakeInfoPSMPackageModules(members,errors,catalog,schema,packageName);
+    if(members.empty())
+    {
+      return;
+    }
+    MembersToTree(members,p_theItem);
+  }
+}
+
 // Finding all procedures according to the filter, or all
 void
 ObjectTree::FindProcedures(HTREEITEM p_theItem)
@@ -1093,7 +1263,7 @@ ObjectTree::FindProcedures(HTREEITEM p_theItem)
   XString   errors;
   CString   lastSchema;
   int       schemaCount = 0;
-  HTREEITEM schemaItem  = NULL;
+  HTREEITEM schemaItem  = nullptr;
 
   // Find filtered name
   XString catalog;
@@ -1122,7 +1292,7 @@ ObjectTree::FindProcedures(HTREEITEM p_theItem)
   
   for(auto& proc : procedures)
   {
-    HTREEITEM procedure = NULL;
+    HTREEITEM procedure = nullptr;
     CString schem  = proc.m_schemaName;
     CString object = proc.m_procedureName;
     schema.Trim();
@@ -1282,6 +1452,30 @@ ObjectTree::FindSourcecode(HTREEITEM p_theItem)
   }
 }
 
+void
+ObjectTree::FindBodySource(HTREEITEM p_theItem)
+{
+  CString tableproc;
+  if(PresetProcedure(p_theItem))
+  {
+    // For triggers it's the first node
+    if(ShowSourcecodeTrigger(m_schema, m_procedure))
+    {
+      return;
+    }
+    tableproc = m_procedure;
+    // For procedures, it's a node deeper in the tree
+    HTREEITEM par = GetParentItem(p_theItem);
+    if(PresetProcedure(par))
+    {
+      if(ShowSourcecodeModule(m_schema,m_procedure + _T(".Body")))
+      {
+        return;
+      }
+    }
+  }
+}
+
 bool
 ObjectTree::ShowSourcecodeTrigger(CString /*p_schema*/,CString p_trigger)
 {
@@ -1423,7 +1617,6 @@ ObjectTree::ColumnListToTree(MColumnMap& p_columns,HTREEITEM p_item)
       case SQL_NULLABLE_UNKNOWN:  line += _T(" NULLABLE UNKNOWN");
                                   break;
     }
-
     if(!column.m_remarks.IsEmpty())
     {
       line.AppendFormat(_T(" (%s)"),column.m_remarks.GetString());
@@ -2150,4 +2343,59 @@ ObjectTree::AddErrorsToTree(XString p_errors,HTREEITEM p_theItem)
   }
 }
 
+void
+ObjectTree::PackageToTree(MetaPackage& p_package,HTREEITEM p_item)
+{
+  RemoveNoInfo(p_item);
 
+  CString line;
+  // Package name
+  line.Format(_T("Package name: %s"),p_package.m_packageName.GetString());
+  HTREEITEM item = InsertItem(line,p_item);
+  SetItemImage(item,IMG_PACKAGE,IMG_PACKAGE);
+
+  // Remarks
+  line = _T("Comment on package is: ") + p_package.m_remarks;
+  item = InsertItem(line,p_item);
+  SetItemImage(item,IMG_PACKAGE,IMG_PACKAGE);
+
+  // Security
+  line = CString(_T("Package security: ")) + (p_package.m_asDefiner ? _T("DEFINER") : _T("INVOKER"));
+  item = InsertItem(line,p_item);
+  SetItemImage(item,IMG_PACKAGE,IMG_PACKAGE);
+
+  // Source of the package
+  CString name = p_package.m_schemaName + _T(".") + p_package.m_packageName;
+  m_source.insert(std::make_pair(name,p_package.m_source));
+  line.Format(_T("PACKAGE Source: %d characters"),p_package.m_source.GetLength());
+  item = InsertItem(line,p_item,TREE_SOURCECODE);
+  SetItemImage(item,IMG_SOURCE,IMG_SOURCE);
+  
+  // Source of the body
+  name = p_package.m_schemaName + _T(".") + p_package.m_packageName + _T(".Body");
+  m_source.insert(std::make_pair(name, p_package.m_bodySource));
+  line.Format(_T("PACKAGE BODY Source: %d characters"), p_package.m_bodySource.GetLength());
+  item = InsertItem(line, p_item,TREE_BODYSOURCE);
+  SetItemImage(item,IMG_SOURCE,IMG_SOURCE);
+}
+
+void
+ObjectTree::MembersToTree(MPackMemberMap& p_members,HTREEITEM p_item)
+{
+  RemoveNoInfo(p_item);
+
+  for(auto& member : p_members)
+  {
+    CString line(member.m_memberName);
+    HTREEITEM item = InsertItem(line,p_item);
+    SetItemImage(item,IMG_PROCEDURE,IMG_PROCEDURE);
+
+    // Type (Function or procedure)
+    line.Format(_T("Member type: %s"),member.m_type.GetString());
+    InsertItem(line,item);
+
+    // Callable
+    line.Format(_T("Callable: %s"),member.m_private ? _T("PRIVATE") : _T("PUBLIC"));
+    InsertItem(line, item);
+  }
+}

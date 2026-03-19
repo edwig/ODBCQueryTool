@@ -2220,31 +2220,37 @@ SQLInfoMySQL::GetCATALOGCommentCreate(XString /*p_schema*/,XString p_object,XStr
 
 // All package functions
 XString
-SQLInfoMySQL::GetPMSPackageExists(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+SQLInfoMySQL::GetPSMPackageExists(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoMySQL::GetPMSPackageList(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+SQLInfoMySQL::GetPSMPackageList(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoMySQL::GetPMSPackageListModules(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+SQLInfoMySQL::GetPSMPackageListModules(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+{
+  return _T("");
+}
+
+XString 
+SQLInfoMySQL::GetPSMPackageAttributes(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoMySQL::GetPMSPackageCreate(MetaPackage& /*p_package*/) const
+SQLInfoMySQL::GetPSMPackageCreate(MetaPackage& /*p_package*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoMySQL::GetPMSPackageDrop(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+SQLInfoMySQL::GetPSMPackageDrop(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }

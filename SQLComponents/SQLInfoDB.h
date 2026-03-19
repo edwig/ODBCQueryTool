@@ -92,9 +92,11 @@ public:
   virtual bool    MakeInfoViewDefinition  (XString&       p_defintion, XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_viewname);
   virtual bool    MakeInfoUserTypes       (MUserTypeMap&  p_usertypes, XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_usertype);
 
-  // Procedures
-  virtual bool    MakeInfoPSMProcedures(MProcedureMap& p_procedures,XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_procedure) override;
-  virtual bool    MakeInfoPSMParameters(MParameterMap& p_parameters,XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_procedure) override;
+  // Packages & procedures
+  virtual bool    MakeInfoPSMPackages      (MPackageMap&    p_packages,  XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_package);
+  virtual bool    MakeInfoPSMPackageModules(MPackMemberMap& p_modules,   XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_package);
+  virtual bool    MakeInfoPSMProcedures    (MProcedureMap&  p_procedures,XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_procedure) override;
+  virtual bool    MakeInfoPSMParameters    (MParameterMap&  p_parameters,XString& p_errors,const XString& p_catalog,const XString& p_schema,const XString& p_procedure) override;
   // Read extra source code for database that can only do it by an extra procedure
   virtual XString MakeInfoPSMSourcecode(const XString& p_catalog,const XString& p_schema, const XString& p_procedure);
 
@@ -484,11 +486,12 @@ public:
   //////////////////////////////////////////////////////////////////////////
 
   // All package functions
-  virtual XString GetPMSPackageExists      (XString& p_schema,XString& p_package,bool p_quoted = false) const = 0;
-  virtual XString GetPMSPackageList        (XString& p_schema,XString& p_package,bool p_quoted = false) const = 0;
-  virtual XString GetPMSPackageListModules (XString& p_schema,XString& p_package,bool p_quoted = false) const = 0;
-  virtual XString GetPMSPackageCreate      (MetaPackage& p_package) const = 0;
-  virtual XString GetPMSPackageDrop        (XString& p_schema,XString& p_package,bool p_quoted = false) const = 0;
+  virtual XString GetPSMPackageExists      (XString& p_schema,XString& p_package,bool p_quoted = false) const = 0;
+  virtual XString GetPSMPackageList        (XString& p_schema,XString& p_package,bool p_quoted = false) const = 0;
+  virtual XString GetPSMPackageListModules (XString& p_schema,XString& p_package,bool p_quoted = false) const = 0;
+  virtual XString GetPSMPackageAttributes  (XString& p_schema,XString& p_package,bool p_quoted = false) const = 0;
+  virtual XString GetPSMPackageCreate      (MetaPackage& p_package) const = 0;
+  virtual XString GetPSMPackageDrop        (XString& p_schema,XString& p_package,bool p_quoted = false) const = 0;
 
   // All procedure functions
   virtual XString GetPSMProcedureExists    (XString  p_schema,XString& p_package,XString  p_procedure,bool p_quoted = false) const = 0;

@@ -720,6 +720,116 @@ SQLInfoDB::MakeInfoTableStatistics(MIndicesMap&   p_indices
   return false;
 }
 
+bool
+SQLInfoDB::MakeInfoPSMPackages(MPackageMap& p_packages
+                              ,      XString& p_errors
+                              ,const XString& /*p_catalog*/
+                              ,const XString& p_schema
+                              ,const XString& p_package)
+{
+  XString schema(p_schema);
+  XString package(p_package);
+  XString sql;
+
+  if(p_package.IsEmpty() || p_package.Compare(_T("%")) == 0)
+  {
+    // We want a list only
+    sql = GetPSMPackageList(schema,package,true);
+  }
+  else
+  {
+    // Try quoted identifier case
+    sql = GetPSMPackageAttributes(schema,package,true);
+  }
+
+  try
+  {
+    for(int ind = 0;ind < 2;++ind)
+    {
+      SQLQuery qry(m_database);
+
+      if(!p_schema.IsEmpty())  qry.SetParameter(schema);
+      if(!p_package.IsEmpty()) qry.SetParameter(package);
+
+      qry.DoSQLStatement(sql);
+      while(qry.GetRecord())
+      {
+        MetaPackage pac;
+
+        pac.m_catalogName = (XString)qry[MetaPackage_catalogname];
+        pac.m_schemaName  = (XString)qry[MetaPackage_schemaname];
+        pac.m_packageName = (XString)qry[MetaPackage_packagename];
+        if(qry.GetNumberOfColumns() > 3)
+        {
+          pac.m_remarks     = (XString)qry[MetaPackage_remarks];
+          pac.m_source      = (XString)qry[MetaPackage_source];
+          pac.m_bodySource  = (XString)qry[MetaPackage_bodysource];
+          pac.m_asDefiner   = (int)    qry[MetaPackage_asDefiner];
+        }
+        p_packages.push_back(pac);
+      }
+      if(!p_packages.empty())
+      {
+        return true;
+      }
+      // Try standard identifier case
+      if (p_package.IsEmpty() || p_package.Compare(_T("%")) == 0)
+      {
+        sql = GetPSMPackageList(schema,package);
+      }
+      else
+      {
+        sql = GetPSMPackageAttributes(schema,package);
+      }
+    }
+  }
+  catch (StdException& er)
+  {
+    ReThrowSafeException(er);
+    p_errors += er.GetErrorMessage();
+  }
+  return false;
+}
+
+bool
+SQLInfoDB::MakeInfoPSMPackageModules(MPackMemberMap& p_modules
+                                    ,      XString&  /*p_errors*/
+                                    ,const XString&  /*p_catalog*/
+                                    ,const XString&  p_schema
+                                    ,const XString&  p_package)
+{
+  XString schema(p_schema);
+  XString package(p_package);
+  
+  XString sql = GetPSMPackageListModules(schema,package,true);
+  if(!sql.IsEmpty())
+  {
+    for(int ind = 0;ind < 2;++ind)
+    {
+      SQLQuery query(m_database);
+      query.DoSQLStatement(sql);
+      while(query.GetRecord())
+      {
+        MetaPackageMember module;
+
+        module.m_packageName = (XString) query[MetaPackMember_packagename];
+        module.m_memberName  = (XString) query[MetaPackMember_membername];
+        module.m_private     = (bool)    query[MetaPackMember_private];
+        module.m_type        = (XString) query[MetaPackMember_type];
+
+        p_modules.push_back(module);
+      }
+      if(!p_modules.empty())
+      {
+        return true;
+      }
+      // Try standard unquoted identifiers
+      sql = GetPSMPackageListModules(schema,package);
+    }
+  }
+  return false;
+}
+
 bool    
 SQLInfoDB::MakeInfoPSMProcedures(MProcedureMap& p_procedures
                                 ,      XString& p_errors

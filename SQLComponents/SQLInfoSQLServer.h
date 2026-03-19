@@ -404,11 +404,12 @@ public:
   //////////////////////////////////////////////////////////////////////////
 
   // All package functions
-  XString GetPMSPackageExists      (XString& p_schema,XString& p_package,bool p_quoted = false) const;
-  XString GetPMSPackageList        (XString& p_schema,XString& p_package,bool p_quoted = false) const;
-  XString GetPMSPackageListModules (XString& p_schema,XString& p_package,bool p_quoted = false) const;
-  XString GetPMSPackageCreate      (MetaPackage& p_package) const;
-  XString GetPMSPackageDrop        (XString& p_schema,XString& p_package,bool p_quoted = false) const;
+  XString GetPSMPackageExists      (XString& p_schema,XString& p_package,bool p_quoted = false) const;
+  XString GetPSMPackageList        (XString& p_schema,XString& p_package,bool p_quoted = false) const;
+  XString GetPSMPackageListModules (XString& p_schema,XString& p_package,bool p_quoted = false) const;
+  XString GetPSMPackageAttributes  (XString& p_schema,XString& p_package,bool p_quoted = false) const;
+  XString GetPSMPackageCreate      (MetaPackage& p_package) const;
+  XString GetPSMPackageDrop        (XString& p_schema,XString& p_package,bool p_quoted = false) const;
 
   // All procedure functions
   XString GetPSMProcedureExists    (XString  p_schema,XString& p_package,XString  p_procedure,bool p_quoted = false) const override;

@@ -2694,31 +2694,37 @@ SQLInfoOracle::GetCATALOGCommentCreate(XString p_schema,XString p_object,XString
 
 // All package functions
 XString
-SQLInfoOracle::GetPMSPackageExists(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetPSMPackageExists(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoOracle::GetPMSPackageList(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetPSMPackageList(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoOracle::GetPMSPackageListModules(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetPSMPackageListModules(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+{
+  return _T("");
+}
+
+XString 
+SQLInfoOracle::GetPSMPackageAttributes(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoOracle::GetPMSPackageCreate(MetaPackage& /*p_package*/) const
+SQLInfoOracle::GetPSMPackageCreate(MetaPackage& /*p_package*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoOracle::GetPMSPackageDrop(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+SQLInfoOracle::GetPSMPackageDrop(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
 {
   return _T("");
 }

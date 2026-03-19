@@ -344,11 +344,13 @@ using MPrivilegeMap = std::vector<MetaPrivilege>;
 
 typedef struct _metaInfoPackage
 {
-  XString   m_catalogName;
-  XString   m_schemaName;
-  XString   m_packageName;
-  XString   m_remarks;
-  XString   m_source;
+  XString   m_catalogName;    // Catalog
+  XString   m_schemaName;     // Schema
+  XString   m_packageName;    // The package name
+  XString   m_remarks;        // Comment on package
+  XString   m_source;         // Source of the package header
+  XString   m_bodySource;     // Source of the package body
+  int       m_asDefiner{ 0 }; // 1 = DEFINER, 0 = INVOKER
 }
 MetaPackage;
 
@@ -357,9 +359,29 @@ using MPackageMap = std::vector<MetaPackage>;
 // MetaPackage fields
 #define MetaPackage_catalogname      1
 #define MetaPackage_schemaname       2
-#define MetaPacakge_packagename      3
-#define MetaPacakge_remarks          4
+#define MetaPackage_packagename      3
+#define MetaPackage_remarks          4
 #define MetaPackage_source           5
+#define MetaPackage_bodysource       6
+#define MetaPackage_asDefiner        7
+
+typedef struct _metaInfoPackageMember
+{
+  XString m_schemaName;   // Schema
+  XString m_packageName;  // Package
+  XString m_memberName;   // Member name
+  XString m_type;         // 'FUNCTION','PROCEDURE', etc
+  bool    m_private;      // true = private, false = public callable
+}
+MetaPackageMember;
+
+using MPackMemberMap = std::vector<MetaPackageMember>;
+
+#define MetaPackMember_schemaname  1
+#define MetaPackMember_packagename 2
+#define MetaPackMember_membername  3
+#define MetaPackMember_private     4
+#define MetaPackMember_type        5
 
 // Results from "SQLProcedures"
 

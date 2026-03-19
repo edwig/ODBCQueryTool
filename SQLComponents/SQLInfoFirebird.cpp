@@ -2728,79 +2728,149 @@ SQLInfoFirebird::GetCATALOGCommentCreate(XString /*p_schema*/,XString p_object,X
 
 // All package functions
 XString
-SQLInfoFirebird::GetPMSPackageExists(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+SQLInfoFirebird::GetPSMPackageExists(XString& /*p_schema*/,XString& p_package,bool p_quoted /*=false*/) const
+{
+  IdentifierCorrect(p_package);
+  XString query = _T("SELECT trim(dbs.mon$database_name) as catalog_name\n")
+                  _T("      ,trim(rdb$owner_name)\n")
+                  _T("      ,trim(rdb$package_name)\n")
+                  _T("  FROM rdb$packages\n")
+                  _T("       CROSS JOIN mon$database dbs\n")
+                  _T(" WHERE rdb$system_flag  = 0\n")
+                  _T("   AND rdb$package_name = '") + p_package + _T("'");
+  return query;
+}
+
+XString
+SQLInfoFirebird::GetPSMPackageList(XString& /*p_schema*/,XString& p_package,bool p_quoted /*=false*/) const
+{
+  IdentifierCorrect(p_package);
+  XString query = _T("SELECT trim(dbs.mon$database_name) as catalog_name\n")
+                  _T("      ,trim(rdb$owner_name)\n")
+                  _T("      ,trim(rdb$package_name)\n")
+                  _T("  FROM rdb$packages\n")
+                  _T("       CROSS JOIN mon$database dbs\n")
+                  _T(" WHERE rdb$system_flag = 0\n");
+  if(!p_package.IsEmpty())
+  {
+    query += _T("   AND rdb$package_name LIKE '") + p_package + _T("'");
+  }
+  return query;
+}
+
+XString
+SQLInfoFirebird::GetPSMPackageListModules(XString& /*p_schema*/,XString& p_package,bool /*p_quoted=false*/) const
+{
+  XString sql = _T("SELECT trim(rdb$owner_name)\n")
+                _T("      ,trim(rdb$package_name)\n")
+                _T("      ,trim(rdb$procedure_name)\n")
+                _T("      ,rdb$private_flag\n")
+                _T("      ,'PROCEDURE' AS type\n")
+                _T("  FROM rdb$procedures\n")
+                _T(" WHERE rdb$private_flag >= 0\n")
+                _T("   AND rdb$package_name = '") + p_package + _T("'\n")
+                _T("UNION ALL\n")
+                _T("SELECT trim(rdb$owner_name)\n")
+                _T("      ,trim(rdb$package_name)\n")
+                _T("      ,trim(rdb$function_name)\n")
+                _T("      ,rdb$private_flag\n")
+                _T("      ,'FUNCTION'\n")
+                _T("  FROM rdb$functions\n")
+                _T(" WHERE rdb$private_flag >= 0\n")
+                _T("   AND rdb$package_name = '") + p_package + _T("'");
+  return sql;
+}
+
+XString
+SQLInfoFirebird::GetPSMPackageAttributes(XString& /*p_schema*/, XString& p_package,bool p_quoted /*=false*/) const
+{
+  IdentifierCorrect(p_package);
+  XString query = _T("SELECT trim(dbs.mon$database_name) as catalog_name\n")
+                  _T("      ,trim(rdb$owner_name)\n")
+                  _T("      ,trim(rdb$package_name)\n")
+                  _T("      ,rdb$description as remarks\n")
+                  _T("      ,'RECREATE PACKAGE ' || rdb$package_name || ASCII_CHAR(10) ||\n")
+                  _T("       CASE rdb$sql_security\n")
+                  _T("            WHEN TRUE  THEN 'SQL SECURITY DEFINER'\n")
+                  _T("            WHEN FALSE THEN 'SQL SECURITY INVOKER'\n")
+                  _T("       END || ASCII_CHAR(10)  ||\n")
+                  _T("      'AS' || ASCII_CHAR(10)  || rdb$package_header_source as package_header\n")
+                  _T("      ,'RECREATE PACKAGE BODY ' || rdb$package_name || ASCII_CHAR(10) ||\n")
+                  _T("      'AS' || ASCII_CHAR(10)  || rdb$package_body_source as package_body\n")
+                  _T("      ,rdb$sql_security as as_definer\n")
+                  _T("  FROM rdb$packages\n")
+                  _T("       CROSS JOIN mon$database dbs\n")
+                  _T(" WHERE rdb$system_flag = 0\n")
+                  _T("   AND rdb$package_name = '") + p_package + _T("'");
+  return query;
+}
+
+XString
+SQLInfoFirebird::GetPSMPackageCreate(MetaPackage& /*p_package*/) const
 {
   return _T("");
 }
 
 XString
-SQLInfoFirebird::GetPMSPackageList(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
+SQLInfoFirebird::GetPSMPackageDrop(XString& /*p_schema*/,XString& p_package,bool /*p_quoted=false*/) const
 {
-  return _T("");
+  XString sql = _T("DROP PACKAGE ") + QIQ(p_package);
+  return sql;
 }
 
 XString
-SQLInfoFirebird::GetPMSPackageListModules(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
-{
-  return _T("");
-}
-
-XString
-SQLInfoFirebird::GetPMSPackageCreate(MetaPackage& /*p_package*/) const
-{
-  return _T("");
-}
-
-XString
-SQLInfoFirebird::GetPMSPackageDrop(XString& /*p_schema*/,XString& /*p_package*/,bool /*p_quoted = false*/) const
-{
-  return _T("");
-}
-
-XString
-SQLInfoFirebird::GetPSMProcedureExists(XString p_schema,XString& /*p_package*/,XString p_procedure,bool p_quoted /*= false*/) const
+SQLInfoFirebird::GetPSMProcedureExists(XString p_schema,XString& p_package,XString p_procedure,bool p_quoted /*= false*/) const
 {
   IdentifierCorrect(p_procedure);
 
-  XString extra;
+  XString extra1,extra2;
   if(!p_schema.IsEmpty())
   {
     IdentifierCorrect(p_schema);
-    extra = _T("   AND rdb$owner_name = '") + p_schema + _T("'\n");
+    extra1 = _T("   AND rdb$owner_name = '") + p_schema + _T("'\n");
+  }
+  if(p_package.IsEmpty())
+  {
+    IdentifierCorrect(p_package);
+    extra2 = _T("   AND rdb$package_name = '") + p_package + _T("'\n");
   }
   XString query = (_T("SELECT (SELECT COUNT(*)\n")
                    _T("  FROM rdb$functions\n")
                    _T(" WHERE rdb$function_name  = '") + p_procedure + _T("'\n")
-                   + extra +
+                   + extra1 + extra2 +
                    _T("   AND rdb$system_flag = 0)\n")
                    _T("     + (SELECT COUNT(*)\n")
                    _T("  FROM rdb$procedures\n")
                    _T(" WHERE rdb$procedure_name = '") + p_procedure + _T("'\n")
-                   + extra + 
-                   _T("   AND rdb$procedure_source IS NOT NULL) as total\n")
+                   + extra1 + extra2 +
+                   _T("   AND rdb$system_flag = 0) as total\n")
                    _T("  FROM rdb$database"));
   return query;
 }
 
 XString
-SQLInfoFirebird::GetPSMProcedureList(XString& p_schema,XString& /*p_package*/,XString p_procedure,bool p_quoted /*= false*/) const
+SQLInfoFirebird::GetPSMProcedureList(XString& p_schema,XString& p_package,XString p_procedure,bool p_quoted /*= false*/) const
 {
   IdentifierCorrect(p_schema);
   IdentifierCorrect(p_procedure);
-  XString extra;
+  XString extra1,extra2;
 
   if(!p_schema.IsEmpty())
   {
-    extra = _T("   AND rdb$owner_name = '") + p_schema + _T("'\n");
+    extra1 = _T("   AND rdb$owner_name = '") + p_schema + _T("'\n");
+  }
+  if(!p_package.IsEmpty())
+  {
+    IdentifierCorrect(p_package);
+    extra2 = _T("   AND rdb$package_name = '") + p_package + _T("'\n");
   }
   XString sql1(_T("SELECT '' as catalog_name\n")
                _T("      ,trim(rdb$owner_name) as schema_name\n")
-               _T("      ,trim(rdb$procedure_name)\n")
+               _T("      ,coalesce(trim(rdb$package_name) || '.','') || trim(rdb$procedure_name)\n")
                _T("      ,1\n")  // PROCEDURE
                _T("  FROM rdb$procedures pro\n")
-               _T(" WHERE rdb$procedure_source IS NOT NULL\n")
-               _T("   AND rdb$system_flag = 0\n"));
-  sql1 += extra;         
+               _T(" WHERE rdb$system_flag = 0\n"));
+  sql1 += extra1 + extra2;
   if(!p_procedure.IsEmpty())
   {
     sql1 += _T("   AND rdb$procedure_name ");
@@ -2809,11 +2879,11 @@ SQLInfoFirebird::GetPSMProcedureList(XString& p_schema,XString& /*p_package*/,XS
   }
   XString sql2(_T("SELECT '' as catalog_name\n")
                _T("      ,trim(rdb$owner_name) as schema_name\n")
-               _T("      ,trim(rdb$function_name)\n")
+               _T("      ,coalesce(trim(rdb$package_name) || '.','') || trim(rdb$function_name)\n")
                _T("      ,2\n")  // FUNCTION
                _T("  FROM rdb$functions fun\n")
                _T(" WHERE rdb$system_flag = 0\n"));
-  sql2 += extra;
+  sql2 += extra1 + extra2;
   if(!p_procedure.IsEmpty())
   {
     sql2 += _T("   AND rdb$function_name \n");
@@ -2828,7 +2898,7 @@ SQLInfoFirebird::GetPSMProcedureAttributes(XString& p_schema,XString& /*p_packag
 {
   XString sql1(_T("SELECT trim(dbs.mon$database_name) as catalog_name\n")
                _T("      ,trim(pro.rdb$owner_name) as schema_name\n")
-               _T("      ,trim(pro.rdb$procedure_name)\n")
+               _T("      ,coalesce(trim(rdb$package_name) || '.','') || trim(pro.rdb$procedure_name)\n")
                _T("      ,(SELECT COUNT(*)\n")
                _T("          FROM rdb$procedure_parameters par\n")
                _T("         WHERE par.rdb$procedure_name = pro.rdb$procedure_name\n")
@@ -2843,14 +2913,16 @@ SQLInfoFirebird::GetPSMProcedureAttributes(XString& p_schema,XString& /*p_packag
                _T("           AND par.rdb$parameter_type = 1) as result_sets\n")
                _T("      ,pro.rdb$description\n")
                _T("      ,1 as procedure_type\n") // SQL_PROCEDURE
-               _T("      ,'<@>'\n")
+               _T("      ,CASE WHEN rdb$package_name IS NULL THEN '<@>'\n")
+               _T("            ELSE 'See package: ' || rdb$package_name\n")
+               _T("       END as sourcecode\n")
                _T("  FROM rdb$procedures pro\n")
                _T("      ,mon$database   dbs\n")
-               _T(" WHERE rdb$procedure_source IS NOT NULL\n"));
+               _T(" WHERE rdb$system_flag = 0\n"));
 
   XString sql2 (_T("SELECT trim(dbs.mon$database_name) as catalog_name\n")
                 _T("      ,trim(fun.rdb$owner_name) as schema_name\n")
-                _T("      ,trim(fun.rdb$function_name)\n")
+                _T("      ,coalesce(trim(rdb$package_name) || '.','') || trim(fun.rdb$function_name)\n")
                 _T("      ,(SELECT COUNT(*)\n")
                 _T("          FROM rdb$function_arguments arg\n")
                 _T("         WHERE fun.rdb$function_name = arg.rdb$function_name\n")
@@ -2865,7 +2937,9 @@ SQLInfoFirebird::GetPSMProcedureAttributes(XString& p_schema,XString& /*p_packag
                 _T("           AND arg.rdb$argument_position > 0) as result_sets\n")
                 _T("      ,fun.rdb$description\n")
                 _T("      ,2 as procedure_type\n") // SQL_FUNCTION
-                _T("      ,'<@>'\n")
+               _T("      ,CASE WHEN rdb$package_name IS NULL THEN '<@>'\n")
+               _T("            ELSE 'See package: ' || rdb$package_name\n")
+               _T("       END\n")
                 _T("  FROM rdb$functions fun\n")
                 _T("      ,mon$database  dbs\n")
                 _T(" WHERE rdb$system_flag = 0\n"));
@@ -2877,6 +2951,11 @@ SQLInfoFirebird::GetPSMProcedureAttributes(XString& p_schema,XString& /*p_packag
   }
   if(!p_procedure.IsEmpty())
   {
+    int pos = p_procedure.Find(_T('.'));
+    if (pos > 0)
+    {
+      p_procedure = p_procedure.Mid(pos + 1);
+    }
     IdentifierCorrect(p_procedure);
     sql1 += _T("   AND pro.rdb$procedure_name = '") + p_procedure + _T("'\n");
     sql2 += _T("   AND fun.rdb$function_name  = ?\n");
@@ -2885,6 +2964,7 @@ SQLInfoFirebird::GetPSMProcedureAttributes(XString& p_schema,XString& /*p_packag
 }
 
 // Getting the sourcecode: 3th column yields the source
+// Works in Firebird ONLY for those functions/procedures ***NOT** in a package!!
 XString
 SQLInfoFirebird::GetPSMProcedureSourcecode(XString p_schema,XString& /*p_package*/,XString p_procedure,bool p_quoted /*= false*/) const
 {
@@ -3333,6 +3413,12 @@ SQLInfoFirebird::GetPSMProcedureParameters(XString& p_schema,XString& /*p_packag
   }
   if(!p_procedure.IsEmpty())
   {
+    int pos = p_procedure.Find(_T('.'));
+    if(pos > 0)
+    {
+      p_procedure = p_procedure.Mid(pos + 1);
+    }
+
     IdentifierCorrect(p_procedure);
     sql1 += _T("   AND pro.rdb$procedure_name = '") + p_procedure + _T("'\n");
     sql2 += _T("   AND fun.rdb$function_name = ?\n");
