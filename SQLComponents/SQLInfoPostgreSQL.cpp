@@ -1992,6 +1992,7 @@ SQLInfoPostgreSQL::GetCATALOGSequenceList(XString& p_schema,XString& p_pattern,b
     sql += p_schema.IsEmpty() ? _T(" WHERE ") : _T("   AND ");
     sql += _T("sequence_name LIKE ?");
   }
+  sql += _T(" ORDER BY 1,2,3");
   return sql;
 }
 
