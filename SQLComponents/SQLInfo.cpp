@@ -174,6 +174,7 @@ SQLInfo::Init()
   m_maxColumnName    = SQL_MAX_IDENTIFIER;
   m_maxTableName     = SQL_MAX_IDENTIFIER;
   m_maxIdentifier    = SQL_MAX_IDENTIFIER; 
+  m_maxProcedureName = SQL_MAX_IDENTIFIER;
 
   // Conversions
   m_conversionFuncs   = 0;
@@ -463,6 +464,7 @@ SQLInfo::GetInfo()
   m_maxTableName        = GetInfoShortInteger(SQL_MAX_TABLE_NAME_LEN);
   m_maxSchemaName       = GetInfoShortInteger(SQL_MAX_SCHEMA_NAME_LEN);
   m_maxCatalogName      = GetInfoShortInteger(SQL_MAX_CATALOG_NAME_LEN);
+  m_maxProcedureName    = GetInfoShortInteger(SQL_MAX_PROCEDURE_NAME_LEN);
   m_identifierCase      = GetInfoShortInteger(SQL_IDENTIFIER_CASE);
   m_fileUsage           = GetInfoShortInteger(SQL_FILE_USAGE);
   m_activeEnvironments  = GetInfoShortInteger(SQL_ACTIVE_ENVIRONMENTS);

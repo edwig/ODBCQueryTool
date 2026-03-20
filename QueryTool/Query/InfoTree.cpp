@@ -802,6 +802,8 @@ InfoTree::MakeTreeInfo()
   DisplayBitfield(cu,catalogUsage,SQL_CU_INDEX_DEFINITION,    _T("Index definition"));
   DisplayBitfield(cu,catalogUsage,SQL_CU_PRIVILEGE_DEFINITION,_T("Privilege definition"));
 
+  sitem.Format(_T("Maximum length of identifiers: %i"),m_info->GetMaxIdentifierNameLength());
+  InsertItem(sitem,infoItemImpl);
   sitem.Format(_T("Maximum length of catalogname: %i"),m_info->GetMaxCatalogNameLength());
   InsertItem(sitem, infoItemImpl);
   sitem.Format(_T("Maximum length of schemaname: %i"), m_info->GetMaxSchemaNameLength());
@@ -812,6 +814,8 @@ InfoTree::MakeTreeInfo()
   InsertItem(sitem, infoItemImpl);
   sitem.Format(_T("Maximum number of columns in a table: %i"), m_info->GetMaxColumnsInTable());
   InsertItem(sitem, infoItemImpl);
+  sitem.Format(_T("Maximum length of procedurename: %i"),m_info->GetMaxProcedureNameLength());
+  InsertItem(sitem,infoItemImpl);
 
   InsertItem(CString(_T("Special characters: ") + m_info->GetSpecialCharacters()),        infoItemImpl);
   InsertItem(CString(_T("Like escape char: ")   + m_info->GetLikeEscapeCharacter()),      infoItemImpl);
