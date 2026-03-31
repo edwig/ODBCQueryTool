@@ -467,6 +467,7 @@ public:
   void    ScriptSelect(int p_line,int p_longest,int p_row);
   long    MilisecondsToMinute();
   int     FindIfOperator(CString& p_command,CString& p_operatorText);
+  void    PumpMessages();
 
   CGridView*      m_gridView;
   CGridView*      m_histoView;

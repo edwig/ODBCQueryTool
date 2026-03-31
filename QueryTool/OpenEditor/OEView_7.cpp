@@ -447,7 +447,7 @@ COEditorView::GetODBCCommand(int& curLine
           odbcCommand.TrimLeft('\n');
           odbcCommand.TrimRight('\n');
         }
-        TRACE(_T("ODBC Ended command: %s\n"),odbcCommand.Left(255).GetString());
+        // TRACE(_T("ODBC Ended command: %s\n"),odbcCommand.Left(255).GetString());
         // End of command found
         return firstline;
       }
@@ -727,7 +727,10 @@ COEditorView::ExecuteQuery(int      p_line
   {
     prefetchLines = 0x7ffffff;
   }
-  WriteStatisticsLine(_T("Query"),_T("Start: ") + partialCommand,true); // Reset the timer
+  if(!p_batch)
+  {
+    WriteStatisticsLine(_T("Query"),_T("Start: ") + partialCommand,true); // Reset the timer
+  }
   try
   {
     long row = 0;
@@ -757,7 +760,10 @@ COEditorView::ExecuteQuery(int      p_line
 
       // Prepare the query
       m_query.DoSQLPrepare(XString(p_odbcCommand));
-      WriteStatisticsLine(_T("0 =>"),_T("Query prepared: ") + partialCommand);
+      if(!p_batch)
+      {
+        WriteStatisticsLine(_T("0 =>"),_T("Query prepared: ") + partialCommand);
+      }
       // Go and execute
       m_query.DoSQLExecute();
     }
@@ -765,7 +771,10 @@ COEditorView::ExecuteQuery(int      p_line
     {
       m_query.DoSQLStatement(XString(p_odbcCommand));
     }
-    WriteStatisticsLine(_T("1 =>"),(mustPrepare ? _T("Execute ready: ") : _T("Query ready: ")) + partialCommand);
+    if(!p_batch)
+    {
+      WriteStatisticsLine(_T("1 =>"),(mustPrepare ? _T("Execute ready: ") : _T("Query ready: ")) + partialCommand);
+    }
     if(selectQuery)
     {
       // Init the CGridView
@@ -827,7 +836,10 @@ COEditorView::ExecuteQuery(int      p_line
     {
       row = m_query.GetNumberOfRows();
     }
-    WriteStatisticsLine(_T("2 =>"),_T("Fetch ready: ") + partialCommand);
+    if(!p_batch)
+    {
+      WriteStatisticsLine(_T("2 =>"),_T("Fetch ready: ") + partialCommand);
+    }
     WriteOutputLine(p_line,row,partialCommand,m_query.GetError().GetString());
   }
   catch(TCHAR *errorText)
@@ -875,10 +887,18 @@ COEditorView::ExecuteQuery(int      p_line
     panelWindow = QPW_OUTPUT_VIEW;
   }
   // Clock is ready ticking
-  WriteStatisticsLine(_T("3 =>"),_T("Ready: ") + partialCommand);
-
-  // Auto change to the right panel
   if(!p_batch)
+  {
+    WriteStatisticsLine(_T("3 =>"),_T("Ready: ") + partialCommand);
+  }
+
+  // Auto change to the right panel or show the batch results
+  if(p_batch)
+  {
+    m_queryPanel->GotoEndOfPanel(QPW_OUTPUT_VIEW);
+    PumpMessages();
+  }
+  else
   {
     m_queryPanel->ChangePanel(panelWindow);
   }
@@ -1932,4 +1952,28 @@ COEditorView::MilisecondsToMinute()
   localtime_s(ptnow,&time);
 
   return (60 - now.tm_sec) * 1000;
+}
+
+void
+COEditorView::PumpMessages()
+{
+  // Handle only the PAINT messages for larger processes
+  // So we can see the application
+  // Potentially we can have an endless loop here
+  // so we limit the loop to a certain time frame
+  MSG msg;
+  ULONGLONG ticks = GetTickCount64();
+  while((GetTickCount64() - ticks) < 200L && (PeekMessage(&msg,NULL,WM_MOVE,WM_USER,PM_REMOVE)))
+  {
+    try
+    {
+      ::TranslateMessage(&msg);
+      ::DispatchMessage(&msg);
+    }
+    catch(StdException& er)
+    {
+      // How now brown cow?
+      UNREFERENCED_PARAMETER(er);
+    }
+  }
 }

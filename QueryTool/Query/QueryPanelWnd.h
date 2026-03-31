@@ -59,6 +59,8 @@ public:
   CToolBar*  GetDialogBar();
   void       RegisterFrame(CMDIChildFrame* frame); 
   CGridView& GetActivePane();
+  void       GotoEndOfPanel(int p_panel);
+
 protected:
     bool         m_isQueryInitialized;
     bool         m_isStatsInitialized;

@@ -58,7 +58,7 @@ CQueryPanelWnd::~CQueryPanelWnd()
   CView::~CView();
 }
 
-void CQueryPanelWnd::ChangePanel (int nTab)
+void CQueryPanelWnd::ChangePanel(int nTab)
 {
   _CHECK_AND_THROW_(nTab < QPW_NUM_OF_PANEL, _T("Invalid index of a query views."));
 
@@ -253,6 +253,7 @@ BOOL CQueryPanelWnd::OnCreate(LPCREATESTRUCT /*lpCreateStruct*/)
     TRACE0("Failed to create history view\n");
     return -1;
   }
+
   // Activate first panel
   ChangePanel(QPW_QUERY_VIEW);
   return 0;
@@ -305,6 +306,20 @@ void CQueryPanelWnd::OnOpenFiles_RClick (NMHDR* pNMHDR, LRESULT* pResult)
   else
   {
     *pResult = 0;
+  }
+}
+
+void
+CQueryPanelWnd::GotoEndOfPanel(int p_panel)
+{
+  _CHECK_AND_THROW_(p_panel < QPW_NUM_OF_PANEL,_T("Invalid index of a query views."));
+
+  switch(p_panel)
+  {
+    case QPW_QUERY_VIEW:      m_queryView.GotoQueryEnd(); break;
+    case QPW_STATISTICS_VIEW: m_statsView.GotoQueryEnd(); break;
+    case QPW_OUTPUT_VIEW:     m_outptView.GotoQueryEnd(); break;
+    case QPW_HISTORY_VIEW:    m_histoView.GotoQueryEnd(); break;
   }
 }
 
