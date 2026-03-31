@@ -994,7 +994,8 @@ void
 SQLMigrateDialog::OnSave()
 {
   SaveProfile();
-  StyleMessageBox(this,_T("Your migration settings have been saved to disk."),SQL_MIGRATE,MB_OK);
+  CreateToast(STYLE_TOAST_MESSAGE,STYLE_POS_BOTLEFT
+             ,_T("Your migration settings have been saved to disk."));
 }
 
 void

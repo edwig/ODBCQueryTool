@@ -83,7 +83,7 @@ SQLVariant::SQLVariant(short p_short)
   m_datatype    = SQL_C_SSHORT;
   m_sqlDatatype = SQL_INTEGER;
   m_indicator   = 0;
-  m_data.m_dataSSHORT  = p_short;
+  m_data.m_dataSSHORT = p_short;
 }
 
 // XTOR SQL_C_USHORT
@@ -93,7 +93,7 @@ SQLVariant::SQLVariant(unsigned short p_short)
   m_datatype    = SQL_C_USHORT;
   m_sqlDatatype = SQL_INTEGER;
   m_indicator   = 0;
-  m_data.m_dataUSHORT  = p_short;
+  m_data.m_dataUSHORT = p_short;
 }
 
 // XTOR SQL_C_LONG / SQL_C_SLONG
@@ -225,6 +225,7 @@ SQLVariant::SQLVariant(const DATE_STRUCT* p_date)
   m_datatype    = SQL_C_DATE;
   m_sqlDatatype = SQL_DATE;
   m_indicator   = 0;
+  memset(&m_data.m_dataCHAR,0,sizeof(m_data));
   memcpy(&m_data.m_dataDATE,p_date,sizeof(DATE_STRUCT));
 }
 
@@ -235,6 +236,7 @@ SQLVariant::SQLVariant(const TIME_STRUCT* p_time)
   m_datatype    = SQL_C_TIME;
   m_sqlDatatype = SQL_TIME;
   m_indicator   = 0;
+  memset(&m_data.m_dataCHAR,0,sizeof(m_data));
   memcpy(&m_data.m_dataTIME,p_time,sizeof(TIME_STRUCT));
 }
 
@@ -244,6 +246,7 @@ SQLVariant::SQLVariant(const TIMESTAMP_STRUCT* p_stamp)
   m_datatype    = SQL_C_TIMESTAMP;
   m_sqlDatatype = SQL_TIMESTAMP;
   m_indicator   = 0;
+  memset(&m_data.m_dataCHAR,0,sizeof(m_data));
   memcpy(&m_data.m_dataTIMESTAMP,p_stamp,sizeof(TIMESTAMP_STRUCT));
 }
 

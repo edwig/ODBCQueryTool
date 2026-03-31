@@ -1120,16 +1120,16 @@ SQLQuery::BindParameters()
       LogParameter(icol,var);
     }
 
-//     TRACE(_T("COLUMN     : %d\n"), icol);
-//     TRACE(_T("ParamType  : %d\n"), paramType);
-//     TRACE(_T("Datatype   : %d\n"), dataType);
-//     TRACE(_T("SQLtype    : %d\n"), sqlDatatype);
-//     TRACE(_T("Col size   : %d\n"), columnSize);
-//     TRACE(_T("Scale      : %d\n"), scale);
-//     TRACE(_T("DataPointer: %p\n"), dataPointer);
-//     TRACE(_T("BufferSize : %d\n"), bufferSize);
-//     TRACE(_T("Indicator  : %d\n"), (int)*indicator);
-//     TRACE(_T("DATA       : %s\n"), var->GetAsString().GetString());
+//     ATLTRACE(_T("COLUMN     : %d\n"), icol);
+//     ATLTRACE(_T("ParamType  : %d\n"), paramType);
+//     ATLTRACE(_T("Datatype   : %d\n"), dataType);
+//     ATLTRACE(_T("SQLtype    : %d\n"), sqlDatatype);
+//     ATLTRACE(_T("Col size   : %d\n"), columnSize);
+//     ATLTRACE(_T("Scale      : %d\n"), scale);
+//     ATLTRACE(_T("DataPointer: %p\n"), dataPointer);
+//     ATLTRACE(_T("BufferSize : %d\n"), bufferSize);
+//     ATLTRACE(_T("Indicator  : %d\n"), (int)*indicator);
+//     ATLTRACE(_T("DATA       : %s\n"), var->GetAsString().GetString());
 
     // Do the bindings
     m_retCode = SqlBindParameter(m_hstmt        // Statement handle

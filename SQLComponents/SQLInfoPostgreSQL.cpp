@@ -28,6 +28,9 @@
 #include "SQLInfoPostgreSQL.h"
 #include "SQLQuery.h"
 
+// Undefine to convert in SQLMigrate without translation
+#define CONVERT_DECIMAL_INTEGER
+
 namespace SQLComponents
 {
 
@@ -377,6 +380,7 @@ SQLInfoPostgreSQL::GetKEYWORDDataType(MetaColumn* p_column)
     case SQL_WLONGVARCHAR:              type = _T("text");          break;   // TBF
     case SQL_NUMERIC:                   // Fall through
     case SQL_DECIMAL:                   type = _T("numeric");
+#ifdef CONVERT_DECIMAL_INTEGER
                                         if(p_column->m_decimalDigits == 0)
                                         {
                                           if(p_column->m_columnSize <= 2)
@@ -404,6 +408,7 @@ SQLInfoPostgreSQL::GetKEYWORDDataType(MetaColumn* p_column)
                                             p_column->m_datatype   = SQL_INTEGER;
                                           }
                                         }
+#endif
                                         break;
     case SQL_INTEGER:                   type = _T("int4");
                                         p_column->m_columnSize = 10;
@@ -430,7 +435,7 @@ SQLInfoPostgreSQL::GetKEYWORDDataType(MetaColumn* p_column)
                                         p_column->m_columnSize = 8;
                                         break;
     case SQL_TIMESTAMP:                 // Fall through
-    case SQL_TYPE_TIMESTAMP:            type = _T("timestamptz");
+    case SQL_TYPE_TIMESTAMP:            type = _T("timestamp");
                                         p_column->m_columnSize = 26;
                                         break;
     case SQL_BINARY:                    type = _T("bytea");         break;
@@ -694,8 +699,22 @@ SQLInfoPostgreSQL::GetTempTablename(const XString& /*p_schema*/,const XString& p
 
 // Changes to parameters before binding to an ODBC HSTMT handle (returning the At-Exec status)
 bool
-SQLInfoPostgreSQL::DoBindParameterFixup(SQLVariant* /*p_var*/,SQLSMALLINT& /*p_dataType*/,SQLSMALLINT& /*p_sqlDatatype*/,SQLULEN& /*p_columnSize*/,SQLSMALLINT& /*p_scale*/,SQLLEN& /*p_bufferSize*/,SQLLEN* /*p_indicator*/) const
+SQLInfoPostgreSQL::DoBindParameterFixup(SQLVariant* /*p_var*/,SQLSMALLINT& p_dataType,SQLSMALLINT& p_sqlDatatype,SQLULEN& p_columnSize,SQLSMALLINT& p_scale,SQLLEN& p_bufferSize,SQLLEN* /*p_indicator*/) const
 {
+  if(p_dataType == SQL_C_TYPE_TIMESTAMP)
+  {
+    p_dataType = SQL_C_TIMESTAMP;
+    p_bufferSize = 0;
+    p_columnSize = 0;
+    p_scale      = 0;
+  }
+  if(p_sqlDatatype == SQL_TYPE_TIMESTAMP)
+  {
+    p_sqlDatatype = SQL_TIMESTAMP;
+    p_bufferSize = 0;
+    p_columnSize = 0;
+    p_scale      = 0;
+  }
   return false;
 }
 
