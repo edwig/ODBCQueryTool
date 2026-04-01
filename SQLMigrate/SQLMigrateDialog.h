@@ -73,6 +73,7 @@ public:
   BOOL          m_do_views;
   BOOL          m_do_data;
   BOOL          m_do_truncate;
+  BOOL          m_do_stripDiac;
   BOOL          m_do_deletes;
   BOOL          m_do_primarys;
   BOOL          m_do_indices;
@@ -128,6 +129,7 @@ public:
   StyleCheckbox     m_check_do_views;
   StyleCheckbox     m_check_do_data;
   StyleCheckbox     m_check_do_truncate;
+  StyleCheckbox     m_check_do_stripDiac;
   StyleCheckbox     m_check_do_deletes;
   StyleCheckbox     m_check_do_primarys;
   StyleCheckbox     m_check_do_indices;

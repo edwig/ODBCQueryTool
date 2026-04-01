@@ -29,6 +29,7 @@
 #include "SQLMigrateDialog.h"
 #include "SQLQuery.h"
 #include "SQLInfoDB.h"
+#include <ConvertWideString.h>
 #include <sql.h>
 #include <sqlext.h>
 
@@ -1796,6 +1797,7 @@ SQLMigrate::FillTablesViaData(bool p_process)
         m_log.WriteLog(meld);
         meld.Format(_T("Number of records  : %ld"),totalrows);
         m_log.WriteLog(meld);
+        m_log.SetTableGauge(0,totalrows);
 
         SQLQuery query1(m_databaseSource);
         SQLQuery query2(m_databaseTarget);
@@ -1847,12 +1849,12 @@ SQLMigrate::FillTablesViaData(bool p_process)
           rows += extra;
 
           // Mark progress in gauge
-          m_log.SetTableGauge(rows,totalrows);
           if(rows % m_params.v_logLines == 0)
           {
             XString text;
             text.Format(_T("Table: %s Rows: %ld [%5.2f %%]"),table.GetString(),rows,((double)rows / (double)totalrows * 100.0));
             m_log.WriteLog(text);
+            m_log.SetTableGauge(rows,totalrows);
           }
         }
         trans.Commit();
@@ -1870,6 +1872,7 @@ SQLMigrate::FillTablesViaData(bool p_process)
     }
     // Show tables
     m_log.SetTablesGauge(++numTables);
+    m_log.SetTableGauge(0,totalrows);
     XString processed;
     processed.Format(_T("Table [%s.%s] processed with [%ld of %ld] rows"),m_params.v_source_user.GetString(),table.GetString(),rows,totalrows);
     m_log.WriteLog(processed);
@@ -1964,6 +1967,10 @@ SQLMigrate::VariantToInsertString(SQLVariant* p_var,int p_datatype)
     case SQL_CHAR:        // Fall through
     case SQL_VARCHAR:
     case SQL_LONGVARCHAR: p_var->GetAsString(result);
+                          if(m_params.v_diacritics)
+                          {
+                            StripDiacritics(result);
+                          }
                           result.Replace(_T("\'"),_T("\'\'"));
                           result = _T("\'") + result + _T("\'");
                           break;
@@ -2045,4 +2052,77 @@ SQLMigrate::DatatypeExceptions(RebindMap& p_map)
   }
 }
 
+// Implementations of character sets varies per RDBMS
+// and can differ by the way a 'database' has been created
+// for the default VARCHAR datatype.
+// Not all RDBMS can vary the charset per column
+// So we strip the basic diacritic characters in this option
+// in a basic portable way
+void
+SQLMigrate::StripDiacritics(XString& p_string)
+{
+  TCHAR ch;
+
+  for(int i = 0;i < p_string.GetLength(); ++i)
+  {
+    ch = (TCHAR) p_string.GetAt(i);
+    if(ch >= 128)
+    {
+      switch(ch)
+      {
+        case 'À': ch = 'A'; break;
+        case 'Á': ch = 'A'; break;
+        case 'Ä': ch = 'A'; break;
+        case 'Â': ch = 'A'; break;
+        case 'Ã': ch = 'A'; break;
+        case 'à': ch = 'a'; break;
+        case 'á': ch = 'a'; break;
+        case 'ä': ch = 'a'; break;
+        case 'â': ch = 'a'; break;
+        case 'ã': ch = 'a'; break;
+        case 'È': ch = 'E'; break;
+        case 'É': ch = 'E'; break;
+        case 'Ë': ch = 'E'; break;
+        case 'Ê': ch = 'E'; break;
+        case 'è': ch = 'e'; break;
+        case 'é': ch = 'e'; break;
+        case 'ë': ch = 'e'; break;
+        case 'ê': ch = 'e'; break;
+        case 'Ò': ch = 'O'; break;
+        case 'Ó': ch = 'O'; break;
+        case 'Ö': ch = 'O'; break;
+        case 'Ô': ch = 'O'; break;
+        case 'Õ': ch = 'O'; break;
+        case 'ò': ch = 'o'; break;
+        case 'ó': ch = 'o'; break;
+        case 'ö': ch = 'o'; break;
+        case 'ô': ch = 'o'; break;
+        case 'õ': ch = 'o'; break;
+        case 'Ù': ch = 'U'; break;
+        case 'Ú': ch = 'U'; break;
+        case 'Ü': ch = 'U'; break;
+        case 'Û': ch = 'U'; break;
+        case 'ù': ch = 'u'; break;
+        case 'ú': ch = 'u'; break;
+        case 'ü': ch = 'u'; break;
+        case 'û': ch = 'u'; break;
+        case 'Ì': ch = 'I'; break;
+        case 'Í': ch = 'I'; break;
+        case 'Ï': ch = 'I'; break;
+        case 'Î': ch = 'I'; break;
+        case 'ì': ch = 'i'; break;
+        case 'í': ch = 'i'; break;
+        case 'ï': ch = 'i'; break;
+        case 'î': ch = 'i'; break;
+        case 'Ç': ch = 'C'; break;
+        case 'ç': ch = 'c'; break;
+        case '€': ch = 'E'; break;
+        default : ch = '-'; break;
+      }
+      p_string.SetAt(i,ch);
+    }
+  }
 }
+
+}
+

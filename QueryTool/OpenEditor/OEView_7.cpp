@@ -501,7 +501,7 @@ COEditorView::GetODBCCommand(int& curLine
   {
     odbcCommand = multiLineCommand;
   }
-  TRACE(_T("ODBC Command: %s\n"),odbcCommand.GetString());
+  // TRACE(_T("ODBC Command: %s\n"),odbcCommand.GetString());
   return firstline;
 }
 

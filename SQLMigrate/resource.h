@@ -116,6 +116,8 @@
 #define IDC_GRP_STATUS                  1042
 #define IDC_BUTTON1                     1043
 #define IDC_SAVE                        1043
+#define IDC_DO_TRUNCATE2                1044
+#define IDC_DO_DIAC                     1044
 #define ID_THEMA_LIME                   32771
 #define ID_THEMA_SKYBLUE                32772
 #define ID_THEMA_PURPLE                 32773

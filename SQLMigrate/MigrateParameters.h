@@ -70,6 +70,7 @@ public:
   int     v_do_views        {    0 };    // Convert views instead of tables
   int     v_truncate        {    0 };    // Truncate char fields in table before converting
   int     v_deletes         {    0 };    // Truncate/delete table contents before converting
+  int     v_diacritics      {    0 };    // Strip diacritics on SELECT/INSERT
   int     v_primarys        {    0 };    // Add primary key to tables
   int     v_indices         {    0 };    // Add all other indices to tables
   int     v_foreigns        {    0 };    // add foreign keys to other tables

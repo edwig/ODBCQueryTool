@@ -120,7 +120,7 @@ void CFileWatch::NotifyClients ()
 void CFileWatch::SuspendThread () 
 { 
 	m_csDataLock.Lock();
-  TRACE(_T("FileWatch: SuspendThread\n"));
+  // TRACE(_T("FileWatch: SuspendThread\n"));
   if (m_pThread && !m_bStopWatch) 
   {
     m_pThread->SuspendThread(); 
@@ -131,7 +131,7 @@ void CFileWatch::SuspendThread ()
 void CFileWatch::ResumeThread () 
 { 
 	m_csDataLock.Lock();
-  TRACE(_T("FileWatch: ResumeThread\n"));
+  // TRACE(_T("FileWatch: ResumeThread\n"));
   if (m_pThread) 
   {
     m_EventCheck.SetEvent();

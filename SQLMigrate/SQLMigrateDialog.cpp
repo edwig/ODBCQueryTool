@@ -56,6 +56,7 @@ SQLMigrateDialog::SQLMigrateDialog(CWnd* pParent)
   m_commandLineMode = false;
   m_exportResult    = false;
   m_do_truncate     = false;
+  m_do_stripDiac       = false;
   m_do_deletes      = false;
   m_do_primarys     = false;
   m_do_indices      = false;
@@ -120,6 +121,7 @@ SQLMigrateDialog::DoDataExchange(CDataExchange* pDX)
   DDX_Control (pDX, IDC_DO_VIEWS,        m_check_do_views);
   DDX_Control (pDX, IDC_DO_DATA,         m_check_do_data);
   DDX_Control (pDX, IDC_DO_TRUNCATE,     m_check_do_truncate);
+  DDX_Control (pDX, IDC_DO_DIAC,         m_check_do_stripDiac);
   DDX_Control (pDX, IDC_DO_DELETES,      m_check_do_deletes);
   DDX_Control (pDX, IDC_DO_PRIMARYS,     m_check_do_primarys);
   DDX_Control (pDX, IDC_DO_INDICES,      m_check_do_indices);
@@ -132,6 +134,7 @@ SQLMigrateDialog::DoDataExchange(CDataExchange* pDX)
   DDX_Check   (pDX, IDC_DO_DATA,         m_do_data);
   DDX_Check   (pDX, IDC_DO_VIEWS,        m_do_views);
   DDX_Check   (pDX, IDC_DO_TRUNCATE,     m_do_truncate);
+  DDX_Check   (pDX, IDC_DO_DIAC,         m_do_stripDiac);
   DDX_Check   (pDX, IDC_DO_DELETES,      m_do_deletes);
   DDX_Check   (pDX, IDC_DO_PRIMARYS,     m_do_primarys);
   DDX_Check   (pDX, IDC_DO_INDICES,      m_do_indices);
@@ -213,6 +216,7 @@ SQLMigrateDialog::OnInitDialog()
   m_do_data      = 1;
   m_do_truncate  = 1;
   m_do_deletes   = 1;
+  m_do_stripDiac    = 0;
 
   if(!StartFromCommandLine())
   {
@@ -435,17 +439,18 @@ SQLMigrateDialog::LoadProfile()
   }
 
   // Options
-  m_do_tables    = GetPrivateProfileInt(_T("OPTION"),_T("tables"),   1,m_profile);
-  m_do_data      = GetPrivateProfileInt(_T("OPTION"),_T("data"),     1,m_profile);
-  m_do_views     = GetPrivateProfileInt(_T("OPTION"),_T("views"),    1,m_profile);
-  m_do_truncate  = GetPrivateProfileInt(_T("OPTION"),_T("truncate"), 1,m_profile);
-  m_do_deletes   = GetPrivateProfileInt(_T("OPTION"),_T("deletes"),  1,m_profile);
-  m_do_primarys  = GetPrivateProfileInt(_T("OPTION"),_T("primarys"), 0,m_profile);
-  m_do_indices   = GetPrivateProfileInt(_T("OPTION"),_T("indices"),  0,m_profile);
-  m_do_foreigns  = GetPrivateProfileInt(_T("OPTION"),_T("foreigns"), 0,m_profile);
-  m_do_sequences = GetPrivateProfileInt(_T("OPTION"),_T("sequences"),0,m_profile);
-  m_do_triggers  = GetPrivateProfileInt(_T("OPTION"),_T("triggers"), 0,m_profile);
-  m_do_access    = GetPrivateProfileInt(_T("OPTION"),_T("access"),   0,m_profile);
+  m_do_tables    = GetPrivateProfileInt(_T("OPTION"),_T("tables"),    1,m_profile);
+  m_do_data      = GetPrivateProfileInt(_T("OPTION"),_T("data"),      1,m_profile);
+  m_do_views     = GetPrivateProfileInt(_T("OPTION"),_T("views"),     1,m_profile);
+  m_do_truncate  = GetPrivateProfileInt(_T("OPTION"),_T("truncate"),  1,m_profile);
+  m_do_stripDiac = GetPrivateProfileInt(_T("OPTION"),_T("diacritics"),0,m_profile);
+  m_do_deletes   = GetPrivateProfileInt(_T("OPTION"),_T("deletes"),   1,m_profile);
+  m_do_primarys  = GetPrivateProfileInt(_T("OPTION"),_T("primarys"),  0,m_profile);
+  m_do_indices   = GetPrivateProfileInt(_T("OPTION"),_T("indices"),   0,m_profile);
+  m_do_foreigns  = GetPrivateProfileInt(_T("OPTION"),_T("foreigns"),  0,m_profile);
+  m_do_sequences = GetPrivateProfileInt(_T("OPTION"),_T("sequences") ,0,m_profile);
+  m_do_triggers  = GetPrivateProfileInt(_T("OPTION"),_T("triggers"),  0,m_profile);
+  m_do_access    = GetPrivateProfileInt(_T("OPTION"),_T("access"),    0,m_profile);
 
 
   // Check scripts
@@ -512,17 +517,18 @@ SQLMigrateDialog::SaveProfile()
   WritePrivateProfileString(_T("LOG"),_T("logging"),log_logstr  ,m_profile);
   WritePrivateProfileString(_T("LOG"),_T("lines"),  m_logPerRow ,m_profile);
 
-  WritePrivateProfileString(_T("OPTION"),_T("tables"),   m_do_tables    ? _T("1") : _T("0"),m_profile);
-  WritePrivateProfileString(_T("OPTION"),_T("data"),     m_do_data      ? _T("1") : _T("0"),m_profile);
-  WritePrivateProfileString(_T("OPTION"),_T("views"),    m_do_views     ? _T("1") : _T("0"),m_profile);
-  WritePrivateProfileString(_T("OPTION"),_T("truncate"), m_do_truncate  ? _T("1") : _T("0"),m_profile);
-  WritePrivateProfileString(_T("OPTION"),_T("deletes"),  m_do_deletes   ? _T("1") : _T("0"),m_profile);
-  WritePrivateProfileString(_T("OPTION"),_T("primarys"), m_do_primarys  ? _T("1") : _T("0"),m_profile);
-  WritePrivateProfileString(_T("OPTION"),_T("indices"),  m_do_indices   ? _T("1") : _T("0"),m_profile);
-  WritePrivateProfileString(_T("OPTION"),_T("foreigns"), m_do_foreigns  ? _T("1") : _T("0"),m_profile);
-  WritePrivateProfileString(_T("OPTION"),_T("sequences"),m_do_sequences ? _T("1") : _T("0"),m_profile);
-  WritePrivateProfileString(_T("OPTION"),_T("triggers"), m_do_triggers  ? _T("1") : _T("0"),m_profile);
-  WritePrivateProfileString(_T("OPTION"),_T("access"),   m_do_access    ? _T("1") : _T("0"),m_profile);
+  WritePrivateProfileString(_T("OPTION"),_T("tables"),    m_do_tables    ? _T("1") : _T("0"),m_profile);
+  WritePrivateProfileString(_T("OPTION"),_T("data"),      m_do_data      ? _T("1") : _T("0"),m_profile);
+  WritePrivateProfileString(_T("OPTION"),_T("views"),     m_do_views     ? _T("1") : _T("0"),m_profile);
+  WritePrivateProfileString(_T("OPTION"),_T("truncate"),  m_do_truncate  ? _T("1") : _T("0"),m_profile);
+  WritePrivateProfileString(_T("OPTION"),_T("diacritics"),m_do_stripDiac ? _T("1") : _T("0"),m_profile);
+  WritePrivateProfileString(_T("OPTION"),_T("deletes"),   m_do_deletes   ? _T("1") : _T("0"),m_profile);
+  WritePrivateProfileString(_T("OPTION"),_T("primarys"),  m_do_primarys  ? _T("1") : _T("0"),m_profile);
+  WritePrivateProfileString(_T("OPTION"),_T("indices"),   m_do_indices   ? _T("1") : _T("0"),m_profile);
+  WritePrivateProfileString(_T("OPTION"),_T("foreigns"),  m_do_foreigns  ? _T("1") : _T("0"),m_profile);
+  WritePrivateProfileString(_T("OPTION"),_T("sequences"), m_do_sequences ? _T("1") : _T("0"),m_profile);
+  WritePrivateProfileString(_T("OPTION"),_T("triggers"),  m_do_triggers  ? _T("1") : _T("0"),m_profile);
+  WritePrivateProfileString(_T("OPTION"),_T("access"),    m_do_access    ? _T("1") : _T("0"),m_profile);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -564,6 +570,7 @@ SQLMigrateDialog::GetMigrationParameters()
   m_parameters.v_do_data          = m_do_data;
   m_parameters.v_do_views         = m_do_views;
   m_parameters.v_truncate         = m_do_truncate;
+  m_parameters.v_diacritics       = m_do_stripDiac;
   m_parameters.v_deletes          = m_do_deletes;
   m_parameters.v_primarys         = m_do_primarys;
   m_parameters.v_indices          = m_do_indices;

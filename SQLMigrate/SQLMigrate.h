@@ -89,6 +89,7 @@ private:
   void     DatatypeExceptions(RebindMap& p_map);
   void     SetExecParameters(ParameterMap& p_params,VarMap* p_columns);
   void     SetExecParameters(SQLQuery& p_target,VarMap* p_columns);
+  void     StripDiacritics(XString& p_string);
 
   // Record missing records
   void     LogMissingRecord(SQLQuery& p_query,XString& p_error);
