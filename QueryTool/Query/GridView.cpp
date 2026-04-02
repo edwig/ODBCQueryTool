@@ -1112,9 +1112,8 @@ CGridView::ExportToTXT()
     _tcscpy_s(html,5,_T(".txt"));
     _trename(filename,newname);
   }
-  // Startup with TXT viewer
-  QueryToolApp* app = (QueryToolApp*) AfxGetApp();
-  app->RunShellCommand(tempdir,_T("open"),newname,NULL);
+  // Startup as a TXT document
+  AfxGetApp()->OpenDocumentFile(newname);
 
   // Cleanup
   colSize.RemoveAll();
