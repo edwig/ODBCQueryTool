@@ -60,6 +60,7 @@ public:
   void SetLogfile(XString p_logfile);
   void SetDBType(bool p_source, XString p_type);
 private:
+  bool    m_scripting;
   int     m_tables;
   LogType m_status;
 

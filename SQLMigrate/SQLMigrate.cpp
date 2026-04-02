@@ -392,17 +392,18 @@ SQLMigrate::WriteMigrateParameters()
 
   // Logging of all migration options
   // Ruler               "------------------- : "
-  m_log.WriteLog(XString(_T("Create new tables   : ")) + (m_params.v_do_tables ? _T("yes") : _T("no")));
-  m_log.WriteLog(XString(_T("Delete  table data  : ")) + (m_params.v_deletes   ? _T("yes") : _T("no")));
-  m_log.WriteLog(XString(_T("Convert table data  : ")) + (m_params.v_do_data   ? _T("yes") : _T("no")));
-  m_log.WriteLog(XString(_T("Convert views       : ")) + (m_params.v_do_views  ? _T("yes") : _T("no")));
-  m_log.WriteLog(XString(_T("Truncate char fields: ")) + (m_params.v_truncate  ? _T("yes") : _T("no")));
-  m_log.WriteLog(XString(_T("Create new indices  : ")) + (m_params.v_indices   ? _T("yes") : _T("no")));
-  m_log.WriteLog(XString(_T("Create primary keys : ")) + (m_params.v_primarys  ? _T("yes") : _T("no")));
-  m_log.WriteLog(XString(_T("Create foreign keys : ")) + (m_params.v_foreigns  ? _T("yes") : _T("no")));
-  m_log.WriteLog(XString(_T("Create sequences    : ")) + (m_params.v_sequences ? _T("yes") : _T("no")));
-  m_log.WriteLog(XString(_T("Create triggers     : ")) + (m_params.v_triggers  ? _T("yes") : _T("no")));
-  m_log.WriteLog(XString(_T("Grant access rights : ")) + (m_params.v_access    ? _T("yes") : _T("no")));
+  m_log.WriteLog(XString(_T("Create new tables   : ")) + (m_params.v_do_tables  ? _T("yes") : _T("no")));
+  m_log.WriteLog(XString(_T("Delete  table data  : ")) + (m_params.v_deletes    ? _T("yes") : _T("no")));
+  m_log.WriteLog(XString(_T("Convert table data  : ")) + (m_params.v_do_data    ? _T("yes") : _T("no")));
+  m_log.WriteLog(XString(_T("Convert views       : ")) + (m_params.v_do_views   ? _T("yes") : _T("no")));
+  m_log.WriteLog(XString(_T("Truncate char fields: ")) + (m_params.v_truncate   ? _T("yes") : _T("no")));
+  m_log.WriteLog(XString(_T("Strip diacritics    : ")) + (m_params.v_diacritics ? _T("yes") : _T("no")));
+  m_log.WriteLog(XString(_T("Create new indices  : ")) + (m_params.v_indices    ? _T("yes") : _T("no")));
+  m_log.WriteLog(XString(_T("Create primary keys : ")) + (m_params.v_primarys   ? _T("yes") : _T("no")));
+  m_log.WriteLog(XString(_T("Create foreign keys : ")) + (m_params.v_foreigns   ? _T("yes") : _T("no")));
+  m_log.WriteLog(XString(_T("Create sequences    : ")) + (m_params.v_sequences  ? _T("yes") : _T("no")));
+  m_log.WriteLog(XString(_T("Create triggers     : ")) + (m_params.v_triggers   ? _T("yes") : _T("no")));
+  m_log.WriteLog(XString(_T("Grant access rights : ")) + (m_params.v_access     ? _T("yes") : _T("no")));
   m_log.WriteLog(_T(""));
 }
 
@@ -1967,6 +1968,10 @@ SQLMigrate::VariantToInsertString(SQLVariant* p_var,int p_datatype)
     case SQL_CHAR:        // Fall through
     case SQL_VARCHAR:
     case SQL_LONGVARCHAR: p_var->GetAsString(result);
+                          if(m_params.v_truncate)
+                          {
+                            result.TrimRight();
+                          }
                           if(m_params.v_diacritics)
                           {
                             StripDiacritics(result);
@@ -2070,6 +2075,7 @@ SQLMigrate::StripDiacritics(XString& p_string)
     {
       switch(ch)
       {
+        // A
         case 'À': ch = 'A'; break;
         case 'Á': ch = 'A'; break;
         case 'Ä': ch = 'A'; break;
@@ -2080,6 +2086,7 @@ SQLMigrate::StripDiacritics(XString& p_string)
         case 'ä': ch = 'a'; break;
         case 'â': ch = 'a'; break;
         case 'ã': ch = 'a'; break;
+        // E
         case 'È': ch = 'E'; break;
         case 'É': ch = 'E'; break;
         case 'Ë': ch = 'E'; break;
@@ -2088,6 +2095,7 @@ SQLMigrate::StripDiacritics(XString& p_string)
         case 'é': ch = 'e'; break;
         case 'ë': ch = 'e'; break;
         case 'ê': ch = 'e'; break;
+        // O
         case 'Ò': ch = 'O'; break;
         case 'Ó': ch = 'O'; break;
         case 'Ö': ch = 'O'; break;
@@ -2098,6 +2106,7 @@ SQLMigrate::StripDiacritics(XString& p_string)
         case 'ö': ch = 'o'; break;
         case 'ô': ch = 'o'; break;
         case 'õ': ch = 'o'; break;
+        // U
         case 'Ù': ch = 'U'; break;
         case 'Ú': ch = 'U'; break;
         case 'Ü': ch = 'U'; break;
@@ -2106,6 +2115,7 @@ SQLMigrate::StripDiacritics(XString& p_string)
         case 'ú': ch = 'u'; break;
         case 'ü': ch = 'u'; break;
         case 'û': ch = 'u'; break;
+        // I
         case 'Ì': ch = 'I'; break;
         case 'Í': ch = 'I'; break;
         case 'Ï': ch = 'I'; break;
@@ -2114,6 +2124,7 @@ SQLMigrate::StripDiacritics(XString& p_string)
         case 'í': ch = 'i'; break;
         case 'ï': ch = 'i'; break;
         case 'î': ch = 'i'; break;
+        // Specials
         case 'Ç': ch = 'C'; break;
         case 'ç': ch = 'c'; break;
         case '€': ch = 'E'; break;

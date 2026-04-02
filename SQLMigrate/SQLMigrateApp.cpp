@@ -40,19 +40,17 @@ BEGIN_MESSAGE_MAP(SQLMigrateApp, CWinApp)
 END_MESSAGE_MAP()
 
 
-// ExportDB construction
+// construction
 
 SQLMigrateApp::SQLMigrateApp()
 {
-	// TODO: add construction code here,
-	// Place all significant initialization in InitInstance
 }
 
 // The one and only ExportDB object
 
 SQLMigrateApp theApp;
 
-// ExportDB initialization
+// initialization
 
 BOOL SQLMigrateApp::InitInstance()
 {

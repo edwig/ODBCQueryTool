@@ -40,6 +40,7 @@ static char THIS_FILE[] = __FILE__;
 Logging::Logging() 
         :m_status(nothing)
         ,m_tables(0)
+        ,m_scripting(false)
 {
   m_flog  = nullptr;
   m_fout  = nullptr;
@@ -90,39 +91,34 @@ Logging::SetLogfile(XString p_logfile)
 int
 Logging::Open(bool p_scripting)
 {
+  m_scripting = p_scripting;
+
   // Always open standard logfile
   m_flog = _tfsopen(m_logfile, _T("a+"), _SH_DENYWR);
-  if (m_flog == nullptr)
+  if(m_flog == nullptr)
   {
-    if (!m_flog)
-    {
-      StyleMessageBox(nullptr
-                     ,_T("No write access for file: ") FILENAME_LOGFILE
-                     ,_T("No access")
-                     ,MB_OK | MB_ICONWARNING);
-      return 0;
-    }
+    XString error;
+    error.Format(_T("No write access for file: %s"),m_logfile.GetString());
+    StyleMessageBox(nullptr,error,_T("No access"),MB_OK | MB_ICONWARNING);
   }
   // If we do scripting: open the script files
   if (p_scripting)
   {
-    m_fout = _tfsopen(m_script, _T("a+"), _SH_DENYWR);
+    m_fout  = _tfsopen(m_script,     _T("a+"), _SH_DENYWR);
     m_fdrop = _tfsopen(m_dropscript, _T("a+"), _SH_DENYWR);
     if (m_fout == nullptr || m_fdrop == nullptr)
     {
       if (!m_fout)
       {
-        StyleMessageBox(nullptr
-                       ,_T("No write access for file: ") FILENAME_OUTPUT
-                       ,_T("No Access")
-                       ,MB_OK | MB_ICONWARNING);
+        XString error;
+        error.Format(_T("No write access for file: %s"),m_script.GetString());
+        StyleMessageBox(nullptr,error,_T("No access"),MB_OK | MB_ICONWARNING);
       }
       if (!m_fdrop)
       {
-        StyleMessageBox(nullptr
-                       ,_T("No write access for file: ") FILENAME_DROPFILE
-                       ,_T("No Access")
-                       ,MB_OK | MB_ICONWARNING);
+        XString error;
+        error.Format(_T("No write access for file: %s"),m_dropscript.GetString());
+        StyleMessageBox(nullptr,error,_T("No access"),MB_OK | MB_ICONWARNING);
       }
       return 0;
     }
@@ -218,6 +214,10 @@ Logging::WriteOut(XString statement,bool p_delim /* = false*/)
   afxDump << statement << "\n";
 #endif
 #endif
+  if(!m_scripting)
+  {
+    return;
+  }
   if(m_fout == nullptr)
   {
     m_fout = _tfsopen(m_script,_T("a"),_SH_DENYWR);
@@ -241,6 +241,10 @@ Logging::WriteDrop(XString statement,bool p_delim /*=false*/)
   afxDump << statement << "\n";
 #endif
 #endif
+  if(!m_scripting)
+  {
+    return;
+  }
   if(m_fdrop == nullptr)
   {
     m_fdrop = _tfsopen(m_dropscript,_T("a"),_SH_DENYWR);
