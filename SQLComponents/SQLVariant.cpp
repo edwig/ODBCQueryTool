@@ -69,7 +69,7 @@ SQLVariant::SQLVariant(LPCTSTR p_data,bool p_wide /*=false*/)
   SetData(p_wide ? SQL_C_WCHAR : SQL_C_CHAR,p_data);
 }
 
-// XTOR SQL_C_CHAR / SQL_C_WCHAR FROM MFC XString
+// XTOR SQL_C_CHAR / SQL_C_WCHAR FROM XString
 SQLVariant::SQLVariant(const XString& p_data,bool p_wide /*=false*/)
 {
   Init();
@@ -225,7 +225,6 @@ SQLVariant::SQLVariant(const DATE_STRUCT* p_date)
   m_datatype    = SQL_C_DATE;
   m_sqlDatatype = SQL_DATE;
   m_indicator   = 0;
-  memset(&m_data.m_dataCHAR,0,sizeof(m_data));
   memcpy(&m_data.m_dataDATE,p_date,sizeof(DATE_STRUCT));
 }
 
@@ -236,7 +235,6 @@ SQLVariant::SQLVariant(const TIME_STRUCT* p_time)
   m_datatype    = SQL_C_TIME;
   m_sqlDatatype = SQL_TIME;
   m_indicator   = 0;
-  memset(&m_data.m_dataCHAR,0,sizeof(m_data));
   memcpy(&m_data.m_dataTIME,p_time,sizeof(TIME_STRUCT));
 }
 
@@ -246,7 +244,6 @@ SQLVariant::SQLVariant(const TIMESTAMP_STRUCT* p_stamp)
   m_datatype    = SQL_C_TIMESTAMP;
   m_sqlDatatype = SQL_TIMESTAMP;
   m_indicator   = 0;
-  memset(&m_data.m_dataCHAR,0,sizeof(m_data));
   memcpy(&m_data.m_dataTIMESTAMP,p_stamp,sizeof(TIMESTAMP_STRUCT));
 }
 

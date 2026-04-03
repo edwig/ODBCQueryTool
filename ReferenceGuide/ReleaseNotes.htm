@@ -4,6 +4,29 @@
 <META name=GENERATOR content=AuthorDocumentation><LINK rel=Stylesheet 
 type=text/css href="default.css"></HEAD>
 <BODY>
+<H3>Releasenotes 3.6.3</H3>
+<P>Enhanced the performance of the F5 batch command. Performance was degrading 
+if a batch of more than 200 SQL commands was run. The degradation is now 
+minimal.</P>
+<P>Stripping of the basic ISO8859-1 diacritics in a database migration has been 
+added as an option in SQLMigrate.</P>
+<P>Export of the text in the output panes of the SQL results are now re-directed 
+to a new temporary file within the ODBCQueryTool, instead of starting your 
+default *.txt windows viewer.</P>
+<P>Creating view DDL from the right click menu on a view in the object tree. 
+This is a very useful feature to quickly get the DDL of a view, which is not 
+directly supported by ODBC.</P>
+<P>Fixing the split-cursors for dragging the panels sideways and up/down. In 
+essence the cursor definition files (*.cur) where missing.</P>
+<P>The password field in the login dialog now has a password eye to view the 
+currently entered password.</P>
+<P>Fix for a crash when copying text to the MS-Windows clipboard. This was 
+caused by an incoreect handling of the clipboard data formats.</P>
+<P>Added packages to the object tree. This feature is no implemented for 
+Firebird. The package definition and the package body are shown as separate 
+nodes in the tree. The procedure and function names are shown as modules and are 
+extended by the package name. So for instance "my_package.my_procedure" is the 
+name of a procedure in a package. </P>
 <H3>Releasenotes 3.6.2</H3>
 <P>Fix for a crash when saving an *.SQL file back to the filesystem</P>
 <H3>Releasenotes 3.6.1</H3>

@@ -716,8 +716,13 @@ COEditorView::ExecuteQuery(int      p_line
   }
   if(p_odbcCommand.GetLength() > 5)
   {
-    if(p_odbcCommand.Left(6).CompareNoCase(_T("SELECT")) == 0 ||
-       p_odbcCommand.Left(4).CompareNoCase(_T("WITH"))   == 0 )
+    if(p_odbcCommand.Left(6).CompareNoCase(_T("PROMPT")) == 0)
+    {
+      return true;
+    }
+    if(p_odbcCommand.Left(6).CompareNoCase(_T("SELECT"))  == 0 ||
+       p_odbcCommand.Left(4).CompareNoCase(_T("WITH"))    == 0 ||
+       p_odbcCommand.Left(7).CompareNoCase(_T("EXPLAIN")) == 0 )
     {
       selectQuery = true;
     }

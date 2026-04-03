@@ -22,8 +22,15 @@ pretty well.
 LATEST HISTORY
 ==============
 
-Releasenotes 3.x.x
+Releasenotes 3.6.3
 ------------------
+-  Enhanced the performance of the F5 batch command. Performance was degrading if 
+   a batch of more than 200 SQL commands was run. The degradation is now minimal
+-  Stripping of the basic ISO8859-1 diacritics in a database migration has been 
+   added as an option in SQLMigrate
+-  Export of the text in the output panes of the SQL results are now re-directed
+   to a new temporary file within the ODBCQueryTool, instead of starting your default
+   *.txt windows viewer.
 -  Creating view DDL from the right click menu on a view in the object tree. 
    This is a very useful feature to quickly get the DDL of a view, 
    which is not directly supported by ODBC.
@@ -38,7 +45,6 @@ Releasenotes 3.x.x
    The procedure and function names are shown as modules and are extended by the 
    package name. So for instance "my_package.my_procedure" is the name of a procedure
    in a package.
-   
 
 Releasenotes 3.6.2
 ------------------
