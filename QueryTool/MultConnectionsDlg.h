@@ -142,6 +142,7 @@ private:
   void        InitGridEmpty();
   bool        WriteSettings();
   bool        ReadSettings();
+  void        SaveSorting();
   void        FillGridWithSettings();
   ODBCSetting* FindSetting(CString user,CString datasource);
   bool        RemoveSetting(ODBCSetting* p_setting);

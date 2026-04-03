@@ -21,6 +21,8 @@
 #include "ConnStringDlg.h"
 #include "Query\codeer.h"
 #include "COmmon\AppGlobal.h"
+#include "Version.h"
+#include <RegistryManager.h>
 #include <KnownFolders.h>
 #include <direct.h>
 #include <wincrypt.h>
@@ -280,6 +282,26 @@ MultConnectionsDlg::FillGridWithSettings()
   m_DataSource   = mDatasource;
   m_Safty        = mSafty;
   m_connString   = mConnString;
+
+  RegistryManager manager;
+  manager.SetRegistryKey(PRODUCT_REGISTRY,PROGRAM_NAME);
+  UINT column = manager.GetRegistryInteger(_T("Login"),_T("SortColumn"),0);
+  UINT direct = manager.GetRegistryInteger(_T("Login"),_T("SortDirection"),0);
+
+  m_list.SetHeaderSort();
+  m_list.SetSortColumn(column);
+  m_list.SetSortAscending(direct);
+
+  m_list.SortItems(column,direct);
+}
+
+void
+MultConnectionsDlg::SaveSorting()
+{
+  RegistryManager manager;
+  manager.SetRegistryKey(PRODUCT_REGISTRY,PROGRAM_NAME);
+  manager.SetRegistryInteger(_T("Login"),_T("SortColumn"),   m_list.GetSortColumn());
+  manager.SetRegistryInteger(_T("Login"),_T("SortDirection"),m_list.GetSortAscending());
 }
 
 void
@@ -440,7 +462,7 @@ MultConnectionsDlg::OnOK()
   }
   m_boxUserEdit.SetFocus();
 
-
+  SaveSorting();
   SaveSettings(m_DataSource
               ,m_UserEdit
               ,m_UserPassword
