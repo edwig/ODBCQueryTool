@@ -39,6 +39,9 @@ namespace SQLComponents
 
 typedef std::map<int,SQLVariant*> VarMap;
 
+// Running in a separate thread
+unsigned __stdcall RunMigrate(void* p_context);
+
 // The maximum of records that may be missing
 // before we skip reporting them in the logfiles
 #define MAX_MISSING_RECORDS 10
@@ -90,6 +93,8 @@ private:
   void     SetExecParameters(ParameterMap& p_params,VarMap* p_columns);
   void     SetExecParameters(SQLQuery& p_target,VarMap* p_columns);
   void     StripDiacritics(XString& p_string);
+  bool     CheckEmergencyStop();
+  void     PostEnd(bool p_result);
 
   // Record missing records
   void     LogMissingRecord(SQLQuery& p_query,XString& p_error);

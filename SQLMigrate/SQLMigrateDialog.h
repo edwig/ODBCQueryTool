@@ -30,6 +30,8 @@
 #include "resource.h"
 #include "version.h"
 
+#define WM_READY   (WM_USER+1)
+
 class SQLMigrateDialog : public StyleDialog
 {
 public:
@@ -183,6 +185,7 @@ protected:
   afx_msg void OnEnKillfocusSourceUser();
   afx_msg void OnEnKillfocusTargetUser();
   afx_msg void OnSysCommand(UINT nID, LPARAM lParam);
+  afx_msg LRESULT OnReady(WPARAM wParam,LPARAM lParam);
   afx_msg void OnSave();
   afx_msg void OnMigrate();
   afx_msg void OnCancel();
@@ -190,9 +193,9 @@ protected:
   DECLARE_MESSAGE_MAP()
 
 private:
-  XString m_profile;
-
-  bool    m_exportRunning;
-  bool    m_commandLineMode;
-  bool    m_exportResult;
+  XString     m_profile;
+  SQLMigrate* m_migrate { nullptr };
+  bool        m_exportRunning;
+  bool        m_commandLineMode;
+  bool        m_exportResult;
 };

@@ -30,6 +30,7 @@
 #include "SQLMigrateDialog.h"
 #include "MapDialog.h"
 #include "AboutDlg.h"
+#include <CreateFullThread.h>
 #include <direct.h>
 #include <shobjidl.h>
 
@@ -171,6 +172,7 @@ BEGIN_MESSAGE_MAP(SQLMigrateDialog, StyleDialog)
   ON_COMMAND      (ID_THEMA_PUREGRAY,   OnStylePureGray)
   ON_COMMAND      (ID_THEMA_BLACKWHITE, OnStyleBlackWhite)
   ON_COMMAND      (ID_THEMA_DARK,       OnStyleDark)
+  ON_MESSAGE      (WM_READY,            OnReady)
 END_MESSAGE_MAP()
 
 BOOL 
@@ -598,7 +600,7 @@ void
 SQLMigrateDialog::PerformMigration()
 {
   XString error;
-  SQLMigrate migrate(m_parameters,m_logfile);
+  m_migrate = new SQLMigrate(m_parameters,m_logfile);
 
   // Show stop button
   m_buttonExport.SetStyle(_T("rem"));
@@ -608,42 +610,16 @@ SQLMigrateDialog::PerformMigration()
   // Needed for the estimated time on the dialog
   m_start = clock();
 
-  try
+  // Try to run the migration in a seperate thread
+  HANDLE thread = CreateFullThread(RunMigrate,(void*)m_migrate);
+  if(thread != INVALID_HANDLE_VALUE)
   {
-    // block all buttons
     m_exportRunning = true;
-    m_exportResult  = migrate.Migrate();
   }
-  catch(StdException& ex)
+  else
   {
-    error = ex.GetErrorMessage();
-  }
-  catch(XString& ex)
-  {
-    error = ex;
-  }
-  catch(...)
-  {
-    error = _T("Migration is stopped with an error");
-  }
-
-  // NOW READY!
-  m_exportRunning = false;
-  m_buttonExport.SetStyle(_T("ok"));
-  m_buttonExport.SetWindowText(_T("Start migration"));
-  m_buttonClose.EnableWindow(TRUE);
-
-  // Show errors (if any)
-  if(!error.IsEmpty())
-  {
-    m_logfile.WriteLog(XString(_T("")));
-    m_logfile.WriteLog(XString(_T("STOPPED WITH ERROR!")));
-    m_logfile.WriteLog(error);
-
-    if(m_commandLineMode == false)
-    {
-      StyleMessageBox(this,error,SQL_MIGRATE,MB_OK | MB_ICONERROR);
-    }
+    m_exportResult = false;
+    PostMigration();
   }
 }
 
@@ -651,6 +627,28 @@ SQLMigrateDialog::PerformMigration()
 void
 SQLMigrateDialog::PostMigration()
 {
+  // NOW READY!
+  m_exportRunning = false;
+  m_buttonExport.SetStyle(_T("ok"));
+  m_buttonExport.SetWindowText(_T("Start migration"));
+  m_buttonClose.EnableWindow(TRUE);
+
+  // Show errors (if any)
+  if(m_exportResult == false)
+  {
+    XString error(_T("STOPPED WITH ERROR!"));
+    m_logfile.WriteLog(XString(_T("")));
+    m_logfile.WriteLog(error);
+
+    if(m_commandLineMode == false)
+    {
+      StyleMessageBox(this,error,SQL_MIGRATE,MB_OK | MB_ICONERROR);
+    }
+
+    delete m_migrate;
+    m_migrate = nullptr;
+  }
+
   // Reset the time
   m_estimated.Empty();
   m_start = 0L;
@@ -957,8 +955,16 @@ SQLMigrateDialog::OnMigrate()
   {
     GetMigrationParameters();
     PerformMigration();
-    PostMigration();
   }
+}
+
+LRESULT
+SQLMigrateDialog::OnReady(WPARAM wParam,LPARAM /*lParam*/)
+{
+  m_exportResult = (bool)wParam;
+  PostMigration();
+
+  return 0;
 }
 
 BOOL

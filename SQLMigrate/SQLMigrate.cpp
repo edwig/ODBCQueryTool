@@ -62,6 +62,16 @@ SQLMigrate::~SQLMigrate()
   }
 }
 
+unsigned __stdcall RunMigrate(void* p_context)
+{
+  SQLMigrate* migrate = reinterpret_cast<SQLMigrate*>(p_context);
+  if(migrate)
+  {
+    return migrate->Migrate();
+  }
+  return 0;
+}
+
 bool 
 SQLMigrate::Migrate()
 {
@@ -164,6 +174,7 @@ SQLMigrate::Migrate()
 
   // THE END!
   m_log.WriteLog(_T("*** End of migration. ***"));
+  PostEnd(result);
   return result;
 }
 
@@ -830,7 +841,7 @@ SQLMigrate::CreateTables()
     }
 
     // Check for emergency stopping
-    if(m_params.v_emergencyStop)
+    if(CheckEmergencyStop())
     {
       return;
     }
@@ -1102,7 +1113,7 @@ SQLMigrate::CreateViews()
 
     }
     // Check for emergency stopping
-    if(m_params.v_emergencyStop)
+    if(CheckEmergencyStop())
     {
       return;
     }
@@ -1286,7 +1297,7 @@ SQLMigrate::FillTablesViaPump()
               }
 
               // Check emergency stop
-              if(m_params.v_emergencyStop)
+              if(CheckEmergencyStop())
               {
                 return;
               }
@@ -1463,7 +1474,7 @@ SQLMigrate::FillTablesViaSlowPump()
               query2.ResetParameters();
 
               // Check emergency stop
-              if(m_params.v_emergencyStop)
+              if(CheckEmergencyStop())
               {
                 return;
               }
@@ -1867,7 +1878,7 @@ SQLMigrate::FillTablesViaData(bool p_process)
           rows += extra;
 
           // Check emergency stop
-          if(m_params.v_emergencyStop)
+          if(CheckEmergencyStop())
           {
             return;
           }
@@ -2155,6 +2166,27 @@ SQLMigrate::StripDiacritics(XString& p_string)
       }
       p_string.SetAt(i,ch);
     }
+  }
+}
+
+bool
+SQLMigrate::CheckEmergencyStop()
+{
+  if(m_params.v_emergencyStop)
+  {
+    m_log.WriteLog(_T("Emergency stop activated. Migration stopped."));
+    return true;
+  }
+  return false;
+}
+
+void
+SQLMigrate::PostEnd(bool p_result)
+{
+  SQLMigrateDialog* dialog = reinterpret_cast<SQLMigrateDialog*>(AfxGetApp()->m_pMainWnd);
+  if(dialog)
+  {
+    dialog->PostMessage(WM_READY,(WPARAM)p_result,0);
   }
 }
 
