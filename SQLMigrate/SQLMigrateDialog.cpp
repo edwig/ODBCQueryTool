@@ -644,9 +644,6 @@ SQLMigrateDialog::PostMigration()
     {
       StyleMessageBox(this,error,SQL_MIGRATE,MB_OK | MB_ICONERROR);
     }
-
-    delete m_migrate;
-    m_migrate = nullptr;
   }
 
   // Reset the time
@@ -682,6 +679,11 @@ SQLMigrateDialog::PostMigration()
       StyleMessageBox(this,text,SQL_MIGRATE,style);
     }
   }
+
+  // Remove last migration
+  delete m_migrate;
+  m_migrate = nullptr;
+
   // Closing the logfile now. we are done.
   m_logfile.Close();
 }
