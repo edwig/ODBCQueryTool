@@ -83,6 +83,8 @@ public:
   MigrateType v_direct      { MigrateType::DataPump };    // direct migration into database 
   // Keep track of total
   int     v_errors          {    0 };    // Total number of errors
+  // Stopping
+  bool    v_emergencyStop   { false};    // Stopping while converting
 };
 
 }

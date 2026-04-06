@@ -166,6 +166,7 @@ protected:
   void GetMigrationParameters();
   void PerformMigration();
   void PostMigration();
+  void StopMigration();
 
   afx_msg void    OnPaint();
   afx_msg HCURSOR OnQueryDragIcon();

@@ -99,8 +99,8 @@ private:
   typedef std::vector<XString> TablesMap;
 
   // DATA
-  MigrateParameters m_params;
-  Logging&          m_log;
+  MigrateParameters& m_params;
+  Logging&           m_log;
 
   MigrateType  m_directMigration { MigrateType::DataPump };
   int          m_totalTables     { 0 };

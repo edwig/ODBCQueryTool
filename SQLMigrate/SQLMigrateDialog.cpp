@@ -579,6 +579,9 @@ SQLMigrateDialog::GetMigrationParameters()
   m_parameters.v_triggers         = m_do_triggers;
   m_parameters.v_access           = m_do_access;
   m_parameters.v_allObjects       = m_allTables;
+  // Stopping criterion
+  m_parameters.v_errors           = 0;
+  m_parameters.v_emergencyStop    = false;
 
   // Empty the log window
   m_editLog.SetWindowText(_T("")); 
@@ -590,6 +593,11 @@ SQLMigrateDialog::PerformMigration()
 {
   XString error;
   SQLMigrate migrate(m_parameters,m_logfile);
+
+  // Show stop button
+  m_buttonExport.SetStyle(_T("rem"));
+  m_buttonExport.SetWindowTextW(_T("STOP !!"));
+  m_buttonClose.EnableWindow(FALSE);
 
   // Needed for the estimated time on the dialog
   m_start = clock();
@@ -615,6 +623,9 @@ SQLMigrateDialog::PerformMigration()
 
   // NOW READY!
   m_exportRunning = false;
+  m_buttonExport.SetStyle(_T("ok"));
+  m_buttonExport.SetWindowText(_T("Start migration"));
+  m_buttonClose.EnableWindow(TRUE);
 
   // Show errors (if any)
   if(!error.IsEmpty())
@@ -650,19 +661,32 @@ SQLMigrateDialog::PostMigration()
 
   if(m_exportResult)
   {
-    XString text(_T("The migration is complete"));
-    if (m_commandLineMode)
+    long style = MB_OK;
+    XString text(_T("The migration is complete."));
+    if(m_parameters.v_errors > 0)
+    {
+      text.AppendFormat(_T(" Total number of errors: %d"),m_parameters.v_errors);
+      style |= MB_ICONERROR;
+    }
+    if(m_commandLineMode)
     {
       m_logfile.WriteLog(XString(_T("")));
       m_logfile.WriteLog(text);
     }
     else
     {
-      StyleMessageBox(this,text,SQL_MIGRATE,MB_OK);
+      StyleMessageBox(this,text,SQL_MIGRATE,style);
     }
   }
   // Closing the logfile now. we are done.
   m_logfile.Close();
+}
+
+void
+SQLMigrateDialog::StopMigration()
+{
+  // Cross fingers that the migration process finds this!
+  m_parameters.v_emergencyStop = true;
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -671,7 +695,8 @@ SQLMigrateDialog::PostMigration()
 //
 //////////////////////////////////////////////////////////////////////////
 
-void SQLMigrateDialog::OnPaint() 
+void 
+SQLMigrateDialog::OnPaint() 
 {
   if (IsIconic())
   {
@@ -906,9 +931,16 @@ SQLMigrateDialog::SetStatus(XString status)
 void 
 SQLMigrateDialog::OnMigrate()
 {
-  GetMigrationParameters();
-  PerformMigration();
-  PostMigration();
+  if(m_exportRunning)
+  {
+    StopMigration();
+  }
+  else
+  {
+    GetMigrationParameters();
+    PerformMigration();
+    PostMigration();
+  }
 }
 
 BOOL

@@ -828,6 +828,12 @@ SQLMigrate::CreateTables()
         m_log.WriteOut(statement.GetString(), true);
       }
     }
+
+    // Check for emergency stopping
+    if(m_params.v_emergencyStop)
+    {
+      return;
+    }
     // Show number of tables
     m_log.SetTablesGauge(++numTables);
   }
@@ -1093,7 +1099,14 @@ SQLMigrate::CreateViews()
         m_log.WriteOut(statement.GetString(),true);
       }
       first = false;
+
     }
+    // Check for emergency stopping
+    if(m_params.v_emergencyStop)
+    {
+      return;
+    }
+
     // Show number of tables
     m_log.SetTablesGauge(++numViews);
   }
@@ -1272,14 +1285,16 @@ SQLMigrate::FillTablesViaPump()
                 query1.TruncateCharFieldsReset();
               }
 
-              // Increment rows and potentially show in the dialog
-              if(++rows % 10 == 0)
+              // Check emergency stop
+              if(m_params.v_emergencyStop)
+              {
+                return;
+              }
+
+              if(rows % m_params.v_logLines == 0)
               {
                 // Show progress (but not every row or we will flicker)
                 m_log.SetTableGauge(rows,totrows);
-              }
-              if(rows % m_params.v_logLines == 0)
-              {
                 // Show if requested in the log
                 text.Format(_T("Table: %s Rows: %ld [%6.2f %%]"),table.GetString(),rows,((double) rows / (double)totrows * 100.0));
                 m_log.WriteLog(text);
@@ -1447,14 +1462,16 @@ SQLMigrate::FillTablesViaSlowPump()
               }
               query2.ResetParameters();
 
-              // Increment rows and potentially show in the dialog
-              if(++rows % 10 == 0)
+              // Check emergency stop
+              if(m_params.v_emergencyStop)
+              {
+                return;
+              }
+
+              if(rows % m_params.v_logLines == 0)
               {
                 // Show progress (but not every row or we will flicker)
                 m_log.SetTableGauge(rows,totrows);
-              }
-              if(rows % m_params.v_logLines == 0)
-              {
                 // Show if requested in the log
                 text.Format(_T("Table: %s Rows: %ld [%6.2f %%]"),table.GetString(),rows,((double)rows / (double)totrows * 100.0));
                 m_log.WriteLog(text);
@@ -1848,6 +1865,12 @@ SQLMigrate::FillTablesViaData(bool p_process)
 
           // Next row
           rows += extra;
+
+          // Check emergency stop
+          if(m_params.v_emergencyStop)
+          {
+            return;
+          }
 
           // Mark progress in gauge
           if(rows % m_params.v_logLines == 0)
