@@ -1718,6 +1718,7 @@ SQLQuery::RetrieveAtExecData()
     }
     else if(actualLength == 0 || actualLength == SQL_NULL_DATA)
     {
+      *var->GetIndicatorPointer() = actualLength;
       continue;
     }
     else if(actualLength < SQL_NULL_DATA)
