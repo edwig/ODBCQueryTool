@@ -151,6 +151,7 @@ SQLMigrateDialog::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(SQLMigrateDialog, StyleDialog)
   ON_WM_SYSCOMMAND()
   ON_WM_PAINT()
+  ON_WM_SIZE()
   ON_WM_QUERYDRAGICON()
   ON_BN_CLICKED   (IDC_BUTT_DIR,        OnDirectory)
   ON_EN_KILLFOCUS (IDC_SOURCE_USER,     OnEnKillfocusSourceUser)
@@ -294,6 +295,11 @@ SQLMigrateDialog::SetupDynamicLayout()
   manager.AddItem(IDC_EXPORT,    manager.MoveHorizontalAndVertical(100,100),manager.SizeNone());
 
   manager.Adjust();
+
+  CRect rect;
+  m_editLog.GetWindowRect(rect);
+  m_posLogWnd.x = rect.left - SIZEMARGIN         (m_editLog.GetSafeHwnd());
+  m_posLogWnd.y = rect.top  - WINDOWCAPTIONHEIGHT(m_editLog.GetSafeHwnd());
 }
 
 void
@@ -718,6 +724,18 @@ SQLMigrateDialog::OnPaint()
   else
   {
     StyleDialog::OnPaint();
+  }
+}
+
+void
+SQLMigrateDialog::OnSize(UINT nType,int cx,int cy)
+{
+  StyleDialog::OnSize(nType,cx,cy);
+  if((nType == SIZE_MAXIMIZED || nType == SIZE_RESTORED) && m_editLog.GetSafeHwnd())
+  {
+    CRect rect;
+    m_editLog.GetWindowRect(rect);
+    m_editLog.SetWindowPos(nullptr,m_posLogWnd.x,m_posLogWnd.y,rect.Width(),rect.Height(),SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
   }
 }
 

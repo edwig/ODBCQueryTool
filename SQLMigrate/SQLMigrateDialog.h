@@ -147,6 +147,7 @@ public:
   clock_t           m_start;
   MigrateParameters m_parameters;
   Logging           m_logfile;
+  CPoint            m_posLogWnd;
 
   void HandleMessages();
 
@@ -169,6 +170,7 @@ protected:
   void StopMigration();
 
   afx_msg void    OnPaint();
+  afx_msg void    OnSize(UINT nType,int cx,int cy);
   afx_msg HCURSOR OnQueryDragIcon();
 
   afx_msg void OnAboutBox();
