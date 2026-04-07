@@ -604,7 +604,7 @@ SQLMigrateDialog::PerformMigration()
 
   // Show stop button
   m_buttonExport.SetStyle(_T("rem"));
-  m_buttonExport.SetWindowTextW(_T("STOP !!"));
+  m_buttonExport.SetWindowText(_T("STOP !!"));
   m_buttonClose.EnableWindow(FALSE);
 
   // Needed for the estimated time on the dialog

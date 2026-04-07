@@ -45,6 +45,11 @@ Releasenotes 3.6.3
    The procedure and function names are shown as modules and are extended by the 
    package name. So for instance "my_package.my_procedure" is the name of a procedure
    in a package.
+-  Entries in the login list can now be sorted. The sorting will be retained in the 
+   Windows registry in between sessions.
+-  SQLMigrate has a 'STOP' button to stop the current migration
+-  The migration in SQLMigrate has been moved to a seperate thread, so that the 
+   interface can show the logging more reliable during the long migrations.
 
 Releasenotes 3.6.2
 ------------------
