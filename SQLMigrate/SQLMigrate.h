@@ -34,6 +34,8 @@
 #include <vector>
 #include <map>
 
+#define SQL_MIGRATE _T("SQLMigrate")
+
 namespace SQLComponents
 {
 

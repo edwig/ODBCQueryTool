@@ -30,6 +30,7 @@
 #include "SQLMigrateDialog.h"
 #include "MapDialog.h"
 #include "AboutDlg.h"
+#include "..\QueryTool\Version.h"
 #include <CreateFullThread.h>
 #include <direct.h>
 #include <shobjidl.h>
@@ -179,7 +180,7 @@ BOOL
 SQLMigrateDialog::OnInitDialog()
 {
   StyleDialog::OnInitDialog();
-  SetWindowText(SQL_MIGRATE _T(" ") SQL_COMPONENTS_VERSION);
+  SetWindowText(SQL_MIGRATE _T(" ") ODBCQUERYTOOL_VERSION);
   ShowMinMaxButton();
   // Use as system menu
   SetSysMenu(IDR_SYSMENU);

@@ -945,6 +945,14 @@ SQLMigrate::FixupTableColumns(DDLCreateTable& p_create)
         // Must remove the default
         column.m_default.Empty();
       }
+
+      // Inpossible combination for most databases
+      if(column.m_default   .Compare(_T("NULL")) == 0 &&
+         column.m_isNullable.Compare(_T("NO"))   == 0)
+      {
+        // NO NULL takes precedence
+        column.m_default.Empty();
+      }
     }
   }
 }
@@ -1302,7 +1310,7 @@ SQLMigrate::FillTablesViaPump()
                 return;
               }
 
-              if(rows % m_params.v_logLines == 0)
+              if(++rows % m_params.v_logLines == 0)
               {
                 // Show progress (but not every row or we will flicker)
                 m_log.SetTableGauge(rows,totrows);
@@ -1382,7 +1390,7 @@ SQLMigrate::FillTablesViaSlowPump()
   XString text;
 
   m_log.WriteLog(_T(""));
-  m_log.WriteLog(_T("MIGRATING TABLE CONTENT TO TARGET DATABASE (SLOW PUMP)"));
+  m_log.WriteLog(_T("MIGRATING TABLE CONTENT TO TARGET DATABASE (SAFE PUMP)"));
   m_log.WriteLog(_T("======================================================"));
 
   // Current step
@@ -1479,7 +1487,7 @@ SQLMigrate::FillTablesViaSlowPump()
                 return;
               }
 
-              if(rows % m_params.v_logLines == 0)
+              if(++rows % m_params.v_logLines == 0)
               {
                 // Show progress (but not every row or we will flicker)
                 m_log.SetTableGauge(rows,totrows);

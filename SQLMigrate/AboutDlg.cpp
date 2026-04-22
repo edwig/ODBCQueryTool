@@ -25,7 +25,7 @@
 //
 #include "stdafx.h"
 #include "AboutDlg.h"
-#include "version.h"
+#include "..\QueryTool\version.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -36,8 +36,8 @@ static char THIS_FILE[] = __FILE__;
 
 AboutDlg::AboutDlg() : StyleDialog(AboutDlg::IDD)
 {
-  m_version   = SQL_MIGRATE _T(" ") SQL_COMPONENTS_VERSION;
-  m_copyright = SQL_COMPONENTS_COPYRIGHT;
+  m_version   = _T("SQLMigrate ") ODBCQUERYTOOL_VERSION;
+  m_copyright = ODBCQUERYTOOL_COPYRIGHT;
 }
 
 void AboutDlg::DoDataExchange(CDataExchange* pDX)
@@ -55,6 +55,6 @@ BOOL
 AboutDlg::OnInitDialog()
 {
   StyleDialog::OnInitDialog();
-  SetWindowText(_T("About ") SQL_MIGRATE);
+  SetWindowText(_T("About SQLMigrate"));
   return FALSE;
 }

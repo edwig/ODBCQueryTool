@@ -28,7 +28,6 @@
 #include "SQLMigrate.h"
 #include "Logging.h"
 #include "resource.h"
-#include "version.h"
 
 #define WM_READY   (WM_USER+1)
 
