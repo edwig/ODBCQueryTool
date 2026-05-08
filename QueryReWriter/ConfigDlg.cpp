@@ -379,7 +379,7 @@ ConfigDlg::OnBnClickedButtConfig()
   UpdateData();
 
   DocFileDialog dlg(GetSafeHwnd(),true,_T("Select query-rewriter config file"),_T("qrc"),_T(""),0
-                   ,_T("Query-Rewriter config *.qrc|*.qrc|All files *.*|*.*|"));
+                                      ,_T("Query-Rewriter config *.qrc|*.qrc|All files *.*|*.*|"));
   if(dlg.DoModal() == IDOK)
   {
     m_config = dlg.GetChosenFile();

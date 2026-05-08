@@ -21,7 +21,7 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-// Version number: See SQLComponents.h
+// Version number: See QueryTool\Version.h
 //
 #include "stdafx.h"
 #include "AboutDlg.h"
@@ -32,6 +32,7 @@
 #include "AboutDlg.h"
 #include "..\QueryTool\Version.h"
 #include <CreateFullThread.h>
+#include <WinFile.h>
 #include <direct.h>
 #include <shobjidl.h>
 
@@ -203,8 +204,8 @@ SQLMigrateDialog::OnInitDialog()
   m_editLog.SetMutable(false);
   // Set the buttons
   m_buttonDirectory.SetStyle(_T("dir"));
-  m_buttonExport.SetStyle(_T("ok"));
-  m_buttonClose.SetStyle(_T("can"));
+  m_buttonExport   .SetStyle(_T("ok"));
+  m_buttonClose    .SetStyle(_T("can"));
   // Set passwords
   m_editSourcePassword.SetPassword();
   m_editSourcePassword.UsePasswordEye();
@@ -220,7 +221,7 @@ SQLMigrateDialog::OnInitDialog()
   m_do_data      = 1;
   m_do_truncate  = 1;
   m_do_deletes   = 1;
-  m_do_stripDiac    = 0;
+  m_do_stripDiac = 0;
 
   if(!StartFromCommandLine())
   {
@@ -330,9 +331,22 @@ SQLMigrateDialog::InitTaskbar()
 void 
 SQLMigrateDialog::SetDirectory()
 {
-  TCHAR* dir = m_directory.GetBufferSetLength(MAX_PATH);
-  GetCurrentDirectory(MAX_PATH,dir);
-  m_directory.ReleaseBuffer();
+  XString directory;
+  if(directory.GetEnvironmentVariable(_T("USERPROFILE")))
+  {
+    directory += _T("\\AppData\\Local\\EDO\\");
+    m_directory = directory;
+  }
+  else
+  {
+    TCHAR* dir = m_directory.GetBufferSetLength(MAX_PATH);
+    GetCurrentDirectory(MAX_PATH, dir);
+    m_directory.ReleaseBuffer();
+    directory = m_directory;
+  }
+  WinFile file(directory);
+  file.CreateDirectory();
+
   UpdateData(FALSE);
 }
 
@@ -395,10 +409,8 @@ SQLMigrateDialog::FindProfile()
   else
   {
     // Find in the current working directory
-    TCHAR curdir[MAX_PATH];
-    _tgetcwd(curdir,MAX_PATH);
-    workingDir = curdir;
-    if(workingDir.Right(1) != '\\')
+    workingDir = m_directory;
+    if (workingDir.Right(1) != _T("\\"))
     {
       workingDir += _T("\\");
     }
@@ -517,9 +529,9 @@ SQLMigrateDialog::SaveProfile()
 
   // Tables
   XString table_allestr = m_allTables ? _T("1") : _T("0");
-  WritePrivateProfileString(_T("TABLE"),_T("all"),        table_allestr,    m_profile);
-  WritePrivateProfileString(_T("TABLE"),_T("table"),      m_table,          m_profile);
-  WritePrivateProfileString(_T("TABLE"),_T("where"),      m_where,         m_profile);
+  WritePrivateProfileString(_T("TABLE"),_T("all"),     table_allestr,  m_profile);
+  WritePrivateProfileString(_T("TABLE"),_T("table"),   m_table,        m_profile);
+  WritePrivateProfileString(_T("TABLE"),_T("where"),   m_where,        m_profile);
 
   // Log en log lines
   XString log_logstr = m_toLogfile ? _T("1") : _T("0");
