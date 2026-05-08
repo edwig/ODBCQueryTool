@@ -88,6 +88,7 @@ public:
   afx_msg void OnODBCBegin();
   afx_msg void OnODBCCommit();
   afx_msg void OnODBCRollback();
+  afx_msg void OnODBCStop();
   afx_msg void OnUpdateEditIndicators(CCmdUI* pCmdUI);
   afx_msg void OnFileWatchNotify(WPARAM, LPARAM);
   afx_msg void OnFileCloseAll();

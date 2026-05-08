@@ -29,6 +29,7 @@
 #include "ChildFrm.h"
 #include "QueryToolDoc.h"
 #include "QueryToolView.h"
+#include "OEView.h"
 #include "Version.h"
 #include <RegistryManager.h>
 #include <DDLCreateTable.h>
@@ -67,6 +68,7 @@ BEGIN_MESSAGE_MAP(QueryToolApp, CWinAppEx)
   ON_COMMAND(ID_ODBC_BEGIN,               OnODBCBegin)
   ON_COMMAND(ID_ODBC_COMMIT,              OnODBCCommit)
   ON_COMMAND(ID_ODBC_ROLLBACK,            OnODBCRollback)
+  ON_COMMAND(ID_ODBC_STOP,                OnODBCStop)
   ON_COMMAND(ID_SESSION_ODBCREPORT,       ReportCapabilities)
   ON_COMMAND(ID_SESSIONSTATUS,            OnSessionStatus)
 
@@ -985,6 +987,23 @@ QueryToolApp::OnODBCRollback()
     m_transaction->Rollback();
     delete m_transaction;
     m_transaction = NULL;
+  }
+}
+
+void
+QueryToolApp::OnODBCStop()
+{
+  if(!m_database.IsOpen())
+  {
+    AfxMessageBox(_T("QUERY STOP: There is no current connection to a database"),MB_OK | MB_ICONEXCLAMATION);
+    return;
+  }
+  CMainFrame*   main   = reinterpret_cast<CMainFrame*>(m_pMainWnd);
+  CMDIChildWnd* pChild = (CMDIChildWnd*)main->GetActiveFrame();
+  COEditorView* pView  = reinterpret_cast<COEditorView*>(pChild->GetActiveView());
+  if(pView)
+  {
+    pView->StopQuery();
   }
 }
 

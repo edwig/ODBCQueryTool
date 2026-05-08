@@ -382,6 +382,7 @@ copy $(SolutionDir)\Data\*.*  $(OutDir)\Data\</Command>
     <ClInclude Include="Query\codeer.h" />
     <ClInclude Include="Query\DirTreeCtrl.h" />
     <ClInclude Include="Query\DirTreeView.h" />
+    <ClInclude Include="Query\ExecuteThread.h" />
     <ClInclude Include="Query\GridView.h" />
     <ClInclude Include="Query\InfoTree.h" />
     <ClInclude Include="Query\InfoView.h" />
@@ -501,6 +502,7 @@ copy $(SolutionDir)\Data\*.*  $(OutDir)\Data\</Command>
     <ClCompile Include="Query\Codeer.cpp" />
     <ClCompile Include="Query\DirTreeCtrl.cpp" />
     <ClCompile Include="Query\DirTreeView.cpp" />
+    <ClCompile Include="Query\ExecuteThread.cpp" />
     <ClCompile Include="Query\GridView.cpp" />
     <ClCompile Include="Query\InfoTree.cpp" />
     <ClCompile Include="Query\InfoView.cpp" />

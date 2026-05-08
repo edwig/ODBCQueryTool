@@ -18,7 +18,6 @@
 #define IDI_CANCEL                      135
 #define IDI_REMOVE                      136
 #define IDI_SAVE                        137
-
 #define IDD_CALENDAR                    138
 #define IDI_CALENDAR                    139
 #define IDD_STEPPER                     140
@@ -26,7 +25,6 @@
 #define IDC_NEXT                        142
 #define IDI_PRIOR                       143
 #define IDI_NEXT                        144
-
 #define IDB_SCROLLBAR1                  150
 #define IDB_SCROLLBAR2                  151
 #define IDB_SCROLLBAR3                  152
@@ -35,7 +33,6 @@
 #define IDB_SCROLLBAR6                  155
 #define IDB_SCROLLBAR7                  156
 #define IDB_SCROLLBAR8                  157
-
 #define IDB_SCROLLBAR1_125              158
 #define IDB_SCROLLBAR2_125              159
 #define IDB_SCROLLBAR3_125              160
@@ -44,7 +41,6 @@
 #define IDB_SCROLLBAR6_125              163
 #define IDB_SCROLLBAR7_125              164
 #define IDB_SCROLLBAR8_125              165
-
 #define IDB_SCROLLBAR1_150              166
 #define IDB_SCROLLBAR2_150              167
 #define IDB_SCROLLBAR3_150              168
@@ -53,7 +49,6 @@
 #define IDB_SCROLLBAR6_150              171
 #define IDB_SCROLLBAR7_150              172
 #define IDB_SCROLLBAR8_150              173
-
 #define IDB_SCROLLBAR1_200              174
 #define IDB_SCROLLBAR2_200              175
 #define IDB_SCROLLBAR3_200              176
@@ -62,7 +57,6 @@
 #define IDB_SCROLLBAR6_200              179
 #define IDB_SCROLLBAR7_200              180
 #define IDB_SCROLLBAR8_200              181
-
 #define IDD_CONNECTION                  201
 #define IDD_DIALOGBAR                   202
 #define IDD_CONNECT                     203
@@ -616,6 +610,7 @@
 #define ID_TOOLS_SQLMIGRATION           50130
 #define ID_TOOLS_QUERYREWRITER          50131
 #define ID_TOOLS_REWRITER               50132
+#define ID_ODBC_STOP                    50133
 #define ID_APP_DBLKEYACCEL_FIRST        0xDF00
 #define ID_APP_DBLKEYACCEL_LAST         0xDFFF
 
@@ -624,7 +619,7 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        330
-#define _APS_NEXT_COMMAND_VALUE         50133
+#define _APS_NEXT_COMMAND_VALUE         50134
 #define _APS_NEXT_CONTROL_VALUE         1053
 #define _APS_NEXT_SYMED_VALUE           100
 #endif

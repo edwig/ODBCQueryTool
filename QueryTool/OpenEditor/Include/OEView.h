@@ -33,13 +33,14 @@
 #include "OEViewPaintAccessories.h"
 #include "Query/GridView.h"
 #include "Query/QueryPanelWnd.h"
-#include "SQLQuery.h"
-#include "SQLInfo.h"
+#include <SQLQuery.h>
+#include <SQLInfo.h>
 
 using arg::counted_ptr;
 using namespace SQLComponents;
 class COEDocument;
 class WinFile;
+class ExecuteThread;
 namespace OpenEditor { class HighlighterBase; };
 enum SearchDirection { esdDown, esdUp, esdDefault };
 
@@ -210,6 +211,8 @@ public:
     //void PushInUndoStack (Position);
     //void PushInUndoStack (EBlockMode, Square);
     using EditContext::PushInUndoStack;
+
+    void  StopQuery();
 
 protected:
     void SetCaretPosition ();
@@ -426,18 +429,16 @@ public:
   int  GetODBCCommand(int& curLine
                      ,int& endFileLine
                      ,CString& odbcCommand);
-  bool ExecuteQuery(int p_line
-                   ,CString& odbcCommand
-                   ,bool batch = false
-                   ,WinFile* p_script = NULL);
+//   bool ExecuteQuery(int p_line
+//                    ,CString& odbcCommand
+//                    ,bool batch = false
+//                    ,WinFile* p_script = NULL);
   bool ExecuteQueryRepeat(int p_line
                          ,CString& odbcCommand
                          ,bool batch = false);
-  void GetLineFromQuery(int row);
   void ReadRestOfQuery();
   int  LinesFetchedSoFar();
   bool IsDigits(LPTSTR token);
-  void TranslateText(CString& p_text,int p_translation,CString p_charset);
 
   // Write a line with info to the statistics view
   void    WriteStatisticsLine(CString p_step
@@ -463,11 +464,21 @@ public:
   bool    ScriptCommandRepeat   (int p_line,CString p_tail);
   bool    ScriptCommandExit     (int p_line,CString p_tail);
   bool    ScriptCommandEndRepeat(int p_line,CString p_tail);
-  int     ScriptSelect(int p_line);
-  void    ScriptSelect(int p_line,int p_longest,int p_row);
   long    MilisecondsToMinute();
   int     FindIfOperator(CString& p_command,CString& p_operatorText);
+  bool    StartQueryThread();
+  bool    GetScriptCompare();
+  void    SetScriptCompare(bool p_compare);
+  int     GetInboundBufferSize();
+  bool    GetScriptSelect();
   void    PumpMessages();
+  void    QueryReady();
+  void    WaitForRunningQuery();
+  bool    GetQueryIsRunning();
+
+  WinFile*        GetScriptOutput();
+  CGridView*      GetGridView();
+  CQueryPanelWnd* GetQueryPanel();
 
   CGridView*      m_gridView;
   CGridView*      m_histoView;
@@ -477,10 +488,11 @@ public:
   HistoryMap      m_historyMap;
   ErrorMap        m_errorMap;
   int             m_currentError;
-  int             m_linesFetched;   // aantal regels opgehaald
   CString         m_tableOne;
   bool            m_findPrimary;
-  SQLQuery        m_query;
+  ExecuteThread*  m_execute;
+  HANDLE          m_thread;
+  bool            m_queryRunning;
   PrimaryMap      m_keyMap;
   CString         m_primaryName;
   WinFile*        m_scriptOutput;
@@ -521,10 +533,46 @@ UndoGroup::UndoGroup (COEditorView& view)
 {
 }
 
-inline int
-COEditorView::LinesFetchedSoFar()
+inline bool
+COEditorView::GetScriptCompare()
 {
-  return m_linesFetched;
+  return m_scriptCompare;
+}
+
+inline void
+COEditorView::SetScriptCompare(bool p_compare)
+{
+  m_scriptCompare = p_compare;
+}
+
+inline WinFile* 
+COEditorView::GetScriptOutput()
+{
+  return m_scriptOutput;
+}
+
+inline CGridView* 
+COEditorView::GetGridView()
+{
+  return m_gridView;
+}
+
+inline int
+COEditorView::GetInboundBufferSize()
+{
+  return m_inboundBufferSize;
+}
+
+inline bool
+COEditorView::GetScriptSelect()
+{
+  return m_scriptSelect;
+}
+
+inline CQueryPanelWnd* 
+COEditorView::GetQueryPanel()
+{
+  return m_queryPanel;
 }
 
 //{{AFX_INSERT_LOCATION}}

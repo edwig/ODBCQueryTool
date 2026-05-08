@@ -61,18 +61,22 @@ public:
   bool    GetUseConnection()    { return m_useConnectionString; }
   bool    GetOptionalUser()     { return m_optionalUser;        }
   bool    GetOptionalPassword() { return m_optionalPassword;    }
+  bool    GetChanged()          { return m_changed;             }
   // Setters
-  void   SetSection(int section)          { m_section             = section; }
-  void   SetPassword (CString word)       { m_password            = word;    }
-  void   SetLastUsage(CString usage)      { m_lastUsage           = usage;   }
-  void   SetTimesUsed(CString used)       { m_timesUsed           = used;    }
-  void   SetConnString(CString str)       { m_connString          = str;     }
-  void   SetSafty(bool safty)             { m_safty               = safty;   }
-  void   SetUseConnection(bool p_use)     { m_useConnectionString = p_use;   }
-  void   SetOptionalUser(bool p_opt)      { m_optionalUser        = p_opt;   }
-  void   SetOptionalPassword(bool p_opt)  { m_optionalPassword    = p_opt;   }
+  void    SetSection(int section);
+  void    SetPassword(CString word);
+  void    SetLastUsage(CString usage);
+  void    SetTimesUsed(CString used);
+  void    SetConnString(CString str);
+  void    SetSafty(bool safty);
+  void    SetUseConnection(bool p_use);
+  void    SetOptionalUser(bool p_opt);
+  void    SetOptionalPassword(bool p_opt);
+  void    SetChanged();
 
 private:
+  bool    m_changed;
+
   int     m_section;
   bool    m_safty;
   CString m_user;

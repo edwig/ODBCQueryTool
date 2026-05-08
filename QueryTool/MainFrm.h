@@ -81,6 +81,7 @@ protected:
 
 	afx_msg int			OnCreate(LPCREATESTRUCT lpCreateStruct);
   afx_msg void    OnTimer(UINT_PTR nIDEvent);
+  afx_msg void    OnClose();
 	afx_msg void		OnWindowManager();
 	afx_msg void		OnViewCustomize();
 	afx_msg LRESULT OnToolbarCreateNew(WPARAM wp, LPARAM lp);
@@ -109,6 +110,7 @@ protected:
   afx_msg void    OnUpdateBegin(CCmdUI* pCmdUI);
   afx_msg void    OnUpdateCommit(CCmdUI* pCmdUI);
   afx_msg void    OnUpdateRollback(CCmdUI* pCmdUI);
+  afx_msg void    OnUpdateOdbcStop(CCmdUI* pCmdUI);
   afx_msg void    OnUpdateODBCReport(CCmdUI* pCmdUI);
   afx_msg void    OnUpdateSessionStatus(CCmdUI* pCmdUI);
   afx_msg void    OnUpdateViewFindPanel(CCmdUI* pCmdUI);

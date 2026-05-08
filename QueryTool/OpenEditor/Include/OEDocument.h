@@ -93,6 +93,7 @@ public:
 	public:
 	  virtual BOOL IsModified();
 	  virtual BOOL OnNewDocument();
+    virtual void OnCloseDocument();
     virtual void SetTitle();
 	  virtual void SetTitle(LPCTSTR lpszTitle);
 	  virtual BOOL OnSaveDocument(LPCTSTR lpszPathName);

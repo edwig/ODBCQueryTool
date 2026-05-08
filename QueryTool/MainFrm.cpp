@@ -31,6 +31,7 @@
 #include "OEFindFiles.h"
 #include "ChildFrm.h"
 #include "DonateDlg.h"
+#include "Version.h"
 #include <GetExePath.h>
 
 #ifdef _DEBUG
@@ -54,6 +55,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, StyleMDIFrameWnd)
   ON_WM_COPYDATA()
   ON_WM_ACTIVATEAPP()
   ON_WM_SETTINGCHANGE()
+	ON_WM_CLOSE()
 
   ON_COMMAND(ID_WINDOW_MANAGER, &CMainFrame::OnWindowManager)
   ON_COMMAND(ID_VIEW_CUSTOMIZE, &CMainFrame::OnViewCustomize)
@@ -89,6 +91,7 @@ BEGIN_MESSAGE_MAP(CMainFrame, StyleMDIFrameWnd)
   ON_UPDATE_COMMAND_UI(ID_ODBC_BEGIN,         OnUpdateBegin)
   ON_UPDATE_COMMAND_UI(ID_ODBC_COMMIT,        OnUpdateCommit)
   ON_UPDATE_COMMAND_UI(ID_ODBC_ROLLBACK,      OnUpdateRollback)
+	ON_UPDATE_COMMAND_UI(ID_ODBC_STOP,          OnUpdateOdbcStop)
   ON_UPDATE_COMMAND_UI(ID_SESSION_ODBCREPORT, OnUpdateODBCReport)
   ON_UPDATE_COMMAND_UI(ID_VIEW_CONNECTBAR,    OnUpdateConnectBarVisible)
   ON_UPDATE_COMMAND_UI(ID_VIEW_DATABASEBAR,   OnUpdateDatabaseBarVisible)
@@ -366,6 +369,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
   lstBasicCommands.AddTail(ID_ODBC_BEGIN);
   lstBasicCommands.AddTail(ID_ODBC_COMMIT);
   lstBasicCommands.AddTail(ID_ODBC_ROLLBACK);
+  lstBasicCommands.AddTail(ID_ODBC_STOP);
   lstBasicCommands.AddTail(ID_SESSION_ODBCREPORT);
   lstBasicCommands.AddTail(ID_SESSIONSTATUS);
 	// Script menu
@@ -496,6 +500,43 @@ void CMainFrame::SetDockingWindowIcons(BOOL bHiColorIcons)
 	UpdateMDITabbedBarsIcons();
 }
 
+void
+CMainFrame::OnClose()
+{
+  // Iterate through all document templates
+  POSITION tmplPos = AfxGetApp()->GetFirstDocTemplatePosition();
+  while(tmplPos != nullptr)
+  {
+    CDocTemplate* pTemplate = AfxGetApp()->GetNextDocTemplate(tmplPos);
+
+    // Iterate through all documents in this template
+    POSITION docPos = pTemplate->GetFirstDocPosition();
+    while(docPos != nullptr)
+    {
+      CDocument* pDoc = pTemplate->GetNextDoc(docPos);
+
+      POSITION viewPos = pDoc->GetFirstViewPosition();
+      while(viewPos != nullptr)
+      {
+        CView* pView = pDoc->GetNextView(viewPos);
+				COEditorView* view = reinterpret_cast<COEditorView*>(pView);
+        if(view)
+        {
+          if(view->GetQueryIsRunning())
+          {
+            MDIActivate(pView);
+            XString msg(_T("You cannot close this program, because there still is a running query!\n")
+                        _T("Stop the query, in order to be able to close this document."));
+            StyleMessageBox(pView,msg,PROGRAM_NAME,MB_OK | MB_ICONERROR);
+            return;
+          }
+        }
+      }
+    }
+  }
+	StyleMDIFrameWnd::OnClose();
+}
+
 
 LRESULT 
 CMainFrame::OnToolbarReset(WPARAM wp, LPARAM)
@@ -517,8 +558,6 @@ CMainFrame::OnToolbarReset(WPARAM wp, LPARAM)
 
   return 0;
 }
-
-
 
 // CMainFrame diagnostics
 
@@ -854,6 +893,19 @@ CMainFrame::OnUpdateRollback(CCmdUI* pCmdUI)
 {
   QueryToolApp* app = dynamic_cast<QueryToolApp*> (AfxGetApp());
   pCmdUI->Enable(app->DatabaseHasTransaction());
+}
+
+void
+CMainFrame::OnUpdateOdbcStop(CCmdUI* pCmdUI)
+{
+	bool enable(false);
+  CMDIChildWnd* pChild = (CMDIChildWnd*)GetActiveFrame();
+	COEditorView* pView = reinterpret_cast<COEditorView*>(pChild->GetActiveView());
+	if(pView)
+	{
+		enable = pView->GetQueryIsRunning();
+	}
+	pCmdUI->Enable(enable);
 }
 
 void

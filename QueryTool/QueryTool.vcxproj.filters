@@ -345,6 +345,9 @@
     <ClInclude Include="ConnStringDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Query\ExecuteThread.h">
+      <Filter>Query\Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="QueryTool.cpp">
@@ -664,6 +667,9 @@
     </ClCompile>
     <ClCompile Include="ConnStringDlg.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Query\ExecuteThread.cpp">
+      <Filter>Query</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

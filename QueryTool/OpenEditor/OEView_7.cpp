@@ -33,7 +33,10 @@
 #include <ConvertWideString.h>
 #include "Query\NativeSQLDlg.h"
 #include "Query\VariablesDlg.h"
+#include "Query\ExecuteThread.h"
 #include "Common\AppGlobal.h"
+#include "Version.h"
+#include <CreateFullThread.h>
 #include <sysinfoapi.h>
 #include <sql.h>
 #include <time.h>
@@ -58,6 +61,66 @@ COEditorView::OnUpdateCommandScriptExecute(CCmdUI* pCmdUI)
   pCmdUI->Enable(true);
 }
 
+bool
+COEditorView::StartQueryThread()
+{
+  if(m_thread != NULL)
+  {
+    if(::WaitForSingleObject(m_thread,0) == WAIT_TIMEOUT)
+    {
+      // RunQueue Loopt al
+      return true;
+    }
+  }
+  m_execute = new ExecuteThread(this);
+  m_thread  = CreateFullThread(ExecuteSQLThread,(void*)m_execute);
+  if(m_thread == INVALID_HANDLE_VALUE)
+  {
+    m_thread = NULL;
+    AfxMessageBox(_T("Fout bij starten server's RunQueue thread"),MB_OK|MB_ICONERROR);
+    return false;
+  }
+  return true;
+}
+
+void
+COEditorView::QueryReady()
+{
+  m_queryRunning = false;
+  UpdateWindow();
+}
+
+void
+COEditorView::WaitForRunningQuery()
+{
+  while(m_queryRunning)
+  {
+    Sleep(50);
+  }
+}
+
+bool
+COEditorView::GetQueryIsRunning()
+{
+  return m_queryRunning;
+}
+
+void
+COEditorView::StopQuery()
+{
+  if(m_execute)
+  {
+    XString ask(_T("Do you want to abort the current running query?"));
+    if(StyleMessageBox(this,ask,PROGRAM_NAME,MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)
+    {
+      m_execute->StopRunning();
+      m_execute = nullptr;
+
+      StyleMessageBox(this,_T("BEWARE: The query results in the result pane are INCOMPLETE!"),PROGRAM_NAME,MB_OK | MB_ICONWARNING);
+    }
+  }
+}
+
 void 
 COEditorView::OnScriptExecute()
 {
@@ -65,9 +128,15 @@ COEditorView::OnScriptExecute()
   int orgLine     = 0;
   int endFileLine = GetLineCount();
   int curLine     = GetPosition().line;
-  long ticks = GetTickCount();
-  bool first = true;
+  long ticks      = GetTickCount();
+  bool first      = true;
   CWaitCursor take_a_deep_sigh;
+
+  if(!StartQueryThread())
+  {
+    AfxMessageBox(_T("Cannot start background thread for query execution!"),MB_OK|MB_ICONERROR);
+    return;
+  }
 
   m_queryPanel->ChangePanel(QPW_OUTPUT_VIEW);
 
@@ -78,6 +147,7 @@ COEditorView::OnScriptExecute()
   WriteStatisticsLine(_T("Script"),_T("Start of script"),true);
   while(curLine < endFileLine)
   {
+    WaitForRunningQuery();
     int startline = GetODBCCommand(curLine,endFileLine,odbcCommand);
     if(odbcCommand == _T(""))
     {
@@ -93,10 +163,18 @@ COEditorView::OnScriptExecute()
     }
     else
     {
-      ExecuteQuery(startline,odbcCommand,true);
+      if(odbcCommand.Left(1) == ':')
+      {
+        ScriptCommand(startline,odbcCommand);
+      }
+      else
+      {
+        m_execute->ExecuteQuery(startline,odbcCommand,true);
+      }
     }
+    m_queryRunning = true;
     // Reset the command
-    odbcCommand = _T("");
+    odbcCommand.Empty();
     // And step
     moveCurrentLine(curLine);
     if(curLine == orgLine)
@@ -116,7 +194,7 @@ COEditorView::OnScriptExecute()
     this->InvalidateRect(&rect);
 
     // Get the new current line
-    curLine = GetPosition().line;
+    curLine     = GetPosition().line;
     endFileLine = GetLineCount();
   }
 
@@ -162,13 +240,28 @@ COEditorView::OnScriptCurrent()
   int curLine = GetPosition().line;
   CWaitCursor take_a_deep_sigh;
 
+  if(!StartQueryThread())
+  {
+    AfxMessageBox(_T("Cannot start background thread for query execution!"),MB_OK | MB_ICONERROR);
+    return;
+  }
+
   int firstline = GetODBCCommand(curLine,endFileLine,odbcCommand);
 
   // Empty these grids
   m_statsView->InitGridEmpty(TYPE_STATS);
   m_outptView->InitGridEmpty(TYPE_OUTPT);
 
-  ExecuteQuery(firstline,odbcCommand);
+  if(odbcCommand.Left(1) == ':')
+  {
+    ScriptCommand(firstline,odbcCommand);
+  }
+  else
+  {
+    WaitForRunningQuery();
+    m_execute->ExecuteQuery(firstline,odbcCommand);
+    m_queryRunning = true;
+  }
 }
 
 void
@@ -294,6 +387,12 @@ COEditorView::OnScriptExecuteStep()
   int curLine     = GetPosition().line;
   CWaitCursor take_a_deep_sigh;
 
+  if(!StartQueryThread())
+  {
+    AfxMessageBox(_T("Cannot start background thread for query execution!"),MB_OK | MB_ICONERROR);
+    return;
+  }
+
   orgLine = curLine;
   int firstline = GetODBCCommand(curLine,endFileLine,odbcCommand);
 
@@ -302,8 +401,16 @@ COEditorView::OnScriptExecuteStep()
   m_outptView->InitGridEmpty(TYPE_OUTPT);
 
   // Now execute
-  ExecuteQuery(firstline,odbcCommand);
-
+  if(odbcCommand.Left(1) == ':')
+  {
+    ScriptCommand(firstline,odbcCommand);
+  }
+  else
+  {
+    WaitForRunningQuery();
+    m_execute->ExecuteQuery(firstline,odbcCommand);
+    m_queryRunning = true;
+  }
   // And step
   moveCurrentLine(curLine);
   if(curLine == orgLine)
@@ -639,8 +746,25 @@ COEditorView::ExecuteQueryRepeat(int p_line,CString& odbcCommand,bool batch /*=f
       ::Sleep(remainder);
     }
   }
+
+  if(!StartQueryThread())
+  {
+    AfxMessageBox(_T("Cannot start background thread for query execution!"),MB_OK | MB_ICONERROR);
+    return false;
+  }
+
+  bool result(false);
   // Execute the query
-  bool result = ExecuteQuery(p_line,odbcCommand,batch,m_scriptOutput);
+  if(odbcCommand.Left(1) == ':')
+  {
+    result = ScriptCommand(p_line,odbcCommand);
+  }
+  else
+  {
+    WaitForRunningQuery();
+    result = m_execute->ExecuteQuery(p_line,odbcCommand,batch);
+    m_queryRunning = true;
+  }
 
   // Check on a specified number of iterations
   if(m_repeat >= 0)
@@ -662,365 +786,18 @@ COEditorView::ExecuteQueryRepeat(int p_line,CString& odbcCommand,bool batch /*=f
   return result;
 }
 
-bool
-COEditorView::ExecuteQuery(int      p_line
-                          ,CString& p_odbcCommand
-                          ,bool     p_batch   /* = false */
-                          ,WinFile* /*p_script*/  /* = NULL  */)
-{
-  QueryToolApp *app         = dynamic_cast<QueryToolApp *> (AfxGetApp());
-  SQLDatabase&   database   = app->GetDatabase();
-  bool     selectQuery      = false;
-  bool     preMatureStopped = false;
-  int      panelWindow      = p_batch ? QPW_OUTPUT_VIEW : QPW_QUERY_VIEW;
-  int      prefetchLines    = GetDocument()->GetSettings().GetSQLPrefetchLines();
-  int      lengthOption     = GetDocument()->GetSettings().GetSQLLengthOption();
-  VarMap&  variables        = theApp.GetVariables();
-  int      numVariables     = (int)variables.size();
-  int      longestColumn    = 0;
-  CString  partialCommand;
-
-  p_odbcCommand.TrimLeft('\n');
-
-  // ExecuteQuery is called from several places
-  // So a script command is only forked-off here.
-  if(p_odbcCommand.Left(1) == ':')
-  {
-    return ScriptCommand(p_line,p_odbcCommand);
-  }
-
-  // Init the SQLQuery object
-  m_query.Init(&database);
-  m_query.SetLengthOption((LOption) lengthOption);
-
-  if(!database.IsOpen())
-  {
-    AfxMessageBox(_T("Cannot execute ODBC query: Not connected to a database"),MB_OK | MB_ICONEXCLAMATION);
-    return false;
-  }
-  if(p_odbcCommand == _T(""))
-  {
-    AfxMessageBox(_T("No query to execute"),MB_OK | MB_ICONEXCLAMATION);
-    return false;
-  }
-  // See if the last IF statement prevents us from executing this SQL statement
-  // So that scripting can decide whether or not to query this statement
-  if(m_scriptCompare == false)
-  {
-    if(m_scriptOutput && m_scriptOutput->GetIsOpen())
-    {
-      m_scriptOutput->Write(XString(_T("SQL prevented by :IF statement\n")));
-    }
-    m_scriptCompare = true;
-    return true;
-  }
-  if(p_odbcCommand.GetLength() > 5)
-  {
-    if(p_odbcCommand.Left(6).CompareNoCase(_T("PROMPT")) == 0)
-    {
-      return true;
-    }
-    if(p_odbcCommand.Left(6).CompareNoCase(_T("SELECT"))  == 0 ||
-       p_odbcCommand.Left(4).CompareNoCase(_T("WITH"))    == 0 ||
-       p_odbcCommand.Left(7).CompareNoCase(_T("EXPLAIN")) == 0 )
-    {
-      selectQuery = true;
-    }
-    partialCommand = p_odbcCommand.Left(100) + _T(".....");
-  }
-  if(prefetchLines <= 1)
-  {
-    prefetchLines = 0x7ffffff;
-  }
-  if(!p_batch)
-  {
-    WriteStatisticsLine(_T("Query"),_T("Start: ") + partialCommand,true); // Reset the timer
-  }
-  try
-  {
-    long row = 0;
-    // INIT the grid again
-    m_gridView->InitGridEmpty(TYPE_QUERY);
-    m_gridView->SetPrefetchLines(0);
-
-    // also record the history of the command
-    WriteHistoryLine(p_odbcCommand);
-
-    // Set rebind map for executing a query
-    RebindMap* rebinds = theApp.GetRebinds();
-    m_query.SetRebindMap(rebinds);
-    // Set the buffer size for piece-wise extraction
-    m_query.SetBufferSize(m_inboundBufferSize);
-
-    // Run the query
-    bool mustPrepare = (numVariables > 0) && (p_odbcCommand.Find('?') > 0);
-    if(mustPrepare)
-    {
-      // Bind the variables
-      int number = 0;
-      for(auto& param : variables)
-      {
-        m_query.SetParameter(++number,param.second);
-      }
-
-      // Prepare the query
-      m_query.DoSQLPrepare(XString(p_odbcCommand));
-      if(!p_batch)
-      {
-        WriteStatisticsLine(_T("0 =>"),_T("Query prepared: ") + partialCommand);
-      }
-      // Go and execute
-      m_query.DoSQLExecute();
-    }
-    else
-    {
-      m_query.DoSQLStatement(XString(p_odbcCommand));
-    }
-    if(!p_batch)
-    {
-      WriteStatisticsLine(_T("1 =>"),(mustPrepare ? _T("Execute ready: ") : _T("Query ready: ")) + partialCommand);
-    }
-    if(selectQuery)
-    {
-      // Init the CGridView
-      m_gridView->SetAutoExpand(false);
-      m_gridView->InitGridEmpty(TYPE_QUERY); // No first column
-      m_gridView->DeleteColumn(1);
-
-      // Build the header of the grid
-      UINT format = DT_SINGLELINE|DT_VCENTER|DT_WORDBREAK|DT_END_ELLIPSIS|DT_NOPREFIX|DT_EXPANDTABS;
-      for(int k = 1; k <= m_query.GetNumberOfColumns();++k)
-      {
-        XString colname;
-        SQLVariant* var = m_query.GetColumn(k);
-        SWORD type = (SWORD)var->GetDataType();
-        format &= ~(DT_LEFT | DT_RIGHT);
-        format |= (type == SQL_C_CHAR) ? DT_LEFT : DT_RIGHT;
-        if(var->IsNumericType())
-        {
-          // Numeric sort
-          format |= DT_SORT_NUMERIC;
-        }
-        m_query.GetColumnName(k,colname);
-        m_gridView->InsertColumn((LPCTSTR)colname,format,k);
-      }
-
-      // Header of the select in the output script
-      if(m_scriptSelect)
-      {
-        longestColumn = ScriptSelect(p_line);
-      }
-      if(m_query.GetRecord())
-      {
-        do
-        {
-          // Insert an extra row in the CGridView
-          GetLineFromQuery(++row);
-          ScriptSelect(p_line,longestColumn,row);
-          if(row >= prefetchLines)
-          {
-            // Reset pre-fetched lines
-            m_gridView->SetPrefetchLines(row);
-            m_linesFetched   = row;
-            preMatureStopped = true;
-            break;
-          }
-        }
-        while(m_query.GetRecord());
-      }
-    }
-    else
-    {
-      // Not a select query -> Output panel is default
-      panelWindow = QPW_OUTPUT_VIEW;
-    }
-    // Size the grid again
-    m_gridView->AutoSize();
-
-    if(!row)
-    {
-      row = m_query.GetNumberOfRows();
-    }
-    if(!p_batch)
-    {
-      WriteStatisticsLine(_T("2 =>"),_T("Fetch ready: ") + partialCommand);
-    }
-    WriteOutputLine(p_line,row,partialCommand,m_query.GetError().GetString());
-  }
-  catch(TCHAR *errorText)
-  {
-    if(!p_batch)
-    {
-      CString text;
-      text.Format(_T("Error in ODBC Query: %s"),errorText);
-      AfxMessageBox(text,MB_OK | MB_ICONHAND);
-    }
-    WriteStatisticsLine(_T("2 =>"),_T("Error: ") + partialCommand);
-    WriteOutputLine(p_line,m_query.GetNumberOfRows(),partialCommand,errorText);
-    panelWindow = QPW_OUTPUT_VIEW;
-  }
-  catch(CString errorText)
-  {
-    if(!p_batch)
-    {
-      AfxMessageBox(errorText,MB_OK | MB_ICONHAND);
-    }
-    WriteStatisticsLine(_T("2 =>"),_T("Error: ") + partialCommand);
-    WriteOutputLine(p_line,m_query.GetNumberOfRows(),partialCommand,errorText);
-    panelWindow = QPW_OUTPUT_VIEW;
-  }
-  catch(StdException& ex)
-  {
-    if(!p_batch)
-    {
-      AfxMessageBox(ex.GetErrorMessage(),MB_OK|MB_ICONERROR);
-    }
-    WriteStatisticsLine(_T("2 =>"), _T("Error: ") + partialCommand);
-    WriteOutputLine(p_line,m_query.GetNumberOfRows(),partialCommand,ex.GetErrorMessage().GetString());
-    panelWindow = QPW_OUTPUT_VIEW;
-  }
-  catch(...)
-  {
-    if(!p_batch)
-    {
-      CString text;
-      text.Format(_T("Unknown error in ODBC Query: %s"),p_odbcCommand.GetString());
-      AfxMessageBox(text,MB_OK | MB_ICONHAND);
-    }
-    WriteStatisticsLine(_T("2 =>"),_T("Unknown: ") + partialCommand);
-    WriteOutputLine(p_line,m_query.GetNumberOfRows(),partialCommand,_T("ERROR"));
-    panelWindow = QPW_OUTPUT_VIEW;
-  }
-  // Clock is ready ticking
-  if(!p_batch)
-  {
-    WriteStatisticsLine(_T("3 =>"),_T("Ready: ") + partialCommand);
-  }
-
-  // Auto change to the right panel or show the batch results
-  if(p_batch)
-  {
-    m_queryPanel->GotoEndOfPanel(QPW_OUTPUT_VIEW);
-    PumpMessages();
-  }
-  else
-  {
-    m_queryPanel->ChangePanel(panelWindow);
-  }
-  return true;
-}
-
-void
-COEditorView::GetLineFromQuery(int row)
-{
-  UINT format = DT_SINGLELINE|DT_VCENTER|DT_WORDBREAK|DT_END_ELLIPSIS|DT_NOPREFIX|DT_EXPANDTABS;
-  CString rowNumber;
-  int charsetTranslation = 0;
-  CString charset;
-  // Getting charset translation
-  COEDocument* doc = GetDocument();
-  if(doc)
-  {
-    charsetTranslation = doc->GetSettings().GetSQLCharsetTranslation();
-    charset = doc->GetSettings().GetSQLCharsetUsed();
-  }
-
-  rowNumber.Format(_T("%d"),row);
-  m_gridView->InsertRow((LPCTSTR) rowNumber,-1);
-
-  // Insert the row info
-  for(int k = 1; k <= m_query.GetNumberOfColumns(); ++k)
-  {
-    SQLVariant* var = m_query.GetColumn(k);
-    SWORD type = (SWORD)var->GetDataType();
-
-    if(type == SQL_C_BINARY)
-    {
-      int len = var->GetDataSize();
-      _TUCHAR* buffer = (_TUCHAR*) calloc(2,(len * 2) + 6);
-      const void* binbuf = var->GetAsBinary();
-      _tcsncpy_s((TCHAR*)buffer,len*2+1,(TCHAR*)binbuf,len*2);
-      buffer[len * 2]  = 0;
-      CString text((TCHAR*)buffer);
-      m_gridView->InsertItem(row,k,text,DT_LEFT);
-      free(buffer);
-    }
-    if(type == SQL_C_CHAR)
-    {
-      XString s;
-      var->GetAsString(s);
-      CString text(s);
-      if(charsetTranslation)
-      {
-        TranslateText(text,charsetTranslation,charset);
-      }
-      format &= ~(DT_LEFT | DT_RIGHT);
-      format |= (type == SQL_CHAR || type == SQL_VARCHAR) ? DT_LEFT : DT_RIGHT;
-      m_gridView->InsertItem(row,k,text,format,var->GetDataType());
-    }
-    else
-    {
-      XString s;
-      var->GetAsString(s);
-      CString text(s);
-      format &= ~(DT_LEFT | DT_RIGHT);
-      format |= (type == SQL_CHAR || type == SQL_VARCHAR) ? DT_LEFT : DT_RIGHT;
-      m_gridView->InsertItem(row,k,text,format,var->GetDataType());
-    }
-  }
-}
-
 void
 COEditorView::ReadRestOfQuery()
 {
-  try
-  {
-    if(m_query.GetRecord())
-    {
-      do 
-      {
-        GetLineFromQuery(++m_linesFetched);
-      } 
-      while(m_query.GetRecord());
-    }
-  }
-  catch(CString& er)
-  {
-    CString error(_T("ERROR reading query: "));
-    error += er;
-    AfxMessageBox(error,MB_OK|MB_ICONERROR);
-  }
-  catch(StdException& ex)
-  {
-    CString error(_T("ERROR reading query: "));
-    error += ex.GetErrorMessage();
-    AfxMessageBox(error,MB_OK|MB_ICONERROR);
-  }
-  // Reset to 0, so grid will not attempt a second time
-  m_linesFetched = 0;
-}
-
-void
-COEditorView::TranslateText(CString& p_text,int p_translation,CString p_charset)
-{
-  XString source;
-
-  if(p_translation == 1)
-  {
-    if(!theApp.GetDatabase().GetSQLInfoDB()->MakeInfoDefaultCharset(source))
-    {
-      return;
-    }
-  }
-  else if(p_translation == 2)
-  {
-    source = p_charset;
-  }
-  if(source.IsEmpty() || source == _T("-") || p_translation < 0 || p_translation > 2)
+  if(!StartQueryThread())
   {
     return;
   }
-  p_text = DecodeStringFromTheWire(XString(p_text),source);
+  if(m_execute)
+  {
+    m_queryRunning = true;
+    m_execute->SignalEvent();
+  }
 }
 
 // Write a line with info to the statistics view
@@ -1184,7 +961,7 @@ COEditorView::CanEdit()
 CString
 COEditorView::UpdateCondition(int row,CString column)
 {
-  if(m_keyMap.empty())
+  if(m_keyMap.empty() || !m_execute)
   {
     return _T("");
   }
@@ -1232,7 +1009,7 @@ COEditorView::UpdateCondition(int row,CString column)
       return _T("");
     }
     CString text = m_gridView->GetItemText(row,xx);
-    SQLVariant* var = m_query.GetColumn(xx);
+    SQLVariant* var = m_execute->GetColumnValue(xx);
     if(var == NULL)
     {
       return _T("");
@@ -1251,7 +1028,7 @@ COEditorView::UpdateCondition(int row,CString column)
 bool
 COEditorView::UpdateTable(int row,int col,CString text)
 {
-  if(m_tableOne.IsEmpty())
+  if(m_tableOne.IsEmpty() || !m_execute)
   {
     // Cannot do this
     return false;
@@ -1261,7 +1038,7 @@ COEditorView::UpdateTable(int row,int col,CString text)
 
   // Get column
   CString column = m_gridView->GetItemText(0,col);
-  SQLVariant* var = m_query.GetColumn(col);
+  SQLVariant* var = m_execute->GetColumnValue(col);
   if(var->GetDataType() == SQL_C_CHAR)
   {
     text.Replace(_T("\'"),_T("\'\'"));
@@ -1878,74 +1655,6 @@ COEditorView::ScriptCommandEndRepeat(int /*p_line*/,CString /*p_tail*/)
   return true;
 }
 
-int
-COEditorView::ScriptSelect(int p_line)
-{
-  if(!m_scriptOutput || !m_scriptSelect || !m_scriptOutput->GetIsOpen())
-  {
-    return 0;
-  }
-
-  int longest = 0;
-  for(int k=1; k <= m_query.GetNumberOfColumns();++k)
-  {
-    XString name;
-    XString result;
-    m_query.GetColumnName(k,name);
-
-    result.Format(_T(":COLUMN [%d] = [%s]\n"),k,name.GetString());
-    m_scriptOutput->Write(result);
-    WriteOutputLine(p_line,1,result.GetString(),_T(""));
-
-    if(name.GetLength() > longest)
-    {
-      longest = name.GetLength();
-    }
-  }
-  return longest;
-}
-
-void
-COEditorView::ScriptSelect(int p_line,int p_longest,int p_row)
-{
-  if(!m_scriptSelect)
-  {
-    return;
-  }
-
-  VarMap& vars = theApp.GetVariables();
-
-  for(int k = 1; k <= m_query.GetNumberOfColumns();++k)
-  {
-    XString text;
-    SQLVariant* column = m_query.GetColumn(k);
-    column->GetAsString(text);
-
-    XString name;
-    m_query.GetColumnName(k,name);
-
-    XString result;
-    result.Format(_T(":ROW [%d:%-*s] = [%s]\n"),p_row,p_longest,name.GetString(),text.GetString());
-    if(m_scriptOutput && m_scriptOutput->GetIsOpen())
-    {
-      m_scriptOutput->Write(result);
-    }
-    WriteOutputLine(p_line,1,result.GetString(),_T(""));
-
-    // Get the result in the variables array
-    // so we can use the variables in the 'if' statement!
-    VarMap::iterator it = vars.find(k);
-    if(it != vars.end())
-    {
-      *(it->second) = *column;
-    }
-    else
-    {
-      vars[k] = new SQLVariant(column);
-    }
-  }
-}
-
 long
 COEditorView::MilisecondsToMinute()
 {
@@ -1957,6 +1666,16 @@ COEditorView::MilisecondsToMinute()
   localtime_s(ptnow,&time);
 
   return (60 - now.tm_sec) * 1000;
+}
+
+int
+COEditorView::LinesFetchedSoFar()
+{
+  if(m_execute)
+  {
+    return m_execute->GetLinesFetchedSoFar();
+  }
+  return 0;
 }
 
 void

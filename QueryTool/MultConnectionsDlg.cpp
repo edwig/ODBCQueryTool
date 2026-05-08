@@ -536,6 +536,7 @@ MultConnectionsDlg::SaveSettings(CString p_datasource
                        ,p_useConnString
                        ,p_optionalUser
                        ,p_optionalPassword);
+    setting.SetChanged();
     m_settings.push_back(setting);
   }
   return WriteSettings();
@@ -555,6 +556,10 @@ MultConnectionsDlg::WriteSettings()
   CString number;
   for(auto& setting : m_settings)
   {
+    if(setting.GetChanged() == false)
+    {
+      continue;
+    }
     int section = setting.GetSection();
     if(section == 0)
     {
@@ -951,6 +956,7 @@ ODBCSetting::ODBCSetting(int     p_section
             ,m_useConnectionString(p_useConnString)
             ,m_optionalUser(p_optUser)
             ,m_optionalPassword(p_optPassword)
+            ,m_changed(false)
 {
 }
 
@@ -958,3 +964,98 @@ ODBCSetting::~ODBCSetting()
 {
 }
 
+void
+ODBCSetting::SetSection(int section)
+{
+  if(m_section != section)
+  {
+    m_section = section;
+    m_changed = true;
+  }
+}
+
+void
+ODBCSetting::SetPassword(CString word)
+{
+  if(m_password.Compare(word))
+  {
+    m_password = word;
+    m_changed  = true;
+  }
+}
+
+void
+ODBCSetting::SetLastUsage(CString usage)
+{
+  if(m_lastUsage.Compare(usage))
+  {
+    m_lastUsage = usage;
+    m_changed   = true;
+  }
+}
+
+void
+ODBCSetting::SetTimesUsed(CString used)
+{
+  if(m_timesUsed.Compare(used))
+  {
+    m_timesUsed = used;
+    m_changed   = true;
+  }
+}
+
+void
+ODBCSetting::SetConnString(CString str)
+{
+  if(m_connString.Compare(str))
+  {
+    m_connString = str;
+    m_changed    = true;
+  }
+}
+
+void
+ODBCSetting::SetSafty(bool safty)
+{
+  if(m_safty != safty)
+  {
+    m_safty   = safty;
+    m_changed = true;
+  }
+}
+
+void
+ODBCSetting::SetUseConnection(bool p_use)
+{
+  if(m_useConnectionString != p_use)
+  {
+    m_useConnectionString = p_use;
+    m_changed = true;
+  }
+}
+
+void
+ODBCSetting::SetOptionalUser(bool p_opt)
+{
+  if(m_optionalUser != p_opt)
+  {
+    m_optionalUser = p_opt;
+    m_changed = true;
+  }
+}
+
+void
+ODBCSetting::SetOptionalPassword(bool p_opt)
+{
+  if(m_optionalPassword != p_opt)
+  {
+    m_optionalPassword = p_opt;
+    m_changed = true;
+  }
+}
+
+void
+ODBCSetting::SetChanged()
+{
+  m_changed = true;
+}

@@ -45,8 +45,8 @@
 #include <OESQLSettingsPage.h>
 #include "Query/QueryPanelWnd.h"
 #include <StyleMessageBox.h>
+#include "Version.h"
 #include <io.h>
-
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -1011,4 +1011,31 @@ void COEDocument::OnFileOpen ()
     CDocManagerExt::SetFileOpenPath(path);
     AfxGetApp()->OnCmdMsg(ID_FILE_OPEN, 0, 0, 0);
     CDocManagerExt::SetFileOpenPath(_T(""));
+}
+
+void COEDocument::OnCloseDocument()
+{
+  if(!m_viewList.IsEmpty())
+  {
+    // get frame attached to the view
+    POSITION ps = m_viewList.GetHeadPosition();
+    while(ps)
+    {
+      CView* pView = (CView*)m_viewList.GetAt(ps);
+      ASSERT_VALID(pView);
+      COEditorView* view = reinterpret_cast<COEditorView*>(pView);
+      if(view)
+      {
+        if(view->GetQueryIsRunning())
+        {
+          XString msg(_T("You cannot close this query document, because there still is a running query!\n")
+                      _T("Stop the query, in order to be able to close this document."));
+          StyleMessageBox(view,msg,PROGRAM_NAME,MB_OK | MB_ICONERROR);
+          return;
+        }
+      }
+      m_viewList.GetNext(ps);
+    }
+  }
+  CDocument::OnCloseDocument();
 }

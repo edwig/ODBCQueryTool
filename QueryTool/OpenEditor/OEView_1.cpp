@@ -45,6 +45,7 @@
 #include "OEFindReplaceDlg.h"
 #include "OEGoToDialog.h"
 #include "OEHighlighter.h" // for a destructor
+#include "Query\ExecuteThread.h"
 #include <WinFile.h>
 
 #ifdef _DEBUG
@@ -224,11 +225,16 @@ COEditorView::COEditorView ()
     m_interval                = 0;
     m_repeat                  = 0;
     m_wholeMinutes            = false;
+    m_execute                 = nullptr;
+    m_queryRunning            = false;
 }
 
 COEditorView::~COEditorView ()
 {
-  m_query.Close(false);
+  if(m_execute)
+  {
+    m_execute->StopRunning();
+  }
   while(m_historyMap.size())
   {
     m_historyMap.pop_back();
@@ -426,7 +432,7 @@ LRESULT COEditorView::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
 {
     try
     {
-        return CView::WindowProc(message, wParam, lParam);
+      return CView::WindowProc(message, wParam, lParam);
     }
     _OE_DEFAULT_HANDLER_;
 
@@ -567,207 +573,276 @@ void COEditorView::OnKillFocus (CWnd* pNewWnd)
     ShowCaret(FALSE);
 }
 
-void COEditorView::OnKeyDown (UINT nChar, UINT nRepCnt, UINT nFlags)
+void 
+COEditorView::OnKeyDown(UINT nChar,UINT nRepCnt,UINT nFlags)
 {
-    if (!m_bAttached) return;
+  if(!m_bAttached)
+  {
+    return;
+  }
+  Position prevPos = GetPosition();
 
-    Position prevPos = GetPosition();
+  bool _shift = (0xFF00 & GetKeyState(VK_SHIFT))      ? true : false;
+  bool _cntrl = (0xFF00 & GetKeyState(VK_CONTROL))    ? true : false;
+  bool _force = GetBlockMode() == ebtColumn && _shift ? true : false;
 
-    bool _shift = (0xFF00 & GetKeyState(VK_SHIFT))   ? true : false;
-    bool _cntrl = (0xFF00 & GetKeyState(VK_CONTROL)) ? true : false;
-    bool _force = GetBlockMode() == ebtColumn && _shift ? true : false;
+  switch (nChar)
+  {
+    default:        CView::OnKeyUp(nChar, nRepCnt, nFlags);
+                    return;
+    case VK_INSERT: if(m_queryRunning)
+                    {
+                      break;
+                    }
+                    if(!_shift && !_cntrl && !(0xFF00 & GetKeyState(VK_MENU)))
+                    {
+                      m_isOverWriteMode = !m_isOverWriteMode;
+                      ShowCaret(TRUE);
+                      return;
+                    }
+                    break;
+    case VK_DELETE: if(m_queryRunning)
+                    {
+                      break;
+                    }
+                    if (!IsSelectionEmpty() && GetBlockDelAndBSDelete())
+                    {
+                      DeleteBlock();
+                    }
+                    else
+                    {
+                      Delete();
+                    }
+                    break;
+    case VK_BACK:   if(m_queryRunning)
+                    {
+                      break;
+                    }
+                    if(!IsSelectionEmpty() && GetBlockDelAndBSDelete())
+                    {
+                      DeleteBlock();
+                    }
+                    else
+                    {
+                      Backspace();
+                    }
+                    break;
+    case VK_UP:     GoToUp(_force);
+                    break;
+    case VK_DOWN:   GoToDown(_force);
+                    break;
+    case VK_LEFT:   if(_cntrl)
+                    {
+                      WordLeft();
+                    }
+                    else
+                    {
+                      if(!_shift && !IsSelectionEmpty())
+                      {
+                        Square blkPos;
+                        GetSelection(blkPos);
+                        blkPos.normalize();
 
-    switch (nChar)
+                        if(prevPos != blkPos.start)
+                        {
+                          MoveTo(blkPos.start);
+                        }
+                        else
+                        {
+                          ClearSelection();
+                        }
+                      }
+                      else
+                      {
+                        GoToLeft(_force);
+                      }
+                    }
+                    break;
+    case VK_RIGHT:  if(_cntrl)
+                    {
+                      WordRight();
+                    }
+                    else
+                    {
+                      if(!_shift && !IsSelectionEmpty())
+                      {
+                        Square blkPos;
+                        GetSelection(blkPos);
+                        blkPos.normalize();
+
+                        if(prevPos != blkPos.end)
+                        {
+                          MoveTo(blkPos.end);
+                        }
+                        else
+                        {
+                          ClearSelection();
+                        }
+                      }
+                      else
+                      {
+                        GoToRight(_force);
+                      }
+                    }
+                    break;
+    case VK_HOME:   if(_cntrl)
+                    {
+                      GoToTop();
+                    }
+                    else
+                    {
+                      SmartGoToStart();
+                    }
+                    break;
+    case VK_END:    if(_cntrl)
+                    {
+                      GoToBottom();
+                    }
+                    else
+                    {
+                      GoToEnd();
+                    }
+                    break;
+    case VK_PRIOR:  AdjustCaretPosition();
+                    {
+                      Position pos   = GetPosition();
+                      int screenLine = pos.line - m_Rulers[1].m_Topmost;
+                      int topmost    = m_Rulers[1].m_Topmost;
+
+                      DoPageUp();
+
+                      if(m_Rulers[1].m_Topmost != topmost)
+                      {
+                        pos.line = m_Rulers[1].m_Topmost + screenLine;
+                      }
+                      else
+                      {
+                        pos.line = 0;
+                      }
+                      MoveTo(pos, _force);
+                    }
+                    break;
+    case VK_NEXT:   AdjustCaretPosition();
+                    {
+                      Position pos   = GetPosition();
+                      int screenLine = pos.line - m_Rulers[1].m_Topmost;
+                      int topmost    = m_Rulers[1].m_Topmost;
+
+                      DoPageDown();
+
+                      if(m_Rulers[1].m_Topmost != topmost)
+                      {
+                        pos.line = m_Rulers[1].m_Topmost + screenLine;
+                      }
+                      pos.line = min(pos.line,max(0,GetLineCount() - 1));
+
+                      MoveTo(pos,_force);
+                    }
+                    break;
+    case VK_ESCAPE: if(!IsSelectionEmpty())
+                    {
+                      ClearSelection();
+                    }
+                    break;
+  }
+
+  if(_shift)
+  {
+  	SelectByCursor(prevPos);
+  }
+  else
+  {
+    if(!IsSelectionEmpty())
     {
-    default:
-        CView::OnKeyUp(nChar, nRepCnt, nFlags);
-        return;
-
-    case VK_INSERT:
-        if (!_shift && !_cntrl && !(0xFF00 & GetKeyState(VK_MENU)))
-        {
-            m_isOverWriteMode = !m_isOverWriteMode;
-            ShowCaret(TRUE);
-            return;
-        }
-        break;
-    case VK_DELETE:
-        if (!IsSelectionEmpty() && GetBlockDelAndBSDelete())
-            DeleteBlock();
-        else
-            Delete();
-        break;
-    case VK_BACK:
-        if (!IsSelectionEmpty() && GetBlockDelAndBSDelete())
-            DeleteBlock();
-        else
-            Backspace();
-        break;
-    case VK_UP:
-        GoToUp(_force);
-        break;
-    case VK_DOWN:
-        GoToDown(_force);
-        break;
-    case VK_LEFT:
-        if (_cntrl)
-            WordLeft();
-        else
-            if (!_shift && !IsSelectionEmpty())
-            {
-                Square blkPos;
-                GetSelection(blkPos);
-                blkPos.normalize();
-
-                if (prevPos != blkPos.start)
-                    MoveTo(blkPos.start);
-                else
-                    ClearSelection();
-            }
-            else
-                GoToLeft(_force);
-        break;
-    case VK_RIGHT:
-        if (_cntrl)
-            WordRight();
-        else
-            if (!_shift && !IsSelectionEmpty())
-            {
-                Square blkPos;
-                GetSelection(blkPos);
-                blkPos.normalize();
-
-                if (prevPos != blkPos.end)
-                    MoveTo(blkPos.end);
-                else
-                    ClearSelection();
-            }
-            else
-                GoToRight(_force);
-        break;
-    case VK_HOME:
-        if (_cntrl)
-            GoToTop();
-        else
-            SmartGoToStart();
-        break;
-    case VK_END:
-        if (_cntrl)
-            GoToBottom();
-        else
-            GoToEnd();
-        break;
-    case VK_PRIOR:
-        {
-            AdjustCaretPosition();
-            Position pos = GetPosition();
-
-            int screenLine = pos.line - m_Rulers[1].m_Topmost;
-            int topmost = m_Rulers[1].m_Topmost;
-
-            DoPageUp();
-
-            if (m_Rulers[1].m_Topmost != topmost)
-                pos.line = m_Rulers[1].m_Topmost + screenLine;
-            else
-                pos.line = 0;
-
-            MoveTo(pos, _force);
-        }
-        break;
-    case VK_NEXT:
-        {
-            AdjustCaretPosition();
-            Position pos = GetPosition();
-
-            int screenLine = pos.line - m_Rulers[1].m_Topmost;
-            int topmost = m_Rulers[1].m_Topmost;
-
-            DoPageDown();
-
-            if (m_Rulers[1].m_Topmost != topmost)
-                pos.line = m_Rulers[1].m_Topmost + screenLine;
-
-            pos.line = min(pos.line, max(0, GetLineCount()- 1));
-
-            MoveTo(pos, _force);
-        }
-        break;
-    case VK_ESCAPE:
-        if (!IsSelectionEmpty())
-            ClearSelection();
-        break;
-    };
-
-    if (_shift)
-    {
-		SelectByCursor(prevPos);
+      ClearSelection();
     }
-    else
-    {
-        if (!IsSelectionEmpty())
-		    ClearSelection();
-    }
+  }
 
-    AdjustCaretPosition();
+  AdjustCaretPosition();
 
-    // for better visual response
-    if (nRepCnt) UpdateWindow();
+  // for better visual response
+  if(nRepCnt)
+  {
+    UpdateWindow();
+  }
 }
 
-void COEditorView::OnChar (UINT nChar, UINT nRepCnt, UINT /*nFlags*/)
+void
+COEditorView::OnChar(UINT nChar, UINT nRepCnt, UINT /*nFlags*/)
 {
-    if (!m_bAttached) return;
+  if(!m_bAttached || m_queryRunning)
+  {
+    return;
+  }
+  NormalizeOnCharCxt cxt;
+  PreNormalizeOnChar(cxt, static_cast<TCHAR>(nChar));
 
-    NormalizeOnCharCxt cxt;
-    PreNormalizeOnChar(cxt, static_cast<TCHAR>(nChar));
+  switch (nChar)
+  {
+    default:        if(!IsSelectionEmpty())
+                    {
+                      if(GetBlockTypingOverwrite()) 
+                      {
+                        DeleteBlock();
+                      }
+                    }
+                    else 
+                    {
+                      ClearSelection();
+                    }
+                    if (m_isOverWriteMode)
+                    {
+                      Overwrite(static_cast<TCHAR>(nChar));
+                    }
+                    else
+                    {
+                      Insert(static_cast<TCHAR>(nChar));
+                    }
+                    break;
 
-    switch (nChar)
-    {
-    default:
-        if (!IsSelectionEmpty())
-            if (GetBlockTypingOverwrite()) DeleteBlock();
-            else ClearSelection();
+  case '\t':        if(!IsSelectionEmpty() && !GetBlockTabIndent())
+                    {
+                      if(GetBlockTypingOverwrite()) 
+                      {
+                        DeleteBlock();
+                      }
+                    }
+                    else
+                    {
+                      ClearSelection();
+                    }
 
-        if (m_isOverWriteMode)
-            Overwrite(static_cast<TCHAR>(nChar));
-        else
-            Insert(static_cast<TCHAR>(nChar));
-        break;
+                    if ((0xFF00 & GetKeyState(VK_SHIFT)))
+                    {
+                      if(IsSelectionEmpty())
+                      {
+                        DoUndent();
+                      }
+                      else
+                      {
+                        CWaitCursor wait;
+                        UndentBlock();
+                      }
+                    }
+                    else
+                    {
+                      if(IsSelectionEmpty())
+                      {
+                        DoIndent(m_isOverWriteMode ? true : false);
+                      }
+                      else
+                      {
+                        CWaitCursor wait;
+                        IndentBlock();
+                      }
+                    }
+                    break;
 
-    case '\t':
-        if (!IsSelectionEmpty() && !GetBlockTabIndent())
-            if (GetBlockTypingOverwrite()) DeleteBlock();
-            else ClearSelection();
-
-        if ((0xFF00 & GetKeyState(VK_SHIFT)))
-        {
-            if (IsSelectionEmpty())
-                DoUndent();
-            else
-            {
-                CWaitCursor wait;
-                UndentBlock();
-            }
-        }
-        else
-        {
-            if (IsSelectionEmpty())
-                DoIndent(m_isOverWriteMode ? true : false);
-            else
-            {
-                CWaitCursor wait;
-                IndentBlock();
-            }
-        }
-        break;
-
-     // it's processed already.
+    // it's processed already.
     case VK_ESCAPE:
-	case VK_BACK:
-        break;
+	  case VK_BACK:   break;
 
-     // control characters are not supported
+    // control characters are not supported
     case 0x00: // (NUL)
     case 0x01: // (SOH)
     case 0x02: // (STX)
@@ -795,16 +870,21 @@ void COEditorView::OnChar (UINT nChar, UINT nRepCnt, UINT /*nFlags*/)
     case 0x1C: // (FS)
     case 0x1D: // (GS)
     case 0x1E: // (RS)
-    case 0x1F: // (US)
-        MessageBeep((UINT)-1);
-    }
+    case 0x1F: // (US) 
+                MessageBeep((UINT)-1);
+                break;
+  }
 
-    if (cxt.matched)
-        NormalizeOnChar(cxt);
-
-    AdjustCaretPosition();
-    // for better visual response
-    if (nRepCnt) UpdateWindow();
+  if(cxt.matched)
+  {
+    NormalizeOnChar(cxt);
+  }
+  AdjustCaretPosition();
+  // for better visual response
+  if(nRepCnt)
+  {
+    UpdateWindow();
+  }
 }
 
 void COEditorView::OnMouseMove (UINT nFlags, CPoint point)
