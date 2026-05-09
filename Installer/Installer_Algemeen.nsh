@@ -6,12 +6,12 @@
 ; Copyright (c) 2006-2026 ir. W.E. Huisman
 ; All rights reserved
 ;
-; Last change:       07-04-2026
-; Versionnumber:     3.6.3
+; Last change:       22-04-2026
+; Versionnumber:     3.6.4
 ;-------------------------------------------------------
  !define PRODUCT_NAME                         "OpenODBCQuerytool"
- !define PRODUCT_VERSION                      "3.6.3"
- !define PRODUCT_BUILDNUMBER                  "508"
+ !define PRODUCT_VERSION                      "3.6.4"
+ !define PRODUCT_BUILDNUMBER                  "512"
  !define PRODUCT_PUBLISHER                    "EDO"
  !define PRODUCT_WEB_SITE                     "https://sourceforge.net/projects/odbcquerytool"
  !define PRODUCT_DIR_REGKEY                   "Software\Microsoft\Windows\CurrentVersion\App Paths\${PRODUCT_NAME}"
@@ -47,9 +47,9 @@
 
  !macro _CreateShortcutInStartMenuPrograms targetName program targetExtension
  SetShellVarContext all
- CreateShortCut "$INSTDIR\${targetName}_${PRODUCT_BITNESS}.lnk" "$INSTDIR\${program}.${targetExtension}"
- CopyFiles /FILESONLY "$INSTDIR\${targetName}_${PRODUCT_BITNESS}.lnk" "$SMPROGRAMS\${PRODUCT_PUBLISHER}\${PRODUCT_NAME}_${PRODUCT_VERSION}_${PRODUCT_BITNESS}\${targetName}_${PRODUCT_BITNESS}.lnk"
- Delete "$INSTDIR\${targetName}_${PRODUCT_BITNESS}.lnk"
+ CreateShortCut "$INSTDIR\${targetName}.lnk" "$INSTDIR\${program}.${targetExtension}"
+ CopyFiles /FILESONLY "$INSTDIR\${targetName}.lnk" "$SMPROGRAMS\${PRODUCT_PUBLISHER}\${PRODUCT_NAME}_${PRODUCT_VERSION}\${targetName}.lnk"
+ Delete "$INSTDIR\${targetName}.lnk"
  !macroend
  
  !define CreateShortcutInStartMenuPrograms "!insertmacro _CreateShortcutInStartMenuPrograms"
@@ -66,10 +66,10 @@
  XPStyle on
  RequestExecutionLevel admin
 ;--------------------------------------------------------------------------------------------------------
- OutFile "Setup_${PRODUCT_NAME}_${PRODUCT_VERSION}_${PRODUCT_BITNESS}${Unicode}.exe"
+ OutFile "Setup_${PRODUCT_NAME}_${PRODUCT_VERSION}.exe"
 ;--------------------------------------------------------------------------------------------------------
 ; title of the setup
- Name "${PRODUCT_NAME} ${PRODUCT_VERSION} ${PRODUCT_BITNESS}"
+ Name "${PRODUCT_NAME} ${PRODUCT_VERSION}"
 ;--------------------------------------------------------------------------------------------------------
  ; Set in the standard installation folder
  ; Beware: The "\" at the end must be preserved to prevent 'strange' browser behaviour
@@ -169,11 +169,13 @@ Section "Create startmenu" Create_Startmenu
 
  DetailPrint "Creating shortcuts in the startmenu"
  SetOutPath "$INSTDIR"
- CreateDirectory "$SMPROGRAMS\${PRODUCT_PUBLISHER}\${PRODUCT_NAME}_${PRODUCT_VERSION}_${PRODUCT_BITNESS}"
+ CreateDirectory "$SMPROGRAMS\${PRODUCT_PUBLISHER}\${PRODUCT_NAME}_${PRODUCT_VERSION}"
 
  ${CreateShortcutInStartMenuPrograms} ODBCQueryTool              ODBCQueryTool exe
+ ${CreateShortcutInStartMenuPrograms} SQLMigrate                 SQLMigrate    exe
+ ${CreateShortcutInStartMenuPrograms} QueryRewriter              QueryRewriter exe
  ${CreateShortcutInStartMenuPrograms} "Manual for ODBCQueryTool" ODBCQueryTool chm
- ${CreateShortcutInStartMenuPrograms} "Uninstall ${PRODUCT_NAME} ${PRODUCT_VERSION}" "Uninstall_${PRODUCT_NAME}_${PRODUCT_VERSION}_${PRODUCT_BITNESS}" exe
+ ${CreateShortcutInStartMenuPrograms} "Uninstall ${PRODUCT_NAME} ${PRODUCT_VERSION}" "Uninstall_${PRODUCT_NAME}_${PRODUCT_VERSION}" exe
 
 SectionEnd
 
@@ -181,10 +183,11 @@ Section "Create desktop icons" Desktop_icons
 
  DetailPrint "Creating of the desktop shortcuts"
  SetOutPath "$INSTDIR"
- CreateShortCut "$DESKTOP\ODBCQueryTool ${PRODUCT_BITNESS}.lnk"          "$INSTDIR\ODBCQueryTool.exe"
- CreateShortCut "$DESKTOP\Manual ODBCQueryTool ${PRODUCT_BITNESS}.lnk"   "$INSTDIR\ODBCQueryTool.chm"
+ CreateShortCut "$DESKTOP\ODBCQueryTool.lnk"          "$INSTDIR\ODBCQueryTool.exe"
+ CreateShortCut "$DESKTOP\SQLMigrate.lnk"             "$INSTDIR\SQLMigrate.exe"
+ CreateShortCut "$DESKTOP\QueryRewriter.lnk"          "$INSTDIR\QueryRewriter.exe"
+ CreateShortCut "$DESKTOP\Manual ODBCQueryTool.lnk"   "$INSTDIR\ODBCQueryTool.chm"
 SectionEnd
-
 
 ;--------------------------------------------------------------------------------------------------------
 ; To do at thes tart
@@ -286,14 +289,16 @@ Section Uninstall
 
  ; Remove directory in the start menu
  DetailPrint "Remove links from the startmenu"
- Delete "$SMPROGRAMS\${PRODUCT_PUBLISHER}\${PRODUCT_NAME}_${PRODUCT_VERSION}_${PRODUCT_BITNESS}\ODBCQueryTool_${PRODUCT_BITNESS}.lnk"
- Delete "$SMPROGRAMS\${PRODUCT_PUBLISHER}\${PRODUCT_NAME}_${PRODUCT_VERSION}_${PRODUCT_BITNESS}\Manual for ODBCQueryTool_${PRODUCT_BITNESS}.lnk"
- RmDir /r /REBOOTOK "$SMPROGRAMS\${PRODUCT_PUBLISHER}\${PRODUCT_NAME}_${PRODUCT_VERSION}_${PRODUCT_BITNESS}"
+ Delete "$SMPROGRAMS\${PRODUCT_PUBLISHER}\${PRODUCT_NAME}_${PRODUCT_VERSION}\ODBCQueryTool.lnk"
+ Delete "$SMPROGRAMS\${PRODUCT_PUBLISHER}\${PRODUCT_NAME}_${PRODUCT_VERSION}\Manual for ODBCQueryTool.lnk"
+ RmDir /r /REBOOTOK "$SMPROGRAMS\${PRODUCT_PUBLISHER}\${PRODUCT_NAME}_${PRODUCT_VERSION}"
 
  DetailPrint "Removing the links from the desktop"
- Delete "$DESKTOP\ODBCQueryTool ${PRODUCT_BITNESS}.lnk"
- Delete "$DESKTOP\Manual ODBCQueryTool ${PRODUCT_BITNESS}.lnk"
- 
+ Delete "$DESKTOP\ODBCQueryTool.lnk"
+ Delete "$DESKTOP\Manual ODBCQueryTool.lnk"
+ Delete "$DESKTOP\SQLMigrate.lnk"
+ Delete "$DESKTOP\QueryRewriter.lnk"
+
  ;De-Registring of the product.
  DetailPrint "De-registration of ${PRODUCT_NAME}"
  Delete "$INSTDIR\Uninstall ${PRODUCT_NAME} $currentVersion.exe"
