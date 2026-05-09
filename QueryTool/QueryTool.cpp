@@ -950,27 +950,32 @@ QueryToolApp::ReportCapabilities()
 void
 QueryToolApp::OnODBCBegin()
 {
-  if (!m_database.IsOpen())
+  if(!m_database.IsOpen())
   {
     AfxMessageBox(_T("BEGIN: There is no current connection to a database"), MB_OK | MB_ICONEXCLAMATION);
     return;
   }
-  m_transaction = new SQLTransaction(&m_database, _T("Transaction"));
+  if(!m_transaction)
+  {
+    m_transaction = new SQLTransaction(&m_database,_T("Transaction"));
+    UpdateWindow(m_pMainWnd->GetSafeHwnd());
+  }
 }
 
 void
 QueryToolApp::OnODBCCommit()
 {
-  if (!m_database.IsOpen())
+  if(!m_database.IsOpen())
   {
     AfxMessageBox(_T("COMMIT: There is no current connection to a database"), MB_OK | MB_ICONEXCLAMATION);
     return;
   }
-  if (m_transaction)
+  if(m_transaction)
   {
     m_transaction->Commit();
     delete m_transaction;
-    m_transaction = NULL;
+    m_transaction = nullptr;
+    UpdateWindow(m_pMainWnd->GetSafeHwnd());
   }
 }
 
@@ -982,11 +987,12 @@ QueryToolApp::OnODBCRollback()
     AfxMessageBox(_T("ROLLBACK: There is no current connection to a database"), MB_OK | MB_ICONEXCLAMATION);
     return;
   }
-  if (m_transaction)
+  if(m_transaction)
   {
     m_transaction->Rollback();
     delete m_transaction;
-    m_transaction = NULL;
+    m_transaction = nullptr;
+    UpdateWindow(m_pMainWnd->GetSafeHwnd());
   }
 }
 

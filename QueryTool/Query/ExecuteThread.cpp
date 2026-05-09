@@ -175,7 +175,7 @@ ExecuteThread::ExecuteQuery(int      p_line
 bool
 ExecuteThread::ExecuteQuery()
 {
-  QueryToolApp* app         = dynamic_cast<QueryToolApp*> (AfxGetApp());
+  QueryToolApp* app         = dynamic_cast<QueryToolApp*>(AfxGetApp());
   SQLDatabase& database     = app->GetDatabase();
   bool     selectQuery      = false;
   bool     preMatureStopped = false;
@@ -240,9 +240,26 @@ ExecuteThread::ExecuteQuery()
   {
     m_view->WriteStatisticsLine(_T("Query"),_T("Start: ") + partialCommand,true); // Reset the timer
   }
-  // No lines fetched (yet)
-  m_linesFetched = 0;
 
+  // Look at the type of the command
+  CString command = m_odbcCommand.Left(6);
+
+  // Is it a commit?
+  if(command.CompareNoCase(_T("COMMIT")) == 0)
+  {
+    app->OnODBCCommit();
+    m_odbcCommand.Empty();
+    return true;
+  }
+
+  // Make sure we have a transaction in case we do a DML command
+  if(command.CompareNoCase(_T("INSERT")) == 0 ||
+     command.CompareNoCase(_T("UPDATE")) == 0 ||
+     command.CompareNoCase(_T("DELETE")) == 0 ||
+     command.CompareNoCase(_T("MERGE ")) == 0 )
+  {
+    app->OnODBCBegin();
+  }
   try
   {
     long row = 0;
@@ -258,6 +275,9 @@ ExecuteThread::ExecuteQuery()
     m_query.SetRebindMap(rebinds);
     // Set the buffer size for piece-wise extraction
     m_query.SetBufferSize(m_view->GetInboundBufferSize());
+
+    // No lines fetched (yet)
+    m_linesFetched = 0;
 
     // Run the query
     bool mustPrepare = (numVariables > 0) && (m_odbcCommand.Find('?') > 0);
