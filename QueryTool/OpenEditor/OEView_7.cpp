@@ -58,7 +58,7 @@ QueryHistory::~QueryHistory()
 void
 COEditorView::OnUpdateCommandScriptExecute(CCmdUI* pCmdUI)
 {
-  pCmdUI->Enable(true);
+  pCmdUI->Enable(GetQueryIsRunning() == false);
 }
 
 bool
@@ -84,25 +84,39 @@ COEditorView::StartQueryThread()
 }
 
 void
+COEditorView::QueryIsRunning()
+{
+  QueryToolApp* app = dynamic_cast<QueryToolApp*>(AfxGetApp());
+  app->SetQueryIsRunning(this);
+  GetDocument()->SetTitle();
+  UpdateWindow();
+}
+
+void
 COEditorView::QueryReady()
 {
-  m_queryRunning = false;
+  QueryToolApp* app = dynamic_cast<QueryToolApp*>(AfxGetApp());
+  app->SetQueryIsRunning(nullptr);
+  GetDocument()->SetTitle();
+  GetGridView()->m_pGridCtrl->Refresh();
   UpdateWindow();
 }
 
 void
 COEditorView::WaitForRunningQuery()
 {
-  while(m_queryRunning)
+  QueryToolApp* app = dynamic_cast<QueryToolApp*>(AfxGetApp());
+  while(app->GetQueryIsRunning())
   {
-    Sleep(50);
+    Sleep(100);
   }
 }
 
 bool
 COEditorView::GetQueryIsRunning()
 {
-  return m_queryRunning;
+  QueryToolApp* app = dynamic_cast<QueryToolApp*>(AfxGetApp());
+  return app->GetQueryIsRunning() != nullptr;
 }
 
 void
@@ -114,8 +128,7 @@ COEditorView::StopQuery()
     if(StyleMessageBox(this,ask,PROGRAM_NAME,MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)
     {
       m_execute->StopRunning();
-      m_execute = nullptr;
-
+      WaitForRunningQuery();
       StyleMessageBox(this,_T("BEWARE: The query results in the result pane are INCOMPLETE!"),PROGRAM_NAME,MB_OK | MB_ICONWARNING);
     }
   }
@@ -169,10 +182,11 @@ COEditorView::OnScriptExecute()
       }
       else
       {
+        QueryIsRunning();
         m_execute->ExecuteQuery(startline,odbcCommand,true);
       }
     }
-    m_queryRunning = true;
+    QueryIsRunning();
     // Reset the command
     odbcCommand.Empty();
     // And step
@@ -259,8 +273,8 @@ COEditorView::OnScriptCurrent()
   else
   {
     WaitForRunningQuery();
+    QueryIsRunning();
     m_execute->ExecuteQuery(firstline,odbcCommand);
-    m_queryRunning = true;
   }
 }
 
@@ -408,8 +422,8 @@ COEditorView::OnScriptExecuteStep()
   else
   {
     WaitForRunningQuery();
+    QueryIsRunning();
     m_execute->ExecuteQuery(firstline,odbcCommand);
-    m_queryRunning = true;
   }
   // And step
   moveCurrentLine(curLine);
@@ -762,8 +776,8 @@ COEditorView::ExecuteQueryRepeat(int p_line,CString& odbcCommand,bool batch /*=f
   else
   {
     WaitForRunningQuery();
+    QueryIsRunning();
     result = m_execute->ExecuteQuery(p_line,odbcCommand,batch);
-    m_queryRunning = true;
   }
 
   // Check on a specified number of iterations
@@ -795,7 +809,7 @@ COEditorView::ReadRestOfQuery()
   }
   if(m_execute)
   {
-    m_queryRunning = true;
+    QueryIsRunning();
     m_execute->SignalEvent();
   }
 }

@@ -1387,10 +1387,36 @@ QueryToolApp::SetTitle(CString p_document)
     if(!p_document.IsEmpty())
     {
       title += _T(" - ");
+      if(m_runningQuery)
+      {
+        title += _T("! ");
+      }
       title += p_document;
     }
     m_pMainWnd->SetWindowText(title);
   }
+}
+
+COEditorView*
+QueryToolApp::GetQueryIsRunning()
+{
+  return m_runningQuery;
+}
+
+bool
+QueryToolApp::SetQueryIsRunning(COEditorView* p_view)
+{
+  if(m_runningQuery == nullptr)
+  {
+    m_runningQuery = p_view;
+    return true;
+  }
+  else if(p_view == nullptr)
+  {
+    m_runningQuery = nullptr;
+    return true;
+  }
+  return false;
 }
 
 BOOL 

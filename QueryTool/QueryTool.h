@@ -33,6 +33,7 @@
 using namespace SQLComponents;
 
 typedef std::map<int,SQLVariant*> VarMap;
+class   COEditorView;
 
 // QueryToolApp:
 // See QueryTool.cpp for the implementation of this class
@@ -69,6 +70,8 @@ public:
   CString       FindNativeSQL(CString& command);
   void          ReportCapabilities();
   void          SetTitle(CString p_document);
+  COEditorView* GetQueryIsRunning();
+  bool          SetQueryIsRunning(COEditorView* p_view);
 
   // Implementation
 	UINT    m_nAppLook;
@@ -125,6 +128,7 @@ private:
   mutable bool            m_isClosing;
   mutable VarMap          m_variables;
   mutable RebindMap       m_rebinds;
+  mutable COEditorView*   m_runningQuery;
 
   HANDLE m_hMutex;
 };

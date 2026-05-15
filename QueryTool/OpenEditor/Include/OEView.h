@@ -472,9 +472,10 @@ public:
   int     GetInboundBufferSize();
   bool    GetScriptSelect();
   void    PumpMessages();
-  void    QueryReady();
-  void    WaitForRunningQuery();
+  void    QueryIsRunning();
   bool    GetQueryIsRunning();
+  void    WaitForRunningQuery();
+  void    QueryReady();
 
   WinFile*        GetScriptOutput();
   CGridView*      GetGridView();
@@ -492,7 +493,6 @@ public:
   bool            m_findPrimary;
   ExecuteThread*  m_execute;
   HANDLE          m_thread;
-  bool            m_queryRunning;
   PrimaryMap      m_keyMap;
   CString         m_primaryName;
   WinFile*        m_scriptOutput;

@@ -18,15 +18,10 @@
 // WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
 // WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 //
-#if !defined(AFX_GridView_H)
-#define AFX_GridView_H
-
-#if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
-
 #include "MGridCtrl.h"
 #include "OEDocument.h"
+#include <deque>
 
 #define TYPE_QUERY    0
 #define TYPE_STATS    1
@@ -50,13 +45,12 @@ struct _gridType
 
 typedef _gridType GridType;
 
-
 class CGridView : public CView
 {
 //protected: // create from serialization only
 public:
 	CGridView();
-  virtual void  PostNcDestroy();
+ ~CGridView();
 
 	//DECLARE_DYNCREATE(CGridView)
 
@@ -67,7 +61,7 @@ public:
   void    RegisterEditor(CWnd *editor,int p_type = 0);
   void    InitGridEmpty(int p_type = 0,bool nofirst = false);
   void    InsertColumn(LPCTSTR p_heading,UINT p_format,int p_column);
-  void    InsertRow   (LPCTSTR p_heading,int p_row);
+  void    InsertRow   (LPCTSTR p_heading,int p_row,bool p_resetScroll = true);
   void    InsertItem(int p_row,int p_col,CString& p_text,UINT p_format = 0,int p_sqlType = 0);
   void    InsertImage(int p_row,int p_col,int p_image);
   CString GetItemText(int p_row,int p_col);
@@ -97,7 +91,6 @@ public:
   void    ExportToExcelSLK();
   void    ExportToHTML();
   void    ExportToTXT();
-
   void    AutoSize();
 
 // Operations
@@ -106,18 +99,18 @@ public:
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CGridView)
-	public:
-	virtual void OnDraw(CDC* pDC);  // overridden to draw this view
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-	virtual void OnInitialUpdate();
-	virtual BOOL OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
-	protected:
-	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
-	virtual void OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
-	virtual void OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
-	virtual void OnPrint(CDC* pDC, CPrintInfo* pInfo);
-  afx_msg void OnEndInPlaceEdit(NMHDR* pNMHDR, LRESULT* pResult);
-  afx_msg void OnBeginEdit     (NMHDR* pNMHDR, LRESULT* pResult);
+public:
+	virtual void    OnDraw(CDC* pDC);  // overridden to draw this view
+	virtual BOOL    PreCreateWindow(CREATESTRUCT& cs);
+	virtual void    OnInitialUpdate();
+	virtual BOOL    OnCmdMsg(UINT nID, int nCode, void* pExtra, AFX_CMDHANDLERINFO* pHandlerInfo);
+protected:
+	virtual BOOL    OnPreparePrinting(CPrintInfo* pInfo);
+	virtual void    OnBeginPrinting(CDC* pDC, CPrintInfo* pInfo);
+	virtual void    OnEndPrinting(CDC* pDC, CPrintInfo* pInfo);
+	virtual void    OnPrint(CDC* pDC, CPrintInfo* pInfo);
+  afx_msg void    OnEndInPlaceEdit(NMHDR* pNMHDR, LRESULT* pResult);
+  afx_msg void    OnBeginEdit     (NMHDR* pNMHDR, LRESULT* pResult);
 	//}}AFX_VIRTUAL
 
 // Implementation
@@ -180,4 +173,3 @@ CGridView::GetQueryTerminator()
   return m_queryTerminator;
 }
 
-#endif 

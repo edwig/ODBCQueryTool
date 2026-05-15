@@ -46,6 +46,7 @@
 #include "OEGoToDialog.h"
 #include "OEHighlighter.h" // for a destructor
 #include "Query\ExecuteThread.h"
+#include "QueryTool.h"
 #include <WinFile.h>
 
 #ifdef _DEBUG
@@ -226,8 +227,7 @@ COEditorView::COEditorView ()
     m_repeat                  = 0;
     m_wholeMinutes            = false;
     m_execute                 = nullptr;
-    m_queryRunning            = false;
-}
+}  
 
 COEditorView::~COEditorView ()
 {
@@ -581,6 +581,7 @@ COEditorView::OnKeyDown(UINT nChar,UINT nRepCnt,UINT nFlags)
     return;
   }
   Position prevPos = GetPosition();
+  QueryToolApp* app = dynamic_cast<QueryToolApp*>(AfxGetApp());
 
   bool _shift = (0xFF00 & GetKeyState(VK_SHIFT))      ? true : false;
   bool _cntrl = (0xFF00 & GetKeyState(VK_CONTROL))    ? true : false;
@@ -590,7 +591,7 @@ COEditorView::OnKeyDown(UINT nChar,UINT nRepCnt,UINT nFlags)
   {
     default:        CView::OnKeyUp(nChar, nRepCnt, nFlags);
                     return;
-    case VK_INSERT: if(m_queryRunning)
+    case VK_INSERT: if(app->GetQueryIsRunning())
                     {
                       break;
                     }
@@ -601,7 +602,7 @@ COEditorView::OnKeyDown(UINT nChar,UINT nRepCnt,UINT nFlags)
                       return;
                     }
                     break;
-    case VK_DELETE: if(m_queryRunning)
+    case VK_DELETE: if(app->GetQueryIsRunning())
                     {
                       break;
                     }
@@ -614,7 +615,7 @@ COEditorView::OnKeyDown(UINT nChar,UINT nRepCnt,UINT nFlags)
                       Delete();
                     }
                     break;
-    case VK_BACK:   if(m_queryRunning)
+    case VK_BACK:   if(app->GetQueryIsRunning())
                     {
                       break;
                     }
@@ -770,7 +771,9 @@ COEditorView::OnKeyDown(UINT nChar,UINT nRepCnt,UINT nFlags)
 void
 COEditorView::OnChar(UINT nChar, UINT nRepCnt, UINT /*nFlags*/)
 {
-  if(!m_bAttached || m_queryRunning)
+  QueryToolApp* app = dynamic_cast<QueryToolApp*>(AfxGetApp());
+
+  if(!m_bAttached || app->GetQueryIsRunning())
   {
     return;
   }

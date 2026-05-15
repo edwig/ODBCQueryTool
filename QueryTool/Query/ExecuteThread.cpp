@@ -28,7 +28,7 @@
 unsigned __stdcall
 ExecuteSQLThread(void* p_context)
 {
-  // Gebruik StdExceptions i.p.v. SEH
+  // Use StdExceptions with SEH
   _set_se_translator(SeTranslator);
 
   ExecuteThread* sqlexec = reinterpret_cast<ExecuteThread*>(p_context);
@@ -76,23 +76,17 @@ ExecuteThread::Execute()
   // De verwerkingsloop
   try
   {
-    while(m_running)
+    while(WaitForEvent(INFINITE) == 1 && m_running)
     {
-      if(WaitForEvent(INFINITE) == 1)
+      if(m_odbcCommand.IsEmpty())
       {
-        if(m_running)
-        {
-          if(m_odbcCommand.IsEmpty())
-          {
-            ReadRestOfQuery();
-          }
-          else
-          {
-            ExecuteQuery();
-          }
-          m_view->QueryReady();
-        }
+        ReadRestOfQuery();
       }
+      else
+      {
+        ExecuteQuery();
+      }
+      m_view->QueryReady();
     }
   }
   catch(StdException& ex)
@@ -362,7 +356,7 @@ ExecuteThread::ExecuteQuery()
       panelWindow = QPW_OUTPUT_VIEW;
     }
     // Size the grid again
-    m_view->GetGridView()->AutoSize();
+    // m_view->GetGridView()->AutoSize();
 
     if(!row)
     {
@@ -441,6 +435,9 @@ ExecuteThread::ExecuteQuery()
 void
 ExecuteThread::ReadRestOfQuery()
 {
+  // Do not trigger again from the GridCtrl
+  m_view->GetGridView()->m_pGridCtrl->RegisterView(nullptr);
+
   try
   {
     if(m_query.GetRecord())
@@ -449,7 +446,7 @@ ExecuteThread::ReadRestOfQuery()
       {
         GetLineFromQuery(++m_linesFetched);
       }
-      while(m_query.GetRecord() && m_running);
+      while(m_running && m_query.GetRecord());
     }
   }
   catch(CString& er)
@@ -540,7 +537,6 @@ void
 ExecuteThread::GetLineFromQuery(int row)
 {
   UINT format = DT_SINGLELINE | DT_VCENTER | DT_WORDBREAK | DT_END_ELLIPSIS | DT_NOPREFIX | DT_EXPANDTABS;
-  CString rowNumber;
   int charsetTranslation = 0;
   CString charset;
   // Getting charset translation
@@ -551,14 +547,18 @@ ExecuteThread::GetLineFromQuery(int row)
     charset = doc->GetSettings().GetSQLCharsetUsed();
   }
 
+  // Make a new row in the view
+  CString rowNumber;
   rowNumber.Format(_T("%d"),row);
-  m_view->GetGridView()->InsertRow((LPCTSTR)rowNumber,-1);
+  m_view->GetGridView()->InsertRow(rowNumber,-1,false);
 
   // Insert the row info
   for(int k = 1; k <= m_query.GetNumberOfColumns(); ++k)
   {
     SQLVariant* var = m_query.GetColumn(k);
     SWORD type = (SWORD)var->GetDataType();
+    int sqltype = 0;
+    CString text;
 
     if(type == SQL_C_BINARY)
     {
@@ -567,32 +567,26 @@ ExecuteThread::GetLineFromQuery(int row)
       const void* binbuf = var->GetAsBinary();
       _tcsncpy_s((TCHAR*)buffer,len * 2 + 1,(TCHAR*)binbuf,len * 2);
       buffer[len * 2] = 0;
-      CString text((TCHAR*)buffer);
-      m_view->GetGridView()->InsertItem(row,k,text,DT_LEFT);
+      text = (TCHAR*)buffer;
       free(buffer);
-    }
-    if(type == SQL_C_CHAR)
-    {
-      XString s;
-      var->GetAsString(s);
-      CString text(s);
-      if(charsetTranslation)
-      {
-        TranslateText(text,charsetTranslation,charset);
-      }
-      format &= ~(DT_LEFT | DT_RIGHT);
-      format |= (type == SQL_CHAR || type == SQL_VARCHAR) ? DT_LEFT : DT_RIGHT;
-      m_view->GetGridView()->InsertItem(row,k,text,format,var->GetDataType());
+
+      format &= ~ DT_RIGHT;
+      format |= DT_LEFT;
     }
     else
     {
       XString s;
       var->GetAsString(s);
-      CString text(s);
+      text = s.GetString();
+      if(charsetTranslation && type == SQL_C_CHAR)
+      {
+        TranslateText(text,charsetTranslation,charset);
+      }
       format &= ~(DT_LEFT | DT_RIGHT);
       format |= (type == SQL_CHAR || type == SQL_VARCHAR) ? DT_LEFT : DT_RIGHT;
-      m_view->GetGridView()->InsertItem(row,k,text,format,var->GetDataType());
+      sqltype = var->GetDataType();
     }
+    m_view->GetGridView()->InsertItem(row,k,text,format,sqltype);
   }
 }
 

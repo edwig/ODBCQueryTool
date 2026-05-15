@@ -175,7 +175,7 @@ COEDocument::SetTitle()
   theApp.SetTitle(title);
 }
 
-void 
+void
 COEDocument::SetTitle (LPCTSTR lpszTitle)
 {
   m_orgTitle = lpszTitle;

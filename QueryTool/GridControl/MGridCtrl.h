@@ -407,7 +407,7 @@ public:
 public:
     int  InsertColumn(LPCTSTR strHeading, UINT nFormat = DT_CENTER|DT_VCENTER|DT_SINGLELINE,
                       int nColumn = -1);
-    int  InsertRow(LPCTSTR strHeading, int nRow = -1);
+    int  InsertRow(LPCTSTR strHeading, int nRow = -1,bool p_resetScroll = true);
     BOOL DeleteColumn(int nColumn);
     BOOL DeleteRow(int nRow);
     BOOL DeleteNonFixedRows();
@@ -428,7 +428,9 @@ public:
     void Refresh();
     void AutoFill();   // Fill grid with blank cells
 
-    void EnsureVisible(MCCellID &cell)       { EnsureVisible(cell.row, cell.col); }
+    void GotoTop();
+    void GotoEnd();
+    void EnsureVisible(MCCellID &cell);
     void EnsureVisible(int nRow, int nCol);
     BOOL IsCellVisible(int nRow, int nCol);
     BOOL IsCellVisible(MCCellID cell);
@@ -742,7 +744,7 @@ protected:
     afx_msg void OnMouseMove(UINT nFlags, CPoint point);
     afx_msg UINT OnGetDlgCode();
     afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
-	afx_msg void OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags);
+	  afx_msg void OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags);
     afx_msg void OnChar(UINT nChar, UINT nRepCnt, UINT nFlags);
     afx_msg void OnLButtonDblClk(UINT nFlags, CPoint point);
     afx_msg BOOL OnEraseBkgnd(CDC* pDC);

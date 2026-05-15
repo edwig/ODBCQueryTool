@@ -1530,7 +1530,7 @@ void MCGridCtrl::OnVScroll(UINT nSBCode, UINT /*nPos*/, CScrollBar* /*pScrollBar
                   m_view->ReadRestOfQuery();
                   return;
                 }
-                break;          // didn't work
+                break; // didn't work
             }
             rect.top = GetFixedRowHeight();
             //rect.top = GetFixedRowHeight() + yScroll;
@@ -4046,7 +4046,7 @@ int MCGridCtrl::InsertColumn(LPCTSTR strHeading,
 }
 
 // Insert a row at a given position, or add to end of rows (if nRow = -1)
-int MCGridCtrl::InsertRow(LPCTSTR strHeading, int nRow /* = -1 */)
+int MCGridCtrl::InsertRow(LPCTSTR strHeading, int nRow /* = -1 */,bool p_resetScroll /*=true*/)
 {
   if (nRow >= 0 && nRow < m_nFixedRows)
   {
@@ -4136,8 +4136,10 @@ int MCGridCtrl::InsertRow(LPCTSTR strHeading, int nRow /* = -1 */)
   {
     m_idCurrentCell.row++;
   }
-  ResetScrollBars();
-
+  if(p_resetScroll)
+  {
+    ResetScrollBars();
+  }
   SetModified();
 
   return nRow;
@@ -5666,6 +5668,12 @@ void MCGridCtrl::Refresh()
   }
 }
 
+void 
+MCGridCtrl::EnsureVisible(MCCellID& cell)       
+{
+  EnsureVisible(cell.row,cell.col);
+}
+
 // EnsureVisible supplied by Roelf Werkman
 void MCGridCtrl::EnsureVisible(int nRow, int nCol)
 {
@@ -5779,6 +5787,18 @@ void MCGridCtrl::EnsureVisible(int nRow, int nCol)
   {
     pFocusWnd->SetFocus(); 
   }
+}
+
+void
+MCGridCtrl::GotoTop()
+{
+  SendMessage(WM_VSCROLL,SB_TOP,0);
+}
+
+void 
+MCGridCtrl::GotoEnd()
+{
+  SendMessage(WM_VSCROLL,SB_BOTTOM,0);
 }
 
 BOOL MCGridCtrl::IsCellEditable(MCCellID &cell) const

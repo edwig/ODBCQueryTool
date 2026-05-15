@@ -25,8 +25,9 @@
 #include "resource.h"
 #include "OEView.h"
 #include "OESettings.h"
-#include "BasicExcel.h"
-#include "ExcelFormat.h"
+#include <BasicExcel.h>
+#include <ExcelFormat.h>
+#include <AutoCritical.h>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -75,10 +76,10 @@ BEGIN_MESSAGE_MAP(CGridView, CView)
 	ON_WM_ERASEBKGND()
   ON_WM_DESTROY()
 	// Standard printing commands
-	ON_COMMAND(ID_FILE_PRINT, CView::OnFilePrint)
-	ON_COMMAND(ID_FILE_PRINT_DIRECT, CView::OnFilePrint)
+	ON_COMMAND(ID_FILE_PRINT,         CView::OnFilePrint)
+	ON_COMMAND(ID_FILE_PRINT_DIRECT,  CView::OnFilePrint)
 	ON_COMMAND(ID_FILE_PRINT_PREVIEW, CView::OnFilePrintPreview)
-//ON_COMMAND(ID_TOGGLE_READONLY, OnToggleReadonly)
+
   ON_NOTIFY(GVN_ENDLABELEDIT,  ID_QUERY_VIEW,OnEndInPlaceEdit)
   ON_NOTIFY(GVN_BEGINLABELEDIT,ID_QUERY_VIEW,OnBeginEdit)
 END_MESSAGE_MAP()
@@ -95,10 +96,8 @@ CGridView::CGridView()
   m_queryTerminator = _T("");
 }
 
-void 
-CGridView::PostNcDestroy()
+CGridView::~CGridView()
 {
-  // No self destruct;
 }
 
 void
@@ -110,11 +109,9 @@ CGridView::OnDestroy()
   }
 }
 
-BOOL CGridView::PreCreateWindow(CREATESTRUCT& cs)
+BOOL 
+CGridView::PreCreateWindow(CREATESTRUCT& cs)
 {
-	// TODO: Modify the Window class or styles here by modifying
-	//  the CREATESTRUCT cs
-
 	return CView::PreCreateWindow(cs);
 }
 
@@ -363,9 +360,9 @@ CGridView::InsertColumn(LPCTSTR p_heading,UINT p_format,int p_column)
 }
 
 void
-CGridView::InsertRow(LPCTSTR p_heading,int p_row)
+CGridView::InsertRow(LPCTSTR p_heading,int p_row,bool p_resetScroll /*=true*/)
 {
-  m_pGridCtrl->InsertRow(p_heading,p_row);
+  m_pGridCtrl->InsertRow(p_heading,p_row,p_resetScroll);
 }
 
 void
@@ -460,6 +457,9 @@ CGridView::GotoQueryBegin()
   int row  = 1;
   int col;
   MCCellID cell = m_pGridCtrl->GetFocusCell();
+
+  m_pGridCtrl->GotoTop();
+
   col = (cell.col == -1) ? 0 : cell.col;
   m_pGridCtrl->SetFocusCell(row,col);
   cell = m_pGridCtrl->GetFocusCell();
@@ -569,6 +569,8 @@ CGridView::GotoQueryEnd()
   int row  = (rows >= 1) ? rows - 1 : 0;
   int col;
   MCCellID cell = m_pGridCtrl->GetFocusCell();
+
+  m_pGridCtrl->GotoEnd();
 
   col = (cell.col == -1) ? 0 : cell.col;
   m_pGridCtrl->SetFocusCell(row,col);
@@ -1152,5 +1154,3 @@ CGridView::OnEndInPlaceEdit(NMHDR* pNMHDR, LRESULT* /*pResult*/)
     m_saveEdit = _T("");
   }
 }
-
-
