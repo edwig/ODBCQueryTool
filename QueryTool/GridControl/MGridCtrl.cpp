@@ -5769,17 +5769,20 @@ void MCGridCtrl::EnsureVisible(int nRow, int nCol)
     }
   }
 
+  int bottom = rectCell.bottom;
   while (rectCell.bottom > rectWindow.bottom && rectCell.top > GetFixedRowHeight())
   {
     SendMessage(WM_VSCROLL, SB_LINEDOWN, 0);
-    if (!GetCellRect(nRow, nCol, rectCell))
+    BOOL gr = GetCellRect(nRow,nCol,rectCell);
+    if(!gr || bottom == rectCell.bottom)
     {
-      if (pFocusWnd && ::IsWindow(pFocusWnd->GetSafeHwnd()))
+      if(pFocusWnd && ::IsWindow(pFocusWnd->GetSafeHwnd()))
       {
         pFocusWnd->SetFocus(); 
       }
       return;
     }
+    bottom = rectCell.bottom;
   }
 
   // restore focus to whoever owned it

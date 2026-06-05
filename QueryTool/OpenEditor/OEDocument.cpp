@@ -1015,7 +1015,10 @@ void COEDocument::OnFileOpen ()
 
 void COEDocument::OnCloseDocument()
 {
-  if(!m_viewList.IsEmpty())
+  QueryToolApp* app = dynamic_cast<QueryToolApp*>(AfxGetApp());
+  COEditorView* runview = app->GetQueryIsRunning();
+
+  if(!m_viewList.IsEmpty() && runview)
   {
     // get frame attached to the view
     POSITION ps = m_viewList.GetHeadPosition();
@@ -1024,15 +1027,12 @@ void COEDocument::OnCloseDocument()
       CView* pView = (CView*)m_viewList.GetAt(ps);
       ASSERT_VALID(pView);
       COEditorView* view = reinterpret_cast<COEditorView*>(pView);
-      if(view)
+      if(view && (view == runview))
       {
-        if(view->GetQueryIsRunning())
-        {
-          XString msg(_T("You cannot close this query document, because there still is a running query!\n")
-                      _T("Stop the query, in order to be able to close this document."));
-          StyleMessageBox(view,msg,PROGRAM_NAME,MB_OK | MB_ICONERROR);
-          return;
-        }
+        XString msg(_T("You cannot close this query document, because there still is a running query!\n")
+                    _T("Stop the query, in order to be able to close this document."));
+        StyleMessageBox(view,msg,PROGRAM_NAME,MB_OK | MB_ICONERROR);
+        return;
       }
       m_viewList.GetNext(ps);
     }

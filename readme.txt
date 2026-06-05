@@ -22,6 +22,21 @@ pretty well.
 LATEST HISTORY
 ==============
 
+Releasenotes 3.6.4
+------------------
+-  AUTO transactions. A DML action (INSERT/UPDATE/DELETE) will now automatically
+   start a transaction. You must either use the "COMMIT" command, or the commit
+   button in the toolbar.
+-  The execution of the SQL is moved to a seperate thread. This makes a new button
+   in the toolbar possible to stop a very long running current SQL query.
+   During execution you can view text in the current view or other views, but you
+   cannot change the text until the query completes.
+-  Startup performance boost for PostgreSQL databases with a very large number
+   of objects. The SQLTables function that returns the META data (META_CATALOGS,
+   META_SCHEMAS, META_TABLES) returns all the objects instead of just the object
+   types, which made the login very bad performend. These functions are now taken
+   care of by the SQLInfoPostgreSQL class.
+
 Releasenotes 3.6.3
 ------------------
 -  Enhanced the performance of the F5 batch command. Performance was degrading if 

@@ -50,7 +50,7 @@ class CGridView : public CView
 //protected: // create from serialization only
 public:
 	CGridView();
- ~CGridView();
+  virtual void  PostNcDestroy();
 
 	//DECLARE_DYNCREATE(CGridView)
 

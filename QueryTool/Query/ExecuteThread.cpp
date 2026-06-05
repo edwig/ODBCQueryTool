@@ -429,6 +429,8 @@ ExecuteThread::ExecuteQuery()
     m_view->GetQueryPanel()->ChangePanel(panelWindow);
   }
   m_odbcCommand.Empty();
+
+  m_view->GetGridView()->m_pGridCtrl->AutoSize();
   return true;
 }
 
@@ -463,6 +465,8 @@ ExecuteThread::ReadRestOfQuery()
   }
   // Reset to 0, so grid will not attempt a second time
   m_linesFetched = 0;
+
+  m_view->GetGridView()->m_pGridCtrl->AutoSize();
 }
 
 int

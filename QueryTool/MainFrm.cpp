@@ -503,37 +503,47 @@ void CMainFrame::SetDockingWindowIcons(BOOL bHiColorIcons)
 void
 CMainFrame::OnClose()
 {
-  // Iterate through all document templates
-  POSITION tmplPos = AfxGetApp()->GetFirstDocTemplatePosition();
-  while(tmplPos != nullptr)
-  {
-    CDocTemplate* pTemplate = AfxGetApp()->GetNextDocTemplate(tmplPos);
+  QueryToolApp* app = dynamic_cast<QueryToolApp*>(AfxGetApp());
+	if(app->GetQueryIsRunning())
+	{
+		XString msg(_T("You cannot close this program, because there still is a running query!\n")
+								_T("Stop the query, in order to be able to close this document."));
+		StyleMessageBox(this,msg,PROGRAM_NAME,MB_OK | MB_ICONERROR);
+		return;
+	}
 
-    // Iterate through all documents in this template
-    POSITION docPos = pTemplate->GetFirstDocPosition();
-    while(docPos != nullptr)
-    {
-      CDocument* pDoc = pTemplate->GetNextDoc(docPos);
 
-      POSITION viewPos = pDoc->GetFirstViewPosition();
-      while(viewPos != nullptr)
-      {
-        CView* pView = pDoc->GetNextView(viewPos);
-				COEditorView* view = reinterpret_cast<COEditorView*>(pView);
-        if(view)
-        {
-          if(view->GetQueryIsRunning())
-          {
-            MDIActivate(pView);
-            XString msg(_T("You cannot close this program, because there still is a running query!\n")
-                        _T("Stop the query, in order to be able to close this document."));
-            StyleMessageBox(pView,msg,PROGRAM_NAME,MB_OK | MB_ICONERROR);
-            return;
-          }
-        }
-      }
-    }
-  }
+//   // Iterate through all document templates
+//   POSITION tmplPos = AfxGetApp()->GetFirstDocTemplatePosition();
+//   while(tmplPos != nullptr)
+//   {
+//     CDocTemplate* pTemplate = AfxGetApp()->GetNextDocTemplate(tmplPos);
+// 
+//     // Iterate through all documents in this template
+//     POSITION docPos = pTemplate->GetFirstDocPosition();
+//     while(docPos != nullptr)
+//     {
+//       CDocument* pDoc = pTemplate->GetNextDoc(docPos);
+// 
+//       POSITION viewPos = pDoc->GetFirstViewPosition();
+//       while(viewPos != nullptr)
+//       {
+//         CView* pView = pDoc->GetNextView(viewPos);
+// 				 COEditorView* view = reinterpret_cast<COEditorView*>(pView);
+//         if(view)
+//         {
+//           if(view->GetQueryIsRunning())
+//           {
+//             MDIActivate(pView);
+//             XString msg(_T("You cannot close this program, because there still is a running query!\n")
+//                         _T("Stop the query, in order to be able to close this document."));
+//             StyleMessageBox(pView,msg,PROGRAM_NAME,MB_OK | MB_ICONERROR);
+//             return;
+//           }
+//         }
+//       }
+//     }
+//   }
 	StyleMDIFrameWnd::OnClose();
 }
 

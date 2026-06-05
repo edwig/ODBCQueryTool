@@ -96,8 +96,10 @@ CGridView::CGridView()
   m_queryTerminator = _T("");
 }
 
-CGridView::~CGridView()
+void
+CGridView::PostNcDestroy()
 {
+  // No self destruct;
 }
 
 void

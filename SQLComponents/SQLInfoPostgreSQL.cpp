@@ -744,12 +744,34 @@ SQLInfoPostgreSQL::DoBindParameterFixup(SQLVariant* /*p_var*/,SQLSMALLINT& p_dat
 //////////////////////////////////////////////////////////////////////////
 
 // Meta info about meta types
-// Standard ODBC functions are good enough
+// Standard ODBC functions return always ALL objects in the database !!
 XString
 SQLInfoPostgreSQL::GetCATALOGMetaTypes(int p_type) const
 {
-  UNREFERENCED_PARAMETER(p_type);
-  return _T("");
+  // type META_CATALOGS / META_SCHEMAS / META_TABLES
+  XString sql;
+  if(p_type == META_CATALOGS)
+  {
+    sql = _T("SELECT datname as object_name\n")
+          _T("      ,''      as object_remarks\n")
+          _T("  FROM pg_database");
+  }
+  if(p_type == META_SCHEMAS)
+  {
+    sql = _T("SELECT nspname as object_name\n")
+          _T("      ,''      as object_remarks\n")
+          _T("  FROM pg_namespace\n")
+          _T(" WHERE nspname NOT LIKE 'pg\\_%' escape '\\'");
+  }
+  if(p_type == META_TABLES)
+  {
+    sql = _T("SELECT 'TABLE' as object_name\n")
+          _T("      ,''      as object_remarks\n")
+          _T("UNION\n")
+          _T("SELECT 'VIEW'  as object_name\n")
+          _T("      ,''      as object_remarks\n");
+  }
+  return sql;
 }
 
 XString

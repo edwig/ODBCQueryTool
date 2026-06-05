@@ -147,17 +147,17 @@ InfoTree::MakeTreeInfo()
   HTREEITEM meta     = InsertItem(_T("Meta-objects in the database"),infoItemDB);
   HTREEITEM catalogs = InsertItem(_T("Catalogs"),meta);
   m_info->MakeInfoMetaTypes(objects,errors,META_CATALOGS);
-  DeDuplicateOjbects(objects);
+  DeDuplicateObjects(objects);
   MetaListToTree(objects,catalogs,errors);
 
   HTREEITEM schemas  = InsertItem(_T("Schemas"),meta);
   m_info->MakeInfoMetaTypes(objects,errors,META_SCHEMAS);
-  DeDuplicateOjbects(objects);
+  DeDuplicateObjects(objects);
   MetaListToTree(objects,schemas,errors);
 
   HTREEITEM obtypes  = InsertItem(_T("Object types"),meta);
   m_info->MakeInfoMetaTypes(objects,errors,META_TABLES);
-  DeDuplicateOjbects(objects);
+  DeDuplicateObjects(objects);
   MetaListToTree(objects,obtypes,errors);
 
   // ODBC DRIVER
@@ -1478,7 +1478,7 @@ InfoTree::MakeTreeInfoFunctions(HTREEITEM item)
 
 // De-Duplicate the objects from a META query
 void 
-InfoTree::DeDuplicateOjbects(MMetaMap& p_objects)
+InfoTree::DeDuplicateObjects(MMetaMap& p_objects)
 {
   MMetaMap::iterator all = p_objects.begin();
   while(all != p_objects.end())
@@ -1495,7 +1495,7 @@ InfoTree::DeDuplicateOjbects(MMetaMap& p_objects)
       }
       ++srch;
     }
-    // Next item in the three
+    // Next item in the tree
     if(all != p_objects.end())
     {
       ++all;
