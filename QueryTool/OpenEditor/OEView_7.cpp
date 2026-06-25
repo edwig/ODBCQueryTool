@@ -513,6 +513,13 @@ COEditorView::GetODBCCommand(int& curLine
       ++curLine;
       continue;
     }
+//     if(tempLine.Left(endToken2.GetLength()).Compare(endToken2) == 0)
+//     {
+//       // TRACE(_T("ODBC Ended command: %s\n"),odbcCommand.Left(255).GetString());
+//       // End of command found
+//       return firstline;
+//     }
+
     if(multiLine)
     {
       multiLineCommand += _T("\n");
@@ -542,14 +549,12 @@ COEditorView::GetODBCCommand(int& curLine
       if(createSeen && _tcsicmp(token,_T("procedure")) == 0)
       {
         procedureSeen = true;
-        endToken1     = endToken2;
       }
       if(createSeen && _tcsicmp(token,_T("function")) == 0)
       {
         functionSeen = true;
-        endToken1    = endToken2;
       }
-      if((endToken1.CompareNoCase(token) == 0) ||
+      if((endToken1.CompareNoCase(token) == 0 && (!procedureSeen && !functionSeen)) ||
          (endToken2.CompareNoCase(token) == 0 && pos == 0))
       {
         if(multiLine)

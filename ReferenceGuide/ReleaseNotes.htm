@@ -4,6 +4,22 @@
 <META name=GENERATOR content=AuthorDocumentation><LINK rel=Stylesheet 
 type=text/css href="default.css"></HEAD>
 <BODY>
+<H3>Releasenotes 3.6.4</H3>
+<P>AUTO transactions. A DML action (INSERT/UPDATE/DELETE) will now automatically 
+start a transaction. You must either use the "COMMIT" command, or the commit 
+button in the toolbar.</P>
+<P>The execution of the SQL is moved to a seperate thread. This makes a new 
+button in the toolbar possible to stop a very long running current SQL query. 
+During execution you can view text in the current view or other views, but you 
+cannot change the text until the query completes.</P>
+<P>Startup performance boost for PostgreSQL databases with a very large number 
+of objects. The SQLTables function that returns the META data (META_CATALOGS, 
+META_SCHEMAS, META_TABLES) returns all the objects instead of just the object 
+types, which made the login very bad performend. These functions are now taken 
+care of by the SQLInfoPostgreSQL class.</P>
+<P>The 32bits and ANSI versions are dropped from the release system and are 
+declared DEPRECATED. Only 64bits Unicode versions of the programs are enclosed 
+in the installer.</P>
 <H3>Releasenotes 3.6.3</H3>
 <P>Enhanced the performance of the F5 batch command. Performance was degrading 
 if a batch of more than 200 SQL commands was run. The degradation is now 
