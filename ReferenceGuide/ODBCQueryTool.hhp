@@ -6,7 +6,7 @@ Contents File=ODBCQueryTool.hhc
 Index File=ODBCQueryTool.hhk
 Default Topic=Welcome.htm
 Default Window=NewWindow
-Default Font=
+Default Font=Verdana,9,0
 Error log file=CompileErrors.log
 Custom tab=
 Language=
@@ -16,16 +16,17 @@ Display compile notes=yes
 Full-text search=yes
 Binary index=yes
 Binary TOC=no
-Auto index=no
-Enhanced decompilation=no
+Auto index=yes
+Enhanced decompilation=yes
 Flat=no
 
 [WINDOWS]
-NewWindow="ODBC SQL QueryTool","C:\Develop\ODBCQueryTool\ReferenceGuide\ODBCQueryTool.hhc","C:\Develop\ODBCQueryTool\ReferenceGuide\ODBCQueryTool.hhk","Welcome.htm","Welcome.htm","ODBCQuickReference\ODBC_SQL_Reference.htm","SQL","","",0x21420,0,0x4204e,[0,0,1024,768],0xb0000,0x0,,0,0,0
+NewWindow="ODBC SQL QueryTool","ODBCQueryTool.hhc","ODBCQueryTool.hhk","Welcome.htm","Welcome.htm","ODBCQuickReference\ODBC_SQL_Reference.htm","SQL","","",0xa1520,0,0x4386e,[76,16,1251,946],0xb0000,0x20,,0,0,0
 
 [FILES]
 default.css
 EDO.jpg
+ODBC_Reference.css
 ODBCQuickReference\Elements\Datatypes.htm
 ODBCQuickReference\Elements\OBJECT PRIVILEGES.htm
 ODBCQuickReference\Elements\Operators.htm
@@ -38,6 +39,23 @@ ODBCQuickReference\Functions\String_functions.htm
 ODBCQuickReference\Functions\System_functions.htm
 ODBCQuickReference\Functions\Time_Date_Interval_Functions.htm
 ODBCQuickReference\ODBC_SQL_Reference.htm
+ODBCQuickReference\Pictures\Alter_table.bmp
+ODBCQuickReference\Pictures\Conversion_functions.bmp
+ODBCQuickReference\Pictures\Create_schema.bmp
+ODBCQuickReference\Pictures\Create_table.bmp
+ODBCQuickReference\Pictures\Create_view.bmp
+ODBCQuickReference\Pictures\Data_types.bmp
+ODBCQuickReference\Pictures\Delete.bmp
+ODBCQuickReference\Pictures\Drop_table.bmp
+ODBCQuickReference\Pictures\Drop_view.bmp
+ODBCQuickReference\Pictures\Grant.bmp
+ODBCQuickReference\Pictures\Index.bmp
+ODBCQuickReference\Pictures\Insert.bmp
+ODBCQuickReference\Pictures\PseudoColumns.bmp
+ODBCQuickReference\Pictures\Real_datatypes.bmp
+ODBCQuickReference\Pictures\Revoke.bmp
+ODBCQuickReference\Pictures\Select.bmp
+ODBCQuickReference\Pictures\Table_names.bmp
 ODBCQuickReference\SQL_Elements\base-table-name.htm
 ODBCQuickReference\SQL_Elements\column-name.htm
 ODBCQuickReference\SQL_Elements\data-type.htm
@@ -66,8 +84,8 @@ ODBCQuickReference\Statements\UPDATE.htm
 Querying\FindingTables.html
 Querying\Querying.htm
 Querying\Scripting.htm
+Querying\UseObjectPane.png
 ReleaseNotes.htm
-RoboHHRE.lng
 TheEditor\The_open_editor.htm
 Welcome.htm
 

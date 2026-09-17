@@ -1,6 +1,13 @@
-<html>
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+</HEAD>
 <!-- Sitemap 1.0 -->
-<object type="text/site properties">
+<BODY>
+<OBJECT type="text/site properties">
   <param name="SiteType" value="index">
-</object>
-</html>
+</OBJECT>
+<UL>
+</UL>
+</BODY>
+</HTML>

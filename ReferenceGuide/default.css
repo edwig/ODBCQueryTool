@@ -1,72 +1,41 @@
-/* AuthorHTML CSS-Editor rewritten: Thu Oct 17 16:52:38 2019*/
+﻿/* AuthorHTML CSS-Editor rewritten: Sun Sep  6 13:38:53 2026*/
 H1 {
 margin-top:12pt;
 margin-bottom:12pt;
 color:#a20032;
-font-weight:Normal;
+font-weight:Bold;
 font-style:Normal;
 font-family:Verdana;
 font-size:14pt;
 }
 
-LI.kadov-H1 {
-font-family:Verdana;
-font-size:14pt;
-color:#A20032;
-font-weight:normal;
-font-style:normal;
-}
-
 H2 {
-font-family:Verdana;
-font-size:12pt;
-color:#A20032;
-font-weight:bold;
-font-style:normal;
 margin-bottom:4pt;
 margin-top:12pt;
-}
-
-LI.kadov-H2 {
+color:#a20032;
+font-weight:Bold;
+font-style:Normal;
 font-family:Verdana;
 font-size:12pt;
-color:#A20032;
-font-weight:bold;
-font-style:normal;
 }
 
 H3 {
+margin-top:10pt;
+margin-bottom:0;
 color:#a20032;
 font-weight:Bold;
 font-style:Normal;
 font-family:Verdana;
 font-size:10pt;
-margin-top:10pt;
-margin-bottom:0;
-}
-
-LI.kadov-H3 {
-font-family:Verdana;
-font-size:10pt;
-color:#A20032;
-font-weight:bold;
-font-style:normal;
 }
 
 H4 {
-font-family:Verdana;
-font-size:10pt;
 margin-top:10pt;
 margin-bottom:0;
-font-weight:bold;
-font-style:normal;
-}
-
-LI.kadov-H4 {
+font-weight:Bold;
+font-style:Normal;
 font-family:Verdana;
 font-size:10pt;
-font-weight:bold;
-font-style:normal;
 }
 
 .underline {
@@ -91,7 +60,7 @@ border-top:solid #1e3f9a 1px;
 border-bottom:solid #1e3f9a 1px;
 margin-top:9pt;
 margin-bottom:9pt;
-padding:2px 4px 6px;
+padding:2px 4px 6px 2px;
 }
 
 P {
@@ -102,15 +71,10 @@ margin-bottom:10pt;
 color:#1e3f9a;
 }
 
-LI.kadov-P {
-font-family:Verdana;
-font-size:10pt;
-}
-
 SPAN.Code {
-font-family:"Courier New", Courier, mono;
 margin-bottom:0;
 margin-top:0;
+font-family:"Courier New", Courier, mono;
 }
 
 .low {
@@ -246,47 +210,28 @@ font-family:Verdana, geneva, Arial, helvetica, sans-serif;
 background-color:#add9f4;
 }
 
-LI.kadov-CtblHeader {
-font-weight:bold;
-font-size:95%;
-font-family:Verdana, geneva, Arial, helvetica, sans-serif;
-}
-
 .tblColOne {
-font-weight:bold;
-font-size:90%;
-font-family:Verdana, geneva, Arial, helvetica, sans-serif;
 background-color:#e5f4fd;
-}
-
-LI.kadov-CtblColOne {
-font-weight:bold;
+font-weight:Bold;
+font-family:Verdana, geneva, arial, helvetica, sans-serif;
 font-size:90%;
-font-family:Verdana, geneva, Arial, helvetica, sans-serif;
 }
 
 .Kolomkop {
-font-size:8pt;
-font-weight:normal;
-font-style:normal;
-color:navy;
 margin-top:0;
 margin-bottom:0;
 padding-bottom:2px;
 border-bottom-style:Solid;
 border-bottom-width:1px;
 border-bottom-color:#1e3f9a;
-}
-
-LI.kadov-CKolomkop {
-font-size:8pt;
-font-weight:normal;
-font-style:normal;
 color:navy;
+font-weight:Normal;
+font-style:Normal;
+font-size:8pt;
 }
 
 TD {
-padding:3px;
+padding:3px 3px 3px 3px;
 }
 
 TR {
@@ -302,45 +247,8 @@ margin-bottom:10pt;
 }
 
 SPAN.expandtext {
-font-family:Verdana;
 margin-top:0;
 margin-bottom:10pt;
-font-size:8pt;
-}
-
-LI.kadov-Cfootnote1,LI.kadov-Cfootnote2 {
 font-family:Verdana;
 font-size:8pt;
-}
-
-LI.kadov-CBullet1,LI.kadov-CBullet1High,LI.kadov-CBullet2,LI.kadov-CBullet2High {
-list-style-position:outside;
-list-style-type:disc;
-}
-
-LI.kadov-CNumbered1,LI.kadov-CNumbered1High,LI.kadov-CNumbered2,LI.kadov-CNumbered2High {
-list-style-position:outside;
-list-style-type:decimal;
-}
-
-H5,LI.kadov-H5 {
-font-size:xx-small;
-font-stretch:ultra-condensed;
-font-style:normal;
-font-variant:small-caps;
-font-weight:normal;
-text-decoration:line-through;
-x-text-line-through:normal;
-}
-
-H6,LI.kadov-H6 {
-font-size:xx-small;
-font-style:normal;
-font-variant:small-caps;
-font-weight:normal;
-text-decoration:line-through;
-x-text-line-through:normal;
-}
-
- {
 }
