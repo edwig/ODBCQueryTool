@@ -288,5 +288,6 @@ paket-files/
 #This project "ODBCQueryTool"
 
 ReferenceGuide/ODBCQueryTool.chm
+ReferenceGuide/ODBCQueryTool.chw
 *.exe
 [Ll]ib/
