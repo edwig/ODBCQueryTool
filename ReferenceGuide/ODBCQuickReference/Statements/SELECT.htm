@@ -3,25 +3,8 @@
 <html>
 <head>
     <title>SELECT</title>
-    <!--(==============================================================)-->
-
-    <!--(Document created with RoboEditor. )============================-->
-
-    <!--(==============================================================)-->
-
-    <!--(Meta)==========================================================-->
     <meta content="text/html; charset=utf-8" http-equiv="content-type">
     <meta name="GENERATOR" content="AuthorDocumentation">
-    <meta name="generator-major-version" content="0.1">
-    <meta name="generator-minor-version" content="1">
-    <meta name="filetype" content="kadov">
-    <meta name="filetype-version" content="1">
-    <meta name="page-count" content="1">
-    <meta name="layout-height" content="1309">
-    <meta name="layout-width" content="740">
-    <!--(Links)=========================================================-->
-    <link rel="stylesheet" type="text/css" href="../../ODBC_Reference.css">
-    <!--(Body)==========================================================-->
     <meta name="AuthorOriginalAuthor" content="">
     <meta name="AuthorDocComment" content="">
     <meta name="AuthorHTMLTemplate" content="">
@@ -32,13 +15,13 @@
     <meta name="AuthorWidth" content="0">
     <meta name="AuthorHeight" content="0">
     <meta name="MS-HKWD" content="SELECT">
+    <link rel="Stylesheet" type="text/css" href="../../default.css">
 </head>
 
 <body>
     <h1>SELECT</h1>
 
     <p>Use this command to retrieve data from one or more tables, views or synonyms.</p>
-    <!--(Table)=========================================================-->
 
     <table style="WIDTH: 100.01%; BORDER-SPACING: 0px; x-cell-content-align: top" cellspacing="0" width="100.01%"
     x-use-null-cells="">
@@ -59,44 +42,32 @@
                 <td style=
                 "BORDER-LEFT-STYLE: none; WIDTH: 100%; BORDER-BOTTOM-STYLE: none; BORDER-RIGHT-STYLE: none; PADDING-LEFT: 10px; PADDING-RIGHT: 10px"
                 width="100%">
-                    <p style="MARGIN-BOTTOM: 0pt"><span class="Code">
-                    <!--kadov_tag{{<spaces>}}-->&nbsp; 
-                    <!--kadov_tag{{</spaces>}}-->SELECT [DISTINCT | ALL]</span></p>
+                    <p style="MARGIN-BOTTOM: 0pt"><span class="Code">&nbsp; SELECT [DISTINCT | ALL]</span></p>
 
-                    <p style="MARGIN-BOTTOM: 0pt"><span class="Code">
-                    <!--kadov_tag{{<spaces>}}-->&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-                    <!--kadov_tag{{</spaces>}}-->[* | <a href="../SQL_Elements/expression.htm">expression</a> [[AS]
-                    column_alias]] [,...]</span></p>
+                    <p style="MARGIN-BOTTOM: 0pt"><span class="Code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [* |
+                    <a href="../SQL_Elements/expression.htm">expression</a> [[AS] column_alias]] [,...]</span></p>
 
-                    <p style="MARGIN-BOTTOM: 0pt"><span class="Code">
-                    <!--kadov_tag{{<spaces>}}-->&nbsp;&nbsp;&nbsp; 
-                    <!--kadov_tag{{</spaces>}}-->FROM table [[AS] table_alias]</span></p>
+                    <p style="MARGIN-BOTTOM: 0pt"><span class="Code">&nbsp;&nbsp;&nbsp; FROM table [[AS]
+                    table_alias]</span></p>
 
-                    <p style="MARGIN-BOTTOM: 0pt"><span class="Code">
-                    <!--kadov_tag{{<spaces>}}-->&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
-                    <!--kadov_tag{{</spaces>}}-->{[join ...] | [,...]}</span></p>
+                    <p style="MARGIN-BOTTOM: 0pt"><span class="Code">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {[join
+                    ...] | [,...]}</span></p>
 
-                    <p style="MARGIN-BOTTOM: 0pt"><span class="Code">
-                    <!--kadov_tag{{<spaces>}}-->&nbsp; 
-                    <!--kadov_tag{{</spaces>}}-->[WHERE <a href=
+                    <p style="MARGIN-BOTTOM: 0pt"><span class="Code">&nbsp; [WHERE <a href=
                     "../SQL_Elements/search-condition.htm">search-condition</a>]</span></p>
 
-                    <p style="MARGIN-BOTTOM: 0pt"><span class="Code">
-                    <!--kadov_tag{{<spaces>}}-->&nbsp; 
-                    <!--kadov_tag{{</spaces>}}-->[GROUP BY column_alias [,...]]</span></p>
+                    <p style="MARGIN-BOTTOM: 0pt"><span class="Code">&nbsp; [GROUP BY column_alias [,...]]</span></p>
 
                     <p style="MARGIN-BOTTOM: 0pt"><span class="Code">[HAVING <a href=
                     "../SQL_Elements/search-condition.htm">search-condition</a>]</span></p>
 
-                    <p style="MARGIN-BOTTOM: 0pt"><span class="Code">
-                    <!--kadov_tag{{<spaces>}}-->&nbsp; 
-                    <!--kadov_tag{{</spaces>}}-->[ORDER BY column_alias [ASC | DESC][,...]]</span></p>
+                    <p style="MARGIN-BOTTOM: 0pt"><span class="Code">&nbsp; [ORDER BY column_alias [ASC |
+                    DESC][,...]]</span></p>
 
                     <p style="MARGIN-BOTTOM: 0pt">&nbsp;</p>
 
-                    <p style="MARGIN-BOTTOM: 0pt"><span class="Code">
-                    <!--kadov_tag{{<spaces>}}-->&nbsp; 
-                    <!--kadov_tag{{</spaces>}}-->[UNION [ALL | INTERSECT | EXCEPT] SELECT .... ]</span></p>
+                    <p style="MARGIN-BOTTOM: 0pt"><span class="Code">&nbsp; [UNION [ALL | INTERSECT | EXCEPT] SELECT ....
+                    ]</span></p>
 
                     <p><span class="Code">;</span></p>
                 </td>
@@ -110,9 +81,7 @@
 
                     <p style="MARGIN-BOTTOM: 0pt">&nbsp;</p>
 
-                    <p style="MARGIN-BOTTOM: 0pt"><span class="Code">
-                    <!--kadov_tag{{<spaces>}}-->&nbsp;&nbsp; 
-                    <!--kadov_tag{{</spaces>}}-->base-table-name</span></p>
+                    <p style="MARGIN-BOTTOM: 0pt"><span class="Code">&nbsp;&nbsp; base-table-name</span></p>
 
                     <p style="MARGIN-BOTTOM: 0pt"><span class="Code">| view-name</span></p>
 
@@ -128,9 +97,7 @@
 
                     <p style="MARGIN-BOTTOM: 0pt">&nbsp;</p>
 
-                    <p style="MARGIN-BOTTOM: 0pt"><span class="Code">
-                    <!--kadov_tag{{<spaces>}}-->&nbsp;&nbsp; 
-                    <!--kadov_tag{{</spaces>}}-->INNER JOIN</span></p>
+                    <p style="MARGIN-BOTTOM: 0pt"><span class="Code">&nbsp;&nbsp; INNER JOIN</span></p>
 
                     <p style="MARGIN-BOTTOM: 0pt"><span class="Code">| NATURAL JOIN</span></p>
 
@@ -162,7 +129,6 @@
     border="0" src="../Pictures/Select.bmp" width="371" height="556" x-maintain-ratio="TRUE"></p>
 
     <p>See also: <a href="DELETE.htm">DELETE</a> , <a href="INSERT.htm">INSERT</a> , <a href="UPDATE.htm">UPDATE</a></p>
-    <!--(HR)============================================================-->
     <hr style="HEIGHT: 1px" align="center" size="1">
 
     <p class="footer">This SQL Reference is not the complete documentation for your SQL language. For more detailed information
