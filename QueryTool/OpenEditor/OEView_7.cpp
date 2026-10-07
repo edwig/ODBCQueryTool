@@ -87,7 +87,10 @@ void
 COEditorView::QueryIsRunning()
 {
   QueryToolApp* app = dynamic_cast<QueryToolApp*>(AfxGetApp());
-  app->SetQueryIsRunning(this);
+  while(!app->SetQueryIsRunning(this))
+  { 
+    PumpMessages();
+  }
   GetDocument()->SetTitle();
   UpdateWindow();
 }
@@ -100,16 +103,6 @@ COEditorView::QueryReady()
   GetDocument()->SetTitle();
   GetGridView()->m_pGridCtrl->Refresh();
   UpdateWindow();
-}
-
-void
-COEditorView::WaitForRunningQuery()
-{
-  QueryToolApp* app = dynamic_cast<QueryToolApp*>(AfxGetApp());
-  while(app->GetQueryIsRunning())
-  {
-    Sleep(100);
-  }
 }
 
 bool
@@ -128,7 +121,6 @@ COEditorView::StopQuery()
     if(StyleMessageBox(this,ask,PROGRAM_NAME,MB_YESNO | MB_ICONQUESTION | MB_DEFBUTTON2) == IDYES)
     {
       m_execute->StopRunning();
-      WaitForRunningQuery();
       StyleMessageBox(this,_T("BEWARE: The query results in the result pane are INCOMPLETE!"),PROGRAM_NAME,MB_OK | MB_ICONWARNING);
     }
   }
@@ -156,11 +148,12 @@ COEditorView::OnScriptExecute()
   // Empty these grids
   m_statsView->InitGridEmpty(TYPE_STATS);
   m_outptView->InitGridEmpty(TYPE_OUTPT);
+  m_histoView->InitGridEmpty(TYPE_HISTO);
+  m_historyMap.clear();
 
   WriteStatisticsLine(_T("Script"),_T("Start of script"),true);
   while(curLine < endFileLine)
   {
-    WaitForRunningQuery();
     int startline = GetODBCCommand(curLine,endFileLine,odbcCommand);
     if(odbcCommand == _T(""))
     {
@@ -186,7 +179,6 @@ COEditorView::OnScriptExecute()
         m_execute->ExecuteQuery(startline,odbcCommand,true);
       }
     }
-    QueryIsRunning();
     // Reset the command
     odbcCommand.Empty();
     // And step
@@ -272,7 +264,6 @@ COEditorView::OnScriptCurrent()
   }
   else
   {
-    WaitForRunningQuery();
     QueryIsRunning();
     m_execute->ExecuteQuery(firstline,odbcCommand);
   }
@@ -421,7 +412,6 @@ COEditorView::OnScriptExecuteStep()
   }
   else
   {
-    WaitForRunningQuery();
     QueryIsRunning();
     m_execute->ExecuteQuery(firstline,odbcCommand);
   }
@@ -780,7 +770,6 @@ COEditorView::ExecuteQueryRepeat(int p_line,CString& odbcCommand,bool batch /*=f
   }
   else
   {
-    WaitForRunningQuery();
     QueryIsRunning();
     result = m_execute->ExecuteQuery(p_line,odbcCommand,batch);
   }

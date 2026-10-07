@@ -940,7 +940,14 @@ CMainFrame::OnTimer(UINT_PTR nIDEvent)
 	  try
     {
 			QueryToolApp* app = dynamic_cast<QueryToolApp*> (AfxGetApp());
-			app->GetDatabase().Ping();
+			if(!app->GetQueryIsRunning())
+			{
+				if(app->SetQueryIsRunning((COEditorView*)nIDEvent))
+				{
+					app->GetDatabase().Ping();
+					app->SetQueryIsRunning(nullptr);
+				}
+			}
 		}
 		catch(...)
 		{

@@ -474,7 +474,6 @@ public:
   void    PumpMessages();
   void    QueryIsRunning();
   bool    GetQueryIsRunning();
-  void    WaitForRunningQuery();
   void    QueryReady();
 
   WinFile*        GetScriptOutput();

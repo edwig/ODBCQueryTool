@@ -130,7 +130,8 @@ private:
   mutable RebindMap       m_rebinds;
   mutable COEditorView*   m_runningQuery;
 
-  HANDLE m_hMutex;
+  HANDLE                  m_hMutex;
+  CRITICAL_SECTION        m_runningSQL;
 };
 
 inline bool

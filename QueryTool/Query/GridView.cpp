@@ -352,7 +352,8 @@ CGridView::InitGridEmpty(int p_type,bool nofirst /* = false */)
   }
   // Sync with the outside world
 	m_pGridCtrl->AutoSize();
-  m_pGridCtrl->ExpandLastColumn();
+//   m_pGridCtrl->ExpandLastColumn();
+//   m_pGridCtrl->Refresh();
 }
 
 void

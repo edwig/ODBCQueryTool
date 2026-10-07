@@ -430,7 +430,7 @@ ExecuteThread::ExecuteQuery()
   }
   m_odbcCommand.Empty();
 
-  m_view->GetGridView()->m_pGridCtrl->AutoSize();
+  m_view->GetGridView()->AutoSize();
   return true;
 }
 

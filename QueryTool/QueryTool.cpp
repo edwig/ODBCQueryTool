@@ -109,6 +109,8 @@ QueryToolApp::QueryToolApp() noexcept
   // https://docs.microsoft.com/en-us/answers/questions/855042/i-am-getting-an-exception-in-mfc-loadframe-from-a.html
   m_bLoadWindowPlacement = false;
 #endif
+
+  InitializeCriticalSection(&m_runningSQL);
 }
 
 QueryToolApp::~QueryToolApp()
@@ -137,6 +139,8 @@ QueryToolApp::~QueryToolApp()
   }
   m_variables.clear();
   m_rebinds.clear();
+
+  DeleteCriticalSection(&m_runningSQL);
 }
 
 void QueryToolApp::InitGUICommand()
@@ -1400,12 +1404,19 @@ QueryToolApp::SetTitle(CString p_document)
 COEditorView*
 QueryToolApp::GetQueryIsRunning()
 {
-  return m_runningQuery;
+  if(TryEnterCriticalSection(&m_runningSQL))
+  {
+    LeaveCriticalSection(&m_runningSQL);
+    return m_runningQuery;
+  }
+  return nullptr;
 }
 
 bool
 QueryToolApp::SetQueryIsRunning(COEditorView* p_view)
 {
+  AutoCritSec section(&m_runningSQL);
+
   if(m_runningQuery == nullptr)
   {
     m_runningQuery = p_view;
