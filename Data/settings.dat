@@ -33,6 +33,7 @@ SQLQueryTerminator=/
 SQLQueryFont=Verdana;10
 SQLCharsetTranslation=0
 SQLCharsetUsed=0
+SQLAutoCommit=1
 PreferODBCMetaSQL=0
 DefFileExtension=sql
 UndoLimit=1000

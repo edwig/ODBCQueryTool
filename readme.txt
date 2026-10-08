@@ -24,18 +24,37 @@ LATEST HISTORY
 
 Releasenotes 3.6.4
 ------------------
--  AUTO transactions. A DML action (INSERT/UPDATE/DELETE) will now automatically
+-  AUTO transactions. Any action other than a 'SELECT' will now automatically
    start a transaction. You must either use the "COMMIT" command, or the commit
    button in the toolbar.
+-  Standard the querytool runs in "AUTO COMMIT" mode. This means that every DML 
+   action that is not a 'SELECT' statement will automatically commit in the database.
+   You can turn this now off by using the 'Auto-commit mode' option in the menu, 
+   or in the SQL settings page to make ths permanent.
+   If you turn this off, you must use the "COMMIT" command, or when you issue another
+   command than 'SELECT', 'WITH' or 'EXPLAIN', you will automatically enter the 
+   transaction mode. 
+   You can commit by using the 'Commit' menu option, or the 'Commit' button in the
+   toolbar, or you can issue a "COMMIT" command. 
+   Of course you can also rollback by using the 'Rollback' menu option, the 'Rollback' 
+   button in the toolbar, or you can issue a "ROLLBACK" command.
+-  The default of the 'auto-commit-mode' is set to 'ON' upon installation of this version.
+   This is the default behaviour of the ODBCQueryTool in previous versions.
 -  The execution of the SQL is moved to a seperate thread. This makes a new button
    in the toolbar possible to stop a very long running current SQL query.
    During execution you can view text in the current view or other views, but you
    cannot change the text until the query completes.
+   Please notice the red X button in the toolbar to stop a long running query. 
+   This is especially useful for queries that are running for a long time, 
+   or when you have a wrong SQL statement that will never complete.
 -  Startup performance boost for PostgreSQL databases with a very large number
    of objects. The SQLTables function that returns the META data (META_CATALOGS,
    META_SCHEMAS, META_TABLES) returns all the objects instead of just the object
    types, which made the login very bad performend. These functions are now taken
    care of by the SQLInfoPostgreSQL class.
+-  The performance of the F5 (batch command) has been improved further, by 
+   using a better method of interacting with the front end views of the SQL results,
+   the output timings and the history view.
 
 Releasenotes 3.6.3
 ------------------

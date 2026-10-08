@@ -49,6 +49,7 @@ COESQLSettingsPage::DoDataExchange(CDataExchange* pDX)
   DDX_CBIndex(pDX,IDC_SQL_LEN,            m_comboSqlLen,     m_lenOption);
   DDX_CBIndex(pDX,IDC_TRANSLATION,        m_comboTranslation,m_charsetTranslation);
   DDX_Control(pDX,IDC_CHARACTERSET,       m_comboCharset);
+  DDX_Control(pDX,IDC_AUTOCOMMIT,         m_buttonAutoCommit);
 
   m_comboCharset.EnableWindow(m_charsetTranslation == 2);
 }
@@ -59,6 +60,7 @@ BEGIN_MESSAGE_MAP(COESQLSettingsPage,StyleDialog)
   ON_EN_CHANGE(IDC_FONT,               &COESQLSettingsPage::OnEnChangeFont)
   ON_BN_CLICKED(IDC_BUT_FONT,          &COESQLSettingsPage::OnBnClickedButFont)
   ON_BN_CLICKED(IDC_META,              &COESQLSettingsPage::OnBnClickedPreferODBC)
+  ON_BN_CLICKED(IDC_AUTOCOMMIT,        &COESQLSettingsPage::OnBnClickedAutoCommit)
   ON_CBN_SELCHANGE(IDC_SQL_LEN,        &COESQLSettingsPage::OnCbnSelchangeSqlLen)
   ON_CBN_SELCHANGE(IDC_TRANSLATION,    &COESQLSettingsPage::OnCbnSelchangeTranslation)
   ON_CBN_SELCHANGE(IDC_CHARACTERSET,   &COESQLSettingsPage::OnCbnSelchangeCharset)
@@ -73,6 +75,7 @@ COESQLSettingsPage::OnInitDialog()
   InitCombos();
 
   m_buttonODBC.SetCheck(m_odbcMetaSQL);
+  m_buttonAutoCommit.SetCheck(m_autoCommit);
 
   UpdateData(FALSE);
   return TRUE;
@@ -262,6 +265,7 @@ COESQLSettingsPage::ReadSQLSettings()
     m_lenOption          = settings.GetSQLLengthOption();
     m_charsetTranslation = settings.GetSQLCharsetTranslation();
     m_charset            = settings.GetSQLCharsetUsed();
+    m_autoCommit         = settings.GetSQLAutoCommit();
   }
   _OE_DEFAULT_HANDLER_;
 }
@@ -283,6 +287,9 @@ COESQLSettingsPage::SaveSQLSettings()
     settings.SetSQLLengthOption(m_lenOption + 1);
     settings.SetSQLCharsetTranslation(m_charsetTranslation);
     settings.SetSQLCharsetUsed(m_charset.GetString());
+    settings.SetSQLAutoCommit(m_autoCommit);
+
+    theApp.SetAutoCommitMode(m_autoCommit);
   }
   _OE_DEFAULT_HANDLER_;
 }
@@ -442,4 +449,10 @@ void
 COESQLSettingsPage::OnBnClickedPreferODBC()
 {
   m_odbcMetaSQL = m_buttonODBC.GetCheck() > 0;
+}
+
+void
+COESQLSettingsPage::OnBnClickedAutoCommit()
+{
+  m_autoCommit = m_buttonAutoCommit.GetCheck() > 0;
 }

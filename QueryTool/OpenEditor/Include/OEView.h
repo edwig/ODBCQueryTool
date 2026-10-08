@@ -213,6 +213,7 @@ public:
     using EditContext::PushInUndoStack;
 
     void  StopQuery();
+    bool  GetScriptExecute();
 
 protected:
     void SetCaretPosition ();
@@ -502,6 +503,7 @@ public:
   int             m_interval;
   int             m_repeat;
   bool            m_wholeMinutes;
+  bool            m_scriptExecute { false };
   // END QUERY TOOL
 protected:
     virtual void OnActivateView(BOOL bActivate, CView* pActivateView, CView* pDeactiveView);
@@ -573,6 +575,12 @@ COEditorView::GetQueryPanel()
 {
   return m_queryPanel;
 }
+
+inline bool
+COEditorView::GetScriptExecute()
+{
+  return m_scriptExecute;
+} 
 
 //{{AFX_INSERT_LOCATION}}
 

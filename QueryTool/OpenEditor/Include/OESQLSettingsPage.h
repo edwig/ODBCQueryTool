@@ -51,6 +51,7 @@ public:
   bool          m_odbcMetaSQL;
   int           m_charsetTranslation;
   CString       m_charset;
+  bool          m_autoCommit;
 
   StyleEdit     m_editPrefetch;
   StyleEdit     m_editTerminator;
@@ -60,6 +61,7 @@ public:
   StyleComboBox m_comboTranslation;
   StyleComboBox m_comboCharset;
   StyleCheckbox m_buttonODBC;
+  StyleCheckbox m_buttonAutoCommit;
 
   afx_msg void OnUpdateData();
   afx_msg void OnEnChangePrefetch();
@@ -67,6 +69,7 @@ public:
   afx_msg void OnEnChangeFont();
   afx_msg void OnBnClickedButFont();
   afx_msg void OnBnClickedPreferODBC();
+  afx_msg void OnBnClickedAutoCommit();
   afx_msg void OnCbnSelchangeSqlLen();
   afx_msg void OnCbnSelchangeCharset();
   afx_msg void OnCbnSelchangeTranslation();

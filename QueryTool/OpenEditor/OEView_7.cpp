@@ -152,6 +152,8 @@ COEditorView::OnScriptExecute()
   m_historyMap.clear();
 
   WriteStatisticsLine(_T("Script"),_T("Start of script"),true);
+  m_scriptExecute = true;
+
   while(curLine < endFileLine)
   {
     int startline = GetODBCCommand(curLine,endFileLine,odbcCommand);
@@ -210,6 +212,7 @@ COEditorView::OnScriptExecute()
   }
   // Total batch time
   WriteStatisticsLine(_T("Script"),_T("End of script"),false,ticks);
+  m_scriptExecute = false;
 }
 
 void
@@ -879,16 +882,22 @@ COEditorView::WriteHistoryLine(CString p_command)
   int reruns      = 0;
   HistoryMap::iterator iter;
 
-  for(iter = m_historyMap.begin(); iter != m_historyMap.end(); ++iter)
+  // Check if this command is already in the history
+  // But in scripts, we will always skip this check
+  if(!m_scriptExecute)
   {
-    ++newNumber;
-    if(p_command.CompareNoCase(iter->command) == 0)
+    for(iter = m_historyMap.begin();iter != m_historyMap.end();++iter)
     {
-      reruns = ++(iter->reruns);
-      row = iter->number;
-      break;
+      ++newNumber;
+      if(p_command.CompareNoCase(iter->command) == 0)
+      {
+        reruns = ++(iter->reruns);
+        row    = iter->number;
+        break;
+      }
     }
   }
+  // New history line
   if(row == -1)
   {
     QueryHistory hist;
@@ -906,6 +915,7 @@ COEditorView::WriteHistoryLine(CString p_command)
   }
   else
   {
+    // Update the number of times the SQL command has been executed
     CString num;
     num.Format(_T("%d"),row);
     for(int i=0; i < m_histoView->GetColumnCount(); ++i)

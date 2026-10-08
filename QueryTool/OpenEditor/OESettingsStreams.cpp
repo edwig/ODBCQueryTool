@@ -88,7 +88,7 @@ void SettingsManagerWriter::operator << (const SettingsManager& mgr)
     OESMS_WRITE_MEMBER(settings, SQLQueryFont);
     OESMS_WRITE_MEMBER(settings, SQLCharsetTranslation);
     OESMS_WRITE_MEMBER(settings, SQLCharsetUsed);
-
+    OESMS_WRITE_MEMBER(settings, SQLAutoCommit);
 
     OESMS_WRITE_MEMBER(settings, PreferODBCMetaSQL);
     OESMS_WRITE_MEMBER(settings, DefFileExtension);
@@ -177,6 +177,7 @@ void SettingsManagerReader::operator >> (SettingsManager& mgr)
     OESMS_READ_MEMBER(settings, SQLQueryFont,false);
     OESMS_READ_MEMBER(settings, SQLCharsetTranslation,true);
     OESMS_READ_MEMBER(settings, SQLCharsetUsed,true);
+    OESMS_READ_MEMBER(settings, SQLAutoCommit,true);
 
     OESMS_READ_MEMBER(settings, PreferODBCMetaSQL,false);
     OESMS_VER_READ_MEMBER(1013, settings, DefFileExtension, _T("sql"));

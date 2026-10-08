@@ -227,6 +227,7 @@ COEditorView::COEditorView ()
     m_repeat                  = 0;
     m_wholeMinutes            = false;
     m_execute                 = nullptr;
+    m_scriptExecute           = false;
 }  
 
 COEditorView::~COEditorView ()

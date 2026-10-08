@@ -72,27 +72,32 @@ public:
   void          SetTitle(CString p_document);
   COEditorView* GetQueryIsRunning();
   bool          SetQueryIsRunning(COEditorView* p_view);
+  bool          GetHasTransaction();
+  bool          GetAutoCommitMode();
+  void          SetAutoCommitMode(bool p_autoCommit);
 
   // Implementation
-	UINT    m_nAppLook;
-	BOOL    m_bHiColorIcons;
-  int     m_dblKeyAccelInx;
-  HACCEL  m_accelTable;
+  UINT    m_nAppLook        {    0 };
+	BOOL    m_bHiColorIcons   { TRUE };
+  int     m_dblKeyAccelInx  {   -1 };
+  HACCEL  m_accelTable      { NULL };
 
-	virtual void PreLoadState();
-	virtual void LoadCustomState();
-	virtual void SaveCustomState();
+	virtual void PreLoadState()    override;
+	virtual void LoadCustomState() override;
+	virtual void SaveCustomState() override;
 
   afx_msg void OnAppAbout();
   afx_msg void OnEditPermanetSettings();
   afx_msg void OnCHMHelp();
   afx_msg void OnConnect();
   afx_msg void OnDisconnect();
+  afx_msg void OnAutoCommit();
   afx_msg void OnODBCBegin();
   afx_msg void OnODBCCommit();
   afx_msg void OnODBCRollback();
   afx_msg void OnODBCStop();
   afx_msg void OnUpdateEditIndicators(CCmdUI* pCmdUI);
+  afx_msg void OnUpdateAutoCommit(CCmdUI* pCmdUI);
   afx_msg void OnFileWatchNotify(WPARAM, LPARAM);
   afx_msg void OnFileCloseAll();
   afx_msg void OnFileSaveAll();
@@ -115,22 +120,23 @@ private:
   bool    AppStarted25Times();
 
   mutable SQLDatabase     m_database;
-  mutable SQLTransaction* m_transaction;
+  mutable SQLTransaction* m_transaction    { nullptr };
   mutable CString         m_user;
   mutable CString         m_password;
   mutable CString         m_datasource;
   mutable CString         m_connString;
-  mutable bool            m_useConnString;
-  mutable bool            m_optionalUser;
-  mutable bool            m_optionalPassword;
-  mutable bool            m_savePassword;
-  mutable bool            m_safty;
-  mutable bool            m_isClosing;
+  mutable bool            m_useConnString    { false };
+  mutable bool            m_optionalUser     { false };
+  mutable bool            m_optionalPassword { false };
+  mutable bool            m_savePassword     { false };
+  mutable bool            m_safty            { false };
+  mutable bool            m_isClosing        { false };
+  mutable bool            m_autoCommitMode   {  true };
   mutable VarMap          m_variables;
   mutable RebindMap       m_rebinds;
-  mutable COEditorView*   m_runningQuery;
+  mutable COEditorView*   m_runningQuery   { nullptr };
 
-  HANDLE                  m_hMutex;
+  HANDLE                  m_hMutex           { NULL };
   CRITICAL_SECTION        m_runningSQL;
 };
 
@@ -156,6 +162,24 @@ inline RebindMap*
 QueryToolApp::GetRebinds()
 {
   return &m_rebinds;
+}
+
+inline bool
+QueryToolApp::GetHasTransaction()
+{
+  return m_transaction != nullptr;
+}
+
+inline bool
+QueryToolApp::GetAutoCommitMode()
+{
+  return m_autoCommitMode;
+}
+
+inline void
+QueryToolApp::SetAutoCommitMode(bool p_autoCommit)
+{
+  m_autoCommitMode = p_autoCommit;
 }
 
 extern QueryToolApp theApp;

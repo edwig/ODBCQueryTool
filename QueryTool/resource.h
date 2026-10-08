@@ -388,6 +388,8 @@
 #define IDC_EDIT3                       1049
 #define IDC_TAB                         1050
 #define IDC_PAYPAL                      1051
+#define IDC_CHECK2                      1053
+#define IDC_AUTOCOMMIT                  1053
 #define IDI_OE_BIG_SMILE                1101
 #define IDB_OE_EXPLORER_STATE_LIST      1201
 #define IDR_OPENEDITOR                  1301
@@ -611,6 +613,7 @@
 #define ID_TOOLS_QUERYREWRITER          50131
 #define ID_TOOLS_REWRITER               50132
 #define ID_ODBC_STOP                    50133
+#define ID_ODBC_AUTOCOMMIT                   50134
 #define ID_APP_DBLKEYACCEL_FIRST        0xDF00
 #define ID_APP_DBLKEYACCEL_LAST         0xDFFF
 
@@ -619,8 +622,8 @@
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        330
-#define _APS_NEXT_COMMAND_VALUE         50134
-#define _APS_NEXT_CONTROL_VALUE         1053
+#define _APS_NEXT_COMMAND_VALUE         50135
+#define _APS_NEXT_CONTROL_VALUE         1054
 #define _APS_NEXT_SYMED_VALUE           100
 #endif
 #endif

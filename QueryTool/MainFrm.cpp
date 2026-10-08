@@ -366,6 +366,7 @@ int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 	// Connect menu
   lstBasicCommands.AddTail(ID_ODBC_CONNECT);
   lstBasicCommands.AddTail(ID_ODBC_DISCONNECT);
+  lstBasicCommands.AddTail(ID_ODBC_AUTOCOMMIT);
   lstBasicCommands.AddTail(ID_ODBC_BEGIN);
   lstBasicCommands.AddTail(ID_ODBC_COMMIT);
   lstBasicCommands.AddTail(ID_ODBC_ROLLBACK);

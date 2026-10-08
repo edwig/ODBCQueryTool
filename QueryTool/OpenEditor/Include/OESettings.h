@@ -188,12 +188,13 @@ namespace OpenEditor
         OES_DECLARE_PROPERTY(CString, FileFileTypes);
         OES_DECLARE_PROPERTY(CString, FileStartDirectory);
 
-        OES_DECLARE_PROPERTY(int,    SQLPrefetchLines);
-        OES_DECLARE_PROPERTY(int,    SQLLengthOption);
+        OES_DECLARE_PROPERTY(int,     SQLPrefetchLines);
+        OES_DECLARE_PROPERTY(int,     SQLLengthOption);
         OES_DECLARE_PROPERTY(CString, SQLQueryTerminator);
         OES_DECLARE_PROPERTY(CString, SQLQueryFont);
-        OES_DECLARE_PROPERTY(int,    SQLCharsetTranslation);
+        OES_DECLARE_PROPERTY(int,     SQLCharsetTranslation);
         OES_DECLARE_PROPERTY(CString, SQLCharsetUsed);
+        OES_DECLARE_PROPERTY(int,     SQLAutoCommit);
 
         OES_DECLARE_PROPERTY(bool,   PreferODBCMetaSQL);
         OES_DECLARE_PROPERTY(bool,   AllowMultipleInstances);
@@ -378,12 +379,13 @@ namespace OpenEditor
         OES_DECLARE_GLOBAL_PROPERTY(CString, FileFileTypes);
         OES_DECLARE_GLOBAL_PROPERTY(CString, FileStartDirectory);
 
-        OES_DECLARE_GLOBAL_PROPERTY(int,    SQLPrefetchLines);
-        OES_DECLARE_GLOBAL_PROPERTY(int,    SQLLengthOption);
+        OES_DECLARE_GLOBAL_PROPERTY(int,     SQLPrefetchLines);
+        OES_DECLARE_GLOBAL_PROPERTY(int,     SQLLengthOption);
         OES_DECLARE_GLOBAL_PROPERTY(CString, SQLQueryTerminator);
         OES_DECLARE_GLOBAL_PROPERTY(CString, SQLQueryFont);
-        OES_DECLARE_GLOBAL_PROPERTY(int,    SQLCharsetTranslation);
+        OES_DECLARE_GLOBAL_PROPERTY(int,     SQLCharsetTranslation);
         OES_DECLARE_GLOBAL_PROPERTY(CString, SQLCharsetUsed);
+        OES_DECLARE_GLOBAL_PROPERTY(int,     SQLAutoCommit);
 
         OES_DECLARE_GLOBAL_PROPERTY(bool,   PreferODBCMetaSQL);
         OES_DECLARE_GLOBAL_PROPERTY(bool,   AllowMultipleInstances);
@@ -500,12 +502,13 @@ namespace OpenEditor
         OES_AGGREGATE_PROPERTY(CString, FileFileTypes);
         OES_AGGREGATE_PROPERTY(CString, FileStartDirectory);
 
-        OES_AGGREGATE_PROPERTY(int,    SQLPrefetchLines);
-        OES_AGGREGATE_PROPERTY(int,    SQLLengthOption);
+        OES_AGGREGATE_PROPERTY(int,     SQLPrefetchLines);
+        OES_AGGREGATE_PROPERTY(int,     SQLLengthOption);
         OES_AGGREGATE_PROPERTY(CString, SQLQueryTerminator);
         OES_AGGREGATE_PROPERTY(CString, SQLQueryFont);
-        OES_AGGREGATE_PROPERTY(int,    SQLCharsetTranslation);
+        OES_AGGREGATE_PROPERTY(int,     SQLCharsetTranslation);
         OES_AGGREGATE_PROPERTY(CString, SQLCharsetUsed);
+        OES_AGGREGATE_PROPERTY(int,     SQLAutoCommit);
 
 
         OES_AGGREGATE_PROPERTY(bool,   PreferODBCMetaSQL);

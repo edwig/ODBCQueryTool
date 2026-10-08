@@ -37,6 +37,7 @@
 #include "Common\GUICommandDictionary.h"
 #include "ConnectionDlg.h"
 #include "MultConnectionsDlg.h"
+#include "OESettings.h"
 
 using namespace Common;
 
@@ -65,6 +66,7 @@ BEGIN_MESSAGE_MAP(QueryToolApp, CWinAppEx)
   ON_COMMAND(ID_HELP_INDEX,               OnCHMHelp)
   ON_COMMAND(ID_ODBC_CONNECT,             OnConnect)
   ON_COMMAND(ID_ODBC_DISCONNECT,          OnDisconnect)
+  ON_COMMAND(ID_ODBC_AUTOCOMMIT,          OnAutoCommit)
   ON_COMMAND(ID_ODBC_BEGIN,               OnODBCBegin)
   ON_COMMAND(ID_ODBC_COMMIT,              OnODBCCommit)
   ON_COMMAND(ID_ODBC_ROLLBACK,            OnODBCRollback)
@@ -72,6 +74,7 @@ BEGIN_MESSAGE_MAP(QueryToolApp, CWinAppEx)
   ON_COMMAND(ID_SESSION_ODBCREPORT,       ReportCapabilities)
   ON_COMMAND(ID_SESSIONSTATUS,            OnSessionStatus)
 
+  ON_UPDATE_COMMAND_UI(ID_ODBC_AUTOCOMMIT,           OnUpdateAutoCommit)
   ON_UPDATE_COMMAND_UI(ID_INDICATOR_POS,        OnUpdateEditIndicators)
   ON_UPDATE_COMMAND_UI(ID_INDICATOR_SCROLL_POS, OnUpdateEditIndicators)
   ON_UPDATE_COMMAND_UI(ID_INDICATOR_FILE_TYPE,  OnUpdateEditIndicators)
@@ -86,8 +89,6 @@ END_MESSAGE_MAP()
 
 QueryToolApp::QueryToolApp() noexcept
 {
-	m_bHiColorIcons = TRUE;
-	m_nAppLook      = 0;
 	// support Restart Manager
 	m_dwRestartManagerSupportFlags = AFX_RESTART_MANAGER_SUPPORT_ALL_ASPECTS;
 
@@ -95,19 +96,14 @@ QueryToolApp::QueryToolApp() noexcept
 	// format for string is CompanyName.ProductName.SubProduct.VersionInformation
 	SetAppID(_T("EDO.QueryTool.App.Version"));
 
-	// TODO: add construction code here,
-	// Place all significant initialization in InitInstance
-  m_dblKeyAccelInx        = -1;
-  m_hMutex                = NULL;
-  m_accelTable            = NULL;
-  m_pDocManager           = new CDocManagerExt;
-  m_isClosing             = false;
+  // Create a document manager
+  m_pDocManager = new CDocManagerExt;
 
 #ifdef _DEBUG
   // DISABLE window placement.
   // Should be fixed in version MFC 17.3.x
   // https://docs.microsoft.com/en-us/answers/questions/855042/i-am-getting-an-exception-in-mfc-loadframe-from-a.html
-  m_bLoadWindowPlacement = false;
+  // m_bLoadWindowPlacement = false;
 #endif
 
   InitializeCriticalSection(&m_runningSQL);
@@ -260,6 +256,7 @@ void QueryToolApp::InitGUICommand()
     //Session
     GUICommandDictionary::InsertCommand(_T("Session.Connect"),                 ID_ODBC_CONNECT);
     GUICommandDictionary::InsertCommand(_T("Session.Disconnect"),              ID_ODBC_DISCONNECT);
+    GUICommandDictionary::InsertCommand(_T("Session.AutoCommit"),              ID_ODBC_AUTOCOMMIT);
     GUICommandDictionary::InsertCommand(_T("Session.Begin"),                   ID_ODBC_BEGIN);
     GUICommandDictionary::InsertCommand(_T("Session.Commit"),                  ID_ODBC_COMMIT);
     GUICommandDictionary::InsertCommand(_T("Session.Rollback"),                ID_ODBC_ROLLBACK);
@@ -360,6 +357,7 @@ BOOL QueryToolApp::InitInstance()
     // Load editor settings
     COEDocument::LoadSettingsManager();
     _tsetlocale(LC_ALL, COEDocument::GetSettingsManager().GetGlobalSettings().GetLocale());
+     m_autoCommitMode = COEDocument::GetSettingsManager().GetGlobalSettings().GetSQLAutoCommit();
 
     if (!AllowThisInstance()) // must be after COEDocument::LoadSettingsManager();
     {
@@ -596,6 +594,8 @@ void QueryToolApp::OnAppAbout()
 
 void QueryToolApp::PreLoadState()
 {
+  CWinAppEx::PreLoadState();
+
 	BOOL bNameValid;
 	CString strName;
 	bNameValid = strName.LoadString(IDS_EDIT_MENU);
@@ -608,10 +608,12 @@ void QueryToolApp::PreLoadState()
 
 void QueryToolApp::LoadCustomState()
 {
+  CWinAppEx::LoadCustomState();
 }
 
 void QueryToolApp::SaveCustomState()
 {
+  CWinAppEx::SaveCustomState();
 }
 
 bool    
@@ -952,6 +954,22 @@ QueryToolApp::ReportCapabilities()
 }
 
 void
+QueryToolApp::OnAutoCommit()
+{
+  m_autoCommitMode = !m_autoCommitMode;
+
+  OpenEditor::GlobalSettings& settings = const_cast<OpenEditor::GlobalSettings&>(COEDocument::GetSettingsManager().GetGlobalSettings());
+  settings.SetSQLAutoCommit(m_autoCommitMode);
+  COEDocument::SaveSettingsManager();
+}
+
+void 
+QueryToolApp::OnUpdateAutoCommit(CCmdUI* pCmdUI)
+{
+  pCmdUI->SetCheck(m_autoCommitMode);
+}
+
+void
 QueryToolApp::OnODBCBegin()
 {
   if(!m_database.IsOpen())
@@ -1077,10 +1095,10 @@ QueryToolApp::OnCHMHelp()
 }
 
 void
-QueryToolApp::RunShellCommand(const TCHAR* directory
-                             ,const TCHAR* command
-                             ,const TCHAR* filename
-                             ,const TCHAR* parameters)
+QueryToolApp::RunShellCommand(LPCTSTR directory
+                             ,LPCTSTR command
+                             ,LPCTSTR filename
+                             ,LPCTSTR parameters)
 {
   HWND hwnd = GetMainWnd()->GetSafeHwnd();
   HINSTANCE res = ShellExecute(hwnd         // Controlling window
@@ -1294,7 +1312,7 @@ QueryToolApp::TableDDL(CString& p_table)
 }
 
 void
-QueryToolApp::ViewDDL(String& p_view)
+QueryToolApp::ViewDDL(CString& p_view)
 {
   if (m_pMainWnd)
   {

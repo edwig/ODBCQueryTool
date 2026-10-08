@@ -218,8 +218,9 @@ ExecuteThread::ExecuteQuery()
       m_odbcCommand.Empty();
       return true;
     }
-    if(m_odbcCommand.Left(6).CompareNoCase(_T("SELECT")) == 0 ||
-       m_odbcCommand.Left(4).CompareNoCase(_T("WITH")) == 0 ||
+    // Any form of a select statement for which we want a results grid
+    if(m_odbcCommand.Left(6).CompareNoCase(_T("SELECT"))  == 0 ||
+       m_odbcCommand.Left(4).CompareNoCase(_T("WITH"))    == 0 ||
        m_odbcCommand.Left(7).CompareNoCase(_T("EXPLAIN")) == 0)
     {
       selectQuery = true;
@@ -247,10 +248,8 @@ ExecuteThread::ExecuteQuery()
   }
 
   // Make sure we have a transaction in case we do a DML command
-  if(command.CompareNoCase(_T("INSERT")) == 0 ||
-     command.CompareNoCase(_T("UPDATE")) == 0 ||
-     command.CompareNoCase(_T("DELETE")) == 0 ||
-     command.CompareNoCase(_T("MERGE ")) == 0 )
+  // Modern databases also require a transaction for DDL statements.
+  if(!selectQuery && app->GetAutoCommitMode() == false)
   {
     app->OnODBCBegin();
   }
