@@ -125,10 +125,15 @@ CMainFrame::~CMainFrame()
 {
 }
 
-int CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
+int
+CMainFrame::OnCreate(LPCREATESTRUCT lpCreateStruct)
 {
-	if (StyleMDIFrameWnd::OnCreate(lpCreateStruct) == -1)
+	if(StyleMDIFrameWnd::OnCreate(lpCreateStruct) == -1)
+	{
 		return -1;
+	}
+
+  CMFCToolBar::EnableQuickCustomization();
 
 	DWORD ctrlStyle = TBSTYLE_FLAT | CBRS_TOOLTIPS | CBRS_SIZE_DYNAMIC;
 	DWORD dwStyle   = AFX_DEFAULT_TOOLBAR_STYLE;
@@ -484,7 +489,8 @@ BOOL CMainFrame::CreateDockingWindows()
 	return TRUE;
 }
 
-void CMainFrame::SetDockingWindowIcons(BOOL bHiColorIcons)
+void
+CMainFrame::SetDockingWindowIcons(BOOL bHiColorIcons)
 {
 	HICON hObjectViewIcon = (HICON) ::LoadImage(::AfxGetResourceHandle(), MAKEINTRESOURCE(bHiColorIcons ? IDI_OUTPUT_WND_HC : IDI_OUTPUT_WND), IMAGE_ICON, ::GetSystemMetrics(SM_CXSMICON), ::GetSystemMetrics(SM_CYSMICON), 0);
 	m_wndObjectView.SetIcon(hObjectViewIcon, FALSE);
@@ -857,7 +863,6 @@ CMainFrame::OnSQLReWriter()
 }
 
 //////////////////////////////////////////////////////////////////////////
-
 
 void
 CMainFrame::OnUpdateConnect(CCmdUI* pCmdUI)

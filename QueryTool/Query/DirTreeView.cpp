@@ -328,9 +328,12 @@ DirTreeView::SelectDrive(const CString& path, BOOL force)
   else
   {
     CWaitCursor wait;
+    CString drive(path);
+    drive.TrimRight(_T("\\"));
     for (int i(0), count((int)m_driverPaths.GetSize()); i < count; i++)
     {
-      if (!m_driverPaths.ElementAt(i).CompareNoCase(path)
+      if((!m_driverPaths.ElementAt(i).CompareNoCase(path) ||
+          !m_driverPaths.ElementAt(i).CompareNoCase(drive))
         && (force || m_driverPaths.ElementAt(i).CompareNoCase(m_curDrivePath)))
       {
         CString volumeName;

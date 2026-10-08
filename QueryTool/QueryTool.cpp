@@ -351,6 +351,18 @@ BOOL QueryToolApp::InitInstance()
     | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
+  CWinAppEx::InitInstance();
+
+  // InitCommonControlsEx() is required on Windows XP if an application
+  // manifest specifies use of ComCtl32.dll version 6 or later to enable
+  // visual styles.  Otherwise, any window creation will fail.
+  INITCOMMONCONTROLSEX InitCtrls;
+  InitCtrls.dwSize = sizeof(InitCtrls);
+  // Set this to include all the common control classes you want to use
+  // in your application.
+  InitCtrls.dwICC = ICC_WIN95_CLASSES;
+  InitCommonControlsEx(&InitCtrls);
+
   CMainFrame* pMainFrame = nullptr;
   try
   {
@@ -378,19 +390,6 @@ BOOL QueryToolApp::InitInstance()
       StyleMessageBox(nullptr,_T("Version change: Your profile is re-initialized"),_T("Warning"),MB_OK|MB_ICONINFORMATION);
     }
     LoadStdProfileSettings(10);  // Load standard INI file options (including MRU)
-    ParseODBCCommandLine();
-  
-    // InitCommonControlsEx() is required on Windows XP if an application
-	  // manifest specifies use of ComCtl32.dll version 6 or later to enable
-	  // visual styles.  Otherwise, any window creation will fail.
-	  INITCOMMONCONTROLSEX InitCtrls;
-	  InitCtrls.dwSize = sizeof(InitCtrls);
-	  // Set this to include all the common control classes you want to use
-	  // in your application.
-	  InitCtrls.dwICC = ICC_WIN95_CLASSES;
-	  InitCommonControlsEx(&InitCtrls);
-
-  	CWinAppEx::InitInstance();
 
 	  EnableTaskbarInteraction();
 	  InitContextMenuManager();
@@ -400,6 +399,14 @@ BOOL QueryToolApp::InitInstance()
     CMFCToolTipInfo ttParams;
 	  ttParams.m_bVislManagerTheme = TRUE;
 	  theApp.GetTooltipManager()->SetTooltipParams(AFX_TOOLTIP_TYPE_ALL,RUNTIME_CLASS(CMFCToolTipCtrl), &ttParams);
+
+    // Needed for toolbar reloads
+    CMFCToolBar::AddToolBarForImageCollection(IDR_MAINFRAME);
+    CMFCToolBar::EnableQuickCustomization();
+    CMFCToolBarComboBoxButton comboDummy;
+    GetCmdMgr()->EnableMenuItemImage(FALSE);
+
+    ParseODBCCommandLine();
 
 	  // Register the application's document templates.  Document templates
 	  //  serve as the connection between documents, frame windows and views
@@ -1382,7 +1389,7 @@ QueryToolApp::SaveAllModified()
     // Rollback the transaction
     OnODBCRollback();
   }
-  return CWinApp::SaveAllModified();
+  return CWinAppEx::SaveAllModified();
 }
 
 int
@@ -1501,7 +1508,7 @@ QueryToolApp::PreTranslateMessage(MSG* pMsg)
   {
     return TRUE;
   }
-  return CWinApp::PreTranslateMessage(pMsg);
+  return CWinAppEx::PreTranslateMessage(pMsg);
 }
 
 BOOL 
@@ -1511,7 +1518,7 @@ QueryToolApp::OnIdle(LONG lCount)
 
   try
   {
-    more = CWinApp::OnIdle(lCount);
+    more = CWinAppEx::OnIdle(lCount);
   }
   catch (...) { /*it's silent*/ }
 
