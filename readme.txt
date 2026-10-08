@@ -24,6 +24,8 @@ LATEST HISTORY
 
 Releasenotes 3.6.4
 ------------------
+-  The 32bits and ANSI versions are dropped from the release system and are declared 
+   DEPRECATED. Only 64bits Unicode versions of the programs are enclosed in the installer.
 -  AUTO transactions. Any action other than a 'SELECT' will now automatically
    start a transaction. You must either use the "COMMIT" command, or the commit
    button in the toolbar.
